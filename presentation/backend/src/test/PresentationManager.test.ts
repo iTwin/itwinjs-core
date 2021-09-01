@@ -17,9 +17,9 @@ import {
   DisplayLabelsRequestOptions, DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, ExtendedContentRequestOptions,
   ExtendedHierarchyRequestOptions, FieldDescriptor, FieldDescriptorType, FieldJSON, getLocalesDirectory, HierarchyCompareInfo,
   HierarchyCompareInfoJSON, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, IntRulesetVariable, ItemJSON, KeySet, KindOfQuantityInfo,
-  LabelDefinition, LabelRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationError, PresentationUnitSystem,
-  PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RequestPriority, Ruleset, SelectClassInfoJSON,
-  SelectionInfo, SelectionScope, StandardNodeTypes, StructTypeDescription, VariableValueTypes,
+  LabelDefinition, LabelRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationError, PrimitiveTypeDescription,
+  PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RequestPriority, Ruleset, SelectClassInfoJSON, SelectionInfo,
+  SelectionScope, StandardNodeTypes, StructTypeDescription, VariableValueTypes,
 } from "@bentley/presentation-common";
 import {
   createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestSimpleContentField,
@@ -32,7 +32,7 @@ import {
   createRandomRuleset,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "../presentation-backend/Constants";
-import { NativePlatformDefinition, NativePlatformRequestTypes } from "../presentation-backend/NativePlatform";
+import { NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationUnitSystem } from "../presentation-backend/NativePlatform";
 import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler";
 import {
   HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerMode, PresentationManagerProps,
@@ -126,9 +126,6 @@ describe("PresentationManager", () => {
           type: "Decimal",
           uomSeparator: "",
         };
-        const defaultFormats = {
-          length: { unitSystems: [PresentationUnitSystem.BritishImperial], format: formatProps },
-        };
         const props: PresentationManagerProps = {
           id: faker.random.uuid(),
           presentationAssetsRoot: "/test",
@@ -139,7 +136,9 @@ describe("PresentationManager", () => {
           cacheConfig,
           contentCacheSize: 999,
           useMmap: 666,
-          defaultFormats,
+          defaultFormats: {
+            length: { unitSystems: ["imperial"], format: formatProps },
+          },
         };
         const expectedCacheConfig = {
           mode: HierarchyCacheMode.Memory,
@@ -154,7 +153,9 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: true,
             cacheConfig: expectedCacheConfig,
             contentCacheSize: 999,
-            defaultFormats: { length: { unitSystems: [PresentationUnitSystem.BritishImperial], serializedFormat: JSON.stringify(formatProps) } },
+            defaultFormats: {
+              length: { unitSystems: [NativePresentationUnitSystem.BritishImperial], serializedFormat: JSON.stringify(formatProps) },
+            },
             useMmap: 666,
           });
         });
@@ -443,15 +444,32 @@ describe("PresentationManager", () => {
       addonMock.reset();
     });
 
+    it("uses unit system specified in request options", async () => {
+      const imodelMock = moq.Mock.ofType<IModelDb>();
+      const rulesetId = faker.random.word();
+      const unitSystem = "metric";
+      await using(new PresentationManager({ addon: addonMock.object }), async (manager) => {
+        addonMock
+          .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
+            const request = JSON.parse(serializedRequest);
+            return request.params.unitSystem === NativePresentationUnitSystem.Metric;
+          })))
+          .returns(async () => ({ result: "null" }))
+          .verifiable(moq.Times.once());
+        await manager.getContentDescriptor({ requestContext: ClientRequestContext.current, imodel: imodelMock.object, rulesetOrId: rulesetId, displayType: "", keys: new KeySet(), unitSystem });
+        addonMock.verifyAll();
+      });
+    });
+
     it("uses manager's activeUnitSystem when not specified in request options", async () => {
       const imodelMock = moq.Mock.ofType<IModelDb>();
       const rulesetId = faker.random.word();
-      const unitSystem = PresentationUnitSystem.UsSurvey;
+      const unitSystem = "usSurvey";
       await using(new PresentationManager({ addon: addonMock.object, activeUnitSystem: unitSystem }), async (manager) => {
         addonMock
           .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
             const request = JSON.parse(serializedRequest);
-            return request.params.unitSystem === unitSystem;
+            return request.params.unitSystem === NativePresentationUnitSystem.UsSurvey;
           })))
           .returns(async () => ({ result: "null" }))
           .verifiable(moq.Times.once());
@@ -460,16 +478,16 @@ describe("PresentationManager", () => {
       });
     });
 
-    it("ignores manager's activeLocale when locale is specified in request options", async () => {
+    it("ignores manager's activeUnitSystem when unit system is specified in request options", async () => {
       const imodelMock = moq.Mock.ofType<IModelDb>();
       const rulesetId = faker.random.word();
-      const unitSystem = PresentationUnitSystem.UsSurvey;
-      await using(new PresentationManager({ addon: addonMock.object, activeLocale: PresentationUnitSystem.Metric }), async (manager) => {
+      const unitSystem = "usCustomary";
+      await using(new PresentationManager({ addon: addonMock.object, activeUnitSystem: "metric" }), async (manager) => {
         expect(manager.activeUnitSystem).to.not.eq(unitSystem);
         addonMock
           .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
             const request = JSON.parse(serializedRequest);
-            return request.params.unitSystem === unitSystem;
+            return request.params.unitSystem === NativePresentationUnitSystem.UsCustomary;
           })))
           .returns(async () => ({ result: "null" }))
           .verifiable(moq.Times.once());
@@ -1445,57 +1463,6 @@ describe("PresentationManager", () => {
         };
         const result = await manager.compareHierarchies(options);
         verifyWithExpectedResult(result, HierarchyCompareInfo.fromJSON(addonResponse), expectedParams);
-      });
-
-    });
-
-    describe("loadHierarchy", () => {
-
-      it("[deprecated] requests hierarchy load", async () => {
-        // what the addon receives
-        const expectedParams = {
-          requestId: NativePlatformRequestTypes.LoadHierarchy,
-          params: {
-            rulesetId: manager.getRulesetId(testData.rulesetOrId),
-          },
-        };
-
-        // what addon returns
-        setup("");
-
-        // test
-        const options: HierarchyRequestOptions<IModelDb> = {
-          imodel: imodelMock.object,
-          rulesetOrId: testData.rulesetOrId,
-        };
-        await manager.loadHierarchy(ClientRequestContext.current, options);
-
-        // verify the addon was called with correct params
-        verifyMockRequest(expectedParams);
-      });
-
-      it("requests hierarchy load", async () => {
-        // what the addon receives
-        const expectedParams = {
-          requestId: NativePlatformRequestTypes.LoadHierarchy,
-          params: {
-            rulesetId: manager.getRulesetId(testData.rulesetOrId),
-          },
-        };
-
-        // what addon returns
-        setup("");
-
-        // test
-        const options: WithClientRequestContext<HierarchyRequestOptions<IModelDb>> = {
-          requestContext: ClientRequestContext.current,
-          imodel: imodelMock.object,
-          rulesetOrId: testData.rulesetOrId,
-        };
-        await manager.loadHierarchy(options);
-
-        // verify the addon was called with correct params
-        verifyMockRequest(expectedParams);
       });
 
     });

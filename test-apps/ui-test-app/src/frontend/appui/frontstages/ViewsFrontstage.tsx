@@ -14,7 +14,8 @@ import {
   BadgeType, CommonToolbarItem, ConditionalBooleanValue, RelativePosition, SpecialKey, StagePanelLocation, StageUsage, ToolbarItemUtilities,
   WidgetState,
 } from "@bentley/ui-abstract";
-import { SelectionMode } from "@bentley/ui-components";
+import { Button, Slider } from "@itwin/itwinui-react";
+import { CustomToolbarItem, SelectionMode, useToolbarPopupContext } from "@bentley/ui-components";
 import { Point, ScrollView } from "@bentley/ui-core";
 import {
   BasicNavigationWidget, BasicToolWidget, ClassGroupingOption, CommandItemDef, ConfigurableUiManager, ContentGroup, ContentLayoutDef,
@@ -51,6 +52,33 @@ import { NestedAnimationStage } from "./NestedAnimationStage";
 import { OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool } from "../../tools/UiProviderTool";
 
 /* eslint-disable react/jsx-key, deprecation/deprecation */
+function MySliderPanel() {
+  const [sliderValues, setSliderValues] = React.useState([50]);
+  React.useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log("mounting my panel");
+    return () => {
+      // eslint-disable-next-line no-console
+      console.log("unmounting my panel");
+    };
+  }, []);
+
+  const { closePanel } = useToolbarPopupContext();
+  const handlApply = React.useCallback(() => {
+    closePanel();
+  }, [closePanel]);
+
+  const handleChange = React.useCallback((values) => {
+    setSliderValues(values);
+  }, []);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "4px", alignItems: "center", width: "300px", height: "68px", padding: "6px", boxSizing: "border-box" }}>
+      <Slider style={{ width: "100%" }} min={0} max={100} values={sliderValues} step={1} onChange={handleChange} />
+      <Button onClick={handlApply}>Apply</Button>
+    </div>
+  );
+}
 
 export class ViewsFrontstage extends FrontstageProvider {
   public static stageId = "ViewsFrontstage";
@@ -175,6 +203,16 @@ export class ViewsFrontstage extends FrontstageProvider {
   }
 
   private get _additionalNavigationVerticalToolbarItems() {
+    const customPopupButton: CustomToolbarItem = {
+      isCustom: true,
+      id: "test.custom-popup-with-slider",
+      itemPriority: 220,
+      icon: "icon-arrow-left",
+      label: "Slider Test",
+      panelContentNode: <MySliderPanel />,
+      groupPriority: 20,
+    };
+
     return [
       ToolbarHelper.createToolbarItemFromItemDef(200, this._viewSelectorItemDef),
       ToolbarHelper.createToolbarItemFromItemDef(210,
@@ -185,6 +223,7 @@ export class ViewsFrontstage extends FrontstageProvider {
           items: [this._switchLayout1, this._switchLayout2],
         }),
       ),
+      customPopupButton,
     ];
   }
 
@@ -751,9 +790,9 @@ class AdditionalTools {
 
   // cSpell:enable
   public additionalHorizontalToolbarItems: CommonToolbarItem[] = [
-    // ToolbarHelper.createToolbarItemFromItemDef(0, CoreTools.keyinBrowserButtonItemDef, { groupPriority: -10 }),
+    // ToolbarHelper.createToolbarItemFromItemDef(0, CoreTools.keyinBrowserButtonItemDef, {groupPriority: -10 }),
     ToolbarHelper.createToolbarItemFromItemDef(0, CoreTools.keyinPaletteButtonItemDef, { groupPriority: -10 }),
-    // ToolbarHelper.createToolbarItemFromItemDef(5, this._openNestedAnimationStage, { groupPriority: -10 }),
+    // ToolbarHelper.createToolbarItemFromItemDef(5, this._openNestedAnimationStage, {groupPriority: -10 }),
     ToolbarHelper.createToolbarItemFromItemDef(115, AppTools.tool1, { groupPriority: 20 }),
     ToolbarHelper.createToolbarItemFromItemDef(120, AppTools.tool2, { groupPriority: 20 }),
     ToolbarHelper.createToolbarItemFromItemDef(125, this._viewportPopupButtonItemDef, { groupPriority: 20 }),

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-frontend",
+      "comment": "The previous fix to the graphicbuilder transform problem actually resulted in some graphicbuilder primitives being transformed twice because they already had the transform applied to them. This fixes that issue by moving the transformation only to primitives that were missing it. This also adds code to ensure that GeometryAccumulator does not mutate the graphicbuilder's transform in-place.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend"
+}

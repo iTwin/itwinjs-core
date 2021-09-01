@@ -45,7 +45,6 @@ import { Paged } from '@bentley/presentation-common';
 import { PagedResponse } from '@bentley/presentation-common';
 import { PageOptions } from '@bentley/presentation-common';
 import { PartialHierarchyModification } from '@bentley/presentation-common';
-import { PresentationUnitSystem } from '@bentley/presentation-common';
 import { RegisteredRuleset } from '@bentley/presentation-common';
 import { RpcRequestsHandler } from '@bentley/presentation-common';
 import { Ruleset } from '@bentley/presentation-common';
@@ -54,6 +53,7 @@ import { SelectClassInfo } from '@bentley/presentation-common';
 import { SelectionInfo } from '@bentley/presentation-common';
 import { SelectionScope } from '@bentley/presentation-common';
 import { SetRulesetVariableParams } from '@bentley/presentation-common';
+import { UnitSystemKey } from '@bentley/imodeljs-quantity';
 import { UnsetRulesetVariableParams } from '@bentley/presentation-common';
 import { UpdateHierarchyStateParams } from '@bentley/presentation-common';
 import { VariableValue } from '@bentley/presentation-common';
@@ -256,7 +256,7 @@ export enum PresentationFrontendLoggerCategory {
 // @public
 export class PresentationManager implements IDisposable {
     activeLocale: string | undefined;
-    activeUnitSystem: PresentationUnitSystem | undefined;
+    activeUnitSystem: UnitSystemKey | undefined;
     compareHierarchies(props: HierarchyCompareOptions<IModelConnection, NodeKey>): Promise<PartialHierarchyModification[]>;
     static create(props?: PresentationManagerProps): PresentationManager;
     // (undocumented)
@@ -317,8 +317,6 @@ export class PresentationManager implements IDisposable {
     getPagedDistinctValues(requestOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor, KeySet, RulesetVariable>): Promise<PagedResponse<DisplayValueGroup>>;
     // @internal (undocumented)
     get ipcRequestsHandler(): IpcRequestsHandler | undefined;
-    // @alpha @deprecated
-    loadHierarchy(_requestOptions: HierarchyRequestOptions<IModelConnection>): Promise<void>;
     // @alpha
     onIModelContentChanged: BeEvent<(args: IModelContentChangeEventArgs) => void>;
     // @alpha
@@ -336,8 +334,7 @@ export class PresentationManager implements IDisposable {
 // @public
 export interface PresentationManagerProps {
     activeLocale?: string;
-    // @alpha
-    activeUnitSystem?: PresentationUnitSystem;
+    activeUnitSystem?: UnitSystemKey;
     clientId?: string;
     // @internal (undocumented)
     ipcRequestsHandler?: IpcRequestsHandler;
