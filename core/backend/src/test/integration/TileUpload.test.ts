@@ -110,7 +110,7 @@ describe("TileUpload (#integration)", () => {
     await IModelTestUtils.startBackend();
   });
 
-  it.only("should upload tile to external cache with metadata", async () => {
+  it("should upload tile to external cache with metadata", async () => {
     const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testContextId, iModelId: testIModelId });
     assert.isDefined(iModel);
 
