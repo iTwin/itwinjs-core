@@ -2336,6 +2336,7 @@ importers:
       '@bentley/imodeljs-common': workspace:*
       '@bentley/imodeljs-frontend': workspace:*
       '@bentley/imodeljs-i18n': workspace:*
+      '@bentley/imodeljs-quantity': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@bentley/presentation-backend': workspace:*
@@ -2396,6 +2397,7 @@ importers:
       '@bentley/imodeljs-common': link:../../core/common
       '@bentley/imodeljs-frontend': link:../../core/frontend
       '@bentley/imodeljs-i18n': link:../../core/i18n
+      '@bentley/imodeljs-quantity': link:../../core/quantity
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@bentley/presentation-backend': link:../../presentation/backend
@@ -2884,6 +2886,7 @@ importers:
       '@bentley/imodeljs-common': workspace:*
       '@bentley/imodeljs-frontend': workspace:*
       '@bentley/imodeljs-i18n': workspace:*
+      '@bentley/imodeljs-quantity': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/presentation-common': workspace:*
       '@bentley/product-settings-client': workspace:*
@@ -2921,6 +2924,7 @@ importers:
       '@bentley/imodeljs-common': link:../../core/common
       '@bentley/imodeljs-frontend': link:../../core/frontend
       '@bentley/imodeljs-i18n': link:../../core/i18n
+      '@bentley/imodeljs-quantity': link:../../core/quantity
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/presentation-common': link:../common
       '@bentley/product-settings-client': link:../../clients/product-settings
@@ -3629,10 +3633,10 @@ importers:
       '@types/lorem-ipsum': ^1.0.2
       '@types/node': 10.14.1
       '@types/react': ^17.0.0
-      '@types/react-beautiful-dnd': ^12.1.2
       '@types/react-dom': ^17.0.0
       '@types/react-redux': ^7.1.18
       '@types/react-select': 3.0.26
+      '@types/react-table': ^7.0.18
       '@types/semver': ^5.5.0
       classnames: ^2.3.1
       cpx: ^1.5.0
@@ -3651,6 +3655,7 @@ importers:
       react-dom: ^17.0.0
       react-redux: ^7.2.2
       react-select: 3.1.0
+      react-table: ^7.1.0
       redux: ^4.0.3
       rimraf: ^3.0.2
       semver: ^5.5.0
@@ -3700,6 +3705,7 @@ importers:
       react-dom: 17.0.2_react@17.0.2
       react-redux: 7.2.4_react-dom@17.0.2+react@17.0.2
       react-select: 3.1.0_react-dom@17.0.2+react@17.0.2
+      react-table: 7.7.0_react@17.0.2
       redux: 4.1.0
       semver: 5.7.1
     devDependencies:
@@ -3710,10 +3716,10 @@ importers:
       '@types/lorem-ipsum': 1.0.2
       '@types/node': 10.14.1
       '@types/react': 17.0.18
-      '@types/react-beautiful-dnd': 12.1.4
       '@types/react-dom': 17.0.9
       '@types/react-redux': 7.1.18
       '@types/react-select': 3.0.26
+      '@types/react-table': 7.7.2
       '@types/semver': 5.5.0
       cpx: 1.5.0
       cross-env: 5.2.1

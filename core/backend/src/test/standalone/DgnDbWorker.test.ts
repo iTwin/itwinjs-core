@@ -190,12 +190,13 @@ describe("DgnDbWorker", () => {
       worldToView: Matrix4d.createIdentity().toJSON(),
     });
 
+    const toBeRejected = expect(snap).to.be.rejectedWith("aborted");
     imodel.cancelSnap(sessionId);
 
     // Clear the worker thread pool so the snap request (now canceled) can be processed.
     blockers.forEach((w) => w.setReady());
     await Promise.all(blockers.map(async (w) => w.promise));
 
-    await expect(snap).to.be.rejectedWith("aborted");
+    await toBeRejected;
   });
 });

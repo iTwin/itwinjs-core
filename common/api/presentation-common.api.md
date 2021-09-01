@@ -15,6 +15,7 @@ import { IDisposable } from '@bentley/bentleyjs-core';
 import { IModelRpcProps } from '@bentley/imodeljs-common';
 import { LogFunction } from '@bentley/bentleyjs-core';
 import { RpcInterface } from '@bentley/imodeljs-common';
+import { UnitSystemKey } from '@bentley/imodeljs-quantity';
 
 // @alpha (undocumented)
 export function addFieldHierarchy(rootHierarchies: FieldHierarchy[], hierarchy: FieldHierarchy): void;
@@ -2045,8 +2046,6 @@ export class PresentationRpcInterface extends RpcInterface {
     getSelectionScopes(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]>;
     static readonly interfaceName = "PresentationRpcInterface";
     static interfaceVersion: string;
-    // @alpha @deprecated (undocumented)
-    loadHierarchy(_token: IModelRpcProps, _options: HierarchyRpcRequestOptions): PresentationRpcResponse<void>;
 }
 
 // @public
@@ -2079,18 +2078,6 @@ export enum PresentationStatus {
     Success = 0,
     // @deprecated
     UseAfterDisposal = 65538
-}
-
-// @beta
-export enum PresentationUnitSystem {
-    // (undocumented)
-    BritishImperial = "british-imperial",
-    // (undocumented)
-    Metric = "metric",
-    // (undocumented)
-    UsCustomary = "us-customary",
-    // (undocumented)
-    UsSurvey = "us-survey"
 }
 
 // @public
@@ -2534,8 +2521,7 @@ export interface RequestOptions<TIModel> {
     imodel: TIModel;
     locale?: string;
     priority?: number;
-    // @beta
-    unitSystem?: PresentationUnitSystem;
+    unitSystem?: UnitSystemKey;
 }
 
 // @public

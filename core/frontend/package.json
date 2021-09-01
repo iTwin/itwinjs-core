@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-frontend",
-  "version": "3.0.0-dev.41",
+  "version": "3.0.0-dev.43",
   "description": "iModel.js frontend components",
   "main": "lib/imodeljs-frontend.js",
   "typings": "lib/imodeljs-frontend",
@@ -36,19 +36,19 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.41",
-    "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.41",
-    "@bentley/geometry-core": "workspace:^3.0.0-dev.41",
-    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.41",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.41",
-    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.41",
-    "@bentley/imodeljs-quantity": "workspace:^3.0.0-dev.41",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.41",
-    "@bentley/orbitgt-core": "workspace:^3.0.0-dev.41",
-    "@bentley/product-settings-client": "workspace:^3.0.0-dev.41",
-    "@bentley/telemetry-client": "workspace:^3.0.0-dev.41",
-    "@bentley/ui-abstract": "workspace:^3.0.0-dev.41",
-    "@bentley/webgl-compatibility": "workspace:^3.0.0-dev.41"
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.43",
+    "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.43",
+    "@bentley/geometry-core": "workspace:^3.0.0-dev.43",
+    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.43",
+    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.43",
+    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.43",
+    "@bentley/imodeljs-quantity": "workspace:^3.0.0-dev.43",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.43",
+    "@bentley/orbitgt-core": "workspace:^3.0.0-dev.43",
+    "@bentley/product-settings-client": "workspace:^3.0.0-dev.43",
+    "@bentley/telemetry-client": "workspace:^3.0.0-dev.43",
+    "@bentley/ui-abstract": "workspace:^3.0.0-dev.43",
+    "@bentley/webgl-compatibility": "workspace:^3.0.0-dev.43"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",

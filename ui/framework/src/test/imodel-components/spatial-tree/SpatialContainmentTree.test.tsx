@@ -59,7 +59,6 @@ describe("SpatialContainmentTree", () => {
       sinon.stub(PresentationTreeDataProvider.prototype, "getNodes").callsFake(
         async () => [{ __key: createKey("1"), label: PropertyRecord.fromString("test-node"), id: "1" }],
       );
-      sinon.stub(PresentationTreeDataProvider.prototype, "loadHierarchy");
 
       const selectionChangeEvent = new SelectionChangeEvent();
       selectionManagerMock.setup((x) => x.selectionChange).returns(() => selectionChangeEvent);

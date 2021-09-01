@@ -78,7 +78,7 @@ The [AppUiSettings]($ui-framework) class, which implements the UserSettingsProvi
 
 ### Quantity Formatting Settings
 
-  The [QuantityFormatSettingsPage]($ui-framework) component provides the UI to set both the [PresentationUnitSystem]($presentation-common) and formatting overrides in the [QuantityFormatter]($frontend). This component can be used in the new [SettingsContainer]($ui-core) UI component. The function `getQuantityFormatsSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core) for use by the [SettingsManager]($ui-core).
+  The [QuantityFormatSettingsPage]($ui-framework) component provides the UI to set both the [PresentationManager.activeUnitSystem]($presentation-frontend) and formatting overrides in the [QuantityFormatter]($frontend). This component can be used in the new [SettingsContainer]($ui-core) UI component. The function `getQuantityFormatsSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core) for use by the [SettingsManager]($ui-core).
 
 ### User Interface Settings
 
