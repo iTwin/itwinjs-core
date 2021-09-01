@@ -298,6 +298,7 @@ import { UiAdmin } from '@bentley/ui-abstract';
 import { UnitConversion } from '@bentley/imodeljs-quantity';
 import { UnitProps } from '@bentley/imodeljs-quantity';
 import { UnitsProvider } from '@bentley/imodeljs-quantity';
+import { UnitSystemKey } from '@bentley/imodeljs-quantity';
 import { Vector2d } from '@bentley/geometry-core';
 import { Vector3d } from '@bentley/geometry-core';
 import { ViewAttachmentProps } from '@bentley/imodeljs-common';
@@ -11112,9 +11113,6 @@ export interface UnitFormattingSettingsProvider {
     storeUnitSystemKey(unitSystemKey: UnitSystemKey): Promise<boolean>;
     storeUnitSystemSetting(args: FormattingUnitSystemChangedArgs): Promise<void>;
 }
-
-// @beta
-export type UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey";
 
 // @internal (undocumented)
 export class UpsampledMapTile extends MapTile {

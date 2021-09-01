@@ -2336,6 +2336,7 @@ importers:
       '@bentley/imodeljs-common': workspace:*
       '@bentley/imodeljs-frontend': workspace:*
       '@bentley/imodeljs-i18n': workspace:*
+      '@bentley/imodeljs-quantity': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@bentley/presentation-backend': workspace:*
@@ -2396,6 +2397,7 @@ importers:
       '@bentley/imodeljs-common': link:../../core/common
       '@bentley/imodeljs-frontend': link:../../core/frontend
       '@bentley/imodeljs-i18n': link:../../core/i18n
+      '@bentley/imodeljs-quantity': link:../../core/quantity
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@bentley/presentation-backend': link:../../presentation/backend
@@ -2884,6 +2886,7 @@ importers:
       '@bentley/imodeljs-common': workspace:*
       '@bentley/imodeljs-frontend': workspace:*
       '@bentley/imodeljs-i18n': workspace:*
+      '@bentley/imodeljs-quantity': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/presentation-common': workspace:*
       '@bentley/product-settings-client': workspace:*
@@ -2921,6 +2924,7 @@ importers:
       '@bentley/imodeljs-common': link:../../core/common
       '@bentley/imodeljs-frontend': link:../../core/frontend
       '@bentley/imodeljs-i18n': link:../../core/i18n
+      '@bentley/imodeljs-quantity': link:../../core/quantity
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/presentation-common': link:../common
       '@bentley/product-settings-client': link:../../clients/product-settings
@@ -12614,7 +12618,7 @@ packages:
       promise-inflight: 1.0.1
       rimraf: 3.0.2
       ssri: 8.0.1
-      tar: 6.1.8
+      tar: 6.1.11
       unique-filename: 1.1.1
 
   /cache-base/1.0.1:
@@ -23531,8 +23535,8 @@ packages:
       inherits: 2.0.4
       readable-stream: 3.6.0
 
-  /tar/6.1.8:
-    resolution: {integrity: sha512-sb9b0cp855NbkMJcskdSYA7b11Q8JsX4qe4pyUAfHp+Y6jBjJeek2ZVlwEfWayshEIwlIzXx0Fain3QG9JPm2A==}
+  /tar/6.1.11:
+    resolution: {integrity: sha512-an/KZQzQUkZCkuoAA64hM92X0Urb6VpRhAFllDzz44U2mcD5scmT3zBc4VgVpkugF580+DQn8eAFSyoQt0tznA==}
     engines: {node: '>= 10'}
     dependencies:
       chownr: 2.0.0
