@@ -49,7 +49,7 @@ async function signin(user: TestUserCredentials, oidcConfig?: TestBrowserAuthori
   // console.log("Starting OIDC signin...");
   // console.time("Finished OIDC signin in");
 
-  let token: AccessTokenString;
+  let token: AccessTokenString | undefined;
   if (undefined === oidcConfig || null === oidcConfig) {
     token = await TestUtility.getAccessToken(user);
   } else {

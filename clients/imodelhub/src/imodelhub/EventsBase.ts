@@ -176,7 +176,7 @@ export abstract class EventBaseHandler {
 /** @internal */
 export class ListenerSubscription {
   public listeners: BeEvent<(event: IModelHubBaseEvent) => void>;
-  public authenticationCallback: () => Promise<AccessTokenString>;
+  public authenticationCallback: () => Promise<AccessTokenString | undefined>;
   public getEvent: (token: string, baseAddress: string, subscriptionId: string, timeout?: number) => Promise<IModelHubBaseEvent | undefined>;
   public getSASToken: (requestContext: AuthorizedClientRequestContext) => Promise<BaseEventSAS>;
   public id: string;
@@ -215,7 +215,7 @@ export class EventListener {
   }
 
   private static async getEvents(subscription: ListenerSubscription) {
-    let accessToken: AccessTokenString = await subscription.authenticationCallback();
+    let accessToken: AccessTokenString | undefined = await subscription.authenticationCallback();
     let eventSAS: BaseEventSAS | undefined;
 
     mainLoop:

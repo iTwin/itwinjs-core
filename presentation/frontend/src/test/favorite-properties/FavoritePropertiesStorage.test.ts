@@ -19,7 +19,7 @@ import { FavoritePropertiesOrderInfo, PropertyFullName } from "../../presentatio
 import {
   IModelAppFavoritePropertiesStorage, OfflineCachingFavoritePropertiesStorage,
 } from "../../presentation-frontend/favorite-properties/FavoritePropertiesStorage";
-import { AccessTokenString } from "../../../../../clients/itwin/lib/Token";
+import { AccessTokenString } from "@bentley/itwin-client";
 
 describe("IModelAppFavoritePropertiesStorage", () => {
 

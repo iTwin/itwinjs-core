@@ -25,7 +25,7 @@ const authorizationClient = new AgentAuthorizationClient(clientConfig);
 const imodelHubClient: IModelHubClient = new IModelHubClient();
 
 // __PUBLISH_EXTRACT_START__ GlobalEventHandler.createListener.authenticate.example-code
-async function authenticate(): Promise<AccessTokenString> {
+async function authenticate(): Promise<AccessTokenString | undefined> {
   const requestContext = new ClientRequestContext();
   return authorizationClient.getAccessToken(requestContext);
 }

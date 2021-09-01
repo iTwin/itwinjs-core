@@ -125,7 +125,7 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
   let serviceAccount1: TestUserCredentials;
 
   before(async () => {
-    const accessToken: AccessTokenString = await utils.login();
+    const accessToken: AccessTokenString | undefined = await utils.login();
     requestContext = new AuthorizedClientRequestContext(accessToken);
     projectId = await utils.getProjectId(requestContext);
 

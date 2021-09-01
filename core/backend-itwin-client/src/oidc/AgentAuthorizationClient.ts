@@ -40,7 +40,7 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
     super(agentConfiguration);
   }
 
-  private async generateAccessToken(requestContext: ClientRequestContext): Promise<AccessTokenString> {
+  private async generateAccessToken(requestContext: ClientRequestContext): Promise<AccessTokenString | undefined> {
     const scope = this._configuration.scope;
     if (scope.includes("openid") || scope.includes("email") || scope.includes("profile") || scope.includes("organization"))
       throw new BentleyError(AuthStatus.Error, "Scopes for an Agent cannot include 'openid email profile organization'");
@@ -67,7 +67,7 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
    * Get the access token
    * @deprecated Use [[AgentAuthorizationClient.getAccessToken]] instead.
    */
-  public async getToken(requestContext: ClientRequestContext): Promise<AccessTokenString> {
+  public async getToken(requestContext: ClientRequestContext): Promise<AccessTokenString | undefined> {
     return this.generateAccessToken(requestContext);
   }
 
@@ -98,7 +98,7 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
   /** Returns a promise that resolves to the AccessToken of the currently authorized client.
    * The token is refreshed if necessary.
    */
-  public async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessTokenString> {
+  public async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessTokenString | undefined> {
     if (this.isAuthorized)
       return this._accessToken!;
     return this.generateAccessToken(requestContext || new ClientRequestContext());

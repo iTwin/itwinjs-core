@@ -34,7 +34,7 @@ chai.should();
 describe("DelegationAuthorizationClient (#integration)", () => {
 
   let validator: HubAccessTestValidator;
-  let jwt: AccessTokenString;
+  let jwt: AccessTokenString | undefined;
   const requestContext = new ClientRequestContext();
 
   before(async () => {

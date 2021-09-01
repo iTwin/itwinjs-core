@@ -28,7 +28,7 @@ export class DelegationAuthorizationClient extends BackendAuthorizationClient {
     super(configuration);
   }
 
-  private async exchangeToJwtToken(requestContext: ClientRequestContext, accessToken: AccessTokenString, grantType: string): Promise<AccessTokenString> {
+  private async exchangeToJwtToken(requestContext: ClientRequestContext, accessToken: AccessTokenString | undefined, grantType: string): Promise<AccessTokenString | undefined> {
     requestContext.enter();
 
     const grantParams: GrantBody = {
@@ -44,7 +44,7 @@ export class DelegationAuthorizationClient extends BackendAuthorizationClient {
   }
 
   /** Get a delegation JWT for a new scope from another JWT */
-  public async getJwtFromJwt(requestContext: ClientRequestContext, accessToken: AccessTokenString): Promise<AccessTokenString> {
+  public async getJwtFromJwt(requestContext: ClientRequestContext, accessToken?: AccessTokenString): Promise<AccessTokenString | undefined> {
     requestContext.enter();
     return this.exchangeToJwtToken(requestContext, accessToken, "urn:ietf:params:oauth:grant-type:jwt-bearer");
   }

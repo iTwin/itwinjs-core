@@ -39,12 +39,12 @@ export class AuthorizedClientRequestContext extends ClientRequestContext {
   /** The access token value of the client application.
    * @beta
    */
-  public accessToken: AccessTokenString;
+  public accessToken?: AccessTokenString;
 
   /** Constructor
    * @beta
    */
-  public constructor(accessToken: AccessTokenString, activityId: GuidString = Guid.createValue(), applicationId: string = "", applicationVersion: string = "", sessionId: GuidString = Guid.empty) {
+  public constructor(accessToken?: AccessTokenString, activityId: GuidString = Guid.createValue(), applicationId: string = "", applicationVersion: string = "", sessionId: GuidString = Guid.empty) {
     super(activityId, applicationId, applicationVersion, sessionId);
     this.accessToken = accessToken;
   }

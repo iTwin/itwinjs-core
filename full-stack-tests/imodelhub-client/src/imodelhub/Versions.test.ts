@@ -87,7 +87,7 @@ describe("iModelHub VersionHandler", () => {
       utils.getRequestBehaviorOptionsHandler().disableBehaviorOption("DoNotScheduleRenderThumbnailJob");
     }
 
-    const accessToken: AccessTokenString = TestConfig.enableMocks ? "" : await utils.login(TestUsers.super);
+    const accessToken: AccessTokenString | undefined = TestConfig.enableMocks ? "" : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
     (requestContext as any).activityId = "iModelHub VersionHandler";
 

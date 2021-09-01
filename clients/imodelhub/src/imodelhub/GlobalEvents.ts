@@ -423,7 +423,7 @@ export class GlobalEventHandler extends EventBaseHandler {
    * @returns Function that deletes the created listener.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if one of the arguments is undefined or has an invalid value.
    */
-  public createListener(requestContext: AuthorizedClientRequestContext, authenticationCallback: () => Promise<AccessTokenString>, subscriptionInstanceId: string, listener: (event: IModelHubGlobalEvent) => void): () => void {
+  public createListener(requestContext: AuthorizedClientRequestContext, authenticationCallback: () => Promise<AccessTokenString | undefined>, subscriptionInstanceId: string, listener: (event: IModelHubGlobalEvent) => void): () => void {
     requestContext.enter();
     ArgumentCheck.defined("subscriptionInstanceId", subscriptionInstanceId);
     const subscription = new ListenerSubscription();

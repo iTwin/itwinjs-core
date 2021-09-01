@@ -21,7 +21,7 @@ export class HubAccessTestValidator {
     if (HubAccessTestValidator._singletonInstance)
       return HubAccessTestValidator._singletonInstance;
 
-    const accessToken: AccessTokenString = await TestUtility.getAccessToken(TestUsers.regular);
+    const accessToken: AccessTokenString | undefined = await TestUtility.getAccessToken(TestUsers.regular);
     const requestContext = new AuthorizedClientRequestContext(accessToken);
 
     const testProjectName = "iModelJsIntegrationTest";
@@ -33,13 +33,13 @@ export class HubAccessTestValidator {
     return HubAccessTestValidator._singletonInstance;
   }
 
-  public async validateContextRegistryAccess(accessToken: AccessTokenString) {
+  public async validateContextRegistryAccess(accessToken?: AccessTokenString) {
     const requestContext = new AuthorizedClientRequestContext(accessToken);
     const projectId = await TestConfig.queryProjectId(requestContext, this._testProjectName);
     chai.expect(projectId).to.be.equal(this._testProjectId);
   }
 
-  public async validateIModelHubAccess(accessToken: AccessTokenString) {
+  public async validateIModelHubAccess(accessToken?: AccessTokenString) {
     const requestContext = new AuthorizedClientRequestContext(accessToken);
     const iModelId = await TestConfig.queryIModelId(requestContext, this._testIModelName, this._testProjectId);
     chai.expect(iModelId).to.be.equal(this._testIModelId);

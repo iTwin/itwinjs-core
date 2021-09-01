@@ -22,7 +22,7 @@ export class AuthorizedFrontendRequestContext extends AuthorizedClientRequestCon
    * Create a new context for frontend operations to pass to various services
    * @see [[AuthorizedFrontendRequestContext.create]] to create the request based on the authorization information supplied to IModelHost.
    */
-  public constructor(accessToken: AccessTokenString, activityId?: string) {
+  public constructor(accessToken?: AccessTokenString, activityId?: string) {
     super(accessToken, activityId, IModelApp.applicationId, IModelApp.applicationVersion, IModelApp.sessionId);
   }
 

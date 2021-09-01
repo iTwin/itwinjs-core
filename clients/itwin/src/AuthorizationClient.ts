@@ -14,5 +14,5 @@ import { AccessTokenString } from "./Token";
  */
 export interface AuthorizationClient {
   /** Get the AccessToken of the currently authorized user. The token is refreshed if necessary and possible. */
-  getAccessToken(requestContext?: ClientRequestContext): Promise<AccessTokenString>;
+  getAccessToken(requestContext?: ClientRequestContext): Promise<AccessTokenString | undefined>;
 }

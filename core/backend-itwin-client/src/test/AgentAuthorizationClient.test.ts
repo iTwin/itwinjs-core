@@ -6,10 +6,9 @@
 import * as chai from "chai";
 import { Client, Issuer } from "openid-client";
 import * as path from "path";
-import { BeDuration, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessTokenString } from "@bentley/itwin-client";
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "../oidc/AgentAuthorizationClient";
-import { HubAccessTestValidator } from "./HubAccessTestValidator";
+// import { HubAccessTestValidator } from "./HubAccessTestValidator";
 import * as fs from "fs";
 
 /** Loads the provided `.env` file into process.env */
@@ -33,13 +32,13 @@ chai.should();
 
 describe("AgentAuthorizationClient (#integration)", () => {
 
-  let validator: HubAccessTestValidator;
+  // let validator: HubAccessTestValidator;
   const requestContext = new ClientRequestContext();
 
   let agentConfiguration: AgentAuthorizationClientConfiguration;
 
   before(async () => {
-    validator = await HubAccessTestValidator.getInstance();
+    // validator = await HubAccessTestValidator.getInstance();
 
     if (process.env.IMJS_AGENT_TEST_CLIENT_ID === undefined)
       throw new Error("Could not find IMJS_AGENT_TEST_CLIENT_ID");

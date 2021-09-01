@@ -96,7 +96,7 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
    * The token is refreshed if necessary and possible.
    * @throws [[BentleyError]] If the client was not used to authorize, or there was an authorization error.
    */
-  public async getAccessToken(_requestContext?: ClientRequestContext): Promise<AccessTokenString> {
+  public async getAccessToken(_requestContext?: ClientRequestContext): Promise<AccessTokenString | undefined> {
     if (this.isAuthorized)
       return this._accessToken;
 
@@ -196,7 +196,7 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
     this.onUserStateChanged.raiseEvent(this._accessToken);
   }
 
-  private async tokenSetToAccessToken(tokenSet: TokenSet): Promise<AccessTokenString> {
+  private async tokenSetToAccessToken(tokenSet: TokenSet): Promise<AccessTokenString | undefined> {
     return tokenSet.access_token;
   }
 
@@ -444,7 +444,7 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
  * @param deploymentRegion Deployment region. If unspecified, it's inferred from configuration, or simply defaults to "0" for PROD use
  * @alpha
  */
-export async function getTestAccessToken(config: TestBrowserAuthorizationClientConfiguration, user: TestUserCredentials, deploymentRegion?: number): Promise<AccessTokenString> {
+export async function getTestAccessToken(config: TestBrowserAuthorizationClientConfiguration, user: TestUserCredentials, deploymentRegion?: number): Promise<AccessTokenString | undefined> {
   const client = new TestBrowserAuthorizationClient(config, user);
   if (undefined !== deploymentRegion)
     client.deploymentRegion = deploymentRegion;

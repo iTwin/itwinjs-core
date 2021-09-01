@@ -51,7 +51,7 @@ export class SignIn extends React.PureComponent<SignInProps> {
 
     // istanbul ignore if
     if (this._oidcClient)
-      this._oidcClient!.onUserStateChanged.addListener(this._onUserStateChanged);
+      this._oidcClient.onUserStateChanged.addListener(this._onUserStateChanged);
   }
 
   // istanbul ignore next

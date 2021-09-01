@@ -17,7 +17,7 @@ describe.skip("iModelHub Performance tests", () => {
   let requestContext: AuthorizedClientRequestContext;
 
   async function setup(recreate = false) {
-    const accessToken: AccessTokenString = await utils.login();
+    const accessToken: AccessTokenString | undefined = await utils.login();
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
     contextId = await utils.getProjectId(requestContext);
@@ -300,7 +300,7 @@ describe.skip("iModelHub Performance tests", () => {
           await imodelHubClient.locks.get(requestContext, imodelId, query);
         } catch (err) {
           if ((err instanceof ResponseError && err.status === 401) || err instanceof AuthenticationError) {
-            const accessToken: AccessTokenString = await utils.login();
+            const accessToken: AccessTokenString | undefined = await utils.login();
             requestContext = new AuthorizedClientRequestContext(accessToken);
             startTime = Date.now();
             await imodelHubClient.locks.get(requestContext, imodelId, query);

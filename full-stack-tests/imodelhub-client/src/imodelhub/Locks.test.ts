@@ -27,7 +27,7 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
   let requestContext: AuthorizedClientRequestContext;
 
   before(async () => {
-    const accessToken: AccessTokenString = TestConfig.enableMocks ? "" : await utils.login(TestUsers.super);
+    const accessToken: AccessTokenString | undefined = TestConfig.enableMocks ? "" : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
     contextId = await utils.getProjectId(requestContext);

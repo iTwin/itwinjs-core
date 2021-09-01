@@ -29,8 +29,8 @@ export function TokenPrefix(prefix: string) { // eslint-disable-line @typescript
   };
 }
 
-export function removeAccessTokenPrefix(accessToken: AccessTokenString): string {
-  return accessToken.substr(accessToken.indexOf(" ") + 1);
+export function removeAccessTokenPrefix(accessToken: AccessTokenString | undefined): AccessTokenString | undefined {
+  return accessToken ? accessToken.substr(accessToken.indexOf(" ") + 1) : undefined;
 }
 
 /**

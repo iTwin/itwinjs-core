@@ -41,7 +41,7 @@ export class TestUtility {
    * @param user Test user credentials
    * @internal
    */
-  public static async getAccessToken(user: TestUserCredentials): Promise<AccessTokenString> {
+  public static async getAccessToken(user: TestUserCredentials): Promise<AccessTokenString | undefined> {
     const client = this.getAuthorizationClient(user);
     return client.getAccessToken();
   }

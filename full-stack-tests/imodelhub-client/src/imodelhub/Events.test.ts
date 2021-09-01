@@ -99,7 +99,7 @@ describe("iModelHub EventHandler", () => {
 
   before(async function () {
     this.timeout(0);
-    const accessToken: AccessTokenString = TestConfig.enableMocks ? "" : await utils.login(TestUsers.super);
+    const accessToken: AccessTokenString | undefined = TestConfig.enableMocks ? "" : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
     contextId = await utils.getProjectId(requestContext);
@@ -227,7 +227,7 @@ describe("iModelHub EventHandler", () => {
 
     let receivedEventsCount = 0;
     const deleteListener = imodelHubClient.events.createListener(requestContext, async () => {
-      return TestConfig.enableMocks ? "" : utils.login(TestUsers.super);
+      return TestConfig.enableMocks ? "" : (await utils.login(TestUsers.super) ?? "");
     }, subscription.wsgId, imodelId, (receivedEvent: IModelHubEvent) => {
       if (receivedEvent instanceof CodeEvent)
         receivedEventsCount++;

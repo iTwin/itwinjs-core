@@ -29,7 +29,7 @@ export class MobileAuthorizationBackend extends NativeAppAuthorizationBackend {
     assert(this.config !== undefined && this.issuerUrl !== undefined, "URL of authorization provider was not initialized");
 
     MobileHost.device.authStateChanged = (tokenString?: string) => {
-      let token: AccessTokenString;
+      let token: AccessTokenString | undefined;
       if (tokenString) {
         const tokenJson = JSON.parse(tokenString) as AccessTokenProps;
         token = tokenJson.tokenString;

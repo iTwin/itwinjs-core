@@ -220,7 +220,7 @@ export class IModelHost {
   /** Get the active authorization/access token for use with various services
    * @throws if authorizationClient has not been set up
    */
-  public static async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessTokenString> {
+  public static async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessTokenString | undefined> {
     return this.authorizationClient!.getAccessToken(requestContext);
   }
   /** @internal */
@@ -265,7 +265,7 @@ export class IModelHost {
         return new ClientRequestContext(serializedContext.id, serializedContext.applicationId, serializedContext.applicationVersion, serializedContext.sessionId);
 
       // Setup an AuthorizationClientRequestContext if authorization is required for the RPC operation
-      let accessToken: AccessTokenString;
+      let accessToken: AccessTokenString | undefined;
       if (!IModelHost.authorizationClient) {
         // Determine the access token from the frontend request
         accessToken = serializedContext.authorization;

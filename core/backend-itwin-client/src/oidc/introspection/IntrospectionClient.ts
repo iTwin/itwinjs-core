@@ -7,12 +7,11 @@
  */
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ImsAuthorizationClient, RequestGlobalOptions } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, ImsAuthorizationClient, removeAccessTokenPrefix, RequestGlobalOptions } from "@bentley/itwin-client";
 import { ClientMetadata, custom, Issuer, Client as OpenIdClient } from "openid-client";
 import { BackendITwinClientLoggerCategory } from "../../BackendITwinClientLoggerCategory";
 import { IntrospectionResponse } from "./IntrospectionResponse";
 import { IntrospectionResponseCache, MemoryIntrospectionResponseCache } from "./IntrospectionResponseCache";
-import { removeAccessTokenPrefix } from "@bentley/itwin-client";
 
 /** @alpha */
 export class IntrospectionClient {
@@ -67,7 +66,7 @@ export class IntrospectionClient {
   }
 
   public async introspect(requestContext: AuthorizedClientRequestContext): Promise<IntrospectionResponse> {
-    const accessTokenStr = removeAccessTokenPrefix(requestContext.accessToken);
+    const accessTokenStr = removeAccessTokenPrefix(requestContext.accessToken) ?? ""; // Is there a better solution for this? It needs a string value, will return
 
     try {
       const cachedResponse = await this._cache.get(accessTokenStr);

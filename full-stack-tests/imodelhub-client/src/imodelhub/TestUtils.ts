@@ -189,7 +189,7 @@ export async function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export async function login(userCredentials?: TestUserCredentials): Promise<AccessTokenString> {
+export async function login(userCredentials?: TestUserCredentials): Promise<AccessTokenString | undefined> {
   if (TestConfig.enableMocks)
     return "";
   const authorizationClient = getCloudEnv().getAuthorizationClient(userCredentials);
