@@ -182,7 +182,7 @@ export class RealityTileTree extends TileTree {
     const graphicTypeBranches = new Map<TileGraphicType, GraphicBranch>();
 
     const selectedTiles = this.selectRealityTiles(args, displayedTileDescendants, preloadDebugBuilder);
-    if (!this.loader.parentsAndChildrenExclusive)
+    if (!this.parentsAndChildrenExclusive)
       selectedTiles.sort((a, b) => a.depth - b.depth);                    // If parent and child are not exclusive then display parents (low resolution) first.
 
     const classifier = args.context.planarClassifiers.get(this.modelId);
