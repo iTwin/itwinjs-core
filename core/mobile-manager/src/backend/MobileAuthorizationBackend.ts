@@ -78,9 +78,9 @@ export class MobileAuthorizationBackend extends NativeAppAuthorizationBackend {
   /** return accessToken */
   public async refreshToken(): Promise<AccessTokenString> {
     return new Promise<AccessTokenString>((resolve, reject) => {
-      MobileHost.device.authGetAccessToken((tokenString?: string, err?: string) => {
-        if (!err && tokenString) {
-          resolve((JSON.parse(tokenString) as AccessTokenProps).tokenString);
+      MobileHost.device.authGetAccessToken((tokenStringJson?: string, err?: string) => {
+        if (!err && tokenStringJson) {
+          resolve((JSON.parse(tokenStringJson) as AccessTokenProps).tokenString);
         } else {
           reject(new Error(err));
         }

@@ -59,16 +59,9 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
     }
 
     this._accessToken = tokenSet.access_token;
-    this._expiresAt = new Date(tokenSet.expires_at!); // TODO: Check if this is in proper format
+    if (tokenSet.expires_at)
+      this._expiresAt = new Date(tokenSet.expires_at); // TODO: Check if this is in proper format
     return this._accessToken;
-  }
-
-  /**
-   * Get the access token
-   * @deprecated Use [[AgentAuthorizationClient.getAccessToken]] instead.
-   */
-  public async getToken(requestContext: ClientRequestContext): Promise<AccessTokenString | undefined> {
-    return this.generateAccessToken(requestContext);
   }
 
   /**
@@ -100,7 +93,7 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
    */
   public async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessTokenString | undefined> {
     if (this.isAuthorized)
-      return this._accessToken!;
+      return this._accessToken;
     return this.generateAccessToken(requestContext || new ClientRequestContext());
   }
 }
