@@ -31,6 +31,7 @@ export function BackstageComposerActionItem({ item }: BackstageComposerActionIte
   }, [manager, item]);
   return (
     <NZ_BackstageItem
+      itemId={item.id}
       icon={<Icon iconSpec={ConditionalStringValue.getValue(item.icon)} />}
       isActive={ConditionalBooleanValue.getValue(item.isActive)}
       isDisabled={ConditionalBooleanValue.getValue(item.isDisabled)}
@@ -62,6 +63,7 @@ export function BackstageComposerStageLauncher({ item }: BackstageComposerStageL
   const isActive = ConditionalBooleanValue.getValue(item.isActive ?? item.stageId === activeFrontstageId);
   return (
     <NZ_BackstageItem
+      itemId={item.id}
       icon={<Icon iconSpec={ConditionalStringValue.getValue(item.icon)} />}
       isActive={isActive}
       isDisabled={ConditionalBooleanValue.getValue(item.isDisabled)}

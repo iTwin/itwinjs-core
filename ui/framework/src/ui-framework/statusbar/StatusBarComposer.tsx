@@ -69,6 +69,7 @@ export function DockedStatusBarItem(props: StatusBarItemProps) {
   );
   return (
     <div
+      data-item-id={props.itemId}
       className={className}
       ref={ref}
       style={props.style}
@@ -286,7 +287,7 @@ export function StatusBarComposer(props: StatusBarComposerProps) {
         entryKey={key}
         getOnResize={handleEntryResize}
       >
-        <DockedStatusBarItem key={key}>
+        <DockedStatusBarItem key={key} itemId={item.id} >
           {isStatusBarItem(item) && item.reactNode}
           {isAbstractStatusBarActionItem(item) && generateActionStatusBarItem(item, statusBarContext.isInFooterMode)}
           {isAbstractStatusBarLabelItem(item) && generateActionStatusLabelItem(item, statusBarContext.isInFooterMode)}
