@@ -21,7 +21,7 @@ import { CoreTools } from "../tools/CoreToolDefinitions";
  * @beta
  */
 export interface DefaultContentToolsAppData {
-  contentToolGroupsProps?: {
+  defaultContentTools?: {
     vertical?: {
       selectElementGroupPriority?: number;
       measureGroupPriority?: number;
@@ -94,8 +94,8 @@ export class StandardContentToolsProvider implements UiItemsProvider {
     }
 
     if (provideToStage && toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
-      const clearSelectionGroupPriority = getGroupPriority(stageAppData?.contentToolGroupsProps?.horizontal?.clearSelectionGroupPriority, 10);
-      const overridesGroupPriority = getGroupPriority(stageAppData?.contentToolGroupsProps?.horizontal?.overridesGroupPriority, 20);
+      const clearSelectionGroupPriority = getGroupPriority(stageAppData?.defaultContentTools?.horizontal?.clearSelectionGroupPriority, 10);
+      const overridesGroupPriority = getGroupPriority(stageAppData?.defaultContentTools?.horizontal?.overridesGroupPriority, 20);
 
       if (!this.defaultContextTools || !this.defaultContextTools?.horizontal || this.defaultContextTools?.horizontal?.clearSelection)
         items.push(ToolbarHelper.createToolbarItemFromItemDef(10, CoreTools.clearSelectionItemDef, { groupPriority: clearSelectionGroupPriority }));
@@ -122,9 +122,9 @@ export class StandardContentToolsProvider implements UiItemsProvider {
       }
 
     } else if (provideToStage && toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Vertical) {
-      const selectElementGroupPriority = getGroupPriority(stageAppData?.contentToolGroupsProps?.vertical?.selectElementGroupPriority, 10);
-      const measureGroupPriority = getGroupPriority(stageAppData?.contentToolGroupsProps?.vertical?.measureGroupPriority, 10);
-      const selectionGroupPriority = getGroupPriority(stageAppData?.contentToolGroupsProps?.vertical?.selectionGroupPriority, 10);
+      const selectElementGroupPriority = getGroupPriority(stageAppData?.defaultContentTools?.vertical?.selectElementGroupPriority, 10);
+      const measureGroupPriority = getGroupPriority(stageAppData?.defaultContentTools?.vertical?.measureGroupPriority, 10);
+      const selectionGroupPriority = getGroupPriority(stageAppData?.defaultContentTools?.vertical?.selectionGroupPriority, 10);
 
       if (!this.defaultContextTools || !this.defaultContextTools?.vertical || this.defaultContextTools?.vertical?.selectElement)
         items.push(ToolbarHelper.createToolbarItemFromItemDef(10, CoreTools.selectElementCommand, { groupPriority: selectElementGroupPriority }));

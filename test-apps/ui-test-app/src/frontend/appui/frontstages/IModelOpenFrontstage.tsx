@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelApp } from "@bentley/imodeljs-frontend";
+import { StageUsage } from "@bentley/ui-abstract";
 import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, IModelInfo,
 } from "@bentley/ui-framework";
@@ -43,6 +44,7 @@ export class IModelOpenFrontstage extends FrontstageProvider {
         defaultLayout="SingleContent"
         contentGroup={contentGroup}
         isInFooterMode={false}
+        usage={StageUsage.Private}
       />
     );
   }

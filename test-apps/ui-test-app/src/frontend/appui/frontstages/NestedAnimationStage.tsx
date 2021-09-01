@@ -26,7 +26,6 @@ export class NestedAnimationStage extends FrontstageProvider {
         defaultLayout="SingleContent"
         contentGroup={myContentGroup}
         isInFooterMode={false}
-        applicationData={{ key: "value" }}
         contentManipulationTools={
           <Zone
             widgets={[

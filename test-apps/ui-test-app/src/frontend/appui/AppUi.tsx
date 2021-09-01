@@ -147,7 +147,7 @@ export class AppUi {
     const hideNavigationAid = !showCornerButtons;
     const setUpCustomToolGroups = false;
     const applicationData = setUpCustomToolGroups ? {
-      contentToolGroupsProps: {
+      defaultContentTools: {
         vertical: {
           selectElementGroupPriority: 100,
           measureGroupPriority: 200,

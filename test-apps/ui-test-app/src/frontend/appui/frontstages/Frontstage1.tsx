@@ -136,7 +136,6 @@ export class Frontstage1 extends FrontstageProvider {
         contentGroup="TestContentGroup1"
         defaultContentId="TestContent1"
         isInFooterMode={true}
-        applicationData={{ key: "value" }}
         topLeft={
           <Zone
             widgets={[

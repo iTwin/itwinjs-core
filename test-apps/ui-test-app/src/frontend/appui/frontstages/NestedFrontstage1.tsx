@@ -25,7 +25,6 @@ export class NestedFrontstage1 extends FrontstageProvider {
         defaultLayout="TwoHalvesHorizontal"
         contentGroup="TestContentGroup2"
         isInFooterMode={false}
-        applicationData={{ key: "value" }}
         contentManipulationTools={
           <Zone
             widgets={[

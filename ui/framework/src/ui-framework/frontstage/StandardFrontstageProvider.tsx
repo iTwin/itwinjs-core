@@ -45,14 +45,22 @@ export interface StandardFrontstageProp {
   hideNavigationAid?: boolean;
   /** Set to true if no status bar is needed in stage */
   hideStatusBar?: boolean;
-  /** Props used to set initial size and state of panel */
+  /** Props used to set initial size and state of panel. Defaults to:
+   *  {size: 300, pinned=false, defaultState:StagePanelState.Minimized} */
   leftPanelProps?: WidgetPanelProps;
-  /** Props used to set initial size and state of panel */
+  /** Props used to set initial size and state of panel. Defaults to:
+   *  {size: 90, pinned=false, defaultState:StagePanelState.Minimized} */
   topPanelProps?: WidgetPanelProps;
-  /** Props used to set initial size and state of panel */
+  /** Props used to set initial size and state of panel. Defaults to:
+   *  {size: 200, pinned=true, defaultState:StagePanelState.Open} */
   rightPanelProps?: WidgetPanelProps;
-  /** Props used to set initial size and state of panel */
+  /** Props used to set initial size and state of panel. Defaults to:
+   *  {size: 180, pinned=true, defaultState:StagePanelState.Open} */
   bottomPanelProps?: WidgetPanelProps;
+  /** Application data is not require but exists for stages to pass feature settings to UiItemsProviders.
+   * It is expected that the UiItemsProvider supply an xxxAppData interface to define the properties it
+   * supports. See [[DefaultContentToolsAppData]] for an example.
+   */
   applicationData?: any;
 }
 

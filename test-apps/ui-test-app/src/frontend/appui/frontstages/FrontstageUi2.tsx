@@ -106,7 +106,7 @@ export class FrontstageUi2 extends FrontstageProvider {
         isInFooterMode={true}
         usage={StageUsage.General}
         applicationData={{
-          contentToolGroupsProps: {
+          defaultContentTools: {
             vertical: {
               selectElementGroupPriority: 100,
               measureGroupPriority: 200,

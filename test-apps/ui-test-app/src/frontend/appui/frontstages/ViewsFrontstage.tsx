@@ -64,7 +64,7 @@ function MySliderPanel() {
   }, []);
 
   const { closePanel } = useToolbarPopupContext();
-  const handlApply = React.useCallback(() => {
+  const handleApply = React.useCallback(() => {
     closePanel();
   }, [closePanel]);
 
@@ -75,7 +75,7 @@ function MySliderPanel() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "4px", alignItems: "center", width: "300px", height: "68px", padding: "6px", boxSizing: "border-box" }}>
       <Slider style={{ width: "100%" }} min={0} max={100} values={sliderValues} step={1} onChange={handleChange} />
-      <Button onClick={handlApply}>Apply</Button>
+      <Button onClick={handleApply}>Apply</Button>
     </div>
   );
 }

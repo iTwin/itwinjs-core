@@ -10,6 +10,7 @@ import {
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../../index";
 import { IModelIndex } from "../imodelindex/IModelIndex";
+import { StageUsage } from "@bentley/ui-abstract";
 
 class IModelIndexControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -49,6 +50,7 @@ export class IModelIndexFrontstage extends FrontstageProvider {
         defaultLayout="SingleContent"
         contentGroup={contentGroup}
         isInFooterMode={false}
+        usage={StageUsage.Private}
       />
     );
   }

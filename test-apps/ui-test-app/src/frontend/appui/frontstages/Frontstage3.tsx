@@ -62,7 +62,6 @@ export class Frontstage3 extends FrontstageProvider {
         defaultLayout={contentLayoutDef}
         contentGroup={myContentGroup}
         isInFooterMode={true}
-        applicationData={{ key: "value" }}
         contentManipulationTools={
           <Zone
             widgets={[

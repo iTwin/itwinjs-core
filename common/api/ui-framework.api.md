@@ -1705,7 +1705,7 @@ export interface DefaultContentTools {
 // @beta
 export interface DefaultContentToolsAppData {
     // (undocumented)
-    contentToolGroupsProps?: {
+    defaultContentTools?: {
         vertical?: {
             selectElementGroupPriority?: number;
             measureGroupPriority?: number;
@@ -5832,7 +5832,6 @@ export class StandardContentToolsProvider implements UiItemsProvider {
 
 // @beta (undocumented)
 export interface StandardFrontstageProp {
-    // (undocumented)
     applicationData?: any;
     bottomPanelProps?: WidgetPanelProps;
     contentGroupProps: ContentGroupProps;

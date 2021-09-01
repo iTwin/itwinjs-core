@@ -9,6 +9,7 @@ import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, SignIn,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../../index";
+import { StageUsage } from "@bentley/ui-abstract";
 
 class SignInControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -48,6 +49,7 @@ export class SignInFrontstage extends FrontstageProvider {
         defaultLayout="SingleContent"
         contentGroup={contentGroup}
         isInFooterMode={false}
+        usage={StageUsage.Private}
       />
     );
   }
