@@ -93,7 +93,7 @@ beta;CheckboxFormatPropEditorSpec
 public;CheckpointConnection 
 public;ClipEventType
 public;Cluster
-internal;CompassMode
+alpha;CompassMode
 internal;ContextMode
 public;ContextRealityModelState 
 public;ContextRotationId
