@@ -29,7 +29,7 @@ export interface CheckpointProps {
   readonly expectV2?: boolean;
 
   /** Context (Project or Asset) that the iModel belongs to */
-  readonly contextId: GuidString;
+  readonly iTwinId: GuidString;
 
   /** Id of the iModel */
   readonly iModelId: GuidString;
@@ -37,7 +37,7 @@ export interface CheckpointProps {
   /** changeset for the checkpoint */
   readonly changeset: ChangesetIdWithIndex;
 
-  readonly requestContext?: AuthorizedClientRequestContext;
+  readonly user?: AuthorizedClientRequestContext;
 }
 
 /** Called to show progress during a download. If this function returns non-zero, the download is aborted.
@@ -213,7 +213,7 @@ export class CheckpointManager {
   public static async updateToRequestedVersion(request: DownloadRequest) {
     const checkpoint = request.checkpoint;
     const targetFile = request.localFile;
-    const traceInfo = { iTwinId: checkpoint.contextId, iModelId: checkpoint.iModelId, changeset: checkpoint.changeset };
+    const traceInfo = { iTwinId: checkpoint.iTwinId, iModelId: checkpoint.iModelId, changeset: checkpoint.changeset };
     try {
       // Open checkpoint for write
       const db = SnapshotDb.openForApplyChangesets(targetFile);
@@ -232,7 +232,7 @@ export class CheckpointManager {
         // Apply change sets if necessary
         const parentChangeset = nativeDb.getParentChangeset();
         if (parentChangeset.id !== checkpoint.changeset.id) {
-          const user = checkpoint.requestContext;
+          const user = checkpoint.user;
           const toIndex = checkpoint.changeset.index ??
             (await IModelHost.hubAccess.getChangesetFromVersion({ user, iModelId: checkpoint.iModelId, version: IModelVersion.asOfChangeSet(checkpoint.changeset.id) })).index;
           await BriefcaseManager.pullAndApplyChangesets(db, { user, toIndex });
@@ -276,9 +276,9 @@ export class CheckpointManager {
     return this.updateToRequestedVersion(request);
   }
 
-  /** checks a file's dbGuid & contextId for consistency, and updates the dbGuid when possible */
+  /** checks a file's dbGuid & iTwinId for consistency, and updates the dbGuid when possible */
   public static validateCheckpointGuids(checkpoint: CheckpointProps, nativeDb: IModelJsNative.DgnDb) {
-    const traceInfo = { contextId: checkpoint.contextId, iModelId: checkpoint.iModelId };
+    const traceInfo = { iTwinId: checkpoint.iTwinId, iModelId: checkpoint.iModelId };
 
     const dbChangeset = nativeDb.getParentChangeset();
     const dbGuid = Guid.normalize(nativeDb.getDbGuid());
@@ -295,8 +295,8 @@ export class CheckpointManager {
     }
 
     const dbContextGuid = Guid.normalize(nativeDb.queryProjectGuid());
-    if (dbContextGuid !== Guid.normalize(checkpoint.contextId))
-      throw new IModelError(IModelStatus.ValidationFailed, "ContextId was not properly set up in the checkpoint");
+    if (dbContextGuid !== Guid.normalize(checkpoint.iTwinId))
+      throw new IModelError(IModelStatus.ValidationFailed, "iTwinId was not properly set up in the checkpoint");
   }
 
   /** @returns true if the file is the checkpoint requested */

@@ -14,7 +14,7 @@ describe("SnapshotDb.reattachDaemon", () => {
   const fakeSnapshotDb: any = {
     isReadonly: () => true,
     getDbGuid: () => "fakeIModelId",
-    queryProjectGuid: () => "fakeContextId",
+    queryProjectGuid: () => "fakeITwinId",
     getParentChangeset: () => fakeChangeset,
     setIModelDb: () => { },
   };
@@ -29,7 +29,7 @@ describe("SnapshotDb.reattachDaemon", () => {
     sinon.stub(CheckpointManager, "validateCheckpointGuids").returns();
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
 
-    const checkpoint = await SnapshotDb.openCheckpointV2({ contextId: "fakeContextId", iModelId: "fake1", changeset: fakeChangeset });
+    const checkpoint = await SnapshotDb.openCheckpointV2({ iTwinId: "fakeITwinId", iModelId: "fake1", changeset: fakeChangeset });
     expect(openDgnDbStub.calledOnce).to.be.true;
     expect(openDgnDbStub.firstCall.firstArg.path).to.equal("testFilePath1");
 
@@ -38,7 +38,7 @@ describe("SnapshotDb.reattachDaemon", () => {
     await checkpoint.reattachDaemon();
 
     expect(attachStub.calledTwice).to.be.true;
-    expect(attachStub.secondCall.firstArg.contextId).to.equal("fakeContextId");
+    expect(attachStub.secondCall.firstArg.iTwinId).to.equal("fakeITwinId");
     expect(attachStub.secondCall.firstArg.iModelId).to.equal("fakeIModelId");
     expect(attachStub.secondCall.firstArg.changeset.id).to.equal("fakeChangeSetId");
   });
@@ -53,7 +53,7 @@ describe("SnapshotDb.reattachDaemon", () => {
     sinon.stub(CheckpointManager, "validateCheckpointGuids").returns();
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
 
-    const checkpoint = await SnapshotDb.openCheckpointV2({ contextId: "fakeContextId", iModelId: "fake1", changeset: fakeChangeset });
+    const checkpoint = await SnapshotDb.openCheckpointV2({ iTwinId: "fakeITwinId", iModelId: "fake1", changeset: fakeChangeset });
     expect(openDgnDbStub.calledOnce).to.be.true;
     expect(openDgnDbStub.firstCall.firstArg.path).to.equal("testFilePath1");
     expect(attachStub.calledOnce).to.be.true;
@@ -71,7 +71,7 @@ describe("SnapshotDb.reattachDaemon", () => {
     sinon.stub(CheckpointManager, "validateCheckpointGuids").returns();
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
 
-    const snapshot = SnapshotDb.openCheckpointV1("fakeFilePath", { contextId: "fakeContextId", iModelId: "fake1", changeset: fakeChangeset });
+    const snapshot = SnapshotDb.openCheckpointV1("fakeFilePath", { iTwinId: "fakeITwinId", iModelId: "fake1", changeset: fakeChangeset });
     const nowStub = sinon.stub(Date, "now");
     await snapshot.reattachDaemon();
     expect(nowStub.called).to.be.false;

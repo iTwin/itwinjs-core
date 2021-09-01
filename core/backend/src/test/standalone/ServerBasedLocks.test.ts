@@ -49,7 +49,7 @@ describe("Server-based locks", () => {
     iModelId = await IModelHost.hubAccess.createNewIModel(iModelProps);
     user1 = await IModelTestUtils.getUserContext(TestUserType.Regular);
     user2 = await IModelTestUtils.getUserContext(TestUserType.Regular);
-    const args: RequestNewBriefcaseProps = { contextId: iModelProps.iTwinId, iModelId };
+    const args: RequestNewBriefcaseProps = { iTwinId: iModelProps.iTwinId, iModelId };
     briefcase1Props = await BriefcaseManager.downloadBriefcase(user1, args);
     briefcase2Props = await BriefcaseManager.downloadBriefcase(user2, args);
   });

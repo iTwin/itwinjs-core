@@ -20,7 +20,7 @@ import { HubUtility } from "./HubUtility";
 describe("Checkpoints (#integration)", () => {
   let user: AuthorizedBackendRequestContext;
   let testIModelId: GuidString;
-  let testContextId: GuidString;
+  let testITwinId: GuidString;
   let testChangeSet: ChangesetProps;
 
   const blockcacheDir = path.join(KnownTestLocations.outputDir, "blockcachevfs");
@@ -33,7 +33,7 @@ describe("Checkpoints (#integration)", () => {
     // IModelTestUtils.setupDebugLogLevels();
 
     user = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-    testContextId = await HubUtility.getTestContextId(user);
+    testITwinId = await HubUtility.getTestITwinId(user);
     testIModelId = await HubUtility.getTestIModelId(user, HubUtility.testIModelNames.stadium);
     testChangeSet = await IModelHost.hubAccess.getLatestChangeset({ user, iModelId: testIModelId });
 
@@ -67,14 +67,14 @@ describe("Checkpoints (#integration)", () => {
 
   it("should be able to open and read V2 checkpoint", async () => {
     const iModel = await SnapshotDb.openCheckpointV2({
-      requestContext: user,
-      contextId: testContextId,
+      user,
+      iTwinId: testITwinId,
       iModelId: testIModelId,
       changeset: testChangeSet,
     });
     assert.equal(iModel.getGuid(), testIModelId);
     assert.equal(iModel.changeset.id, testChangeSet.id);
-    assert.equal(iModel.contextId, testContextId);
+    assert.equal(iModel.contextId, testITwinId);
     assert.equal(iModel.rootSubject.name, "Stadium Dataset 1");
     let numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
     assert.equal(numModels, 32);

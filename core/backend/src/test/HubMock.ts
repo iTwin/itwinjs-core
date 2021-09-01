@@ -78,7 +78,7 @@ export class HubMock {
     IModelJsFs.purgeDirSync(this.mockRoot);
     this._saveHubAccess = IModelHost.hubAccess;
     IModelHost.setHubAccess(this);
-    HubUtility.contextId = Guid.createValue(); // all iModels for this test get the same "contextId"
+    HubUtility.iTwinId = Guid.createValue(); // all iModels for this test get the same "iTwinId"
 
     sinon.stub(IModelHubBackend, "iModelClient").get(() => {
       throw new Error("IModelHubAccess is mocked for this test - use only IModelHost.hubaccess functions");
@@ -93,7 +93,7 @@ export class HubMock {
     if (!this.isValid)
       return;
 
-    HubUtility.contextId = undefined;
+    HubUtility.iTwinId = undefined;
     for (const hub of this.hubs)
       hub[1].cleanup();
 
@@ -125,8 +125,7 @@ export class HubMock {
 
   /** remove the [[LocalHub]] for an iModel */
   public static destroy(iModelId: GuidString) {
-    const hub = this.findLocalHub(iModelId);
-    hub.cleanup();
+    this.findLocalHub(iModelId).cleanup();
     this.hubs.delete(iModelId);
   }
 

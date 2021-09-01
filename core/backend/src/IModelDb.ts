@@ -2265,7 +2265,7 @@ export class BriefcaseDb extends IModelDb {
     const briefcaseDb = await BriefcaseDb.open(user, { ...arg.briefcase, readonly: false });
     try {
       await briefcaseDb.pushChanges(arg);
-      arg.briefcase.changeset = briefcaseDb.changeset;
+      (arg.briefcase.changeset as any) = briefcaseDb.changeset;
     } finally {
       briefcaseDb.close();
     }
@@ -2482,7 +2482,7 @@ export class SnapshotDb extends IModelDb {
    */
   public static openCheckpointV1(fileName: LocalFileName, checkpoint: CheckpointProps) {
     const snapshot = this.openFile(fileName, { key: CheckpointManager.getKey(checkpoint) });
-    snapshot._contextId = checkpoint.contextId;
+    snapshot._contextId = checkpoint.iTwinId;
     return snapshot;
   }
 
@@ -2501,7 +2501,7 @@ export class SnapshotDb extends IModelDb {
     // NOTE: Currently the key contains a ':' which can not be part of a filename on windows, so it can not be used as the tempFileBase.
     const tempFileBase = join(IModelHost.cacheDir, `${checkpoint.iModelId}\$${checkpoint.changeset.id}`); // temp files for this checkpoint should go in the cacheDir.
     const snapshot = SnapshotDb.openFile(filePath, { lazyBlockCache: true, key, tempFileBase });
-    snapshot._contextId = checkpoint.contextId;
+    snapshot._contextId = checkpoint.iTwinId;
     try {
       CheckpointManager.validateCheckpointGuids(checkpoint, snapshot.nativeDb);
     } catch (err) {
@@ -2517,9 +2517,9 @@ export class SnapshotDb extends IModelDb {
    * @throws [[IModelError]] If the db is not a checkpoint.
    * @internal
    */
-  public override async reattachDaemon(requestContext?: AuthorizedClientRequestContext): Promise<void> {
+  public override async reattachDaemon(user?: AuthorizedClientRequestContext): Promise<void> {
     if (undefined !== this._reattachDueTimestamp && this._reattachDueTimestamp <= Date.now()) {
-      const { expiryTimestamp } = await V2CheckpointManager.attach({ requestContext, contextId: this.contextId!, iModelId: this.iModelId, changeset: this.changeset });
+      const { expiryTimestamp } = await V2CheckpointManager.attach({ user, iTwinId: this.contextId!, iModelId: this.iModelId, changeset: this.changeset });
       this.setReattachDueTimestamp(expiryTimestamp);
     }
   }

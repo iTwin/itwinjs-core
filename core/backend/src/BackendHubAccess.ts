@@ -63,7 +63,7 @@ export interface IModelIdArg {
   readonly user?: AuthorizedClientRequestContext;
 }
 
-/** Argument for methods that must supply an IModel name and ContextId
+/** Argument for methods that must supply an IModel name and iTwinId
  * @internal
  */
 export interface IModelNameArg {

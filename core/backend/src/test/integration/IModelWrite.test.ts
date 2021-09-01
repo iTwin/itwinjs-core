@@ -32,9 +32,9 @@ export async function createNewModelAndCategory(requestContext: AuthorizedBacken
 }
 
 describe("IModelWriteTest (#integration)", () => {
-  let managerRequestContext: AuthorizedBackendRequestContext;
-  let superRequestContext: AuthorizedBackendRequestContext;
-  let testContextId: string;
+  let managerUser: AuthorizedBackendRequestContext;
+  let superUser: AuthorizedBackendRequestContext;
+  let testITwinId: string;
   let readWriteTestIModelId: GuidString;
 
   let readWriteTestIModelName: string;
@@ -43,21 +43,21 @@ describe("IModelWriteTest (#integration)", () => {
     // IModelTestUtils.setupDebugLogLevels();
     HubMock.startup("IModelWriteTest");
 
-    managerRequestContext = await IModelTestUtils.getUserContext(TestUserType.Manager);
-    superRequestContext = await IModelTestUtils.getUserContext(TestUserType.Super);
-    (superRequestContext as any).activityId = "IModelWriteTest (#integration)";
+    managerUser = await IModelTestUtils.getUserContext(TestUserType.Manager);
+    superUser = await IModelTestUtils.getUserContext(TestUserType.Super);
+    (superUser as any).activityId = "IModelWriteTest (#integration)";
 
-    testContextId = await HubUtility.getTestContextId(managerRequestContext);
+    testITwinId = await HubUtility.getTestITwinId(managerUser);
     readWriteTestIModelName = HubUtility.generateUniqueName("ReadWriteTest");
-    readWriteTestIModelId = await HubUtility.recreateIModel({ user: managerRequestContext, iTwinId: testContextId, iModelName: readWriteTestIModelName });
+    readWriteTestIModelId = await HubUtility.recreateIModel({ user: managerUser, iTwinId: testITwinId, iModelName: readWriteTestIModelName });
 
     // Purge briefcases that are close to reaching the acquire limit
-    await HubUtility.purgeAcquiredBriefcasesById(managerRequestContext, readWriteTestIModelId);
+    await HubUtility.purgeAcquiredBriefcasesById(managerUser, readWriteTestIModelId);
   });
 
   after(async () => {
     try {
-      await HubUtility.deleteIModel(managerRequestContext, "iModelJsIntegrationTest", readWriteTestIModelName);
+      await HubUtility.deleteIModel(managerUser, "iModelJsIntegrationTest", readWriteTestIModelName);
       HubMock.shutdown();
     } catch (err) {
       // eslint-disable-next-line no-console
@@ -69,14 +69,14 @@ describe("IModelWriteTest (#integration)", () => {
     const adminRequestContext = await IModelTestUtils.getUserContext(TestUserType.SuperManager);
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "CodesUndoRedoPushTest";
-    const iModelId = await IModelHost.hubAccess.queryIModelByName({ user: adminRequestContext, iTwinId: testContextId, iModelName });
+    const iModelId = await IModelHost.hubAccess.queryIModelByName({ user: adminRequestContext, iTwinId: testITwinId, iModelName });
     if (iModelId)
-      await IModelHost.hubAccess.deleteIModel({ user: adminRequestContext, iTwinId: testContextId, iModelId });
+      await IModelHost.hubAccess.deleteIModel({ user: adminRequestContext, iTwinId: testITwinId, iModelId });
 
     // Create a new empty iModel on the Hub & obtain a briefcase
-    const rwIModelId = await IModelHost.hubAccess.createNewIModel({ user: adminRequestContext, iTwinId: testContextId, iModelName, description: "TestSubject" });
+    const rwIModelId = await IModelHost.hubAccess.createNewIModel({ user: adminRequestContext, iTwinId: testITwinId, iModelName, description: "TestSubject" });
     assert.isNotEmpty(rwIModelId);
-    const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: adminRequestContext, contextId: testContextId, iModelId: rwIModelId });
+    const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ user: adminRequestContext, iTwinId: testITwinId, iModelId: rwIModelId });
 
     // create and insert a new model with code1
     const code1 = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel1");
@@ -127,7 +127,7 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it("Run plain SQL against fixed version connection", async () => {
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: managerRequestContext, contextId: testContextId, iModelId: readWriteTestIModelId });
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ user: managerUser, iTwinId: testITwinId, iModelId: readWriteTestIModelId });
     try {
       iModel.withPreparedSqliteStatement("CREATE TABLE Test(Id INTEGER PRIMARY KEY, Name TEXT NOT NULL, Code INTEGER)", (stmt: SqliteStatement) => {
         assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
@@ -192,14 +192,14 @@ describe("IModelWriteTest (#integration)", () => {
       if (iModel.isOpen)
         briefcasePath = iModel.pathName;
 
-      await IModelTestUtils.closeAndDeleteBriefcaseDb(managerRequestContext, iModel);
+      await IModelTestUtils.closeAndDeleteBriefcaseDb(managerUser, iModel);
       if (!!briefcasePath && IModelJsFs.existsSync(briefcasePath))
         IModelJsFs.unlinkSync(briefcasePath);
     }
   });
 
   it("Run plain SQL against readonly connection", async () => {
-    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext: managerRequestContext, contextId: testContextId, iModelId: readWriteTestIModelId });
+    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ user: managerUser, iTwinId: testITwinId, iModelId: readWriteTestIModelId });
 
     iModel.withPreparedSqliteStatement("SELECT Name,StrData FROM be_Prop WHERE Namespace='ec_Db'", (stmt: SqliteStatement) => {
       let rowCount = 0;
@@ -237,7 +237,7 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it("should be able to upgrade a briefcase with an older schema", async () => {
-    const iTwinId = await HubUtility.getTestContextId(managerRequestContext);
+    const iTwinId = await HubUtility.getTestITwinId(managerUser);
 
     /**
      * Test validates that -
@@ -248,17 +248,17 @@ describe("IModelWriteTest (#integration)", () => {
     /* Setup test - Push an iModel with an old BisCore schema up to the Hub */
     const pathname = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
     const hubName = HubUtility.generateUniqueName("CompatibilityTest");
-    const iModelId = await HubUtility.pushIModel(managerRequestContext, iTwinId, pathname, hubName, true);
+    const iModelId = await HubUtility.pushIModel(managerUser, iTwinId, pathname, hubName, true);
 
     // Download two copies of the briefcase - manager and super
-    const args: RequestNewBriefcaseProps = { contextId: iTwinId, iModelId };
-    const managerBriefcaseProps = await BriefcaseManager.downloadBriefcase(managerRequestContext, args);
-    const superBriefcaseProps = await BriefcaseManager.downloadBriefcase(superRequestContext, args);
+    const args: RequestNewBriefcaseProps = { iTwinId, iModelId };
+    const managerBriefcaseProps = await BriefcaseManager.downloadBriefcase(managerUser, args);
+    const superBriefcaseProps = await BriefcaseManager.downloadBriefcase(superUser, args);
 
     /* User "manager" upgrades the briefcase */
 
     // Validate the original state of the BisCore schema in the briefcase
-    let iModel = await BriefcaseDb.open(managerRequestContext, { fileName: managerBriefcaseProps.fileName });
+    let iModel = await BriefcaseDb.open(managerUser, { fileName: managerBriefcaseProps.fileName });
     const beforeVersion = iModel.querySchemaVersion("BisCore");
     assert.isTrue(semver.satisfies(beforeVersion!, "= 1.0.0"));
     assert.isFalse(iModel.nativeDb.hasPendingTxns());
@@ -269,11 +269,11 @@ describe("IModelWriteTest (#integration)", () => {
     assert.strictEqual(schemaState, SchemaState.UpgradeRecommended);
 
     // Upgrade the schemas
-    await BriefcaseDb.upgradeSchemas(managerRequestContext, managerBriefcaseProps);
+    await BriefcaseDb.upgradeSchemas(managerUser, managerBriefcaseProps);
 
     // Validate state after upgrade
-    iModel = await BriefcaseDb.open(managerRequestContext, { fileName: managerBriefcaseProps.fileName });
-    managerRequestContext.enter();
+    iModel = await BriefcaseDb.open(managerUser, { fileName: managerBriefcaseProps.fileName });
+    managerUser.enter();
     const afterVersion = iModel.querySchemaVersion("BisCore");
     assert.isTrue(semver.satisfies(afterVersion!, ">= 1.0.10"));
     assert.isFalse(iModel.nativeDb.hasPendingTxns());
@@ -298,8 +298,8 @@ describe("IModelWriteTest (#integration)", () => {
     // assert.strictEqual(result, IModelHubStatus.PullIsRequired);
 
     // Open briefcase and pull change sets to upgrade
-    const superIModel = await BriefcaseDb.open(superRequestContext, { fileName: superBriefcaseProps.fileName });
-    superBriefcaseProps.changeset = await superIModel.pullChanges({ user: superRequestContext });
+    const superIModel = await BriefcaseDb.open(superUser, { fileName: superBriefcaseProps.fileName });
+    (superBriefcaseProps.changeset as any) = await superIModel.pullChanges({ user: superUser });
     const superVersion = superIModel.querySchemaVersion("BisCore");
     assert.isTrue(semver.satisfies(superVersion!, ">= 1.0.10"));
     assert.isFalse(superIModel.nativeDb.hasUnsavedChanges()); // Validate no changes were made
@@ -311,9 +311,9 @@ describe("IModelWriteTest (#integration)", () => {
     assert.strictEqual(schemaState, SchemaState.UpToDate);
 
     // Upgrade the schemas - ensure this is a no-op
-    await BriefcaseDb.upgradeSchemas(superRequestContext, superBriefcaseProps);
-    superRequestContext.enter();
+    await BriefcaseDb.upgradeSchemas(superUser, superBriefcaseProps);
+    superUser.enter();
 
-    await IModelHost.hubAccess.deleteIModel({ user: managerRequestContext, iTwinId, iModelId });
+    await IModelHost.hubAccess.deleteIModel({ user: managerUser, iTwinId, iModelId });
   });
 });

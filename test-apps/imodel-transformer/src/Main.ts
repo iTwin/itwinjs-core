@@ -178,7 +178,7 @@ void (async () => {
       }
 
       sourceDb = await IModelHubUtils.downloadAndOpenBriefcase(user, {
-        contextId: sourceContextId,
+        iTwinId: sourceContextId,
         iModelId: sourceIModelId,
         asOf: sourceEndVersion.toJSON(),
         briefcaseId: BriefcaseIdValue.Unassigned, // A "pull only" briefcase can be used since the sourceDb is opened read-only
@@ -233,7 +233,7 @@ void (async () => {
       }
 
       targetDb = await IModelHubUtils.downloadAndOpenBriefcase(user, {
-        contextId: targetContextId,
+        iTwinId: targetContextId,
         iModelId: targetIModelId,
       });
     } else if (args.targetDestination) {

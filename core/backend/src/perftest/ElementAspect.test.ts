@@ -28,18 +28,18 @@ async function createNewModelAndCategory(rwIModel: IModelDb) {
 
 describe("ElementAspectPerformance", () => {
   const reporter = new Reporter();
-  let requestContext: AuthorizedClientRequestContext;
+  let user: AuthorizedClientRequestContext;
   let iModelDbHub: SnapshotDb;
 
   before(async () => {
     if (!fs.existsSync(KnownTestLocations.outputDir))
       fs.mkdirSync(KnownTestLocations.outputDir);
     const configData = require(path.join(__dirname, "CSPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-var-requires
-    const projectId = configData.basicTest.projectId;
+    const iTwinId = configData.basicTest.projectId;
     const imodelId = configData.basicTest.aspectIModelId;
 
-    requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-    iModelDbHub = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: projectId, iModelId: imodelId });
+    user = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+    iModelDbHub = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId, iModelId: imodelId });
     assert.exists(iModelDbHub);
   });
 

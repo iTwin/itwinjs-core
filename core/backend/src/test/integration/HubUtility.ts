@@ -30,12 +30,12 @@ export class HubUtility {
     readWrite: "ReadWriteTest",
   };
 
-  public static contextId: GuidString | undefined;
+  public static iTwinId: GuidString | undefined;
   /** Returns the ContextId if a Context with the name exists. Otherwise, returns undefined. */
-  public static async getTestContextId(requestContext: AuthorizedClientRequestContext): Promise<GuidString> {
+  public static async getTestITwinId(requestContext: AuthorizedClientRequestContext): Promise<GuidString> {
 
-    if (undefined !== HubUtility.contextId)
-      return HubUtility.contextId;
+    if (undefined !== HubUtility.iTwinId)
+      return HubUtility.iTwinId;
     return HubUtility.queryProjectIdByName(requestContext, HubUtility.testContextName);
   }
 
@@ -45,15 +45,15 @@ export class HubUtility {
     if (HubUtility.imodelCache.has(name))
       return HubUtility.imodelCache.get(name)!;
 
-    const projectId = await HubUtility.getTestContextId(requestContext);
+    const projectId = await HubUtility.getTestITwinId(requestContext);
     const imodelId = await HubUtility.queryIModelIdByName(requestContext, projectId, name);
     HubUtility.imodelCache.set(name, imodelId);
     return imodelId;
   }
 
   private static async queryContextByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<string | undefined> {
-    if (undefined !== HubUtility.contextId)
-      return HubUtility.contextId;
+    if (undefined !== HubUtility.iTwinId)
+      return HubUtility.iTwinId;
 
     const project = await getIModelProjectAbstraction().queryProject(requestContext, {
       $select: "*",

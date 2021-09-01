@@ -85,7 +85,7 @@ describe("PushChangesTest (#integration)", () => {
     HubMock.startup("PushChangesTest");
 
     user = await IModelTestUtils.getUserContext(TestUserType.Manager);
-    iTwinId = await HubUtility.getTestContextId(user);
+    iTwinId = await HubUtility.getTestITwinId(user);
 
     IModelHost.authorizationClient = {
       isAuthorized: true,
@@ -101,7 +101,7 @@ describe("PushChangesTest (#integration)", () => {
     const iModelName = HubUtility.generateUniqueName("PushChangesTest");
     const iModelId = await HubUtility.recreateIModel({ user, iTwinId, iModelName, noLocks: true });
 
-    const briefcaseProps = await BriefcaseManager.downloadBriefcase(user, { contextId: iTwinId, iModelId });
+    const briefcaseProps = await BriefcaseManager.downloadBriefcase(user, { iTwinId, iModelId });
     let iModel: BriefcaseDb | undefined;
     try {
       iModel = await BriefcaseDb.open(user, { fileName: briefcaseProps.fileName });

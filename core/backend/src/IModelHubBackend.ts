@@ -288,8 +288,8 @@ export class IModelHubBackend {
     const checkpoint = arg.checkpoint;
     let checkpointQuery = new CheckpointQuery().selectDownloadUrl();
     checkpointQuery = checkpointQuery.precedingCheckpoint(checkpoint.changeset.id);
-    const requestContext = checkpoint.requestContext ?? await AuthorizedBackendRequestContext.create();
-    const checkpoints = await this.iModelClient.checkpoints.get(requestContext, checkpoint.iModelId, checkpointQuery);
+    const user = checkpoint.user ?? await AuthorizedBackendRequestContext.create();
+    const checkpoints = await this.iModelClient.checkpoints.get(user, checkpoint.iModelId, checkpointQuery);
     if (checkpoints.length !== 1)
       throw new IModelError(BriefcaseStatus.VersionNotFound, "no checkpoints not found");
 
@@ -299,14 +299,14 @@ export class IModelHubBackend {
         cancelRequest.cancel?.();
     };
 
-    await this.iModelClient.checkpoints.download(requestContext, checkpoints[0], arg.localFile, progressCallback, cancelRequest);
+    await this.iModelClient.checkpoints.download(user, checkpoints[0], arg.localFile, progressCallback, cancelRequest);
     return checkpoints[0].mergedChangeSetId!;
   }
 
   public static async queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined> {
     const checkpointQuery = new CheckpointV2Query().byChangeSetId(arg.changeset.id).selectContainerAccessKey();
-    const requestContext = arg.requestContext ?? await AuthorizedBackendRequestContext.create();
-    const checkpoints = await this.iModelClient.checkpointsV2.get(requestContext, arg.iModelId, checkpointQuery);
+    const user = arg.user ?? await AuthorizedBackendRequestContext.create();
+    const checkpoints = await this.iModelClient.checkpointsV2.get(user, arg.iModelId, checkpointQuery);
     if (checkpoints.length < 1)
       return undefined;
 
@@ -327,10 +327,10 @@ export class IModelHubBackend {
     const checkpoint = arg.checkpoint;
     let checkpointQuery = new CheckpointV2Query();
     checkpointQuery = checkpointQuery.precedingCheckpointV2(checkpoint.changeset.id).selectContainerAccessKey();
-    const requestContext = checkpoint.requestContext ?? await AuthorizedBackendRequestContext.create();
+    const user = checkpoint.user ?? await AuthorizedBackendRequestContext.create();
     let checkpoints: CheckpointV2[] = [];
     try {
-      checkpoints = await this.iModelClient.checkpointsV2.get(requestContext, checkpoint.iModelId, checkpointQuery);
+      checkpoints = await this.iModelClient.checkpointsV2.get(user, checkpoint.iModelId, checkpointQuery);
     } catch (error) {
       if (error instanceof BentleyError && error.errorNumber === IModelHubStatus.Unknown)
         throw new IModelError(IModelStatus.NotFound, "V2 checkpoints not supported");

@@ -75,11 +75,11 @@ async function createIModel(user: AuthorizedClientRequestContext, iTwinId: GuidS
 }
 
 // __PUBLISH_EXTRACT_START__ Bridge.firstTime.example-code
-async function runBridgeFirstTime(user: AuthorizedClientRequestContext, iModelId: GuidString, projectId: GuidString, assetsDir: string) {
+async function runBridgeFirstTime(user: AuthorizedClientRequestContext, iModelId: GuidString, iTwinId: GuidString, assetsDir: string) {
   // Start the IModelHost
   await IModelHost.startup();
 
-  const props = await BriefcaseManager.downloadBriefcase(user, { contextId: projectId, iModelId });
+  const props = await BriefcaseManager.downloadBriefcase(user, { iTwinId, iModelId });
   const briefcase = await BriefcaseDb.open(user, { fileName: props.fileName });
 
   // I. Import the schema.

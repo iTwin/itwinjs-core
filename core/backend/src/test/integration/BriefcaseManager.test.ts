@@ -7,13 +7,14 @@ import { assert, expect } from "chai";
 import * as os from "os";
 import * as readline from "readline";
 import { BriefcaseStatus, GuidString, StopWatch } from "@bentley/bentleyjs-core";
-import { BriefcaseIdValue, IModelError, IModelVersion } from "@bentley/imodeljs-common";
+import { BriefcaseIdValue, BriefcaseProps, IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { UserCancelledError } from "@bentley/itwin-client";
 import { AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, Element, IModelHost, IModelJsFs } from "../../imodeljs-backend";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";
+import { RequestNewBriefcaseArg } from "../../BriefcaseManager";
 
 // Configuration needed:
 //    IMJS_TEST_REGULAR_USER_NAME
@@ -31,52 +32,52 @@ import { TestChangeSetUtility } from "./TestChangeSetUtility";
 //      - Required scopes: "openid imodelhub context-registry-service:read-only"
 
 describe("BriefcaseManager (#integration)", () => {
-  let testContextId: string;
+  let testITwinId: string;
 
   let readOnlyTestIModelId: GuidString;
   const readOnlyTestVersions = ["FirstVersion", "SecondVersion", "ThirdVersion"];
   const readOnlyTestElementCounts = [27, 28, 29];
 
   let noVersionsTestIModelId: GuidString;
-  let requestContext: AuthorizedBackendRequestContext;
-  let managerRequestContext: AuthorizedBackendRequestContext;
+  let user: AuthorizedBackendRequestContext;
+  let manager: AuthorizedBackendRequestContext;
 
   before(async () => {
     // IModelTestUtils.setupDebugLogLevels();
 
-    requestContext = await IModelTestUtils.getUserContext(TestUserType.Regular);
-    testContextId = await HubUtility.getTestContextId(requestContext);
-    readOnlyTestIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.readOnly);
-    noVersionsTestIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.readWrite);
+    user = await IModelTestUtils.getUserContext(TestUserType.Regular);
+    testITwinId = await HubUtility.getTestITwinId(user);
+    readOnlyTestIModelId = await HubUtility.getTestIModelId(user, HubUtility.testIModelNames.readOnly);
+    noVersionsTestIModelId = await HubUtility.getTestIModelId(user, HubUtility.testIModelNames.readWrite);
   });
 
   it("should open and close an iModel from the Hub", async () => {
-    const iModel = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.first().toJSON(), deleteFirst: true });
+    const iModel = await IModelTestUtils.openCheckpointUsingRpc({ user: user, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.first().toJSON(), deleteFirst: true });
     assert.exists(iModel, "No iModel returned from call to BriefcaseManager.open");
 
     // Validate that the IModelDb is readonly
     assert(iModel.isReadonly, "iModel not set to Readonly mode");
 
-    const expectedChangeSet = await IModelHost.hubAccess.getChangesetFromVersion({ version: IModelVersion.first(), user: requestContext, iModelId: readOnlyTestIModelId });
+    const expectedChangeSet = await IModelHost.hubAccess.getChangesetFromVersion({ version: IModelVersion.first(), user: user, iModelId: readOnlyTestIModelId });
     assert.strictEqual(iModel.changeset.id, expectedChangeSet.id);
     assert.strictEqual(iModel.changeset.id, expectedChangeSet.id);
 
     const pathname = iModel.pathName;
     assert.isTrue(IModelJsFs.existsSync(pathname));
-    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
+    await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModel);
 
     assert.isFalse(IModelJsFs.existsSync(pathname), `Briefcase continues to exist at ${pathname}`);
   });
 
   it("should reuse checkpoints", async () => {
-    const iModel1 = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named("FirstVersion").toJSON() });
+    const iModel1 = await IModelTestUtils.openCheckpointUsingRpc({ user: user, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named("FirstVersion").toJSON() });
     assert.exists(iModel1, "No iModel returned from call to BriefcaseManager.open");
 
-    const iModel2 = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named("FirstVersion").toJSON() });
+    const iModel2 = await IModelTestUtils.openCheckpointUsingRpc({ user: user, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named("FirstVersion").toJSON() });
     assert.exists(iModel2, "No iModel returned from call to BriefcaseManager.open");
     assert.equal(iModel1, iModel2, "previously open briefcase was expected to be shared");
 
-    const iModel3 = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named("SecondVersion").toJSON() });
+    const iModel3 = await IModelTestUtils.openCheckpointUsingRpc({ user: user, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named("SecondVersion").toJSON() });
     assert.exists(iModel3, "No iModel returned from call to BriefcaseManager.open");
     assert.notEqual(iModel3, iModel2, "opening two different versions should not cause briefcases to be shared when the older one is open");
 
@@ -88,18 +89,18 @@ describe("BriefcaseManager (#integration)", () => {
     iModel3.close();
     assert.isTrue(IModelJsFs.existsSync(pathname3));
 
-    const iModel4 = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named("FirstVersion").toJSON() });
+    const iModel4 = await IModelTestUtils.openCheckpointUsingRpc({ user: user, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named("FirstVersion").toJSON() });
     assert.exists(iModel4, "No iModel returned from call to BriefcaseManager.open");
     assert.equal(iModel4.pathName, pathname2, "previously closed briefcase was expected to be shared");
 
-    const iModel5 = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named("SecondVersion").toJSON() });
+    const iModel5 = await IModelTestUtils.openCheckpointUsingRpc({ user: user, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named("SecondVersion").toJSON() });
     assert.exists(iModel5, "No iModel returned from call to BriefcaseManager.open");
     assert.equal(iModel5.pathName, pathname3, "previously closed briefcase was expected to be shared");
 
-    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel4);
+    await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModel4);
     assert.isFalse(IModelJsFs.existsSync(pathname2));
 
-    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel5);
+    await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModel5);
     assert.isFalse(IModelJsFs.existsSync(pathname3));
   });
 
@@ -107,18 +108,18 @@ describe("BriefcaseManager (#integration)", () => {
     const dirToPurge = BriefcaseManager.getIModelPath(readOnlyTestIModelId);
     IModelJsFs.purgeDirSync(dirToPurge);
 
-    const iModelFirstVersion = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.first().toJSON(), deleteFirst: true });
+    const iModelFirstVersion = await IModelTestUtils.openCheckpointUsingRpc({ user: user, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.first().toJSON(), deleteFirst: true });
     assert.exists(iModelFirstVersion);
     assert.strictEqual(iModelFirstVersion.changeset.id, "");
 
-    const changeSets = await IModelHost.hubAccess.queryChangesets({ user: requestContext, iModelId: readOnlyTestIModelId });
+    const changeSets = await IModelHost.hubAccess.queryChangesets({ user: user, iModelId: readOnlyTestIModelId });
 
     for (const [arrayIndex, versionName] of readOnlyTestVersions.entries()) {
-      const iModelFromVersion = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.asOfChangeSet(changeSets[arrayIndex + 1].id).toJSON() });
+      const iModelFromVersion = await IModelTestUtils.openCheckpointUsingRpc({ user: user, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.asOfChangeSet(changeSets[arrayIndex + 1].id).toJSON() });
       assert.exists(iModelFromVersion);
       assert.strictEqual(iModelFromVersion.changeset.id, changeSets[arrayIndex + 1].id);
 
-      const iModelFromChangeSet = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named(versionName).toJSON() });
+      const iModelFromChangeSet = await IModelTestUtils.openCheckpointUsingRpc({ user: user, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named(versionName).toJSON() });
       assert.exists(iModelFromChangeSet);
       assert.strictEqual(iModelFromChangeSet, iModelFromVersion);
       assert.strictEqual(iModelFromChangeSet.changeset.id, changeSets[arrayIndex + 1].id);
@@ -133,18 +134,18 @@ describe("BriefcaseManager (#integration)", () => {
       iModelFromChangeSet.close();
     }
 
-    const iModelLatestVersion = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, deleteFirst: true });
+    const iModelLatestVersion = await IModelTestUtils.openCheckpointUsingRpc({ user: user, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, deleteFirst: true });
     assert.isDefined(iModelLatestVersion);
     assert.strictEqual(iModelLatestVersion.nativeDb.getParentChangeset().id, changeSets[3].id);
 
     assert.equal(iModelLatestVersion.nativeDb.getParentChangeset().index, changeSets[3].index);
 
-    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModelFirstVersion);
-    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModelLatestVersion);
+    await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModelFirstVersion);
+    await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModelLatestVersion);
   });
 
   it("should open an iModel with no versions", async () => {
-    const iModelNoVer = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: noVersionsTestIModelId });
+    const iModelNoVer = await IModelTestUtils.openCheckpointUsingRpc({ user: user, iTwinId: testITwinId, iModelId: noVersionsTestIModelId });
     assert.exists(iModelNoVer);
     assert(iModelNoVer.iModelId === noVersionsTestIModelId, "Correct iModel not found");
   });
@@ -152,14 +153,14 @@ describe("BriefcaseManager (#integration)", () => {
   it("Open iModels with various names causing potential issues on Windows/Unix", async () => {
     HubMock.startup("bad names");
     let iModelName = "iModel Name With Spaces";
-    let iModelId = await HubUtility.createIModel(managerRequestContext, testContextId, iModelName);
-    const args = { requestContext, contextId: testContextId, iModelId };
+    let iModelId = await HubUtility.createIModel(manager, testITwinId, iModelName);
+    const args = { user, iTwinId: testITwinId, iModelId };
     assert.isDefined(iModelId);
     let iModel = await IModelTestUtils.openCheckpointUsingRpc(args);
     assert.isDefined(iModel);
 
     iModelName = "iModel Name With :\/<>?* Characters";
-    iModelId = await HubUtility.createIModel(managerRequestContext, testContextId, iModelName);
+    iModelId = await HubUtility.createIModel(manager, testITwinId, iModelName);
     assert.isDefined(iModelId);
     iModel = await IModelTestUtils.openCheckpointUsingRpc(args);
     assert.isDefined(iModel);
@@ -170,7 +171,7 @@ describe("BriefcaseManager (#integration)", () => {
       "01234567890123456789"; // 35 + 2*100 + 20 = 255
     // Note: iModelHub does not accept a name that's longer than 255 characters.
     assert.equal(255, iModelName.length);
-    iModelId = await HubUtility.createIModel(managerRequestContext, testContextId, iModelName);
+    iModelId = await HubUtility.createIModel(manager, testITwinId, iModelName);
     assert.isDefined(iModelId);
     iModel = await IModelTestUtils.openCheckpointUsingRpc(args);
     assert.isDefined(iModel);
@@ -180,8 +181,8 @@ describe("BriefcaseManager (#integration)", () => {
 
   it("should set appropriate briefcase ids for FixedVersion, PullOnly and PullAndPush workflows", async () => {
     HubMock.startup("briefcaseIds");
-    const iModelId = await HubUtility.createIModel(requestContext, testContextId, "imodel1");
-    const args = { requestContext, contextId: testContextId, iModelId, deleteFirst: true };
+    const iModelId = await HubUtility.createIModel(user, testITwinId, "imodel1");
+    const args = { user, iTwinId: testITwinId, iModelId, deleteFirst: true };
     const iModel1 = await IModelTestUtils.openCheckpointUsingRpc(args);
     assert.equal(BriefcaseIdValue.Unassigned, iModel1.nativeDb.getBriefcaseId(), "checkpoint should be 0");
 
@@ -191,17 +192,17 @@ describe("BriefcaseManager (#integration)", () => {
     const iModel3 = await IModelTestUtils.openBriefcaseUsingRpc(args);
     assert.isTrue(iModel3.briefcaseId >= BriefcaseIdValue.FirstValid && iModel3.briefcaseId <= BriefcaseIdValue.LastValid, "valid briefcaseId");
 
-    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel1);
-    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel2);
-    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel3);
+    await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModel1);
+    await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModel2);
+    await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModel3);
     HubMock.shutdown();
   });
 
   it("should reuse a briefcaseId when re-opening iModels for pullAndPush workflows", async () => {
     HubMock.startup("briefcaseIdsReopen");
-    const iModelId = await HubUtility.createIModel(requestContext, testContextId, "imodel1");
+    const iModelId = await HubUtility.createIModel(user, testITwinId, "imodel1");
 
-    const args = { requestContext, contextId: testContextId, iModelId, deleteFirst: false };
+    const args = { user, iTwinId: testITwinId, iModelId, deleteFirst: false };
     const iModel1 = await IModelTestUtils.openBriefcaseUsingRpc(args);
     const briefcaseId1 = iModel1.briefcaseId;
     iModel1.close(); // Keeps the briefcase by default
@@ -210,7 +211,7 @@ describe("BriefcaseManager (#integration)", () => {
     const briefcaseId3 = iModel3.briefcaseId;
     assert.strictEqual(briefcaseId3, briefcaseId1);
 
-    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel3);
+    await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModel3);
     HubMock.shutdown();
   });
 
@@ -224,7 +225,7 @@ describe("BriefcaseManager (#integration)", () => {
     await testUtility.createTestIModel();
 
     // User2 opens and then closes the iModel pullOnly/pullPush, keeping the briefcase
-    const args = { requestContext: userContext2, contextId: testUtility.projectId, iModelId: testUtility.iModelId };
+    const args = { user: userContext2, iTwinId: testUtility.projectId, iModelId: testUtility.iModelId };
     const iModelPullAndPush = await IModelTestUtils.openBriefcaseUsingRpc(args);
     const briefcaseIdPullAndPush: number = iModelPullAndPush.briefcaseId;
     const changesetPullAndPush = iModelPullAndPush.changeset;
@@ -268,7 +269,7 @@ describe("BriefcaseManager (#integration)", () => {
     await testUtility.createTestIModel();
 
     // User2 opens the iModel pullAndPush and is able to edit and save changes
-    const args = { requestContext: userContext2, contextId: testUtility.projectId, iModelId: testUtility.iModelId };
+    const args = { user: userContext2, iTwinId: testUtility.projectId, iModelId: testUtility.iModelId };
     let iModelPullAndPush = await IModelTestUtils.openBriefcaseUsingRpc(args);
     assert.exists(iModelPullAndPush);
     const briefcaseId = iModelPullAndPush.briefcaseId;
@@ -325,7 +326,7 @@ describe("BriefcaseManager (#integration)", () => {
   });
 
   it("should be able to show progress when downloading a briefcase (#integration)", async () => {
-    const testIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.stadium);
+    const testIModelId = await HubUtility.getTestIModelId(user, HubUtility.testIModelNames.stadium);
 
     let numProgressCalls = 0;
 
@@ -347,8 +348,8 @@ describe("BriefcaseManager (#integration)", () => {
       return 0;
     };
 
-    const args = {
-      contextId: testContextId,
+    const args: RequestNewBriefcaseArg & BriefcaseProps = {
+      iTwinId: testITwinId,
       iModelId: testIModelId,
       briefcaseId: BriefcaseIdValue.Unassigned,
       onProgress: downloadProgress,
@@ -356,31 +357,31 @@ describe("BriefcaseManager (#integration)", () => {
     const fileName = BriefcaseManager.getFileName(args);
     await BriefcaseManager.deleteBriefcaseFiles(fileName);
     const watch = new StopWatch("download", true);
-    const props = await BriefcaseManager.downloadBriefcase(requestContext, args);
+    const props = await BriefcaseManager.downloadBriefcase(user, args);
     // eslint-disable-next-line no-console
     console.log(`download took ${watch.elapsedSeconds} seconds`);
-    const iModel = await BriefcaseDb.open(requestContext, { fileName: props.fileName });
+    const iModel = await BriefcaseDb.open(user, { fileName: props.fileName });
 
-    await expect(BriefcaseManager.downloadBriefcase(requestContext, args)).to.be.rejectedWith(IModelError, "already exists", "should not be able to download a briefcase if a file with that name already exists");
+    await expect(BriefcaseManager.downloadBriefcase(user, args)).to.be.rejectedWith(IModelError, "already exists", "should not be able to download a briefcase if a file with that name already exists");
 
-    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
+    await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModel);
     assert.isAbove(numProgressCalls, 0, "download progress called");
     assert.isAbove(done, 0, "done set");
     assert.isAbove(complete, 0, "complete set");
   });
 
   it("Should be able to cancel an in progress download (#integration)", async () => {
-    const testIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.stadium);
+    const testIModelId = await HubUtility.getTestIModelId(user, HubUtility.testIModelNames.stadium);
     let aborted = 0;
     const args = {
-      contextId: testContextId,
+      iTwinId: testITwinId,
       iModelId: testIModelId,
       briefcaseId: BriefcaseIdValue.Unassigned,
       onProgress: () => aborted,
     };
-    await BriefcaseManager.deleteBriefcaseFiles(BriefcaseManager.getFileName(args), requestContext);
+    await BriefcaseManager.deleteBriefcaseFiles(BriefcaseManager.getFileName(args), user);
 
-    const downloadPromise = BriefcaseManager.downloadBriefcase(requestContext, args);
+    const downloadPromise = BriefcaseManager.downloadBriefcase(user, args);
     setTimeout(async () => aborted = 1, 1000);
     await expect(downloadPromise).to.be.rejectedWith(UserCancelledError).to.eventually.have.property("errorNumber", BriefcaseStatus.DownloadCancelled);
   });

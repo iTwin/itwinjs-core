@@ -29,7 +29,7 @@ describe("Schema XML Import Tests (#integration)", () => {
   before(async () => {
     HubMock.startup("schemaImport");
     user = await IModelTestUtils.getUserContext(TestUserType.Manager);
-    testContextId = await HubUtility.getTestContextId(user);
+    testContextId = await HubUtility.getTestITwinId(user);
     readWriteTestIModelId = await HubUtility.recreateIModel({ user, iTwinId: testContextId, iModelName: HubUtility.generateUniqueName("ReadWriteTest"), noLocks: true });
   });
 
@@ -47,7 +47,7 @@ describe("Schema XML Import Tests (#integration)", () => {
     const schemaFilePath = path.join(KnownTestLocations.assetsDir, "Test3.ecschema.xml");
     const schemaString = fs.readFileSync(schemaFilePath, "utf8");
 
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: user, contextId: testContextId, iModelId: readWriteTestIModelId });
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId: testContextId, iModelId: readWriteTestIModelId });
     await iModel.importSchemaStrings(user, [schemaString]); // will throw an exception if import fails
 
     const testDomainClass = iModel.getMetaData("Test3:Test3Element"); // will throw on failure

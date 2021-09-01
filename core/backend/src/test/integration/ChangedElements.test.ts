@@ -19,12 +19,12 @@ import { HubUtility } from "./HubUtility";
 
 describe("ChangedElements (#integration)", () => {
   let user: AuthorizedBackendRequestContext;
-  let testContextId: GuidString;
+  let testITwinId: GuidString;
   let testIModelId: GuidString;
 
   before(async () => {
     user = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-    testContextId = await HubUtility.getTestContextId(user);
+    testITwinId = await HubUtility.getTestITwinId(user);
     testIModelId = await HubUtility.getTestIModelId(user, HubUtility.testIModelNames.readOnly);
 
   });
@@ -34,7 +34,7 @@ describe("ChangedElements (#integration)", () => {
     if (IModelJsFs.existsSync(cacheFilePath))
       IModelJsFs.removeSync(cacheFilePath);
 
-    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext: user, contextId: testContextId, iModelId: testIModelId, asOf: IModelVersion.first().toJSON() });
+    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId: testITwinId, iModelId: testIModelId, asOf: IModelVersion.first().toJSON() });
     const changeSets = await IModelHost.hubAccess.queryChangesets({ user, iModelId: testIModelId });
     assert.exists(iModel);
 
@@ -169,7 +169,7 @@ describe("ChangedElements (#integration)", () => {
     if (IModelJsFs.existsSync(cacheFilePath))
       IModelJsFs.removeSync(cacheFilePath);
 
-    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext: user, contextId: testContextId, iModelId: testIModelId, asOf: IModelVersion.first().toJSON() });
+    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId: testITwinId, iModelId: testIModelId, asOf: IModelVersion.first().toJSON() });
     const changeSets = await IModelHost.hubAccess.queryChangesets({ user, iModelId: testIModelId });
     assert.exists(iModel);
 

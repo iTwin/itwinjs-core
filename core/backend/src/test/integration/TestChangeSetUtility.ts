@@ -29,7 +29,7 @@ export class TestChangeSetUtility {
   }
 
   private async addTestModel(): Promise<void> {
-    this._iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: this._requestContext, contextId: this.projectId, iModelId: this.iModelId });
+    this._iModel = await IModelTestUtils.downloadAndOpenBriefcase({ user: this._requestContext, iTwinId: this.projectId, iModelId: this.iModelId });
     [, this._modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(this._iModel, IModelTestUtils.getUniqueModelCode(this._iModel, "TestPhysicalModel"), true);
     this._iModel.saveChanges("Added test model");
   }
@@ -46,7 +46,7 @@ export class TestChangeSetUtility {
   }
 
   public async createTestIModel(): Promise<BriefcaseDb> {
-    this.projectId = await HubUtility.getTestContextId(this._requestContext);
+    this.projectId = await HubUtility.getTestITwinId(this._requestContext);
 
     // Re-create iModel on iModelHub
     this.iModelId = await HubUtility.recreateIModel({ user: this._requestContext, iTwinId: this.projectId, iModelName: this._iModelName, noLocks: true });

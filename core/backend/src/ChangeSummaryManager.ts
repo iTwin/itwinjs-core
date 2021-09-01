@@ -69,7 +69,7 @@ export interface ChangeSummaryExtractOptions {
  */
 export interface CreateChangeSummaryArgs {
   /** Id of the context that contains the iModel */
-  contextId: GuidString;
+  iTwinId: GuidString;
 
   /** Id of the iModel */
   iModelId: GuidString;
@@ -82,7 +82,7 @@ export interface CreateChangeSummaryArgs {
   range: ChangesetRange;
 
   /** Context for the request */
-  requestContext?: AuthorizedClientRequestContext;
+  user?: AuthorizedClientRequestContext;
 }
 
 /** Class to extract Change Summaries for a briefcase.
@@ -546,8 +546,8 @@ export class ChangeSummaryManager {
    * @param args Arguments including the range of versions for which Change Summaries are to be created, and other necessary input for creation
    */
   public static async createChangeSummaries(args: CreateChangeSummaryArgs): Promise<Id64String[]> {
-    const user = args.requestContext ?? await IModelHost.getAuthorizedContext();
-    const { iModelId, contextId, range } = args;
+    const user = args.user ?? await IModelHost.getAuthorizedContext();
+    const { iModelId, iTwinId, range } = args;
     range.end = range.end ?? (await IModelHost.hubAccess.getChangesetFromVersion({ user, iModelId, version: IModelVersion.latest() })).index;
     if (range.first > range.end)
       throw new IModelError(IModelStatus.BadArg, "Invalid range of changesets", undefined, undefined, () => ({ iModelId, ...range }));
@@ -563,7 +563,7 @@ export class ChangeSummaryManager {
     let iModel: BriefcaseDb | undefined;
     try {
       // Download a version that has the first change set applied
-      const props = await BriefcaseManager.downloadBriefcase(user, { contextId, iModelId, asOf: { afterChangeSetId: changesets[0].id }, briefcaseId: 0, fileName });
+      const props = await BriefcaseManager.downloadBriefcase(user, { iTwinId, iModelId, asOf: { afterChangeSetId: changesets[0].id }, briefcaseId: 0, fileName });
       iModel = await BriefcaseDb.open(user, { fileName: props.fileName });
 
       const summaryIds = new Array<Id64String>();

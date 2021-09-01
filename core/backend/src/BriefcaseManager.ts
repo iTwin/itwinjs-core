@@ -20,7 +20,7 @@ import {
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TelemetryEvent } from "@bentley/telemetry-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { CheckpointManager, ProgressFunction } from "./CheckpointManager";
+import { CheckpointManager, CheckpointProps, ProgressFunction } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
@@ -135,7 +135,7 @@ export class BriefcaseManager {
             const fileName = path.join(bcPath, briefcaseName);
             const fileSize = IModelJsFs.lstatSync(fileName)?.size ?? 0;
             const db = IModelDb.openDgnDb({ path: fileName }, OpenMode.Readonly);
-            briefcaseList.push({ fileName, contextId: db.queryProjectGuid(), iModelId: db.getDbGuid(), briefcaseId: db.getBriefcaseId(), changeset: db.getParentChangeset(), fileSize });
+            briefcaseList.push({ fileName, iTwinId: db.queryProjectGuid(), iModelId: db.getDbGuid(), briefcaseId: db.getBriefcaseId(), changeset: db.getParentChangeset(), fileSize });
             db.closeIModel();
           } catch (_err) {
           }
@@ -194,26 +194,16 @@ export class BriefcaseManager {
 
     const asOf = request.asOf ?? IModelVersion.latest().toJSON();
     const changeset = await IModelHost.hubAccess.getChangesetFromVersion({ user, version: IModelVersion.fromJSON(asOf), iModelId: request.iModelId });
+    const checkpoint: CheckpointProps = { user, iTwinId: request.iTwinId, iModelId: request.iModelId, changeset };
 
-    const args = {
-      localFile: fileName,
-      checkpoint: {
-        requestContext: user,
-        contextId: request.contextId,
-        iModelId: request.iModelId,
-        changeset,
-      },
-      onProgress: request.onProgress,
-    };
-
-    await CheckpointManager.downloadCheckpoint(args);
+    await CheckpointManager.downloadCheckpoint({ localFile: fileName, checkpoint, onProgress: request.onProgress });
     const fileSize = IModelJsFs.lstatSync(fileName)?.size ?? 0;
     const response: LocalBriefcaseProps = {
       fileName,
       briefcaseId,
       iModelId: request.iModelId,
-      contextId: request.contextId,
-      changeset: args.checkpoint.changeset,
+      iTwinId: request.iTwinId,
+      changeset: checkpoint.changeset,
       fileSize,
     };
 
@@ -226,7 +216,7 @@ export class BriefcaseManager {
     }
     try {
       nativeDb.resetBriefcaseId(briefcaseId);
-      if (nativeDb.getParentChangeset().id !== args.checkpoint.changeset.id)
+      if (nativeDb.getParentChangeset().id !== checkpoint.changeset.id)
         throw new IModelError(IModelStatus.InvalidId, `Downloaded briefcase has wrong changesetId: ${fileName}`);
     } finally {
       nativeDb.saveChanges();

@@ -201,25 +201,25 @@ export class IModelTestUtils {
   }
 
   /** Helper to open a briefcase db directly with the BriefcaseManager API */
-  public static async downloadAndOpenBriefcase(args: RequestNewBriefcaseProps & { requestContext: AuthorizedClientRequestContext }): Promise<BriefcaseDb> {
+  public static async downloadAndOpenBriefcase(args: RequestNewBriefcaseProps & { user: AuthorizedClientRequestContext }): Promise<BriefcaseDb> {
     assert.isTrue(HubUtility.allowHubBriefcases || HubMock.isValid, "Must use HubMock for tests that modify iModels");
-    const props = await BriefcaseManager.downloadBriefcase(args.requestContext, args);
-    return BriefcaseDb.open(args.requestContext, { fileName: props.fileName });
+    const props = await BriefcaseManager.downloadBriefcase(args.user, args);
+    return BriefcaseDb.open(args.user, { fileName: props.fileName });
   }
 
   /** Opens the specific iModel as a Briefcase through the same workflow the IModelReadRpc.openForRead method will use. Replicates the way a frontend would open the iModel. */
-  public static async openBriefcaseUsingRpc(args: RequestNewBriefcaseProps & { requestContext: AuthorizedClientRequestContext, deleteFirst?: boolean }): Promise<BriefcaseDb> {
-    args.requestContext.enter();
+  public static async openBriefcaseUsingRpc(args: RequestNewBriefcaseProps & { user: AuthorizedClientRequestContext, deleteFirst?: boolean }): Promise<BriefcaseDb> {
+    args.user.enter();
     if (undefined === args.asOf)
       args.asOf = IModelVersion.latest().toJSON();
 
     const openArgs: DownloadAndOpenArgs = {
       tokenProps: {
-        contextId: args.contextId,
+        contextId: args.iTwinId,
         iModelId: args.iModelId,
-        changeset: (await IModelHost.hubAccess.getChangesetFromVersion({ user: args.requestContext, version: IModelVersion.fromJSON(args.asOf), iModelId: args.iModelId })),
+        changeset: (await IModelHost.hubAccess.getChangesetFromVersion({ user: args.user, version: IModelVersion.fromJSON(args.asOf), iModelId: args.iModelId })),
       },
-      requestContext: args.requestContext,
+      user: args.user,
       syncMode: args.briefcaseId === 0 ? SyncMode.PullOnly : SyncMode.PullAndPush,
       forceDownload: args.deleteFirst,
     };
@@ -236,37 +236,37 @@ export class IModelTestUtils {
   }
 
   /** Downloads and opens a v1 checkpoint */
-  public static async downloadAndOpenCheckpoint(args: { requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, asOf?: IModelVersionProps }): Promise<SnapshotDb> {
+  public static async downloadAndOpenCheckpoint(args: { user: AuthorizedClientRequestContext, iTwinId: GuidString, iModelId: GuidString, asOf?: IModelVersionProps }): Promise<SnapshotDb> {
     if (undefined === args.asOf)
       args.asOf = IModelVersion.latest().toJSON();
 
     const checkpoint: CheckpointProps = {
-      contextId: args.contextId,
+      iTwinId: args.iTwinId,
       iModelId: args.iModelId,
-      requestContext: args.requestContext,
-      changeset: (await IModelHost.hubAccess.getChangesetFromVersion({ user: args.requestContext, version: IModelVersion.fromJSON(args.asOf), iModelId: args.iModelId })),
+      user: args.user,
+      changeset: (await IModelHost.hubAccess.getChangesetFromVersion({ user: args.user, version: IModelVersion.fromJSON(args.asOf), iModelId: args.iModelId })),
     };
 
     return V1CheckpointManager.getCheckpointDb({ checkpoint, localFile: V1CheckpointManager.getFileName(checkpoint) });
   }
 
   /** Opens the specific Checkpoint iModel, `SyncMode.FixedVersion`, through the same workflow the IModelReadRpc.openForRead method will use. Replicates the way a frontend would open the iModel. */
-  public static async openCheckpointUsingRpc(args: RequestNewBriefcaseProps & { requestContext: AuthorizedClientRequestContext, deleteFirst?: boolean }): Promise<SnapshotDb> {
+  public static async openCheckpointUsingRpc(args: RequestNewBriefcaseProps & { user: AuthorizedClientRequestContext, deleteFirst?: boolean }): Promise<SnapshotDb> {
     if (undefined === args.asOf)
       args.asOf = IModelVersion.latest().toJSON();
 
-    const changeset = await IModelHost.hubAccess.getChangesetFromVersion({ user: args.requestContext, version: IModelVersion.fromJSON(args.asOf), iModelId: args.iModelId });
+    const changeset = await IModelHost.hubAccess.getChangesetFromVersion({ user: args.user, version: IModelVersion.fromJSON(args.asOf), iModelId: args.iModelId });
     const openArgs: DownloadAndOpenArgs = {
       tokenProps: {
-        contextId: args.contextId,
+        contextId: args.iTwinId,
         iModelId: args.iModelId,
         changeset,
       },
-      requestContext: args.requestContext,
+      user: args.user,
       syncMode: SyncMode.FixedVersion,
       forceDownload: args.deleteFirst,
     };
-    args.requestContext.enter();
+    args.user.enter();
 
     while (true) {
       try {
