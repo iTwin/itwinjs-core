@@ -6,7 +6,7 @@
  * @module Notification
  */
 
-import { MessageSeverity } from "@bentley/ui-core";
+import { MessageSeverity } from "@bentley/ui-abstract";
 
 /** @internal */
 export function getToastCategory(severity: MessageSeverity) {

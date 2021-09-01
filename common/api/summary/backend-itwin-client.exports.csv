@@ -5,7 +5,6 @@ beta;AgentAuthorizationClientConfiguration = BackendAuthorizationClientConfigura
 internal;AzureFileHandler 
 beta;class BackendAuthorizationClient 
 beta;BackendAuthorizationClientConfiguration
-internal;BackendFeatureUsageTelemetryClient 
 public;BackendITwinClientLoggerCategory
 alpha;class BackendTelemetryClient 
 alpha;BackendTelemetryEvent 

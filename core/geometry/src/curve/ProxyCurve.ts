@@ -48,6 +48,8 @@ export abstract class ProxyCurve extends CurvePrimitive{
     this._proxyCurve = proxyCurve;
   }
 
+  /** return the (pointer to) the proxy curve. */
+  public get proxyCurve(): CurvePrimitive { return this._proxyCurve;}
   /** Implement by proxyCurve */
   public computeStrokeCountForOptions(options?: StrokeOptions): number {
   return this._proxyCurve.computeStrokeCountForOptions(options);

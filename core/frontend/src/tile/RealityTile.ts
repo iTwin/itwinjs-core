@@ -6,8 +6,8 @@
  * @module Tiles
  */
 
-import { assert, BeTimePoint, dispose } from "@bentley/bentleyjs-core";
-import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { BeTimePoint, dispose } from "@bentley/bentleyjs-core";
+import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, Point3d, Transform } from "@bentley/geometry-core";
 import { ColorDef, Frustum } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch, GraphicBranchOptions } from "../render/GraphicBranch";
@@ -17,6 +17,7 @@ import { RenderSystem } from "../render/RenderSystem";
 import { ViewingSpace } from "../ViewingSpace";
 import { Viewport } from "../Viewport";
 import {
+  RealityTileRegion,
   RealityTileTree, Tile, TileContent, TileDrawArgs, TileGraphicType, TileLoadStatus, TileParams, TileRequest, TileRequestChannel, TileTreeLoadStatus, TraversalDetails, TraversalSelectionContext,
 } from "./internal";
 
@@ -26,12 +27,12 @@ export interface RealityTileParams extends TileParams {
   readonly additiveRefinement?: boolean;
   readonly noContentButTerminateOnSelection?: boolean;
   readonly rangeCorners?: Point3d[];
-  readonly boundedByRegion?: boolean;
+  readonly region?: RealityTileRegion;
 }
 
 const scratchLoadedChildren = new Array<RealityTile>();
 const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];
-const additiveRefinementThreshold = 2000;    // Additive tiles (Cesium OSM tileset) are subdivided until their range diagonal falls below this threshold to ensure accurate reprojection.
+const additiveRefinementThreshold = 10000;    // Additive tiles (Cesium OSM tileset) are subdivided until their range diagonal falls below this threshold to ensure accurate reprojection.
 const additiveRefinementDepthLimit = 20;
 const scratchFrustum = new Frustum();
 
@@ -44,7 +45,7 @@ export class RealityTile extends Tile {
   public readonly additiveRefinement?: boolean;
   public readonly noContentButTerminateOnSelection?: boolean;
   public readonly rangeCorners?: Point3d[];
-  public readonly boundedByRegion;
+  public readonly region?: RealityTileRegion;
   private _everDisplayed = false;
   protected _reprojectionTransform?: Transform;
   private _reprojectedGraphic?: RenderGraphic;
@@ -55,7 +56,7 @@ export class RealityTile extends Tile {
     this.additiveRefinement = (undefined === props.additiveRefinement) ? this.realityParent?.additiveRefinement : props.additiveRefinement;
     this.noContentButTerminateOnSelection = props.noContentButTerminateOnSelection;
     this.rangeCorners = props.rangeCorners;
-    this.boundedByRegion = props.boundedByRegion;
+    this.region = props.region;
 
     if (undefined === this.transformToRoot)
       return;
@@ -178,11 +179,20 @@ export class RealityTile extends Tile {
   }
   public addBoundingGraphic(builder: GraphicBuilder, color: ColorDef) {
     builder.setSymbology(color, color, 3);
-    builder.addRangeBoxFromCorners(this.rangeCorners ? this.rangeCorners : this.range.corners());
+    let corners = this.rangeCorners ? this.rangeCorners : this.range.corners();
+    if (this._reprojectionTransform)
+      corners = this._reprojectionTransform.multiplyPoint3dArray(corners);
+    builder.addRangeBoxFromCorners(corners);
   }
 
-  public setReprojection(rootReprojection: Transform) {
+  public reproject(rootReprojection: Transform) {
     this._reprojectionTransform = rootReprojection;
+    rootReprojection.multiplyRange(this.range, this.range);
+    this.boundingSphere.transformBy(rootReprojection, this.boundingSphere);
+    if (this.contentRange)
+      rootReprojection.multiplyRange(this.contentRange, this.contentRange);
+    if (this.rangeCorners)
+      rootReprojection.multiplyPoint3dArrayInPlace(this.rangeCorners);
   }
 
   public allChildrenIncluded(tiles: Tile[]) {
@@ -314,48 +324,34 @@ export class RealityTile extends Tile {
     if (!this.rangeCorners)
       return this.range.corners(scratchCorners);
 
-    return this.boundedByRegion ? this.rangeCorners.slice(4) : this.rangeCorners;
+    return this.region ? this.rangeCorners.slice(4) : this.rangeCorners;
   }
 
   public get isStepChild() { return false; }
 
   protected loadAdditiveRefinementChildren(resolve: (children: Tile[]) => void): void {
+    const region = this.region;
     const corners = this.rangeCorners;
-    if (!corners)
+    if (!region || !corners)
       return;
 
-    const origin = corners[0];
-    const xVector = Vector3d.createStartEnd(origin, corners[1]);
-    const yVector = Vector3d.createStartEnd(origin, corners[2]);
-    const zVector = Vector3d.createStartEnd(origin, corners[4]);
     const maximumSize = this.maximumSize;
-    const boundedByRegion = this.boundedByRegion;
     const rangeDiagonal = corners[0].distance(corners[3]);
     const isLeaf = rangeDiagonal < additiveRefinementThreshold || this.depth  > additiveRefinementDepthLimit;
-    const localTransform = Transform.createOriginAndMatrixColumns(origin, xVector, yVector, zVector);
-    if (!localTransform) {
-      assert(false);
-      return;
-    }
 
     const stepChildren = new Array<AdditiveRefinementStepChild>();
+    const latitudeDelta = (region.maxLatitude - region.minLatitude) / 2;
+    const longitudeDelta = (region.maxLongitude - region.minLongitude) / 2;
+    const minHeight = region.minHeight;
+    const maxHeight = region.maxHeight;
 
-    for (let i = 0, step = 0; i < 2; i++) {
-      for (let j = 0; j < 2; j++) {
-        const  rangeCorners = [];
-        const xLow = i / 2, xHigh = xLow + .5, yLow = j / 2, yHigh = yLow + .5;
-        rangeCorners.push(Point3d.create(xLow, yLow));
-        rangeCorners.push(Point3d.create(xHigh, yLow));
-        rangeCorners.push(Point3d.create(xLow, yHigh));
-        rangeCorners.push(Point3d.create(xHigh, yHigh));
-        for (let k = 0; k < 4; k++)
-          rangeCorners.push(rangeCorners[k].plusXYZ(0, 0, 1));
-
-        localTransform.multiplyPoint3dArrayInPlace(rangeCorners);
+    for (let i = 0, minLongitude = region.minLongitude, step = 0; i < 2; i++, minLongitude += longitudeDelta, step++) {
+      for (let j = 0, minLatitude = region.minLatitude; j < 2; j++, minLatitude += latitudeDelta) {
+        const childRegion = new RealityTileRegion({ minLatitude, maxLatitude: minLatitude + latitudeDelta, minLongitude, maxLongitude: minLongitude + longitudeDelta, minHeight, maxHeight });
+        const childRange = childRegion.getRange();
 
         const contentId = `${this.contentId}_S${step++}`;
-        const range = Range3d.createArray(rangeCorners);
-        const childParams: RealityTileParams = { rangeCorners, contentId, range, maximumSize, parent: this, additiveRefinement: false, isLeaf, boundedByRegion };
+        const childParams: RealityTileParams = { rangeCorners: childRange.corners, contentId, range: childRange.range, maximumSize, parent: this, additiveRefinement: false, isLeaf, region: childRegion };
 
         stepChildren.push(new AdditiveRefinementStepChild(childParams, this.realityRoot));
       }

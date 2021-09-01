@@ -36,7 +36,7 @@ export class GeoJsonImporter {
    * @param iModelFileName the output iModel file name
    * @param geoJson the input GeoJson data
    */
-  public constructor(iModelFileName: string, geoJson: GeoJson, appendToExisting: boolean, modelName?: string, labelProperty?: string, pointRadius?: number, pseudoColor?: boolean, mapType?: string, mapGroundBias?: number,
+  public constructor(iModelFileName: string, geoJson: GeoJson, appendToExisting: boolean, modelName?: string, labelProperty?: string, pointRadius?: number, pseudoColor?: boolean, mapTypeString?: string, mapGroundBias?: number,
     private _classifiedURL?: string, private _classifiedName?: string, private _classifiedOutside?: string, private _classifiedInside?: string) {
     this.iModelDb = appendToExisting ? StandaloneDb.openFile(iModelFileName, OpenMode.ReadWrite) : SnapshotDb.createEmpty(iModelFileName, { rootSubject: { name: geoJson.title } });
     this._geoJson = geoJson;
@@ -45,26 +45,17 @@ export class GeoJsonImporter {
     this._labelProperty = labelProperty;
     this._pointRadius = pointRadius === undefined ? .25 : pointRadius;
     this._colorIndex = pseudoColor ? 0 : undefined;
-    this._viewFlags = new ViewFlags();
-    this._viewFlags.renderMode = RenderMode.SmoothShade;
-    switch (mapType) {
-      case "none":
-        this._viewFlags.backgroundMap = false;
-        break;
-      case "streets":
-        this._viewFlags.backgroundMap = true;
-        this._backgroundMap = { providerName: "BingProvider", groundBias: mapGroundBias, providerData: { mapType: BackgroundMapType.Street } };
-        break;
-      case "aerial":
-        this._viewFlags.backgroundMap = true;
-        this._backgroundMap = { providerName: "BingProvider", groundBias: mapGroundBias, providerData: { mapType: BackgroundMapType.Aerial } };
-        break;
-      default:
-      case "hybrid":
-        this._viewFlags.backgroundMap = true;
-        this._backgroundMap = { providerName: "BingProvider", groundBias: mapGroundBias, providerData: { mapType: BackgroundMapType.Hybrid } };
-        break;
+
+    let mapType;
+    switch (mapTypeString) {
+      case "streets": mapType = BackgroundMapType.Street; break;
+      case "aerial": mapType = BackgroundMapType.Aerial; break;
+      case "hybrid": mapType = BackgroundMapType.Hybrid; break;
     }
+
+    this._viewFlags = new ViewFlags({ renderMode: RenderMode.SmoothShade, backgroundMap: undefined !== mapType });
+    if (undefined !== mapType)
+      this._backgroundMap = { providerName: "BingProvider", groundBias: mapGroundBias, providerData: { mapType } };
   }
 
   /** Perform the import */

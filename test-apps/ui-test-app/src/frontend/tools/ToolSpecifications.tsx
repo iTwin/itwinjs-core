@@ -6,18 +6,17 @@ import * as React from "react";
 import imperialIconSvg from "@bentley/icons-generic/icons/app-2.svg?sprite";
 import automationIconSvg from "@bentley/icons-generic/icons/automation.svg?sprite";
 import {
-  ActivityMessageDetails,
-  ActivityMessageEndReason,
+  ActivityMessageDetails, ActivityMessageEndReason,
   IModelApp, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType,
   QuantityType, SelectionTool, SnapMode,
 } from "@bentley/imodeljs-frontend";
-import { PresentationUnitSystem } from "@bentley/presentation-common";
+import { UnitSystemKey } from "@bentley/imodeljs-quantity";
 import { Presentation } from "@bentley/presentation-frontend";
 import {
-  BackstageItem, BackstageItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue, DialogButtonType, StatusBarSection,
-  UiItemsManager, UiItemsProvider, WidgetState,
+  BackstageItem, BackstageItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue, DialogButtonType,
+  MessageSeverity, StatusBarSection, UiItemsManager, UiItemsProvider, WidgetState,
 } from "@bentley/ui-abstract";
-import { Dialog, MessageSeverity, ReactMessage, SvgPath, SvgSprite, UnderlinedButton } from "@bentley/ui-core";
+import { Dialog, ReactMessage, SvgPath, SvgSprite, UnderlinedButton } from "@bentley/ui-core";
 import {
   Backstage, CommandItemDef, ContentViewManager, FrontstageManager, MessageManager, ModalDialogManager, ReactNotifyMessageDetails,
   StatusBarItemUtilities, SyncUiEventDispatcher, SyncUiEventId, ToolItemDef, withStatusFieldProps,
@@ -57,32 +56,10 @@ export function UnitsFormatDialog() {
   }, []);
 
   const onRadioChange = React.useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const unitSystem = event.target.value;
-
-    switch (unitSystem) {
-      case "imperial":
-        setUnitFormat(unitSystem);
-        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.BritishImperial;
-        await IModelApp.quantityFormatter.setActiveUnitSystem(unitSystem);
-        break;
-      case "metric":
-        setUnitFormat(unitSystem);
-        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.Metric;
-        await IModelApp.quantityFormatter.setActiveUnitSystem(unitSystem);
-        break;
-      case "usSurvey":
-        setUnitFormat(unitSystem);
-        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.UsSurvey;
-        await IModelApp.quantityFormatter.setActiveUnitSystem(unitSystem);
-        break;
-      case "usCustomary":
-        setUnitFormat(unitSystem);
-        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.UsCustomary;
-        await IModelApp.quantityFormatter.setActiveUnitSystem(unitSystem);
-        break;
-      default:
-        break;
-    }
+    const unitSystem = event.target.value as UnitSystemKey;
+    setUnitFormat(unitSystem);
+    Presentation.presentation.activeUnitSystem = unitSystem;
+    await IModelApp.quantityFormatter.setActiveUnitSystem(unitSystem);
   }, [setUnitFormat]);
 
   const buttonCluster = React.useMemo(() => [
@@ -313,7 +290,7 @@ export class AppTools {
       labelKey: "SampleApp:buttons.setLengthFormatMetric",
       execute: () => {
         IModelApp.quantityFormatter.useImperialFormats = false; // eslint-disable-line deprecation/deprecation
-        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.Metric;
+        Presentation.presentation.activeUnitSystem = "metric";
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Length Format to Metric"));
       },
     });
@@ -327,7 +304,7 @@ export class AppTools {
       labelKey: "SampleApp:buttons.setLengthFormatImperial",
       execute: () => {
         IModelApp.quantityFormatter.useImperialFormats = true; // eslint-disable-line deprecation/deprecation
-        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.BritishImperial;
+        Presentation.presentation.activeUnitSystem = "imperial";
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Length Format to Imperial"));
       },
     });

@@ -21,8 +21,8 @@ import { BackstageItem } from '@bentley/ui-abstract';
 import { BackstageItemsManager } from '@bentley/ui-abstract';
 import { BackstageStageLauncher as BackstageStageLauncher_2 } from '@bentley/ui-abstract';
 import { BadgeType } from '@bentley/ui-abstract';
-import { BaseSolarDataProvider } from '@bentley/ui-components';
-import { BaseTimelineDataProvider } from '@bentley/ui-components';
+import { BaseSolarDataProvider } from '@bentley/ui-imodel-components';
+import { BaseTimelineDataProvider } from '@bentley/ui-imodel-components';
 import { BeButtonEvent } from '@bentley/imodeljs-frontend';
 import { BeDuration } from '@bentley/bentleyjs-core';
 import { BeEvent } from '@bentley/bentleyjs-core';
@@ -75,7 +75,7 @@ import { ItemField } from '@bentley/imodeljs-frontend';
 import { MessageBoxIconType } from '@bentley/imodeljs-frontend';
 import { MessageBoxType } from '@bentley/imodeljs-frontend';
 import { MessageBoxValue } from '@bentley/imodeljs-frontend';
-import { MessageSeverity } from '@bentley/ui-core';
+import { MessageSeverity } from '@bentley/ui-abstract';
 import { MessageType } from '@bentley/ui-core';
 import { NestedStagePanelKey } from '@bentley/ui-ninezone';
 import { NestedStagePanelsManagerProps } from '@bentley/ui-ninezone';
@@ -102,10 +102,10 @@ import { OutputMessagePriority } from '@bentley/imodeljs-frontend';
 import { OutputMessageType } from '@bentley/imodeljs-frontend';
 import { PageOptions } from '@bentley/ui-components';
 import { PanelSide } from '@bentley/ui-ninezone';
-import { PlaybackSettings } from '@bentley/ui-components';
+import { PlaybackSettings } from '@bentley/ui-imodel-components';
 import { Point } from '@bentley/ui-core';
 import { Point2d } from '@bentley/geometry-core';
-import { PointProps } from '@bentley/ui-core';
+import { PointProps } from '@bentley/ui-abstract';
 import { Primitives } from '@bentley/ui-abstract';
 import { PropertyDescription } from '@bentley/ui-abstract';
 import { PropertyRecord } from '@bentley/ui-abstract';
@@ -127,7 +127,7 @@ import { SettingsTabEntry } from '@bentley/ui-core';
 import { Size } from '@bentley/ui-core';
 import { SizeProps } from '@bentley/ui-core';
 import { SnapMode } from '@bentley/imodeljs-frontend';
-import { SolarDataProvider } from '@bentley/ui-components';
+import { SolarDataProvider } from '@bentley/ui-imodel-components';
 import { SpecialKey } from '@bentley/ui-abstract';
 import { StagePanelLocation as StagePanelLocation_2 } from '@bentley/ui-abstract';
 import { StagePanelSection as StagePanelSection_2 } from '@bentley/ui-abstract';
@@ -170,14 +170,14 @@ import { UiSettingsStatus } from '@bentley/ui-core';
 import { UiSettingsStorage } from '@bentley/ui-core';
 import { UnifiedSelectionTreeEventHandler } from '@bentley/presentation-components';
 import { UnifiedSelectionTreeEventHandlerParams } from '@bentley/presentation-components';
-import { UnitSystemKey } from '@bentley/imodeljs-frontend';
+import { UnitSystemKey } from '@bentley/imodeljs-quantity';
 import { UserInfo } from '@bentley/itwin-client';
 import { VerticalAnchor } from '@bentley/ui-ninezone';
 import { ViewFlagProps } from '@bentley/imodeljs-common';
 import { ViewManager } from '@bentley/imodeljs-frontend';
 import { Viewport } from '@bentley/imodeljs-frontend';
 import { ViewState } from '@bentley/imodeljs-frontend';
-import { ViewStateProp } from '@bentley/ui-components';
+import { ViewStateProp } from '@bentley/ui-imodel-components';
 import { ViewStateProps } from '@bentley/imodeljs-common';
 import { WidgetManagerProps } from '@bentley/ui-ninezone';
 import { WidgetState } from '@bentley/ui-abstract';
@@ -461,6 +461,9 @@ export class AnalysisAnimationTimelineDataProvider extends BaseTimelineDataProvi
 
 // @public
 export type AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef | ActionButtonItemDef;
+
+// @public
+export type AnyToolbarItemDef = AnyItemDef | CustomItemDef;
 
 // @public
 export type AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps;
@@ -1037,6 +1040,9 @@ export interface ConditionalFieldProps extends StatusFieldProps {
 // @public
 export class ConfigurableBase implements ConfigurableUiElement {
     constructor(info: ConfigurableCreateInfo, options: any);
+    // (undocumented)
+    protected _appDataOptions: any;
+    get applicationData(): any;
     get classId(): string;
     get name(): string;
     // @internal (undocumented)
@@ -1943,6 +1949,7 @@ export const expandWidget: (base: {
                     readonly widgetId: string | undefined;
                     readonly side: PanelSide;
                 };
+                readonly userSized?: boolean | undefined;
             };
         };
         readonly allIds: readonly string[];
@@ -2035,6 +2042,8 @@ export const expandWidget: (base: {
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
             readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
             readonly canPopout?: boolean | undefined;
+            readonly userSized?: boolean | undefined;
+            readonly isFloatingStateWindowResizable?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -2048,6 +2057,7 @@ export const expandWidget: (base: {
             readonly id: string;
             readonly minimized: boolean;
             readonly tabs: readonly string[];
+            readonly isFloatingStateWindowResizable?: boolean | undefined;
         };
     };
     readonly size: {
@@ -2466,6 +2476,12 @@ export class FrontstageDef {
     floatWidget(widgetId: string, point?: PointProps, size?: SizeProps): void;
     // (undocumented)
     get frontstageProvider(): FrontstageProvider | undefined;
+    // (undocumented)
+    getFloatingWidgetContainerBounds(floatingWidgetId: string | undefined): RectangleProps | undefined;
+    // (undocumented)
+    getFloatingWidgetContainerIdByWidgetId(widgetId: string): string | undefined;
+    // (undocumented)
+    getFloatingWidgetContainerIds(): string[];
     // @beta
     getStagePanelDef(location: StagePanelLocation_2): StagePanelDef | undefined;
     getZoneDef(zoneId: number): ZoneDef | undefined;
@@ -2514,6 +2530,10 @@ export class FrontstageDef {
     setActiveView(newContent: ContentControl, oldContent?: ContentControl): void;
     setActiveViewFromViewport(viewport: ScreenViewport): boolean;
     setContentLayoutAndGroup(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): void;
+    // @internal (undocumented)
+    setFloatingWidgetBoundsInternal(floatingWidgetId: string, bounds: RectangleProps, inhibitNineZoneStateChangedEvent?: boolean): void;
+    // (undocumented)
+    setFloatingWidgetContainerBounds(floatingWidgetId: string, bounds: RectangleProps): boolean;
     // @internal (undocumented)
     setIsApplicationClosing(value: boolean): void;
     startDefaultTool(): void;
@@ -3004,7 +3024,7 @@ export const IModelConnectedNavigationWidget: import("react-redux").ConnectedCom
 export const IModelConnectedSpatialContainmentTree: import("react-redux").ConnectedComponent<typeof SpatialContainmentTree, any>;
 
 // @beta
-export const IModelConnectedViewport: import("react-redux").ConnectedComponent<React.ComponentType<import("@bentley/ui-components").ViewportProps & import("@bentley/presentation-components").ViewWithUnifiedSelectionProps>, any>;
+export const IModelConnectedViewport: import("react-redux").ConnectedComponent<React.ComponentType<import("@bentley/ui-imodel-components").ViewportProps & import("@bentley/presentation-components").ViewWithUnifiedSelectionProps>, any>;
 
 // @beta
 export const IModelConnectedViewSelector: import("react-redux").ConnectedComponent<typeof ViewSelector, any>;
@@ -4635,6 +4655,20 @@ export class SelectionContextToolDefinitions {
 export const SelectionInfoField: import("react-redux").ConnectedComponent<typeof SelectionInfoFieldComponent, import("react-redux").Omit<React.ClassAttributes<SelectionInfoFieldComponent> & SelectionInfoFieldProps, "selectionCount">>;
 
 // @public
+export enum SelectionScope {
+    // (undocumented)
+    Assembly = 1,
+    // (undocumented)
+    Category = 3,
+    // (undocumented)
+    Element = 0,
+    // (undocumented)
+    Model = 4,
+    // (undocumented)
+    TopAssembly = 2
+}
+
+// @public
 export const SelectionScopeField: import("react-redux").ConnectedComponent<typeof SelectionScopeFieldComponent, import("react-redux").Omit<React.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "availableSelectionScopes" | "activeSelectionScope">>;
 
 // @public
@@ -4779,6 +4813,7 @@ export const setPanelSize: (base: {
                     readonly widgetId: string | undefined;
                     readonly side: PanelSide;
                 };
+                readonly userSized?: boolean | undefined;
             };
         };
         readonly allIds: readonly string[];
@@ -4871,6 +4906,8 @@ export const setPanelSize: (base: {
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
             readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
             readonly canPopout?: boolean | undefined;
+            readonly userSized?: boolean | undefined;
+            readonly isFloatingStateWindowResizable?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -4884,6 +4921,7 @@ export const setPanelSize: (base: {
             readonly id: string;
             readonly minimized: boolean;
             readonly tabs: readonly string[];
+            readonly isFloatingStateWindowResizable?: boolean | undefined;
         };
     };
     readonly size: {
@@ -4943,6 +4981,7 @@ export const setWidgetLabel: (base: {
                     readonly widgetId: string | undefined;
                     readonly side: PanelSide;
                 };
+                readonly userSized?: boolean | undefined;
             };
         };
         readonly allIds: readonly string[];
@@ -5035,6 +5074,8 @@ export const setWidgetLabel: (base: {
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
             readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
             readonly canPopout?: boolean | undefined;
+            readonly userSized?: boolean | undefined;
+            readonly isFloatingStateWindowResizable?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -5048,6 +5089,7 @@ export const setWidgetLabel: (base: {
             readonly id: string;
             readonly minimized: boolean;
             readonly tabs: readonly string[];
+            readonly isFloatingStateWindowResizable?: boolean | undefined;
         };
     };
     readonly size: {
@@ -5085,6 +5127,7 @@ export const setWidgetState: (base: {
                     readonly widgetId: string | undefined;
                     readonly side: PanelSide;
                 };
+                readonly userSized?: boolean | undefined;
             };
         };
         readonly allIds: readonly string[];
@@ -5177,6 +5220,8 @@ export const setWidgetState: (base: {
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
             readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
             readonly canPopout?: boolean | undefined;
+            readonly userSized?: boolean | undefined;
+            readonly isFloatingStateWindowResizable?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -5190,6 +5235,7 @@ export const setWidgetState: (base: {
             readonly id: string;
             readonly minimized: boolean;
             readonly tabs: readonly string[];
+            readonly isFloatingStateWindowResizable?: boolean | undefined;
         };
     };
     readonly size: {
@@ -5291,6 +5337,7 @@ export const showWidget: (base: {
                     readonly widgetId: string | undefined;
                     readonly side: PanelSide;
                 };
+                readonly userSized?: boolean | undefined;
             };
         };
         readonly allIds: readonly string[];
@@ -5383,6 +5430,8 @@ export const showWidget: (base: {
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
             readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
             readonly canPopout?: boolean | undefined;
+            readonly userSized?: boolean | undefined;
+            readonly isFloatingStateWindowResizable?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -5396,6 +5445,7 @@ export const showWidget: (base: {
             readonly id: string;
             readonly minimized: boolean;
             readonly tabs: readonly string[];
+            readonly isFloatingStateWindowResizable?: boolean | undefined;
         };
     };
     readonly size: {
@@ -6713,6 +6763,19 @@ export interface UiVisibilityEventArgs {
     visible: boolean;
 }
 
+// @alpha
+export function UnitSystemSelector(props: UnitSystemSelectorProps): JSX.Element;
+
+// @beta
+export interface UnitSystemSelectorProps {
+    // (undocumented)
+    availableUnitSystems: Set<UnitSystemKey>;
+    // (undocumented)
+    onUnitSystemSelected: (unitSystem: UnitSystemKey) => void;
+    // (undocumented)
+    selectedUnitSystemKey: UnitSystemKey;
+}
+
 // @internal (undocumented)
 export function useActiveFrontstageDef(): FrontstageDef | undefined;
 
@@ -6826,6 +6889,9 @@ export function useSyncDefinitions(frontstageDef: FrontstageDef): void;
 
 // @internal (undocumented)
 export function useToolSettingsNode(): string | number | boolean | {} | React.ReactElement<any, string | React.JSXElementConstructor<any>> | React.ReactNodeArray | React.ReactPortal | null | undefined;
+
+// @beta
+export const useUiItemsProviderBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[];
 
 // @beta
 export const useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[];
@@ -7181,11 +7247,16 @@ export class WidgetDef {
     // (undocumented)
     static createWidgetPropsFromAbstractProps(abstractWidgetProps: AbstractWidgetProps): WidgetProps;
     // @internal (undocumented)
+    get defaultFloatingPosition(): PointProps | undefined;
+    set defaultFloatingPosition(position: PointProps | undefined);
+    // @internal (undocumented)
     get defaultState(): WidgetState;
     // @alpha
     expand(): void;
     // (undocumented)
     get fillZone(): boolean;
+    // (undocumented)
+    get floatingContainerId(): string | undefined;
     // (undocumented)
     getWidgetControl(type: ConfigurableUiControlType): WidgetControl | undefined;
     // (undocumented)
@@ -7224,6 +7295,8 @@ export class WidgetDef {
     saveTransientState(): void;
     // (undocumented)
     setCanPopout(value: boolean | undefined): void;
+    // (undocumented)
+    setFloatingContainerId(value: string | undefined): void;
     setLabel(v: string | ConditionalStringValue | StringGetter): void;
     setTooltip(v: string | ConditionalStringValue | StringGetter): void;
     // (undocumented)

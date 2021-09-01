@@ -2,6 +2,8 @@
 
 - [imodeljs-backend](../reference/imodeljs-backend/changelog)
 
+- [imodeljs-transformer](../reference/imodeljs-transformer/changelog)
+
 - [imodeljs-frontend](../reference/imodeljs-frontend/changelog)
 
 - [imodeljs-common](../reference/imodeljs-common/changelog)

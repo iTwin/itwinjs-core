@@ -2,6 +2,36 @@
   "name": "@bentley/ui-core",
   "entries": [
     {
+      "version": "2.19.9",
+      "tag": "@bentley/ui-core_v2.19.9",
+      "date": "Wed, 25 Aug 2021 15:36:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Test resizeObserver.current before calling unobserve."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.8",
+      "tag": "@bentley/ui-core_v2.19.8",
+      "date": "Mon, 23 Aug 2021 13:23:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.7",
+      "tag": "@bentley/ui-core_v2.19.7",
+      "date": "Fri, 20 Aug 2021 17:47:22 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.6",
+      "tag": "@bentley/ui-core_v2.19.6",
+      "date": "Tue, 17 Aug 2021 20:34:29 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.19.5",
       "tag": "@bentley/ui-core_v2.19.5",
       "date": "Fri, 13 Aug 2021 21:48:09 GMT",

@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelApp, MessageBoxIconType, MessageBoxType } from "@bentley/imodeljs-frontend";
-import { DialogButtonStyle, DialogButtonType } from "@bentley/ui-abstract";
-import { MessageBox, MessageSeverity } from "@bentley/ui-core";
+import { DialogButtonStyle, DialogButtonType, MessageSeverity } from "@bentley/ui-abstract";
+import { MessageBox } from "@bentley/ui-core";
 import { ModalDialogManager } from "@bentley/ui-framework";
 import { Button } from "@itwin/itwinui-react";
 

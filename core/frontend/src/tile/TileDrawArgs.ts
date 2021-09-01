@@ -258,7 +258,7 @@ export class TileDrawArgs {
     this.drape = context.getTextureDrapeForModel(tree.modelId);
 
     // NB: If the tile tree has its own clip, do not also apply the view's clip.
-    if (context.viewFlags.clipVolume && false !== viewFlagOverrides.clipVolumeOverride && undefined === clipVolume) {
+    if (context.viewFlags.clipVolume && false !== viewFlagOverrides.clipVolume && undefined === clipVolume) {
       const outsideClipColor = context.viewport.displayStyle.settings.clipStyle.outsideColor;
       this.viewClip = undefined === outsideClipColor ? context.viewport.view.getViewClip() : undefined;
     }

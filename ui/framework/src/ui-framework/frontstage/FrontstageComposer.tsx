@@ -8,8 +8,8 @@
 
 import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
-import { StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
-import { CommonProps, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
+import { PointProps, StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
+import { CommonProps, Rectangle, RectangleProps } from "@bentley/ui-core";
 import {
   getDefaultNineZoneStagePanelsManagerProps, getDefaultZonesManagerProps, NineZoneManagerProps, ResizeHandle, StagePanelsManager, StagePanelType,
   WidgetZoneId, widgetZoneIds, ZoneTargetType,

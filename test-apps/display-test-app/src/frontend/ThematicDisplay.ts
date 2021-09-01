@@ -198,9 +198,7 @@ export class ThematicDisplayEditor {
 
       const displaySettings = (this._vp.view as ViewState3d).getDisplayStyle3d().settings;
       displaySettings.thematic = ThematicDisplay.fromJSON(defaultSettings);
-      const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
-      vf.thematicDisplay = enabled;
-      this._vp.viewFlags = vf;
+      this._vp.viewFlags = this._vp.viewFlags.with("thematicDisplay", enabled);
       showHideControls(enabled);
       this.sync();
     };

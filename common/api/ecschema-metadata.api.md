@@ -744,6 +744,10 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     protected createStructPropertySync(name: string, structType: string | StructClass): StructProperty;
     // (undocumented)
     get customAttributes(): CustomAttributeSet | undefined;
+    // @alpha
+    protected deleteProperty(name: string): Promise<void>;
+    // @alpha
+    protected deletePropertySync(name: string): void;
     // (undocumented)
     fromJSON(classProps: ClassProps): Promise<void>;
     // (undocumented)
@@ -2321,6 +2325,10 @@ export class Schema implements CustomAttributeContainerProps {
     protected createUnitSystemSync(name: string): UnitSystem;
     // (undocumented)
     get customAttributes(): CustomAttributeSet | undefined;
+    // @alpha
+    protected deleteClass(name: string): Promise<void>;
+    // @alpha
+    protected deleteClassSync(name: string): void;
     // (undocumented)
     get description(): string | undefined;
     // (undocumented)
