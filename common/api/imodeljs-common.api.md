@@ -7550,6 +7550,8 @@ export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
     autoUploadBlocks?: boolean;
     // @internal (undocumented)
     lazyBlockCache?: boolean;
+    // @internal
+    tempFileBase?: string;
 }
 
 // @public

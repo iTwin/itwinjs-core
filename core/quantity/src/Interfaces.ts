@@ -77,3 +77,9 @@ export interface UnitsProvider {
   findUnitByName(unitName: string): Promise<UnitProps>;
   getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversion>;
 }
+
+/**
+ * Used to uniquely identify a unit system.
+ * @beta
+ */
+export type UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey";
