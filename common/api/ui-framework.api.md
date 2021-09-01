@@ -11,7 +11,6 @@ import { AbstractToolbarProps } from '@bentley/ui-abstract';
 import { AbstractTreeNodeLoaderWithProvider } from '@bentley/ui-components';
 import { AbstractWidgetProps } from '@bentley/ui-abstract';
 import { AccuDraw } from '@bentley/imodeljs-frontend';
-import { AccuDrawField } from '@bentley/ui-abstract';
 import { ActionButton } from '@bentley/ui-abstract';
 import { ActivityMessageDetails } from '@bentley/imodeljs-frontend';
 import { ActivityMessageEndReason } from '@bentley/imodeljs-frontend';
@@ -34,6 +33,7 @@ import { CommonDivProps } from '@bentley/ui-core';
 import { CommonProps } from '@bentley/ui-core';
 import { CommonStatusBarItem } from '@bentley/ui-abstract';
 import { CommonToolbarItem } from '@bentley/ui-abstract';
+import { CompassMode } from '@bentley/imodeljs-frontend';
 import { ConditionalBooleanValue } from '@bentley/ui-abstract';
 import { ConditionalStringValue } from '@bentley/ui-abstract';
 import * as CSS from 'csstype';
@@ -228,15 +228,19 @@ export class AccuDrawCommandItems {
     static get setOrigin(): ToolItemDef;
 }
 
-// @alpha (undocumented)
+// @alpha
 export function AccuDrawDialog(props: AccuDrawDialogProps): JSX.Element;
 
-// @alpha (undocumented)
+// @alpha
 export interface AccuDrawDialogProps extends CommonProps {
     dialogId: string;
     onClose?: () => void;
     opened: boolean;
     orientation?: Orientation;
+}
+
+// @alpha
+export class AccuDrawGrabInputFocusEvent extends BeUiEvent<{}> {
 }
 
 // @alpha
@@ -260,6 +264,64 @@ export class AccuDrawPopupManager {
     static showLengthEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean;
     // (undocumented)
     static showMenuButton(id: string, el: HTMLElement, pt: XAndY, menuItemsProps: AbstractMenuItemProps[]): boolean;
+}
+
+// @alpha
+export class AccuDrawSetCompassModeEvent extends BeUiEvent<AccuDrawSetCompassModeEventArgs> {
+}
+
+// @alpha
+export interface AccuDrawSetCompassModeEventArgs {
+    // (undocumented)
+    mode: CompassMode;
+}
+
+// @alpha
+export class AccuDrawSetFieldFocusEvent extends BeUiEvent<AccuDrawSetFieldFocusEventArgs> {
+}
+
+// @alpha
+export interface AccuDrawSetFieldFocusEventArgs {
+    // (undocumented)
+    field: ItemField;
+}
+
+// @alpha
+export class AccuDrawSetFieldLockEvent extends BeUiEvent<AccuDrawSetFieldLockEventArgs> {
+}
+
+// @alpha
+export interface AccuDrawSetFieldLockEventArgs {
+    // (undocumented)
+    field: ItemField;
+    // (undocumented)
+    lock: boolean;
+}
+
+// @alpha
+export class AccuDrawSetFieldValueFromUiEvent extends BeUiEvent<AccuDrawSetFieldValueFromUiEventArgs> {
+}
+
+// @alpha
+export interface AccuDrawSetFieldValueFromUiEventArgs {
+    // (undocumented)
+    field: ItemField;
+    // (undocumented)
+    stringValue: string;
+}
+
+// @alpha
+export class AccuDrawSetFieldValueToUiEvent extends BeUiEvent<AccuDrawSetFieldValueToUiEventArgs> {
+}
+
+// @alpha
+export interface AccuDrawSetFieldValueToUiEventArgs {
+    // (undocumented)
+    field: ItemField;
+    // (undocumented)
+    formattedValue: string;
+    // (undocumented)
+    value: number;
 }
 
 // @alpha
@@ -291,7 +353,7 @@ export interface AccuDrawUiSettings {
     zStyle?: React_2.CSSProperties;
 }
 
-// @internal (undocumented)
+// @alpha
 export class AccuDrawUiSettingsChangedEvent extends BeUiEvent<{}> {
 }
 
@@ -2097,14 +2159,15 @@ export interface FooterModeFieldProps extends StatusFieldProps {
     children?: React.ReactNode;
 }
 
-// @internal (undocumented)
+// @alpha
 export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider {
     constructor();
     static get displayNotifications(): boolean;
     static set displayNotifications(v: boolean);
-    // (undocumented)
     static getFieldDisplayValue(index: ItemField): string;
+    // @internal
     grabInputFocus(): void;
+    // @internal
     get hasInputFocus(): boolean;
     static readonly isACSRotationConditional: ConditionalBooleanValue;
     static readonly isContextRotationConditional: ConditionalBooleanValue;
@@ -2116,24 +2179,28 @@ export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider 
     static readonly isViewRotationConditional: ConditionalBooleanValue;
     // (undocumented)
     loadUserSettings(storage: UiSettings): Promise<void>;
+    static readonly onAccuDrawGrabInputFocusEvent: AccuDrawGrabInputFocusEvent;
+    static readonly onAccuDrawSetCompassModeEvent: AccuDrawSetCompassModeEvent;
+    static readonly onAccuDrawSetFieldFocusEvent: AccuDrawSetFieldFocusEvent;
+    static readonly onAccuDrawSetFieldLockEvent: AccuDrawSetFieldLockEvent;
+    static readonly onAccuDrawSetFieldValueFromUiEvent: AccuDrawSetFieldValueFromUiEvent;
+    static readonly onAccuDrawSetFieldValueToUiEvent: AccuDrawSetFieldValueToUiEvent;
     static readonly onAccuDrawUiSettingsChangedEvent: AccuDrawUiSettingsChangedEvent;
-    // (undocumented)
+    // @internal (undocumented)
     onCompassModeChange(): void;
-    // (undocumented)
+    // @internal (undocumented)
     onFieldLockChange(index: ItemField): void;
-    // (undocumented)
+    // @internal (undocumented)
     onFieldValueChange(index: ItemField): void;
+    // @internal
     onMotion(_ev: BeButtonEvent): void;
-    // (undocumented)
+    // @internal (undocumented)
     onRotationModeChange(): void;
     // (undocumented)
     readonly providerId = "FrameworkAccuDraw";
-    // (undocumented)
+    static setFieldValueFromUi(field: ItemField, stringValue: string): void;
+    // @internal (undocumented)
     setFocusItem(index: ItemField): void;
-    // (undocumented)
-    static translateFromItemField(item: ItemField): AccuDrawField;
-    // (undocumented)
-    static translateToItemField(field: AccuDrawField): ItemField;
     static get uiSettings(): AccuDrawUiSettings | undefined;
     static set uiSettings(v: AccuDrawUiSettings | undefined);
     }
