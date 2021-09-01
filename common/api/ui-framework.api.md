@@ -170,7 +170,7 @@ import { UiSettingsStatus } from '@bentley/ui-core';
 import { UiSettingsStorage } from '@bentley/ui-core';
 import { UnifiedSelectionTreeEventHandler } from '@bentley/presentation-components';
 import { UnifiedSelectionTreeEventHandlerParams } from '@bentley/presentation-components';
-import { UnitSystemKey } from '@bentley/imodeljs-frontend';
+import { UnitSystemKey } from '@bentley/imodeljs-quantity';
 import { UserInfo } from '@bentley/itwin-client';
 import { VerticalAnchor } from '@bentley/ui-ninezone';
 import { ViewFlagProps } from '@bentley/imodeljs-common';

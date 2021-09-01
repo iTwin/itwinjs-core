@@ -10,18 +10,21 @@ import * as hash from "object-hash";
 import * as path from "path";
 import { ClientRequestContext, Id64String } from "@bentley/bentleyjs-core";
 import { BriefcaseDb, IModelDb, IModelJsNative, IpcHost } from "@bentley/imodeljs-backend";
-import { FormatProps } from "@bentley/imodeljs-quantity";
+import { FormatProps, UnitSystemKey } from "@bentley/imodeljs-quantity";
 import {
   Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor,
   DescriptorOverrides, DiagnosticsOptionsWithHandler, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
   DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions,
   getLocalesDirectory, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, KeySet, LabelDefinition,
   LabelRequestOptions, Node, NodeKey, NodePathElement, Paged, PagedResponse, PartialHierarchyModification, PresentationError, PresentationStatus,
-  PresentationUnitSystem, RequestPriority, Ruleset, SelectClassInfo, SelectionInfo, SelectionScope, SelectionScopeRequestOptions,
+  RequestPriority, Ruleset, SelectClassInfo, SelectionInfo, SelectionScope, SelectionScopeRequestOptions,
 } from "@bentley/presentation-common";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
 import { buildElementProperties } from "./ElementPropertiesHelper";
-import { createDefaultNativePlatform, NativePlatformDefinition, NativePlatformRequestTypes } from "./NativePlatform";
+import {
+  createDefaultNativePlatform, NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationDefaultUnitFormats,
+  NativePresentationUnitSystem,
+} from "./NativePlatform";
 import { PresentationIpcHandler } from "./PresentationIpcHandler";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
@@ -116,12 +119,13 @@ export interface HybridCacheConfig extends HierarchyCacheConfigBase {
 }
 
 /**
- * A data structure that associates some unit systems with a format. The associations are used for
- * assigning default unit formats for specific phenomenons (see [[PresentationManagerProps.defaultFormats]])
- * @alpha
+ * A data structure that associates unit systems with a format. The associations are used for
+ * assigning default unit formats for specific phenomenons (see [[PresentationManagerProps.defaultFormats]]).
+ *
+ * @public
  */
 export interface UnitSystemFormat {
-  unitSystems: PresentationUnitSystem[];
+  unitSystems: UnitSystemKey[];
   format: FormatProps;
 }
 
@@ -192,10 +196,9 @@ export interface PresentationManagerProps {
    * Sets the active unit system to use for formatting property values with
    * units. Default presentation units are used if this is not specified. The active unit
    * system can later be changed through [[PresentationManager]] or overriden for each request
-   *
-   * @alpha
+   * through request options.
    */
-  activeUnitSystem?: PresentationUnitSystem;
+  activeUnitSystem?: UnitSystemKey;
 
   /**
    * Should schemas preloading be enabled. If true, presentation manager listens
@@ -262,7 +265,7 @@ export interface PresentationManagerProps {
   /**
    * A map of default unit formats to use for formatting properties that don't have a presentation format
    * in requested unit system.
-   *  @alpha */
+   */
   defaultFormats?: {
     [phenomenon: string]: UnitSystemFormat;
   };
@@ -312,7 +315,7 @@ export class PresentationManager {
   public activeLocale: string | undefined;
 
   /** Get / set active unit system used to format property values with units */
-  public activeUnitSystem: PresentationUnitSystem | undefined;
+  public activeUnitSystem: UnitSystemKey | undefined;
 
   /**
    * Creates an instance of PresentationManager.
@@ -336,7 +339,7 @@ export class PresentationManager {
         isChangeTrackingEnabled,
         cacheConfig: createCacheConfig(this._props.cacheConfig),
         contentCacheSize: this._props.contentCacheSize,
-        defaultFormats: this._props.defaultFormats,
+        defaultFormats: toNativeUnitFormatsMap(this._props.defaultFormats),
         useMmap: this._props.useMmap,
       });
       this._nativePlatform = new nativePlatformImpl();
@@ -889,14 +892,14 @@ export class PresentationManager {
     return SelectionScopesHelper.computeSelection(requestOptions, ids, scopeId);
   }
 
-  private async request<TParams extends { requestContext: ClientRequestContext, diagnostics?: DiagnosticsOptionsWithHandler, requestId: string, imodel: IModelDb, locale?: string, unitSystem?: PresentationUnitSystem }, TResult>(params: TParams, reviver?: (key: string, value: any) => any): Promise<TResult> {
+  private async request<TParams extends { requestContext: ClientRequestContext, diagnostics?: DiagnosticsOptionsWithHandler, requestId: string, imodel: IModelDb, locale?: string, unitSystem?: UnitSystemKey }, TResult>(params: TParams, reviver?: (key: string, value: any) => any): Promise<TResult> {
     const { requestContext, requestId, imodel, locale, unitSystem, diagnostics, ...strippedParams } = params;
     const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
     const nativeRequestParams: any = {
       requestId,
       params: {
         locale: normalizeLocale(locale ?? this.activeLocale),
-        unitSystem: unitSystem ?? this.activeUnitSystem,
+        unitSystem: toOptionalNativeUnitSystem(unitSystem ?? this.activeUnitSystem),
         ...strippedParams,
       },
     };
@@ -1007,6 +1010,34 @@ const normalizeLocale = (locale?: string) => {
 
 const normalizeDirectory = (directory?: string) => {
   return directory ? path.resolve(directory) : "";
+};
+
+const toNativeUnitSystem = (unitSystem: UnitSystemKey) => {
+  switch (unitSystem) {
+    case "imperial": return NativePresentationUnitSystem.BritishImperial;
+    case "metric": return NativePresentationUnitSystem.Metric;
+    case "usCustomary": return NativePresentationUnitSystem.UsCustomary;
+    case "usSurvey": return NativePresentationUnitSystem.UsSurvey;
+  }
+};
+
+const toOptionalNativeUnitSystem = (unitSystem: UnitSystemKey | undefined) => {
+  return unitSystem ? toNativeUnitSystem(unitSystem) : undefined;
+};
+
+const toNativeUnitFormatsMap = (map: { [phenomenon: string]: UnitSystemFormat } | undefined) => {
+  if (!map)
+    return undefined;
+
+  const nativeFormatsMap: NativePresentationDefaultUnitFormats = {};
+  Object.keys(map).forEach((phenomenon) => {
+    const unitSystemsFormat = map[phenomenon];
+    nativeFormatsMap[phenomenon] = {
+      unitSystems: unitSystemsFormat.unitSystems.map(toNativeUnitSystem),
+      format: unitSystemsFormat.format,
+    };
+  });
+  return nativeFormatsMap;
 };
 
 const createCacheConfig = (config?: HierarchyCacheConfig): IModelJsNative.ECPresentationHierarchyCacheConfig => {
