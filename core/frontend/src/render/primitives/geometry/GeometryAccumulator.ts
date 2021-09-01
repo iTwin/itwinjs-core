@@ -60,10 +60,11 @@ export class GeometryAccumulator {
   }
 
   private calculateTransform(transform: Transform, range: Range3d): Transform {
-    const xform = this.haveTransform ? transform : transform.clone();
-    if (this.haveTransform) this._transform.multiplyTransformTransform(xform, xform);
-    xform.multiplyRange(range, range);
-    return xform;
+    if (this.haveTransform)
+      transform = this._transform.multiplyTransformTransform(transform);
+
+    transform.multiplyRange(range, range);
+    return transform;
   }
 
   public addLoop(loop: Loop, displayParams: DisplayParams, transform: Transform, disjoint: boolean): boolean {
