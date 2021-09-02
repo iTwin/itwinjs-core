@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-core",
+      "comment": "Support for Esri OAUTH2 authentification",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core"
+}
