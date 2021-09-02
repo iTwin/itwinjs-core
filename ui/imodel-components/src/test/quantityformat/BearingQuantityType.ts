@@ -5,11 +5,12 @@
 
 import { Logger } from "@bentley/bentleyjs-core";
 import {
-  CheckboxFormatPropEditorSpec, CustomFormatPropEditorSpec, CustomQuantityTypeDefinition, IModelApp,
-  TextInputFormatPropEditorSpec, TextSelectFormatPropEditorSpec, UnitSystemKey,
+  CheckboxFormatPropEditorSpec, CustomFormatPropEditorSpec, CustomQuantityTypeDefinition, IModelApp, TextInputFormatPropEditorSpec,
+  TextSelectFormatPropEditorSpec,
 } from "@bentley/imodeljs-frontend";
 import {
   CustomFormatProps, Format, FormatProps, FormatterSpec, Parser, ParserSpec, QuantityParseResult, UnitConversionSpec, UnitProps, UnitsProvider,
+  UnitSystemKey,
 } from "@bentley/imodeljs-quantity";
 
 /* Interface that defines custom properties used to format and parse Bearing values. */

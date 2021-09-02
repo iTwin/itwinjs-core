@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-imodel-components",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-imodel-components"
+}

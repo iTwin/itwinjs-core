@@ -2381,8 +2381,6 @@ export class Schema implements CustomAttributeContainerProps {
     setVersion(readVersion?: number, writeVersion?: number, minorVersion?: number): void;
     toJSON(): SchemaProps;
     toXml(schemaXml: Document): Promise<Document>;
-    // @alpha
-    toXmlString(): Promise<string>;
     // (undocumented)
     get writeVersion(): number;
 }
