@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { CheckboxFormatPropEditorSpec, CustomFormatPropEditorSpec, CustomQuantityTypeDefinition, IModelApp, TextSelectFormatPropEditorSpec, UnitSystemKey } from "@bentley/imodeljs-frontend";
+import { CheckboxFormatPropEditorSpec, CustomFormatPropEditorSpec, CustomQuantityTypeDefinition, IModelApp, TextSelectFormatPropEditorSpec } from "@bentley/imodeljs-frontend";
 import {
-  CustomFormatProps, Format, FormatProps, FormatterSpec, Parser, ParserSpec, QuantityParseResult, UnitConversionSpec, UnitProps, UnitsProvider,
+  CustomFormatProps, Format, FormatProps, FormatterSpec, Parser, ParserSpec, QuantityParseResult, UnitConversionSpec, UnitProps, UnitsProvider, UnitSystemKey,
 } from "@bentley/imodeljs-quantity";
 
 interface BearingFormatProps extends CustomFormatProps {

@@ -224,6 +224,7 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `RemoteBriefcaseConnection`            | `CheckpointConnection`                                    |
 | `ScreenViewport.decorationDiv`         | `DecorateContext.addHtmlDecoration`                       |
 | `ViewManager.forEachViewport`          | Use a `for..of` loop                                      |
+| `UnitSystemKey`                        | Moved to `@bentley/imodeljs-quantity`                     |
 
 ### @bentley/backend-itwin-client
 
@@ -268,6 +269,9 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `ReactMessage`                         | `ReactMessage` in @bentley/ui-core                                                     |
 | `SpecialKey`                           | `SpecialKey` in @bentley/ui-abstract                                                   |
 | `WidgetState`                          | `WidgetState` in @bentley/ui-abstract                                                  |
+| `UserProfileBackstageItem`             | *eliminated*                                                                           |
+| `SignIn`                               | *eliminated*                                                                           |
+| `SignOutModalFrontstage`               | *eliminated*                                                                           |
 
 ### @bentley/bentleyjs-core
 
@@ -275,6 +279,38 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | -------------------------------------- | -------------------------------------------------------------------------------------- |
 | `Config`                               | Use `process.env` to access environment variables directly |
 | `EnvMacroSubst`                        | *eliminated*  |
+
+### @bentley/presentation-common
+
+| Removed                                  | Replacement                                                                            |
+| ---------------------------------------- | -------------------------------------------------------------------------------------- |
+| `PresentationRpcInterface.loadHierarchy` | *eliminated*                                                                           |
+| `PresentationUnitSystem`                 | Removed in favor of `UnitSystemKey` from `@bentley/imodeljs-quantity`                  |
+
+### @bentley/presentation-backend
+
+| Removed                                     | Replacement                                                                            |
+| ------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `PresentationManager.loadHierarchy`         | *eliminated*                                                                           |
+| `UnitSystemFormat.unitSystems`              | Changed type from `PresentationUnitSystem[]` to `UnitSystemKey[]`                      |
+| `PresentationManagerProps.activeUnitSystem` | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
+| `PresentationManager.activeUnitSystem`      | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
+
+### @bentley/presentation-frontend
+
+| Removed                                     | Replacement                                                                            |
+| ------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `PresentationManager.loadHierarchy`         | *eliminated*                                                                           |
+| `PresentationManagerProps.activeUnitSystem` | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
+| `PresentationManager.activeUnitSystem`      | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
+
+### @bentley/presentation-components
+
+| Removed                                               | Replacement                                                                            |
+| ----------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `IPresentationTreeDataProvider.loadHierarchy`         | *eliminated*                                                                           |
+| `PresentationTreeDataProvider.loadHierarchy`          | *eliminated*                                                                           |
+| `FilteredPresentationTreeDataProvider.loadHierarchy`  | *eliminated*                                                                           |
 
 <!---
 User Interface Changes - section to comment below

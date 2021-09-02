@@ -6,8 +6,9 @@ import * as React from "react";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import {
-  ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, SignIn,
+  ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
 } from "@bentley/ui-framework";
+import { SignIn } from "../oidc/SignIn";
 import { SampleAppIModelApp } from "../../index";
 
 class SignInControl extends ContentControl {
