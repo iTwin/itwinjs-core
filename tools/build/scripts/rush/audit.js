@@ -40,6 +40,9 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
     1700, // https://npmjs.com/advisories/1700
     1754, // https://npmjs.com/advisories/1754. Waiting for fix, https://github.com/svg/svgo/pull/1485.
     1755, // https://npmjs.com/advisories/1755. Waiting for fix, https://github.com/sindresorhus/normalize-url/issues/135
+    1779, // https://npmjs.com/advisories/1779. Waiting for fix in @bentley/react-scripts
+    1780, // https://npmjs.com/advisories/1780. Waiting for fix in @bentley/react-scripts
+    1781, // https://npmjs.com/advisories/1781. Waiting for fix in @bentley/react-scripts
   ];
 
   let shouldFailBuild = false;

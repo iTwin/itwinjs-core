@@ -65,23 +65,13 @@ export abstract class Geometry {
     if (!this.displayParams.ignoreLighting) // ###TODO don't generate normals for 2d views.
       facetOptions.needNormals = true;
 
-    const polyfaceList = this._getPolyfaces(facetOptions);
-    if (undefined !== polyfaceList && !this.transform.isIdentity)
-      polyfaceList.forEach((polyface: PolyfacePrimitive) => {
-        polyface.transform(this.transform);
-      });
-    return polyfaceList;
+    return this._getPolyfaces(facetOptions);
   }
 
   public getStrokes(tolerance: number): StrokesPrimitiveList | undefined {
     const strokeOptions = StrokeOptions.createForCurves();
     strokeOptions.chordTol = tolerance;
-    const strokesList = this._getStrokes(strokeOptions);
-    if (undefined !== strokesList && !this.transform.isIdentity)
-      strokesList.forEach((stroke: StrokesPrimitive) => {
-        stroke.transform(this.transform);
-      });
-    return strokesList;
+    return this._getStrokes(strokeOptions);
   }
 
   public get hasTexture() { return this.displayParams.isTextured; }
@@ -229,7 +219,7 @@ export class PrimitivePolyfaceGeometry extends Geometry {
 
   public constructor(polyface: IndexedPolyface, tf: Transform, range: Range3d, params: DisplayParams) {
     super(tf, range, params);
-    this.polyface = polyface;
+    this.polyface = tf.isIdentity ? polyface : polyface.cloneTransformed(tf);
   }
 
   protected _getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined {
@@ -262,7 +252,8 @@ class SolidPrimitiveGeometry extends Geometry {
 
   public constructor(primitive: SolidPrimitive, tf: Transform, range: Range3d, params: DisplayParams) {
     super(tf, range, params);
-    this._primitive = primitive;
+    const xformPrim = tf.isIdentity ? primitive : primitive.cloneTransformed(tf);
+    this._primitive = xformPrim !== undefined ? xformPrim as SolidPrimitive : primitive;
   }
 
   protected _getStrokes() { return undefined; }

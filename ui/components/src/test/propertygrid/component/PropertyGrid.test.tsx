@@ -221,6 +221,7 @@ describe("PropertyGrid", () => {
       const rootCategoryBlock2 = wrapper.find(PropertyCategoryBlock).at(2);
 
       rootCategoryBlock1.find(".iui-header").first().simulate("click");
+      // NEEDSWORK: This is causing the `Warning: Can't perform a React state update on an unmounted component.` in ExpandableBlock
       childCategoryBlock.find(".iui-header").simulate("click");
       rootCategoryBlock2.find(".iui-header").simulate("click");
 

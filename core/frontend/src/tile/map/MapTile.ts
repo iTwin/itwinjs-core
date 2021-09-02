@@ -284,7 +284,7 @@ export class MapTile extends RealityTile {
       for (const cornerNormal of this._cornerRays) {
         const eyeNormal = Vector3d.createStartEnd(viewingSpace.eyePoint, cornerNormal.origin, scratchNormal);
         eyeNormal.normalizeInPlace();
-        if (eyeNormal.dotProduct(cornerNormal.direction) < .1)
+        if (eyeNormal.dotProduct(cornerNormal.direction) < .01)
           return false;
       }
     } else {
