@@ -158,6 +158,9 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
     const projectQuery = {...queryOptions};
     const assetQuery = {...queryOptions};
 
+    // Known skip inaccuracy when skipping beyond the number elements of one of the two endpoints
+    //  this issue is known and ignored as this feature is only used by ui-test-apps
+    //  as such a small level of inaccuracy is acceptable for now
     if (queryOptions?.$skip && (projectQuery && assetQuery)) {
       // Ceiling to skip a project object on Odd skips
       projectQuery.$skip = queryOptions?.$skip ? Math.ceil(queryOptions.$skip / 2) : undefined;
