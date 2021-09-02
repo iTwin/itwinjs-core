@@ -9,6 +9,7 @@ import {
   Element, ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect, PhysicalElement, SnapshotDb, SpatialCategory,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { SequentialLogMatcher } from "../SequentialLogMatcher";
 
 describe("ElementAspect", () => {
 
@@ -122,7 +123,11 @@ describe("ElementAspect", () => {
 
     // The 'Element' property is introduced by ElementUniqueAspect and ElementMultiAspect, but is not available at the ElementAspect base class.
     // This is unfortunate, but is expected behavior and the reason why the getAllAspects method exists.
+
+    const slm = new SequentialLogMatcher();
+    slm.append().error().category("ECDb").message("No property or enumeration found for expression 'Element.Id'.");
     assert.throws(() => iModel.elements.getAspects(element.id, ElementAspect.classFullName), IModelError);
+    assert.isTrue(slm.finishAndDispose());
 
     const allAspects: ElementAspect[] = iModel.elements.getAspects(element.id);
     assert.equal(allAspects.length, 6);
