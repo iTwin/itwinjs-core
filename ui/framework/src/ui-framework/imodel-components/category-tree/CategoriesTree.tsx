@@ -115,7 +115,7 @@ export function CategoryTree(props: CategoryTreeProps) {
         nodeLoader={filteredNodeLoader}
         model={treeModel}
         selectionMode={SelectionMode.None}
-        treeEvents={eventHandler}
+        eventsHandler={eventHandler}
         treeRenderer={treeRenderer}
         descriptionsEnabled={true}
         nodeHighlightingProps={nodeHighlightingProps}

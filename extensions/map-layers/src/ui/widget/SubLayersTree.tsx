@@ -157,7 +157,7 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
       <ControlledTree
         nodeLoader={nodeLoader}
         selectionMode={SelectionMode.None}
-        treeEvents={eventHandler}
+        eventsHandler={eventHandler}
         model={treeModel}
         treeRenderer={nodeWithEyeCheckboxTreeRenderer}
         nodeHighlightingProps={nodeHighlightingProps}

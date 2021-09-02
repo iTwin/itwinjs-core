@@ -834,6 +834,7 @@ export function ControlledTree(props: ControlledTreeProps): JSX.Element;
 // @public
 export interface ControlledTreeProps extends CommonProps {
     descriptionsEnabled?: boolean;
+    eventsHandler: TreeEvents;
     height?: number;
     iconsEnabled?: boolean;
     model: TreeModel;
@@ -844,7 +845,6 @@ export interface ControlledTreeProps extends CommonProps {
     onItemsRendered?: (items: RenderedItemsRange) => void;
     selectionMode: SelectionMode;
     spinnerRenderer?: () => React.ReactElement;
-    treeEvents: TreeEvents;
     treeRenderer?: (props: TreeRendererProps) => React.ReactElement;
     width?: number;
 }

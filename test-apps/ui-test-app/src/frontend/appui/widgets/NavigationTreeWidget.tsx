@@ -105,7 +105,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props: NavigationTreeProp
       model={treeModel}
       nodeLoader={nodeLoader}
       selectionMode={SelectionMode.Single}
-      treeEvents={eventHandler}
+      eventsHandler={eventHandler}
     />
   );
 };

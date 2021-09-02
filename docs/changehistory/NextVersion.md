@@ -252,6 +252,7 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `StandardTypeConverterTypeNames`        | `StandardTypeNames` in @bentley/ui-abstract                 |
 | `StandardTypeNames`                     | `StandardTypeNames` in @bentley/ui-abstract                 |
 | `Timeline`                              | `TimelineComponent` in @bentley/ui-components               |
+| `ControlledTreeProps.treeEvents`        | `ControlledTreeProps.eventsHandler`                         |
 | `ControlledTreeProps.visibleNodes`      | `ControlledTreeProps.model`                                 |
 | `MutableTreeModel.computeVisibleNodes`  | `computeVisibleNodes` in @bentley/ui-components             |
 | `TreeModelSource.getVisibleNodes`       | memoized result of `computeVisibleNodes`                    |

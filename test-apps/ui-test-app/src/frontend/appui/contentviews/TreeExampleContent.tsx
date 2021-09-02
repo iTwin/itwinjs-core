@@ -74,7 +74,7 @@ function TreeExampleContent() {
           nodeLoader={nodeLoader}
           model={treeModel}
           selectionMode={selectionMode}
-          treeEvents={eventsHandler}
+          eventsHandler={eventsHandler}
         />
       </div>
     </div >

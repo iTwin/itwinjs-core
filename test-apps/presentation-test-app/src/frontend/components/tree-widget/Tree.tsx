@@ -50,7 +50,7 @@ export function Tree(props: Props) {
   return (
     <ControlledTree
       model={treeModel}
-      treeEvents={eventHandler}
+      eventsHandler={eventHandler}
       nodeLoader={filteredNodeLoader}
       selectionMode={SelectionMode.Extended}
       nodeHighlightingProps={nodeHighlightingProps}

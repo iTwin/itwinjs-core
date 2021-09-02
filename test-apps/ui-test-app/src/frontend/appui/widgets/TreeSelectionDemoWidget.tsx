@@ -30,7 +30,7 @@ function TreeSelectionDemoWidget() {
       <ControlledTree
         nodeLoader={nodeLoader}
         model={treeModel}
-        treeEvents={eventsHandler}
+        eventsHandler={eventsHandler}
         selectionMode={SelectionMode.Extended}
       />
     </div>

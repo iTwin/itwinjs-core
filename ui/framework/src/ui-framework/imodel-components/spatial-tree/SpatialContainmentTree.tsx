@@ -64,7 +64,7 @@ export function SpatialContainmentTree(props: SpatialContainmentTreeProps) {
       <ControlledTree
         model={treeModel}
         nodeLoader={nodeLoader}
-        treeEvents={eventHandler}
+        eventsHandler={eventHandler}
         selectionMode={SelectionMode.Extended}
       />
     </div>

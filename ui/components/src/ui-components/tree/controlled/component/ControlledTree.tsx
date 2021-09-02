@@ -31,7 +31,7 @@ export interface ControlledTreeProps extends CommonProps {
   /** Node loader used to load root nodes and placeholder nodes. */
   nodeLoader: ITreeNodeLoader;
   /** Tree events handler. */
-  treeEvents: TreeEvents;
+  eventsHandler: TreeEvents;
   /** Mode of nodes' selection in tree. */
   selectionMode: SelectionMode;
   /**
@@ -82,7 +82,7 @@ export function ControlledTree(props: ControlledTreeProps) {
   ), [props.descriptionsEnabled, props.iconsEnabled, imageLoader]);
 
   const visibleNodes = React.useMemo(() => computeVisibleNodes(props.model), [props.model]);
-  const eventDispatcher = useEventDispatcher(props.nodeLoader, props.treeEvents, props.selectionMode, visibleNodes);
+  const eventDispatcher = useEventDispatcher(props.nodeLoader, props.eventsHandler, props.selectionMode, visibleNodes);
 
   const treeProps: TreeRendererProps = {
     nodeRenderer,

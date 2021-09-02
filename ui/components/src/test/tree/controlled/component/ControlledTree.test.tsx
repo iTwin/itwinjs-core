@@ -27,7 +27,7 @@ describe("ControlledTree", () => {
   const defaultProps: ControlledTreeProps = {
     model: treeModelMock.object,
     nodeLoader: nodeLoaderMock.object,
-    treeEvents: treeEventsMock.object,
+    eventsHandler: treeEventsMock.object,
     selectionMode: SelectionMode.Single,
     width: 200,
     height: 200,

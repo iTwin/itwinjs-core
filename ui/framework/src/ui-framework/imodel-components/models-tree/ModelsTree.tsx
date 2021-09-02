@@ -142,7 +142,7 @@ export function ModelsTree(props: ModelsTreeProps) {
         nodeLoader={filteredNodeLoader}
         model={treeModel}
         selectionMode={props.selectionMode || SelectionMode.None}
-        treeEvents={eventHandler}
+        eventsHandler={eventHandler}
         treeRenderer={treeRenderer}
         nodeHighlightingProps={nodeHighlightingProps}
         noDataRenderer={filterApplied ? noFilteredDataRenderer : undefined}
