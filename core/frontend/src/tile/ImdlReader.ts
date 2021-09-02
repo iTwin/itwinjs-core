@@ -7,7 +7,7 @@
  */
 
 import { assert, ByteStream, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { Point3d, Range2d, Range2dProps, Range3d, Transform, TransformProps, XYZProps } from "@bentley/geometry-core";
+import { ClipVectorProps, Point3d, Range2d, Range2dProps, Range3d, Transform, TransformProps, XYZProps } from "@bentley/geometry-core";
 import {
   BatchType, ColorDef, ColorDefProps, ElementAlignedBox3d, FeatureIndexType, FeatureTableHeader, FillFlags, Gradient, ImageSource, ImdlHeader, LinePixels,
   PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, readTileContentDescription, RenderMaterial, RenderTexture, TextureMapping,
@@ -118,6 +118,7 @@ interface ImdlPolyline {
 }
 
 interface ImdlAreaPattern {
+  readonly clip: ClipVectorProps;
   readonly scale: number;
   readonly spacing: number[];
   readonly orgTransform: TransformProps;
