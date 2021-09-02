@@ -14,7 +14,7 @@ import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDb, ECDbOpenMode } from "./ECDb";
 import { ECSqlStatement } from "./ECSqlStatement";
-import { BriefcaseDb, IModelDb } from "./IModelDb";
+import { BriefcaseDb, IModelDb, UserArg } from "./IModelDb";
 import { IModelHost, KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 
@@ -67,7 +67,7 @@ export interface ChangeSummaryExtractOptions {
 /** Options for [ChangeSummaryManager.createChangeSummaries]($backend).
  * @beta
  */
-export interface CreateChangeSummaryArgs {
+export interface CreateChangeSummaryArgs extends UserArg {
   /** Id of the context that contains the iModel */
   iTwinId: GuidString;
 
@@ -80,9 +80,6 @@ export interface CreateChangeSummaryArgs {
    * - if unspecified, all change sets until the latest version are processed
    */
   range: ChangesetRange;
-
-  /** Context for the request */
-  user?: AuthorizedClientRequestContext;
 }
 
 /** Class to extract Change Summaries for a briefcase.

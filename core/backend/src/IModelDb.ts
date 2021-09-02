@@ -12,7 +12,7 @@ import {
 } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import {
-  AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code, CodeSpec,
+  AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code, CodeSpec,
   CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions, EcefLocation,
   ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData,
   EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
@@ -26,7 +26,7 @@ import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { join } from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BriefcaseId, BriefcaseManager, PullChangesArgs, PushChangesArgs } from "./BriefcaseManager";
+import { BriefcaseManager, PullChangesArgs, PushChangesArgs } from "./BriefcaseManager";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { CodeSpecs } from "./CodeSpecs";
@@ -83,37 +83,62 @@ export interface ComputedProjectExtents {
   outliers?: Id64Array;
 }
 
-/** @beta */
+/**
+ * @beta
+ */
 export interface LockControl {
-  /** true if the LockControl uses a server-based concurrency approach. */
+  /**
+   * true if this LockControl uses a server-based concurrency approach.
+   */
   readonly isServerBased: boolean;
-  /** Close the local lock control database */
+  /**
+   * Close the local lock control database
+   * @internal
+   */
   close(): void;
-  /** Notification that a new element was just created */
+  /**
+   * Notification that a new element was just created. Called by [[Element.onInserted]]
+   * @internal
+   */
   elementWasCreated(id: Id64String): void;
-  /** Determine whether the supplied element currently holds the exclusive lock */
-  holdsExclusiveLock(id: Id64String): boolean;
-  /** determine whether the supplied element currently holds a shared lock */
-  holdsSharedLock(id: Id64String): boolean;
-  /** Throw if locks are required and the exclusive lock is not held on the supplied element.
+  /**
+   * Throw if locks are required and the exclusive lock is not held on the supplied element.
    * Note: there is no need to check the shared locks on parents/models since an element cannot hold the exclusive lock without first obtaining them.
+   * Called by [[Element.onUpdate]], [[Element.onDelete]], etc.
+   * @internal
    */
   checkExclusiveLock(id: Id64String, type: string, operation: string): void;
-  /** Throw if locks are required and a shared lock is not held on the supplied element */
+  /**
+   * Throw if locks are required and a shared lock is not held on the supplied element.
+   * Called by [[Element.onInsert]] to ensure shared lock is held on model and parent.
+   * @internal
+   */
   checkSharedLock(id: Id64String, type: string, operation: string): void;
-  /** Acquire the exclusive lock on one or more elements from the lock server, if locks are required and not already held.
+  /**
+   * Determine whether the supplied element currently holds the exclusive lock
+   */
+  holdsExclusiveLock(id: Id64String): boolean;
+  /**
+   * Determine whether the supplied element currently holds a shared lock
+   */
+  holdsSharedLock(id: Id64String): boolean;
+  /**
+   * Acquire the exclusive lock on one or more elements from the lock server, if locks are required and not already held.
    * If any required lock is not available, this method throws an exception and *none* of the requested locks are acquired.
    * > Note: acquiring the exclusive lock on an element requires also obtaining a shared lock on all its owner elements. This method will
    * attempt to acquire all necessary locks for the set of input ids.
    */
   acquireExclusiveLock(ids: Id64Arg): Promise<void>;
-  /** Acquire a shared lock on one or more elements from the lock server, if locks are required and not already held.
+  /**
+   * Acquire a shared lock on one or more elements from the lock server, if locks are required and not already held.
    * If any required lock is not available, this method throws an exception and *none* of the requested locks are acquired.
    * > Note: acquiring the shared lock on an element requires also obtaining a shared lock on all its owner elements. This method will
    * attempt to acquire all necessary locks for the set of input ids.
    */
   acquireSharedLock(ids: Id64Arg): Promise<void>;
-  /** Release all locks currently held from the lock server. */
+  /**
+   * Release all locks currently held by this Briefcase from the lock server.
+   */
   releaseAllLocks(): Promise<void>;
 }
 
@@ -2157,7 +2182,21 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     }
   }
 }
-export type OpenBriefcaseArgs = { user?: AuthorizedClientRequestContext } & OpenBriefcaseProps;
+
+/**
+ * Argument to a function that can accept an authenticated user.
+ * @public
+ */
+export interface UserArg {
+  /** If present, the user's access token for the requested operation. If not present, use [[IModelHost.getAccessToken]] */
+  user?: AuthorizedClientRequestContext;
+}
+
+/**
+ * Arguments to open a BriefcaseDb
+ * @public
+ */
+export type OpenBriefcaseArgs = OpenBriefcaseProps & UserArg;
 
 /**
  * A local copy of an iModel from iModelHub that can pull and potentially push changesets.
@@ -2172,7 +2211,7 @@ export class BriefcaseDb extends IModelDb {
   public override get isBriefcase(): boolean { return true; }
 
   /* the BriefcaseId of the briefcase opened with this BriefcaseDb */
-  public readonly briefcaseId: number;
+  public readonly briefcaseId: BriefcaseId;
 
   /** Event raised just before a BriefcaseDb is opened.
    * **Example:**

@@ -8,12 +8,12 @@
 
 import { GuidString, Id64String } from "@bentley/bentleyjs-core";
 import {
+  BriefcaseId,
   ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, CodeProps, IModelVersion,
   LocalDirName, LocalFileName,
 } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { BriefcaseId } from "./BriefcaseManager";
 import { CheckpointProps, DownloadRequest } from "./CheckpointManager";
+import { UserArg } from "./IModelDb";
 
 /** The state of a lock.
  * @public
@@ -55,39 +55,45 @@ export interface LockProps {
   readonly state: LockState;
 }
 
-/** Argument for methods that must supply an IModelId
- * @internal
+/**
+ * Argument for methods that must supply an iTwinId
+ * @public
  */
-export interface IModelIdArg {
+export interface ITwinIdArg {
+  readonly iTwinId: GuidString;
+}
+
+/**
+ * Argument for methods that must supply an IModelId
+ * @public
+ */
+export interface IModelIdArg extends UserArg {
   readonly iModelId: GuidString;
-  readonly user?: AuthorizedClientRequestContext;
 }
 
 /** Argument for methods that must supply an IModel name and iTwinId
- * @internal
+ * @public
  */
-export interface IModelNameArg {
-  readonly user?: AuthorizedClientRequestContext;
-  readonly iTwinId: GuidString;
+export interface IModelNameArg extends UserArg, ITwinIdArg {
   readonly iModelName: string;
 }
 
 /** Argument for methods that must supply an IModelId and a BriefcaseId
- * @internal
+ * @public
  */
 export interface BriefcaseIdArg extends IModelIdArg {
   readonly briefcaseId: BriefcaseId;
 }
 
 /** Argument for methods that must supply a briefcaseId and a changeset
- * @internal
+ * @public
  */
 export interface BriefcaseDbArg extends BriefcaseIdArg {
   readonly changeset: ChangesetIdWithIndex;
 }
 
 /** Argument for methods that must supply an IModelId and a changeset
- * @internal
+ * @public
  */
 export interface ChangesetArg extends IModelIdArg {
   readonly changeset: ChangesetIndexOrId;
@@ -99,7 +105,7 @@ export interface ChangesetIndexArg extends IModelIdArg {
 }
 
 /** Argument for methods that must supply an IModelId and a range of ChangesetIds.
- * @internal
+ * @public
  */
 export interface ChangesetRangeArg extends IModelIdArg {
   /** the range of changesets desired. If is undefined, *all* changesets are returned. */
@@ -109,15 +115,20 @@ export interface ChangesetRangeArg extends IModelIdArg {
 /** @internal */
 export type CheckPointArg = DownloadRequest;
 
-/** @internal */
+/**
+ * Arguments to create a new iModel in iModelHub
+ *  @public
+ */
 export interface CreateNewIModelProps extends IModelNameArg {
   readonly description?: string;
   readonly revision0?: LocalFileName;
   readonly noLocks?: true;
 }
 
-/** Methods for accessing services of IModelHub from an iTwin.js backend.
- * @internal
+/**
+ * Methods for accessing services of IModelHub from an iTwin.js backend.
+ * Generally direct access to these methods should not be required, since higher-level apis are provided.
+ * @beta
  */
 export interface BackendHubAccess {
   /** Download all the changesets in the specified range. */
@@ -147,34 +158,54 @@ export interface BackendHubAccess {
   /** get an array of the briefcases assigned to the current user. */
   getMyBriefcaseIds(arg: IModelIdArg): Promise<BriefcaseId[]>;
 
-  /** download a v1 checkpoint */
+  /**
+   * download a v1 checkpoint
+   * @internal
+   */
   downloadV1Checkpoint(arg: CheckPointArg): Promise<ChangesetId>;
 
-  /** get the access props for a V2 checkpoint. Returns undefined if no V2 checkpoint exists. */
+  /**
+   * Get the access props for a V2 checkpoint. Returns undefined if no V2 checkpoint exists.
+   * @internal
+   */
   queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined>;
-  /** download a v2 checkpoint */
+  /**
+   * download a v2 checkpoint
+   * @internal
+   */
   downloadV2Checkpoint(arg: CheckPointArg): Promise<ChangesetId>;
 
-  /** acquire one or more locks. Throws if unsuccessful. If *any* lock cannot be obtained, no locks are acquired */
+  /**
+   * acquire one or more locks. Throws if unsuccessful. If *any* lock cannot be obtained, no locks are acquired
+   * @internal
+   */
   acquireLocks(arg: BriefcaseDbArg, locks: LockMap): Promise<void>;
 
-  /** get the full list of held locks for a briefcase */
+  /**
+   * Get the list of all held locks for a briefcase. This is currently used only for tests.
+   * @internal
+   */
   queryAllLocks(arg: BriefcaseDbArg): Promise<LockProps[]>;
 
-  /** release all currently held locks */
+  /** Release all currently held locks */
   releaseAllLocks(arg: BriefcaseDbArg): Promise<void>;
 
-  /** Query codes */
+  /** Query codes
+   * @internal
+   */
   queryAllCodes(arg: BriefcaseDbArg): Promise<CodeProps[]>;
-  /** release codes */
+  /**
+   * release codes
+   * @internal
+   */
   releaseAllCodes(arg: BriefcaseDbArg): Promise<void>;
 
-  /** get the iModelId of an iModel by name. Undefined if no iModel with that name exists.  */
+  /** Get the iModelId of an iModel by name. Undefined if no iModel with that name exists.  */
   queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
 
   /** create a new iModel. Returns the Guid of the newly created iModel */
   createNewIModel(arg: CreateNewIModelProps): Promise<GuidString>;
 
-  /** delete an iModel  */
-  deleteIModel(arg: IModelIdArg & { iTwinId: GuidString }): Promise<void>;
+  /** delete an iModel */
+  deleteIModel(arg: IModelIdArg & ITwinIdArg): Promise<void>;
 }

@@ -17,9 +17,9 @@ import {
   BriefcaseIdValue,
   ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, CodeProps, IModelError, IModelVersion, LocalDirName,
 } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
+import { ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 import {
-  BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckPointArg, CreateNewIModelProps, IModelIdArg, IModelNameArg, LockProps, V2CheckpointAccessProps,
+  BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckPointArg, CreateNewIModelProps, IModelIdArg, IModelNameArg, ITwinIdArg, LockProps, V2CheckpointAccessProps,
 } from "./BackendHubAccess";
 import { AuthorizedBackendRequestContext } from "./BackendRequestContext";
 import { BriefcaseManager } from "./BriefcaseManager";
@@ -115,7 +115,7 @@ export class IModelHubBackend {
     return hubIModel.wsgId;
   }
 
-  public static async deleteIModel(arg: IModelIdArg & { iTwinId: GuidString }): Promise<void> {
+  public static async deleteIModel(arg: IModelIdArg & ITwinIdArg): Promise<void> {
     const dirName = BriefcaseManager.getIModelPath(arg.iModelId);
     if (IModelJsFs.existsSync(dirName)) {
       IModelJsFs.purgeDirSync(dirName);
@@ -178,7 +178,7 @@ export class IModelHubBackend {
     return myBriefcaseIds;
   }
 
-  public static async acquireNewBriefcaseId(arg: { user?: AuthorizedClientRequestContext, iModelId: GuidString }): Promise<number> {
+  public static async acquireNewBriefcaseId(arg: IModelIdArg): Promise<number> {
     const user = arg.user ?? await AuthorizedBackendRequestContext.create();
     const briefcase = await this.iModelClient.briefcases.create(user, arg.iModelId);
     user.enter();

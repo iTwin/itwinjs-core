@@ -6594,7 +6594,7 @@ export { RepositoryStatus }
 // @public
 export interface RequestNewBriefcaseProps {
     asOf?: IModelVersionProps;
-    readonly briefcaseId?: BriefcaseId;
+    briefcaseId?: BriefcaseId;
     readonly fileName?: LocalFileName;
     readonly iModelId: GuidString;
     readonly iTwinId: GuidString;

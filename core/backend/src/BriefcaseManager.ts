@@ -14,6 +14,7 @@ import {
   ChangeSetApplyOption, ChangeSetStatus, ClientRequestContext, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode,
 } from "@bentley/bentleyjs-core";
 import {
+  BriefcaseId,
   BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps, LocalDirName,
   LocalFileName, RequestNewBriefcaseProps,
 } from "@bentley/imodeljs-common";
@@ -21,26 +22,12 @@ import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TelemetryEvent } from "@bentley/telemetry-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { CheckpointManager, CheckpointProps, ProgressFunction } from "./CheckpointManager";
-import { BriefcaseDb, IModelDb } from "./IModelDb";
+import { BriefcaseDb, IModelDb, UserArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { IModelIdArg } from "./BackendHubAccess";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
-
-/** The Id assigned to a briefcase by iModelHub, or [[BriefcaseIdValue.Unassigned]] .
- * @public
- */
-export type BriefcaseId = number;
-
-/**
- * An argument to a function that can accept an authenticated user.
- * @public
- */
-export interface UserArg {
-  /** If present, the user's access token for the requested operation. If not present, use [[IModelHost.getAccessToken]] */
-  user?: AuthorizedClientRequestContext;
-}
 
 /** The argument for [[BriefcaseManager.downloadBriefcase]]
  * @public

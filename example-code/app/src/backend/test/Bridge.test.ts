@@ -9,12 +9,11 @@ import * as path from "path";
 import { GuidString, Id64String } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@bentley/geometry-core";
-import { HubIModel } from "@bentley/imodelhub-client";
 import {
-  BriefcaseDb, BriefcaseManager, CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, IModelHubBackend, ModelSelector,
+  BriefcaseDb, BriefcaseManager, CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, ModelSelector,
   OrthographicViewDefinition, PhysicalModel, SpatialCategory, Subject,
 } from "@bentley/imodeljs-backend";
-import { ColorByName, IModel } from "@bentley/imodeljs-common";
+import { ColorByName, IModel, LocalFileName } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { Barrier } from "../BarrierElement";
@@ -55,14 +54,14 @@ function convertToBis(briefcase: IModelDb, modelId: Id64String, data: RobotWorld
 
 // __PUBLISH_EXTRACT_END__
 
-async function queryProjectIdByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project> {
+async function queryITwinIdByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project> {
   return (new ContextRegistryClient()).getProject(requestContext, {
     $select: "*",
     $filter: `Name+eq+'${projectName}'`,
   });
 }
 
-async function createIModel(user: AuthorizedClientRequestContext, iTwinId: GuidString, iModelName: string, seedFile: string) {
+async function createIModel(user: AuthorizedClientRequestContext, iTwinId: GuidString, iModelName: string, revision0: LocalFileName) {
   try {
     const iModelId = await IModelHost.hubAccess.queryIModelByName({ user, iTwinId, iModelName });
     if (iModelId !== undefined)
@@ -70,9 +69,7 @@ async function createIModel(user: AuthorizedClientRequestContext, iTwinId: GuidS
   } catch (_err) {
   }
   // __PUBLISH_EXTRACT_START__ Bridge.create-imodel.example-code
-  const imodelRepository: HubIModel = await IModelHubBackend.iModelClient.iModels.create(user, iTwinId, iModelName, { path: seedFile });
-  // __PUBLISH_EXTRACT_END__
-  return imodelRepository;
+  return IModelHost.hubAccess.createNewIModel({ user, iModelName, iTwinId, revision0 });
 }
 
 // __PUBLISH_EXTRACT_START__ Bridge.firstTime.example-code
@@ -143,17 +140,17 @@ async function runBridgeFirstTime(user: AuthorizedClientRequestContext, iModelId
 
 describe.skip("Bridge", async () => {
 
-  let requestContext: AuthorizedClientRequestContext;
-  let testProjectId: string;
-  let seedPathname: string;
-  let imodelRepository: HubIModel;
+  let user: AuthorizedClientRequestContext;
+  let testITwinId: GuidString;
+  let revision0: LocalFileName;
+  let iModelId: GuidString;
 
   before(async () => {
     await IModelHost.startup();
-    requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
-    testProjectId = (await queryProjectIdByName(requestContext, "iModelJsIntegrationTest")).wsgId;
-    seedPathname = path.join(KnownTestLocations.assetsDir, "empty.bim");
-    imodelRepository = await createIModel(requestContext, testProjectId, "BridgeTest", seedPathname);
+    user = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
+    testITwinId = (await queryITwinIdByName(user, "iModelJsIntegrationTest")).wsgId;
+    revision0 = path.join(KnownTestLocations.assetsDir, "empty.bim");
+    iModelId = await createIModel(user, testITwinId, "BridgeTest", revision0);
     await IModelHost.shutdown();
   });
 
@@ -163,6 +160,6 @@ describe.skip("Bridge", async () => {
 
   it("should run bridge the first time", async () => {
     const assetsDir = path.join(__dirname, "..", "assets");
-    await runBridgeFirstTime(requestContext, imodelRepository.wsgId, testProjectId, assetsDir);
+    await runBridgeFirstTime(user, iModelId, testITwinId, assetsDir);
   });
 });

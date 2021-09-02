@@ -14,7 +14,6 @@ import { RobotWorldEngine } from "../RobotWorldEngine";
 import { RobotWorld } from "../RobotWorldSchema";
 import { IModelTestUtils } from "./Utils";
 
-
 describe("RobotWorld", () => {
   it("should run robotworld", async () => {
     await RobotWorldEngine.initialize();

@@ -12,10 +12,9 @@ import * as path from "path";
 import { BeEvent, ChangeSetStatus, DbResult, Guid, GuidString, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, IModelError, IModelVersion, LocalDirName, LocalFileName } from "@bentley/imodeljs-common";
 import { BlobDaemon, BlobDaemonCommandArg, IModelJsNative } from "@bentley/imodeljs-native";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
-import { SnapshotDb } from "./IModelDb";
+import { SnapshotDb, UserArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 
@@ -25,7 +24,7 @@ const loggerCategory = BackendLoggerCategory.IModelDb;
  * Properties of a checkpoint
  * @public
  */
-export interface CheckpointProps {
+export interface CheckpointProps extends UserArg {
   readonly expectV2?: boolean;
 
   /** Context (Project or Asset) that the iModel belongs to */
@@ -36,8 +35,6 @@ export interface CheckpointProps {
 
   /** changeset for the checkpoint */
   readonly changeset: ChangesetIdWithIndex;
-
-  readonly user?: AuthorizedClientRequestContext;
 }
 
 /** Called to show progress during a download. If this function returns non-zero, the download is aborted.
