@@ -517,9 +517,6 @@ alpha;SheetNavigationAidControl
 alpha;SheetNavigationProps 
 alpha;SheetsModalFrontstage 
 internal;showWidget: (base:
-public;SignIn 
-public;SignInProps 
-public;SignOutModalFrontstage 
 public;SnapModeField: import("react-redux").ConnectedComponent
 alpha;SolarTimelineDataProvider 
 public;SpatialContainmentTree(props: SpatialContainmentTreeProps): JSX.Element
@@ -684,8 +681,6 @@ internal;useItemsManager(frontstageDef: FrontstageDef): void
 internal;useLabels(): NineZoneLabels
 internal;useNineZoneDispatch(frontstageDef: FrontstageDef): NineZoneDispatch
 internal;useNineZoneState(frontstageDef: FrontstageDef): NineZoneState | undefined
-public;UserProfileBackstageItem 
-public;UserProfileBackstageItemProps 
 beta;UserSettingsProvider
 public;UserSettingsStorage 
 internal;useSavedFrontstageState(frontstageDef: FrontstageDef): void

@@ -5522,35 +5522,6 @@ export const showWidget: (base: {
 }, id: string) => import("immer/dist/internal").WritableDraft<NineZoneState>;
 
 // @public
-export class SignIn extends React.PureComponent<SignInProps> {
-    constructor(props: SignInProps);
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    render(): JSX.Element;
-}
-
-// @public
-export interface SignInProps extends CommonProps {
-    onOffline?: () => void;
-    onRegister?: () => void;
-    onSignedIn?: () => void;
-    // @internal (undocumented)
-    onStartSignIn?: () => void;
-}
-
-// @public
-export class SignOutModalFrontstage implements ModalFrontstageInfo {
-    constructor(userInfo?: UserInfo);
-    // (undocumented)
-    get content(): React.ReactNode;
-    // (undocumented)
-    title: string;
-    }
-
-// @public
 export const SnapModeField: import("react-redux").ConnectedComponent<typeof SnapModeFieldComponent, import("react-redux").Omit<React.ClassAttributes<SnapModeFieldComponent> & SnapModeFieldProps, "setSnapMode" | "snapMode">>;
 
 // @alpha
@@ -6905,20 +6876,6 @@ export function useNineZoneDispatch(frontstageDef: FrontstageDef): NineZoneDispa
 
 // @internal (undocumented)
 export function useNineZoneState(frontstageDef: FrontstageDef): NineZoneState | undefined;
-
-// @public
-export class UserProfileBackstageItem extends React.PureComponent<UserProfileBackstageItemProps> {
-    // (undocumented)
-    render(): React.ReactNode | undefined;
-}
-
-// @public
-export interface UserProfileBackstageItemProps extends CommonProps {
-    // (undocumented)
-    onOpenSignOut?: () => void;
-    // (undocumented)
-    userInfo: UserInfo;
-}
 
 // @beta
 export interface UserSettingsProvider {
