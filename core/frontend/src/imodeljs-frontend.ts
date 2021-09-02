@@ -139,6 +139,11 @@ export * from "./LocalhostIpcApp";
  * Classes for working with a connection to an [iModel briefcase]($docs/learning/IModels.md)
  */
 /**
+ * @docs-group-description DisplayStyles
+ * Classes for working with display styles.
+ * See [the learning articles]($docs/learning/frontend/index.md).
+ */
+/**
  * @docs-group-description ElementState
  * Classes for working with the *state* of Elements in the frontend.
  * See [the learning articles]($docs/learning/frontend/index.md).
@@ -174,6 +179,14 @@ export * from "./LocalhostIpcApp";
  * @docs-group-description Notifications
  * Notifications provide feedback to the user of something of interest.
  * See [the learning articles]($docs/learning/frontend/index.md).
+ */
+/**
+ * @docs-group-description EsriOAuth2
+ * Class to support ESRI Oauth2 authentification.
+ */
+/**
+ * @docs-group-description EsriSettingsService
+ * Class that saves ESRI settings in settings service
  */
 /**
  * @docs-group-description Extensions

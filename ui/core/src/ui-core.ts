@@ -240,6 +240,10 @@ export * from "./ui-core/utils/hooks/useWidgetOpacityContext";
  * Components used to create a Form using supplied properties to specify fields.
  */
 /**
+ * @docs-group-description Hooks
+ * Various React hooks for working with a UI.
+ */
+/**
  * @docs-group-description Icon
  * Component that renders ui-core icon when given an icon name or SVG source.
  */
@@ -319,3 +323,4 @@ export * from "./ui-core/utils/hooks/useWidgetOpacityContext";
  * @docs-group-description Utilities
  * Various utility classes, functions and React hooks for working with a UI.
  */
+
