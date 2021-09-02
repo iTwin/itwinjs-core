@@ -5724,6 +5724,8 @@ export class MapTileTree extends RealityTileTree {
     // (undocumented)
     static minReprojectionDepth: number;
     // (undocumented)
+    get parentsAndChildrenExclusive(): boolean;
+    // (undocumented)
     pointAboveEllipsoid(point: Point3d): boolean;
     // (undocumented)
     sourceTilingScheme: MapTilingScheme;
