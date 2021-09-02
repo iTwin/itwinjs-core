@@ -95,6 +95,25 @@ describe("SchemaEditor tests", () => {
       await expect(testEditor.entities.createEx(testSchemaKey, "testElement", ECClassModifier.None, "test element", multiAspectKey)).to.be.rejectedWith(Error, "The class testElement could not be created because the specified base class BisCore.PhysicalModel is not supported.");
     });
 
+    it("should delete class successfully", async () => {
+      const multiAspectKey = new SchemaItemKey("ElementMultiAspect", bisSchemaKey);
+      const result = await testEditor.entities.createEx(testSchemaKey, "testElement", ECClassModifier.None, "test element", multiAspectKey);
+      expect(result).to.not.be.undefined;
+      expect(result.itemKey).to.not.be.undefined;
+      expect(result.itemKey).to.deep.equal(new SchemaItemKey("testElement", testSchemaKey));
+      let element = await testSchema!.getItem<EntityClass>("testElement");
+      expect(element).to.not.be.undefined;
+      await testEditor.entities.delete(result.itemKey!);
+      expect(result.itemKey).to.not.be.undefined;
+      expect(result.itemKey).to.deep.equal(new SchemaItemKey("testElement", testSchemaKey));
+      element = await testSchema!.getItem<EntityClass>("testElements");
+      expect(element).to.be.undefined;
+      const classes = testSchema!.getClasses();
+      for (const _class of classes) {
+        expect(false, "Expected no classes in the schema.").to.be.true;
+      }
+    });
+
     describe("Property tests", () => {
       let testEntity: EntityClass | undefined;
       let entityKey: SchemaItemKey | undefined;
