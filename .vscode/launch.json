@@ -845,6 +845,23 @@
       ]
     },
     {
+      "name": "[perftests] Sqlite Read Perftests",
+      "presentation": {
+        "group": "6_Misc"
+      },
+      "cwd": "${workspaceFolder}/core/backend",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "perftest:sqlite"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
+      ]
+    },
+    {
       "name": "[perftests] Apply Changeset PerfTests",
       "presentation": {
         "group": "6_Misc"

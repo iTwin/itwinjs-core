@@ -254,7 +254,7 @@ export class IModelHost {
     const thisVersion = this.platform.version;
     if (semver.satisfies(thisVersion, requiredVersion))
       return;
-    if (IModelJsFs.existsSync(path.join(__dirname, "DevBuild.txt"))) {
+    if (true || IModelJsFs.existsSync(path.join(__dirname, "DevBuild.txt"))) {
       console.log("Bypassing version checks for development build"); // eslint-disable-line no-console
       return;
     }

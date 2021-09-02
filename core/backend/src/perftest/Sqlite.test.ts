@@ -12,6 +12,10 @@ import { IModelHost } from "../IModelHost";
 import { SqliteStatement } from "../SqliteStatement";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
+import { ChildProcess } from "child_process";
+import { BlobCacheProps, BlobContainerProps, BlobDaemon, DaemonProps } from "@bentley/imodeljs-native";
+import { IModelJsFs } from "../IModelJsFs";
+import { Guid } from "../../../bentley/lib/Id";
 
 IModelTestUtils.init();
 function makeRandStr(length: number) {
@@ -30,10 +34,12 @@ async function reportProgress(prefix: string, c: number, m: number) {
     process.stdout.write(os.EOL);
   }
 }
-async function createSeedFile(pathName: string, tbl: string, nCols: number, nRows: number, startId: number) {
+async function createSeedFile(pathName: string, tbl: string, nCols: number, nRows: number, startId: number, bcvOpts?: {secure: boolean, auth: string}) {
   const kMaxLengthOfString = 11;
   await using(new ECDb(), async (ecdb) => {
-    ecdb.createDb(pathName);
+    if (bcvOpts !== undefined) {
+      ecdb.createDb(`file:///${pathName}?bcv_secure=${bcvOpts.secure ? "1" : "0"}&bcv_auth=${encodeURIComponent(bcvOpts.auth)}`);
+    } else ecdb.createDb(pathName);
     const cols = [];
     for (let i = 0; i < nCols; i++) {
       cols.push(`[c${i}]`);
@@ -85,7 +91,7 @@ async function simulateRowRead(stmt: SqliteStatement, probabiltyOfConsectiveRead
     rowReadSoFar++;
   } while (rowReadSoFar < rowsToBeRead);
   sp.stop();
-  process.stdout.write(`took ${sp.elapsedSeconds} sec\n`);
+  // process.stdout.write(`took ${sp.elapsedSeconds} sec\n`);
   return sp.elapsedSeconds;
 }
 
@@ -118,6 +124,11 @@ interface ReadParams {
   seedFolder: string;
   testFolder?: string;
   pageSizeInKb: number;
+  bcvOpts?: {
+    secure: boolean;
+    auth: string;
+    checkpointProps: BlobCacheProps & BlobContainerProps;
+  };
 }
 function standardDeviation(values: number[]) {
   const avg = average(values);
@@ -141,20 +152,29 @@ function average(data: number[]) {
   const avg = sum / data.length;
   return avg;
 }
+async function initializeContainer(checkpointProps: BlobContainerProps & BlobCacheProps, baseFile: string) {
+  const props = {
+    ...checkpointProps,
+    dbAlias: "base.chkpt",
+    localFile: baseFile,
+  };
+  await BlobDaemon.command("create", props);
+  await BlobDaemon.command("upload", props);
+}
 async function runReadTest(param: ReadParams) {
   param.testFolder = param.testFolder || param.seedFolder;
   const testTableName = "foo";
   const seedFileName = `read_test_${param.seedRowCount}_${param.columnsCount}.ecdb`;
   const testFile = `read_test_${param.seedRowCount}_${param.columnsCount}_run.ecdb`;
   const seedFilePath = path.join(param.seedFolder, seedFileName);
-  const testFilepath = path.join(param.testFolder, testFile);
+  let testFilepath = path.join(param.testFolder, testFile);
   const report = path.join(param.seedFolder, "report.csv");
   if (!fs.existsSync(param.seedFolder))
     fs.mkdirSync(param.seedFolder, { recursive: true });
   if (!fs.existsSync(param.testFolder))
     fs.mkdirSync(param.testFolder, { recursive: true });
   if (!fs.existsSync(seedFilePath)) {
-    await createSeedFile(seedFilePath, testTableName, param.columnsCount, param.seedRowCount, param.startId);
+    await createSeedFile(seedFilePath, testTableName, param.columnsCount, param.seedRowCount, param.startId, param.bcvOpts);
     if (fs.existsSync(testFilepath))
       fs.unlinkSync(testFilepath);
   }
@@ -162,12 +182,20 @@ async function runReadTest(param: ReadParams) {
     fs.copyFileSync(seedFilePath, testFilepath);
 
   changePageSize(testFilepath, param.pageSizeInKb);
+  // Create a container and upload it to azurite.
+  if (param.bcvOpts !== undefined) {
+    await initializeContainer(param.bcvOpts.checkpointProps, testFilepath);
+    testFilepath = path.join(param.bcvOpts.checkpointProps.daemonDir!, param.bcvOpts.checkpointProps.container, "base.chkpt");
+  }
+
   let r = 0;
   const result: number[] = [];
   while (r++ < param.runCount) {
-    process.stdout.write(`Run ... [${r}/${param.runCount}] `);
+    // process.stdout.write(`Run ... [${r}/${param.runCount}] `);
     await using(new ECDb(), async (ecdb: ECDb) => {
-      ecdb.openDb(testFilepath, ECDbOpenMode.Readonly);
+      if (param.bcvOpts !== undefined) {
+        ecdb.openDb(`file:///${testFilepath}?bcv_secure=${param.bcvOpts.secure ? "1" : "0"}&bcv_auth=${encodeURIComponent(param.bcvOpts.auth)}`, ECDbOpenMode.Readonly);
+      } else ecdb.openDb(testFilepath, ECDbOpenMode.Readonly);
       if (!ecdb.isOpen)
         throw new Error(`changePageSize() fail to open file ${testFilepath}`);
       await ecdb.withPreparedSqliteStatement(`select * from ${testTableName} where id=?`, async (stmt: SqliteStatement) => {
@@ -186,15 +214,15 @@ async function runReadTest(param: ReadParams) {
 }
 /* This test suite require configuring dataset path
 **/
-describe.skip("SQLite performance test", () => {
+describe.skip("SQLitePerformanceTest", () => {
   it("Read Test", async () => {
     const seedDir = path.join(KnownTestLocations.outputDir, "perf_test");
-    const pageSizes = [1, 4 /* , 8, 16, 32, 64, 128, 256, 512 */];
-    const targets = ["C:\\test", "F:\\test", "Y:\\test", "Z:\\test"];
+    const pageSizes = [4096 /* 1, 4, 8, 16, 32, 64, 128, 256, 512 */];
+    const targets = ["C:\\test" /* "F:\\test", "Y:\\test", "Z:\\test"*/];
     for (const targetFolder of targets) {
       for (const pageSize of pageSizes) {
         await runReadTest({
-          runCount: 1,
+          runCount: 5000,
           seedRowCount: 50000,
           columnsCount: 20,
           startId: 1,
@@ -207,4 +235,113 @@ describe.skip("SQLite performance test", () => {
       }
     }
   });
+});
+describe("SQLiteBlockcachePerformanceTest", () => {
+  const azureStorageUser = "devstoreaccount1";
+  const azureStorageKey = "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="; // default Azurite password
+  const daemonDir = path.resolve(__dirname, "blob-daemon");
+  const storageType = "azure?emulator=127.0.0.1:10000&sas=0";
+  const checkpointProps = {
+    user: "devstoreaccount1",
+    container: `imodelblocks-${Guid.createValue()}`,
+    storageType,
+    auth: azureStorageKey,
+    writeable: true,
+    daemonDir,
+  };
+  let daemonExitedPromise: Promise<void>;
+  let daemon: ChildProcess;
+  // let checkpointProps: BlobCacheProps & BlobContainerProps;
+  it.skip("Read Test Blockcache Unencrypted", async () => {
+    const seedDir = path.join(KnownTestLocations.outputDir, "perf_test");
+    daemon = await startDaemon();
+    const pageSizes = [4096 /* 1, 4, 8, 16, 32, 64, 128, 256, 512 */];
+    const targets = ["C:\\test" /* "F:\\test", "Y:\\test", "Z:\\test"*/];
+    for (const targetFolder of targets) {
+      for (const pageSize of pageSizes) {
+        await runReadTest({
+          runCount: 1000,
+          seedRowCount: 50000,
+          columnsCount: 20,
+          startId: 1,
+          percentageOfRowsToRead: 50,
+          probabilityOfConsecutiveReads: 0.3,
+          seedFolder: seedDir,
+          testFolder: targetFolder,
+          pageSizeInKb: pageSize,
+          bcvOpts: {
+            secure: false,
+            auth: azureStorageKey,
+            checkpointProps,
+          },
+        });
+      }
+    }
+    await cleanupDaemon();
+  });
+  it("Read Test Blockcache Encrypted", async () => {
+    const seedDir = path.join(KnownTestLocations.outputDir, "perf_test");
+    daemon = await startDaemon();
+    const pageSizes = [4096 /* 1, 4, 8, 16, 32, 64, 128, 256, 512 */];
+    const targets = ["C:\\test" /* "F:\\test", "Y:\\test", "Z:\\test"*/];
+    for (const targetFolder of targets) {
+      for (const pageSize of pageSizes) {
+        await runReadTest({
+          runCount: 1000,
+          seedRowCount: 50000,
+          columnsCount: 20,
+          startId: 1,
+          percentageOfRowsToRead: 50,
+          probabilityOfConsecutiveReads: 0.3,
+          seedFolder: seedDir,
+          testFolder: targetFolder,
+          pageSizeInKb: pageSize,
+          bcvOpts: {
+            secure: true,
+            auth: azureStorageKey,
+            checkpointProps,
+          },
+        });
+      }
+    }
+    await cleanupDaemon();
+  });
+
+  async function startDaemon(): Promise<ChildProcess> {
+    const cacheProps: BlobCacheProps = {
+      user: azureStorageUser,
+      storageType,
+      daemonDir,
+    };
+    const daemonProps: DaemonProps = {
+      log: "meh", // message, event, http
+      maxCacheSize: "10G",
+      gcTime: 600,
+      pollTime: 600,
+      lazy: true,
+      addr: "127.0.0.1",
+      portNumber: 2030,
+      // NOTE: On windows you may want to pass the below option:
+      spawnOptions: { stdio: "ignore"}, // On windows, using the default stdio of "pipe" causes a clash between daemon and backend client when logging is enabled.
+    };
+
+    if (os.platform() === "linux") {
+      fs.chmodSync(path.join(path.dirname(require.resolve("@bentley/imodeljs-native")), "imodeljs-linux-x64", "BeBlobDaemon"), "755");
+    }
+
+    // startup daemon
+    daemon = BlobDaemon.start({ ...daemonProps, ...cacheProps });
+    daemonExitedPromise = new Promise((resolve) => {
+      daemon.on("exit", () => {
+        resolve();
+      });
+    });
+    return daemon;
+  }
+  async function cleanupDaemon() {
+    // shutdown daemon
+    daemon.kill("SIGKILL");
+    await daemonExitedPromise;
+    IModelJsFs.removeSync(daemonDir);
+  }
 });

@@ -186,9 +186,12 @@ async function generateIModelDbTiles(requestContext: AuthorizedClientRequestCont
   };
 }
 
-describe("TilesGenerationPerformance", () => {
-  if (process.env.IMJS_TILE_PERF_CONFIG === undefined)
-    throw new Error("Could not find IMJS_TILE_PERF_CONFIG");
+describe.skip("TilesGenerationPerformance", () => {
+  if (process.env.IMJS_TILE_PERF_CONFIG === undefined) {
+    return;
+    // throw new Error("Could not find IMJS_TILE_PERF_CONFIG");
+  }
+
   const config = require(process.env.IMJS_TILE_PERF_CONFIG); // eslint-disable-line @typescript-eslint/no-var-requires
   const imodels: ConfigData[] = config.iModels;
 
