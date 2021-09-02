@@ -245,13 +245,17 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @bentley/ui-components
 
-| Removed                          | Replacement                                      |
-| -------------------------------- | ------------------------------------------------ |
-| `hasFlag`                        | `hasSelectionModeFlag` in @bentley/ui-components |
-| `StandardEditorNames`            | `StandardEditorNames` in @bentley/ui-abstract    |
-| `StandardTypeConverterTypeNames` | `StandardTypeNames` in @bentley/ui-abstract      |
-| `StandardTypeNames`              | `StandardTypeNames` in @bentley/ui-abstract      |
-| `Timeline`                       | `TimelineComponent` in @bentley/ui-components    |
+| Removed                                 | Replacement                                                 |
+| --------------------------------------- | ----------------------------------------------------------- |
+| `hasFlag`                               | `hasSelectionModeFlag` in @bentley/ui-components            |
+| `StandardEditorNames`                   | `StandardEditorNames` in @bentley/ui-abstract               |
+| `StandardTypeConverterTypeNames`        | `StandardTypeNames` in @bentley/ui-abstract                 |
+| `StandardTypeNames`                     | `StandardTypeNames` in @bentley/ui-abstract                 |
+| `Timeline`                              | `TimelineComponent` in @bentley/ui-components               |
+| `ControlledTreeProps.visibleNodes`      | `ControlledTreeProps.model`                                 |
+| `MutableTreeModel.computeVisibleNodes`  | `computeVisibleNodes` in @bentley/ui-components             |
+| `TreeModelSource.getVisibleNodes`       | memoized result of `computeVisibleNodes`                    |
+| `useVisibleTreeNodes`                   | `useTreeModel` and `computeVisibleNodes`                    |
 
 ### @bentley/ui-framework
 
@@ -311,6 +315,8 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `IPresentationTreeDataProvider.loadHierarchy`         | *eliminated*                                                                           |
 | `PresentationTreeDataProvider.loadHierarchy`          | *eliminated*                                                                           |
 | `FilteredPresentationTreeDataProvider.loadHierarchy`  | *eliminated*                                                                           |
+| `DEPRECATED_controlledTreeWithFilteringSupport`       | *eliminated*                                                                           |
+| `DEPRECATED_controlledTreeWithVisibleNodes`           | *eliminated*                                                                           |
 
 <!---
 User Interface Changes - section to comment below

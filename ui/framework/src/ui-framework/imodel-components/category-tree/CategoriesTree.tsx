@@ -12,7 +12,7 @@ import { IModelApp, IModelConnection, SpatialViewState, ViewManager, Viewport } 
 import { Ruleset } from "@bentley/presentation-common";
 import { IPresentationTreeDataProvider, usePresentationTreeNodeLoader } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";
-import { ControlledTree, SelectionMode, useVisibleTreeNodes } from "@bentley/ui-components";
+import { ControlledTree, SelectionMode, useTreeModel } from "@bentley/ui-components";
 import { useDisposable } from "@bentley/ui-core";
 import { connectIModelConnection } from "../../redux/connectIModel";
 import { UiFramework } from "../../UiFramework";
@@ -97,8 +97,7 @@ export function CategoryTree(props: CategoryTreeProps) {
     collapsedChildrenDisposalEnabled: true,
   }), [filteredNodeLoader, visibilityHandler]));
 
-  const visibleNodes = useVisibleTreeNodes(filteredNodeLoader.modelSource);
-
+  const treeModel = useTreeModel(filteredNodeLoader.modelSource);
   const treeRenderer = useVisibilityTreeRenderer(false, true);
   const overlay = isFiltering ? <div className="filteredTreeOverlay" /> : undefined;
   const filterApplied = filteredNodeLoader !== nodeLoader;
@@ -114,7 +113,7 @@ export function CategoryTree(props: CategoryTreeProps) {
     <div className="ui-fw-categories-tree">
       <ControlledTree
         nodeLoader={filteredNodeLoader}
-        visibleNodes={visibleNodes}
+        model={treeModel}
         selectionMode={SelectionMode.None}
         treeEvents={eventHandler}
         treeRenderer={treeRenderer}

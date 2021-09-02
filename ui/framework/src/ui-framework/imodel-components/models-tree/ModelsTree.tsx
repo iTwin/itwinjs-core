@@ -15,7 +15,7 @@ import {
   IFilteredPresentationTreeDataProvider, IPresentationTreeDataProvider, usePresentationTreeNodeLoader,
 } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";
-import { ControlledTree, SelectionMode, TreeNodeItem, useVisibleTreeNodes } from "@bentley/ui-components";
+import { ControlledTree, SelectionMode, TreeNodeItem, useTreeModel } from "@bentley/ui-components";
 import { useDisposable, useOptionalDisposable } from "@bentley/ui-core";
 import { connectIModelConnection } from "../../../ui-framework/redux/connectIModel";
 import { UiFramework } from "../../../ui-framework/UiFramework";
@@ -123,7 +123,7 @@ export function ModelsTree(props: ModelsTreeProps) {
     selectionPredicate: nodeSelectionPredicate,
   }), [filteredNodeLoader, visibilityHandler, nodeSelectionPredicate]));
 
-  const visibleNodes = useVisibleTreeNodes(filteredNodeLoader.modelSource);
+  const treeModel = useTreeModel(filteredNodeLoader.modelSource);
   const treeRenderer = useVisibilityTreeRenderer(true, false);
 
   const overlay = isFiltering ? <div className="filteredTreeOverlay" /> : undefined;
@@ -140,7 +140,7 @@ export function ModelsTree(props: ModelsTreeProps) {
     <div className="ui-fw-models-tree" ref={props.rootElementRef}>
       <ControlledTree
         nodeLoader={filteredNodeLoader}
-        visibleNodes={visibleNodes}
+        model={treeModel}
         selectionMode={props.selectionMode || SelectionMode.None}
         treeEvents={eventHandler}
         treeRenderer={treeRenderer}

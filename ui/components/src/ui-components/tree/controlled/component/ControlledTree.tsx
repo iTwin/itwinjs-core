@@ -16,7 +16,7 @@ import { TreeImageLoader } from "../../ImageLoader";
 import { toRxjsObservable } from "../Observable";
 import { TreeEventDispatcher } from "../TreeEventDispatcher";
 import { TreeEvents } from "../TreeEvents";
-import { isTreeModelNode, TreeModelNode, TreeModelNodePlaceholder, VisibleTreeNodes } from "../TreeModel";
+import { computeVisibleNodes, isTreeModelNode, TreeModel, TreeModelNode, TreeModelNodePlaceholder, VisibleTreeNodes } from "../TreeModel";
 import { ITreeNodeLoader } from "../TreeNodeLoader";
 import { TreeNodeRenderer, TreeNodeRendererProps } from "./TreeNodeRenderer";
 import { RenderedItemsRange, TreeRenderer, TreeRendererProps } from "./TreeRenderer";
@@ -26,8 +26,8 @@ import { RenderedItemsRange, TreeRenderer, TreeRendererProps } from "./TreeRende
  * @public
  */
 export interface ControlledTreeProps extends CommonProps {
-  /** Flat list of nodes to be rendered in tree. */
-  visibleNodes: VisibleTreeNodes;
+  /** Model of the tree to display. */
+  model: TreeModel;
   /** Node loader used to load root nodes and placeholder nodes. */
   nodeLoader: ITreeNodeLoader;
   /** Tree events handler. */
@@ -81,22 +81,23 @@ export function ControlledTree(props: ControlledTreeProps) {
     />
   ), [props.descriptionsEnabled, props.iconsEnabled, imageLoader]);
 
-  const eventDispatcher = useEventDispatcher(props.nodeLoader, props.treeEvents, props.selectionMode, props.visibleNodes);
+  const visibleNodes = React.useMemo(() => computeVisibleNodes(props.model), [props.model]);
+  const eventDispatcher = useEventDispatcher(props.nodeLoader, props.treeEvents, props.selectionMode, visibleNodes);
 
   const treeProps: TreeRendererProps = {
     nodeRenderer,
     nodeHeight,
+    visibleNodes,
     treeActions: eventDispatcher,
     nodeLoader: props.nodeLoader,
-    visibleNodes: props.visibleNodes,
     nodeHighlightingProps: props.nodeHighlightingProps,
     onItemsRendered: props.onItemsRendered,
     width: props.width,
     height: props.height,
   };
 
-  const loading = useRootNodeLoader(props.visibleNodes, props.nodeLoader);
-  const noData = props.visibleNodes.getNumRootNodes() === 0;
+  const loading = useRootNodeLoader(visibleNodes, props.nodeLoader);
+  const noData = visibleNodes.getNumRootNodes() === 0;
   return (
     <Loader loading={loading} noData={noData} spinnerRenderer={props.spinnerRenderer} noDataRenderer={props.noDataRenderer}>
       {props.treeRenderer ? props.treeRenderer(treeProps) : <TreeRenderer {...treeProps} />}

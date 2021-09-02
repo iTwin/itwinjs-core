@@ -9,37 +9,30 @@ import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { renderHook } from "@testing-library/react-hooks";
 import { TreeEventHandler, TreeEventHandlerParams } from "../../../ui-components/tree/controlled/TreeEventHandler";
 import {
-  usePagedTreeNodeLoader, useTreeEventsHandler, useTreeModelSource, useTreeNodeLoader, useVisibleTreeNodes,
+  usePagedTreeNodeLoader, useTreeEventsHandler, useTreeModel, useTreeModelSource, useTreeNodeLoader,
 } from "../../../ui-components/tree/controlled/TreeHooks";
-import { MutableTreeModel, TreeModel, VisibleTreeNodes } from "../../../ui-components/tree/controlled/TreeModel";
+import { MutableTreeModel, TreeModel } from "../../../ui-components/tree/controlled/TreeModel";
 import { TreeModelChanges, TreeModelSource } from "../../../ui-components/tree/controlled/TreeModelSource";
 import { ITreeNodeLoader } from "../../../ui-components/tree/controlled/TreeNodeLoader";
 import { TreeDataProvider, TreeDataProviderRaw } from "../../../ui-components/tree/TreeDataProvider";
 
-describe("useVisibleTreeNodes", () => {
+describe("useTreeModel", () => {
   const modelSourceMock = moq.Mock.ofType<TreeModelSource>();
+  const testModel = new MutableTreeModel();
   let onModelChangeEvent: BeUiEvent<[TreeModel, TreeModelChanges]>;
-  const testVisibleNodes: VisibleTreeNodes = {
-    getAtIndex: () => undefined,
-    getModel: () => new MutableTreeModel(),
-    getNumNodes: () => 0,
-    getNumRootNodes: () => 0,
-    getIndexOfNode: () => -1,
-    [Symbol.iterator]: () => [][Symbol.iterator](),
-  };
 
   beforeEach(() => {
     modelSourceMock.reset();
     onModelChangeEvent = new BeUiEvent<[TreeModel, TreeModelChanges]>();
 
     modelSourceMock.setup((x) => x.onModelChanged).returns(() => onModelChangeEvent);
-    modelSourceMock.setup((x) => x.getVisibleNodes()).returns(() => testVisibleNodes);
+    modelSourceMock.setup((x) => x.getModel()).returns(() => testModel);
   });
 
   it("subscribes to onModelChange event and returns visible nodes", () => {
     const spy = sinon.spy(onModelChangeEvent, "addListener");
     const { result } = renderHook(
-      (props: { modelSource: TreeModelSource }) => useVisibleTreeNodes(props.modelSource),
+      (props: { modelSource: TreeModelSource }) => useTreeModel(props.modelSource),
       { initialProps: { modelSource: modelSourceMock.object } },
     );
 
@@ -51,7 +44,7 @@ describe("useVisibleTreeNodes", () => {
     const firstModelEventAddSpy = sinon.spy(onModelChangeEvent, "addListener");
     const firstModelEventRemoveSpy = sinon.spy(onModelChangeEvent, "removeListener");
     const { rerender } = renderHook(
-      (props: { modelSource: TreeModelSource }) => useVisibleTreeNodes(props.modelSource),
+      (props: { modelSource: TreeModelSource }) => useTreeModel(props.modelSource),
       { initialProps: { modelSource: modelSourceMock.object } },
     );
     expect(firstModelEventAddSpy).to.have.been.calledOnce;

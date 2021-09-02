@@ -6,7 +6,7 @@ import * as React from "react";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import {
   ControlledTree, DelayLoadedTreeNodeItem, EditableTreeDataProvider, SelectionMode, SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy,
-  TreeModelNode, TreeNodeItem, useTreeEventsHandler, useTreeModelSource, useTreeNodeLoader, useVisibleTreeNodes,
+  TreeModelNode, TreeNodeItem, useTreeEventsHandler, useTreeModel, useTreeModelSource, useTreeNodeLoader,
 } from "@bentley/ui-components";
 import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl } from "@bentley/ui-framework";
 import { Select, SelectOption } from "@itwin/itwinui-react";
@@ -39,7 +39,7 @@ function TreeExampleContent() {
   }, []);
   const modelSource = useTreeModelSource(dataProvider);
   const nodeLoader = useTreeNodeLoader(dataProvider, modelSource);
-  const visibleNodes = useVisibleTreeNodes(modelSource);
+  const treeModel = useTreeModel(modelSource);
   const nodeUpdatedCallback = React.useCallback((node: TreeModelNode, newValue: string) => {
     modelSource.modifyModel((model) => {
       const modelNode = model.getNode(node.id);
@@ -72,7 +72,7 @@ function TreeExampleContent() {
       <div style={{ flex: "1", height: "calc(100% - 22px)" }}>
         <ControlledTree
           nodeLoader={nodeLoader}
-          visibleNodes={visibleNodes}
+          model={treeModel}
           selectionMode={selectionMode}
           treeEvents={eventsHandler}
         />

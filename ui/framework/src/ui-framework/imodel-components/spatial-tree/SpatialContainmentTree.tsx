@@ -11,7 +11,7 @@ import * as React from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Ruleset } from "@bentley/presentation-common";
 import { UnifiedSelectionTreeEventHandler, usePresentationTreeNodeLoader } from "@bentley/presentation-components";
-import { ControlledTree, SelectionMode, useVisibleTreeNodes } from "@bentley/ui-components";
+import { ControlledTree, SelectionMode, useTreeModel } from "@bentley/ui-components";
 import { useDisposable } from "@bentley/ui-core";
 import { connectIModelConnection } from "../../redux/connectIModel";
 import { ClassGroupingOption } from "../Common";
@@ -57,12 +57,12 @@ export function SpatialContainmentTree(props: SpatialContainmentTreeProps) {
     nodeLoader,
     collapsedChildrenDisposalEnabled: true,
   }), [nodeLoader]));
-  const visibleNodes = useVisibleTreeNodes(nodeLoader.modelSource);
+  const treeModel = useTreeModel(nodeLoader.modelSource);
 
   return (
     <div className="ui-fw-spatial-tree">
       <ControlledTree
-        visibleNodes={visibleNodes}
+        model={treeModel}
         nodeLoader={nodeLoader}
         treeEvents={eventHandler}
         selectionMode={SelectionMode.Extended}

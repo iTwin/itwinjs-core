@@ -7,7 +7,7 @@ import { PropertyRecord } from "@bentley/ui-abstract";
 import {
   AbstractTreeNodeLoaderWithProvider, ControlledTree, DelayLoadedTreeNodeItem, ITreeDataProvider, MutableTreeModel, SelectionMode, Subscription,
   TreeCheckboxStateChangeEventArgs, TreeEventHandler, TreeModel, TreeModelChanges, TreeModelNode, TreeNodeItem, TreeSelectionModificationEventArgs,
-  TreeSelectionReplacementEventArgs, useTreeEventsHandler, useTreeModelSource, useTreeNodeLoader, useVisibleTreeNodes,
+  TreeSelectionReplacementEventArgs, useTreeEventsHandler, useTreeModel, useTreeModelSource, useTreeNodeLoader,
 } from "@bentley/ui-components";
 import { CheckBoxState } from "@bentley/ui-core";
 import { ConfigurableCreateInfo, WidgetControl } from "@bentley/ui-framework";
@@ -23,13 +23,13 @@ function TreeSelectionDemoWidget() {
   const dataProvider = React.useMemo(createDataProvider, []);
   const modelSource = useTreeModelSource(dataProvider);
   const nodeLoader = useTreeNodeLoader(dataProvider, modelSource);
-  const visibleNodes = useVisibleTreeNodes(modelSource);
+  const treeModel = useTreeModel(modelSource);
   const eventsHandler = useTreeEventsHandler(React.useCallback(() => new DemoTreeEventsHandler(nodeLoader), [nodeLoader]));
   return (
     <div style={{ height: "100%" }}>
       <ControlledTree
         nodeLoader={nodeLoader}
-        visibleNodes={visibleNodes}
+        model={treeModel}
         treeEvents={eventsHandler}
         selectionMode={SelectionMode.Extended}
       />

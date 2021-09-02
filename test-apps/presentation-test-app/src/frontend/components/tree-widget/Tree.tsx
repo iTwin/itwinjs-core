@@ -8,7 +8,7 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   DiagnosticsProps, useControlledPresentationTreeFiltering, usePresentationTreeNodeLoader, useUnifiedSelectionTreeEventHandler,
 } from "@bentley/presentation-components";
-import { ControlledTree, SelectionMode, useVisibleTreeNodes } from "@bentley/ui-components";
+import { ControlledTree, SelectionMode, useTreeModel } from "@bentley/ui-components";
 
 const PAGING_SIZE = 10;
 
@@ -45,11 +45,11 @@ export function Tree(props: Props) {
   }, [isFiltering, matchesCount, onFilteringStateChange]);
 
   const eventHandler = useUnifiedSelectionTreeEventHandler({ nodeLoader: filteredNodeLoader, collapsedChildrenDisposalEnabled: true, name: "TreeWithHooks" });
-  const visibleNodes = useVisibleTreeNodes(filteredModelSource);
+  const treeModel = useTreeModel(filteredModelSource);
 
   return (
     <ControlledTree
-      visibleNodes={visibleNodes}
+      model={treeModel}
       treeEvents={eventHandler}
       nodeLoader={filteredNodeLoader}
       selectionMode={SelectionMode.Extended}
