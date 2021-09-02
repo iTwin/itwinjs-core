@@ -139,6 +139,10 @@
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal" ]
     },
     {
+      "name": "@bentley/imodeljs-transformer",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@bentley/itwin-client",
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -229,10 +233,6 @@
     {
       "name": "@bentley/units-schema",
       "allowedCategories": [ "backend", "common" ]
-    },
-    {
-      "name": "@bentley/usage-logging-client",
-      "allowedCategories": [ "backend", "frontend" ]
     },
     {
       "name": "@bentley/webgl-compatibility",
@@ -845,6 +845,10 @@
     {
       "name": "react-split-pane",
       "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "react-table",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "react-test-renderer",

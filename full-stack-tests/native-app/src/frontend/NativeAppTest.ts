@@ -3,8 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
+import { AsyncMethodsOf, PromiseReturnType } from "@bentley/bentleyjs-core";
 import { IModelCloudEnvironment, IModelQuery } from "@bentley/imodelhub-client";
-import { AsyncMethodsOf, AuthorizedFrontendRequestContext, IpcApp, PromiseReturnType } from "@bentley/imodeljs-frontend";
+import { AuthorizedFrontendRequestContext, IpcApp } from "@bentley/imodeljs-frontend";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import { testIpcChannel, TestIpcInterface } from "../common/IpcInterfaces";

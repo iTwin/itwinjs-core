@@ -9,7 +9,6 @@ import * as ReactDOM from "react-dom";
 import { Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { IModelApp, IModelAppOptions } from "@bentley/imodeljs-frontend";
-import { PresentationUnitSystem } from "@bentley/presentation-common";
 // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Imports
 import { Presentation } from "@bentley/presentation-frontend";
 // __PUBLISH_EXTRACT_END__
@@ -68,7 +67,7 @@ export class SampleApp {
       activeLocale: IModelApp.i18n.languageList()[0],
 
       // specify the preferred unit system
-      activeUnitSystem: PresentationUnitSystem.Metric,
+      activeUnitSystem: "metric",
     });
     // __PUBLISH_EXTRACT_END__
 

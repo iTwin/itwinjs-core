@@ -397,7 +397,7 @@ export class IModelApp {
     this._accuSnap = (opts.accuSnap !== undefined) ? opts.accuSnap : new AccuSnap();
     this._locateManager = (opts.locateManager !== undefined) ? opts.locateManager : new ElementLocateManager();
     this._tentativePoint = (opts.tentativePoint !== undefined) ? opts.tentativePoint : new TentativePoint();
-    this._extensionAdmin = (opts.extensionAdmin !== undefined) ? opts.extensionAdmin : new ExtensionAdmin({});
+    this._extensionAdmin = (opts.extensionAdmin !== undefined) ? opts.extensionAdmin : new ExtensionAdmin();
     this._quantityFormatter = (opts.quantityFormatter !== undefined) ? opts.quantityFormatter : new QuantityFormatter();
     this._uiAdmin = (opts.uiAdmin !== undefined) ? opts.uiAdmin : new UiAdmin();
     this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);

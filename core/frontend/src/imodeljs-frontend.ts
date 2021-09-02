@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 export * from "./AccuDraw";
 export * from "./AccuSnap";
 export * from "./AuxCoordSys";
@@ -13,6 +14,7 @@ export * from "./ChangeFlags";
 export * from "./ContextRealityModelState";
 export * from "./CoordSystem";
 export * from "./DecorationsCache";
+export * from "./DeprecatedUtils";
 export * from "./DevTools";
 export * from "./DisplayStyleState";
 export * from "./DrawingViewState";
@@ -20,9 +22,7 @@ export * from "./ElementLocateManager";
 export * from "./EmphasizeElements";
 export * from "./EmphasizeElementsProps";
 export * from "./EntityState";
-export * from "./FeatureLogBatchClient";
 export * from "./FeatureOverrideProvider";
-export * from "./FeatureTrackingManager";
 export * from "./FlashSettings";
 export * from "./FrontendLoggerCategory";
 export * from "./FrontendRequestContext";
@@ -77,7 +77,6 @@ export * from "./ViewStatus";
 export * from "./WebViewerApp";
 export * from "./extension/Extension";
 export * from "./extension/ExtensionAdmin";
-export * from "./extension/loaders/ExtensionServiceExtensionLoader";
 export * from "./extension/loaders/ExternalServerExtensionLoader";
 export * from "./properties/AngleDescription";
 export * from "./properties/FormattedQuantityDescription";

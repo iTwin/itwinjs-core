@@ -36,9 +36,7 @@ export class BlankConnectionExample {
 
     // turn on the background map
     const style = blankView.displayStyle;
-    const viewFlags = style.viewFlags;
-    viewFlags.backgroundMap = true;
-    style.viewFlags = viewFlags; // call to accessor to get the json properties to reflect the changes to ViewFlags
+    style.viewFlags = style.viewFlags.with("backgroundMap", true);
 
     style.backgroundColor = ColorDef.white;
 

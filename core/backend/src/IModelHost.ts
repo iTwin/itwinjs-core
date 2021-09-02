@@ -187,7 +187,11 @@ export class IModelHost {
 
   private static _platform?: typeof IModelJsNative;
   /** @internal */
-  public static get platform(): typeof IModelJsNative { return this._platform!; }
+  public static get platform(): typeof IModelJsNative {
+    if (this._platform === undefined)
+      throw new Error("IModelHost.startup must be called first");
+    return this._platform;
+  }
 
   public static configuration?: IModelHostConfiguration;
   /** Event raised just after the backend IModelHost was started */
@@ -415,6 +419,7 @@ export class IModelHost {
 
   private static setupCacheDirs(configuration: IModelHostConfiguration) {
     this._cacheDir = configuration.cacheDir ? path.normalize(configuration.cacheDir) : NativeLibrary.defaultCacheDir;
+    IModelJsFs.recursiveMkDirSync(this._cacheDir); // make sure the directory for cacheDir exists.
     this._briefcaseCacheDir = path.join(this._cacheDir, "imodels");
   }
 

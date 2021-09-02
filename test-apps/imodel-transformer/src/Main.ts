@@ -9,9 +9,10 @@ import { assert, Guid, GuidString, Id64String, Logger, LogLevel } from "@bentley
 import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { Version } from "@bentley/imodelhub-client";
 import {
-  BackendLoggerCategory, BackendRequestContext, IModelDb, IModelHost, IModelJsFs, SnapshotDb,
+  BackendRequestContext, IModelDb, IModelHost, IModelJsFs, SnapshotDb,
   StandaloneDb,
 } from "@bentley/imodeljs-backend";
+import { TransformerLoggerCategory } from "@bentley/imodeljs-transformer";
 import { BriefcaseIdValue, ChangesetId, ChangesetIndex, ChangesetProps, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { ElementUtils } from "./ElementUtils";
@@ -110,9 +111,9 @@ void (async () => {
     Logger.setLevel(loggerCategory, LogLevel.Info);
 
     if (args.logTransformer) { // optionally enable verbose transformation logging
-      Logger.setLevel(BackendLoggerCategory.IModelExporter, LogLevel.Trace);
-      Logger.setLevel(BackendLoggerCategory.IModelImporter, LogLevel.Trace);
-      Logger.setLevel(BackendLoggerCategory.IModelTransformer, LogLevel.Trace);
+      Logger.setLevel(TransformerLoggerCategory.IModelExporter, LogLevel.Trace);
+      Logger.setLevel(TransformerLoggerCategory.IModelImporter, LogLevel.Trace);
+      Logger.setLevel(TransformerLoggerCategory.IModelTransformer, LogLevel.Trace);
     }
 
     let requestContext: AuthorizedClientRequestContext | BackendRequestContext;

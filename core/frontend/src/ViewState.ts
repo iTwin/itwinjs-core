@@ -8,8 +8,8 @@
 
 import { assert, BeEvent, Id64, Id64Arg, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import {
-  Angle, AxisOrder, ClipVector, Constant, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d,
-  PolyfaceBuilder, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY, XYAndZ, XYZ, YawPitchRollAngles,
+  Angle, AxisOrder, ClipVector, Constant, Geometry, LongitudeLatitudeNumber, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d,
+  PolyfaceBuilder, Range2d, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY, XYAndZ, XYZ, YawPitchRollAngles,
 } from "@bentley/geometry-core";
 import {
   AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef,
@@ -20,6 +20,7 @@ import {
 import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemState } from "./AuxCoordSys";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState } from "./DisplayStyleState";
+import { DrawingViewState } from "./DrawingViewState";
 import { ElementState } from "./EntityState";
 import { Frustum2d } from "./Frustum2d";
 import { IModelApp } from "./IModelApp";
@@ -30,18 +31,17 @@ import { GraphicType } from "./render/GraphicBuilder";
 import { RenderClipVolume } from "./render/RenderClipVolume";
 import { RenderMemory } from "./render/RenderMemory";
 import { RenderScheduleState } from "./RenderScheduleState";
+import { SheetViewState } from "./SheetViewState";
+import { SpatialViewState } from "./SpatialViewState";
 import { StandardView, StandardViewId } from "./StandardView";
 import { DisclosedTileTreeSet, TileTreeReference } from "./tile/internal";
+import { ViewChangeOptions } from "./ViewAnimation";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { areaToEyeHeight, areaToEyeHeightFromGcs, GlobalLocation } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
-import { ViewChangeOptions } from "./ViewAnimation";
 import { Viewport } from "./Viewport";
-import { DrawingViewState } from "./DrawingViewState";
-import { SpatialViewState } from "./SpatialViewState";
-import { SheetViewState } from "./SheetViewState";
-import { ViewStatus } from "./ViewStatus";
 import { ViewPose, ViewPose2d, ViewPose3d } from "./ViewPose";
+import { ViewStatus } from "./ViewStatus";
 
 /** Describes the largest and smallest values allowed for the extents of a [[ViewState]].
  * Attempts to exceed these limits in any dimension will fail, preserving the previous extents.
@@ -94,6 +94,12 @@ class GridDecorator {
     context.drawStandardGrid(origin, matrix, spacing, gridsPerRef, isoGrid, orientation !== GridOrientationType.View ? fixedRepsAuto : undefined);
   }
 }
+
+const scratchCorners = Range3d.createNull().corners();
+const scratchRay = Ray3d.createZero();
+const unitRange2d = Range2d.createXYXY(0, 0, 1, 1);
+const scratchRange2d = Range2d.createNull();
+const scratchRange2dIntersect = Range2d.createNull();
 
 /** The front-end state of a [[ViewDefinition]] element.
  * A ViewState is typically associated with a [[Viewport]] to display the contents of the view on the screen. A ViewState being displayed by a Viewport is considered to be
@@ -200,7 +206,6 @@ export abstract class ViewState extends ElementState {
   }
 
   /** Flags controlling various aspects of this view's [[DisplayStyleState]].
-   * @note Don't modify this object directly - clone it and modify the clone, then pass the clone to the setter.
    * @see [DisplayStyleSettings.viewFlags]($common)
    */
   public get viewFlags(): ViewFlags {
@@ -444,10 +449,24 @@ export abstract class ViewState extends ElementState {
   }
 
   /** @internal */
-  public static getStandardViewMatrix(id: StandardViewId): Matrix3d { return StandardView.getStandardRotation(id); }
+  public static getStandardViewMatrix(id: StandardViewId): Matrix3d {
+    return StandardView.getStandardRotation(id);
+  }
 
   /** Orient this view to one of the [[StandardView]] rotations. */
   public setStandardRotation(id: StandardViewId) { this.setRotation(ViewState.getStandardViewMatrix(id)); }
+
+  /** Orient this view to one of the [[StandardView]] rotations, if the the view is not viewing the project then the
+   * standard rotation is relative to the global position rather than the project.
+   */
+  public setStandardGlobalRotation(id: StandardViewId) {
+    const worldToView = ViewState.getStandardViewMatrix(id);
+    const globeToWorld = this.getGlobeRotation();
+    if (globeToWorld)
+      return this.setRotation(worldToView.multiplyMatrixMatrix(globeToWorld));
+    else
+      this.setRotation(worldToView);
+  }
 
   /** Get the target point of the view. If there is no camera, center is returned. */
   public getTargetPoint(result?: Point3d): Point3d { return this.getCenter(result); }
@@ -1017,6 +1036,59 @@ export abstract class ViewState extends ElementState {
     return normal;
   }
 
+  /** Return true if the view is looking at the current iModel project extents or
+   * false if the viewed area do does not include more than one percent of the project.
+   */
+  public getIsViewingProject(): boolean {
+    const worldToNpc =  this.computeWorldToNpc();
+    if (!worldToNpc || !worldToNpc.map)
+      return false;
+    const expandedRange = this.iModel.projectExtents.clone();
+    expandedRange.expandInPlace(10E3);
+    const corners = expandedRange.corners(scratchCorners);
+    worldToNpc.map.transform0.multiplyPoint3dArrayQuietNormalize(corners);
+    scratchRange2d.setNull();
+    corners.forEach((corner) => scratchRange2d.extendXY(corner.x, corner.y));
+    const intersection = scratchRange2d.intersect(unitRange2d, scratchRange2dIntersect);
+    if (!intersection || intersection.isNull)
+      return false;
+
+    const area = (intersection.high.x - intersection.low.x) * (intersection.high.y - intersection.low.y);
+    return area > 1.0E-2;
+  }
+
+  /** If the view is not of the project as determined by [[getIsViewingProject]] then return
+   * the rotation from a global reference frame to world coordinates.  The global reference frame includes
+   * Y vector towards true north, X parallel to the equator and Z perpendicular to the ellipspoid surface
+   */
+  public getGlobeRotation(): Matrix3d | undefined {
+    if (!this.iModel.isGeoLocated || this.globeMode !== GlobeMode.Ellipsoid || this.getIsViewingProject())
+      return undefined;
+
+    const backgroundMapGeometry = this.displayStyle.getBackgroundMapGeometry();
+    if (!backgroundMapGeometry)
+      return undefined;
+
+    const targetRay = Ray3d.create(this.getCenter(), this.getRotation().rowZ().negate(), scratchRay);
+    const earthEllipsoid = backgroundMapGeometry.getEarthEllipsoid();
+    const intersectFractions = new Array<number>(), intersectAngles = new Array<LongitudeLatitudeNumber>();
+    if (earthEllipsoid.intersectRay(targetRay, intersectFractions, undefined, intersectAngles) < 2)
+      return undefined;
+
+    let minIndex = 0, minFraction = -1.0E10;
+    for (let i = 0; i < intersectFractions.length; i++) {
+      const fraction = intersectFractions[i];
+      if (fraction < minFraction) {
+        minFraction = fraction;
+        minIndex = i;
+      }
+    }
+    const angles = intersectAngles[minIndex];
+    const pointAndDerivs = earthEllipsoid.radiansToPointAndDerivatives(angles.longitudeRadians, angles.latitudeRadians, false);
+    return Matrix3d.createRigidFromColumns(pointAndDerivs.vectorU, pointAndDerivs.vectorV, AxisOrder.XYZ)?.transpose();
+
+  }
+
   /** A value that represents the global scope of the view -- a value greater than one indicates that the scope of this view is global (viewing most of Earth). */
   public get globalScopeFactor(): number {
     return this.getExtents().magnitudeXY() / Constant.earthRadiusWGS84.equator;
@@ -1262,6 +1334,13 @@ export abstract class ViewState3d extends ViewState {
     return (undefined === eyeHeight) ? (this.extents.magnitudeXY() / Constant.earthRadiusWGS84.equator) : (eyeHeight / ViewState3d._minGlobeEyeHeight);
   }
 
+  /** A value representing the degree to which a view is viewing the globe as opposed to a specific location
+   * a value of zero or less indicates that the view is not global, a value between zero and one represent a semi
+   * global view.  Values greater than one indicate a global view.
+   *
+   * A Global view is arbitrarily designated as a camera view with the camera height greater than one fourth of the globe
+   * radius or an orthographic view with view diagonal greater than one fourth of the globe radius.
+   */
   public globalViewTransition(): number {
     if (undefined === this.iModel.ecefLocation)
       return 0.0;
@@ -1354,7 +1433,7 @@ export abstract class ViewState3d extends ViewState {
   }
 
   private finishLookAtGlobalLocation(targetPointCartographic: Cartographic, origEyePoint: Point3d, lEyePoint: Point3d, targetPoint: Point3d, pitchAngleRadians: number): number {
-    targetPointCartographic.latitude += 10.0;
+    targetPointCartographic.latitude += .001;
     const northOfEyePoint = this.cartographicToRoot(targetPointCartographic)!;
     let upVector = northOfEyePoint.unitVectorTo(lEyePoint)!;
     if (this.globeMode === GlobeMode.Plane)
@@ -1514,8 +1593,10 @@ export abstract class ViewState3d extends ViewState {
 
   /** Get the target point of the view. If there is no camera, view center is returned. */
   public override getTargetPoint(result?: Point3d): Point3d {
-    if (!this._cameraOn)
-      return super.getTargetPoint(result);
+    if (!this._cameraOn) {
+      const earthFocalPoint = this.getEarthFocalPoint();
+      return earthFocalPoint ? earthFocalPoint : super.getTargetPoint(result);
+    }
 
     return this.getEyePoint().plusScaled(this.getZVector(), -1.0 * this.getFocusDistance(), result);
   }
@@ -1704,6 +1785,32 @@ export abstract class ViewState3d extends ViewState {
     const newTarget = trans.multiplyPoint3d(this.getTargetPoint());
     const upVec = rotation.multiplyVector(this.getYVector());
     return this.lookAt(this.getEyePoint(), newTarget, upVec);
+  }
+
+  /** Move camera about the global ellipsoid. This rotates the camera position about the center of the global ellipsoid maintaining the current height.
+   * @param fromPoint Point to pan from.
+   * @param point Point to point to.
+   * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
+   */
+  public moveCameraGlobal(fromPoint: Point3d, toPoint: Point3d): ViewStatus {
+    if (!this.iModel.ecefLocation)
+      return ViewStatus.NotGeolocated;
+
+    if (this.globeMode !== GlobeMode.Ellipsoid)
+      return ViewStatus.NotEllipsoidGlobeMode;
+
+    const earthCenter = this.iModel.ecefLocation?.earthCenter;
+    const rMatrix = Matrix3d.createRotationVectorToVector(Vector3d.createStartEnd(earthCenter, toPoint), Vector3d.createStartEnd(earthCenter, fromPoint));
+    if (!rMatrix)
+      return ViewStatus.DegenerateGeometry;
+
+    const rotationTransform = Transform.createFixedPointAndMatrix(earthCenter, rMatrix);
+    const frustum = this.calculateFrustum();
+    if (!frustum)
+      return ViewStatus.DegenerateGeometry;
+
+    frustum.multiply(rotationTransform);
+    return this.setupFromFrustum(frustum);
   }
 
   /** Get the distance from the eyePoint to the front plane for this view. */
@@ -1944,6 +2051,93 @@ export abstract class ViewState3d extends ViewState {
   public override getModelElevation(modelId: Id64String): number {
     const settings = this.getDisplayStyle3d().settings.getPlanProjectionSettings(modelId);
     return settings && settings.elevation ? settings.elevation : 0;
+  }
+
+  /** If the background map is displayed, return the point on the globe in directly front of the eye (or in center of view if camera off)
+   *  This is generally a better target point for orthographic views than the view center which can be far from the area of interest.
+   * @public
+   */
+  public getEarthFocalPoint(): Point3d | undefined {
+    if (!this.iModel.ecefLocation || this.globeMode !== GlobeMode.Ellipsoid)
+      return undefined;
+
+    const backgroundMapGeometry = this.displayStyle.getBackgroundMapGeometry();
+    if (undefined === backgroundMapGeometry)
+      return undefined;
+
+    const earthEllipsoid = backgroundMapGeometry.getEarthEllipsoid();
+    const viewZ = this.getRotation().rowZ();
+    const center = this.getCenter();
+    const eye = this.isCameraEnabled() ? this.camera.getEyePoint() : center.plusScaled(viewZ, Constant.diameterOfEarth);
+    const eyeRay = Ray3d.create(eye, viewZ);
+    const fractions = new Array<number>(), points = new Array<Point3d>();
+
+    if (earthEllipsoid.intersectRay(eyeRay, fractions, points, undefined)) {
+      let fraction = -1.0E10, index = -1;
+      for (let i = 0; i < fractions.length; i++)
+        if (fractions[i] > fraction) {
+          fraction = fractions[i];
+          index = i;
+        }
+      return (index >= 0 && fraction < 0) ? points[index] : undefined;
+    } else {
+      return eyeRay.projectPointToRay(center);
+    }
+  }
+
+  /**
+   * For a geoLocated project, align the view with the global allipsoid by rotating
+   * around the supplied target point such that the view axis points toward the
+   * globe center. If the viewing height is below the global transition threshold.
+   * @param target The rotation target or pivot point.  This point will remain stationary in the view.
+   * @param transition If this is defined and true then the rotation is scaled by the [[ViewState.globalViewTransition]]  This
+   * will cause a smooth transition as a view is zoomed out from a specific location to a more global representation.
+   * @public
+   */
+
+  public alignToGlobe(target: Point3d, transition?: boolean): ViewStatus {
+    if (!this.iModel.ecefLocation)
+      return ViewStatus.NotGeolocated;
+
+    if (this.globeMode !== GlobeMode.Ellipsoid)
+      return ViewStatus.NotEllipsoidGlobeMode;
+
+    const globalTransition = this.globalViewTransition();
+
+    if (globalTransition <= 0)
+      return ViewStatus.HeightBelowTransition;
+
+    const earthCenter = this.iModel.ecefLocation?.earthCenter;
+    const viewCenter = this.getCenter();
+    const viewZ = this.getRotation().rowZ();
+    const eye = this.isCameraEnabled() ? this.camera.eye : viewCenter.plusScaled(viewZ, Constant.diameterOfEarth);
+
+    const centerToEye = earthCenter.unitVectorTo(eye);
+    if (!centerToEye)
+      return ViewStatus.DegenerateGeometry;
+
+    const axis = viewZ.unitCrossProduct(centerToEye);
+    if (!axis)
+      return ViewStatus.DegenerateGeometry;
+
+    const theta = viewZ.angleTo(centerToEye);
+    if (theta.radians > Angle.piOver2Radians)
+      return ViewStatus.DegenerateGeometry;
+
+    if (theta.isAlmostZero)
+      return ViewStatus.NoTransitionRequired;
+
+    const transitionRotation = Matrix3d.createRotationAroundVector(axis, transition ? theta.cloneScaled(globalTransition) : theta);
+    if (!transitionRotation)
+      return ViewStatus.DegenerateGeometry;
+
+    const transitionTransform = Transform.createFixedPointAndMatrix(target, transitionRotation);
+    const frustum = this.calculateFrustum();
+    if (!frustum)
+      return ViewStatus.DegenerateGeometry;
+
+    frustum.multiply(transitionTransform);
+    return  this.setupFromFrustum(frustum);
   }
 }
 
