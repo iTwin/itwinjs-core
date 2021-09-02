@@ -8,11 +8,11 @@
 
 import { BeDuration, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcOpenProps, IModelRpcProps, IModelVersion, RequestNewBriefcaseProps, RpcPendingResponse, SyncMode,
+  BriefcaseProps, IModelConnectionProps, IModelRpcOpenProps, IModelRpcProps, IModelVersion, RpcPendingResponse, SyncMode,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
-import { BriefcaseManager } from "../BriefcaseManager";
+import { BriefcaseManager, RequestNewBriefcaseArg } from "../BriefcaseManager";
 import { CheckpointManager, CheckpointProps, V1CheckpointManager } from "../CheckpointManager";
 import { BriefcaseDb, IModelDb, SnapshotDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
@@ -60,7 +60,7 @@ export class RpcBriefcaseUtility {
             try {
               if (args.forceDownload)
                 throw new Error(); // causes delete below
-              const db = await BriefcaseDb.open(user, { fileName });
+              const db = await BriefcaseDb.open({ user, fileName });
               if (db.changeset.id !== tokenProps.changeset?.id) {
                 const toIndex = tokenProps.changeset?.index ??
                   (await IModelHost.hubAccess.getChangesetFromVersion({ user, iModelId, version: IModelVersion.asOfChangeSet(tokenProps.changeset!.id) })).index;
@@ -68,7 +68,7 @@ export class RpcBriefcaseUtility {
               }
               return db;
             } catch (error) {
-              if (!(error instanceof IModelError && error.errorNumber === IModelStatus.AlreadyOpen))
+              if (!(error.errorNumber === IModelStatus.AlreadyOpen))
                 // somehow we have this briefcaseId and the file exists, but we can't open it. Delete it.
                 await BriefcaseManager.deleteBriefcaseFiles(fileName, args.user);
             }
@@ -78,14 +78,15 @@ export class RpcBriefcaseUtility {
     }
 
     // no local briefcase available. Download one and open it.
-    const request: RequestNewBriefcaseProps = {
+    const request: RequestNewBriefcaseArg = {
+      user,
       iTwinId: tokenProps.contextId!,
       iModelId,
       briefcaseId: args.syncMode === SyncMode.PullOnly ? 0 : undefined, // if briefcaseId is undefined, we'll acquire a new one.
     };
 
-    const props = await BriefcaseManager.downloadBriefcase(user, request);
-    return BriefcaseDb.open(user, { fileName: props.fileName });
+    const props = await BriefcaseManager.downloadBriefcase(request);
+    return BriefcaseDb.open({ user, fileName: props.fileName });
   }
 
   private static _briefcasePromise: Promise<BriefcaseDb> | undefined;

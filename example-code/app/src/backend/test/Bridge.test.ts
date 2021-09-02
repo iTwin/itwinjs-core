@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as path from "path";
+
 // __PUBLISH_EXTRACT_START__ Bridge.imports.example-code
 import { GuidString, Id64String } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
@@ -79,11 +80,11 @@ async function runBridgeFirstTime(user: AuthorizedClientRequestContext, iModelId
   // Start the IModelHost
   await IModelHost.startup();
 
-  const props = await BriefcaseManager.downloadBriefcase(user, { iTwinId, iModelId });
-  const briefcase = await BriefcaseDb.open(user, { fileName: props.fileName });
+  const props = await BriefcaseManager.downloadBriefcase({ user, iTwinId, iModelId });
+  const briefcase = await BriefcaseDb.open({ user, fileName: props.fileName });
 
   // I. Import the schema.
-  await briefcase.importSchemas(user, [path.join(assetsDir, "RobotWorld.ecschema.xml")]);
+  await briefcase.importSchemas([path.join(assetsDir, "RobotWorld.ecschema.xml")]);
   //    You *must* push this to the iModel right now.
   briefcase.saveChanges();
   await briefcase.pullChanges({ user });

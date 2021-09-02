@@ -224,7 +224,7 @@ describe("HubMock", () => {
 
   it("use HubMock with BriefcaseManager", async () => {
     const iModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "test imodel", revision0 });
-    const briefcase = await BriefcaseManager.downloadBriefcase(user, { iTwinId, iModelId });
+    const briefcase = await BriefcaseManager.downloadBriefcase({ user, iTwinId, iModelId });
     assert.equal(briefcase.briefcaseId, 2);
     assert.equal(briefcase.changeset.id, "");
     assert.equal(briefcase.iModelId, iModelId);

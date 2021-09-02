@@ -46,6 +46,8 @@ import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 
+/// cspell:ignore ecef
+
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
 /** Options for [[IModelDb.Models.updateModel]]
@@ -243,7 +245,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal */
-  public async reattachDaemon(_requestContext: AuthorizedClientRequestContext): Promise<void> { }
+  public async reattachDaemon(_user: AuthorizedClientRequestContext): Promise<void> { }
 
   /** Event called when the iModel is about to be closed */
   public readonly onBeforeClose = new BeEvent<() => void>();
@@ -801,14 +803,12 @@ export abstract class IModelDb extends IModel {
   /** Import an ECSchema. On success, the schema definition is stored in the iModel.
    * This method is asynchronous (must be awaited) because, in the case where this IModelDb is a briefcase, this method first obtains the schema lock from the iModel server.
    * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
-   * @param requestContext Context used for logging and authorization (if applicable)
-   * @param schemaFileName  Full path to an ECSchema.xml file that is to be imported.
+   * @param schemaFileName  array of Full paths to ECSchema.xml files to be imported.
    * @throws [[IModelError]] if the schema lock cannot be obtained or there is a problem importing the schema.
    * @note Changes are saved if importSchemas is successful and abandoned if not successful.
    * @see querySchemaVersion
    */
-  public async importSchemas(requestContext: ClientRequestContext, schemaFileNames: LocalFileName[]): Promise<void> {
-    requestContext.enter();
+  public async importSchemas(schemaFileNames: LocalFileName[]): Promise<void> {
     if (this.isSnapshot || this.isStandalone) {
       const status = this.nativeDb.importSchemas(schemaFileNames);
       if (DbResult.BE_SQLITE_OK !== status)
@@ -816,9 +816,6 @@ export abstract class IModelDb extends IModel {
       this.clearCaches();
       return;
     }
-
-    if (!(requestContext instanceof AuthorizedClientRequestContext))
-      throw new IModelError(BentleyStatus.ERROR, "Importing the schema requires an AuthorizedClientRequestContext");
 
     await this.acquireSchemaLock();
 
@@ -833,15 +830,13 @@ export abstract class IModelDb extends IModel {
   /** Import ECSchema(s) serialized to XML. On success, the schema definition is stored in the iModel.
    * This method is asynchronous (must be awaited) because, in the case where this IModelDb is a briefcase, this method first obtains the schema lock from the iModel server.
    * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
-   * @param requestContext Context used for logging and authorization (if applicable)
    * @param serializedXmlSchemas  The xml string(s) created from a serialized ECSchema.
    * @throws [[IModelError]] if the schema lock cannot be obtained or there is a problem importing the schema.
    * @note Changes are saved if importSchemaStrings is successful and abandoned if not successful.
    * @see querySchemaVersion
    * @alpha
    */
-  public async importSchemaStrings(requestContext: ClientRequestContext, serializedXmlSchemas: string[]): Promise<void> {
-    requestContext.enter();
+  public async importSchemaStrings(serializedXmlSchemas: string[]): Promise<void> {
     if (this.isSnapshot || this.isStandalone) {
       const status = this.nativeDb.importXmlSchemas(serializedXmlSchemas);
       if (DbResult.BE_SQLITE_OK !== status) {
@@ -1175,8 +1170,7 @@ export abstract class IModelDb extends IModel {
    */
   public queryNextAvailableFileProperty(prop: FilePropertyProps) { return this.nativeDb.queryNextAvailableFileProperty(prop); }
 
-  public async requestSnap(requestContext: ClientRequestContext, sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
-    requestContext.enter();
+  public async requestSnap(sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
     let request = this._snaps.get(sessionId);
     if (undefined === request) {
       request = new IModelHost.platform.SnapRequest();
@@ -1209,8 +1203,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Get the clip containment status for the supplied elements. */
-  public async getGeometryContainment(requestContext: ClientRequestContext, props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps> {
-    requestContext.enter();
+  public async getGeometryContainment(props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps> {
     return new Promise<GeometryContainmentResponseProps>((resolve, reject) => {
       if (!this.isOpen) {
         reject(new Error("not open"));
@@ -1226,8 +1219,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Get the mass properties for the supplied elements. */
-  public async getMassProperties(requestContext: ClientRequestContext, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> {
-    requestContext.enter();
+  public async getMassProperties(props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> {
     return new Promise<MassPropertiesResponseProps>((resolve, reject) => {
       if (!this.isOpen) {
         reject(new Error("not open"));
@@ -1243,15 +1235,13 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Get the IModel coordinate corresponding to each GeoCoordinate point in the input */
-  public async getIModelCoordinatesFromGeoCoordinates(requestContext: ClientRequestContext, props: string): Promise<IModelCoordinatesResponseProps> {
-    requestContext.enter();
+  public async getIModelCoordinatesFromGeoCoordinates(props: string): Promise<IModelCoordinatesResponseProps> {
     const resultString = this.nativeDb.getIModelCoordinatesFromGeoCoordinates(props);
     return JSON.parse(resultString) as IModelCoordinatesResponseProps;
   }
 
   /** Get the GeoCoordinate (longitude, latitude, elevation) corresponding to each IModel Coordinate point in the input */
-  public async getGeoCoordinatesFromIModelCoordinates(requestContext: ClientRequestContext, props: string): Promise<GeoCoordinatesResponseProps> {
-    requestContext.enter();
+  public async getGeoCoordinatesFromIModelCoordinates(props: string): Promise<GeoCoordinatesResponseProps> {
     const resultString = this.nativeDb.getGeoCoordinatesFromIModelCoordinates(props);
     return JSON.parse(resultString) as GeoCoordinatesResponseProps;
   }
@@ -2167,6 +2157,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     }
   }
 }
+export type OpenBriefcaseArgs = { user?: AuthorizedClientRequestContext } & OpenBriefcaseProps;
 
 /**
  * A local copy of an iModel from iModelHub that can pull and potentially push changesets.
@@ -2184,13 +2175,12 @@ export class BriefcaseDb extends IModelDb {
   public readonly briefcaseId: number;
 
   /** Event raised just before a BriefcaseDb is opened.
-   *  * If the open requires authorization [AuthorizedClientRequestContext]($itwin-client) is passed in to the event handler. Otherwise [[ClientRequestContext]] is passed in
    * **Example:**
    * ``` ts
    * [[include:BriefcaseDb.onOpen]]
    * ```
    */
-  public static readonly onOpen = new BeEvent<(_requestContext: ClientRequestContext, _args: OpenBriefcaseProps) => void>();
+  public static readonly onOpen = new BeEvent<(_args: OpenBriefcaseArgs) => void>();
 
   /** Event raised just after a BriefcaseDb is opened.
    * **Example:**
@@ -2198,7 +2188,7 @@ export class BriefcaseDb extends IModelDb {
    * [[include:BriefcaseDb.onOpened]]
    * ```
    */
-  public static readonly onOpened = new BeEvent<(_requestContext: ClientRequestContext, _imodelDb: BriefcaseDb) => void>();
+  public static readonly onOpened = new BeEvent<(_iModelDb: BriefcaseDb, _args: OpenBriefcaseArgs,) => void>();
 
   public static override findByKey(key: string): BriefcaseDb {
     return super.findByKey(key) as BriefcaseDb;
@@ -2232,18 +2222,17 @@ export class BriefcaseDb extends IModelDb {
   }
 
   /** Upgrades the profile or domain schemas */
-  private static async upgradeProfileOrDomainSchemas(arg: { user: AuthorizedClientRequestContext, briefcase: LocalBriefcaseProps & OpenBriefcaseProps, upgradeOptions: UpgradeOptions, description: string }): Promise<void> {
+  private static async upgradeProfileOrDomainSchemas(briefcase: LocalBriefcaseProps & OpenBriefcaseArgs, upgradeOptions: UpgradeOptions, description: string): Promise<void> {
     const lockArg = {
-      briefcaseId: arg.briefcase.briefcaseId, changeset: arg.briefcase.changeset, iModelId: arg.briefcase.iModelId,
+      briefcaseId: briefcase.briefcaseId, changeset: briefcase.changeset, iModelId: briefcase.iModelId,
     };
-    const user = arg.user;
     // Lock schemas
     // await IModelHost.hubAccess.acquireSchemaLock(lockArg);
 
     // Upgrade and validate
     try {
       // openDgnDb performs the upgrade
-      const nativeDb = this.openDgnDb({ path: arg.briefcase.fileName, key: arg.briefcase.key }, OpenMode.ReadWrite, arg.upgradeOptions);
+      const nativeDb = this.openDgnDb({ path: briefcase.fileName, key: briefcase.key }, OpenMode.ReadWrite, upgradeOptions);
 
       try {
         if (!nativeDb.hasPendingTxns()) {
@@ -2258,14 +2247,14 @@ export class BriefcaseDb extends IModelDb {
       throw err;
     }
 
-    if (arg.briefcase.briefcaseId === BriefcaseIdValue.Unassigned)
+    if (briefcase.briefcaseId === BriefcaseIdValue.Unassigned)
       return;
 
     // Push changes
-    const briefcaseDb = await BriefcaseDb.open(user, { ...arg.briefcase, readonly: false });
+    const briefcaseDb = await BriefcaseDb.open({ ...briefcase, readonly: false });
     try {
-      await briefcaseDb.pushChanges(arg);
-      (arg.briefcase.changeset as any) = briefcaseDb.changeset;
+      await briefcaseDb.pushChanges({ ...briefcase, description });
+      (briefcase.changeset as any) = briefcaseDb.changeset;
     } finally {
       briefcaseDb.close();
     }
@@ -2282,28 +2271,26 @@ export class BriefcaseDb extends IModelDb {
    * @see [[BriefcaseDb.validateSchemas]]
    * @see ($docs/learning/backend/IModelDb.md#upgrading-schemas-in-an-imodel)
   */
-  public static async upgradeSchemas(user: AuthorizedClientRequestContext, briefcase: LocalBriefcaseProps & OpenBriefcaseProps): Promise<void> {
+  public static async upgradeSchemas(briefcase: LocalBriefcaseProps & OpenBriefcaseArgs): Promise<void> {
     // Note: For admins we do not care about translations and keep description consistent, but we do need to enhance this to
     // include more information on versions
-    const upgradeArg = { user, briefcase };
-    await this.upgradeProfileOrDomainSchemas({ ...upgradeArg, upgradeOptions: { profile: ProfileOptions.Upgrade }, description: "Upgraded profile" });
-    await this.upgradeProfileOrDomainSchemas({ ...upgradeArg, upgradeOptions: { domain: DomainOptions.Upgrade }, description: "Upgraded domain schemas" });
+    await this.upgradeProfileOrDomainSchemas(briefcase, { profile: ProfileOptions.Upgrade }, "Upgraded profile");
+    await this.upgradeProfileOrDomainSchemas(briefcase, { domain: DomainOptions.Upgrade }, "Upgraded domain schemas");
   }
 
   /** Open a briefcase file and return a new BriefcaseDb to interact with it.
-   * @param requestContext The context for authorization to acquire locks
    * @param args parameters that specify the file name, and options for opening the briefcase file
    */
-  public static async open(requestContext: ClientRequestContext, args: OpenBriefcaseProps): Promise<BriefcaseDb> {
-    this.onOpen.raiseEvent(requestContext, args);
+  public static async open(args: OpenBriefcaseArgs): Promise<BriefcaseDb> {
+    this.onOpen.raiseEvent(args);
 
     const file = { path: args.fileName, key: args.key };
     const openMode = args.readonly ? OpenMode.Readonly : OpenMode.ReadWrite;
     const nativeDb = this.openDgnDb(file, openMode);
     const briefcaseDb = new BriefcaseDb({ nativeDb, key: file.key ?? Guid.createValue(), openMode, briefcaseId: nativeDb.getBriefcaseId() });
 
-    BriefcaseManager.logUsage(requestContext, briefcaseDb);
-    this.onOpened.raiseEvent(requestContext, briefcaseDb);
+    BriefcaseManager.logUsage(args.user, briefcaseDb);
+    this.onOpened.raiseEvent(briefcaseDb, args);
     return briefcaseDb;
   }
 
@@ -2333,8 +2320,8 @@ export class BriefcaseDb extends IModelDb {
   }
 
   /** Push changes to iModelHub.
-   * @returns The [[ChangesetIndexAndId]] of the successfully pushed changeset
-   */
+ * @returns The [[ChangesetIndexAndId]] of the successfully pushed changeset
+ */
   public async pushChanges(arg: PushChangesArgs): Promise<ChangesetIndexAndId> {
     if (this.nativeDb.hasUnsavedChanges())
       throw new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot push with unsaved changes");
@@ -2350,10 +2337,10 @@ export class BriefcaseDb extends IModelDb {
   }
 
   /** Reverse a previously applied set of changes
-   * @param version Version to reverse changes to.
-   * @throws [[IModelError]] If the reversal fails.
-   * @deprecated reversing previously applied changes is not supported
-   */
+ * @param version Version to reverse changes to.
+ * @throws [[IModelError]] If the reversal fails.
+ * @deprecated reversing previously applied changes is not supported
+ */
   public async reverseChanges(user: AuthorizedClientRequestContext, version: IModelVersion): Promise<void> {
     const changeset = await IModelHost.hubAccess.getChangesetFromVersion({ user, iModelId: this.iModelId, version });
     await BriefcaseManager.pullAndApplyChangesets(this, { user, toIndex: changeset.index });
@@ -2361,10 +2348,10 @@ export class BriefcaseDb extends IModelDb {
   }
 
   /** Reinstate a previously reversed set of changes
-   * @param version Version to reinstate changes to.
-   * @throws [[IModelError]] If the reinstate fails.
-   * @deprecated reversing previously applied changes is not supported
-   */
+ * @param version Version to reinstate changes to.
+ * @throws [[IModelError]] If the reinstate fails.
+ * @deprecated reversing previously applied changes is not supported
+ */
   public async reinstateChanges(user: AuthorizedClientRequestContext, version: IModelVersion = IModelVersion.latest()): Promise<void> {
     const changeset = await IModelHost.hubAccess.getChangesetFromVersion({ user, iModelId: this.iModelId, version });
     await BriefcaseManager.pullAndApplyChangesets(this, { user, toIndex: changeset.index });

@@ -48,7 +48,7 @@ describe("Schema XML Import Tests (#integration)", () => {
     const schemaString = fs.readFileSync(schemaFilePath, "utf8");
 
     const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId: testContextId, iModelId: readWriteTestIModelId });
-    await iModel.importSchemaStrings(user, [schemaString]); // will throw an exception if import fails
+    await iModel.importSchemaStrings([schemaString]); // will throw an exception if import fails
 
     const testDomainClass = iModel.getMetaData("Test3:Test3Element"); // will throw on failure
 

@@ -50,8 +50,8 @@ describe("Server-based locks", () => {
     user1 = await IModelTestUtils.getUserContext(TestUserType.Regular);
     user2 = await IModelTestUtils.getUserContext(TestUserType.Regular);
     const args: RequestNewBriefcaseProps = { iTwinId: iModelProps.iTwinId, iModelId };
-    briefcase1Props = await BriefcaseManager.downloadBriefcase(user1, args);
-    briefcase2Props = await BriefcaseManager.downloadBriefcase(user2, args);
+    briefcase1Props = await BriefcaseManager.downloadBriefcase({ user: user1, ...args });
+    briefcase2Props = await BriefcaseManager.downloadBriefcase({ user: user2, ...args });
   });
 
   const assertSharedLocks = (locks: ServerBasedLocks, ids: Id64Arg) => {
@@ -70,9 +70,9 @@ describe("Server-based locks", () => {
 
   it("Acquiring locks", async () => {
     const lockSpy = sinonSpy(IModelHost.hubAccess, "acquireLocks");
-    let bc1 = await BriefcaseDb.open(user1, { fileName: briefcase1Props.fileName });
+    let bc1 = await BriefcaseDb.open({ user: user1, fileName: briefcase1Props.fileName });
     assert.isTrue(bc1.locks.isServerBased);
-    let bc2 = await BriefcaseDb.open(user2, { fileName: briefcase2Props.fileName });
+    let bc2 = await BriefcaseDb.open({ user: user2, fileName: briefcase2Props.fileName });
     assert.isTrue(bc2.locks.isServerBased);
 
     let bc1Locks = bc1.locks as ServerBasedLocks;
@@ -145,8 +145,8 @@ describe("Server-based locks", () => {
     bc1.close();
     bc2.close();
 
-    bc1 = await BriefcaseDb.open(user1, { fileName: briefcase1Props.fileName });
-    bc2 = await BriefcaseDb.open(user2, { fileName: briefcase2Props.fileName });
+    bc1 = await BriefcaseDb.open({ user: user1, fileName: briefcase1Props.fileName });
+    bc2 = await BriefcaseDb.open({ user: user2, fileName: briefcase2Props.fileName });
     bc1Locks = bc1.locks as ServerBasedLocks;
     bc2Locks = bc2.locks as ServerBasedLocks;
 

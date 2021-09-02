@@ -71,7 +71,6 @@ describe("iModel", () => {
   let imodel4: SnapshotDb;
   let imodel5: SnapshotDb;
   let originalEnv: any;
-  const requestContext = new BackendRequestContext();
 
   before(async () => {
     originalEnv = { ...process.env };
@@ -83,7 +82,7 @@ describe("iModel", () => {
     imodel5 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim"), IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
 
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-    await imodel1.importSchemas(requestContext, [schemaPathname]); // will throw an exception if import fails
+    await imodel1.importSchemas([schemaPathname]); // will throw an exception if import fails
   });
 
   after(() => {
@@ -1386,7 +1385,7 @@ describe("iModel", () => {
 
   it("snapping", async () => {
     const worldToView = Matrix4d.createIdentity();
-    const response = await imodel2.requestSnap(requestContext, "0x222", { testPoint: { x: 1, y: 2, z: 3 }, closePoint: { x: 1, y: 2, z: 3 }, id: "0x111", worldToView: worldToView.toJSON() });
+    const response = await imodel2.requestSnap("0x222", { testPoint: { x: 1, y: 2, z: 3 }, closePoint: { x: 1, y: 2, z: 3 }, id: "0x111", worldToView: worldToView.toJSON() });
     assert.isDefined(response.status);
   });
 

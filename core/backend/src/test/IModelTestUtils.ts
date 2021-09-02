@@ -28,7 +28,7 @@ import { CheckpointProps, V1CheckpointManager } from "../CheckpointManager";
 import { ClassRegistry } from "../ClassRegistry";
 import { DefinitionPartition, Drawing, DrawingGraphic, GeometryPart, LinkElement, PhysicalElement, RepositoryLink, Subject } from "../Element";
 import {
-  AuxCoordSystem2d, BackendRequestContext, BriefcaseDb, BriefcaseManager, CategorySelector, DisplayStyle2d, DisplayStyle3d, DrawingCategory,
+  AuxCoordSystem2d, BriefcaseDb, BriefcaseManager, CategorySelector, DisplayStyle2d, DisplayStyle3d, DrawingCategory,
   DrawingViewDefinition, ECSqlStatement, Element, ElementAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementUniqueAspect,
   ExternalSource, ExternalSourceIsInRepository, FunctionalModel, FunctionalSchema, GroupModel, IModelDb, IModelHost, IModelHostConfiguration,
   IModelJsFs, InformationPartitionElement, Model, ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, Platform,
@@ -41,6 +41,7 @@ import { Schema, Schemas } from "../Schema";
 import { HubMock } from "./HubMock";
 import { HubUtility } from "./integration/HubUtility";
 import { KnownTestLocations } from "./KnownTestLocations";
+import { RequestNewBriefcaseArg } from "../BriefcaseManager";
 
 const assert = chai.assert;
 chai.use(chaiAsPromised);
@@ -201,10 +202,10 @@ export class IModelTestUtils {
   }
 
   /** Helper to open a briefcase db directly with the BriefcaseManager API */
-  public static async downloadAndOpenBriefcase(args: RequestNewBriefcaseProps & { user: AuthorizedClientRequestContext }): Promise<BriefcaseDb> {
+  public static async downloadAndOpenBriefcase(args: RequestNewBriefcaseArg): Promise<BriefcaseDb> {
     assert.isTrue(HubUtility.allowHubBriefcases || HubMock.isValid, "Must use HubMock for tests that modify iModels");
-    const props = await BriefcaseManager.downloadBriefcase(args.user, args);
-    return BriefcaseDb.open(args.user, { fileName: props.fileName });
+    const props = await BriefcaseManager.downloadBriefcase(args);
+    return BriefcaseDb.open({ user: args.user, fileName: props.fileName });
   }
 
   /** Opens the specific iModel as a Briefcase through the same workflow the IModelReadRpc.openForRead method will use. Replicates the way a frontend would open the iModel. */
@@ -793,9 +794,8 @@ export class ExtensiveTestScenario {
 
   public static async prepareDb(sourceDb: IModelDb): Promise<void> {
     // Import desired schemas
-    const requestContext = new BackendRequestContext();
     const sourceSchemaFileName = path.join(KnownTestLocations.assetsDir, "ExtensiveTestScenario.ecschema.xml");
-    await sourceDb.importSchemas(requestContext, [FunctionalSchema.schemaFilePath, sourceSchemaFileName]);
+    await sourceDb.importSchemas([FunctionalSchema.schemaFilePath, sourceSchemaFileName]);
     FunctionalSchema.registerSchema();
   }
 

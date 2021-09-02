@@ -177,7 +177,8 @@ void (async () => {
         });
       }
 
-      sourceDb = await IModelHubUtils.downloadAndOpenBriefcase(user, {
+      sourceDb = await IModelHubUtils.downloadAndOpenBriefcase({
+        user,
         iTwinId: sourceContextId,
         iModelId: sourceIModelId,
         asOf: sourceEndVersion.toJSON(),
@@ -232,7 +233,8 @@ void (async () => {
         });
       }
 
-      targetDb = await IModelHubUtils.downloadAndOpenBriefcase(user, {
+      targetDb = await IModelHubUtils.downloadAndOpenBriefcase({
+        user,
         iTwinId: targetContextId,
         iModelId: targetIModelId,
       });
@@ -279,7 +281,7 @@ void (async () => {
       assert(undefined !== args.sourceStartChangesetId);
       await Transformer.transformChanges(user, sourceDb, targetDb, args.sourceStartChangesetId, transformerOptions);
     } else {
-      await Transformer.transformAll(user, sourceDb, targetDb, transformerOptions);
+      await Transformer.transformAll(sourceDb, targetDb, transformerOptions);
     }
 
     if (args.exportViewDefinition) {

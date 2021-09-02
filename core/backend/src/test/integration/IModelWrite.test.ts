@@ -252,13 +252,13 @@ describe("IModelWriteTest (#integration)", () => {
 
     // Download two copies of the briefcase - manager and super
     const args: RequestNewBriefcaseProps = { iTwinId, iModelId };
-    const managerBriefcaseProps = await BriefcaseManager.downloadBriefcase(managerUser, args);
-    const superBriefcaseProps = await BriefcaseManager.downloadBriefcase(superUser, args);
+    const managerBriefcaseProps = await BriefcaseManager.downloadBriefcase({ user: managerUser, ...args });
+    const superBriefcaseProps = await BriefcaseManager.downloadBriefcase({ user: superUser, ...args });
 
     /* User "manager" upgrades the briefcase */
 
     // Validate the original state of the BisCore schema in the briefcase
-    let iModel = await BriefcaseDb.open(managerUser, { fileName: managerBriefcaseProps.fileName });
+    let iModel = await BriefcaseDb.open({ user: managerUser, fileName: managerBriefcaseProps.fileName });
     const beforeVersion = iModel.querySchemaVersion("BisCore");
     assert.isTrue(semver.satisfies(beforeVersion!, "= 1.0.0"));
     assert.isFalse(iModel.nativeDb.hasPendingTxns());
@@ -269,11 +269,10 @@ describe("IModelWriteTest (#integration)", () => {
     assert.strictEqual(schemaState, SchemaState.UpgradeRecommended);
 
     // Upgrade the schemas
-    await BriefcaseDb.upgradeSchemas(managerUser, managerBriefcaseProps);
+    await BriefcaseDb.upgradeSchemas({ user: managerUser, ...managerBriefcaseProps });
 
     // Validate state after upgrade
-    iModel = await BriefcaseDb.open(managerUser, { fileName: managerBriefcaseProps.fileName });
-    managerUser.enter();
+    iModel = await BriefcaseDb.open({ user: managerUser, fileName: managerBriefcaseProps.fileName });
     const afterVersion = iModel.querySchemaVersion("BisCore");
     assert.isTrue(semver.satisfies(afterVersion!, ">= 1.0.10"));
     assert.isFalse(iModel.nativeDb.hasPendingTxns());
@@ -298,7 +297,7 @@ describe("IModelWriteTest (#integration)", () => {
     // assert.strictEqual(result, IModelHubStatus.PullIsRequired);
 
     // Open briefcase and pull change sets to upgrade
-    const superIModel = await BriefcaseDb.open(superUser, { fileName: superBriefcaseProps.fileName });
+    const superIModel = await BriefcaseDb.open({ user: superUser, fileName: superBriefcaseProps.fileName });
     (superBriefcaseProps.changeset as any) = await superIModel.pullChanges({ user: superUser });
     const superVersion = superIModel.querySchemaVersion("BisCore");
     assert.isTrue(semver.satisfies(superVersion!, ">= 1.0.10"));
@@ -311,9 +310,7 @@ describe("IModelWriteTest (#integration)", () => {
     assert.strictEqual(schemaState, SchemaState.UpToDate);
 
     // Upgrade the schemas - ensure this is a no-op
-    await BriefcaseDb.upgradeSchemas(superUser, superBriefcaseProps);
-    superUser.enter();
-
+    await BriefcaseDb.upgradeSchemas({ user: superUser, ...superBriefcaseProps });
     await IModelHost.hubAccess.deleteIModel({ user: managerUser, iTwinId, iModelId });
   });
 });

@@ -7,9 +7,8 @@
  */
 
 import * as path from "path";
-import { ClientRequestContext, DbResult, Logger } from "@bentley/bentleyjs-core";
+import { DbResult, Logger } from "@bentley/bentleyjs-core";
 import { IModelError } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { ClassRegistry } from "../ClassRegistry";
 import { IModelDb } from "../IModelDb";
@@ -32,8 +31,7 @@ export class FunctionalSchema extends Schema {
   }
 
   /** @deprecated Use [[schemaFilePath]] and IModelDb.importSchemas instead */
-  public static async importSchema(requestContext: AuthorizedClientRequestContext | ClientRequestContext, iModelDb: IModelDb) {
-    requestContext.enter();
+  public static async importSchema(iModelDb: IModelDb) {
     if (iModelDb.isBriefcaseDb())
       await iModelDb.acquireSchemaLock();
 

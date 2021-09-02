@@ -150,7 +150,7 @@ export interface RequestNewBriefcaseProps {
    * @note this member is both an input and an output.
    *
    */
-  readonly briefcaseId?: BriefcaseId;
+  briefcaseId?: BriefcaseId;
 
   /** Id of the change set of the new briefcase. If undefined, use latest. */
   asOf?: IModelVersionProps;

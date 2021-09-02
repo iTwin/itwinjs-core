@@ -6,7 +6,7 @@
  * @module NativeApp
  */
 
-import { ClientRequestContext, IModelStatus, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { IModelStatus, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import {
   ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, IModelConnectionProps, IModelError, IModelRpcProps, IpcAppChannel, IpcAppFunctions,
   IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel, OpenBriefcaseProps, RemoveFunction, StandaloneOpenOptions,
@@ -184,8 +184,7 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     return IModelDb.findByKey(key).nativeDb.cancelElementGraphicsRequests(requestIds);
   }
   public async openBriefcase(args: OpenBriefcaseProps): Promise<IModelConnectionProps> {
-    const requestContext = args.readonly === true ? new ClientRequestContext() : await IModelHost.getAuthorizedContext();
-    const db = await BriefcaseDb.open(requestContext, args);
+    const db = await BriefcaseDb.open(args);
     return db.toJSON();
   }
   public async openStandalone(filePath: string, openMode: OpenMode, opts?: StandaloneOpenOptions): Promise<IModelConnectionProps> {

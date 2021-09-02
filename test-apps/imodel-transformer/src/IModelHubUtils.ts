@@ -81,9 +81,9 @@ export namespace IModelHubUtils {
     }
   }
 
-  export async function downloadAndOpenBriefcase(requestContext: AuthorizedClientRequestContext, briefcaseArg: RequestNewBriefcaseArg): Promise<BriefcaseDb> {
-    const briefcaseProps = await BriefcaseManager.downloadBriefcase(requestContext, briefcaseArg);
-    return BriefcaseDb.open(requestContext, {
+  export async function downloadAndOpenBriefcase(briefcaseArg: RequestNewBriefcaseArg): Promise<BriefcaseDb> {
+    const briefcaseProps = await BriefcaseManager.downloadBriefcase(briefcaseArg);
+    return BriefcaseDb.open({
       fileName: briefcaseProps.fileName,
       readonly: briefcaseArg.briefcaseId ? briefcaseArg.briefcaseId === BriefcaseIdValue.Unassigned : false,
     });

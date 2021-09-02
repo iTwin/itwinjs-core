@@ -10,7 +10,7 @@ import {
   Code, ColorByName, DomainOptions, EntityIdAndClassId, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, TxnAction, UpgradeOptions,
 } from "@bentley/imodeljs-common";
 import {
-  BackendRequestContext, IModelHost, IModelJsFs, PhysicalModel, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, TxnChangedEntities, TxnManager,
+  IModelHost, IModelJsFs, PhysicalModel, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, TxnChangedEntities, TxnManager,
 } from "../../imodeljs-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 
@@ -20,7 +20,6 @@ describe("TxnManager", () => {
   let imodel: StandaloneDb;
   let props: TestPhysicalObjectProps;
   let testFileName: string;
-  const requestContext = new BackendRequestContext();
 
   const performUpgrade = (pathname: string) => {
     const nativeDb = new IModelHost.platform.DgnDb();
@@ -41,7 +40,7 @@ describe("TxnManager", () => {
     IModelJsFs.copySync(seedFileName, testFileName);
     performUpgrade(testFileName);
     imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
-    await imodel.importSchemas(requestContext, [schemaFileName]); // will throw an exception if import fails
+    await imodel.importSchemas([schemaFileName]); // will throw an exception if import fails
 
     const builder = new GeometryStreamBuilder();
     builder.appendGeometry(LineSegment3d.create(Point3d.createZero(), Point3d.create(5, 0, 0)));

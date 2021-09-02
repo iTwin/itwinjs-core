@@ -660,8 +660,7 @@ describe("PresentationManager", () => {
       const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
       nativePlatformMock.setup((x) => x.getImodelAddon(imodelMock.object)).verifiable(moq.Times.atLeastOnce());
       using(new PresentationManager({ addon: nativePlatformMock.object, enableSchemasPreload: true }), (_) => {
-        const context = new ClientRequestContext();
-        BriefcaseDb.onOpened.raiseEvent(context, imodelMock.object);
+        BriefcaseDb.onOpened.raiseEvent(imodelMock.object, {} as any);
         nativePlatformMock.verify(async (x) => x.forceLoadSchemas(moq.It.isAny()), moq.Times.once());
       });
     });

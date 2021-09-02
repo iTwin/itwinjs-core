@@ -563,8 +563,8 @@ export class ChangeSummaryManager {
     let iModel: BriefcaseDb | undefined;
     try {
       // Download a version that has the first change set applied
-      const props = await BriefcaseManager.downloadBriefcase(user, { iTwinId, iModelId, asOf: { afterChangeSetId: changesets[0].id }, briefcaseId: 0, fileName });
-      iModel = await BriefcaseDb.open(user, { fileName: props.fileName });
+      const props = await BriefcaseManager.downloadBriefcase({ user, iTwinId, iModelId, asOf: { afterChangeSetId: changesets[0].id }, briefcaseId: 0, fileName });
+      iModel = await BriefcaseDb.open({ user, fileName: props.fileName });
 
       const summaryIds = new Array<Id64String>();
       for (let index = 0; index < changesets.length; index++) {

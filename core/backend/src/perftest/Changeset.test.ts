@@ -153,7 +153,7 @@ async function pushIModelAfterSchemaChanges(user: AuthorizedClientRequestContext
   assert.isNotEmpty(rwIModelId);
   // import schema and push change to hub
   const schemaPathname = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
-  await rwIModel.importSchemas(user, [schemaPathname]).catch(() => { });
+  await rwIModel.importSchemas( [schemaPathname]).catch(() => { });
   assert.isDefined(rwIModel.getMetaData("PerfTestDomain:" + "PerfElement"), "PerfElement" + "is present in iModel.");
   rwIModel.saveChanges("schema change pushed");
   await rwIModel.pullChanges({ user });
@@ -624,7 +624,7 @@ describe("ImodelChangesetPerformance own data", () => {
     const changeSet = changeSets[changeSets.length - 1];
     const query = new ChangeSetQuery();
     query.byId(changeSet.wsgId);
-    const downloadDir = path.join(BriefcaseManager.cacheDir, modelId, "csets");
+    const downloadDir = BriefcaseManager.getChangeSetsPath(modelId);
     await IModelHubBackend.iModelClient.changeSets.download(user, modelId, query, downloadDir);
     const pathname = path.join(downloadDir, changeSet.fileName!);
     return { id: changeSet.id!, parentId: changeSet.parentId!, pathname, changesType: changeSet.changesType!, index: +changeSet.index!, pushDate: "", userCreated: "", briefcaseId: 0, description: "" };
@@ -657,7 +657,7 @@ describe("ImodelChangesetPerformance own data", () => {
           const sxml = PerfTestUtility.genSchemaXML(schemaName, baseClassName, hier, true, true, []);
           fs.writeFileSync(schemaPathname, sxml);
 
-          await iModelDb.importSchemas(user, [schemaPathname]).catch(() => { });
+          await iModelDb.importSchemas([schemaPathname]).catch(() => { });
           assert.isDefined(iModelDb.getMetaData(`${schemaName}:${baseClassName}`), `${baseClassName} is not present in iModel.`);
           iModelDb.saveChanges("schema changes");
           await iModelDb.pullChanges({ user });

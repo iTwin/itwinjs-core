@@ -101,10 +101,10 @@ describe("PushChangesTest (#integration)", () => {
     const iModelName = HubUtility.generateUniqueName("PushChangesTest");
     const iModelId = await HubUtility.recreateIModel({ user, iTwinId, iModelName, noLocks: true });
 
-    const briefcaseProps = await BriefcaseManager.downloadBriefcase(user, { iTwinId, iModelId });
+    const briefcaseProps = await BriefcaseManager.downloadBriefcase({ user, iTwinId, iModelId });
     let iModel: BriefcaseDb | undefined;
     try {
-      iModel = await BriefcaseDb.open(user, { fileName: briefcaseProps.fileName });
+      iModel = await BriefcaseDb.open({ user, fileName: briefcaseProps.fileName });
 
       // Initialize project extents
       const projectExtents = new Range3d(-1000, -1000, -1000, 1000, 1000, 1000);

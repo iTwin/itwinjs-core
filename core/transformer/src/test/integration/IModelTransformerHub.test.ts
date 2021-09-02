@@ -280,7 +280,7 @@ describe("IModelTransformerHub (#integration)", () => {
       const sourceDb = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId, iModelId: sourceIModelId });
       const seedBisCoreVersion = sourceDb.querySchemaVersion(BisCoreSchema.schemaName)!;
       assert.isTrue(semver.satisfies(seedBisCoreVersion, ">= 1.0.1"));
-      await sourceDb.importSchemas(user, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
+      await sourceDb.importSchemas([BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
       const updatedBisCoreVersion = sourceDb.querySchemaVersion(BisCoreSchema.schemaName)!;
       assert.isTrue(semver.satisfies(updatedBisCoreVersion, ">= 1.0.10"));
       assert.isTrue(sourceDb.containsClass(ExternalSourceAspect.classFullName), "Expect BisCore to be updated and contain ExternalSourceAspect");
@@ -292,7 +292,7 @@ describe("IModelTransformerHub (#integration)", () => {
       await sourceDb.pushChanges({ user, description: "Import schemas to upgrade BisCore" }); // may push schema changes
 
       // import schemas again to test common scenario of not knowing whether schemas are up-to-date or not..
-      await sourceDb.importSchemas(user, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
+      await sourceDb.importSchemas([BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
       assert.isFalse(sourceDb.nativeDb.hasPendingTxns(), "Expect importSchemas to be a no-op");
       assert.isFalse(sourceDb.nativeDb.hasUnsavedChanges(), "Expect importSchemas to be a no-op");
       sourceDb.saveChanges(); // will be no changes to save in this case
@@ -306,7 +306,7 @@ describe("IModelTransformerHub (#integration)", () => {
 
       // open/upgrade targetDb
       const targetDb = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId, iModelId: targetIModelId });
-      await targetDb.importSchemas(user, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
+      await targetDb.importSchemas([BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
       assert.isTrue(targetDb.containsClass(ExternalSourceAspect.classFullName), "Expect BisCore to be updated and contain ExternalSourceAspect");
 
       // push targetDb schema changes

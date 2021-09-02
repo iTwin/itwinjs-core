@@ -349,6 +349,7 @@ describe("BriefcaseManager (#integration)", () => {
     };
 
     const args: RequestNewBriefcaseArg & BriefcaseProps = {
+      user,
       iTwinId: testITwinId,
       iModelId: testIModelId,
       briefcaseId: BriefcaseIdValue.Unassigned,
@@ -357,12 +358,12 @@ describe("BriefcaseManager (#integration)", () => {
     const fileName = BriefcaseManager.getFileName(args);
     await BriefcaseManager.deleteBriefcaseFiles(fileName);
     const watch = new StopWatch("download", true);
-    const props = await BriefcaseManager.downloadBriefcase(user, args);
+    const props = await BriefcaseManager.downloadBriefcase(args);
     // eslint-disable-next-line no-console
     console.log(`download took ${watch.elapsedSeconds} seconds`);
-    const iModel = await BriefcaseDb.open(user, { fileName: props.fileName });
+    const iModel = await BriefcaseDb.open({ user, fileName: props.fileName });
 
-    await expect(BriefcaseManager.downloadBriefcase(user, args)).to.be.rejectedWith(IModelError, "already exists", "should not be able to download a briefcase if a file with that name already exists");
+    await expect(BriefcaseManager.downloadBriefcase(args)).to.be.rejectedWith(IModelError, "already exists", "should not be able to download a briefcase if a file with that name already exists");
 
     await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModel);
     assert.isAbove(numProgressCalls, 0, "download progress called");
@@ -373,7 +374,9 @@ describe("BriefcaseManager (#integration)", () => {
   it("Should be able to cancel an in progress download (#integration)", async () => {
     const testIModelId = await HubUtility.getTestIModelId(user, HubUtility.testIModelNames.stadium);
     let aborted = 0;
+
     const args = {
+      user,
       iTwinId: testITwinId,
       iModelId: testIModelId,
       briefcaseId: BriefcaseIdValue.Unassigned,
@@ -381,7 +384,7 @@ describe("BriefcaseManager (#integration)", () => {
     };
     await BriefcaseManager.deleteBriefcaseFiles(BriefcaseManager.getFileName(args), user);
 
-    const downloadPromise = BriefcaseManager.downloadBriefcase(user, args);
+    const downloadPromise = BriefcaseManager.downloadBriefcase(args);
     setTimeout(async () => aborted = 1, 1000);
     await expect(downloadPromise).to.be.rejectedWith(UserCancelledError).to.eventually.have.property("errorNumber", BriefcaseStatus.DownloadCancelled);
   });
