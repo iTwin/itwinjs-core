@@ -114,6 +114,7 @@ export class PlanarSubdivision {
       area = 0;
     if (Math.abs(area) < zeroAreaTolerance)
       area = 0.0;
+    (loop as any).computedAreaInPlanarSubdivision = area;
     if (area > 0)
       signedAreas.positiveAreaLoops.push(loop);
     else if (area < 0)
@@ -144,6 +145,23 @@ export class PlanarSubdivision {
     } while (he !== faceSeed);
     return loop;
   }
+// return true if there are only two edges.
+  // In a line-only graph, this is a null-area face.
+  private static isNullFace(he: HalfEdge): boolean {
+    return he.faceSuccessor.faceSuccessor == he;
+  }
+  // Look  across edge mates (possibly several) for a nonnull mate face.
+  private static nonNullEdgeMate(_graph: HalfEdgeGraph, e: HalfEdge): HalfEdge | undefined {
+    if (this.isNullFace (e))
+      return undefined;
+    let e1 = e.edgeMate;
+    while (this.isNullFace(e1)){
+      e1 = e1.faceSuccessor.edgeMate;
+      if (e1 === e)
+        return undefined;
+    }
+    return e1;
+  }
   public static collectSignedLoopSetsInHalfEdgeGraph(graph: HalfEdgeGraph, zeroAreaTolerance: number = 1.0e-10): SignedLoops[] {
     const q = HalfEdgeGraphSearch.collectConnectedComponentsWithExteriorParityMasks(graph, undefined);
     const result: SignedLoops[] = [];
@@ -153,16 +171,22 @@ export class PlanarSubdivision {
       const edges: LoopCurveLoopCurve[] = [];
       for (const faceSeed of faceSeeds) {
         const loop = this.createLoopInFace(faceSeed, (he: HalfEdge, curveC: CurvePrimitive, loopC: Loop) => {
-          const mate = he.edgeMate;
-          const e = edgeMap.get (mate);
-          if (e === undefined) {
-            // Record this as loopA,edgeA of a shared edge to be completed later from the other side of the edge
-            const e1 = new LoopCurveLoopCurve(loopC, curveC, undefined, undefined);
-            edgeMap.set(he, e1);
-          } else if (e instanceof LoopCurveLoopCurve) {
-            e.setB(loopC, curveC);
-            edges.push(e);
-            edgeMap.delete(mate);
+          if (this.isNullFace(he)) {
+            // Ignore all edges of null faces.
+          } else {
+            const mate = this.nonNullEdgeMate(graph, he);
+              if (mate !== undefined){
+                const e = edgeMap.get(mate);
+                if (e === undefined) {
+                  // Record this as loopA,edgeA of a shared edge to be completed later from the other side of the edge
+                  const e1 = new LoopCurveLoopCurve(loopC, curveC, undefined, undefined);
+                  edgeMap.set(he, e1);
+                } else if (e instanceof LoopCurveLoopCurve) {
+                  e.setB(loopC, curveC);
+                  edges.push(e);
+                  edgeMap.delete(mate);
+                }
+            }
           }
         });
         this.collectSignedLoop(loop, componentAreas, zeroAreaTolerance);
