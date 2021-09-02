@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module ContextRegistry
+ * @module ITwinRegistry
  */
 import * as deepAssign from "deep-assign";
 import { assert } from "@bentley/bentleyjs-core";

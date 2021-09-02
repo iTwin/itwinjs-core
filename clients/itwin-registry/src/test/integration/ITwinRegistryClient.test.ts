@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { ITwinAccessClient } from "../../ContextRegistryClient";
+import { ITwinAccessClient } from "../../ITwinRegistryClient";
 import { ITwin, ITwinSearchableProperty } from "../../ITwinAccessProps";
 import { TestConfig } from "../TestConfig";
 
 chai.should();
-describe("ContextRegistryClient (#integration)", () => {
+describe("ITwinRegistryClient (#integration)", () => {
   const iTwinAccessClient: ITwinAccessClient = new ITwinAccessClient();
   let requestContext: AuthorizedClientRequestContext;
 
@@ -26,7 +26,7 @@ describe("ContextRegistryClient (#integration)", () => {
   });
 
   it("should get a paged list of iTwins using top (#integration)", async () => {
-    const numberOfITwins = 3;
+    const numberOfITwins = 6;
 
     // Verify there are enough iTwins to test the paging
     const fullITwinList: ITwin[] = await iTwinAccessClient.getAll(requestContext);
@@ -44,7 +44,7 @@ describe("ContextRegistryClient (#integration)", () => {
   });
 
   it("should get a paged list of iTwins using skip (#integration)", async () => {
-    const numberSkipped = 3;
+    const numberSkipped = 4;
 
     // Verify there are enough iTwins to test the paging
     const fullITwinList: ITwin[] = await iTwinAccessClient.getAll(requestContext);
@@ -62,8 +62,8 @@ describe("ContextRegistryClient (#integration)", () => {
   });
 
   it("should get a continuous paged list of iTwins (#integration)", async () => {
-    const numberOfITwins = 3;
-    const numberSkipped = 1;
+    const numberOfITwins = 6;
+    const numberSkipped = 4;
 
     // Verify the paging properties can be tested
     chai.assert(numberSkipped < numberOfITwins, "There must be overlap between the two pages to run test.");
