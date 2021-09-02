@@ -536,29 +536,31 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
           <div className="map-layer-source-url">
             <span className="map-layer-source-label">{typeLabel}</span>
             <Select
-              className="map-manager-base-select"
+              className="map-layer-source-select"
               options={mapTypes}
               value={mapType}
               disabled={props.layerRequiringCredentials !== undefined || props.mapLayerSourceToEdit !== undefined || layerAttachPending || layerAuthPending}
               onChange={handleMapTypeSelection} />
 
             <span className="map-layer-source-label">{nameLabel}</span>
-            <Input placeholder={nameInputPlaceHolder} onChange={onNameChange} value={mapName} disabled={props.layerRequiringCredentials !== undefined || layerAttachPending || layerAuthPending} />
+            <Input className="map-layer-source-input"  placeholder={nameInputPlaceHolder} onChange={onNameChange} value={mapName} disabled={props.layerRequiringCredentials !== undefined || layerAttachPending || layerAuthPending} />
             <span className="map-layer-source-label">{urlLabel}</span>
-            <Input placeholder={urlInputPlaceHolder} onKeyPress={handleOnKeyDown} onChange={onUrlChange} disabled={props.mapLayerSourceToEdit !== undefined || layerAttachPending || layerAuthPending} value={mapUrl} />
+            <Input className="map-layer-source-input" placeholder={urlInputPlaceHolder} onKeyPress={handleOnKeyDown} onChange={onUrlChange} disabled={props.mapLayerSourceToEdit !== undefined || layerAttachPending || layerAuthPending} value={mapUrl} />
             {serverRequireCredentials
              && (layerAuthMethod === MapLayerAuthType.Basic ||  layerAuthMethod === MapLayerAuthType.EsriToken)
              && props.mapLayerSourceToEdit === undefined &&
               <>
                 <span className="map-layer-source-label">{userNameLabel}</span>
-                <LabeledInput displayStyle="inline"
+                <LabeledInput className="map-layer-source-input"
+                  displayStyle="inline"
                   placeholder={serverRequireCredentials ? userNameRequiredLabel : userNameLabel}
                   status={!userName && serverRequireCredentials ? "warning" : undefined}
                   disabled={layerAttachPending || layerAuthPending}
                   onChange={onUsernameChange} />
 
                 <span className="map-layer-source-label">{passwordLabel}</span>
-                <LabeledInput displayStyle="inline"
+                <LabeledInput className="map-layer-source-input"
+                  displayStyle="inline"
                   type="password" placeholder={serverRequireCredentials ? passwordRequiredLabel : passwordLabel}
                   status={!password && serverRequireCredentials ? "warning" : undefined}
                   disabled={layerAttachPending || layerAuthPending}

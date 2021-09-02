@@ -27,6 +27,10 @@ $hovered-icon-color: $buic-foreground-primary-tone;
   grid-column-gap: 10px;
   align-items: center;
 
+  .map-layer-source-select, .map-layer-source-input{
+  margin-bottom: 0.5rem;
+  }
+
   .map-layer-source-label{
     font-size: $iui-font-size;
     color: $buic-foreground-body;
