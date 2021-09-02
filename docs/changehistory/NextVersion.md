@@ -224,6 +224,7 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `RemoteBriefcaseConnection`            | `CheckpointConnection`                                    |
 | `ScreenViewport.decorationDiv`         | `DecorateContext.addHtmlDecoration`                       |
 | `ViewManager.forEachViewport`          | Use a `for..of` loop                                      |
+| `UnitSystemKey`                        | Moved to `@bentley/imodeljs-quantity`                     |
 
 ### @bentley/backend-itwin-client
 
@@ -268,6 +269,9 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `ReactMessage`                         | `ReactMessage` in @bentley/ui-core                                                     |
 | `SpecialKey`                           | `SpecialKey` in @bentley/ui-abstract                                                   |
 | `WidgetState`                          | `WidgetState` in @bentley/ui-abstract                                                  |
+| `UserProfileBackstageItem`             | *eliminated*                                                                           |
+| `SignIn`                               | *eliminated*                                                                           |
+| `SignOutModalFrontstage`               | *eliminated*                                                                           |
 
 ### @bentley/bentleyjs-core
 
@@ -275,6 +279,38 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | -------------------------------------- | -------------------------------------------------------------------------------------- |
 | `Config`                               | Use `process.env` to access environment variables directly |
 | `EnvMacroSubst`                        | *eliminated*  |
+
+### @bentley/presentation-common
+
+| Removed                                  | Replacement                                                                            |
+| ---------------------------------------- | -------------------------------------------------------------------------------------- |
+| `PresentationRpcInterface.loadHierarchy` | *eliminated*                                                                           |
+| `PresentationUnitSystem`                 | Removed in favor of `UnitSystemKey` from `@bentley/imodeljs-quantity`                  |
+
+### @bentley/presentation-backend
+
+| Removed                                     | Replacement                                                                            |
+| ------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `PresentationManager.loadHierarchy`         | *eliminated*                                                                           |
+| `UnitSystemFormat.unitSystems`              | Changed type from `PresentationUnitSystem[]` to `UnitSystemKey[]`                      |
+| `PresentationManagerProps.activeUnitSystem` | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
+| `PresentationManager.activeUnitSystem`      | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
+
+### @bentley/presentation-frontend
+
+| Removed                                     | Replacement                                                                            |
+| ------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `PresentationManager.loadHierarchy`         | *eliminated*                                                                           |
+| `PresentationManagerProps.activeUnitSystem` | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
+| `PresentationManager.activeUnitSystem`      | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
+
+### @bentley/presentation-components
+
+| Removed                                               | Replacement                                                                            |
+| ----------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `IPresentationTreeDataProvider.loadHierarchy`         | *eliminated*                                                                           |
+| `PresentationTreeDataProvider.loadHierarchy`          | *eliminated*                                                                           |
+| `FilteredPresentationTreeDataProvider.loadHierarchy`  | *eliminated*                                                                           |
 
 <!---
 User Interface Changes - section to comment below
@@ -388,3 +424,8 @@ The loader has been deprecated due to a preference for using the dotenv package 
 The method `BSplineCurve3d.createThroughPoints` has been deprecated in favor of the more general method `BSplineCurve3d.createFromInterpolationCurve3dOptions`.
 
 The property `InterpolationCurve3dOptions.isChordLenTangent` has been deprecated due to a naming inconsistency with similar adjacent properties. Use `InterpolationCurve3dOptions.isChordLenTangents` instead.
+
+## new @bentley/imodeljs-transformer package split out of backend package
+
+The iModel Transformer APIs, such as the classes [IModelExporter]($transformer), [IModelImporter]($transformer), and [IModelTransformer]($transformer)
+were removed from the `@bentley/imodeljs-backend` package and moved to a new package, `@bentley/imodeljs-transformer`.

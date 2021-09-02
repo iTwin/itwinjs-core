@@ -139,6 +139,10 @@
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal" ]
     },
     {
+      "name": "@bentley/imodeljs-transformer",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@bentley/itwin-client",
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -841,6 +845,10 @@
     {
       "name": "react-split-pane",
       "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "react-table",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "react-test-renderer",
