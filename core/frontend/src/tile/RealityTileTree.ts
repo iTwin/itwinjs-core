@@ -17,6 +17,7 @@ import { GraphicBuilder } from "../render/GraphicBuilder";
 import { SceneContext } from "../ViewContext";
 import { GraphicsCollectorDrawArgs, MapTile, RealityTile, RealityTileDrawArgs, RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGraphicType, TileParams, TileTree, TileTreeParams } from "./internal";
 
+/** @internal */
 export class TraversalDetails {
   public queuedChildren = new Array<Tile>();
   public childrenLoading = false;
