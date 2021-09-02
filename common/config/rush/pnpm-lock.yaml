@@ -1916,6 +1916,7 @@ importers:
       '@types/react': ^17.0.0
       '@types/react-beautiful-dnd': ^12.1.2
       '@types/react-select': 3.0.26
+      '@types/react-virtualized-auto-sizer': ^1.0.0
       '@types/sinon': ^9.0.0
       '@types/sinon-chai': ^3.2.0
       '@types/testing-library__react-hooks': ^3.1.0
@@ -1936,6 +1937,7 @@ importers:
       react: ^17.0.0
       react-beautiful-dnd: ^13.0.0
       react-select: 3.1.0
+      react-virtualized-auto-sizer: ^1.0.0
       rimraf: ^3.0.2
       sinon: ^9.0.2
       sinon-chai: ^3.2.0
@@ -1945,6 +1947,7 @@ importers:
       classnames: 2.3.1
       react-beautiful-dnd: 13.1.0_react@17.0.2
       react-select: 3.1.0_react@17.0.2
+      react-virtualized-auto-sizer: 1.0.6_react@17.0.2
     devDependencies:
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/build-tools': link:../../tools/build
@@ -1975,6 +1978,7 @@ importers:
       '@types/react': 17.0.18
       '@types/react-beautiful-dnd': 12.1.4
       '@types/react-select': 3.0.26
+      '@types/react-virtualized-auto-sizer': 1.0.1
       '@types/sinon': 9.0.11
       '@types/sinon-chai': 3.2.5
       '@types/testing-library__react-hooks': 3.4.1
@@ -3522,6 +3526,7 @@ importers:
       '@types/react': ^17.0.0
       '@types/react-dom': ^17.0.0
       '@types/react-select': 3.0.26
+      '@types/react-virtualized-auto-sizer': ^1.0.0
       autoprefixer: ^8.6.5
       cpx: ^1.5.0
       cross-env: ^5.1.4
@@ -3535,6 +3540,7 @@ importers:
       react: ^17.0.0
       react-dom: ^17.0.0
       react-select: 3.1.0
+      react-virtualized-auto-sizer: ^1.0.0
       rimraf: ^3.0.2
       semver: ^5.5.0
       symlink-dir: ~4.0.3
@@ -3563,6 +3569,7 @@ importers:
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
       react-select: 3.1.0_react-dom@17.0.2+react@17.0.2
+      react-virtualized-auto-sizer: 1.0.6_react-dom@17.0.2+react@17.0.2
       semver: 5.7.1
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
@@ -3572,6 +3579,7 @@ importers:
       '@types/react': 17.0.18
       '@types/react-dom': 17.0.9
       '@types/react-select': 3.0.26
+      '@types/react-virtualized-auto-sizer': 1.0.1
       autoprefixer: 8.6.5
       cpx: 1.5.0
       cross-env: 5.2.1
@@ -3635,6 +3643,7 @@ importers:
       '@types/react-redux': ^7.1.18
       '@types/react-select': 3.0.26
       '@types/react-table': ^7.0.18
+      '@types/react-virtualized-auto-sizer': ^1.0.0
       '@types/semver': ^5.5.0
       classnames: ^2.3.1
       cpx: ^1.5.0
@@ -3654,6 +3663,7 @@ importers:
       react-redux: ^7.2.2
       react-select: 3.1.0
       react-table: ^7.1.0
+      react-virtualized-auto-sizer: ^1.0.0
       redux: ^4.0.3
       rimraf: ^3.0.2
       semver: ^5.5.0
@@ -3704,6 +3714,7 @@ importers:
       react-redux: 7.2.4_react-dom@17.0.2+react@17.0.2
       react-select: 3.1.0_react-dom@17.0.2+react@17.0.2
       react-table: 7.7.0_react@17.0.2
+      react-virtualized-auto-sizer: 1.0.6_react-dom@17.0.2+react@17.0.2
       redux: 4.1.1
       semver: 5.7.1
     devDependencies:
@@ -3718,6 +3729,7 @@ importers:
       '@types/react-redux': 7.1.18
       '@types/react-select': 3.0.26
       '@types/react-table': 7.7.2
+      '@types/react-virtualized-auto-sizer': 1.0.1
       '@types/semver': 5.5.0
       cpx: 1.5.0
       cross-env: 5.2.1
@@ -21712,6 +21724,16 @@ packages:
     dependencies:
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
+    dev: false
+
+  /react-virtualized-auto-sizer/1.0.6_react@17.0.2:
+    resolution: {integrity: sha512-7tQ0BmZqfVF6YYEWcIGuoR3OdYe8I/ZFbNclFlGOC3pMqunkYF/oL30NCjSGl9sMEb17AnzixDz98Kqc3N76HQ==}
+    engines: {node: '>8.0.0'}
+    peerDependencies:
+      react: ^15.3.0 || ^16.0.0-alpha || ^17.0.0
+      react-dom: ^15.3.0 || ^16.0.0-alpha || ^17.0.0
+    dependencies:
+      react: 17.0.2
     dev: false
 
   /react-virtualized/9.22.3_react-dom@17.0.2+react@17.0.2:
