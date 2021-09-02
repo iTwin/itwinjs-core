@@ -6,11 +6,12 @@ import { expect } from "chai";
 import { it } from "mocha";
 import * as moq from "typemoq";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { I18N } from "@bentley/imodeljs-i18n";
 import { Node, RegisteredRuleset, RulesetVariable, StandardNodeTypes, VariableValueTypes } from "@bentley/presentation-common";
 import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@bentley/presentation-frontend";
 import { PrimitiveValue } from "@bentley/ui-abstract";
 import {
-  computeVisibleNodes, MutableTreeModel, TreeModel, TreeModelNode, TreeModelNodeEditingInfo, TreeModelNodeInput,
+  computeVisibleNodes, MutableTreeModel, TreeModel, TreeModelNode, TreeModelNodeEditingInfo, TreeModelNodeInput, UiComponents,
 } from "@bentley/ui-components";
 import { act, cleanup, renderHook } from "@testing-library/react-hooks";
 import { IPresentationTreeDataProvider } from "../../../presentation-components";
@@ -34,6 +35,10 @@ describe("usePresentationNodeLoader", () => {
     ruleset: rulesetId,
     pagingSize: 5,
   };
+
+  before(async () => {
+    await UiComponents.initialize(new I18N());
+  });
 
   beforeEach(() => {
     imodelMock.reset();

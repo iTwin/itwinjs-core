@@ -6,7 +6,6 @@
  * @module Tree
  */
 
-import * as immer from "immer";
 import * as React from "react";
 import { Subscription } from "rxjs/internal/Subscription";
 import { HierarchyUpdateRecord, PageOptions, UPDATE_FULL } from "@bentley/presentation-common";
@@ -348,7 +347,8 @@ export function applyHierarchyChanges(
   reloadedHierarchyParts: ReloadedHierarchyPart[],
   treeNodeItemCreationProps: CreateTreeNodeItemProps
 ) {
-  const updatedTreeModel = immer.produce(treeModel, (model: MutableTreeModel) => {
+  const modelSource = new TreeModelSource(treeModel);
+  modelSource.modifyModel((model: MutableTreeModel) => {
     const updateParentIds = hierarchyUpdateRecords
       .map((record) => record.parent ? createTreeNodeId(record.parent) : undefined);
     for (const record of hierarchyUpdateRecords) {
@@ -385,7 +385,7 @@ export function applyHierarchyChanges(
       }
     }
   });
-  return updatedTreeModel;
+  return modelSource.getModel() as MutableTreeModel;
 }
 
 function rebuildSubTree(oldModel: MutableTreeModel, newModel: MutableTreeModel, parentNode: TreeModelNode, excludedNodeIds: Array<string | undefined>) {
