@@ -7,7 +7,7 @@ import { renderHook } from "@testing-library/react-hooks";
 import {useCrossOriginPopup} from "../../../ui-core/utils/hooks/useCrossOriginPopup";
 import { expect } from "chai";
 
-describe.only("useCrossOriginPopup", () => {
+describe("useCrossOriginPopup", () => {
   const sandbox = sinon.createSandbox();
   const fakeUrl = "https://test.com";
   const fakeTitle = "test";

@@ -38,12 +38,27 @@ export function useCrossOriginPopup(visible: boolean, url: string | undefined, t
     popupWindow.current = undefined;
   }, []);
 
+  const closePopup = React.useCallback(() => {
+    if (popupWindow.current !== undefined) {
+      popupWindow.current.close();    // Manually close the popup
+      handleClosedPopup();
+    }
+  }, [handleClosedPopup]);
+
   const checkPopupClosed = React.useCallback(() => {
     if (popupWindow.current?.closed) {
       // Popup has been closed by end-user, inform our host and cleanup
       handleClosedPopup();
     }
   }, [handleClosedPopup]);
+
+  //  Close popup when parent window get closed
+  React.useEffect(() => {
+    window.onbeforeunload = (_event) => {closePopup();};
+    return () => {
+      window.onbeforeunload = null;
+    };
+  }, [closePopup]);
 
   // Whenever the hook is unloaded, make sure the underlying popup get closed.
   // Note: An interval is used to check if popup was closed by user: because we access
@@ -52,12 +67,9 @@ export function useCrossOriginPopup(visible: boolean, url: string | undefined, t
   // Reference: https://stackoverflow.com/questions/9388380/capture-the-close-event-of-popup-window-in-javascript/48240128#48240128
   React.useEffect(() => {
     return () => {
-      if (popupWindow.current !== undefined) {
-        popupWindow.current.close();    // Manually close the popup
-        handleClosedPopup();
-      }
+      closePopup();
     };
-  }, [handleClosedPopup]);
+  }, [closePopup]);
 
   // Timer that checks if popup was closed by end-user
   useInterval(checkPopupClosed, checkPopupAliveDelay);

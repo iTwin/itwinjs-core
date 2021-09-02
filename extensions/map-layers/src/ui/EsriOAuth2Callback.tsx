@@ -10,7 +10,7 @@ import * as React from "react";
 export function EsriOAuth2Callback() {
 
   const completeLogin = () => {
-    if (window.opener !== undefined) {
+    if (window.opener) {
       const opener = (window.opener as any);
       assert(opener?.esriOAuth2Callback);
       if (opener?.esriOAuth2Callback) {
