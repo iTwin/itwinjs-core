@@ -347,6 +347,80 @@ the widget in a floating container. The property `defaultFloatingPosition` may a
 
 The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to retrieve the Ids for all floating widget containers for the active frontstage as specified by the `frontstageDef`. These ids can be used to query the size of the floating container via `frontstageDef.getFloatingWidgetContainerBounds`. The method `frontstageDef.setFloatingWidgetContainerBounds` can then be used to set the size and position of a floating widget container.
 
+#### `ControlledTree` API Changes
+
+There were some breaking API changes related to `ControlledTree` component:
+
+* The component now takes `TreeModel` rather than `VisibleTreeNodes` as a prop to avoid requiring consumers to manage `VisibleTreeNodes` object. As a result, the `useVisibleTreeNodes` hook was replaced with `useTreeModel` hook. Typical mitigation:
+
+  **Before:**
+
+  ```tsx
+  const visibleNodes = useVisibleTreeNodes(modelSource);
+  return (
+    <ControlledTree {...otherProps} visibleNodes={visibleNodes} />
+  );
+  ```
+
+  **After:**
+
+  ```tsx
+  const treeModel = useTreeModel(modelSource);
+  return (
+    <ControlledTree {...otherProps} model={treeModel} />
+  );
+  ```
+
+* Name of the `treeEvents` prop was changed to `eventsHandler` to make it clearer. Typical mitigation:
+
+  **Before:**
+
+  ```tsx
+  return (
+    <ControlledTree {...otherProps} treeEvents={eventsHandler} />
+  );
+  ```
+
+  **After:**
+
+  ```tsx
+  return (
+    <ControlledTree {...otherProps} eventsHandler={eventsHandler} />
+  );
+  ```
+
+* Made the props `width` and `height` required. Previously they were optional and forced us to use non-optimal approach when not provided. Now it's up to the consumer to tell the size of the component. Typical mitigation:
+
+  **Before:**
+
+  ```tsx
+  return (
+    <ControlledTree {...props} />
+  );
+  ```
+
+  **After:**
+
+  ```tsx
+  const width = 100;
+  const height = 100;
+  return (
+    <ControlledTree {...props} width={width} height={height} />
+  );
+  ```
+
+  Or, the size may be determined dynamically. The below example uses an `AutoSizer` component from `react-virtualized-auto-sizer` package for that:
+
+  ```tsx
+  return (
+    <AutoSizer>
+      {({ width, height }) => (
+        <ControlledTree {...props} width={width} height={height} />
+      )}
+    </AutoSizer>
+  );
+  ```
+
 ### Deprecated ui-core Components in Favor of iTwinUI-react Components
 
 Several UI components in the @bentley/ui-core package have been deprecated.
