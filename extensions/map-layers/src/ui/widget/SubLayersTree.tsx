@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import AutoSizer from "react-virtualized-auto-sizer";
 import { IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { PropertyValueFormat } from "@bentley/ui-abstract";
 import { CheckBoxState, ImageCheckBox, NodeCheckboxRenderProps, useDisposable, WebFontIcon } from "@bentley/ui-core";
@@ -154,14 +155,22 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
           </button>,
         ]}
       </Toolbar>
-      <ControlledTree
-        nodeLoader={nodeLoader}
-        selectionMode={SelectionMode.None}
-        eventsHandler={eventHandler}
-        model={treeModel}
-        treeRenderer={nodeWithEyeCheckboxTreeRenderer}
-        nodeHighlightingProps={nodeHighlightingProps}
-      />
+      <div style={{ display: "block", width: "100%", height: "100%" }}>
+        <AutoSizer>
+          {({ width, height }) => (
+            <ControlledTree
+              nodeLoader={nodeLoader}
+              selectionMode={SelectionMode.None}
+              eventsHandler={eventHandler}
+              model={treeModel}
+              treeRenderer={nodeWithEyeCheckboxTreeRenderer}
+              nodeHighlightingProps={nodeHighlightingProps}
+              width={width}
+              height={height}
+            />
+          )}
+        </AutoSizer>
+      </div>
     </div>
   </>;
 }

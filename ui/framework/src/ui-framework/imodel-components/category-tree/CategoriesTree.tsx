@@ -14,7 +14,6 @@ import { IPresentationTreeDataProvider, usePresentationTreeNodeLoader } from "@b
 import { Presentation } from "@bentley/presentation-frontend";
 import { ControlledTree, SelectionMode, useTreeModel } from "@bentley/ui-components";
 import { useDisposable } from "@bentley/ui-core";
-import { connectIModelConnection } from "../../redux/connectIModel";
 import { UiFramework } from "../../UiFramework";
 import { VisibilityTreeFilterInfo } from "../Common";
 import { VisibilityTreeEventHandler } from "../VisibilityTreeEventHandler";
@@ -42,6 +41,10 @@ export interface CategoryTreeProps {
    * An IModel to pull data from
    */
   iModel: IModelConnection;
+  /** Width of the component */
+  width: number;
+  /** Height of the component */
+  height: number;
   /**
    * Start loading hierarchy as soon as the component is created
    */
@@ -110,7 +113,7 @@ export function CategoryTree(props: CategoryTreeProps) {
   }, []);
 
   return (
-    <div className="ui-fw-categories-tree">
+    <div className="ui-fw-categories-tree" style={{ width: props.width, height: props.height }}>
       <ControlledTree
         nodeLoader={filteredNodeLoader}
         model={treeModel}
@@ -120,18 +123,13 @@ export function CategoryTree(props: CategoryTreeProps) {
         descriptionsEnabled={true}
         nodeHighlightingProps={nodeHighlightingProps}
         noDataRenderer={filterApplied ? noFilteredDataRenderer : undefined}
+        width={props.width}
+        height={props.height}
       />
       {overlay}
     </div>
   );
 }
-
-/**
- * CategoryTree that is connected to the IModelConnection property in the Redux store. The
- * application must set up the Redux store and include the FrameworkReducer.
- * @beta
- */
-export const IModelConnectedCategoryTree = connectIModelConnection(null, null)(CategoryTree); // eslint-disable-line @typescript-eslint/naming-convention
 
 function useCategoryVisibilityHandler(viewManager: ViewManager, imodel: IModelConnection, categories: Category[], activeView?: Viewport, allViewports?: boolean, visibilityHandler?: CategoryVisibilityHandler) {
   return useDisposable(React.useCallback(

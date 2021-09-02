@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import AutoSizer from "react-virtualized-auto-sizer";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { usePresentationTreeNodeLoader, useUnifiedSelectionTreeEventHandler } from "@bentley/presentation-components";
 import { ControlledTree, SelectionMode, useTreeModel } from "@bentley/ui-components";
@@ -101,12 +102,20 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props: NavigationTreeProp
   const eventHandler = useUnifiedSelectionTreeEventHandler({ nodeLoader, collapsedChildrenDisposalEnabled: true });
   const treeModel = useTreeModel(modelSource);
   return (
-    <ControlledTree
-      model={treeModel}
-      nodeLoader={nodeLoader}
-      selectionMode={SelectionMode.Single}
-      eventsHandler={eventHandler}
-    />
+    <div style={{ display: "block", width: "100%", height: "100%" }}>
+      <AutoSizer>
+        {({ width, height }) => (
+          <ControlledTree
+            model={treeModel}
+            nodeLoader={nodeLoader}
+            selectionMode={SelectionMode.Single}
+            eventsHandler={eventHandler}
+            width={width}
+            height={height}
+          />
+        )}
+      </AutoSizer>
+    </div>
   );
 };
 

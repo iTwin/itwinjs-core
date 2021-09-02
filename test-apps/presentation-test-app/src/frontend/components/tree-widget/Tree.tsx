@@ -21,6 +21,8 @@ interface Props {
     activeMatchIndex: number;
     onFilteringStateChange: (isFiltering: boolean, matchesCount: number | undefined) => void;
   };
+  width: number;
+  height: number;
 }
 
 export function Tree(props: Props) {
@@ -55,6 +57,8 @@ export function Tree(props: Props) {
       selectionMode={SelectionMode.Extended}
       nodeHighlightingProps={nodeHighlightingProps}
       iconsEnabled={true}
+      width={props.width}
+      height={props.height}
     />
   );
 }

@@ -33,4 +33,6 @@
 .treewidget .filteredTree {
   flex: 1;
   min-height: 50px;
+  width: 100%;
+  height: 100%;
 }

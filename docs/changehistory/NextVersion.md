@@ -260,23 +260,29 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @bentley/ui-framework
 
-| Removed                                | Replacement                                                                            |
-| -------------------------------------- | -------------------------------------------------------------------------------------- |
-| `COLOR_THEME_DEFAULT`                  | `SYSTEM_PREFERRED_COLOR_THEME` in @bentley/ui-framework is used as default color theme |
-| `FunctionKey`                          | `FunctionKey` in @bentley/ui-abstract                                                  |
-| `IModelAppUiSettings`                  | `UserSettingsStorage` in @bentley/ui-framework                                         |
-| `reactElement` in ContentControl       | `ContentControl.reactNode`                                                             |
-| `reactElement` in NavigationAidControl | `NavigationAidControl.reactNode`                                                       |
-| `reactElement` in NavigationWidgetDef  | `NavigationWidgetDef.reactNode`                                                        |
-| `reactElement` in ToolWidgetDef        | `ToolWidgetDef.reactNode`                                                              |
-| `reactElement` in WidgetControl        | `WidgetControl.reactNode`                                                              |
-| `reactElement` in WidgetDef            | `WidgetDef.reactNode`                                                                  |
-| `ReactMessage`                         | `ReactMessage` in @bentley/ui-core                                                     |
-| `SpecialKey`                           | `SpecialKey` in @bentley/ui-abstract                                                   |
-| `WidgetState`                          | `WidgetState` in @bentley/ui-abstract                                                  |
-| `UserProfileBackstageItem`             | *eliminated*                                                                           |
-| `SignIn`                               | *eliminated*                                                                           |
-| `SignOutModalFrontstage`               | *eliminated*                                                                           |
+| Removed                                 | Replacement                                                                            |
+| --------------------------------------- | -------------------------------------------------------------------------------------- |
+| `COLOR_THEME_DEFAULT`                   | `SYSTEM_PREFERRED_COLOR_THEME` in @bentley/ui-framework is used as default color theme |
+| `FunctionKey`                           | `FunctionKey` in @bentley/ui-abstract                                                  |
+| `IModelAppUiSettings`                   | `UserSettingsStorage` in @bentley/ui-framework                                         |
+| `reactElement` in ContentControl        | `ContentControl.reactNode`                                                             |
+| `reactElement` in NavigationAidControl  | `NavigationAidControl.reactNode`                                                       |
+| `reactElement` in NavigationWidgetDef   | `NavigationWidgetDef.reactNode`                                                        |
+| `reactElement` in ToolWidgetDef         | `ToolWidgetDef.reactNode`                                                              |
+| `reactElement` in WidgetControl         | `WidgetControl.reactNode`                                                              |
+| `reactElement` in WidgetDef             | `WidgetDef.reactNode`                                                                  |
+| `ReactMessage`                          | `ReactMessage` in @bentley/ui-core                                                     |
+| `SpecialKey`                            | `SpecialKey` in @bentley/ui-abstract                                                   |
+| `WidgetState`                           | `WidgetState` in @bentley/ui-abstract                                                  |
+| `UserProfileBackstageItem`              | *eliminated*                                                                           |
+| `SignIn`                                | *eliminated*                                                                           |
+| `SignOutModalFrontstage`                | *eliminated*                                                                           |
+| `IModelConnectedCategoryTree`           | *eliminated*                                                                           |
+| `IModelConnectedModelsTree`             | *eliminated*                                                                           |
+| `IModelConnectedSpatialContainmentTree` | *eliminated*                                                                           |
+| `CategoryTreeWithSearchBox`             | *eliminated*                                                                           |
+| `VisibilityComponent`                   | `TreeWidgetComponent` in @bentley/tree-widget-react                                    |
+| `VisibilityWidget`                      | `TreeWidgetControl` in @bentley/tree-widget-react                                      |
 
 ### @bentley/bentleyjs-core
 

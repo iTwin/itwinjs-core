@@ -835,7 +835,7 @@ export function ControlledTree(props: ControlledTreeProps): JSX.Element;
 export interface ControlledTreeProps extends CommonProps {
     descriptionsEnabled?: boolean;
     eventsHandler: TreeEvents;
-    height?: number;
+    height: number;
     iconsEnabled?: boolean;
     model: TreeModel;
     noDataRenderer?: () => React.ReactElement;
@@ -846,7 +846,7 @@ export interface ControlledTreeProps extends CommonProps {
     selectionMode: SelectionMode;
     spinnerRenderer?: () => React.ReactElement;
     treeRenderer?: (props: TreeRendererProps) => React.ReactElement;
-    width?: number;
+    width: number;
 }
 
 // @public
@@ -4695,7 +4695,7 @@ TreeRendererContextProvider: React.ProviderExoticComponent<React.ProviderProps<T
 
 // @public
 export interface TreeRendererProps {
-    height?: number;
+    height: number;
     nodeHeight: (node: TreeModelNode | TreeModelNodePlaceholder, index: number) => number;
     nodeHighlightingProps?: HighlightableTreeProps;
     // (undocumented)
@@ -4708,7 +4708,7 @@ export interface TreeRendererProps {
     // (undocumented)
     treeActions: TreeActions;
     visibleNodes: VisibleTreeNodes;
-    width?: number;
+    width: number;
 }
 
 // @public

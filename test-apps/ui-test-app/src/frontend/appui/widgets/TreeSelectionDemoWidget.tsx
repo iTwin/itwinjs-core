@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import AutoSizer from "react-virtualized-auto-sizer";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import {
   AbstractTreeNodeLoaderWithProvider, ControlledTree, DelayLoadedTreeNodeItem, ITreeDataProvider, MutableTreeModel, SelectionMode, Subscription,
@@ -26,13 +27,19 @@ function TreeSelectionDemoWidget() {
   const treeModel = useTreeModel(modelSource);
   const eventsHandler = useTreeEventsHandler(React.useCallback(() => new DemoTreeEventsHandler(nodeLoader), [nodeLoader]));
   return (
-    <div style={{ height: "100%" }}>
-      <ControlledTree
-        nodeLoader={nodeLoader}
-        model={treeModel}
-        eventsHandler={eventsHandler}
-        selectionMode={SelectionMode.Extended}
-      />
+    <div style={{ width: "100%", height: "100%" }}>
+      <AutoSizer>
+        {({ width, height }) => (
+          <ControlledTree
+            nodeLoader={nodeLoader}
+            model={treeModel}
+            eventsHandler={eventsHandler}
+            selectionMode={SelectionMode.Extended}
+            width={width}
+            height={height}
+          />
+        )}
+      </AutoSizer>
     </div>
   );
 }

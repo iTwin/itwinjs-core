@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import AutoSizer from "react-virtualized-auto-sizer";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import {
   ControlledTree, DelayLoadedTreeNodeItem, EditableTreeDataProvider, SelectionMode, SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy,
@@ -69,13 +70,19 @@ function TreeExampleContent() {
       <div style={{ marginBottom: "4px", width: "200px" }}>
         <Select onChange={onChangeSelectionMode} value={selectionMode} title="Selection Mode" options={selectionModes} />
       </div>
-      <div style={{ flex: "1", height: "calc(100% - 22px)" }}>
-        <ControlledTree
-          nodeLoader={nodeLoader}
-          model={treeModel}
-          selectionMode={selectionMode}
-          eventsHandler={eventsHandler}
-        />
+      <div style={{ flex: "1", height: "calc(100% - 22px)", width: "100%" }}>
+        <AutoSizer>
+          {({ width, height }) => (
+            <ControlledTree
+              nodeLoader={nodeLoader}
+              model={treeModel}
+              selectionMode={selectionMode}
+              eventsHandler={eventsHandler}
+              width={width}
+              height={height}
+            />
+          )}
+        </AutoSizer>
       </div>
     </div >
   );

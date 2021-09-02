@@ -4,9 +4,10 @@ exports[`ModelsTree #integration renders component with real data and no active 
 <div>
   <div
     class="ui-fw-models-tree"
+    style="width: 200px; height: 200px;"
   >
     <div
-      style="overflow: visible; height: 0px; width: 0px;"
+      style="width: 200px; height: 200px;"
     >
       <div
         class="core-tree components-controlledTree components-smallEditor-host"
@@ -18,7 +19,7 @@ exports[`ModelsTree #integration renders component with real data and no active 
           style="position: relative; height: 200px; width: 200px; overflow: auto; will-change: transform; direction: ltr;"
         >
           <div
-            style="height: 50px; width: 100%; min-width: 200px;"
+            style="height: 50px; width: 100%; min-width: 0;"
           >
             <div
               class="node-wrapper"
@@ -115,20 +116,6 @@ exports[`ModelsTree #integration renders component with real data and no active 
           </div>
         </div>
       </div>
-    </div>
-    <div
-      class="resize-triggers"
-    >
-      <div
-        class="expand-trigger"
-      >
-        <div
-          style="width: 201px; height: 201px;"
-        />
-      </div>
-      <div
-        class="contract-trigger"
-      />
     </div>
   </div>
 </div>
@@ -3194,9 +3181,10 @@ exports[`ModelsTree #unit <ModelsTree /> should match snapshot 1`] = `
   <div>
     <div
       class="ui-fw-models-tree"
+      style="width: 200px; height: 200px;"
     >
       <div
-        style="overflow: visible; height: 0px; width: 0px;"
+        style="width: 200px; height: 200px;"
       >
         <div
           class="core-tree components-controlledTree components-smallEditor-host"
@@ -3208,7 +3196,7 @@ exports[`ModelsTree #unit <ModelsTree /> should match snapshot 1`] = `
             style="position: relative; height: 200px; width: 200px; overflow: auto; will-change: transform; direction: ltr;"
           >
             <div
-              style="height: 25px; width: 100%; min-width: 200px;"
+              style="height: 25px; width: 100%; min-width: 0;"
             >
               <div
                 class="node-wrapper"
@@ -3257,20 +3245,6 @@ exports[`ModelsTree #unit <ModelsTree /> should match snapshot 1`] = `
             </div>
           </div>
         </div>
-      </div>
-      <div
-        class="resize-triggers"
-      >
-        <div
-          class="expand-trigger"
-        >
-          <div
-            style="width: 201px; height: 201px;"
-          />
-        </div>
-        <div
-          class="contract-trigger"
-        />
       </div>
     </div>
   </div>

@@ -17,7 +17,6 @@ import {
 import { Presentation } from "@bentley/presentation-frontend";
 import { ControlledTree, SelectionMode, TreeNodeItem, useTreeModel } from "@bentley/ui-components";
 import { useDisposable, useOptionalDisposable } from "@bentley/ui-core";
-import { connectIModelConnection } from "../../../ui-framework/redux/connectIModel";
 import { UiFramework } from "../../../ui-framework/UiFramework";
 import { ClassGroupingOption, VisibilityTreeFilterInfo } from "../Common";
 import { VisibilityTreeEventHandler } from "../VisibilityTreeEventHandler";
@@ -41,6 +40,10 @@ export interface ModelsTreeProps {
    * An IModel to pull data from
    */
   iModel: IModelConnection;
+  /** Width of the component */
+  width: number;
+  /** Height of the component */
+  height: number;
   /**
    * Selection mode in the tree
    */
@@ -137,7 +140,7 @@ export function ModelsTree(props: ModelsTreeProps) {
   }, []);
 
   return (
-    <div className="ui-fw-models-tree" ref={props.rootElementRef}>
+    <div className="ui-fw-models-tree" ref={props.rootElementRef} style={{ width: props.width, height: props.height }}>
       <ControlledTree
         nodeLoader={filteredNodeLoader}
         model={treeModel}
@@ -147,18 +150,13 @@ export function ModelsTree(props: ModelsTreeProps) {
         nodeHighlightingProps={nodeHighlightingProps}
         noDataRenderer={filterApplied ? noFilteredDataRenderer : undefined}
         onItemsRendered={onItemsRendered}
+        width={props.width}
+        height={props.height}
       />
       {overlay}
     </div>
   );
 }
-
-/**
- * ModelsTree that is connected to the IModelConnection property in the Redux store. The
- * application must set up the Redux store and include the FrameworkReducer.
- * @alpha
- */
-export const IModelConnectedModelsTree = connectIModelConnection(null, null)(ModelsTree); // eslint-disable-line @typescript-eslint/naming-convention
 
 function useModelsTreeNodeLoader(props: ModelsTreeProps) {
   // note: this is a temporary workaround for auto-update not working on ruleset variable changes - instead

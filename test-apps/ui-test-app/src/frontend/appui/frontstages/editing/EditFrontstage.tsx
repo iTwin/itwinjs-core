@@ -4,13 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelApp, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
-import { NodeKey } from "@bentley/presentation-common";
 import { CommonToolbarItem, ConditionalBooleanValue, IconSpecUtilities, StageUsage, ToolbarItemUtilities, WidgetState } from "@bentley/ui-abstract";
-import { SelectionMode } from "@bentley/ui-components";
 import {
   AccuDrawDialog, AccuDrawWidgetControl, BasicNavigationWidget, BasicToolWidget, CommandItemDef, ContentGroup, ContentLayoutDef, ContentLayoutProps, ContentProps,
-  CoreTools, CustomItemDef, Frontstage, FrontstageProvider, IModelConnectedViewSelector, ModelessDialogManager, ModelsTreeNodeType,
-  StagePanel, ToolbarHelper, VisibilityComponentHierarchy, VisibilityWidget, Widget, Zone, ZoneLocation, ZoneState,
+  CoreTools, CustomItemDef, Frontstage, FrontstageProvider, IModelConnectedViewSelector, ModelessDialogManager,
+  StagePanel, ToolbarHelper, Widget, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../../../../frontend/index";
 import { EditTools } from "../../../tools/editing/ToolSpecifications";
@@ -20,7 +18,6 @@ import { IModelViewportControl } from "../../contentviews/IModelViewport";
 import { EditStatusBarWidgetControl } from "../../statusbars/editing/EditStatusBar";
 import { ActiveSettingsWidget } from "../../widgets/editing/ActiveSettingsWidget";
 import { ModelCreationWidget } from "../../widgets/editing/ModelCreationWidget";
-import { VisibilityTreeWidgetControl } from "../../widgets/VisibilityTreeWidget";
 import { Orientation } from "@bentley/ui-core";
 
 /* eslint-disable react/jsx-key, deprecation/deprecation */
@@ -33,15 +30,6 @@ export class EditFrontstage extends FrontstageProvider {
   private _additionalTools = new AdditionalTools();
 
   public static savedViewLayoutProps: string;
-  private _leftPanel = {
-    widgets: [
-      <Widget
-        iconSpec="icon-placeholder"
-        labelKey="SampleApp:widgets.VisibilityTree"
-        control={VisibilityTreeWidgetControl}
-      />,
-    ],
-  };
 
   private _bottomPanel = {
     widgets: [
@@ -142,21 +130,6 @@ export class EditFrontstage extends FrontstageProvider {
                   stateFunc={(): WidgetState => SampleAppIModelApp.getTestProperty() !== "HIDE" ? WidgetState.Closed : WidgetState.Hidden}
                 />,
               ]}
-          />
-        }
-        centerRight={
-          <Zone
-            allowsMerging
-            defaultState={ZoneState.Minimized}
-            initialWidth={350}
-            widgets={[
-              <Widget id="VisibilityWidget" iconSpec={VisibilityWidget.iconSpec} label={VisibilityWidget.label} control={VisibilityWidget}
-                applicationData={{
-                  iModelConnection: this.iModelConnection, enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories], useControlledTree: true,
-                  config: { modelsTreeConfig: { selectionMode: SelectionMode.Extended, selectionPredicate: (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Element } },
-                }}
-                fillZone={true} />,
-            ]}
           />
         }
         statusBar={

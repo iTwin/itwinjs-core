@@ -860,7 +860,7 @@
     },
     {
       "name": "react-virtualized-auto-sizer",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "react-window",

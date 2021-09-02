@@ -958,10 +958,12 @@ export interface CategoryTreeProps {
     enablePreloading?: boolean;
     // @alpha
     filterInfo?: VisibilityTreeFilterInfo;
+    height: number;
     iModel: IModelConnection;
     onFilterApplied?: (filteredDataProvider: IPresentationTreeDataProvider, matchesCount: number) => void;
     // @internal
     viewManager?: ViewManager;
+    width: number;
 }
 
 // @internal
@@ -3078,26 +3080,14 @@ export interface HTMLElementPopupProps extends PopupPropsBase {
 export class IModelAppUiSettings extends UserSettingsStorage {
 }
 
-// @beta
-export const IModelConnectedCategoryTree: import("react-redux").ConnectedComponent<typeof CategoryTree, any>;
-
-// @alpha
-export const IModelConnectedModelsTree: import("react-redux").ConnectedComponent<typeof ModelsTree, any>;
-
 // @beta @deprecated
 export const IModelConnectedNavigationWidget: import("react-redux").ConnectedComponent<typeof DefaultNavigationWidget, any>;
-
-// @beta
-export const IModelConnectedSpatialContainmentTree: import("react-redux").ConnectedComponent<typeof SpatialContainmentTree, any>;
 
 // @beta
 export const IModelConnectedViewport: import("react-redux").ConnectedComponent<React.ComponentType<import("@bentley/ui-imodel-components").ViewportProps & import("@bentley/presentation-components").ViewWithUnifiedSelectionProps>, any>;
 
 // @beta
 export const IModelConnectedViewSelector: import("react-redux").ConnectedComponent<typeof ViewSelector, any>;
-
-// @beta @deprecated
-export const IModelConnectedVisibilityComponent: import("react-redux").ConnectedComponent<typeof VisibilityComponent, any>;
 
 // @internal
 export interface IModelInfo {
@@ -4027,6 +4017,7 @@ export interface ModelsTreeProps {
     filteredElementIds?: Id64Array;
     // @alpha
     filterInfo?: VisibilityTreeFilterInfo;
+    height: number;
     iModel: IModelConnection;
     // @alpha
     modelsVisibilityHandler?: ModelsVisibilityHandler;
@@ -4035,6 +4026,7 @@ export interface ModelsTreeProps {
     selectionMode?: SelectionMode;
     // @alpha
     selectionPredicate?: ModelsTreeSelectionPredicate;
+    width: number;
 }
 
 // @beta
@@ -5548,8 +5540,10 @@ export interface SpatialContainmentTreeProps {
     // @beta
     enableElementsClassGrouping?: ClassGroupingOption;
     enablePreloading?: boolean;
+    height: number;
     // (undocumented)
     iModel: IModelConnection;
+    width: number;
 }
 
 // @internal (undocumented)
@@ -7091,50 +7085,6 @@ export class ViewUtilities {
 // @alpha
 export type VisibilityChangeListener = (nodeIds?: string[], visibilityStatus?: Map<string, VisibilityStatus>) => void;
 
-// @beta @deprecated
-export class VisibilityComponent extends React.Component<VisibilityComponentProps, VisibilityTreeState> {
-    constructor(props: any);
-    // (undocumented)
-    componentDidMount(): Promise<void>;
-    componentWillUnmount(): void;
-    // (undocumented)
-    render(): JSX.Element;
-    }
-
-// @beta @deprecated
-export interface VisibilityComponentConfig {
-    // (undocumented)
-    modelsTree?: {
-        selectionMode?: SelectionMode;
-        selectionPredicate?: ModelsTreeSelectionPredicate;
-        enableElementsClassGrouping?: ClassGroupingOption;
-        enableHierarchyAutoUpdate?: boolean;
-    };
-    // (undocumented)
-    spatialContainmentTree?: {
-        enableElementsClassGrouping?: ClassGroupingOption;
-    };
-}
-
-// @public @deprecated
-export enum VisibilityComponentHierarchy {
-    // (undocumented)
-    Categories = "categories",
-    // (undocumented)
-    Models = "models",
-    // (undocumented)
-    SpatialContainment = "spatial-containment"
-}
-
-// @beta @deprecated
-export interface VisibilityComponentProps {
-    activeTreeRef?: React.Ref<HTMLDivElement>;
-    activeViewport?: Viewport;
-    config?: VisibilityComponentConfig;
-    enableHierarchiesPreloading?: VisibilityComponentHierarchy[];
-    iModelConnection: IModelConnection;
-}
-
 // @alpha
 export interface VisibilityStatus {
     // (undocumented)
@@ -7190,19 +7140,6 @@ export interface VisibilityTreeNoFilteredDataProps {
 
 // @alpha
 export type VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => boolean;
-
-// @beta @deprecated
-export class VisibilityWidget extends WidgetControl {
-    constructor(info: ConfigurableCreateInfo, options: any);
-    // (undocumented)
-    static get iconSpec(): string;
-    // (undocumented)
-    static get label(): string;
-    // (undocumented)
-    restoreTransientState(): boolean;
-    // (undocumented)
-    saveTransientState(): void;
-}
 
 // @public
 export class Widget extends React.Component<WidgetProps> {

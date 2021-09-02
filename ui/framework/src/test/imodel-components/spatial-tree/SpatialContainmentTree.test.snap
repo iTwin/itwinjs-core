@@ -5,9 +5,10 @@ exports[`SpatialContainmentTree <SpatialContainmentTree /> renders 1`] = `
   <div>
     <div
       class="ui-fw-spatial-tree"
+      style="width: 200px; height: 200px;"
     >
       <div
-        style="overflow: visible; height: 0px; width: 0px;"
+        style="width: 200px; height: 200px;"
       >
         <div
           class="core-tree components-controlledTree components-smallEditor-host"
@@ -51,20 +52,6 @@ exports[`SpatialContainmentTree <SpatialContainmentTree /> renders 1`] = `
             </div>
           </div>
         </div>
-      </div>
-      <div
-        class="resize-triggers"
-      >
-        <div
-          class="expand-trigger"
-        >
-          <div
-            style="width: 201px; height: 201px;"
-          />
-        </div>
-        <div
-          class="contract-trigger"
-        />
       </div>
     </div>
   </div>

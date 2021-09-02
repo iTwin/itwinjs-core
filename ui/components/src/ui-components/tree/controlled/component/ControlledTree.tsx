@@ -61,9 +61,9 @@ export interface ControlledTreeProps extends CommonProps {
    */
   onItemsRendered?: (items: RenderedItemsRange) => void;
   /** Width of the tree renderer. */
-  width?: number;
+  width: number;
   /** Height of the tree renderer. */
-  height?: number;
+  height: number;
 }
 
 /**
@@ -99,9 +99,11 @@ export function ControlledTree(props: ControlledTreeProps) {
   const loading = useRootNodeLoader(visibleNodes, props.nodeLoader);
   const noData = visibleNodes.getNumRootNodes() === 0;
   return (
-    <Loader loading={loading} noData={noData} spinnerRenderer={props.spinnerRenderer} noDataRenderer={props.noDataRenderer}>
-      {props.treeRenderer ? props.treeRenderer(treeProps) : <TreeRenderer {...treeProps} />}
-    </Loader>
+    <div style={{ width: props.width, height: props.height }}>
+      <Loader loading={loading} noData={noData} spinnerRenderer={props.spinnerRenderer} noDataRenderer={props.noDataRenderer}>
+        {props.treeRenderer ? props.treeRenderer(treeProps) : <TreeRenderer {...treeProps} />}
+      </Loader>
+    </div>
   );
 }
 
