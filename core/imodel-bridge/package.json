@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/imodel-bridge"
+    "url": "https://github.com/imodeljs/imodeljs/tree/release/2.19.x/core/imodel-bridge"
   },
   "scripts": {
     "compile": "npm run build",
