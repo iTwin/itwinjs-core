@@ -31,7 +31,6 @@ export * from "./ui-framework/backstage/FrontstageLaunch";
 export * from "./ui-framework/backstage/Separator";
 export * from "./ui-framework/backstage/useDefaultBackstageItems";
 export * from "./ui-framework/backstage/TaskLaunch";
-export * from "./ui-framework/backstage/UserProfile";
 export * from "./ui-framework/backstage/useUiItemsProviderBackstageItems";
 
 export * from "./ui-framework/clientservices/IModelServices";
@@ -119,9 +118,6 @@ export * from "./ui-framework/navigationaids/NavigationAidControl";
 export * from "./ui-framework/navigationaids/SheetNavigationAid";
 export * from "./ui-framework/navigationaids/SheetsModalFrontstage";
 export * from "./ui-framework/navigationaids/StandardRotationNavigationAid";
-
-export * from "./ui-framework/oidc/SignIn";
-export * from "./ui-framework/oidc/SignOut";
 
 export * from "./ui-framework/pickers/ListPicker";
 export * from "./ui-framework/pickers/ModelSelector/ModelSelector";
@@ -285,7 +281,7 @@ export * from "./ui-framework/zones/Zone";
 export * from "./ui-framework/zones/ZoneDef";
 
 /** @docs-package-description
- * The ui-framework package contains application fragments for Login, Project, iModel and View selection,
+ * The ui-framework package contains application fragments for Project, iModel and View selection,
  * and configuration of the application UI with the Backstage, Frontstages, Widgets, etc.
  * For more information, see [learning about ui-framework]($docs/learning/ui/framework/index.md).
  */
@@ -344,10 +340,6 @@ export * from "./ui-framework/zones/ZoneDef";
 /**
  * @docs-group-description Notification
  * Classes for working with a Notification or Message
- */
-/**
- * @docs-group-description OIDC
- * Classes for working with the OpenID Connect (OIDC) protocol
  */
 
 /**

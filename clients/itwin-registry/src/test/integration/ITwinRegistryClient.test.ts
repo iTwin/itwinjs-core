@@ -9,7 +9,7 @@ import { ITwin, ITwinSearchableProperty } from "../../ITwinAccessProps";
 import { TestConfig } from "../TestConfig";
 
 chai.should();
-describe("ITwinRegistryClient (#integration)", () => {
+describe("ContextRegistryClient (#integration)", () => {
   const iTwinAccessClient: ITwinAccessClient = new ITwinAccessClient();
   let requestContext: AuthorizedClientRequestContext;
 
@@ -26,7 +26,7 @@ describe("ITwinRegistryClient (#integration)", () => {
   });
 
   it("should get a paged list of iTwins using top (#integration)", async () => {
-    const numberOfITwins = 6;
+    const numberOfITwins = 3;
 
     // Verify there are enough iTwins to test the paging
     const fullITwinList: ITwin[] = await iTwinAccessClient.getAll(requestContext);
@@ -69,8 +69,13 @@ describe("ITwinRegistryClient (#integration)", () => {
     chai.assert(numberSkipped < numberOfITwins, "There must be overlap between the two pages to run test.");
 
     // Verify there are enough iTwins to test the paging
-    const fullITwinList: ITwin[] = await iTwinAccessClient.getAll(requestContext);
-    chai.assert(fullITwinList.length >= numberOfITwins + numberSkipped, "Unable to meaningfully run test since there are too few iTwins.");
+    const fullITwinList: ITwin[] = await iTwinAccessClient.getAll(requestContext,
+      {
+        pagination: {
+          top: numberOfITwins + numberSkipped,
+        },
+      });
+    chai.assert(fullITwinList.length === numberOfITwins + numberSkipped, "Unable to meaningfully run test since there are too few iTwins.");
 
     const firstPageList: ITwin[] = await iTwinAccessClient.getAll(requestContext,
       {
@@ -104,6 +109,10 @@ describe("ITwinRegistryClient (#integration)", () => {
     // The number of unique iTwins must match the number skipped
     chai.expect(uniqueFirstPageITwins).length(numberSkipped);
     chai.expect(uniqueSecondPageITwins).length(numberSkipped);
+
+    // Both pages are contained within the larger full page
+    chai.expect(fullITwinList).to.deep.include.members(firstPageList);
+    chai.expect(fullITwinList).to.deep.include.members(secondPageList);
   });
 
   it("should get a list of iTwins by name (#integration)", async () => {
