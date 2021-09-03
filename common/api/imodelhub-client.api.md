@@ -443,12 +443,6 @@ export class ConflictingLocksError extends IModelHubError {
 export function constructorFromEventType(type: IModelHubEventType): EventConstructor;
 
 // @internal
-export interface ITwinManagerClient {
-    // (undocumented)
-    getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin>;
-}
-
-// @internal
 export class DefaultCodeUpdateOptionsProvider {
     constructor();
     assignOptions(options: CodeUpdateOptions): Promise<void>;
@@ -732,13 +726,13 @@ export abstract class IModelClient {
 // @internal
 export interface IModelCloudEnvironment {
     // (undocumented)
-    readonly iTwinMgr: ITwinManagerClient;
-    // (undocumented)
     getAuthorizationClient(userInfo: UserInfo | undefined, userCredentials: any): FrontendAuthorizationClient;
     // (undocumented)
     readonly imodelClient: IModelClient;
     // (undocumented)
     readonly isIModelHub: boolean;
+    // (undocumented)
+    readonly iTwinMgr: ITwinManagerClient;
     // (undocumented)
     shutdown(): Promise<number>;
     // (undocumented)
@@ -933,6 +927,12 @@ export class InstanceIdQuery extends WsgQuery {
     protected _byId?: GuidString;
     // @internal
     getId(): string | undefined;
+}
+
+// @internal
+export interface ITwinManagerClient {
+    // (undocumented)
+    getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin>;
 }
 
 // @public
