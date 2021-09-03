@@ -6,8 +6,9 @@
 import { expect } from "chai";
 import * as React from "react";
 import { MockRender } from "@bentley/imodeljs-frontend";
+import { ContentLayoutProps } from "@bentley/ui-abstract";
 import {
-  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroupManager, ContentGroupProps, ContentLayoutManager, ContentLayoutProps, CoreTools,
+  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroupManager, ContentGroupProps, ContentLayoutManager, CoreTools,
   Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider, MessageManager, ModalDialogManager, ModelessDialogManager, PopupManager,
   TaskManager, TaskPropsList, WidgetControl, WorkflowManager, WorkflowProps, WorkflowPropsList,
 } from "../../ui-framework";

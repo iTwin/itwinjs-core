@@ -10,11 +10,11 @@ import { expect } from "chai";
 
 import { I18N } from "@bentley/imodeljs-i18n";
 import { UserInfo } from "@bentley/itwin-client";
-import { PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValueFormat, StandardTypeNames } from "@bentley/ui-abstract";
+import { ContentLayoutProps, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValueFormat, StandardTypeNames } from "@bentley/ui-abstract";
 import { UiSettings, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 
 import {
-  ActionsUnion, combineReducers, ConfigurableUiManager, ContentGroupProps, ContentLayoutProps, createAction, DeepReadonly, FrameworkReducer,
+  ActionsUnion, combineReducers, ConfigurableUiManager, ContentGroupProps, createAction, DeepReadonly, FrameworkReducer,
   FrameworkState, SyncUiEventDispatcher, ToolSettingsManager, UiFramework,
 } from "../ui-framework";
 import { TestContentControl } from "./frontstage/FrontstageTestUtils";
