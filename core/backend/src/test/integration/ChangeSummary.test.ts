@@ -146,12 +146,12 @@ describe("ChangeSummary (#integration)", () => {
     const changeSets = await IModelHost.hubAccess.queryChangesets({ user, iModelId });
     assert.isAtLeast(changeSets.length, 3);
     // extract summary for second changeset
-    const changesetId: string = changeSets[1].id;
+    const changesetId = changeSets[1].id;
 
     const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId, iModelId });
     try {
       assert.exists(iModel);
-      await iModel.reverseChanges(user, IModelVersion.asOfChangeSet(changesetId)); // eslint-disable-line deprecation/deprecation
+      await iModel.pullChanges({ user, toIndex: changeSets[1].index });
 
       // now extract change summary for that one changeset
       const summaryId = await ChangeSummaryManager.createChangeSummary(user, iModel);
@@ -224,15 +224,15 @@ describe("ChangeSummary (#integration)", () => {
   it("Subsequent ChangeSummary extractions", async () => {
     setupTest(iModelId);
 
-    const changeSets = await IModelHost.hubAccess.queryChangesets({ user, iModelId });
-    assert.isAtLeast(changeSets.length, 3);
+    const changesets = await IModelHost.hubAccess.queryChangesets({ user, iModelId });
+    assert.isAtLeast(changesets.length, 3);
     // first extraction: just first changeset
-    const firstChangesetId: string = changeSets[0].id;
+    const firstChangesetId = changesets[0].id;
 
     let iModel = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId, iModelId });
     try {
       assert.exists(iModel);
-      await iModel.reverseChanges(user, IModelVersion.asOfChangeSet(firstChangesetId));// eslint-disable-line deprecation/deprecation
+      await iModel.pullChanges({ user, toIndex: changesets[0].index });
 
       // now extract change summary for that one changeset
       const summaryId = await ChangeSummaryManager.createChangeSummary(user, iModel);
@@ -256,7 +256,7 @@ describe("ChangeSummary (#integration)", () => {
       });
 
       // now do second extraction for last changeset
-      const lastChangesetId: string = changeSets[changeSets.length - 1].id;
+      const lastChangesetId: string = changesets[changesets.length - 1].id;
       await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModel);
       iModel = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId, iModelId, asOf: IModelVersion.asOfChangeSet(lastChangesetId).toJSON() });
       // WIP not working yet until cache can be detached.

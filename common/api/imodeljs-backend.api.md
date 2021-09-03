@@ -32,7 +32,6 @@ import { ChangesetFileProps } from '@bentley/imodeljs-common';
 import { ChangesetId } from '@bentley/imodeljs-common';
 import { ChangesetIdWithIndex } from '@bentley/imodeljs-common';
 import { ChangesetIndex } from '@bentley/imodeljs-common';
-import { ChangesetIndexAndId } from '@bentley/imodeljs-common';
 import { ChangesetIndexOrId } from '@bentley/imodeljs-common';
 import { ChangesetProps } from '@bentley/imodeljs-common';
 import { ChangesetRange } from '@bentley/imodeljs-common';
@@ -340,6 +339,7 @@ export interface BackendHubAccess {
     queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined>;
     // @internal
     releaseAllCodes(arg: BriefcaseDbArg): Promise<void>;
+    // @internal
     releaseAllLocks(arg: BriefcaseDbArg): Promise<void>;
     releaseBriefcase(arg: BriefcaseIdArg): Promise<void>;
 }
@@ -404,16 +404,12 @@ export class BriefcaseDb extends IModelDb {
     static readonly onOpen: BeEvent<(_args: OpenBriefcaseArgs) => void>;
     static readonly onOpened: BeEvent<(_iModelDb: BriefcaseDb, _args: OpenBriefcaseArgs) => void>;
     static open(args: OpenBriefcaseArgs): Promise<BriefcaseDb>;
-    pullChanges(arg?: PullChangesArgs): Promise<ChangesetIndexAndId>;
-    pushChanges(arg: PushChangesArgs): Promise<ChangesetIndexAndId>;
-    // @deprecated
-    reinstateChanges(user: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
-    // @deprecated
-    reverseChanges(user: AuthorizedClientRequestContext, version: IModelVersion): Promise<void>;
+    pullChanges(arg?: PullChangesArgs): Promise<void>;
+    pushChanges(arg: PushChangesArgs): Promise<void>;
     // (undocumented)
     static tryFindByKey(key: string): BriefcaseDb | undefined;
     readonly txns: TxnManager;
-    static upgradeSchemas(briefcase: LocalBriefcaseProps & OpenBriefcaseArgs): Promise<void>;
+    static upgradeSchemas(briefcase: OpenBriefcaseArgs): Promise<void>;
     protected get useLockServer(): boolean;
 }
 
@@ -4099,7 +4095,7 @@ export class UrlLink extends LinkElement implements UrlLinkProps {
 
 // @public
 export interface UserArg {
-    user?: AuthorizedClientRequestContext;
+    readonly user?: AuthorizedClientRequestContext;
 }
 
 // @internal

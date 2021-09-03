@@ -153,7 +153,7 @@ async function pushIModelAfterSchemaChanges(user: AuthorizedClientRequestContext
   assert.isNotEmpty(rwIModelId);
   // import schema and push change to hub
   const schemaPathname = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
-  await rwIModel.importSchemas( [schemaPathname]).catch(() => { });
+  await rwIModel.importSchemas([schemaPathname]).catch(() => { });
   assert.isDefined(rwIModel.getMetaData("PerfTestDomain:" + "PerfElement"), "PerfElement" + "is present in iModel.");
   rwIModel.saveChanges("schema change pushed");
   await rwIModel.pullChanges({ user });
@@ -213,11 +213,8 @@ async function reverseChanges(user: AuthorizedClientRequestContext, reporter: Re
   const secondCount = getElementCount(rwIModel);
   assert.equal(secondCount, 11);
 
-  const iModelId = await HubUtility.queryIModelIdByName(user, iTwinId, "reverseChangeTest");
-  const changeSets = await IModelHost.hubAccess.queryChangesets({ user, iModelId });
-  const firstChangeSetId = changeSets[0].id;
   const startTime = new Date().getTime();
-  await rwIModel.reverseChanges(user, IModelVersion.asOfChangeSet(firstChangeSetId));// eslint-disable-line deprecation/deprecation
+  await rwIModel.pullChanges({ user, toIndex: 0 }); // reverses changes.
   const endTime = new Date().getTime();
   const elapsedTime1 = (endTime - startTime) / 1000.0;
 
@@ -258,15 +255,12 @@ async function reinstateChanges(user: AuthorizedClientRequestContext, reporter: 
   const secondCount = getElementCount(rwIModel);
   assert.equal(secondCount, 11);
 
-  const iModelId = await HubUtility.queryIModelIdByName(user, iTwinId, iModelName);
-  const changeSets = await IModelHost.hubAccess.queryChangesets({ user, iModelId });
-  const firstChangeSetId = changeSets[0].id;
-  await rwIModel.reverseChanges(user, IModelVersion.asOfChangeSet(firstChangeSetId));// eslint-disable-line deprecation/deprecation
+  await rwIModel.pullChanges({ user, toIndex: 0 });
   const reverseCount = getElementCount(rwIModel);
   assert.equal(reverseCount, firstCount);
 
   const startTime = new Date().getTime();
-  await rwIModel.reinstateChanges(user, IModelVersion.latest());// eslint-disable-line deprecation/deprecation
+  await rwIModel.pullChanges({user});
   const endTime = new Date().getTime();
   const elapsedTime1 = (endTime - startTime) / 1000.0;
   const reinstateCount = getElementCount(rwIModel);

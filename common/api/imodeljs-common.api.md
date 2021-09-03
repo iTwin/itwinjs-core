@@ -1701,20 +1701,20 @@ export type CreateEmptyStandaloneIModelProps = CreateIModelProps & CreateStandal
 
 // @public
 export interface CreateIModelProps extends IModelProps {
-    client?: string;
-    guid?: GuidString;
+    readonly client?: string;
+    readonly guid?: GuidString;
     // @alpha
-    thumbnail?: ThumbnailProps;
+    readonly thumbnail?: ThumbnailProps;
 }
 
 // @public
 export interface CreateSnapshotIModelProps extends IModelEncryptionProps {
-    createClassViews?: boolean;
+    readonly createClassViews?: boolean;
 }
 
 // @internal
 export interface CreateStandaloneIModelProps extends IModelEncryptionProps {
-    allowEdit?: string;
+    readonly allowEdit?: string;
 }
 
 // @internal (undocumented)
@@ -2132,11 +2132,11 @@ export class EcefLocation implements EcefLocationProps {
 
 // @public
 export interface EcefLocationProps {
-    cartographicOrigin?: LatLongAndHeight;
-    orientation: YawPitchRollProps;
-    origin: XYZProps;
-    xVector?: XYZProps;
-    yVector?: XYZProps;
+    readonly cartographicOrigin?: LatLongAndHeight;
+    readonly orientation: YawPitchRollProps;
+    readonly origin: XYZProps;
+    readonly xVector?: XYZProps;
+    readonly yVector?: XYZProps;
 }
 
 // @public
@@ -2826,9 +2826,9 @@ export interface FilePropertyProps {
     // (undocumented)
     id?: number | string;
     // (undocumented)
-    name: string;
+    readonly name: string;
     // (undocumented)
-    namespace: string;
+    readonly namespace: string;
     // (undocumented)
     subId?: number | string;
 }
@@ -4207,7 +4207,7 @@ export interface IModelCoordinatesResponseProps {
 
 // @public
 export interface IModelEncryptionProps {
-    password?: string;
+    readonly password?: string;
 }
 
 // @public
@@ -4223,12 +4223,12 @@ export class IModelNotFoundResponse extends RpcNotFoundResponse {
 
 // @public
 export interface IModelProps {
-    ecefLocation?: EcefLocationProps;
-    geographicCoordinateSystem?: GeographicCRSProps;
-    globalOrigin?: XYZProps;
-    name?: string;
-    projectExtents?: Range3dProps;
-    rootSubject: RootSubjectProps;
+    readonly ecefLocation?: EcefLocationProps;
+    readonly geographicCoordinateSystem?: GeographicCRSProps;
+    readonly globalOrigin?: XYZProps;
+    readonly name?: string;
+    readonly projectExtents?: Range3dProps;
+    readonly rootSubject: RootSubjectProps;
 }
 
 // @internal
@@ -5414,7 +5414,7 @@ export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey {
 // @public
 export interface OpenDbKey {
     // (undocumented)
-    key?: string;
+    readonly key?: string;
 }
 
 // @internal (undocumented)
@@ -6671,8 +6671,8 @@ export type RgbFactorProps = number[];
 
 // @public
 export interface RootSubjectProps {
-    description?: string;
-    name: string;
+    readonly description?: string;
+    readonly name: string;
 }
 
 // @public
@@ -7550,11 +7550,11 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface {
 // @public
 export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
     // @internal (undocumented)
-    autoUploadBlocks?: boolean;
+    readonly autoUploadBlocks?: boolean;
     // @internal (undocumented)
-    lazyBlockCache?: boolean;
+    readonly lazyBlockCache?: boolean;
     // @internal
-    tempFileBase?: string;
+    readonly tempFileBase?: string;
 }
 
 // @public

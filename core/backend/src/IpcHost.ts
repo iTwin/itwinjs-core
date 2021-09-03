@@ -158,7 +158,7 @@ export abstract class IpcHandler {
           throw new IModelError(IModelStatus.FunctionNotFound, `Method "${impl.constructor.name}.${funcName}" not found on IpcHandler registered for channel: ${impl.channelName}`);
 
         return { result: await func.call(impl, ...args) };
-      } catch (err) {
+      } catch (err: any) {
         const ret: IpcInvokeReturn = { error: { name: err.constructor.name, message: err.message ?? "", errorNumber: err.errorNumber ?? 0 } };
         if (!IpcHost.noStack)
           ret.error.stack = err.stack ?? "";
@@ -215,11 +215,13 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
 
   public async pullChanges(key: string, toIndex?: ChangesetIndex): Promise<ChangesetIndexAndId> {
     const iModelDb = BriefcaseDb.findByKey(key);
-    return iModelDb.pullChanges({ toIndex });
+    await iModelDb.pullChanges({ toIndex });
+    return iModelDb.changeset as ChangesetIndexAndId;
   }
   public async pushChanges(key: string, description: string): Promise<ChangesetIndexAndId> {
     const iModelDb = BriefcaseDb.findByKey(key);
-    return iModelDb.pushChanges({ description });
+    await iModelDb.pushChanges({ description });
+    return iModelDb.changeset as ChangesetIndexAndId;
   }
 
   public async toggleGraphicalEditingScope(key: string, startSession: boolean): Promise<boolean> {

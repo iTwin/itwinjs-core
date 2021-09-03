@@ -2289,7 +2289,7 @@ export class BriefcaseDb extends IModelDb {
   /** Upgrades the schemas in the iModel based on the current version of the software. Follows a sequence of operations -
    * * Acquires a schema lock to prevent other users from making any other changes while upgrade is happening
    * * Updates the local briefcase with the schema changes.
-   * * Pushes the resulting changeset(s) to the iModelHub.
+   * * Pushes the resulting changeset(s) to iModelHub.
    * Note that the upgrade requires that the local briefcase be closed, and may result in one or two change sets depending on whether both
    * profile and domain schemas need to get upgraded.
    * @see ($docs/learning/backend/IModelDb.md#upgrading-schemas-in-an-imodel)
@@ -2335,66 +2335,36 @@ export class BriefcaseDb extends IModelDb {
     this.nativeDb.openIModel(fileName, openMode);
   }
 
-  /** Pull and apply changesets from iModelHub
-   * @returns the new changeSetId of this BriefcaseDb after pulling
-   */
-  public async pullChanges(arg?: PullChangesArgs): Promise<ChangesetIndexAndId> {
+  /** Pull and apply changesets from iModelHub */
+  public async pullChanges(arg?: PullChangesArgs): Promise<void> {
     if (this.isReadonly) // we allow pulling changes into a briefcase that is readonly - close and reopen it writeable
       this.closeAndReopen(OpenMode.ReadWrite);
     try {
       await BriefcaseManager.pullAndApplyChangesets(this, arg ?? {});
+      this.initializeIModelDb();
     } finally {
       if (this.isReadonly) // if the briefcase was opened readonly - close and reopen it readonly
         this.closeAndReopen(OpenMode.Readonly);
     }
 
-    const changeset = this.changeset as ChangesetIndexAndId;
-    IpcHost.notifyTxns(this, "notifyPulledChanges", changeset);
-    this.initializeIModelDb();
-    return changeset;
+    IpcHost.notifyTxns(this, "notifyPulledChanges", this.changeset as ChangesetIndexAndId);
   }
 
-  /** Push changes to iModelHub.
- * @returns The [[ChangesetIndexAndId]] of the successfully pushed changeset
- */
-  public async pushChanges(arg: PushChangesArgs): Promise<ChangesetIndexAndId> {
+  /** Push changes to iModelHub. */
+  public async pushChanges(arg: PushChangesArgs): Promise<void> {
     if (this.briefcaseId === BriefcaseIdValue.Unassigned)
-      return this.changeset as ChangesetIndexAndId; // can't push changes unless we have a valid briefcaseId
+      return;
 
     if (this.nativeDb.hasUnsavedChanges())
       throw new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot push with unsaved changes");
     if (!this.nativeDb.hasPendingTxns())
-      return this.changeset as ChangesetIndexAndId; // nothing to push
+      return; // nothing to push
 
     await BriefcaseManager.pullMergePush(this, arg);
     this.initializeIModelDb();
 
     const changeset = this.changeset as ChangesetIndexAndId;
     IpcHost.notifyTxns(this, "notifyPushedChanges", changeset);
-
-    return changeset;
-  }
-
-  /** Reverse a previously applied set of changes
- * @param version Version to reverse changes to.
- * @throws [[IModelError]] If the reversal fails.
- * @deprecated reversing previously applied changes is not supported
- */
-  public async reverseChanges(user: AuthorizedClientRequestContext, version: IModelVersion): Promise<void> {
-    const changeset = await IModelHost.hubAccess.getChangesetFromVersion({ user, iModelId: this.iModelId, version });
-    await BriefcaseManager.pullAndApplyChangesets(this, { user, toIndex: changeset.index });
-    this.initializeIModelDb();
-  }
-
-  /** Reinstate a previously reversed set of changes
- * @param version Version to reinstate changes to.
- * @throws [[IModelError]] If the reinstate fails.
- * @deprecated reversing previously applied changes is not supported
- */
-  public async reinstateChanges(user: AuthorizedClientRequestContext, version: IModelVersion = IModelVersion.latest()): Promise<void> {
-    const changeset = await IModelHost.hubAccess.getChangesetFromVersion({ user, iModelId: this.iModelId, version });
-    await BriefcaseManager.pullAndApplyChangesets(this, { user, toIndex: changeset.index });
-    this.initializeIModelDb();
   }
 }
 
