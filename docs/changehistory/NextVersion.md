@@ -269,6 +269,9 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `ReactMessage`                         | `ReactMessage` in @bentley/ui-core                                                     |
 | `SpecialKey`                           | `SpecialKey` in @bentley/ui-abstract                                                   |
 | `WidgetState`                          | `WidgetState` in @bentley/ui-abstract                                                  |
+| `UserProfileBackstageItem`             | *eliminated*                                                                           |
+| `SignIn`                               | *eliminated*                                                                           |
+| `SignOutModalFrontstage`               | *eliminated*                                                                           |
 
 ### @bentley/bentleyjs-core
 

@@ -14,8 +14,7 @@ import { IModelApp } from "@bentley/imodeljs-frontend";
 import { UserInfo } from "@bentley/itwin-client";
 import { getUserColor } from "@bentley/ui-core";
 import { Button } from "@itwin/itwinui-react";
-import { FrontstageManager, ModalFrontstageInfo } from "../frontstage/FrontstageManager";
-import { UiFramework } from "../UiFramework";
+import { FrontstageManager, ModalFrontstageInfo, UiFramework } from "@bentley/ui-framework";
 
 // cSpell:Ignore userprofile signoutprompt
 
