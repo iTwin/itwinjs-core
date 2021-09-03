@@ -115,7 +115,7 @@ class Asset extends HiddenContext {
   public assetType?: string;
 }
 
-/** Client API to access the context registry services.
+/** Client API to access the iTwin registry services.
  * @beta
  */
 export class ITwinAccessClient extends WsgClient implements ITwinAccess {

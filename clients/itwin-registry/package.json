@@ -1,7 +1,7 @@
 {
   "name": "@bentley/itwin-registry-client",
   "version": "3.0.0-dev.41",
-  "description": "iModel.js Context Registry Client",
+  "description": "iModel.js iTwin Registry Client",
   "main": "lib/itwin-registry-client.js",
   "typings": "lib/itwin-registry-client",
   "imodeljsSharedLibrary": true,
@@ -29,7 +29,7 @@
     "Bentley",
     "BIM",
     "iModel",
-    "Context Registry Client"
+    "iTwin Registry Client"
   ],
   "author": {
     "name": "Bentley Systems, Inc.",

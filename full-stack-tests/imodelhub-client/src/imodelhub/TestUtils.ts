@@ -9,7 +9,7 @@ import * as path from "path";
 import { ClientRequestContext, Guid, GuidString, Id64, Id64String, Logger, WSStatus } from "@bentley/bentleyjs-core";
 import { ITwin } from "@bentley/itwin-registry-client";
 import {
-  Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, CodeState, HubCode, IModelBankClient, IModelBankFileSystemContextClient,
+  Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, CodeState, HubCode, IModelBankClient, IModelBankFileSystemITwinClient,
   IModelCloudEnvironment, IModelHubClient, IModelQuery, LargeThumbnail, Lock, LockLevel, LockType, MultiCode, MultiLock, SmallThumbnail, Thumbnail,
   Version, VersionQuery,
 } from "@bentley/imodelhub-client";
@@ -220,7 +220,7 @@ export async function bootstrapBankProject(requestContext: AuthorizedClientReque
   if (getCloudEnv().isIModelHub || bankProjects.includes(projectName))
     return;
 
-  const bankContext = getCloudEnv().contextMgr as IModelBankFileSystemContextClient;
+  const bankContext = getCloudEnv().iTwinMgr as IModelBankFileSystemITwinClient;
   let iTwin: ITwin | undefined;
   try {
     iTwin = await bankContext.getITwinByName(requestContext, projectName);
@@ -245,7 +245,7 @@ export async function getAssetId(requestContext: AuthorizedClientRequestContext,
 
   await bootstrapBankProject(requestContext, assetName);
 
-  const iTwin: ITwin = await getCloudEnv().contextMgr.getITwinByName(requestContext, assetName);
+  const iTwin: ITwin = await getCloudEnv().iTwinMgr.getITwinByName(requestContext, assetName);
 
   if (!iTwin || !iTwin.id)
     throw new Error(`Asset with name ${assetName} doesn't exist.`);
@@ -261,7 +261,7 @@ export async function getProjectId(requestContext: AuthorizedClientRequestContex
 
   await bootstrapBankProject(requestContext, projectName);
 
-  const iTwin: ITwin = await getCloudEnv().contextMgr.getITwinByName(requestContext, projectName);
+  const iTwin: ITwin = await getCloudEnv().iTwinMgr.getITwinByName(requestContext, projectName);
 
   if (!iTwin || !iTwin.id)
     throw new Error(`Project with name ${TestConfig.projectName} doesn't exist.`);

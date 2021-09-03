@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
-import { ContextManagerClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
+import { IModelCloudEnvironment, ITwinManagerClient } from "@bentley/imodelhub-client";
 import { AuthorizedClientRequestContext, UserInfo } from "@bentley/itwin-client";
 
 import { getIModelHubClient } from "./TestUtils";
 import { TestIModelHubOidcAuthorizationClient } from "../TestIModelHubOidcAuthorizationClient";
 
 /** An implementation of IModelProjectAbstraction backed by a iModelHub/iTwin project */
-class TestContextManagerClient implements ContextManagerClient {
+class TestITwinManagerClient implements ITwinManagerClient {
   public async getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
     const client = new ITwinAccessClient();
     const iTwinList: ITwin[] = await client.getAll(requestContext, {
@@ -32,7 +32,7 @@ class TestContextManagerClient implements ContextManagerClient {
 
 export class TestIModelHubCloudEnv implements IModelCloudEnvironment {
   public get isIModelHub(): boolean { return true; }
-  public readonly contextMgr = new TestContextManagerClient();
+  public readonly iTwinMgr = new TestITwinManagerClient();
   public readonly imodelClient = getIModelHubClient();
   public async startup(): Promise<void> { }
   public async shutdown(): Promise<number> { return 0; }

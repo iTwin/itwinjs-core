@@ -10,7 +10,7 @@ import { TestConfig } from "./TestConfig";
 
 chai.should();
 
-/** Utility to test basic access to the Context Registry, RBAC, and iModelHub */
+/** Utility to test basic access to the iTwin Registry, RBAC, and iModelHub */
 export class HubAccessTestValidator {
   private static _singletonInstance: HubAccessTestValidator;
 

@@ -599,14 +599,14 @@ class TestIModelHubProject {
 
   private static _iTwinAccessClient?: ITwinAccessClient;
 
-  private static get contextClient(): ITwinAccessClient {
+  private static get iTwinClient(): ITwinAccessClient {
     if (this._iTwinAccessClient === undefined)
       this._iTwinAccessClient = new ITwinAccessClient();
     return this._iTwinAccessClient;
   }
 
   public async getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
-    const client = TestIModelHubProject.contextClient;
+    const client = TestIModelHubProject.iTwinClient;
     const iTwinList: ITwin[] = await client.getAll(requestContext, {
       search: {
         searchString: name,

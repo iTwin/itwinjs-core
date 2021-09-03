@@ -46,7 +46,7 @@ steps:
 
   - script: "npm run test:integration"
     workingDirectory: "clients/itwin-registry"
-    displayName: "Run Context Registry Client Tests"
+    displayName: "Run iTwin Registry Client Tests"
     condition: succeededOrFailed()
 
   - script: "npm run test:integration"
@@ -90,10 +90,10 @@ steps:
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2
-    displayName: "Publish Context Registry Client Test Results"
+    displayName: "Publish iTwin Registry Client Test Results"
     inputs:
       testResultsFiles: "clients/itwin-registry/lib/test/junit_results.xml"
-      testRunTitle: "Client - Context Registry Tests - ${{ parameters.Node_Version }}"
+      testRunTitle: "Client - iTwin Registry Tests - ${{ parameters.Node_Version }}"
     continueOnError: true
     condition: succeededOrFailed()
 

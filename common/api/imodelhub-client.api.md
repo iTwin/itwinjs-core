@@ -443,7 +443,7 @@ export class ConflictingLocksError extends IModelHubError {
 export function constructorFromEventType(type: IModelHubEventType): EventConstructor;
 
 // @internal
-export interface ContextManagerClient {
+export interface ITwinManagerClient {
     // (undocumented)
     getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin>;
 }
@@ -634,7 +634,7 @@ export class IModelBankClient extends IModelClient {
 }
 
 // @internal (undocumented)
-export class IModelBankFileSystemContextClient implements ContextManagerClient {
+export class IModelBankFileSystemITwinClient implements ITwinManagerClient {
     constructor(baseUri: string);
     // (undocumented)
     baseUri: string;
@@ -732,7 +732,7 @@ export abstract class IModelClient {
 // @internal
 export interface IModelCloudEnvironment {
     // (undocumented)
-    readonly contextMgr: ContextManagerClient;
+    readonly iTwinMgr: ITwinManagerClient;
     // (undocumented)
     getAuthorizationClient(userInfo: UserInfo | undefined, userCredentials: any): FrontendAuthorizationClient;
     // (undocumented)

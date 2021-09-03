@@ -4,7 +4,7 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md 
 
 ## Description
 
-The __@bentley/itwin-registry-client__ package contains client wrappers for sending requests to the Context Registry Service.
+The __@bentley/itwin-registry-client__ package contains client wrappers for sending requests to the iTwin Registry Service.
 These classes work on both the frontend and backend.
 
 ## Documentation

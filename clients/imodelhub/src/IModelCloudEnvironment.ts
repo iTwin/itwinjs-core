@@ -13,7 +13,7 @@ import { IModelClient } from "./IModelClient";
 /** How to discover "contexts". A context corresponds to an iTwin "project" or "asset".
  * @internal
  */
-export interface ContextManagerClient {
+export interface ITwinManagerClient {
   getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin>;
 }
 
@@ -22,7 +22,7 @@ export interface ContextManagerClient {
  */
 export interface IModelCloudEnvironment {
   readonly isIModelHub: boolean;
-  readonly contextMgr: ContextManagerClient;
+  readonly iTwinMgr: ITwinManagerClient;
   readonly imodelClient: IModelClient;
   getAuthorizationClient(userInfo: UserInfo | undefined, userCredentials: any): FrontendAuthorizationClient;
   startup(): Promise<void>;

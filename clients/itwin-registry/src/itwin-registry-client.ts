@@ -10,5 +10,5 @@ export * from "./ITwinAccessProps";
 
 /**
  * @docs-group-description ITwinRegistry
- * Classes for communicating with the context registry service.
+ * Classes for communicating with the iTwin registry service.
  */
