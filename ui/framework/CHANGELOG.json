@@ -2,6 +2,24 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "2.19.9",
+      "tag": "@bentley/ui-framework_v2.19.9",
+      "date": "Wed, 25 Aug 2021 15:36:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.8",
+      "tag": "@bentley/ui-framework_v2.19.8",
+      "date": "Mon, 23 Aug 2021 13:23:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Backport change to clear hide/isolate/emphasis of models and categories."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.7",
       "tag": "@bentley/ui-framework_v2.19.7",
       "date": "Fri, 20 Aug 2021 17:47:22 GMT",

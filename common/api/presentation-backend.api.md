@@ -38,13 +38,13 @@ import { NodePathElement } from '@bentley/presentation-common';
 import { Paged } from '@bentley/presentation-common';
 import { PagedResponse } from '@bentley/presentation-common';
 import { PartialHierarchyModification } from '@bentley/presentation-common';
-import { PresentationUnitSystem } from '@bentley/presentation-common';
 import { RegisteredRuleset } from '@bentley/presentation-common';
 import { Ruleset } from '@bentley/presentation-common';
 import { SelectClassInfo } from '@bentley/presentation-common';
 import { SelectionInfo } from '@bentley/presentation-common';
 import { SelectionScope } from '@bentley/presentation-common';
 import { SelectionScopeRequestOptions } from '@bentley/presentation-common';
+import { UnitSystemKey } from '@bentley/imodeljs-quantity';
 import { UpdateInfoJSON } from '@bentley/presentation-common';
 import { VariableValue } from '@bentley/presentation-common';
 import { VariableValueTypes } from '@bentley/presentation-common';
@@ -156,7 +156,7 @@ export enum PresentationBackendNativeLoggerCategory {
 export class PresentationManager {
     constructor(props?: PresentationManagerProps);
     activeLocale: string | undefined;
-    activeUnitSystem: PresentationUnitSystem | undefined;
+    activeUnitSystem: UnitSystemKey | undefined;
     // @deprecated (undocumented)
     compareHierarchies(requestContext: ClientRequestContext, requestOptions: HierarchyCompareOptions<IModelDb, NodeKey>): Promise<PartialHierarchyModification[]>;
     compareHierarchies(requestOptions: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>>): Promise<HierarchyCompareInfo>;
@@ -223,10 +223,6 @@ export class PresentationManager {
     // @deprecated
     getSelectionScopes(requestContext: ClientRequestContext, requestOptions: SelectionScopeRequestOptions<IModelDb>): Promise<SelectionScope[]>;
     getSelectionScopes(requestOptions: WithClientRequestContext<SelectionScopeRequestOptions<IModelDb>>): Promise<SelectionScope[]>;
-    // @alpha @deprecated
-    loadHierarchy(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>): Promise<void>;
-    // @alpha
-    loadHierarchy(requestOptions: WithClientRequestContext<HierarchyRequestOptions<IModelDb>>): Promise<void>;
     get props(): PresentationManagerProps;
     rulesets(): RulesetManager;
     vars(rulesetId: string): RulesetVariablesManager;
@@ -241,15 +237,13 @@ export enum PresentationManagerMode {
 // @public
 export interface PresentationManagerProps {
     activeLocale?: string;
-    // @alpha
-    activeUnitSystem?: PresentationUnitSystem;
+    activeUnitSystem?: UnitSystemKey;
     // @internal (undocumented)
     addon?: NativePlatformDefinition;
     // @beta
     cacheConfig?: HierarchyCacheConfig;
     // @alpha (undocumented)
     contentCacheSize?: number;
-    // @alpha
     defaultFormats?: {
         [phenomenon: string]: UnitSystemFormat;
     };
@@ -376,12 +370,12 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
     unset(variableId: string): void;
 }
 
-// @alpha
+// @public
 export interface UnitSystemFormat {
     // (undocumented)
     format: FormatProps;
     // (undocumented)
-    unitSystems: PresentationUnitSystem[];
+    unitSystems: UnitSystemKey[];
 }
 
 // @public

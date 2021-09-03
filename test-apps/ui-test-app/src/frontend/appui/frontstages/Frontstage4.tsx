@@ -161,7 +161,6 @@ export class Frontstage4 extends FrontstageProvider {
         contentGroup={myContentGroup}
         defaultContentId="TestContent1"
         isInFooterMode={true}
-        applicationData={{ key: "value" }}
         contentManipulationTools={
           <Zone
             widgets={[

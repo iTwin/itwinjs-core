@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import {
-  ContentGroup, ContentToolWidgetComposer,
+  ContentGroup, ContentGroupProps, ContentToolWidgetComposer,
   CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
   IModelViewportControl, StagePanel, StagePanelState, SyncUiEventArgs, SyncUiEventDispatcher,
   UiFramework, ViewToolWidgetComposer, Widget, Zone,
@@ -14,6 +14,26 @@ import { ScreenViewport } from "@bentley/imodeljs-frontend";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
 
 /* eslint-disable react/jsx-key */
+const supplyViewOverlay = (viewport: ScreenViewport) => {
+  if (viewport.view) {
+    return <MyCustomViewOverlay />;
+  }
+  return null;
+};
+
+export const ui2ContentGroupProps: ContentGroupProps = {
+  contents: [
+    {
+      id: "primaryContent",
+      classId: IModelViewportControl.id,
+      applicationData: {
+        viewState: UiFramework.getDefaultViewState,
+        iModelConnection: UiFramework.getIModelConnection,
+        supplyViewOverlay,
+      },
+    },
+  ],
+};
 
 export function MyCustomViewOverlay() {
   const [syncIdsOfInterest] = React.useState([SampleAppUiActionId.setTestProperty]);
@@ -86,7 +106,7 @@ export class FrontstageUi2 extends FrontstageProvider {
         isInFooterMode={true}
         usage={StageUsage.General}
         applicationData={{
-          contentToolGroupsProps: {
+          defaultContentTools: {
             vertical: {
               selectElementGroupPriority: 100,
               measureGroupPriority: 200,

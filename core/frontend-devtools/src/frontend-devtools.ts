@@ -21,7 +21,6 @@ export * from "./tools/ChangeUnitsTool";
 export * from "./tools/ClipTools";
 export * from "./tools/DisplayStyleTools";
 export * from "./tools/EmphasizeElementsTool";
-export * from "./tools/ExtensionServiceTool";
 export * from "./tools/FrustumDecoration";
 export * from "./tools/InspectElementTool";
 export * from "./tools/MapLayerTool";

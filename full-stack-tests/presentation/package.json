@@ -29,6 +29,7 @@
     "@bentley/imodeljs-common": "workspace:*",
     "@bentley/imodeljs-backend": "workspace:*",
     "@bentley/imodeljs-frontend": "workspace:*",
+    "@bentley/imodeljs-quantity": "workspace:*",
     "@bentley/oidc-signin-tool": "workspace:*",
     "@bentley/presentation-common": "workspace:*",
     "@bentley/presentation-backend": "workspace:*",

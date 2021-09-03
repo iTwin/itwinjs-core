@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-ninezone",
-  "version": "3.0.0-dev.31",
+  "version": "3.0.0-dev.44",
   "description": "iModel.js Nine-zone React UI components",
   "main": "lib/ui-ninezone.js",
   "typings": "lib/ui-ninezone",
@@ -33,9 +33,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.31",
-    "@bentley/ui-abstract": "workspace:^3.0.0-dev.31",
-    "@bentley/ui-core": "workspace:^3.0.0-dev.31",
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.44",
+    "@bentley/ui-abstract": "workspace:^3.0.0-dev.44",
+    "@bentley/ui-core": "workspace:^3.0.0-dev.44",
     "react": "^16.8.6 || ^17.0.0",
     "react-dom": "^16.8.6 || ^17.0.0"
   },
@@ -92,8 +92,8 @@
     "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@itwin/itwinui-css": "^0.25.0",
-    "@itwin/itwinui-react": "^1.14.0",
+    "@itwin/itwinui-css": "^0.27.0",
+    "@itwin/itwinui-react": "^1.16.2",
     "classnames": "^2.3.1",
     "immer": "9.0.2",
     "svg-sprite-loader": "4.2.1",

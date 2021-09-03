@@ -6,9 +6,11 @@ import * as React from "react";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import {
-  ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, SignIn,
+  ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
 } from "@bentley/ui-framework";
+import { SignIn } from "../oidc/SignIn";
 import { SampleAppIModelApp } from "../../index";
+import { StageUsage } from "@bentley/ui-abstract";
 
 class SignInControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -48,6 +50,7 @@ export class SignInFrontstage extends FrontstageProvider {
         defaultLayout="SingleContent"
         contentGroup={contentGroup}
         isInFooterMode={false}
+        usage={StageUsage.Private}
       />
     );
   }

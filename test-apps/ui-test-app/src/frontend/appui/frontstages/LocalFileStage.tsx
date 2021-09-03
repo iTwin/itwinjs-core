@@ -20,6 +20,7 @@ import { AppTools } from "../../tools/ToolSpecifications";
 import { IModelViewPicker } from "../imodelopen/IModelViewPicker";
 import { LocalFileSupport } from "../LocalFileSupport";
 import { Button, Headline } from "@itwin/itwinui-react";
+import { StageUsage } from "@bentley/ui-abstract";
 
 class LocalFileOpenControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -63,6 +64,7 @@ export class LocalFileOpenFrontstage extends FrontstageProvider {
         defaultLayout="SingleContent"
         contentGroup={contentGroup}
         isInFooterMode={false}
+        usage={StageUsage.Private}
         contentManipulationTools={
           <Zone
             widgets={[

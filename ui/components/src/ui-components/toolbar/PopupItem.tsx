@@ -15,7 +15,7 @@ import { ToolbarButtonItemProps } from "./Item";
 import { useToolbarWithOverflowDirectionContext, useToolItemEntryContext } from "./ToolbarWithOverflow";
 import { toToolbarPopupRelativePosition } from "./PopupItemWithDrag";
 
-/** @internal */
+/** @public */
 export interface ToolbarPopupContextProps {
   readonly closePanel: () => void;
   readonly setSelectedItem?: (buttonItem: ActionButton) => void;
@@ -23,15 +23,20 @@ export interface ToolbarPopupContextProps {
 
 /**
  * Context used by Toolbar items in popups to close the popup panel.
- * @internal
+ * @public
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const ToolbarPopupContext = React.createContext<ToolbarPopupContextProps>({
+  /** function used to close popup panel */
   closePanel: /* istanbul ignore next */ () => { },
+  /** if popup panel is a GroupButton then this is call to set the selected action item within the panel */
   setSelectedItem: /* istanbul ignore next */  (_buttonItem: ActionButton) => { },
 });
 
-/** @internal */
+/**
+ * React hook used to retrieve the ToolbarPopupContext.
+ *  @public
+ */
 export function useToolbarPopupContext() {
   return React.useContext(ToolbarPopupContext);
 }
@@ -88,6 +93,8 @@ export function PopupItem(props: PopupItemProps) {
       closePanel: () => processPanelOpenClose(false),
     }}>
       <button
+        data-item-id={props.itemId ?? props.title}
+        data-item-type="tool-button"
         ref={targetRef}
         disabled={props.isDisabled}  // this is needed to prevent focusing/keyboard access to disabled buttons
         onClick={onButtonClick}

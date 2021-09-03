@@ -88,7 +88,6 @@ import { EmphasizeElementsProps as EmphasizeElementsProps_2 } from '@bentley/imo
 import { EntityProps } from '@bentley/imodeljs-common';
 import { EntityQueryParams } from '@bentley/imodeljs-common';
 import { EnvironmentProps } from '@bentley/imodeljs-common';
-import { ExtensionProps } from '@bentley/extension-client';
 import { Feature } from '@bentley/imodeljs-common';
 import { FeatureAppearance } from '@bentley/imodeljs-common';
 import { FeatureAppearanceProps } from '@bentley/imodeljs-common';
@@ -299,6 +298,7 @@ import { UiAdmin } from '@bentley/ui-abstract';
 import { UnitConversion } from '@bentley/imodeljs-quantity';
 import { UnitProps } from '@bentley/imodeljs-quantity';
 import { UnitsProvider } from '@bentley/imodeljs-quantity';
+import { UnitSystemKey } from '@bentley/imodeljs-quantity';
 import { Vector2d } from '@bentley/geometry-core';
 import { Vector3d } from '@bentley/geometry-core';
 import { ViewAttachmentProps } from '@bentley/imodeljs-common';
@@ -1356,7 +1356,7 @@ export class BackgroundMapGeometry {
     // (undocumented)
     getEarthEllipsoid(radiusOffset?: number): Ellipsoid;
     // (undocumented)
-    getFrustumIntersectionDepthRange(frustum: Frustum, bimRange: Range3d, heightRange?: Range1d, gridPlane?: Plane3dByOriginAndUnitNormal, doGlobalScope?: boolean): Range1d;
+    getFrustumIntersectionDepthRange(frustum: Frustum, heightRange?: Range1d, gridPlane?: Plane3dByOriginAndUnitNormal, doGlobalScope?: boolean): Range1d;
     // (undocumented)
     getPlane(offset?: number): Plane3dByOriginAndUnitNormal;
     // (undocumented)
@@ -1894,7 +1894,7 @@ export class Cluster<T extends Marker> {
     readonly rect: ViewRect;
 }
 
-// @internal (undocumented)
+// @alpha (undocumented)
 export enum CompassMode {
     // (undocumented)
     Polar = 0,
@@ -2948,7 +2948,7 @@ export abstract class Extension {
 
 // @beta
 export class ExtensionAdmin {
-    constructor(props?: ExtensionAdminProps);
+    constructor();
     addExtensionLoader(extensionLoader: ExtensionLoader): void;
     addExtensionLoaderFront(extensionLoader: ExtensionLoader): void;
     // @internal (undocumented)
@@ -2958,11 +2958,6 @@ export class ExtensionAdmin {
     onInitialized(): void;
     register(extension: Extension): void;
     }
-
-// @beta
-export interface ExtensionAdminProps {
-    configureExtensionServiceLoader?: boolean;
-}
 
 // @beta
 export interface ExtensionLoader {
@@ -2975,15 +2970,24 @@ export interface ExtensionLoader {
 }
 
 // @beta
-export class ExtensionServiceExtensionLoader implements ExtensionLoader {
-    constructor(_contextId: string);
+export interface ExtensionProps {
     // (undocumented)
-    getExtensionName(extensionRoot: string): string;
+    contextId: string;
     // (undocumented)
-    loadExtension(extensionName: string, extensionVersion?: string, args?: string[] | undefined): Promise<PendingExtension | undefined>;
+    extensionName: string;
     // (undocumented)
-    resolveResourceUrl(extensionName: string, relativeFileName: string): string;
-    }
+    files: FileInfo[];
+    // (undocumented)
+    isPublic: boolean;
+    // (undocumented)
+    status: ExtensionUploadStatus;
+    // (undocumented)
+    timestamp: Date;
+    // (undocumented)
+    uploadedBy: string;
+    // (undocumented)
+    version: string;
+}
 
 // @public
 export interface ExtentLimits {
@@ -3470,6 +3474,12 @@ export function getImageSourceMimeType(format: ImageSourceFormat): string;
 export function getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey;
 
 // @public
+export interface GlobalAlignmentOptions {
+    target: Point3d;
+    transition?: boolean;
+}
+
+// @public
 export interface GlobalLocation {
     // (undocumented)
     area?: GlobalLocationArea;
@@ -3487,7 +3497,9 @@ export interface GlobalLocationArea {
 
 // @public
 export class GlobeAnimator implements Animator {
-    protected constructor(viewport: ScreenViewport, destination: GlobalLocation, afterLanding: Frustum);
+    protected constructor(viewport: ScreenViewport, destination: GlobalLocation, afterLanding: Frustum, afterFocus: number);
+    // (undocumented)
+    protected _afterFocusDistance: number;
     // (undocumented)
     protected _afterLanding: Frustum;
     // @internal (undocumented)
@@ -5712,6 +5724,8 @@ export class MapTileTree extends RealityTileTree {
     // (undocumented)
     static minReprojectionDepth: number;
     // (undocumented)
+    get parentsAndChildrenExclusive(): boolean;
+    // (undocumented)
     pointAboveEllipsoid(point: Point3d): boolean;
     // (undocumented)
     sourceTilingScheme: MapTilingScheme;
@@ -7516,6 +7530,7 @@ export class RealityModelTileUtils {
     static rangeFromBoundingVolume(boundingVolume: any): {
         range: Range3d;
         corners?: Point3d[];
+        region?: RealityTileRegion;
     } | undefined;
     // (undocumented)
     static transformFromJson(jTrans: number[] | undefined): Transform;
@@ -7532,8 +7547,6 @@ export class RealityTile extends Tile {
     allChildrenIncluded(tiles: Tile[]): boolean;
     // (undocumented)
     protected get _anyChildNotFound(): boolean;
-    // (undocumented)
-    readonly boundedByRegion: boolean | undefined;
     // (undocumented)
     get channel(): TileRequestChannel;
     // (undocumented)
@@ -7595,6 +7608,10 @@ export class RealityTile extends Tile {
     // (undocumented)
     get realityRoot(): RealityTileTree;
     // (undocumented)
+    readonly region?: RealityTileRegion;
+    // (undocumented)
+    reproject(rootReprojection: Transform): void;
+    // (undocumented)
     protected _reprojectionTransform?: Transform;
     // (undocumented)
     requestContent(isCanceled: () => boolean): Promise<TileRequest.Response>;
@@ -7604,8 +7621,6 @@ export class RealityTile extends Tile {
     selectRealityTiles(context: TraversalSelectionContext, args: TileDrawArgs, traversalDetails: TraversalDetails): void;
     // (undocumented)
     selectSecondaryTiles(_args: TileDrawArgs, _context: TraversalSelectionContext): void;
-    // (undocumented)
-    setReprojection(rootReprojection: Transform): void;
     // (undocumented)
     readonly transformToRoot?: Transform;
     // (undocumented)
@@ -7673,13 +7688,46 @@ export interface RealityTileParams extends TileParams {
     // (undocumented)
     readonly additiveRefinement?: boolean;
     // (undocumented)
-    readonly boundedByRegion?: boolean;
-    // (undocumented)
     readonly noContentButTerminateOnSelection?: boolean;
     // (undocumented)
     readonly rangeCorners?: Point3d[];
     // (undocumented)
+    readonly region?: RealityTileRegion;
+    // (undocumented)
     readonly transformToRoot?: Transform;
+}
+
+// @internal (undocumented)
+export class RealityTileRegion {
+    constructor(values: {
+        minLongitude: number;
+        minLatitude: number;
+        minHeight: number;
+        maxLongitude: number;
+        maxLatitude: number;
+        maxHeight: number;
+    });
+    // (undocumented)
+    static create(region: number[]): RealityTileRegion;
+    // (undocumented)
+    getRange(): {
+        range: Range3d;
+        corners?: Point3d[];
+    };
+    // (undocumented)
+    static isGlobal(boundingVolume: any): boolean;
+    // (undocumented)
+    maxHeight: number;
+    // (undocumented)
+    maxLatitude: number;
+    // (undocumented)
+    maxLongitude: number;
+    // (undocumented)
+    minHeight: number;
+    // (undocumented)
+    minLatitude: number;
+    // (undocumented)
+    minLongitude: number;
 }
 
 // @internal (undocumented)
@@ -11076,9 +11124,6 @@ export interface UnitFormattingSettingsProvider {
     storeUnitSystemSetting(args: FormattingUnitSystemChangedArgs): Promise<void>;
 }
 
-// @beta
-export type UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey";
-
 // @internal (undocumented)
 export class UpsampledMapTile extends MapTile {
     // (undocumented)
@@ -11119,6 +11164,7 @@ export interface ViewAnimationOptions {
 // @public
 export interface ViewChangeOptions extends ViewAnimationOptions {
     animateFrustumChange?: boolean;
+    globalAlignment?: GlobalAlignmentOptions;
     marginPercent?: MarginPercent;
     noSaveInUndo?: boolean;
     onExtentsError?: (status: ViewStatus) => ViewStatus;
@@ -12562,12 +12608,14 @@ export abstract class ViewState extends ElementState {
     getAuxiliaryCoordinateSystemId(): Id64String;
     getCenter(result?: Point3d): Point3d;
     abstract getExtents(): Vector3d;
+    getGlobeRotation(): Matrix3d | undefined;
     getGridOrientation(): GridOrientationType;
     getGridSettings(vp: Viewport, origin: Point3d, rMatrix: Matrix3d, orientation: GridOrientationType): void;
     // (undocumented)
     getGridSpacing(): XAndY;
     // (undocumented)
     getGridsPerRef(): number;
+    getIsViewingProject(): boolean;
     getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined;
     // @beta
     getModelDisplayTransform(modelId: Id64String, baseTransform: Transform): Transform;
@@ -12637,6 +12685,7 @@ export abstract class ViewState extends ElementState {
     abstract setOrigin(viewOrg: XYAndZ): void;
     abstract setRotation(viewRot: Matrix3d): void;
     setRotationAboutPoint(rotation: Matrix3d, point?: Point3d): void;
+    setStandardGlobalRotation(id: StandardViewId): void;
     setStandardRotation(id: StandardViewId): void;
     setupFromFrustum(inFrustum: Frustum, opts?: ViewChangeOptions): ViewStatus;
     setViewClip(clip?: ClipVector): void;
@@ -12717,6 +12766,7 @@ export abstract class ViewState2d extends ViewState {
 // @public
 export abstract class ViewState3d extends ViewState {
     constructor(props: ViewDefinition3dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState);
+    alignToGlobe(target: Point3d, transition?: boolean): ViewStatus;
     // (undocumented)
     allow3dManipulations(): boolean;
     // @internal (undocumented)
@@ -12755,6 +12805,7 @@ export abstract class ViewState3d extends ViewState {
     // (undocumented)
     getCartographicHeight(point: XYAndZ): number | undefined;
     getDisplayStyle3d(): DisplayStyle3dState;
+    getEarthFocalPoint(): Point3d | undefined;
     // (undocumented)
     getExtents(): Vector3d;
     // (undocumented)
@@ -12777,7 +12828,6 @@ export abstract class ViewState3d extends ViewState {
     getRotation(): Matrix3d;
     getTargetPoint(result?: Point3d): Point3d;
     get globalScopeFactor(): number;
-    // (undocumented)
     globalViewTransition(): number;
     // @internal (undocumented)
     is3d(): this is ViewState3d;
@@ -12798,6 +12848,7 @@ export abstract class ViewState3d extends ViewState {
     lookAtUsingLensAngle(eyePoint: Point3d, targetPoint: Point3d, upVector: Vector3d, fov: Angle, frontDistance?: number, backDistance?: number, opts?: ViewChangeOptions): ViewStatus;
     // (undocumented)
     minimumFrontDistance(): number;
+    moveCameraGlobal(fromPoint: Point3d, toPoint: Point3d): ViewStatus;
     moveCameraLocal(distance: Vector3d): ViewStatus;
     moveCameraWorld(distance: Vector3d): ViewStatus;
     readonly origin: Point3d;
@@ -12833,7 +12884,11 @@ export enum ViewStatus {
     // (undocumented)
     AlreadyAttached = 2,
     // (undocumented)
+    DegenerateGeometry = 20,
+    // (undocumented)
     DrawFailure = 4,
+    // (undocumented)
+    HeightBelowTransition = 21,
     // (undocumented)
     InvalidLens = 14,
     // (undocumented)
@@ -12856,6 +12911,16 @@ export enum ViewStatus {
     ModelNotFound = 6,
     // (undocumented)
     NotAttached = 3,
+    // (undocumented)
+    NotCameraView = 17,
+    // (undocumented)
+    NotEllipsoidGlobeMode = 18,
+    // (undocumented)
+    NotGeolocated = 16,
+    // (undocumented)
+    NotOrthographicView = 19,
+    // (undocumented)
+    NoTransitionRequired = 22,
     // (undocumented)
     NotResized = 5,
     // (undocumented)
