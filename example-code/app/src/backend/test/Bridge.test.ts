@@ -71,7 +71,7 @@ async function createIModel(user: AuthorizedClientRequestContext, iTwinId: GuidS
   // __PUBLISH_EXTRACT_START__ Bridge.create-imodel.example-code
   const newIModelId = await IModelHost.hubAccess.createNewIModel({ user, iModelName, iTwinId, revision0 });
   // __PUBLISH_EXTRACT_END__
-  return newIModelId
+  return newIModelId;
 }
 
 // __PUBLISH_EXTRACT_START__ Bridge.firstTime.example-code
