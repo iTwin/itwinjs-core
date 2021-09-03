@@ -18,7 +18,7 @@ import {
   DomainOptions, EcefLocation, ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate, ElementGraphicsRequestProps, ElementLoadProps,
   ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontProps, GeoCoordinatesResponseProps,
   GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse,
-  IModelProps, IModelTileTreeProps, IModelVersion, LocalFileName, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps,
+  IModelProps, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps,
   ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus,
   SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, StandaloneOpenOptions,
   TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
