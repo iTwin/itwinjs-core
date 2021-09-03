@@ -250,7 +250,7 @@ describe("RegionBoolean", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "Solids", "ParityRegionWithBadBoundary");
     expect(ck.getNumErrors()).equals(0);
   });
-  it.only("SectioningExample", () => {
+  it("SectioningExample", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let xOut = 0.0;
@@ -291,7 +291,7 @@ describe("RegionBoolean", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "SectioningExample");
     expect(ck.getNumErrors()).equals(0);
     });
-    it.only("SectioningExampleFile", () => {
+    it("SectioningExampleFile", () => {
       const ck = new Checker();
       const allGeometry: GeometryQuery[] = [];
       let x0 = 0.0;
@@ -333,7 +333,7 @@ describe("RegionBoolean", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "SectioningExampleFile");
       expect(ck.getNumErrors()).equals(0);
     });
-    it.only("SectioningLineStringApproach", () => {
+    it("SectioningLineStringApproach", () => {
       const ck = new Checker();
       const allGeometry: GeometryQuery[] = [];
       let x0 = 0.0;
@@ -408,6 +408,7 @@ describe("RegionBoolean", () => {
       //    Madhav.json is the whole input set for 5 sections.
       //    sectionA..sectionE are splits of the separate sections.
       //  Note that the corresponding .imjs files are reduced to linestrings and are accessed in other tests.
+  // (skip this in production builds -- it's more part of helping the user understand his data than code test)
       it.skip("SectioningJson", () => {
         const ck = new Checker();
         const allGeometry: GeometryQuery[] = [];

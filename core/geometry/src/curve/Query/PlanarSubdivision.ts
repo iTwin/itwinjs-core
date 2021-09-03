@@ -148,7 +148,7 @@ export class PlanarSubdivision {
 // return true if there are only two edges.
   // In a line-only graph, this is a null-area face.
   private static isNullFace(he: HalfEdge): boolean {
-    return he.faceSuccessor.faceSuccessor == he;
+    return he.faceSuccessor.faceSuccessor === he;
   }
   // Look  across edge mates (possibly several) for a nonnull mate face.
   private static nonNullEdgeMate(_graph: HalfEdgeGraph, e: HalfEdge): HalfEdge | undefined {
