@@ -153,45 +153,60 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
    * @returns Array of iTwins meeting the query's requirements
    */
   private async getByQuery(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<ITwin[]> {
-    requestContext.enter();
     // Spread operator possible since there are no nested properties
-    const projectQuery = {...queryOptions};
-    const assetQuery = {...queryOptions};
+    const innerQuery = {...queryOptions};
 
-    // Known skip inaccuracy when skipping beyond the number elements of one of the two endpoints
-    //  this issue is known and ignored as this feature is only used by ui-test-apps
-    //  as such a small level of inaccuracy is acceptable for now
-    if (queryOptions?.$skip && (projectQuery && assetQuery)) {
-      // Ceiling to skip a project object on Odd skips
-      projectQuery.$skip = queryOptions?.$skip ? Math.ceil(queryOptions.$skip / 2) : undefined;
+    // Alter to get all items including those asked to skip
+    innerQuery.$top = innerQuery.$top ? innerQuery.$top + (innerQuery.$skip ?? 0) : undefined;
+    innerQuery.$skip = undefined;
 
-      // Floor to skip an asset object on Even skips
-      assetQuery.$skip = queryOptions?.$skip ? Math.floor(queryOptions.$skip / 2) : undefined;
+    requestContext.enter();
+    const projectITwins: ITwin[] = await this.getInstances<Project>(requestContext, Project, "/Repositories/BentleyCONNECT--Main/ConnectedContext/project/", innerQuery);
+    const assetITwins: ITwin[] = await this.getInstances<Asset>(requestContext, Asset, "/Repositories/BentleyCONNECT--Main/ConnectedContext/asset/", innerQuery);
+
+    // Default range is whole list
+    const projectRange = {
+      skip: 0,
+      top: projectITwins.length,
+    };
+    const assetRange = {
+      skip: 0,
+      top: assetITwins.length,
+    };
+
+    // If a top value is given
+    if (innerQuery?.$top) {
+      // Either take half the elements, or more than half if the other list is too short
+      projectRange.top = Math.max(
+        Math.ceil( innerQuery.$top / 2), // Ceil to add an extra Project if top is Odd
+        innerQuery.$top - assetITwins.length
+      );
+
+      assetRange.top = Math.max(
+        Math.floor( innerQuery.$top / 2),
+        innerQuery.$top - projectITwins.length
+      );
     }
 
-    const projectITwins: ITwin[] = await this.getInstances<Project>(requestContext, Project, "/Repositories/BentleyCONNECT--Main/ConnectedContext/project/", projectQuery);
-    const assetITwins: ITwin[] = await this.getInstances<Asset>(requestContext, Asset, "/Repositories/BentleyCONNECT--Main/ConnectedContext/asset/", assetQuery);
+    // If a skip value is given
+    if (queryOptions?.$skip) {
+      // Either skip half the elements, or skip more if the other list is too short
+      projectRange.skip = Math.max(
+        Math.ceil( queryOptions.$skip / 2), // Ceil to skip project on Odd skips
+        queryOptions.$skip - assetITwins.length
+      );
 
-    if (!queryOptions?.$top) {
-      return projectITwins.concat(assetITwins);
+      assetRange.skip = Math.max(
+        Math.floor( queryOptions.$skip / 2), // Floor to skip asset on Even skips
+        queryOptions.$skip - projectITwins.length
+      );
     }
 
     return projectITwins
-      // Fill half if there are enough assets, or fill where there are not enough assets
       // if slice end > array.length, it returns the full array no error
-      .slice(0,
-        Math.max(
-          (queryOptions.$top / 2) + (queryOptions.$top % 2), // Add an extra project if top is Odd
-          queryOptions.$top - assetITwins.length
-        )
-      ).concat(assetITwins
-        // Fill half if there are enough projects, or fill where there are not enough projects
-        .slice(0,
-          Math.max(
-            queryOptions.$top / 2,
-            queryOptions.$top - projectITwins.length
-          )
-        )
+      .slice(projectRange.skip, projectRange.top)
+      .concat(assetITwins
+        .slice(assetRange.skip, assetRange.top)
       );
   }
 

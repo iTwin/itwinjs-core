@@ -43,9 +43,7 @@ describe("ContextRegistryClient (#integration)", () => {
     chai.expect(partialITwinList).length(numberOfITwins);
   });
 
-  // Feature not working due to issue with spanning two endpoint
-  //  ignoring feature as it is only used in ui-test-apps and small inaccuracy is acceptable
-  it.skip("should get a paged list of iTwins using skip (#integration)", async () => {
+  it("should get a paged list of iTwins using skip (#integration)", async () => {
     const numberSkipped = 4;
 
     // Verify there are enough iTwins to test the paging
@@ -63,9 +61,7 @@ describe("ContextRegistryClient (#integration)", () => {
     chai.expect(partialITwinList).length(fullITwinList.length - numberSkipped);
   });
 
-  // Feature not working due to issue with spanning two endpoint
-  //  ignoring feature as it is only used in ui-test-apps and small inaccuracy is acceptable
-  it.skip("should get a continuous paged list of iTwins (#integration)", async () => {
+  it("should get a continuous paged list of iTwins (#integration)", async () => {
     const numberOfITwins = 6;
     const numberSkipped = 4;
 
@@ -115,8 +111,8 @@ describe("ContextRegistryClient (#integration)", () => {
     chai.expect(uniqueSecondPageITwins).length(numberSkipped);
 
     // Both pages are contained within the larger full page
-    chai.expect(fullITwinList).has.deep.members(firstPageList);
-    chai.expect(fullITwinList).has.deep.members(secondPageList);
+    chai.expect(fullITwinList).to.deep.include.members(firstPageList);
+    chai.expect(fullITwinList).to.deep.include.members(secondPageList);
   });
 
   it("should get a list of iTwins by name (#integration)", async () => {
