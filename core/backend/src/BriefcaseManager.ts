@@ -224,7 +224,7 @@ export class BriefcaseManager {
     const nativeDb = new IModelHost.platform.DgnDb();
     try {
       nativeDb.openIModel(fileName, OpenMode.ReadWrite);
-    } catch (err) {
+    } catch (err: any) {
       throw new IModelError(err.errorNumber, `Could not open downloaded briefcase for write access: ${fileName}, err=${err.message}`);
     }
     try {
@@ -243,8 +243,7 @@ export class BriefcaseManager {
    */
   public static deleteChangeSetsFromLocalDisk(iModelId: string) {
     const changeSetsPath = BriefcaseManager.getChangeSetsPath(iModelId);
-    if (BriefcaseManager.deleteFolderAndContents(changeSetsPath))
-      Logger.logTrace(loggerCategory, "Deleted change sets from local disk", () => ({ iModelId, changeSetsPath }));
+    BriefcaseManager.deleteFolderAndContents(changeSetsPath);
   }
 
   /** Releases a briefcaseId from iModelHub. After this call it is illegal to generate changesets for the released briefcaseId.
@@ -443,7 +442,7 @@ export class BriefcaseManager {
           await IModelHost.hubAccess.releaseAllLocks(db);
 
         return;
-      } catch (err) {
+      } catch (err: any) {
         if (typeof err.errorNumber === "number") {
           switch (err.errorNumber) {
             case IModelHubStatus.AnotherUserPushing:

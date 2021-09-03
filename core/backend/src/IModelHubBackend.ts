@@ -367,7 +367,7 @@ export class IModelHubBackend {
       }
       await downloader.downloadPromise;
       onProgress?.(total, total); // make sure we call progress func one last time when download completes
-    } catch (err) {
+    } catch (err: any) {
       throw (err.message === "cancelled") ? new UserCancelledError(BriefcaseStatus.DownloadCancelled, "download cancelled") : err;
     } finally {
       if (timer)

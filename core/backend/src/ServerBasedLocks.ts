@@ -71,10 +71,11 @@ export class ServerBasedLocks implements LockControl {
    */
   private clearAllLocks() {
     this.lockDb.executeSQL("DELETE FROM locks");
+    this.lockDb.saveChanges();
   }
 
   /** only for tests */
-  public getLockCount(state: LockState) {
+  public getLockCount(state: LockState): number {
     return this.lockDb.withSqliteStatement("SELECT count(*) FROM locks WHERE state=?", (stmt) => {
       stmt.bindInteger(1, state);
       stmt.step();
@@ -82,7 +83,7 @@ export class ServerBasedLocks implements LockControl {
     });
   }
 
-  public async releaseAllLocks() {
+  public async releaseAllLocks(): Promise<void> {
     await IModelHost.hubAccess.releaseAllLocks(this.briefcase); // throws if unsuccessful
     this.clearAllLocks();
   }

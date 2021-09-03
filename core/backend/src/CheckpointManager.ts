@@ -111,7 +111,7 @@ export class V2CheckpointManager {
         throw new Error("no checkpoint");
 
       return { ...v2props, daemonDir: process.env.BLOCKCACHE_DIR, writeable: false };
-    } catch (err) {
+    } catch (err: any) {
       throw new IModelError(IModelStatus.NotFound, `V2 checkpoint not found: err: ${err.message}`);
     }
   }
@@ -242,7 +242,7 @@ export class CheckpointManager {
         db.saveChanges();
         db.close();
       }
-    } catch (error) {
+    } catch (error: any) {
 
       Logger.logError(loggerCategory, "Error downloading checkpoint - deleting it", () => traceInfo);
       IModelJsFs.removeSync(targetFile);

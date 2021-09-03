@@ -6,25 +6,25 @@
  * @module iModels
  */
 
+import { join } from "path";
 import {
   BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
   IModelStatus, JsonUtils, Logger, OpenMode,
 } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import {
-  AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code, CodeSpec,
-  CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions, EcefLocation,
-  ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData,
-  EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
-  GeometryContainmentResponseProps, IModel, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelProps,
-  IModelTileTreeProps, IModelVersion, LocalBriefcaseProps, LocalFileName, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps,
+  AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex,
+  ChangesetIndexAndId, Code, CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps,
+  DomainOptions, EcefLocation, ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate, ElementGraphicsRequestProps, ElementLoadProps,
+  ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontProps, GeoCoordinatesResponseProps,
+  GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse,
+  IModelProps, IModelTileTreeProps, IModelVersion, LocalFileName, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps,
   ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus,
   SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, StandaloneOpenOptions,
   TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { join } from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager, PullChangesArgs, PushChangesArgs } from "./BriefcaseManager";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
@@ -162,6 +162,16 @@ export enum BriefcaseLocalValue {
   StandaloneEdit = "StandaloneEdit",
   NoLocking = "NoLocking"
 }
+
+// open an briefcaseDb, perform an operation, and then close file.
+const withBriefcaseDb = async (briefcase: OpenBriefcaseArgs, fn: (_db: BriefcaseDb) => Promise<any>) => {
+  const db = await BriefcaseDb.open(briefcase);
+  try {
+    return await fn(db);
+  } finally {
+    db.close();
+  }
+};
 
 /** An iModel database file. The database file is either briefcase or a snapshot.
  * @see [Accessing iModels]($docs/learning/backend/AccessingIModels.md)
@@ -360,7 +370,7 @@ export abstract class IModelDb extends IModel {
         release();
       }
       return val;
-    } catch (err) {
+    } catch (err: any) {
       release();
       throw err;
     }
@@ -387,7 +397,7 @@ export abstract class IModelDb extends IModel {
         release();
       }
       return val;
-    } catch (err) {
+    } catch (err: any) {
       release();
       throw err;
     }
@@ -663,7 +673,7 @@ export abstract class IModelDb extends IModel {
         release();
       }
       return val;
-    } catch (err) {
+    } catch (err: any) {
       release();
       throw err;
     }
@@ -689,7 +699,7 @@ export abstract class IModelDb extends IModel {
         release();
       }
       return val;
-    } catch (err) {
+    } catch (err: any) {
       release();
       throw err;
     }
@@ -926,7 +936,7 @@ export abstract class IModelDb extends IModel {
       const nativeDb = new IModelHost.platform.DgnDb();
       nativeDb.openIModel(file.path, openMode, upgradeOptions, props);
       return nativeDb;
-    } catch (err) {
+    } catch (err: any) {
       throw new IModelError(err.errorNumber, `Could not open iModel [${err.message}], ${file.path}`);
     }
   }
@@ -951,7 +961,7 @@ export abstract class IModelDb extends IModel {
       };
       const nativeDb = this.openDgnDb(file, openMode, upgradeOptions);
       nativeDb.closeIModel();
-    } catch (err) {
+    } catch (err: any) {
       result = err.errorNumber;
     }
 
@@ -1037,7 +1047,7 @@ export abstract class IModelDb extends IModel {
   public getJsClass<T extends typeof Entity>(classFullName: string): T {
     try {
       return ClassRegistry.getClass(classFullName, this) as T;
-    } catch (err) {
+    } catch (err: any) {
       if (!ClassRegistry.isNotFoundError(err)) {
         Logger.logError(loggerCategory, err.toString());
         throw err;
@@ -1171,7 +1181,7 @@ export abstract class IModelDb extends IModel {
     try {
       this.nativeDb.saveFileProperty(prop, strValue, blobVal);
       return DbResult.BE_SQLITE_OK;
-    } catch (err) {
+    } catch (err: any) {
       return err.errorNumber;
     }
   }
@@ -1184,7 +1194,7 @@ export abstract class IModelDb extends IModel {
     try {
       this.nativeDb.saveFileProperty(prop, undefined, undefined);
       return DbResult.BE_SQLITE_OK;
-    } catch (err) {
+    } catch (err: any) {
       return err.errorNumber;
     }
   }
@@ -1458,7 +1468,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     private tryGetModelJson<T extends ModelProps>(modelIdArg: ModelLoadProps): T | undefined {
       try {
         return this._iModel.nativeDb.getModel(modelIdArg) as T;
-      } catch (err) {
+      } catch (err: any) {
         return undefined;
       }
     }
@@ -1507,7 +1517,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public insertModel(props: ModelProps): Id64String {
       try {
         return props.id = this._iModel.nativeDb.insertModel(props instanceof Model ? props.toJSON() : props);
-      } catch (err) {
+      } catch (err: any) {
         throw new IModelError(err.errorNumber, `Error inserting model [${err.message}], class=${props.classFullName}`);
       }
     }
@@ -1519,7 +1529,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public updateModel(props: UpdateModelOptions): void {
       try {
         this._iModel.nativeDb.updateModel(props instanceof Model ? props.toJSON() : props);
-      } catch (err) {
+      } catch (err: any) {
         throw new IModelError(err.errorNumber, `error updating model [${err.message}] id=${props.id}`);
       }
     }
@@ -1546,7 +1556,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       Id64.toIdSet(ids).forEach((id) => {
         try {
           this._iModel.nativeDb.deleteModel(id);
-        } catch (err) {
+        } catch (err: any) {
           throw new IModelError(err.errorNumber, `error deleting model [${err.message}] id ${id}`);
         }
       });
@@ -1583,7 +1593,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     private tryGetElementJson<T extends ElementProps>(loadProps: ElementLoadProps): T | undefined {
       try {
         return this._iModel.nativeDb.getElement(loadProps) as T;
-      } catch (err) {
+      } catch (err: any) {
         return undefined;
       }
     }
@@ -1708,7 +1718,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public insertElement(elProps: ElementProps): Id64String {
       try {
         return elProps.id = this._iModel.nativeDb.insertElement(elProps instanceof Element ? elProps.toJSON() : elProps);
-      } catch (err) {
+      } catch (err: any) {
         throw new IModelError(err.errorNumber, `insertElement with class=${elProps.classFullName}: ${err.message}`,);
       }
     }
@@ -1723,7 +1733,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public updateElement(elProps: ElementProps): void {
       try {
         this._iModel.nativeDb.updateElement(elProps instanceof Element ? elProps.toJSON() : elProps);
-      } catch (err) {
+      } catch (err: any) {
         throw new IModelError(err.errorNumber, `Error updating element [${err.message}], id:${elProps.id}`);
       }
     }
@@ -1738,7 +1748,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       Id64.toIdSet(ids).forEach((id) => {
         try {
           iModel.nativeDb.deleteElement(id);
-        } catch (err) {
+        } catch (err: any) {
           throw new IModelError(err.errorNumber, `Error deleting element [${err.message}], id:${id}`);
         }
       });
@@ -1920,7 +1930,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public insertAspect(aspectProps: ElementAspectProps): void {
       try {
         this._iModel.nativeDb.insertElementAspect(aspectProps);
-      } catch (err) {
+      } catch (err: any) {
         throw new IModelError(err.errorNumber, `Error inserting ElementAspect [${err.message}], class: ${aspectProps.classFullName}`);
       }
     }
@@ -1932,7 +1942,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public updateAspect(aspectProps: ElementAspectProps): void {
       try {
         this._iModel.nativeDb.updateElementAspect(aspectProps);
-      } catch (err) {
+      } catch (err: any) {
         throw new IModelError(err.errorNumber, `Error updating ElementAspect [${err.message}], id: ${aspectProps.id}`);
       }
     }
@@ -1946,7 +1956,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       Id64.toIdSet(aspectInstanceIds).forEach((aspectInstanceId) => {
         try {
           iModel.nativeDb.deleteElementAspect(aspectInstanceId);
-        } catch (err) {
+        } catch (err: any) {
           throw new IModelError(err.errorNumber, `Error deleting ElementAspect [${err.message}], id: ${aspectInstanceId}`);
         }
       });
@@ -1973,7 +1983,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       ids.forEach((id) => {
         try {
           props.push(imodel.elements.getElementProps<ViewDefinitionProps>(id));
-        } catch (err) { }
+        } catch (err: any) { }
       });
 
       return props;
@@ -2003,7 +2013,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
             if (!finished)
               break;
           }
-        } catch (err) { }
+        } catch (err: any) { }
       }
 
       return finished;
@@ -2141,7 +2151,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       let ret;
       try {
         ret = this._iModel.nativeDb.pollTileContent(treeId, tileId);
-      } catch (err) {
+      } catch (err: any) {
         // Typically "imodel not open".
         reject(err);
         return;
@@ -2189,7 +2199,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
  */
 export interface UserArg {
   /** If present, the user's access token for the requested operation. If not present, use [[IModelHost.getAccessToken]] */
-  user?: AuthorizedClientRequestContext;
+  readonly user?: AuthorizedClientRequestContext;
 }
 
 /**
@@ -2213,7 +2223,10 @@ export class BriefcaseDb extends IModelDb {
   /* the BriefcaseId of the briefcase opened with this BriefcaseDb */
   public readonly briefcaseId: BriefcaseId;
 
-  /** Event raised just before a BriefcaseDb is opened.
+  /**
+   * Event raised just before a BriefcaseDb is opened. Supplies the arguments that will be used to open the BriefcaseDb.
+   * Throw an exception to stop the open.
+   *
    * **Example:**
    * ``` ts
    * [[include:BriefcaseDb.onOpen]]
@@ -2221,7 +2234,9 @@ export class BriefcaseDb extends IModelDb {
    */
   public static readonly onOpen = new BeEvent<(_args: OpenBriefcaseArgs) => void>();
 
-  /** Event raised just after a BriefcaseDb is opened.
+  /**
+   * Event raised just after a BriefcaseDb is opened. Supplies the newly opened BriefcaseDb and the arguments that were used to open it.
+   *
    * **Example:**
    * ``` ts
    * [[include:BriefcaseDb.onOpened]]
@@ -2241,7 +2256,8 @@ export class BriefcaseDb extends IModelDb {
   /** The Guid that identifies the *context* that owns this iModel. */
   public override get contextId(): GuidString { return super.contextId!; } // GuidString | undefined for the superclass, but required for BriefcaseDb
 
-  /** Determine whether this BriefcaseDb should use a lock server.
+  /**
+   * Determine whether this BriefcaseDb should use a lock server.
    * All must be true:
    * - file is open for write
    * - has an assigned briefcaseId
@@ -2256,65 +2272,45 @@ export class BriefcaseDb extends IModelDb {
     this._openMode = args.openMode;
     this.briefcaseId = args.briefcaseId;
 
-    if (this.useLockServer)
+    if (this.useLockServer) // if the iModel uses a lock server, create a ServerBasedLocks LockControl for this BriefcaseDb.
       this._locks = new ServerBasedLocks(this);
   }
 
-  /** Upgrades the profile or domain schemas */
-  private static async upgradeProfileOrDomainSchemas(briefcase: LocalBriefcaseProps & OpenBriefcaseArgs, upgradeOptions: UpgradeOptions, description: string): Promise<void> {
-    const lockArg = {
-      briefcaseId: briefcase.briefcaseId, changeset: briefcase.changeset, iModelId: briefcase.iModelId,
-    };
-    // Lock schemas
-    // await IModelHost.hubAccess.acquireSchemaLock(lockArg);
+  /** Upgrades the profile or domain schemas. File must be closed before this call and is always left closed. */
+  private static async doUpgrade(briefcase: OpenBriefcaseArgs, upgradeOptions: UpgradeOptions, description: string): Promise<void> {
+    const nativeDb = this.openDgnDb({ path: briefcase.fileName }, OpenMode.ReadWrite, upgradeOptions); // performs the upgrade
+    const wasChanges = nativeDb.hasPendingTxns();
+    nativeDb.closeIModel();
 
-    // Upgrade and validate
-    try {
-      // openDgnDb performs the upgrade
-      const nativeDb = this.openDgnDb({ path: briefcase.fileName, key: briefcase.key }, OpenMode.ReadWrite, upgradeOptions);
-
-      try {
-        if (!nativeDb.hasPendingTxns()) {
-          await IModelHost.hubAccess.releaseAllLocks(lockArg);
-          return; // No changes made due to the upgrade
-        }
-      } finally {
-        nativeDb.closeIModel();
-      }
-    } catch (err) {
-      await IModelHost.hubAccess.releaseAllLocks(lockArg);
-      throw err;
-    }
-
-    if (briefcase.briefcaseId === BriefcaseIdValue.Unassigned)
-      return;
-
-    // Push changes
-    const briefcaseDb = await BriefcaseDb.open({ ...briefcase, readonly: false });
-    try {
-      await briefcaseDb.pushChanges({ ...briefcase, description });
-      (briefcase.changeset as any) = briefcaseDb.changeset;
-    } finally {
-      briefcaseDb.close();
-    }
+    if (wasChanges)
+      await withBriefcaseDb(briefcase, async (db) => db.pushChanges({ ...briefcase, description, retainLocks: true }));
   }
 
   /** Upgrades the schemas in the iModel based on the current version of the software. Follows a sequence of operations -
-   * * Acquires a schema lock to prevent other users from making a concurrent upgrade
+   * * Acquires a schema lock to prevent other users from making any other changes while upgrade is happening
    * * Updates the local briefcase with the schema changes.
-   * * Pushes the resulting change set(s) to the iModel Hub.
+   * * Pushes the resulting changeset(s) to the iModelHub.
    * Note that the upgrade requires that the local briefcase be closed, and may result in one or two change sets depending on whether both
-   * profile and domain schemas need to get upgraded. At the end of the call, the local database is left back in the closed state.
-   * @param briefcaseProps Properties of the downloaded briefcase and any additional parameters needed to open the briefcase. @see [[BriefcaseManager.downloadBriefcase]]
-   * @throws [[IModelError]] If there was a problem with upgrading schemas
-   * @see [[BriefcaseDb.validateSchemas]]
+   * profile and domain schemas need to get upgraded.
    * @see ($docs/learning/backend/IModelDb.md#upgrading-schemas-in-an-imodel)
   */
-  public static async upgradeSchemas(briefcase: LocalBriefcaseProps & OpenBriefcaseArgs): Promise<void> {
-    // Note: For admins we do not care about translations and keep description consistent, but we do need to enhance this to
-    // include more information on versions
-    await this.upgradeProfileOrDomainSchemas(briefcase, { profile: ProfileOptions.Upgrade }, "Upgraded profile");
-    await this.upgradeProfileOrDomainSchemas(briefcase, { domain: DomainOptions.Upgrade }, "Upgraded domain schemas");
+  public static async upgradeSchemas(briefcase: OpenBriefcaseArgs): Promise<void> {
+    // upgrading schemas involves closing and reopening the file repeatedly. That's because the process of upgrading
+    // happens on a file open. We have to open-and-close the file at *each* of these steps:
+    // - acquire schema lock
+    // - upgrade profile
+    // - push changes
+    // - upgrade domain
+    // - push changes
+    // - release schema lock
+    // good thing computers are fast. Fortunately upgrading should be rare (and the push time will dominate anyway.) Don't try to optimize any of this away.
+    await withBriefcaseDb(briefcase, async (db) => db.acquireSchemaLock()); // may not really acquire lock if iModel uses "noLocks" mode.
+    try {
+      await this.doUpgrade(briefcase, { profile: ProfileOptions.Upgrade }, "Upgraded profile");
+      await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade }, "Upgraded domain schemas");
+    } finally {
+      await withBriefcaseDb(briefcase, async (db) => db.locks.releaseAllLocks());
+    }
   }
 
   /** Open a briefcase file and return a new BriefcaseDb to interact with it.
@@ -2362,6 +2358,9 @@ export class BriefcaseDb extends IModelDb {
  * @returns The [[ChangesetIndexAndId]] of the successfully pushed changeset
  */
   public async pushChanges(arg: PushChangesArgs): Promise<ChangesetIndexAndId> {
+    if (this.briefcaseId === BriefcaseIdValue.Unassigned)
+      return this.changeset as ChangesetIndexAndId; // can't push changes unless we have a valid briefcaseId
+
     if (this.nativeDb.hasUnsavedChanges())
       throw new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot push with unsaved changes");
     if (!this.nativeDb.hasPendingTxns())
@@ -2372,6 +2371,7 @@ export class BriefcaseDb extends IModelDb {
 
     const changeset = this.changeset as ChangesetIndexAndId;
     IpcHost.notifyTxns(this, "notifyPushedChanges", changeset);
+
     return changeset;
   }
 
@@ -2530,7 +2530,7 @@ export class SnapshotDb extends IModelDb {
     snapshot._contextId = checkpoint.iTwinId;
     try {
       CheckpointManager.validateCheckpointGuids(checkpoint, snapshot.nativeDb);
-    } catch (err) {
+    } catch (err: any) {
       snapshot.close();
       throw err;
     }

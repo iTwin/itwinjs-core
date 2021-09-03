@@ -51,7 +51,7 @@ export type LockMap = Map<Id64String, LockState>;
 export interface LockProps {
   /** The elementId for the lock */
   readonly id: Id64String;
-  /** the lock scope */
+  /** the lock state */
   readonly state: LockState;
 }
 
@@ -155,7 +155,7 @@ export interface BackendHubAccess {
   /** Release a briefcaseId. After this call it is illegal to generate changesets for the released briefcaseId. */
   releaseBriefcase(arg: BriefcaseIdArg): Promise<void>;
 
-  /** get an array of the briefcases assigned to the current user. */
+  /** get an array of the briefcases assigned to a user. */
   getMyBriefcaseIds(arg: IModelIdArg): Promise<BriefcaseId[]>;
 
   /**
@@ -182,12 +182,15 @@ export interface BackendHubAccess {
   acquireLocks(arg: BriefcaseDbArg, locks: LockMap): Promise<void>;
 
   /**
-   * Get the list of all held locks for a briefcase. This is currently used only for tests.
+   * Get the list of all held locks for a briefcase. This can be very expensive and is currently used only for tests.
    * @internal
    */
   queryAllLocks(arg: BriefcaseDbArg): Promise<LockProps[]>;
 
-  /** Release all currently held locks */
+  /**
+   * Release all currently held locks
+   * @internal
+   */
   releaseAllLocks(arg: BriefcaseDbArg): Promise<void>;
 
   /** Query codes
