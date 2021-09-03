@@ -64,6 +64,29 @@ describe("SchemaEditor tests", () => {
       expect(baseClass?.key).to.deep.equal(new SchemaItemKey("Element", bisSchemaKey));
     });
 
+    it("should create BisCore.Element grandchild successfully", async () => {
+      const elementKey = new SchemaItemKey("Element", bisSchemaKey);
+      const result = await testEditor.entities.createEx(testSchemaKey, "testElement", ECClassModifier.None, "test element", elementKey);
+      expect(result).to.not.be.undefined;
+      expect(result.itemKey).to.not.be.undefined;
+      expect(result.itemKey).to.deep.equal(new SchemaItemKey("testElement", testSchemaKey));
+      const element = await testSchema!.getItem<EntityClass>("testElement") as EntityClass;
+      expect(element).to.not.be.undefined;
+      const baseClass = await element.baseClass;
+      expect(baseClass).to.not.be.undefined;
+      expect(baseClass?.key).to.deep.equal(new SchemaItemKey("Element", bisSchemaKey));
+
+      const result2 = await testEditor.entities.createEx(testSchemaKey, "testElement2", ECClassModifier.None, "test element2", result.itemKey);
+      expect(result2).to.not.be.undefined;
+      expect(result2.itemKey).to.not.be.undefined;
+      expect(result2.itemKey).to.deep.equal(new SchemaItemKey("testElement2", testSchemaKey));
+      const element2 = await testSchema!.getItem<EntityClass>("testElement2") as EntityClass;
+      expect(element2).to.not.be.undefined;
+      const baseClass2 = await element2.baseClass;
+      expect(baseClass2).to.not.be.undefined;
+      expect(baseClass2?.key).to.deep.equal(new SchemaItemKey("testElement", testSchemaKey));
+    });
+
     it("should create BisCore.ElementUniqueAspect subclass successfully", async () => {
       const uniqueAspectKey = new SchemaItemKey("ElementUniqueAspect", bisSchemaKey);
       const result = await testEditor.entities.createEx(testSchemaKey, "testElement", ECClassModifier.None, "test element", uniqueAspectKey);
@@ -77,6 +100,29 @@ describe("SchemaEditor tests", () => {
       expect(baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(uniqueAspectKey));
     });
 
+    it("should create BisCore.ElementUniqueAspect grandchild successfully", async () => {
+      const elementKey = new SchemaItemKey("ElementUniqueAspect", bisSchemaKey);
+      const result = await testEditor.entities.createEx(testSchemaKey, "testElement", ECClassModifier.None, "test element", elementKey);
+      expect(result).to.not.be.undefined;
+      expect(result.itemKey).to.not.be.undefined;
+      expect(result.itemKey).to.deep.equal(new SchemaItemKey("testElement", testSchemaKey));
+      const element = await testSchema!.getItem<EntityClass>("testElement") as EntityClass;
+      expect(element).to.not.be.undefined;
+      const baseClass = await element.baseClass;
+      expect(baseClass).to.not.be.undefined;
+      expect(baseClass?.key).to.deep.equal(new SchemaItemKey("ElementUniqueAspect", bisSchemaKey));
+
+      const result2 = await testEditor.entities.createEx(testSchemaKey, "testElement2", ECClassModifier.None, "test element2", result.itemKey);
+      expect(result2).to.not.be.undefined;
+      expect(result2.itemKey).to.not.be.undefined;
+      expect(result2.itemKey).to.deep.equal(new SchemaItemKey("testElement2", testSchemaKey));
+      const element2 = await testSchema!.getItem<EntityClass>("testElement2") as EntityClass;
+      expect(element2).to.not.be.undefined;
+      const baseClass2 = await element2.baseClass;
+      expect(baseClass2).to.not.be.undefined;
+      expect(baseClass2?.key).to.deep.equal(new SchemaItemKey("testElement", testSchemaKey));
+    });
+
     it("should create BisCore.ElementMultiAspect subclass successfully", async () => {
       const multiAspectKey = new SchemaItemKey("ElementMultiAspect", bisSchemaKey);
       const result = await testEditor.entities.createEx(testSchemaKey, "testElement", ECClassModifier.None, "test element", multiAspectKey);
@@ -88,6 +134,29 @@ describe("SchemaEditor tests", () => {
       const baseClass = await element?.baseClass;
       expect(baseClass).to.not.be.undefined;
       expect(baseClass).to.eql(await testEditor.schemaContext.getSchemaItem(multiAspectKey));
+    });
+
+    it("should create BisCore.ElementMultiAspect grandchild successfully", async () => {
+      const elementKey = new SchemaItemKey("ElementMultiAspect", bisSchemaKey);
+      const result = await testEditor.entities.createEx(testSchemaKey, "testElement", ECClassModifier.None, "test element", elementKey);
+      expect(result).to.not.be.undefined;
+      expect(result.itemKey).to.not.be.undefined;
+      expect(result.itemKey).to.deep.equal(new SchemaItemKey("testElement", testSchemaKey));
+      const element = await testSchema!.getItem<EntityClass>("testElement") as EntityClass;
+      expect(element).to.not.be.undefined;
+      const baseClass = await element.baseClass;
+      expect(baseClass).to.not.be.undefined;
+      expect(baseClass?.key).to.deep.equal(new SchemaItemKey("ElementMultiAspect", bisSchemaKey));
+
+      const result2 = await testEditor.entities.createEx(testSchemaKey, "testElement2", ECClassModifier.None, "test element2", result.itemKey);
+      expect(result2).to.not.be.undefined;
+      expect(result2.itemKey).to.not.be.undefined;
+      expect(result2.itemKey).to.deep.equal(new SchemaItemKey("testElement2", testSchemaKey));
+      const element2 = await testSchema!.getItem<EntityClass>("testElement2") as EntityClass;
+      expect(element2).to.not.be.undefined;
+      const baseClass2 = await element2.baseClass;
+      expect(baseClass2).to.not.be.undefined;
+      expect(baseClass2?.key).to.deep.equal(new SchemaItemKey("testElement", testSchemaKey));
     });
 
     it("try subclassing unsupported base class, throws", async () => {
