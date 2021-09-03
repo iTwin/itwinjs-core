@@ -180,10 +180,6 @@ export class InstancedGeometry extends CachedGeometry {
   private readonly _repr: LUTGeometry;
   private readonly _ownsRepr: boolean;
 
-  public get numInstances() { return this._buffers.numInstances; }
-  public get transforms() { return this._buffers.transforms; }
-  public get featureIds() { return this._buffers.featureIds; }
-  public get symbology() { return this._buffers.symbology; }
   public getRtcModelTransform(modelMatrix: Transform) { return this._buffers.getRtcModelTransform(modelMatrix); }
   public getRtcOnlyTransform() { return this._buffers.getRtcOnlyTransform(); }
 
@@ -212,8 +208,6 @@ export class InstancedGeometry extends CachedGeometry {
   public override getLineCode(params: ShaderProgramParams) { return this._repr.getLineCode(params); }
   public override getLineWeight(params: ShaderProgramParams) { return this._repr.getLineWeight(params); }
   public override wantMonochrome(target: Target) { return this._repr.wantMonochrome(target); }
-
-  public get rtcCenter(): Point3d { return this._buffers.rtcCenter; }
 
   public constructor(repr: LUTGeometry, ownsRepr: boolean, buffers: InstanceBuffers) {
     super();
@@ -260,7 +254,7 @@ export class InstancedGeometry extends CachedGeometry {
   }
 
   public draw() {
-    this._repr.drawInstanced(this.numInstances, this._buffersContainer);
+    this._repr.drawInstanced(this._buffers.numInstances, this._buffersContainer);
   }
 
   public override computeRange(output?: Range3d): Range3d {
