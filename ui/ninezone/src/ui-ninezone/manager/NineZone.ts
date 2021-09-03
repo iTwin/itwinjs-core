@@ -6,7 +6,8 @@
  * @module Zone
  */
 
-import { Point, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
+import { PointProps } from "@bentley/ui-abstract";
+import { Point, Rectangle, RectangleProps } from "@bentley/ui-core";
 import { NestedStagePanelKey, NestedStagePanelsManagerProps } from "../stage-panels/manager/NestedStagePanels";
 import { StagePanelsManager } from "../stage-panels/manager/StagePanels";
 import { StagePanelType } from "../stage-panels/StagePanel";

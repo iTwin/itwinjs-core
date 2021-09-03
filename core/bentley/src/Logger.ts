@@ -17,6 +17,11 @@ import { IDisposable } from "./Disposable";
  */
 export type LogFunction = (category: string, message: string, metaData?: GetMetaDataFunction) => void;
 
+/** Defines log filter intercept.
+ * @internal
+ * */
+export type LogIntercept = (level: LogLevel, category: string, message: string, metaData?: GetMetaDataFunction) => boolean;
+
 /** Use to categorize logging messages by severity.
  * @public
  */
@@ -58,6 +63,7 @@ export class Logger {
   private static _logWarning: LogFunction | undefined;
   private static _logInfo: LogFunction | undefined;
   private static _logTrace: LogFunction | undefined;
+  private static _logIntercept: LogIntercept | undefined;
   private static _categoryFilter: Map<string, LogLevel> = new Map<string, LogLevel>();
   private static _minLevel: LogLevel | undefined = undefined;
   private static _logExceptionCallstacks = false;
@@ -98,6 +104,12 @@ export class Logger {
           this._logWarning(category, message, getMetaData);
         break;
     }
+  }
+  /** Register a log intercept that get call called before log is forwarded to log functions.
+   * @internal
+   */
+  public static setIntercept(logIntercept?: LogIntercept) {
+    Logger._logIntercept = logIntercept;
   }
 
   /** Initialize the logger streams to the console. Should be called at application initialization time. */
@@ -290,6 +302,10 @@ export class Logger {
    * @param metaData  Optional data for the message
    */
   public static logError(category: string, message: string, metaData?: GetMetaDataFunction): void {
+    if (Logger._logIntercept) {
+      if (!Logger._logIntercept(LogLevel.Error, category, message, metaData))
+        return;
+    }
     if (Logger._logError && Logger.isEnabled(category, LogLevel.Error))
       Logger._logError(category, message, metaData);
   }
@@ -324,6 +340,10 @@ export class Logger {
    * @param metaData  Optional data for the message
    */
   public static logWarning(category: string, message: string, metaData?: GetMetaDataFunction): void {
+    if (Logger._logIntercept) {
+      if (!Logger._logIntercept(LogLevel.Warning, category, message, metaData))
+        return;
+    }
     if (Logger._logWarning && Logger.isEnabled(category, LogLevel.Warning))
       Logger._logWarning(category, message, metaData);
   }
@@ -334,6 +354,10 @@ export class Logger {
    * @param metaData  Optional data for the message
    */
   public static logInfo(category: string, message: string, metaData?: GetMetaDataFunction): void {
+    if (Logger._logIntercept) {
+      if (!Logger._logIntercept(LogLevel.Info, category, message, metaData))
+        return;
+    }
     if (Logger._logInfo && Logger.isEnabled(category, LogLevel.Info))
       Logger._logInfo(category, message, metaData);
   }
@@ -344,6 +368,10 @@ export class Logger {
    * @param metaData  Optional data for the message
    */
   public static logTrace(category: string, message: string, metaData?: GetMetaDataFunction): void {
+    if (Logger._logIntercept) {
+      if (!Logger._logIntercept(LogLevel.Trace, category, message, metaData))
+        return;
+    }
     if (Logger._logTrace && Logger.isEnabled(category, LogLevel.Trace))
       Logger._logTrace(category, message, metaData);
   }
@@ -396,66 +424,3 @@ export class PerfLogger implements IDisposable {
   }
 }
 
-/** Helps with macro-substitution
- * @alpha Better name?
- */
-export class EnvMacroSubst {
-  /** Replace macros delimited by ${} assuming that they refer to environment variables. */
-  public static replace(str: string, defaultValues?: any): string {
-    let startMacro;
-    let startNext = 0;
-    // eslint-disable-next-line no-cond-assign
-    while ((startMacro = str.indexOf("${", startNext)) !== -1) {
-      const endMacro = str.indexOf("}", startMacro + 2);
-      if (endMacro === -1) {
-        startNext = startMacro + 2;
-        continue;
-      }
-      const envvar = str.slice(startMacro + 2, endMacro);
-
-      let subst = process.env[envvar];
-
-      if (subst === undefined) {
-        if ((defaultValues === undefined) || !defaultValues.hasOwnProperty(envvar)) {
-          startNext = endMacro + 1;
-          continue;
-        }
-        subst = defaultValues[envvar];
-      }
-      str = str.slice(0, startMacro) + subst + str.slice(endMacro + 1);
-      startNext += startMacro + subst!.length;
-    }
-    return str;
-  }
-
-  /** Check if the string contains ${}, indicating the presence of a macro. */
-  public static containsEnvvars(str: string): boolean {
-    return str.includes("${") && str.includes("}");
-  }
-
-  /** Replace macros delimited by ${} that are found in any of the object's properties */
-  public static replaceInProperties(obj: any, recurse: boolean, defaultValues?: any): void {
-    for (const prop of Object.keys(obj)) {
-      if (typeof obj[prop] === "string") {
-        if (EnvMacroSubst.containsEnvvars(obj[prop]))
-          obj[prop] = EnvMacroSubst.replace(obj[prop], defaultValues);
-      } else if (recurse && (typeof obj[prop] === "object")) {
-        EnvMacroSubst.replaceInProperties(obj[prop], true, defaultValues);
-      }
-    }
-  }
-
-  /** Check if the string contains ${}, indicating the presence of a macro. */
-  public static anyPropertyContainsEnvvars(obj: any, recurse: boolean): boolean {
-    for (const prop of Object.keys(obj)) {
-      if (typeof obj[prop] === "string") {
-        if (EnvMacroSubst.containsEnvvars(obj[prop]))
-          return true;
-      } else if (recurse && (typeof obj[prop] === "object")) {
-        if (EnvMacroSubst.anyPropertyContainsEnvvars(obj[prop], true))
-          return true;
-      }
-    }
-    return false;
-  }
-}

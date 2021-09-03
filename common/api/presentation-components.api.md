@@ -45,7 +45,6 @@ import { Paged } from '@bentley/presentation-common';
 import { PagedTreeNodeLoader } from '@bentley/ui-components';
 import { PageOptions } from '@bentley/presentation-common';
 import { PageOptions as PageOptions_2 } from '@bentley/ui-components';
-import { PartialHierarchyModification } from '@bentley/presentation-common';
 import { ProcessFieldHierarchiesProps } from '@bentley/presentation-common';
 import { ProcessMergedValueProps } from '@bentley/presentation-common';
 import { ProcessPrimitiveValueProps } from '@bentley/presentation-common';
@@ -78,7 +77,6 @@ import { TableDataProvider } from '@bentley/ui-components';
 import { TableProps } from '@bentley/ui-components';
 import { TreeEditingParams } from '@bentley/ui-components';
 import { TreeEventHandler } from '@bentley/ui-components';
-import { TreeModel } from '@bentley/ui-components';
 import { TreeModelChanges } from '@bentley/ui-components';
 import { TreeModelSource } from '@bentley/ui-components';
 import { TreeNodeItem } from '@bentley/ui-components';
@@ -86,7 +84,7 @@ import { TreeProps } from '@bentley/ui-components';
 import { TreeSelectionModificationEventArgs } from '@bentley/ui-components';
 import { TreeSelectionReplacementEventArgs } from '@bentley/ui-components';
 import { TypeDescription } from '@bentley/presentation-common';
-import { ViewportProps } from '@bentley/ui-components';
+import { ViewportProps } from '@bentley/ui-imodel-components';
 import { VisibleTreeNodes } from '@bentley/ui-components';
 
 // @internal (undocumented)
@@ -325,8 +323,6 @@ export class FilteredPresentationTreeDataProvider implements IFilteredPresentati
     getNodesCount(parent?: TreeNodeItem): Promise<number>;
     // (undocumented)
     get imodel(): IModelConnection;
-    // @alpha
-    loadHierarchy(): Promise<void>;
     nodeMatchesFilter(node: TreeNodeItem): boolean;
     // (undocumented)
     get parentDataProvider(): IPresentationTreeDataProvider;
@@ -404,8 +400,6 @@ export type IPresentationTableDataProvider = TableDataProvider & IContentDataPro
 export interface IPresentationTreeDataProvider extends ITreeDataProvider, IPresentationDataProvider {
     getFilteredNodePaths(filter: string): Promise<NodePathElement[]>;
     getNodeKey(node: TreeNodeItem): NodeKey;
-    // @alpha
-    loadHierarchy?(): Promise<void>;
 }
 
 // @internal (undocumented)
@@ -518,13 +512,11 @@ export interface PresentationTableDataProviderProps extends DiagnosticsProps {
 export class PresentationTreeDataProvider implements IPresentationTreeDataProvider, IDisposable {
     constructor(props: PresentationTreeDataProviderProps);
     dispose(): void;
-    getFilteredNodePaths: (filter: string) => Promise<NodePathElement[]>;
+    getFilteredNodePaths(filter: string): Promise<NodePathElement[]>;
     getNodeKey(node: TreeNodeItem): NodeKey;
     getNodes(parentNode?: TreeNodeItem, pageOptions?: PageOptions_2): Promise<DelayLoadedTreeNodeItem[]>;
     getNodesCount(parentNode?: TreeNodeItem): Promise<number>;
     get imodel(): IModelConnection;
-    // @alpha @deprecated
-    loadHierarchy(): Promise<void>;
     get pagingSize(): number | undefined;
     set pagingSize(value: number | undefined);
     get rulesetId(): string;
@@ -555,13 +547,18 @@ export interface PresentationTreeDataProviderProps extends DiagnosticsProps {
 
 // @public
 export interface PresentationTreeNodeLoaderProps extends PresentationTreeDataProviderProps {
-    // @internal
-    dataProvider?: IPresentationTreeDataProvider;
     // @alpha
     enableHierarchyAutoUpdate?: boolean;
     pagingSize: number;
     // @alpha @deprecated
     preloadingEnabled?: boolean;
+}
+
+// @public
+export interface PresentationTreeNodeLoaderResult {
+    nodeLoader: PagedTreeNodeLoader<IPresentationTreeDataProvider>;
+    // @alpha
+    onItemsRendered: (items: RenderedItemsRange) => void;
 }
 
 // @public
@@ -724,9 +721,6 @@ export interface UnifiedSelectionTreeEventHandlerParams {
     selectionHandler?: SelectionHandler;
 }
 
-// @internal (undocumented)
-export function updateTreeModel(treeModel: TreeModel, hierarchyModifications: PartialHierarchyModification[], treeNodeItemCreationProps: CreateTreeNodeItemProps): MutableTreeModel | undefined;
-
 // @public
 export function useControlledPresentationTreeFiltering(props: ControlledPresentationTreeFilteringProps): {
     nodeHighlightingProps: HighlightableTreeProps | undefined;
@@ -751,10 +745,7 @@ export function useFilteredNodeLoader(nodeLoader: AbstractTreeNodeLoaderWithProv
 export function useNodeHighlightingProps(filter: string | undefined, filteredNodeLoader?: ITreeNodeLoaderWithProvider<IFilteredPresentationTreeDataProvider>, activeMatchIndex?: number): HighlightableTreeProps | undefined;
 
 // @public
-export function usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps): {
-    nodeLoader: PagedTreeNodeLoader<IPresentationTreeDataProvider>;
-    onItemsRendered: (items: RenderedItemsRange) => void;
-};
+export function usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps): PresentationTreeNodeLoaderResult;
 
 // @public
 export function usePropertyDataProviderWithUnifiedSelection(props: PropertyDataProviderWithUnifiedSelectionProps): UsePropertyDataProviderWithUnifiedSelectionResult;

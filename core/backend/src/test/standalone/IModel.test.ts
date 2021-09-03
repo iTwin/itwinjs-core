@@ -37,6 +37,7 @@ import { KnownTestLocations } from "../KnownTestLocations";
 import sinon = require("sinon");
 import { IModelHubBackend } from "../../IModelHubBackend";
 import { V2CheckpointManager } from "../../CheckpointManager";
+import { Base64 } from "js-base64";
 
 // spell-checker: disable
 
@@ -586,8 +587,7 @@ describe("iModel", () => {
     expect(style.settings.viewFlags.renderMode).to.equal(RenderMode.SolidFill);
     expect(style.settings.backgroundColor.equals(ColorDef.blue)).to.be.true;
 
-    const newFlags = style.settings.viewFlags.clone();
-    newFlags.renderMode = RenderMode.SmoothShade;
+    const newFlags = style.settings.viewFlags.copy({ renderMode: RenderMode.SmoothShade });
     style.settings.viewFlags = newFlags;
     style.settings.backgroundColor = ColorDef.red;
     style.settings.monochromeColor = ColorDef.green;
@@ -605,10 +605,7 @@ describe("iModel", () => {
   it("should create display styles", () => {
     const defaultViewFlags = new ViewFlags().toJSON();
 
-    const viewFlags = new ViewFlags();
-    viewFlags.patterns = false;
-    viewFlags.visibleEdges = true;
-
+    const viewFlags = new ViewFlags({ patterns: false, visibleEdges: true });
     const viewflags: ViewFlagProps = { noWhiteOnWhiteReversal: true, shadows: true, noTransp: true };
 
     const mapImagery: MapImageryProps = {
@@ -1909,9 +1906,9 @@ describe("iModel", () => {
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
     const iModelId = snapshot.getGuid();
     const contextId = Guid.createValue();
-    const changeSetId = IModelTestUtils.generateChangeSetId();
+    const changeset = IModelTestUtils.generateChangeSetId();
     snapshot.nativeDb.saveProjectGuid(Guid.normalize(contextId));
-    snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeSetId); // even fake checkpoints need a changeSetId!
+    snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id); // even fake checkpoints need a changeSetId!
     snapshot.saveChanges();
     snapshot.close();
 
@@ -1919,7 +1916,7 @@ describe("iModel", () => {
     const mockCheckpointV2: CheckpointV2 = {
       wsgId: "INVALID",
       ecId: "INVALID",
-      changeSetId,
+      changeset,
       containerAccessKeyAccount: "testAccount",
       containerAccessKeyContainer: `imodelblocks-${iModelId}`,
       containerAccessKeySAS: "testSAS",
@@ -1937,12 +1934,11 @@ describe("iModel", () => {
 
     process.env.BLOCKCACHE_DIR = "/foo/";
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const checkpoint = await SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId, iModelId, changeSetId });
+    const checkpoint = await SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId, iModelId, changeset });
     const props = checkpoint.getRpcProps();
-    assert.equal(props.openMode, OpenMode.Readonly);
     assert.equal(props.iModelId, iModelId);
     assert.equal(props.contextId, contextId);
-    assert.equal(props.changeSetId, changeSetId);
+    assert.equal(props.changeset?.id, changeset.id);
     assert.equal(commandStub.callCount, 1);
     assert.equal(commandStub.firstCall.firstArg, "attach");
 
@@ -1962,9 +1958,9 @@ describe("iModel", () => {
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
     const iModelId = Guid.createValue();  // This is wrong - it should be `snapshot.getGuid()`!
     const contextId = Guid.createValue();
-    const changeSetId = IModelTestUtils.generateChangeSetId();
+    const changeset = IModelTestUtils.generateChangeSetId();
     snapshot.nativeDb.saveProjectGuid(Guid.normalize(contextId));
-    snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeSetId);
+    snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id);
     snapshot.saveChanges();
     snapshot.close();
 
@@ -1972,7 +1968,7 @@ describe("iModel", () => {
     const mockCheckpointV2: CheckpointV2 = {
       wsgId: "INVALID",
       ecId: "INVALID",
-      changeSetId,
+      changeset,
       containerAccessKeyAccount: "testAccount",
       containerAccessKeyContainer: `imodelblocks-${iModelId}`,
       containerAccessKeySAS: "testSAS",
@@ -1990,11 +1986,11 @@ describe("iModel", () => {
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
 
     process.env.BLOCKCACHE_DIR = ""; // try without setting daemon dir
-    let error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: IModelTestUtils.generateChangeSetId() }));
+    let error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.BadRequest, error); // bad request because daemon dir wasn't set
 
     process.env.BLOCKCACHE_DIR = "/foo/";
-    error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId, iModelId, changeSetId }));
+    error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId, iModelId, changeset }));
     expectIModelError(IModelStatus.ValidationFailed, error);
   });
 
@@ -2005,11 +2001,11 @@ describe("iModel", () => {
     sinon.stub(IModelHubBackend.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
 
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    let error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: IModelTestUtils.generateChangeSetId() }));
+    let error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.NotFound, error);
 
     hubMock.callsFake(async () => [{} as any]);
-    error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: IModelTestUtils.generateChangeSetId() }));
+    error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.NotFound, error);
   });
 

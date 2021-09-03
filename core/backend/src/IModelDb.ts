@@ -6,8 +6,6 @@
  * @module iModels
  */
 
-// cspell:ignore ulas postrc pollrc CANTOPEN
-
 import {
   assert, BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
   IModelStatus, JsonUtils, Logger, OpenMode,
@@ -27,6 +25,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { join } from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseId, BriefcaseManager } from "./BriefcaseManager";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
@@ -138,8 +137,8 @@ export abstract class IModelDb extends IModel {
   public get pathName(): string { return this.nativeDb.getFilePath(); }
 
   /** @internal */
-  protected constructor(nativeDb: IModelJsNative.DgnDb, iModelToken: IModelRpcProps, openMode: OpenMode) {
-    super(iModelToken, openMode);
+  protected constructor(nativeDb: IModelJsNative.DgnDb, iModelToken: IModelRpcProps) {
+    super(iModelToken);
     this._nativeDb = nativeDb;
     this.nativeDb.setIModelDb(this);
     this.initializeIModelDb();
@@ -244,12 +243,13 @@ export abstract class IModelDb extends IModel {
    * the oldest statements as it fills. For statements you don't intend to reuse, instead use [[withStatement]].
    * @param sql The SQLite SQL statement to execute
    * @param callback the callback to invoke on the prepared statement
+   * @param logErrors Determines if error will be logged if statement fail to prepare
    * @returns the value returned by `callback`.
    * @see [[withStatement]]
    * @public
    */
-  public withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T): T {
-    const stmt = this._statementCache.findAndRemove(ecsql) ?? this.prepareStatement(ecsql);
+  public withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors = true): T {
+    const stmt = this._statementCache.findAndRemove(ecsql) ?? this.prepareStatement(ecsql, logErrors);
     const release = () => this._statementCache.addOrDispose(stmt);
     try {
       const val = callback(stmt);
@@ -271,12 +271,13 @@ export abstract class IModelDb extends IModel {
    * For statements that will be reused often, instead use [[withPreparedStatement]].
    * @param sql The SQLite SQL statement to execute
    * @param callback the callback to invoke on the prepared statement
+   * @param logErrors Determines if error will be logged if statement fail to prepare
    * @returns the value returned by `callback`.
    * @see [[withPreparedStatement]]
    * @public
    */
-  public withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T): T {
-    const stmt = this.prepareStatement(ecsql);
+  public withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors = true): T {
+    const stmt = this.prepareStatement(ecsql, logErrors);
     const release = () => stmt.dispose();
     try {
       const val = callback(stmt);
@@ -547,12 +548,13 @@ export abstract class IModelDb extends IModel {
    * the oldest statements as it fills. For statements you don't intend to reuse, instead use [[withSqliteStatement]].
    * @param sql The SQLite SQL statement to execute
    * @param callback the callback to invoke on the prepared statement
+   * @param logErrors Determine if errors are logged or not
    * @returns the value returned by `callback`.
    * @see [[withPreparedStatement]]
    * @public
    */
-  public withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T {
-    const stmt = this._sqliteStatementCache.findAndRemove(sql) ?? this.prepareSqliteStatement(sql);
+  public withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors = true): T {
+    const stmt = this._sqliteStatementCache.findAndRemove(sql) ?? this.prepareSqliteStatement(sql, logErrors);
     const release = () => this._sqliteStatementCache.addOrDispose(stmt);
     try {
       const val: T = callback(stmt);
@@ -574,11 +576,12 @@ export abstract class IModelDb extends IModel {
    * For statements that will be reused often, instead use [[withPreparedSqliteStatement]].
    * @param sql The SQLite SQL statement to execute
    * @param callback the callback to invoke on the prepared statement
+   * @param logErrors Determine if errors are logged or not
    * @returns the value returned by `callback`.
    * @public
    */
-  public withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T {
-    const stmt = this.prepareSqliteStatement(sql);
+  public withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors = true): T {
+    const stmt = this.prepareSqliteStatement(sql, logErrors);
     const release = () => stmt.dispose();
     try {
       const val: T = callback(stmt);
@@ -599,9 +602,9 @@ export abstract class IModelDb extends IModel {
    * @throws [[IModelError]] if there is a problem preparing the statement.
    * @internal
    */
-  public prepareSqliteStatement(sql: string): SqliteStatement {
+  public prepareSqliteStatement(sql: string, logErrors = true): SqliteStatement {
     const stmt = new SqliteStatement(sql);
-    stmt.prepare(this.nativeDb);
+    stmt.prepare(this.nativeDb, logErrors);
     return stmt;
   }
 
@@ -640,16 +643,6 @@ export abstract class IModelDb extends IModel {
     });
     return ids;
   }
-
-  /** Empty the ECSqlStatementCache for this iModel.
-   * @deprecated use clearCaches
-   */
-  public clearStatementCache(): void { this._statementCache.clear(); }
-
-  /** Empty the SqliteStatementCache for this iModel.
-   * @deprecated use clearCaches
-   */
-  public clearSqliteStatementCache(): void { this._sqliteStatementCache.clear(); }
 
   /** Clear all in-memory caches held in this IModelDb. */
   public clearCaches() {
@@ -958,11 +951,12 @@ export abstract class IModelDb extends IModel {
 
   /** Prepare an ECSQL statement.
    * @param sql The ECSQL statement to prepare
+   * @param logErrors Determines if error will be logged if statement fail to prepare
    * @throws [[IModelError]] if there is a problem preparing the statement.
    */
-  public prepareStatement(sql: string): ECSqlStatement {
+  public prepareStatement(sql: string, logErrors = true): ECSqlStatement {
     const stmt = new ECSqlStatement();
-    stmt.prepare(this.nativeDb, sql);
+    stmt.prepare(this.nativeDb, sql, logErrors);
     return stmt;
   }
 
@@ -1428,9 +1422,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T {
       const modeledElementProps = this._iModel.elements.getElementProps<ElementProps>(modeledElementId);
-      if (modeledElementProps.id === IModel.rootSubjectId) {
+      if (modeledElementProps.id === IModel.rootSubjectId)
         throw new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model");
-      }
       return this.getModel<T>(modeledElementProps.id!, modelClass);
     }
 
@@ -1443,9 +1436,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public tryGetSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T | undefined {
       const modeledElementProps = this._iModel.elements.tryGetElementProps(modeledElementId);
-      if ((undefined === modeledElementProps) || (IModel.rootSubjectId === modeledElementProps.id)) {
+      if ((undefined === modeledElementProps) || (IModel.rootSubjectId === modeledElementProps.id))
         return undefined;
-      }
+
       return this.tryGetModel<T>(modeledElementProps.id!, modelClass);
     }
 
@@ -2146,7 +2139,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
  */
 export class BriefcaseDb extends IModelDb {
   /** Manages local changes to this briefcase. */
-  public readonly txns = new TxnManager(this);
+  public readonly txns: TxnManager = new TxnManager(this);
 
   /** override superclass method */
   public override get isBriefcase(): boolean { return true; }
@@ -2164,7 +2157,7 @@ export class BriefcaseDb extends IModelDb {
    * [[include:BriefcaseDb.onOpen]]
    * ```
    */
-  public static readonly onOpen = new BeEvent<(_requestContext: ClientRequestContext, _props: IModelRpcProps) => void>();
+  public static readonly onOpen = new BeEvent<(_requestContext: ClientRequestContext, _args: OpenBriefcaseProps) => void>();
 
   /** Event raised just after a BriefcaseDb is opened.
    * **Example:**
@@ -2201,7 +2194,8 @@ export class BriefcaseDb extends IModelDb {
   public readonly concurrencyControl: ConcurrencyControl;
 
   private constructor(nativeDb: IModelJsNative.DgnDb, token: IModelRpcProps, openMode: OpenMode) {
-    super(nativeDb, token, openMode);
+    super(nativeDb, token);
+    this._openMode = openMode;
     this.concurrencyControl = new ConcurrencyControl(this);
     this.concurrencyControl.setPolicy(new ConcurrencyControl.PessimisticPolicy());
     this.briefcaseId = this.nativeDb.getBriefcaseId();
@@ -2221,7 +2215,12 @@ export class BriefcaseDb extends IModelDb {
 
   /** Upgrades the profile or domain schemas */
   private static async upgradeProfileOrDomainSchemas(arg: { requestContext: AuthorizedClientRequestContext, briefcase: LocalBriefcaseProps & OpenBriefcaseProps, upgradeOptions: UpgradeOptions, description: string }): Promise<void> {
-    const lockArg = { ...arg, ...arg.briefcase, csIndex: 0 };
+    const lockArg = {
+      briefcase: {
+        briefcaseId: arg.briefcase.briefcaseId, changeset: arg.briefcase.changeset, iModelId: arg.briefcase.iModelId,
+      },
+      requestContext: arg.requestContext,
+    };
     const requestContext = arg.requestContext;
     // Lock schemas
     await IModelHost.hubAccess.acquireSchemaLock(lockArg);
@@ -2250,7 +2249,7 @@ export class BriefcaseDb extends IModelDb {
       // Sync the concurrencyControl cache so that it includes the schema lock we requested before the open
       await briefcaseDb.concurrencyControl.syncCache(requestContext);
       await briefcaseDb.pushChanges(requestContext, arg.description, ChangesType.Schema);
-      arg.briefcase.changeSetId = briefcaseDb.changeset.id;
+      arg.briefcase.changeset = briefcaseDb.changeset;
     } finally {
       briefcaseDb.close();
       requestContext.enter();
@@ -2284,6 +2283,7 @@ export class BriefcaseDb extends IModelDb {
    */
   public static async open(requestContext: ClientRequestContext, args: OpenBriefcaseProps): Promise<BriefcaseDb> {
     requestContext.enter();
+    this.onOpen.raiseEvent(requestContext, args);
 
     const file = { path: args.fileName, key: args.key };
     const openMode = args.readonly ? OpenMode.Readonly : OpenMode.ReadWrite;
@@ -2293,12 +2293,9 @@ export class BriefcaseDb extends IModelDb {
       key: file.key ?? Guid.createValue(),
       iModelId: nativeDb.getDbGuid(),
       contextId: nativeDb.queryProjectGuid(),
-      changeSetId: changeset.id,
-      changesetIndex: changeset.index,
-      openMode,
+      changeset,
     };
 
-    this.onOpen.raiseEvent(requestContext, token);
     const briefcaseDb = new BriefcaseDb(nativeDb, token, openMode);
 
     if (briefcaseDb.allowLocalChanges) {
@@ -2416,19 +2413,15 @@ export class BriefcaseDb extends IModelDb {
  * @public
  */
 export class SnapshotDb extends IModelDb {
-  public override get isSnapshot(): boolean { return true; }
+  public override get isSnapshot() { return true; }
   private _reattachDueTimestamp: number | undefined;
   private _createClassViewsOnClose?: boolean;
-  /** The full path to the snapshot iModel file.
-   * @deprecated use pathName
-  */
-  public get filePath(): string { return this.pathName; }
 
   private constructor(nativeDb: IModelJsNative.DgnDb, key: string) {
-    const openMode = nativeDb.isReadonly() ? OpenMode.Readonly : OpenMode.ReadWrite;
     const changeset = nativeDb.getParentChangeset();
-    const iModelRpcProps: IModelRpcProps = { key, iModelId: nativeDb.getDbGuid(), changeSetId: changeset.id, changesetIndex: changeset.index, openMode };
-    super(nativeDb, iModelRpcProps, openMode);
+    const iModelRpcProps: IModelRpcProps = { key, iModelId: nativeDb.getDbGuid(), changeset };
+    super(nativeDb, iModelRpcProps);
+    this._openMode = nativeDb.isReadonly() ? OpenMode.Readonly : OpenMode.ReadWrite;
   }
 
   public static override findByKey(key: string): SnapshotDb {
@@ -2541,7 +2534,10 @@ export class SnapshotDb extends IModelDb {
    */
   public static async openCheckpointV2(checkpoint: CheckpointProps): Promise<SnapshotDb> {
     const { filePath, expiryTimestamp } = await V2CheckpointManager.attach(checkpoint);
-    const snapshot = SnapshotDb.openFile(filePath, { lazyBlockCache: true, key: CheckpointManager.getKey(checkpoint) });
+    const key = CheckpointManager.getKey(checkpoint);
+    // NOTE: Currently the key contains a ':' which can not be part of a filename on windows, so it can not be used as the tempFileBase.
+    const tempFileBase = join(IModelHost.cacheDir, `${checkpoint.iModelId}\$${checkpoint.changeset.id}`); // temp files for this checkpoint should go in the cacheDir.
+    const snapshot = SnapshotDb.openFile(filePath, { lazyBlockCache: true, key, tempFileBase });
     snapshot._contextId = checkpoint.contextId;
     try {
       CheckpointManager.validateCheckpointGuids(checkpoint, snapshot.nativeDb);
@@ -2561,7 +2557,7 @@ export class SnapshotDb extends IModelDb {
    */
   public override async reattachDaemon(requestContext: AuthorizedClientRequestContext): Promise<void> {
     if (undefined !== this._reattachDueTimestamp && this._reattachDueTimestamp <= Date.now()) {
-      const { expiryTimestamp } = await V2CheckpointManager.attach({ requestContext, contextId: this.contextId!, iModelId: this.iModelId, changeSetId: this.changeset.id });
+      const { expiryTimestamp } = await V2CheckpointManager.attach({ requestContext, contextId: this.contextId!, iModelId: this.iModelId, changeset: this.changeset });
       this.setReattachDueTimestamp(expiryTimestamp);
     }
   }
@@ -2607,10 +2603,6 @@ export class StandaloneDb extends IModelDb {
   public override get isStandalone(): boolean { return true; }
   /** Manages local changes to this briefcase. */
   public readonly txns: TxnManager;
-  /** The full path to the standalone iModel file.
-   * @deprecated use pathName
-   */
-  public get filePath(): string { return this.pathName; }
 
   public static override findByKey(key: string): StandaloneDb {
     return super.findByKey(key) as StandaloneDb;
@@ -2622,9 +2614,9 @@ export class StandaloneDb extends IModelDb {
   }
 
   private constructor(nativeDb: IModelJsNative.DgnDb, key: string) {
-    const openMode = nativeDb.isReadonly() ? OpenMode.Readonly : OpenMode.ReadWrite;
-    const iModelRpcProps: IModelRpcProps = { key, iModelId: nativeDb.getDbGuid(), openMode, contextId: Guid.empty };
-    super(nativeDb, iModelRpcProps, openMode);
+    const iModelRpcProps: IModelRpcProps = { key, iModelId: nativeDb.getDbGuid(), contextId: Guid.empty };
+    super(nativeDb, iModelRpcProps);
+    this._openMode = nativeDb.isReadonly() ? OpenMode.Readonly : OpenMode.ReadWrite;
     this.txns = new TxnManager(this);
   }
 

@@ -31,7 +31,7 @@ export class LineStringOffsetClipperContext {
    * @param index0
    * @param closed indicates that first and last points are identical and need wrap logic.
    */
-  public static createUnit(points: IndexedXYZCollection, index0: number, closed: boolean): Vector3d | undefined {
+  public static createUnit(points: IndexedXYZCollection, index0: number, closed: boolean, xyOnly: boolean = true): Vector3d | undefined {
     // pick two indices of active points, allowing for wrap if needed:
     // normally use index0 and index0 + 1
     // but apply wrap if appropriate, and shift ahead of needed.
@@ -53,14 +53,17 @@ export class LineStringOffsetClipperContext {
       }
     }
     const result = points.vectorIndexIndex(k0, k1);
-    if (result)
+    if (result) {
+      if (xyOnly)
+        result.z = 0.0;
       return result.normalize(result);
+    }
     return undefined;
   }
-  private static createDirectedPlane(basePoint: Point3d, vector: Vector3d, shift: number, normalScale: number) {
+private static createDirectedPlane(basePoint: Point3d, vector: Vector3d, shift: number, normalScale: number, interior: boolean = false) {
     return ClipPlane.createNormalAndPointXYZXYZ(
       vector.x * normalScale, vector.y * normalScale, vector.z * normalScale,
-      basePoint.x + shift * vector.x, basePoint.y + shift * vector.y, basePoint.z + shift * vector.z);
+      basePoint.x + shift * vector.x, basePoint.y + shift * vector.y, basePoint.z + shift * vector.z, interior, interior);
   }
   /**
    * Create (if needed) the chamfer cutback plane for a turn.
@@ -76,9 +79,9 @@ export class LineStringOffsetClipperContext {
       perpAB.rotate90CCWXY(perpAB);
       perpAB.normalizeInPlace();
       if (degreesA > 0)
-        clipSet.addPlaneToConvexSet(LineStringOffsetClipperContext.createDirectedPlane(point, perpAB, -this._positiveOffsetRight, 1.0));
+        clipSet.addPlaneToConvexSet(LineStringOffsetClipperContext.createDirectedPlane(point, perpAB, -this._positiveOffsetRight, 1.0, false));
       else
-        clipSet.addPlaneToConvexSet(LineStringOffsetClipperContext.createDirectedPlane(point, perpAB, this._positiveOffsetLeft, -1.0));
+        clipSet.addPlaneToConvexSet(LineStringOffsetClipperContext.createDirectedPlane(point, perpAB, this._positiveOffsetLeft, -1.0, false));
     }
   }
   private createOffsetFromSegment(pointA: Point3d, pointB: Point3d,
@@ -97,10 +100,10 @@ export class LineStringOffsetClipperContext {
     const unitBC = unitB.interpolate(0.5, unitC);
     unitBC.normalizeInPlace();
     const clipSet = ConvexClipPlaneSet.createEmpty();
-    clipSet.addPlaneToConvexSet(LineStringOffsetClipperContext.createDirectedPlane(pointA, perpB, this._positiveOffsetLeft, -1.0));
-    clipSet.addPlaneToConvexSet(LineStringOffsetClipperContext.createDirectedPlane(pointA, perpB, -this._positiveOffsetRight, 1.0));
-    clipSet.addPlaneToConvexSet(LineStringOffsetClipperContext.createDirectedPlane(pointA, unitAB, 0, 1.0));
-    clipSet.addPlaneToConvexSet(LineStringOffsetClipperContext.createDirectedPlane(pointB, unitBC, 0, -1.0));
+    clipSet.addPlaneToConvexSet(LineStringOffsetClipperContext.createDirectedPlane(pointA, perpB, this._positiveOffsetLeft, -1.0, false));
+    clipSet.addPlaneToConvexSet(LineStringOffsetClipperContext.createDirectedPlane(pointA, perpB, -this._positiveOffsetRight, 1.0, false));
+    clipSet.addPlaneToConvexSet(LineStringOffsetClipperContext.createDirectedPlane(pointA, unitAB, 0, 1.0, true));
+    clipSet.addPlaneToConvexSet(LineStringOffsetClipperContext.createDirectedPlane(pointB, unitBC, 0, -1.0, true));
     this.createChamferCut(clipSet, pointA, unitA, unitB);
     this.createChamferCut(clipSet, pointB, unitB, unitC);
     /*

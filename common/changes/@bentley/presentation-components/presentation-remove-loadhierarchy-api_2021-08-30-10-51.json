@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-components",
+      "comment": "Remove `IPresentationTreeDataProvider.loadHierarchy`.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components"
+}

@@ -64,7 +64,7 @@
   }
 
   &--horizontal {
-    height: calc(100% + 3px);
+    height: 100%;
     cursor: col-resize;
     background: background-line(to right);
   }

@@ -8,10 +8,9 @@ import * as ReactDOM from "react-dom";
 import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
-import { ClientRequestContext, Config, Id64String, Logger, LogLevel, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Id64String, Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
-import { FrontendApplicationInsightsClient } from "@bentley/frontend-application-insights-client";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
@@ -29,7 +28,6 @@ import { AccessToken, ProgressInfo, UrlDiscoveryClient } from "@bentley/itwin-cl
 // To test map-layer extension comment out the following and ensure ui-test-app\build\imjs_extensions contains map-layers, if not see Readme.md in map-layers package.
 import { MapLayersUI } from "@bentley/map-layers";
 import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
-import { PresentationUnitSystem } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { getClassName } from "@bentley/ui-abstract";
 import { BeDragDropContext } from "@bentley/ui-components";
@@ -250,7 +248,7 @@ export class SampleAppIModelApp {
 
     // default to showing imperial formatted units
     await IModelApp.quantityFormatter.setActiveUnitSystem("imperial");
-    Presentation.presentation.activeUnitSystem = PresentationUnitSystem.BritishImperial;
+    Presentation.presentation.activeUnitSystem = "imperial";
     await IModelApp.quantityFormatter.setUnitFormattingSettingsProvider(new LocalUnitFormatProvider(IModelApp.quantityFormatter, true)); // pass true to save per imodel
 
     await FrontendDevTools.initialize();
@@ -304,7 +302,7 @@ export class SampleAppIModelApp {
       await req.downloadPromise;
       iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
     } else {
-      iModelConnection = await UiFramework.iModelServices.openIModel(projectId, iModelId, this.allowWrite ? OpenMode.ReadWrite : OpenMode.Readonly);
+      iModelConnection = await UiFramework.iModelServices.openIModel(projectId, iModelId);
     }
 
     SampleAppIModelApp.setIsIModelLocal(false, true);
@@ -414,7 +412,7 @@ export class SampleAppIModelApp {
         await req.downloadPromise;
         iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
       } else {
-        iModelConnection = await UiFramework.iModelServices.openIModel(contextId, iModelId, this.allowWrite ? OpenMode.ReadWrite : OpenMode.Readonly);
+        iModelConnection = await UiFramework.iModelServices.openIModel(contextId, iModelId);
       }
 
       SampleAppIModelApp.setIsIModelLocal(false, true);
@@ -438,13 +436,11 @@ export class SampleAppIModelApp {
   public static async showSignedIn() {
     SampleAppIModelApp.iModelParams = SampleAppIModelApp._usingParams();
 
-    if (Config.App.has("imjs_uitestapp_imodel_name") && Config.App.has("imjs_uitestapp_imodel_project_name")) {
-      let viewId: string | undefined;
-      if (Config.App.has("imjs_uitestapp_imodel_viewId"))
-        viewId = Config.App.get("imjs_uitestapp_imodel_viewId");
+    if (process.env.IMJS_UITESTAPP_IMODEL_NAME && process.env.IMJS_UITESTAPP_IMODEL_PROJECT_NAME) {
+      const viewId: string | undefined = process.env.IMJS_UITESTAPP_IMODEL_VIEWID;
 
-      const projectName = Config.App.getString("imjs_uitestapp_imodel_project_name");
-      const iModelName = Config.App.getString("imjs_uitestapp_imodel_name");
+      const projectName = process.env.IMJS_UITESTAPP_IMODEL_PROJECT_NAME ?? "";
+      const iModelName = process.env.IMJS_UITESTAPP_IMODEL_NAME ?? "";
 
       const requestContext = await AuthorizedFrontendRequestContext.create();
       const project = await (new ContextRegistryClient()).getProject(requestContext, {
@@ -494,11 +490,11 @@ export class SampleAppIModelApp {
   }
 
   public static isEnvVarOn(envVar: string): boolean {
-    return Config.App.has(envVar) && (Config.App.get(envVar) === "1" || Config.App.get(envVar) === "true");
+    return process.env[envVar] === "1" || process.env[envVar] === "true";
   }
 
   public static get allowWrite() {
-    return SampleAppIModelApp.isEnvVarOn("imjs_TESTAPP_ALLOW_WRITE");
+    return SampleAppIModelApp.isEnvVarOn("IMJS_TESTAPP_ALLOW_WRITE");
   }
 
   public static setTestProperty(value: string, immediateSync = false) {
@@ -678,15 +674,15 @@ async function main() {
 
   // retrieve, set, and output the global configuration variable
   SampleAppIModelApp.testAppConfiguration = {};
-  const envVar = "imjs_TESTAPP_SNAPSHOT_FILEPATH";
-  SampleAppIModelApp.testAppConfiguration.snapshotPath = Config.App.has(envVar) && Config.App.get(envVar);
-  SampleAppIModelApp.testAppConfiguration.startWithSnapshots = SampleAppIModelApp.isEnvVarOn("imjs_TESTAPP_START_WITH_SNAPSHOTS");
-  SampleAppIModelApp.testAppConfiguration.reactAxeConsole = SampleAppIModelApp.isEnvVarOn("imjs_TESTAPP_REACT_AXE_CONSOLE");
-  SampleAppIModelApp.testAppConfiguration.useLocalSettings = SampleAppIModelApp.isEnvVarOn("imjs_TESTAPP_USE_LOCAL_SETTINGS");
+  const envVar = "IMJS_TESTAPP_SNAPSHOT_FILEPATH";
+  SampleAppIModelApp.testAppConfiguration.snapshotPath = process.env[envVar];
+  SampleAppIModelApp.testAppConfiguration.startWithSnapshots = SampleAppIModelApp.isEnvVarOn("IMJS_TESTAPP_START_WITH_SNAPSHOTS");
+  SampleAppIModelApp.testAppConfiguration.reactAxeConsole = SampleAppIModelApp.isEnvVarOn("IMJS_TESTAPP_REACT_AXE_CONSOLE");
+  SampleAppIModelApp.testAppConfiguration.useLocalSettings = SampleAppIModelApp.isEnvVarOn("IMJS_TESTAPP_USE_LOCAL_SETTINGS");
   Logger.logInfo("Configuration", JSON.stringify(SampleAppIModelApp.testAppConfiguration)); // eslint-disable-line no-console
 
   let rpcParams: BentleyCloudRpcParams;
-  if (process.env.imjs_gp_backend) {
+  if (process.env.IMJS_GP_BACKEND) {
     const urlClient = new UrlDiscoveryClient();
     const requestContext = new ClientRequestContext();
     const orchestratorUrl = await urlClient.discoverUrl(requestContext, "iModelJsOrchestrator.K8S", undefined);
@@ -726,13 +722,6 @@ async function main() {
 
   // Start the app.
   await SampleAppIModelApp.startup(opts);
-
-  // Add ApplicationInsights telemetry client
-  const iModelJsApplicationInsightsKey = Config.App.getString("imjs_telemetry_application_insights_instrumentation_key", "");
-  if (iModelJsApplicationInsightsKey) {
-    const applicationInsightsClient = new FrontendApplicationInsightsClient(iModelJsApplicationInsightsKey);
-    IModelApp.telemetry.addClient(applicationInsightsClient);
-  }
 
   await SampleAppIModelApp.initialize();
 

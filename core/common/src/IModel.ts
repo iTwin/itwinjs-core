@@ -12,7 +12,7 @@ import {
 import {
   Angle, AxisIndex, AxisOrder, Constant, Geometry, Matrix3d, Point3d, Range3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps, YawPitchRollAngles, YawPitchRollProps,
 } from "@bentley/geometry-core";
-import { ChangesetId, ChangesetIdWithIndex, ChangesetIndex } from "./ChangesetProps";
+import { ChangesetIdWithIndex } from "./ChangesetProps";
 import { Cartographic, LatLongAndHeight } from "./geometry/Cartographic";
 import { GeographicCRS, GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
 import { AxisAlignedBox3d } from "./geometry/Placement";
@@ -28,16 +28,10 @@ export interface IModelRpcOpenProps {
   /** Guid of the iModel. */
   readonly iModelId?: GuidString;
 
-  /** Id of the last ChangeSet that was applied to the iModel - must be defined for briefcases that are synchronized with iModelHub. An empty string indicates the first version.
-   * @note ChangeSet Ids are string hash values based on the ChangeSet's content and parent.
+  /** Id of the last Changeset that was applied to the iModel - must be defined for briefcases that are synchronized with iModelHub.
+   * @note Changeset Ids are string hash values based on the content and parent.
    */
-  changeSetId?: ChangesetId;
-
-  /** The index of the last changeset. If <= 0, must be determined by changeSetId */
-  changesetIndex?: ChangesetIndex;
-
-  /** Mode used to open the iModel */
-  openMode?: OpenMode;
+  readonly changeset?: ChangesetIdWithIndex;
 }
 
 /** The properties that identify an opened iModel for RPC operations.
@@ -141,6 +135,14 @@ export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
   lazyBlockCache?: boolean;
   /** @internal */
   autoUploadBlocks?: boolean;
+  /**
+   * The "base" name that can be used for creating temporary files related to this Db.
+   * The string should be a name related to the current Db filename using some known pattern so that all files named "baseName*" can be deleted externally during cleanup.
+   * It must be the name of a file (that may or may not exist) in a writable directory.
+   * If not present, the baseName will default to the database's file name (including the path).
+   * @internal
+   */
+  tempFileBase?: string;
 }
 
 /** Options to open a [StandaloneDb]($backend) via [StandaloneDb.openFile]($backend) from the backend,
@@ -206,7 +208,7 @@ export class EcefLocation implements EcefLocationProps {
   private _transform: Transform;
 
   /** Get the transform from iModel Spatial coordinates to ECEF from this EcefLocation */
-  public getTransform(): Transform { return this._transform;  }
+  public getTransform(): Transform { return this._transform; }
 
   /** Construct a new EcefLocation. Once constructed, it is frozen and cannot be modified. */
   constructor(props: EcefLocationProps) {
@@ -481,14 +483,9 @@ export abstract class IModel implements IModelProps {
   /** @public */
   public changeset: ChangesetIdWithIndex;
 
-  /** The Id of the last changeset that was applied to this iModel.
-   * @note An empty string indicates the first version
-   * @deprecated use changeset.id
-   */
-  public get changeSetId() { return this.changeset.id; }
-
+  protected _openMode = OpenMode.Readonly;
   /** The [[OpenMode]] used for this IModel. */
-  public readonly openMode: OpenMode;
+  public get openMode(): OpenMode { return this._openMode; }
 
   /** Return a token for RPC operations. */
   public getRpcProps(): IModelRpcProps {
@@ -499,24 +496,21 @@ export abstract class IModel implements IModelProps {
       key: this._fileKey,
       contextId: this.contextId,
       iModelId: this.iModelId,
-      changeSetId: this.changeset.id,
-      changesetIndex: this.changeset.index,
-      openMode: this.openMode,
+      changeset: this.changeset,
     };
   }
 
   /** @internal */
-  protected constructor(tokenProps: IModelRpcProps | undefined, openMode: OpenMode) {
+  protected constructor(tokenProps?: IModelRpcProps) {
     this.changeset = { id: "", index: 0 };
     this._fileKey = "";
     if (tokenProps) {
       this._fileKey = tokenProps.key;
       this._contextId = tokenProps.contextId;
       this._iModelId = tokenProps.iModelId;
-      if (tokenProps.changeSetId)
-        this.changeset = { id: tokenProps.changeSetId, index: tokenProps.changesetIndex };
+      if (tokenProps.changeset)
+        this.changeset = tokenProps.changeset;
     }
-    this.openMode = openMode;
   }
 
   /** @internal */

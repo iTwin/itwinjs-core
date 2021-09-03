@@ -32,6 +32,7 @@ export * from "./ui-framework/backstage/Separator";
 export * from "./ui-framework/backstage/useDefaultBackstageItems";
 export * from "./ui-framework/backstage/TaskLaunch";
 export * from "./ui-framework/backstage/UserProfile";
+export * from "./ui-framework/backstage/useUiItemsProviderBackstageItems";
 
 export * from "./ui-framework/clientservices/IModelServices";
 export * from "./ui-framework/clientservices/ProjectServices";
@@ -152,9 +153,11 @@ export * from "./ui-framework/selection/ClearEmphasisStatusField";
 
 export * from "./ui-framework/settings/ui/UiSettingsPage";
 export * from "./ui-framework/settings/quantityformatting/QuantityFormat";
+export * from "./ui-framework/settings/quantityformatting/UnitSystemSelector";
 
 export * from "./ui-framework/shared/ActionButtonItemDef";
 export * from "./ui-framework/shared/AnyItemDef";
+export * from "./ui-framework/shared/AnyToolbarItemDef";
 export * from "./ui-framework/shared/CommandItemDef";
 export * from "./ui-framework/shared/CustomItemDef";
 export * from "./ui-framework/shared/CustomItemProps";
@@ -163,6 +166,7 @@ export * from "./ui-framework/shared/ItemDefBase";
 export * from "./ui-framework/shared/ItemMap";
 export * from "./ui-framework/shared/ItemProps";
 export * from "./ui-framework/shared/MenuItem";
+export * from "./ui-framework/shared/SelectionScope";
 export * from "./ui-framework/shared/ToolItemDef";
 
 export * from "./ui-framework/stagepanels/FrameworkStagePanel";

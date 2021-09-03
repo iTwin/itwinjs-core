@@ -56,11 +56,6 @@ export interface CategoryTreeProps {
    */
   onFilterApplied?: (filteredDataProvider: IPresentationTreeDataProvider, matchesCount: number) => void;
   /**
-   * Custom data provider to use for testing
-   * @internal
-   */
-  dataProvider?: IPresentationTreeDataProvider;
-  /**
    * Custom category visibility handler to use for testing
    * @internal
    */
@@ -79,7 +74,6 @@ export interface CategoryTreeProps {
 export function CategoryTree(props: CategoryTreeProps) {
   const { nodeLoader } = usePresentationTreeNodeLoader({
     imodel: props.iModel,
-    dataProvider: props.dataProvider,
     ruleset: RULESET_CATEGORIES,
     pagingSize: PAGING_SIZE,
     preloadingEnabled: props.enablePreloading,

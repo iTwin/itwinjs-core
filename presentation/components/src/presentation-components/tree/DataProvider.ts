@@ -182,16 +182,9 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
    * Returns filtered node paths.
    * @param filter Filter.
    */
-  public getFilteredNodePaths = async (filter: string): Promise<NodePathElement[]> => {
+  public async getFilteredNodePaths(filter: string): Promise<NodePathElement[]> {
     return this._dataSource.getFilteredNodePaths(this.createRequestOptions<never>(undefined), filter);
-  };
-
-  /**
-   * A no-op that used to request the whole hierarchy to be loaded on the backend.
-   * @alpha @deprecated Will be removed on 3.0
-   */
-  // istanbul ignore next
-  public async loadHierarchy() { }
+  }
 }
 
 class MemoizationHelpers {

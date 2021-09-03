@@ -8,10 +8,10 @@
 // Run selected backend mocha tests programmatically. We do this in the mobile platform.
 require("mocha"); // puts the symbol "mocha" in global.
 require("chai"); // puts 'assert', etc. into global
-const config = require("@bentley/bentleyjs-core").Config;
-config.App.merge(
-  eval('require("./config.json");')
-);
+
+const configs = eval('require("./config.json");');
+process.env = {...process.env, ...configs};
+
 const xunit = require("mocha/lib/reporters/xunit");
 function MobileReporter(runner) {
   Mocha.reporters.Base.call(this, runner);
