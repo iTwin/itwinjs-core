@@ -15,9 +15,7 @@ Also removed legacy `.eslintrc.js` file from the same package. Instead, use `@be
 * Previously, the element Ids were passed to [IModelConnection.Elements.getProps]($frontend), which returned **all** of the element's properties (potentially many megabytes of data), only to extract the [PlacementProps]($common) for each element and discard the rest. Now, it uses the new [IModelConnection.Elements.getPlacements]($frontend) function to query only the placements.
 * Previously, if a mix of 2d and 3d elements were specified, the viewport would attempt to union their 2d and 3d placements, typically causing it to fit incorrectly because 2d elements reside in a different coordinate space than 3d elements. Now, the viewport ignores 2d elements if it is viewing a 3d view, and vice-versa.
 
-## Breaking changes
-
-### Continued transition to `ChangesetIndex`
+## Continued transition to `ChangesetIndex`
 
 Every Changeset has both an Id (a string hash of its content and parent changeset) and an Index (a small integer representing its relative position on the iModel's timeline.) Either value can be used to uniquely identify a changeset. However, it is often necessary to compare two changeset identifiers to determine relative order, or to supply a range of changesets of interest. In this case, Id is not useful and must be converted to an index via a round-trip to an iModelHub server. Unfortunately, much of the iModel.js api uses only [ChangesetId]($common) to identify a changeset. That was unfortunate, since [ChangesetIndex]($common) is frequently needed and `ChangesetId` is rarely useful. For this reason we are migrating the api to prefer `ChangesetIndex` over several releases.
 
@@ -31,11 +29,16 @@ Each of these interfaces originally had only a member `changeSetId: string`, In 
 
 > Note: "Changeset" is one word. Apis should not use a capital "S" when referring to them.
 
+## Concurrency Control
+
+
+
 ## ViewFlags
 
 ### Immutability
 
 [ViewFlags]($common) has long been a common source of surprising behavior. Consider the following code:
+
 ```ts
   function turnOnShadows(vp: Viewport) {
     vp.viewFlags.shadows = true;
@@ -43,6 +46,7 @@ Each of these interfaces originally had only a member `changeSetId: string`, In 
 ```
 
 You could be forgiven for expecting the image displayed in the Viewport to include shadows after calling this function, but that will not be the case. Instead, you must write the function as follows:
+
 ```ts
   function turnOnShadows(vp: Viewport) {
     const vf = vp.viewFlags.clone();
@@ -52,6 +56,7 @@ You could be forgiven for expecting the image displayed in the Viewport to inclu
 ```
 
 To rectify this, and to eliminate various other pitfalls associated with mutable state, ViewFlags has been converted to an immutable type - all of its properties are read-only and the only way to change a property is to create a copy. The function above can now be written as:
+
 ```ts
   function turnOnShadows(vp: Viewport) {
     vp.viewFlags = vp.viewFlags.with("shadows", true);
@@ -61,10 +66,12 @@ To rectify this, and to eliminate various other pitfalls associated with mutable
 ```
 
 Methods that mutate a ViewFlags object have been removed.
-- `clone` has been replaced with [ViewFlags.copy]($common), which returns a new object instead of modifying `this`.
-- `createFrom` has been removed. Because ViewFlags is immutable, it is never necessary to create an identical copy of one - just use the same object. Or, if for some reason you really want an identical copy, use the object spread operator.
+
+* `clone` has been replaced with [ViewFlags.copy]($common), which returns a new object instead of modifying `this`.
+* `createFrom` has been removed. Because ViewFlags is immutable, it is never necessary to create an identical copy of one - just use the same object. Or, if for some reason you really want an identical copy, use the object spread operator.
 
 If your code used to modify a single property, change it to use [ViewFlags.with]($common) or [ViewFlags.withRenderMode]($common):
+
 ```ts
   // Replace this...
   viewport.viewFlags.clipVolume = true;
@@ -73,6 +80,7 @@ If your code used to modify a single property, change it to use [ViewFlags.with]
 ```
 
 If your code used to modify multiple properties, change it to use [ViewFlags.copy]($common):
+
 ```ts
   // Replace this...
   viewport.viewFlags.shadows = viewport.viewFlags.lighting = true;
@@ -81,6 +89,7 @@ If your code used to modify multiple properties, change it to use [ViewFlags.cop
 ```
 
 If your code used to create a new ViewFlags and then modify its properties, pass the initial properties to [ViewFlags.create]($common) instead:
+
 ```ts
   // Replace this...
   const vf = new ViewFlags();
@@ -106,7 +115,8 @@ If you were using noCameraLights, noSourceLights, or noSolarLight, use [ViewFlag
 This cumbersome, inefficient class has been replaced with the identically-named [ViewFlagOverrides]($common) type, which is simply an interface that has all the same properties as [ViewFlags]($common), but each is optional. A flag is overridden if its value is not `undefined`.
 
 Upgrade instructions:
-```
+
+```ts
   let ovrs = new ViewFlagOverrides(); // Old code - nothing overridden.
   let ovrs = { }; // New code
 
@@ -187,26 +197,26 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 
 ### @bentley/imodeljs-common
 
-| Removed                                       | Replacement                                                     |
-| --------------------------------------------- | --------------------------------------------------------------- |
-| `Code.getValue`                               | `Code.value`                                                    |
-| `CodeSpec.specScopeType`                      | `CodeSpec.scopeType`                                            |
-| `IModel.changeSetId`                          | `IModel.changeset.id`                                           |
-| `IModelVersion.evaluateChangeSet`             | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion`  |
-| `IModelVersion.fromJson`                      | `IModelVersion.fromJSON`                                        |
-| `IModelVersion.getChangeSetFromNamedVersion`  | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion`  |
-| `IModelVersion.getLatestChangeSetId`          | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion`  |
-| `IModelWriteRpcInterface`                     | Use IPC for writing to iModels                                  |
-| `ViewFlagOverrides` class                     | [ViewFlagOverrides]($common) type                               |
-| `ViewFlagProps.edgeMask`                      | *eliminated*                                                    |
-| `ViewFlagProps.hlMatColors`                   | *eliminated*                                                    |
-| `ViewFlags.clone`                             | [ViewFlags.copy]($common)
-| `ViewFlags.edgeMask`                          | *eliminated*                                                    |
-| `ViewFlags.hLineMaterialColors`               | *eliminated*                                                    |
-| `ViewFlags.noCameraLights`                    | [ViewFlags.lighting]($common)                                   |
-| `ViewFlags.noGeometryMap`                     | *eliminated*                                                    |
-| `ViewFlags.noSolarLight`                      | [ViewFlags.lighting]($common)                                   |
-| `ViewFlags.noSourceLights`                    | [ViewFlags.lighting]($common)                                   |
+| Removed                                      | Replacement                                                    |
+| -------------------------------------------- | -------------------------------------------------------------- |
+| `Code.getValue`                              | `Code.value`                                                   |
+| `CodeSpec.specScopeType`                     | `CodeSpec.scopeType`                                           |
+| `IModel.changeSetId`                         | `IModel.changeset.id`                                          |
+| `IModelVersion.evaluateChangeSet`            | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
+| `IModelVersion.fromJson`                     | `IModelVersion.fromJSON`                                       |
+| `IModelVersion.getChangeSetFromNamedVersion` | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
+| `IModelVersion.getLatestChangeSetId`         | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
+| `IModelWriteRpcInterface`                    | Use IPC for writing to iModels                                 |
+| `ViewFlagOverrides` class                    | [ViewFlagOverrides]($common) type                              |
+| `ViewFlagProps.edgeMask`                     | *eliminated*                                                   |
+| `ViewFlagProps.hlMatColors`                  | *eliminated*                                                   |
+| `ViewFlags.clone`                            | [ViewFlags.copy]($common)                                      |
+| `ViewFlags.edgeMask`                         | *eliminated*                                                   |
+| `ViewFlags.hLineMaterialColors`              | *eliminated*                                                   |
+| `ViewFlags.noCameraLights`                   | [ViewFlags.lighting]($common)                                  |
+| `ViewFlags.noGeometryMap`                    | *eliminated*                                                   |
+| `ViewFlags.noSolarLight`                     | [ViewFlags.lighting]($common)                                  |
+| `ViewFlags.noSourceLights`                   | [ViewFlags.lighting]($common)                                  |
 
 ### @bentley/imodeljs-frontend
 
@@ -275,48 +285,48 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @bentley/bentleyjs-core
 
-| Removed                                | Replacement                                                                            |
-| -------------------------------------- | -------------------------------------------------------------------------------------- |
-| `Config`                               | Use `process.env` to access environment variables directly |
-| `EnvMacroSubst`                        | *eliminated*  |
+| Removed         | Replacement                                                |
+| --------------- | ---------------------------------------------------------- |
+| `Config`        | Use `process.env` to access environment variables directly |
+| `EnvMacroSubst` | *eliminated*                                               |
 
 ### @bentley/presentation-common
 
-| Removed                                  | Replacement                                                                            |
-| ---------------------------------------- | -------------------------------------------------------------------------------------- |
-| `PresentationRpcInterface.loadHierarchy` | *eliminated*                                                                           |
-| `PresentationUnitSystem`                 | Removed in favor of `UnitSystemKey` from `@bentley/imodeljs-quantity`                  |
+| Removed                                  | Replacement                                                           |
+| ---------------------------------------- | --------------------------------------------------------------------- |
+| `PresentationRpcInterface.loadHierarchy` | *eliminated*                                                          |
+| `PresentationUnitSystem`                 | Removed in favor of `UnitSystemKey` from `@bentley/imodeljs-quantity` |
 
 ### @bentley/presentation-backend
 
-| Removed                                     | Replacement                                                                            |
-| ------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `PresentationManager.loadHierarchy`         | *eliminated*                                                                           |
-| `UnitSystemFormat.unitSystems`              | Changed type from `PresentationUnitSystem[]` to `UnitSystemKey[]`                      |
-| `PresentationManagerProps.activeUnitSystem` | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
-| `PresentationManager.activeUnitSystem`      | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
+| Removed                                     | Replacement                                                       |
+| ------------------------------------------- | ----------------------------------------------------------------- |
+| `PresentationManager.loadHierarchy`         | *eliminated*                                                      |
+| `UnitSystemFormat.unitSystems`              | Changed type from `PresentationUnitSystem[]` to `UnitSystemKey[]` |
+| `PresentationManagerProps.activeUnitSystem` | Changed type from `PresentationUnitSystem` to `UnitSystemKey`     |
+| `PresentationManager.activeUnitSystem`      | Changed type from `PresentationUnitSystem` to `UnitSystemKey`     |
 
 ### @bentley/presentation-frontend
 
-| Removed                                     | Replacement                                                                            |
-| ------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `PresentationManager.loadHierarchy`         | *eliminated*                                                                           |
-| `PresentationManagerProps.activeUnitSystem` | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
-| `PresentationManager.activeUnitSystem`      | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
+| Removed                                     | Replacement                                                   |
+| ------------------------------------------- | ------------------------------------------------------------- |
+| `PresentationManager.loadHierarchy`         | *eliminated*                                                  |
+| `PresentationManagerProps.activeUnitSystem` | Changed type from `PresentationUnitSystem` to `UnitSystemKey` |
+| `PresentationManager.activeUnitSystem`      | Changed type from `PresentationUnitSystem` to `UnitSystemKey` |
 
 ### @bentley/presentation-components
 
-| Removed                                               | Replacement                                                                            |
-| ----------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `IPresentationTreeDataProvider.loadHierarchy`         | *eliminated*                                                                           |
-| `PresentationTreeDataProvider.loadHierarchy`          | *eliminated*                                                                           |
-| `FilteredPresentationTreeDataProvider.loadHierarchy`  | *eliminated*                                                                           |
+| Removed                                              | Replacement  |
+| ---------------------------------------------------- | ------------ |
+| `IPresentationTreeDataProvider.loadHierarchy`        | *eliminated* |
+| `PresentationTreeDataProvider.loadHierarchy`         | *eliminated* |
+| `FilteredPresentationTreeDataProvider.loadHierarchy` | *eliminated* |
 
 <!---
 User Interface Changes - section to comment below
 -->
 
-### User Interface Changes
+## User Interface Changes
 
 Several changes were made in the @bentley/ui-* packages.
 Some components in @bentley/ui-core were deprecated in favor of components in @itwinui-react.
@@ -327,7 +337,7 @@ The @bentley/ui-* and @bentley/presentation-components packages are now dependen
 
 For migration purposes, React 16 is included in the peerDependencies for the packages. React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
 
-#### New Floating Widget Capabilities
+### New Floating Widget Capabilities
 
 Widgets provided via UiItemsProviders may now set `defaultState: WidgetState.Floating` and `isFloatingStateSupported: true` to open
 the widget in a floating container. The property `defaultFloatingPosition` may also be specified to define the position of the floating container. If a position is not defined the container will be centered in the `AppUi` area.
@@ -372,7 +382,7 @@ Developers should use equivalent components in @itwin/itwinui-react instead.
 | Tooltip                        | Tooltip                                        |
 | TooltipPlacement               | Placement                                      |
 
-#### Slider
+### Slider
 
 The deprecated [Slider]($ui-core) was a wrapper around the react-compound-slider that does not work properly in popout windows. To eliminate this issue, the deprecated `Slider`will now wrap the  `Slider` component from @itwin/itwinui-react. This result is a couple prop changes. The `onSlideStart` or `onSlideEnd` props are ignored, use `onUpdate` and `onChange` props if needed. The only two `modes` that remain supported are 1 and 2.
 

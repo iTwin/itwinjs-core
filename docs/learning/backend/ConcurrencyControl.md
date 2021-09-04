@@ -54,7 +54,7 @@ The pessimistic concurrency policy requires that Elements must be locked before 
 
 #### Lock Types
 
-Locks apply (only) to Elements and are acquired on behalf of a briefcase by specfiying a Lock type and an ElementId.
+Locks apply (only) to Elements and are acquired on behalf of a briefcase by specifying a Lock type and an ElementId.
 
 There are two types of locks:
 
@@ -70,7 +70,7 @@ Rules for acquiring locks:
 - Ony one briefcase at a time may hold the Exclusive lock on an Element.
 - You may only obtain the Exclusive lock on an Element if your [BriefcaseDb.changeset.index]($backend) is equal or greater than the ChangesetIndex specified the last time the lock was released. That is, you may only acquire the Exclusive lock on an Element if your briefcase holds its most recent state.
 - You cannot obtain a Shared lock on an Element while the Exclusive lock is held by another briefcase.
-- An attempt to obtain a lock on an Element (either Exclusive or Shared) requires also obtaining the Shared lock on its Model and its Parent if it has one. This is both automatic and recursive. That is, a request to obtain a single lock may, in fact, require many locks all the way to the top of the hierarchy if they are not already held. If any required lock is unavailable, not locks are obtained.
+- An attempt to obtain a lock on an Element (either Exclusive or Shared) requires also obtaining the Shared lock on its Model and its Parent if it has one. This is both automatic and recursive. That is, a request to obtain a single lock may, in fact, require many locks all the way to the top of the hierarchy if they are not already held. If any required lock is unavailable, no locks are obtained.
 
 The "root" ElementId is the [IModel.repositoryModelId]($common). For convenience, the Exclusive lock on the root Element is called the **Schema Lock**. From the rules above you can tell that to obtain the Schema Lock of an iModel no other briefcase can hold *any* locks. Further, while the Schema Lock is held, no other briefcases may obtain *any* locks.
 
@@ -120,7 +120,7 @@ Property-level change-merging is very fine-grained, and so it allows many kinds 
 
 ## Changesets and Schema Changes
 
-The Shema Lock must be acquired before importing a schema into a briefcase. Also, schema changes must be isolated in a dedicated Changeset, separate from other kinds of changes. This is true for either  concurrency control policiy. To import a schema, an app must:
+The Schema Lock must be acquired before importing a schema into a briefcase. Also, schema changes must be isolated in a dedicated Changeset, separate from other kinds of changes. This is true for either concurrency control policy. To import a schema, an app must:
 
 1. Pull and merge to synchronize with the tip.
 1. Push any local changes to iModelHub.
