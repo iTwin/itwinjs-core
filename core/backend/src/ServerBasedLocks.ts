@@ -25,6 +25,13 @@ export interface ElementOwners {
   readonly parentId: Id64String | undefined;
 }
 
+// eslint-disable-next-line no-restricted-syntax
+const enum LockOrigin {
+  Acquired = 0,
+  NewElement = 1,
+  Discovered = 2,
+}
+
 /** @internal */
 export class ServerBasedLocks implements LockControl {
   public get isServerBased() { return true; }
@@ -38,7 +45,7 @@ export class ServerBasedLocks implements LockControl {
       this.lockDb.openDb(dbName, OpenMode.ReadWrite);
     } catch (_e) {
       this.lockDb.createDb(dbName);
-      this.lockDb.executeSQL("CREATE TABLE locks(id INTEGER PRIMARY KEY NOT NULL,state INTEGER NOT NULL,acquired INTEGER)");
+      this.lockDb.executeSQL("CREATE TABLE locks(id INTEGER PRIMARY KEY NOT NULL,state INTEGER NOT NULL,origin INTEGER)");
       this.lockDb.saveChanges();
     }
   }
@@ -88,44 +95,44 @@ export class ServerBasedLocks implements LockControl {
     this.clearAllLocks();
   }
 
-  private insertLock(id: Id64String, state: LockState, acquired: boolean) {
-    this.lockDb.withPreparedSqliteStatement("INSERT INTO locks(id,state,acquired) VALUES (?,?,?) ON CONFLICT(id) DO UPDATE SET state=excluded.state,acquired=excluded.acquired", (stmt) => {
+  private insertLock(id: Id64String, state: LockState, origin: LockOrigin): true {
+    this.lockDb.withPreparedSqliteStatement("INSERT INTO locks(id,state,origin) VALUES (?,?,?) ON CONFLICT(id) DO UPDATE SET state=excluded.state,origin=excluded.origin", (stmt) => {
       stmt.bindId(1, id);
       stmt.bindInteger(2, state);
-      stmt.bindInteger(3, acquired ? 1 : 0);
+      stmt.bindInteger(3, origin);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_DONE !== rc)
         throw new IModelError(rc, "can't insert lock into database");
     });
+    return true;
+  }
+
+  private ownerHoldsExclusiveLock(id: Id64String | undefined): boolean {
+    if (id === undefined || id === IModel.rootSubjectId)
+      return false; // has no owners
+
+    const { modelId, parentId } = this.getOwners(id);
+    if (this.getLockState(modelId) === LockState.Exclusive || this.getLockState(parentId) === LockState.Exclusive)
+      return true;
+
+    // see if this model is exclusively locked by one of its owners. If so, save that fact on modelId so future tests won't have to descend.
+    if (this.ownerHoldsExclusiveLock(modelId))
+      return this.insertLock(modelId, LockState.Exclusive, LockOrigin.Discovered);
+
+    // see if the parent is exclusively locked by one of its owners. If so, save that fact on parentId so future tests won't have to descend.
+    return this.ownerHoldsExclusiveLock(parentId) ? this.insertLock(parentId!, LockState.Exclusive, LockOrigin.Discovered) : false;
   }
 
   /** Determine whether an the exclusive lock is already held by an element (or one of its owners) */
-  public holdsExclusiveLock(id: Id64String | undefined): boolean {
-    if (id === undefined)
-      return false;
-
-    if (this.getLockState(id) === LockState.Exclusive)
-      return true; // yes, we hold the lock.
-
-    if (id === IModel.rootSubjectId) // the root has no owners
-      return false;
-
-    // an exclusive lock is implied if the element's owner is exclusively locked (recursively)
-    const owners = this.getOwners(id);
-    return this.holdsExclusiveLock(owners.modelId) || this.holdsExclusiveLock(owners.parentId);
+  public holdsExclusiveLock(id: Id64String): boolean {
+    // see if we hold the exclusive lock. or if one of the element's owners is exclusively locked (recursively)
+    return this.getLockState(id) === LockState.Exclusive || this.ownerHoldsExclusiveLock(id);
   }
 
   public holdsSharedLock(id: Id64String): boolean {
     const state = this.getLockState(id);
-    if (state === LockState.Shared || state === LockState.Exclusive)
-      return true; // we already hold either the shared or exclusive lock for this element
-
-    if (id === IModel.rootSubjectId) // the root has no owners
-      return false;
-
-    // see if an owner has exclusive lock. If so we implicitly have shared lock, but owner holding shared lock doesn't help.
-    const owners = this.getOwners(id);
-    return this.holdsExclusiveLock(owners.modelId) || this.holdsExclusiveLock(owners.parentId);
+    // see if we hold shared or exclusive lock, or if an owner has exclusive lock. If so we implicitly have shared lock, but owner holding shared lock doesn't help.
+    return (state === LockState.Shared || state === LockState.Exclusive) || this.ownerHoldsExclusiveLock(id);
   }
 
   /** if the shared lock on the element supplied is not already held, add it to the set of shared locks required. Then, check owners. */
@@ -162,7 +169,7 @@ export class ServerBasedLocks implements LockControl {
 
     await IModelHost.hubAccess.acquireLocks(this.briefcase, locks); // throws if unsuccessful
     for (const lock of locks)
-      this.insertLock(lock[0], lock[1], true);
+      this.insertLock(lock[0], lock[1], LockOrigin.Acquired);
     this.lockDb.saveChanges();
   }
 
@@ -194,7 +201,7 @@ export class ServerBasedLocks implements LockControl {
 
   /** When an element is newly created in a session, we hold the lock on it implicitly. Save that fact. */
   public elementWasCreated(id: Id64String) {
-    this.insertLock(id, LockState.Exclusive, false);
+    this.insertLock(id, LockState.Exclusive, LockOrigin.NewElement);
     this.lockDb.saveChanges();
   }
 

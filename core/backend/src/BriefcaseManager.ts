@@ -48,10 +48,14 @@ export interface PushChangesArgs extends UserArg {
   description: string;
   /** if present, the locks are retained after the operation. Otherwise, *all* locks are released after the changeset is successfully pushed. */
   retainLocks?: true;
+  /** number of times to retry pull/merge if other users are pushing at the same time. Default is 5 */
+  mergeRetryCount?: number;
+  /** delay to wait between pull/merge retry attempts. Default is 3 seconds */
+  mergeRetryDelay?: BeDuration;
   /** the number of time to attempt to retry to push the changeset upon failure. Default is 3 */
-  retryPushCount?: number;
+  pushRetryCount?: number;
   /** The delay to wait between retry attempts on failed pushes. Default is 3 seconds. */
-  retryDelay?: BeDuration;
+  pushRetryDelay?: BeDuration;
 }
 
 /**
@@ -412,19 +416,17 @@ export class BriefcaseManager {
     db.notifyChangesetApplied();
   }
 
-  /** Push local changes. Called by [[BriefcaseDb.pushChanges]]
-   * @internal
-   */
-  public static async pullMergePush(db: BriefcaseDb, arg: PushChangesArgs): Promise<void> {
-    await BriefcaseManager.pullAndApplyChangesets(db, arg);
+  /** create a changeset from the current changes, and push it to iModelHub */
+  private static async pushChanges(db: BriefcaseDb, arg: PushChangesArgs): Promise<void> {
+    const changesetProps = db.nativeDb.startCreateChangeset();
+    changesetProps.briefcaseId = db.briefcaseId;
+    changesetProps.description = arg.description;
+    changesetProps.size = IModelJsFs.lstatSync(changesetProps.pathname)?.size;
+    if (!changesetProps.size) // either undefined or 0 means error
+      throw new IModelError(IModelStatus.NoContent, "error creating changeset");
 
-    const changeset = db.nativeDb.startCreateChangeset();
-    changeset.briefcaseId = db.briefcaseId;
-    changeset.description = arg.description;
-    changeset.size = IModelJsFs.lstatSync(changeset.pathname)!.size;
-
-    const retryCount = arg.retryPushCount ?? 3;
-    for (let attempt = 0; attempt < retryCount; ++attempt) {
+    let retryCount = arg.pushRetryCount ?? 3;
+    while (true) {
       try {
         // Refresh the access token since this process can take time
         if (arg.user) {
@@ -433,28 +435,49 @@ export class BriefcaseManager {
             arg.user.accessToken = await auth.getAccessToken();
         }
 
-        const index = await IModelHost.hubAccess.pushChangeset({ user: arg.user, iModelId: db.iModelId, changesetProps: changeset });
+        const index = await IModelHost.hubAccess.pushChangeset({ user: arg.user, iModelId: db.iModelId, changesetProps });
         db.nativeDb.completeCreateChangeset({ index });
         db.changeset = db.nativeDb.getParentChangeset();
-        IModelJsFs.removeSync(changeset.pathname);
-
         if (!arg.retainLocks)
           await IModelHost.hubAccess.releaseAllLocks(db);
 
         return;
       } catch (err: any) {
-        if (typeof err.errorNumber === "number") {
+        const shouldRetry = () => {
+          if (retryCount-- <= 0)
+            return false;
           switch (err.errorNumber) {
             case IModelHubStatus.AnotherUserPushing:
             case IModelHubStatus.DatabaseTemporarilyLocked:
             case IModelHubStatus.OperationFailed:
-              await (arg.retryDelay ?? BeDuration.fromSeconds(3)).wait();
-              continue;
+              return true;
           }
+          return false;
+        };
+
+        if (!shouldRetry()) {
+          db.nativeDb.abandonCreateChangeset();
+          throw err;
         }
-        db.nativeDb.abandonCreateChangeset();
-        IModelJsFs.removeSync(changeset.pathname);
-        throw err;
+      } finally {
+        IModelJsFs.removeSync(changesetProps.pathname);
+      }
+    }
+  }
+
+  /** Pull/merge (if necessary), then push all local changes as a changeset. Called by [[BriefcaseDb.pushChanges]]
+   * @internal
+   */
+  public static async pullMergePush(db: BriefcaseDb, arg: PushChangesArgs): Promise<void> {
+    let retryCount = arg.mergeRetryCount ?? 5;
+    while (true) {
+      try {
+        await BriefcaseManager.pullAndApplyChangesets(db, arg);
+        return await BriefcaseManager.pushChanges(db, arg);
+      } catch (err: any) {
+        if (retryCount-- <= 0 || err.errorNumber !== IModelHubStatus.PullIsRequired)
+          throw (err);
+        await (arg.mergeRetryDelay ?? BeDuration.fromSeconds(3)).wait();
       }
     }
   }
