@@ -99,11 +99,9 @@ export function ControlledTree(props: ControlledTreeProps) {
   const loading = useRootNodeLoader(visibleNodes, props.nodeLoader);
   const noData = visibleNodes.getNumRootNodes() === 0;
   return (
-    <div style={{ width: props.width, height: props.height }}>
-      <Loader loading={loading} noData={noData} spinnerRenderer={props.spinnerRenderer} noDataRenderer={props.noDataRenderer}>
-        {props.treeRenderer ? props.treeRenderer(treeProps) : <TreeRenderer {...treeProps} />}
-      </Loader>
-    </div>
+    <Loader loading={loading} noData={noData} spinnerRenderer={props.spinnerRenderer} noDataRenderer={props.noDataRenderer}>
+      {props.treeRenderer ? props.treeRenderer(treeProps) : <TreeRenderer {...treeProps} />}
+    </Loader>
   );
 }
 
