@@ -1,6 +1,6 @@
 # Permissions
 
-Every iModelHub operation requires that user would be authorized to perform it. iModelHub uses Role Based Access Control (RBAC) service to manage authorization. RBAC allows to create roles with a chosen set of permissions. Every user can be assigned one of these roles. RBAC permissions are configured per [Project]($context-registry-client). You can access RBAC permissions management through this [portal](https://connect.bentley.com).
+Every iModelHub operation requires that user would be authorized to perform it. iModelHub uses Role Based Access Control (RBAC) service to manage authorization. RBAC allows to create roles with a chosen set of permissions. Every user can be assigned one of these roles. RBAC permissions are configured per iTwin.
 
 iModelHub uses 6 permissions:
 
@@ -33,7 +33,7 @@ User that only has Read iModel permission can work with iModel, but they will be
 
 Permissions automatically included: _Read iModel_
 
-Modify iModel permission allows making changes to the iModel. It means that users will be able to manage `Locks` and push `Changesets`s to iModelHub. See [concurrency control]($docs/learning/backend/concurrencycontrol) and [BriefcaseDb.pushChanges]($backend).
+Modify iModel permission allows making changes to the iModel. It means that users will be able to manage `Locks` and push `Changeset`s to iModelHub. See [concurrency control]($docs/learning/backend/concurrencycontrol) and [BriefcaseDb.pushChanges]($backend).
 
 ## Manage iModel Versions
 
