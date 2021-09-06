@@ -351,7 +351,7 @@ The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to 
 
 `ControlledTree` component has received the following breaking changes:
 
-* The component now takes `TreeModel` rather than `VisibleTreeNodes` as a prop to avoid requiring consumers to manage `VisibleTreeNodes` object. As a result, the `useVisibleTreeNodes` hook was replaced with `useTreeModel` hook. Typical mitigation:
+* The component now takes `TreeModel` rather than `VisibleTreeNodes` as a prop to avoid requiring consumers to manage `VisibleTreeNodes` object. As a result, the `useVisibleTreeNodes` hook was replaced with `useTreeModel` hook. Typical migration:
 
   **Before:**
 
@@ -371,7 +371,7 @@ The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to 
   );
   ```
 
-* Name of the `treeEvents` prop was changed to `eventsHandler` to make it clearer. Typical mitigation:
+* Name of the `treeEvents` prop was changed to `eventsHandler` to make it clearer. Typical migration:
 
   **Before:**
 
@@ -389,7 +389,7 @@ The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to 
   );
   ```
 
-* Made the props `width` and `height` required. Previously they were optional and forced us to use non-optimal approach when not provided. Now it's up to the consumer to tell the size of the component. Typical mitigation:
+* Made the props `width` and `height` required. Previously they were optional and forced us to use non-optimal approach when not provided. Now it's up to the consumer to tell the size of the component. Typical migration:
 
   **Before:**
 
