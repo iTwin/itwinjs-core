@@ -27,30 +27,24 @@ export class InstanceBuffers implements WebGLDisposable {
   public readonly hasFeatures: boolean;
   public readonly symbology?: BufferHandle;
   public readonly shared: boolean;
-  // The center of the range of the instances' translations.
-  private readonly _rtcCenter: Point3d;
+  public readonly range: Range3d;
   // A transform including only rtcCenter.
   private readonly _rtcOnlyTransform: Transform;
   // A transform from _rtcCenter including model matrix
   private readonly _rtcModelTransform: Transform;
   // The model matrix from which _rtcModelTransform was previously computed. If it changes, _rtcModelTransform must be recomputed.
   private readonly _modelMatrix = Transform.createIdentity();
-  // Holds the instance transforms for computing range. Set to undefined after range computed (immediately after construction)
-  private _transforms?: Float32Array;
-  // Holds the range computed from the above transforms
-  private _range?: Range3d;
 
-  private constructor(shared: boolean, count: number, transforms: BufferHandle, rtcCenter: Point3d, transformsData: Float32Array, symbology?: BufferHandle, featureIds?: BufferHandle) {
+  private constructor(shared: boolean, count: number, transforms: BufferHandle, rtcCenter: Point3d, range: Range3d, symbology?: BufferHandle, featureIds?: BufferHandle) {
     this.shared = shared;
     this.numInstances = count;
     this.transforms = transforms;
     this.featureIds = featureIds;
     this.hasFeatures = undefined !== featureIds;
     this.symbology = symbology;
-    this._rtcCenter = rtcCenter;
-    this._rtcOnlyTransform = Transform.createTranslation(this._rtcCenter);
+    this._rtcOnlyTransform = Transform.createTranslation(rtcCenter);
     this._rtcModelTransform = this._rtcOnlyTransform.clone();
-    this._transforms = transformsData;
+    this.range = range;
   }
 
   public static createTransformBufferParameters(techniqueId: TechniqueId): BufferParameters[] {
@@ -81,7 +75,7 @@ export class InstanceBuffers implements WebGLDisposable {
     return params;
   }
 
-  public static create(params: InstancedGraphicParams, shared: boolean): InstanceBuffers | undefined {
+  public static create(params: InstancedGraphicParams, shared: boolean, range: Range3d): InstanceBuffers | undefined {
     const { count, featureIds, symbologyOverrides, transforms } = params;
 
     assert(count > 0 && Math.floor(count) === count);
@@ -98,7 +92,7 @@ export class InstanceBuffers implements WebGLDisposable {
       return undefined;
 
     const tfBuf = BufferHandle.createArrayBuffer(transforms);
-    return undefined !== tfBuf ? new InstanceBuffers(shared, count, tfBuf, params.transformCenter, transforms, symBuf, idBuf) : undefined;
+    return undefined !== tfBuf ? new InstanceBuffers(shared, count, tfBuf, params.transformCenter, range, symBuf, idBuf) : undefined;
   }
 
   public getRtcModelTransform(modelMatrix: Transform): Transform {
@@ -125,8 +119,6 @@ export class InstanceBuffers implements WebGLDisposable {
     dispose(this.symbology);
   }
 
-  public get rtcCenter(): Point3d { return this._rtcCenter; }
-
   public collectStatistics(stats: RenderMemory.Statistics): void {
     const featureBytes = undefined !== this.featureIds ? this.featureIds.bytesUsed : 0;
     const symBytes = undefined !== this.symbology ? this.symbology.bytesUsed : 0;
@@ -135,16 +127,8 @@ export class InstanceBuffers implements WebGLDisposable {
     stats.addInstances(bytesUsed);
   }
 
-  public computeRange(reprRange: Range3d, out?: Range3d): Range3d {
-    if (undefined !== this._range)
-      return this._range.clone(out);
-
-    this._range = new Range3d();
-    const tfs = this._transforms;
-    if (undefined === tfs)
-      return this._range.clone(out);
-
-    this._transforms = undefined;
+  public static computeRange(reprRange: Range3d, tfs: Float32Array, rtcCenter: Point3d, out?: Range3d): Range3d {
+    const range = out ?? new Range3d();
 
     const numFloatsPerTransform = 3 * 4;
     assert(0 === tfs.length % (3 * 4));
@@ -163,13 +147,13 @@ export class InstanceBuffers implements WebGLDisposable {
 
       reprRange.clone(r);
       tf.multiplyRange(r, r);
-      this._range.extendRange(r);
+      range.extendRange(r);
     }
 
-    const rtcTransform = Transform.createTranslation(this._rtcCenter);
-    rtcTransform.multiplyRange(this._range, this._range);
+    const rtcTransform = Transform.createTranslation(rtcCenter);
+    rtcTransform.multiplyRange(range, range);
 
-    return this._range.clone(out);
+    return range.clone(out);
   }
 }
 
@@ -258,13 +242,7 @@ export class InstancedGeometry extends CachedGeometry {
   }
 
   public override computeRange(output?: Range3d): Range3d {
-    if (undefined === this._range) {
-      this._range = new Range3d();
-      const reprRange = this._repr.computeRange();
-      this._buffers.computeRange(reprRange, this._range);
-    }
-
-    return this._range.clone(output);
+    return this._buffers.range.clone(output);
   }
 
   public collectStatistics(stats: RenderMemory.Statistics) {
