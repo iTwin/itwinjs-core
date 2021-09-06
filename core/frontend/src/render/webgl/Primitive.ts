@@ -29,11 +29,21 @@ export class Primitive extends Graphic {
   protected constructor(cachedGeom: CachedGeometry) { super(); this.cachedGeometry = cachedGeom; }
 
   public static create(createGeom: () => CachedGeometry | undefined, instances?: InstancedGraphicParams): Primitive | undefined {
-    const instanceBuffers = undefined !== instances ? InstanceBuffers.create(instances, false) : undefined;
-    if (undefined === instanceBuffers && undefined !== instances)
+    let geom = createGeom();
+    if (!geom)
       return undefined;
 
-    return this.createShared(createGeom, instanceBuffers);
+    if (instances) {
+      assert(geom instanceof LUTGeometry, "Invalid geometry type for instancing");
+      const range = InstanceBuffers.computeRange(geom.computeRange(), instances.transforms, instances.transformCenter);
+      const instanceBuffers = InstanceBuffers.create(instances, false, range);
+      if (!instanceBuffers)
+        return undefined;
+
+      geom = new InstancedGeometry(geom, true, instanceBuffers);
+    }
+
+    return new this(geom);
   }
 
   public static createShared(createGeom: () => CachedGeometry | undefined, instances?: InstanceBuffers): Primitive | undefined {
@@ -44,9 +54,6 @@ export class Primitive extends Graphic {
     if (undefined !== instances) {
       assert(geom instanceof LUTGeometry, "Invalid geometry type for instancing");
       geom = new InstancedGeometry(geom, true, instances);
-
-      // Ensure range computed immediately so we can discard the Float32Array holding the instance transforms...
-      geom.computeRange();
     }
 
     return new this(geom);

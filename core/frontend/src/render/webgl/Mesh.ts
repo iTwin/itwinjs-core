@@ -115,9 +115,13 @@ export class MeshGraphic extends Graphic {
   public static create(params: MeshParams, instancesOrVIOrigin?: InstancedGraphicParams | Point3d): MeshGraphic | undefined {
     const viOrigin = instancesOrVIOrigin instanceof Point3d ? instancesOrVIOrigin : undefined;
     const instances = undefined === viOrigin ? instancesOrVIOrigin as InstancedGraphicParams : undefined;
-    const buffers = undefined !== instances ? InstanceBuffers.create(instances, true) : undefined;
-    if (undefined === buffers && undefined !== instances)
-      return undefined;
+    let buffers;
+    if (instances) {
+      const range = InstanceBuffers.computeRange(params.vertices.qparams.computeRange(), instances.transforms, instances.transformCenter);
+      buffers = InstanceBuffers.create(instances, true, range);
+      if (!buffers)
+        return undefined;
+    }
 
     const data = MeshData.create(params, viOrigin);
     return undefined !== data ? new MeshGraphic(data, params, buffers) : undefined;
