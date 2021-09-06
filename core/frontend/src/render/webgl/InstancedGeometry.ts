@@ -178,6 +178,7 @@ export class PatternBuffers extends InstanceData {
     public readonly localToWorld: Matrix4,
     public readonly worldToModel: Matrix4,
     public readonly offsets: BufferHandle,
+    public readonly offsetType: GL.DataType,
     public readonly featureId?: number
   ) {
     super(count, shared, rtcCenter, range);
@@ -185,7 +186,21 @@ export class PatternBuffers extends InstanceData {
 
   public static create(params: PatternGraphicParams, shared: boolean, range: Range3d): PatternBuffers | undefined {
     const bytesPerOffset = params.bytesPerOffset;
-    assert(1 === bytesPerOffset || 2 === bytesPerOffset || 4 === bytesPerOffset);
+    let dataType;
+    switch (bytesPerOffset) {
+      case 1:
+        dataType = GL.DataType.UnsignedByte;
+        break;
+      case 2:
+        dataType = GL.DataType.UnsignedShort;
+        break;
+      case 4:
+        dataType = GL.DataType.UnsignedInt;
+        break;
+      default:
+        throw new Error("Invalid number of bytes per pattern offset");
+    }
+
     const count = params.xyOffsets.byteLength / bytesPerOffset;
     assert(Math.floor(count) === count);
 
@@ -203,6 +218,7 @@ export class PatternBuffers extends InstanceData {
       Matrix4.fromTransform(params.localToWorld),
       Matrix4.fromTransform(params.worldToModel),
       offsets,
+      dataType,
       params.featureId
     );
   }
@@ -295,8 +311,8 @@ export class InstancedGeometry extends CachedGeometry {
     const attrY = AttributeMap.findAttribute("a_patternY", techId, true);
     assert(undefined !== attrX && undefined !== attrY);
     container.addBuffer(buffers.offsets, [
-      BufferParameters.create(attrX.location, 1, GL.DataType.UnsignedInt, false, 8, 0, true),
-      BufferParameters.create(attrY.location, 1, GL.DataType.UnsignedInt, false, 8, 4, true),
+      BufferParameters.create(attrX.location, 1, buffers.offsetType, false, 8, 0, true),
+      BufferParameters.create(attrY.location, 1, buffers.offsetType, false, 8, 4, true),
     ]);
 
     return new this(repr, ownsRepr, buffers, container);
