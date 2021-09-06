@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import AutoSizer from "react-virtualized-auto-sizer";
+import { useResizeDetector } from "react-resize-detector";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { DiagnosticsProps } from "@bentley/presentation-components";
 import { FilteringInput } from "@bentley/ui-components";
@@ -28,6 +28,8 @@ export function TreeWidget(props: Props) {
     setMatchesCount(newMatchesCount);
   }, []);
 
+  const { width, height, ref } = useResizeDetector();
+
   return (
     <div className="treewidget">
       <div className="treewidget-header">
@@ -43,20 +45,16 @@ export function TreeWidget(props: Props) {
             resultCount: matchesCount || 0,
           }} /> : null}
       </div>
-      <div className="filteredTree">
-        {rulesetId ? <>
-          <AutoSizer>
-            {({ width, height }) => (
-              <Tree
-                imodel={imodel}
-                rulesetId={rulesetId}
-                diagnostics={diagnosticsOptions}
-                filtering={{ filter, activeMatchIndex, onFilteringStateChange }}
-                width={width}
-                height={height}
-              />
-            )}
-          </AutoSizer>
+      <div ref={ref} className="filteredTree">
+        {rulesetId && width && height ? <>
+          <Tree
+            imodel={imodel}
+            rulesetId={rulesetId}
+            diagnostics={diagnosticsOptions}
+            filtering={{ filter, activeMatchIndex, onFilteringStateChange }}
+            width={width}
+            height={height}
+          />
           {isFiltering ? <div className="filteredTreeOverlay" /> : null}
         </> : null}
       </div>

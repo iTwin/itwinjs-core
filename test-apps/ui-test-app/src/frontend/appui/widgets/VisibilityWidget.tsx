@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import "./VisibilityWidget.scss";
 import * as React from "react";
-import AutoSizer from "react-virtualized-auto-sizer";
+import { useResizeDetector } from "react-resize-detector";
 import { BeEvent, Id64Array, Id64String } from "@bentley/bentleyjs-core";
 import { IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@bentley/imodeljs-frontend";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
@@ -88,7 +88,7 @@ function ModelsTreeComponent(props: ModelsTreeComponentProps) {
     activeMatchIndex,
     onFilterApplied,
   } = useTreeFilteringState();
-
+  const { width, height, ref } = useResizeDetector();
   return (
     <>
       <Toolbar
@@ -106,22 +106,18 @@ function ModelsTreeComponent(props: ModelsTreeComponentProps) {
           </Button>,
         ]}
       </Toolbar>
-      <div style={{ width: "100%", height: "100%" }}>
-        <AutoSizer>
-          {({ width, height }) => (
-            <ModelsTree
-              {...props}
-              enableElementsClassGrouping={ClassGroupingOption.YesWithCounts}
-              filterInfo={{
-                filter: filterString,
-                activeMatchIndex,
-              }}
-              onFilterApplied={onFilterApplied}
-              width={width}
-              height={height}
-            />
-          )}
-        </AutoSizer>
+      <div ref={ref} style={{ width: "100%", height: "100%" }}>
+        {width && height ? <ModelsTree
+          {...props}
+          enableElementsClassGrouping={ClassGroupingOption.YesWithCounts}
+          filterInfo={{
+            filter: filterString,
+            activeMatchIndex,
+          }}
+          onFilterApplied={onFilterApplied}
+          width={width}
+          height={height}
+        /> : null}
       </div>
     </>
   );
@@ -151,6 +147,8 @@ function CategoriesTreeComponent(props: CategoriesTreeComponentProps) {
     return toggleAllCategories(IModelApp.viewManager, props.iModel, false, undefined, true, filteredProvider);
   }, [props.iModel, filteredProvider]);
 
+  const { width, height, ref } = useResizeDetector();
+
   return (
     <>
       <Toolbar
@@ -165,21 +163,17 @@ function CategoriesTreeComponent(props: CategoriesTreeComponentProps) {
           </Button>,
         ]}
       </Toolbar>
-      <div style={{ width: "100%", height: "100%" }}>
-        <AutoSizer>
-          {({ width, height }) => (
-            <CategoryTree
-              {...props}
-              filterInfo={{
-                filter: filterString,
-                activeMatchIndex,
-              }}
-              onFilterApplied={onFilterApplied}
-              width={width}
-              height={height}
-            />
-          )}
-        </AutoSizer>
+      <div ref={ref} style={{ width: "100%", height: "100%" }}>
+        {width && height ? <CategoryTree
+          {...props}
+          filterInfo={{
+            filter: filterString,
+            activeMatchIndex,
+          }}
+          onFilterApplied={onFilterApplied}
+          width={width}
+          height={height}
+        /> : null}
       </div>
     </>
   );

@@ -397,17 +397,7 @@ The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to 
   return <ControlledTree width={width} height={height} {...props} />;
   ```
 
-  Or, the size may be determined dynamically. The below example uses an `AutoSizer` component from `react-virtualized-auto-sizer` package for that:
-
-  ```tsx
-  return (
-    <AutoSizer>
-      {({ width, height }) => (
-        <ControlledTree {...props} width={width} height={height} />
-      )}
-    </AutoSizer>
-  );
-  ```
+  `width` and `height` props may be calculated dynamically using [ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver) API.
 
 ### Deprecated ui-core Components in Favor of iTwinUI-react Components
 

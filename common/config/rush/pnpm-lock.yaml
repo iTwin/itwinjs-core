@@ -1916,7 +1916,6 @@ importers:
       '@types/react': ^17.0.0
       '@types/react-beautiful-dnd': ^12.1.2
       '@types/react-select': 3.0.26
-      '@types/react-virtualized-auto-sizer': ^1.0.0
       '@types/sinon': ^9.0.0
       '@types/sinon-chai': ^3.2.0
       '@types/testing-library__react-hooks': ^3.1.0
@@ -1936,8 +1935,8 @@ importers:
       nyc: ^15.1.0
       react: ^17.0.0
       react-beautiful-dnd: ^13.0.0
+      react-resize-detector: ^6.7.6
       react-select: 3.1.0
-      react-virtualized-auto-sizer: ^1.0.0
       rimraf: ^3.0.2
       sinon: ^9.0.2
       sinon-chai: ^3.2.0
@@ -1946,8 +1945,8 @@ importers:
     dependencies:
       classnames: 2.3.1
       react-beautiful-dnd: 13.1.0_react@17.0.2
+      react-resize-detector: 6.7.6_react@17.0.2
       react-select: 3.1.0_react@17.0.2
-      react-virtualized-auto-sizer: 1.0.6_react@17.0.2
     devDependencies:
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/build-tools': link:../../tools/build
@@ -1978,7 +1977,6 @@ importers:
       '@types/react': 17.0.18
       '@types/react-beautiful-dnd': 12.1.4
       '@types/react-select': 3.0.26
-      '@types/react-virtualized-auto-sizer': 1.0.1
       '@types/sinon': 9.0.11
       '@types/sinon-chai': 3.2.5
       '@types/testing-library__react-hooks': 3.4.1
@@ -3526,7 +3524,6 @@ importers:
       '@types/react': ^17.0.0
       '@types/react-dom': ^17.0.0
       '@types/react-select': 3.0.26
-      '@types/react-virtualized-auto-sizer': ^1.0.0
       autoprefixer: ^8.6.5
       cpx: ^1.5.0
       cross-env: ^5.1.4
@@ -3539,8 +3536,8 @@ importers:
       postcss-loader: 3.0.0
       react: ^17.0.0
       react-dom: ^17.0.0
+      react-resize-detector: ^6.7.6
       react-select: 3.1.0
-      react-virtualized-auto-sizer: ^1.0.0
       rimraf: ^3.0.2
       semver: ^5.5.0
       symlink-dir: ~4.0.3
@@ -3568,8 +3565,8 @@ importers:
       '@itwin/itwinui-react': 1.16.2_react-dom@17.0.2+react@17.0.2
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
+      react-resize-detector: 6.7.6_react-dom@17.0.2+react@17.0.2
       react-select: 3.1.0_react-dom@17.0.2+react@17.0.2
-      react-virtualized-auto-sizer: 1.0.6_react-dom@17.0.2+react@17.0.2
       semver: 5.7.1
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
@@ -3579,7 +3576,6 @@ importers:
       '@types/react': 17.0.18
       '@types/react-dom': 17.0.9
       '@types/react-select': 3.0.26
-      '@types/react-virtualized-auto-sizer': 1.0.1
       autoprefixer: 8.6.5
       cpx: 1.5.0
       cross-env: 5.2.1
@@ -3643,7 +3639,6 @@ importers:
       '@types/react-redux': ^7.1.18
       '@types/react-select': 3.0.26
       '@types/react-table': ^7.0.18
-      '@types/react-virtualized-auto-sizer': ^1.0.0
       '@types/semver': ^5.5.0
       classnames: ^2.3.1
       cpx: ^1.5.0
@@ -3661,9 +3656,9 @@ importers:
       react-beautiful-dnd: ^13.0.0
       react-dom: ^17.0.0
       react-redux: ^7.2.2
+      react-resize-detector: ^6.7.6
       react-select: 3.1.0
       react-table: ^7.1.0
-      react-virtualized-auto-sizer: ^1.0.0
       redux: ^4.0.3
       rimraf: ^3.0.2
       semver: ^5.5.0
@@ -3712,9 +3707,9 @@ importers:
       react-beautiful-dnd: 13.1.0_react-dom@17.0.2+react@17.0.2
       react-dom: 17.0.2_react@17.0.2
       react-redux: 7.2.4_react-dom@17.0.2+react@17.0.2
+      react-resize-detector: 6.7.6_react-dom@17.0.2+react@17.0.2
       react-select: 3.1.0_react-dom@17.0.2+react@17.0.2
       react-table: 7.7.0_react@17.0.2
-      react-virtualized-auto-sizer: 1.0.6_react-dom@17.0.2+react@17.0.2
       redux: 4.1.1
       semver: 5.7.1
     devDependencies:
@@ -3729,7 +3724,6 @@ importers:
       '@types/react-redux': 7.1.18
       '@types/react-select': 3.0.26
       '@types/react-table': 7.7.2
-      '@types/react-virtualized-auto-sizer': 1.0.1
       '@types/semver': 5.5.0
       cpx: 1.5.0
       cross-env: 5.2.1
@@ -10507,6 +10501,10 @@ packages:
       '@types/prop-types': 15.7.4
       '@types/scheduler': 0.16.2
       csstype: 3.0.8
+
+  /@types/resize-observer-browser/0.1.6:
+    resolution: {integrity: sha512-61IfTac0s9jvNtBCpyo86QeaN8qqpMGHdK0uGKCCIy2dt5/Yk84VduHIdWAcmkC5QvdkPL0p5eWYgUZtHKKUVg==}
+    dev: false
 
   /@types/resolve/0.0.8:
     resolution: {integrity: sha512-auApPaJf3NPfe18hSoJkp8EbZzer2ISk7o8mCC3M9he/a04+gbMF97NkpD2S8riMGvm4BMRI59/SZQSaLTKpsQ==}
@@ -18524,6 +18522,10 @@ packages:
       lodash._reinterpolate: 3.0.0
     dev: true
 
+  /lodash.throttle/4.1.1:
+    resolution: {integrity: sha1-wj6RtxAkKscMN/HhzaknTMOb8vQ=}
+    dev: false
+
   /lodash.truncate/4.4.2:
     resolution: {integrity: sha1-WjUNoLERO4N+z//VgSy+WNbq4ZM=}
 
@@ -21563,6 +21565,33 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
+  /react-resize-detector/6.7.6_react-dom@17.0.2+react@17.0.2:
+    resolution: {integrity: sha512-/6RZlul1yePSoYJxWxmmgjO320moeLC/khrwpEVIL+D2EjLKhqOwzFv+H8laMbImVj7Zu4FlMa0oA7au3/ChjQ==}
+    peerDependencies:
+      react: ^16.0.0 || ^17.0.0
+      react-dom: ^16.0.0 || ^17.0.0
+    dependencies:
+      '@types/resize-observer-browser': 0.1.6
+      lodash.debounce: 4.0.8
+      lodash.throttle: 4.1.1
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
+      resize-observer-polyfill: 1.5.1
+    dev: false
+
+  /react-resize-detector/6.7.6_react@17.0.2:
+    resolution: {integrity: sha512-/6RZlul1yePSoYJxWxmmgjO320moeLC/khrwpEVIL+D2EjLKhqOwzFv+H8laMbImVj7Zu4FlMa0oA7au3/ChjQ==}
+    peerDependencies:
+      react: ^16.0.0 || ^17.0.0
+      react-dom: ^16.0.0 || ^17.0.0
+    dependencies:
+      '@types/resize-observer-browser': 0.1.6
+      lodash.debounce: 4.0.8
+      lodash.throttle: 4.1.1
+      react: 17.0.2
+      resize-observer-polyfill: 1.5.1
+    dev: false
+
   /react-router-dom/5.2.0_react@17.0.2:
     resolution: {integrity: sha512-gxAmfylo2QUjcwxI63RhQ5G85Qqt4voZpUXSEqCwykV0baaOTQDR1f0PmY8AELqIyVc0NEZUj0Gov5lNGcXgsA==}
     peerDependencies:
@@ -21724,16 +21753,6 @@ packages:
     dependencies:
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
-    dev: false
-
-  /react-virtualized-auto-sizer/1.0.6_react@17.0.2:
-    resolution: {integrity: sha512-7tQ0BmZqfVF6YYEWcIGuoR3OdYe8I/ZFbNclFlGOC3pMqunkYF/oL30NCjSGl9sMEb17AnzixDz98Kqc3N76HQ==}
-    engines: {node: '>8.0.0'}
-    peerDependencies:
-      react: ^15.3.0 || ^16.0.0-alpha || ^17.0.0
-      react-dom: ^15.3.0 || ^16.0.0-alpha || ^17.0.0
-    dependencies:
-      react: 17.0.2
     dev: false
 
   /react-virtualized/9.22.3_react-dom@17.0.2+react@17.0.2:

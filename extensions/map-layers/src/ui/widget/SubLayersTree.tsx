@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import AutoSizer from "react-virtualized-auto-sizer";
+import { useResizeDetector } from "react-resize-detector";
 import { IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { PropertyValueFormat } from "@bentley/ui-abstract";
 import { CheckBoxState, ImageCheckBox, NodeCheckboxRenderProps, useDisposable, WebFontIcon } from "@bentley/ui-core";
@@ -136,6 +136,8 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
     setLayerFilterString(event.target.value);
   }, []);
 
+  const { width, height, ref } = useResizeDetector();
+
   return <>
     <div className="map-manager-sublayer-tree">
       <Toolbar
@@ -155,21 +157,17 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
           </button>,
         ]}
       </Toolbar>
-      <div style={{ display: "block", width: "100%", height: "100%" }}>
-        <AutoSizer>
-          {({ width, height }) => (
-            <ControlledTree
-              nodeLoader={nodeLoader}
-              selectionMode={SelectionMode.None}
-              eventsHandler={eventHandler}
-              model={treeModel}
-              treeRenderer={nodeWithEyeCheckboxTreeRenderer}
-              nodeHighlightingProps={nodeHighlightingProps}
-              width={width}
-              height={height}
-            />
-          )}
-        </AutoSizer>
+      <div ref={ref} style={{ display: "block", width: "100%", height: "100%" }}>
+        {width && height ? <ControlledTree
+          nodeLoader={nodeLoader}
+          selectionMode={SelectionMode.None}
+          eventsHandler={eventHandler}
+          model={treeModel}
+          treeRenderer={nodeWithEyeCheckboxTreeRenderer}
+          nodeHighlightingProps={nodeHighlightingProps}
+          width={width}
+          height={height}
+        /> : null}
       </div>
     </div>
   </>;
