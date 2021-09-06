@@ -40,6 +40,10 @@ describe("usePresentationNodeLoader", () => {
     await UiComponents.initialize(new I18N());
   });
 
+  after(() => {
+    UiComponents.terminate();
+  });
+
   beforeEach(() => {
     imodelMock.reset();
     imodelMock.setup((x) => x.key).returns(() => imodelKey);
