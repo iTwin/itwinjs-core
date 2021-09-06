@@ -2353,7 +2353,7 @@ export class IModelHost {
     static getAuthorizedContext(): Promise<AuthorizedClientRequestContext>;
     // @alpha
     static getCrashReportProperties(): CrashReportingConfigNameValuePair[];
-    // @internal
+    // @beta
     static get hubAccess(): BackendHubAccess;
     static get isValid(): boolean;
     // @internal (undocumented)
