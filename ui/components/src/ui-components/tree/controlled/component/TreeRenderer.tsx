@@ -12,8 +12,6 @@ import * as React from "react";
 import { areEqual, ListChildComponentProps, ListOnItemsRenderedProps, VariableSizeList } from "react-window";
 import { concat } from "rxjs/internal/observable/concat";
 import { timer } from "rxjs/internal/observable/timer";
-import { ReplaySubject } from "rxjs/internal/ReplaySubject";
-import { Subscription } from "rxjs/internal/Subscription";
 import { assert } from "@bentley/bentleyjs-core";
 import { Tree as CoreTree, TreeNodePlaceholder } from "@bentley/ui-core";
 import { createContextWithMandatoryProvider } from "../../../common/UseContextWithMandatoryProvider";
@@ -160,25 +158,18 @@ export const [
  * @beta
  */
 export class TreeRenderer extends React.Component<TreeRendererProps> implements TreeRendererAttributes {
-  private observableScrollToItem = new ReplaySubject<Parameters<TreeRendererAttributes["scrollToNode"]>>(1);
-  private refSubscription: Subscription | undefined = undefined;
+  private _ref = React.createRef<TreeRendererAttributes>();
 
   /** @inheritdoc */
   public scrollToNode(nodeId: string, alignment?: Alignment) {
-    this.observableScrollToItem.next([nodeId, alignment]);
+    // istanbul ignore else
+    if (this._ref.current)
+      this._ref.current.scrollToNode(nodeId, alignment);
   }
-
-  private setTreeRendererRef: React.Ref<TreeRendererAttributes> = (ref) => {
-    this.refSubscription?.unsubscribe();
-    this.refSubscription = undefined;
-    if (ref) {
-      this.refSubscription = this.observableScrollToItem.subscribe((args) => ref.scrollToNode(...args));
-    }
-  };
 
   public override render() {
     return (
-      <TreeRendererInner ref={this.setTreeRendererRef} {...this.props} />
+      <TreeRendererInner ref={this._ref} {...this.props} />
     );
   }
 }
