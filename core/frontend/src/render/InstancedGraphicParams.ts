@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { Point3d, Transform, XY } from "@bentley/geometry-core";
+import { Point3d, Range3d, Transform, XY } from "@bentley/geometry-core";
 
 /** Parameters for creating a [[RenderGraphic]] representing a collection of instances of shared geometry.
  * Each instance is drawn using the same graphics, but with its own transform and (optionally) [[Feature]] Id.
@@ -55,11 +55,12 @@ export interface PatternGraphicParams {
   readonly spacing: XY;
   readonly localToWorld: Transform;
   readonly worldToModel: Transform;
+  readonly range: Range3d;
 }
 
 /** Type discriminator for functions that accept InstanceGraphicParams | PatternGraphicParams.
  * @internal
  */
-export function isPatternGraphicsParams(params: InstancedGraphicParams | PatternGraphicParams): params is PatternGraphicParams {
+export function isPatternGraphicParams(params: InstancedGraphicParams | PatternGraphicParams): params is PatternGraphicParams {
   return undefined === (params as any).xyOffsets;
 }

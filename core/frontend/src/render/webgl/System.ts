@@ -20,7 +20,7 @@ import { MapTileTreeReference, TileTreeReference } from "../../tile/internal";
 import { ViewRect } from "../../ViewRect";
 import { GraphicBranch, GraphicBranchOptions } from "../GraphicBranch";
 import { BatchOptions, GraphicBuilder, GraphicBuilderOptions } from "../GraphicBuilder";
-import { InstancedGraphicParams } from "../InstancedGraphicParams";
+import { InstancedGraphicParams, PatternGraphicParams } from "../InstancedGraphicParams";
 import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
 import { RealityMeshPrimitive } from "../primitives/mesh/RealityMeshPrimitive";
 import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
@@ -338,9 +338,14 @@ const enum VertexAttribState {
   InstancedEnabled = Instanced | Enabled,
 }
 
-function createPrimitive(createGeom: (viOrigin: Point3d | undefined) => CachedGeometry | undefined, instancesOrVIOrigin: InstancedGraphicParams | Point3d | undefined): RenderGraphic | undefined {
-  const viOrigin = instancesOrVIOrigin instanceof Point3d ? instancesOrVIOrigin : undefined;
-  const instances = undefined === viOrigin ? instancesOrVIOrigin as InstancedGraphicParams : undefined;
+function createPrimitive(createGeom: (viOrigin: Point3d | undefined) => CachedGeometry | undefined, instancesOrVIOrigin: InstancedGraphicParams | PatternGraphicParams | Point3d | undefined): RenderGraphic | undefined {
+  let viOrigin: Point3d | undefined;
+  let instances;
+  if (instancesOrVIOrigin instanceof Point3d)
+    viOrigin = instancesOrVIOrigin;
+  else
+    instances = instancesOrVIOrigin;
+
   return Primitive.create(() => createGeom(viOrigin), instances);
 }
 
@@ -519,7 +524,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return new PrimitiveBuilder(this, options);
   }
 
-  public override createMesh(params: MeshParams, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {
+  public override createMesh(params: MeshParams, instances?: InstancedGraphicParams | PatternGraphicParams | Point3d): RenderGraphic | undefined {
     return MeshGraphic.create(params, instances);
   }
 
@@ -539,11 +544,11 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return geom ? Primitive.create(() => geom) : undefined;
   }
 
-  public override createPolyline(params: PolylineParams, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {
+  public override createPolyline(params: PolylineParams, instances?: InstancedGraphicParams | PatternGraphicParams | Point3d): RenderGraphic | undefined {
     return createPrimitive((viOrigin) => PolylineGeometry.create(params, viOrigin), instances);
   }
 
-  public override createPointString(params: PointStringParams, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {
+  public override createPointString(params: PointStringParams, instances?: InstancedGraphicParams | PatternGraphicParams | Point3d): RenderGraphic | undefined {
     return createPrimitive((viOrigin) => PointStringGeometry.create(params, viOrigin), instances);
   }
 

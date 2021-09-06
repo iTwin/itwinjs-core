@@ -9,7 +9,7 @@
 import { assert, dispose } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
 import { FeatureIndexType, FillFlags, LinePixels, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
-import { InstancedGraphicParams } from "../InstancedGraphicParams";
+import { InstancedGraphicParams, isPatternGraphicParams, PatternGraphicParams } from "../InstancedGraphicParams";
 import { MeshParams, SegmentEdgeParams, SilhouetteParams, SurfaceType, TesselatedPolyline, VertexIndices } from "../primitives/VertexTable";
 import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
@@ -22,7 +22,7 @@ import { FloatRgba } from "./FloatRGBA";
 import { GL } from "./GL";
 import { Graphic } from "./Graphic";
 import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
-import { InstanceBuffers } from "./InstancedGeometry";
+import { InstanceBuffers, PatternBuffers } from "./InstancedGeometry";
 import { createMaterialInfo, MaterialInfo } from "./Material";
 import { Primitive } from "./Primitive";
 import { RenderCommands } from "./RenderCommands";
@@ -110,15 +110,21 @@ export class MeshData implements WebGLDisposable {
 export class MeshGraphic extends Graphic {
   public readonly meshData: MeshData;
   private readonly _primitives: Primitive[] = [];
-  private readonly _instances?: InstanceBuffers;
+  private readonly _instances?: InstanceBuffers | PatternBuffers;
 
-  public static create(params: MeshParams, instancesOrVIOrigin?: InstancedGraphicParams | Point3d): MeshGraphic | undefined {
-    const viOrigin = instancesOrVIOrigin instanceof Point3d ? instancesOrVIOrigin : undefined;
-    const instances = undefined === viOrigin ? instancesOrVIOrigin as InstancedGraphicParams : undefined;
+  public static create(params: MeshParams, instancesOrVIOrigin?: InstancedGraphicParams | PatternGraphicParams | Point3d): MeshGraphic | undefined {
+    let viOrigin: Point3d | undefined;
     let buffers;
-    if (instances) {
-      const range = InstanceBuffers.computeRange(params.vertices.qparams.computeRange(), instances.transforms, instances.transformCenter);
-      buffers = InstanceBuffers.create(instances, true, range);
+    if (instancesOrVIOrigin instanceof Point3d) {
+      viOrigin = instancesOrVIOrigin;
+    } else if (instancesOrVIOrigin) {
+      if (!isPatternGraphicParams(instancesOrVIOrigin)) {
+        const range = InstanceBuffers.computeRange(params.vertices.qparams.computeRange(), instancesOrVIOrigin.transforms, instancesOrVIOrigin.transformCenter);
+        buffers = InstanceBuffers.create(instancesOrVIOrigin, true, range);
+      } else {
+        buffers = PatternBuffers.create(instancesOrVIOrigin, true);
+      }
+
       if (!buffers)
         return undefined;
     }
@@ -127,18 +133,18 @@ export class MeshGraphic extends Graphic {
     return undefined !== data ? new MeshGraphic(data, params, buffers) : undefined;
   }
 
-  private addPrimitive(createGeom: () => CachedGeometry | undefined, instances?: InstanceBuffers) {
-    const primitive = Primitive.createShared(createGeom, instances);
+  private addPrimitive(createGeom: () => CachedGeometry | undefined) {
+    const primitive = Primitive.createShared(createGeom, this._instances);
     if (undefined !== primitive)
       this._primitives.push(primitive);
   }
 
-  private constructor(data: MeshData, params: MeshParams, instances?: InstanceBuffers) {
+  private constructor(data: MeshData, params: MeshParams, instances?: InstanceBuffers | PatternBuffers) {
     super();
     this.meshData = data;
     this._instances = instances;
 
-    this.addPrimitive(() => SurfaceGeometry.create(this.meshData, params.surface.indices), instances);
+    this.addPrimitive(() => SurfaceGeometry.create(this.meshData, params.surface.indices));
 
     // Classifiers are surfaces only...no edges.
     if (this.surfaceType === SurfaceType.VolumeClassifier || undefined === params.edges)
@@ -146,13 +152,13 @@ export class MeshGraphic extends Graphic {
 
     const edges = params.edges;
     if (undefined !== edges.silhouettes)
-      this.addPrimitive(() => SilhouetteEdgeGeometry.createSilhouettes(this.meshData, edges.silhouettes!), instances);
+      this.addPrimitive(() => SilhouetteEdgeGeometry.createSilhouettes(this.meshData, edges.silhouettes!));
 
     if (undefined !== edges.segments)
-      this.addPrimitive(() => EdgeGeometry.create(this.meshData, edges.segments!), instances);
+      this.addPrimitive(() => EdgeGeometry.create(this.meshData, edges.segments!));
 
     if (undefined !== edges.polylines)
-      this.addPrimitive(() => PolylineEdgeGeometry.create(this.meshData, edges.polylines!), instances);
+      this.addPrimitive(() => PolylineEdgeGeometry.create(this.meshData, edges.polylines!));
   }
 
   public get isDisposed(): boolean { return this.meshData.isDisposed && 0 === this._primitives.length; }
