@@ -19,14 +19,9 @@ import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuf
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 
-/** @internal */
-export class InstanceBuffers implements WebGLDisposable {
-  public readonly numInstances: number;
-  public readonly transforms: BufferHandle;
-  public readonly featureIds?: BufferHandle;
-  public readonly hasFeatures: boolean;
-  public readonly symbology?: BufferHandle;
+class InstanceData {
   public readonly shared: boolean;
+  public readonly numInstances: number;
   public readonly range: Range3d;
   // A transform including only rtcCenter.
   private readonly _rtcOnlyTransform: Transform;
@@ -35,16 +30,41 @@ export class InstanceBuffers implements WebGLDisposable {
   // The model matrix from which _rtcModelTransform was previously computed. If it changes, _rtcModelTransform must be recomputed.
   private readonly _modelMatrix = Transform.createIdentity();
 
-  private constructor(shared: boolean, count: number, transforms: BufferHandle, rtcCenter: Point3d, range: Range3d, symbology?: BufferHandle, featureIds?: BufferHandle) {
+  protected constructor(numInstances: number, shared: boolean, rtcCenter: Point3d, range: Range3d) {
+    this.numInstances = numInstances;
     this.shared = shared;
-    this.numInstances = count;
+    this.range = range;
+    this._rtcOnlyTransform = Transform.createTranslation(rtcCenter);
+    this._rtcModelTransform = this._rtcOnlyTransform.clone();
+  }
+
+  public getRtcModelTransform(modelMatrix: Transform): Transform {
+    if (!this._modelMatrix.isAlmostEqual(modelMatrix)) {
+      modelMatrix.clone(this._modelMatrix);
+      modelMatrix.multiplyTransformTransform(this._rtcOnlyTransform, this._rtcModelTransform);
+    }
+
+    return this._rtcModelTransform;
+  }
+
+  public getRtcOnlyTransform(): Transform {
+    return this._rtcOnlyTransform;
+  }
+}
+
+/** @internal */
+export class InstanceBuffers extends InstanceData {
+  public readonly transforms: BufferHandle;
+  public readonly featureIds?: BufferHandle;
+  public readonly hasFeatures: boolean;
+  public readonly symbology?: BufferHandle;
+
+  private constructor(shared: boolean, count: number, transforms: BufferHandle, rtcCenter: Point3d, range: Range3d, symbology?: BufferHandle, featureIds?: BufferHandle) {
+    super(count, shared, rtcCenter, range);
     this.transforms = transforms;
     this.featureIds = featureIds;
     this.hasFeatures = undefined !== featureIds;
     this.symbology = symbology;
-    this._rtcOnlyTransform = Transform.createTranslation(rtcCenter);
-    this._rtcModelTransform = this._rtcOnlyTransform.clone();
-    this.range = range;
   }
 
   public static createTransformBufferParameters(techniqueId: TechniqueId): BufferParameters[] {
@@ -95,18 +115,6 @@ export class InstanceBuffers implements WebGLDisposable {
     return undefined !== tfBuf ? new InstanceBuffers(shared, count, tfBuf, params.transformCenter, range, symBuf, idBuf) : undefined;
   }
 
-  public getRtcModelTransform(modelMatrix: Transform): Transform {
-    if (!this._modelMatrix.isAlmostEqual(modelMatrix)) {
-      modelMatrix.clone(this._modelMatrix);
-      modelMatrix.multiplyTransformTransform(this._rtcOnlyTransform, this._rtcModelTransform);
-    }
-
-    return this._rtcModelTransform;
-  }
-  public getRtcOnlyTransform(): Transform {
-    return this._rtcOnlyTransform;
-  }
-
   public get isDisposed(): boolean {
     return this.transforms.isDisposed
       && (undefined === this.featureIds || this.featureIds.isDisposed)
@@ -154,6 +162,37 @@ export class InstanceBuffers implements WebGLDisposable {
     rtcTransform.multiplyRange(range, range);
 
     return range.clone(out);
+  }
+}
+
+/** @internal */
+export class PatternBuffers extends InstanceData {
+  public readonly featureId?: number;
+  private readonly _transforms: BufferHandle;
+
+  private constructor(shared: boolean, count: number, transforms: BufferHandle, rtcCenter: Point3d, range: Range3d, featureId: number | undefined) {
+    super(count, shared, rtcCenter, range);
+    this._transforms = transforms;
+    this.featureId = featureId;
+    // ###TODO additional members...
+  }
+
+  // ###TODO public static create(...)
+
+  public get hasFeatures(): boolean {
+    return undefined !== this.featureId;
+  }
+
+  public get isDisposed(): boolean {
+    return this._transforms.isDisposed;
+  }
+
+  public dispose(): void {
+    dispose(this._transforms);
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    stats.addInstances(this._transforms.bytesUsed);
   }
 }
 
