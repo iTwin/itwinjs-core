@@ -21,7 +21,7 @@ import { Viewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
 import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
 import { BatchOptions, GraphicBuilder, GraphicBuilderOptions, GraphicType } from "./GraphicBuilder";
-import { InstancedGraphicParams } from "./InstancedGraphicParams";
+import { InstancedGraphicParams, PatternGraphicParams } from "./InstancedGraphicParams";
 import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
 import { RealityMeshPrimitive } from "./primitives/mesh/RealityMeshPrimitive";
 import { TerrainMeshPrimitive } from "./primitives/mesh/TerrainMeshPrimitive";
@@ -284,13 +284,13 @@ export abstract class RenderSystem implements IDisposable {
   }
 
   /** @internal */
-  public createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {
+  public createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | PatternGraphicParams | Point3d): RenderGraphic | undefined {
     const params = MeshParams.create(args);
     return this.createMesh(params, instances);
   }
 
   /** @internal */
-  public createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {
+  public createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams | PatternGraphicParams | Point3d): RenderGraphic | undefined {
     if (args.flags.isDisjoint) {
       const pointStringParams = PointStringParams.create(args);
       return undefined !== pointStringParams ? this.createPointString(pointStringParams, instances) : undefined;
@@ -301,9 +301,9 @@ export abstract class RenderSystem implements IDisposable {
   }
 
   /** @internal */
-  public createMesh(_params: MeshParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined { return undefined; }
+  public createMesh(_params: MeshParams, _instances?: InstancedGraphicParams | PatternGraphicParams | Point3d): RenderGraphic | undefined { return undefined; }
   /** @internal */
-  public createPolyline(_params: PolylineParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined { return undefined; }
+  public createPolyline(_params: PolylineParams, _instances?: InstancedGraphicParams | PatternGraphicParams | Point3d): RenderGraphic | undefined { return undefined; }
   /** @internal */
   public createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform): RenderRealityMeshGeometry | undefined { return undefined; }
   /** @internal */
@@ -313,7 +313,7 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public get maxRealityImageryLayers() { return 0; }
   /** @internal */
-  public createPointString(_params: PointStringParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined { return undefined; }
+  public createPointString(_params: PointStringParams, _instances?: InstancedGraphicParams | PatternGraphicParams | Point3d): RenderGraphic | undefined { return undefined; }
   /** @internal */
   public createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
 

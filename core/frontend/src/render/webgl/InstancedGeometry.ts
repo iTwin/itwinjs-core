@@ -184,7 +184,7 @@ export class PatternBuffers extends InstanceData {
     super(count, shared, rtcCenter, range);
   }
 
-  public static create(params: PatternGraphicParams, shared: boolean, range: Range3d): PatternBuffers | undefined {
+  public static create(params: PatternGraphicParams, shared: boolean): PatternBuffers | undefined {
     const bytesPerOffset = params.bytesPerOffset;
     let dataType;
     switch (bytesPerOffset) {
@@ -212,7 +212,7 @@ export class PatternBuffers extends InstanceData {
       count,
       shared,
       new Point3d(), // ###TODO May need to use this if symbols/patterns far from origin produce artifacts.
-      range,
+      params.range,
       new Float32Array([params.spacing.x, params.spacing.y, params.scale]),
       Matrix4.fromTransform(params.orgTransform),
       Matrix4.fromTransform(params.localToWorld),
