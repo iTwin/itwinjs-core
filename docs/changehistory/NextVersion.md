@@ -349,7 +349,7 @@ The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to 
 
 #### `ControlledTree` API Changes
 
-There were some breaking API changes related to `ControlledTree` component:
+`ControlledTree` component has received the following breaking changes:
 
 * The component now takes `TreeModel` rather than `VisibleTreeNodes` as a prop to avoid requiring consumers to manage `VisibleTreeNodes` object. As a result, the `useVisibleTreeNodes` hook was replaced with `useTreeModel` hook. Typical mitigation:
 
