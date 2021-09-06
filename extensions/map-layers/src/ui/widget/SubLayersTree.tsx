@@ -157,7 +157,7 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
           </button>,
         ]}
       </Toolbar>
-      <div ref={ref} style={{ display: "block", width: "100%", height: "100%" }}>
+      <div ref={ref} className="map-manager-sublayer-tree-content">
         {width && height ? <ControlledTree
           nodeLoader={nodeLoader}
           selectionMode={SelectionMode.None}

@@ -106,7 +106,7 @@ function ModelsTreeComponent(props: ModelsTreeComponentProps) {
           </Button>,
         ]}
       </Toolbar>
-      <div ref={ref} style={{ width: "100%", height: "100%" }}>
+      <div ref={ref} className="ui-test-app-visibility-tree-content">
         {width && height ? <ModelsTree
           {...props}
           enableElementsClassGrouping={ClassGroupingOption.YesWithCounts}

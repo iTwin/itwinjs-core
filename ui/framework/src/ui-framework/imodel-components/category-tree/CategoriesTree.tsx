@@ -113,7 +113,7 @@ export function CategoryTree(props: CategoryTreeProps) {
   }, []);
 
   return (
-    <div className="ui-fw-categories-tree" style={{ width: props.width, height: props.height }}>
+    <div className="ui-fw-categories-tree">
       <ControlledTree
         nodeLoader={filteredNodeLoader}
         model={treeModel}

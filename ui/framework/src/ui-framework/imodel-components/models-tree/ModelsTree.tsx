@@ -140,7 +140,7 @@ export function ModelsTree(props: ModelsTreeProps) {
   }, []);
 
   return (
-    <div className="ui-fw-models-tree" ref={props.rootElementRef} style={{ width: props.width, height: props.height }}>
+    <div className="ui-fw-models-tree" ref={props.rootElementRef}>
       <ControlledTree
         nodeLoader={filteredNodeLoader}
         model={treeModel}

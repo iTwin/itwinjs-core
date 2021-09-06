@@ -63,7 +63,7 @@ export function SpatialContainmentTree(props: SpatialContainmentTreeProps) {
   const treeModel = useTreeModel(nodeLoader.modelSource);
 
   return (
-    <div className="ui-fw-spatial-tree" style={{ width: props.width, height: props.height }}>
+    <div className="ui-fw-spatial-tree">
       <ControlledTree
         model={treeModel}
         nodeLoader={nodeLoader}

@@ -103,7 +103,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props: NavigationTreeProp
   const treeModel = useTreeModel(modelSource);
   const { width, height, ref } = useResizeDetector();
   return (
-    <div ref={ref} style={{ display: "block", width: "100%", height: "100%" }}>
+    <div ref={ref} style={{ width: "100%", height: "100%" }}>
       {width && height ? <ControlledTree
         model={treeModel}
         nodeLoader={nodeLoader}
