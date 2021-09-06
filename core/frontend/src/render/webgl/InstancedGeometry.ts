@@ -199,7 +199,7 @@ export class PatternBuffers extends InstanceData {
 /** @internal */
 export class InstancedGeometry extends CachedGeometry {
   private readonly _buffersContainer: BuffersContainer;
-  private readonly _buffers: InstanceBuffers;
+  private readonly _buffers: InstanceBuffers | PatternBuffers;
   private readonly _repr: LUTGeometry;
   private readonly _ownsRepr: boolean;
 
@@ -232,30 +232,42 @@ export class InstancedGeometry extends CachedGeometry {
   public override getLineWeight(params: ShaderProgramParams) { return this._repr.getLineWeight(params); }
   public override wantMonochrome(target: Target) { return this._repr.wantMonochrome(target); }
 
-  public constructor(repr: LUTGeometry, ownsRepr: boolean, buffers: InstanceBuffers) {
-    super();
-    this._repr = repr;
-    this._ownsRepr = ownsRepr;
-    this._buffers = buffers;
-    this._buffersContainer = BuffersContainer.create();
-    this._buffersContainer.appendLinkages(repr.lutBuffers.linkages);
+  public static create(repr: LUTGeometry, ownsRepr: boolean, buffers: InstanceBuffers): InstancedGeometry {
+    const techId = repr.techniqueId;
+    const container = BuffersContainer.create();
+    container.appendLinkages(repr.lutBuffers.linkages);
 
-    this._buffersContainer.addBuffer(this._buffers.transforms, InstanceBuffers.createTransformBufferParameters(this.techniqueId));
-    if (this._buffers.symbology !== undefined) {
-      const attrInstanceOverrides = AttributeMap.findAttribute("a_instanceOverrides", this.techniqueId, true);
-      const attrInstanceRgba = AttributeMap.findAttribute("a_instanceRgba", this.techniqueId, true);
+    container.addBuffer(buffers.transforms, InstanceBuffers.createTransformBufferParameters(repr.techniqueId));
+
+    if (buffers.symbology) {
+      const attrInstanceOverrides = AttributeMap.findAttribute("a_instanceOverrides", techId, true);
+      const attrInstanceRgba = AttributeMap.findAttribute("a_instanceRgba", techId, true);
       assert(attrInstanceOverrides !== undefined);
       assert(attrInstanceRgba !== undefined);
-      this._buffersContainer.addBuffer(this._buffers.symbology, [
+      container.addBuffer(buffers.symbology, [
         BufferParameters.create(attrInstanceOverrides.location, 4, GL.DataType.UnsignedByte, false, 8, 0, true),
         BufferParameters.create(attrInstanceRgba.location, 4, GL.DataType.UnsignedByte, false, 8, 4, true),
       ]);
     }
-    if (this._buffers.featureIds !== undefined) {
-      const attrFeatureId = AttributeMap.findAttribute("a_featureId", this.techniqueId, true);
+    if (buffers.featureIds) {
+      const attrFeatureId = AttributeMap.findAttribute("a_featureId", techId, true);
       assert(attrFeatureId !== undefined);
-      this._buffersContainer.addBuffer(this._buffers.featureIds, [BufferParameters.create(attrFeatureId.location, 3, GL.DataType.UnsignedByte, false, 0, 0, true)]);
+      container.addBuffer(buffers.featureIds, [BufferParameters.create(attrFeatureId.location, 3, GL.DataType.UnsignedByte, false, 0, 0, true)]);
     }
+
+    return new this(repr, ownsRepr, buffers, container);
+  }
+
+  // public static createPattern(repr: LUTGeometry, ownsRepr: boolean, buffers: PatternBuffers): InstancedGeometry {
+  //   throw new Error("###TODO");
+  // }
+
+  private constructor(repr: LUTGeometry, ownsRepr: boolean, buffers: InstanceBuffers | PatternBuffers, container: BuffersContainer) {
+    super();
+    this._repr = repr;
+    this._ownsRepr = ownsRepr;
+    this._buffers = buffers;
+    this._buffersContainer = container;
   }
 
   public get isDisposed(): boolean {

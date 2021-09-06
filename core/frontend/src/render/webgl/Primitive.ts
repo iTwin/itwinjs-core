@@ -40,7 +40,7 @@ export class Primitive extends Graphic {
       if (!instanceBuffers)
         return undefined;
 
-      geom = new InstancedGeometry(geom, true, instanceBuffers);
+      geom = InstancedGeometry.create(geom, true, instanceBuffers);
     }
 
     return new this(geom);
@@ -53,7 +53,7 @@ export class Primitive extends Graphic {
 
     if (undefined !== instances) {
       assert(geom instanceof LUTGeometry, "Invalid geometry type for instancing");
-      geom = new InstancedGeometry(geom, true, instances);
+      geom = InstancedGeometry.create(geom, true, instances);
     }
 
     return new this(geom);
