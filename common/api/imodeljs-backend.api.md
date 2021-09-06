@@ -3302,9 +3302,11 @@ export type PullChangesArgs = ToChangesetArgs;
 // @public
 export interface PushChangesArgs extends UserArg {
     description: string;
+    mergeRetryCount?: number;
+    mergeRetryDelay?: BeDuration;
+    pushRetryCount?: number;
+    pushRetryDelay?: BeDuration;
     retainLocks?: true;
-    retryDelay?: BeDuration;
-    retryPushCount?: number;
 }
 
 // @beta

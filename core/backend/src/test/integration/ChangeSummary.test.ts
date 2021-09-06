@@ -258,7 +258,7 @@ describe("ChangeSummary (#integration)", () => {
       await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModel);
       iModel = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId, iModelId, asOf: IModelVersion.asOfChangeSet(lastChangesetId).toJSON() });
       // WIP not working yet until cache can be detached.
-      // await iModel.pullAndMergeChanges(accessToken, IModelVersion.asOfChangeSet(lastChangesetId));
+      // await iModel.pullChanges(accessToken, IModelVersion.asOfChangeSet(lastChangesetId));
 
       await ChangeSummaryManager.createChangeSummary(user, iModel);
 

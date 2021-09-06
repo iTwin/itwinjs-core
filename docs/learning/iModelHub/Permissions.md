@@ -16,7 +16,7 @@ iModelHub uses 6 permissions:
 
 Permissions automatically included: _Read iModel_, _Modify iModel_
 
-Create iModel permission allows creating iModels. See [BriefcaseManager.create]($backend).
+Create iModel permission allows creating iModels. See [BackendHubAccess.createNewIModel]($backend).
 
 ## Delete iModel
 
@@ -26,15 +26,15 @@ Delete iModel permission allows deleting iModels. See [IModelHandler.delete]($im
 
 ## Read iModel
 
-Read iModel permission is required for every single iModelHub operation. It is automatically granted when giving any other iModelHub permission.
+Read iModel permission is required for every iModelHub operation. It is automatically granted when giving any other iModelHub permission.
 
-User that only has Read iModel permission can work with iModel, but they will be unable to make any changes to it. It means that users with this permission will be able to send all query requests. In addition to that, they will be able to acquire and download [Briefcase]($imodelhub-client)s and pull [ChangeSet]($imodelhub-client)s. See [BriefcaseDb.open]($backend) and [BriefcaseDb.pullAndMergeChanges]($backend).
+User that only has Read iModel permission can work with iModel, but they will be unable to make any changes to it. It means that users with this permission will be able to send all query requests. In addition to that, they will be able to acquire and download [Briefcase]($imodelhub-client)s and pull [ChangeSet]($imodelhub-client)s. See [BriefcaseDb.open]($backend) and [BriefcaseDb.pullChanges]($backend).
 
 ## Modify iModel
 
 Permissions automatically included: _Read iModel_
 
-Modify iModel permission allows making changes to the iModel. It means that users will be able to manage their own [HubCode]($imodelhub-client)s and [Lock]($imodelhub-client)s and push their [ChangeSet]($imodelhub-client)s to iModelHub. See [concurrency control]($docs/learning/backend/concurrencycontrol) and [BriefcaseDb.pushChanges]($backend).
+Modify iModel permission allows making changes to the iModel. It means that users will be able to manage their own [HubCode]($imodelhub-client)s and [Lock]($imodelhub-client)s and push [ChangesSet]($imodelhub-client)s to iModelHub. See [concurrency control]($docs/learning/backend/concurrencycontrol) and [BriefcaseDb.pushChanges]($backend).
 
 ## Manage iModel Resources
 

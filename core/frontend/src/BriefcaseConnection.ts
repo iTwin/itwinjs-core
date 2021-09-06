@@ -231,7 +231,7 @@ export class BriefcaseConnection extends IModelConnection {
    * @param toIndex The changeset index to pull changes to. If `undefined`, pull all changes.
    * @see [[BriefcaseTxns.onChangesPulled]] for the event dispatched after changes are pulled.
    */
-  public async pullAndMergeChanges(toIndex?: ChangesetIndex): Promise<void> {
+  public async pullChanges(toIndex?: ChangesetIndex): Promise<void> {
     this.requireTimeline();
     this.changeset = await IpcApp.callIpcHost("pullChanges", this.key, toIndex);
   }
