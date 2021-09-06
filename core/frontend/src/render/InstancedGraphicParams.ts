@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { Point3d } from "@bentley/geometry-core";
+import { Point3d, Transform, XY } from "@bentley/geometry-core";
 
 /** Parameters for creating a [[RenderGraphic]] representing a collection of instances of shared geometry.
  * Each instance is drawn using the same graphics, but with its own transform and (optionally) [[Feature]] Id.
@@ -39,4 +39,20 @@ export interface InstancedGraphicParams {
    * The encoding matches that used by FeatureOverrides, though only the RGB, alpha, line weight, and line code are used.
    */
   readonly symbologyOverrides?: Uint8Array;
+}
+
+/** Parameters for creating a [[RenderGraphic]] representing a patterned area.
+ * A patterned area is a planar region filled with a pattern symbol repeated in
+ * a regular grid and clipped by the region's boundary.
+ * @internal
+ */
+export interface PatternGraphicParams {
+  readonly bytesPerOffset: 1 | 2 | 4;
+  readonly xyOffsets: Uint8Array;
+  readonly featureId?: number;
+  readonly orgTransform: Transform;
+  readonly scale: number;
+  readonly spacing: XY;
+  readonly localToWorld: Transform;
+  readonly worldToModel: Transform;
 }

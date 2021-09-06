@@ -8,7 +8,7 @@
 
 import { assert, dispose } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, Transform } from "@bentley/geometry-core";
-import { InstancedGraphicParams } from "../InstancedGraphicParams";
+import { InstancedGraphicParams, PatternGraphicParams } from "../InstancedGraphicParams";
 import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
 import { CachedGeometry, LUTGeometry } from "./CachedGeometry";
@@ -18,6 +18,7 @@ import { GL } from "./GL";
 import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
+import { Matrix4 } from "./Matrix";
 
 class InstanceData {
   public readonly shared: boolean;
@@ -167,32 +168,59 @@ export class InstanceBuffers extends InstanceData {
 
 /** @internal */
 export class PatternBuffers extends InstanceData {
-  public readonly featureId?: number;
-  private readonly _transforms: BufferHandle;
-
-  private constructor(shared: boolean, count: number, transforms: BufferHandle, rtcCenter: Point3d, range: Range3d, featureId: number | undefined) {
+  private constructor(
+    count: number,
+    shared: boolean,
+    rtcCenter: Point3d,
+    range: Range3d,
+    public readonly spacingAndScale: Float32Array,
+    public readonly orgTransform: Matrix4,
+    public readonly localToWorld: Matrix4,
+    public readonly worldToModel: Matrix4,
+    public readonly offsets: BufferHandle,
+    public readonly featureId?: number
+  ) {
     super(count, shared, rtcCenter, range);
-    this._transforms = transforms;
-    this.featureId = featureId;
-    // ###TODO additional members...
   }
 
-  // ###TODO public static create(...)
+  public static create(params: PatternGraphicParams, shared: boolean, range: Range3d): PatternBuffers | undefined {
+    const bytesPerOffset = params.bytesPerOffset;
+    assert(1 === bytesPerOffset || 2 === bytesPerOffset || 4 === bytesPerOffset);
+    const count = params.xyOffsets.byteLength / bytesPerOffset;
+    assert(Math.floor(count) === count);
+
+    const offsets = BufferHandle.createArrayBuffer(params.xyOffsets);
+    if (!offsets)
+      return undefined;
+
+    return new PatternBuffers(
+      count,
+      shared,
+      new Point3d(), // ###TODO May need to use this if symbols/patterns far from origin produce artifacts.
+      range,
+      new Float32Array([params.spacing.x, params.spacing.y, params.scale]),
+      Matrix4.fromTransform(params.orgTransform),
+      Matrix4.fromTransform(params.localToWorld),
+      Matrix4.fromTransform(params.worldToModel),
+      offsets,
+      params.featureId
+    );
+  }
 
   public get hasFeatures(): boolean {
     return undefined !== this.featureId;
   }
 
   public get isDisposed(): boolean {
-    return this._transforms.isDisposed;
+    return this.offsets.isDisposed;
   }
 
   public dispose(): void {
-    dispose(this._transforms);
+    dispose(this.offsets);
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    stats.addInstances(this._transforms.bytesUsed);
+    stats.addInstances(this.offsets.bytesUsed);
   }
 }
 
@@ -258,9 +286,21 @@ export class InstancedGeometry extends CachedGeometry {
     return new this(repr, ownsRepr, buffers, container);
   }
 
-  // public static createPattern(repr: LUTGeometry, ownsRepr: boolean, buffers: PatternBuffers): InstancedGeometry {
-  //   throw new Error("###TODO");
-  // }
+  public static createPattern(repr: LUTGeometry, ownsRepr: boolean, buffers: PatternBuffers): InstancedGeometry {
+    const techId = repr.techniqueId;
+    const container = BuffersContainer.create();
+    container.appendLinkages(repr.lutBuffers.linkages);
+
+    const attrX = AttributeMap.findAttribute("a_patternX", techId, true);
+    const attrY = AttributeMap.findAttribute("a_patternY", techId, true);
+    assert(undefined !== attrX && undefined !== attrY);
+    container.addBuffer(buffers.offsets, [
+      BufferParameters.create(attrX.location, 1, GL.DataType.UnsignedInt, false, 8, 0, true),
+      BufferParameters.create(attrY.location, 1, GL.DataType.UnsignedInt, false, 8, 4, true),
+    ]);
+
+    return new this(repr, ownsRepr, buffers, container);
+  }
 
   private constructor(repr: LUTGeometry, ownsRepr: boolean, buffers: InstanceBuffers | PatternBuffers, container: BuffersContainer) {
     super();
