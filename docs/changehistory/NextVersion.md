@@ -357,18 +357,14 @@ The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to 
 
   ```tsx
   const visibleNodes = useVisibleTreeNodes(modelSource);
-  return (
-    <ControlledTree {...otherProps} visibleNodes={visibleNodes} />
-  );
+  return <ControlledTree visibleNodes={visibleNodes} {...otherProps} />;
   ```
 
   **After:**
 
   ```tsx
   const treeModel = useTreeModel(modelSource);
-  return (
-    <ControlledTree {...otherProps} model={treeModel} />
-  );
+  return <ControlledTree model={treeModel} {...otherProps} />;
   ```
 
 * Name of the `treeEvents` prop was changed to `eventsHandler` to make it clearer. Typical migration:
@@ -376,17 +372,13 @@ The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to 
   **Before:**
 
   ```tsx
-  return (
-    <ControlledTree {...otherProps} treeEvents={eventsHandler} />
-  );
+  return <ControlledTree treeEvents={eventsHandler} {...otherProps} />;
   ```
 
   **After:**
 
   ```tsx
-  return (
-    <ControlledTree {...otherProps} eventsHandler={eventsHandler} />
-  );
+  return <ControlledTree eventsHandler={eventsHandler} {...otherProps} />;
   ```
 
 * Made the props `width` and `height` required. Previously they were optional and forced us to use non-optimal approach when not provided. Now it's up to the consumer to tell the size of the component. Typical migration:
@@ -394,9 +386,7 @@ The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to 
   **Before:**
 
   ```tsx
-  return (
-    <ControlledTree {...props} />
-  );
+  return <ControlledTree {...props} />;
   ```
 
   **After:**
@@ -404,9 +394,7 @@ The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to 
   ```tsx
   const width = 100;
   const height = 100;
-  return (
-    <ControlledTree {...props} width={width} height={height} />
-  );
+  return <ControlledTree width={width} height={height} {...props} />;
   ```
 
   Or, the size may be determined dynamically. The below example uses an `AutoSizer` component from `react-virtualized-auto-sizer` package for that:
