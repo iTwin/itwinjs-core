@@ -63,3 +63,5 @@ export const uifwThreeViewsTwoOnRight: ContentLayoutProps =
      right: 2,
    },
  };
+
+export const standardViewLayouts: ContentLayoutProps[] = [uifwSingleView, uifwFourQuadrants, uifwTwoVerticalSplit, uifwTwoHorizontalSplit, uifwThreeViewsTwoOnRight ];
