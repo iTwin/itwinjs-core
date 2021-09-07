@@ -30,7 +30,7 @@ import { RenderClipVolume } from "../RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
 import {
-  DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderDiagnostics, RenderSystem, RenderSystemDebugControl, TerrainTexture,
+  DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderDiagnostics, RenderGeometry, RenderSystem, RenderSystemDebugControl, TerrainTexture,
 } from "../RenderSystem";
 import { RenderTarget } from "../RenderTarget";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "../ScreenSpaceEffectBuilder";
@@ -46,7 +46,7 @@ import { Batch, Branch, Graphic, GraphicOwner, GraphicsArray } from "./Graphic";
 import { Layer, LayerContainer } from "./Layer";
 import { LineCode } from "./LineCode";
 import { Material } from "./Material";
-import { MeshGraphic } from "./Mesh";
+import { MeshGraphic, MeshRenderGeometry } from "./Mesh";
 import { PointCloudGeometry } from "./PointCloud";
 import { PointStringGeometry } from "./PointString";
 import { PolylineGeometry } from "./Polyline";
@@ -338,17 +338,6 @@ const enum VertexAttribState {
   InstancedEnabled = Instanced | Enabled,
 }
 
-function createPrimitive(createGeom: (viOrigin: Point3d | undefined) => CachedGeometry | undefined, instancesOrVIOrigin: InstancedGraphicParams | PatternGraphicParams | Point3d | undefined): RenderGraphic | undefined {
-  let viOrigin: Point3d | undefined;
-  let instances;
-  if (instancesOrVIOrigin instanceof Point3d)
-    viOrigin = instancesOrVIOrigin;
-  else
-    instances = instancesOrVIOrigin;
-
-  return Primitive.create(() => createGeom(viOrigin), instances);
-}
-
 /** @internal */
 export class System extends RenderSystem implements RenderSystemDebugControl, RenderMemory.Consumer, WebGLDisposable {
   public readonly canvas: HTMLCanvasElement;
@@ -524,10 +513,6 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return new PrimitiveBuilder(this, options);
   }
 
-  public override createMesh(params: MeshParams, instances?: InstancedGraphicParams | PatternGraphicParams | Point3d): RenderGraphic | undefined {
-    return MeshGraphic.create(params, instances);
-  }
-
   public override createPlanarGrid(frustum: Frustum, grid: PlanarGridProps): RenderGraphic | undefined {
     return PlanarGridGeometry.create(frustum, grid, this);
   }
@@ -544,12 +529,29 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return geom ? Primitive.create(() => geom) : undefined;
   }
 
-  public override createPolyline(params: PolylineParams, instances?: InstancedGraphicParams | PatternGraphicParams | Point3d): RenderGraphic | undefined {
-    return createPrimitive((viOrigin) => PolylineGeometry.create(params, viOrigin), instances);
+  public override createMeshGeometry(params: MeshParams, viOrigin?: Point3d): MeshRenderGeometry | undefined {
+    return MeshRenderGeometry.create(params, viOrigin);
   }
 
-  public override createPointString(params: PointStringParams, instances?: InstancedGraphicParams | PatternGraphicParams | Point3d): RenderGraphic | undefined {
-    return createPrimitive((viOrigin) => PointStringGeometry.create(params, viOrigin), instances);
+  public override createPolylineGeometry(params: PolylineParams, viOrigin?: Point3d): PolylineGeometry | undefined {
+    return PolylineGeometry.create(params, viOrigin);
+  }
+
+  public override createPointStringGeometry(params: PointStringParams, viOrigin?: Point3d): PointStringGeometry | undefined {
+    return PointStringGeometry.create(params, viOrigin);
+  }
+
+  public override createRenderGraphic(geometry: RenderGeometry, instances?: InstancedGraphicParams | PatternGraphicParams): RenderGraphic | undefined {
+    // ###TODO Take InstanceBuffers or PatternBuffers, not Params.
+    if (!(geometry instanceof MeshRenderGeometry)) {
+      if (geometry instanceof PolylineGeometry || geometry instanceof PointStringGeometry)
+        return Primitive.create(() => geometry, instances);
+
+      assert(false, "Invalid RenderGeometry for System.createRenderGraphic");
+      return undefined;
+    }
+
+    return MeshGraphic.create(geometry, instances);
   }
 
   public override createPointCloud(args: PointCloudArgs): RenderGraphic | undefined {
