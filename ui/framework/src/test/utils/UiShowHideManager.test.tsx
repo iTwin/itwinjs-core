@@ -172,8 +172,7 @@ describe("UiShowHideManager localStorage Wrapper", () => {
 
       const myContentLayout: ContentLayoutDef = new ContentLayoutDef({
         id: "SingleContent",
-        descriptionKey: "UiFramework:tests.singleContent",
-        priority: 100,
+        description: "UiFramework:tests.singleContent",
       });
 
       it("Mouse move in content view should show the UI then hide after inactivity", () => {

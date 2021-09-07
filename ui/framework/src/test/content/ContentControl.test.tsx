@@ -41,8 +41,7 @@ describe("ContentControl", () => {
 
     const myContentLayout: ContentLayoutDef = new ContentLayoutDef({
       id: "SingleContent",
-      descriptionKey: "UiFramework:tests.singleContent",
-      priority: 100,
+      description: "UiFramework:tests.singleContent",
     });
 
     class Frontstage1 extends FrontstageProvider {
@@ -98,8 +97,7 @@ describe("ContentControl", () => {
 
     const contentLayout2: ContentLayoutDef = new ContentLayoutDef({
       id: "TwoHalvesVertical",
-      descriptionKey: "App:ContentLayoutDef.TwoHalvesVertical",
-      priority: 60,
+      description: "App:ContentLayoutDef.TwoHalvesVertical",
       verticalSplit: { id: "TwoHalvesVertical.VerticalSplit", percentage: 0.50, left: 0, right: 1 },
     });
 

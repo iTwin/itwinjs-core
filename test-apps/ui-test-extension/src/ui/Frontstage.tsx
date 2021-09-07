@@ -42,8 +42,7 @@ export class ExtensionFrontstage extends FrontstageProvider {
     const pluginContentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
       {
         id: "ui-test.TwoHalvesHorizontal",
-        descriptionKey: "ContentDef.TwoStacked",
-        priority: 50,
+        description: "ContentDef.TwoStacked",
         horizontalSplit: { id: "TwoHalvesHorizontal.HorizontalSplit", percentage: 0.80, top: 0, bottom: 1 },
       });
 

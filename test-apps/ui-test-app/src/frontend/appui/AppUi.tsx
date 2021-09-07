@@ -21,7 +21,7 @@ import "./tooluiproviders/Tool2UiProvider";
 import "./statusbars/AppStatusBar";
 import "./navigationaids/CubeExampleNavigationAid";
 import * as React from "react";
-import { BadgeType, FunctionKey, StagePanelLocation, StagePanelSection, StageUsage, WidgetState } from "@bentley/ui-abstract";
+import { BadgeType, ContentLayoutProps, FunctionKey, StagePanelLocation, StagePanelSection, StageUsage, WidgetState } from "@bentley/ui-abstract";
 import { FillCentered } from "@bentley/ui-core";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 
@@ -33,7 +33,6 @@ import {
   CommandItemDef,
   ConfigurableUiManager,
   ContentGroupProps,
-  ContentLayoutProps,
   FrameworkAccuDraw,
   FrontstageManager,
   KeyboardShortcutManager,
@@ -345,21 +344,22 @@ export class AppUi {
     const fourQuadrants: ContentLayoutProps = {
       id: "FourQuadrants",
       horizontalSplit: {
+        id: "FourQuadrantsVerticalSplit",
         percentage: 0.50,
         minSizeTop: 100, minSizeBottom: 100,
-        top: { verticalSplit: { percentage: 0.50, left: 0, right: 1, minSizeLeft: 100, minSizeRight: 100 } },
-        bottom: { verticalSplit: { percentage: 0.50, left: 2, right: 3, minSizeLeft: 100, minSizeRight: 100 } },
+        top: { verticalSplit: { id: "FourQuadrantsTopHorizontalSplit", percentage: 0.50, left: 0, right: 1, minSizeLeft: 100, minSizeRight: 100 } },
+        bottom: { verticalSplit: { id: "FourQuadrantsBottomHorizontalSplit", percentage: 0.50, left: 2, right: 3, minSizeLeft: 100, minSizeRight: 100 } },
       },
     };
 
     const twoHalvesVertical: ContentLayoutProps = {
       id: "TwoHalvesVertical",
-      verticalSplit: { percentage: 0.50, left: 0, right: 1, minSizeLeft: 100, minSizeRight: 100 },
+      verticalSplit: { id: "TwoViewsVerticalSplit", percentage: 0.50, left: 0, right: 1, minSizeLeft: 100, minSizeRight: 100 },
     };
 
     const twoHalvesHorizontal: ContentLayoutProps = {
       id: "TwoHalvesHorizontal",
-      horizontalSplit: { percentage: 0.50, top: 0, bottom: 1, minSizeTop: 100, minSizeBottom: 100 },
+      horizontalSplit: {  id: "TwoViewsHorizontalSplit", percentage: 0.50, top: 0, bottom: 1, minSizeTop: 100, minSizeBottom: 100 },
     };
 
     const singleContent: ContentLayoutProps = {
@@ -373,7 +373,7 @@ export class AppUi {
         percentage: 0.50,
         minSizeLeft: 100, minSizeRight: 100,
         left: 0,
-        right: { horizontalSplit: { percentage: 0.50, top: 1, bottom: 2, minSizeTop: 100, minSizeBottom: 100 } },
+        right: { horizontalSplit: { id:"ThreeViewsRightHorizontalSplit", percentage: 0.50, top: 1, bottom: 2, minSizeTop: 100, minSizeBottom: 100 } },
       },
     };
 

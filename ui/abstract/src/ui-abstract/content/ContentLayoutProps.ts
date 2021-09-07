@@ -11,7 +11,7 @@
  */
 export interface LayoutSplitPropsBase {
   /** The id used to save the current state of the splitter */
-  id?: string;
+  id: string;
   /** The percentage of this layout that should be occupied by the top/left fragment by default */
   percentage: number;
   /** Used to lock splitter into fixed position. Defaults to false. */
@@ -67,9 +67,7 @@ export interface LayoutHorizontalSplitProps extends LayoutSplitPropsBase {
  */
 export interface ContentLayoutProps extends LayoutFragmentProps {
   /** ID for this Content Layout */
-  id?: string;
-  /** Localization key for a description. */
-  descriptionKey?: string;
-  /** The priority for the layout. Determines its position in menus. Higher numbers appear first. */
-  priority?: number;
+  id: string;
+  /** Description of the layout*/
+  description?: string;
 }

@@ -135,12 +135,12 @@ describe("ConfigurableUiManager", () => {
     const contentLayoutProps: ContentLayoutProps = {
       // Three Views, one on the left, two stacked on the right.
       id: "testContentLayout1",
-      descriptionKey: "SampleApp:ContentDef.ThreeRightStacked",
-      priority: 85,
+      description: "SampleApp:ContentDef.ThreeRightStacked",
       verticalSplit: {
+        id: "testContentLayout1Vertical",
         percentage: 0.50,
         left: 0,
-        right: { horizontalSplit: { percentage: 0.50, top: 1, bottom: 2 } },
+        right: { horizontalSplit: { id:"testContentLayout1Horizontal", percentage: 0.50, top: 1, bottom: 2 } },
       },
     };
     ConfigurableUiManager.loadContentLayout(contentLayoutProps);
@@ -152,12 +152,12 @@ describe("ConfigurableUiManager", () => {
       {
         // Three Views, one on the left, two stacked on the right.
         id: "testContentLayout2",
-        descriptionKey: "SampleApp:ContentDef.ThreeRightStacked",
-        priority: 85,
+        description: "SampleApp:ContentDef.ThreeRightStacked",
         verticalSplit: {
+          id: "testContentLayout2Vertical",
           percentage: 0.50,
           left: 0,
-          right: { horizontalSplit: { percentage: 0.50, top: 1, bottom: 2 } },
+          right: { horizontalSplit: { id:"testContentLayout2Horizontal", percentage: 0.50, top: 1, bottom: 2 } },
         },
       },
     ];

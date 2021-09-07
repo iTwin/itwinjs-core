@@ -71,8 +71,7 @@ describe("IModelViewportControl", () => {
     public contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
       {
         id: "SingleContent",
-        descriptionKey: "App:ContentLayoutDef.SingleContent",
-        priority: 100,
+        description: "App:ContentLayoutDef.SingleContent",
       },
     );
 

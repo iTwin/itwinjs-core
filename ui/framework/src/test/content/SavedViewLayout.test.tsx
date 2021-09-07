@@ -145,8 +145,7 @@ describe("SavedViewLayout", () => {
     public contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
       {
         id: "SingleContent",
-        descriptionKey: "App:ContentLayoutDef.SingleContent",
-        priority: 100,
+        description: "App:ContentLayoutDef.SingleContent",
       },
     );
 
@@ -220,7 +219,7 @@ describe("SavedViewLayout", () => {
       // Create ViewStates
       const viewStates = await SavedViewLayout.viewStatesFromProps(iModelConnection, savedViewLayoutProps);
 
-      expect(contentLayoutDef.descriptionKey).to.eq("App:ContentLayoutDef.SingleContent");
+      expect(contentLayoutDef.description).to.eq("App:ContentLayoutDef.SingleContent");
       expect(viewStates.length).to.eq(1);
 
       const viewState0 = viewStates[0];
@@ -279,7 +278,7 @@ describe("SavedViewLayout", () => {
       // Create ViewStates
       const viewStates = await SavedViewLayout.viewStatesFromProps(iModelConnection, savedViewLayoutProps);
 
-      expect(contentLayoutDef.descriptionKey).to.eq("App:ContentLayoutDef.SingleContent");
+      expect(contentLayoutDef.description).to.eq("App:ContentLayoutDef.SingleContent");
       expect(viewStates.length).to.eq(1);
 
       const viewState0 = viewStates[0];
@@ -334,7 +333,7 @@ describe("SavedViewLayout", () => {
       // Create ViewStates
       const viewStates = await SavedViewLayout.viewStatesFromProps(iModelConnection, savedViewLayoutProps);
 
-      expect(contentLayoutDef.descriptionKey).to.eq("App:ContentLayoutDef.SingleContent");
+      expect(contentLayoutDef.description).to.eq("App:ContentLayoutDef.SingleContent");
       expect(viewStates.length).to.eq(1);
 
       const viewState0 = viewStates[0];
