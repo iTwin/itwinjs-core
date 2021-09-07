@@ -83,12 +83,17 @@ export class EditFrontstage extends FrontstageProvider {
     const contentProps: ContentProps[] = [];
     for (const viewState of this.viewStates) {
       const thisContentProps: ContentProps = {
+        id: "edit-MainView",
         classId: IModelViewportControl,
         applicationData: { viewState, iModelConnection: this.iModelConnection },
       };
       contentProps.push(thisContentProps);
     }
-    const myContentGroup: ContentGroup = new ContentGroup({ contents: contentProps });
+    const myContentGroup: ContentGroup = new ContentGroup({
+      id: "main-edit",
+      preferredLayoutId: "SingleContent",
+      contents: contentProps,
+    });
     return (
       <Frontstage id="EditFrontstage"
         defaultTool={CoreTools.selectElementCommand}

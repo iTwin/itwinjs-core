@@ -33,9 +33,10 @@ describe("ContentControl", () => {
   it("activated", async () => {
     const myContentGroup: ContentGroup = new ContentGroup({
       id: "myContentGroup",
+      preferredLayoutId: "SingleContent",
       contents: [
-        { classId: TestContentControl, applicationData: "data1" },
-        { classId: TestContentControl, applicationData: "data2" },
+        { id: "main", classId: TestContentControl, applicationData: "data1" },
+        { id: "secondary", classId: TestContentControl, applicationData: "data2" },
       ],
     });
 
@@ -90,9 +91,10 @@ describe("ContentControl", () => {
   it("deactivated", async () => {
     const contentGroup2: ContentGroup = new ContentGroup({
       id: "contentGroup2",
+      preferredLayoutId: "SingleContent",
       contents: [
-        { classId: TestContentControl, applicationData: "data1" },
-        { classId: TestContentControl, applicationData: "data2" },
+        { id: "main", classId: TestContentControl, applicationData: "data1" },
+        { id: "secondary", classId: TestContentControl, applicationData: "data2" },
       ],
     });
 

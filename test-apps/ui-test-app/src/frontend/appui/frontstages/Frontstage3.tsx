@@ -24,7 +24,8 @@ export class Frontstage3 extends FrontstageProvider {
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
       { // Three Views, one on the left, two stacked on the right.
-        descriptionKey: "SampleApp:ContentLayoutDef.ThreeRightStacked",
+        id: "FourQuadrants",
+        descriptionKey: "SampleApp:ContentLayoutDef.FourQuadrants",
         verticalSplit: {
           percentage: 0.50,
           minSizeLeft: 100, minSizeRight: 100,
@@ -36,19 +37,25 @@ export class Frontstage3 extends FrontstageProvider {
 
     const myContentGroup: ContentGroup = new ContentGroup(
       {
+        id: "Frontstage4",
+        preferredLayoutId: "FourQuadrants",
         contents: [
           {
+            id: "imodelView1",
             classId: IModelViewportControl.id,
             applicationData: { viewState: UiFramework.getDefaultViewState, iModelConnection: UiFramework.getIModelConnection },
           },
           {
+            id: "reactTableView",
             classId: ReactTableDemoContentControl,
           },
           {
+            id: "imodelView2",
             classId: App_IModelViewport.id,
             applicationData: { viewState: UiFramework.getDefaultViewState, iModelConnection: UiFramework.getIModelConnection },
           },
           {
+            id: "oldTableView",
             classId: "TableExampleContent",
           },
         ],

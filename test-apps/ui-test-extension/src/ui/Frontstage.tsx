@@ -49,12 +49,16 @@ export class ExtensionFrontstage extends FrontstageProvider {
 
     const pluginContentGroup: ContentGroup = new ContentGroup(
       {
+        id: "ui-test:content-group",
+        preferredLayoutId: "ui-test.TwoHalvesHorizontal",
         contents: [
           {
+            id: "ui-test:primary",
             classId: IModelViewportControl,
             applicationData: { viewState: this._getViewState, iModelConnection: UiFramework.getIModelConnection },
           },
           {
+            id: "ui-test:primary",
             classId: "SampleExtensionContentControl",
           },
         ],

@@ -67,7 +67,9 @@ describe("WidgetStack", () => {
 
     public get frontstage(): React.ReactElement<FrontstageProps> {
       const myContentGroup: ContentGroup = new ContentGroup({
-        contents: [{ classId: "TestContentControl2" }],
+        id: "test-group",
+        preferredLayoutId: "SingleContent",
+        contents: [{ id: "main", classId: "TestContentControl2" }],
       });
 
       const myContentLayout: ContentLayoutDef = new ContentLayoutDef({

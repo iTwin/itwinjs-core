@@ -1400,7 +1400,7 @@ export class ContentLayoutManager {
 // @public
 export interface ContentLayoutProps extends LayoutFragmentProps {
     descriptionKey?: string;
-    id?: string;
+    id: string;
     priority?: number;
 }
 

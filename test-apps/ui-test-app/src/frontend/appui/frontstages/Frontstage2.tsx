@@ -28,6 +28,7 @@ export class Frontstage2 extends FrontstageProvider {
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
       { // Four Views, two stacked on the left, two stacked on the right.
+        id: "FourQuadrants",
         descriptionKey: "SampleApp:ContentLayoutDef.FourQuadrants",
         verticalSplit: {
           percentage: 0.50,
@@ -40,20 +41,26 @@ export class Frontstage2 extends FrontstageProvider {
 
     const myContentGroup: ContentGroup = new ContentGroup(
       {
+        id: "frontstage2",
+        preferredLayoutId: "FourQuadrants",
         contents: [
           {
+            id: "imodelView1",
             classId: "UiFramework.IModelViewportControl",
             applicationData: { label: "Content 1a", bgColor: "black" },
           },
           {
+            id: "treeView",
             classId: TreeExampleContentControl,
             applicationData: { label: "Content 2a", bgColor: "black" },
           },
           {
+            id: "imodelView2",
             classId: "TestApp.IModelViewport",
             applicationData: { label: "Content 3a", bgColor: "black" },
           },
           {
+            id: "gridView",
             classId: HorizontalPropertyGridContentControl,
             applicationData: { label: "Content 4a", bgColor: "black" },
           },

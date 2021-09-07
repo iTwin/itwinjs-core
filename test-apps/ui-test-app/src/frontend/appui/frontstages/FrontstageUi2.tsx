@@ -22,6 +22,8 @@ const supplyViewOverlay = (viewport: ScreenViewport) => {
 };
 
 export const ui2ContentGroupProps: ContentGroupProps = {
+  id: "main-content-group",
+  preferredLayoutId: "SingleContent",
   contents: [
     {
       id: "primaryContent",
@@ -84,17 +86,7 @@ export class FrontstageUi2 extends FrontstageProvider {
   };
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
-    const myContentGroup: ContentGroup = new ContentGroup(
-      {
-        contents: [
-          {
-            id: "primaryContent",
-            classId: IModelViewportControl.id,
-            applicationData: { viewState: UiFramework.getDefaultViewState, iModelConnection: UiFramework.getIModelConnection, supplyViewOverlay: this._supplyViewOverlay },
-          },
-        ],
-      },
-    );
+    const myContentGroup: ContentGroup = new ContentGroup(ui2ContentGroupProps);
 
     return (
       <Frontstage id="Ui2"

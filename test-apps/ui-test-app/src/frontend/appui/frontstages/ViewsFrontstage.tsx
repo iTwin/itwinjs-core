@@ -238,8 +238,9 @@ export class ViewsFrontstage extends FrontstageProvider {
 
     // create the content props that specifies an iModelConnection and a viewState entry in the application data.
     const contentProps: ContentProps[] = [];
-    for (const viewState of this.viewStates) {
+    this.viewStates.forEach((viewState, index) => {
       const thisContentProps: ContentProps = {
+        id: `imodel-view-${index}`,
         classId: IModelViewportControl,
         applicationData:
         {
@@ -255,12 +256,21 @@ export class ViewsFrontstage extends FrontstageProvider {
         },
       };
       contentProps.push(thisContentProps);
-    }
-    const myContentGroup: ContentGroup = new ContentGroup({ contents: contentProps });
+    });
+
+    // TODO - add this group to ContentGroupManager ???
+    const myContentGroup: ContentGroup = new ContentGroup(
+      {
+        id: "default-group",
+        preferredLayoutId: contentLayoutProps.id,
+        contents: contentProps,
+      });
+
     return (
       <Frontstage id={ViewsFrontstage.stageId}
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout={contentLayoutDef} contentGroup={myContentGroup}
+        defaultLayout={contentLayoutDef}
+        contentGroup={myContentGroup}
         isInFooterMode={true} applicationData={{ key: "value" }}
         usage={StageUsage.General}
         version={3.1} // Defaults to 0. Increment this when Frontstage changes are meaningful enough to reinitialize saved user layout settings.

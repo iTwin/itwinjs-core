@@ -11,8 +11,11 @@ export class ScheduleAnimationFrontstage extends FrontstageProvider {
 
     const myContentGroup: ContentGroup = new ContentGroup(
       {
+        id: "ScheduleAnimation",
+        preferredLayoutId: "SingleContent",
         contents: [
           {
+            id: "ScheduleAnimation",
             classId: "ScheduleAnimationControl",
           },
         ],
