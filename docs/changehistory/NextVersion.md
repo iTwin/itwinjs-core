@@ -235,6 +235,11 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `OidcDelegationClientConfiguration` | `DelegationAuthorizationClientConfiguration` |
 | `OidcDelegationClient`              | `DelegationAuthorizationClient`              |
 
+### @bentley/ui-abstract
+| Removed                             | Replacement                                  |
+| ----------------------------------- | -------------------------------------------- |
+| `ContentLayoutProps.priority`       | *eliminated*                                 |
+
 ### @bentley/ui-core
 
 | Removed                              | Replacement                                            |
@@ -263,6 +268,8 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | Removed                                 | Replacement                                                                            |
 | --------------------------------------- | -------------------------------------------------------------------------------------- |
 | `COLOR_THEME_DEFAULT`                   | `SYSTEM_PREFERRED_COLOR_THEME` in @bentley/ui-framework is used as default color theme |
+| `ContentLayoutProps`                    | `ContentLayoutProps` in @bentley/ui-abstract                                           |
+| `ContentLayoutDef.descriptionKey`       | `ContentLayoutDef.description`                                                         |
 | `FunctionKey`                           | `FunctionKey` in @bentley/ui-abstract                                                  |
 | `IModelAppUiSettings`                   | `UserSettingsStorage` in @bentley/ui-framework                                         |
 | `reactElement` in ContentControl        | `ContentControl.reactNode`                                                             |
