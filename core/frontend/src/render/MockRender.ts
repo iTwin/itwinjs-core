@@ -138,6 +138,7 @@ export namespace MockRender {
     public override createPolyline(_params: PolylineParams) { return new Graphic(); }
     public override createPointString(_params: PointStringParams) { return new Graphic(); }
     public override createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection) { return new Graphic(); }
+    public override createRenderGraphic() { return undefined; }
   }
 
   /** @internal */

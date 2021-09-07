@@ -7,11 +7,12 @@
  */
 
 import { assert, dispose } from "@bentley/bentleyjs-core";
-import { Point3d } from "@bentley/geometry-core";
+import { Point3d, Range3d } from "@bentley/geometry-core";
 import { FeatureIndexType, FillFlags, LinePixels, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
 import { InstancedGraphicParams, isPatternGraphicParams, PatternGraphicParams } from "../InstancedGraphicParams";
 import { MeshParams, SegmentEdgeParams, SilhouetteParams, SurfaceType, TesselatedPolyline, VertexIndices } from "../primitives/VertexTable";
 import { RenderMemory } from "../RenderMemory";
+import { RenderGeometry } from "../RenderSystem";
 import { AttributeMap } from "./AttributeMap";
 import { CachedGeometry, LUTGeometry, PolylineBuffers } from "./CachedGeometry";
 import { ColorInfo } from "./ColorInfo";
@@ -107,58 +108,75 @@ export class MeshData implements WebGLDisposable {
 }
 
 /** @internal */
+export class MeshRenderGeometry {
+  public readonly data: MeshData;
+  public readonly surface?: SurfaceGeometry;
+  public readonly segmentEdges?: EdgeGeometry;
+  public readonly silhouetteEdges?: SilhouetteEdgeGeometry;
+  public readonly polylineEdges?: PolylineEdgeGeometry;
+  public readonly range: Range3d;
+
+  private constructor(data: MeshData, params: MeshParams) {
+    this.data = data;
+    this.range = params.vertices.qparams.computeRange();
+    this.surface = SurfaceGeometry.create(data, params.surface.indices);
+    const edges = params.edges;
+    if (!edges || data.type === SurfaceType.VolumeClassifier)
+      return;
+
+    if (edges.silhouettes)
+      this.silhouetteEdges = SilhouetteEdgeGeometry.createSilhouettes(data, edges.silhouettes);
+
+    if (edges.segments)
+      this.segmentEdges = EdgeGeometry.create(data, edges.segments);
+
+    if (edges.polylines)
+      this.polylineEdges = PolylineEdgeGeometry.create(data, edges.polylines);
+  }
+
+  public static create(params: MeshParams, viewIndependentOrigin: Point3d | undefined): MeshRenderGeometry | undefined {
+    const data = MeshData.create(params, viewIndependentOrigin);
+    return data ? new this(data, params) : undefined;
+  }
+
+  public dispose() { }
+  public collectStatistics() { }
+}
+
+/** @internal */
 export class MeshGraphic extends Graphic {
   public readonly meshData: MeshData;
   private readonly _primitives: Primitive[] = [];
   private readonly _instances?: InstanceBuffers | PatternBuffers;
 
-  public static create(params: MeshParams, instancesOrVIOrigin?: InstancedGraphicParams | PatternGraphicParams | Point3d): MeshGraphic | undefined {
-    let viOrigin: Point3d | undefined;
+  public static create(geometry: MeshRenderGeometry, instances?: InstancedGraphicParams | PatternGraphicParams): MeshGraphic | undefined {
     let buffers;
-    if (instancesOrVIOrigin instanceof Point3d) {
-      viOrigin = instancesOrVIOrigin;
-    } else if (instancesOrVIOrigin) {
-      if (!isPatternGraphicParams(instancesOrVIOrigin)) {
-        const range = InstanceBuffers.computeRange(params.vertices.qparams.computeRange(), instancesOrVIOrigin.transforms, instancesOrVIOrigin.transformCenter);
-        buffers = InstanceBuffers.create(instancesOrVIOrigin, true, range);
-      } else {
-        buffers = PatternBuffers.create(instancesOrVIOrigin, true);
-      }
-
+    if (instances) {
+      // ###TODO: Accept InstanceBuffers or PatternBuffers, not Params.
+      buffers = isPatternGraphicParams(instances) ? PatternBuffers.create(instances, true) : InstanceBuffers.create(instances, true, geometry.range);
       if (!buffers)
         return undefined;
     }
 
-    const data = MeshData.create(params, viOrigin);
-    return undefined !== data ? new MeshGraphic(data, params, buffers) : undefined;
+    return new MeshGraphic(geometry, buffers);
   }
 
-  private addPrimitive(createGeom: () => CachedGeometry | undefined) {
-    const primitive = Primitive.createShared(createGeom, this._instances);
-    if (undefined !== primitive)
+  private addPrimitive(geometry: RenderGeometry | undefined) {
+    assert(geometry instanceof CachedGeometry);
+    const primitive = geometry ? Primitive.createShared(() => geometry, this._instances) : undefined;
+    if (primitive)
       this._primitives.push(primitive);
   }
 
-  private constructor(data: MeshData, params: MeshParams, instances?: InstanceBuffers | PatternBuffers) {
+  private constructor(geometry: MeshRenderGeometry, instances?: InstanceBuffers | PatternBuffers) {
     super();
-    this.meshData = data;
+    this.meshData = geometry.data;
     this._instances = instances;
 
-    this.addPrimitive(() => SurfaceGeometry.create(this.meshData, params.surface.indices));
-
-    // Classifiers are surfaces only...no edges.
-    if (this.surfaceType === SurfaceType.VolumeClassifier || undefined === params.edges)
-      return;
-
-    const edges = params.edges;
-    if (undefined !== edges.silhouettes)
-      this.addPrimitive(() => SilhouetteEdgeGeometry.createSilhouettes(this.meshData, edges.silhouettes!));
-
-    if (undefined !== edges.segments)
-      this.addPrimitive(() => EdgeGeometry.create(this.meshData, edges.segments!));
-
-    if (undefined !== edges.polylines)
-      this.addPrimitive(() => PolylineEdgeGeometry.create(this.meshData, edges.polylines!));
+    this.addPrimitive(geometry.surface);
+    this.addPrimitive(geometry.segmentEdges);
+    this.addPrimitive(geometry.silhouetteEdges);
+    this.addPrimitive(geometry.polylineEdges);
   }
 
   public get isDisposed(): boolean { return this.meshData.isDisposed && 0 === this._primitives.length; }
