@@ -3559,10 +3559,6 @@
       "$ref": "#/definitions/SupplementationInfo",
       "description": "Supplementation-related information for this ruleset"
     },
-    "supportedSchemas": {
-      "$ref": "#/definitions/SchemasSpecification",
-      "description": "Names of schemas which the rules should be applied for. Rules are applied to all\nschemas if this property is not set."
-    },
     "vars": {
       "description": "User-controllable variable definitions",
       "items": {
