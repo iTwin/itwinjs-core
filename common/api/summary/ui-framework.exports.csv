@@ -293,15 +293,10 @@ alpha;HTMLElementPopup
 alpha;HTMLElementPopupProps 
 beta;IModelAppUiSettings 
 deprecated;IModelAppUiSettings 
-beta;IModelConnectedCategoryTree: import("react-redux").ConnectedComponent
-alpha;IModelConnectedModelsTree: import("react-redux").ConnectedComponent
 beta;IModelConnectedNavigationWidget: import("react-redux").ConnectedComponent
 deprecated;IModelConnectedNavigationWidget: import("react-redux").ConnectedComponent
-beta;IModelConnectedSpatialContainmentTree: import("react-redux").ConnectedComponent
 beta;IModelConnectedViewport: import("react-redux").ConnectedComponent
 beta;IModelConnectedViewSelector: import("react-redux").ConnectedComponent
-beta;IModelConnectedVisibilityComponent: import("react-redux").ConnectedComponent
-deprecated;IModelConnectedVisibilityComponent: import("react-redux").ConnectedComponent
 internal;IModelInfo
 internal;IModelScope
 internal;IModelServices
@@ -713,14 +708,6 @@ beta;ViewSelectorDefaultProps = Pick
 beta;ViewSelectorProps
 public;ViewUtilities
 alpha;VisibilityChangeListener = (nodeIds?: string[], visibilityStatus?: Map
-beta;VisibilityComponent 
-deprecated;VisibilityComponent 
-beta;VisibilityComponentConfig
-deprecated;VisibilityComponentConfig
-public;VisibilityComponentHierarchy
-deprecated;VisibilityComponentHierarchy
-beta;VisibilityComponentProps
-deprecated;VisibilityComponentProps
 alpha;VisibilityStatus
 alpha;VisibilityTreeEventHandler 
 alpha;VisibilityTreeEventHandlerParams 
@@ -729,8 +716,6 @@ alpha;visibilityTreeNodeCheckboxRenderer: (props: NodeCheckboxRenderProps) => JS
 alpha;VisibilityTreeNoFilteredData(props: VisibilityTreeNoFilteredDataProps): JSX.Element
 alpha;VisibilityTreeNoFilteredDataProps
 alpha;VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => boolean
-beta;VisibilityWidget 
-deprecated;VisibilityWidget 
 public;Widget 
 public;WIDGET_OPACITY_DEFAULT = 0.9
 internal;WidgetChangedEventArgs

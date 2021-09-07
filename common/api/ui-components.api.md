@@ -810,6 +810,9 @@ export class CompositeTypeConverter extends TypeConverter {
     sortCompare(valueA: Primitives.Composite, valueB: Primitives.Composite, ignoreCase?: boolean | undefined): number;
 }
 
+// @public
+export function computeVisibleNodes(model: TreeModel): VisibleTreeNodes;
+
 // @beta
 export function ControlledSelectableContent(props: ControlledSelectableContentProps): JSX.Element;
 
@@ -831,8 +834,10 @@ export function ControlledTree(props: ControlledTreeProps): JSX.Element;
 // @public
 export interface ControlledTreeProps extends CommonProps {
     descriptionsEnabled?: boolean;
-    height?: number;
+    eventsHandler: TreeEvents;
+    height: number;
     iconsEnabled?: boolean;
+    model: TreeModel;
     noDataRenderer?: () => React.ReactElement;
     nodeHighlightingProps?: HighlightableTreeProps;
     nodeLoader: ITreeNodeLoader;
@@ -840,10 +845,8 @@ export interface ControlledTreeProps extends CommonProps {
     onItemsRendered?: (items: RenderedItemsRange) => void;
     selectionMode: SelectionMode;
     spinnerRenderer?: () => React.ReactElement;
-    treeEvents: TreeEvents;
     treeRenderer?: (props: TreeRendererProps) => React.ReactElement;
-    visibleNodes: VisibleTreeNodes;
-    width?: number;
+    width: number;
 }
 
 // @public
@@ -1630,6 +1633,9 @@ export function getPropertyKey(propertyCategory: PropertyCategory, propertyRecor
 // @internal (undocumented)
 export const getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection;
 
+// @internal
+export function getVisibleDescendants(model: TreeModel, parentNode: TreeModelNode | TreeModelRootNode, result?: Array<TreeModelNode | TreeModelNodePlaceholder>): Array<TreeModelNode | TreeModelNodePlaceholder>;
+
 // @beta
 export interface GridCategoryItem extends FlatGridItemBase {
     // (undocumented)
@@ -2385,7 +2391,6 @@ export class MutableTreeModel implements TreeModel {
     [immerable]: boolean;
     changeNodeId(currentId: string, newId: string): boolean;
     clearChildren(parentId: string | undefined): void;
-    computeVisibleNodes(): VisibleTreeNodes;
     getChildOffset(parentId: string | undefined, childId: string): number | undefined;
     getChildren(parentId: string | undefined): SparseArray<string> | undefined;
     getNode(id: string): MutableTreeModelNode | undefined;
@@ -4462,10 +4467,9 @@ export interface TreeModelRootNode {
 export class TreeModelSource {
     constructor(_model?: MutableTreeModel);
     getModel(): TreeModel;
-    getVisibleNodes(): VisibleTreeNodes;
     modifyModel(callback: (model: MutableTreeModel) => void): void;
     onModelChanged: BeUiEvent<[TreeModel, TreeModelChanges]>;
-    }
+}
 
 // @public @deprecated
 export class TreeNode extends React.Component<TreeNodeProps> {
@@ -4691,7 +4695,7 @@ TreeRendererContextProvider: React.ProviderExoticComponent<React.ProviderProps<T
 
 // @public
 export interface TreeRendererProps {
-    height?: number;
+    height: number;
     nodeHeight: (node: TreeModelNode | TreeModelNodePlaceholder, index: number) => number;
     nodeHighlightingProps?: HighlightableTreeProps;
     // (undocumented)
@@ -4704,7 +4708,7 @@ export interface TreeRendererProps {
     // (undocumented)
     treeActions: TreeActions;
     visibleNodes: VisibleTreeNodes;
-    width?: number;
+    width: number;
 }
 
 // @public
@@ -4851,6 +4855,9 @@ export function useToolItemEntryContext(): ToolbarItemContextArgs;
 export function useTreeEventsHandler<TEventsHandler extends TreeEventHandler>(factoryOrParams: (() => TEventsHandler) | TreeEventHandlerParams): TreeEventHandler;
 
 // @public
+export function useTreeModel(modelSource: TreeModelSource): TreeModel;
+
+// @public
 export function useTreeModelSource(dataProvider: TreeDataProvider): TreeModelSource;
 
 // @public
@@ -4863,9 +4870,6 @@ export const
  * @beta
  */
 useTreeRendererContext: <P>(component: React.ComponentType<P>) => TreeRendererContext;
-
-// @public
-export function useVisibleTreeNodes(modelSource: TreeModelSource): VisibleTreeNodes;
 
 // @beta
 export class VirtualizedPropertyGrid extends React.Component<VirtualizedPropertyGridProps, VirtualizedPropertyGridState> {
