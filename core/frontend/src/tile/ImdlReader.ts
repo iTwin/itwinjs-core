@@ -125,7 +125,8 @@ interface ImdlAreaPattern {
   readonly scale: number;
   readonly spacing: XYProps;
   readonly orgTransform: TransformProps;
-  readonly xyOffsets: Uint8Array;
+  /** Lookup key in ImdlReader._bufferViews. */
+  readonly xyOffsets: string;
   readonly bytesPerOffset: 1 | 2 | 4;
   readonly featureId: number;
   readonly localToWorld: TransformProps;
@@ -469,6 +470,10 @@ export class ImdlReader extends GltfReader {
     if (!geometry || geometry.length === 0)
       return undefined;
 
+    const xyOffsets = this.findBuffer(json.xyOffsets);
+    if (!xyOffsets)
+      return undefined;
+
     const clip = ClipVector.fromJSON(json.clip);
     const clipVolume = clip && clip.isValid ? this._system.createClipVolume(clip) : undefined;
     if (!clipVolume)
@@ -476,7 +481,7 @@ export class ImdlReader extends GltfReader {
 
     const pattern = this._system.createAreaPattern({
       bytesPerOffset: json.bytesPerOffset,
-      xyOffsets: json.xyOffsets,
+      xyOffsets,
       featureId: json.featureId,
       orgTransform: Transform.fromJSON(json.orgTransform),
       scale: json.scale,
