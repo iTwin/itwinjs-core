@@ -166,7 +166,7 @@ export class MeshGraphic extends Graphic {
       return;
 
     assert(geometry instanceof CachedGeometry);
-    const primitive = Primitive.createShared(() => geometry, this._instances);
+    const primitive = Primitive.createShared(geometry, this._instances);
     if (primitive)
       this._primitives.push(primitive);
   }
