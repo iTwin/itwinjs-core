@@ -64,4 +64,51 @@ export const uifwThreeViewsTwoOnLeft: ContentLayoutProps =
    },
  };
 
-export const standardViewLayouts: ContentLayoutProps[] = [uifwSingleView, uifwFourQuadrants, uifwTwoVerticalSplit, uifwTwoHorizontalSplit, uifwThreeViewsTwoOnLeft ];
+export const uifwThreeViewsTwoOnRight: ContentLayoutProps =
+ {
+   id: "uifw:threeViewsTwoOnRight",
+   description: "Three views, one on the left with the two on the right stacked one of top of the other",
+   verticalSplit: {
+     id: "uifw:twoViewsOnRightSplit",
+     percentage: 0.50,
+     left: 0,
+     right: { horizontalSplit: { id: "uifw:twoViewsOnRightHorizontal", percentage: 0.50, top: 1, bottom: 2, lock: true, minSizeTop: 50, minSizeBottom: 50 } },
+   },
+ };
+
+export const uifwThreeViewsTwoOnBottom: ContentLayoutProps =
+ {
+   id: "uifw:threeViewsTwoOnBottom",
+   description: "Three Views, one on top and two side by side on the bottom",
+   horizontalSplit: {
+     id: "uifw:threeViewsTwoOnBottomHorizontal",
+     percentage: 0.50,
+     lock: true,
+     top: 0,
+     bottom: { verticalSplit: { id: "uifw:twoViewsOnBottomVertical", percentage: 0.50, left: 1, right: 2, lock: true, minSizeLeft: 50, minSizeRight: 50 } },
+   },
+ };
+
+export const uifwThreeViewsTwoOnTop: ContentLayoutProps =
+ {
+   id: "uifw:threeViewsTwoOnTop",
+   description: "Three Views, two side by side on top and one on the bottom",
+   horizontalSplit: {
+     id: "uifw:twoViewsOnTopHorizontal",
+     percentage: 0.50,
+     lock: true,
+     top: { verticalSplit: { id: "uifw:twoViewsOnTopVertical", percentage: 0.50, left: 0, right: 1, lock: true, minSizeLeft: 50, minSizeRight: 50 } },
+     bottom: 2,
+   },
+ };
+
+export const standardViewLayouts: ContentLayoutProps[] = [
+  uifwSingleView,
+  uifwFourQuadrants,
+  uifwTwoVerticalSplit,
+  uifwTwoHorizontalSplit,
+  uifwThreeViewsTwoOnLeft,
+  uifwThreeViewsTwoOnRight,
+  uifwThreeViewsTwoOnBottom,
+  uifwThreeViewsTwoOnTop,
+];
