@@ -31,7 +31,6 @@ export * from "./ui-framework/backstage/FrontstageLaunch";
 export * from "./ui-framework/backstage/Separator";
 export * from "./ui-framework/backstage/useDefaultBackstageItems";
 export * from "./ui-framework/backstage/TaskLaunch";
-export * from "./ui-framework/backstage/UserProfile";
 export * from "./ui-framework/backstage/useUiItemsProviderBackstageItems";
 
 export * from "./ui-framework/clientservices/IModelServices";
@@ -120,9 +119,6 @@ export * from "./ui-framework/navigationaids/NavigationAidControl";
 export * from "./ui-framework/navigationaids/SheetNavigationAid";
 export * from "./ui-framework/navigationaids/SheetsModalFrontstage";
 export * from "./ui-framework/navigationaids/StandardRotationNavigationAid";
-
-export * from "./ui-framework/oidc/SignIn";
-export * from "./ui-framework/oidc/SignOut";
 
 export * from "./ui-framework/pickers/ListPicker";
 export * from "./ui-framework/pickers/ModelSelector/ModelSelector";
@@ -238,6 +234,8 @@ export * from "./ui-framework/uisettings/AppUiSettings";
 export * from "./ui-framework/uisettings/UserSettingsStorage";
 export * from "./ui-framework/uisettings/useUiSettings";
 
+export * from "./ui-framework/UserInfo";
+
 export * from "./ui-framework/utils/ViewUtilities";
 export * from "./ui-framework/utils/PropsHelper";
 export * from "./ui-framework/utils/UiShowHideManager";
@@ -270,7 +268,6 @@ export * from "./ui-framework/widgets/WidgetHost";
 export * from "./ui-framework/widgets/WidgetManager";
 export * from "./ui-framework/widgets/WidgetProps";
 export * from "./ui-framework/widgets/WidgetStack";
-export * from "./ui-framework/widgets/VisibilityWidget";
 
 export * from "./ui-framework/workflow/Task";
 export * from "./ui-framework/workflow/Workflow";
@@ -286,7 +283,7 @@ export * from "./ui-framework/zones/Zone";
 export * from "./ui-framework/zones/ZoneDef";
 
 /** @docs-package-description
- * The ui-framework package contains application fragments for Login, Project, iModel and View selection,
+ * The ui-framework package contains application fragments for Project, iModel and View selection,
  * and configuration of the application UI with the Backstage, Frontstages, Widgets, etc.
  * For more information, see [learning about ui-framework]($docs/learning/ui/framework/index.md).
  */
@@ -345,10 +342,6 @@ export * from "./ui-framework/zones/ZoneDef";
 /**
  * @docs-group-description Notification
  * Classes for working with a Notification or Message
- */
-/**
- * @docs-group-description OIDC
- * Classes for working with the OpenID Connect (OIDC) protocol
  */
 
 /**
@@ -419,4 +412,3 @@ export * from "./ui-framework/zones/ZoneDef";
  * @docs-group-description Timeline
  * Classes for working with a TimelineComponent
  */
-

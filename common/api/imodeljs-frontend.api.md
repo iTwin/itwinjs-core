@@ -1894,7 +1894,7 @@ export class Cluster<T extends Marker> {
     readonly rect: ViewRect;
 }
 
-// @internal (undocumented)
+// @alpha (undocumented)
 export enum CompassMode {
     // (undocumented)
     Polar = 0,
@@ -5723,6 +5723,8 @@ export class MapTileTree extends RealityTileTree {
     minEarthEllipsoid: Ellipsoid;
     // (undocumented)
     static minReprojectionDepth: number;
+    // (undocumented)
+    get parentsAndChildrenExclusive(): boolean;
     // (undocumented)
     pointAboveEllipsoid(point: Point3d): boolean;
     // (undocumented)

@@ -22,30 +22,7 @@ exports[`Backstage <Backstage /> renders correctly - isVisible 1`] = `
 
 exports[`Backstage <Backstage /> renders correctly with UserInfo 1`] = `
 <Backstage
-  header={
-    <UserProfileBackstageItem
-      userInfo={
-        UserInfo {
-          "email": Object {
-            "id": "testuser001@mailinator.com",
-          },
-          "featureTracking": Object {
-            "ultimateSite": "1004144426",
-            "usageCountryIso": "US",
-          },
-          "id": "596c0d8b-eac2-46a0-aa4a-b590c3314e7c",
-          "organization": Object {
-            "id": "fefac5b-bcad-488b-aed2-df27bffe5786",
-            "name": "Bentley",
-          },
-          "profile": Object {
-            "firstName": "test",
-            "lastName": "user",
-          },
-        }
-      }
-    />
-  }
+  header={null}
   isOpen={false}
   onClose={[Function]}
   safeAreaInsets={0}

@@ -11,7 +11,6 @@ import { AbstractToolbarProps } from '@bentley/ui-abstract';
 import { AbstractTreeNodeLoaderWithProvider } from '@bentley/ui-components';
 import { AbstractWidgetProps } from '@bentley/ui-abstract';
 import { AccuDraw } from '@bentley/imodeljs-frontend';
-import { AccuDrawField } from '@bentley/ui-abstract';
 import { ActionButton } from '@bentley/ui-abstract';
 import { ActivityMessageDetails } from '@bentley/imodeljs-frontend';
 import { ActivityMessageEndReason } from '@bentley/imodeljs-frontend';
@@ -34,6 +33,7 @@ import { CommonDivProps } from '@bentley/ui-core';
 import { CommonProps } from '@bentley/ui-core';
 import { CommonStatusBarItem } from '@bentley/ui-abstract';
 import { CommonToolbarItem } from '@bentley/ui-abstract';
+import { CompassMode } from '@bentley/imodeljs-frontend';
 import { ConditionalBooleanValue } from '@bentley/ui-abstract';
 import { ConditionalStringValue } from '@bentley/ui-abstract';
 import * as CSS from 'csstype';
@@ -228,15 +228,19 @@ export class AccuDrawCommandItems {
     static get setOrigin(): ToolItemDef;
 }
 
-// @alpha (undocumented)
+// @alpha
 export function AccuDrawDialog(props: AccuDrawDialogProps): JSX.Element;
 
-// @alpha (undocumented)
+// @alpha
 export interface AccuDrawDialogProps extends CommonProps {
     dialogId: string;
     onClose?: () => void;
     opened: boolean;
     orientation?: Orientation;
+}
+
+// @alpha
+export class AccuDrawGrabInputFocusEvent extends BeUiEvent<{}> {
 }
 
 // @alpha
@@ -260,6 +264,64 @@ export class AccuDrawPopupManager {
     static showLengthEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean;
     // (undocumented)
     static showMenuButton(id: string, el: HTMLElement, pt: XAndY, menuItemsProps: AbstractMenuItemProps[]): boolean;
+}
+
+// @alpha
+export class AccuDrawSetCompassModeEvent extends BeUiEvent<AccuDrawSetCompassModeEventArgs> {
+}
+
+// @alpha
+export interface AccuDrawSetCompassModeEventArgs {
+    // (undocumented)
+    mode: CompassMode;
+}
+
+// @alpha
+export class AccuDrawSetFieldFocusEvent extends BeUiEvent<AccuDrawSetFieldFocusEventArgs> {
+}
+
+// @alpha
+export interface AccuDrawSetFieldFocusEventArgs {
+    // (undocumented)
+    field: ItemField;
+}
+
+// @alpha
+export class AccuDrawSetFieldLockEvent extends BeUiEvent<AccuDrawSetFieldLockEventArgs> {
+}
+
+// @alpha
+export interface AccuDrawSetFieldLockEventArgs {
+    // (undocumented)
+    field: ItemField;
+    // (undocumented)
+    lock: boolean;
+}
+
+// @alpha
+export class AccuDrawSetFieldValueFromUiEvent extends BeUiEvent<AccuDrawSetFieldValueFromUiEventArgs> {
+}
+
+// @alpha
+export interface AccuDrawSetFieldValueFromUiEventArgs {
+    // (undocumented)
+    field: ItemField;
+    // (undocumented)
+    stringValue: string;
+}
+
+// @alpha
+export class AccuDrawSetFieldValueToUiEvent extends BeUiEvent<AccuDrawSetFieldValueToUiEventArgs> {
+}
+
+// @alpha
+export interface AccuDrawSetFieldValueToUiEventArgs {
+    // (undocumented)
+    field: ItemField;
+    // (undocumented)
+    formattedValue: string;
+    // (undocumented)
+    value: number;
 }
 
 // @alpha
@@ -291,7 +353,7 @@ export interface AccuDrawUiSettings {
     zStyle?: React_2.CSSProperties;
 }
 
-// @internal (undocumented)
+// @alpha
 export class AccuDrawUiSettingsChangedEvent extends BeUiEvent<{}> {
 }
 
@@ -896,10 +958,12 @@ export interface CategoryTreeProps {
     enablePreloading?: boolean;
     // @alpha
     filterInfo?: VisibilityTreeFilterInfo;
+    height: number;
     iModel: IModelConnection;
     onFilterApplied?: (filteredDataProvider: IPresentationTreeDataProvider, matchesCount: number) => void;
     // @internal
     viewManager?: ViewManager;
+    width: number;
 }
 
 // @internal
@@ -2097,14 +2161,15 @@ export interface FooterModeFieldProps extends StatusFieldProps {
     children?: React.ReactNode;
 }
 
-// @internal (undocumented)
+// @alpha
 export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider {
     constructor();
     static get displayNotifications(): boolean;
     static set displayNotifications(v: boolean);
-    // (undocumented)
     static getFieldDisplayValue(index: ItemField): string;
+    // @internal
     grabInputFocus(): void;
+    // @internal
     get hasInputFocus(): boolean;
     static readonly isACSRotationConditional: ConditionalBooleanValue;
     static readonly isContextRotationConditional: ConditionalBooleanValue;
@@ -2116,24 +2181,28 @@ export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider 
     static readonly isViewRotationConditional: ConditionalBooleanValue;
     // (undocumented)
     loadUserSettings(storage: UiSettings): Promise<void>;
+    static readonly onAccuDrawGrabInputFocusEvent: AccuDrawGrabInputFocusEvent;
+    static readonly onAccuDrawSetCompassModeEvent: AccuDrawSetCompassModeEvent;
+    static readonly onAccuDrawSetFieldFocusEvent: AccuDrawSetFieldFocusEvent;
+    static readonly onAccuDrawSetFieldLockEvent: AccuDrawSetFieldLockEvent;
+    static readonly onAccuDrawSetFieldValueFromUiEvent: AccuDrawSetFieldValueFromUiEvent;
+    static readonly onAccuDrawSetFieldValueToUiEvent: AccuDrawSetFieldValueToUiEvent;
     static readonly onAccuDrawUiSettingsChangedEvent: AccuDrawUiSettingsChangedEvent;
-    // (undocumented)
+    // @internal (undocumented)
     onCompassModeChange(): void;
-    // (undocumented)
+    // @internal (undocumented)
     onFieldLockChange(index: ItemField): void;
-    // (undocumented)
+    // @internal (undocumented)
     onFieldValueChange(index: ItemField): void;
+    // @internal
     onMotion(_ev: BeButtonEvent): void;
-    // (undocumented)
+    // @internal (undocumented)
     onRotationModeChange(): void;
     // (undocumented)
     readonly providerId = "FrameworkAccuDraw";
-    // (undocumented)
+    static setFieldValueFromUi(field: ItemField, stringValue: string): void;
+    // @internal (undocumented)
     setFocusItem(index: ItemField): void;
-    // (undocumented)
-    static translateFromItemField(item: ItemField): AccuDrawField;
-    // (undocumented)
-    static translateToItemField(field: AccuDrawField): ItemField;
     static get uiSettings(): AccuDrawUiSettings | undefined;
     static set uiSettings(v: AccuDrawUiSettings | undefined);
     }
@@ -3011,26 +3080,14 @@ export interface HTMLElementPopupProps extends PopupPropsBase {
 export class IModelAppUiSettings extends UserSettingsStorage {
 }
 
-// @beta
-export const IModelConnectedCategoryTree: import("react-redux").ConnectedComponent<typeof CategoryTree, any>;
-
-// @alpha
-export const IModelConnectedModelsTree: import("react-redux").ConnectedComponent<typeof ModelsTree, any>;
-
 // @beta @deprecated
 export const IModelConnectedNavigationWidget: import("react-redux").ConnectedComponent<typeof DefaultNavigationWidget, any>;
-
-// @beta
-export const IModelConnectedSpatialContainmentTree: import("react-redux").ConnectedComponent<typeof SpatialContainmentTree, any>;
 
 // @beta
 export const IModelConnectedViewport: import("react-redux").ConnectedComponent<React.ComponentType<import("@bentley/ui-imodel-components").ViewportProps & import("@bentley/presentation-components").ViewWithUnifiedSelectionProps>, any>;
 
 // @beta
 export const IModelConnectedViewSelector: import("react-redux").ConnectedComponent<typeof ViewSelector, any>;
-
-// @beta @deprecated
-export const IModelConnectedVisibilityComponent: import("react-redux").ConnectedComponent<typeof VisibilityComponent, any>;
 
 // @internal
 export interface IModelInfo {
@@ -3960,6 +4017,7 @@ export interface ModelsTreeProps {
     filteredElementIds?: Id64Array;
     // @alpha
     filterInfo?: VisibilityTreeFilterInfo;
+    height: number;
     iModel: IModelConnection;
     // @alpha
     modelsVisibilityHandler?: ModelsVisibilityHandler;
@@ -3968,6 +4026,7 @@ export interface ModelsTreeProps {
     selectionMode?: SelectionMode;
     // @alpha
     selectionPredicate?: ModelsTreeSelectionPredicate;
+    width: number;
 }
 
 // @beta
@@ -5455,35 +5514,6 @@ export const showWidget: (base: {
 }, id: string) => import("immer/dist/internal").WritableDraft<NineZoneState>;
 
 // @public
-export class SignIn extends React.PureComponent<SignInProps> {
-    constructor(props: SignInProps);
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    render(): JSX.Element;
-}
-
-// @public
-export interface SignInProps extends CommonProps {
-    onOffline?: () => void;
-    onRegister?: () => void;
-    onSignedIn?: () => void;
-    // @internal (undocumented)
-    onStartSignIn?: () => void;
-}
-
-// @public
-export class SignOutModalFrontstage implements ModalFrontstageInfo {
-    constructor(userInfo?: UserInfo);
-    // (undocumented)
-    get content(): React.ReactNode;
-    // (undocumented)
-    title: string;
-    }
-
-// @public
 export const SnapModeField: import("react-redux").ConnectedComponent<typeof SnapModeFieldComponent, import("react-redux").Omit<React.ClassAttributes<SnapModeFieldComponent> & SnapModeFieldProps, "setSnapMode" | "snapMode">>;
 
 // @alpha
@@ -5510,8 +5540,10 @@ export interface SpatialContainmentTreeProps {
     // @beta
     enableElementsClassGrouping?: ClassGroupingOption;
     enablePreloading?: boolean;
+    height: number;
     // (undocumented)
     iModel: IModelConnection;
+    width: number;
 }
 
 // @internal (undocumented)
@@ -6839,20 +6871,6 @@ export function useNineZoneDispatch(frontstageDef: FrontstageDef): NineZoneDispa
 // @internal (undocumented)
 export function useNineZoneState(frontstageDef: FrontstageDef): NineZoneState | undefined;
 
-// @public
-export class UserProfileBackstageItem extends React.PureComponent<UserProfileBackstageItemProps> {
-    // (undocumented)
-    render(): React.ReactNode | undefined;
-}
-
-// @public
-export interface UserProfileBackstageItemProps extends CommonProps {
-    // (undocumented)
-    onOpenSignOut?: () => void;
-    // (undocumented)
-    userInfo: UserInfo;
-}
-
 // @beta
 export interface UserSettingsProvider {
     loadUserSettings(storage: UiSettingsStorage): Promise<void>;
@@ -7067,50 +7085,6 @@ export class ViewUtilities {
 // @alpha
 export type VisibilityChangeListener = (nodeIds?: string[], visibilityStatus?: Map<string, VisibilityStatus>) => void;
 
-// @beta @deprecated
-export class VisibilityComponent extends React.Component<VisibilityComponentProps, VisibilityTreeState> {
-    constructor(props: any);
-    // (undocumented)
-    componentDidMount(): Promise<void>;
-    componentWillUnmount(): void;
-    // (undocumented)
-    render(): JSX.Element;
-    }
-
-// @beta @deprecated
-export interface VisibilityComponentConfig {
-    // (undocumented)
-    modelsTree?: {
-        selectionMode?: SelectionMode;
-        selectionPredicate?: ModelsTreeSelectionPredicate;
-        enableElementsClassGrouping?: ClassGroupingOption;
-        enableHierarchyAutoUpdate?: boolean;
-    };
-    // (undocumented)
-    spatialContainmentTree?: {
-        enableElementsClassGrouping?: ClassGroupingOption;
-    };
-}
-
-// @public @deprecated
-export enum VisibilityComponentHierarchy {
-    // (undocumented)
-    Categories = "categories",
-    // (undocumented)
-    Models = "models",
-    // (undocumented)
-    SpatialContainment = "spatial-containment"
-}
-
-// @beta @deprecated
-export interface VisibilityComponentProps {
-    activeTreeRef?: React.Ref<HTMLDivElement>;
-    activeViewport?: Viewport;
-    config?: VisibilityComponentConfig;
-    enableHierarchiesPreloading?: VisibilityComponentHierarchy[];
-    iModelConnection: IModelConnection;
-}
-
 // @alpha
 export interface VisibilityStatus {
     // (undocumented)
@@ -7166,19 +7140,6 @@ export interface VisibilityTreeNoFilteredDataProps {
 
 // @alpha
 export type VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => boolean;
-
-// @beta @deprecated
-export class VisibilityWidget extends WidgetControl {
-    constructor(info: ConfigurableCreateInfo, options: any);
-    // (undocumented)
-    static get iconSpec(): string;
-    // (undocumented)
-    static get label(): string;
-    // (undocumented)
-    restoreTransientState(): boolean;
-    // (undocumented)
-    saveTransientState(): void;
-}
 
 // @public
 export class Widget extends React.Component<WidgetProps> {

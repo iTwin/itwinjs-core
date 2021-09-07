@@ -6,31 +6,18 @@
  * @module AccuDraw
  */
 
-import { AccuDraw, BeButtonEvent, CompassMode, IModelApp, ItemField, NotifyMessageDetails, OutputMessagePriority, QuantityType, RotationMode } from "@bentley/imodeljs-frontend";
-import { AccuDrawField, AccuDrawMode, AccuDrawSetFieldValueFromUiEventArgs, AccuDrawUiAdmin, ConditionalBooleanValue } from "@bentley/ui-abstract";
+import { BeUiEvent } from "@bentley/bentleyjs-core";
+import {
+  AccuDraw, BeButtonEvent, CompassMode, IModelApp, ItemField,
+  NotifyMessageDetails, OutputMessagePriority, QuantityType, RotationMode,
+} from "@bentley/imodeljs-frontend";
+import { ConditionalBooleanValue } from "@bentley/ui-abstract";
+import { UiSettings, UiSettingsStatus } from "@bentley/ui-core";
 import { UiFramework, UserSettingsProvider } from "../UiFramework";
 import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { AccuDrawUiSettings } from "./AccuDrawUiSettings";
-import { BeUiEvent } from "@bentley/bentleyjs-core";
-import { UiSettings, UiSettingsStatus } from "@bentley/ui-core";
 
 // cspell:ignore dont
-
-const itemToFieldMap = new Map<ItemField, AccuDrawField>([
-  [ItemField.X_Item, AccuDrawField.X],
-  [ItemField.Y_Item, AccuDrawField.Y],
-  [ItemField.Z_Item, AccuDrawField.Z],
-  [ItemField.ANGLE_Item, AccuDrawField.Angle],
-  [ItemField.DIST_Item, AccuDrawField.Distance],
-]);
-
-const fieldToItemMap = new Map<AccuDrawField, ItemField>([
-  [AccuDrawField.X, ItemField.X_Item],
-  [AccuDrawField.Y, ItemField.Y_Item],
-  [AccuDrawField.Z, ItemField.Z_Item],
-  [AccuDrawField.Angle, ItemField.ANGLE_Item],
-  [AccuDrawField.Distance, ItemField.DIST_Item],
-]);
 
 const compassModeToKeyMap = new Map<CompassMode, string>([
   [CompassMode.Polar, "polar"],
@@ -46,16 +33,90 @@ const rotationModeToKeyMap = new Map<RotationMode, string>([
   [RotationMode.Context, "context"],
 ]);
 
-/** @internal */
+/** Arguments for [[AccuDrawSetFieldFocusEvent]]
+ * @alpha */
+export interface AccuDrawSetFieldFocusEventArgs {
+  field: ItemField;
+}
+
+/** AccuDraw Set Field Focus event
+ * @alpha */
+export class AccuDrawSetFieldFocusEvent extends BeUiEvent<AccuDrawSetFieldFocusEventArgs> { }
+
+/** Arguments for [[AccuDrawSetFieldValueToUiEvent]]
+ * @alpha */
+export interface AccuDrawSetFieldValueToUiEventArgs {
+  field: ItemField;
+  value: number;
+  formattedValue: string;
+}
+
+/** AccuDraw Set Field Value to Ui event
+ * @alpha */
+export class AccuDrawSetFieldValueToUiEvent extends BeUiEvent<AccuDrawSetFieldValueToUiEventArgs> { }
+
+/** Arguments for [[AccuDrawSetFieldValueFromUiEvent]]
+ * @alpha */
+export interface AccuDrawSetFieldValueFromUiEventArgs {
+  field: ItemField;
+  stringValue: string;
+}
+
+/** AccuDraw Set Field Value from Ui event
+ * @alpha */
+export class AccuDrawSetFieldValueFromUiEvent extends BeUiEvent<AccuDrawSetFieldValueFromUiEventArgs> { }
+
+/** Arguments for [[AccuDrawSetFieldLockEvent]]
+ * @alpha */
+export interface AccuDrawSetFieldLockEventArgs {
+  field: ItemField;
+  lock: boolean;
+}
+
+/** AccuDraw Set Field Lock event
+ * @alpha */
+export class AccuDrawSetFieldLockEvent extends BeUiEvent<AccuDrawSetFieldLockEventArgs> { }
+
+/** Arguments for [[AccuDrawSetCompassModeEvent]]
+ * @alpha */
+export interface AccuDrawSetCompassModeEventArgs {
+  mode: CompassMode;
+}
+
+/** AccuDraw Set Compass Mode event
+ * @alpha */
+export class AccuDrawSetCompassModeEvent extends BeUiEvent<AccuDrawSetCompassModeEventArgs> { }
+
+/** AccuDraw Grab Input Focus event
+ * @alpha */
+export class AccuDrawGrabInputFocusEvent extends BeUiEvent<{}> { }
+
+/** AccuDraw Ui Settings Changed event
+ * @alpha */
 export class AccuDrawUiSettingsChangedEvent extends BeUiEvent<{}> { }
 
-/** @internal */
+/** Implementation of AccuDraw that sends events for UI and status changes
+ * @alpha
+ */
 export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider {
   private static _displayNotifications = false;
   private static _uiSettings: AccuDrawUiSettings | undefined;
   private static _settingsNamespace = "AppUiSettings";
   private static _notificationsKey = "AccuDrawNotifications";
   public readonly providerId = "FrameworkAccuDraw";
+
+  /** AccuDraw Set Field Focus event. */
+  public static readonly onAccuDrawSetFieldFocusEvent = new AccuDrawSetFieldFocusEvent();
+  /** AccuDraw Set Field Value to Ui event. */
+  public static readonly onAccuDrawSetFieldValueToUiEvent = new AccuDrawSetFieldValueToUiEvent();
+  /** AccuDraw Set Field Value from Ui event. */
+  public static readonly onAccuDrawSetFieldValueFromUiEvent = new AccuDrawSetFieldValueFromUiEvent();
+  /** AccuDraw Set Field Lock event. */
+  public static readonly onAccuDrawSetFieldLockEvent = new AccuDrawSetFieldLockEvent();
+  /** AccuDraw Set Mode event. */
+  public static readonly onAccuDrawSetCompassModeEvent = new AccuDrawSetCompassModeEvent();
+  /** AccuDraw Grab Input Focus event. */
+  public static readonly onAccuDrawGrabInputFocusEvent = new AccuDrawGrabInputFocusEvent();
 
   /** Determines if AccuDraw.rotationMode === RotationMode.Top */
   public static readonly isTopRotationConditional = new ConditionalBooleanValue(() => IModelApp.accuDraw.rotationMode === RotationMode.Top, [SyncUiEventId.AccuDrawRotationChanged]);
@@ -99,37 +160,17 @@ export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider 
 
   constructor() {
     super();
-    AccuDrawUiAdmin.onAccuDrawSetFieldValueFromUiEvent.addListener(this.handleSetFieldValueFromUiEvent);
+    FrameworkAccuDraw.onAccuDrawSetFieldValueFromUiEvent.addListener(this.handleSetFieldValueFromUiEvent);
     UiFramework.registerUserSettingsProvider(this);
   }
 
   private handleSetFieldValueFromUiEvent = async (args: AccuDrawSetFieldValueFromUiEventArgs) => {
-    const item = FrameworkAccuDraw.translateToItemField(args.field);
-    return IModelApp.accuDraw.processFieldInput(item, args.stringValue, false);
+    return this.processFieldInput(args.field, args.stringValue, false);
   };
 
   /** @internal */
-  public static translateFromItemField(item: ItemField): AccuDrawField {
-    let field = itemToFieldMap.get(item);
-    // istanbul ignore if
-    if (field === undefined)
-      field = AccuDrawField.X;
-    return field;
-  }
-
-  /** @internal */
-  public static translateToItemField(field: AccuDrawField): ItemField {
-    let item = fieldToItemMap.get(field);
-    // istanbul ignore if
-    if (item === undefined)
-      item = ItemField.X_Item;
-    return item;
-  }
-
-  /** @internal */
   public override onCompassModeChange(): void {
-    const accuDrawMode = this.compassMode === CompassMode.Rectangular ? AccuDrawMode.Rectangular : AccuDrawMode.Polar;
-    IModelApp.uiAdmin.accuDrawUi.setMode(accuDrawMode);
+    FrameworkAccuDraw.onAccuDrawSetCompassModeEvent.emit({ mode: this.compassMode });
     SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.AccuDrawCompassModeChanged);
 
     this.outputCompassModeMessage();
@@ -144,16 +185,14 @@ export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider 
 
   /** @internal */
   public override onFieldLockChange(index: ItemField): void {
-    const field = FrameworkAccuDraw.translateFromItemField(index);
-    IModelApp.uiAdmin.accuDrawUi.setFieldLock(field, this.getFieldLock(index));
+    FrameworkAccuDraw.onAccuDrawSetFieldLockEvent.emit({ field: index, lock: this.getFieldLock(index) });
   }
 
   /** @internal */
   public override onFieldValueChange(index: ItemField): void {
-    const field = FrameworkAccuDraw.translateFromItemField(index);
     const value = this.getValueByIndex(index);
     const formattedValue = FrameworkAccuDraw.getFieldDisplayValue(index);
-    IModelApp.uiAdmin.accuDrawUi.setFieldValueToUi(field, value, formattedValue);
+    FrameworkAccuDraw.onAccuDrawSetFieldValueToUiEvent.emit({ field: index, value, formattedValue });
   }
 
   private fieldValuesChanged(): void {
@@ -166,8 +205,7 @@ export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider 
 
   /** @internal */
   public override setFocusItem(index: ItemField): void {
-    const field = FrameworkAccuDraw.translateFromItemField(index);
-    IModelApp.uiAdmin.accuDrawUi.setFieldFocus(field);
+    FrameworkAccuDraw.onAccuDrawSetFieldFocusEvent.emit({ field: index });
   }
 
   /** Implemented by sub-classes to update ui fields to show current deltas or coordinates when inactive.
@@ -200,9 +238,10 @@ export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider 
    * @internal
    */
   public override grabInputFocus(): void {
-    IModelApp.uiAdmin.accuDrawUi.grabInputFocus();
+    FrameworkAccuDraw.onAccuDrawGrabInputFocusEvent.emit({});
   }
 
+  /** Gets the display value for an AccuDraw field */
   public static getFieldDisplayValue(index: ItemField): string {
     const value = IModelApp.accuDraw.getValueByIndex(index);
     let formattedValue = value.toString();
@@ -215,6 +254,11 @@ export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider 
     return formattedValue;
   }
 
+  /** AccuDraw Set Field Value from Ui. */
+  public static setFieldValueFromUi(field: ItemField, stringValue: string): void {
+    FrameworkAccuDraw.onAccuDrawSetFieldValueFromUiEvent.emit({ field, stringValue });
+  }
+
   private outputInfoMessage(message: string): void {
     // istanbul ignore else
     if (FrameworkAccuDraw.displayNotifications)
@@ -223,7 +267,7 @@ export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider 
 
   private outputCompassModeMessage(): void {
     if (FrameworkAccuDraw.displayNotifications) {
-      let modeKey = compassModeToKeyMap.get(IModelApp.accuDraw.compassMode);
+      let modeKey = compassModeToKeyMap.get(this.compassMode);
       // istanbul ignore if
       if (modeKey === undefined)
         modeKey = "polar";
@@ -235,7 +279,7 @@ export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider 
 
   private outputRotationMessage(): void {
     if (FrameworkAccuDraw.displayNotifications) {
-      let rotationKey = rotationModeToKeyMap.get(IModelApp.accuDraw.rotationMode);
+      let rotationKey = rotationModeToKeyMap.get(this.rotationMode);
       // istanbul ignore if
       if (rotationKey === undefined)
         rotationKey = "top";

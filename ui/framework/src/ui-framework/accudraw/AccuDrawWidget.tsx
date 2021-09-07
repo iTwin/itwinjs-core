@@ -32,7 +32,7 @@ export class AccuDrawWidgetControl extends WidgetControl {
   }
 }
 
-/** AccuDraw Widget
+/** AccuDraw Widget displays [[AccuDrawFieldContainer]] for AccuDraw Ui
  * @alpha
  */
 export function AccuDrawWidget() {
