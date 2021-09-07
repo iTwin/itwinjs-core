@@ -167,6 +167,8 @@ describe("UiShowHideManager localStorage Wrapper", () => {
       }
 
       const myContentGroup: ContentGroup = new ContentGroup({
+        id: "test-group",
+        preferredLayoutId: "SingleContent",
         contents: [{ id: "myContent", classId: TestContentControl }],
       });
 
@@ -246,14 +248,14 @@ describe("UiShowHideManager localStorage Wrapper", () => {
   describe("UiShowHideSettingsProvider ", () => {
 
     it("should get and set defaults", async () => {
-      const settingsStorage = new LocalSettingsStorage ();
+      const settingsStorage = new LocalSettingsStorage();
       await UiShowHideSettingsProvider.storeAutoHideUi(false, settingsStorage);
-      await UiShowHideSettingsProvider.storeUseProximityOpacity (false, settingsStorage);
+      await UiShowHideSettingsProvider.storeUseProximityOpacity(false, settingsStorage);
       await UiShowHideSettingsProvider.storeSnapWidgetOpacity(false, settingsStorage);
       await TestUtils.initializeUiFramework();
 
-      const uiShowHideSettingsProvider = new UiShowHideSettingsProvider ();
-      await uiShowHideSettingsProvider.loadUserSettings (UiFramework.getUiSettingsStorage());
+      const uiShowHideSettingsProvider = new UiShowHideSettingsProvider();
+      await uiShowHideSettingsProvider.loadUserSettings(UiFramework.getUiSettingsStorage());
 
       expect(UiShowHideManager.autoHideUi).to.eq(false);
       expect(UiShowHideManager.useProximityOpacity).to.eq(false);

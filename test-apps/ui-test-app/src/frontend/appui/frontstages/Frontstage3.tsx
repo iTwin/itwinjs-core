@@ -38,19 +38,25 @@ export class Frontstage3 extends FrontstageProvider {
 
     const myContentGroup: ContentGroup = new ContentGroup(
       {
+        id: "Frontstage4",
+        preferredLayoutId: "FourQuadrants",
         contents: [
           {
+            id: "imodelView1",
             classId: IModelViewportControl.id,
             applicationData: { viewState: UiFramework.getDefaultViewState, iModelConnection: UiFramework.getIModelConnection },
           },
           {
+            id: "reactTableView",
             classId: ReactTableDemoContentControl,
           },
           {
+            id: "imodelView2",
             classId: App_IModelViewport.id,
             applicationData: { viewState: UiFramework.getDefaultViewState, iModelConnection: UiFramework.getIModelConnection },
           },
           {
+            id: "oldTableView",
             classId: "TableExampleContent",
           },
         ],

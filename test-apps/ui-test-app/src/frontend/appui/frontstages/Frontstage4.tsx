@@ -145,8 +145,11 @@ export class Frontstage4 extends FrontstageProvider {
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const myContentGroup: ContentGroup = new ContentGroup(
       {
+        id: "CubeContent",
+        preferredLayoutId: "SingleContent",
         contents: [
           {
+            id: "navigationCube",
             classId: "CubeContent",
           },
         ],

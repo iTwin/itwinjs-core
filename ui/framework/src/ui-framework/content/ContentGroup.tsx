@@ -19,8 +19,8 @@ import { ContentControl } from "./ContentControl";
  * @public
  */
 export interface ContentProps {
-  /** An optional id for the Content View */
-  id?: string;
+  /** A unique id for the Content View within the group */
+  id: string;
   /** The class name or [[ConfigurableUiControlConstructor]] of the content control */
   classId: string | ConfigurableUiControlConstructor;
   /** Optional application data passed down to the Content View */
@@ -32,7 +32,9 @@ export interface ContentProps {
  */
 export interface ContentGroupProps {
   /** An optional id for the [[ContentGroup]] */
-  id?: string;
+  id: string;
+  /** Preferred Layout Id */
+  preferredLayoutId: string;
   /** A collection of [[ContentProps]], one for each content view */
   contents: ContentProps[];
 }
@@ -44,23 +46,17 @@ export type ContentCallback = (content: ContentProps) => void;
 
 /** ContentGroup class. Content Groups define content displayed in content views that are laid out using a [[ContentLayout]].
  * @public
- */
+ */
 export class ContentGroup {
-  private static _sId = 0;
-
   public groupId: string;
+  public preferredLayoutId: string;
   public contentPropsList: ContentProps[];
   private _contentControls = new Map<string, ContentControl>();
   private _contentSetMap = new Map<string, ContentControl>();
 
   constructor(groupProps: ContentGroupProps) {
-    if (groupProps.id !== undefined)
-      this.groupId = groupProps.id;
-    else {
-      ContentGroup._sId++;
-      this.groupId = `ContentGroup-${ContentGroup._sId}`;
-    }
-
+    this.preferredLayoutId = groupProps.preferredLayoutId;
+    this.groupId = groupProps.id;
     this.contentPropsList = groupProps.contents;
   }
 
@@ -172,6 +168,7 @@ export class ContentGroup {
   public toJSON(contentCallback?: ContentCallback): ContentGroupProps {
     const contentGroupProps: ContentGroupProps = {
       id: this.groupId,
+      preferredLayoutId: this.preferredLayoutId,
       contents: this.contentPropsList,
     };
 
@@ -217,29 +214,34 @@ export class ContentGroup {
 
 /** ContentGroup Manager class.
  * @public
- */
+ */
 export class ContentGroupManager {
-  private static _groups: Map<string, ContentGroup> = new Map<string, ContentGroup>();
+  private static _groupsProps: Map<string, ContentGroupProps> = new Map<string, ContentGroupProps>();
 
+  /** @internal - called by ConfigurableUiManager (TODO find out why we can't call directly, why does ConfigurableUiManager need to be involved ) */
   public static loadGroups(groupPropsList: ContentGroupProps[]) {
-    groupPropsList.map((groupProps, _index) => {
-      this.loadGroup(groupProps);
+    groupPropsList.forEach((groupProps) => {
+      if (!this._groupsProps.has(groupProps.id))
+        this._groupsProps.set(groupProps.id, groupProps);
+      else
+        Logger.logError(UiFramework.loggerCategory(this), `unable to load content group with duplicate id of '${groupProps.id}'`);
     });
   }
 
-  public static loadGroup(groupProps: ContentGroupProps) {
-    const group = new ContentGroup(groupProps);
-    if (groupProps.id)
-      this.addGroup(groupProps.id, group);
-    else
-      throw new UiError(UiFramework.loggerCategory(this), `loadGroup: ContentGroupProps should contain an id`);
-  }
-
   public static findGroup(groupId: string): ContentGroup | undefined {
-    return this._groups.get(groupId);
+    const groupProps = this._groupsProps.get(groupId);
+    if (groupProps) {
+      return new ContentGroup(groupProps);
+    }
+    return undefined;
   }
 
-  public static addGroup(groupId: string, group: ContentGroup) {
-    this._groups.set(groupId, group);
+  public static getPreferredLayoutId(groupId: string): string | undefined {
+    const groupProps = this._groupsProps.get(groupId);
+    if (groupProps) {
+      return groupProps.preferredLayoutId;
+    }
+    return undefined;
   }
+
 }

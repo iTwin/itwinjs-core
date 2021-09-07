@@ -151,6 +151,7 @@ public;ContentLayoutComponentProps
 public;ContentLayoutDef
 public;ContentLayoutManager
 public;ContentLayoutProps 
+deprecated;ContentLayoutProps 
 public;ContentProps
 public;ContentToolWidgetComposer(props: ContentToolWidgetComposerProps): JSX.Element
 public;ContentToolWidgetComposerProps
@@ -300,15 +301,10 @@ alpha;HTMLElementPopup
 alpha;HTMLElementPopupProps 
 beta;IModelAppUiSettings 
 deprecated;IModelAppUiSettings 
-beta;IModelConnectedCategoryTree: import("react-redux").ConnectedComponent
-alpha;IModelConnectedModelsTree: import("react-redux").ConnectedComponent
 beta;IModelConnectedNavigationWidget: import("react-redux").ConnectedComponent
 deprecated;IModelConnectedNavigationWidget: import("react-redux").ConnectedComponent
-beta;IModelConnectedSpatialContainmentTree: import("react-redux").ConnectedComponent
 beta;IModelConnectedViewport: import("react-redux").ConnectedComponent
 beta;IModelConnectedViewSelector: import("react-redux").ConnectedComponent
-beta;IModelConnectedVisibilityComponent: import("react-redux").ConnectedComponent
-deprecated;IModelConnectedVisibilityComponent: import("react-redux").ConnectedComponent
 internal;IModelInfo
 internal;IModelScope
 internal;IModelServices
@@ -357,10 +353,14 @@ internal;KeyinPalettePanel({ keyins, onKeyinExecuted, historyLength: allowedHist
 alpha;KeyinPalettePopup({ el, id, keyins, onCancel, onItemExecuted }: KeyinPalettePopupProps): JSX.Element
 alpha;KeyinPalettePopupProps
 public;LayoutFragmentProps
+deprecated;LayoutFragmentProps
 public;LayoutHorizontalSplitProps 
+deprecated;LayoutHorizontalSplitProps 
 public;LayoutSplit
 public;LayoutSplitPropsBase
+deprecated;LayoutSplitPropsBase
 public;LayoutVerticalSplitProps 
+deprecated;LayoutVerticalSplitProps 
 beta;ListItem
 beta;ListItemType
 beta;ListPicker 
@@ -728,14 +728,6 @@ public;ViewToolWidgetComposer(props: ViewToolWidgetComposerProps): JSX.Element
 public;ViewToolWidgetComposerProps
 public;ViewUtilities
 alpha;VisibilityChangeListener = (nodeIds?: string[], visibilityStatus?: Map
-beta;VisibilityComponent 
-deprecated;VisibilityComponent 
-beta;VisibilityComponentConfig
-deprecated;VisibilityComponentConfig
-public;VisibilityComponentHierarchy
-deprecated;VisibilityComponentHierarchy
-beta;VisibilityComponentProps
-deprecated;VisibilityComponentProps
 alpha;VisibilityStatus
 alpha;VisibilityTreeEventHandler 
 alpha;VisibilityTreeEventHandlerParams 
@@ -744,8 +736,6 @@ alpha;visibilityTreeNodeCheckboxRenderer: (props: NodeCheckboxRenderProps) => JS
 alpha;VisibilityTreeNoFilteredData(props: VisibilityTreeNoFilteredDataProps): JSX.Element
 alpha;VisibilityTreeNoFilteredDataProps
 alpha;VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => boolean
-beta;VisibilityWidget 
-deprecated;VisibilityWidget 
 public;Widget 
 public;WIDGET_OPACITY_DEFAULT = 0.9
 internal;WidgetChangedEventArgs

@@ -15,7 +15,6 @@ import "./widgets/TableDemoWidget";
 import "./widgets/FeedbackWidget";
 import "./widgets/NavigationTreeWidget";
 import "./widgets/PropertyGridDemoWidget";
-import "./widgets/VisibilityTreeWidget";
 import "./tooluiproviders/Tool1UiProvider";
 import "./tooluiproviders/Tool2UiProvider";
 import "./statusbars/AppStatusBar";
@@ -202,39 +201,62 @@ export class AppUi {
   private static defineContentGroups() {
     const singleIModelViewport: ContentGroupProps = {
       id: "singleIModelViewport",
+      preferredLayoutId: "SingleContent",
       contents: [
         {
           classId: IModelViewportControl,
-          id: "singleIModelView",
+          id: "drawingView",
+          applicationData: {
+            supports: ["issueResolutionMarkers", "viewIdSelection"],
+          },
         },
       ],
     };
 
+    // id: "FourQuadrants",
+    // id: "ThreeRightStacked",
+    // preferredLayoutId: "TwoHalvesHorizontal",
+
     const drawingAndSheetViewports: ContentGroupProps = {
       id: "DrawingAndSheetViewports",
+      preferredLayoutId: "TwoHalvesVertical",
       contents: [
         {
           classId: IModelViewportControl,
+          id: "drawingView",
+          applicationData: {
+            isPrimaryView: true,
+            supports: ["issueResolutionMarkers", "viewIdSelection", "3dModels", "2dModels"],
+          },
         },
         {
           classId: IModelViewportControl,
+          id: "sheetView",
+          applicationData: {
+            supports: ["issueResolutionMarkers", "viewIdSelection", "sheetModels"],
+          },
         },
       ],
     };
 
     const threeIModelViewportsWithItemsTable: ContentGroupProps = {
       id: "ThreeIModelViewportsWithItemsTable",
+      preferredLayoutId: "FourQuadrants",
       contents: [
         {
+          id: "primaryIModelView",
           classId: IModelViewportControl,
         },
         {
+          id: "secondIModelView",
           classId: IModelViewportControl,
         },
         {
+          id: "tableView",
           classId: "TablePane",
         },
         {
+          id: "thirdIModelView",
           classId: IModelViewportControl,
         },
       ],
@@ -242,20 +264,25 @@ export class AppUi {
 
     const testContentGroup1: ContentGroupProps = {
       id: "TestContentGroup1",
+      preferredLayoutId: "FourQuadrants",
       contents: [
         {
+          id: "primaryIModelView",
           classId: IModelViewportControl,
           applicationData: { label: "Content 1a", bgColor: "black" },
         },
         {
+          id: "secondIModelView",
           classId: IModelViewportControl,
           applicationData: { label: "Content 2a", bgColor: "black" },
         },
         {
+          id: "tableView",
           classId: "TableExampleContent",
           applicationData: { label: "Content 3a", bgColor: "black" },
         },
         {
+          id: "custom-content",
           classId: "TestContent",
           applicationData: { label: "Content 4a", bgColor: "black" },
         },
@@ -264,20 +291,25 @@ export class AppUi {
 
     const testContentGroup2: ContentGroupProps = {
       id: "TestContentGroup2",
+      preferredLayoutId: "FourQuadrants",
       contents: [
         {
+          id: "primaryIModelView",
           classId: IModelViewportControl,
           applicationData: { label: "Content 1b", bgColor: "black" },
         },
         {
+          id: "secondIModelView",
           classId: IModelViewportControl,
           applicationData: { label: "Content 2b", bgColor: "black" },
         },
         {
+          id: "tableView",
           classId: "TableExampleContent",
           applicationData: { label: "Content 3b", bgColor: "black" },
         },
         {
+          id: "thirdIModelView",
           classId: IModelViewportControl,
           applicationData: { label: "Content 4b", bgColor: "black" },
         },
@@ -286,20 +318,25 @@ export class AppUi {
 
     const testContentGroup3: ContentGroupProps = {
       id: "TestContentGroup3",
+      preferredLayoutId: "FourQuadrants",
       contents: [
         {
+          id: "primaryIModelView",
           classId: IModelViewportControl,
           applicationData: { label: "Content 1a", bgColor: "black" },
         },
         {
+          id: "CubeView",
           classId: "CubeContent",
           applicationData: { label: "Content 2a", bgColor: "black" },
         },
         {
+          id: "tableView",
           classId: "TableExampleContent",
           applicationData: { label: "Content 3a", bgColor: "black" },
         },
         {
+          id: "secondIModelView",
           classId: IModelViewportControl,
           applicationData: { label: "Content 4a", bgColor: "black" },
         },
@@ -308,20 +345,25 @@ export class AppUi {
 
     const testContentGroup4: ContentGroupProps = {
       id: "TestContentGroup4",
+      preferredLayoutId: "FourQuadrants",
       contents: [
         {
+          id: "primaryIModelView",
           classId: IModelViewportControl,
           applicationData: { label: "Content 1a", bgColor: "black" },
         },
         {
+          id: "secondIModelView",
           classId: IModelViewportControl,
           applicationData: { label: "Content 2a", bgColor: "black" },
         },
         {
+          id: "tableView",
           classId: "TableExampleContent",
           applicationData: { label: "Content 3a", bgColor: "black" },
         },
         {
+          id: "treeView",
           classId: "TreeExampleContent",
           applicationData: { label: "Content 4a", bgColor: "black" },
         },

@@ -26,6 +26,8 @@ describe("ContentLayout", () => {
   }
 
   const myContentGroup: ContentGroup = new ContentGroup({
+    id: "testGroup",
+    preferredLayoutId: "SingleContent",
     contents: [{ id: "myContent", classId: TestContentControl, applicationData: { name: "Test" } }],
   });
 
@@ -36,11 +38,12 @@ describe("ContentLayout", () => {
 
   const contentGroup2: ContentGroup = new ContentGroup({
     id: "contentGroup2",
+    preferredLayoutId: "FourQuadrants",
     contents: [
-      { classId: TestContentControl, applicationData: "data1" },
-      { classId: TestContentControl, applicationData: "data2" },
-      { classId: TestContentControl, applicationData: "data3" },
-      { classId: TestContentControl, applicationData: "data4" },
+      { id: "one", classId: TestContentControl, applicationData: "data1" },
+      { id: "two", classId: TestContentControl, applicationData: "data2" },
+      { id: "three", classId: TestContentControl, applicationData: "data3" },
+      { id: "four", classId: TestContentControl, applicationData: "data4" },
     ],
   });
 
@@ -199,15 +202,6 @@ describe("ContentLayout", () => {
 
     wrapper.update();
   });
-
-  // it("ContentLayoutManager.loadLayout should throw Error if ContentLayoutProps does not have an id", () => {
-  //   const layoutProps: ContentLayoutProps = {
-  //     id: "UiFramework:tests.singleContent",
-  //     descriptionKey: "UiFramework:tests.singleContent",
-  //     priority: 100,
-  //   };
-  //   expect(() => ContentLayoutManager.loadLayout(layoutProps)).to.throw(Error);
-  // });
 
   it("ContentLayoutManager.setActiveLayout & refreshActiveLayout should emit onContentLayoutActivatedEvent", async () => {
     const spyMethod = sinon.spy();

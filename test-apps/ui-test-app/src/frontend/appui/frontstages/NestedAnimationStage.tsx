@@ -12,8 +12,11 @@ export class NestedAnimationStage extends FrontstageProvider {
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const myContentGroup: ContentGroup = new ContentGroup(
       {
+        id: "ScheduleAnimation",
+        preferredLayoutId: "SingleContent",
         contents: [
           {
+            id: "ScheduleAnimationView",
             classId: "ScheduleAnimationControl",
           },
         ],

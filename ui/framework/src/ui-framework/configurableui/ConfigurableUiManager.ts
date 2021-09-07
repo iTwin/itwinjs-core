@@ -191,7 +191,7 @@ export class ConfigurableUiManager {
    * @param groupProps  the properties of the ContentGroup to load
    */
   public static loadContentGroup(groupProps: ContentGroupProps): void {
-    ContentGroupManager.loadGroup(groupProps);
+    ContentGroupManager.loadGroups([groupProps]);
   }
 
   /** Loads one or more ContentLayouts into the [[ContentLayoutManager]].

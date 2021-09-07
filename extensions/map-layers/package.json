@@ -1,6 +1,6 @@
 {
   "name": "@bentley/map-layers",
-  "version": "3.0.0-dev.44",
+  "version": "3.0.0-dev.49",
   "description": "Extension that adds a Map Layers Widget",
   "main": "lib/map-layers.js",
   "typings": "lib/map-layers",
@@ -88,7 +88,8 @@
   "dependencies": {
     "classnames": "^2.3.1",
     "react-beautiful-dnd": "^13.0.0",
-    "react-select": "3.1.0"
+    "react-select": "3.1.0",
+    "react-resize-detector": "^6.7.6"
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "workspace:*",

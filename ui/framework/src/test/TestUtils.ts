@@ -145,20 +145,25 @@ export class TestUtils {
 
     const testContentGroup1: ContentGroupProps = {
       id: "TestContentGroup1",
+      preferredLayoutId: "FourQuadrants",
       contents: [
         {
+          id: "test:TestContentControl1",
           classId: TestContentControl,
           applicationData: { label: "Content 1a", bgColor: "black" },
         },
         {
+          id: "test:TestContentControl2",
           classId: TestContentControl,
           applicationData: { label: "Content 2a", bgColor: "black" },
         },
         {
+          id: "test:TestContentControl3",
           classId: TestContentControl,
           applicationData: { label: "Content 3a", bgColor: "black" },
         },
         {
+          id: "test:TestContentControl4",
           classId: TestContentControl,
           applicationData: { label: "Content 4a", bgColor: "black" },
         },

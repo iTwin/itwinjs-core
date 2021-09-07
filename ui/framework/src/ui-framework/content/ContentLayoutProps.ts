@@ -67,7 +67,7 @@ export interface LayoutHorizontalSplitProps extends LayoutSplitPropsBase {
  */
 export interface ContentLayoutProps extends LayoutFragmentProps {
   /** ID for this Content Layout */
-  id?: string;
+  id: string;
   /** Localization key for a description. */
   descriptionKey?: string;
   /** The priority for the layout. Determines its position in menus. Higher numbers appear first. */

@@ -12,9 +12,8 @@ import { IModelApp, IModelConnection, SpatialViewState, ViewManager, Viewport } 
 import { Ruleset } from "@bentley/presentation-common";
 import { IPresentationTreeDataProvider, usePresentationTreeNodeLoader } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";
-import { ControlledTree, SelectionMode, useVisibleTreeNodes } from "@bentley/ui-components";
+import { ControlledTree, SelectionMode, useTreeModel } from "@bentley/ui-components";
 import { useDisposable } from "@bentley/ui-core";
-import { connectIModelConnection } from "../../redux/connectIModel";
 import { UiFramework } from "../../UiFramework";
 import { VisibilityTreeFilterInfo } from "../Common";
 import { VisibilityTreeEventHandler } from "../VisibilityTreeEventHandler";
@@ -42,6 +41,10 @@ export interface CategoryTreeProps {
    * An IModel to pull data from
    */
   iModel: IModelConnection;
+  /** Width of the component */
+  width: number;
+  /** Height of the component */
+  height: number;
   /**
    * Start loading hierarchy as soon as the component is created
    */
@@ -97,8 +100,7 @@ export function CategoryTree(props: CategoryTreeProps) {
     collapsedChildrenDisposalEnabled: true,
   }), [filteredNodeLoader, visibilityHandler]));
 
-  const visibleNodes = useVisibleTreeNodes(filteredNodeLoader.modelSource);
-
+  const treeModel = useTreeModel(filteredNodeLoader.modelSource);
   const treeRenderer = useVisibilityTreeRenderer(false, true);
   const overlay = isFiltering ? <div className="filteredTreeOverlay" /> : undefined;
   const filterApplied = filteredNodeLoader !== nodeLoader;
@@ -114,25 +116,20 @@ export function CategoryTree(props: CategoryTreeProps) {
     <div className="ui-fw-categories-tree">
       <ControlledTree
         nodeLoader={filteredNodeLoader}
-        visibleNodes={visibleNodes}
+        model={treeModel}
         selectionMode={SelectionMode.None}
-        treeEvents={eventHandler}
+        eventsHandler={eventHandler}
         treeRenderer={treeRenderer}
         descriptionsEnabled={true}
         nodeHighlightingProps={nodeHighlightingProps}
         noDataRenderer={filterApplied ? noFilteredDataRenderer : undefined}
+        width={props.width}
+        height={props.height}
       />
       {overlay}
     </div>
   );
 }
-
-/**
- * CategoryTree that is connected to the IModelConnection property in the Redux store. The
- * application must set up the Redux store and include the FrameworkReducer.
- * @beta
- */
-export const IModelConnectedCategoryTree = connectIModelConnection(null, null)(CategoryTree); // eslint-disable-line @typescript-eslint/naming-convention
 
 function useCategoryVisibilityHandler(viewManager: ViewManager, imodel: IModelConnection, categories: Category[], activeView?: Viewport, allViewports?: boolean, visibilityHandler?: CategoryVisibilityHandler) {
   return useDisposable(React.useCallback(

@@ -79,8 +79,11 @@ describe("IModelViewportControl", () => {
 
       const myContentGroup: ContentGroup = new ContentGroup(
         {
+          id: "test",
+          preferredLayoutId: "SingleContent",
           contents: [
             {
+              id: "main",
               classId: TestViewportContentControl,
               applicationData: { label: "Content 1a", bgColor: "black" },
             },

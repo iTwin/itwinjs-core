@@ -4,19 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 import "./VisibilityWidget.scss";
 import * as React from "react";
+import { useResizeDetector } from "react-resize-detector";
 import { BeEvent, Id64Array, Id64String } from "@bentley/bentleyjs-core";
 import { IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@bentley/imodeljs-frontend";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import { FilteringInput, SelectableContent, SelectionMode } from "@bentley/ui-components";
 import { Icon, WebFontIcon } from "@bentley/ui-core";
-import { Button } from "@itwin/itwinui-react";
 import {
-  CategoryTree, ClassGroupingOption, CommandItemDef, ConfigurableCreateInfo, ModelsTree, ModelsTreeSelectionPredicate, toggleAllCategories, WidgetControl,
+  CategoryTree, ClassGroupingOption, CommandItemDef, ConfigurableCreateInfo, ModelsTree, ModelsTreeSelectionPredicate, toggleAllCategories,
+  WidgetControl,
 } from "@bentley/ui-framework";
+import { Button } from "@itwin/itwinui-react";
 import { SampleAppIModelApp } from "../..";
-
-import filterIconSvg from "../icons/filter.svg?sprite";
 import cancelFilterIconSvg from "../icons/filter-outlined.svg?sprite";
+import filterIconSvg from "../icons/filter.svg?sprite";
 
 export class VisibilityWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -87,7 +88,7 @@ function ModelsTreeComponent(props: ModelsTreeComponentProps) {
     activeMatchIndex,
     onFilterApplied,
   } = useTreeFilteringState();
-
+  const { width, height, ref } = useResizeDetector();
   return (
     <>
       <Toolbar
@@ -105,15 +106,19 @@ function ModelsTreeComponent(props: ModelsTreeComponentProps) {
           </Button>,
         ]}
       </Toolbar>
-      <ModelsTree
-        {...props}
-        enableElementsClassGrouping={ClassGroupingOption.YesWithCounts}
-        filterInfo={{
-          filter: filterString,
-          activeMatchIndex,
-        }}
-        onFilterApplied={onFilterApplied}
-      />
+      <div ref={ref} className="ui-test-app-visibility-tree-content">
+        {width && height ? <ModelsTree
+          {...props}
+          enableElementsClassGrouping={ClassGroupingOption.YesWithCounts}
+          filterInfo={{
+            filter: filterString,
+            activeMatchIndex,
+          }}
+          onFilterApplied={onFilterApplied}
+          width={width}
+          height={height}
+        /> : null}
+      </div>
     </>
   );
 }
@@ -142,6 +147,8 @@ function CategoriesTreeComponent(props: CategoriesTreeComponentProps) {
     return toggleAllCategories(IModelApp.viewManager, props.iModel, false, undefined, true, filteredProvider);
   }, [props.iModel, filteredProvider]);
 
+  const { width, height, ref } = useResizeDetector();
+
   return (
     <>
       <Toolbar
@@ -156,14 +163,18 @@ function CategoriesTreeComponent(props: CategoriesTreeComponentProps) {
           </Button>,
         ]}
       </Toolbar>
-      <CategoryTree
-        {...props}
-        filterInfo={{
-          filter: filterString,
-          activeMatchIndex,
-        }}
-        onFilterApplied={onFilterApplied}
-      />
+      <div ref={ref} style={{ width: "100%", height: "100%" }}>
+        {width && height ? <CategoryTree
+          {...props}
+          filterInfo={{
+            filter: filterString,
+            activeMatchIndex,
+          }}
+          onFilterApplied={onFilterApplied}
+          width={width}
+          height={height}
+        /> : null}
+      </div>
     </>
   );
 }

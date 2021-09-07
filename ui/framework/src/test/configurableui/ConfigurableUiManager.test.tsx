@@ -96,6 +96,7 @@ describe("ConfigurableUiManager", () => {
   it("loadContentGroup and read applicationData from control", () => {
     const contentGroupProps: ContentGroupProps = {
       id: "testContentGroup1",
+      preferredLayoutId: "testContentLayout1",
       contents: [
         {
           id: "test-content-control",
@@ -119,8 +120,10 @@ describe("ConfigurableUiManager", () => {
     const contentGroupProps: ContentGroupProps[] = [
       {
         id: "testContentGroup2",
+        preferredLayoutId: "testContentLayout1",
         contents: [
           {
+            id: "test.TestControl",
             classId: "TestContentControl",
             applicationData: { label: "Content 1a", bgColor: "black" },
           },

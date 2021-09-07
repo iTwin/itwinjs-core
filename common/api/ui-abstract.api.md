@@ -873,6 +873,13 @@ export class ConditionalStringValue {
     get value(): string;
     }
 
+// @public
+export interface ContentLayoutProps extends LayoutFragmentProps {
+    descriptionKey?: string;
+    id: string;
+    priority?: number;
+}
+
 // @internal (undocumented)
 export function convertSimple2RegExpPattern(pattern: string): string;
 
@@ -1250,6 +1257,35 @@ export const isSuppressLabelEditorParams: (item: BasePropertyEditorParams) => it
 
 // @internal (undocumented)
 export function isUpperAsciiLetter(code: number): boolean;
+
+// @public
+export interface LayoutFragmentProps {
+    horizontalSplit?: LayoutHorizontalSplitProps;
+    verticalSplit?: LayoutVerticalSplitProps;
+}
+
+// @public
+export interface LayoutHorizontalSplitProps extends LayoutSplitPropsBase {
+    bottom: LayoutFragmentProps | number;
+    minSizeBottom?: number;
+    minSizeTop?: number;
+    top: LayoutFragmentProps | number;
+}
+
+// @public
+export interface LayoutSplitPropsBase {
+    id?: string;
+    lock?: boolean;
+    percentage: number;
+}
+
+// @public
+export interface LayoutVerticalSplitProps extends LayoutSplitPropsBase {
+    left: LayoutFragmentProps | number;
+    minSizeLeft?: number;
+    minSizeRight?: number;
+    right: LayoutFragmentProps | number;
+}
 
 // @public
 export interface LinkElementsInfo {
