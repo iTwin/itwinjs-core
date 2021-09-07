@@ -52,7 +52,7 @@ export const uifwTwoHorizontalSplit: ContentLayoutProps =
    },
  };
 
-export const uifwThreeViewsTwoOnRight: ContentLayoutProps =
+export const uifwThreeViewsTwoOnLeft: ContentLayoutProps =
  {
    id: "uifw:threeViewsTwoOnLeft",
    description: "Three views, one on the right with the two on the left stacked one of top of the other",
@@ -64,4 +64,4 @@ export const uifwThreeViewsTwoOnRight: ContentLayoutProps =
    },
  };
 
-export const standardViewLayouts: ContentLayoutProps[] = [uifwSingleView, uifwFourQuadrants, uifwTwoVerticalSplit, uifwTwoHorizontalSplit, uifwThreeViewsTwoOnRight ];
+export const standardViewLayouts: ContentLayoutProps[] = [uifwSingleView, uifwFourQuadrants, uifwTwoVerticalSplit, uifwTwoHorizontalSplit, uifwThreeViewsTwoOnLeft ];
