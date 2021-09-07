@@ -57,10 +57,3 @@ export interface PatternGraphicParams {
   readonly worldToModel: Transform;
   readonly range: Range3d;
 }
-
-/** Type discriminator for functions that accept InstanceGraphicParams | PatternGraphicParams.
- * @internal
- */
-export function isPatternGraphicParams(params: InstancedGraphicParams | PatternGraphicParams): params is PatternGraphicParams {
-  return undefined === (params as any).xyOffsets;
-}

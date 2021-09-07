@@ -7,13 +7,14 @@
  */
 
 import { assert, dispose } from "@bentley/bentleyjs-core";
-import { InstancedGraphicParams, isPatternGraphicParams, PatternGraphicParams } from "../InstancedGraphicParams";
+import { InstancedGraphicParams } from "../InstancedGraphicParams";
 import { RenderMemory } from "../RenderMemory";
 import { PrimitiveVisibility } from "../RenderTarget";
+import { RenderAreaPattern } from "../RenderSystem";
 import { CachedGeometry, LUTGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { DrawParams, PrimitiveCommand } from "./DrawCommand";
 import { Graphic } from "./Graphic";
-import { InstanceBuffers, InstancedGeometry, PatternBuffers } from "./InstancedGeometry";
+import { InstanceBuffers, InstancedGeometry, isInstancedGraphicParams, PatternBuffers } from "./InstancedGeometry";
 import { RenderCommands } from "./RenderCommands";
 import { RenderOrder, RenderPass } from "./RenderFlags";
 import { ShaderProgramExecutor } from "./ShaderProgram";
@@ -28,26 +29,23 @@ export class Primitive extends Graphic {
 
   protected constructor(cachedGeom: CachedGeometry) { super(); this.cachedGeometry = cachedGeom; }
 
-  public static create(createGeom: () => CachedGeometry | undefined, instances?: InstancedGraphicParams | PatternGraphicParams): Primitive | undefined {
+  public static create(createGeom: () => CachedGeometry | undefined, instances?: InstancedGraphicParams | RenderAreaPattern): Primitive | undefined {
     let geom = createGeom();
     if (!geom)
       return undefined;
 
     if (instances) {
       assert(geom instanceof LUTGeometry, "Invalid geometry type for instancing");
-      if (!isPatternGraphicParams(instances)) {
+      if (instances instanceof PatternBuffers) {
+        geom = InstancedGeometry.createPattern(geom, true, instances);
+      } else {
+        assert(isInstancedGraphicParams(instances));
         const range = InstanceBuffers.computeRange(geom.computeRange(), instances.transforms, instances.transformCenter);
         const instanceBuffers = InstanceBuffers.create(instances, false, range);
         if (!instanceBuffers)
           return undefined;
 
         geom = InstancedGeometry.create(geom, true, instanceBuffers);
-      } else {
-        const patternBuffers = PatternBuffers.create(instances, false);
-        if (!patternBuffers)
-          return undefined;
-
-        geom = InstancedGeometry.createPattern(geom, true, patternBuffers);
       }
     }
 

@@ -197,6 +197,11 @@ export interface PlanarGridProps {
  */
 export type RenderGeometry = IDisposable & RenderMemory.Consumer;
 
+/** An opaque representation of instructions for repeatedly drawing a [[RenderGeometry]] to pattern a planar region, to be supplied to [[RenderSystem.createRenderGraphic]].
+ * @internal
+ */
+export type RenderAreaPattern = IDisposable & RenderMemory.Consumer;
+
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
  * An application rarely interacts directly with the RenderSystem; instead it interacts with types like [[Viewport]] which
  * coordinate with the RenderSystem on the application's behalf.
@@ -303,13 +308,13 @@ export abstract class RenderSystem implements IDisposable {
   }
 
   /** @internal */
-  public createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | PatternGraphicParams | Point3d): RenderGraphic | undefined {
+  public createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
     const params = MeshParams.create(args);
     return this.createMesh(params, instances);
   }
 
   /** @internal */
-  public createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams | PatternGraphicParams | Point3d): RenderGraphic | undefined {
+  public createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
     if (args.flags.isDisjoint) {
       const pointStringParams = PointStringParams.create(args);
       return undefined !== pointStringParams ? this.createPointString(pointStringParams, instances) : undefined;
@@ -326,14 +331,17 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public createPointStringGeometry(_params: PointStringParams, _viewIndependentOrigin?: Point3d): RenderGeometry | undefined { return undefined; }
 
+  /** @internal */
+  public createAreaPattern(_params: PatternGraphicParams): RenderAreaPattern | undefined { return undefined; }
+
   /** Create a RenderGraphic from a RenderGeometry produced by this RenderSystem.
    * @internal
    */
-  public abstract createRenderGraphic(_geometry: RenderGeometry, instances?: InstancedGraphicParams | PatternGraphicParams, instancesOwnGeometry?: boolean): RenderGraphic | undefined;
+  public abstract createRenderGraphic(_geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern, instancesOwnGeometry?: boolean): RenderGraphic | undefined;
 
   private createGraphicFromGeometry(
     createGeometry: (viewIndependentOrigin?: Point3d) => RenderGeometry | undefined,
-    instancesOrOrigin?: InstancedGraphicParams | PatternGraphicParams | Point3d): RenderGraphic | undefined {
+    instancesOrOrigin?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
       let viOrigin;
       let instances;
       if (instancesOrOrigin instanceof Point3d)
@@ -346,17 +354,17 @@ export abstract class RenderSystem implements IDisposable {
   }
 
   /** @internal */
-  public createMesh(params: MeshParams, instances?: InstancedGraphicParams | PatternGraphicParams | Point3d): RenderGraphic | undefined {
+  public createMesh(params: MeshParams, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
     return this.createGraphicFromGeometry((viOrigin) => this.createMeshGeometry(params, viOrigin), instances);
   }
 
   /** @internal */
-  public createPolyline(params: PolylineParams, instances?: InstancedGraphicParams | PatternGraphicParams | Point3d): RenderGraphic | undefined {
+  public createPolyline(params: PolylineParams, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
     return this.createGraphicFromGeometry((origin) => this.createPolylineGeometry(params, origin), instances);
   }
 
   /** @internal */
-  public createPointString(params: PointStringParams, instances?: InstancedGraphicParams | PatternGraphicParams | Point3d): RenderGraphic | undefined {
+  public createPointString(params: PointStringParams, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
     return this.createGraphicFromGeometry((origin) => this.createPointStringGeometry(params, origin), instances);
   }
 

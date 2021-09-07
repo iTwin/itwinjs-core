@@ -20,6 +20,11 @@ import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 import { Matrix4 } from "./Matrix";
 
+/** @internal */
+export function isInstancedGraphicParams(params: any): params is InstancedGraphicParams {
+  return typeof params === "object" && typeof params.count === "number" && params.transforms instanceof Float32Array && params.transformCenter instanceof Point3d;
+}
+
 class InstanceData {
   public readonly shared: boolean;
   public readonly numInstances: number;
