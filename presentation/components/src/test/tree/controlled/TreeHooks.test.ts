@@ -6,10 +6,13 @@ import { expect } from "chai";
 import { it } from "mocha";
 import * as moq from "typemoq";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { I18N } from "@bentley/imodeljs-i18n";
 import { Node, RegisteredRuleset, RulesetVariable, StandardNodeTypes, VariableValueTypes } from "@bentley/presentation-common";
 import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@bentley/presentation-frontend";
 import { PrimitiveValue } from "@bentley/ui-abstract";
-import { MutableTreeModel, TreeModel, TreeModelNode, TreeModelNodeEditingInfo, TreeModelNodeInput, TreeModelSource } from "@bentley/ui-components";
+import {
+  computeVisibleNodes, MutableTreeModel, TreeModel, TreeModelNode, TreeModelNodeEditingInfo, TreeModelNodeInput, UiComponents,
+} from "@bentley/ui-components";
 import { act, cleanup, renderHook } from "@testing-library/react-hooks";
 import { IPresentationTreeDataProvider } from "../../../presentation-components";
 import {
@@ -32,6 +35,14 @@ describe("usePresentationNodeLoader", () => {
     ruleset: rulesetId,
     pagingSize: 5,
   };
+
+  before(async () => {
+    await UiComponents.initialize(new I18N());
+  });
+
+  after(() => {
+    UiComponents.terminate();
+  });
 
   beforeEach(() => {
     imodelMock.reset();
@@ -652,7 +663,7 @@ describe("reloadVisibleHierarchyParts", () => {
   function createVisibleNodes(rootNodesCount: number, hierarchy: HierarchyItem[],) {
     const model = new MutableTreeModel();
     addNodes(model, undefined, hierarchy, rootNodesCount);
-    return new TreeModelSource(model).getVisibleNodes();
+    return computeVisibleNodes(model);
   }
 
   const dataProviderMock = moq.Mock.ofType<IPresentationTreeDataProvider>();
