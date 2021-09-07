@@ -36,6 +36,7 @@ import { CommonToolbarItem } from '@bentley/ui-abstract';
 import { CompassMode } from '@bentley/imodeljs-frontend';
 import { ConditionalBooleanValue } from '@bentley/ui-abstract';
 import { ConditionalStringValue } from '@bentley/ui-abstract';
+import { ContentLayoutProps as ContentLayoutProps_2 } from '@bentley/ui-abstract';
 import * as CSS from 'csstype';
 import { CustomButtonDefinition } from '@bentley/ui-abstract';
 import { CustomToolbarItem } from '@bentley/ui-components';
@@ -1225,8 +1226,8 @@ export class ConfigurableUiManager {
     static isControlRegistered(classId: string): boolean;
     static loadContentGroup(groupProps: ContentGroupProps): void;
     static loadContentGroups(groupPropsList: ContentGroupProps[]): void;
-    static loadContentLayout(layoutProps: ContentLayoutProps): void;
-    static loadContentLayouts(layoutPropsList: ContentLayoutProps[]): void;
+    static loadContentLayout(layoutProps: ContentLayoutProps_2): void;
+    static loadContentLayouts(layoutPropsList: ContentLayoutProps_2[]): void;
     static loadKeyboardShortcuts(shortcutList: KeyboardShortcutProps[]): void;
     static loadTasks(taskPropsList: TaskPropsList): void;
     static loadWorkflow(workflowProps: WorkflowProps): void;
@@ -1315,6 +1316,8 @@ export class ContentGroup {
     groupId: string;
     onFrontstageDeactivated(): void;
     onFrontstageReady(): void;
+    // (undocumented)
+    preferredLayoutId: string;
     refreshContentNodes(): void;
     toJSON(contentCallback?: ContentCallback): ContentGroupProps;
 }
@@ -1322,19 +1325,18 @@ export class ContentGroup {
 // @public
 export class ContentGroupManager {
     // (undocumented)
-    static addGroup(groupId: string, group: ContentGroup): void;
-    // (undocumented)
     static findGroup(groupId: string): ContentGroup | undefined;
     // (undocumented)
-    static loadGroup(groupProps: ContentGroupProps): void;
-    // (undocumented)
+    static getPreferredLayoutId(groupId: string): string | undefined;
+    // @internal
     static loadGroups(groupPropsList: ContentGroupProps[]): void;
 }
 
 // @public
 export interface ContentGroupProps {
     contents: ContentProps[];
-    id?: string;
+    id: string;
+    preferredLayoutId: string;
 }
 
 // @public
@@ -1374,7 +1376,7 @@ export interface ContentLayoutComponentProps extends CommonProps {
 
 // @public
 export class ContentLayoutDef {
-    constructor(layoutProps: ContentLayoutProps);
+    constructor(layoutProps: ContentLayoutProps_2);
     // @internal (undocumented)
     static createSplit(fragmentDef: LayoutFragmentProps): LayoutSplit | undefined;
     descriptionKey: string;
@@ -1384,7 +1386,7 @@ export class ContentLayoutDef {
     priority: number;
     // (undocumented)
     get rootSplit(): LayoutSplit | undefined;
-    toJSON(): ContentLayoutProps;
+    toJSON(): ContentLayoutProps_2;
 }
 
 // @public
@@ -1393,13 +1395,13 @@ export class ContentLayoutManager {
     static get activeLayout(): ContentLayoutDef | undefined;
     static addLayout(layoutId: string, layoutDef: ContentLayoutDef): void;
     static findLayout(layoutId: string): ContentLayoutDef | undefined;
-    static loadLayout(layoutProps: ContentLayoutProps): void;
-    static loadLayouts(layoutPropsList: ContentLayoutProps[]): void;
+    static loadLayout(layoutProps: ContentLayoutProps_2): void;
+    static loadLayouts(layoutPropsList: ContentLayoutProps_2[]): void;
     static refreshActiveLayout(): void;
     static setActiveLayout(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): Promise<void>;
 }
 
-// @public
+// @public @deprecated
 export interface ContentLayoutProps extends LayoutFragmentProps {
     descriptionKey?: string;
     id: string;
@@ -1410,7 +1412,7 @@ export interface ContentLayoutProps extends LayoutFragmentProps {
 export interface ContentProps {
     applicationData?: any;
     classId: string | ConfigurableUiControlConstructor;
-    id?: string;
+    id: string;
 }
 
 // @public
@@ -3626,13 +3628,13 @@ export interface KeyinPalettePopupProps {
     onItemExecuted?: OnItemExecutedFunc;
 }
 
-// @public
+// @public @deprecated
 export interface LayoutFragmentProps {
     horizontalSplit?: LayoutHorizontalSplitProps;
     verticalSplit?: LayoutVerticalSplitProps;
 }
 
-// @public
+// @public @deprecated
 export interface LayoutHorizontalSplitProps extends LayoutSplitPropsBase {
     bottom: LayoutFragmentProps | number;
     minSizeBottom?: number;
@@ -3648,14 +3650,14 @@ export interface LayoutSplit {
     isLocked: boolean;
 }
 
-// @public
+// @public @deprecated
 export interface LayoutSplitPropsBase {
     id?: string;
     lock?: boolean;
     percentage: number;
 }
 
-// @public
+// @public @deprecated
 export interface LayoutVerticalSplitProps extends LayoutSplitPropsBase {
     left: LayoutFragmentProps | number;
     minSizeLeft?: number;
@@ -4731,7 +4733,7 @@ export interface SavedViewLayoutProps {
     // (undocumented)
     contentGroupProps: ContentGroupProps;
     // (undocumented)
-    contentLayoutProps: ContentLayoutProps;
+    contentLayoutProps: ContentLayoutProps_2;
     // (undocumented)
     savedViews: SavedViewProps[];
 }

@@ -35,6 +35,7 @@ public;CommonStatusBarItem = AbstractStatusBarActionItem | AbstractStatusBarLabe
 public;CommonToolbarItem = ActionButton | GroupButton | CustomButtonDefinition
 public;ConditionalBooleanValue
 public;ConditionalStringValue
+public;ContentLayoutProps 
 internal;convertSimple2RegExpPattern(pattern: string): string
 internal;createMatches(score: undefined | FuzzyScore): IMatch[]
 public;CustomButtonDefinition 
@@ -91,6 +92,10 @@ internal;isPatternInWord(patternLow: string, patternPos: number, patternLen: num
 public;isStageLauncher: (item: BackstageItem) => item is BackstageStageLauncher
 public;isSuppressLabelEditorParams: (item: BasePropertyEditorParams) => item is SuppressLabelEditorParams
 internal;isUpperAsciiLetter(code: number): boolean
+public;LayoutFragmentProps
+public;LayoutHorizontalSplitProps 
+public;LayoutSplitPropsBase
+public;LayoutVerticalSplitProps 
 public;LinkElementsInfo
 internal;matchesCamelCase(word: string, camelCaseWord: string): IMatch[] | null
 internal;matchesContiguousSubString(word: string, wordToMatchAgainst: string): IMatch[] | null
