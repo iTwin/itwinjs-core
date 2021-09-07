@@ -7,7 +7,7 @@
  */
 
 import { assert, ByteStream, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { ClipVectorProps, Point3d, Range2d, Range2dProps, Range3d, Transform, TransformProps, XYZProps } from "@bentley/geometry-core";
+import { ClipVectorProps, Point3d, Range2d, Range2dProps, Range3d, Range3dProps, Transform, TransformProps, XYZProps } from "@bentley/geometry-core";
 import {
   BatchType, ColorDef, ColorDefProps, ElementAlignedBox3d, FeatureIndexType, FeatureTableHeader, FillFlags, Gradient, ImageSource, ImdlHeader, LinePixels,
   PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, readTileContentDescription, RenderMaterial, RenderTexture, TextureMapping,
@@ -25,7 +25,7 @@ import {
   SurfaceMaterial, SurfaceParams, SurfaceType, TesselatedPolyline, VertexIndices, VertexTable,
 } from "../render/primitives/VertexTable";
 import { RenderGraphic } from "../render/RenderGraphic";
-import { RenderSystem } from "../render/RenderSystem";
+import { RenderGeometry, RenderSystem } from "../render/RenderSystem";
 import { BatchOptions } from "../render/GraphicBuilder";
 import { GltfReader, GltfReaderProps, IModelTileContent, ShouldAbortReadGltf } from "./internal";
 
@@ -118,10 +118,17 @@ interface ImdlPolyline {
 }
 
 interface ImdlAreaPattern {
+  readonly type: "areaPattern";
   readonly clip: ClipVectorProps;
   readonly scale: number;
   readonly spacing: number[];
   readonly orgTransform: TransformProps;
+  readonly xyOffsets: Uint8Array;
+  readonly bytesPerOffset: 1 | 2 | 4;
+  readonly featureId: number;
+  readonly localToWorld: TransformProps;
+  readonly worldToModel: TransformProps;
+  readonly range: Range3dProps;
 }
 
 interface ImdlSurface {
@@ -154,8 +161,12 @@ interface ImdlPointStringPrimitive extends ImdlPrimitive {
 type AnyImdlPrimitive = ImdlMeshPrimitive | ImdlPolylinePrimitive | ImdlPointStringPrimitive;
 
 interface ImdlMesh {
-  readonly primitives?: AnyImdlPrimitive[];
+  readonly primitives?: Array<AnyImdlPrimitive | ImdlAreaPattern>;
   readonly layer?: string;
+}
+
+interface ImdlAreaPatternSymbol {
+  readonly primitives: AnyImdlPrimitive;
 }
 
 /** Deserializes tile content in iMdl format. These tiles contain element geometry encoded into a format optimized for the imodeljs webgl renderer.
@@ -165,6 +176,8 @@ export class ImdlReader extends GltfReader {
   private readonly _sizeMultiplier?: number;
   private readonly _loadEdges: boolean;
   private readonly _options: BatchOptions;
+  private readonly _patternSymbols: { [key: string]: ImdlAreaPatternSymbol | undefined; };
+  private readonly _patternGeometry = new Map<string, RenderGeometry>();
 
   /** Attempt to initialize an ImdlReader to deserialize iModel tile data beginning at the stream's current position. */
   public static create(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem,
@@ -436,6 +449,7 @@ export class ImdlReader extends GltfReader {
     this._sizeMultiplier = sizeMultiplier;
     this._loadEdges = loadEdges;
     this._options = options ?? {};
+    this._patternSymbols = props.scene.patternSymbols as any ?? { };
   }
 
   private static skipFeatureTable(stream: ByteStream): boolean {
@@ -447,7 +461,14 @@ export class ImdlReader extends GltfReader {
     return undefined !== header;
   }
 
-  private readMeshGraphic(primitive: AnyImdlPrimitive): RenderGraphic | undefined {
+  private readAreaPattern(_primitive: ImdlAreaPattern): RenderGraphic | undefined {
+    return undefined; /// ###TODO
+  }
+
+  private readMeshGraphic(primitive: AnyImdlPrimitive | ImdlAreaPattern): RenderGraphic | undefined {
+    if (primitive.type === "areaPattern")
+      return this.readAreaPattern(primitive);
+
     const materialName = primitive.material ?? "";
     const materialValue = 0 < materialName.length ? JsonUtils.asObject(this._materialValues[materialName]) : undefined;
     const displayParams = undefined !== materialValue ? this.createDisplayParams(materialValue) : undefined;
@@ -460,19 +481,31 @@ export class ImdlReader extends GltfReader {
       return undefined;
     }
 
+    let viOrigin;
+    let instances;
+    if (undefined !== primitive.viewIndependentOrigin)
+      viOrigin = Point3d.fromJSON(primitive.viewIndependentOrigin);
+    else
+      instances = this.readInstances(primitive);
+
     const isPlanar = !this._is3d || JsonUtils.asBool(primitive.isPlanar);
-    const instances = this.readInstances(primitive);
+    let geometry;
     switch (primitive.type) {
       case Mesh.PrimitiveType.Mesh:
-        return this.createMeshGraphic(primitive, displayParams, vertices, isPlanar, this.readAuxChannelTable(primitive), instances);
+        geometry = this.createMeshGeometry(primitive, displayParams, vertices, isPlanar, this.readAuxChannelTable(primitive), viOrigin);
+        break;
       case Mesh.PrimitiveType.Polyline:
-        return this.createPolylineGraphic(primitive, displayParams, vertices, isPlanar, instances);
+        geometry = this.createPolylineGeometry(primitive, displayParams, vertices, isPlanar, viOrigin);
+        break;
       case Mesh.PrimitiveType.Point:
-        return this.createPointStringGraphic(primitive, displayParams, vertices, instances);
+        geometry = this.createPointStringGeometry(primitive, displayParams, vertices, viOrigin);
+        break;
+      default:
+        assert(false, "unhandled primitive type");
+        return undefined;
     }
 
-    assert(false, "unhandled primitive type");
-    return undefined;
+    return geometry ? this._system.createRenderGraphic(geometry, instances) : undefined;
   }
 
   private findBuffer(bufferViewId: string): Uint8Array | undefined {
@@ -556,11 +589,7 @@ export class ImdlReader extends GltfReader {
     return AuxChannelTable.fromJSON(props);
   }
 
-  private readInstances(primitive: ImdlPrimitive): Point3d | InstancedGraphicParams | undefined {
-    const viJson = primitive.viewIndependentOrigin;
-    if (undefined !== viJson)
-      return Point3d.fromJSON(viJson);
-
+  private readInstances(primitive: ImdlPrimitive): InstancedGraphicParams | undefined {
     const json = primitive.instances;
     if (undefined === json)
       return undefined;
@@ -602,13 +631,13 @@ export class ImdlReader extends GltfReader {
     return undefined !== bytes ? new VertexIndices(bytes) : undefined;
   }
 
-  private createPointStringGraphic(primitive: ImdlPointStringPrimitive, displayParams: DisplayParams, vertices: VertexTable, instances: Point3d | InstancedGraphicParams | undefined): RenderGraphic | undefined {
+  private createPointStringGeometry(primitive: ImdlPointStringPrimitive, displayParams: DisplayParams, vertices: VertexTable, viewIndependentOrigin: Point3d | undefined): RenderGeometry | undefined {
     const indices = this.readVertexIndices(primitive.indices);
     if (undefined === indices)
       return undefined;
 
     const params = new PointStringParams(vertices, indices, displayParams.width);
-    return this._system.createPointString(params, instances);
+    return this._system.createPointStringGeometry(params, viewIndependentOrigin);
   }
 
   private readTesselatedPolyline(json: ImdlPolyline): TesselatedPolyline | undefined {
@@ -622,7 +651,7 @@ export class ImdlReader extends GltfReader {
     return { indices, prevIndices, nextIndicesAndParams };
   }
 
-  private createPolylineGraphic(primitive: ImdlPolylinePrimitive, displayParams: DisplayParams, vertices: VertexTable, isPlanar: boolean, instances: Point3d | InstancedGraphicParams | undefined): RenderGraphic | undefined {
+  private createPolylineGeometry(primitive: ImdlPolylinePrimitive, displayParams: DisplayParams, vertices: VertexTable, isPlanar: boolean, viewIndependentOrigin: Point3d | undefined): RenderGeometry | undefined {
     const polyline = this.readTesselatedPolyline(primitive);
     if (undefined === polyline)
       return undefined;
@@ -632,7 +661,7 @@ export class ImdlReader extends GltfReader {
       flags = (undefined === displayParams.gradient || displayParams.gradient.isOutlined) ? PolylineTypeFlags.Edge : PolylineTypeFlags.Outline;
 
     const params = new PolylineParams(vertices, polyline, displayParams.width, displayParams.linePixels, isPlanar, flags);
-    return this._system.createPolyline(params, instances);
+    return this._system.createPolylineGeometry(params, viewIndependentOrigin);
   }
 
   private readSurface(mesh: ImdlMeshPrimitive, displayParams: DisplayParams): SurfaceParams | undefined {
@@ -718,7 +747,7 @@ export class ImdlReader extends GltfReader {
     return { succeeded, params };
   }
 
-  private createMeshGraphic(primitive: ImdlMeshPrimitive, displayParams: DisplayParams, vertices: VertexTable, isPlanar: boolean, auxChannels: AuxChannelTable | undefined, instances: Point3d | InstancedGraphicParams | undefined): RenderGraphic | undefined {
+  private createMeshGeometry(primitive: ImdlMeshPrimitive, displayParams: DisplayParams, vertices: VertexTable, isPlanar: boolean, auxChannels: AuxChannelTable | undefined, viewIndependentOrigin: Point3d | undefined): RenderGeometry | undefined {
     const surface = this.readSurface(primitive, displayParams);
     if (undefined === surface)
       return undefined;
@@ -734,7 +763,7 @@ export class ImdlReader extends GltfReader {
     }
 
     const params = new MeshParams(vertices, surface, edgeParams, isPlanar, auxChannels);
-    return this._system.createMesh(params, instances);
+    return this._system.createMeshGeometry(params, viewIndependentOrigin);
   }
 
   private finishRead(isLeaf: boolean, featureTable: PackedFeatureTable, contentRange: ElementAlignedBox3d, emptySubRangeMask: number, sizeMultiplier?: number): ImdlReaderResult {

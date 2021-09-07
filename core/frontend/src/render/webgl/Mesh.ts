@@ -162,8 +162,11 @@ export class MeshGraphic extends Graphic {
   }
 
   private addPrimitive(geometry: RenderGeometry | undefined) {
+    if (!geometry)
+      return;
+
     assert(geometry instanceof CachedGeometry);
-    const primitive = geometry ? Primitive.createShared(() => geometry, this._instances) : undefined;
+    const primitive = Primitive.createShared(() => geometry, this._instances);
     if (primitive)
       this._primitives.push(primitive);
   }
