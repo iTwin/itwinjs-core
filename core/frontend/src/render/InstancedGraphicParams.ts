@@ -6,7 +6,9 @@
  * @module Rendering
  */
 
-import { Point3d, Range3d, Transform, XY } from "@bentley/geometry-core";
+import {
+  Point2d, Point3d, Range3d, Transform,
+} from "@bentley/geometry-core";
 
 /** Parameters for creating a [[RenderGraphic]] representing a collection of instances of shared geometry.
  * Each instance is drawn using the same graphics, but with its own transform and (optionally) [[Feature]] Id.
@@ -52,10 +54,11 @@ export interface PatternGraphicParams {
   readonly featureId?: number;
   readonly orgTransform: Transform;
   readonly scale: number;
-  readonly spacing: XY;
+  readonly spacing: Point2d;
   readonly localToWorld: Transform;
   /** Usually, to tile tree coordinates. */
   readonly worldToModel: Transform;
   /** Range of pattern boundary in model (tile tree, usually) coordinates. */
   readonly range: Range3d;
+  readonly symbolTranslation: Point3d;
 }
