@@ -44,7 +44,6 @@ export * from "./ui-framework/configurableui/state";
 export * from "./ui-framework/content/ContentControl";
 export * from "./ui-framework/content/ContentGroup";
 export * from "./ui-framework/content/ContentLayout";
-export * from "./ui-framework/content/ContentLayoutProps";
 export * from "./ui-framework/content/ContentLayoutManager";
 export * from "./ui-framework/content/ContentViewManager";
 export * from "./ui-framework/content/SavedView";

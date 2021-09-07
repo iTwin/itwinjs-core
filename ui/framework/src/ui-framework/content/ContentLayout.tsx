@@ -16,10 +16,7 @@ import { CommonProps, Orientation, UiEvent } from "@bentley/ui-core";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { ContentGroup } from "./ContentGroup";
-import { ContentLayoutProps } from "@bentley/ui-abstract";
-import {
-  LayoutFragmentProps, LayoutHorizontalSplitProps, LayoutSplitPropsBase, LayoutVerticalSplitProps,
-} from "./ContentLayoutProps";
+import { ContentLayoutProps, LayoutFragmentProps, LayoutHorizontalSplitProps, LayoutSplitPropsBase, LayoutVerticalSplitProps } from "@bentley/ui-abstract";
 import { ActiveContentChangedEventArgs, ContentViewManager } from "./ContentViewManager";
 
 /** Properties for [[ContentWrapper]] */
