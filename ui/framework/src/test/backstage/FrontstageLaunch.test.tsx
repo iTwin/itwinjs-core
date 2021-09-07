@@ -44,7 +44,6 @@ describe("Backstage", () => {
             <Frontstage
               id="Test1"
               defaultTool={CoreTools.selectElementCommand}
-              defaultLayout="FourQuadrants"
               contentGroup="TestContentGroup1"
             />
           );

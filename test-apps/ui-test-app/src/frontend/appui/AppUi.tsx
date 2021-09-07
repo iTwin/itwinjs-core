@@ -161,7 +161,6 @@ export class AppUi {
     const ui2StageProps: StandardFrontstageProp = {
       id: "Ui2",
       version: 1.1,
-      defaultLayout: "SingleContent",
       contentGroupProps: ui2ContentGroupProps,
       hideNavigationAid,
       cornerButton,
@@ -401,7 +400,7 @@ export class AppUi {
 
     const twoHalvesHorizontal: ContentLayoutProps = {
       id: "TwoHalvesHorizontal",
-      horizontalSplit: {  id: "TwoViewsHorizontalSplit", percentage: 0.50, top: 0, bottom: 1, minSizeTop: 100, minSizeBottom: 100 },
+      horizontalSplit: { id: "TwoViewsHorizontalSplit", percentage: 0.50, top: 0, bottom: 1, minSizeTop: 100, minSizeBottom: 100 },
     };
 
     const singleContent: ContentLayoutProps = {
@@ -415,7 +414,7 @@ export class AppUi {
         percentage: 0.50,
         minSizeLeft: 100, minSizeRight: 100,
         left: 0,
-        right: { horizontalSplit: { id:"ThreeViewsRightHorizontalSplit", percentage: 0.50, top: 1, bottom: 2, minSizeTop: 100, minSizeBottom: 100 } },
+        right: { horizontalSplit: { id: "ThreeViewsRightHorizontalSplit", percentage: 0.50, top: 1, bottom: 2, minSizeTop: 100, minSizeBottom: 100 } },
       },
     };
 

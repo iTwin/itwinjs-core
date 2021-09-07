@@ -16,7 +16,6 @@ The definition that produces the sample frontstage is shown below.
   <Frontstage id="Ui2Sample"
     version={2.1}
     defaultTool={CoreTools.selectElementCommand}
-    defaultLayout="SingleContent"
     contentGroup={myContentGroup}
     defaultContentId="singleIModelView"
     isInFooterMode={true}

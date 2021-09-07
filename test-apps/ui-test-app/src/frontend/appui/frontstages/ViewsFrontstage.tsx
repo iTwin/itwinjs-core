@@ -256,7 +256,6 @@ export class ViewsFrontstage extends FrontstageProvider {
     return (
       <Frontstage id={ViewsFrontstage.stageId}
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout={contentLayoutDef}
         contentGroup={myContentGroup}
         isInFooterMode={true} applicationData={{ key: "value" }}
         usage={StageUsage.General}

@@ -64,7 +64,6 @@ export class ExtensionFrontstage extends FrontstageProvider {
       <Frontstage id={ExtensionFrontstage.id}
         version={1.2}
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout={pluginContentLayoutDef}
         contentGroup={pluginContentGroup}
         defaultContentId="singleIModelView"
         isInFooterMode={true}

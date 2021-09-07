@@ -44,7 +44,6 @@ export class IModelOpenFrontstage extends FrontstageProvider {
     return (
       <Frontstage id="IModelOpen"
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout="SingleContent"
         contentGroup={contentGroup}
         isInFooterMode={false}
         usage={StageUsage.Private}

@@ -87,7 +87,6 @@ export class TestFrontstage extends FrontstageProvider {
       <Frontstage
         id="TestFrontstage"
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout={contentLayoutDef}
         contentGroup={myContentGroup}
         defaultContentId="defaultContentId"
         isInFooterMode={false}
@@ -182,7 +181,6 @@ export class TestFrontstage2 extends FrontstageProvider {
       <Frontstage
         id="TestFrontstage2"
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout={contentLayoutDef}
         contentGroup={myContentGroup}
         defaultContentId="defaultContentId"
         isInFooterMode={false}
@@ -275,7 +273,6 @@ export class TestFrontstage3 extends FrontstageProvider {
       <Frontstage
         id="TestFrontstage3"
         defaultTool={new ToolItemDef({ toolId: "test" })}
-        defaultLayout={contentLayoutDef}
         contentGroup={myContentGroup}
         defaultContentId="defaultContentId"
         isInFooterMode={false}

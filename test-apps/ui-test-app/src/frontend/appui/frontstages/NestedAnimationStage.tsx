@@ -26,7 +26,6 @@ export class NestedAnimationStage extends FrontstageProvider {
     return (
       <Frontstage id="NestedAnimationStage"
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout="SingleContent"
         contentGroup={myContentGroup}
         isInFooterMode={false}
         contentManipulationTools={

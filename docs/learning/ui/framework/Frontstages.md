@@ -41,7 +41,6 @@ export class SampleFrontstage extends FrontstageProvider {
     return (
       <Frontstage id="Test1"
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout="TwoHalvesVertical"
         contentGroup="TestContentGroup1"
         isInFooterMode={true}
         applicationData={{ key: "value" }}
@@ -89,9 +88,8 @@ export class SampleFrontstage extends FrontstageProvider {
 
 ```
 
-The `defaultTool` prop specifies a tool or command.
-`defaultLayout` specifies a registered Content Layout and `contentGroup` specifies a registered Content Group.
-Note that these two props can reference a ContentLayoutDef and ContentGroup directly instead of specifying an Id.
+The `defaultTool` prop specifies a tool or command and `contentGroup` specifies a registered Content Group.
+Note `contentGroup` can reference a ContentGroup directly instead of specifying an Id.
 See [Content Views and Layouts](./ContentViews.md) for more details.
 A `isInFooterMode` prop with a value of true indicates the Status Bar will be in Footer mode across the bottom of the screen.
 A value of false would indicate the Status Bar is open in the bottom center position in the grid.

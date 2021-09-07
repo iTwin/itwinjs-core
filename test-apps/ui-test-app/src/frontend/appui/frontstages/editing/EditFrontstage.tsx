@@ -85,7 +85,7 @@ export class EditFrontstage extends FrontstageProvider {
     return (
       <Frontstage id="EditFrontstage"
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout={contentLayoutDef} contentGroup={myContentGroup}
+        contentGroup={myContentGroup}
         isInFooterMode={true} applicationData={{ key: "value" }}
         usage={StageUsage.Edit}
         contentManipulationTools={

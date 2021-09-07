@@ -160,12 +160,6 @@ describe("FrontstageComposer", () => {
           ],
         },
       ),
-      defaultLayout: new ContentLayoutDef(
-        {
-          id: "SingleContent",
-          description: "App:ContentLayoutDef.SingleContent",
-        },
-      ),
     });
 
     const spyMethod = sinon.spy(Logger, "logError");

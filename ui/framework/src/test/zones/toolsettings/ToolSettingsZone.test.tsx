@@ -85,7 +85,6 @@ describe("ToolSettingsZone", () => {
           <Frontstage
             id="ToolSettingsZone-TestFrontstage"
             defaultTool={CoreTools.selectElementCommand}
-            defaultLayout="FourQuadrants"
             contentGroup="TestContentGroup1"
             topCenter={
               <Zone
@@ -106,7 +105,6 @@ describe("ToolSettingsZone", () => {
           <Frontstage
             id="ToolSettingsZone-TestFrontstage2"
             defaultTool={CoreTools.selectElementCommand}
-            defaultLayout="FourQuadrants"
             contentGroup="TestContentGroup1"
             topCenter={
               <Zone

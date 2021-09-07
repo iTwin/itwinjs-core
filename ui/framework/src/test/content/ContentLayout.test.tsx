@@ -58,7 +58,8 @@ describe("ContentLayout", () => {
   class TestFrontstage2 extends FrontstageProvider {
     public get frontstage(): React.ReactElement<FrontstageProps> {
       return (
-        <Frontstage id="TestFrontstage2" defaultTool={CoreTools.selectElementCommand} defaultLayout={contentLayout2} contentGroup={contentGroup2} />
+        <Frontstage id="TestFrontstage2" defaultTool={CoreTools.selectElementCommand}
+          contentGroup={contentGroup2} />
       );
     }
   }

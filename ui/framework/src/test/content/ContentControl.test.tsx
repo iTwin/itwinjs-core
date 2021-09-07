@@ -51,7 +51,6 @@ describe("ContentControl", () => {
           <Frontstage
             id="ContentFrontstage1"
             defaultTool={CoreTools.selectElementCommand}
-            defaultLayout={myContentLayout}
             contentGroup={myContentGroup}
           />
         );
@@ -109,7 +108,6 @@ describe("ContentControl", () => {
           <Frontstage
             id="ContentFrontstage2"
             defaultTool={CoreTools.selectElementCommand}
-            defaultLayout={contentLayout2}
             contentGroup={contentGroup2}
           />
         );

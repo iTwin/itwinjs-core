@@ -69,7 +69,6 @@ describe("ToolUiProvider", () => {
           <Frontstage
             id="ToolUiProvider-TestFrontstage"
             defaultTool={CoreTools.selectElementCommand}
-            defaultLayout="FourQuadrants"
             contentGroup="TestContentGroup1"
             topCenter={
               <Zone

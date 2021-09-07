@@ -64,7 +64,6 @@ export class LocalFileOpenFrontstage extends FrontstageProvider {
     return (
       <Frontstage id="LocalFileOpen"
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout="SingleContent"
         contentGroup={contentGroup}
         isInFooterMode={false}
         usage={StageUsage.Private}

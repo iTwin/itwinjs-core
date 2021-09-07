@@ -37,7 +37,6 @@ describe("FrontstageDef", () => {
         <Frontstage
           id="BadLayout"
           defaultTool={CoreTools.selectElementCommand}
-          defaultLayout="abc"
           contentGroup="def"
         />
       );
@@ -58,7 +57,6 @@ describe("FrontstageDef", () => {
         <Frontstage
           id="BadGroup"
           defaultTool={CoreTools.selectElementCommand}
-          defaultLayout={contentLayoutDef}
           contentGroup="def"
         />
       );
@@ -146,7 +144,6 @@ describe("FrontstageDef", () => {
           <Frontstage
             id="TestFrontstageUi2"
             defaultTool={CoreTools.selectElementCommand}
-            defaultLayout="SingleContent"
             contentGroup="TestContentGroup1"
             defaultContentId="defaultContentId"
             isInFooterMode={false}

@@ -53,7 +53,6 @@ export interface FrontstageNineZoneStateChangedEventArgs extends FrontstageEvent
 export class FrontstageDef {
   private _id: string = "";
   private _defaultTool?: ToolItemDef;
-  private _defaultLayoutId: string = "";
   private _defaultContentId: string = "";
   private _contentGroupId: string = "";
   private _isInFooterMode: boolean = true;
@@ -86,7 +85,6 @@ export class FrontstageDef {
 
   public get id(): string { return this._id; }
   public get defaultTool(): ToolItemDef | undefined { return this._defaultTool; }
-  public get defaultLayoutId(): string { return this._defaultLayoutId; }
   public get defaultContentId(): string { return this._defaultContentId; }
   public get contentGroupId(): string { return this._contentGroupId; }
   public get isInFooterMode(): boolean { return this._isInFooterMode; }
@@ -158,24 +156,19 @@ export class FrontstageDef {
   public onActivated(): void {
     this.updateWidgetDefs();
 
-    this._contentLayoutDef = this.defaultLayout;
-
-    if (!this._contentLayoutDef) {
-      this._contentLayoutDef = ContentLayoutManager.findLayout(this.defaultLayoutId);
-      if (!this._contentLayoutDef)
-        throw new UiError(UiFramework.loggerCategory(this), `onActivated: Content Layout '${this.defaultLayoutId}' not registered`);
-    }
-
     if (!this._contentGroup) {
       this._contentGroup = ContentGroupManager.findGroup(this.contentGroupId);
       if (!this._contentGroup)
         throw new UiError(UiFramework.loggerCategory(this), `onActivated: Content Group '${this.contentGroupId}' not registered`);
     }
 
+    this._contentLayoutDef = ContentLayoutManager.findLayout(this._contentGroup?.preferredLayoutId);
+    if (!this._contentLayoutDef)
+      throw new UiError(UiFramework.loggerCategory(this), `onActivated: Content Layout '${this._contentGroup?.preferredLayoutId}' not registered`);
+
     FrontstageManager.onContentLayoutActivatedEvent.emit({ contentLayout: this._contentLayoutDef, contentGroup: this._contentGroup });
 
     this._timeTracker.startTiming();
-
     this._onActivated();
   }
 
@@ -492,11 +485,6 @@ export class FrontstageDef {
 
     if (props.defaultContentId !== undefined)
       this._defaultContentId = props.defaultContentId;
-
-    if (typeof props.defaultLayout === "string")
-      this._defaultLayoutId = props.defaultLayout;
-    else
-      this._defaultLayout = props.defaultLayout;
 
     if (typeof props.contentGroup === "string")
       this._contentGroupId = props.contentGroup;

@@ -50,7 +50,6 @@ export class SignInFrontstage extends FrontstageProvider {
     return (
       <Frontstage id="SignIn"
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout="SingleContent"
         contentGroup={contentGroup}
         isInFooterMode={false}
         usage={StageUsage.Private}

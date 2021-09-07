@@ -49,7 +49,6 @@ describe("ConfigurableUiManager", () => {
           <Frontstage
             id="TestFrontstage2"
             defaultTool={CoreTools.selectElementCommand}
-            defaultLayout="FourQuadrants"
             contentGroup="TestContentGroup1"
           />
         );
@@ -143,7 +142,7 @@ describe("ConfigurableUiManager", () => {
         id: "testContentLayout1Vertical",
         percentage: 0.50,
         left: 0,
-        right: { horizontalSplit: { id:"testContentLayout1Horizontal", percentage: 0.50, top: 1, bottom: 2 } },
+        right: { horizontalSplit: { id: "testContentLayout1Horizontal", percentage: 0.50, top: 1, bottom: 2 } },
       },
     };
     ConfigurableUiManager.loadContentLayout(contentLayoutProps);
@@ -160,7 +159,7 @@ describe("ConfigurableUiManager", () => {
           id: "testContentLayout2Vertical",
           percentage: 0.50,
           left: 0,
-          right: { horizontalSplit: { id:"testContentLayout2Horizontal", percentage: 0.50, top: 1, bottom: 2 } },
+          right: { horizontalSplit: { id: "testContentLayout2Horizontal", percentage: 0.50, top: 1, bottom: 2 } },
         },
       },
     ];

@@ -40,7 +40,6 @@ class TestNestedFrontstage extends FrontstageProvider {
       <Frontstage
         id="Test1"
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout={contentLayoutDef}
         contentGroup={myContentGroup}
         defaultContentId="defaultContentId"
         isInFooterMode={false}

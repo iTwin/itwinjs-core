@@ -22,7 +22,6 @@ export class NestedFrontstage1 extends FrontstageProvider {
     return (
       <Frontstage id="NestedFrontstage1"
         defaultTool={CoreTools.rotateViewCommand}
-        defaultLayout="TwoHalvesHorizontal"
         contentGroup="TestContentGroup2"
         isInFooterMode={false}
         contentManipulationTools={

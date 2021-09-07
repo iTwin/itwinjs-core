@@ -92,7 +92,6 @@ export class FrontstageUi2 extends FrontstageProvider {
       <Frontstage id="Ui2"
         version={1.1}
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout="SingleContent"
         contentGroup={myContentGroup}
         defaultContentId="singleIModelView"
         isInFooterMode={true}

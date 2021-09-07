@@ -160,7 +160,6 @@ export class Frontstage4 extends FrontstageProvider {
       <Frontstage
         id="Test4"
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout="SingleContent"
         contentGroup={myContentGroup}
         defaultContentId="TestContent1"
         isInFooterMode={true}

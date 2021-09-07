@@ -59,7 +59,6 @@ export class TestFrontstageUi2 extends FrontstageProvider {
       <Frontstage
         id="TestFrontstageUi2"
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout="SingleContent"
         contentGroup="TestContentGroup1"
         leftPanel={
           <StagePanel
@@ -89,7 +88,6 @@ export class TestFrontstageUi1 extends FrontstageProvider {
       <Frontstage
         id="TestFrontstageUi1"
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout="SingleContent"
         contentGroup="TestContentGroup1"
         centerLeft={
           <Zone

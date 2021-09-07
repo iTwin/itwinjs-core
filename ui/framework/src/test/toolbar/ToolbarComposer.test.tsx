@@ -261,9 +261,9 @@ describe("<ToolbarComposer  />", async () => {
     // new frontstage should trigger refresh
 
     /** Id for the Frontstage */
-    const oldProps: FrontstageProps = { id: "old", defaultTool: CoreTools.selectElementCommand, defaultLayout: "single", contentGroup: "single" };
+    const oldProps: FrontstageProps = { id: "old", defaultTool: CoreTools.selectElementCommand, contentGroup: "single" };
     const oldStageDef = new FrontstageDef(oldProps);
-    const newProps: FrontstageProps = { id: "new", defaultTool: CoreTools.selectElementCommand, defaultLayout: "single", contentGroup: "single" };
+    const newProps: FrontstageProps = { id: "new", defaultTool: CoreTools.selectElementCommand, contentGroup: "single" };
     const newStageDef = new FrontstageDef(newProps);
     FrontstageManager.onFrontstageActivatedEvent.emit({ deactivatedFrontstageDef: oldStageDef, activatedFrontstageDef: newStageDef } as FrontstageActivatedEventArgs);
 

@@ -25,7 +25,6 @@ export class ScheduleAnimationFrontstage extends FrontstageProvider {
     return (
       <Frontstage id="ScheduleAnimationFrontstage"
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout="SingleContent"
         contentGroup={myContentGroup}
         isInFooterMode={false}
         applicationData={{ key: "value" }}

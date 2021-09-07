@@ -81,7 +81,6 @@ describe("WidgetStack", () => {
         <Frontstage
           id="WidgetStack-Frontstage"
           defaultTool={CoreTools.selectElementCommand}
-          defaultLayout={myContentLayout}
           contentGroup={myContentGroup}
           centerRight={
             <Zone defaultState={ZoneState.Open}

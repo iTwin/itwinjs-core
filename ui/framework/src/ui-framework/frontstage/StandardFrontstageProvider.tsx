@@ -33,8 +33,6 @@ export interface StandardFrontstageProp {
   usage?: StageUsage | string;
   /** Definition of available content groups */
   contentGroupProps: ContentGroupProps;
-  /** Default Layout id */
-  defaultLayout: string;  /* | LayoutType */
   /** Specify button to use to open backstage. Leave undefined for no backstage button.
    * ```
    * <BackstageAppButton icon={"icon-bentley-systems"} />
@@ -80,7 +78,6 @@ export class StandardFrontstageProvider extends FrontstageProvider {
         id={this.props.id}
         version={this.props.version ?? 1.0}
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout={this.props.defaultLayout ?? "SingleContent"}
         contentGroup={new ContentGroup(this.props.contentGroupProps)}
         isInFooterMode={true}
         usage={this.props.usage ?? StageUsage.General}

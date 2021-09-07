@@ -169,7 +169,6 @@ describe("SavedViewLayout", () => {
         <Frontstage
           id="Test1"
           defaultTool={CoreTools.selectElementCommand}
-          defaultLayout={this.contentLayoutDef}
           contentGroup={myContentGroup}
 
           topRight={

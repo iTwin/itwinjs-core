@@ -39,8 +39,6 @@ export interface FrontstageProps extends CommonProps {
   id: string;
   /** Tool that is started once the Frontstage is activated */
   defaultTool: ToolItemDef;
-  /** The default Content Layout used */
-  defaultLayout: string | ContentLayoutDef;
   /** The Content Group providing the Content Views */
   contentGroup: string | ContentGroup;
   /** Id of the Content View to be activated initially */
