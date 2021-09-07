@@ -40,7 +40,7 @@ describe("ContextRegistryClient (#integration)", () => {
       });
 
     // Get the same number of iTwins as the top param
-    chai.expect(partialITwinList).length(numberOfITwins);
+    chai.expect(partialITwinList).length(numberOfITwins, "Paged list length does not match top value.");
   });
 
   it("should get a paged list of iTwins using skip (#integration)", async () => {
@@ -58,12 +58,12 @@ describe("ContextRegistryClient (#integration)", () => {
       });
 
     // Get all but the skipped ones
-    chai.expect(partialITwinList).length(fullITwinList.length - numberSkipped);
+    chai.expect(partialITwinList).length(fullITwinList.length - numberSkipped, "Paged list length does not match the expected number skipped.");
   });
 
   it("should get a continuous paged list of iTwins (#integration)", async () => {
-    const numberOfITwins = 6;
-    const numberSkipped = 4;
+    const numberOfITwins = 3;
+    const numberSkipped = 2;
 
     // Verify the paging properties can be tested
     chai.assert(numberSkipped < numberOfITwins, "There must be overlap between the two pages to run test.");
@@ -103,16 +103,38 @@ describe("ContextRegistryClient (#integration)", () => {
     });
 
     // Both pages should have a full page's worth of iTwins
-    chai.expect(firstPageList).length(numberOfITwins);
-    chai.expect(secondPageList).length(numberOfITwins);
+    chai.expect(firstPageList).length(numberOfITwins, "First page length does not match top value.");
+    chai.expect(secondPageList).length(numberOfITwins, "Second page length does not match top value.");
 
     // The number of unique iTwins must match the number skipped
-    chai.expect(uniqueFirstPageITwins).length(numberSkipped);
-    chai.expect(uniqueSecondPageITwins).length(numberSkipped);
+    chai.expect(uniqueFirstPageITwins).length(numberSkipped, "The number of first page specific items does not match the skip value.");
+    chai.expect(uniqueSecondPageITwins).length(numberSkipped, "The number of second page specific items does not match the skip value.");
 
     // Both pages are contained within the larger full page
-    chai.expect(fullITwinList).to.deep.include.members(firstPageList);
-    chai.expect(fullITwinList).to.deep.include.members(secondPageList);
+    // Reduce objects down to ITwin properties
+    const mappedFullITwinList: ITwin[] = fullITwinList.map((iTwin) => {
+      return {
+        id: iTwin.id,
+        name: iTwin.name,
+        code: iTwin.code,
+      };
+    });
+
+    chai.expect(mappedFullITwinList).to.deep.include.members(firstPageList.map((iTwin) => {
+      return {
+        id: iTwin.id,
+        name: iTwin.name,
+        code: iTwin.code,
+      };
+    }), "The first page contains items not present in the full page.");
+
+    chai.expect(mappedFullITwinList).to.deep.include.members(secondPageList.map((iTwin) => {
+      return {
+        id: iTwin.id,
+        name: iTwin.name,
+        code: iTwin.code,
+      };
+    }), "The second page contains items not present in the full page.");
   });
 
   it("should get a list of iTwins by name (#integration)", async () => {
