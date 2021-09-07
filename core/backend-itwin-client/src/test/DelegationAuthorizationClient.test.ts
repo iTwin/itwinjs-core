@@ -44,11 +44,13 @@ describe("DelegationAuthorizationClient (#integration)", () => {
       throw new Error("Could not find IMJS_AGENT_TEST_CLIENT_ID");
     if (process.env.IMJS_AGENT_TEST_CLIENT_SECRET === undefined)
       throw new Error("Could not find IMJS_AGENT_TEST_CLIENT_SECRET");
+    if (process.env.IMJS_AGENT_TEST_CLIENT_SCOPES === undefined)
+      throw new Error("Could not find IMJS_AGENT_TEST_CLIENT_SCOPES");
 
     const agentConfiguration: AgentAuthorizationClientConfiguration = {
       clientId: process.env.IMJS_AGENT_TEST_CLIENT_ID ?? "",
       clientSecret: process.env.IMJS_AGENT_TEST_CLIENT_SECRET ?? "",
-      scope: "imodelhub rbac-user:external-client reality-data:read urlps-third-party context-registry-service:read-only imodeljs-backend-2686",
+      scope: process.env.IMJS_AGENT_TEST_CLIENT_SCOPES ?? "",
     };
 
     const agentClient = new AgentAuthorizationClient(agentConfiguration);
@@ -56,6 +58,7 @@ describe("DelegationAuthorizationClient (#integration)", () => {
   });
 
   it("should get valid OIDC delegation tokens", async () => {
+
     if (process.env.IMJS_DELEGATION_TEST_CLIENT_ID === undefined)
       throw new Error("Could not find IMJS_DELEGATION_TEST_CLIENT_ID");
     if (process.env.IMJS_DELEGATION_TEST_CLIENT_SECRET === undefined)
@@ -64,10 +67,17 @@ describe("DelegationAuthorizationClient (#integration)", () => {
     const delegationConfiguration: DelegationAuthorizationClientConfiguration = {
       clientId:process.env.IMJS_DELEGATION_TEST_CLIENT_ID ?? "",
       clientSecret: process.env.IMJS_DELEGATION_TEST_CLIENT_SECRET ?? "",
-      scope: "context-registry-service imodelhub rbac-service",
+      scope: "imodelhub",
     };
 
     const delegationClient = new DelegationAuthorizationClient(delegationConfiguration);
+
+    const url = await delegationClient.getUrl(new ClientRequestContext());
+    // Skip this test if the issuing authority is not imsoidc.
+    // The iTwin Platform currently does not allow a token delegation workflow.
+    if (-1 === url.indexOf("imsoidc"))
+      return;
+
     const delegationJwt = await delegationClient.getJwtFromJwt(requestContext, jwt);
     await validator.validateContextRegistryAccess(delegationJwt);
     await validator.validateIModelHubAccess(delegationJwt);
