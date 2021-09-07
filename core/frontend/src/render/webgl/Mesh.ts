@@ -9,7 +9,7 @@
 import { assert, dispose } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d } from "@bentley/geometry-core";
 import { FeatureIndexType, FillFlags, LinePixels, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
-import { InstancedGraphicParams, isPatternGraphicParams, PatternGraphicParams } from "../InstancedGraphicParams";
+import { InstancedGraphicParams, PatternGraphicParams } from "../InstancedGraphicParams";
 import { MeshParams, SegmentEdgeParams, SilhouetteParams, SurfaceType, TesselatedPolyline, VertexIndices } from "../primitives/VertexTable";
 import { RenderMemory } from "../RenderMemory";
 import { RenderGeometry } from "../RenderSystem";
@@ -149,11 +149,11 @@ export class MeshGraphic extends Graphic {
   private readonly _primitives: Primitive[] = [];
   private readonly _instances?: InstanceBuffers | PatternBuffers;
 
-  public static create(geometry: MeshRenderGeometry, instances?: InstancedGraphicParams | PatternGraphicParams): MeshGraphic | undefined {
+  public static create(geometry: MeshRenderGeometry, instances?: InstancedGraphicParams | PatternBuffers): MeshGraphic | undefined {
     let buffers;
     if (instances) {
       // ###TODO: Accept InstanceBuffers or PatternBuffers, not Params.
-      buffers = isPatternGraphicParams(instances) ? PatternBuffers.create(instances, true) : InstanceBuffers.create(instances, true, geometry.range);
+      buffers = instances instanceof PatternBuffers ? instances : InstanceBuffers.create(instances, true, geometry.range);
       if (!buffers)
         return undefined;
     }

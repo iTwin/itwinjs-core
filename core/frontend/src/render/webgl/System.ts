@@ -30,13 +30,14 @@ import { RenderClipVolume } from "../RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
 import {
-  DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderDiagnostics, RenderGeometry, RenderSystem, RenderSystemDebugControl, TerrainTexture,
+  DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderAreaPattern, RenderDiagnostics, RenderGeometry, RenderSystem, RenderSystemDebugControl, TerrainTexture,
 } from "../RenderSystem";
 import { RenderTarget } from "../RenderTarget";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "../ScreenSpaceEffectBuilder";
 import { BackgroundMapDrape } from "./BackgroundMapDrape";
 import { CachedGeometry, SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { ClipVolume } from "./ClipVolume";
+import { isInstancedGraphicParams, PatternBuffers } from "./InstancedGeometry";
 import { Debug } from "./Diagnostics";
 import { WebGLDisposable } from "./Disposable";
 import { DepthBuffer, FrameBufferStack } from "./FrameBuffer";
@@ -541,7 +542,14 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return PointStringGeometry.create(params, viOrigin);
   }
 
-  public override createRenderGraphic(geometry: RenderGeometry, instances?: InstancedGraphicParams | PatternGraphicParams): RenderGraphic | undefined {
+  public override createAreaPattern(params: PatternGraphicParams): PatternBuffers | undefined {
+    // ###TODO? The "shared" flag on PatternBuffers is always true, because the buffers can be shared amongst any number of RenderGraphics
+    // Unless we can figure out how to track those references we'll have to rely on garbage collection to dispose of it, and
+    // we won't be able to accurately report GPU memory usage (we can either report none for patterns, or count each occurrence of each pattern).
+    return PatternBuffers.create(params, true);
+  }
+
+  public override createRenderGraphic(geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined {
     // ###TODO Take InstanceBuffers or PatternBuffers, not Params.
     if (!(geometry instanceof MeshRenderGeometry)) {
       if (geometry instanceof PolylineGeometry || geometry instanceof PointStringGeometry)
@@ -551,6 +559,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
       return undefined;
     }
 
+    assert(!instances || instances instanceof PatternBuffers || isInstancedGraphicParams(instances));
     return MeshGraphic.create(geometry, instances);
   }
 
