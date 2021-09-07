@@ -7,7 +7,7 @@
  */
 
 import { assert, ByteStream, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { ClipVectorProps, Point3d, Range2d, Range2dProps, Range3d, Range3dProps, Transform, TransformProps, XYZProps } from "@bentley/geometry-core";
+import { ClipVector, ClipVectorProps, Point2d, Point3d, Range2d, Range2dProps, Range3d, Range3dProps, Transform, TransformProps, XYProps, XYZ, XYZProps } from "@bentley/geometry-core";
 import {
   BatchType, ColorDef, ColorDefProps, ElementAlignedBox3d, FeatureIndexType, FeatureTableHeader, FillFlags, Gradient, ImageSource, ImdlHeader, LinePixels,
   PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, readTileContentDescription, RenderMaterial, RenderTexture, TextureMapping,
@@ -16,7 +16,7 @@ import {
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { GraphicBranch } from "../render/GraphicBranch";
-import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
+import { InstancedGraphicParams, PatternGraphicParams } from "../render/InstancedGraphicParams";
 import { AuxChannelTable, AuxChannelTableProps } from "../render/primitives/AuxChannelTable";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
@@ -123,7 +123,7 @@ interface ImdlAreaPattern {
   readonly symbolName: string;
   readonly clip: ClipVectorProps;
   readonly scale: number;
-  readonly spacing: number[];
+  readonly spacing: XYProps;
   readonly orgTransform: TransformProps;
   readonly xyOffsets: Uint8Array;
   readonly bytesPerOffset: 1 | 2 | 4;
@@ -131,6 +131,7 @@ interface ImdlAreaPattern {
   readonly localToWorld: TransformProps;
   readonly worldToModel: TransformProps;
   readonly range: Range3dProps;
+  readonly symbolTranslation: XYZProps;
 }
 
 interface ImdlSurface {
@@ -463,8 +464,43 @@ export class ImdlReader extends GltfReader {
     return undefined !== header;
   }
 
-  private readAreaPattern(_primitive: ImdlAreaPattern): RenderGraphic | undefined {
-    return undefined; /// ###TODO
+  private readAreaPattern(json: ImdlAreaPattern): RenderGraphic | undefined {
+    const geometry = this.getPatternGeometry(json.symbolName);
+    if (!geometry || geometry.length === 0)
+      return undefined;
+
+    const clip = ClipVector.fromJSON(json.clip);
+    if (!clip || !clip.isValid)
+      return undefined;
+
+    const pattern = this._system.createAreaPattern({
+      bytesPerOffset: json.bytesPerOffset,
+      xyOffsets: json.xyOffsets,
+      featureId: json.featureId,
+      orgTransform: Transform.fromJSON(json.orgTransform),
+      scale: json.scale,
+      spacing: Point2d.fromJSON(json.spacing),
+      localToWorld: Transform.fromJSON(json.localToWorld),
+      worldToModel: Transform.fromJSON(json.worldToModel),
+      range: Range3d.fromJSON(json.range),
+      symbolTranslation: Point3d.fromJSON(json.symbolTranslation),
+    });
+
+    if (!pattern)
+      return undefined;
+
+    const graphics = [];
+    for (const geom of geometry) {
+      const graphic = this._system.createRenderGraphic(geom, pattern);
+      if (graphic)
+         graphics.push(graphic);
+    }
+
+    switch (graphics.length) {
+      case 0: return undefined;
+      case 1: return graphics[0];
+      default: return this._system.createGraphicList(graphics);
+    }
   }
 
   private readMeshGraphic(primitive: AnyImdlPrimitive | ImdlAreaPattern): RenderGraphic | undefined {
