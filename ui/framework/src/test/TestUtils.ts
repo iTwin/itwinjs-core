@@ -119,8 +119,7 @@ export class TestUtils {
   private static getContentLayouts(): ContentLayoutProps[] {
     const fourQuadrants: ContentLayoutProps = {
       id: "FourQuadrants",
-      descriptionKey: "SampleApp:ContentLayoutDef.FourQuadrants",
-      priority: 1000,
+      description: "SampleApp:ContentLayoutDef.FourQuadrants",
       horizontalSplit: {
         id: "FourQuadrants.MainHorizontal",
         percentage: 0.50,
@@ -131,8 +130,7 @@ export class TestUtils {
 
     const singleContent: ContentLayoutProps = {
       id: "SingleContent",
-      descriptionKey: "SampleApp:ContentLayoutDef.SingleContent",
-      priority: 100,
+      description: "SampleApp:ContentLayoutDef.SingleContent",
     };
 
     const contentLayouts: ContentLayoutProps[] = [];

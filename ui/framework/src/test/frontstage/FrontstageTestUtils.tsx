@@ -65,8 +65,7 @@ export class TestFrontstage extends FrontstageProvider {
     const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
       {
         id: "SingleContent",
-        descriptionKey: "App:ContentLayoutDef.SingleContent",
-        priority: 100,
+        description: "App:ContentLayoutDef.SingleContent",
       },
     );
 
@@ -161,8 +160,7 @@ export class TestFrontstage2 extends FrontstageProvider {
     const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
       {
         id: "SingleContent",
-        descriptionKey: "App:ContentLayoutDef.SingleContent",
-        priority: 100,
+        description: "App:ContentLayoutDef.SingleContent",
       },
     );
 
@@ -257,8 +255,7 @@ export class TestFrontstage3 extends FrontstageProvider {
     const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
       {
         id: "SingleContent",
-        descriptionKey: "App:ContentLayoutDef.SingleContent",
-        priority: 100,
+        description: "App:ContentLayoutDef.SingleContent",
       },
     );
 

@@ -163,8 +163,7 @@ describe("FrontstageComposer", () => {
       defaultLayout: new ContentLayoutDef(
         {
           id: "SingleContent",
-          descriptionKey: "App:ContentLayoutDef.SingleContent",
-          priority: 100,
+          description: "App:ContentLayoutDef.SingleContent",
         },
       ),
     });

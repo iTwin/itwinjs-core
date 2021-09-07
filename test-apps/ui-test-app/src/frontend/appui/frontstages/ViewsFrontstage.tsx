@@ -11,13 +11,13 @@ import {
 import { MapLayersWidgetControl } from "@bentley/map-layers"; // used to test map-layers widget control
 import { NodeKey } from "@bentley/presentation-common";
 import {
-  BadgeType, CommonToolbarItem, ConditionalBooleanValue, RelativePosition, SpecialKey, StageUsage, ToolbarItemUtilities, WidgetState,
+  BadgeType, CommonToolbarItem, ConditionalBooleanValue, ContentLayoutProps, RelativePosition, SpecialKey, StageUsage, ToolbarItemUtilities, WidgetState,
 } from "@bentley/ui-abstract";
 import { CustomToolbarItem, SelectionMode, useToolbarPopupContext } from "@bentley/ui-components";
 import { Point, ScrollView } from "@bentley/ui-core";
 import {
   BasicNavigationWidget, BasicToolWidget, CommandItemDef, ConfigurableUiManager, ContentGroup, ContentLayoutDef, ContentLayoutManager,
-  ContentLayoutProps, ContentProps, ContentViewManager, CoreTools, CursorInformation, CursorPopupContent, CursorPopupManager, CursorUpdatedEventArgs,
+  ContentProps, ContentViewManager, CoreTools, CursorInformation, CursorPopupContent, CursorPopupManager, CursorUpdatedEventArgs,
   CustomItemDef, EmphasizeElementsChangedArgs, Frontstage, FrontstageDef, FrontstageManager, FrontstageProvider, GroupItemDef,
   HideIsolateEmphasizeAction, HideIsolateEmphasizeActionHandler, HideIsolateEmphasizeManager, IModelConnectedViewSelector, MessageManager,
   ModalDialogManager, ModelessDialogManager, ModelSelectorWidgetControl, ModelsTreeNodeType, SavedViewLayout, SavedViewLayoutProps, StagePanel,

@@ -356,11 +356,8 @@ export class ContentLayoutDef {
 
   /** ID for this Content Layout */
   public id: string = "";
-  /** Localization key for a description. */
-  public descriptionKey: string = "";
-  /** The priority for the layout. Determines its position in menus. Higher numbers appear first. */
-  public priority: number = 0;
-
+  /** Description of the layout. */
+  public description: string = "";
   constructor(layoutProps: ContentLayoutProps) {
     this._layoutProps = layoutProps;
 
@@ -371,10 +368,8 @@ export class ContentLayoutDef {
       this.id = `ContentLayout-${ContentLayoutDef._sId}`;
     }
 
-    if (layoutProps.descriptionKey !== undefined)
-      this.descriptionKey = layoutProps.descriptionKey;
-    if (layoutProps.priority !== undefined)
-      this.priority = layoutProps.priority;
+    if (layoutProps.description !== undefined)
+      this.description = layoutProps.description;
   }
 
   public get rootSplit(): LayoutSplit | undefined { return this._rootSplit; }

@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelApp, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
-import { CommonToolbarItem, ConditionalBooleanValue, IconSpecUtilities, StageUsage, ToolbarItemUtilities, WidgetState } from "@bentley/ui-abstract";
+import { CommonToolbarItem, ConditionalBooleanValue, ContentLayoutProps, IconSpecUtilities, StageUsage, ToolbarItemUtilities, WidgetState } from "@bentley/ui-abstract";
 import {
-  AccuDrawDialog, AccuDrawWidgetControl, BasicNavigationWidget, BasicToolWidget, CommandItemDef, ContentGroup, ContentLayoutDef, ContentLayoutProps, ContentProps,
+  AccuDrawDialog, AccuDrawWidgetControl, BasicNavigationWidget, BasicToolWidget, CommandItemDef, ContentGroup, ContentLayoutDef, ContentProps,
   CoreTools, CustomItemDef, Frontstage, FrontstageProvider, IModelConnectedViewSelector, ModelessDialogManager,
   StagePanel, ToolbarHelper, Widget, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";

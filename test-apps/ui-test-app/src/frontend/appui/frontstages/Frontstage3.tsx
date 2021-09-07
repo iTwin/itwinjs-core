@@ -24,13 +24,14 @@ export class Frontstage3 extends FrontstageProvider {
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
       { // Three Views, one on the left, two stacked on the right.
-        id: "FourQuadrants",
-        descriptionKey: "SampleApp:ContentLayoutDef.FourQuadrants",
+        id: "SampleApp:ContentLayoutDef.ThreeRightStacked",
+        description: "SampleApp:ContentLayoutDef.ThreeRightStacked",
         verticalSplit: {
+          id: "SampleApp:ThreeRightStackedVerticalSplit",
           percentage: 0.50,
           minSizeLeft: 100, minSizeRight: 100,
-          left: { horizontalSplit: { percentage: 0.50, top: 0, bottom: 1, minSizeTop: 100, minSizeBottom: 100 } },
-          right: { horizontalSplit: { percentage: 0.50, top: 2, bottom: 3, minSizeTop: 100, minSizeBottom: 100 } },
+          left: { horizontalSplit: { id: "SampleApp:ThreeViewsRightHorizontalSplit", percentage: 0.50, top: 0, bottom: 1, minSizeTop: 100, minSizeBottom: 100 } },
+          right: { horizontalSplit: { id: "SampleApp:ThreeViewsLeftHorizontalSplit", percentage: 0.50, top: 2, bottom: 3, minSizeTop: 100, minSizeBottom: 100 } },
         },
       },
     );

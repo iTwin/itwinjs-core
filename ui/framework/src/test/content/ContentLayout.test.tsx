@@ -8,7 +8,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import SplitPane from "react-split-pane";
 import { MockRender } from "@bentley/imodeljs-frontend";
-import { ContentLayoutProps } from "@bentley/ui-abstract";
+import { ContentLayoutProps, uifwFourQuadrants } from "@bentley/ui-abstract";
 import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, ContentLayout, ContentLayoutDef, ContentLayoutManager,
   ContentViewManager, CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider,
@@ -33,8 +33,7 @@ describe("ContentLayout", () => {
 
   const myContentLayout: ContentLayoutDef = new ContentLayoutDef({
     id: "SingleContent",
-    descriptionKey: "UiFramework:tests.singleContent",
-    priority: 100,
+    description: "UiFramework:tests.singleContent",
   });
 
   const contentGroup2: ContentGroup = new ContentGroup({
@@ -50,10 +49,11 @@ describe("ContentLayout", () => {
 
   const contentLayout2: ContentLayoutDef = new ContentLayoutDef({
     id: "TwoHalvesVertical",
-    descriptionKey: "SampleApp:ContentLayoutDef.TwoHalvesVertical",
-    priority: 60,
+    description: "SampleApp:ContentLayoutDef.TwoHalvesVertical",
     verticalSplit: { id: "TwoHalvesVertical.VerticalSplit", percentage: 0.50, left: 0, right: 1 },
   });
+
+  const standardContentLayout1: ContentLayoutDef = new ContentLayoutDef(uifwFourQuadrants);
 
   class TestFrontstage2 extends FrontstageProvider {
     public get frontstage(): React.ReactElement<FrontstageProps> {
@@ -96,8 +96,7 @@ describe("ContentLayout", () => {
 
   const contentLayout3: ContentLayoutDef = new ContentLayoutDef({
     id: "TwoHalvesHorizontal",
-    descriptionKey: "SampleApp:ContentLayoutDef.TwoHalvesHorizontal",
-    priority: 60,
+    description: "SampleApp:ContentLayoutDef.TwoHalvesHorizontal",
     horizontalSplit: { id: "TwoHalvesHorizontal.HorizontalSplit", percentage: 0.50, top: 0, bottom: 1 },
   });
 
@@ -113,12 +112,13 @@ describe("ContentLayout", () => {
     { // Four Views, two stacked on the left, two stacked on the right.
       id: "fourQuadrantsVertical",
       verticalSplit: {
+        id: "fourQuadrantsVertical",
         percentage: 0.50,
         lock: true,
         minSizeLeft: 100,
         minSizeRight: 100,
-        left: { horizontalSplit: { percentage: 0.50, top: 0, bottom: 1, lock: true, minSizeTop: 50, minSizeBottom: 50 } },
-        right: { horizontalSplit: { percentage: 0.50, top: 2, bottom: 3, lock: true, minSizeTop: 50, minSizeBottom: 50 } },
+        left: { horizontalSplit: { id: "fourQuadrantsRightHorizontal", percentage: 0.50, top: 0, bottom: 1, lock: true, minSizeTop: 50, minSizeBottom: 50 } },
+        right: { horizontalSplit: { id: "fourQuadrantsLeftHorizontal", percentage: 0.50, top: 2, bottom: 3, lock: true, minSizeTop: 50, minSizeBottom: 50 } },
       },
     },
   );
@@ -133,14 +133,15 @@ describe("ContentLayout", () => {
 
   const fourQuadrantsHorizontalLayoutDef: ContentLayoutDef = new ContentLayoutDef(
     { // Four Views, two stacked on the left, two stacked on the right.
-      id: "FourQuadrants",
+      id: "fourQuadrantsHorizontal",
       horizontalSplit: {
+        id: "fourQuadrantsHorizontal",
         percentage: 0.50,
         lock: true,
         minSizeTop: 100,
         minSizeBottom: 100,
-        top: { verticalSplit: { percentage: 0.50, left: 0, right: 1, lock: true, minSizeLeft: 100, minSizeRight: 100 } },
-        bottom: { verticalSplit: { percentage: 0.50, left: 2, right: 3, lock: true, minSizeLeft: 100, minSizeRight: 100 } },
+        top: { verticalSplit: { id: "fourQuadrantsTopVertical", percentage: 0.50, left: 0, right: 1, lock: true, minSizeLeft: 100, minSizeRight: 100 } },
+        bottom: { verticalSplit: { id: "fourQuadrantsBottomVertical", percentage: 0.50, left: 2, right: 3, lock: true, minSizeLeft: 100, minSizeRight: 100 } },
       },
     },
   );
@@ -202,21 +203,11 @@ describe("ContentLayout", () => {
     wrapper.update();
   });
 
-  // it("ContentLayoutManager.loadLayout should throw Error if ContentLayoutProps does not have an id", () => {
-  //   const layoutProps: ContentLayoutProps = {
-  //     id: "SingleContent",
-  //     descriptionKey: "UiFramework:tests.singleContent",
-  //     priority: 100,
-  //   };
-  //   expect(() => ContentLayoutManager.loadLayout(layoutProps)).to.throw(Error);
-  // });
-
   it("ContentLayoutManager.setActiveLayout & refreshActiveLayout should emit onContentLayoutActivatedEvent", async () => {
     const spyMethod = sinon.spy();
     const layoutProps: ContentLayoutProps = {
-      id: "SingleContent",
-      descriptionKey: "UiFramework:tests.singleContent",
-      priority: 100,
+      id: "UiFramework:tests.singleContent",
+      description: "UiFramework:tests.singleContent",
     };
     const contentLayout = new ContentLayoutDef(layoutProps);
     const remove = FrontstageManager.onContentLayoutActivatedEvent.addListener(spyMethod);
@@ -233,8 +224,7 @@ describe("ContentLayout", () => {
   const threeRightStackedLayoutDef: ContentLayoutDef = new ContentLayoutDef(
     { // Three Views, one on the left, two stacked on the right.
       id: "ThreeRightStacked",
-      descriptionKey: "SampleApp:ContentLayoutDef.ThreeRightStacked",
-      priority: 85,
+      description: "SampleApp:ContentLayoutDef.ThreeRightStacked",
       verticalSplit: {
         id: "ThreeRightStacked.MainVertical",
         percentage: 0.50,
@@ -251,6 +241,6 @@ describe("ContentLayout", () => {
     expect(fourQuadrantsVerticalLayoutDef.getUsedContentIndexes()).to.have.members([0, 1, 2, 3]);
     expect(fourQuadrantsHorizontalLayoutDef.getUsedContentIndexes()).to.have.members([0, 1, 2, 3]);
     expect(threeRightStackedLayoutDef.getUsedContentIndexes()).to.have.members([0, 1, 3]);
+    expect(standardContentLayout1.getUsedContentIndexes()).to.have.members([0, 1, 2, 3]);
   });
-
 });
