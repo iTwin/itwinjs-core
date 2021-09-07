@@ -7,7 +7,7 @@
  */
 
 /** Base interface for layout split properties
- * @public @deprecated Please import from ui-abstract
+ * @public
  */
 export interface LayoutSplitPropsBase {
   /** The id used to save the current state of the splitter */
@@ -19,7 +19,7 @@ export interface LayoutSplitPropsBase {
 }
 
 /** Properties for a layout fragment
- * @public @deprecated Please import from ui-abstract
+ * @public
  */
 export interface LayoutFragmentProps {
   /** Vertical split layout properties */
@@ -31,7 +31,7 @@ export interface LayoutFragmentProps {
 /** Properties for a vertical layout split.
  * When a member is a [[LayoutFragmentProps]], it creates a nested split pane.
  * When a number, it represents an index into a [[ContentGroup]].
- * @public @deprecated Please import from ui-abstract
+ * @public
  */
 export interface LayoutVerticalSplitProps extends LayoutSplitPropsBase {
   /** Left layout fragment properties. */
@@ -48,7 +48,7 @@ export interface LayoutVerticalSplitProps extends LayoutSplitPropsBase {
 /** Properties for a horizontal layout split
  * When a member is a [[LayoutFragmentProps]], it creates a nested split pane.
  * When a number, it represents an index into a [[ContentGroup]].
- * @public @deprecated Please import from ui-abstract
+ * @public
  */
 export interface LayoutHorizontalSplitProps extends LayoutSplitPropsBase {
   /** Top layout fragment properties. */
@@ -63,11 +63,11 @@ export interface LayoutHorizontalSplitProps extends LayoutSplitPropsBase {
 }
 
 /** Properties for a [[ContentLayoutDef]]
- * @public @deprecated Please import from ui-abstract
+ * @public
  */
 export interface ContentLayoutProps extends LayoutFragmentProps {
   /** ID for this Content Layout */
-  id: string;
+  id?: string;
   /** Localization key for a description. */
   descriptionKey?: string;
   /** The priority for the layout. Determines its position in menus. Higher numbers appear first. */

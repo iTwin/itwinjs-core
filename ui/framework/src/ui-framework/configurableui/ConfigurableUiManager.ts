@@ -7,10 +7,9 @@
  */
 
 import { BeUiEvent } from "@bentley/bentleyjs-core";
-import { UiError } from "@bentley/ui-abstract";
+import { ContentLayoutProps, UiError } from "@bentley/ui-abstract";
 import { ContentGroupManager, ContentGroupProps } from "../content/ContentGroup";
 import { ContentLayoutManager } from "../content/ContentLayoutManager";
-import { ContentLayoutProps } from "../content/ContentLayoutProps";
 import { FrontstageDef } from "../frontstage/FrontstageDef";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { FrontstageProvider } from "../frontstage/FrontstageProvider";

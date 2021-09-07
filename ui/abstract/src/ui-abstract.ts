@@ -13,6 +13,8 @@ export * from "./ui-abstract/backstage/BackstageItemsManager";
 
 export * from "./ui-abstract/common/KeyboardKey";
 
+export * from "./ui-abstract/content/ContentLayoutProps";
+
 export * from "./ui-abstract/dialogs/DialogItem";
 export * from "./ui-abstract/dialogs/UiLayoutDataProvider";
 export * from "./ui-abstract/dialogs/UiDataProvider";

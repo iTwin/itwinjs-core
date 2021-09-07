@@ -9,8 +9,8 @@
 import { IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
 import { ContentCallback, ContentGroup, ContentGroupProps } from "./ContentGroup";
 import { ContentLayoutDef } from "./ContentLayout";
-import { ContentLayoutProps } from "./ContentLayoutProps";
 import { SavedView, SavedViewProps } from "./SavedView";
+import { ContentLayoutProps } from "@bentley/ui-abstract";
 
 /** SavedViewLayoutProps interface for sharing view layout information.
  * @public

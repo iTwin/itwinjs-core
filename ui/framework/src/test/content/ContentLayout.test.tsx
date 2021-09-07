@@ -8,9 +8,10 @@ import * as React from "react";
 import * as sinon from "sinon";
 import SplitPane from "react-split-pane";
 import { MockRender } from "@bentley/imodeljs-frontend";
+import { ContentLayoutProps } from "@bentley/ui-abstract";
 import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, ContentLayout, ContentLayoutDef, ContentLayoutManager,
-  ContentLayoutProps, ContentViewManager, CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider,
+  ContentViewManager, CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider,
 } from "../../ui-framework";
 import TestUtils, { mount } from "../TestUtils";
 
