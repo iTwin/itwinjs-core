@@ -381,7 +381,7 @@ The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to 
   return <ControlledTree eventsHandler={eventsHandler} {...otherProps} />;
   ```
 
-* Made the props `width` and `height` required. Previously they were optional and forced us to use non-optimal approach when not provided. Now it's up to the consumer to tell the size of the component. Typical migration:
+* `width` and `height` properties are now required. Previously they were optional and forced us to use non-optimal approach when not provided. Now it's up to the consumer to tell the size of the component. Typical migration:
 
   **Before:**
 
