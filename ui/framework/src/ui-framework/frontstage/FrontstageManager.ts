@@ -26,6 +26,7 @@ import { ToolUiProvider } from "../zones/toolsettings/ToolUiProvider";
 import { FrontstageDef, FrontstageEventArgs, FrontstageNineZoneStateChangedEventArgs } from "./FrontstageDef";
 import { FrontstageProvider } from "./FrontstageProvider";
 import { TimeTracker } from "../configurableui/TimeTracker";
+import { ContentLayoutManager } from "../content/ContentLayoutManager";
 
 // -----------------------------------------------------------------------------
 // Frontstage Events
@@ -519,6 +520,28 @@ export class FrontstageManager {
       FrontstageManager._isLoading = false;
 
       activeFrontstageDef.setActiveContent();
+    }
+  }
+
+  /** Sets the active layout, content group and active content.
+   * @param contentGroup  Content Group to make active
+   */
+  public static async setActiveContentGroup(contentGroup: ContentGroup): Promise<void> {
+    const contentLayoutDef = ContentLayoutManager.findLayout(contentGroup.preferredLayoutId);
+    if (contentLayoutDef) {
+      const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+      // istanbul ignore else
+      if (activeFrontstageDef) {
+        FrontstageManager._isLoading = false;
+
+        activeFrontstageDef.setContentLayoutAndGroup(contentLayoutDef, contentGroup);
+        FrontstageManager.onContentLayoutActivatedEvent.emit({ contentLayout: contentLayoutDef, contentGroup });
+
+        await activeFrontstageDef.waitUntilReady();
+        FrontstageManager._isLoading = false;
+
+        activeFrontstageDef.setActiveContent();
+      }
     }
   }
 

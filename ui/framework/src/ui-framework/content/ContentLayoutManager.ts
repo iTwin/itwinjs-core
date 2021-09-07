@@ -14,7 +14,7 @@ import { ContentLayoutDef } from "./ContentLayout";
 
 /** ContentLayout Manager class.
  * @public
- */
+ */
 export class ContentLayoutManager {
   private static _layoutDefs: Map<string, ContentLayoutDef> = new Map<string, ContentLayoutDef>();
 
@@ -82,6 +82,13 @@ export class ContentLayoutManager {
    */
   public static async setActiveLayout(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): Promise<void> {
     await FrontstageManager.setActiveLayout(contentLayoutDef, contentGroup);
+  }
+
+  /** Sets the active Content Group.
+   * @param contentGroup  Content Group to make active
+   */
+  public static async setActiveContentGroup(contentGroup: ContentGroup): Promise<void> {
+    await FrontstageManager.setActiveContentGroup(contentGroup);
   }
 
   /** Refreshes the active layout and content group.

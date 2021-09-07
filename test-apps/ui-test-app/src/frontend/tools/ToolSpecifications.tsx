@@ -5,6 +5,9 @@
 import * as React from "react";
 import imperialIconSvg from "@bentley/icons-generic/icons/app-2.svg?sprite";
 import automationIconSvg from "@bentley/icons-generic/icons/automation.svg?sprite";
+import splitVerticalIconSvg from "@bentley/icons-generic/icons/window-split-vertical.svg?sprite";
+import singlePaneIconSvg from "@bentley/icons-generic/icons/window.svg?sprite";
+
 import {
   ActivityMessageDetails, ActivityMessageEndReason,
   IModelApp, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType,
@@ -18,7 +21,7 @@ import {
 } from "@bentley/ui-abstract";
 import { Dialog, ReactMessage, SvgPath, SvgSprite, UnderlinedButton } from "@bentley/ui-core";
 import {
-  Backstage, CommandItemDef, ContentViewManager, FrontstageManager, MessageManager, ModalDialogManager, ReactNotifyMessageDetails,
+  Backstage, CommandItemDef, ContentGroup, ContentProps, ContentViewManager, FrontstageManager, IModelViewportControl, MessageManager, ModalDialogManager, ReactNotifyMessageDetails,
   StatusBarItemUtilities, SyncUiEventDispatcher, SyncUiEventId, ToolItemDef, withStatusFieldProps,
 } from "@bentley/ui-framework";
 import { FooterSeparator } from "@bentley/ui-ninezone";
@@ -385,6 +388,100 @@ export class AppTools {
         SampleAppIModelApp.setTestProperty(SampleAppIModelApp.getTestProperty() === "HIDE" ? "" : "HIDE");
         // demonstrate how tool could dispatch its own event.
         IModelApp.toolAdmin.dispatchUiSyncEvent(toolSyncUiEventId);
+      },
+    });
+  }
+
+  public static get splitSingleViewportCommandDef() {
+    const commandId = "splitSingleViewportCommandDef";
+    return new CommandItemDef({
+      commandId,
+      iconSpec: new ConditionalStringValue(() => 1 === FrontstageManager.activeFrontstageDef?.contentControls?.length ? `svg:${splitVerticalIconSvg}` : `svg:${singlePaneIconSvg}`, [SyncUiEventId.ActiveContentChanged]),
+      label: new ConditionalStringValue(() => 1 === FrontstageManager.activeFrontstageDef?.contentControls?.length ? "Split Content View" : "Single Content View", [SyncUiEventId.ActiveContentChanged]),
+      execute: async () => {
+        // if the active frontstage is only showing an single viewport then split it and have two copies of it
+        const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+        if (activeFrontstageDef && 1 === activeFrontstageDef.contentControls?.length &&
+          activeFrontstageDef.contentControls[0].viewport) {
+          const vp = activeFrontstageDef.contentControls[0].viewport;
+          if (vp) {
+            const contentPropsArray: ContentProps[] = [];
+            contentPropsArray.push({
+              id: "imodel-view-0",
+              classId: IModelViewportControl,
+              applicationData:
+              {
+                viewState: vp.view.clone(),
+                iModelConnection: vp.view.iModel,
+                featureOptions:
+                {
+                  defaultViewOverlay: {
+                    enableScheduleAnimationViewOverlay: true,
+                    enableAnalysisTimelineViewOverlay: true,
+                    enableSolarTimelineViewOverlay: true,
+                  },
+                },
+              },
+            });
+            contentPropsArray.push({
+              id: "imodel-view-1",
+              classId: IModelViewportControl,
+              applicationData:
+              {
+                viewState: vp.view.clone(),
+                iModelConnection: vp.view.iModel,
+                featureOptions:
+                {
+                  defaultViewOverlay: {
+                    enableScheduleAnimationViewOverlay: true,
+                    enableAnalysisTimelineViewOverlay: true,
+                    enableSolarTimelineViewOverlay: true,
+                  },
+                },
+              },
+            });
+
+            const contentGroup = new ContentGroup(
+              {
+                id: "split-vertical-group",
+                preferredLayoutId: "TwoHalvesVertical",
+                contents: contentPropsArray,
+              });
+
+            await FrontstageManager.setActiveContentGroup(contentGroup);
+          }
+        } else if (activeFrontstageDef && 2 === activeFrontstageDef.contentControls?.length &&
+          activeFrontstageDef.contentControls[0].viewport) {
+          const vp = activeFrontstageDef.contentControls[0].viewport;
+          if (vp) {
+            const contentPropsArray: ContentProps[] = [];
+            contentPropsArray.push({
+              id: "imodel-view-0",
+              classId: IModelViewportControl,
+              applicationData:
+              {
+                viewState: vp.view.clone(),
+                iModelConnection: vp.view.iModel,
+                featureOptions:
+                {
+                  defaultViewOverlay: {
+                    enableScheduleAnimationViewOverlay: true,
+                    enableAnalysisTimelineViewOverlay: true,
+                    enableSolarTimelineViewOverlay: true,
+                  },
+                },
+              },
+            });
+            const contentGroup = new ContentGroup(
+              {
+                id: "single-content",
+                preferredLayoutId: "SingleContent",
+                contents: contentPropsArray,
+              });
+
+            await FrontstageManager.setActiveContentGroup(contentGroup);
+          }
+        }
       },
     });
   }

@@ -25,6 +25,8 @@ export interface ContentProps {
   classId: string | ConfigurableUiControlConstructor;
   /** Optional application data passed down to the Content View */
   applicationData?: any;
+  /** Optional function to provide additional application data to pass to the Content View */
+  appDataProvider?: (id: string, applicationData?: any) => any;
 }
 
 /** Properties for a [[ContentGroup]]
@@ -63,7 +65,7 @@ export class ContentGroup {
   /** Gets a [[ContentControl]] from the Content Group based on its [[ContentProps]]. */
   public getContentControl(contentProps: ContentProps, index: number): ContentControl | undefined {
     let id: string;
-    if (contentProps.id !== undefined)
+    if (contentProps.id !== undefined)  // is now required should either remove or throw is undefined
       id = contentProps.id;
     else
       id = `${this.groupId}-${index}`;
@@ -75,7 +77,11 @@ export class ContentGroup {
 
       if (typeof contentProps.classId === "string") {
         if (!this._contentControls.get(id) && ConfigurableUiManager.isControlRegistered(contentProps.classId)) {
-          contentControl = ConfigurableUiManager.createControl(contentProps.classId, id, contentProps.applicationData) as ContentControl;
+          let appData: any = {};
+          if (contentProps.appDataProvider) {
+            appData = contentProps.appDataProvider(id, contentProps.applicationData);
+          }
+          contentControl = ConfigurableUiManager.createControl(contentProps.classId, id, { ...contentProps.applicationData, ...appData }) as ContentControl;
           usedClassId = contentProps.classId;
         }
       } else {
@@ -205,7 +211,6 @@ export class ContentGroup {
 
     return viewports;
   }
-
 }
 
 // -----------------------------------------------------------------------------
@@ -243,5 +248,4 @@ export class ContentGroupManager {
     }
     return undefined;
   }
-
 }

@@ -126,7 +126,7 @@ The definition that produces the sample frontstage is shown below.
     }
 
     bottomPanel={
-      <StagePanel
+       <StagePanel
         size={180}
         defaultState={StagePanelState.Minimized}
         panelZones={{
