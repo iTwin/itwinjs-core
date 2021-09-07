@@ -470,7 +470,8 @@ export class ImdlReader extends GltfReader {
       return undefined;
 
     const clip = ClipVector.fromJSON(json.clip);
-    if (!clip || !clip.isValid)
+    const clipVolume = clip && clip.isValid ? this._system.createClipVolume(clip) : undefined;
+    if (!clipVolume)
       return undefined;
 
     const pattern = this._system.createAreaPattern({
@@ -489,18 +490,17 @@ export class ImdlReader extends GltfReader {
     if (!pattern)
       return undefined;
 
-    const graphics = [];
+    const branch = new GraphicBranch();
     for (const geom of geometry) {
       const graphic = this._system.createRenderGraphic(geom, pattern);
       if (graphic)
-         graphics.push(graphic);
+        branch.add(graphic);
     }
 
-    switch (graphics.length) {
-      case 0: return undefined;
-      case 1: return graphics[0];
-      default: return this._system.createGraphicList(graphics);
-    }
+    if (branch.isEmpty)
+      return undefined;
+
+    return this._system.createGraphicBranch(branch, Transform.createIdentity(), { clipVolume });
   }
 
   private readMeshGraphic(primitive: AnyImdlPrimitive | ImdlAreaPattern): RenderGraphic | undefined {
