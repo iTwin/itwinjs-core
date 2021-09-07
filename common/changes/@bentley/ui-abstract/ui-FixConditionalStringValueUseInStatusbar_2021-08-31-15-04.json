@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-abstract",
+      "comment": "Add comment about isPressed property.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-abstract"
+}

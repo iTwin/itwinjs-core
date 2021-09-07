@@ -224,6 +224,7 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `RemoteBriefcaseConnection`            | `CheckpointConnection`                                    |
 | `ScreenViewport.decorationDiv`         | `DecorateContext.addHtmlDecoration`                       |
 | `ViewManager.forEachViewport`          | Use a `for..of` loop                                      |
+| `UnitSystemKey`                        | Moved to `@bentley/imodeljs-quantity`                     |
 
 ### @bentley/backend-itwin-client
 
@@ -244,30 +245,44 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @bentley/ui-components
 
-| Removed                          | Replacement                                      |
-| -------------------------------- | ------------------------------------------------ |
-| `hasFlag`                        | `hasSelectionModeFlag` in @bentley/ui-components |
-| `StandardEditorNames`            | `StandardEditorNames` in @bentley/ui-abstract    |
-| `StandardTypeConverterTypeNames` | `StandardTypeNames` in @bentley/ui-abstract      |
-| `StandardTypeNames`              | `StandardTypeNames` in @bentley/ui-abstract      |
-| `Timeline`                       | `TimelineComponent` in @bentley/ui-components    |
+| Removed                                 | Replacement                                                 |
+| --------------------------------------- | ----------------------------------------------------------- |
+| `hasFlag`                               | `hasSelectionModeFlag` in @bentley/ui-components            |
+| `StandardEditorNames`                   | `StandardEditorNames` in @bentley/ui-abstract               |
+| `StandardTypeConverterTypeNames`        | `StandardTypeNames` in @bentley/ui-abstract                 |
+| `StandardTypeNames`                     | `StandardTypeNames` in @bentley/ui-abstract                 |
+| `Timeline`                              | `TimelineComponent` in @bentley/ui-components               |
+| `ControlledTreeProps.treeEvents`        | `ControlledTreeProps.eventsHandler`                         |
+| `ControlledTreeProps.visibleNodes`      | `ControlledTreeProps.model`                                 |
+| `MutableTreeModel.computeVisibleNodes`  | `computeVisibleNodes` in @bentley/ui-components             |
+| `TreeModelSource.getVisibleNodes`       | memoized result of `computeVisibleNodes`                    |
+| `useVisibleTreeNodes`                   | `useTreeModel` and `computeVisibleNodes`                    |
 
 ### @bentley/ui-framework
 
-| Removed                                | Replacement                                                                            |
-| -------------------------------------- | -------------------------------------------------------------------------------------- |
-| `COLOR_THEME_DEFAULT`                  | `SYSTEM_PREFERRED_COLOR_THEME` in @bentley/ui-framework is used as default color theme |
-| `FunctionKey`                          | `FunctionKey` in @bentley/ui-abstract                                                  |
-| `IModelAppUiSettings`                  | `UserSettingsStorage` in @bentley/ui-framework                                         |
-| `reactElement` in ContentControl       | `ContentControl.reactNode`                                                             |
-| `reactElement` in NavigationAidControl | `NavigationAidControl.reactNode`                                                       |
-| `reactElement` in NavigationWidgetDef  | `NavigationWidgetDef.reactNode`                                                        |
-| `reactElement` in ToolWidgetDef        | `ToolWidgetDef.reactNode`                                                              |
-| `reactElement` in WidgetControl        | `WidgetControl.reactNode`                                                              |
-| `reactElement` in WidgetDef            | `WidgetDef.reactNode`                                                                  |
-| `ReactMessage`                         | `ReactMessage` in @bentley/ui-core                                                     |
-| `SpecialKey`                           | `SpecialKey` in @bentley/ui-abstract                                                   |
-| `WidgetState`                          | `WidgetState` in @bentley/ui-abstract                                                  |
+| Removed                                 | Replacement                                                                            |
+| --------------------------------------- | -------------------------------------------------------------------------------------- |
+| `COLOR_THEME_DEFAULT`                   | `SYSTEM_PREFERRED_COLOR_THEME` in @bentley/ui-framework is used as default color theme |
+| `FunctionKey`                           | `FunctionKey` in @bentley/ui-abstract                                                  |
+| `IModelAppUiSettings`                   | `UserSettingsStorage` in @bentley/ui-framework                                         |
+| `reactElement` in ContentControl        | `ContentControl.reactNode`                                                             |
+| `reactElement` in NavigationAidControl  | `NavigationAidControl.reactNode`                                                       |
+| `reactElement` in NavigationWidgetDef   | `NavigationWidgetDef.reactNode`                                                        |
+| `reactElement` in ToolWidgetDef         | `ToolWidgetDef.reactNode`                                                              |
+| `reactElement` in WidgetControl         | `WidgetControl.reactNode`                                                              |
+| `reactElement` in WidgetDef             | `WidgetDef.reactNode`                                                                  |
+| `ReactMessage`                          | `ReactMessage` in @bentley/ui-core                                                     |
+| `SpecialKey`                            | `SpecialKey` in @bentley/ui-abstract                                                   |
+| `WidgetState`                           | `WidgetState` in @bentley/ui-abstract                                                  |
+| `UserProfileBackstageItem`              | *eliminated*                                                                           |
+| `SignIn`                                | *eliminated*                                                                           |
+| `SignOutModalFrontstage`                | *eliminated*                                                                           |
+| `IModelConnectedCategoryTree`           | *eliminated*                                                                           |
+| `IModelConnectedModelsTree`             | *eliminated*                                                                           |
+| `IModelConnectedSpatialContainmentTree` | *eliminated*                                                                           |
+| `CategoryTreeWithSearchBox`             | *eliminated*                                                                           |
+| `VisibilityComponent`                   | `TreeWidgetComponent` in @bentley/tree-widget-react                                    |
+| `VisibilityWidget`                      | `TreeWidgetControl` in @bentley/tree-widget-react                                      |
 
 ### @bentley/bentleyjs-core
 
@@ -275,6 +290,40 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | -------------------------------------- | -------------------------------------------------------------------------------------- |
 | `Config`                               | Use `process.env` to access environment variables directly |
 | `EnvMacroSubst`                        | *eliminated*  |
+
+### @bentley/presentation-common
+
+| Removed                                  | Replacement                                                                            |
+| ---------------------------------------- | -------------------------------------------------------------------------------------- |
+| `PresentationRpcInterface.loadHierarchy` | *eliminated*                                                                           |
+| `PresentationUnitSystem`                 | Removed in favor of `UnitSystemKey` from `@bentley/imodeljs-quantity`                  |
+
+### @bentley/presentation-backend
+
+| Removed                                     | Replacement                                                                            |
+| ------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `PresentationManager.loadHierarchy`         | *eliminated*                                                                           |
+| `UnitSystemFormat.unitSystems`              | Changed type from `PresentationUnitSystem[]` to `UnitSystemKey[]`                      |
+| `PresentationManagerProps.activeUnitSystem` | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
+| `PresentationManager.activeUnitSystem`      | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
+
+### @bentley/presentation-frontend
+
+| Removed                                     | Replacement                                                                            |
+| ------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `PresentationManager.loadHierarchy`         | *eliminated*                                                                           |
+| `PresentationManagerProps.activeUnitSystem` | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
+| `PresentationManager.activeUnitSystem`      | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
+
+### @bentley/presentation-components
+
+| Removed                                               | Replacement                                                                            |
+| ----------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `IPresentationTreeDataProvider.loadHierarchy`         | *eliminated*                                                                           |
+| `PresentationTreeDataProvider.loadHierarchy`          | *eliminated*                                                                           |
+| `FilteredPresentationTreeDataProvider.loadHierarchy`  | *eliminated*                                                                           |
+| `DEPRECATED_controlledTreeWithFilteringSupport`       | *eliminated*                                                                           |
+| `DEPRECATED_controlledTreeWithVisibleNodes`           | *eliminated*                                                                           |
 
 <!---
 User Interface Changes - section to comment below
@@ -297,6 +346,58 @@ Widgets provided via UiItemsProviders may now set `defaultState: WidgetState.Flo
 the widget in a floating container. The property `defaultFloatingPosition` may also be specified to define the position of the floating container. If a position is not defined the container will be centered in the `AppUi` area.
 
 The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to retrieve the Ids for all floating widget containers for the active frontstage as specified by the `frontstageDef`. These ids can be used to query the size of the floating container via `frontstageDef.getFloatingWidgetContainerBounds`. The method `frontstageDef.setFloatingWidgetContainerBounds` can then be used to set the size and position of a floating widget container.
+
+#### `ControlledTree` API Changes
+
+`ControlledTree` component has received the following breaking changes:
+
+* The component now takes `TreeModel` rather than `VisibleTreeNodes` as a prop to avoid requiring consumers to manage `VisibleTreeNodes` object. As a result, the `useVisibleTreeNodes` hook was replaced with `useTreeModel` hook. Typical migration:
+
+  **Before:**
+
+  ```tsx
+  const visibleNodes = useVisibleTreeNodes(modelSource);
+  return <ControlledTree visibleNodes={visibleNodes} {...otherProps} />;
+  ```
+
+  **After:**
+
+  ```tsx
+  const treeModel = useTreeModel(modelSource);
+  return <ControlledTree model={treeModel} {...otherProps} />;
+  ```
+
+* Name of the `treeEvents` prop was changed to `eventsHandler` to make it clearer. Typical migration:
+
+  **Before:**
+
+  ```tsx
+  return <ControlledTree treeEvents={eventsHandler} {...otherProps} />;
+  ```
+
+  **After:**
+
+  ```tsx
+  return <ControlledTree eventsHandler={eventsHandler} {...otherProps} />;
+  ```
+
+* `width` and `height` properties are now required. Previously they were optional and forced us to use non-optimal approach when not provided. Now it's up to the consumer to tell the size of the component. Typical migration:
+
+  **Before:**
+
+  ```tsx
+  return <ControlledTree {...props} />;
+  ```
+
+  **After:**
+
+  ```tsx
+  const width = 100;
+  const height = 100;
+  return <ControlledTree width={width} height={height} {...props} />;
+  ```
+
+  `width` and `height` props may be calculated dynamically using [ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver) API.
 
 ### Deprecated ui-core Components in Favor of iTwinUI-react Components
 
@@ -382,3 +483,14 @@ The cli tool has been deprecated due to an impending change of Extensions and th
 ## @bentley/config-loader
 
 The loader has been deprecated due to a preference for using the dotenv package instead. Any workflows using .env files will not be affected.
+
+## @bentley/geometry-core
+
+The method `BSplineCurve3d.createThroughPoints` has been deprecated in favor of the more general method `BSplineCurve3d.createFromInterpolationCurve3dOptions`.
+
+The property `InterpolationCurve3dOptions.isChordLenTangent` has been deprecated due to a naming inconsistency with similar adjacent properties. Use `InterpolationCurve3dOptions.isChordLenTangents` instead.
+
+## new @bentley/imodeljs-transformer package split out of backend package
+
+The iModel Transformer APIs, such as the classes [IModelExporter]($transformer), [IModelImporter]($transformer), and [IModelTransformer]($transformer)
+were removed from the `@bentley/imodeljs-backend` package and moved to a new package, `@bentley/imodeljs-transformer`.

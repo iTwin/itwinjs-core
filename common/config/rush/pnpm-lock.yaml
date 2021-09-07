@@ -315,7 +315,7 @@ importers:
       '@bentley/geometry-core': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/imodeljs-common': workspace:*
-      '@bentley/imodeljs-native': 3.0.6
+      '@bentley/imodeljs-native': 3.0.7
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@bentley/perf-tools': workspace:*
@@ -365,7 +365,7 @@ importers:
     dependencies:
       '@azure/storage-blob': 10.4.0
       '@bentley/context-registry-client': link:../../clients/context-registry
-      '@bentley/imodeljs-native': 3.0.6
+      '@bentley/imodeljs-native': 3.0.7
       deep-assign: 2.0.0
       form-data: 2.5.1
       fs-extra: 8.1.0
@@ -1316,6 +1316,61 @@ importers:
       sinon: 9.2.4
       typescript: 4.3.5
 
+  ../../core/transformer:
+    specifiers:
+      '@bentley/bentleyjs-core': workspace:*
+      '@bentley/build-tools': workspace:*
+      '@bentley/ecschema-metadata': workspace:*
+      '@bentley/eslint-plugin': workspace:*
+      '@bentley/geometry-core': workspace:*
+      '@bentley/imodeljs-backend': workspace:*
+      '@bentley/imodeljs-common': workspace:*
+      '@bentley/itwin-client': workspace:*
+      '@types/chai': ^4.1.4
+      '@types/chai-as-promised': ^7
+      '@types/mocha': ^8.2.2
+      '@types/node': 10.14.1
+      '@types/semver': ^5.5.0
+      '@types/sinon': ^9.0.0
+      chai: ^4.1.2
+      chai-as-promised: ^7
+      cpx: ^1.5.0
+      eslint: ^7.11.0
+      mocha: ^8.3.2
+      npm-run-all: ^4.1.5
+      nyc: ^15.1.0
+      rimraf: ^3.0.2
+      semver: ^5.5.0
+      sinon: ^9.0.2
+      typescript: ~4.3.0
+    dependencies:
+      semver: 5.7.1
+    devDependencies:
+      '@bentley/bentleyjs-core': link:../bentley
+      '@bentley/build-tools': link:../../tools/build
+      '@bentley/ecschema-metadata': link:../ecschema-metadata
+      '@bentley/eslint-plugin': link:../../tools/eslint-plugin
+      '@bentley/geometry-core': link:../geometry
+      '@bentley/imodeljs-backend': link:../backend
+      '@bentley/imodeljs-common': link:../common
+      '@bentley/itwin-client': link:../../clients/itwin
+      '@types/chai': 4.2.21
+      '@types/chai-as-promised': 7.1.4
+      '@types/mocha': 8.2.3
+      '@types/node': 10.14.1
+      '@types/semver': 5.5.0
+      '@types/sinon': 9.0.11
+      chai: 4.3.4
+      chai-as-promised: 7.1.1_chai@4.3.4
+      cpx: 1.5.0
+      eslint: 7.32.0
+      mocha: 8.4.0
+      npm-run-all: 4.1.5
+      nyc: 15.1.0
+      rimraf: 3.0.2
+      sinon: 9.2.4
+      typescript: 4.3.5
+
   ../../core/webgl-compatibility:
     specifiers:
       '@bentley/bentleyjs-core': workspace:*
@@ -1724,6 +1779,7 @@ importers:
       '@bentley/imodeljs-backend': workspace:*
       '@bentley/imodeljs-common': workspace:*
       '@bentley/imodeljs-frontend': workspace:*
+      '@bentley/imodeljs-transformer': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@types/body-parser': ^1.17.0
@@ -1760,6 +1816,7 @@ importers:
       '@bentley/imodeljs-backend': link:../../core/backend
       '@bentley/imodeljs-common': link:../../core/common
       '@bentley/imodeljs-frontend': link:../../core/frontend
+      '@bentley/imodeljs-transformer': link:../../core/transformer
       '@bentley/itwin-client': link:../../clients/itwin
       body-parser: 1.19.0
       chai: 4.3.4
@@ -1848,8 +1905,8 @@ importers:
       '@bentley/ui-framework': workspace:*
       '@bentley/ui-imodel-components': workspace:*
       '@bentley/ui-ninezone': workspace:*
-      '@itwin/itwinui-css': ^0.25.0
-      '@itwin/itwinui-react': ^1.14.0
+      '@itwin/itwinui-css': ^0.27.0
+      '@itwin/itwinui-react': ^1.16.2
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^3.2.1
       '@types/chai': ^4.1.4
@@ -1878,6 +1935,7 @@ importers:
       nyc: ^15.1.0
       react: ^17.0.0
       react-beautiful-dnd: ^13.0.0
+      react-resize-detector: ^6.7.6
       react-select: 3.1.0
       rimraf: ^3.0.2
       sinon: ^9.0.2
@@ -1887,6 +1945,7 @@ importers:
     dependencies:
       classnames: 2.3.1
       react-beautiful-dnd: 13.1.0_react@17.0.2
+      react-resize-detector: 6.7.6_react@17.0.2
       react-select: 3.1.0_react@17.0.2
     devDependencies:
       '@bentley/bentleyjs-core': link:../../core/bentley
@@ -1907,8 +1966,8 @@ importers:
       '@bentley/ui-framework': link:../../ui/framework
       '@bentley/ui-imodel-components': link:../../ui/imodel-components
       '@bentley/ui-ninezone': link:../../ui/ninezone
-      '@itwin/itwinui-css': 0.25.2
-      '@itwin/itwinui-react': 1.15.0_react@17.0.2
+      '@itwin/itwinui-css': 0.27.3
+      '@itwin/itwinui-react': 1.16.2_react@17.0.2
       '@testing-library/react': 12.0.0_react@17.0.2
       '@testing-library/react-hooks': 3.7.0_react@17.0.2
       '@types/chai': 4.2.21
@@ -2279,6 +2338,7 @@ importers:
       '@bentley/imodeljs-common': workspace:*
       '@bentley/imodeljs-frontend': workspace:*
       '@bentley/imodeljs-i18n': workspace:*
+      '@bentley/imodeljs-quantity': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@bentley/presentation-backend': workspace:*
@@ -2339,6 +2399,7 @@ importers:
       '@bentley/imodeljs-common': link:../../core/common
       '@bentley/imodeljs-frontend': link:../../core/frontend
       '@bentley/imodeljs-i18n': link:../../core/i18n
+      '@bentley/imodeljs-quantity': link:../../core/quantity
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@bentley/presentation-backend': link:../../presentation/backend
@@ -2745,7 +2806,6 @@ importers:
       fast-deep-equal: ^3.1.3
       fast-sort: ^3.0.2
       ignore-styles: ^5.0.1
-      immer: 9.0.2
       jsdom-global: 3.0.2
       micro-memoize: ^4.0.9
       mocha: ^8.3.2
@@ -2763,7 +2823,6 @@ importers:
     dependencies:
       fast-deep-equal: 3.1.3
       fast-sort: 3.0.2
-      immer: 9.0.2
       micro-memoize: 4.0.9
       rxjs: 6.6.7
     devDependencies:
@@ -2827,6 +2886,7 @@ importers:
       '@bentley/imodeljs-common': workspace:*
       '@bentley/imodeljs-frontend': workspace:*
       '@bentley/imodeljs-i18n': workspace:*
+      '@bentley/imodeljs-quantity': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/presentation-common': workspace:*
       '@bentley/product-settings-client': workspace:*
@@ -2864,6 +2924,7 @@ importers:
       '@bentley/imodeljs-common': link:../../core/common
       '@bentley/imodeljs-frontend': link:../../core/frontend
       '@bentley/imodeljs-i18n': link:../../core/i18n
+      '@bentley/imodeljs-quantity': link:../../core/quantity
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/presentation-common': link:../common
       '@bentley/product-settings-client': link:../../clients/product-settings
@@ -3351,6 +3412,7 @@ importers:
       '@bentley/imodelhub-client': workspace:*
       '@bentley/imodeljs-backend': workspace:*
       '@bentley/imodeljs-common': workspace:*
+      '@bentley/imodeljs-transformer': workspace:*
       '@bentley/itwin-client': workspace:*
       '@types/chai': ^4.1.4
       '@types/fs-extra': ^4.0.7
@@ -3372,6 +3434,7 @@ importers:
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/imodeljs-backend': link:../../core/backend
       '@bentley/imodeljs-common': link:../../core/common
+      '@bentley/imodeljs-transformer': link:../../core/transformer
       '@bentley/itwin-client': link:../../clients/itwin
       fs-extra: 8.1.0
       yargs: 16.2.0
@@ -3455,8 +3518,8 @@ importers:
       '@bentley/ui-components': workspace:*
       '@bentley/ui-core': workspace:*
       '@bentley/ui-imodel-components': workspace:*
-      '@itwin/itwinui-css': ^0.25.0
-      '@itwin/itwinui-react': ^1.14.0
+      '@itwin/itwinui-css': ^0.27.0
+      '@itwin/itwinui-react': ^1.16.2
       '@types/bunyan': ^1.8.4
       '@types/react': ^17.0.0
       '@types/react-dom': ^17.0.0
@@ -3473,6 +3536,7 @@ importers:
       postcss-loader: 3.0.0
       react: ^17.0.0
       react-dom: ^17.0.0
+      react-resize-detector: ^6.7.6
       react-select: 3.1.0
       rimraf: ^3.0.2
       semver: ^5.5.0
@@ -3497,10 +3561,11 @@ importers:
       '@bentley/ui-components': link:../../ui/components
       '@bentley/ui-core': link:../../ui/core
       '@bentley/ui-imodel-components': link:../../ui/imodel-components
-      '@itwin/itwinui-css': 0.25.2
-      '@itwin/itwinui-react': 1.15.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-css': 0.27.3
+      '@itwin/itwinui-react': 1.16.2_react-dom@17.0.2+react@17.0.2
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
+      react-resize-detector: 6.7.6_react-dom@17.0.2+react@17.0.2
       react-select: 3.1.0_react-dom@17.0.2+react@17.0.2
       semver: 5.7.1
     devDependencies:
@@ -3565,15 +3630,15 @@ importers:
       '@bentley/ui-framework': workspace:*
       '@bentley/ui-imodel-components': workspace:*
       '@bentley/ui-ninezone': workspace:*
-      '@itwin/itwinui-css': ^0.25.0
-      '@itwin/itwinui-react': ^1.14.0
+      '@itwin/itwinui-css': ^0.27.0
+      '@itwin/itwinui-react': ^1.16.2
       '@types/lorem-ipsum': ^1.0.2
       '@types/node': 10.14.1
       '@types/react': ^17.0.0
-      '@types/react-beautiful-dnd': ^12.1.2
       '@types/react-dom': ^17.0.0
       '@types/react-redux': ^7.1.18
       '@types/react-select': 3.0.26
+      '@types/react-table': ^7.0.18
       '@types/semver': ^5.5.0
       classnames: ^2.3.1
       cpx: ^1.5.0
@@ -3591,7 +3656,9 @@ importers:
       react-beautiful-dnd: ^13.0.0
       react-dom: ^17.0.0
       react-redux: ^7.2.2
+      react-resize-detector: ^6.7.6
       react-select: 3.1.0
+      react-table: ^7.1.0
       redux: ^4.0.3
       rimraf: ^3.0.2
       semver: ^5.5.0
@@ -3632,15 +3699,17 @@ importers:
       '@bentley/ui-framework': link:../../ui/framework
       '@bentley/ui-imodel-components': link:../../ui/imodel-components
       '@bentley/ui-ninezone': link:../../ui/ninezone
-      '@itwin/itwinui-css': 0.25.2
-      '@itwin/itwinui-react': 1.15.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-css': 0.27.3
+      '@itwin/itwinui-react': 1.16.2_react-dom@17.0.2+react@17.0.2
       classnames: 2.3.1
       lorem-ipsum: 2.0.3
       react: 17.0.2
       react-beautiful-dnd: 13.1.0_react-dom@17.0.2+react@17.0.2
       react-dom: 17.0.2_react@17.0.2
       react-redux: 7.2.4_react-dom@17.0.2+react@17.0.2
+      react-resize-detector: 6.7.6_react-dom@17.0.2+react@17.0.2
       react-select: 3.1.0_react-dom@17.0.2+react@17.0.2
+      react-table: 7.7.0_react@17.0.2
       redux: 4.1.1
       semver: 5.7.1
     devDependencies:
@@ -3651,10 +3720,10 @@ importers:
       '@types/lorem-ipsum': 1.0.2
       '@types/node': 10.14.1
       '@types/react': 17.0.18
-      '@types/react-beautiful-dnd': 12.1.4
       '@types/react-dom': 17.0.9
       '@types/react-redux': 7.1.18
       '@types/react-select': 3.0.26
+      '@types/react-table': 7.7.2
       '@types/semver': 5.5.0
       cpx: 1.5.0
       cross-env: 5.2.1
@@ -4156,7 +4225,7 @@ importers:
       chai-as-promised: ^7
       chai-jest-snapshot: ^2.0.0
       chalk: ^3.0.0
-      copy-webpack-plugin: ^6.2.1
+      copy-webpack-plugin: ^9.0.1
       cpx: ^1.5.0
       eslint: ^7.11.0
       file-loader: ^4.2.0
@@ -4176,7 +4245,7 @@ importers:
       webpack-sources: ^1.4.3
     dependencies:
       chalk: 3.0.0
-      copy-webpack-plugin: 6.4.1_webpack@4.42.0
+      copy-webpack-plugin: 9.0.1_webpack@4.42.0
       file-loader: 4.3.0_webpack@4.42.0
       findup: 0.1.5
       fs-extra: 8.1.0
@@ -4288,8 +4357,8 @@ importers:
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/ui-abstract': workspace:*
       '@bentley/ui-core': workspace:*
-      '@itwin/itwinui-css': ^0.25.0
-      '@itwin/itwinui-react': ^1.14.0
+      '@itwin/itwinui-css': ^0.27.0
+      '@itwin/itwinui-react': ^1.16.2
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^3.2.1
       '@testing-library/user-event': ^13.2.1
@@ -4366,8 +4435,8 @@ importers:
       xmlhttprequest: ^1.8.0
     dependencies:
       '@bentley/icons-generic-webfont': 1.0.34
-      '@itwin/itwinui-css': 0.25.2
-      '@itwin/itwinui-react': 1.15.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-css': 0.27.3
+      '@itwin/itwinui-react': 1.16.2_react-dom@17.0.2+react@17.0.2
       '@types/shortid': 0.0.29
       callable-instance2: 1.0.0
       classnames: 2.3.1
@@ -4459,8 +4528,8 @@ importers:
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/react-scripts': 4.0.3
       '@bentley/ui-abstract': workspace:*
-      '@itwin/itwinui-css': ^0.25.0
-      '@itwin/itwinui-react': ^1.14.0
+      '@itwin/itwinui-css': ^0.27.0
+      '@itwin/itwinui-react': ^1.16.2
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^3.2.1
       '@testing-library/user-event': ^13.2.1
@@ -4516,8 +4585,8 @@ importers:
       xmlhttprequest: ^1.8.0
     dependencies:
       '@bentley/icons-generic-webfont': 1.0.34
-      '@itwin/itwinui-css': 0.25.2
-      '@itwin/itwinui-react': 1.15.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-css': 0.27.3
+      '@itwin/itwinui-react': 1.16.2_react-dom@17.0.2+react@17.0.2
       classnames: 2.3.1
       dompurify: 2.3.1
       lodash: 4.17.21
@@ -4608,8 +4677,8 @@ importers:
       '@bentley/ui-core': workspace:*
       '@bentley/ui-imodel-components': workspace:*
       '@bentley/ui-ninezone': workspace:*
-      '@itwin/itwinui-css': ^0.25.0
-      '@itwin/itwinui-react': ^1.14.0
+      '@itwin/itwinui-css': ^0.27.0
+      '@itwin/itwinui-react': ^1.16.2
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^3.2.1
       '@types/chai': ^4.1.4
@@ -4670,8 +4739,8 @@ importers:
       '@bentley/icons-generic': 1.0.34
       '@bentley/icons-generic-webfont': 1.0.34
       '@bentley/presentation-components': link:../../presentation/components
-      '@itwin/itwinui-css': 0.25.2
-      '@itwin/itwinui-react': 1.15.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-css': 0.27.3
+      '@itwin/itwinui-react': 1.16.2_react-dom@17.0.2+react@17.0.2
       classnames: 2.3.1
       immer: 9.0.2
       lodash: 4.17.21
@@ -4766,8 +4835,8 @@ importers:
       '@bentley/ui-abstract': workspace:*
       '@bentley/ui-components': workspace:*
       '@bentley/ui-core': workspace:*
-      '@itwin/itwinui-css': ^0.25.0
-      '@itwin/itwinui-react': ^1.14.0
+      '@itwin/itwinui-css': ^0.27.0
+      '@itwin/itwinui-react': ^1.16.2
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^3.2.1
       '@testing-library/user-event': ^13.2.1
@@ -4820,8 +4889,8 @@ importers:
       xmlhttprequest: ^1.8.0
     dependencies:
       '@bentley/icons-generic-webfont': 1.0.34
-      '@itwin/itwinui-css': 0.25.2
-      '@itwin/itwinui-react': 1.15.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-css': 0.27.3
+      '@itwin/itwinui-react': 1.16.2_react-dom@17.0.2+react@17.0.2
       callable-instance2: 1.0.0
       classnames: 2.3.1
       eventemitter2: 5.0.1
@@ -4893,8 +4962,8 @@ importers:
       '@bentley/react-scripts': 4.0.3
       '@bentley/ui-abstract': workspace:*
       '@bentley/ui-core': workspace:*
-      '@itwin/itwinui-css': ^0.25.0
-      '@itwin/itwinui-react': ^1.14.0
+      '@itwin/itwinui-css': ^0.27.0
+      '@itwin/itwinui-react': ^1.16.2
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^3.2.1
       '@types/chai': ^4.1.4
@@ -4936,8 +5005,8 @@ importers:
       typescript: ~4.3.0
       uuid: ^7.0.3
     dependencies:
-      '@itwin/itwinui-css': 0.25.2
-      '@itwin/itwinui-react': 1.15.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-css': 0.27.3
+      '@itwin/itwinui-react': 1.16.2_react-dom@17.0.2+react@17.0.2
       classnames: 2.3.1
       immer: 9.0.2
       svg-sprite-loader: 4.2.1
@@ -8522,8 +8591,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/3.0.6:
-    resolution: {integrity: sha512-EKvAOR5k1sTAO2WXUyxjxEzJInwB6Uq4czJ46I83Jfk0p2DP6rAVcdoD4gGn7hmiURCKTrzWk03hjQqDLJY7rg==}
+  /@bentley/imodeljs-native/3.0.7:
+    resolution: {integrity: sha512-ZrFqyF7x5w++42io5uVHjsuOPZ8Jwpy4bf94twcLITwRvYCwnnXXPHN+5u1VmGVzCrDyVROCB4wqYy34NjQrdQ==}
     requiresBuild: true
     dev: false
 
@@ -9043,8 +9112,8 @@ packages:
     resolution: {integrity: sha512-ZXRY4jNvVgSVQ8DL3LTcakaAtXwTVUxE81hslsyD2AtoXW/wVob10HkOJ1X/pAlcI7D+2YoZKg5do8G/w6RYgA==}
     engines: {node: '>=8'}
 
-  /@itwin/itwinui-css/0.25.2:
-    resolution: {integrity: sha512-eiyaz6Uqy+SGlpaymYRM+Oej+/OaHvSK8LefEHbqubfWTryICaYzQQJctweBgdOz/A6eS6Tf5BlecIMY61iN6w==}
+  /@itwin/itwinui-css/0.27.3:
+    resolution: {integrity: sha512-2kiak9/KX1QHv+aB1bcK3MjM6H2oF2QzrgRzYWfuBY/6uWWoIKLDzsCDJEplNCEbDHZTuYeojw2Ac/e9ieVVAg==}
 
   /@itwin/itwinui-icons-react/1.2.0_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-yeBIJPWli/iLKaTLmhsd7ZOn9bMRouN3dGHggJjBjAsgJNNtahbfB/NfOS17DcN6Ejt4Z70VAzMdpwzJ/34CKA==}
@@ -9084,13 +9153,13 @@ packages:
       react: 17.0.2
     dev: true
 
-  /@itwin/itwinui-react/1.15.0_react-dom@17.0.2+react@17.0.2:
-    resolution: {integrity: sha512-GEA016GIfauH2E30cZK09Ye6nzlbabwjs+LGt6cKPDt+eMjCQmkIXTyZPqWWYYRkBsBkUTI23NdclLjr9Xtqcg==}
+  /@itwin/itwinui-react/1.16.2_react-dom@17.0.2+react@17.0.2:
+    resolution: {integrity: sha512-Jnm+SMsYCfFRDsuGMIK6xFXdf8+TRGESJ5SO2rJ+i8wkJvtFIVsPWPh0Rqn5N9nscBQWpOxip8BryHcrdanakg==}
     peerDependencies:
       react: ^16.8.6 || ^17.0.0
       react-dom: ^16.8.6 || ^17.0.0
     dependencies:
-      '@itwin/itwinui-css': 0.25.2
+      '@itwin/itwinui-css': 0.27.3
       '@itwin/itwinui-icons-react': 1.2.0_react-dom@17.0.2+react@17.0.2
       '@itwin/itwinui-illustrations-react': 1.0.2_react-dom@17.0.2+react@17.0.2
       '@tippyjs/react': 4.2.5_react-dom@17.0.2+react@17.0.2
@@ -9102,13 +9171,13 @@ packages:
       react-transition-group: 4.4.2_react-dom@17.0.2+react@17.0.2
     dev: false
 
-  /@itwin/itwinui-react/1.15.0_react@17.0.2:
-    resolution: {integrity: sha512-GEA016GIfauH2E30cZK09Ye6nzlbabwjs+LGt6cKPDt+eMjCQmkIXTyZPqWWYYRkBsBkUTI23NdclLjr9Xtqcg==}
+  /@itwin/itwinui-react/1.16.2_react@17.0.2:
+    resolution: {integrity: sha512-Jnm+SMsYCfFRDsuGMIK6xFXdf8+TRGESJ5SO2rJ+i8wkJvtFIVsPWPh0Rqn5N9nscBQWpOxip8BryHcrdanakg==}
     peerDependencies:
       react: ^16.8.6 || ^17.0.0
       react-dom: ^16.8.6 || ^17.0.0
     dependencies:
-      '@itwin/itwinui-css': 0.25.2
+      '@itwin/itwinui-css': 0.27.3
       '@itwin/itwinui-icons-react': 1.2.0_react@17.0.2
       '@itwin/itwinui-illustrations-react': 1.0.2_react@17.0.2
       '@tippyjs/react': 4.2.5_react@17.0.2
@@ -10432,6 +10501,10 @@ packages:
       '@types/prop-types': 15.7.4
       '@types/scheduler': 0.16.2
       csstype: 3.0.8
+
+  /@types/resize-observer-browser/0.1.6:
+    resolution: {integrity: sha512-61IfTac0s9jvNtBCpyo86QeaN8qqpMGHdK0uGKCCIy2dt5/Yk84VduHIdWAcmkC5QvdkPL0p5eWYgUZtHKKUVg==}
+    dev: false
 
   /@types/resolve/0.0.8:
     resolution: {integrity: sha512-auApPaJf3NPfe18hSoJkp8EbZzer2ISk7o8mCC3M9he/a04+gbMF97NkpD2S8riMGvm4BMRI59/SZQSaLTKpsQ==}
@@ -12553,7 +12626,7 @@ packages:
       promise-inflight: 1.0.1
       rimraf: 3.0.2
       ssri: 8.0.1
-      tar: 6.1.8
+      tar: 6.1.11
       unique-filename: 1.1.1
 
   /cache-base/1.0.1:
@@ -13311,26 +13384,6 @@ packages:
     resolution: {integrity: sha1-Z29us8OZl8LuGsOpJP1hJHSPV40=}
     engines: {node: '>=0.10.0'}
 
-  /copy-webpack-plugin/6.4.1_webpack@4.42.0:
-    resolution: {integrity: sha512-MXyPCjdPVx5iiWyl40Va3JGh27bKzOTNY3NjUTrosD2q7dR/cLD0013uqJ3BpFbUjyONINjb6qI7nDIJujrMbA==}
-    engines: {node: '>= 10.13.0'}
-    peerDependencies:
-      webpack: ^4.37.0 || ^5.0.0
-    dependencies:
-      cacache: 15.2.0
-      fast-glob: 3.2.7
-      find-cache-dir: 3.3.1
-      glob-parent: 5.1.2
-      globby: 11.0.4
-      loader-utils: 2.0.0
-      normalize-path: 3.0.0
-      p-limit: 3.1.0
-      schema-utils: 3.1.1
-      serialize-javascript: 5.0.1
-      webpack: 4.42.0
-      webpack-sources: 1.4.3
-    dev: false
-
   /copy-webpack-plugin/6.4.1_webpack@4.44.2:
     resolution: {integrity: sha512-MXyPCjdPVx5iiWyl40Va3JGh27bKzOTNY3NjUTrosD2q7dR/cLD0013uqJ3BpFbUjyONINjb6qI7nDIJujrMbA==}
     engines: {node: '>= 10.13.0'}
@@ -13350,6 +13403,22 @@ packages:
       webpack: 4.44.2
       webpack-sources: 1.4.3
     dev: true
+
+  /copy-webpack-plugin/9.0.1_webpack@4.42.0:
+    resolution: {integrity: sha512-14gHKKdYIxF84jCEgPgYXCPpldbwpxxLbCmA7LReY7gvbaT555DgeBWBgBZM116tv/fO6RRJrsivBqRyRlukhw==}
+    engines: {node: '>= 12.13.0'}
+    peerDependencies:
+      webpack: ^5.1.0
+    dependencies:
+      fast-glob: 3.2.7
+      glob-parent: 6.0.1
+      globby: 11.0.4
+      normalize-path: 3.0.0
+      p-limit: 3.1.0
+      schema-utils: 3.1.1
+      serialize-javascript: 6.0.0
+      webpack: 4.42.0
+    dev: false
 
   /core-js-compat/3.16.2:
     resolution: {integrity: sha512-4lUshXtBXsdmp8cDWh6KKiHUg40AjiuPD3bOWkNVsr1xkAhpUqCjaZ8lB1bKx9Gb5fXcbRbFJ4f4qpRIRTuJqQ==}
@@ -15712,6 +15781,13 @@ packages:
     engines: {node: '>= 6'}
     dependencies:
       is-glob: 4.0.1
+
+  /glob-parent/6.0.1:
+    resolution: {integrity: sha512-kEVjS71mQazDBHKcsq4E9u/vUzaLcw1A8EtUeydawvIWQCJM0qQ08G1H7/XTjFUulla6XQiDOG6MXSaG0HDKog==}
+    engines: {node: '>=10.13.0'}
+    dependencies:
+      is-glob: 4.0.1
+    dev: false
 
   /glob/7.1.6:
     resolution: {integrity: sha512-LwaxwyZ72Lk7vZINtNNrywX0ZuLyStrdDtabefZKAY5ZGJhVtgdznluResxNmPitE0SAO+O26sWTHeKSI2wMBA==}
@@ -18445,6 +18521,10 @@ packages:
     dependencies:
       lodash._reinterpolate: 3.0.0
     dev: true
+
+  /lodash.throttle/4.1.1:
+    resolution: {integrity: sha1-wj6RtxAkKscMN/HhzaknTMOb8vQ=}
+    dev: false
 
   /lodash.truncate/4.4.2:
     resolution: {integrity: sha1-WjUNoLERO4N+z//VgSy+WNbq4ZM=}
@@ -21485,6 +21565,33 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
+  /react-resize-detector/6.7.6_react-dom@17.0.2+react@17.0.2:
+    resolution: {integrity: sha512-/6RZlul1yePSoYJxWxmmgjO320moeLC/khrwpEVIL+D2EjLKhqOwzFv+H8laMbImVj7Zu4FlMa0oA7au3/ChjQ==}
+    peerDependencies:
+      react: ^16.0.0 || ^17.0.0
+      react-dom: ^16.0.0 || ^17.0.0
+    dependencies:
+      '@types/resize-observer-browser': 0.1.6
+      lodash.debounce: 4.0.8
+      lodash.throttle: 4.1.1
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
+      resize-observer-polyfill: 1.5.1
+    dev: false
+
+  /react-resize-detector/6.7.6_react@17.0.2:
+    resolution: {integrity: sha512-/6RZlul1yePSoYJxWxmmgjO320moeLC/khrwpEVIL+D2EjLKhqOwzFv+H8laMbImVj7Zu4FlMa0oA7au3/ChjQ==}
+    peerDependencies:
+      react: ^16.0.0 || ^17.0.0
+      react-dom: ^16.0.0 || ^17.0.0
+    dependencies:
+      '@types/resize-observer-browser': 0.1.6
+      lodash.debounce: 4.0.8
+      lodash.throttle: 4.1.1
+      react: 17.0.2
+      resize-observer-polyfill: 1.5.1
+    dev: false
+
   /react-router-dom/5.2.0_react@17.0.2:
     resolution: {integrity: sha512-gxAmfylo2QUjcwxI63RhQ5G85Qqt4voZpUXSEqCwykV0baaOTQDR1f0PmY8AELqIyVc0NEZUj0Gov5lNGcXgsA==}
     peerDependencies:
@@ -22482,6 +22589,12 @@ packages:
     dependencies:
       randombytes: 2.1.0
 
+  /serialize-javascript/6.0.0:
+    resolution: {integrity: sha512-Qr3TosvguFt8ePWqsvRfrKyQXIiW+nGbYpy8XK24NQHE83caxWt+mIymTT19DGFbNWNLfEwsrkSmN64lVWB9ag==}
+    dependencies:
+      randombytes: 2.1.0
+    dev: false
+
   /serve-handler/6.1.3:
     resolution: {integrity: sha512-FosMqFBNrLyeiIDvP1zgO6YoTzFYHxLDEIavhlmQ+knB2Z7l1t+kGLHkZIDN7UVWqQAmKI3D20A6F6jo3nDd4w==}
     dependencies:
@@ -23470,8 +23583,8 @@ packages:
       inherits: 2.0.4
       readable-stream: 3.6.0
 
-  /tar/6.1.8:
-    resolution: {integrity: sha512-sb9b0cp855NbkMJcskdSYA7b11Q8JsX4qe4pyUAfHp+Y6jBjJeek2ZVlwEfWayshEIwlIzXx0Fain3QG9JPm2A==}
+  /tar/6.1.11:
+    resolution: {integrity: sha512-an/KZQzQUkZCkuoAA64hM92X0Urb6VpRhAFllDzz44U2mcD5scmT3zBc4VgVpkugF580+DQn8eAFSyoQt0tznA==}
     engines: {node: '>= 10'}
     dependencies:
       chownr: 2.0.0

@@ -139,6 +139,10 @@
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal" ]
     },
     {
+      "name": "@bentley/imodeljs-transformer",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@bentley/itwin-client",
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -827,6 +831,10 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
+      "name": "react-resize-detector",
+      "allowedCategories": [ "extensions", "internal" ]
+    },
+    {
       "name": "react-router-dom",
       "allowedCategories": [ "internal" ]
     },
@@ -843,6 +851,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "react-table",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "react-test-renderer",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -852,7 +864,7 @@
     },
     {
       "name": "react-virtualized-auto-sizer",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "react-window",

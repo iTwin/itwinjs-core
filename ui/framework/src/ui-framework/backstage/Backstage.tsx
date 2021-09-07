@@ -13,7 +13,6 @@ import { Backstage as NZ_Backstage } from "@bentley/ui-ninezone";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { UiFramework } from "../UiFramework";
 import { BackstageManager } from "./BackstageManager";
-import { UserProfileBackstageItem } from "./UserProfile";
 
 // cSpell:ignore safearea
 
@@ -130,8 +129,6 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
 
     if (this.props.header)
       header = this.props.header;
-    else if (this.props.userInfo !== undefined)
-      header = <UserProfileBackstageItem userInfo={this.props.userInfo} />;
 
     return (
       <SafeAreaContext.Consumer>

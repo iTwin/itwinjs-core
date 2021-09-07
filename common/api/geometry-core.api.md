@@ -767,9 +767,8 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     static create(poleArray: Float64Array | Point3d[], knotArray: Float64Array | number[], order: number): BSplineCurve3d | undefined;
     // (undocumented)
     static createFromAkimaCurve3dOptions(options: AkimaCurve3dOptions): BSplineCurve3d | undefined;
-    // (undocumented)
     static createFromInterpolationCurve3dOptions(options: InterpolationCurve3dOptions): BSplineCurve3d | undefined;
-    // (undocumented)
+    // @deprecated (undocumented)
     static createThroughPoints(points: IndexedXYZCollection | Point3d[], order: number): BSplineCurve3d | undefined;
     static createUniformKnots(poles: Point3d[] | Float64Array | GrowableXYZArray, order: number): BSplineCurve3d | undefined;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
@@ -874,6 +873,24 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
     spanFractionToKnot(span: number, localFraction: number): number;
     tryTransformInPlace(transform: Transform): boolean;
     }
+
+// @public
+export class BSplineCurveOps {
+    static createThroughPoints(points: IndexedXYZCollection | Point3d[], order: number): BSplineCurve3d | undefined;
+    static createThroughPointsC2Cubic(options: InterpolationCurve3dOptions): BSplineCurve3d | undefined;
+}
+
+// @public
+export namespace BSplineCurveOps {
+    export class C2CubicFit {
+        static constructFitParameters(options: InterpolationCurve3dOptions): boolean;
+        static constructPoles(options: InterpolationCurve3dOptions): Point3d[] | Float64Array | undefined;
+        static convertCubicKnotVectorToFitParams(knots: number[] | undefined, numFitPoints: number, normalize?: boolean): number[] | undefined;
+        static convertFitParamsToCubicKnotVector(params: number[] | undefined, closed?: boolean, legacy?: boolean): number[] | undefined;
+        static convertToJsonKnots(props: InterpolationCurve3dProps): void;
+        static validateOptions(options: InterpolationCurve3dOptions): boolean;
+    }
+}
 
 // @public
 export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQuery {
@@ -2514,6 +2531,7 @@ export namespace IModelJson {
     export interface CurvePrimitiveProps {
         arc?: ArcByVectorProps | [XYZProps, XYZProps, XYZProps];
         bcurve?: BcurveProps;
+        interpolationCurve?: InterpolationCurve3dProps;
         lineSegment?: [XYZProps, XYZProps];
         lineString?: XYZProps[];
         transitionSpiral?: TransitionSpiralProps;
@@ -2826,6 +2844,7 @@ export abstract class IndexedXYZCollection {
     cyclicIndex(i: number): number;
     abstract distanceIndexIndex(index0: number, index1: number): number | undefined;
     abstract distanceSquaredIndexIndex(index0: number, index1: number): number | undefined;
+    findOrderedDuplicates(tolerance?: number): number[];
     getArray(): Point3d[];
     abstract getPoint3dAtCheckedPointIndex(index: number, result?: Point3d): Point3d | undefined;
     abstract getPoint3dAtUncheckedPointIndex(index: number, result?: Point3d): Point3d;
@@ -2929,17 +2948,29 @@ export class InterpolationCurve3dOptions {
     clone(): InterpolationCurve3dOptions;
     cloneAsInterpolationCurve3dProps(): InterpolationCurve3dProps;
     get closed(): boolean;
+    set closed(val: boolean);
     static create(source: InterpolationCurve3dProps): InterpolationCurve3dOptions;
     get endTangent(): Vector3d | undefined;
+    set endTangent(val: Vector3d | undefined);
     get fitPoints(): Point3d[];
+    set fitPoints(val: Point3d[]);
     get isChordLenKnots(): number;
+    set isChordLenKnots(val: number);
+    // @deprecated (undocumented)
     get isChordLenTangent(): number;
+    get isChordLenTangents(): number;
+    set isChordLenTangents(val: number);
     get isColinearTangents(): number;
+    set isColinearTangents(val: number);
     get isNaturalTangents(): number;
+    set isNaturalTangents(val: number);
     get knots(): number[] | undefined;
+    set knots(val: number[] | undefined);
     get order(): number;
+    set order(val: number);
     reverseInPlace(): void;
     get startTangent(): Vector3d | undefined;
+    set startTangent(val: Vector3d | undefined);
     }
 
 // @public
@@ -2947,13 +2978,9 @@ export interface InterpolationCurve3dProps {
     closed?: boolean;
     endTangent?: XYZProps;
     fitPoints: XYZProps[];
-    // (undocumented)
     isChordLenKnots?: number;
-    // (undocumented)
-    isChordLenTangent?: number;
-    // (undocumented)
+    isChordLenTangents?: number;
     isColinearTangents?: number;
-    // (undocumented)
     isNaturalTangents?: number;
     knots?: number[];
     order?: number;
@@ -3222,6 +3249,17 @@ export class Loop extends CurveChain {
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     isInner: boolean;
     isSameGeometryClass(other: GeometryQuery): boolean;
+}
+
+// @public
+export class LoopCurveLoopCurve {
+    constructor(loopA: Loop | undefined, curveA: CurvePrimitive | undefined, loopB: Loop | undefined, curveB: CurvePrimitive | undefined);
+    curveA?: CurvePrimitive;
+    curveB?: CurvePrimitive;
+    loopA?: Loop;
+    loopB?: Loop;
+    setA(loop: Loop, curve: CurvePrimitive): void;
+    setB(loop: Loop, curve: CurvePrimitive): void;
 }
 
 // @public
@@ -3628,6 +3666,7 @@ export class NullGeometryHandler extends GeometryHandler {
 
 // @public
 export class NumberArray {
+    static cloneWithStartAndEndMultiplicity(knots: number[] | undefined, target0: number, target1: number): number[];
     static create(source: number[] | Float64Array): number[];
     static createArrayWithMaxStepSize(low: number, high: number, step: number): number[];
     static isAlmostEqual(dataA: number[] | Float64Array | undefined, dataB: number[] | Float64Array | undefined, tolerance: number): boolean;
@@ -4339,6 +4378,7 @@ export class PolyfaceQuery {
     static buildAverageNormals(polyface: IndexedPolyface, toleranceAngle?: Angle): void;
     static buildPerFaceNormals(polyface: IndexedPolyface): void;
     static cloneByFacetDuplication(source: Polyface, includeSingletons: boolean, clusterSelector: DuplicateFacetClusterSelector): Polyface;
+    static cloneFiltered(source: Polyface | PolyfaceVisitor, filter: (visitor: PolyfaceVisitor) => boolean): Polyface;
     static clonePartitions(polyface: Polyface | PolyfaceVisitor, partitions: number[][]): Polyface[];
     static cloneWithColinearEdgeFixup(polyface: Polyface): Polyface;
     static cloneWithTVertexFixup(polyface: Polyface): IndexedPolyface;
@@ -4451,6 +4491,7 @@ export abstract class ProxyCurve extends CurvePrimitive {
     fractionToPointAnd2Derivatives(fraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors | undefined;
     fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d;
     isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
+    get proxyCurve(): CurvePrimitive;
     // (undocumented)
     protected _proxyCurve: CurvePrimitive;
     // (undocumented)
@@ -4688,6 +4729,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     low: Point3d;
     maxAbs(): number;
     maxLength(): number;
+    rectangleXY(zFraction?: number, upwardNormal?: boolean, addClosure?: boolean): Point3d[] | undefined;
     scaleAboutCenterInPlace(scaleFactor: number): void;
     setFrom(other: Range3d): void;
     setFromJSON(json?: Range3dProps): void;
@@ -5098,6 +5140,7 @@ export class Segment1d {
 
 // @public
 export interface SignedLoops {
+    edges?: LoopCurveLoopCurve[];
     negativeAreaLoops: Loop[];
     positiveAreaLoops: Loop[];
     slivers: Loop[];
