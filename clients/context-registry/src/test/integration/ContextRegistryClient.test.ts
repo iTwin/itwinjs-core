@@ -62,8 +62,8 @@ describe("ContextRegistryClient (#integration)", () => {
   });
 
   it("should get a continuous paged list of iTwins (#integration)", async () => {
-    const numberOfITwins = 6;
-    const numberSkipped = 4;
+    const numberOfITwins = 3;
+    const numberSkipped = 2;
 
     // Verify the paging properties can be tested
     chai.assert(numberSkipped < numberOfITwins, "There must be overlap between the two pages to run test.");
