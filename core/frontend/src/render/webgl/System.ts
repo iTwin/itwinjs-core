@@ -527,7 +527,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
   public override createRealityMesh(realityMesh: RealityMeshPrimitive): RenderGraphic | undefined {
     const geom = RealityMeshGeometry.createFromRealityMesh(realityMesh);
-    return geom ? Primitive.create(() => geom) : undefined;
+    return geom ? Primitive.create(geom) : undefined;
   }
 
   public override createMeshGeometry(params: MeshParams, viOrigin?: Point3d): MeshRenderGeometry | undefined {
@@ -553,7 +553,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     // ###TODO Take InstanceBuffers or PatternBuffers, not Params.
     if (!(geometry instanceof MeshRenderGeometry)) {
       if (geometry instanceof PolylineGeometry || geometry instanceof PointStringGeometry)
-        return Primitive.create(() => geometry, instances);
+        return Primitive.create(geometry, instances);
 
       assert(false, "Invalid RenderGeometry for System.createRenderGraphic");
       return undefined;
@@ -564,7 +564,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
   public override createPointCloud(args: PointCloudArgs): RenderGraphic | undefined {
-    return Primitive.create(() => new PointCloudGeometry(args));
+    return Primitive.create(new PointCloudGeometry(args));
   }
 
   public createGraphicList(primitives: RenderGraphic[]): RenderGraphic {
@@ -593,10 +593,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   public override createSkyBox(params: SkyBox.CreateParams): RenderGraphic | undefined {
     if (undefined !== params.cube) {
-      return SkyCubePrimitive.create(() => SkyBoxQuadsGeometry.create(params.cube!));
+      return SkyCubePrimitive.create(SkyBoxQuadsGeometry.create(params.cube!));
     } else {
       assert(undefined !== params.sphere || undefined !== params.gradient);
-      return SkySpherePrimitive.create(() => SkySphereViewportQuadGeometry.createGeometry(params));
+      return SkySpherePrimitive.create(SkySphereViewportQuadGeometry.createGeometry(params));
     }
   }
 

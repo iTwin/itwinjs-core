@@ -29,8 +29,7 @@ export class Primitive extends Graphic {
 
   protected constructor(cachedGeom: CachedGeometry) { super(); this.cachedGeometry = cachedGeom; }
 
-  public static create(createGeom: () => CachedGeometry | undefined, instances?: InstancedGraphicParams | RenderAreaPattern): Primitive | undefined {
-    let geom = createGeom();
+  public static create(geom: CachedGeometry | undefined, instances?: InstancedGraphicParams | RenderAreaPattern): Primitive | undefined {
     if (!geom)
       return undefined;
 
@@ -52,9 +51,8 @@ export class Primitive extends Graphic {
     return new this(geom);
   }
 
-  public static createShared(createGeom: () => CachedGeometry | undefined, instances?: InstanceBuffers | PatternBuffers): Primitive | undefined {
-    let geom = createGeom();
-    if (undefined === geom)
+  public static createShared(geom: CachedGeometry | undefined, instances?: InstanceBuffers | PatternBuffers): Primitive | undefined {
+    if (!geom)
       return undefined;
 
     if (instances) {
