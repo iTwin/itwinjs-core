@@ -6,12 +6,12 @@
  * @module OIDC
  */
 
-import "./SignIn.scss";
+import "./SignInBase.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";
-import { UiComponents } from "../UiComponents";
+import { UiComponents } from "@bentley/ui-components";
 import { Button } from "@itwin/itwinui-react";
 
 // cspell:ignore signingin
@@ -50,7 +50,7 @@ interface SignInState {
  * SignIn React presentational component
  * @public
  */
-export class SignIn extends React.PureComponent<SignInProps, SignInState> {
+export class SignInBase extends React.PureComponent<SignInProps, SignInState> {
 
   constructor(props: SignInProps) {
     super(props);
@@ -103,14 +103,12 @@ export class SignIn extends React.PureComponent<SignInProps, SignInState> {
           {this.props.onRegister !== undefined &&
             <span className="components-signin-register">
               {this.state.profilePrompt}
-              {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
               <a onClick={this.props.onRegister} onKeyUp={(e) => this._handleKeyUp(e, this.props.onRegister)} role="link" tabIndex={0}>
                 {this.state.registerAnchor}
               </a>
             </span>
           }
           {this.props.onOffline !== undefined &&
-            // eslint-disable-next-line jsx-a11y/anchor-is-valid
             <a className="components-signin-offline" onClick={this.props.onOffline} onKeyUp={(e) => this._handleKeyUp(e, this.props.onOffline)} role="link" tabIndex={0}>
               {this.state.offlineButton}
             </a>

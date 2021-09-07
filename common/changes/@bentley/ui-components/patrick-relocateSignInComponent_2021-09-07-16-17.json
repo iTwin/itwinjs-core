@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "Removed SignIn component",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components"
+}

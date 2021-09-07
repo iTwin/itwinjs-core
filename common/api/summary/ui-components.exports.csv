@@ -389,8 +389,6 @@ public;ShowHideID = string | number | symbol
 public;ShowHideItem
 public;ShowHideMenu
 public;ShowHideMenuProps
-public;SignIn 
-public;SignInProps 
 public;SimplePropertyDataProvider 
 public;SimpleTableDataProvider 
 public;SimpleTreeDataProvider 

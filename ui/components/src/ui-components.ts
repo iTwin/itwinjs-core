@@ -79,8 +79,6 @@ export * from "./ui-components/iconpicker/IconPickerButton";
 
 export * from "./ui-components/inputs/ParsedInput";
 
-export * from "./ui-components/oidc/SignIn";
-
 export * from "./ui-components/properties/LinkHandler";
 export * from "./ui-components/properties/ValueRendererManager";
 export * from "./ui-components/properties/renderers/NonPrimitivePropertyRenderer";
