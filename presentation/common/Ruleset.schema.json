@@ -935,7 +935,6 @@
           "description": "Direction that will be followed in the relationship select criteria.\nDefaults to `RelationshipDirection.Both`.",
           "enum": [
             "Backward",
-            "Both",
             "Forward"
           ],
           "type": "string"
@@ -1076,7 +1075,6 @@
           "description": "Direction that will be followed in the relationship select criteria.\nDefaults to `RelationshipDirection.Both`.",
           "enum": [
             "Backward",
-            "Both",
             "Forward"
           ],
           "type": "string"
@@ -1264,7 +1262,6 @@
           "description": "Direction that will be followed in the relationship select criteria.\nDefaults to `RelationshipDirection.Both`.",
           "enum": [
             "Backward",
-            "Both",
             "Forward"
           ],
           "type": "string"
@@ -1449,7 +1446,6 @@
           "description": "Direction that will be followed in the relationship select criteria.\nDefaults to `RelationshipDirection.Both`.",
           "enum": [
             "Backward",
-            "Both",
             "Forward"
           ],
           "type": "string"

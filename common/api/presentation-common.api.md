@@ -2467,8 +2467,6 @@ export interface RelatedPropertiesSpecificationNew {
 // @public
 export enum RelationshipDirection {
     Backward = "Backward",
-    // @deprecated
-    Both = "Both",
     Forward = "Forward"
 }
 
