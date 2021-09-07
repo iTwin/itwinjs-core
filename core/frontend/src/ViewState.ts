@@ -64,7 +64,7 @@ export interface ModelDisplayTransformProvider {
 }
 
 /** Interface adopted by caller that wants to set up a perspective or orthographic view for a [[ViewState3d]].
- * @see [[ViewState3d.LookAtPerspectiveOrOrtho]].
+ * @see [[ViewState3d.lookAtPerspectiveOrOrtho]].
  * @beta
  */
 export interface LookAtArgs {
@@ -81,12 +81,11 @@ export interface LookAtArgs {
 }
 
 /** Interface adopted by caller that wants to set up a perspective view for a [[ViewState3d]].
- * @see [[LookAtArgs]]
  * @see [[ViewState3d.lookAtPerspectiveOrOrtho]].
  * @beta
  */
 export interface LookAtPerspectiveArgs extends LookAtArgs {
-  /** The direction in which the view should look. */
+  /** The new location to which the camera should point. This becomes the center of the view on the focus plane. */
   readonly targetPoint: XYAndZ;
   /** The new size (width and height) of the view rectangle. The view rectangle is on the focus plane centered on the targetPoint.
    * If newExtents is undefined, the existing size is unchanged.
@@ -95,7 +94,6 @@ export interface LookAtPerspectiveArgs extends LookAtArgs {
 }
 
 /** Interface adopted by caller that wants to set up an ortho view for a [[ViewState3d]].
- * @see [[LookAtArgs]]
  * @see [[ViewState3d.lookAtPerspectiveOrOrtho]].
  * @beta
  */
@@ -1670,7 +1668,9 @@ export abstract class ViewState3d extends ViewState {
    */
   public lookAtPerspectiveOrOrtho(args: LookAtPerspectiveArgs | LookAtOrthoArgs): ViewStatus {
     const pArgs = args as LookAtPerspectiveArgs;
-    const isPerpective = undefined !== pArgs.targetPoint;
+    const isPerspective = undefined !== pArgs.targetPoint;
+    if (isPerspective && !this.supportsCamera())
+      return ViewStatus.NotCameraView;
 
     const eye = new Point3d(args.eyePoint.x, args.eyePoint.y, args.eyePoint.z);
     const yVec = args.upVector.normalize();
@@ -1680,7 +1680,7 @@ export abstract class ViewState3d extends ViewState {
     let zVec;
     let focusDist;
     let newExtents;
-    if (isPerpective) {
+    if (isPerspective) {
       zVec = Vector3d.createStartEnd(pArgs.targetPoint, eye); // z defined by direction from eye to target
       focusDist = zVec.normalizeWithLength(zVec).mag; // set focus at target point
       newExtents = pArgs.newExtents;
@@ -1749,7 +1749,7 @@ export abstract class ViewState3d extends ViewState {
     this.setOrigin(origin);
     this.setExtents(delta);
     this.setLensAngle(this.calcLensAngle());
-    if (isPerpective)
+    if (isPerspective)
       this.enableCamera();
     else
       this.turnCameraOff();
