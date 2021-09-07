@@ -54,6 +54,8 @@ export interface PatternGraphicParams {
   readonly scale: number;
   readonly spacing: XY;
   readonly localToWorld: Transform;
+  /** Usually, to tile tree coordinates. */
   readonly worldToModel: Transform;
+  /** Range of pattern boundary in model (tile tree, usually) coordinates. */
   readonly range: Range3d;
 }
