@@ -8,7 +8,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import SplitPane from "react-split-pane";
 import { MockRender } from "@bentley/imodeljs-frontend";
-import { ContentLayoutProps, fourQuadrants } from "@bentley/ui-abstract";
+import { ContentLayoutProps, StandardContentLayouts } from "@bentley/ui-abstract";
 import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, ContentLayout, ContentLayoutDef, ContentLayoutManager,
   ContentViewManager, CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider,
@@ -53,7 +53,7 @@ describe("ContentLayout", () => {
     verticalSplit: { id: "TwoHalvesVertical.VerticalSplit", percentage: 0.50, left: 0, right: 1 },
   });
 
-  const standardContentLayout1: ContentLayoutDef = new ContentLayoutDef(fourQuadrants);
+  const standardContentLayout1: ContentLayoutDef = new ContentLayoutDef(StandardContentLayouts.fourQuadrants);
 
   class TestFrontstage2 extends FrontstageProvider {
     public get frontstage(): React.ReactElement<FrontstageProps> {
