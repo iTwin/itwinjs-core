@@ -54,6 +54,7 @@ export interface PatternGraphicParams {
   readonly orgTransform: Transform;
   readonly scale: number;
   readonly spacing: Point2d;
+  readonly origin: Point2d;
   readonly localToWorld: Transform;
   /** Usually, to tile tree coordinates. */
   readonly worldToModel: Transform;
