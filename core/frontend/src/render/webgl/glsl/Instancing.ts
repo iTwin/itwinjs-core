@@ -28,7 +28,7 @@ const computeInstancedModelMatrixRTC = `
 
     float x = u_patternOrigin.x + a_patternX * spacing.x;
     float y = u_patternOrigin.y + a_patternY * spacing.y;
-    vec4 translation = vec4(x / scale, y / scale, 0.0, 0.0);
+    vec4 translation = vec4(x / scale, y / scale, 0.0, 1.0);
     mat4 symbolTrans = u_patOrg;
     symbolTrans[3] = symbolTrans * translation;
 
