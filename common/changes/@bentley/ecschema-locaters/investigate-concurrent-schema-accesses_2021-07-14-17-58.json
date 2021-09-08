@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecschema-locaters",
+      "comment": "Added getLoadingSchema to SchemaJsonFileLocater and SchemaXmlFileLocater to get partially deserialized schemas. Added SchemaTextsCache in SchemaFileLocater to reduce the number of times reading from Schema files.\"",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ecschema-locaters",
+  "email": "Ivan.Kok@bentley.com"
+}
