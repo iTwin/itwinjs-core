@@ -2439,6 +2439,54 @@ export abstract class ViewportToggleTool extends Tool {
     protected abstract toggle(vp: Viewport, enable?: boolean): void;
 }
 
+// @beta
+export class VignetteConfig extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...input: string[]): boolean;
+    static roundness: number;
+    // (undocumented)
+    run(width?: number, height?: number, roundness?: number, smoothness?: number): boolean;
+    static readonly size: Float32Array;
+    static smoothness: number;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class VignetteEffect extends AddEffectTool {
+    // (undocumented)
+    protected defineEffect(builder: ScreenSpaceEffectBuilder): void;
+    // (undocumented)
+    protected get effectName(): string;
+    // (undocumented)
+    protected get source(): {
+        vertex: string;
+        fragment: string;
+    };
+    // (undocumented)
+    protected get textureCoordFromPosition(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class WoWIgnoreBackgroundTool extends DisplayStyleTool {
+    // (undocumented)
+    execute(vp: Viewport): boolean;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parse(args: string[]): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
 
 // (No @packageDocumentation comment for this package)
 

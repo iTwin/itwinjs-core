@@ -102,7 +102,9 @@ export interface ViewFlagProps {
    * that logic does not execute, potentially improving performance for no degradation in visual quality. In some scenarios - such as wireframe views containing many planar regions with interior fill, or smooth views containing many coincident planar and non-planar surfaces - enabling this view flag improves display quality by forcing that logic to execute.
    */
   forceSurfaceDiscard?: boolean;
-  /** Disables the "white-on-white reversal" employed by some CAD applications. White-on-white reversal causes white geometry to be drawn as black if the view's background color is also white. */
+  /** Disables the "white-on-white reversal" employed by some CAD applications.
+   * @see [[ViewFlags.whiteOnWhiteReversal]].
+   */
   noWhiteOnWhiteReversal?: boolean;
 }
 
@@ -187,7 +189,12 @@ export class ViewFlags {
    * that logic does not execute, potentially improving performance for no degradation in visual quality. In some scenarios - such as wireframe views containing many planar regions with interior fill, or smooth views containing many coincident planar and non-planar surfaces - enabling this view flag improves display quality by forcing that logic to execute.
    */
   public forceSurfaceDiscard: boolean = false;
-  /** White-on-white reversal is used by some CAD applications to cause white geometry to be drawn as black if the view's background color is also white. */
+  
+  /** Whether to apply white-on-white reversal.
+   * Some CAD applications use this to cause white geometry to be drawn as black if the view's background color is white.
+   * When enabled, the [[DisplayStyleSettings]]' [[WhiteOnWhiteReversalSettings]] control how white-on-white reversal is applied.
+   * Default: true.
+   */
   public whiteOnWhiteReversal = true;
 
   /** Controls whether or not lighting is applied.

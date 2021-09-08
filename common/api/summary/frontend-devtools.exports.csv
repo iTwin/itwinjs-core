@@ -218,4 +218,11 @@ beta;UnmaskRealityModelTool
 beta;UnsharpenEffect 
 beta;ViewportAddRealityModel 
 beta;ViewportTileSizeModifierTool 
+<<<<<<< HEAD
 beta;class ViewportToggleTool 
+=======
+beta;class ViewportToggleTool 
+beta;VignetteConfig 
+beta;VignetteEffect 
+beta;WoWIgnoreBackgroundTool 
+>>>>>>> 17f75107cf (Allow white-on-white reversal to be applied to non-white backgrounds (#2198))

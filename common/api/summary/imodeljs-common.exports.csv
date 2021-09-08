@@ -689,6 +689,8 @@ public;ViewStateProps
 internal;WEB_RPC_CONSTANTS:
 public;class WebAppRpcProtocol 
 public;WebAppRpcRequest 
+public;WhiteOnWhiteReversalProps
+public;WhiteOnWhiteReversalSettings
 internal;class WipRpcInterface 
 public;XyzRotation 
 public;XyzRotationProps

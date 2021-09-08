@@ -1977,6 +1977,7 @@ export class DisplayStyleSettings {
     readonly onThematicChanged: BeEvent<(newThematic: ThematicDisplay) => void>;
     readonly onTimePointChanged: BeEvent<(newTimePoint: number | undefined) => void>;
     readonly onViewFlagsChanged: BeEvent<(newFlags: Readonly<ViewFlags>) => void>;
+    readonly onWhiteOnWhiteReversalChanged: BeEvent<(newSettings: WhiteOnWhiteReversalSettings) => void>;
     overrideModelAppearance(modelId: Id64String, ovr: FeatureAppearance): void;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     get planarClipMasks(): Map<Id64String, PlanarClipMaskSettings>;
@@ -1995,6 +1996,8 @@ export class DisplayStyleSettings {
     toOverrides(options?: DisplayStyleOverridesOptions): DisplayStyleSettingsProps;
     get viewFlags(): ViewFlags;
     set viewFlags(flags: ViewFlags);
+    get whiteOnWhiteReversal(): WhiteOnWhiteReversalSettings;
+    set whiteOnWhiteReversal(settings: WhiteOnWhiteReversalSettings);
     }
 
 // @public
@@ -2024,6 +2027,7 @@ export interface DisplayStyleSettingsProps {
     timePoint?: number;
     // (undocumented)
     viewflags?: ViewFlagProps;
+    whiteOnWhiteReversal?: WhiteOnWhiteReversalProps;
 }
 
 // @public
@@ -9017,6 +9021,19 @@ export class WebAppRpcRequest extends RpcRequest {
     protected setHeader(name: string, value: string): void;
     protected supplyFetch(): typeof fetch;
     protected supplyRequest(): typeof Request;
+}
+
+// @public
+export interface WhiteOnWhiteReversalProps {
+    ignoreBackgroundColor?: boolean;
+}
+
+// @public
+export class WhiteOnWhiteReversalSettings {
+    equals(other: WhiteOnWhiteReversalSettings): boolean;
+    static fromJSON(props?: WhiteOnWhiteReversalProps): WhiteOnWhiteReversalSettings;
+    readonly ignoreBackgroundColor: boolean;
+    toJSON(): WhiteOnWhiteReversalProps | undefined;
 }
 
 // @internal
