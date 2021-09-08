@@ -265,24 +265,10 @@
           "description": "Defines the order in which specifications are evaluated and executed. Defaults to `1000`.",
           "type": "integer"
         },
-        "propertiesDisplay": {
-          "description": "Specifications for customizing property display by hiding / showing them",
-          "items": {
-            "$ref": "#/definitions/DEPRECATED_PropertiesDisplaySpecification"
-          },
-          "type": "array"
-        },
         "propertyCategories": {
           "description": "Specifications for custom categories. Simply defining the categories does\nnothing - they have to be referenced from `PropertySpecification` defined in\n`propertyOverrides` by `id`.",
           "items": {
             "$ref": "#/definitions/PropertyCategorySpecification"
-          },
-          "type": "array"
-        },
-        "propertyEditors": {
-          "description": "Specifications for assigning property editors",
-          "items": {
-            "$ref": "#/definitions/DEPRECATED_PropertyEditorsSpecification"
           },
           "type": "array"
         },
@@ -362,24 +348,10 @@
           "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
           "type": "integer"
         },
-        "propertiesDisplay": {
-          "description": "Specifications for customizing property display by hiding / showing them",
-          "items": {
-            "$ref": "#/definitions/DEPRECATED_PropertiesDisplaySpecification"
-          },
-          "type": "array"
-        },
         "propertyCategories": {
           "description": "Specifications for custom categories. Simply defining the categories does\nnothing - they have to be referenced from `PropertySpecification` defined in\n`propertyOverrides` by `id`.",
           "items": {
             "$ref": "#/definitions/PropertyCategorySpecification"
-          },
-          "type": "array"
-        },
-        "propertyEditors": {
-          "description": "Specifications for assigning property editors",
-          "items": {
-            "$ref": "#/definitions/DEPRECATED_PropertyEditorsSpecification"
           },
           "type": "array"
         },
@@ -442,24 +414,10 @@
           "description": "Defines the order in which specifications are evaluated and executed. Defaults to `1000`.",
           "type": "integer"
         },
-        "propertiesDisplay": {
-          "description": "Specifications for customizing property display by hiding / showing them",
-          "items": {
-            "$ref": "#/definitions/DEPRECATED_PropertiesDisplaySpecification"
-          },
-          "type": "array"
-        },
         "propertyCategories": {
           "description": "Specifications for custom categories. Simply defining the categories does\nnothing - they have to be referenced from `PropertySpecification` defined in\n`propertyOverrides` by `id`.",
           "items": {
             "$ref": "#/definitions/PropertyCategorySpecification"
-          },
-          "type": "array"
-        },
-        "propertyEditors": {
-          "description": "Specifications for assigning property editors",
-          "items": {
-            "$ref": "#/definitions/DEPRECATED_PropertyEditorsSpecification"
           },
           "type": "array"
         },
@@ -988,24 +946,10 @@
           "description": "Defines the order in which specifications are evaluated and executed. Defaults to `1000`.",
           "type": "integer"
         },
-        "propertiesDisplay": {
-          "description": "Specifications for customizing property display by hiding / showing them",
-          "items": {
-            "$ref": "#/definitions/DEPRECATED_PropertiesDisplaySpecification"
-          },
-          "type": "array"
-        },
         "propertyCategories": {
           "description": "Specifications for custom categories. Simply defining the categories does\nnothing - they have to be referenced from `PropertySpecification` defined in\n`propertyOverrides` by `id`.",
           "items": {
             "$ref": "#/definitions/PropertyCategorySpecification"
-          },
-          "type": "array"
-        },
-        "propertyEditors": {
-          "description": "Specifications for assigning property editors",
-          "items": {
-            "$ref": "#/definitions/DEPRECATED_PropertyEditorsSpecification"
           },
           "type": "array"
         },
@@ -1100,70 +1044,6 @@
       },
       "required": [
         "specType"
-      ],
-      "type": "object"
-    },
-    "DEPRECATED_PropertiesDisplaySpecification": {
-      "additionalProperties": false,
-      "description": "Sub-specification to hide / display specified ECInstance properties.",
-      "properties": {
-        "isDisplayed": {
-          "description": "Should property be displayed. Defaults to `true`.",
-          "type": "boolean"
-        },
-        "priority": {
-          "description": "Controls priority of the specification. Defaults to `1000`.",
-          "type": "integer"
-        },
-        "propertyNames": {
-          "description": "List of ECProperty names which should be hidden or shown",
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
-        }
-      },
-      "required": [
-        "propertyNames"
-      ],
-      "type": "object"
-    },
-    "DEPRECATED_PropertyEditorsSpecification": {
-      "additionalProperties": false,
-      "description": "Sub-specification to specify custom property editor",
-      "properties": {
-        "editorName": {
-          "description": "Name of the custom editor",
-          "type": "string"
-        },
-        "parameters": {
-          "description": "Parameters for the editor",
-          "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/PropertyEditorJsonParameters"
-              },
-              {
-                "$ref": "#/definitions/PropertyEditorMultilineParameters"
-              },
-              {
-                "$ref": "#/definitions/PropertyEditorRangeParameters"
-              },
-              {
-                "$ref": "#/definitions/PropertyEditorSliderParameters"
-              }
-            ]
-          },
-          "type": "array"
-        },
-        "propertyName": {
-          "description": "Name of the property which custom editor should be used for",
-          "type": "string"
-        }
-      },
-      "required": [
-        "editorName",
-        "propertyName"
       ],
       "type": "object"
     },
@@ -3188,24 +3068,10 @@
           "description": "Defines the order in which specifications are evaluated and executed. Defaults to `1000`.",
           "type": "integer"
         },
-        "propertiesDisplay": {
-          "description": "Specifications for customizing property display by hiding / showing them",
-          "items": {
-            "$ref": "#/definitions/DEPRECATED_PropertiesDisplaySpecification"
-          },
-          "type": "array"
-        },
         "propertyCategories": {
           "description": "Specifications for custom categories. Simply defining the categories does\nnothing - they have to be referenced from `PropertySpecification` defined in\n`propertyOverrides` by `id`.",
           "items": {
             "$ref": "#/definitions/PropertyCategorySpecification"
-          },
-          "type": "array"
-        },
-        "propertyEditors": {
-          "description": "Specifications for assigning property editors",
-          "items": {
-            "$ref": "#/definitions/DEPRECATED_PropertyEditorsSpecification"
           },
           "type": "array"
         },

@@ -751,13 +751,14 @@
         "schemaName": "BisCore",
         "className": "LinkElement"
       },
-      "propertiesDisplay": [
+      "propertyOverrides": [
         {
           "isDisplayed": false,
-          "propertyNames": [
-            "CodeValue",
-            "UserLabel"
-          ]
+          "name": "CodeValue"
+        },
+        {
+          "name": "UserLabel",
+          "isDisplayed": false
         }
       ]
     },
@@ -767,12 +768,10 @@
         "schemaName": "BisCore",
         "className": "UrlLink"
       },
-      "propertiesDisplay": [
+      "propertyOverrides": [
         {
           "isDisplayed": false,
-          "propertyNames": [
-            "Description"
-          ]
+          "name": "Description"
         }
       ]
     },
@@ -782,12 +781,10 @@
         "schemaName": "BisCore",
         "className": "EmbeddedFileLink"
       },
-      "propertiesDisplay": [
+      "propertyOverrides": [
         {
           "isDisplayed": false,
-          "propertyNames": [
-            "Description"
-          ]
+          "name": "Description"
         }
       ]
     }
