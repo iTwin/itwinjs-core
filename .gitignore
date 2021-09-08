@@ -4,8 +4,11 @@ package-lock.json
 
 # build output
 .nyc_output
-/**/lib
-/**/build
+lib
+cjs
+esm
+types
+build
 /**/test/output
 /generated-docs
 /out

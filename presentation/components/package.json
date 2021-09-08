@@ -2,8 +2,8 @@
   "name": "@bentley/presentation-components",
   "version": "3.0.0-dev.49",
   "description": "React components based on iModel.js Presentation library",
-  "main": "lib/presentation-components.js",
-  "typings": "lib/presentation-components",
+  "main": "cjs/presentation-components.js",
+  "typings": "types/presentation-components",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {

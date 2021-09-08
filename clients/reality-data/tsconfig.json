@@ -1,16 +1,12 @@
 {
   "extends": "./node_modules/@bentley/build-tools/tsconfig-base.json",
-  "compilerOptions": {
-    "experimentalDecorators": true,
-    "target": "es2017",
-    "module": "commonjs",
-    "outDir": "lib"
-  },
   "include": [
-    "src/**/*.ts",
+    "./src/**/*.ts"
   ],
   "exclude": [
-    "lib",
+    "esm",
+    "cjs",
+    "types",
     "node_modules"
   ]
 }

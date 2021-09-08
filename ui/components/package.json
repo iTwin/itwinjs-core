@@ -2,8 +2,8 @@
   "name": "@bentley/ui-components",
   "version": "3.0.0-dev.49",
   "description": "iModel.js UI complex components",
-  "main": "lib/ui-components.js",
-  "typings": "lib/ui-components",
+  "main": "cjs/ui-components.js",
+  "typings": "types/ui-components",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {

@@ -1,8 +1,16 @@
 # start off ignoring everything, and then add back only the files we want
 *
-!lib/**/*.d.ts
-!lib/**/*.d.ts.map
-!lib/**/*.js
-!lib/**/*.js.map
+!cjs/**/*.d.ts
+!cjs/**/*.d.ts.map
+!cjs/**/*.js
+!cjs/**/*.js.map
+
+!esm/**/*.d.ts
+!esm/**/*.d.ts.map
+!esm/**/*.js
+!esm/**/*.js.map
+
+!types/**/*.d.ts
+!types/**/*.d.ts.map
+
 test
-!*.md

@@ -2,8 +2,8 @@
   "name": "@bentley/orbitgt-core",
   "version": "3.0.0-dev.49",
   "description": "",
-  "main": "lib/imodeljs-orbitgt.js",
-  "typings": "lib/imodeljs-orbitgt",
+  "main": "cjs/imodeljs-orbitgt.js",
+  "typings": "types/imodeljs-orbitgt",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {

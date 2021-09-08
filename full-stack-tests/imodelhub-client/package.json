@@ -1,7 +1,7 @@
 {
   "name": "@bentley/imodelhub-client-tests",
   "version": "3.0.0-dev.49",
-  "main": "lib/imodelhub-client-tests.js",
+  "main": "cjs/imodelhub-client-tests.js",
   "description": "Tests the iModelHub client",
   "license": "MIT",
   "repository": {
@@ -10,8 +10,10 @@
   },
   "scripts": {
     "compile": "npm run build",
-    "build": "tsc 1>&2",
-    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "build": "npm run build:cjs && npm run build:esm",
+    "build:cjs": "tsc 1>&2 --outDir cjs",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir esm --declarationDir types",
+    "clean": "rimraf cjs esm types .rush/temp/package-deps*.json",
     "copy:config": "internal-tools copy-config",
     "copy:test-assets": "cpx \"./src/assets/**/*\" ./lib/assets",
     "cover": "npm run cover:imodelhub-client && npm run cover:backend-itwin-client && npm run cover:itwin-client",

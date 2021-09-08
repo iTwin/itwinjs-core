@@ -18,8 +18,8 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "main": "lib/presentation-common.js",
-  "typings": "lib/presentation-common",
+  "main": "cjs/presentation-common.js",
+  "typings": "types/presentation-common",
   "scripts": {
     "compile": "npm run build",
     "build": "npm run ruleset-json-schema && npm run build:assets && npm run build:public && npm run extract && tsc 1>&2",

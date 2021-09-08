@@ -2,8 +2,8 @@
   "name": "@bentley/ui-framework",
   "version": "3.0.0-dev.49",
   "description": "UI framework",
-  "main": "lib/ui-framework.js",
-  "typings": "lib/ui-framework",
+  "main": "cjs/ui-framework.js",
+  "typings": "types/ui-framework",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {

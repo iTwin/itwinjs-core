@@ -17,8 +17,8 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "main": "lib/presentation-testing.js",
-  "typings": "lib/presentation-testing",
+  "main": "cjs/presentation-testing.js",
+  "typings": "types/presentation-testing",
   "scripts": {
     "compile": "npm run build",
     "build": "npm run extract && tsc 1>&2",

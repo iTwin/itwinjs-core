@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es2017",
+    "target": "ES2020",
     "lib": [
       // Required for async iterators/generators:
       "esnext.asynciterable",
@@ -30,6 +30,8 @@
     "declarationMap": true,
     "jsx": "react",
     "forceConsistentCasingInFileNames": true,
-    "incremental": true
+    "incremental": true,
+    "esModuleInterop": false,
+    "moduleResolution": "node"
   }
 }

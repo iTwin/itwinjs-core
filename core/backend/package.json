@@ -2,8 +2,8 @@
   "name": "@bentley/imodeljs-backend",
   "version": "3.0.0-dev.49",
   "description": "iModel.js backend components",
-  "main": "lib/imodeljs-backend.js",
-  "typings": "lib/imodeljs-backend",
+  "main": "cjs/imodeljs-backend.js",
+  "typings": "types/imodeljs-backend",
   "license": "MIT",
   "engines": {
     "node": ">=10.17.0 <15.0"

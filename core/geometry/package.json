@@ -2,8 +2,8 @@
   "name": "@bentley/geometry-core",
   "version": "3.0.0-dev.49",
   "description": "Bentley Core Geometry library",
-  "main": "lib/geometry-core.js",
-  "typings": "lib/geometry-core",
+  "main": "cjs/geometry-core.js",
+  "typings": "types/geometry-core",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {

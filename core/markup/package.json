@@ -2,8 +2,8 @@
   "name": "@bentley/imodeljs-markup",
   "version": "3.0.0-dev.49",
   "description": "iModel.js markup package",
-  "main": "lib/imodeljs-markup.js",
-  "typings": "lib/imodeljs-markup",
+  "main": "cjs/imodeljs-markup.js",
+  "typings": "types/imodeljs-markup",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {

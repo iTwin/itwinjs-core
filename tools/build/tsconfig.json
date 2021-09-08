@@ -13,7 +13,9 @@
     "./src/**/*.ts"
   ],
   "exclude": [
-    "lib",
+    "esm",
+    "cjs",
+    "types",
     "node_modules"
   ]
 }

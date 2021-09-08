@@ -2,8 +2,8 @@
   "name": "@bentley/imodeljs-editor-frontend",
   "version": "3.0.0-dev.49",
   "description": "iModel.js frontend components",
-  "main": "lib/imodeljs-editor-frontend.js",
-  "typings": "lib/imodeljs-editor-frontend",
+  "main": "cjs/imodeljs-editor-frontend.js",
+  "typings": "types/imodeljs-editor-frontend",
   "imodeljsSharedLibrary": false,
   "license": "MIT",
   "scripts": {

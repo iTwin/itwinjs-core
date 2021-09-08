@@ -3,8 +3,8 @@
   "version": "3.0.0-dev.49",
   "description": "ECObjects core concepts in typescript",
   "license": "MIT",
-  "main": "lib/ecschema-metadata.js",
-  "typings": "lib/ecschema-metadata",
+  "main": "cjs/ecschema-metadata.js",
+  "typings": "types/ecschema-metadata",
   "imodeljsSharedLibrary": true,
   "repository": {
     "type": "git",

@@ -2,8 +2,8 @@
   "name": "@bentley/imodeljs-transformer",
   "version": "3.0.0-dev.49",
   "description": "API for exporting an iModel's parts and also importing them into another iModel",
-  "main": "lib/imodeljs-transformer.js",
-  "typings": "lib/imodeljs-transformer",
+  "main": "cjs/imodeljs-transformer.js",
+  "typings": "types/imodeljs-transformer",
   "license": "MIT",
   "engines": {
     "node": ">=10.17.0 <15.0"

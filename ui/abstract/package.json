@@ -2,8 +2,8 @@
   "name": "@bentley/ui-abstract",
   "version": "3.0.0-dev.49",
   "description": "iModel.js UI abstractions",
-  "main": "lib/ui-abstract.js",
-  "typings": "lib/ui-abstract",
+  "main": "cjs/ui-abstract.js",
+  "typings": "types/ui-abstract",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {

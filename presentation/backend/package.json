@@ -18,8 +18,8 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "main": "lib/presentation-backend.js",
-  "typings": "lib/presentation-backend",
+  "main": "cjs/presentation-backend.js",
+  "typings": "types/presentation-backend",
   "scripts": {
     "compile": "npm run build",
     "build": "tsc 1>&2 && npm run build:assets",

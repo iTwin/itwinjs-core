@@ -2,8 +2,8 @@
   "name": "@bentley/imodeljs-quantity",
   "version": "3.0.0-dev.49",
   "description": "Quantity parsing, formatting and conversions for iModel.js",
-  "main": "lib/imodeljs-quantity.js",
-  "typings": "lib/imodeljs-quantity",
+  "main": "cjs/imodeljs-quantity.js",
+  "typings": "types/imodeljs-quantity",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {

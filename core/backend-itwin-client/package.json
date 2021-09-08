@@ -2,11 +2,11 @@
   "name": "@bentley/backend-itwin-client",
   "version": "3.0.0-dev.49",
   "description": "Clients for various Bentley Services used by iModel.js at the backend",
-  "main": "lib/backend-itwin-client.js",
+  "main": "cjs/backend-itwin-client.js",
   "browser": {
     "./lib/backend-itwin-client.js": "./lib/backend-itwin-client-mobile.js"
   },
-  "typings": "lib/backend-itwin-client",
+  "typings": "types/backend-itwin-client",
   "license": "MIT",
   "engines": {
     "node": ">=10.17.0 <15.0"

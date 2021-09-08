@@ -2,8 +2,8 @@
   "name": "@bentley/imodeljs-frontend",
   "version": "3.0.0-dev.49",
   "description": "iModel.js frontend components",
-  "main": "lib/imodeljs-frontend.js",
-  "typings": "lib/imodeljs-frontend",
+  "main": "cjs/imodeljs-frontend.js",
+  "typings": "types/imodeljs-frontend",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {

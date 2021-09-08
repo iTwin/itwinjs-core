@@ -11,11 +11,13 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "main": "lib/plugins/index.js",
+  "main": "cjs/plugins/index.js",
   "scripts": {
     "compile": "npm run build",
-    "build": "tsc 1>&2",
-    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "build": "npm run build:cjs && npm run build:esm",
+    "build:cjs": "tsc 1>&2 --outDir cjs",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir esm --declarationDir types",
+    "clean": "rimraf cjs esm types .rush/temp/package-deps*.json",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "mocha \"./lib/test/**/*.test.js\"",
