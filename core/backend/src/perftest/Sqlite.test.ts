@@ -45,7 +45,7 @@ async function createSeedFile(pathName: string, tbl: string, nCols: number, nRow
       cols.push(`[c${i}]`);
     }
     const sp = new StopWatch(undefined, true);
-    process.stdout.write(`Creating seed file ... ${pathName}\n`);
+    console.log(`Creating seed file ... ${pathName}\n`);
     ecdb.withPreparedSqliteStatement(`create table [${tbl}](id integer primary key,${cols.join(",")});`, (stmt) => stmt.step());
     await using(ecdb.prepareSqliteStatement(`insert into ${tbl} values(?${",?".repeat(nCols)});`), async (stmt: SqliteStatement) => {
       for (let i = 0; i < nRows; i++) {
@@ -62,7 +62,7 @@ async function createSeedFile(pathName: string, tbl: string, nCols: number, nRow
     });
     ecdb.saveChanges();
     sp.stop();
-    process.stdout.write(`Completed in ${sp.elapsedSeconds} sec\n`);
+    console.log(`Completed in ${sp.elapsedSeconds} sec\n`);
   });
 }
 async function readRow(stmt: SqliteStatement, id: number, nParam: number = 1): Promise<boolean> {
@@ -129,6 +129,7 @@ interface ReadParams {
     auth: string;
     checkpointProps: BlobCacheProps & BlobContainerProps;
   };
+  passwordProtect?: boolean;
 }
 function standardDeviation(values: number[]) {
   const avg = average(values);
@@ -187,7 +188,8 @@ async function runReadTest(param: ReadParams) {
     await initializeContainer(param.bcvOpts.checkpointProps, testFilepath);
     testFilepath = path.join(param.bcvOpts.checkpointProps.daemonDir!, param.bcvOpts.checkpointProps.container, "base.chkpt");
   }
-
+  if (param.passwordProtect === true)
+    IModelHost.platform.DgnDb.encryptDb(testFilepath, {password: "password"});
   let r = 0;
   const result: number[] = [];
   while (r++ < param.runCount) {
@@ -195,6 +197,8 @@ async function runReadTest(param: ReadParams) {
     await using(new ECDb(), async (ecdb: ECDb) => {
       if (param.bcvOpts !== undefined) {
         ecdb.openDb(`file:///${testFilepath}?bcv_secure=${param.bcvOpts.secure ? "1" : "0"}&bcv_auth=${encodeURIComponent(param.bcvOpts.auth)}`, ECDbOpenMode.Readonly);
+      } else if (param.passwordProtect === true) {
+        ecdb.openDb(testFilepath, ECDbOpenMode.Readonly, "password");
       } else ecdb.openDb(testFilepath, ECDbOpenMode.Readonly);
       if (!ecdb.isOpen)
         throw new Error(`changePageSize() fail to open file ${testFilepath}`);
@@ -207,22 +211,28 @@ async function runReadTest(param: ReadParams) {
 
   const avg = average(result);
   const stddev = standardDeviation(result);
-  process.stdout.write(`\nAvg Time:${avg.toFixed(4)} sec, stddev:${stddev.toFixed(4)}\n`);
+  console.log(`\nAvg Time:${avg.toFixed(4)} sec, stddev:${stddev.toFixed(4)}\n`);
   if (!fs.existsSync(report))
     fs.appendFileSync(report, "test dir, runs, page size, avg time elapsed (sec), std-dev\r\n");
   fs.appendFileSync(report, `${param.testFolder}, ${param.runCount}, ${param.pageSizeInKb}K, ${avg.toFixed(4)}, ${stddev.toFixed(4)}\r\n`);
 }
 /* This test suite require configuring dataset path
 **/
+async function sleep(ms: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
 describe.skip("SQLitePerformanceTest", () => {
   it("Read Test", async () => {
     const seedDir = path.join(KnownTestLocations.outputDir, "perf_test");
     const pageSizes = [4096 /* 1, 4, 8, 16, 32, 64, 128, 256, 512 */];
     const targets = ["C:\\test" /* "F:\\test", "Y:\\test", "Z:\\test"*/];
+    await sleep(20000);
     for (const targetFolder of targets) {
       for (const pageSize of pageSizes) {
         await runReadTest({
-          runCount: 5000,
+          runCount: 1000,
           seedRowCount: 50000,
           columnsCount: 20,
           startId: 1,
@@ -235,8 +245,31 @@ describe.skip("SQLitePerformanceTest", () => {
       }
     }
   });
+  it.skip("Read Test Password Protected db", async () => {
+    const seedDir = path.join(KnownTestLocations.outputDir, "perf_test");
+    await sleep(20000);
+    const pageSizes = [4096 /* 1, 4, 8, 16, 32, 64, 128, 256, 512 */];
+    const targets = ["C:\\test" /* "F:\\test", "Y:\\test", "Z:\\test"*/];
+    for (const targetFolder of targets) {
+      for (const pageSize of pageSizes) {
+        await runReadTest({
+          runCount: 1000,
+          seedRowCount: 50000,
+          columnsCount: 20,
+          startId: 1,
+          percentageOfRowsToRead: 50,
+          probabilityOfConsecutiveReads: 0.3,
+          seedFolder: seedDir,
+          testFolder: targetFolder,
+          pageSizeInKb: pageSize,
+          passwordProtect: true,
+        });
+      }
+    }
+  });
 });
-describe("SQLiteBlockcachePerformanceTest", () => {
+
+describe.only("SQLiteBlockcachePerformanceTest", () => {
   const azureStorageUser = "devstoreaccount1";
   const azureStorageKey = "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="; // default Azurite password
   const daemonDir = path.resolve(__dirname, "blob-daemon");
@@ -255,6 +288,8 @@ describe("SQLiteBlockcachePerformanceTest", () => {
   it.skip("Read Test Blockcache Unencrypted", async () => {
     const seedDir = path.join(KnownTestLocations.outputDir, "perf_test");
     daemon = await startDaemon();
+    process.stdout.write("Sleeping for 20 seconds");
+    // await sleep(20000);
     const pageSizes = [4096 /* 1, 4, 8, 16, 32, 64, 128, 256, 512 */];
     const targets = ["C:\\test" /* "F:\\test", "Y:\\test", "Z:\\test"*/];
     for (const targetFolder of targets) {
@@ -279,9 +314,12 @@ describe("SQLiteBlockcachePerformanceTest", () => {
     }
     await cleanupDaemon();
   });
-  it("Read Test Blockcache Encrypted", async () => {
+  it.only("Read Test Blockcache Encrypted", async () => {
     const seedDir = path.join(KnownTestLocations.outputDir, "perf_test");
+    // await askQuestion("push key to continue");
     daemon = await startDaemon();
+    // process.stdout.write("Sleeping for 20 seconds");
+    await sleep(20000);
     const pageSizes = [4096 /* 1, 4, 8, 16, 32, 64, 128, 256, 512 */];
     const targets = ["C:\\test" /* "F:\\test", "Y:\\test", "Z:\\test"*/];
     for (const targetFolder of targets) {
@@ -330,7 +368,8 @@ describe("SQLiteBlockcachePerformanceTest", () => {
     }
 
     // startup daemon
-    daemon = BlobDaemon.start({ ...daemonProps, ...cacheProps });
+    // noNonce true should be faster
+    daemon = BlobDaemon.start({ ...daemonProps, ...cacheProps, noNonce: true });
     daemonExitedPromise = new Promise((resolve) => {
       daemon.on("exit", () => {
         resolve();

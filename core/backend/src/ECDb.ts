@@ -76,10 +76,12 @@ export class ECDb implements IDisposable {
    * @param openMode Open mode
    * @throws [IModelError]($common) if the operation failed.
    */
-  public openDb(pathName: string, openMode: ECDbOpenMode = ECDbOpenMode.Readonly): void {
+  public openDb(pathName: string, openMode: ECDbOpenMode = ECDbOpenMode.Readonly, password?: string): void {
     const nativeOpenMode: OpenMode = openMode === ECDbOpenMode.Readonly ? OpenMode.Readonly : OpenMode.ReadWrite;
     const tryUpgrade: boolean = openMode === ECDbOpenMode.FileUpgrade;
-    const status: DbResult = this.nativeDb.openDb(pathName, nativeOpenMode, tryUpgrade);
+    let status: DbResult;
+    if (password) status = this.nativeDb.openDb(pathName, nativeOpenMode, tryUpgrade, password);
+    else status = this.nativeDb.openDb(pathName, nativeOpenMode, tryUpgrade);
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to open ECDb");
   }
