@@ -34,16 +34,10 @@ export interface ViewLayout {
  * @public
  */
 export class SavedViewLayout {
-
   /** Create props for a View Layout */
   public static viewLayoutToProps(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup, emphasizeElements: boolean = false, contentCallback?: ContentCallback): SavedViewLayoutProps {
-
     const contentLayoutProps = contentLayoutDef.toJSON();
-    // TODO: Why clear id???
-    // contentLayoutProps.id = "";   // Will generate a new id when ContentLayoutDef is created
-
     const contentGroupProps = contentGroup.toJSON(contentCallback);
-
     const savedViews = new Array<SavedViewProps>();
     const viewports = contentGroup.getViewports();
     for (const viewport of viewports) {
@@ -95,5 +89,4 @@ export class SavedViewLayout {
 
     return changedList.some((changed: boolean) => changed);
   }
-
 }
