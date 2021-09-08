@@ -2,6 +2,21 @@
   "name": "@bentley/imodel-bridge",
   "entries": [
     {
+      "version": "2.19.10",
+      "tag": "@bentley/imodel-bridge_v2.19.10",
+      "date": "Wed, 08 Sep 2021 14:36:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Abandons resources on failed connector run"
+          },
+          {
+            "comment": "point link for imodel-bridge to 2.x branch b/c it was removed in 3.x"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.9",
       "tag": "@bentley/imodel-bridge_v2.19.9",
       "date": "Wed, 25 Aug 2021 15:36:01 GMT",
