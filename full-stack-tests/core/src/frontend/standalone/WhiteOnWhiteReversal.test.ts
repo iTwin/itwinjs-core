@@ -77,8 +77,9 @@ describe("White-on-white reversal", async () => {
       return vf.with("whiteOnWhiteReversal", false);
     });
 
-    await test([white], (vp, vf) => {
+    await test([white, red], (vp, vf) => {
       ignoreBackground(vp);
+      vp.displayStyle.backgroundColor = ColorDef.red;
       return vf.with("whiteOnWhiteReversal", false);
     });
   });
