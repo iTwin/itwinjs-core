@@ -7,9 +7,10 @@ import { assert } from "chai";
 import * as path from "path";
 import { DbResult, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import {
-  BackendLoggerCategory, BackendRequestContext, Category, ECSqlStatement, Element, GeometricElement2d, GeometricElement3d, IModelDb, IModelHost,
+  BackendRequestContext, Category, ECSqlStatement, Element, GeometricElement2d, GeometricElement3d, IModelDb, IModelHost,
   IModelJsFs, PhysicalModel, PhysicalPartition, SnapshotDb, SpatialCategory, SpatialElement,
 } from "@bentley/imodeljs-backend";
+import { TransformerLoggerCategory } from "@bentley/imodeljs-transformer";
 import { Code, PhysicalElementProps } from "@bentley/imodeljs-common";
 import { loggerCategory, Transformer } from "../Transformer";
 
@@ -24,9 +25,9 @@ describe("imodel-transformer", () => {
       Logger.initializeToConsole();
       Logger.setLevelDefault(LogLevel.Error);
       Logger.setLevel(loggerCategory, LogLevel.Info);
-      Logger.setLevel(BackendLoggerCategory.IModelExporter, LogLevel.Trace);
-      Logger.setLevel(BackendLoggerCategory.IModelImporter, LogLevel.Trace);
-      Logger.setLevel(BackendLoggerCategory.IModelTransformer, LogLevel.Trace);
+      Logger.setLevel(TransformerLoggerCategory.IModelExporter, LogLevel.Trace);
+      Logger.setLevel(TransformerLoggerCategory.IModelImporter, LogLevel.Trace);
+      Logger.setLevel(TransformerLoggerCategory.IModelTransformer, LogLevel.Trace);
     }
 
     assert.isTrue(IModelJsFs.existsSync(sourceDbFileName));

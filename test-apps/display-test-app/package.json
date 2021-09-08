@@ -85,7 +85,6 @@
     "npm-run-all": "^4.1.5",
     "null-loader": "^0.1.1",
     "rimraf": "^3.0.2",
-    "react": "^16.8.0",
     "typescript": "~4.3.0",
     "webpack": "4.42.0",
     "semver": "^5.5.0"
@@ -111,11 +110,6 @@
         "tsconfig.json",
         "tsconfig.backend.json"
       ]
-    },
-    "settings": {
-      "react": {
-        "version": "999.999.999"
-      }
     }
   }
 }

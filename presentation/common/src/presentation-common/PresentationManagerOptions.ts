@@ -7,6 +7,7 @@
  */
 
 import { Id64String } from "@bentley/bentleyjs-core";
+import { UnitSystemKey } from "@bentley/imodeljs-quantity";
 import { DescriptorOverrides, SelectionInfo } from "./content/Descriptor";
 import { FieldDescriptor } from "./content/Fields";
 import { DiagnosticsOptionsWithHandler } from "./Diagnostics";
@@ -29,17 +30,6 @@ export enum RequestPriority {
 }
 
 /**
- * Enumeration of unit systems that can be used when formatting values.
- * @beta
- */
-export enum PresentationUnitSystem {
-  Metric = "metric",
-  BritishImperial = "british-imperial",
-  UsCustomary = "us-customary",
-  UsSurvey = "us-survey",
-}
-
-/**
  * A generic request options type used for both hierarchy and content requests
  * @public
  */
@@ -53,10 +43,8 @@ export interface RequestOptions<TIModel> {
   /**
    * Unit system to use when formatting property values with units. Default presentation
    * unit is used if unit system is not specified.
-   *
-   * @beta
    */
-  unitSystem?: PresentationUnitSystem;
+  unitSystem?: UnitSystemKey;
 
   /**
    * Optional request priority. Higher priority requests are handled first.
@@ -110,6 +98,15 @@ export const isExtendedHierarchyRequestOptions = <TIModel, TNodeKey, TRulesetVar
  * @deprecated Use [[ContentDescriptorRequestOptions]] or [[ExtendedContentRequestOptions]]
  */
 export interface ContentRequestOptions<TIModel, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> { // eslint-disable-line @typescript-eslint/no-empty-interface
+}
+
+/**
+ * Request type for content sources requests.
+ * @beta
+ */
+export interface ContentSourcesRequestOptions<TIModel> extends RequestOptions<TIModel> {
+  /** Full names of classes to get content sources for. */
+  classes: string[];
 }
 
 /**

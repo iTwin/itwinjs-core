@@ -10,15 +10,16 @@ import { ClientRequestContext, CompressedId64Set, Id64String } from "@bentley/be
 import { IModelDb } from "@bentley/imodeljs-backend";
 import { IModelNotFoundResponse, IModelRpcProps } from "@bentley/imodeljs-common";
 import {
-  ContentDescriptorRequestOptions, ContentDescriptorRpcRequestOptions, ContentRequestOptions, ContentRpcRequestOptions, Descriptor, DescriptorJSON,
-  DescriptorOverrides, DiagnosticsScopeLogs, DisplayLabelRequestOptions, DisplayLabelRpcRequestOptions, DisplayLabelsRequestOptions,
-  DisplayLabelsRpcRequestOptions, DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions,
-  ElementPropertiesRpcRequestOptions, ExtendedContentRequestOptions, ExtendedContentRpcRequestOptions, ExtendedHierarchyRequestOptions,
-  ExtendedHierarchyRpcRequestOptions, FieldDescriptor, FieldDescriptorType, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyCompareRpcOptions,
-  HierarchyRequestOptions, HierarchyRpcRequestOptions, InstanceKey, Item, KeySet, KeySetJSON, Node, NodeKey, NodePathElement, Paged, PageOptions,
-  PresentationError, PresentationRpcRequestOptions, PresentationStatus, RulesetVariable, RulesetVariableJSON, SelectionScopeRequestOptions,
-  VariableValueTypes,
+  ContentDescriptorRequestOptions, ContentDescriptorRpcRequestOptions, ContentRequestOptions, ContentRpcRequestOptions, ContentSourcesRequestOptions,
+  ContentSourcesRpcRequestOptions, ContentSourcesRpcResult, Descriptor, DescriptorJSON, DescriptorOverrides, DiagnosticsScopeLogs,
+  DisplayLabelRequestOptions, DisplayLabelRpcRequestOptions, DisplayLabelsRequestOptions, DisplayLabelsRpcRequestOptions,
+  DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, ElementPropertiesRpcRequestOptions, ExtendedContentRequestOptions,
+  ExtendedContentRpcRequestOptions, ExtendedHierarchyRequestOptions, ExtendedHierarchyRpcRequestOptions, FieldDescriptor, FieldDescriptorType,
+  HierarchyCompareInfo, HierarchyCompareOptions, HierarchyCompareRpcOptions, HierarchyRequestOptions, HierarchyRpcRequestOptions, InstanceKey, Item,
+  KeySet, KeySetJSON, Node, NodeKey, NodePathElement, Paged, PageOptions, PresentationError, PresentationRpcRequestOptions, PresentationStatus,
+  RulesetVariable, RulesetVariableJSON, SelectClassInfo, SelectionScopeRequestOptions, VariableValueTypes,
 } from "@bentley/presentation-common";
+import { createTestSelectClassInfo } from "@bentley/presentation-common/lib/test/_helpers/Content";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
 import {
@@ -649,16 +650,31 @@ describe("PresentationRpcImpl", () => {
 
     });
 
-    describe("loadHierarchy", () => {
+    describe("getContentSources", () => {
 
-      it("returns success status", async () => {
-        const rpcOptions: PresentationRpcRequestOptions<HierarchyRequestOptions<never, RulesetVariableJSON>> = {
+      it("calls manager", async () => {
+        const classes = ["test.class1"];
+        const rpcOptions: ContentSourcesRpcRequestOptions = {
           ...defaultRpcParams,
-          rulesetOrId: testData.rulesetOrId,
+          classes,
         };
-        // eslint-disable-next-line deprecation/deprecation
-        const actualResult = await impl.loadHierarchy(testData.imodelToken, rpcOptions);
-        expect(actualResult.statusCode).to.equal(PresentationStatus.Success);
+        const managerOptions: WithClientRequestContext<ContentSourcesRequestOptions<IModelDb>> = {
+          requestContext: ClientRequestContext.current,
+          imodel: testData.imodelMock.object,
+          classes,
+        };
+        const managerResponse = [createTestSelectClassInfo()];
+        const classesMap = {};
+        const expectedResult: ContentSourcesRpcResult = {
+          sources: managerResponse.map((sci) => SelectClassInfo.toCompressedJSON(sci, classesMap)),
+          classesMap,
+        };
+        presentationManagerMock.setup(async (x) => x.getContentSources(managerOptions))
+          .returns(async () => managerResponse)
+          .verifiable();
+        const actualResult = await impl.getContentSources(testData.imodelToken, rpcOptions);
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result).to.deep.eq(expectedResult);
       });
 
     });

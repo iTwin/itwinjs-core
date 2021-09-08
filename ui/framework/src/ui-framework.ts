@@ -31,7 +31,7 @@ export * from "./ui-framework/backstage/FrontstageLaunch";
 export * from "./ui-framework/backstage/Separator";
 export * from "./ui-framework/backstage/useDefaultBackstageItems";
 export * from "./ui-framework/backstage/TaskLaunch";
-export * from "./ui-framework/backstage/UserProfile";
+export * from "./ui-framework/backstage/useUiItemsProviderBackstageItems";
 
 export * from "./ui-framework/clientservices/IModelServices";
 export * from "./ui-framework/clientservices/ProjectServices";
@@ -120,9 +120,6 @@ export * from "./ui-framework/navigationaids/SheetNavigationAid";
 export * from "./ui-framework/navigationaids/SheetsModalFrontstage";
 export * from "./ui-framework/navigationaids/StandardRotationNavigationAid";
 
-export * from "./ui-framework/oidc/SignIn";
-export * from "./ui-framework/oidc/SignOut";
-
 export * from "./ui-framework/pickers/ListPicker";
 export * from "./ui-framework/pickers/ModelSelector/ModelSelector";
 export * from "./ui-framework/pickers/ViewSelector";
@@ -152,9 +149,11 @@ export * from "./ui-framework/selection/ClearEmphasisStatusField";
 
 export * from "./ui-framework/settings/ui/UiSettingsPage";
 export * from "./ui-framework/settings/quantityformatting/QuantityFormat";
+export * from "./ui-framework/settings/quantityformatting/UnitSystemSelector";
 
 export * from "./ui-framework/shared/ActionButtonItemDef";
 export * from "./ui-framework/shared/AnyItemDef";
+export * from "./ui-framework/shared/AnyToolbarItemDef";
 export * from "./ui-framework/shared/CommandItemDef";
 export * from "./ui-framework/shared/CustomItemDef";
 export * from "./ui-framework/shared/CustomItemProps";
@@ -163,6 +162,7 @@ export * from "./ui-framework/shared/ItemDefBase";
 export * from "./ui-framework/shared/ItemMap";
 export * from "./ui-framework/shared/ItemProps";
 export * from "./ui-framework/shared/MenuItem";
+export * from "./ui-framework/shared/SelectionScope";
 export * from "./ui-framework/shared/ToolItemDef";
 
 export * from "./ui-framework/stagepanels/FrameworkStagePanel";
@@ -266,7 +266,6 @@ export * from "./ui-framework/widgets/WidgetHost";
 export * from "./ui-framework/widgets/WidgetManager";
 export * from "./ui-framework/widgets/WidgetProps";
 export * from "./ui-framework/widgets/WidgetStack";
-export * from "./ui-framework/widgets/VisibilityWidget";
 
 export * from "./ui-framework/workflow/Task";
 export * from "./ui-framework/workflow/Workflow";
@@ -282,7 +281,7 @@ export * from "./ui-framework/zones/Zone";
 export * from "./ui-framework/zones/ZoneDef";
 
 /** @docs-package-description
- * The ui-framework package contains application fragments for Login, Project, iModel and View selection,
+ * The ui-framework package contains application fragments for Project, iModel and View selection,
  * and configuration of the application UI with the Backstage, Frontstages, Widgets, etc.
  * For more information, see [learning about ui-framework]($docs/learning/ui/framework/index.md).
  */
@@ -341,10 +340,6 @@ export * from "./ui-framework/zones/ZoneDef";
 /**
  * @docs-group-description Notification
  * Classes for working with a Notification or Message
- */
-/**
- * @docs-group-description OIDC
- * Classes for working with the OpenID Connect (OIDC) protocol
  */
 
 /**
@@ -415,4 +410,3 @@ export * from "./ui-framework/zones/ZoneDef";
  * @docs-group-description Timeline
  * Classes for working with a TimelineComponent
  */
-

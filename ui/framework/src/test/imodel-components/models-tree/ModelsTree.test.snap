@@ -6,129 +6,111 @@ exports[`ModelsTree #integration renders component with real data and no active 
     class="ui-fw-models-tree"
   >
     <div
-      style="overflow: visible; height: 0px; width: 0px;"
+      class="core-tree components-controlledTree components-smallEditor-host"
+      role="tree"
+      tabindex="-1"
     >
       <div
-        class="core-tree components-controlledTree components-smallEditor-host"
-        role="tree"
-        tabindex="-1"
+        class="ReactWindow__VariableSizeList"
+        style="position: relative; height: 200px; width: 200px; overflow: auto; will-change: transform; direction: ltr;"
       >
         <div
-          class="ReactWindow__VariableSizeList"
-          style="position: relative; height: 200px; width: 200px; overflow: auto; will-change: transform; direction: ltr;"
+          style="height: 50px; width: 100%; min-width: 0;"
         >
           <div
-            style="height: 50px; width: 100%; min-width: 200px;"
+            class="node-wrapper"
+            style="position: absolute; left: 0px; top: 0px; height: 25px; width: 100%;"
           >
             <div
-              class="node-wrapper"
-              style="position: absolute; left: 0px; top: 0px; height: 25px; width: 100%;"
+              class="core-tree-node with-checkbox"
+              data-testid="tree-node"
+              role="treeitem"
+              tabindex="-1"
             >
               <div
-                class="core-tree-node with-checkbox"
-                data-testid="tree-node"
-                role="treeitem"
-                tabindex="-1"
+                class="contents"
+                data-testid="tree-node-contents"
+                style="margin-left: 0px;"
               >
                 <div
-                  class="contents"
-                  data-testid="tree-node-contents"
-                  style="margin-left: 0px;"
+                  aria-label="tree.collapse"
+                  class="core-tree-expansionToggle is-expanded expansion-toggle"
+                  data-testid="tree-node-expansion-toggle"
+                  role="button"
+                  tabindex="-1"
                 >
-                  <div
-                    aria-label="tree.collapse"
-                    class="core-tree-expansionToggle is-expanded expansion-toggle"
-                    data-testid="tree-node-expansion-toggle"
-                    role="button"
-                    tabindex="-1"
+                  <i
+                    class="toggle icon icon-chevron-right"
+                  />
+                </div>
+                <div
+                  class="core-tree-node-icon"
+                >
+                  <span
+                    class="bui-webfont-icon icon-imodel-hollow-2"
+                    role="presentation"
+                  />
+                </div>
+                <div
+                  class="components-controlledTree-node-content"
+                >
+                  <span
+                    title="Joe's house.bim"
                   >
-                    <i
-                      class="toggle icon icon-chevron-right"
-                    />
-                  </div>
-                  <div
-                    class="core-tree-node-icon"
-                  >
-                    <span
-                      class="bui-webfont-icon icon-imodel-hollow-2"
-                      role="presentation"
-                    />
-                  </div>
-                  <div
-                    class="components-controlledTree-node-content"
-                  >
-                    <span
-                      title="Joe's house.bim"
-                    >
-                      Joe's house.bim
-                    </span>
-                  </div>
+                    Joe's house.bim
+                  </span>
                 </div>
               </div>
             </div>
+          </div>
+          <div
+            class="node-wrapper"
+            style="position: absolute; left: 0px; top: 25px; height: 25px; width: 100%;"
+          >
             <div
-              class="node-wrapper"
-              style="position: absolute; left: 0px; top: 25px; height: 25px; width: 100%;"
+              class="core-tree-node with-checkbox"
+              data-testid="tree-node"
+              role="treeitem"
+              tabindex="-1"
             >
               <div
-                class="core-tree-node with-checkbox"
-                data-testid="tree-node"
-                role="treeitem"
-                tabindex="-1"
+                class="contents"
+                data-testid="tree-node-contents"
+                style="margin-left: 20px;"
               >
                 <div
-                  class="contents"
-                  data-testid="tree-node-contents"
-                  style="margin-left: 20px;"
+                  aria-label="tree.expand"
+                  class="core-tree-expansionToggle expansion-toggle"
+                  data-testid="tree-node-expansion-toggle"
+                  role="button"
+                  tabindex="-1"
                 >
-                  <div
-                    aria-label="tree.expand"
-                    class="core-tree-expansionToggle expansion-toggle"
-                    data-testid="tree-node-expansion-toggle"
-                    role="button"
-                    tabindex="-1"
+                  <i
+                    class="toggle icon icon-chevron-right"
+                  />
+                </div>
+                <div
+                  class="core-tree-node-icon"
+                >
+                  <span
+                    class="bui-webfont-icon icon-folder"
+                    role="presentation"
+                  />
+                </div>
+                <div
+                  class="components-controlledTree-node-content"
+                >
+                  <span
+                    title="Joe's house"
                   >
-                    <i
-                      class="toggle icon icon-chevron-right"
-                    />
-                  </div>
-                  <div
-                    class="core-tree-node-icon"
-                  >
-                    <span
-                      class="bui-webfont-icon icon-folder"
-                      role="presentation"
-                    />
-                  </div>
-                  <div
-                    class="components-controlledTree-node-content"
-                  >
-                    <span
-                      title="Joe's house"
-                    >
-                      Joe's house
-                    </span>
-                  </div>
+                    Joe's house
+                  </span>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-    <div
-      class="resize-triggers"
-    >
-      <div
-        class="expand-trigger"
-      >
-        <div
-          style="width: 201px; height: 201px;"
-        />
-      </div>
-      <div
-        class="contract-trigger"
-      />
     </div>
   </div>
 </div>
@@ -3196,81 +3178,63 @@ exports[`ModelsTree #unit <ModelsTree /> should match snapshot 1`] = `
       class="ui-fw-models-tree"
     >
       <div
-        style="overflow: visible; height: 0px; width: 0px;"
+        class="core-tree components-controlledTree components-smallEditor-host"
+        role="tree"
+        tabindex="-1"
       >
         <div
-          class="core-tree components-controlledTree components-smallEditor-host"
-          role="tree"
-          tabindex="-1"
+          class="ReactWindow__VariableSizeList"
+          style="position: relative; height: 200px; width: 200px; overflow: auto; will-change: transform; direction: ltr;"
         >
           <div
-            class="ReactWindow__VariableSizeList"
-            style="position: relative; height: 200px; width: 200px; overflow: auto; will-change: transform; direction: ltr;"
+            style="height: 25px; width: 100%; min-width: 0;"
           >
             <div
-              style="height: 25px; width: 100%; min-width: 200px;"
+              class="node-wrapper"
+              style="position: absolute; left: 0px; top: 0px; height: 25px; width: 100%;"
             >
               <div
-                class="node-wrapper"
-                style="position: absolute; left: 0px; top: 0px; height: 25px; width: 100%;"
+                class="core-tree-node with-checkbox"
+                data-testid="tree-node"
+                role="treeitem"
+                tabindex="-1"
               >
                 <div
-                  class="core-tree-node with-checkbox"
-                  data-testid="tree-node"
-                  role="treeitem"
-                  tabindex="-1"
+                  class="contents"
+                  data-testid="tree-node-contents"
+                  style="margin-left: 24px;"
                 >
-                  <div
-                    class="contents"
-                    data-testid="tree-node-contents"
-                    style="margin-left: 24px;"
+                  <label
+                    class="core-image-checkbox"
                   >
-                    <label
-                      class="core-image-checkbox"
-                    >
-                      <input
-                        type="checkbox"
-                      />
-                      <span
-                        class="image"
-                      >
-                        <i
-                          class="icon icon-visibility-hide-2"
-                        />
-                      </span>
-                    </label>
-                    <div
-                      class="core-tree-node-icon"
+                    <input
+                      type="checkbox"
                     />
-                    <div
-                      class="components-controlledTree-node-content"
+                    <span
+                      class="image"
                     >
-                      <span
-                        title="test-node"
-                      >
-                        test-node
-                      </span>
-                    </div>
+                      <i
+                        class="icon icon-visibility-hide-2"
+                      />
+                    </span>
+                  </label>
+                  <div
+                    class="core-tree-node-icon"
+                  />
+                  <div
+                    class="components-controlledTree-node-content"
+                  >
+                    <span
+                      title="test-node"
+                    >
+                      test-node
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      <div
-        class="resize-triggers"
-      >
-        <div
-          class="expand-trigger"
-        >
-          <div
-            style="width: 201px; height: 201px;"
-          />
-        </div>
-        <div
-          class="contract-trigger"
-        />
       </div>
     </div>
   </div>

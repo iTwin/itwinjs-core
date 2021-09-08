@@ -7,16 +7,14 @@ import * as sinon from "sinon";
 
 import * as React from "react";
 import { fireEvent, render } from "@testing-library/react";
-import { IModelApp, MockRender, QuantityType, QuantityTypeKey, UnitSystemKey } from "@bentley/imodeljs-frontend";
+import { IModelApp, MockRender, QuantityType, QuantityTypeKey } from "@bentley/imodeljs-frontend";
 import TestUtils, { getButtonWithText, handleError, selectChangeValueByText, stubScrollIntoView } from "../TestUtils";
-// import { getQuantityFormatsSettingsManagerEntry, ModalDialogRenderer} from "../../ui-framework";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
-import { PresentationUnitSystem } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { mockPresentationManager } from "@bentley/presentation-components/lib/test/_helpers/UiComponents";
 import { getQuantityFormatsSettingsManagerEntry } from "../../ui-framework/settings/quantityformatting/QuantityFormat";
 import { ModalDialogRenderer } from "../../ui-framework/dialog/ModalDialogManager";
-import { FormatProps } from "@bentley/imodeljs-quantity";
+import { FormatProps, UnitSystemKey } from "@bentley/imodeljs-quantity";
 import { UiFramework } from "../../ui-framework/UiFramework";
 
 describe("QuantityFormatSettingsPage", () => {
@@ -38,7 +36,7 @@ describe("QuantityFormatSettingsPage", () => {
   beforeEach(async () => {
     await IModelApp.quantityFormatter.reinitializeFormatAndParsingsMaps(new Map<UnitSystemKey, Map<QuantityTypeKey, FormatProps>>(), "imperial");
     presentationManagerMock = mockPresentationManager().presentationManager;
-    presentationManagerMock.setup((x) => x.activeUnitSystem).returns(() => PresentationUnitSystem.BritishImperial);
+    presentationManagerMock.setup((x) => x.activeUnitSystem).returns(() => "imperial");
     Presentation.setPresentationManager(presentationManagerMock.object);
   });
 

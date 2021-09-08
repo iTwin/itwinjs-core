@@ -1048,7 +1048,7 @@ describe("IModelWriteTest (#integration)", () => {
 
     // Open briefcase and pull change sets to upgrade
     const superIModel = await BriefcaseDb.open(superRequestContext, { fileName: superBriefcaseProps.fileName });
-    superBriefcaseProps.changeSetId = (await superIModel.pullAndMergeChanges(superRequestContext)).id;
+    superBriefcaseProps.changeset = await superIModel.pullAndMergeChanges(superRequestContext);
     const superVersion = superIModel.querySchemaVersion("BisCore");
     assert.isTrue(semver.satisfies(superVersion!, ">= 1.0.10"));
     assert.isFalse(superIModel.nativeDb.hasUnsavedChanges()); // Validate no changes were made

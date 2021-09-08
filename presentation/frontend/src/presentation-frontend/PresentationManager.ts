@@ -8,15 +8,16 @@
 
 import { BeEvent, IDisposable, Logger, OrderedId64Iterable } from "@bentley/bentleyjs-core";
 import { IModelConnection, IpcApp } from "@bentley/imodeljs-frontend";
+import { UnitSystemKey } from "@bentley/imodeljs-quantity";
 import {
-  Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions,
-  DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions,
-  ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, FieldDescriptorType, HierarchyCompareOptions, HierarchyRequestOptions,
-  HierarchyUpdateInfo, InstanceKey, isContentDescriptorRequestOptions, isDisplayLabelRequestOptions, isDisplayLabelsRequestOptions,
-  isExtendedContentRequestOptions, isExtendedHierarchyRequestOptions, Item, Key, KeySet, LabelDefinition, LabelRequestOptions, Node, NodeKey,
-  NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions, PartialHierarchyModification, PresentationError, PresentationIpcEvents,
-  PresentationStatus, PresentationUnitSystem, RpcRequestsHandler, Ruleset, RulesetVariable, SelectionInfo, UpdateInfo, UpdateInfoJSON,
-  VariableValueTypes,
+  Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides,
+  DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties,
+  ElementPropertiesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, FieldDescriptorType, HierarchyCompareOptions,
+  HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, isContentDescriptorRequestOptions, isDisplayLabelRequestOptions,
+  isDisplayLabelsRequestOptions, isExtendedContentRequestOptions, isExtendedHierarchyRequestOptions, Item, Key, KeySet, LabelDefinition,
+  LabelRequestOptions, Node, NodeKey, NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions, PartialHierarchyModification,
+  PresentationError, PresentationIpcEvents, PresentationStatus, RpcRequestsHandler, Ruleset, RulesetVariable, SelectClassInfo, SelectionInfo,
+  UpdateInfo, UpdateInfoJSON, VariableValueTypes,
 } from "@bentley/presentation-common";
 import { PresentationFrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IpcRequestsHandler } from "./IpcRequestsHandler";
@@ -66,11 +67,9 @@ export interface PresentationManagerProps {
   /**
    * Sets the active unit system to use for formatting property values with
    * units. Default presentation units are used if this is not specified. The active unit
-   * system can later be changed through [[PresentationManager]] or overriden for each request
-   *
-   * @alpha
+   * system can later be changed through [[PresentationManager]] or overriden for each request.
    */
-  activeUnitSystem?: PresentationUnitSystem;
+  activeUnitSystem?: UnitSystemKey;
 
   /**
    * ID used to identify client that requests data. Generally, clients should
@@ -123,7 +122,7 @@ export class PresentationManager implements IDisposable {
   public activeLocale: string | undefined;
 
   /** Get / set active unit system used to format property values with units */
-  public activeUnitSystem: PresentationUnitSystem | undefined;
+  public activeUnitSystem: UnitSystemKey | undefined;
 
   private constructor(props?: PresentationManagerProps) {
     if (props) {
@@ -269,7 +268,7 @@ export class PresentationManager implements IDisposable {
     return this._rulesetVars.get(rulesetId)!;
   }
 
-  private toRpcTokenOptions<TOptions extends { imodel: IModelConnection, locale?: string, unitSystem?: PresentationUnitSystem, rulesetVariables?: RulesetVariable[] }>(requestOptions: TOptions) {
+  private toRpcTokenOptions<TOptions extends { imodel: IModelConnection, locale?: string, unitSystem?: UnitSystemKey, rulesetVariables?: RulesetVariable[] }>(requestOptions: TOptions) {
     // 1. put default `locale` and `unitSystem`
     // 2. put all `requestOptions` members (if `locale` or `unitSystem` are set, they'll override the defaults put at #1)
     // 3. put `imodel` of type `IModelRpcProps` which overwrites the `imodel` from `requestOptions` put at #2
@@ -402,13 +401,14 @@ export class PresentationManager implements IDisposable {
   }
 
   /**
-   * A no-op that used to request the whole hierarchy to be loaded on the backend.
-   * @alpha @deprecated Will be removed in 3.0.
+   * Get all content sources for a given list of classes.
+   * @beta
    */
-  // istanbul ignore next
-  // eslint-disable-next-line deprecation/deprecation
-  public async loadHierarchy(_requestOptions: HierarchyRequestOptions<IModelConnection>): Promise<void> {
-    // This is noop just to avoid breaking the API.
+  public async getContentSources(requestOptions: ContentSourcesRequestOptions<IModelConnection>): Promise<SelectClassInfo[]> {
+    await this.onConnection(requestOptions.imodel);
+    const rpcOptions = this.toRpcTokenOptions(requestOptions);
+    const result = await this._requestsHandler.getContentSources(rpcOptions);
+    return SelectClassInfo.listFromCompressedJSON(result.sources, result.classesMap);
   }
 
   /**

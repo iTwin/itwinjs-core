@@ -59,6 +59,18 @@ describe("RelatedClassInfo", () => {
 
   });
 
+  describe("to/from compressed JSON", () => {
+
+    it("passes roundtrip", () => {
+      const src = createRandomRelatedClassInfo();
+      const classesMap = {};
+      const json = RelatedClassInfo.toCompressedJSON(src, classesMap);
+      const res = RelatedClassInfo.fromCompressedJSON(json, classesMap);
+      expect(res).to.deep.eq(src);
+    });
+
+  });
+
   describe("equals", () => {
 
     it("returns `true` when `RelatedClassInfo` equals to another `RelatedClassInfo`", () => {

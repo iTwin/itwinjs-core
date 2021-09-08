@@ -21,14 +21,11 @@ export class TableFilterDescriptorCollection extends FilterDescriptorCollection 
     super();
   }
 
-  /** Gets the logical operator.
-   */
+  /** Gets/Sets the logical operator. */
   public get logicalOperator(): FilterCompositionLogicalOperator {
     return this._logicalOperator;
   }
 
-  /** Sets the logical operator.
-   */
   public set logicalOperator(value: FilterCompositionLogicalOperator) {
     if (this._logicalOperator !== value) {
       this._logicalOperator = value;

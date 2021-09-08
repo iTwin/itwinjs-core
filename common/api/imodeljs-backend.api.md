@@ -60,7 +60,6 @@ import { DisplayStyle3dSettingsProps } from '@bentley/imodeljs-common';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DisplayStyleSettings } from '@bentley/imodeljs-common';
 import { EcefLocation } from '@bentley/imodeljs-common';
-import * as ECSchemaMetaData from '@bentley/ecschema-metadata';
 import { ECSqlValueType } from '@bentley/imodeljs-common';
 import { EditingScopeNotifications } from '@bentley/imodeljs-common';
 import { ElementAlignedBox3d } from '@bentley/imodeljs-common';
@@ -171,7 +170,6 @@ import { RenderTimelineProps } from '@bentley/imodeljs-common';
 import { RepositoryLinkProps } from '@bentley/imodeljs-common';
 import { RequestNewBriefcaseProps } from '@bentley/imodeljs-common';
 import { Schema as Schema_2 } from '@bentley/ecschema-metadata';
-import { SchemaKey as SchemaKey_2 } from '@bentley/ecschema-metadata';
 import { SchemaState } from '@bentley/imodeljs-common';
 import { SectionDrawingLocationProps } from '@bentley/imodeljs-common';
 import { SectionDrawingProps } from '@bentley/imodeljs-common';
@@ -308,46 +306,47 @@ export class AzureBlobStorage extends CloudStorageService {
 
 // @internal
 export interface BackendHubAccess {
-    acquireLocks: (arg: BriefcaseDbArg & {
+    acquireLocks(arg: BriefcaseDbArg & {
         locks: LockProps[];
-    }) => Promise<void>;
-    acquireNewBriefcaseId: (arg: IModelIdArg) => Promise<number>;
-    acquireSchemaLock: (arg: BriefcaseDbArg) => Promise<void>;
-    createIModel: (arg: IModelNameArg & {
+    }): Promise<void>;
+    acquireNewBriefcaseId(arg: IModelIdArg): Promise<number>;
+    acquireSchemaLock(arg: BriefcaseDbArg): Promise<void>;
+    createIModel(arg: IModelNameArg & {
         description?: string;
         revision0?: LocalFileName;
-    }) => Promise<GuidString>;
-    deleteIModel: (arg: IModelIdArg & {
+    }): Promise<GuidString>;
+    deleteIModel(arg: IModelIdArg & {
         contextId: GuidString;
-    }) => Promise<void>;
-    downloadChangeset: (arg: ChangesetArg & {
+    }): Promise<void>;
+    downloadChangeset(arg: ChangesetArg & {
         targetDir: LocalDirName;
-    }) => Promise<ChangesetFileProps>;
-    downloadChangesets: (arg: ChangesetRangeArg & {
+    }): Promise<ChangesetFileProps>;
+    downloadChangesets(arg: ChangesetRangeArg & {
         targetDir: LocalDirName;
-    }) => Promise<ChangesetFileProps[]>;
-    downloadV1Checkpoint: (arg: CheckPointArg) => Promise<ChangesetId>;
-    downloadV2Checkpoint: (arg: CheckPointArg) => Promise<ChangesetId>;
-    getChangesetFromNamedVersion: (arg: IModelIdArg & {
+    }): Promise<ChangesetFileProps[]>;
+    downloadV1Checkpoint(arg: CheckPointArg): Promise<ChangesetId>;
+    downloadV2Checkpoint(arg: CheckPointArg): Promise<ChangesetId>;
+    getChangesetFromNamedVersion(arg: IModelIdArg & {
         versionName: string;
-    }) => Promise<ChangesetProps>;
-    getChangesetFromVersion: (arg: IModelIdArg & {
+    }): Promise<ChangesetProps>;
+    getChangesetFromVersion(arg: IModelIdArg & {
         version: IModelVersion;
-    }) => Promise<ChangesetProps>;
-    getLatestChangeset: (arg: IModelIdArg) => Promise<ChangesetProps>;
-    getMyBriefcaseIds: (arg: IModelIdArg) => Promise<number[]>;
-    pushChangeset: (arg: IModelIdArg & {
+    }): Promise<ChangesetProps>;
+    getLatestChangeset(arg: IModelIdArg): Promise<ChangesetProps>;
+    getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]>;
+    pushChangeset(arg: IModelIdArg & {
         changesetProps: ChangesetFileProps;
-    }) => Promise<ChangesetIndex>;
-    queryAllCodes: (arg: BriefcaseDbArg) => Promise<CodeProps[]>;
-    queryAllLocks: (arg: BriefcaseDbArg) => Promise<LockProps[]>;
-    queryChangeset: (arg: ChangesetArg) => Promise<ChangesetProps>;
-    queryChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetProps[]>;
-    queryIModelByName: (arg: IModelNameArg) => Promise<GuidString | undefined>;
-    querySchemaLock: (arg: IModelIdArg) => Promise<boolean>;
-    releaseAllCodes: (arg: BriefcaseDbArg) => Promise<void>;
-    releaseAllLocks: (arg: BriefcaseDbArg) => Promise<void>;
-    releaseBriefcase: (arg: BriefcaseIdArg) => Promise<void>;
+    }): Promise<ChangesetIndex>;
+    queryAllCodes(arg: BriefcaseDbArg): Promise<CodeProps[]>;
+    queryAllLocks(arg: BriefcaseDbArg): Promise<LockProps[]>;
+    queryChangeset(arg: ChangesetArg): Promise<ChangesetProps>;
+    queryChangesets(arg: ChangesetRangeArg): Promise<ChangesetProps[]>;
+    queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
+    querySchemaLock(arg: IModelIdArg): Promise<boolean>;
+    queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined>;
+    releaseAllCodes(arg: BriefcaseDbArg): Promise<void>;
+    releaseAllLocks(arg: BriefcaseDbArg): Promise<void>;
+    releaseBriefcase(arg: BriefcaseIdArg): Promise<void>;
 }
 
 // @public
@@ -363,17 +362,11 @@ export enum BackendLoggerCategory {
     EventSink = "imodeljs-backend.EventSink",
     Functional = "imodeljs-backend.Functional",
     IModelDb = "imodeljs-backend.IModelDb",
-    // @beta
-    IModelExporter = "imodeljs-backend.IModelExporter",
     IModelHost = "imodeljs-backend.IModelHost",
-    // @beta
-    IModelImporter = "imodeljs-backend.IModelImporter",
     // @alpha
     IModelSchemaLoader = "imodeljs-backend.IModelSchemaLoader",
     IModelTileRequestRpc = "imodeljs-backend.IModelTileRequestRpc",
     IModelTileUpload = "imodeljs-backend.IModelTileUpload",
-    // @beta
-    IModelTransformer = "imodeljs-backend.IModelTransformer",
     LinearReferencing = "imodeljs-backend.LinearReferencing",
     // @internal
     NativeApp = "imodeljs-backend.NativeApp",
@@ -415,7 +408,7 @@ export class BriefcaseDb extends IModelDb {
     // (undocumented)
     static findByKey(key: string): BriefcaseDb;
     get isBriefcase(): boolean;
-    static readonly onOpen: BeEvent<(_requestContext: ClientRequestContext, _props: IModelRpcProps) => void>;
+    static readonly onOpen: BeEvent<(_requestContext: ClientRequestContext, _args: OpenBriefcaseProps) => void>;
     static readonly onOpened: BeEvent<(_requestContext: ClientRequestContext, _imodelDb: BriefcaseDb) => void>;
     static open(requestContext: ClientRequestContext, args: OpenBriefcaseProps): Promise<BriefcaseDb>;
     pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<ChangesetIndexAndId>;
@@ -652,15 +645,13 @@ export class CheckpointManager {
 
 // @public
 export interface CheckpointProps {
-    changeSetId: ChangesetId;
+    readonly changeset: ChangesetIdWithIndex;
+    readonly contextId: GuidString;
     // (undocumented)
-    changesetIndex?: ChangesetIndex;
-    contextId: GuidString;
+    readonly expectV2?: boolean;
+    readonly iModelId: GuidString;
     // (undocumented)
-    expectV2?: boolean;
-    iModelId: GuidString;
-    // (undocumented)
-    requestContext: AuthorizedClientRequestContext;
+    readonly requestContext?: AuthorizedClientRequestContext;
 }
 
 // @public
@@ -1258,10 +1249,10 @@ export interface DownloadJob {
 
 // @internal
 export interface DownloadRequest {
-    aliasFiles?: string[];
-    checkpoint: CheckpointProps;
+    readonly aliasFiles?: ReadonlyArray<string>;
+    readonly checkpoint: CheckpointProps;
     localFile: string;
-    onProgress?: ProgressFunction;
+    readonly onProgress?: ProgressFunction;
 }
 
 // @internal (undocumented)
@@ -2405,7 +2396,7 @@ export class IModelCloneContext {
 // @public
 export abstract class IModelDb extends IModel {
     // @internal
-    protected constructor(nativeDb: IModelJsNative.DgnDb, iModelToken: IModelRpcProps, openMode: OpenMode);
+    protected constructor(nativeDb: IModelJsNative.DgnDb, iModelToken: IModelRpcProps);
     abandonChanges(): void;
     // @internal
     protected beforeClose(): void;
@@ -2620,70 +2611,6 @@ export namespace IModelDb {
     }
 }
 
-// @beta
-export class IModelExporter {
-    constructor(sourceDb: IModelDb);
-    excludeCodeSpec(codeSpecName: string): void;
-    excludeElement(elementId: Id64String): void;
-    excludeElementAspectClass(classFullName: string): void;
-    // @deprecated
-    excludeElementCategory(categoryId: Id64String): void;
-    excludeElementClass(classFullName: string): void;
-    excludeElementsInCategory(categoryId: Id64String): void;
-    excludeRelationshipClass(classFullName: string): void;
-    exportAll(): Promise<void>;
-    exportChanges(requestContext: AuthorizedClientRequestContext, startChangesetId?: string): Promise<void>;
-    exportChildElements(elementId: Id64String): Promise<void>;
-    exportCodeSpecById(codeSpecId: Id64String): Promise<void>;
-    exportCodeSpecByName(codeSpecName: string): Promise<void>;
-    exportCodeSpecs(): Promise<void>;
-    exportElement(elementId: Id64String): Promise<void>;
-    exportFontByName(fontName: string): Promise<void>;
-    exportFontByNumber(fontNumber: number): Promise<void>;
-    exportFonts(): Promise<void>;
-    exportModel(modeledElementId: Id64String): Promise<void>;
-    exportModelContents(modelId: Id64String, elementClassFullName?: string, skipRootSubject?: boolean): Promise<void>;
-    exportRelationship(relClassFullName: string, relInstanceId: Id64String): Promise<void>;
-    exportRelationships(baseRelClassFullName: string): Promise<void>;
-    // @deprecated
-    exportRepositoryLinks(): Promise<void>;
-    exportSchemas(): Promise<void>;
-    exportSubModels(parentModelId: Id64String): Promise<void>;
-    protected get handler(): IModelExportHandler;
-    progressInterval: number;
-    registerHandler(handler: IModelExportHandler): void;
-    shouldExportElement(element: Element): boolean;
-    readonly sourceDb: IModelDb;
-    visitElements: boolean;
-    visitRelationships: boolean;
-    wantGeometry: boolean;
-    wantSystemSchemas: boolean;
-    wantTemplateModels: boolean;
-}
-
-// @beta
-export abstract class IModelExportHandler {
-    // @internal
-    get callProtected(): any;
-    protected onDeleteElement(_elementId: Id64String): void;
-    protected onDeleteModel(_modelId: Id64String): void;
-    protected onDeleteRelationship(_relInstanceId: Id64String): void;
-    protected onExportCodeSpec(_codeSpec: CodeSpec, _isUpdate: boolean | undefined): void;
-    protected onExportElement(_element: Element, _isUpdate: boolean | undefined): void;
-    protected onExportElementMultiAspects(_aspects: ElementMultiAspect[]): void;
-    protected onExportElementUniqueAspect(_aspect: ElementUniqueAspect, _isUpdate: boolean | undefined): void;
-    protected onExportFont(_font: FontProps, _isUpdate: boolean | undefined): void;
-    protected onExportModel(_model: Model, _isUpdate: boolean | undefined): void;
-    protected onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void;
-    protected onExportSchema(_schema: Schema_2): Promise<void>;
-    protected onProgress(): Promise<void>;
-    protected shouldExportCodeSpec(_codeSpec: CodeSpec): boolean;
-    protected shouldExportElement(_element: Element): boolean;
-    protected shouldExportElementAspect(_aspect: ElementAspect): boolean;
-    protected shouldExportRelationship(_relationship: Relationship): boolean;
-    protected shouldExportSchema(_schemaKey: SchemaKey_2): boolean;
-}
-
 // @public
 export class IModelHost {
     static get appAssetsDir(): string | undefined;
@@ -2851,6 +2778,8 @@ export class IModelHubBackend {
     // (undocumented)
     static querySchemaLock(arg: IModelIdArg): Promise<boolean>;
     // (undocumented)
+    static queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined>;
+    // (undocumented)
     static releaseAllCodes(arg: BriefcaseDbArg): Promise<void>;
     // (undocumented)
     static releaseAllLocks(arg: BriefcaseDbArg): Promise<void>;
@@ -2873,45 +2802,6 @@ export interface IModelIdArg {
     iModelId: GuidString;
     // (undocumented)
     requestContext?: AuthorizedClientRequestContext;
-}
-
-// @beta
-export class IModelImporter {
-    constructor(targetDb: IModelDb, options?: IModelImportOptions);
-    autoExtendProjectExtents: boolean | {
-        excludeOutliers: boolean;
-    };
-    computeProjectExtents(): void;
-    deleteElement(elementId: Id64String): void;
-    deleteRelationship(relationshipProps: RelationshipProps): void;
-    readonly doNotUpdateElementIds: Set<string>;
-    importElement(elementProps: ElementProps): Id64String;
-    importElementMultiAspects(aspectPropsArray: ElementAspectProps[], filterFunc?: (a: ElementMultiAspect) => boolean): void;
-    importElementUniqueAspect(aspectProps: ElementAspectProps): void;
-    importModel(modelProps: ModelProps): void;
-    importRelationship(relationshipProps: RelationshipProps): Id64String;
-    protected onDeleteElement(elementId: Id64String): void;
-    protected onDeleteElementAspect(targetElementAspect: ElementAspect): void;
-    protected onDeleteRelationship(relationshipProps: RelationshipProps): void;
-    protected onInsertElement(elementProps: ElementProps): Id64String;
-    protected onInsertElementAspect(aspectProps: ElementAspectProps): void;
-    protected onInsertModel(modelProps: ModelProps): Id64String;
-    protected onInsertRelationship(relationshipProps: RelationshipProps): Id64String;
-    protected onProgress(): void;
-    protected onUpdateElement(elementProps: ElementProps): void;
-    protected onUpdateElementAspect(aspectProps: ElementAspectProps): void;
-    protected onUpdateModel(modelProps: ModelProps): void;
-    protected onUpdateRelationship(relationshipProps: RelationshipProps): void;
-    progressInterval: number;
-    simplifyElementGeometry: boolean;
-    readonly targetDb: IModelDb;
-    }
-
-// @beta
-export interface IModelImportOptions {
-    autoExtendProjectExtents?: boolean | {
-        excludeOutliers: boolean;
-    };
 }
 
 // @public
@@ -2974,70 +2864,6 @@ export class IModelSchemaLoader {
     constructor(_iModel: IModelDb);
     getSchema<T extends Schema_2>(schemaName: string): T;
     tryGetSchema<T extends Schema_2>(schemaName: string): T | undefined;
-}
-
-// @beta
-export class IModelTransformer extends IModelExportHandler {
-    constructor(source: IModelDb | IModelExporter, target: IModelDb | IModelImporter, options?: IModelTransformOptions);
-    readonly context: IModelCloneContext;
-    protected _deferredElementIds: Set<string>;
-    detectElementDeletes(): Promise<void>;
-    detectRelationshipDeletes(): Promise<void>;
-    dispose(): void;
-    readonly exporter: IModelExporter;
-    protected hasElementChanged(sourceElement: Element, targetElementId: Id64String): boolean;
-    readonly importer: IModelImporter;
-    initFromExternalSourceAspects(): void;
-    protected onDeleteElement(sourceElementId: Id64String): void;
-    protected onDeleteModel(_sourceModelId: Id64String): void;
-    protected onDeleteRelationship(sourceRelInstanceId: Id64String): void;
-    protected onExportCodeSpec(sourceCodeSpec: CodeSpec): void;
-    protected onExportElement(sourceElement: Element): void;
-    protected onExportElementMultiAspects(sourceAspects: ElementMultiAspect[]): void;
-    protected onExportElementUniqueAspect(sourceAspect: ElementUniqueAspect): void;
-    protected onExportFont(font: FontProps, _isUpdate: boolean | undefined): void;
-    protected onExportModel(sourceModel: Model): void;
-    protected onExportRelationship(sourceRelationship: Relationship): void;
-    protected onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void>;
-    protected onTransformElement(sourceElement: Element): ElementProps;
-    protected onTransformElementAspect(sourceElementAspect: ElementAspect, _targetElementId: Id64String): ElementAspectProps;
-    protected onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
-    protected onTransformRelationship(sourceRelationship: Relationship): RelationshipProps;
-    processAll(): Promise<void>;
-    processChanges(requestContext: AuthorizedClientRequestContext, startChangesetId?: string): Promise<void>;
-    processChildElements(sourceElementId: Id64String): Promise<void>;
-    processCodeSpec(codeSpecName: string): Promise<void>;
-    processCodeSpecs(): Promise<void>;
-    processDeferredElements(numRetries?: number): Promise<void>;
-    processElement(sourceElementId: Id64String): Promise<void>;
-    processFonts(): Promise<void>;
-    processModel(sourceModeledElementId: Id64String): Promise<void>;
-    processModelContents(sourceModelId: Id64String, targetModelId: Id64String, elementClassFullName?: string): Promise<void>;
-    processRelationships(baseRelClassFullName: string): Promise<void>;
-    processSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void>;
-    processSubject(sourceSubjectId: Id64String, targetSubjectId: Id64String): Promise<void>;
-    get provenanceDb(): IModelDb;
-    protected _schemaExportDir: string;
-    protected shouldExportCodeSpec(_sourceCodeSpec: CodeSpec): boolean;
-    protected shouldExportElement(_sourceElement: Element): boolean;
-    protected shouldExportElementAspect(_sourceAspect: ElementAspect): boolean;
-    protected shouldExportRelationship(_sourceRelationship: Relationship): boolean;
-    protected shouldExportSchema(schemaKey: ECSchemaMetaData.SchemaKey): boolean;
-    protected skipElement(sourceElement: Element): void;
-    readonly sourceDb: IModelDb;
-    readonly targetDb: IModelDb;
-    readonly targetScopeElementId: Id64String;
-    }
-
-// @beta
-export interface IModelTransformOptions {
-    cloneUsingBinaryGeometry?: boolean;
-    includeSourceProvenance?: boolean;
-    isReverseSynchronization?: boolean;
-    loadSourceGeometry?: boolean;
-    noProvenance?: boolean;
-    targetScopeElementId?: Id64String;
-    wasSourceIModelCopiedToTarget?: boolean;
 }
 
 // @public
@@ -4131,6 +3957,25 @@ export class SpatialViewDefinition extends ViewDefinition3d implements SpatialVi
 }
 
 // @public
+export class SQLiteDb implements IDisposable {
+    constructor();
+    abandonChanges(): void;
+    closeDb(): void;
+    createDb(pathName: string): void;
+    dispose(): void;
+    executeSQL(sql: string): DbResult;
+    get isOpen(): boolean;
+    // @internal (undocumented)
+    get nativeDb(): IModelJsNative.SQLiteDb;
+    openDb(pathName: string, openMode: OpenMode): void;
+    // @internal
+    prepareSqliteStatement(sql: string): SqliteStatement;
+    saveChanges(): void;
+    withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T;
+    withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T;
+}
+
+// @public
 export class SqliteStatement implements IterableIterator<any>, IDisposable {
     [Symbol.iterator](): IterableIterator<any>;
     constructor(_sql: string);
@@ -4299,14 +4144,6 @@ export class SynchronizationConfigSpecifiesRootSources extends SynchronizationCo
     // @internal (undocumented)
     static get className(): string;
 }
-
-// @beta
-export class TemplateModelCloner extends IModelTransformer {
-    constructor(sourceDb: IModelDb, targetDb?: IModelDb);
-    protected onTransformElement(sourceElement: Element): ElementProps;
-    placeTemplate2d(sourceTemplateModelId: Id64String, targetModelId: Id64String, placement: Placement2d): Promise<Map<Id64String, Id64String>>;
-    placeTemplate3d(sourceTemplateModelId: Id64String, targetModelId: Id64String, placement: Placement3d): Promise<Map<Id64String, Id64String>>;
-    }
 
 // @beta
 export class TemplateRecipe2d extends RecipeDefinitionElement {
@@ -4532,6 +4369,20 @@ export class V1CheckpointManager {
     // (undocumented)
     static getFolder(iModelId: GuidString): string;
     }
+
+// @beta
+export interface V2CheckpointAccessProps {
+    // (undocumented)
+    auth: string;
+    // (undocumented)
+    container: string;
+    // (undocumented)
+    dbAlias: string;
+    // (undocumented)
+    storageType: string;
+    // (undocumented)
+    user: string;
+}
 
 // @internal
 export class V2CheckpointManager {

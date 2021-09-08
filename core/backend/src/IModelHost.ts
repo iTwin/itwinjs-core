@@ -33,7 +33,6 @@ import { IModelJsFs } from "./IModelJsFs";
 import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
 import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
-import { IModelWriteRpcImpl } from "./rpc-impl/IModelWriteRpcImpl";
 import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
@@ -188,7 +187,11 @@ export class IModelHost {
 
   private static _platform?: typeof IModelJsNative;
   /** @internal */
-  public static get platform(): typeof IModelJsNative { return this._platform!; }
+  public static get platform(): typeof IModelJsNative {
+    if (this._platform === undefined)
+      throw new Error("IModelHost.startup must be called first");
+    return this._platform;
+  }
 
   public static configuration?: IModelHostConfiguration;
   /** Event raised just after the backend IModelHost was started */
@@ -371,7 +374,6 @@ export class IModelHost {
     [
       IModelReadRpcImpl,
       IModelTileRpcImpl,
-      IModelWriteRpcImpl, // eslint-disable-line deprecation/deprecation
       SnapshotIModelRpcImpl,
       WipRpcImpl,
       DevToolsRpcImpl,
@@ -388,13 +390,6 @@ export class IModelHost {
     IModelHost.setupTileCache();
 
     this.platform.setUseTileCache(configuration.tileCacheCredentials ? false : true);
-
-    // const introspectionClientId = Config.App.getString("imjs_introspection_client_id", "");
-    // const introspectionClientSecret = Config.App.getString("imjs_introspection_client_secret", "");
-    // if (introspectionClientId && introspectionClientSecret) {
-    //   const introspectionClient = new IntrospectionClient(introspectionClientId, introspectionClientSecret);
-    //   this._clientAuthIntrospectionManager = new ImsClientAuthIntrospectionManager(introspectionClient);
-    // }
 
     process.once("beforeExit", IModelHost.shutdown);
     IModelHost.onAfterStartup.raiseEvent();
@@ -427,6 +422,7 @@ export class IModelHost {
 
   private static setupCacheDirs(configuration: IModelHostConfiguration) {
     this._cacheDir = configuration.cacheDir ? path.normalize(configuration.cacheDir) : NativeLibrary.defaultCacheDir;
+    IModelJsFs.recursiveMkDirSync(this._cacheDir); // make sure the directory for cacheDir exists.
     this._briefcaseCacheDir = path.join(this._cacheDir, "imodels");
   }
 

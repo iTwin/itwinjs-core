@@ -50,6 +50,41 @@
       ]
     },
     {
+      "name": "Transformer Tests (Integration)",
+      "presentation": {
+        "group": "0_CoreTests",
+        "order": 1
+      },
+      "cwd": "${workspaceFolder}/core/transformer/",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "test:integration"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/core/transformer/lib/**/*.js"
+      ]
+    },
+    {
+      "name": "Transformer Tests (Standalone)",
+      "presentation": {
+        "group": "0_CoreTests",
+        "order": 1
+      },
+      "cwd": "${workspaceFolder}/core/transformer/",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "test"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/core/transformer/lib/**/*.js"
+      ]
+    },
+    {
       "name": "Bentley Tests",
       "presentation": {
         "group": "0_CoreTests",
@@ -248,60 +283,6 @@
         "[NODE] Certa Test Runner for HyperModeling Tests"
       ]
     },
-    {
-      "name": "IModelBridgeFwk Tests (all)",
-      "presentation": {
-        "group": "0_CoreTests",
-        "order": 5
-      },
-      "cwd": "${workspaceFolder}/core/imodel-bridge",
-      "type": "pwa-node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "test:all"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
-      ]
-    },
-    {
-      "name": "IModelBridgeFwk Tests (standalone)",
-      "presentation": {
-        "group": "0_CoreTests",
-        "order": 5
-      },
-      "cwd": "${workspaceFolder}/core/imodel-bridge",
-      "type": "pwa-node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "test:standalone"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
-      ]
-    },
-    {
-      "name": "IModelBridgeFwk Tests (integration)",
-      "presentation": {
-        "group": "0_CoreTests",
-        "order": 6
-      },
-      "cwd": "${workspaceFolder}/core/imodel-bridge",
-      "type": "pwa-node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "test:integration"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
-      ]
-    },
     { /* PARTIAL */
       "name": "[NODE] Certa Test Runner for Markup Tests",
       "presentation": {
@@ -432,10 +413,13 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "run",
-        "test:integration:chrome -- --debug"
+        "test:integration:chrome",
+        "--",
+        "--debug"
       ],
       "outFiles": [
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/tools/certa/lib/**/*.js"
       ],
       "outputCapture": "std",
       "attachSimplePort": 5858, // NB: This must match ports.debugging in clients/extension/certa.json
@@ -450,10 +434,11 @@
       },
       "type": "pwa-chrome",
       "request": "attach",
-      "port": 9223, // NB: This must match ports.frontendDebugging in core/markup/certa.json
+      "port": 9223, // NB: This must match ports.frontendDebugging in clients/extension/certa.json
       "timeout": 20000,
       "outFiles": [
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/tools/certa/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
         "[NODE] Certa Test Runner for Extension Client Tests (Integration)"
@@ -605,6 +590,25 @@
       "type": "pwa-node",
       "request": "launch",
       "program": "${workspaceFolder}/ui/core/node_modules/mocha/bin/_mocha",
+      "args": [
+        "--config",
+        "../.mocharc.json",
+        "--no-timeouts",
+        "lib/test/**/*.test.js"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/{core,ui}/*/lib/**/*.js"
+      ]
+    },
+    {
+      "name": "[UI] Tests: IModel Components",
+      "presentation": {
+        "group": "4_UI"
+      },
+      "cwd": "${workspaceFolder}/ui/imodel-components",
+      "type": "pwa-node",
+      "request": "launch",
+      "program": "${workspaceFolder}/ui/imodel-components/node_modules/mocha/bin/_mocha",
       "args": [
         "--config",
         "../.mocharc.json",
@@ -889,23 +893,6 @@
       ],
       "outFiles": [
         "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
-      ]
-    },
-    {
-      "name": "Extension CLI Tests (Integration)",
-      "presentation": {
-        "group": "6_Misc"
-      },
-      "cwd": "${workspaceFolder}/tools/extension-cli",
-      "type": "pwa-node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "wip-test:integration"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/{core,clients,tools}/*/lib/**/*.js"
       ]
     },
     {

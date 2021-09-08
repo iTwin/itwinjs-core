@@ -5,9 +5,35 @@
 /** @packageDocumentation
  * @module Extensions
  */
-import { ExtensionProps } from "@bentley/extension-client";
+
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
 import { IModelApp } from "../IModelApp";
+
+/**
+ * Contains metadata for an iModel.js Extension
+ * @beta
+ */
+export interface ExtensionProps {
+  contextId: string;
+  extensionName: string;
+  version: string;
+  files: FileInfo[];
+  uploadedBy: string;
+  timestamp: Date;
+  status: ExtensionUploadStatus;
+  isPublic: boolean;
+}
+
+interface ExtensionUploadStatus {
+  updateTime: Date;
+  status: string;
+}
+
+interface FileInfo {
+  url: string;
+  expires: Date;
+  checksum: string;
+}
 
 /**
  * @internal

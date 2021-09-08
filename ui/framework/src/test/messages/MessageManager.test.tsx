@@ -6,7 +6,8 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { MessageBoxIconType, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
-import { MessageSeverity, UnderlinedButton } from "@bentley/ui-core";
+import { MessageSeverity } from "@bentley/ui-abstract";
+import { UnderlinedButton } from "@bentley/ui-core";
 import { MessageManager, ReactNotifyMessageDetails } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 

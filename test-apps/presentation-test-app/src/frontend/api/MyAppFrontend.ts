@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Guid, Id64Arg, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { AsyncMethodsOf, Guid, Id64Arg, Logger, OpenMode, PromiseReturnType } from "@bentley/bentleyjs-core";
 import { ElementProps, IModelError, ViewQueryParams } from "@bentley/imodeljs-common";
-import { AsyncMethodsOf, BriefcaseConnection, IModelConnection, IpcApp, PromiseReturnType, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import { PresentationUnitSystem } from "@bentley/presentation-common";
+import { BriefcaseConnection, IModelConnection, IpcApp, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { UnitSystemKey } from "@bentley/imodeljs-quantity";
 import { PRESENTATION_TEST_APP_IPC_CHANNEL_NAME, SampleIpcInterface } from "../../common/SampleIpcInterface";
 import SampleRpcInterface from "../../common/SampleRpcInterface";
 
@@ -14,7 +14,7 @@ const LOCAL_STORAGE_KEY_AppSettings = "presentation-test-app/settings";
 export interface MyAppSettings {
   imodelPath?: string;
   rulesetId?: string;
-  unitSystem?: PresentationUnitSystem;
+  unitSystem?: UnitSystemKey;
   persistSettings: boolean;
 }
 

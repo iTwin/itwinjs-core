@@ -5,10 +5,10 @@
 import { expect } from "chai";
 import { ClientRequestContext, Guid, using } from "@bentley/bentleyjs-core";
 import { IModelDb, SnapshotDb } from "@bentley/imodeljs-backend";
-import { PresentationManager } from "@bentley/presentation-backend";
-import { UnitSystemFormat } from "@bentley/presentation-backend/lib/presentation-backend/PresentationManager";
+import { UnitSystemKey } from "@bentley/imodeljs-quantity";
+import { PresentationManager, UnitSystemFormat } from "@bentley/presentation-backend";
 import {
-  ContentSpecificationTypes, DisplayValue, DisplayValuesArray, DisplayValuesMap, KeySet, PresentationUnitSystem, Ruleset, RuleTypes,
+  ContentSpecificationTypes, DisplayValue, DisplayValuesArray, DisplayValuesMap, KeySet, Ruleset, RuleTypes,
 } from "@bentley/presentation-common";
 import { initialize, terminate } from "../IntegrationTests";
 import { findFieldByLabel } from "../Utils";
@@ -39,7 +39,7 @@ describe("PresentationManager", () => {
     const keys = KeySet.fromJSON({ instanceKeys: [["Generic:PhysicalObject", ["0x74"]]], nodeKeys: [] });
 
     it("formats property with default kind of quantity format when it doesn't have format for requested unit system", async () => {
-      expect(await getAreaDisplayValue(PresentationUnitSystem.BritishImperial)).to.eq("150.1235 cm²");
+      expect(await getAreaDisplayValue("imperial")).to.eq("150.1235 cm²");
     });
 
     it("formats property using default format when it doesn't have format for requested unit system", async () => {
@@ -58,10 +58,10 @@ describe("PresentationManager", () => {
       };
 
       const defaultFormats = {
-        area: { unitSystems: [PresentationUnitSystem.BritishImperial], format: formatProps },
+        area: { unitSystems: ["imperial" as UnitSystemKey], format: formatProps },
       };
 
-      expect(await getAreaDisplayValue(PresentationUnitSystem.BritishImperial, defaultFormats)).to.eq("0.1616 ft²");
+      expect(await getAreaDisplayValue("imperial", defaultFormats)).to.eq("0.1616 ft²");
     });
 
     it("formats property using provided format when it has provided format and default format for requested unit system", async () => {
@@ -80,13 +80,13 @@ describe("PresentationManager", () => {
       };
 
       const defaultFormats = {
-        area: { unitSystems: [PresentationUnitSystem.Metric], format: formatProps },
+        area: { unitSystems: ["metric" as UnitSystemKey], format: formatProps },
       };
 
-      expect(await getAreaDisplayValue(PresentationUnitSystem.Metric, defaultFormats)).to.eq("150.1235 cm²");
+      expect(await getAreaDisplayValue("metric", defaultFormats)).to.eq("150.1235 cm²");
     });
 
-    async function getAreaDisplayValue(unitSystem: PresentationUnitSystem, defaultFormats?: { [phenomenon: string]: UnitSystemFormat }): Promise<DisplayValue> {
+    async function getAreaDisplayValue(unitSystem: UnitSystemKey, defaultFormats?: { [phenomenon: string]: UnitSystemFormat }): Promise<DisplayValue> {
       return using(new PresentationManager({ defaultFormats, activeLocale: "en-PSEUDO" }), async (manager) => {
         const descriptor = await manager.getContentDescriptor({
           imodel,

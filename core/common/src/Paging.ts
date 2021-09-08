@@ -20,9 +20,9 @@ export interface QueryQuota {
  * @public
  */
 export interface QueryLimit {
-  /** Maximum time in seconds after which query will be stopped */
+  /** Maximum rows allowed to be returned */
   maxRowAllowed?: number;
-  /** Maximum size of result in bytes after which query will be stopped */
+  /** If set number of rows to skip before returning results */
   startRowOffset?: number;
 }
 

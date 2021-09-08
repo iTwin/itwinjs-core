@@ -208,15 +208,15 @@ describe("<Popup />", () => {
     expect(document.activeElement).to.eq(inputOne);
     const inputTwo = component.getByTestId("input-two") as HTMLInputElement;
     inputTwo.focus();
-    expect(document.activeElement).to.eq(inputTwo);
+    expect(document.activeElement).to.eq(inputTwo as HTMLElement);
 
     // if we hit top - reset focus to bottom
     topDiv.focus();
-    expect(document.activeElement).to.eq(inputTwo);
+    expect(document.activeElement).to.eq(inputTwo as HTMLElement);
 
     // if we hit bottom - reset focus to top
     bottomDiv.focus();
-    expect(document.activeElement).to.eq(inputOne);
+    expect(document.activeElement).to.eq(inputOne as HTMLElement);
   });
 
   it("popup and moves focus to first available (button)", async () => {

@@ -10,13 +10,14 @@ import { BeDuration, BeEvent, CompressedId64Set, Logger, using } from "@bentley/
 import { IModelRpcProps, IpcListener, RemoveFunction } from "@bentley/imodeljs-common";
 import { IModelConnection, IpcApp } from "@bentley/imodeljs-frontend";
 import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
+import { UnitSystemKey } from "@bentley/imodeljs-quantity";
 import {
-  Content, ContentDescriptorRequestOptions, ContentRequestOptions, Descriptor, DisplayLabelRequestOptions, DisplayLabelsRequestOptions,
-  DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, ExtendedContentRequestOptions,
-  ExtendedHierarchyRequestOptions, FieldDescriptor, FieldDescriptorType, HierarchyCompareInfoJSON, HierarchyCompareOptions, HierarchyRequestOptions,
-  InstanceKey, Item, KeySet, LabelDefinition, LabelRequestOptions, Node, NodeKey, NodePathElement, Paged, PartialHierarchyModification,
-  PresentationError, PresentationIpcEvents, PresentationStatus, PresentationUnitSystem, RegisteredRuleset, RpcRequestsHandler, Ruleset,
-  RulesetVariable, UpdateInfo, VariableValueTypes,
+  Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, ContentSourcesRpcResult, Descriptor,
+  DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties,
+  ElementPropertiesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, FieldDescriptor, FieldDescriptorType,
+  HierarchyCompareInfoJSON, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, Item, KeySet, LabelDefinition, LabelRequestOptions, Node,
+  NodeKey, NodePathElement, Paged, PartialHierarchyModification, PresentationError, PresentationIpcEvents, PresentationStatus, RegisteredRuleset,
+  RpcRequestsHandler, Ruleset, RulesetVariable, SelectClassInfo, UpdateInfo, VariableValueTypes,
 } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import {
@@ -75,14 +76,14 @@ describe("PresentationManager", () => {
     i18nMock.setup((x) => x.translate(moq.It.isAny(), moq.It.isAny())).returns((stringId) => stringId);
   };
 
-  const toIModelTokenOptions = <TOptions extends { imodel: IModelConnection, locale?: string, unitSystem?: PresentationUnitSystem }>(requestOptions: TOptions) => {
+  const toIModelTokenOptions = <TOptions extends { imodel: IModelConnection, locale?: string, unitSystem?: UnitSystemKey }>(requestOptions: TOptions) => {
     return {
       ...requestOptions,
       imodel: requestOptions.imodel.getRpcProps(),
     };
   };
 
-  const prepareOptions = <TOptions extends { imodel: IModelConnection, rulesetOrId: Ruleset | string, locale?: string, unitSystem?: PresentationUnitSystem, rulesetVariables?: RulesetVariable[] }>(options: TOptions) => {
+  const prepareOptions = <TOptions extends { imodel: IModelConnection, rulesetOrId: Ruleset | string, locale?: string, unitSystem?: UnitSystemKey, rulesetVariables?: RulesetVariable[] }>(options: TOptions) => {
     return toIModelTokenOptions({
       ...options,
       rulesetVariables: options.rulesetVariables?.map(RulesetVariable.toJSON) ?? [],
@@ -98,7 +99,7 @@ describe("PresentationManager", () => {
     });
 
     it("sets active unit system if supplied with props", async () => {
-      const props = { activeUnitSystem: PresentationUnitSystem.UsSurvey };
+      const props = { activeUnitSystem: "usSurvey" as UnitSystemKey };
       const mgr = PresentationManager.create(props);
       expect(mgr.activeUnitSystem).to.eq(props.activeUnitSystem);
     });
@@ -238,7 +239,7 @@ describe("PresentationManager", () => {
 
     it("requests with manager's unit system if not set in request options", async () => {
       const keys = new KeySet();
-      const unitSystem = PresentationUnitSystem.UsSurvey;
+      const unitSystem = "usSurvey";
       manager.activeUnitSystem = unitSystem;
       await manager.getContentDescriptor({
         imodel: testData.imodelMock.object,
@@ -258,8 +259,8 @@ describe("PresentationManager", () => {
 
     it("requests with request's locale if set", async () => {
       const keys = new KeySet();
-      const unitSystem = PresentationUnitSystem.UsSurvey;
-      manager.activeUnitSystem = PresentationUnitSystem.Metric;
+      const unitSystem = "usSurvey";
+      manager.activeUnitSystem = "metric";
       await manager.getContentDescriptor({
         imodel: testData.imodelMock.object,
         rulesetOrId: testData.rulesetId,
@@ -616,6 +617,46 @@ describe("PresentationManager", () => {
         .verifiable();
       const result = await manager.getNodePaths(options, keyArray, 1);
       expect(result).to.be.deep.equal(value);
+      rpcRequestsHandlerMock.verifyAll();
+    });
+
+  });
+
+  describe("getContentSources", () => {
+
+    it("requests content sources from proxy", async () => {
+      const classes = ["test.class1"];
+      const options: ContentSourcesRequestOptions<IModelConnection> = {
+        imodel: testData.imodelMock.object,
+        classes,
+      };
+      const rpcRequestsHandlerResponse: ContentSourcesRpcResult = {
+        sources: [{
+          selectClassInfo: "0x123",
+          isSelectPolymorphic: true,
+          navigationPropertyClasses: [],
+          pathToPrimaryClass: [],
+          relatedInstanceClasses: [],
+          relatedPropertyPaths: [],
+        }],
+        classesMap: {
+          "0x123": { name: "class_name", label: "Class Label" },
+        },
+      };
+      const expectedResult: SelectClassInfo[] = [{
+        selectClassInfo: { id: "0x123", name: "class_name", label: "Class Label" },
+        isSelectPolymorphic: true,
+        navigationPropertyClasses: [],
+        pathToPrimaryClass: [],
+        relatedInstanceClasses: [],
+        relatedPropertyPaths: [],
+      }];
+      rpcRequestsHandlerMock
+        .setup(async (x) => x.getContentSources(toIModelTokenOptions(options)))
+        .returns(async () => rpcRequestsHandlerResponse)
+        .verifiable();
+      const actualResult = await manager.getContentSources(options);
+      expect(actualResult).to.deep.eq(expectedResult);
       rpcRequestsHandlerMock.verifyAll();
     });
 

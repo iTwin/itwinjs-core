@@ -10,29 +10,28 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDisposable } from "@bentley/ui-core";
 import { TreeDataProvider } from "../TreeDataProvider";
 import { TreeEventHandler, TreeEventHandlerParams } from "./TreeEventHandler";
-import { VisibleTreeNodes } from "./TreeModel";
+import { TreeModel } from "./TreeModel";
 import { TreeModelSource } from "./TreeModelSource";
 import { PagedTreeNodeLoader, TreeNodeLoader } from "./TreeNodeLoader";
 
 /**
- * Custom hook which returns a flat list of visible nodes from given `TreeModelSource` and subscribes
- * to onModelChanged event to update the list when model changes.
+ * React hook that returns an immutable `TreeModel` whenever it changes in the given
+ * `TreeModelSource`.
  *
  * @public
  */
-export function useVisibleTreeNodes(modelSource: TreeModelSource): VisibleTreeNodes {
-  const [visibleNodes, setVisibleNodes] = useState(modelSource.getVisibleNodes());
+export function useTreeModel(modelSource: TreeModelSource): TreeModel {
+  const [model, setModel] = useState(modelSource.getModel());
 
   useEffect(() => {
     const onModelChanged = () => {
-      setVisibleNodes(modelSource.getVisibleNodes());
+      setModel(modelSource.getModel());
     };
-
     onModelChanged();
     return modelSource.onModelChanged.addListener(onModelChanged);
   }, [modelSource]);
 
-  return visibleNodes;
+  return model;
 }
 
 /**

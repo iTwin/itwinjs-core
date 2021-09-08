@@ -104,20 +104,6 @@ describe("PresentationRpcInterface tests", () => {
     });
   });
 
-  it("loadHierarchy works as expected", async () => {
-    ruleset = defaultRuleset as any;
-    const props = { imodel: iModel, rulesetOrId: ruleset.id };
-    await using<RegisteredRuleset, Promise<void>>(await Presentation.presentation.rulesets().add(ruleset), async () => {
-      let success = true;
-      try {
-        await Presentation.presentation.loadHierarchy(props);
-      } catch (ex) {
-        success = false;
-      }
-      expect(success).to.be.true;
-    });
-  });
-
   describe("tests that require a descriptor", async () => {
     let descriptor: Descriptor | undefined;
     let props: any;
@@ -133,6 +119,11 @@ describe("PresentationRpcInterface tests", () => {
 
       ruleset = getRelatedDistinctValues as any;
       props = { imodel: iModel, rulesetOrId: ruleset.id };
+    });
+
+    it("getContentSources works as expected", async () => {
+      const result = await Presentation.presentation.getContentSources({ imodel: iModel, classes: [] });
+      expect(result).to.not.be.undefined;
     });
 
     it("getContentDescriptor works as expected", async () => {
