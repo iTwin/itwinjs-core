@@ -38,6 +38,7 @@ describe("IModelConnection (#integration)", () => {
     IModelApp.authorizationClient = authorizationClient;
 
     // Setup a model with a large number of change sets
+    // SWB
     const testProjectId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
     const testIModelId = await TestUtility.queryIModelIdbyName(testProjectId, TestUtility.testIModelNames.connectionRead);
 
@@ -135,6 +136,7 @@ describe("IModelConnection (#integration)", () => {
   });
 
   it("should be able to open an IModel with no versions", async () => {
+    // SWB
     const projectId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
     const iModelId = await TestUtility.queryIModelIdbyName(projectId, TestUtility.testIModelNames.noVersions);
     const noVersionsIModel = await CheckpointConnection.openRemote(projectId, iModelId);
@@ -148,6 +150,7 @@ describe("IModelConnection (#integration)", () => {
   });
 
   it("should be able to open the same IModel many times", async () => {
+    // SWB
     const projectId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
     const iModelId = await TestUtility.queryIModelIdbyName(projectId, "ReadOnlyTest");
 
@@ -169,6 +172,7 @@ describe("IModelConnection (#integration)", () => {
   });
 
   it("should be able to request tiles from an IModelConnection", async () => {
+    // SWB
     const testProjectId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
     const testIModelId = await TestUtility.queryIModelIdbyName(testProjectId, "ConnectionReadTest");
     iModel = await CheckpointConnection.openRemote(testProjectId, testIModelId);

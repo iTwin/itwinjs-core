@@ -801,6 +801,7 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
 }
 
 interface RDSClientProps {
+  // SWB
   projectId: string;
   tilesId: string;
 }
@@ -843,6 +844,7 @@ export class RealityModelTileClient {
   constructor(url: string, accessToken?: AccessToken, contextId?: string) {
     this.rdsProps = this.parseUrl(url); // Note that returned is undefined if url does not refer to a PW Context Share reality data.
     if (contextId && this.rdsProps)
+      // SWB
       this.rdsProps.projectId = contextId;
     this._token = accessToken;
   }
@@ -854,6 +856,7 @@ export class RealityModelTileClient {
       if (!this._realityData) {
         // TODO Temporary fix ... the root document may not be located at the root. We need to set the base URL even for RD stored on server
         // though this base URL is only the part relative to the root of the blob containing the data.
+        // SWB
         this._realityData = await RealityModelTileClient._client.getRealityData(requestContext, this.rdsProps.projectId, this.rdsProps.tilesId);
         requestContext.enter();
 
@@ -868,6 +871,7 @@ export class RealityModelTileClient {
   // This is the method that determines if the url refers to Reality Data stored on PW Context Share. If not then undefined is returned.
   // ###TODO This method should be replaced by realityDataServiceClient.getRealityDataIdFromUrl()
   // We obtain the projectId from URL but it should be used normally. The iModel context should be used everywhere: verify!
+  // SWB
   private parseUrl(url: string): RDSClientProps | undefined {
     // We have URLs with incorrect slashes that must be supported. The ~2F are WSG encoded slashes and may prevent parsing out the reality data id.
     const workUrl: string = url.replace(/~2F/g, "/").replace(/\\/g, "/");
@@ -875,6 +879,7 @@ export class RealityModelTileClient {
     const tilesId = urlParts.find(Guid.isGuid);
     let props: RDSClientProps | undefined;
     if (undefined !== tilesId) {
+      // SWB
       let projectId = urlParts.find((val: string) => val.includes("--"))!.split("--")[1];
 
       // ###TODO This is a temporary workaround for accessing the reality meshes with a test account

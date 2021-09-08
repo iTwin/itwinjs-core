@@ -28,6 +28,7 @@ export class ExternalIModel {
     if (info.projectId && info.imodelId) {
       // open the imodel
       Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
+      // SWB
         `openIModel (external): projectId=${info.projectId}&iModelId=${info.imodelId} mode=${SampleAppIModelApp.allowWrite ? "ReadWrite" : "Readonly"}`);
 
       this.iModelConnection = await CheckpointConnection.openRemote(info.projectId, info.imodelId);
@@ -63,6 +64,7 @@ export class ExternalIModel {
     if (imodels.length === 0) {
       throw new Error(`iModel with name "${imodelName}" does not exist in project "${projectName}"`);
     }
+    // SWB
     return { projectId: iTwinList[0].id, imodelId: imodels[0].wsgId };
   }
 

@@ -89,6 +89,7 @@ function mockDeleteEventSubscription(imodelId: GuidString, subscriptionId: strin
 }
 
 describe("iModelHub EventHandler", () => {
+  // SWB
   let contextId: string;
   let imodelId: GuidString;
   let subscription: EventSubscription;
@@ -102,6 +103,7 @@ describe("iModelHub EventHandler", () => {
     const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
+    // SWB
     contextId = await utils.getProjectId(requestContext);
     await utils.createIModel(requestContext, utils.sharedimodelName, contextId);
     imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);

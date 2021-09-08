@@ -147,6 +147,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
   }
 
   // Private function that can retrieve either user specific settings or non-user-specific settings
+  // SWB
   private async saveAnySetting(requestContext: AuthorizedClientRequestContext, userSpecific: boolean, settings: any, settingNamespace: string, settingName: string, applicationSpecific: boolean, shared: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult> {
     requestContext.enter();
     const baseUrl: string = await this.getUrl(requestContext);
@@ -177,6 +178,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
   }
 
   // Retrieves previously saved user settings
+  // SWB
   private async getAnySetting(requestContext: AuthorizedClientRequestContext, userSpecific: boolean, settingNamespace: string, settingName: string, applicationSpecific: boolean, shared: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult> {
     const baseUrl: string = await this.getUrl(requestContext);
     const accessTokenString: string | undefined = requestContext.accessToken.toTokenString();
@@ -204,6 +206,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
   }
 
   // Retrieves all saved settings with the same namespace.
+  // SWB
   private async getAnySettingsByNamespace(requestContext: AuthorizedClientRequestContext, userSpecific: boolean, settingNamespace: string, applicationSpecific: boolean, shared: boolean, projectId?: string, iModelId?: string): Promise<SettingsMapResult> {
     const baseUrl: string = await this.getUrl(requestContext);
     const accessTokenString: string | undefined = requestContext.accessToken.toTokenString();
@@ -249,6 +252,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     return new SettingsMapResult(SettingsStatus.Success, undefined, settingsMap);
   }
 
+  // SWB
   private async deleteAnySetting(requestContext: AuthorizedClientRequestContext, userSpecific: boolean, settingNamespace: string, settingName: string, applicationSpecific: boolean, shared: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult> {
     const baseUrl: string = await this.getUrl(requestContext);
     const accessTokenString: string | undefined = requestContext.accessToken.toTokenString();
@@ -273,50 +277,62 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     }
   }
   // app specific, no context, no shared, no user
+  // SWB
   public async saveUserSetting(requestContext: AuthorizedClientRequestContext, settings: any, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult> {
     return this.saveAnySetting(requestContext, true, settings, settingNamespace, settingName, applicationSpecific, false, projectId, iModelId);
   }
 
+  // SWB
   public async getUserSetting(requestContext: AuthorizedClientRequestContext, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult> {
     return this.getAnySetting(requestContext, true, settingNamespace, settingName, applicationSpecific, false, projectId, iModelId);
   }
 
+  // SWB
   public async deleteUserSetting(requestContext: AuthorizedClientRequestContext, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult> {
     return this.deleteAnySetting(requestContext, true, settingNamespace, settingName, applicationSpecific, false, projectId, iModelId);
   }
 
+  // SWB
   public async getUserSettingsByNamespace(requestContext: AuthorizedClientRequestContext, namespace: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsMapResult> {
     return this.getAnySettingsByNamespace(requestContext, true, namespace, applicationSpecific, false, projectId, iModelId);
   }
 
+  // SWB
   public async saveSharedSetting(requestContext: AuthorizedClientRequestContext, settings: any, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsResult> {
     return this.saveAnySetting(requestContext, false, settings, settingNamespace, settingName, applicationSpecific, true, projectId, iModelId);
   }
 
+  // SWB
   public async getSharedSetting(requestContext: AuthorizedClientRequestContext, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsResult> {
     return this.getAnySetting(requestContext, false, settingNamespace, settingName, applicationSpecific, true, projectId, iModelId);
   }
 
+  // SWB
   public async deleteSharedSetting(requestContext: AuthorizedClientRequestContext, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsResult> {
     return this.deleteAnySetting(requestContext, false, settingNamespace, settingName, applicationSpecific, true, projectId, iModelId);
   }
 
+  // SWB
   public async getSharedSettingsByNamespace(requestContext: AuthorizedClientRequestContext, namespace: string, applicationSpecific: boolean, projectId: string, iModelId?: string): Promise<SettingsMapResult> {
     return this.getAnySettingsByNamespace(requestContext, false, namespace, applicationSpecific, true, projectId, iModelId);
   }
 
+  // SWB
   public async saveSetting(requestContext: AuthorizedClientRequestContext, settings: any, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult> {
     return this.saveAnySetting(requestContext, false, settings, settingNamespace, settingName, applicationSpecific, false, projectId, iModelId);
   }
 
+  // SWB
   public async getSetting(requestContext: AuthorizedClientRequestContext, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult> {
     return this.getAnySetting(requestContext, false, settingNamespace, settingName, applicationSpecific, false, projectId, iModelId);
   }
 
+  // SWB
   public async deleteSetting(requestContext: AuthorizedClientRequestContext, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult> {
     return this.deleteAnySetting(requestContext, false, settingNamespace, settingName, applicationSpecific, false, projectId, iModelId);
   }
 
+  // SWB
   public async getSettingsByNamespace(requestContext: AuthorizedClientRequestContext, namespace: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsMapResult> {
     return this.getAnySettingsByNamespace(requestContext, false, namespace, applicationSpecific, false, projectId, iModelId);
   }

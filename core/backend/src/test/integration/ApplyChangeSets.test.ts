@@ -14,19 +14,21 @@ import { HubUtility } from "./HubUtility";
 
 // Useful utilities to download/upload test cases from/to iModelHub
 describe("ApplyChangesets (#integration)", () => {
-
+  // SWB
   const testAllChangeSetOperations = async (requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: GuidString) => {
     const iModelDir = path.join(IModelHost.cacheDir, iModelId.toString());
     await HubUtility.validateAllChangeSetOperations(requestContext, projectId, iModelId, iModelDir);
     IModelJsFs.purgeDirSync(iModelDir);
   };
 
+  // SWB
   const testOpen = async (requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: string) => {
     const iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: projectId, iModelId });
     assert.isDefined(iModelDb);
     iModelDb.close();
   };
 
+  // SWB
   const testAllOperations = async (requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: GuidString) => {
     await testOpen(requestContext, projectId, iModelId);
     await testAllChangeSetOperations(requestContext, projectId, iModelId);
@@ -35,6 +37,7 @@ describe("ApplyChangesets (#integration)", () => {
   it("should test all changeset operations after downloading iModel from the hub (#integration)", async () => {
     const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
 
+    // SWB
     const projectId = await HubUtility.getTestContextId(requestContext);
     let iModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.readOnly);
     await testAllOperations(requestContext, projectId, iModelId);

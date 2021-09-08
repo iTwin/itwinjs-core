@@ -239,6 +239,7 @@ function mockUpdateiModel(contextId: string, imodel: HubIModel) {
 }
 
 describe("iModelHub iModelsHandler", () => {
+  // SWB
   let projectId: string;
   let assetId: string;
   let imodelId: GuidString;
@@ -357,6 +358,7 @@ describe("iModelHub iModelsHandler", () => {
     chai.expect(error!.name).to.be.equal("InstanceNotFound");
   });
 
+  // SWB
   it("should fail getting an iModel without projectId (#iModelBank)", async () => {
     let error: IModelHubClientError | undefined;
     try {

@@ -30,6 +30,7 @@ function mockGetiModelPermissions(imodelId: string, webView: boolean, read: bool
 }
 
 describe("iModelHub PermissionsManager", () => {
+  // SWB
   let projectId: string;
   let imodelId: GuidString;
   let imodelClient: IModelClient;
@@ -41,6 +42,7 @@ describe("iModelHub PermissionsManager", () => {
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
     (requestContext as any).activityId = "iModelHub PermissionHandler";
+    // SWB
     projectId = await utils.getProjectId(requestContext, "iModelJsTest");
 
     await utils.createIModel(requestContext, utils.sharedimodelName, projectId);

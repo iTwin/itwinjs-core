@@ -47,10 +47,12 @@ describe("ElementAspectPerformance", () => {
     if (!fs.existsSync(KnownTestLocations.outputDir))
       fs.mkdirSync(KnownTestLocations.outputDir);
     const configData = require(path.join(__dirname, "CSPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-var-requires
+    // SWB
     const projectId = configData.basicTest.projectId;
     const imodelId = configData.basicTest.aspectIModelId;
 
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+    // SWB
     iModelDbHub = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: projectId, iModelId: imodelId });
     assert.exists(iModelDbHub);
   });

@@ -62,6 +62,7 @@ async function createNamedVersionWithThumbnail(requestContext: AuthorizedClientR
 }
 
 describe("iModelHub VersionHandler", () => {
+  // SWB
   let contextId: string;
   let imodelId: GuidString;
   let imodelId2: GuidString;
@@ -91,6 +92,7 @@ describe("iModelHub VersionHandler", () => {
     requestContext = new AuthorizedClientRequestContext(accessToken);
     (requestContext as any).activityId = "iModelHub VersionHandler";
 
+    // SWB
     contextId = await utils.getProjectId(requestContext);
     await utils.createIModel(requestContext, utils.sharedimodelName, contextId, true, false, true);
     imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);

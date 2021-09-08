@@ -26,6 +26,7 @@ describe("FavoritePropertiesManager", () => {
   let nestedContentField: NestedContentField;
   const storageMock = moq.Mock.ofType<IFavoritePropertiesStorage>();
 
+  // SWB
   let projectId: string;
   let imodelId: string;
   const imodelMock = moq.Mock.ofType<IModelConnection>();
@@ -42,6 +43,7 @@ describe("FavoritePropertiesManager", () => {
   beforeEach(async () => {
     manager = new FavoritePropertiesManager({ storage: storageMock.object });
     imodelMock.setup((x) => x.iModelId).returns(() => imodelId);
+    // SWB
     imodelMock.setup((x) => x.contextId).returns(() => projectId);
   });
 
@@ -66,6 +68,7 @@ describe("FavoritePropertiesManager", () => {
       const imodelId2 = "imodel-id-2";
       imodelMock.reset();
       imodelMock.setup((x) => x.iModelId).returns(() => imodelId2);
+      // SWB
       imodelMock.setup((x) => x.contextId).returns(() => projectId);
       await manager.initializeConnection(imodelMock.object);
 
@@ -132,6 +135,7 @@ describe("FavoritePropertiesManager", () => {
 
     it("throws if not initialized for project", async () => {
       await manager.initializeConnection(imodelMock.object);
+      // SWB
       const projectId2 = "project-id-2";
       expect(() => manager.has(propertyField1, projectId2, imodelId)).to.throw(`Favorite properties are not initialized for project: ${projectId2}.`);
     });
@@ -228,6 +232,7 @@ describe("FavoritePropertiesManager", () => {
   describe("has", () => {
 
     it("throws if not initialized", () => {
+      // SWB
       expect(() => manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.IModel)).to.throw(`Favorite properties are not initialized for iModel: '${imodelId}', in project: '${projectId}'. Call initializeConnection() with an IModelConnection to initialize.`);
     });
 
@@ -322,7 +327,9 @@ describe("FavoritePropertiesManager", () => {
 
     it("throws if not initialized for project", async () => {
       await manager.initializeConnection(imodelMock.object);
+      // SWB
       const projectId2 = "project-id-2";
+      // SWB
       await expect(manager.add(propertyField1, projectId2, imodelId)).to.be.rejectedWith(`Favorite properties are not initialized for project: ${projectId2}.`);
     });
 
@@ -368,6 +375,7 @@ describe("FavoritePropertiesManager", () => {
   describe("add", () => {
 
     it("throws if not initialized", async () => {
+      // SWB
       await expect(manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.Global)).to.be.rejectedWith(`Favorite properties are not initialized for iModel: '${imodelId}', in project: '${projectId}'. Call initializeConnection() with an IModelConnection to initialize.`);
     });
 
@@ -419,13 +427,16 @@ describe("FavoritePropertiesManager", () => {
 
     it("throws if not initialized for project", async () => {
       await manager.initializeConnection(imodelMock.object);
+      // SWB
       const projectId2 = "project-id-2";
+      // SWB
       await expect(manager.remove(propertyField1, projectId2, imodelId)).to.be.rejectedWith(`Favorite properties are not initialized for project: ${projectId2}.`);
     });
 
     it("throws if not initialized for iModel", async () => {
       await manager.initializeConnection(imodelMock.object);
       const imodelId2 = "imodel-id-2";
+      // SWB
       await expect(manager.remove(propertyField1, projectId, imodelId2)).to.be.rejectedWith(`Favorite properties are not initialized for iModel: ${imodelId2}. In project: ${projectId}.`);
     });
 
@@ -515,6 +526,7 @@ describe("FavoritePropertiesManager", () => {
   describe("remove", () => {
 
     it("throws if not initialized", async () => {
+      // SWB
       await expect(manager.remove(propertyField1, imodelMock.object, FavoritePropertiesScope.Global)).to.be.rejectedWith(`Favorite properties are not initialized for iModel: '${imodelId}', in project: '${projectId}'. Call initializeConnection() with an IModelConnection to initialize.`);
     });
 
@@ -609,13 +621,16 @@ describe("FavoritePropertiesManager", () => {
 
     it("throws if not initialized for project", async () => {
       await manager.initializeConnection(imodelMock.object);
+      // SWB
       const projectId2 = "project-id-2";
+      // SWB
       await expect(manager.clear(projectId2, imodelId)).to.be.rejectedWith(`Favorite properties are not initialized for project: ${projectId2}.`);
     });
 
     it("throws if not initialized for iModel", async () => {
       await manager.initializeConnection(imodelMock.object);
       const imodelId2 = "imodel-id-2";
+      // SWB
       await expect(manager.clear(projectId, imodelId2)).to.be.rejectedWith(`Favorite properties are not initialized for iModel: ${imodelId2}. In project: ${projectId}.`);
     });
 
@@ -670,6 +685,7 @@ describe("FavoritePropertiesManager", () => {
   describe("clear", () => {
 
     it("throws if not initialized", async () => {
+      // SWB
       await expect(manager.clear(imodelMock.object, FavoritePropertiesScope.IModel)).to.be.rejectedWith(`Favorite properties are not initialized for iModel: '${imodelId}', in project: '${projectId}'. Call initializeConnection() with an IModelConnection to initialize.`);
     });
 

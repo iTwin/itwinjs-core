@@ -27,6 +27,7 @@ import { HubUtility } from "@bentley/imodeljs-backend/lib/test/integration/HubUt
 
 describe("IModelTransformerHub (#integration)", () => {
   const outputDir = join(KnownTestLocations.outputDir, "IModelTransformerHub");
+  // SWB
   let projectId: GuidString;
   let requestContext: AuthorizedClientRequestContext;
 
@@ -35,6 +36,7 @@ describe("IModelTransformerHub (#integration)", () => {
     IModelJsFs.recursiveMkDirSync(outputDir);
 
     requestContext = await IModelTestUtils.getUserContext(TestUserType.Regular);
+    // SWB
     projectId = HubUtility.contextId!;
 
     // initialize logging
@@ -62,6 +64,7 @@ describe("IModelTransformerHub (#integration)", () => {
     sourceSeedDb.saveChanges();
     sourceSeedDb.close();
 
+    // SWB
     const sourceIModelId = await IModelHost.hubAccess.createIModel({ contextId: projectId, iModelName: sourceIModelName, revision0: sourceSeedFileName });
 
     // Create and push seed of target IModel
@@ -76,10 +79,13 @@ describe("IModelTransformerHub (#integration)", () => {
     assert.isTrue(targetSeedDb.codeSpecs.hasName("TargetCodeSpec")); // inserted by prepareTargetDb
     targetSeedDb.saveChanges();
     targetSeedDb.close();
+    // SWB
     const targetIModelId = await IModelHost.hubAccess.createIModel({ contextId: projectId, iModelName: targetIModelName, revision0: targetSeedFileName });
 
     try {
+      // SWB
       const sourceDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: sourceIModelId });
+      // SWB
       const targetDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: targetIModelId });
       assert.isTrue(sourceDb.isBriefcaseDb());
       assert.isTrue(targetDb.isBriefcaseDb());
@@ -264,7 +270,9 @@ describe("IModelTransformerHub (#integration)", () => {
       await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, targetDb);
     } finally {
       try {
+        // SWB
         await IModelHost.hubAccess.deleteIModel({ contextId: projectId, iModelId: sourceIModelId });
+        // SWB
         await IModelHost.hubAccess.deleteIModel({ contextId: projectId, iModelId: targetIModelId });
       } catch (err) {
         // eslint-disable-next-line no-console
@@ -284,6 +292,7 @@ describe("IModelTransformerHub (#integration)", () => {
 
     try {
       // open/upgrade sourceDb
+      // SWB
       const sourceDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: sourceIModelId });
       const seedBisCoreVersion = sourceDb.querySchemaVersion(BisCoreSchema.schemaName)!;
       assert.isTrue(semver.satisfies(seedBisCoreVersion, ">= 1.0.1"));
@@ -322,6 +331,7 @@ describe("IModelTransformerHub (#integration)", () => {
       assert.isFalse(sourceDb.concurrencyControl.locks.hasSchemaLock);
 
       // open/upgrade targetDb
+      // SWB
       const targetDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: targetIModelId });
       targetDb.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
       await targetDb.importSchemas(requestContext, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
@@ -347,7 +357,9 @@ describe("IModelTransformerHub (#integration)", () => {
     } finally {
       try {
         // delete iModel briefcases
+        // SWB
         await IModelHost.hubAccess.deleteIModel({ contextId: projectId, iModelId: sourceIModelId });
+        // SWB
         await IModelHost.hubAccess.deleteIModel({ contextId: projectId, iModelId: targetIModelId });
       } catch (err) {
         // eslint-disable-next-line no-console
@@ -370,9 +382,11 @@ describe("IModelTransformerHub (#integration)", () => {
     masterSeedDb.nativeDb.saveProjectGuid(projectId); // WIP: attempting a workaround for "ContextId was not properly setup in the checkpoint" issue
     masterSeedDb.saveChanges();
     masterSeedDb.close();
+    // SWB
     const masterIModelId = await IModelHost.hubAccess.createIModel({ contextId: projectId, iModelName: masterIModelName, revision0: masterSeedFileName });
     assert.isTrue(Guid.isGuid(masterIModelId));
     IModelJsFs.removeSync(masterSeedFileName); // now that iModel is pushed, can delete local copy of the seed
+    // SWB
     const masterDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: masterIModelId });
     masterDb.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
     assert.isTrue(masterDb.isBriefcaseDb());
@@ -383,8 +397,10 @@ describe("IModelTransformerHub (#integration)", () => {
 
     // create Branch1 iModel using Master as a template
     const branchIModelName1 = "Branch1";
+    // SWB
     const branchIModelId1 = await IModelHost.hubAccess.createIModel({ contextId: projectId, iModelName: branchIModelName1, description: `Branch1 of ${masterIModelName}`, revision0: masterDb.pathName });
 
+    // SWB
     const branchDb1 = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: branchIModelId1 });
     branchDb1.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
     assert.isTrue(branchDb1.isBriefcaseDb());
@@ -394,21 +410,26 @@ describe("IModelTransformerHub (#integration)", () => {
 
     // create Branch2 iModel using Master as a template
     const branchIModelName2 = "Branch2";
+    // SWB
     const branchIModelId2 = await IModelHost.hubAccess.createIModel({ contextId: projectId, iModelName: branchIModelName2, description: `Branch2 of ${masterIModelName}`, revision0: masterDb.pathName });
+    // SWB
     const branchDb2 = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: branchIModelId2 });
     branchDb2.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
     assert.isTrue(branchDb2.isBriefcaseDb());
+    // SWB
     assert.equal(branchDb2.contextId, projectId);
     assertPhysicalObjects(branchDb2, state0);
     const changeSetBranch2First = branchDb2.changeset.id;
 
     // create empty iModel meant to contain replayed master history
     const replayedIModelName = "Replayed";
+    // SWB
     const replayedIModelId = await IModelHost.hubAccess.createIModel({ contextId: projectId, iModelName: replayedIModelName, description: "blank" });
-
+    // SWB
     const replayedDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: replayedIModelId });
     replayedDb.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
     assert.isTrue(replayedDb.isBriefcaseDb());
+    // SWB
     assert.equal(replayedDb.contextId, projectId);
 
     try {
@@ -538,6 +559,7 @@ describe("IModelTransformerHub (#integration)", () => {
       assert.isAtLeast(masterDeletedElementIds.size, 1);
 
       // replay master history to create replayed iModel
+      // SWB
       const sourceDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: masterIModelId, asOf: IModelVersion.first().toJSON() });
       const replayTransformer = new IModelTransformer(sourceDb, replayedDb);
       // this replay strategy pretends that deleted elements never existed
@@ -580,9 +602,13 @@ describe("IModelTransformerHub (#integration)", () => {
       branchDb2.close();
       replayedDb.close();
     } finally {
+      // SWB
       await IModelHost.hubAccess.deleteIModel({ contextId: projectId, iModelId: masterIModelId });
+      // SWB
       await IModelHost.hubAccess.deleteIModel({ contextId: projectId, iModelId: branchIModelId1 });
+      // SWB
       await IModelHost.hubAccess.deleteIModel({ contextId: projectId, iModelId: branchIModelId2 });
+      // SWB
       await IModelHost.hubAccess.deleteIModel({ contextId: projectId, iModelId: replayedIModelId });
     }
   });

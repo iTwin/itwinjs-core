@@ -38,6 +38,7 @@ export class NativeAppTest {
     return project.id;
   }
 
+  // SWB
   public static async getTestIModelId(projectId: string, iModelName: string): Promise<string> {
     const requestContext = await AuthorizedFrontendRequestContext.create();
     const iModels = await this.imodelCloudEnv.imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));

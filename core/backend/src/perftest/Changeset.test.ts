@@ -26,7 +26,7 @@ import { PerfTestUtility } from "./PerfTestUtils";
 import { IModelHubBackend } from "../IModelHubBackend";
 
 /* eslint-disable @typescript-eslint/naming-convention */
-
+// SWB
 async function getIModelAfterApplyingCS(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string, imodelId: string, client: IModelHubClient) {
   const changeSets = await client.changeSets.get(requestContext, imodelId);
   const firstChangeSetId = changeSets[0].wsgId;
@@ -74,6 +74,7 @@ async function getIModelAfterApplyingCS(requestContext: AuthorizedClientRequestC
   reporter.addEntry("ImodelChangesetPerformance", "GetImodel", "Execution time(s)", elapsedTime3, { Description: "from cache latest CS", Operation: "Open" });
 }
 
+// SWB
 async function pushIModelAfterMetaChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string, imodelPushId: string) {
   const iModelPullAndPush = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: imodelPushId });
   assert.exists(iModelPullAndPush);
@@ -126,6 +127,7 @@ async function createNewModelAndCategory(requestContext: AuthorizedClientRequest
   return { modelId, spatialCategoryId };
 }
 
+// SWB
 async function pushIModelAfterDataChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string) {
   const iModelName = "CodesPushTest";
   // delete any existing imodel with given name
@@ -153,6 +155,7 @@ async function pushIModelAfterDataChanges(requestContext: AuthorizedClientReques
   await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, rwIModel);
 }
 
+// SWB
 async function pushIModelAfterSchemaChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string) {
   const iModelName = "SchemaPushTest";
   // delete any existing imodel with given name
@@ -188,6 +191,7 @@ const getElementCount = (iModel: IModelDb): number => {
   return count;
 };
 
+// SWB
 async function executeQueryTime(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string, imodelId: string) {
   const iModelDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: imodelId, asOf: IModelVersion.named("latest").toJSON() });
   assert.exists(iModelDb);
@@ -200,6 +204,7 @@ async function executeQueryTime(requestContext: AuthorizedClientRequestContext, 
   iModelDb.close();
 }
 
+// SWB
 async function reverseChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string) {
   const iModelName = "reverseChangeTest";
   // delete any existing imodel with given name
@@ -246,6 +251,7 @@ async function reverseChanges(requestContext: AuthorizedClientRequestContext, re
   rwIModel.close();
 }
 
+// SWB
 async function reinstateChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string) {
   const iModelName = "reinstateChangeTest";
   // delete any existing imodel with given name
@@ -297,6 +303,7 @@ async function reinstateChanges(requestContext: AuthorizedClientRequestContext, 
 
 describe("ImodelChangesetPerformance", () => {
   const reporter = new Reporter();
+  // SWB
   let projectId: string;
   let imodelId: string;
   let imodelPushId: string;
@@ -502,6 +509,7 @@ describe("ImodelChangesetPerformance big datasets", () => {
     const reporter = new Reporter();
     const batchSize: number = 50;
     for (const ds of configData.bigDatasets) {
+      // SWB
       const projectId: string = ds.projId;
       const imodelId: string = ds.modelId;
 
@@ -511,7 +519,9 @@ describe("ImodelChangesetPerformance big datasets", () => {
       const startNum: number = ds.csStart ? ds.csStart : 0;
       const endNum: number = ds.csEnd ? ds.csEnd : changeSets.length;
       const modelInfo = {
+        // SWB
         projId: projectId,
+        // SWB
         projName: ds.projName,
         modelId: imodelId,
         modelName: ds.modelName,
@@ -615,6 +625,7 @@ describe("ImodelChangesetPerformance own data", () => {
   const iModelNameBase: string = `CS_Lg3d_PElSub3_${dbSize}_`;
   const opSizes: number[] = configData.ownDataTest.opSizes;
   const baseNames: string[] = configData.ownDataTest.baseNames;
+  // SWB
   const projectId: string = configData.ownDataTest.projectId;
   const schemaDetail = configData.ownDataTest.schema;
   const schemaName: string = schemaDetail.name;
@@ -669,7 +680,9 @@ describe("ImodelChangesetPerformance own data", () => {
           // create iModel and push changesets 1) with schema 2) with 1M records of PerfElementSub3 3) insert of opSize for actual testing
           // eslint-disable-next-line no-console
           console.log(`iModel ${iModelName} does not exist on iModelHub. Creating with changesets...`);
+          // SWB
           const imodelId = await IModelHost.hubAccess.createIModel({ requestContext, contextId: projectId, iModelName, description: "TestSubject" });
+          // SWB
           const iModelDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: imodelId });
 
           const schemaPathname = path.join(outDir, `${schemaName}.01.00.00.ecschema.xml`);

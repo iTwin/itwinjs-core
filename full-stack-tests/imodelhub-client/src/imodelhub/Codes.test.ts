@@ -28,6 +28,7 @@ function containsCode(codes: HubCode[], wantCode: HubCode) {
 }
 
 describe("iModelHub CodeHandler", () => {
+  // SWB
   let contextId: string;
   let imodelId: GuidString;
   let iModelClient: IModelClient;
@@ -43,6 +44,7 @@ describe("iModelHub CodeHandler", () => {
     const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
+    // SWB
     contextId = await utils.getProjectId(requestContext);
     await utils.createIModel(requestContext, utils.sharedimodelName, contextId);
     imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);
@@ -380,6 +382,7 @@ function createTestSequence(type: CodeSequenceType) {
 }
 
 describe("iModelHub CodeSequenceHandler (#iModelBank|#integration)", () => {
+  // SWB
   let contextId: string;
   let imodelId: GuidString;
   let iModelClient: IModelClient;
@@ -390,6 +393,7 @@ describe("iModelHub CodeSequenceHandler (#iModelBank|#integration)", () => {
     const accessToken = await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
+    // SWB
     contextId = await utils.getProjectId(requestContext);
     await utils.createIModel(requestContext, utils.sharedimodelName, contextId);
     imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);

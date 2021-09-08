@@ -27,18 +27,21 @@ export interface IFavoritePropertiesStorage {
    * @param projectId Project Id, if the settings is specific to a project, otherwise undefined.
    * @param imodelId iModel Id, if the setting is specific to an iModel, otherwise undefined. The projectId must be specified if iModelId is specified.
    */
+  // SWB
   loadProperties(projectId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined>;
   /** Saves Favorite properties to user-specific settings.
    * @param properties Favorite properties to save.
    * @param projectId Project Id, if the settings is specific to a project, otherwise undefined.
    * @param iModelId iModel Id, if the setting is specific to an iModel, otherwise undefined. The projectId must be specified if iModelId is specified.
    */
+  // SWB
   saveProperties(properties: Set<PropertyFullName>, projectId?: string, imodelId?: string): Promise<void>;
   /** Load array of FavoritePropertiesOrderInfo from user-specific settings.
    * Setting is specific to an iModel.
    * @param projectId Project Id.
    * @param imodelId iModel Id.
    */
+  // SWB
   loadPropertiesOrder(projectId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
   /** Saves FavoritePropertiesOrderInfo array to user-specific settings.
    * Setting is specific to an iModel.
@@ -46,6 +49,7 @@ export interface IFavoritePropertiesStorage {
    * @param projectId Project Id.
    * @param imodelId iModel Id.
    */
+  // SWB
   savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], projectId: string | undefined, imodelId: string): Promise<void>;
 }
 
@@ -61,6 +65,7 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
     return IModelApp.authorizationClient && IModelApp.authorizationClient.hasSignedIn;
   }
 
+  // SWB
   public async loadProperties(projectId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined> {
     if (!this.isSignedIn) {
       throw new PresentationError(PresentationStatus.Error, "Current user is not authorized to use the settings service");
@@ -83,6 +88,7 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
     return undefined;
   }
 
+  // SWB
   public async saveProperties(properties: Set<PropertyFullName>, projectId?: string, imodelId?: string): Promise<void> {
     if (!this.isSignedIn) {
       throw new PresentationError(PresentationStatus.Error, "Current user is not authorized to use the settings service");
@@ -91,6 +97,7 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
     await IModelApp.settings.saveUserSetting(requestContext, Array.from(properties), IMODELJS_PRESENTATION_SETTING_NAMESPACE, FAVORITE_PROPERTIES_SETTING_NAME, true, projectId, imodelId);
   }
 
+  // SWB
   public async loadPropertiesOrder(projectId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined> {
     if (!this.isSignedIn) {
       throw new PresentationError(PresentationStatus.Error, "Current user is not authorized to use the settings service");
@@ -100,6 +107,7 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
     return settingResult.setting as FavoritePropertiesOrderInfo[];
   }
 
+  // SWB
   public async savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], projectId: string | undefined, imodelId: string) {
     if (!this.isSignedIn) {
       throw new PresentationError(PresentationStatus.Error, "Current user is not authorized to use the settings service");
@@ -140,16 +148,23 @@ export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropert
       // note: we're copying the cached values to temp arrays because `saveProperties` and `savePropertiesOrder` both
       // attempt to modify cache dictionaries
 
+      // SWB
       const propertiesCache = new Array<{ properties: Set<PropertyFullName>, projectId?: string, imodelId?: string }>();
+      // SWB
       this._propertiesOfflineCache.forEach((key, value) => propertiesCache.push({ properties: value, projectId: key[0], imodelId: key[1] }));
+      // SWB
       propertiesCache.forEach(async (cached) => this.saveProperties(cached.properties, cached.projectId, cached.imodelId));
 
+      // SWB
       const ordersCache = new Array<{ order: FavoritePropertiesOrderInfo[], projectId?: string, imodelId: string }>();
+      // SWB
       this._propertiesOrderOfflineCache.forEach((key, value) => ordersCache.push({ order: value, projectId: key[0], imodelId: key[1]! }));
+      // SWB
       ordersCache.forEach(async (cached) => this.savePropertiesOrder(cached.order, cached.projectId, cached.imodelId));
     }
   };
 
+  // SWB
   public async loadProperties(projectId?: string, imodelId?: string) {
     if (this._connectivityInfo.status === InternetConnectivityStatus.Online) {
       try {
@@ -161,6 +176,7 @@ export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropert
     return this._propertiesOfflineCache.get([projectId, imodelId]);
   }
 
+  // SWB
   public async saveProperties(properties: Set<PropertyFullName>, projectId?: string, imodelId?: string) {
     const key: ProjectAndIModelIdsKey = [projectId, imodelId];
     if (this._connectivityInfo.status === InternetConnectivityStatus.Offline) {
@@ -176,6 +192,7 @@ export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropert
     }
   }
 
+  // SWB
   public async loadPropertiesOrder(projectId: string | undefined, imodelId: string) {
     if (this._connectivityInfo.status === InternetConnectivityStatus.Online) {
       try {
@@ -187,6 +204,7 @@ export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropert
     return this._propertiesOrderOfflineCache.get([projectId, imodelId]);
   }
 
+  // SWB
   public async savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], projectId: string | undefined, imodelId: string) {
     const key: ProjectAndIModelIdsKey = [projectId, imodelId];
     if (this._connectivityInfo.status === InternetConnectivityStatus.Offline) {
@@ -239,6 +257,7 @@ type ProjectAndIModelIdsKey = [string | undefined, string | undefined];
 
 // istanbul ignore next
 function projectAndIModelIdsKeyComparer(lhs: ProjectAndIModelIdsKey, rhs: ProjectAndIModelIdsKey) {
+  // SWB
   const projectIdCompare = compareStrings(lhs[0] ?? "", rhs[0] ?? "");
   return (projectIdCompare !== 0) ? projectIdCompare : compareStrings(lhs[1] ?? "", rhs[1] ?? "");
 }

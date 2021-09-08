@@ -69,6 +69,7 @@ export class TestContext {
 
     const iModelData = this.settings.iModel;
 
+    // SWB
     this.contextId = iModelData.projectId;
     this.iModelWithChangesets = new IModelSession(iModelData.id, this.contextId);
 

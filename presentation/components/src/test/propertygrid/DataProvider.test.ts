@@ -184,14 +184,16 @@ describe("PropertyDataProvider", () => {
   });
 
   describe("isFieldFavorite", () => {
-
+    // SWB
     let projectId: string;
     let imodelId: string;
 
     before(() => {
+      // SWB
       projectId = "project-id";
       imodelId = "imodel-id";
       imodelMock.setup((x) => x.iModelId).returns(() => imodelId);
+      // SWB
       imodelMock.setup((x) => x.contextId).returns(() => projectId);
 
       favoritePropertiesManagerMock.setup((x) => x.has(moq.It.isAny(), imodelMock.object, moq.It.isAny())).returns(() => false);

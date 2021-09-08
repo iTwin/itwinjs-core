@@ -40,12 +40,14 @@ interface TestParameters {
   size: ThumbnailSize;
 }
 
+// SWB
 async function getIModelId(requestContext: AuthorizedClientRequestContext, name: string, projectId: string): Promise<string> {
   return utils.getIModelId(requestContext, name, projectId);
 }
 
 describe("iModelHub ThumbnailHandler (#unit)", () => {
   const test: TestParameters[] = [{ size: "Small", thumbnails: [] }, { size: "Large", thumbnails: [] }];
+  // SWB
   let projectId: string;
   let imodelId: GuidString;
   let versions: Version[];
@@ -149,6 +151,7 @@ describe("iModelHub ThumbnailHandler (#unit)", () => {
   test.forEach((params: TestParameters) => {
     it(`should download latest iModel's ${params.size}Thumbnail as a PNG file`, async () => {
       mockDownloadLatestThumbnail(projectId, imodelId, params.size);
+      // SWB
       const image: string = await imodelHubClient.thumbnails.download(requestContext, imodelId, { contextId: projectId, size: params.size });
       chai.assert(image);
       chai.expect(image.length).greaterThan(getThumbnailLength(params.size));

@@ -84,11 +84,13 @@ async function createIModel(requestContext: AuthorizedClientRequestContext, cont
 }
 
 // __PUBLISH_EXTRACT_START__ Bridge.firstTime.example-code
+// SWB
 async function runBridgeFirstTime(requestContext: AuthorizedClientRequestContext, iModelId: string, projectId: string, assetsDir: string) {
   // Start the IModelHost
   await IModelHost.startup();
   requestContext.enter();
 
+  // SWB
   const props = await BriefcaseManager.downloadBriefcase(requestContext, { contextId: projectId, iModelId });
   requestContext.enter();
   const briefcase = await BriefcaseDb.open(requestContext, { fileName: props.fileName });
@@ -165,6 +167,7 @@ async function runBridgeFirstTime(requestContext: AuthorizedClientRequestContext
 describe.skip("Bridge", async () => {
 
   let requestContext: AuthorizedClientRequestContext;
+  // SWB
   let testProjectId: string;
   let seedPathname: string;
   let imodelRepository: HubIModel;

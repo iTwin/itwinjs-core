@@ -47,16 +47,19 @@ export class HubUtility {
     if (HubUtility.imodelCache.has(name))
       return HubUtility.imodelCache.get(name)!;
 
+    // SWB
     const projectId = await HubUtility.getTestContextId(requestContext);
     const imodelId = await HubUtility.queryIModelIdByName(requestContext, projectId, name);
     HubUtility.imodelCache.set(name, imodelId);
     return imodelId;
   }
 
+  // SWB
   public static async queryIModelByName(requestContext: AuthorizedClientRequestContext, projectId: string, iModelName: string): Promise<GuidString | undefined> {
     return IModelHost.hubAccess.queryIModelByName({ requestContext, contextId: projectId, iModelName });
   }
 
+  // SWB
   private static async queryIModelById(requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: GuidString): Promise<HubIModel | undefined> {
     const iModels = await getIModelProjectAbstraction().queryIModels(requestContext, projectId, new IModelQuery().byId(iModelId));
     if (iModels.length === 0)
@@ -89,6 +92,7 @@ export class HubUtility {
    * @param iModelName Name of the iModel
    * @throws If the iModel is not found, or if there is more than one iModel with the supplied name
    */
+  // SWB
   public static async queryIModelIdByName(requestContext: AuthorizedClientRequestContext, projectId: GuidString, iModelName: string): Promise<GuidString> {
     const iModelId = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
     if (!iModelId)
@@ -97,6 +101,7 @@ export class HubUtility {
   }
 
   /** Download all change sets of the specified iModel */
+  // SWB
   private static async downloadChangesets(requestContext: AuthorizedClientRequestContext, changeSetsPath: string, _projectId: GuidString, iModelId: GuidString): Promise<ChangeSet[]> {
     // Determine the range of changesets that remain to be downloaded
     const changeSets = await IModelHubBackend.iModelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery()); // oldest to newest
@@ -124,6 +129,7 @@ export class HubUtility {
   }
 
   /** Download all named versions of the specified iModel */
+  // SWB
   private static async downloadNamedVersions(requestContext: AuthorizedClientRequestContext, _projectId: string, iModelId: GuidString): Promise<Version[]> {
     const query = new VersionQuery();
     query.orderBy("createdDate");
@@ -139,6 +145,7 @@ export class HubUtility {
   /** Download an IModel's seed files and change sets from the Hub.
    *  A standard hierarchy of folders is created below the supplied downloadDir
    */
+  // SWB
   public static async downloadIModelById(requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: GuidString, downloadDir: string, reDownload: boolean): Promise<void> {
     // Recreate the download folder if necessary
     if (reDownload) {
@@ -166,6 +173,7 @@ export class HubUtility {
 
     // Download the change sets
     const changeSetDir = path.join(downloadDir, "changeSets//");
+    // SWB
     const changeSets = await HubUtility.downloadChangesets(requestContext, changeSetDir, projectId, iModelId);
 
     const changeSetsJsonStr = JSON.stringify(changeSets, undefined, 4);
@@ -173,6 +181,7 @@ export class HubUtility {
     IModelJsFs.writeFileSync(changeSetsJsonPathname, changeSetsJsonStr);
 
     // Download the version information
+    // SWB
     const namedVersions = await HubUtility.downloadNamedVersions(requestContext, projectId, iModelId);
     const namedVersionsJsonStr = JSON.stringify(namedVersions, undefined, 4);
     const namedVersionsJsonPathname = path.join(downloadDir, "namedVersions.json");
@@ -187,10 +196,12 @@ export class HubUtility {
     // SWB
     const projectId = await HubUtility.getITwinIdByName(requestContext, projectName);
 
+    // SWB
     const iModelId = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
     if (!iModelId)
       throw new Error(`IModel ${iModelName} not found`);
 
+    // SWB
     await HubUtility.downloadIModelById(requestContext, projectId, iModelId, downloadDir, reDownload);
   }
 
@@ -327,6 +338,7 @@ export class HubUtility {
    * merging the change sets, reversing them, and finally reinstating them. The method also logs the necessary performance
    * metrics with these operations.
    */
+  // SWB
   public static async validateAllChangeSetOperations(requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: GuidString, iModelDir: string) {
     Logger.logInfo(HubUtility.logCategory, "Downloading seed file and all available change sets");
     await HubUtility.downloadIModelById(requestContext, projectId, iModelId, iModelDir, true /* =reDownload */);
@@ -346,6 +358,7 @@ export class HubUtility {
   }
 
   /** Push an iModel to the Hub */
+  // SWB
   public static async pushIModel(requestContext: AuthorizedClientRequestContext, projectId: string, pathname: string, iModelName?: string, overwrite?: boolean): Promise<GuidString> {
     assert.isTrue(HubMock.isValid, "Must use HubMock for tests that create iModels");
     // Delete any existing iModels with the same name as the required iModel
@@ -638,6 +651,7 @@ class TestIModelHubProject {
   // SWB
   public async queryIModels(requestContext: AuthorizedClientRequestContext, projectId: string, query: IModelQuery | undefined): Promise<HubIModel[]> {
     const client = this.iModelHubClient;
+    // SWB
     return client.iModels.get(requestContext, projectId, query);
   }
 }

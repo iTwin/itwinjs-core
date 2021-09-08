@@ -19,6 +19,7 @@ Logger.setLevel(LOG_CATEGORY, LogLevel.Info);
 
 describe("RealityServicesClient Normal (#integration)", () => {
   const realityDataServiceClient: RealityDataClient = new RealityDataClient();
+  // SWB
   let projectId: GuidString;
 
   const tilesId: string = "593eff78-b757-4c07-84b2-a8fe31c19927";

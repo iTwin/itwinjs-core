@@ -295,6 +295,7 @@ export async function deleteIModelByName(requestContext: AuthorizedClientRequest
   }
 }
 
+// SWB
 export async function getIModelId(requestContext: AuthorizedClientRequestContext, imodelName: string, projectId?: string, useUniqueName = true): Promise<GuidString> {
   if (TestConfig.enableMocks)
     return Guid.createValue();
@@ -746,6 +747,7 @@ export async function createIModel(requestContext: AuthorizedClientRequestContex
   if (useUniqueName)
     name = getUniqueIModelName(name);
 
+  // SWB
   contextId = contextId || await getProjectId(requestContext, TestConfig.projectName);
 
   const client = getDefaultClient();

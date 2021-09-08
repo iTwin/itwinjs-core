@@ -39,6 +39,7 @@ export class MapLayerSettingsService {
    * @param source source to be stored on the setting service
    * @param storeOnIModel if true store the settings object on the model, if false store it on the project
    */
+  // SWB
   public static async storeSourceInSettingsService(source: MapLayerSource, storeOnIModel: boolean, projectId: GuidString, iModelId: GuidString): Promise<boolean> {
     const requestContext = await AuthorizedFrontendRequestContext.create();
     const sourceJSON = source.toJSON();
@@ -63,6 +64,7 @@ export class MapLayerSettingsService {
 
   }
 
+  // SWB
   public static async replaceSourceInSettingsService(oldSource: MapLayerSource, newSource: MapLayerSource, projectId: GuidString, iModelId: GuidString): Promise<boolean> {
     const requestContext = await AuthorizedFrontendRequestContext.create();
 
@@ -99,6 +101,7 @@ export class MapLayerSettingsService {
     }
   }
 
+  // SWB
   public static async deleteSharedSettings(source: MapLayerSource, projectId: GuidString, iModelId: GuidString): Promise<boolean> {
     let result: SettingsResult = new SettingsResult(SettingsStatus.UnknownError);
     const requestContext = await AuthorizedFrontendRequestContext.create();
@@ -122,6 +125,7 @@ export class MapLayerSettingsService {
   // This method prevents users from overwriting project settings with model settings. If setting to be added is in same scope as the setting that it collides with
   // then it can be overwritten. This method knows scope of setting to be added is model if storeOnIModel is true
   // returns false if we should not save the setting the user added because we output an error to the user here saying it cannot be done
+  // SWB
   private static async deleteOldSettings(requestContext: AuthorizedFrontendRequestContext, url: string, name: string, projectId: GuidString, iModelId: GuidString, storeOnIModel: boolean): Promise<boolean> {
     requestContext.enter();
     const settingFromName = await IModelApp.settings.getSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, name, true, projectId, undefined);
@@ -170,6 +174,8 @@ export class MapLayerSettingsService {
     }
     return true;
   }
+
+  // SWB
   public static async getSettingFromUrl(requestContext: AuthorizedFrontendRequestContext, url: string, projectId: string, iModelId?: string): Promise<MapLayerSetting | undefined> {
     requestContext.enter();
     const settingResponse = await IModelApp.settings.getSharedSettingsByNamespace(requestContext, MapLayerSettingsService.SourceNamespace, true, projectId, iModelId);
@@ -188,6 +194,8 @@ export class MapLayerSettingsService {
    * @param iModelId id of the iModel
    * @throws error if any of the calls to grab settings fail.
    */
+
+  // SWB
   public static async getSourcesFromSettingsService(projectId: GuidString, iModelId: GuidString): Promise<MapLayerSource[]> {
     const requestContext = await AuthorizedFrontendRequestContext.create();
     const userResultByProjectPromise = IModelApp.settings.getUserSettingsByNamespace(

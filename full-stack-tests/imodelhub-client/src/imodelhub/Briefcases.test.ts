@@ -85,6 +85,7 @@ function mockDeleteBriefcase(imodelId: GuidString, briefcaseId: number) {
 
 describe("iModelHub BriefcaseHandler", () => {
   let requestContext: AuthorizedClientRequestContext;
+  // SWB
   let contextId: string;
   let imodelId: GuidString;
   let iModelClient: IModelClient;
@@ -96,6 +97,7 @@ describe("iModelHub BriefcaseHandler", () => {
     requestContext = new AuthorizedClientRequestContext(accessToken);
     (requestContext as any).activityId = "iModelHub BriefcaseHandler";
 
+    // SWB
     contextId = await utils.getProjectId(requestContext);
     await utils.createIModel(requestContext, utils.sharedimodelName, contextId);
     imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);

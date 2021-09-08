@@ -71,6 +71,7 @@ export class FavoritePropertiesManager implements IDisposable {
 
   private _storage: IFavoritePropertiesStorage;
   private _globalProperties: Set<PropertyFullName> | undefined;
+  // SWB
   private _projectProperties: Map<string, Set<PropertyFullName>>;
   private _imodelProperties: Map<string, Set<PropertyFullName>>;
   private _imodelBaseClassesByClass: Map<string, { [className: string]: string[] }>;
@@ -80,6 +81,7 @@ export class FavoritePropertiesManager implements IDisposable {
 
   public constructor(props: FavoritePropertiesManagerProps) {
     this._storage = props.storage;
+    // SWB
     this._projectProperties = new Map<string, Set<PropertyFullName>>();
     this._imodelProperties = new Map<string, Set<PropertyFullName>>();
     this._propertiesOrder = new Map<string, FavoritePropertiesOrderInfo[]>();
@@ -97,12 +99,15 @@ export class FavoritePropertiesManager implements IDisposable {
    */
   public initializeConnection = async (imodel: IModelConnection) => {
     const imodelId = imodel.iModelId!;
+    // SWB
     const projectId = imodel.contextId!;
 
     if (this._globalProperties === undefined)
       this._globalProperties = await this._storage.loadProperties() || new Set<PropertyFullName>();
 
+    // SWB
     if (!this._projectProperties.has(projectId)) {
+      // SWB
       const projectProperties = await this._storage.loadProperties(projectId) || new Set<PropertyFullName>();
       this._projectProperties.set(projectId, projectProperties);
     }
@@ -120,10 +125,12 @@ export class FavoritePropertiesManager implements IDisposable {
    * Function that removes order information of properties that are no longer
    * favorited and adds missing order information for favorited properties.
    */
+  // SWB
   private _adjustPropertyOrderInfos = async (projectId: string, imodelId: string) => {
     const propertiesOrder = this._propertiesOrder.get(getiModelInfo(projectId, imodelId))!;
 
     const globalProperties = this._globalProperties!;
+    // SWB
     const projectProperties = this._projectProperties.get(projectId)!;
     const imodelProperties = this._imodelProperties.get(getiModelInfo(projectId, imodelId))!;
     // favorite property infos that need to be added to the propertiesOrder array
@@ -147,9 +154,11 @@ export class FavoritePropertiesManager implements IDisposable {
     propertiesOrder.forEach((oi) => oi.priority = priority--);
   };
 
+  // SWB
   private validateInitializedScope(projectId?: string, imodelId?: string) {
     if (this._globalProperties === undefined)
       throw Error("Favorite properties are not initialized. Call initializeConnection() with an IModelConnection to initialize.");
+    // SWB
     if (projectId && !this._projectProperties.has(projectId))
       throw Error(`Favorite properties are not initialized for project: ${projectId}.`);
     if (imodelId && !this._imodelProperties.has(getiModelInfo(projectId!, imodelId)))
@@ -157,9 +166,11 @@ export class FavoritePropertiesManager implements IDisposable {
   }
 
   private validateInitialization(imodel: IModelConnection) {
+    // SWB
     const projectId = imodel.contextId!;
     const imodelId = imodel.iModelId!;
     if (!this._imodelProperties.has(getiModelInfo(projectId, imodelId)))
+      // SWB
       throw Error(`Favorite properties are not initialized for iModel: '${imodelId}', in project: '${projectId}'. Call initializeConnection() with an IModelConnection to initialize.`);
   }
 
@@ -170,6 +181,7 @@ export class FavoritePropertiesManager implements IDisposable {
    * @param imodelId iModel Id, if the favorite property is specific to a iModel, otherwise undefined. The projectId must be specified if iModelId is specified.
    * @deprecated
    */
+  // SWB
   public async add(field: Field, projectId?: string, imodelId?: string): Promise<void>;
   /**
    * Adds favorite properties into a certain scope.
@@ -181,6 +193,7 @@ export class FavoritePropertiesManager implements IDisposable {
   public async add(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void>;
 
   /** @internal */
+  // SWB
   public async add(field: Field, projectIdOrIModel: string | undefined | IModelConnection, imodelIdOrScope: string | undefined | FavoritePropertiesScope): Promise<void> {
     if (typeof projectIdOrIModel === "string" || typeof projectIdOrIModel === "undefined")
       await this.addWithoutOrder(field, projectIdOrIModel, imodelIdOrScope as (string | undefined));
@@ -190,6 +203,7 @@ export class FavoritePropertiesManager implements IDisposable {
 
   private async addWithOrder(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void> {
     this.validateInitialization(imodel);
+    // SWB
     const projectId = imodel.contextId!;
     const imodelId = imodel.iModelId!;
 
@@ -249,6 +263,7 @@ export class FavoritePropertiesManager implements IDisposable {
    * @param imodelId iModel Id to additionaly remove favorite properties from iModel scope, otherwise undefined. The projectId must be specified if iModelId is specified.
    * @deprecated
    */
+  // SWB
   public async remove(field: Field, projectId?: string, imodelId?: string): Promise<void>;
   /**
    * Removes favorite properties from a scope specified and all the more general scopes.
@@ -260,6 +275,7 @@ export class FavoritePropertiesManager implements IDisposable {
   public async remove(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void>;
 
   /** @internal */
+  // SWB
   public async remove(field: Field, projectIdOrIModel: string | undefined | IModelConnection, imodelIdOrScope: string | undefined | FavoritePropertiesScope): Promise<void> {
     if (typeof projectIdOrIModel === "string" || typeof projectIdOrIModel === "undefined")
       await this.removeWithoutOrdering(field, projectIdOrIModel, imodelIdOrScope as (string | undefined));
@@ -269,6 +285,7 @@ export class FavoritePropertiesManager implements IDisposable {
 
   private async removeWithOrdering(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void> {
     this.validateInitialization(imodel);
+    // SWB
     const projectId = imodel.contextId!;
     const imodelId = imodel.iModelId!;
 
@@ -312,6 +329,7 @@ export class FavoritePropertiesManager implements IDisposable {
     this.onFavoritesChanged.raiseEvent();
   }
 
+  // SWB
   private async removeWithoutOrdering(field: Field, projectId?: string, imodelId?: string): Promise<void> {
     this.validateInitializedScope(projectId, imodelId);
 
@@ -355,6 +373,7 @@ export class FavoritePropertiesManager implements IDisposable {
    * @param imodelId iModel Id, if the favorite property is specific to a iModel, otherwise undefined. The projectId must be specified if iModelId is specified.
    * @deprecated
    */
+  // SWB
   public async clear(projectId?: string, imodelId?: string): Promise<void>;
   /**
    * Removes all favorite properties from a certain scope.
@@ -365,6 +384,7 @@ export class FavoritePropertiesManager implements IDisposable {
   public async clear(imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void>;
 
   /** @internal */
+  // SWB
   public async clear(projectIdOrIModel: string | undefined | IModelConnection, imodelIdOrScope: string | undefined | FavoritePropertiesScope): Promise<void> {
     if (typeof projectIdOrIModel === "string" || typeof projectIdOrIModel === "undefined")
       await this.clearWithoutOrdering(projectIdOrIModel, imodelIdOrScope as (string | undefined));
@@ -374,6 +394,7 @@ export class FavoritePropertiesManager implements IDisposable {
 
   private async clearWithOrdering(imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void> {
     this.validateInitialization(imodel);
+    // SWB
     const projectId = imodel.contextId!;
     const imodelId = imodel.iModelId!;
 
@@ -404,6 +425,7 @@ export class FavoritePropertiesManager implements IDisposable {
     this.onFavoritesChanged.raiseEvent();
   }
 
+  // SWB
   private async clearWithoutOrdering(projectId?: string, imodelId?: string): Promise<void> {
     this.validateInitializedScope(projectId, imodelId);
 
@@ -426,6 +448,7 @@ export class FavoritePropertiesManager implements IDisposable {
    * @param imodelId iModel Id, to additionally include the iModel favorite properties, otherwise undefined. The projectId must be specified if iModelId is specified.
    * @deprecated
    */
+  // SWB
   public has(field: Field, projectId?: string, imodelId?: string): boolean;
   /**
    * Check if field contains at least one favorite property.
@@ -437,6 +460,7 @@ export class FavoritePropertiesManager implements IDisposable {
   public has(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): boolean;
 
   /** @internal */
+  // SWB
   public has(field: Field, projectIdOrIModel: string | undefined | IModelConnection, imodelIdOrScope: string | undefined | FavoritePropertiesScope): boolean {
     if (typeof projectIdOrIModel === "string" || typeof projectIdOrIModel === "undefined")
       return this.hasDeprecated(field, projectIdOrIModel, imodelIdOrScope as (string | undefined));
@@ -454,6 +478,7 @@ export class FavoritePropertiesManager implements IDisposable {
       (scope === FavoritePropertiesScope.IModel && setHasAny(this._imodelProperties.get(getiModelInfo(projectId, imodelId))!, fieldInfos));
   }
 
+  // SWB
   private hasDeprecated(field: Field, projectId?: string, imodelId?: string): boolean {
     this.validateInitializedScope(projectId, imodelId);
 
@@ -472,6 +497,7 @@ export class FavoritePropertiesManager implements IDisposable {
    */
   public sortFields = (imodel: IModelConnection, fields: Field[]): Field[] => {
     this.validateInitialization(imodel);
+    // SWB
     const projectId = imodel.contextId!;
     const imodelId = imodel.iModelId!;
 
@@ -491,6 +517,7 @@ export class FavoritePropertiesManager implements IDisposable {
     return fields.sort(sortFunction);
   };
 
+  // SWB
   private getFieldPriority(field: Field, projectId: string, imodelId: string): number {
     const orderInfos = this._propertiesOrder.get(getiModelInfo(projectId, imodelId))!;
     const fieldOrderInfos = getFieldOrderInfos(field, orderInfos);
@@ -501,6 +528,7 @@ export class FavoritePropertiesManager implements IDisposable {
   }
 
   private _getBaseClassesByClass = async (imodel: IModelConnection, neededClasses: Set<string>): Promise<{ [className: string]: string[] }> => {
+    // SWB
     const projectId = imodel.contextId!;
     const imodelId = imodel.iModelId!;
 
@@ -556,6 +584,7 @@ export class FavoritePropertiesManager implements IDisposable {
      * 5. All `field` orderInfo's get moved after `afterOrderInfo`
      */
     this.validateInitialization(imodel);
+    // SWB
     const projectId = imodel.contextId!;
     const imodelId = imodel.iModelId!;
 
@@ -662,6 +691,7 @@ enum Direction {
   Down = 1,
 }
 
+// SWB
 const getiModelInfo = (projectId: string, imodelId: string) => `${projectId}/${imodelId}`;
 
 const getPropertiesFieldPropertyNames = (field: PropertiesField) => {

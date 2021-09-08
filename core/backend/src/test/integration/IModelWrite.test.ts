@@ -984,6 +984,7 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it("should be able to upgrade a briefcase with an older schema", async () => {
+    // SWB
     const projectId = await HubUtility.getTestContextId(managerRequestContext);
 
     /**
@@ -998,6 +999,7 @@ describe("IModelWriteTest (#integration)", () => {
     const iModelId = await HubUtility.pushIModel(managerRequestContext, projectId, pathname, hubName, true);
 
     // Download two copies of the briefcase - manager and super
+    // SWB
     const args: RequestNewBriefcaseProps = { contextId: projectId, iModelId };
     const managerBriefcaseProps = await BriefcaseManager.downloadBriefcase(managerRequestContext, args);
     const superBriefcaseProps = await BriefcaseManager.downloadBriefcase(superRequestContext, args);
@@ -1067,6 +1069,7 @@ describe("IModelWriteTest (#integration)", () => {
     schemaLock = await IModelHost.hubAccess.querySchemaLock({ requestContext: superRequestContext, iModelId: managerBriefcaseProps.iModelId });
     assert.isFalse(schemaLock); // Validate no schema locks held by the hub
 
+    // SWB
     await IModelHost.hubAccess.deleteIModel({ requestContext: managerRequestContext, contextId: projectId, iModelId });
   });
 });

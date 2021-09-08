@@ -301,6 +301,7 @@ export enum IModelHubStatus {
   EventTypeDoesNotExist = IMODELHUBERROR_BASE + 32,
   EventSubscriptionDoesNotExist = IMODELHUBERROR_BASE + 33,
   EventSubscriptionAlreadyExists = IMODELHUBERROR_BASE + 34,
+  // SWB
   ProjectIdIsNotSpecified = IMODELHUBERROR_BASE + 35,
   FailedToGetProjectPermissions = IMODELHUBERROR_BASE + 36,
   FailedToGetProjectMembers = IMODELHUBERROR_BASE + 37,
@@ -697,6 +698,7 @@ export class BentleyError extends Error {
       case IModelHubStatus.EventTypeDoesNotExist: return "Event type does not exist";
       case IModelHubStatus.EventSubscriptionDoesNotExist: return "Event subscription does not exist";
       case IModelHubStatus.EventSubscriptionAlreadyExists: return "Event subscription already exists";
+      // SWB
       case IModelHubStatus.ProjectIdIsNotSpecified: return "Project Id is not specified";
       case IModelHubStatus.FailedToGetProjectPermissions: return "Failed to get project permissions";
       case IModelHubStatus.FailedToGetProjectMembers: return "Failed to get project members";

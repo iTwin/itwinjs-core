@@ -9,6 +9,7 @@ import * as utils from "./TestUtils";
 import { TestConfig } from "../TestConfig";
 
 describe.skip("iModelHub Performance tests", () => {
+  // SWB
   let contextId: string;
   let imodelId: GuidString;
   let briefcase1: Briefcase;
@@ -20,6 +21,7 @@ describe.skip("iModelHub Performance tests", () => {
     const accessToken: AccessToken = await utils.login();
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
+    // SWB
     contextId = await utils.getProjectId(requestContext);
     await utils.createIModel(requestContext, utils.sharedimodelName, contextId, true, recreate);
     imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);

@@ -52,6 +52,7 @@ export class TestConfig {
   }
 
   /** Query for the specified iModel */
+  // SWB
   public static async queryIModelId(requestContext: AuthorizedClientRequestContext, iModelName: string, projectId: GuidString): Promise<string> {
     const imodelHubClient: IModelClient = new IModelHubClient();
     const iModel: HubIModel = (await imodelHubClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName)))[0];

@@ -41,6 +41,7 @@ function generateHubUserInfo(userInfos: UserInfo[]): HubUserInfo[] {
 
 describe("iModelHubClient UserInfoHandler", () => {
   const requestContexts: AuthorizedClientRequestContext[] = [];
+  // SWB
   let projectId: GuidString;
   let imodelId: GuidString;
 
@@ -53,6 +54,7 @@ describe("iModelHubClient UserInfoHandler", () => {
     requestContexts.push(new AuthorizedClientRequestContext(managerAccessToken));
 
     requestContexts.sort((a: AuthorizedClientRequestContext, b: AuthorizedClientRequestContext) => a.accessToken.getUserInfo()!.id.localeCompare(b.accessToken.getUserInfo()!.id));
+    // SWB Why the double assignment?
     projectId = projectId = await utils.getProjectId(requestContexts[0]);
     await utils.createIModel(requestContexts[0], utils.sharedimodelName);
     imodelId = await utils.getIModelId(requestContexts[0], utils.sharedimodelName);

@@ -138,6 +138,7 @@ export interface RootState extends FrameworkRootState {
 }
 
 interface SampleIModelParams {
+  // SWB
   projectId: string;
   iModelId: string;
   viewIds?: string[];
@@ -285,12 +286,14 @@ export class SampleAppIModelApp {
     return category;
   }
 
+  // SWB
   public static async openIModelAndViews(projectId: string, iModelId: string, viewIdsSelected: Id64String[]) {
     // Close the current iModelConnection
     await SampleAppIModelApp.closeCurrentIModel();
 
     // open the imodel
     Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
+    // SWB
       `openIModelAndViews: projectId=${projectId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
 
     let iModelConnection: IModelConnection | undefined;
@@ -401,6 +404,7 @@ export class SampleAppIModelApp {
 
       // open the imodel
       Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
+      // SWB
         `showIModelIndex: projectId=${contextId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
 
       let iModelConnection: IModelConnection | undefined;
@@ -471,9 +475,11 @@ export class SampleAppIModelApp {
     } else if (SampleAppIModelApp.iModelParams) {
       if (SampleAppIModelApp.iModelParams.viewIds && SampleAppIModelApp.iModelParams.viewIds.length > 0) {
         // open directly into the iModel (view)
+        // SWB
         await SampleAppIModelApp.openIModelAndViews(SampleAppIModelApp.iModelParams.projectId, SampleAppIModelApp.iModelParams.iModelId, SampleAppIModelApp.iModelParams.viewIds);
       } else {
         // open to the IModelIndex frontstage
+        // SWB
         await SampleAppIModelApp.showIModelIndex(SampleAppIModelApp.iModelParams.projectId, SampleAppIModelApp.iModelParams.iModelId);
       }
     } else if (SampleAppIModelApp.testAppConfiguration?.startWithSnapshots) {
@@ -487,6 +493,7 @@ export class SampleAppIModelApp {
 
   private static _usingParams(): SampleIModelParams | undefined {
     const urlParams = new URLSearchParams(window.location.search);
+    // SWB
     const projectId = urlParams.get("projectId");
     const iModelId = urlParams.get("iModelId");
 

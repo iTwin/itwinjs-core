@@ -16,6 +16,7 @@ export interface Backend {
 
 export interface IModelData {
   id: string;
+  // SWB
   projectId: string;
   name?: string; // The name is not required to actually get the iModel, only the id.
   changeSetId?: string;
@@ -92,6 +93,7 @@ export class Settings {
       this.gprid = process.env.GPRID;
 
     //  Parse the iModel variables
+    // SWB Change .env vars?
     if (undefined === process.env.IMODEL_PROJECTID)
       throw new Error("Missing the 'IMODEL_PROJECTID' setting.");
 
@@ -99,6 +101,7 @@ export class Settings {
       throw new Error("Missing the 'IMODEL_IMODELID' setting.");
 
     this.iModel = {
+      // SWB
       projectId: process.env.IMODEL_PROJECTID,
       id: process.env.IMODEL_IMODELID,
       // Neither of the next 2 are needed but since they'll be undefined anyway, just always set it.

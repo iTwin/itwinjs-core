@@ -18,12 +18,14 @@ before(() => {
 
 before(async () => {
   const requestContext = await getRequestContext();
+  // SWB
   const contextId = await utils.getProjectId(requestContext);
   await utils.createIModel(requestContext, utils.sharedimodelName, contextId);
 });
 
 after(async () => {
   const requestContext = await getRequestContext();
+  // SWB
   const contextId = await utils.getProjectId(requestContext);
   await utils.deleteIModelByName(requestContext, contextId, utils.sharedimodelName);
 });

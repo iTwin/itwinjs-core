@@ -16,6 +16,7 @@ import { HubUtility } from "./HubUtility";
 export class TestChangeSetUtility {
   private readonly _iModelName: string;
 
+  // SWB
   public projectId!: GuidString;
   public iModelId!: GuidString;
   private _iModel!: BriefcaseDb;
@@ -30,6 +31,7 @@ export class TestChangeSetUtility {
   }
 
   private async addTestModel(): Promise<void> {
+    // SWB
     this._iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: this._requestContext, contextId: this.projectId, iModelId: this.iModelId });
     this._iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
     [, this._modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(this._iModel, IModelTestUtils.getUniqueModelCode(this._iModel, "TestPhysicalModel"), true);
@@ -56,6 +58,7 @@ export class TestChangeSetUtility {
   }
 
   public async createTestIModel(): Promise<BriefcaseDb> {
+    // SWB
     this.projectId = await HubUtility.getTestContextId(this._requestContext);
 
     // Re-create iModel on iModelHub

@@ -9,6 +9,7 @@ import { AuthorizedFrontendRequestContext, CheckpointConnection, IModelHubFronte
 export class IModelApi {
 
   /** Get all iModels in a project */
+  // SWB
   public static async getIModelByName(requestContext: AuthorizedFrontendRequestContext, projectId: string, iModelName: string): Promise<HubIModel | undefined> {
     const queryOptions = new IModelQuery();
     queryOptions.select("*").top(100).skip(0);
@@ -29,6 +30,7 @@ export class IModelApi {
   }
 
   /** Open the specified version of the IModel */
+  // SWB
   public static async openIModel(projectId: string, iModelId: string, changeSetId: string | undefined): Promise<CheckpointConnection> {
     return CheckpointConnection.openRemote(projectId, iModelId, changeSetId ? IModelVersion.asOfChangeSet(changeSetId) : IModelVersion.latest());
   }

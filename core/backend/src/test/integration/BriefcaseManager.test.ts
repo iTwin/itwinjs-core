@@ -224,6 +224,7 @@ describe("BriefcaseManager (#integration)", () => {
     await testUtility.createTestIModel();
 
     // User2 opens and then closes the iModel pullOnly/pullPush, keeping the briefcase
+    // SWB
     const args = { requestContext: userContext2, contextId: testUtility.projectId, iModelId: testUtility.iModelId };
     const iModelPullAndPush = await IModelTestUtils.openBriefcaseUsingRpc(args);
     const briefcaseIdPullAndPush: number = iModelPullAndPush.briefcaseId;
@@ -267,6 +268,7 @@ describe("BriefcaseManager (#integration)", () => {
     const testUtility = new TestChangeSetUtility(userContext1, "PullOnlyTest");
     await testUtility.createTestIModel();
 
+    // SWB
     const args = { requestContext: userContext2, contextId: testUtility.projectId, iModelId: testUtility.iModelId, briefcaseId: 0 };
 
     // User2 opens the iModel pullOnly and is not able to edit (even if the db is opened read-write!)
@@ -337,6 +339,7 @@ describe("BriefcaseManager (#integration)", () => {
     await testUtility.createTestIModel();
 
     // User2 opens the iModel pullAndPush and is able to edit and save changes
+    // SWB
     const args = { requestContext: userContext2, contextId: testUtility.projectId, iModelId: testUtility.iModelId };
     let iModelPullAndPush = await IModelTestUtils.openBriefcaseUsingRpc(args);
     assert.exists(iModelPullAndPush);

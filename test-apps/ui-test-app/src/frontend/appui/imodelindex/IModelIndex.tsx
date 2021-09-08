@@ -64,6 +64,7 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
 
   /* retrieve imodel thumbnail and version information on mount */
   public override async componentDidMount() {
+    // SWB
     const projectId = this.props.iModelConnection.contextId!;
     const iModelId = this.props.iModelConnection.iModelId!;
 
@@ -90,6 +91,7 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
   }
 
   /* retrieves the iModel thumbnail. */
+  // SWB
   private async startRetrieveThumbnail(projectId: string, iModelId: string) {
     const _thumbnail = await UiFramework.iModelServices.getThumbnail(projectId, iModelId);
     this.setState({ thumbnail: _thumbnail });

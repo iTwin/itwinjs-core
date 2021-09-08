@@ -24,6 +24,7 @@ function createAndInsertSpatialCategory(testIModel: IModelDb, name: string): Id6
 
 describe("Channel Control (#integration)", () => {
   let readWriteTestIModelId: GuidString;
+  // SWB
   let testProjectId: string;
   let managerRequestContext: AuthorizedBackendRequestContext;
   let m2: Id64String;
@@ -49,6 +50,7 @@ describe("Channel Control (#integration)", () => {
   });
 
   it("should create channels (#integration)", async () => {
+    // SWB
     const props = await BriefcaseManager.downloadBriefcase(managerRequestContext, { contextId: testProjectId, iModelId: readWriteTestIModelId });
     managerRequestContext.enter();
     const imodel1 = await BriefcaseDb.open(managerRequestContext, { fileName: props.fileName });

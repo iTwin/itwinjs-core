@@ -29,6 +29,7 @@ export class IModelSession {
 
   // SWB
   public static async create(requestContext: AuthorizedFrontendRequestContext, iModelData: IModelData): Promise<IModelSession> {
+    // SWB
     let contextId;
     let imodelId;
 
@@ -52,6 +53,7 @@ export class IModelSession {
 
       contextId = iTwinList[0].id;
     } else
+      // SWB
       contextId = iModelData.projectId!;
 
     if (iModelData.useName) {
@@ -63,6 +65,7 @@ export class IModelSession {
     } else
       imodelId = iModelData.id!;
 
+    // SWB
     console.log(`Using iModel { name:${iModelData.name}, id:${iModelData.id}, projectId:${iModelData.projectId}, changesetId:${iModelData.changeSetId} }`); // eslint-disable-line no-console
 
     return new IModelSession(contextId, imodelId, iModelData.changeSetId);

@@ -56,6 +56,7 @@ function sortStatistics(value: UserStatistics[]) {
 
 describe("iModelHubClient UserStatisticsHandler", () => {
   const requestContexts: AuthorizedClientRequestContext[] = [];
+  // SWB
   let contextId: string;
   let imodelId: GuidString;
 
@@ -75,6 +76,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
     requestContexts.push(new AuthorizedClientRequestContext(superAccessToken));
     requestContexts.push(new AuthorizedClientRequestContext(managerAccessToken));
 
+    // SWB
     contextId = await utils.getProjectId(requestContexts[0]);
     await utils.createIModel(requestContexts[0], utils.sharedimodelName, contextId, true, true);
     imodelId = await utils.getIModelId(requestContexts[0], utils.sharedimodelName, contextId);

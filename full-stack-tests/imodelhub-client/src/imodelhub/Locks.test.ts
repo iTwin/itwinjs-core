@@ -16,6 +16,7 @@ import * as utils from "./TestUtils";
 chai.should();
 
 describe("iModelHubClient LockHandler (#iModelBank)", () => {
+  // SWB
   let contextId: string;
   let imodelId: GuidString;
   let iModelClient: IModelClient;
@@ -30,6 +31,7 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
     const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
+    // SWB
     contextId = await utils.getProjectId(requestContext);
     // Does not create an imodel right now, but should in the future
     await utils.createIModel(requestContext, utils.sharedimodelName, contextId, true, true);

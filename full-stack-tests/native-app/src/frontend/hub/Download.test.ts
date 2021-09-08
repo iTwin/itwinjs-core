@@ -12,6 +12,7 @@ import { usingOfflineScope } from "../HttpRequestHook";
 import { NativeAppTest } from "../NativeAppTest";
 
 describe("NativeApp Download (#integration)", () => {
+  // SWB
   let testProjectId: GuidString;
 
   before(async () => {

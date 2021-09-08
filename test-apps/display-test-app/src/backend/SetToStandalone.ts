@@ -48,6 +48,7 @@ function setToStandalone(iModelName: string) {
   try {
     const nativeDb = new IModelHost.platform.DgnDb();
     nativeDb.openIModel(iModelName, OpenMode.ReadWrite);
+    // SWB
     nativeDb.saveProjectGuid(Guid.empty); // empty projectId means "standalone"
     nativeDb.saveChanges(); // save change to ProjectId
     nativeDb.deleteAllTxns(); // necessary before resetting briefcaseId

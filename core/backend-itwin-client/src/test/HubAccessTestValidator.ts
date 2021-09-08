@@ -28,6 +28,7 @@ export class HubAccessTestValidator {
     // SWB
     const testProjectName = "iModelJsIntegrationTest";
     const testIModelName = "ReadOnlyTest";
+    // SWB
     const testProjectId: string = await TestConfig.getITwinIdByName(requestContext, testProjectName);
     const testIModelId: string = await TestConfig.queryIModelId(requestContext, testIModelName, testProjectId);
 
@@ -37,6 +38,7 @@ export class HubAccessTestValidator {
 
   public async validateITwinClientAccess(accessToken: AccessToken) {
     const requestContext = new AuthorizedClientRequestContext(accessToken);
+    // SWB
     const projectId = await TestConfig.getITwinIdByName(requestContext, this._testProjectName);
     chai.expect(projectId).to.be.equal(this._testProjectId);
   }

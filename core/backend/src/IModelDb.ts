@@ -2658,6 +2658,7 @@ export class StandaloneDb extends IModelDb {
     const nativeDb = this.openDgnDb(file, openMode);
 
     try {
+      // SWB
       const projectId = nativeDb.queryProjectGuid();
       const briefcaseId = nativeDb.getBriefcaseId();
       if (projectId !== Guid.empty || !(briefcaseId === BriefcaseIdValue.Unassigned || briefcaseId === BriefcaseIdValue.DeprecatedStandalone))// eslint-disable-line deprecation/deprecation

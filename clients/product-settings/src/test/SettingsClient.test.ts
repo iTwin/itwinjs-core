@@ -40,6 +40,7 @@ const settingGuids = [
 chai.should();
 
 describe("ConnectSettingsClient-User (#integration)", () => {
+  // SWB
   let projectId: GuidString;
   let iModelId: GuidString;
   const settingsClient = new ConnectSettingsClient("1001");
@@ -281,6 +282,7 @@ describe("ConnectSettingsClient-User (#integration)", () => {
 });
 
 describe("ConnectSettingsClient-Administrator (#integration)", () => {
+  // SWB
   let projectId: GuidString;
   let iModelId: GuidString;
   let settingsClient: ConnectSettingsClient;
@@ -538,6 +540,7 @@ describe("ConnectSettingsClient-Administrator (#integration)", () => {
 });
 
 describe("Reading non-user settings from ordinary user (#integration)", () => {
+  // SWB
   let projectId: GuidString;
   let iModelId: GuidString;
   let settingsClient: ConnectSettingsClient;
@@ -608,6 +611,7 @@ describe("Reading non-user settings from ordinary user (#integration)", () => {
 });
 
 describe("ConnectSettingsClient-Shared (#integration)", () => {
+  // SWB
   let projectId: GuidString;
   let iModelId: GuidString;
   const settingsClient = new ConnectSettingsClient("1001");
@@ -835,6 +839,7 @@ describe("ConnectSettingsClient-Shared (#integration)", () => {
 });
 
 describe("ConnectSettingsClient-User (#integration)", () => {
+  // SWB
   let projectId: GuidString;
   let iModelId: GuidString;
   const settingsClient = new ConnectSettingsClient("1001");
