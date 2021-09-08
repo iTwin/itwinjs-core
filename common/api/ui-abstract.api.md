@@ -875,9 +875,8 @@ export class ConditionalStringValue {
 
 // @public
 export interface ContentLayoutProps extends LayoutFragmentProps {
-    descriptionKey?: string;
+    description?: string;
     id: string;
-    priority?: number;
 }
 
 // @internal (undocumented)
@@ -1274,7 +1273,7 @@ export interface LayoutHorizontalSplitProps extends LayoutSplitPropsBase {
 
 // @public
 export interface LayoutSplitPropsBase {
-    id?: string;
+    id: string;
     lock?: boolean;
     percentage: number;
 }
@@ -1714,6 +1713,28 @@ export enum StageUsage {
     Settings = "Settings",
     // (undocumented)
     ViewOnly = "ViewOnly"
+}
+
+// @public
+export class StandardContentLayouts {
+    // (undocumented)
+    static readonly availableLayouts: ContentLayoutProps[];
+    // (undocumented)
+    static readonly fourQuadrants: ContentLayoutProps;
+    // (undocumented)
+    static readonly singleView: ContentLayoutProps;
+    // (undocumented)
+    static readonly threeViewsTwoOnBottom: ContentLayoutProps;
+    // (undocumented)
+    static readonly threeViewsTwoOnLeft: ContentLayoutProps;
+    // (undocumented)
+    static readonly threeViewsTwoOnRight: ContentLayoutProps;
+    // (undocumented)
+    static readonly threeViewsTwoOnTop: ContentLayoutProps;
+    // (undocumented)
+    static readonly twoHorizontalSplit: ContentLayoutProps;
+    // (undocumented)
+    static readonly twoVerticalSplit: ContentLayoutProps;
 }
 
 // @beta

@@ -150,8 +150,6 @@ public;ContentLayoutActivatedEventArgs
 public;ContentLayoutComponentProps 
 public;ContentLayoutDef
 public;ContentLayoutManager
-public;ContentLayoutProps 
-deprecated;ContentLayoutProps 
 public;ContentProps
 public;ContentToolWidgetComposer(props: ContentToolWidgetComposerProps): JSX.Element
 public;ContentToolWidgetComposerProps
@@ -352,15 +350,7 @@ public;KeyinFieldLocalization
 internal;KeyinPalettePanel({ keyins, onKeyinExecuted, historyLength: allowedHistoryLength }: KeyinPalettePanelProps): JSX.Element
 alpha;KeyinPalettePopup({ el, id, keyins, onCancel, onItemExecuted }: KeyinPalettePopupProps): JSX.Element
 alpha;KeyinPalettePopupProps
-public;LayoutFragmentProps
-deprecated;LayoutFragmentProps
-public;LayoutHorizontalSplitProps 
-deprecated;LayoutHorizontalSplitProps 
 public;LayoutSplit
-public;LayoutSplitPropsBase
-deprecated;LayoutSplitPropsBase
-public;LayoutVerticalSplitProps 
-deprecated;LayoutVerticalSplitProps 
 beta;ListItem
 beta;ListItemType
 beta;ListPicker 

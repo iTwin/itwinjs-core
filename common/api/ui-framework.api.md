@@ -36,7 +36,7 @@ import { CommonToolbarItem } from '@bentley/ui-abstract';
 import { CompassMode } from '@bentley/imodeljs-frontend';
 import { ConditionalBooleanValue } from '@bentley/ui-abstract';
 import { ConditionalStringValue } from '@bentley/ui-abstract';
-import { ContentLayoutProps as ContentLayoutProps_2 } from '@bentley/ui-abstract';
+import { ContentLayoutProps } from '@bentley/ui-abstract';
 import * as CSS from 'csstype';
 import { CustomButtonDefinition } from '@bentley/ui-abstract';
 import { CustomToolbarItem } from '@bentley/ui-components';
@@ -73,6 +73,7 @@ import { Interaction } from 'scheduler/tracing';
 import { InteractiveTool } from '@bentley/imodeljs-frontend';
 import { IPresentationTreeDataProvider } from '@bentley/presentation-components';
 import { ItemField } from '@bentley/imodeljs-frontend';
+import { LayoutFragmentProps } from '@bentley/ui-abstract';
 import { MessageBoxIconType } from '@bentley/imodeljs-frontend';
 import { MessageBoxType } from '@bentley/imodeljs-frontend';
 import { MessageBoxValue } from '@bentley/imodeljs-frontend';
@@ -1226,8 +1227,8 @@ export class ConfigurableUiManager {
     static isControlRegistered(classId: string): boolean;
     static loadContentGroup(groupProps: ContentGroupProps): void;
     static loadContentGroups(groupPropsList: ContentGroupProps[]): void;
-    static loadContentLayout(layoutProps: ContentLayoutProps_2): void;
-    static loadContentLayouts(layoutPropsList: ContentLayoutProps_2[]): void;
+    static loadContentLayout(layoutProps: ContentLayoutProps): void;
+    static loadContentLayouts(layoutPropsList: ContentLayoutProps[]): void;
     static loadKeyboardShortcuts(shortcutList: KeyboardShortcutProps[]): void;
     static loadTasks(taskPropsList: TaskPropsList): void;
     static loadWorkflow(workflowProps: WorkflowProps): void;
@@ -1314,10 +1315,10 @@ export class ContentGroup {
     getViewports(): Array<ScreenViewport | undefined>;
     // (undocumented)
     groupId: string;
+    // (undocumented)
+    layout: ContentLayoutProps;
     onFrontstageDeactivated(): void;
     onFrontstageReady(): void;
-    // (undocumented)
-    layout: ContentLayoutProps
     refreshContentNodes(): void;
     toJSON(contentCallback?: ContentCallback): ContentGroupProps;
 }
@@ -1326,8 +1327,6 @@ export class ContentGroup {
 export class ContentGroupManager {
     // (undocumented)
     static findGroup(groupId: string): ContentGroup | undefined;
-    // (undocumented)
-    static getPreferredLayoutId(groupId: string): string | undefined;
     // @internal
     static loadGroups(groupPropsList: ContentGroupProps[]): void;
 }
@@ -1336,7 +1335,7 @@ export class ContentGroupManager {
 export interface ContentGroupProps {
     contents: ContentProps[];
     id: string;
-    layout: ContentLayoutProps
+    layout: string | ContentLayoutProps;
 }
 
 // @public
@@ -1376,17 +1375,16 @@ export interface ContentLayoutComponentProps extends CommonProps {
 
 // @public
 export class ContentLayoutDef {
-    constructor(layoutProps: ContentLayoutProps_2);
+    constructor(layoutProps: ContentLayoutProps);
     // @internal (undocumented)
     static createSplit(fragmentDef: LayoutFragmentProps): LayoutSplit | undefined;
-    descriptionKey: string;
+    description: string;
     fillLayoutContainer(contentNodes: React.ReactNode[], resizable: boolean): React.ReactNode | undefined;
     getUsedContentIndexes(): number[];
     id: string;
-    priority: number;
     // (undocumented)
     get rootSplit(): LayoutSplit | undefined;
-    toJSON(): ContentLayoutProps_2;
+    toJSON(): ContentLayoutProps;
 }
 
 // @public
@@ -1394,22 +1392,17 @@ export class ContentLayoutManager {
     static get activeContentGroup(): ContentGroup | undefined;
     static get activeLayout(): ContentLayoutDef | undefined;
     static addLayout(layoutId: string, layoutDef: ContentLayoutDef): void;
-    static findLayout(layoutId: string): ContentLayoutDef | undefined;
-    static loadLayout(layoutProps: ContentLayoutProps_2): void;
-    static loadLayouts(layoutPropsList: ContentLayoutProps_2[]): void;
+    static findLayout(layoutId: string | ContentLayoutProps): ContentLayoutDef;
+    static loadLayout(layoutProps: ContentLayoutProps): void;
+    static loadLayouts(layoutPropsList: ContentLayoutProps[]): void;
     static refreshActiveLayout(): void;
+    static setActiveContentGroup(contentGroup: ContentGroup): Promise<void>;
     static setActiveLayout(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): Promise<void>;
-}
-
-// @public @deprecated
-export interface ContentLayoutProps extends LayoutFragmentProps {
-    descriptionKey?: string;
-    id: string;
-    priority?: number;
 }
 
 // @public
 export interface ContentProps {
+    appDataProvider?: (id: string, applicationData?: any) => any;
     applicationData?: any;
     classId: string | ConfigurableUiControlConstructor;
     id: string;
@@ -2618,8 +2611,6 @@ export class FrontstageDef {
     // (undocumented)
     get defaultLayout(): ContentLayoutDef | undefined;
     // (undocumented)
-    get defaultLayoutId(): string;
-    // (undocumented)
     get defaultTool(): ToolItemDef | undefined;
     // @internal
     dockPopoutWidgetContainer(widgetContainerId: string): void;
@@ -2805,6 +2796,7 @@ export class FrontstageManager {
     static readonly onWidgetStateChangedEvent: WidgetStateChangedEvent;
     static openModalFrontstage(modalFrontstage: ModalFrontstageInfo): void;
     static openNestedFrontstage(nestedFrontstage: FrontstageDef): Promise<void>;
+    static setActiveContentGroup(contentGroup: ContentGroup): Promise<void>;
     static setActiveFrontstage(frontstageId: string): Promise<void>;
     static setActiveFrontstageDef(frontstageDef: FrontstageDef | undefined): Promise<void>;
     static setActiveLayout(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): Promise<void>;
@@ -2842,7 +2834,6 @@ export interface FrontstageProps extends CommonProps {
     // @beta
     contentManipulationTools?: React.ReactElement<ZoneProps>;
     defaultContentId?: string;
-    defaultLayout: string | ContentLayoutDef;
     defaultTool: ToolItemDef;
     id: string;
     isInFooterMode?: boolean;
@@ -3628,41 +3619,12 @@ export interface KeyinPalettePopupProps {
     onItemExecuted?: OnItemExecutedFunc;
 }
 
-// @public @deprecated
-export interface LayoutFragmentProps {
-    horizontalSplit?: LayoutHorizontalSplitProps;
-    verticalSplit?: LayoutVerticalSplitProps;
-}
-
-// @public @deprecated
-export interface LayoutHorizontalSplitProps extends LayoutSplitPropsBase {
-    bottom: LayoutFragmentProps | number;
-    minSizeBottom?: number;
-    minSizeTop?: number;
-    top: LayoutFragmentProps | number;
-}
-
 // @public
 export interface LayoutSplit {
     // (undocumented)
     createContentContainer(contentNodes: React.ReactNode[], resizable: boolean): React.ReactNode;
     // (undocumented)
     isLocked: boolean;
-}
-
-// @public @deprecated
-export interface LayoutSplitPropsBase {
-    id?: string;
-    lock?: boolean;
-    percentage: number;
-}
-
-// @public @deprecated
-export interface LayoutVerticalSplitProps extends LayoutSplitPropsBase {
-    left: LayoutFragmentProps | number;
-    minSizeLeft?: number;
-    minSizeRight?: number;
-    right: LayoutFragmentProps | number;
 }
 
 // @beta
@@ -4733,7 +4695,7 @@ export interface SavedViewLayoutProps {
     // (undocumented)
     contentGroupProps: ContentGroupProps;
     // (undocumented)
-    contentLayoutProps: ContentLayoutProps_2;
+    contentLayoutProps: ContentLayoutProps;
     // (undocumented)
     savedViews: SavedViewProps[];
 }
@@ -5870,7 +5832,6 @@ export interface StandardFrontstageProp {
     bottomPanelProps?: WidgetPanelProps;
     contentGroupProps: ContentGroupProps;
     cornerButton?: React.ReactNode;
-    defaultLayout: string;
     hideNavigationAid?: boolean;
     hideStatusBar?: boolean;
     // (undocumented)

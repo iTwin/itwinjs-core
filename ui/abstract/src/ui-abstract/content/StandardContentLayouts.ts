@@ -10,7 +10,8 @@ import { ContentLayoutProps } from "./ContentLayoutProps";
  */
 
 /**
- * Standard Content Layouts that specify how the content in a frontstage is presented to the user.
+ * Class that define Standard Content Layouts that can be used to specify how the content is arranged in a frontstage.
+ * @public
  */
 export class StandardContentLayouts {
   public static readonly singleView: ContentLayoutProps = {

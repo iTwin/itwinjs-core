@@ -137,6 +137,7 @@ public;SpecialKey
 public;StagePanelLocation
 public;StagePanelSection
 public;StageUsage
+public;StandardContentLayouts
 beta;StandardEditorNames
 beta;StandardTypeNames
 internal;startsWithIgnoreCase(str: string, candidate: string): boolean
