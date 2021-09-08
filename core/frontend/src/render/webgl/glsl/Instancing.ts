@@ -65,15 +65,6 @@ export function addInstancedModelMatrixRTC(vert: VertexShaderBuilder) {
     });
   });
 
-  vert.addUniform("u_patternFeatureId", VariableType.Vec3, (prog) => {
-    prog.addGraphicUniform("u_patternFeatureId", (uniform, params) => {
-      const id = params.geometry.asInstanced?.patternFeatureId;
-      assert(undefined !== id);
-      if (id)
-        uniform.setUniform3fv(id);
-    });
-  });
-
   addPatternTransforms(vert);
 
   vert.addGlobal("g_isAreaPattern", VariableType.Boolean);
