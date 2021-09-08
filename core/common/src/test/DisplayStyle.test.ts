@@ -167,6 +167,7 @@ describe("DisplayStyleSettings", () => {
         const excludedIds = Array.from(settings.excludedElementIds);
         // eslint-disable-next-line deprecation/deprecation
         expect(settings.excludedElements.size).to.equal(excludedIds.length);
+        // eslint-disable-next-line deprecation/deprecation
         const set = OrderedId64Iterable.sortArray(Array.from(settings.excludedElements));
         expect(set).to.deep.equal(excludedIds);
       };
@@ -186,6 +187,7 @@ describe("DisplayStyleSettings", () => {
       test(undefined, (settings) => { settings.excludedElements.add("0x2"); settings.excludedElements.delete("0x2"); });
       // eslint-disable-next-line deprecation/deprecation
       test("+2", (settings) => { settings.excludedElements.add("0x1"); settings.excludedElements.add("0x2"); settings.excludedElements.delete("0x1"); });
+      // eslint-disable-next-line deprecation/deprecation
       test("+1", (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.excludedElements.delete("0x2"); });
       // eslint-disable-next-line deprecation/deprecation
       test("+2", (settings) => { settings.excludedElements.add("0x1"); settings.addExcludedElements(["0x2", "0x3"]); settings.dropExcludedElement("0x3"); settings.excludedElements.delete("0x1"); });
