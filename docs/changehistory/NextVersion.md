@@ -8,12 +8,23 @@ publish: false
 Removed TSLint support from `@bentley/build-tools`. If you're still using it, please switch to ESLint.
 Also removed legacy `.eslintrc.js` file from the same package. Instead, use `@bentley/eslint-plugin` and the `imodeljs-recommended` config included in it.
 
-## `Viewport.zoomToElements` improvements
+## Viewport.zoomToElements improvements
 
 [Viewport.zoomToElements]($frontend) accepts any number of element Ids and fits the viewport to the union of their [Placement]($common)s. A handful of shortcomings of the previous implementation have been addressed:
 
 * Previously, the element Ids were passed to [IModelConnection.Elements.getProps]($frontend), which returned **all** of the element's properties (potentially many megabytes of data), only to extract the [PlacementProps]($common) for each element and discard the rest. Now, it uses the new [IModelConnection.Elements.getPlacements]($frontend) function to query only the placements.
 * Previously, if a mix of 2d and 3d elements were specified, the viewport would attempt to union their 2d and 3d placements, typically causing it to fit incorrectly because 2d elements reside in a different coordinate space than 3d elements. Now, the viewport ignores 2d elements if it is viewing a 3d view, and vice-versa.
+
+## White-on-white reversal for non-white backgrounds
+
+White-on-white reversal causes pure white geometry to be displayed as black when drawn onto a pure white background, where it would otherwise be invisible. However, on light-colored (but not pure white) backgrounds, white geometry can be very difficult to discern. [DisplayStyleSettings.whiteOnWhiteReversal]($common) now provides an option to draw white geometry as black regardless of the background color. The following code demonstrates how to enable this behavior for a [DisplayStyleState]($frontend):
+
+```ts
+  // Specify that white-on-white reversal should apply regardless of background color.
+  displayStyle.settings.whiteOnWhiteReversal = WhiteOnWhiteReversal.fromJSON({ ignoreBackgroundColor: true });
+  // Ensure white-on-white reversal is enabled.
+  displayStyle.viewFlags = displayStyle.viewFlags.with("whiteOnWhiteReversal", true);
+```
 
 ## Breaking changes
 
@@ -36,6 +47,7 @@ Each of these interfaces originally had only a member `changeSetId: string`, In 
 ### Immutability
 
 [ViewFlags]($common) has long been a common source of surprising behavior. Consider the following code:
+
 ```ts
   function turnOnShadows(vp: Viewport) {
     vp.viewFlags.shadows = true;
@@ -43,6 +55,7 @@ Each of these interfaces originally had only a member `changeSetId: string`, In 
 ```
 
 You could be forgiven for expecting the image displayed in the Viewport to include shadows after calling this function, but that will not be the case. Instead, you must write the function as follows:
+
 ```ts
   function turnOnShadows(vp: Viewport) {
     const vf = vp.viewFlags.clone();
@@ -52,6 +65,7 @@ You could be forgiven for expecting the image displayed in the Viewport to inclu
 ```
 
 To rectify this, and to eliminate various other pitfalls associated with mutable state, ViewFlags has been converted to an immutable type - all of its properties are read-only and the only way to change a property is to create a copy. The function above can now be written as:
+
 ```ts
   function turnOnShadows(vp: Viewport) {
     vp.viewFlags = vp.viewFlags.with("shadows", true);
@@ -61,10 +75,11 @@ To rectify this, and to eliminate various other pitfalls associated with mutable
 ```
 
 Methods that mutate a ViewFlags object have been removed.
-- `clone` has been replaced with [ViewFlags.copy]($common), which returns a new object instead of modifying `this`.
-- `createFrom` has been removed. Because ViewFlags is immutable, it is never necessary to create an identical copy of one - just use the same object. Or, if for some reason you really want an identical copy, use the object spread operator.
+* `clone` has been replaced with [ViewFlags.copy]($common), which returns a new object instead of modifying `this`.
+* `createFrom` has been removed. Because ViewFlags is immutable, it is never necessary to create an identical copy of one - just use the same object. Or, if for some reason you really want an identical copy, use the object spread operator.
 
 If your code used to modify a single property, change it to use [ViewFlags.with]($common) or [ViewFlags.withRenderMode]($common):
+
 ```ts
   // Replace this...
   viewport.viewFlags.clipVolume = true;
@@ -73,6 +88,7 @@ If your code used to modify a single property, change it to use [ViewFlags.with]
 ```
 
 If your code used to modify multiple properties, change it to use [ViewFlags.copy]($common):
+
 ```ts
   // Replace this...
   viewport.viewFlags.shadows = viewport.viewFlags.lighting = true;
@@ -81,6 +97,7 @@ If your code used to modify multiple properties, change it to use [ViewFlags.cop
 ```
 
 If your code used to create a new ViewFlags and then modify its properties, pass the initial properties to [ViewFlags.create]($common) instead:
+
 ```ts
   // Replace this...
   const vf = new ViewFlags();
@@ -106,6 +123,7 @@ If you were using noCameraLights, noSourceLights, or noSolarLight, use [ViewFlag
 This cumbersome, inefficient class has been replaced with the identically-named [ViewFlagOverrides]($common) type, which is simply an interface that has all the same properties as [ViewFlags]($common), but each is optional. A flag is overridden if its value is not `undefined`.
 
 Upgrade instructions:
+
 ```
   let ovrs = new ViewFlagOverrides(); // Old code - nothing overridden.
   let ovrs = { }; // New code
@@ -325,6 +343,32 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `FilteredPresentationTreeDataProvider.loadHierarchy`  | *eliminated*                                                                           |
 | `DEPRECATED_controlledTreeWithFilteringSupport`       | *eliminated*                                                                           |
 | `DEPRECATED_controlledTreeWithVisibleNodes`           | *eliminated*                                                                           |
+
+### @bentley/ecschema-metadata
+
+| Removed                                 | Replacement                                                                                 |
+| --------------------------------------- | --------------------------------------------------------------------------------------------|
+| `IDiagnostic`                           | `IDiagnostic` in @bentley/ecschema-editing                                                  |
+| `BaseDiagnostic`                        | `BaseDiagnostic` in @bentley/ecschema-editing                                               |
+| `DiagnosticType`                        | `DiagnosticType` in @bentley/ecschema-editing                                               |
+| `DiagnosticCategory`                    | `DiagnosticCategory` in @bentley/ecschema-editing                                           |
+| `DiagnosticCodes`                       | `DiagnosticCodes` in @bentley/ecschema-editing                                              |
+| `Diagnostics`                           | `Diagnostics` in @bentley/ecschema-editing                                                  |
+| `IDiagnosticReporter`                   | `IDiagnosticReporter` in @bentley/ecschema-editing                                          |
+| `SuppressionDiagnosticReporter`         | `SuppressionDiagnosticReporter` in @bentley/ecschema-editing                                |
+| `FormatDiagnosticReporter`              | `FormatDiagnosticReporter` in @bentley/ecschema-editing                                     |
+| `LoggingDiagnosticReporter`             | `LoggingDiagnosticReporter` in @bentley/ecschema-editing                                    |
+| `IRuleSet`                              | `IRuleSet` in @bentley/ecschema-editing                                                     |
+| `ECRuleSet`                             | `ECRuleSet` in @bentley/ecschema-editing                                                    |
+| `ISuppressionRule`                      | `ISuppressionRule` in @bentley/ecschema-editing                                             |
+| `BaseSuppressionRule`                   | `BaseSuppressionRule` in @bentley/ecschema-editing                                          |
+| `IRuleSuppressionMap`                   | `IRuleSuppressionMap` in @bentley/ecschema-editing                                          |
+| `BaseRuleSuppressionMap`                | `BaseRuleSuppressionMap` in @bentley/ecschema-editing                                       |
+| `IRuleSuppressionSet`                   | `IRuleSuppressionSet` in @bentley/ecschema-editing                                          |
+| `SchemaCompareCodes`                    | `SchemaCompareCodes` in @bentley/ecschema-editing                                           |
+| `SchemaCompareDiagnostics`              | `SchemaCompareDiagnostics` in @bentley/ecschema-editing                                     |
+| `SchemaValidater`                       | `SchemaValidater` in @bentley/ecschema-editing                                              |
+| `SchemaValidationVisitor`               | `SchemaValidationVisitor` in @bentley/ecschema-editing                                      |
 
 <!---
 User Interface Changes - section to comment below
