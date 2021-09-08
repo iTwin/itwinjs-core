@@ -189,7 +189,7 @@ export class ViewFlags {
    * that logic does not execute, potentially improving performance for no degradation in visual quality. In some scenarios - such as wireframe views containing many planar regions with interior fill, or smooth views containing many coincident planar and non-planar surfaces - enabling this view flag improves display quality by forcing that logic to execute.
    */
   public forceSurfaceDiscard: boolean = false;
-  
+
   /** Whether to apply white-on-white reversal.
    * Some CAD applications use this to cause white geometry to be drawn as black if the view's background color is white.
    * When enabled, the [[DisplayStyleSettings]]' [[WhiteOnWhiteReversalSettings]] control how white-on-white reversal is applied.

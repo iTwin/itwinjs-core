@@ -9,6 +9,7 @@
 
 import {
   DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, RenderMode, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
+  WhiteOnWhiteReversalSettings,
 } from "@bentley/imodeljs-common";
 import {
   DisplayStyle3dState, Environment, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport,
