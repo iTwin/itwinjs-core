@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider } from "@bentley/ui-framework";
+import { StandardContentLayouts } from "@bentley/ui-abstract";
 
 export class ScheduleAnimationFrontstage extends FrontstageProvider {
 
@@ -12,7 +13,7 @@ export class ScheduleAnimationFrontstage extends FrontstageProvider {
     const myContentGroup: ContentGroup = new ContentGroup(
       {
         id: "ScheduleAnimation",
-        layout: "SingleContent",
+        layout: StandardContentLayouts.singleView,
         contents: [
           {
             id: "ScheduleAnimation",

@@ -9,7 +9,7 @@ import {
   IModelViewportControl, StagePanel, StagePanelState, SyncUiEventArgs, SyncUiEventDispatcher,
   UiFramework, ViewToolWidgetComposer, Widget, Zone,
 } from "@bentley/ui-framework";
-import { StageUsage } from "@bentley/ui-abstract";
+import { StageUsage, StandardContentLayouts } from "@bentley/ui-abstract";
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
 
@@ -23,7 +23,7 @@ const supplyViewOverlay = (viewport: ScreenViewport) => {
 
 export const ui2ContentGroupProps: ContentGroupProps = {
   id: "main-content-group",
-  layout: "SingleContent",
+  layout: StandardContentLayouts.singleView,
   contents: [
     {
       id: "primaryContent",

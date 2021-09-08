@@ -10,7 +10,7 @@ import {
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../../index";
 import { IModelIndex } from "../imodelindex/IModelIndex";
-import { StageUsage } from "@bentley/ui-abstract";
+import { StageUsage, StandardContentLayouts } from "@bentley/ui-abstract";
 
 class IModelIndexControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -38,7 +38,7 @@ export class IModelIndexFrontstage extends FrontstageProvider {
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const contentGroup: ContentGroup = new ContentGroup({
       id: "imodelIndexGroup",
-      layout: "SingleContent",
+      layout: StandardContentLayouts.singleView,
       contents: [
         {
           id: "imodelIndexView",

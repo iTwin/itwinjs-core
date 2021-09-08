@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelApp, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
-import { CommonToolbarItem, ConditionalBooleanValue, ContentLayoutProps, IconSpecUtilities, StageUsage, ToolbarItemUtilities, WidgetState } from "@bentley/ui-abstract";
+import { CommonToolbarItem, ConditionalBooleanValue, ContentLayoutProps, IconSpecUtilities, StageUsage, StandardContentLayouts, ToolbarItemUtilities, WidgetState } from "@bentley/ui-abstract";
 import {
   AccuDrawDialog, AccuDrawWidgetControl, BasicNavigationWidget, BasicToolWidget, CommandItemDef, ContentGroup, ContentLayoutDef, ContentProps,
   CoreTools, CustomItemDef, Frontstage, FrontstageProvider, IModelConnectedViewSelector, ModelessDialogManager,
@@ -65,8 +65,6 @@ export class EditFrontstage extends FrontstageProvider {
       throw (Error(`Could not find layout ContentLayoutProps when number of viewStates=${this.viewStates.length}`));
     }
 
-    const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(contentLayoutProps);
-
     // create the content props that specifies an iModelConnection and a viewState entry in the application data.
     const contentProps: ContentProps[] = [];
     for (const viewState of this.viewStates) {
@@ -79,7 +77,7 @@ export class EditFrontstage extends FrontstageProvider {
     }
     const myContentGroup: ContentGroup = new ContentGroup({
       id: "main-edit",
-      layout: "SingleContent",
+      layout: StandardContentLayouts.singleView,
       contents: contentProps,
     });
     return (

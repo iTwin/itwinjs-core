@@ -5,7 +5,7 @@
 import * as React from "react";
 import {
   DialogButtonDef, DialogButtonType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem,
-  PropertyChangeResult, PropertyChangeStatus, PropertyDescription, StandardTypeNames, WidgetState,
+  PropertyChangeResult, PropertyChangeStatus, PropertyDescription, StandardContentLayouts, StandardTypeNames, WidgetState,
 } from "@bentley/ui-abstract";
 import {
   ActionItemButton,
@@ -146,7 +146,7 @@ export class Frontstage4 extends FrontstageProvider {
     const myContentGroup: ContentGroup = new ContentGroup(
       {
         id: "CubeContent",
-        layout: "SingleContent",
+        layout: StandardContentLayouts.singleView,
         contents: [
           {
             id: "navigationCube",

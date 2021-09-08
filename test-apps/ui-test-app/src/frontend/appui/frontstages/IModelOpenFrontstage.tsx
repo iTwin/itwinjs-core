@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { StageUsage } from "@bentley/ui-abstract";
+import { StageUsage, StandardContentLayouts } from "@bentley/ui-abstract";
 import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, IModelInfo,
 } from "@bentley/ui-framework";
@@ -32,7 +32,7 @@ export class IModelOpenFrontstage extends FrontstageProvider {
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const contentGroup: ContentGroup = new ContentGroup({
       id: "imodelIndexGroup",
-      layout: "SingleContent",
+      layout: StandardContentLayouts.singleView,
       contents: [
         {
           id: "imodel-open",

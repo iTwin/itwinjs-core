@@ -17,7 +17,7 @@ import { UnitSystemKey } from "@bentley/imodeljs-quantity";
 import { Presentation } from "@bentley/presentation-frontend";
 import {
   BackstageItem, BackstageItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue, DialogButtonType,
-  MessageSeverity, StatusBarSection, UiItemsManager, UiItemsProvider, WidgetState,
+  MessageSeverity, StandardContentLayouts, StatusBarSection, UiItemsManager, UiItemsProvider, WidgetState,
 } from "@bentley/ui-abstract";
 import { Dialog, ReactMessage, SvgPath, SvgSprite, UnderlinedButton } from "@bentley/ui-core";
 import {
@@ -444,7 +444,7 @@ export class AppTools {
             const contentGroup = new ContentGroup(
               {
                 id: "split-vertical-group",
-                layout: "TwoHalvesVertical",
+                layout: StandardContentLayouts.twoVerticalSplit,
                 contents: contentPropsArray,
               });
 
@@ -475,7 +475,7 @@ export class AppTools {
             const contentGroup = new ContentGroup(
               {
                 id: "single-content",
-                layout: "SingleContent",
+                layout: StandardContentLayouts.singleView,
                 contents: contentPropsArray,
               });
 

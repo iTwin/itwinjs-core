@@ -6,6 +6,7 @@ import * as React from "react";
 import {
   ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, NestedFrontstage, ToolWidget, Widget, Zone,
 } from "@bentley/ui-framework";
+import { StandardContentLayouts } from "@bentley/ui-abstract";
 
 export class NestedAnimationStage extends FrontstageProvider {
 
@@ -13,7 +14,7 @@ export class NestedAnimationStage extends FrontstageProvider {
     const myContentGroup: ContentGroup = new ContentGroup(
       {
         id: "ScheduleAnimation",
-        layout: "SingleContent",
+        layout: StandardContentLayouts.singleView,
         contents: [
           {
             id: "ScheduleAnimationView",

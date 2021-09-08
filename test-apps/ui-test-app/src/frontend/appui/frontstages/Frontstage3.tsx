@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { WidgetState } from "@bentley/ui-abstract";
+import { StandardContentLayouts, WidgetState } from "@bentley/ui-abstract";
 import {
-  ActionItemButton, ContentGroup, ContentLayoutDef, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, GroupButton, IModelViewportControl,
+  ActionItemButton, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, GroupButton, IModelViewportControl,
   NavigationWidget, ToolButton, ToolWidget, UiFramework, Widget, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
@@ -20,26 +20,16 @@ import { ReactTableDemoContentControl } from "../table-demo/ReactTableDemo";
 /* eslint-disable react/jsx-key, deprecation/deprecation */
 
 export class Frontstage3 extends FrontstageProvider {
+  private getDefaultViewState = () => {
+    return UiFramework.getDefaultViewState()?.clone();
+  };
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
-    const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
-      { // Three Views, one on the left, two stacked on the right.
-        id: "SampleApp:ContentLayoutDef.ThreeRightStacked",
-        description: "SampleApp:ContentLayoutDef.ThreeRightStacked",
-        verticalSplit: {
-          id: "SampleApp:ThreeRightStackedVerticalSplit",
-          percentage: 0.50,
-          minSizeLeft: 100, minSizeRight: 100,
-          left: { horizontalSplit: { id: "SampleApp:ThreeViewsRightHorizontalSplit", percentage: 0.50, top: 0, bottom: 1, minSizeTop: 100, minSizeBottom: 100 } },
-          right: { horizontalSplit: { id: "SampleApp:ThreeViewsLeftHorizontalSplit", percentage: 0.50, top: 2, bottom: 3, minSizeTop: 100, minSizeBottom: 100 } },
-        },
-      },
-    );
 
     const myContentGroup: ContentGroup = new ContentGroup(
       {
-        id: "Frontstage4",
-        layout: "FourQuadrants",
+        id: "ui-test-app:Frontstage3ContentGroup",
+        layout: StandardContentLayouts.fourQuadrants,
         contents: [
           {
             id: "imodelView1",
@@ -53,7 +43,7 @@ export class Frontstage3 extends FrontstageProvider {
           {
             id: "imodelView2",
             classId: App_IModelViewport.id,
-            applicationData: { viewState: UiFramework.getDefaultViewState, iModelConnection: UiFramework.getIModelConnection },
+            applicationData: { viewState: this.getDefaultViewState, iModelConnection: UiFramework.getIModelConnection },
           },
           {
             id: "oldTableView",

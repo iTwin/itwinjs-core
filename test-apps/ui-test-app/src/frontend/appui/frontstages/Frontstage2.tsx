@@ -19,29 +19,17 @@ import {
   HorizontalPropertyGridContentControl, HorizontalPropertyGridWidgetControl,
 } from "../widgets/PropertyGridDemoWidget";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { ConditionalBooleanValue, WidgetState } from "@bentley/ui-abstract";
+import { ConditionalBooleanValue, StandardContentLayouts, WidgetState } from "@bentley/ui-abstract";
 
 /* eslint-disable react/jsx-key, deprecation/deprecation */
 
 export class Frontstage2 extends FrontstageProvider {
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
-    const contentLayoutProps = {
-      id: "SampleApp:ContentLayoutDef.FourQuadrants",
-      description: "SampleApp:ContentLayoutDef.FourQuadrants",
-      verticalSplit: {
-        id: "SampleApp:FourQuadrantsVerticalSplit",
-        percentage: 0.50,
-        minSizeLeft: 100, minSizeRight: 100,
-        left: { horizontalSplit: { id: "SampleApp:FourQuadrantsLeftHorizontalSplit", percentage: 0.50, top: 0, bottom: 1, minSizeTop: 100, minSizeBottom: 100 } },
-        right: { horizontalSplit: { id: "SampleApp:FourQuadrantsRightHorizontalSplit", percentage: 0.50, top: 2, bottom: 3, minSizeTop: 100, minSizeBottom: 100 } },
-      },
-    };
-
     const myContentGroup: ContentGroup = new ContentGroup(
       {
         id: "frontstage2",
-        layout: contentLayoutProps,
+        layout: StandardContentLayouts.fourQuadrants,
         contents: [
           {
             id: "imodelView1",

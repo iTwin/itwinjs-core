@@ -10,7 +10,7 @@ import {
 } from "@bentley/ui-framework";
 import { SignIn } from "../oidc/SignIn";
 import { SampleAppIModelApp } from "../../index";
-import { StageUsage } from "@bentley/ui-abstract";
+import { StageUsage, StandardContentLayouts } from "@bentley/ui-abstract";
 
 class SignInControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -38,7 +38,7 @@ export class SignInFrontstage extends FrontstageProvider {
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const contentGroup: ContentGroup = new ContentGroup({
       id: "sign-in-stage",
-      layout: "SingleContent",
+      layout: StandardContentLayouts.singleView,
       contents: [
         {
           id: "sign-in",

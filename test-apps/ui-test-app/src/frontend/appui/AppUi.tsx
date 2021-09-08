@@ -20,7 +20,7 @@ import "./tooluiproviders/Tool2UiProvider";
 import "./statusbars/AppStatusBar";
 import "./navigationaids/CubeExampleNavigationAid";
 import * as React from "react";
-import { BadgeType, ContentLayoutProps, FunctionKey, StagePanelLocation, StagePanelSection, StageUsage, WidgetState } from "@bentley/ui-abstract";
+import { BadgeType, ContentLayoutProps, FunctionKey, StagePanelLocation, StagePanelSection, StageUsage, StandardContentLayouts, WidgetState } from "@bentley/ui-abstract";
 import { FillCentered } from "@bentley/ui-core";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 
@@ -200,72 +200,9 @@ export class AppUi {
   /** Define Content Groups referenced by Frontstages.
    */
   private static defineContentGroups() {
-    const singleIModelViewport: ContentGroupProps = {
-      id: "singleIModelViewport",
-      layout: "SingleContent",
-      contents: [
-        {
-          classId: IModelViewportControl,
-          id: "drawingView",
-          applicationData: {
-            supports: ["issueResolutionMarkers", "viewIdSelection"],
-          },
-        },
-      ],
-    };
-
-    // id: "FourQuadrants",
-    // id: "ThreeRightStacked",
-    // layout: "TwoHalvesHorizontal",
-
-    const drawingAndSheetViewports: ContentGroupProps = {
-      id: "DrawingAndSheetViewports",
-      layout: "TwoHalvesVertical",
-      contents: [
-        {
-          classId: IModelViewportControl,
-          id: "drawingView",
-          applicationData: {
-            isPrimaryView: true,
-            supports: ["issueResolutionMarkers", "viewIdSelection", "3dModels", "2dModels"],
-          },
-        },
-        {
-          classId: IModelViewportControl,
-          id: "sheetView",
-          applicationData: {
-            supports: ["issueResolutionMarkers", "viewIdSelection", "sheetModels"],
-          },
-        },
-      ],
-    };
-
-    const threeIModelViewportsWithItemsTable: ContentGroupProps = {
-      id: "ThreeIModelViewportsWithItemsTable",
-      layout: "FourQuadrants",
-      contents: [
-        {
-          id: "primaryIModelView",
-          classId: IModelViewportControl,
-        },
-        {
-          id: "secondIModelView",
-          classId: IModelViewportControl,
-        },
-        {
-          id: "tableView",
-          classId: "TablePane",
-        },
-        {
-          id: "thirdIModelView",
-          classId: IModelViewportControl,
-        },
-      ],
-    };
-
     const testContentGroup1: ContentGroupProps = {
       id: "TestContentGroup1",
-      layout: "FourQuadrants",
+      layout: StandardContentLayouts.fourQuadrants,
       contents: [
         {
           id: "primaryIModelView",
@@ -292,7 +229,7 @@ export class AppUi {
 
     const testContentGroup2: ContentGroupProps = {
       id: "TestContentGroup2",
-      layout: "FourQuadrants",
+      layout: "ui-test-app:ThreeStacked",
       contents: [
         {
           id: "primaryIModelView",
@@ -309,70 +246,11 @@ export class AppUi {
           classId: "TableExampleContent",
           applicationData: { label: "Content 3b", bgColor: "black" },
         },
-        {
-          id: "thirdIModelView",
-          classId: IModelViewportControl,
-          applicationData: { label: "Content 4b", bgColor: "black" },
-        },
-      ],
-    };
-
-    const testContentGroup3: ContentGroupProps = {
-      id: "TestContentGroup3",
-      layout: "FourQuadrants",
-      contents: [
-        {
-          id: "primaryIModelView",
-          classId: IModelViewportControl,
-          applicationData: { label: "Content 1a", bgColor: "black" },
-        },
-        {
-          id: "CubeView",
-          classId: "CubeContent",
-          applicationData: { label: "Content 2a", bgColor: "black" },
-        },
-        {
-          id: "tableView",
-          classId: "TableExampleContent",
-          applicationData: { label: "Content 3a", bgColor: "black" },
-        },
-        {
-          id: "secondIModelView",
-          classId: IModelViewportControl,
-          applicationData: { label: "Content 4a", bgColor: "black" },
-        },
-      ],
-    };
-
-    const testContentGroup4: ContentGroupProps = {
-      id: "TestContentGroup4",
-      layout: "FourQuadrants",
-      contents: [
-        {
-          id: "primaryIModelView",
-          classId: IModelViewportControl,
-          applicationData: { label: "Content 1a", bgColor: "black" },
-        },
-        {
-          id: "secondIModelView",
-          classId: IModelViewportControl,
-          applicationData: { label: "Content 2a", bgColor: "black" },
-        },
-        {
-          id: "tableView",
-          classId: "TableExampleContent",
-          applicationData: { label: "Content 3a", bgColor: "black" },
-        },
-        {
-          id: "treeView",
-          classId: "TreeExampleContent",
-          applicationData: { label: "Content 4a", bgColor: "black" },
-        },
       ],
     };
 
     const contentGroups: ContentGroupProps[] = [];
-    contentGroups.push(singleIModelViewport, drawingAndSheetViewports, threeIModelViewportsWithItemsTable, testContentGroup1, testContentGroup2, testContentGroup3, testContentGroup4);
+    contentGroups.push(testContentGroup1, testContentGroup2);
     ConfigurableUiManager.loadContentGroups(contentGroups);
   }
 
@@ -384,53 +262,40 @@ export class AppUi {
   }
 
   private static getContentLayouts(): ContentLayoutProps[] {
-    const fourQuadrants: ContentLayoutProps = {
-      id: "FourQuadrants",
-      horizontalSplit: {
-        id: "FourQuadrantsVerticalSplit",
+    const threeStackedVertical: ContentLayoutProps = {
+      id: "ui-test-app:ThreeStacked",
+      horizontalSplit:
+      {
+        id: "ui-test-app:ThreeStacked-TopSplit",
         percentage: 0.50,
-        minSizeTop: 100, minSizeBottom: 100,
-        top: { verticalSplit: { id: "FourQuadrantsTopHorizontalSplit", percentage: 0.50, left: 0, right: 1, minSizeLeft: 100, minSizeRight: 100 } },
-        bottom: { verticalSplit: { id: "FourQuadrantsBottomHorizontalSplit", percentage: 0.50, left: 2, right: 3, minSizeLeft: 100, minSizeRight: 100 } },
-      },
-    };
-
-    const twoHalvesVertical: ContentLayoutProps = {
-      id: "TwoHalvesVertical",
-      verticalSplit: { id: "TwoViewsVerticalSplit", percentage: 0.50, left: 0, right: 1, minSizeLeft: 100, minSizeRight: 100 },
-    };
-
-    const twoHalvesHorizontal: ContentLayoutProps = {
-      id: "TwoHalvesHorizontal",
-      horizontalSplit: { id: "TwoViewsHorizontalSplit", percentage: 0.50, top: 0, bottom: 1, minSizeTop: 100, minSizeBottom: 100 },
-    };
-
-    const singleContent: ContentLayoutProps = {
-      id: "SingleContent",
-    };
-
-    const threeRightStacked: ContentLayoutProps = { // Three Views, one on the left, two stacked on the right.
-      id: "ThreeRightStacked",
-      verticalSplit: {
-        id: "ThreeRightStacked.MainVertical",
-        percentage: 0.50,
-        minSizeLeft: 100, minSizeRight: 100,
-        left: 0,
-        right: { horizontalSplit: { id: "ThreeViewsRightHorizontalSplit", percentage: 0.50, top: 1, bottom: 2, minSizeTop: 100, minSizeBottom: 100 } },
+        minSizeTop: 100,
+        minSizeBottom: 200,
+        top: 0,
+        bottom: {
+          horizontalSplit: { id: "ui-test-app:ThreeStacked-BottomSplit", percentage: 0.50, top: 1, bottom: 2, minSizeTop: 100, minSizeBottom: 100 },
+        },
       },
     };
 
     const contentLayouts: ContentLayoutProps[] = [];
-    // in order to pick out by number of views for convenience.
-    contentLayouts.push(singleContent, twoHalvesVertical, threeRightStacked, fourQuadrants, singleContent, twoHalvesHorizontal);
+    contentLayouts.push(threeStackedVertical);
     return contentLayouts;
   }
 
   public static findLayoutFromContentCount(contentCount: number): ContentLayoutProps | undefined {
-    const contentLayouts: ContentLayoutProps[] = AppUi.getContentLayouts();
-    if (contentCount <= 4)
-      return contentLayouts[contentCount - 1];
-    return undefined;
+    if (contentCount < 0)
+      return undefined;
+
+    switch (contentCount) {
+      case 1:
+        return StandardContentLayouts.singleView;
+      case 2:
+        return StandardContentLayouts.twoHorizontalSplit;
+      case 3:
+        return StandardContentLayouts.threeViewsTwoOnRight;
+      default:
+        return StandardContentLayouts.fourQuadrants;
+    }
   }
 
   /** Define Tasks list and Workflows list.
