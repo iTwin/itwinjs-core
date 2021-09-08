@@ -25,7 +25,7 @@ import { ISchemaPartVisitor, SchemaPartVisitorDelegate } from "../SchemaPartVisi
 import { getItemNamesFromFormatString } from "../utils/FormatEnums";
 import { AbstractParser, AbstractParserConstructor, CAProviderTuple } from "./AbstractParser";
 import { ClassProps, PropertyProps, RelationshipConstraintProps, SchemaReferenceProps } from "./JsonProps";
-import {validateSchemaReferences, validateSchemaReferencesSync} from "../Validation/ECRules";
+import { SchemaGraph } from "../utils/SchemaGraph";
 
 type AnyCAContainer = Schema | ECClass | Property | RelationshipConstraint;
 type AnyMutableCAContainer = MutableSchema | MutableClass | MutableProperty | MutableRelationshipConstraint;
@@ -162,11 +162,11 @@ export class SchemaReadHelper<T = unknown> {
       throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema!.schemaKey.name}`);
 
     await (this._schema as MutableSchema).addReference(refSchema);
-    const diagnostics = validateSchemaReferences(this._schema!);
+    const results = this.validateSchemaReferences(this._schema!);
 
     let errorMessage: string = "";
-    for await (const diagnostic of diagnostics) {
-      errorMessage += `${diagnostic.code}: ${diagnostic.messageText}\r\n`;
+    for (const result of results) {
+      errorMessage += `${result}\r\n`;
     }
 
     if (errorMessage) {
@@ -185,14 +185,44 @@ export class SchemaReadHelper<T = unknown> {
       throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema!.schemaKey.name}`);
 
     (this._schema as MutableSchema).addReferenceSync(refSchema);
-    const diagnostics = validateSchemaReferencesSync(this._schema!);
+    const results = this.validateSchemaReferences(this._schema!);
 
     let errorMessage: string = "";
-    for (const diagnostic of diagnostics) {
-      errorMessage += `${diagnostic.code}: ${diagnostic.messageText}\r\n`;
+    for (const result of results) {
+      errorMessage += `${result}\r\n`;
     }
+
     if (errorMessage) {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `${errorMessage}`);
+    }
+  }
+
+  /**
+   * Validates schema references against multiple EC rules.
+   * @param schema The schema to validate.
+   */
+  private *validateSchemaReferences(schema: Schema): Iterable<string> {
+    const aliases = new Map();
+    for (const schemaRef of schema.references) {
+      if (schemaRef.customAttributes && schemaRef.customAttributes.has("CoreCustomAttributes.SupplementalSchema"))
+        yield `Referenced schema '${schemaRef.name}' of schema '${schema.name}' is a supplemental schema. Supplemental schemas are not allowed to be referenced.`;
+
+      if (schema.schemaKey.matches(schemaRef.schemaKey))
+        yield `Schema '${schema.name}' has reference cycles: '${schema.name} --> ${schemaRef.name}'`;
+
+      if (aliases.has(schemaRef.alias)) {
+        const currentRef = aliases.get(schemaRef.alias);
+        yield `Schema '${schema.name}' has multiple schema references (${currentRef.name}, $schemaRef.name}) with the same alias '${schemaRef.alias}', which is not allowed.`;
+      } else {
+        aliases.set(schemaRef.alias, schemaRef);
+      }
+    }
+
+    const graph = new SchemaGraph(schema);
+    const cycles = graph.detectCycles();
+    if (cycles) {
+      const result = cycles.map((cycle) => `${cycle.schema.name} --> ${cycle.refSchema.name}`).join(", ");
+      yield `Schema '${schema.name}' has reference cycles: ${result}`;
     }
   }
 
