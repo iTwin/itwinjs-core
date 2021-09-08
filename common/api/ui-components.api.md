@@ -3409,24 +3409,6 @@ export interface ShowHideMenuProps<T extends ShowHideID> extends GlobalContextMe
 }
 
 // @public
-export class SignIn extends React.PureComponent<SignInProps, SignInState> {
-    constructor(props: SignInProps);
-    // (undocumented)
-    render(): JSX.Element;
-}
-
-// @public
-export interface SignInProps extends CommonProps {
-    // @internal
-    disableSignInOnClick?: boolean;
-    onOffline?: () => void;
-    onRegister?: () => void;
-    onSignIn: () => void;
-    // @internal
-    signingInMessage?: string;
-}
-
-// @public
 export class SimplePropertyDataProvider implements IPropertyDataProvider, PropertyData {
     // (undocumented)
     addCategory(category: PropertyCategory): number;
@@ -4653,7 +4635,7 @@ export class TreeRenderer extends React.Component<TreeRendererProps> implements 
     render(): JSX.Element;
     // (undocumented)
     scrollToNode(nodeId: string, alignment?: Alignment): void;
-    }
+}
 
 // @public
 export interface TreeRendererAttributes {

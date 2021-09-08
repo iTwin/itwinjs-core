@@ -262,6 +262,7 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `MutableTreeModel.computeVisibleNodes`  | `computeVisibleNodes` in @bentley/ui-components             |
 | `TreeModelSource.getVisibleNodes`       | memoized result of `computeVisibleNodes`                    |
 | `useVisibleTreeNodes`                   | `useTreeModel` and `computeVisibleNodes`                    |
+| `SignIn`                                | *eliminated*                                                |
 
 ### @bentley/ui-framework
 

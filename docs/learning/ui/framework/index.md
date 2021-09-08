@@ -1,7 +1,6 @@
 # The ui-framework package
 
-The ui-framework package contains components for specifying the application UI consisting of the
-Backstage, Frontstages, Tool Bars, Status Bars, Widgets and Panels.
+The ui-framework package contains components for specifying the application UI consisting of the Backstage, Frontstages, Tool Bars, Status Bars, Widgets and Panels.
 
 ## Application UI Configuration
 
