@@ -12,9 +12,10 @@
   },
   "scripts": {
     "compile": "npm run build",
-    "build": "tsc 1>&2 && npm run copy:test-assets",
-    "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
+    "build": "npm run build:cjs",
+    "build:cjs": "tsc 1>&2 --outDir cjs --declarationDir types && npm run copy:test-assets",
+    "clean": "rimraf cjs types .rush/temp/package-deps*.json",
+    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./cjs/test/assets",
     "extract-api": "betools extract-api --entry=ecschema-metadata",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "betools test",

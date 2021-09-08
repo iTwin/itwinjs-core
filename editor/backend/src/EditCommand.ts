@@ -8,7 +8,7 @@
 
 import { IModelStatus } from "@bentley/bentleyjs-core";
 import { IModelDb, IpcHandler, IpcHost } from "@bentley/imodeljs-backend";
-import { IModelError } from "@bentley/imodeljs-common/lib/IModelError";
+import { IModelError } from "@bentley/imodeljs-common/cjs/IModelError";
 import { EditCommandIpc, editorChannel, EditorIpc } from "@bentley/imodeljs-editor-common";
 
 /** @alpha */

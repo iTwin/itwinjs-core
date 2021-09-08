@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ChangeState, ECInstance, ECJsonTypeMap, WsgInstance } from "@bentley/itwin-client";
+import nock from "nock";
 
-import nock = require("nock");
 export enum RequestType {
   Get,
   Post,
@@ -246,7 +246,7 @@ export class ResponseBuilder {
     nock(host)
       .head(requestPath)
       .times(times)
-      .reply(200, undefined, {"content-length": fileSize!, "accept-ranges": "bytes"});
+      .reply(200, undefined, { "content-length": fileSize!, "accept-ranges": "bytes" });
   }
 
   /**
