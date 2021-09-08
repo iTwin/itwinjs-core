@@ -15,6 +15,7 @@ function isOfflineSet(): boolean {
  */
 export class TestConfig {
   /** Name of iTwins (Projects or Assets) used by most tests */
+  // SWB
   public static readonly iTwinName: string = "iModelJsIntegrationTest";
   public static readonly enableMocks: boolean = isOfflineSet();
 
@@ -24,6 +25,7 @@ export class TestConfig {
     return new AuthorizedClientRequestContext((accessToken as any) as AccessToken);
   }
 
+  // SWB
   public static async getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
     const iTwinAccessClient = new ITwinAccessClient();
     const iTwinList: ITwin[] = await iTwinAccessClient.getAll(requestContext, {

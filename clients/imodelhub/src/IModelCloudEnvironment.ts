@@ -14,6 +14,7 @@ import { IModelClient } from "./IModelClient";
  * @internal
  */
 export interface ITwinManagerClient {
+  // SWB uses
   getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin>;
 }
 
@@ -22,6 +23,7 @@ export interface ITwinManagerClient {
  */
 export interface IModelCloudEnvironment {
   readonly isIModelHub: boolean;
+  // SWB uses
   readonly iTwinMgr: ITwinManagerClient;
   readonly imodelClient: IModelClient;
   getAuthorizationClient(userInfo: UserInfo | undefined, userCredentials: any): FrontendAuthorizationClient;

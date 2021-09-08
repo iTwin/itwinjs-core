@@ -30,8 +30,10 @@ export class HubUtility {
     readWrite: "ReadWriteTest",
   };
 
+  // SWB
   public static contextId: GuidString | undefined;
   /** Returns the ContextId if a Context with the name exists. Otherwise, returns undefined. */
+  // SWB
   public static async getTestContextId(requestContext: AuthorizedClientRequestContext): Promise<GuidString> {
 
     if (undefined !== HubUtility.contextId)
@@ -68,6 +70,7 @@ export class HubUtility {
    * @param name Name of iTwin
    * @throws If the iTwin is not found, or there is more than one iTwin with the supplied name
    */
+  // SWB
   public static async getITwinIdByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<string> {
     if (undefined !== HubUtility.contextId)
       return HubUtility.contextId;
@@ -180,6 +183,7 @@ export class HubUtility {
    *  A standard hierarchy of folders is created below the supplied downloadDir
    */
   public static async downloadIModelByName(requestContext: AuthorizedClientRequestContext, projectName: string, iModelName: string, downloadDir: string, reDownload: boolean): Promise<void> {
+    // SWB
     const projectId = await HubUtility.getITwinIdByName(requestContext, projectName);
 
     const iModelId = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
@@ -191,6 +195,7 @@ export class HubUtility {
 
   /** Delete an IModel from the hub */
   public static async deleteIModel(requestContext: AuthorizedClientRequestContext, projectName: string, iModelName: string): Promise<void> {
+    // SWB
     const contextId = await HubUtility.getITwinIdByName(requestContext, projectName);
     const iModelId = await HubUtility.queryIModelIdByName(requestContext, contextId, iModelName);
 
@@ -358,6 +363,7 @@ export class HubUtility {
    * It's assumed that the uploadDir contains a standard hierarchy of seed files and change sets.
    */
   public static async pushIModelAndChangeSets(requestContext: AuthorizedClientRequestContext, projectName: string, uploadDir: string, iModelName?: string, overwrite?: boolean): Promise<GuidString> {
+    // SWB
     const projectId = await HubUtility.getITwinIdByName(requestContext, projectName);
     const seedPathname = HubUtility.getSeedPathname(uploadDir);
     const iModelId = await HubUtility.pushIModel(requestContext, projectId, seedPathname, iModelName, overwrite);
@@ -455,6 +461,7 @@ export class HubUtility {
    */
   public static async purgeAcquiredBriefcases(requestContext: AuthorizedClientRequestContext, projectName: string, iModelName: string, acquireThreshold: number = 16): Promise<void> {
     assert.isTrue(this.allowHubBriefcases || HubMock.isValid, "Must use HubMock for tests that modify iModels");
+    // SWB
     const projectId = await HubUtility.getITwinIdByName(requestContext, projectName);
     const iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
 
@@ -599,12 +606,14 @@ class TestIModelHubProject {
 
   private static _iTwinAccessClient?: ITwinAccessClient;
 
+  // SWB
   private static get iTwinClient(): ITwinAccessClient {
     if (this._iTwinAccessClient === undefined)
       this._iTwinAccessClient = new ITwinAccessClient();
     return this._iTwinAccessClient;
   }
 
+  // SWB
   public async getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
     const client = TestIModelHubProject.iTwinClient;
     const iTwinList: ITwin[] = await client.getAll(requestContext, {
@@ -622,6 +631,7 @@ class TestIModelHubProject {
     return iTwinList[0];
   }
 
+  // SWB
   public async queryIModels(requestContext: AuthorizedClientRequestContext, projectId: string, query: IModelQuery | undefined): Promise<HubIModel[]> {
     const client = this.iModelHubClient;
     return client.iModels.get(requestContext, projectId, query);

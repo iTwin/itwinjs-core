@@ -30,6 +30,7 @@ loadEnv(path.join(__dirname, "..", "..", ".env"));
  */
 export class TestConfig {
   /** Query for the specified iTwin */
+  // SWB
   public static async getITwinIdByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<string> {
     const iTwinAccessClient = new ITwinAccessClient();
     const iTwinList: ITwin[] = await iTwinAccessClient.getAll(requestContext, {

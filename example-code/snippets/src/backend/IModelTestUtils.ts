@@ -33,8 +33,9 @@ export class KnownTestLocations {
 }
 
 export class IModelTestUtils {
-
+  // SWB
   private static _connectClient: ITwinAccessClient | undefined;
+  // SWB
   public static get connectClient(): ITwinAccessClient {
     if (!IModelTestUtils._connectClient)
       IModelTestUtils._connectClient = new ITwinAccessClient();

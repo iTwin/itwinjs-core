@@ -16,6 +16,7 @@ export class ExternalIModel {
   public viewId: Id64String | undefined;
   public iModelConnection: IModelConnection | undefined;
 
+  // SWB
   constructor(public projectName: string, public imodelName: string) {
   }
 
@@ -23,6 +24,7 @@ export class ExternalIModel {
   public async openIModel(): Promise<void> {
     const info = await this.getIModelInfo();
 
+    // SWB
     if (info.projectId && info.imodelId) {
       // open the imodel
       Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
@@ -34,6 +36,7 @@ export class ExternalIModel {
   }
 
   /** Finds project and imodel ids using their names */
+  // SWB
   private async getIModelInfo(): Promise<{ projectId: string, imodelId: string }> {
     const projectName = this.projectName;
     const imodelName = this.imodelName;

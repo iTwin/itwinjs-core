@@ -216,10 +216,12 @@ export async function login(userCredentials?: TestUserCredentials): Promise<Acce
   return authorizationClient.getAccessToken(requestContext);
 }
 
+// SWB
 export async function bootstrapBankProject(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<void> {
   if (getCloudEnv().isIModelHub || bankProjects.includes(projectName))
     return;
 
+  // SWB
   const bankContext = getCloudEnv().iTwinMgr as IModelBankFileSystemITwinClient;
   let iTwin: ITwin | undefined;
   try {
@@ -237,6 +239,7 @@ export async function bootstrapBankProject(requestContext: AuthorizedClientReque
   bankProjects.push(projectName);
 }
 
+// SWB
 export async function getAssetId(requestContext: AuthorizedClientRequestContext, assetName?: string): Promise<string> {
   if (TestConfig.enableMocks)
     return Guid.createValue();
@@ -253,6 +256,7 @@ export async function getAssetId(requestContext: AuthorizedClientRequestContext,
   return iTwin.id;
 }
 
+// SWB
 export async function getProjectId(requestContext: AuthorizedClientRequestContext, projectName?: string): Promise<string> {
   if (TestConfig.enableMocks)
     return Guid.createValue();

@@ -24,6 +24,7 @@ export interface IModelFileSystemContextProps {
 }
 
 /** @internal */
+// SWB uses
 export class IModelBankFileSystemITwinClient implements ITwinManagerClient {
   constructor(public baseUri: string) {
   }
@@ -64,8 +65,9 @@ export class IModelBankFileSystemITwinClient implements ITwinManagerClient {
     return props.map((value) => value.properties as IModelFileSystemContextProps);
   }
 
+  // SWB
   public async getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
-    const props = await this.queryContextProps(requestContext, name);
+    const props = await this.queryContextProps(requestContext, name); // SWB what does context mean here
     requestContext.enter();
 
     // Get first context

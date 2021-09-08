@@ -24,11 +24,14 @@ export interface IModelOpenProps {
 }
 
 interface IModelOpenState {
+  // SWB
   isLoadingProjects: boolean;
   isLoadingiModels: boolean;
   isLoadingiModel: boolean;
+  // SWB
   recentProjects?: ITwin[];
   iModels?: IModelInfo[];
+  // SWB
   currentProject?: ITwin;
   prompt: string;
   isNavigationExpanded: boolean;
@@ -42,6 +45,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
   constructor(props?: any, context?: any) {
     super(props, context);
 
+    // SWB
     this.state = {
       isLoadingProjects: true,
       isLoadingiModels: false,
@@ -53,6 +57,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
 
   public override async componentDidMount(): Promise<void> {
     if (this.props.initialIModels && this.props.initialIModels.length > 0) {
+      // SWB
       const currentProject = this.props.initialIModels[0].projectInfo;
       currentProject.id = "";
 
@@ -67,6 +72,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
   }
 
   // retrieves the IModels for a Project. Called when first mounted and when a new Project is selected.
+  // SWB
   private async startRetrieveIModels(project: ITwin) {
     this.setState({
       prompt: "Fetching iModel information...",
@@ -87,6 +93,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
     this.setState({ isNavigationExpanded: expanded });
   };
 
+  // SWB
   private _selectProject(project: ITwin) {
     this.startRetrieveIModels(project); // eslint-disable-line @typescript-eslint/no-floating-promises
   }

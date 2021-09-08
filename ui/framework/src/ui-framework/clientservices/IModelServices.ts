@@ -27,6 +27,7 @@ export interface IModelInfo {
   wsgId: string;
   createdDate: Date;
   thumbnail?: string;
+  // SWB
   projectInfo: ITwin;
   status: string;
 }
@@ -73,12 +74,15 @@ export interface IModelUserInfo {
 export interface IModelServices {
 
   /** Get the iModels in a project. */
+  // SWB
   getIModels(projectInfo: ITwin, top: number, skip: number): Promise<IModelInfo[]>;
 
   /** Open the specified version of the IModel */
+  // SWB
   openIModel(contextId: string, iModelId: string, changeSetId?: string): Promise<IModelConnection>;
 
   /** Get the thumbnail for the iModel. */
+  // SWB
   getThumbnail(projectId: string, iModelId: string): Promise<string | undefined>;
 
   /** Get the versions for the iModel. */

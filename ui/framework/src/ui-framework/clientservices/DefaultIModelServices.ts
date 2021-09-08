@@ -18,6 +18,7 @@ import { UiFramework } from "../UiFramework";
 import { ChangeSetInfo, IModelInfo, IModelServices, IModelUserInfo, VersionInfo } from "./IModelServices";
 
 // istanbul ignore next
+// SWB
 class IModelInfoImpl implements IModelInfo {
   constructor(public name: string, public description: string, public wsgId: string, public createdDate: Date, public projectInfo: ITwin, public status: string = "", public thumbnail: string | undefined) {
   }
@@ -55,6 +56,7 @@ export class DefaultIModelServices implements IModelServices {
   }
 
   /** Get all iModels in a project */
+  // SWB
   public async getIModels(projectInfo: ITwin, top: number, skip: number): Promise<IModelInfo[]> {
     const requestContext = await AuthorizedFrontendRequestContext.create();
 
@@ -167,6 +169,7 @@ export class DefaultIModelServices implements IModelServices {
     return userInfos;
   }
 
+  // SWB
   private createIModelInfo(thisIModel: HubIModel, thisProjectInfo: ITwin): IModelInfo {
     const createDate: Date = new Date(thisIModel.createdDate!);
     Logger.logTrace(UiFramework.loggerCategory(this), `Working on iModel '${thisIModel.name}'`);

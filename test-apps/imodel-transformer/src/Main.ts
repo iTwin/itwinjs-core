@@ -64,6 +64,7 @@ void (async () => {
     Yargs.option("sourceFile", { desc: "The full path to the source iModel", type: "string" });
 
     // used if the source iModel is on iModelHub
+    // SWB
     Yargs.option("sourceContextId", { desc: "The iModelHub context containing the source iModel", type: "string" });
     Yargs.option("sourceIModelId", { desc: "The guid of the source iModel", type: "string", default: undefined });
     Yargs.option("sourceIModelName", { desc: "The name of the source iModel", type: "string", default: undefined });
@@ -78,6 +79,7 @@ void (async () => {
     Yargs.option("targetFile", { desc: "The full path to the target iModel", type: "string" });
 
     // used if the target iModel is on iModelHub
+    // SWB
     Yargs.option("targetContextId", { desc: "The iModelHub context containing the target iModel", type: "string" });
     Yargs.option("targetIModelId", { desc: "The guid of the target iModel", type: "string", default: undefined });
     Yargs.option("targetIModelName", { desc: "The name of the target iModel", type: "string", default: undefined });
@@ -117,6 +119,7 @@ void (async () => {
     }
 
     let requestContext: AuthorizedClientRequestContext | BackendRequestContext;
+    // SWB
     let iTwinAccessClient: ITwinAccessClient | undefined;
     let sourceDb: IModelDb;
     let targetDb: IModelDb;

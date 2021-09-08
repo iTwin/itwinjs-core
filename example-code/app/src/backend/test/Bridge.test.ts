@@ -53,7 +53,7 @@ function convertToBis(briefcase: IModelDb, modelId: Id64String, data: RobotWorld
 }
 
 // __PUBLISH_EXTRACT_END__
-
+// SWB
 async function getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
   const iTwinList: ITwin[] = await (new ITwinAccessClient()).getAll(requestContext, {
     search: {
@@ -172,6 +172,7 @@ describe.skip("Bridge", async () => {
   before(async () => {
     await IModelHost.startup();
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
+    // SWB
     testProjectId = (await getITwinByName(requestContext, "iModelJsIntegrationTest")).id;
     seedPathname = path.join(KnownTestLocations.assetsDir, "empty.bim");
     imodelRepository = await createIModel(requestContext, testProjectId, "BridgeTest", seedPathname);

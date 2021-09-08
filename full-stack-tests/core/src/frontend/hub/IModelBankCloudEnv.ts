@@ -12,6 +12,7 @@ import { ITwin } from "@bentley/itwin-registry-client";
 
 export class IModelBankCloudEnv implements IModelCloudEnvironment {
   public get isIModelHub(): boolean { return false; }
+  // SWB
   public readonly iTwinMgr: IModelBankFileSystemITwinClient;
   public readonly imodelClient: IModelClient;
   public async startup(): Promise<void> { }
@@ -28,6 +29,7 @@ export class IModelBankCloudEnv implements IModelCloudEnvironment {
       : new IModelBankDummyAuthorizationClient(userInfo, userCredentials);
   }
 
+  // SWB
   public async bootstrapIModelBankProject(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<void> {
     let iTwin: ITwin | undefined;
     try {

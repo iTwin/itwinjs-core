@@ -439,6 +439,7 @@ export class SampleAppIModelApp {
     if (process.env.IMJS_UITESTAPP_IMODEL_NAME && process.env.IMJS_UITESTAPP_IMODEL_PROJECT_NAME) {
       const viewId: string | undefined = process.env.IMJS_UITESTAPP_IMODEL_VIEWID;
 
+      // SWB
       const projectName = process.env.IMJS_UITESTAPP_IMODEL_PROJECT_NAME ?? "";
       const iModelName = process.env.IMJS_UITESTAPP_IMODEL_NAME ?? "";
 

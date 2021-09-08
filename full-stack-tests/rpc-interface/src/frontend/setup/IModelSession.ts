@@ -11,6 +11,7 @@ import { IModelVersion } from "@bentley/imodeljs-common";
 
 export class IModelSession {
 
+  // SWB
   public contextId: string;
   public iModelId: string;
   public changesetId?: string;
@@ -26,6 +27,7 @@ export class IModelSession {
     this._imodelVersion = changesetId ? IModelVersion.asOfChangeSet(changesetId) : IModelVersion.latest();
   }
 
+  // SWB
   public static async create(requestContext: AuthorizedFrontendRequestContext, iModelData: IModelData): Promise<IModelSession> {
     let contextId;
     let imodelId;
