@@ -102,7 +102,9 @@ export interface ViewFlagProps {
    * that logic does not execute, potentially improving performance for no degradation in visual quality. In some scenarios - such as wireframe views containing many planar regions with interior fill, or smooth views containing many coincident planar and non-planar surfaces - enabling this view flag improves display quality by forcing that logic to execute.
    */
   forceSurfaceDiscard?: boolean;
-  /** Disables the "white-on-white reversal" employed by some CAD applications. White-on-white reversal causes white geometry to be drawn as black if the view's background color is also white. */
+  /** Disables the "white-on-white reversal" employed by some CAD applications.
+   * @see [[ViewFlags.whiteOnWhiteReversal]].
+   */
   noWhiteOnWhiteReversal?: boolean;
 }
 
@@ -186,9 +188,64 @@ export class ViewFlags {
    * When this view flag is set to false (the default), then for 3d views if the render mode is wireframe (only edges are displayed) or smooth shader with visible edges turned off (only surfaces are displayed),
    * that logic does not execute, potentially improving performance for no degradation in visual quality. In some scenarios - such as wireframe views containing many planar regions with interior fill, or smooth views containing many coincident planar and non-planar surfaces - enabling this view flag improves display quality by forcing that logic to execute.
    */
+<<<<<<< HEAD
   public forceSurfaceDiscard: boolean = false;
   /** White-on-white reversal is used by some CAD applications to cause white geometry to be drawn as black if the view's background color is also white. */
   public whiteOnWhiteReversal = true;
+=======
+  public readonly forceSurfaceDiscard: boolean;
+  /** Whether to apply white-on-white reversal.
+   * Some CAD applications use this to cause white geometry to be drawn as black if the view's background color is white.
+   * When enabled, the [[DisplayStyleSettings]]' [[WhiteOnWhiteReversalSettings]] control how white-on-white reversal is applied.
+   * Default: true.
+   */
+  public readonly whiteOnWhiteReversal: boolean;
+
+  /** In [[RenderMode.SmoothShade]], whether to apply lighting to surfaces.
+   * Default: false, except when using [[fromJSON]].
+   * @see [[DisplayStyleSettings.lights]] to customize the light settings.
+   */
+  public readonly lighting: boolean;
+
+  /** Create a new ViewFlags.
+   * @param flags The properties to initialize. Any properties not specified are initialized to their default values.
+   */
+  public constructor(flags?: Partial<ViewFlagsProperties>) {
+    this.renderMode = flags?.renderMode ?? RenderMode.Wireframe;
+    this.dimensions = flags?.dimensions ?? true;
+    this.patterns = flags?.patterns ?? true;
+    this.weights = flags?.weights ?? true;
+    this.styles = flags?.styles ?? true;
+    this.transparency = flags?.transparency ?? true;
+    this.fill = flags?.fill ?? true;
+    this.textures = flags?.textures ?? true;
+    this.materials = flags?.materials ?? true;
+    this.acsTriad = flags?.acsTriad ?? false;
+    this.grid = flags?.grid ?? false;
+    this.visibleEdges = flags?.visibleEdges ?? false;
+    this.hiddenEdges = flags?.hiddenEdges ?? false;
+    this.shadows = flags?.shadows ?? false;
+    this.clipVolume = flags?.clipVolume ?? true;
+    this.constructions = flags?.constructions ?? false;
+    this.monochrome = flags?.monochrome ?? false;
+    this.backgroundMap = flags?.backgroundMap ?? false;
+    this.ambientOcclusion = flags?.ambientOcclusion ?? false;
+    this.thematicDisplay = flags?.thematicDisplay ?? false;
+    this.forceSurfaceDiscard = flags?.forceSurfaceDiscard ?? false;
+    this.whiteOnWhiteReversal = flags?.whiteOnWhiteReversal ?? true;
+    this.lighting = flags?.lighting ?? false;
+  }
+
+  /** Produce a copy of these ViewFlags with some modified properties. Any properties not explicitly specified by `changedFlags` will retain their current values.
+   * @param changedFlags Properties to modify.
+   * @returns A copy of these ViewFlags modified according to the supplied properties.
+   * @note Any explicitly `undefined` property of `changedFlags` will be set to its default value in the returned ViewFlags.
+   * @see [[override]] to have `undefined` properties retain their current values.
+   */
+  public copy(changedFlags: Partial<ViewFlagsProperties>): ViewFlags {
+    return JsonUtils.isNonEmptyObject(changedFlags) ? new ViewFlags({ ...this, ...changedFlags }) : this;
+  }
+>>>>>>> 17f75107cf (Allow white-on-white reversal to be applied to non-white backgrounds (#2198))
 
   /** Controls whether or not lighting is applied.
    * @note Has no effect unless `renderMode` is set to [[RenderMode.SmoothShade]].

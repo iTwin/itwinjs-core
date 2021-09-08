@@ -8,13 +8,19 @@
  */
 
 import {
+<<<<<<< HEAD
   DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, RenderMode, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
+=======
+  DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, RenderMode, SubCategoryAppearance, SubCategoryOverride, ViewFlags, ViewFlagsProperties,
+  WhiteOnWhiteReversalSettings,
+>>>>>>> 17f75107cf (Allow white-on-white reversal to be applied to non-white backgrounds (#2198))
 } from "@bentley/imodeljs-common";
 import {
   DisplayStyle3dState, Environment, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport,
 } from "@bentley/imodeljs-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
+import { parseToggle } from "./parseToggle";
 
 type BooleanFlagName =
   "dimensions" | "patterns" | "weights" | "styles" | "transparency" | "fill" | "textures" | "materials" | "acsTriad" | "grid" | "visibleEdges" |
@@ -255,6 +261,32 @@ export class OverrideSubCategoryTool extends DisplayStyleTool {
     for (const id of this._subcategoryIds)
       vp.displayStyle.overrideSubCategory(id, ovr);
 
+    return true;
+  }
+}
+
+/** Set whether background color is ignored when applying white-on-white reversal.
+ * @beta
+ */
+export class WoWIgnoreBackgroundTool extends DisplayStyleTool {
+  private _ignore?: boolean;
+
+  public static override toolId = "WoWIgnoreBackground";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 1; }
+
+  public parse(args: string[]): boolean {
+    const ignore = parseToggle(args[0]);
+    if (typeof ignore === "string")
+      return false;
+
+    this._ignore = ignore;
+    return true;
+  }
+
+  public execute(vp: Viewport): boolean {
+    const ignoreBackgroundColor = this._ignore ?? !vp.displayStyle.settings.whiteOnWhiteReversal.ignoreBackgroundColor;
+    vp.displayStyle.settings.whiteOnWhiteReversal = WhiteOnWhiteReversalSettings.fromJSON({ ignoreBackgroundColor });
     return true;
   }
 }
