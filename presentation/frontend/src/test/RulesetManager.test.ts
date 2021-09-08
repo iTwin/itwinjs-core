@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { RegisteredRuleset, Rule, Ruleset, RuleTypes } from "@bentley/presentation-common";
+import { createRandomRuleset } from "@bentley/presentation-common/cjs/test/_helpers/random";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
-import { RegisteredRuleset, Rule, Ruleset, RuleTypes } from "@bentley/presentation-common";
-import { createRandomRuleset } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager";
 
 describe("RulesetManager", () => {
@@ -32,8 +32,8 @@ describe("RulesetManager", () => {
       const added = await manager.add(ruleset);
       const result = await manager.get(ruleset.id);
       expect(result).to.not.be.undefined;
-      expect(result!.toJSON()).to.deep.eq(ruleset);
-      expect(result!.uniqueIdentifier).to.eq(added.uniqueIdentifier);
+      expect(result.toJSON()).to.deep.eq(ruleset);
+      expect(result.uniqueIdentifier).to.eq(added.uniqueIdentifier);
     });
 
   });

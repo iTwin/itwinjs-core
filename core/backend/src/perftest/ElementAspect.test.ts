@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import * as fs from "fs-extra";
-import * as path from "path";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelHubError } from "@bentley/imodelhub-client";
 import { ElementAspectProps, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { Reporter } from "@bentley/perf-tools/lib/Reporter";
+import { Reporter } from "@bentley/perf-tools/cjs/Reporter";
+import { assert } from "chai";
+import * as fs from "fs-extra";
+import * as path from "path";
 import { DictionaryModel, ElementAspect, IModelDb, SnapshotDb, SpatialCategory } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";

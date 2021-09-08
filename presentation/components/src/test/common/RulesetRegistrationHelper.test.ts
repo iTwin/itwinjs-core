@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
-import { expect } from "chai";
-import * as sinon from "sinon";
 import { BeDuration, using } from "@bentley/bentleyjs-core";
 import { RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
+import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
+import { ResolvablePromise } from "@bentley/presentation-common/cjs/test/_helpers/Promises";
 import { Presentation, RulesetManager } from "@bentley/presentation-frontend";
+import "@bentley/presentation-frontend/cjs/test/_helpers/MockFrontendEnvironment";
+import { expect } from "chai";
+import * as sinon from "sinon";
 import { RulesetRegistrationHelper } from "../../presentation-components/common/RulesetRegistrationHelper";
 import { mockPresentationManager } from "../_helpers/UiComponents";
 

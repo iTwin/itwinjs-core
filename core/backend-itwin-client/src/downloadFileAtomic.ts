@@ -2,13 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { BriefcaseStatus, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
+import { CancelRequest, DownloadFailed, ProgressCallback, ResponseError, UserCancelledError } from "@bentley/itwin-client";
+import WriteStreamAtomic from "fs-write-stream-atomic";
 import got from "got";
 import { PassThrough, pipeline as pipeline_callback } from "stream";
 import { promisify } from "util";
-import { BriefcaseStatus, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { CancelRequest, DownloadFailed, ProgressCallback, ResponseError, UserCancelledError } from "@bentley/itwin-client";
-
-import WriteStreamAtomic = require("fs-write-stream-atomic");
 import { BufferedStream } from "./imodelhub/AzureFileHandler";
 
 const pipeline = promisify(pipeline_callback);

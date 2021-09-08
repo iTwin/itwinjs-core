@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { using } from "@bentley/bentleyjs-core";
 import { PresentationManagerMode } from "@bentley/presentation-backend";
-import { createDefaultNativePlatform, NativePlatformDefinition } from "@bentley/presentation-backend/lib/presentation-backend/NativePlatform";
-import { RulesetManagerImpl } from "@bentley/presentation-backend/lib/presentation-backend/RulesetManager";
+import { createDefaultNativePlatform, NativePlatformDefinition } from "@bentley/presentation-backend/cjs/presentation-backend/NativePlatform";
+import { RulesetManagerImpl } from "@bentley/presentation-backend/cjs/presentation-backend/RulesetManager";
 import { Ruleset } from "@bentley/presentation-common";
-import { createRandomRuleset } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { createRandomRuleset } from "@bentley/presentation-common/cjs/test/_helpers/random";
+import { expect } from "chai";
 import { initialize, terminate } from "../IntegrationTests";
 import { tweakRuleset } from "./Helpers";
 

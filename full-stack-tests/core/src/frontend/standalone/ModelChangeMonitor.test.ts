@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import * as path from "path";
 import { Guid, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
+import { ElectronApp } from "@bentley/electron-manager/cjs/ElectronFrontend";
 import { Transform } from "@bentley/geometry-core";
 import { BriefcaseConnection, GeometricModelState } from "@bentley/imodeljs-frontend";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { expect } from "chai";
+import * as path from "path";
 import { callFullStackTestIpc, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing";
 
 if (ProcessDetector.isElectronAppFrontend) {
@@ -24,7 +24,7 @@ if (ProcessDetector.isElectronAppFrontend) {
     });
 
     beforeEach(async () => {
-      const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/planprojection.bim");
+      const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/cjs/test/assets/planprojection.bim");
       imodel = await BriefcaseConnection.openStandalone(filePath, OpenMode.ReadWrite);
     });
 
@@ -57,7 +57,7 @@ if (ProcessDetector.isElectronAppFrontend) {
         await getBufferedChanges(async () => imodel.saveChanges());
 
         await imodel.models.load(modelId);
-        model = imodel.models.getLoaded(modelId) as GeometricModelState;
+        model = imodel.models.getLoaded(modelId);
         expect(model).instanceof(GeometricModelState);
       });
 

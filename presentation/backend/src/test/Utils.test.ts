@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { DbResult } from "@bentley/bentleyjs-core";
 import { ECSqlStatement, ECSqlValue, IModelDb } from "@bentley/imodeljs-backend";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
+import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
+import { createRandomId } from "@bentley/presentation-common/cjs/test/_helpers/random";
+import { expect } from "chai";
 import { getElementKey, normalizeVersion } from "../presentation-backend/Utils";
 
 describe("getElementKey", () => {

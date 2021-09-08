@@ -3,9 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable deprecation/deprecation */
-import { expect } from "chai";
-import * as faker from "faker";
-import sinon from "sinon";
 import { BeDuration, BeEvent, CompressedId64Set, Logger, using } from "@bentley/bentleyjs-core";
 import { IModelRpcProps, IpcListener, RemoveFunction } from "@bentley/imodeljs-common";
 import { IModelConnection, IpcApp } from "@bentley/imodeljs-frontend";
@@ -17,17 +14,20 @@ import {
   ElementPropertiesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, FieldDescriptor, FieldDescriptorType,
   HierarchyCompareInfoJSON, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, Item, KeySet, LabelDefinition, LabelRequestOptions, Node,
   NodeKey, NodePathElement, Paged, PartialHierarchyModification, PresentationError, PresentationIpcEvents, PresentationStatus, RegisteredRuleset,
-  RpcRequestsHandler, Ruleset, RulesetVariable, SelectClassInfo, UpdateInfo, VariableValueTypes,
+  RpcRequestsHandler, Ruleset, RulesetVariable, SelectClassInfo, UpdateInfo, VariableValueTypes
 } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
 import {
   createRandomBaseNodeKey, createRandomDescriptor, createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeJSON,
-  createRandomECInstancesNodeKey, createRandomLabelDefinition, createRandomNodePathElement, createRandomRuleset, createRandomTransientId,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
+  createRandomECInstancesNodeKey, createRandomLabelDefinition, createRandomNodePathElement, createRandomRuleset, createRandomTransientId
+} from "@bentley/presentation-common/cjs/test/_helpers/random";
+import { expect } from "chai";
+import * as faker from "faker";
+import sinon from "sinon";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
 import { Presentation } from "../presentation-frontend/Presentation";
 import {
-  buildPagedResponse, IModelContentChangeEventArgs, IModelHierarchyChangeEventArgs, PresentationManager,
+  buildPagedResponse, IModelContentChangeEventArgs, IModelHierarchyChangeEventArgs, PresentationManager
 } from "../presentation-frontend/PresentationManager";
 import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
@@ -677,7 +677,7 @@ describe("PresentationManager", () => {
         .verifiable();
       const actualResult = await manager.getContentDescriptor(options, "test", keyset, undefined); // eslint-disable-line deprecation/deprecation
       expect(actualResult).to.be.instanceOf(Descriptor);
-      expect(actualResult!.toJSON()).to.deep.eq(result.toJSON());
+      expect(actualResult.toJSON()).to.deep.eq(result.toJSON());
       rpcRequestsHandlerMock.verifyAll();
     });
 
@@ -696,7 +696,7 @@ describe("PresentationManager", () => {
         .verifiable();
       const actualResult = await manager.getContentDescriptor(options);
       expect(actualResult).to.be.instanceOf(Descriptor);
-      expect(actualResult!.toJSON()).to.deep.eq(result.toJSON());
+      expect(actualResult.toJSON()).to.deep.eq(result.toJSON());
       rpcRequestsHandlerMock.verifyAll();
     });
 
@@ -817,8 +817,8 @@ describe("PresentationManager", () => {
         .verifiable();
       const actualResult = await manager.getContent(options, descriptor, keyset); // eslint-disable-line deprecation/deprecation
       expect(actualResult).to.be.instanceOf(Content);
-      expect(actualResult!.descriptor).to.eq(descriptor);
-      expect(actualResult!.contentSet).to.deep.eq(result.items);
+      expect(actualResult.descriptor).to.eq(descriptor);
+      expect(actualResult.contentSet).to.deep.eq(result.items);
       rpcRequestsHandlerMock.verifyAll();
     });
 
@@ -842,8 +842,8 @@ describe("PresentationManager", () => {
         .verifiable();
       const actualResult = await manager.getContent(options);
       expect(actualResult).to.be.instanceOf(Content);
-      expect(actualResult!.descriptor).to.eq(descriptor);
-      expect(actualResult!.contentSet).to.deep.eq(result.items);
+      expect(actualResult.descriptor).to.eq(descriptor);
+      expect(actualResult.contentSet).to.deep.eq(result.items);
       rpcRequestsHandlerMock.verifyAll();
     });
 
@@ -865,8 +865,8 @@ describe("PresentationManager", () => {
         .verifiable();
       const actualResult = await manager.getContent(options);
       expect(actualResult).to.be.instanceOf(Content);
-      expect(actualResult!.descriptor).to.deep.eq(descriptor);
-      expect(actualResult!.contentSet).to.deep.eq(items);
+      expect(actualResult.descriptor).to.deep.eq(descriptor);
+      expect(actualResult.contentSet).to.deep.eq(items);
       rpcRequestsHandlerMock.verifyAll();
     });
 

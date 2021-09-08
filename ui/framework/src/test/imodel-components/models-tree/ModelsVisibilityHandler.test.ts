@@ -3,19 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import * as sinon from "sinon";
 import { BeEvent, Id64String, using } from "@bentley/bentleyjs-core";
 import { IModelConnection, PerModelCategoryVisibility, SpatialViewState, Viewport, ViewState, ViewState3d } from "@bentley/imodeljs-frontend";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { FilteredPresentationTreeDataProvider } from "@bentley/presentation-components/lib/presentation-components/tree/FilteredDataProvider";
+import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
+import { createRandomId } from "@bentley/presentation-common/cjs/test/_helpers/random";
+import { FilteredPresentationTreeDataProvider } from "@bentley/presentation-components/cjs/presentation-components/tree/FilteredDataProvider";
+import { IModelHierarchyChangeEventArgs, Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { isPromiseLike } from "@bentley/ui-core";
+import { expect } from "chai";
+import * as sinon from "sinon";
 import { ModelsVisibilityHandler, ModelsVisibilityHandlerProps } from "../../../ui-framework/imodel-components/models-tree/ModelsVisibilityHandler";
 import { TestUtils } from "../../TestUtils";
 import { createCategoryNode, createElementClassGroupingNode, createElementNode, createModelNode, createSubjectNode } from "../Common";
-import { IModelHierarchyChangeEventArgs, Presentation, PresentationManager } from "@bentley/presentation-frontend";
 
 describe("ModelsVisibilityHandler", () => {
 
@@ -62,8 +62,8 @@ describe("ModelsVisibilityHandler", () => {
       props.onNeverDrawnChanged = new BeEvent<() => void>();
     const vpMock = moq.Mock.ofType<Viewport>();
     vpMock.setup((x) => x.iModel).returns(() => imodelMock.object);
-    vpMock.setup((x) => x.view).returns(() => props!.viewState!);
-    vpMock.setup((x) => x.perModelCategoryVisibility).returns(() => props!.perModelCategoryVisibility!);
+    vpMock.setup((x) => x.view).returns(() => props!.viewState);
+    vpMock.setup((x) => x.perModelCategoryVisibility).returns(() => props!.perModelCategoryVisibility);
     vpMock.setup((x) => x.onViewedCategoriesPerModelChanged).returns(() => props!.onViewedCategoriesPerModelChanged!);
     vpMock.setup((x) => x.onViewedCategoriesChanged).returns(() => props!.onViewedCategoriesChanged!);
     vpMock.setup((x) => x.onViewedModelsChanged).returns(() => props!.onViewedModelsChanged!);

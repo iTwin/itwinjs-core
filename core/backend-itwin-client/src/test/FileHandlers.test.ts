@@ -3,19 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { AsyncMutex, BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext, CancelRequest, ProgressInfo } from "@bentley/itwin-client";
 import { assert } from "chai";
 import * as crypto from "crypto";
 import * as fs from "fs-extra";
-import * as nock from "nock";
+import nock from "nock";
 import * as path from "path";
-import { AsyncMutex, BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, CancelRequest, ProgressInfo } from "@bentley/itwin-client";
 import { AzureFileHandler } from "../imodelhub/AzureFileHandler";
 
 const testValidUrl = "https://example.com/";
 const testErrorUrl = "http://bad.example.com/";  // NB: This is not automatically mocked - each test should use nock as-needed.
-const blobSizeInBytes= 1024 * 10;
-const blockSize =1024;
+const blobSizeInBytes = 1024 * 10;
+const blockSize = 1024;
 const enableMd5 = true;
 
 const ECONNRESET: any = new Error("socket hang up");
@@ -24,7 +24,7 @@ ECONNRESET.code = "ECONNRESET";
 const testOutputDir = path.join(__dirname, "output");
 const targetFile = path.join(testOutputDir, "downloadedFile");
 function createHandler() {
-  return  new AzureFileHandler(undefined, undefined, { blockSize, simultaneousDownloads:1, progressReportAfter:100, checkMD5AfterDownload: enableMd5});
+  return new AzureFileHandler(undefined, undefined, { blockSize, simultaneousDownloads: 1, progressReportAfter: 100, checkMD5AfterDownload: enableMd5 });
 }
 describe("AzureFileHandler", async () => {
   const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
@@ -51,8 +51,8 @@ describe("AzureFileHandler", async () => {
       return Buffer.from(block);
     });
 
-    const md5 =  crypto.createHash("md5").update(randomBuffer).digest("base64");
-    const header = {"content-length": blobSizeInBytes.toString(), "accept-ranges": "bytes", "content-md5": md5};
+    const md5 = crypto.createHash("md5").update(randomBuffer).digest("base64");
+    const header = { "content-length": blobSizeInBytes.toString(), "accept-ranges": "bytes", "content-md5": md5 };
     nock(testValidUrl).head("/").reply(200, undefined, header);
 
     onDataReceived = async () => { if (bytesRead < blobSizeInBytes) return new Promise((resolve) => bytesReadChanged.addOnce(resolve)); };
@@ -116,7 +116,7 @@ describe("AzureFileHandler", async () => {
     const handler = createHandler();
     const signal = createCancellation();
     const progressArgs: any[] = [];
-    const firstEvent = new  AsyncMutex();
+    const firstEvent = new AsyncMutex();
     const unlock = await firstEvent.lock();
     const progressCb = (arg: any) => {
       progressArgs.push(arg);
@@ -169,8 +169,8 @@ describe("AzureFileHandler", async () => {
       return Buffer.from(block);
     });
 
-    const md5 =  crypto.createHash("md5").update(randomBuffer).digest("base64");
-    const header = {"content-length": blobSizeInBytes.toString(), "accept-ranges": "bytes", "content-md5": md5};
+    const md5 = crypto.createHash("md5").update(randomBuffer).digest("base64");
+    const header = { "content-length": blobSizeInBytes.toString(), "accept-ranges": "bytes", "content-md5": md5 };
     nock(testErrorUrl).head("/").reply(200, undefined, header);
 
     const handler = new AzureFileHandler(undefined, undefined, { blockSize });
@@ -228,8 +228,8 @@ describe("AzureFileHandler", async () => {
       return Buffer.from(block);
     });
 
-    const md5 =  crypto.createHash("md5").update(randomBuffer).digest("base64");
-    const header = {"content-length": blobSizeInBytes.toString(), "accept-ranges": "bytes", "content-md5": md5};
+    const md5 = crypto.createHash("md5").update(randomBuffer).digest("base64");
+    const header = { "content-length": blobSizeInBytes.toString(), "accept-ranges": "bytes", "content-md5": md5 };
     nock(testErrorUrl).head("/").reply(200, undefined, header);
 
     const handler = new AzureFileHandler();

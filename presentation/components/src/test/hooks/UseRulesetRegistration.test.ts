@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as moq from "typemoq";
 import { RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
-import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
+import { ResolvablePromise } from "@bentley/presentation-common/cjs/test/_helpers/Promises";
 import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
 import { renderHook } from "@testing-library/react-hooks";
+import * as moq from "typemoq";
 import { useRulesetRegistration } from "../../presentation-components/hooks/UseRulesetRegistration";
 
 /* eslint-disable @typescript-eslint/promise-function-async */

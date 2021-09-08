@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
 import { ByteStream, IDisposable } from "@bentley/bentleyjs-core";
 import { Arc3d, Point3d, Range3d } from "@bentley/geometry-core";
 import { ColorByName, ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderTexture } from "@bentley/imodeljs-common";
 import {
   Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, OffScreenViewport, PlanarClassifierMap, PlanarClassifierTarget,
   PlanarClipMaskState, RenderMemory, RenderPlanarClassifier, RenderTextureDrape, SceneContext, ScreenViewport, SnapshotConnection, TextureDrapeMap,
-  TileTreeReference,
+  TileTreeReference
 } from "@bentley/imodeljs-frontend";
-import { MeshArgs } from "@bentley/imodeljs-frontend/lib/render-primitives";
-import { Batch, FrameBuffer, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@bentley/imodeljs-frontend/lib/webgl";
+import { MeshArgs } from "@bentley/imodeljs-frontend/cjs/render-primitives";
+import { Batch, FrameBuffer, Target, TextureHandle, WorldDecorations } from "@bentley/imodeljs-frontend/cjs/webgl";
+import { assert, expect } from "chai";
 import { testViewports } from "../../TestViewport";
 import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1";
 import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
@@ -156,14 +156,14 @@ describe("Disposal of System", () => {
     assert.isDefined(texture1);
 
     // Pre-disposal
-    assert.isFalse(isDisposed(texture0!));
-    assert.isFalse(isDisposed(texture1!));
+    assert.isFalse(isDisposed(texture0));
+    assert.isFalse(isDisposed(texture1));
 
     system.dispose();
 
     // Post-disposal
-    assert.isTrue(isDisposed(texture0!));
-    assert.isTrue(isDisposed(texture1!));
+    assert.isTrue(isDisposed(texture0));
+    assert.isTrue(isDisposed(texture1));
     assert.isUndefined(system.findTexture("-192837465", imodel0));
     assert.isUndefined(system.findTexture("-918273645", imodel0));
   });
@@ -205,7 +205,7 @@ describe("Disposal of WebGL Resources", () => {
     const stream = new ByteStream(TILE_DATA_1_1.triangles.bytes.buffer);
     const reader = ImdlReader.create(stream, model.iModel, model.id, model.is3d, system);
     expect(reader).not.to.be.undefined;
-    const readerRes = await reader!.read();
+    const readerRes = await reader.read();
     const tileGraphic = readerRes.graphic!;
     assert.isDefined(tileGraphic);
 
@@ -236,7 +236,7 @@ describe("Disposal of WebGL Resources", () => {
       expect(vp instanceof ScreenViewport || vp instanceof OffScreenViewport).to.be.true;
       expect(vp.isDisposed).to.be.false;
 
-      const target = (vp.target as any);
+      const target = (vp.target);
       let fbo = target._fbo as FrameBuffer;
       expect(fbo).to.be.undefined;
       let blitGeom = target._blitGeom;
@@ -313,7 +313,7 @@ describe("Disposal of WebGL Resources", () => {
     document.body.appendChild(div);
 
     const vp = ScreenViewport.create(div, view);
-    const target = new ExposedTarget(vp.target as Target);
+    const target = new ExposedTarget(vp.target);
 
     expect(target[key]).to.be.undefined;
 
@@ -413,14 +413,14 @@ describe("Disposal of WebGL Resources", () => {
     viewport.viewFlags = viewport.viewFlags.with("grid", true); // force a decoration to be turned on
     viewport.renderFrame(); // force a frame to be rendered
 
-    const target = viewport.target as OnScreenTarget;
+    const target = viewport.target;
     const exposedTarget = new ExposedTarget(target);
 
     // Create a graphic and a texture
     const textureParams = new RenderTexture.Params("-192837465");
     let texture = system.createTextureFromImageBuffer(ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1)!, imodel0, textureParams);
     const graphicBuilder = target.renderSystem.createGraphic({ type: GraphicType.Scene, viewport });
-    graphicBuilder.addArc(Arc3d.createCircularStartMiddleEnd(new Point3d(-100, 0, 0), new Point3d(0, 100, 0), new Point3d(100, 0, 0)) as Arc3d, false, false);
+    graphicBuilder.addArc(Arc3d.createCircularStartMiddleEnd(new Point3d(-100, 0, 0), new Point3d(0, 100, 0), new Point3d(100, 0, 0)), false, false);
     const graphic = graphicBuilder.finish();
 
     // Pre-disposal

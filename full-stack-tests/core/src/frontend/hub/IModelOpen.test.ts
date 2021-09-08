@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
 import { BeDuration, GuidString, Logger } from "@bentley/bentleyjs-core";
 import { ChangeSet, ChangeSetQuery, IModelHubClient } from "@bentley/imodelhub-client";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedFrontendRequestContext, CheckpointConnection, IModelApp, IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
+import { TestUsers } from "@bentley/oidc-signin-tool/cjs/TestUsers";
+import { assert } from "chai";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { TestUtility } from "./TestUtility";
 

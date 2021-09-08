@@ -4,23 +4,23 @@
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable @typescript-eslint/promise-function-async */
 
-import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
-import { expect } from "chai";
-import * as faker from "faker";
-import * as sinon from "sinon";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   Content, ContentDescriptorRequestOptions, Descriptor, DescriptorOverrides, ExtendedContentRequestOptions, Field, FIELD_NAMES_SEPARATOR, Item,
-  KeySet, NestedContentField, Paged, RegisteredRuleset, SelectionInfo,
+  KeySet, NestedContentField, Paged, RegisteredRuleset, SelectionInfo
 } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { PromiseContainer, ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
+import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
+import { PromiseContainer, ResolvablePromise } from "@bentley/presentation-common/cjs/test/_helpers/Promises";
 import {
   createRandomCategory, createRandomContent, createRandomDescriptor, createRandomECClassInfo, createRandomECInstanceKey, createRandomPrimitiveField,
-  createRandomPrimitiveTypeDescription, createRandomPropertiesField, createRandomRelationshipPath, createRandomRuleset,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
+  createRandomPrimitiveTypeDescription, createRandomPropertiesField, createRandomRelationshipPath, createRandomRuleset
+} from "@bentley/presentation-common/cjs/test/_helpers/random";
 import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
+import "@bentley/presentation-frontend/cjs/test/_helpers/MockFrontendEnvironment";
 import { PrimitiveValue, PropertyDescription, PropertyRecord } from "@bentley/ui-abstract";
+import { expect } from "chai";
+import * as faker from "faker";
+import * as sinon from "sinon";
 import { CacheInvalidationProps, ContentDataProvider, ContentDataProviderProps } from "../../presentation-components/common/ContentDataProvider";
 import { mockPresentationManager } from "../_helpers/UiComponents";
 
@@ -616,7 +616,7 @@ describe("ContentDataProvider", () => {
 
       const resultField = await provider.getFieldByPropertyRecord(propertyRecord);
       presentationManagerMock.verifyAll();
-      expect(resultField!.name).to.eq(field.name);
+      expect(resultField.name).to.eq(field.name);
     });
 
     it("return a nested field", async () => {
@@ -634,7 +634,7 @@ describe("ContentDataProvider", () => {
 
       const resultField = await provider.getFieldByPropertyRecord(propertyRecord);
       presentationManagerMock.verifyAll();
-      expect(resultField!.name).to.eq(nestedField.name);
+      expect(resultField.name).to.eq(nestedField.name);
     });
 
   });

@@ -5,16 +5,16 @@
 
 /* eslint-disable deprecation/deprecation */
 
-import { expect } from "chai";
-import faker from "faker";
-import sinon from "sinon";
 import { DbResult, Id64String } from "@bentley/bentleyjs-core";
 import {
-  BisCoreSchema, CodeSpecs, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, IModelDb, KnownLocations, Model, Subject,
+  BisCoreSchema, CodeSpecs, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, IModelDb, KnownLocations, Model, Subject
 } from "@bentley/imodeljs-backend";
 import { BisCodeSpec, Code, CodeScopeSpec, CodeSpec, DefinitionElementProps } from "@bentley/imodeljs-common";
 import { Ruleset } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
+import { expect } from "chai";
+import faker from "faker";
+import sinon from "sinon";
 import { PresentationRules } from "../presentation-backend/domain/PresentationRulesDomain";
 import * as RulesetElements from "../presentation-backend/domain/RulesetElements";
 import { DuplicateRulesetHandlingStrategy, RulesetEmbedder } from "../presentation-backend/RulesetEmbedder";

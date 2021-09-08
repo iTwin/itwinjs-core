@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { Id64, using } from "@bentley/bentleyjs-core";
 import { RpcManager } from "@bentley/imodeljs-common";
 import { CheckpointConnection, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
+import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/cjs/frontend";
 import {
   ContentRpcRequestOptions, Descriptor, DistinctValuesRpcRequestOptions, FieldDescriptorType, HierarchyCompareRpcOptions, HierarchyRpcRequestOptions,
   InstanceKey, KeySet, Paged, PresentationRpcInterface, PresentationStatus, RegisteredRuleset, Ruleset,

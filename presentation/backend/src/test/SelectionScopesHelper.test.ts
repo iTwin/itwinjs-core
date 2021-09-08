@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import * as faker from "faker";
-import * as moq from "typemoq";
 import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { DrawingGraphic, ECSqlStatement, ECSqlValue, Element, IModelDb, IModelHost } from "@bentley/imodeljs-backend";
 import { ElementProps, EntityMetaData, IModelError, ModelProps } from "@bentley/imodeljs-common";
 import { InstanceKey } from "@bentley/presentation-common";
-import { createRandomECInstanceKey, createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { createRandomECInstanceKey, createRandomId } from "@bentley/presentation-common/cjs/test/_helpers/random";
+import { expect } from "chai";
+import * as faker from "faker";
+import * as moq from "typemoq";
 import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper";
 
 describe("SelectionScopesHelper", () => {

@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { EnumerationInfo, FieldHierarchy, traverseContentItem } from "@bentley/presentation-common";
 import {
   createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestNestedContentField, createTestPropertiesContentField,
-  createTestSimpleContentField,
-} from "@bentley/presentation-common/lib/test/_helpers/Content";
-import { createTestECInstanceKey, createTestPropertyInfo } from "@bentley/presentation-common/lib/test/_helpers/EC";
-import { ArrayValue, PropertyRecord, StructValue } from "@bentley/ui-abstract";
+  createTestSimpleContentField
+} from "@bentley/presentation-common/cjs/test/_helpers/Content";
+import { createTestECInstanceKey, createTestPropertyInfo } from "@bentley/presentation-common/cjs/test/_helpers/EC";
+import { PropertyRecord } from "@bentley/ui-abstract";
+import { expect } from "chai";
 import { FieldHierarchyRecord, IPropertiesAppender, PropertyRecordsBuilder } from "../../presentation-components/common/ContentBuilder";
 
 class TestPropertyRecordsBuilder extends PropertyRecordsBuilder {
@@ -99,8 +99,8 @@ describe("PropertyRecordsBuilder", () => {
     expect(builder.entries.length).to.eq(1);
     const record = builder.entries[0].record;
     expect(record.autoExpand).to.be.true;
-    expect((record.value as ArrayValue).items[0].autoExpand).to.be.true;
-    expect(((record.value as ArrayValue).items[0].value as StructValue).members.child.autoExpand).to.be.undefined;
+    expect((record.value).items[0].autoExpand).to.be.true;
+    expect(((record.value).items[0].value).members.child.autoExpand).to.be.undefined;
   });
 
 });

@@ -3,12 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable deprecation/deprecation */
-import "@bentley/presentation-common/lib/test/_helpers/Promises";
-import { expect } from "chai";
-import * as faker from "faker";
-import * as path from "path";
-import * as sinon from "sinon";
-import * as moq from "typemoq";
 import { ClientRequestContext, DbResult, Id64String, using } from "@bentley/bentleyjs-core";
 import { BriefcaseDb, ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IpcHost } from "@bentley/imodeljs-backend";
 import {
@@ -19,23 +13,29 @@ import {
   HierarchyCompareInfoJSON, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, IntRulesetVariable, ItemJSON, KeySet, KindOfQuantityInfo,
   LabelDefinition, LabelRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationError, PrimitiveTypeDescription,
   PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RequestPriority, Ruleset, SelectClassInfoJSON, SelectionInfo,
-  SelectionScope, StandardNodeTypes, StructTypeDescription, VariableValueTypes,
+  SelectionScope, StandardNodeTypes, StructTypeDescription, VariableValueTypes
 } from "@bentley/presentation-common";
 import {
-  createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestSimpleContentField,
-} from "@bentley/presentation-common/lib/test/_helpers/Content";
-import { createTestECClassInfo } from "@bentley/presentation-common/lib/test/_helpers/EC";
+  createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestSimpleContentField
+} from "@bentley/presentation-common/cjs/test/_helpers/Content";
+import { createTestECClassInfo } from "@bentley/presentation-common/cjs/test/_helpers/EC";
+import "@bentley/presentation-common/cjs/test/_helpers/Promises";
 import {
   createRandomCategory, createRandomDescriptor, createRandomDescriptorJSON, createRandomECClassInfoJSON, createRandomECInstanceKey,
   createRandomECInstanceKeyJSON, createRandomECInstancesNodeJSON, createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON, createRandomId,
   createRandomLabelDefinitionJSON, createRandomNodePathElementJSON, createRandomRelatedClassInfoJSON, createRandomRelationshipPathJSON,
-  createRandomRuleset,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
+  createRandomRuleset
+} from "@bentley/presentation-common/cjs/test/_helpers/random";
+import { expect } from "chai";
+import * as faker from "faker";
+import * as path from "path";
+import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "../presentation-backend/Constants";
 import { NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationUnitSystem } from "../presentation-backend/NativePlatform";
 import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler";
 import {
-  HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerMode, PresentationManagerProps,
+  HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerMode, PresentationManagerProps
 } from "../presentation-backend/PresentationManager";
 import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager";

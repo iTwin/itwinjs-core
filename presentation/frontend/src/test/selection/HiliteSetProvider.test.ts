@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import * as sinon from "sinon";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Content, DEFAULT_KEYS_BATCH_SIZE, Item, KeySet } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomDescriptor, createRandomECInstanceKey, createRandomTransientId } from "@bentley/presentation-common/lib/test/_helpers/random";
+import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
+import { createRandomDescriptor, createRandomECInstanceKey, createRandomTransientId } from "@bentley/presentation-common/cjs/test/_helpers/random";
+import { expect } from "chai";
+import * as sinon from "sinon";
 import { HiliteSetProvider, Presentation, PresentationManager } from "../../presentation-frontend";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "../../presentation-frontend/selection/SelectionManager";
 

@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
+import { ProcessDetector } from "@bentley/bentleyjs-core";
+import { executeBackendCallback } from "@bentley/certa/cjs/utils/CallbackUtils";
 import { RpcProtocolEvent, RpcRequest } from "@bentley/imodeljs-common";
+import { assert } from "chai";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { TestRpcInterface3 } from "../common/TestRpcInterface";
-import { ProcessDetector } from "@bentley/bentleyjs-core";
 
 // N.B.: These tests only run in electron!
 if (ProcessDetector.isElectronAppFrontend) {

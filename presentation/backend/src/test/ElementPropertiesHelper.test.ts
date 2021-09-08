@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Content, PropertyValueFormat } from "@bentley/presentation-common";
 import {
-  createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestSimpleContentField,
-} from "@bentley/presentation-common/lib/test/_helpers/Content";
-import { createTestECClassInfo, createTestECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/EC";
+  createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestSimpleContentField
+} from "@bentley/presentation-common/cjs/test/_helpers/Content";
+import { createTestECClassInfo, createTestECInstanceKey } from "@bentley/presentation-common/cjs/test/_helpers/EC";
+import { expect } from "chai";
 import { buildElementProperties } from "../presentation-backend/ElementPropertiesHelper";
 
 describe("buildElementProperties", () => {

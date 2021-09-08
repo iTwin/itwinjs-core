@@ -2,26 +2,26 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import "./RpcImpl";
-// Sets up certa to allow a method on the frontend to get an access token
-import "@bentley/oidc-signin-tool/lib/certa/certaBackend";
-import * as fs from "fs";
-import * as http from "http";
-import * as path from "path";
 import { Id64String, Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
 import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IModelJsExpressServer } from "@bentley/express-server";
 import {
   FileNameResolver, IModelDb, IModelHost, IModelHostConfiguration, IpcHandler, PhysicalModel, PhysicalPartition, SpatialCategory,
-  SubjectOwnsPartitionElements,
+  SubjectOwnsPartitionElements
 } from "@bentley/imodeljs-backend";
 import {
-  BentleyCloudRpcManager, CodeProps, ElementProps, IModel, RelatedElement, RpcConfiguration, SubCategoryAppearance,
+  BentleyCloudRpcManager, CodeProps, ElementProps, IModel, RelatedElement, RpcConfiguration, SubCategoryAppearance
 } from "@bentley/imodeljs-common";
 import { BasicManipulationCommand, EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
+// Sets up certa to allow a method on the frontend to get an access token
+import "@bentley/oidc-signin-tool/cjs/certa/certaBackend";
+import * as fs from "fs";
+import * as http from "http";
+import * as path from "path";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
+import "./RpcImpl";
 import * as testCommands from "./TestEditCommands";
 
 import serveHandler = require("serve-handler");

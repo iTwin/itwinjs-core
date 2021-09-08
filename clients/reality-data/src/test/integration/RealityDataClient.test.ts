@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as chai from "chai";
 import { Guid, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Angle, Range2d } from "@bentley/geometry-core";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
+import { TestUsers } from "@bentley/oidc-signin-tool/cjs/frontend";
+import * as chai from "chai";
+import { query } from "jsonpath";
 import { RealityData, RealityDataClient, RealityDataRelationship } from "../../RealityDataClient";
 import { TestConfig } from "../TestConfig";
-import { query } from "jsonpath";
 chai.should();
 
 const LOG_CATEGORY: string = "RealityDataClient.Test";
@@ -139,7 +139,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
 
     const modelData: any = await realityData.getTileContent(requestContext, modelName);
     chai.assert(modelData);
-    const modelDataString = decoder.decode(new Uint8Array(modelData)).substring(0,4);
+    const modelDataString = decoder.decode(new Uint8Array(modelData)).substring(0, 4);
     chai.assert(modelDataString === "b3dm");
   });
 

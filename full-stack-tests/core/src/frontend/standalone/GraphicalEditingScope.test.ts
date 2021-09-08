@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as chai from "chai";
-import * as chaiAsPromised from "chai-as-promised";
-import * as path from "path";
 import { BeDuration, compareStrings, DbOpcode, Guid, Id64String, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
+import { ElectronApp } from "@bentley/electron-manager/cjs/ElectronFrontend";
 import { Point3d, Range3d, Transform } from "@bentley/geometry-core";
 import { BatchType, ChangedEntities, ElementGeometryChange, IModelError } from "@bentley/imodeljs-common";
 import {
-  BriefcaseConnection, GeometricModel3dState, GraphicalEditingScope, IModelTileTree, IModelTileTreeParams, TileLoadPriority,
+  BriefcaseConnection, GeometricModel3dState, GraphicalEditingScope, IModelTileTree, IModelTileTreeParams, TileLoadPriority
 } from "@bentley/imodeljs-frontend";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import * as chai from "chai";
+import * as chaiAsPromised from "chai-as-promised";
+import * as path from "path";
 import { callFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeLineSegment, makeModelCode, transformElements } from "../Editing";
 
 const expect = chai.expect;
@@ -26,9 +26,9 @@ describe("GraphicalEditingScope", () => {
   if (ProcessDetector.isElectronAppFrontend) {
     let imodel: BriefcaseConnection | undefined;
     // Editable; BisCore version < 1.0.11
-    const oldFilePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
+    const oldFilePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/cjs/test/assets/test.bim");
     // Editable; BisCore version == 1.0.11
-    const newFilePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/planprojection.bim");
+    const newFilePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/cjs/test/assets/planprojection.bim");
 
     async function closeIModel(): Promise<void> {
       if (imodel) {

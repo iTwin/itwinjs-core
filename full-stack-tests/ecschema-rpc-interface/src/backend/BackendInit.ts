@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 // Sets up certa to allow a method on the frontend to get an access token
-import "@bentley/oidc-signin-tool/lib/certa/certaBackend";
+import "@bentley/oidc-signin-tool/cjs/certa/certaBackend";
+import * as fs from "fs";
 import * as path from "path";
 import { Settings } from "../common/Settings";
 import { exposeBackendCallbacks } from "../common/SideChannels";
-import * as fs from "fs";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {

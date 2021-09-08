@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import * as sinon from "sinon";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { InternetConnectivityStatus } from "@bentley/imodeljs-common";
 import { NativeApp } from "@bentley/imodeljs-frontend";
-import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
+import { ResolvablePromise } from "@bentley/presentation-common/cjs/test/_helpers/Promises";
+import { expect } from "chai";
+import * as sinon from "sinon";
 import { ConnectivityInformationProvider } from "../presentation-frontend/ConnectivityInformationProvider";
 import { Presentation } from "../presentation-frontend/Presentation";
 

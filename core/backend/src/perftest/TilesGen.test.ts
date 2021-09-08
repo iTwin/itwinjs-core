@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import * as fs from "fs-extra";
-import * as os from "os";
-import * as path from "path";
 import { Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { Reporter } from "@bentley/perf-tools/lib/Reporter";
+import { Reporter } from "@bentley/perf-tools/cjs/Reporter";
+import { assert } from "chai";
+import * as fs from "fs-extra";
+import * as os from "os";
+import * as path from "path";
 import { StandaloneDb } from "../IModelDb";
 import { IModelJsFs } from "../IModelJsFs";
 import { IModelTestUtils } from "../test/IModelTestUtils";

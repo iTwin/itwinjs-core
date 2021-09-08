@@ -2,17 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { Id64, ProcessDetector } from "@bentley/bentleyjs-core";
+import { ElectronApp } from "@bentley/electron-manager/cjs/ElectronFrontend";
 import {
-  BackgroundMapSettings, ColorByName, ColorDef, GlobeMode, PlanProjectionSettings, PlanProjectionSettingsProps,
+  BackgroundMapSettings, ColorByName, ColorDef, GlobeMode, PlanProjectionSettings, PlanProjectionSettingsProps
 } from "@bentley/imodeljs-common";
-import {
-  DisplayStyle3dState, GeometricModel3dState, IModelApp, IModelConnection, Pixel, SnapshotConnection,
-} from "@bentley/imodeljs-frontend";
-import { testOnScreenViewport } from "../TestViewport";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { IModelApp, IModelConnection, Pixel, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { expect } from "chai";
 import { rpcInterfaces } from "../../common/RpcInterfaces";
+import { testOnScreenViewport } from "../TestViewport";
 
 describe("Plan projections", () => {
   let mirukuru: IModelConnection;
@@ -46,7 +44,7 @@ describe("Plan projections", () => {
     // Force our model to be a plan projection
     const modelId = "0x17";
     await mirukuru.models.load(modelId);
-    const model = mirukuru.models.getLoaded(modelId) as GeometricModel3dState;
+    const model = mirukuru.models.getLoaded(modelId);
     expect(model).not.to.be.undefined;
     expect(model.isPlanProjection).to.be.true;
 
@@ -79,7 +77,7 @@ describe("Plan projections", () => {
         });
 
         // Set up plan projection settings.
-        const style = vp.displayStyle as DisplayStyle3dState;
+        const style = vp.displayStyle;
         style.settings.setPlanProjectionSettings(modelId, PlanProjectionSettings.fromJSON(test));
         vp.invalidateScene();
 

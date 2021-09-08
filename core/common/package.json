@@ -3,6 +3,7 @@
   "version": "3.0.0-dev.49",
   "description": "iModel.js components common to frontend and backend",
   "main": "cjs/imodeljs-common.js",
+  "module": "esm/imodeljs-common.js",
   "typings": "types/imodeljs-common",
   "imodeljsSharedLibrary": true,
   "license": "MIT",

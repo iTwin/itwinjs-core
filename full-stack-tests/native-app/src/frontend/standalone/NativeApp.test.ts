@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { ElectronApp } from "@bentley/electron-manager/cjs/ElectronFrontend";
 import { NativeApp } from "@bentley/imodeljs-frontend";
-import { NativeAppTest } from "../NativeAppTest";
+import { assert } from "chai";
 import { usingOfflineScope } from "../HttpRequestHook";
+import { NativeAppTest } from "../NativeAppTest";
 
 describe("NativeApp startup", () => {
   before(async () => ElectronApp.startup());

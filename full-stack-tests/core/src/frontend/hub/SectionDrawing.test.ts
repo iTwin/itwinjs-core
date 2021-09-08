@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { CheckpointConnection, DrawingViewState, IModelApp, IModelConnection, SectionDrawingModelState } from "@bentley/imodeljs-frontend";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
+import { TestUsers } from "@bentley/oidc-signin-tool/cjs/TestUsers";
+import { expect } from "chai";
 import { testOnScreenViewport, TestViewport } from "../TestViewport";
 import { TestUtility } from "./TestUtility";
 

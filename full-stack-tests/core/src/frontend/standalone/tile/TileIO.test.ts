@@ -2,18 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { ByteStream, Id64, Id64String } from "@bentley/bentleyjs-core";
 import {
   BatchType, CurrentImdlVersion, ImdlFlags, ImdlHeader, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeId,
-  iModelTileTreeIdToString, ModelProps, RelatedElementProps, RenderMode, TileFormat, TileReadStatus, ViewFlags,
+  iModelTileTreeIdToString, ModelProps, RelatedElementProps, RenderMode, TileFormat, TileReadStatus, ViewFlags
 } from "@bentley/imodeljs-common";
 import {
   GeometricModelState, ImdlReader, IModelApp, IModelConnection, IModelTileTree, iModelTileTreeParamsFromJSON, MockRender, RenderGraphic,
-  SnapshotConnection, TileAdmin, TileRequest, TileTreeLoadStatus, ViewState,
+  SnapshotConnection, TileAdmin, TileRequest, TileTreeLoadStatus, ViewState
 } from "@bentley/imodeljs-frontend";
-import { SurfaceType } from "@bentley/imodeljs-frontend/lib/render-primitives";
-import { Batch, GraphicsArray, MeshGraphic, PolylineGeometry, Primitive, RenderOrder } from "@bentley/imodeljs-frontend/lib/webgl";
+import { SurfaceType } from "@bentley/imodeljs-frontend/cjs/render-primitives";
+import { Batch, GraphicsArray, MeshGraphic, Primitive, RenderOrder } from "@bentley/imodeljs-frontend/cjs/webgl";
+import { expect } from "chai";
 import { TileTestCase, TileTestData } from "./data/TileIO.data";
 import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1";
 import { TILE_DATA_1_2 } from "./data/TileIO.data.1.2";
@@ -270,11 +270,11 @@ describe("TileIO (WebGL)", () => {
     if (IModelApp.initialized) {
       await processEachRectangle(imodel, (graphic) => {
         expect(graphic).to.be.instanceOf(Batch);
-        const batch = graphic as Batch;
+        const batch = graphic;
         expect(batch.featureTable.isUniform).to.be.true;
         expect(batch.graphic).not.to.be.undefined;
         expect(batch.graphic).to.be.instanceOf(MeshGraphic);
-        const mg = batch.graphic as MeshGraphic;
+        const mg = batch.graphic;
         expect(mg.surfaceType).to.equal(SurfaceType.Lit);
         expect(mg.meshData).not.to.be.undefined;
         expect(mg.meshData.edgeLineCode).to.equal(0);
@@ -293,16 +293,16 @@ describe("TileIO (WebGL)", () => {
     if (IModelApp.initialized) {
       await processEachTriangles(imodel, (graphic) => {
         expect(graphic).to.be.instanceOf(Batch);
-        const batch = graphic as Batch;
+        const batch = graphic;
         expect(batch.featureTable.isUniform).to.be.false;
         expect(batch.featureTable.numFeatures).to.equal(6);
         expect(batch.graphic).not.to.be.undefined;
         expect(batch.graphic).to.be.instanceOf(GraphicsArray);
-        const list = batch.graphic as GraphicsArray;
+        const list = batch.graphic;
         expect(list.graphics.length).to.equal(2);
 
         expect(list.graphics[0]).to.be.instanceOf(MeshGraphic);
-        let mg = list.graphics[0] as MeshGraphic;
+        let mg = list.graphics[0];
         expect(mg.surfaceType).to.be.equal(SurfaceType.Lit);
         expect(mg.meshData).not.to.be.undefined;
         expect(mg.meshData.edgeLineCode).to.equal(0);
@@ -315,7 +315,7 @@ describe("TileIO (WebGL)", () => {
         expect(mg.meshData.lut.colorInfo.hasTranslucency).to.be.false;
 
         expect(list.graphics[1]).to.be.instanceOf(MeshGraphic);
-        mg = list.graphics[1] as MeshGraphic;
+        mg = list.graphics[1];
         expect(mg.surfaceType).to.be.equal(SurfaceType.Lit);
         expect(mg.meshData).not.to.be.undefined;
         expect(mg.meshData.edgeLineCode).to.equal(0);
@@ -334,18 +334,18 @@ describe("TileIO (WebGL)", () => {
     if (IModelApp.initialized) {
       await processEachLineString(imodel, (graphic) => {
         expect(graphic).to.be.instanceOf(Batch);
-        const batch = graphic as Batch;
+        const batch = graphic;
         expect(batch.featureTable.isUniform).to.be.true;
         expect(batch.featureTable.numFeatures).to.equal(1);
         expect(batch.graphic).not.to.be.undefined;
         expect(batch.graphic).to.be.instanceOf(Primitive);
-        const plinePrim = batch.graphic as Primitive;
+        const plinePrim = batch.graphic;
         expect(plinePrim.hasFeatures).to.be.true;
         expect(plinePrim.isEdge).to.be.false;
         expect(plinePrim.isLit).to.be.false;
         expect(plinePrim.renderOrder).to.equal(RenderOrder.Linear);
         expect(plinePrim.cachedGeometry).to.not.be.undefined;
-        const plGeom = plinePrim.cachedGeometry as PolylineGeometry;
+        const plGeom = plinePrim.cachedGeometry;
         expect(plGeom.numIndices).to.equal(114); // previously was 60 - but now polyline is tesselated.
         expect(plGeom.lut.numVertices).to.equal(6);
         expect(plGeom.lineCode).to.equal(0);
@@ -359,22 +359,22 @@ describe("TileIO (WebGL)", () => {
     if (IModelApp.initialized) {
       await processEachLineStrings(imodel, (graphic) => {
         expect(graphic).to.be.instanceOf(Batch);
-        const batch = graphic as Batch;
+        const batch = graphic;
         expect(batch.featureTable.isUniform).to.be.false;
         expect(batch.featureTable.numFeatures).to.equal(3);
         expect(batch.graphic).not.to.be.undefined;
         expect(batch.graphic).to.be.instanceOf(GraphicsArray);
-        const list = batch.graphic as GraphicsArray;
+        const list = batch.graphic;
         expect(list.graphics.length).to.equal(2);
 
         expect(list.graphics[0]).to.be.instanceOf(Primitive);
-        let plinePrim = list.graphics[0] as Primitive;
+        let plinePrim = list.graphics[0];
         expect(plinePrim.hasFeatures).to.be.true;
         expect(plinePrim.isEdge).to.be.false;
         expect(plinePrim.isLit).to.be.false;
         expect(plinePrim.renderOrder).to.equal(RenderOrder.Linear);
         expect(plinePrim.cachedGeometry).to.not.be.undefined;
-        let plGeom = plinePrim.cachedGeometry as PolylineGeometry;
+        let plGeom = plinePrim.cachedGeometry;
         expect(plGeom.numIndices).to.equal(114); // previously was 60 - but now polyline is tesselated.
         expect(plGeom.lut.numVertices).to.equal(6);
         expect(plGeom.lineCode).to.equal(0);
@@ -382,13 +382,13 @@ describe("TileIO (WebGL)", () => {
         expect(plGeom.isPlanar).to.be.false;
 
         expect(list.graphics[1]).to.be.instanceOf(Primitive);
-        plinePrim = list.graphics[1] as Primitive;
+        plinePrim = list.graphics[1];
         expect(plinePrim.hasFeatures).to.be.true;
         expect(plinePrim.isEdge).to.be.false;
         expect(plinePrim.isLit).to.be.false;
         expect(plinePrim.renderOrder).to.equal(RenderOrder.Linear);
         expect(plinePrim.cachedGeometry).to.not.be.undefined;
-        plGeom = plinePrim.cachedGeometry as PolylineGeometry;
+        plGeom = plinePrim.cachedGeometry;
         expect(plGeom.numIndices).to.equal(228); // 120 pre-tesselation...
         expect(plGeom.lut.numVertices).to.equal(12);
         expect(plGeom.lineCode).to.equal(2);
@@ -402,11 +402,11 @@ describe("TileIO (WebGL)", () => {
     if (IModelApp.initialized) {
       await processEachCylinder(imodel, (graphic) => {
         expect(graphic).to.be.instanceOf(Batch);
-        const batch = graphic as Batch;
+        const batch = graphic;
         expect(batch.featureTable.isUniform).to.be.true;
         expect(batch.graphic).not.to.be.undefined;
         expect(batch.graphic).to.be.instanceOf(MeshGraphic);
-        const mg = batch.graphic as MeshGraphic;
+        const mg = batch.graphic;
         expect(mg.surfaceType).to.equal(SurfaceType.Lit);
         expect(mg.meshData).not.to.be.undefined;
         expect(mg.meshData.edgeLineCode).to.equal(0);
@@ -443,7 +443,7 @@ describe("TileIO (mock render)", () => {
       const reader = ImdlReader.create(stream, model.iModel, model.id, model.is3d, IModelApp.renderSystem, BatchType.Primary, true, (_) => true);
       expect(reader).not.to.be.undefined;
 
-      const result = await reader!.read();
+      const result = await reader.read();
       expect(result.readStatus).to.equal(TileReadStatus.Canceled);
     }
   });
@@ -467,7 +467,7 @@ describe("TileIO (mock render)", () => {
   it("should read an iModel tile containing a single rectangle", async () => {
     await processEachRectangle(imodel, (graphic) => {
       expect(graphic).instanceof(MockRender.Batch);
-      const batch = graphic as MockRender.Batch;
+      const batch = graphic;
       expect(batch.featureTable.isUniform).to.be.true;
       expect(batch.graphic).not.to.be.undefined;
       expect(batch.graphic).instanceof(MockRender.Graphic);
@@ -477,12 +477,12 @@ describe("TileIO (mock render)", () => {
   it("should read an iModel tile containing multiple meshes and non-uniform feature/color tables", async () => {
     await processEachTriangles(imodel, (graphic) => {
       expect(graphic).instanceof(MockRender.Batch);
-      const batch = graphic as MockRender.Batch;
+      const batch = graphic;
       expect(batch.featureTable.isUniform).to.be.false;
       expect(batch.featureTable.numFeatures).to.equal(6);
       expect(batch.graphic).not.to.be.undefined;
       expect(batch.graphic).instanceof(MockRender.List);
-      const list = batch.graphic as MockRender.List;
+      const list = batch.graphic;
       expect(list.graphics.length).to.equal(2);
     });
   });
@@ -490,7 +490,7 @@ describe("TileIO (mock render)", () => {
   it("should read an iModel tile containing single open yellow line string", async () => {
     await processEachLineString(imodel, (graphic) => {
       expect(graphic).instanceof(MockRender.Batch);
-      const batch = graphic as MockRender.Batch;
+      const batch = graphic;
       expect(batch.featureTable.isUniform).to.be.true;
       expect(batch.featureTable.numFeatures).to.equal(1);
       expect(batch.graphic).not.to.be.undefined;
@@ -500,12 +500,12 @@ describe("TileIO (mock render)", () => {
   it("should read an iModel tile containing multiple line strings", async () => {
     await processEachLineStrings(imodel, (graphic) => {
       expect(graphic).instanceof(MockRender.Batch);
-      const batch = graphic as MockRender.Batch;
+      const batch = graphic;
       expect(batch.featureTable.isUniform).to.be.false;
       expect(batch.featureTable.numFeatures).to.equal(3);
       expect(batch.graphic).not.to.be.undefined;
       expect(batch.graphic).to.be.instanceOf(MockRender.List);
-      const list = batch.graphic as MockRender.List;
+      const list = batch.graphic;
       expect(list.graphics.length).to.equal(2);
     });
   });
@@ -513,7 +513,7 @@ describe("TileIO (mock render)", () => {
   it("should read an iModel tile containing edges and silhouettes", async () => {
     await processEachCylinder(imodel, (graphic) => {
       expect(graphic).instanceof(MockRender.Batch);
-      const batch = graphic as MockRender.Batch;
+      const batch = graphic;
       expect(batch.featureTable.isUniform).to.be.true;
       expect(batch.graphic).not.to.be.undefined;
     });
@@ -555,7 +555,7 @@ async function getPrimaryTileTree(model: GeometricModelState, edgesRequired = tr
 
   const tree = owner.tileTree;
   expect(tree).not.to.be.undefined;
-  return tree! as IModelTileTree;
+  return tree;
 }
 
 describe("mirukuru TileTree", () => {
@@ -676,7 +676,7 @@ describe("mirukuru TileTree", () => {
   it("should use a different tile tree when view flags change", async () => {
     const modelId = "0x1c";
     await imodel.models.load(modelId);
-    const model = imodel.models.getLoaded(modelId) as GeometricModelState;
+    const model = imodel.models.getLoaded(modelId);
 
     const viewState = fakeViewState(imodel);
     const treeRef = model.createTileTreeReference(viewState);
@@ -801,7 +801,7 @@ describe.skip("TileAdmin", () => {
         const reader = ImdlReader.create(stream, imodel, "0x1c", true, IModelApp.renderSystem)!;
         expect(reader).not.to.be.undefined;
 
-        const meshes = (reader as any)._meshes;
+        const meshes = (reader)._meshes;
         expect(meshes).not.to.be.undefined;
         for (const key of Object.keys(meshes)) {
           const mesh = meshes[key];
@@ -889,7 +889,7 @@ describe.skip("TileAdmin", () => {
           if (!useProjectExtents)
             expect(guid).to.equal("first");
           else
-            expect(guid).to.equal(`first_${qualifier!}`);
+            expect(guid).to.equal(`first_${qualifier}`);
 
           return new Uint8Array(1);
         };

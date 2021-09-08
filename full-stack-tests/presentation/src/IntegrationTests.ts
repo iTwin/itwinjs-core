@@ -2,25 +2,25 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { ClientRequestContext, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { IModelAppOptions, NoRenderApp } from "@bentley/imodeljs-frontend";
+import { I18NOptions } from "@bentley/imodeljs-i18n";
+import { TestUsers } from "@bentley/oidc-signin-tool/cjs/TestUsers";
+import { TestUtility } from "@bentley/oidc-signin-tool/cjs/TestUtility";
+import {
+  HierarchyCacheMode, Presentation as PresentationBackend, PresentationBackendNativeLoggerCategory,
+  PresentationProps as PresentationBackendProps
+} from "@bentley/presentation-backend";
+import { RequestPriority } from "@bentley/presentation-common";
+import { PresentationManagerProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
+import { initialize as initializeTesting, PresentationTestingInitProps, terminate as terminateTesting } from "@bentley/presentation-testing";
 import * as chai from "chai";
 import chaiSubset from "chai-subset";
 import * as cpx from "cpx";
 import * as fs from "fs";
 import * as path from "path";
 import sinonChai from "sinon-chai";
-import { ClientRequestContext, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { IModelAppOptions, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { I18NOptions } from "@bentley/imodeljs-i18n";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
-import { TestUtility } from "@bentley/oidc-signin-tool/lib/TestUtility";
-import {
-  HierarchyCacheMode, Presentation as PresentationBackend, PresentationBackendNativeLoggerCategory,
-  PresentationProps as PresentationBackendProps,
-} from "@bentley/presentation-backend";
-import { RequestPriority } from "@bentley/presentation-common";
-import { PresentationManagerProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
-import { initialize as initializeTesting, PresentationTestingInitProps, terminate as terminateTesting } from "@bentley/presentation-testing";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {

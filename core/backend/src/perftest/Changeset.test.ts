@@ -3,27 +3,27 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
-import * as fs from "fs-extra";
-import * as path from "path";
 import { ChangeSetApplyOption, Id64, Id64String, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { Arc3d, IModelJson as GeomJson, Point3d } from "@bentley/geometry-core";
 import {
-  ChangeSet, ChangeSetQuery, ChangesType, CheckpointQuery, IModelHubClient, IModelHubError, IModelQuery, VersionQuery,
+  ChangeSet, ChangeSetQuery, ChangesType, CheckpointQuery, IModelHubClient, IModelHubError, IModelQuery, VersionQuery
 } from "@bentley/imodelhub-client";
 import { Code, ColorDef, GeometryStreamProps, IModel, IModelVersion, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { Reporter } from "@bentley/perf-tools/lib/Reporter";
+import { Reporter } from "@bentley/perf-tools/cjs/Reporter";
+import { assert } from "chai";
+import * as fs from "fs-extra";
+import * as path from "path";
+import { IModelHubBackend } from "../IModelHubBackend";
 import {
-  BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelHost, IModelJsNative, SpatialCategory, StandaloneDb,
+  BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelHost, IModelJsNative, SpatialCategory, StandaloneDb
 } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { HubUtility } from "../test/integration/HubUtility";
 import { KnownTestLocations } from "../test/KnownTestLocations";
 import { RevisionUtility } from "../test/RevisionUtility";
 import { PerfTestUtility } from "./PerfTestUtils";
-import { IModelHubBackend } from "../IModelHubBackend";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

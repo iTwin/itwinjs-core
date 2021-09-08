@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import * as path from "path";
 import { Guid, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
+import { ElectronApp } from "@bentley/electron-manager/cjs/ElectronFrontend";
 import { Transform } from "@bentley/geometry-core";
 import { BriefcaseConnection } from "@bentley/imodeljs-frontend";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { expect } from "chai";
+import * as path from "path";
 import { callFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing";
 
 describe("BriefcaseTxns", () => {
@@ -24,7 +24,7 @@ describe("BriefcaseTxns", () => {
     });
 
     beforeEach(async () => {
-      const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/planprojection.bim");
+      const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/cjs/test/assets/planprojection.bim");
       imodel = await BriefcaseConnection.openStandalone(filePath, OpenMode.ReadWrite);
     });
 

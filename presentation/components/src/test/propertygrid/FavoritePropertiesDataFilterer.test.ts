@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { Field } from "@bentley/presentation-common";
+import { createRandomPrimitiveField } from "@bentley/presentation-common/cjs/test/_helpers/random";
+import { FavoritePropertiesManager, FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
+import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { expect } from "chai";
 import * as faker from "faker";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Field } from "@bentley/presentation-common";
-import { createRandomPrimitiveField } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { FavoritePropertiesManager, FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
-import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { IPresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
 import { FavoritePropertiesDataFilterer } from "../../presentation-components/propertygrid/FavoritePropertiesDataFilterer";
 import { createArrayProperty, createPrimitiveStringProperty, createStructProperty } from "../_helpers/Properties";

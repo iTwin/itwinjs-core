@@ -2,19 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { ProcessDetector } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
+import {
+  HyperModeling, HyperModelingDecorator, SectionDrawingLocationState, SectionMarker, SectionMarkerConfig, SectionMarkerHandler
+} from "@bentley/hypermodeling-frontend";
 import { SectionType } from "@bentley/imodeljs-common";
 import {
-  CheckpointConnection, IModelApp, IModelConnection, ParseAndRunResult, SnapshotConnection,
+  CheckpointConnection, IModelApp, IModelConnection, ParseAndRunResult, SnapshotConnection
 } from "@bentley/imodeljs-frontend";
-import {
-  HyperModeling, HyperModelingDecorator, SectionDrawingLocationState, SectionMarker, SectionMarkerConfig, SectionMarkerHandler,
-} from "@bentley/hypermodeling-frontend";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
-import { TestUtility } from "./TestUtility";
+import { TestUsers } from "@bentley/oidc-signin-tool/cjs/TestUsers";
+import { expect } from "chai";
 import { testOnScreenViewport } from "../TestViewport";
-import { ProcessDetector } from "@bentley/bentleyjs-core";
+import { TestUtility } from "./TestUtility";
 
 describe("HyperModeling (#integration)", () => {
   let imodel: IModelConnection; // An iModel containing no section drawing locations

@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable @typescript-eslint/promise-function-async, deprecation/deprecation */
 
-import { expect } from "chai";
-import sinon from "sinon";
-import * as moq from "typemoq";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Field, NestedContentField, PropertiesField, PropertyInfo } from "@bentley/presentation-common";
 import {
-  createRandomNestedContentField, createRandomPrimitiveField, createRandomPropertiesField, createRandomRelatedClassInfo,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
+  createRandomNestedContentField, createRandomPrimitiveField, createRandomPropertiesField, createRandomRelatedClassInfo
+} from "@bentley/presentation-common/cjs/test/_helpers/random";
+import { expect } from "chai";
+import sinon from "sinon";
+import * as moq from "typemoq";
 import {
-  createFieldOrderInfos, FavoritePropertiesManager, FavoritePropertiesOrderInfo, FavoritePropertiesScope, getFieldInfos, IFavoritePropertiesStorage,
+  createFieldOrderInfos, FavoritePropertiesManager, FavoritePropertiesOrderInfo, FavoritePropertiesScope, getFieldInfos, IFavoritePropertiesStorage
 } from "../../presentation-frontend";
 import { PropertyFullName } from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager";
 

@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Feature, FeatureTable, GeometryClass, PackedFeatureTable } from "@bentley/imodeljs-common";
 import {
-  HiliteSet, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
+  HiliteSet, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId
 } from "@bentley/imodeljs-frontend";
-import { FeatureOverrides, Target } from "@bentley/imodeljs-frontend/lib/webgl";
+import { FeatureOverrides } from "@bentley/imodeljs-frontend/cjs/webgl";
+import { assert, expect } from "chai";
 
 function waitUntilTimeHasPassed() {
   const ot = Date.now();
@@ -31,7 +31,7 @@ describe("FeatureOverrides", () => {
   before(async () => {   // Create a ViewState to load into a Viewport
     await IModelApp.startup();
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
-    spatialView = await imodel.views.load("0x34") as SpatialViewState;
+    spatialView = await imodel.views.load("0x34");
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
 
@@ -49,7 +49,7 @@ describe("FeatureOverrides", () => {
     vp = ScreenViewport.create(viewDiv, vpView);
 
     vp.target.setHiliteSet(new HiliteSet(imodel));
-    const ovr = FeatureOverrides.createFromTarget(vp.target as Target, { });
+    const ovr = FeatureOverrides.createFromTarget(vp.target, {});
     const features = new FeatureTable(1);
     features.insertWithIndex(new Feature(Id64.fromString("0x1")), 0);
 
@@ -74,7 +74,7 @@ describe("FeatureOverrides", () => {
     vp = ScreenViewport.create(viewDiv, vpView);
 
     vp.target.setHiliteSet(new HiliteSet(imodel));
-    const ovr = FeatureOverrides.createFromTarget(vp.target as Target, { });
+    const ovr = FeatureOverrides.createFromTarget(vp.target, {});
     const features = new FeatureTable(2);
     features.insertWithIndex(new Feature(Id64.fromString("0x1")), 0);
     features.insertWithIndex(new Feature(Id64.fromString("0x2")), 1);

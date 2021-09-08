@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
+import { Content, Item, RulesetsFactory } from "@bentley/presentation-common";
+import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
+import {
+  createRandomContent, createRandomDescriptor, createRandomPrimitiveField, createRandomRuleset
+} from "@bentley/presentation-common/cjs/test/_helpers/random";
+import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
+import "@bentley/presentation-frontend/cjs/test/_helpers/MockFrontendEnvironment";
+import { TypeConverter, TypeConverterManager } from "@bentley/ui-components";
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { Content, Item, RulesetsFactory } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import {
-  createRandomContent, createRandomDescriptor, createRandomPrimitiveField, createRandomRuleset,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
-import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
-import { TypeConverter, TypeConverterManager } from "@bentley/ui-components";
-import {
-  DataProvidersFactory, DataProvidersFactoryProps, IPresentationPropertyDataProvider, PresentationTableDataProvider,
+  DataProvidersFactory, DataProvidersFactoryProps, IPresentationPropertyDataProvider, PresentationTableDataProvider
 } from "../presentation-components";
 import { createRandomPropertyRecord, mockPresentationManager } from "./_helpers/UiComponents";
 
@@ -93,7 +93,7 @@ describe("DataProvidersFactory", () => {
       expect(dataProvider).to.be.instanceOf(PresentationTableDataProvider);
       expect(dataProvider.rulesetId).to.eq(ruleset.id);
       expect(dataProvider.description).to.eq("test str");
-      expect((dataProvider as any).shouldRequestContentForEmptyKeyset()).to.be.true;
+      expect((dataProvider).shouldRequestContentForEmptyKeyset()).to.be.true;
     });
 
     it("uses record's display value for navigation properties", async () => {

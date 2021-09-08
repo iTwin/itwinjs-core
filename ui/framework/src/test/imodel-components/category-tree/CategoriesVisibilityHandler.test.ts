@@ -2,19 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import * as sinon from "sinon";
 import { BeEvent, Id64String, using } from "@bentley/bentleyjs-core";
 import {
-  IModelConnection, PerModelCategoryVisibility, ScreenViewport, SubCategoriesCache, ViewManager, Viewport, ViewState,
+  IModelConnection, PerModelCategoryVisibility, ScreenViewport, SubCategoriesCache, ViewManager, Viewport, ViewState
 } from "@bentley/imodeljs-frontend";
 import { ECInstancesNodeKey, StandardNodeTypes } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import * as UiComponents from "@bentley/ui-components";
 import { renderHook } from "@testing-library/react-hooks";
+import { expect } from "chai";
+import * as sinon from "sinon";
 import {
-  Category, CategoryVisibilityHandler, CategoryVisibilityHandlerParams, useCategories,
+  Category, CategoryVisibilityHandler, CategoryVisibilityHandlerParams, useCategories
 } from "../../../ui-framework/imodel-components/category-tree/CategoryVisibilityHandler";
 
 const createKey = (id: Id64String): ECInstancesNodeKey => {
@@ -85,8 +85,8 @@ describe("CategoryVisibilityHandler", () => {
       props.onViewedCategoriesChanged = new BeEvent<(vp: Viewport) => void>();
     const vpMock = moq.Mock.ofType<Viewport>();
     vpMock.setup((x) => x.iModel).returns(() => imodelMock.object);
-    vpMock.setup((x) => x.view).returns(() => props!.viewState!);
-    vpMock.setup((x) => x.perModelCategoryVisibility).returns(() => props!.perModelCategoryVisibility!);
+    vpMock.setup((x) => x.view).returns(() => props!.viewState);
+    vpMock.setup((x) => x.perModelCategoryVisibility).returns(() => props!.perModelCategoryVisibility);
     vpMock.setup((x) => x.onViewedCategoriesChanged).returns(() => props!.onViewedCategoriesChanged!);
     vpMock.setup((x) => x.onDisplayStyleChanged).returns(() => props!.onDisplayStyleChanged!);
     return vpMock;
@@ -110,7 +110,7 @@ describe("CategoryVisibilityHandler", () => {
     viewManagerMock.setup((x) => x.selectedView).returns(() => selectedViewMock.object);
     viewManagerMock
       .setup((x) => x[Symbol.iterator]())
-      .returns(() => [viewport as ScreenViewport][Symbol.iterator]())
+      .returns(() => [viewport][Symbol.iterator]())
       .verifiable(times);
   };
 

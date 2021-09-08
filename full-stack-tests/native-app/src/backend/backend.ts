@@ -4,9 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 // required to get certa to read the .env file - should be reworked
-import "@bentley/oidc-signin-tool/lib/certa/certaBackend";
-import * as nock from "nock";
-import * as path from "path";
 import { BentleyLoggerCategory, ClientRequestContext, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IModelBankClient, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
@@ -14,10 +11,13 @@ import { BackendLoggerCategory, BriefcaseDb, BriefcaseManager, ChangeSummaryMana
 import { IModelRpcProps, RpcConfiguration } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
 import { TestUtility } from "@bentley/oidc-signin-tool";
-import { TestUserCredentials } from "@bentley/oidc-signin-tool/lib/TestUsers";
+import "@bentley/oidc-signin-tool/cjs/certa/certaBackend";
+import { TestUserCredentials } from "@bentley/oidc-signin-tool/cjs/TestUsers";
+import * as fs from "fs";
+import * as nock from "nock";
+import * as path from "path";
 import { testIpcChannel, TestIpcInterface, TestProjectProps } from "../common/IpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
-import * as fs from "fs";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {

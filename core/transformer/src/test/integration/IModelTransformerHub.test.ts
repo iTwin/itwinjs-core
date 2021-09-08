@@ -3,27 +3,27 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
-import { join } from "path";
-import * as semver from "semver";
 import { DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { ChangesetType, Code, ColorDef, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
   BisCoreSchema, BriefcaseDb, BriefcaseManager, ConcurrencyControl, ECSqlStatement, Element, ElementRefersToElements,
   ExternalSourceAspect, GenericSchema, IModelDb, IModelHost, IModelJsFs, IModelJsNative, NativeLoggerCategory,
-  PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
+  PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory
 } from "@bentley/imodeljs-backend";
+import { HubMock } from "@bentley/imodeljs-backend/cjs/test/HubMock";
+import { ExtensiveTestScenario, IModelTestUtils, TestUserType } from "@bentley/imodeljs-backend/cjs/test/IModelTestUtils";
+import { HubUtility } from "@bentley/imodeljs-backend/cjs/test/integration/HubUtility";
+import { KnownTestLocations } from "@bentley/imodeljs-backend/cjs/test/KnownTestLocations";
+import { ChangesetType, Code, ColorDef, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { assert } from "chai";
+import { join } from "path";
+import * as semver from "semver";
 import {
   IModelExporter,
-  IModelTransformer, TransformerLoggerCategory,
+  IModelTransformer, TransformerLoggerCategory
 } from "../../imodeljs-transformer";
-import { HubMock } from "@bentley/imodeljs-backend/lib/test/HubMock";
-import { ExtensiveTestScenario, IModelTestUtils, TestUserType } from "@bentley/imodeljs-backend/lib/test/IModelTestUtils";
 import { CountingIModelImporter, IModelToTextFileExporter, IModelTransformerTestUtils, TestIModelTransformer, TransformerExtensiveTestScenario as TransformerExtensiveTestScenario } from "../IModelTransformerUtils";
-import { KnownTestLocations } from "@bentley/imodeljs-backend/lib/test/KnownTestLocations";
-import { HubUtility } from "@bentley/imodeljs-backend/lib/test/integration/HubUtility";
 
 describe("IModelTransformerHub (#integration)", () => {
   const outputDir = join(KnownTestLocations.outputDir, "IModelTransformerHub");

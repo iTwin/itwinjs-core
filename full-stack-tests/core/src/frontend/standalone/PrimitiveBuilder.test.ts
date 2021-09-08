@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
 import { Arc3d, IndexedPolyface, LineString3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, Transform } from "@bentley/geometry-core";
 import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
 import {
-  GraphicType, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
+  GraphicType, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection, StandardViewId
 } from "@bentley/imodeljs-frontend";
 import {
-  DisplayParams, Geometry, GeometryAccumulator, PrimitiveBuilder, StrokesPrimitiveList, StrokesPrimitivePointList, StrokesPrimitivePointLists,
-} from "@bentley/imodeljs-frontend/lib/render-primitives";
-import { Branch } from "@bentley/imodeljs-frontend/lib/webgl";
+  DisplayParams, Geometry, GeometryAccumulator, PrimitiveBuilder, StrokesPrimitiveList, StrokesPrimitivePointList, StrokesPrimitivePointLists
+} from "@bentley/imodeljs-frontend/cjs/render-primitives";
+import { Branch } from "@bentley/imodeljs-frontend/cjs/webgl";
+import { assert, expect } from "chai";
 
 describe("PrimitiveBuilder", () => {
   let imodel: IModelConnection;
@@ -26,7 +26,7 @@ describe("PrimitiveBuilder", () => {
     viewDiv.style.width = viewDiv.style.height = "1000px";
     document.body.appendChild(viewDiv);
 
-    const spatialView = await imodel.views.load("0x34") as SpatialViewState;
+    const spatialView = await imodel.views.load("0x34");
     spatialView.setStandardRotation(StandardViewId.RightIso);
 
     viewport = ScreenViewport.create(viewDiv, spatialView);
@@ -367,6 +367,6 @@ describe("PrimitiveBuilder", () => {
     const graphic = primBuilder.finishGraphic(accum);
     expect(primBuilder.primitives.length).to.equal(0); // if only 1 entry (a branch), the list of primitives is popped.
     expect(graphic instanceof Branch).to.be.true;
-    expect((graphic as Branch).branch.entries.length).to.equal(2);
+    expect((graphic).branch.entries.length).to.equal(2);
   });
 });

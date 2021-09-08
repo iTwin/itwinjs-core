@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import * as faker from "faker";
 import { Guid, Id64 } from "@bentley/bentleyjs-core";
 import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { ChildNodeSpecificationTypes, ContentSpecificationTypes, KeySet, Ruleset, RuleTypes } from "@bentley/presentation-common";
-import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { createRandomId } from "@bentley/presentation-common/cjs/test/_helpers/random";
 import { Presentation, PresentationManager, RulesetVariablesManager } from "@bentley/presentation-frontend";
+import { expect } from "chai";
+import * as faker from "faker";
 import { initialize, resetBackend, terminate } from "../IntegrationTests";
 
 const RULESET: Ruleset = {
@@ -347,7 +347,7 @@ describe("Ruleset Variables", async () => {
       };
 
       let content = await Presentation.presentation.getContent({ imodel, rulesetOrId: ruleset, keys: new KeySet(), descriptor: {} });
-      expect(content!.contentSet.length).to.eq(0);
+      expect(content.contentSet.length).to.eq(0);
 
       // https://www.sqlite.org/limits.html#max_variable_number
       const maxNumberOfSupportedBindParams = 32766;
@@ -357,8 +357,8 @@ describe("Ruleset Variables", async () => {
 
       await Presentation.presentation.vars(ruleset.id).setId64s("ids", ids);
       content = await Presentation.presentation.getContent({ imodel, rulesetOrId: ruleset, keys: new KeySet(), descriptor: {} });
-      expect(content!.contentSet.length).to.eq(1);
-      expect(content!.contentSet[0].primaryKeys[0]).to.deep.eq({ className: "PCJ_TestSchema:TestClass", id: "0x61" });
+      expect(content.contentSet.length).to.eq(1);
+      expect(content.contentSet[0].primaryKeys[0]).to.deep.eq({ className: "PCJ_TestSchema:TestClass", id: "0x61" });
     });
 
   });

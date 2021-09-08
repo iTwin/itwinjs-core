@@ -2,21 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Logger } from "@bentley/bentleyjs-core";
+import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { IModelBankClient, IModelBankFileSystemContextClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
+import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/cjs/imodelbank/IModelBankBasicAuthorizationClient";
+import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/cjs/imodelbank/IModelBankDummyAuthorizationClient";
+import { UserInfo } from "@bentley/itwin-client";
 import * as child_process from "child_process";
 import * as fs from "fs";
 import * as fsextra from "fs-extra";
 import * as http from "http";
 import * as https from "https";
 import * as path from "path";
-import { Logger } from "@bentley/bentleyjs-core";
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { IModelBankClient, IModelBankFileSystemContextClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
-import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankBasicAuthorizationClient";
-import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankDummyAuthorizationClient";
-import { UserInfo } from "@bentley/itwin-client";
-import { workDir } from "./TestConstants";
-import { createIModelBankFileHandler } from "./FileHandler";
 import { TestIModelHubOidcAuthorizationClient } from "../TestIModelHubOidcAuthorizationClient";
+import { createIModelBankFileHandler } from "./FileHandler";
+import { workDir } from "./TestConstants";
 
 // To run tests with imodel-bank integration:
 // set NODE_EXTRA_CA_CERTS=D:\dev\imodeljs\full-stack-tests\rpc\local_dev_server.crt

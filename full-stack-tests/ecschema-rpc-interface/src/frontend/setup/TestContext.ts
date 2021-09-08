@@ -3,17 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { BentleyCloudRpcManager, OpenAPIInfo } from "@bentley/imodeljs-common";
 import { NoRenderApp } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/itwin-client";
 import {
-  getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials,
-} from "@bentley/oidc-signin-tool/lib/frontend";
+  getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials
+} from "@bentley/oidc-signin-tool/cjs/frontend";
+import { expect } from "chai";
 import { getRpcInterfaces, Settings } from "../../common/Settings";
 import { getProcessEnvFromBackend } from "../../common/SideChannels";
 import { IModelSession } from "./IModelSession";
-import { BentleyCloudRpcManager, OpenAPIInfo } from "@bentley/imodeljs-common";
 
 export class TestContext {
   public adminUserAccessToken!: AccessToken;

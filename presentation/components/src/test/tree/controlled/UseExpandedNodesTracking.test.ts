@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import * as sinon from "sinon";
-import * as moq from "typemoq";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { NodeKey } from "@bentley/presentation-common";
-import { createRandomECInstancesNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { createRandomECInstancesNodeKey } from "@bentley/presentation-common/cjs/test/_helpers/random";
 import { Presentation, StateTracker } from "@bentley/presentation-frontend";
 import { TreeModelNodeInput, TreeModelSource, TreeNodeItem } from "@bentley/ui-components";
 import { cleanup, renderHook } from "@testing-library/react-hooks";
+import { expect } from "chai";
+import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { IPresentationTreeDataProvider } from "../../../presentation-components";
 import { createLabelRecord } from "../../../presentation-components/common/Utils";
 import { useExpandedNodesTracking, UseExpandedNodesTrackingProps } from "../../../presentation-components/tree/controlled/UseExpandedNodesTracking";

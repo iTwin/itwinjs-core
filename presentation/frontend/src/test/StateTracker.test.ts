@@ -5,8 +5,8 @@
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { NodeKey } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomECInstancesNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
+import { createRandomECInstancesNodeKey } from "@bentley/presentation-common/cjs/test/_helpers/random";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
 import { NodeIdentifier, StateTracker } from "../presentation-frontend/StateTracker";
 

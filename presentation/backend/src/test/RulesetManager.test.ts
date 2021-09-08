@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { RegisteredRuleset } from "@bentley/presentation-common";
+import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
 import { expect } from "chai";
 import * as faker from "faker";
-import { RegisteredRuleset } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
 import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
 
@@ -27,8 +27,8 @@ describe("RulesetManager", () => {
       const result = manager.get(ruleset.id);
       addonMock.verifyAll();
       expect(result).to.not.be.undefined;
-      expect(result!.toJSON()).to.deep.eq(ruleset);
-      expect(result!.uniqueIdentifier).to.deep.eq(hash);
+      expect(result.toJSON()).to.deep.eq(ruleset);
+      expect(result.uniqueIdentifier).to.deep.eq(hash);
     });
 
     it("handles empty array response", async () => {
@@ -47,8 +47,8 @@ describe("RulesetManager", () => {
       const result = manager.get(ruleset.id);
       addonMock.verifyAll();
       expect(result).to.not.be.undefined;
-      expect(result!.toJSON()).to.deep.eq(ruleset);
-      expect(result!.uniqueIdentifier).to.deep.eq(hash);
+      expect(result.toJSON()).to.deep.eq(ruleset);
+      expect(result.uniqueIdentifier).to.deep.eq(hash);
     });
 
   });
@@ -120,7 +120,7 @@ describe("RulesetManager", () => {
 
       const result = manager.get(ruleset.id);
       expect(result).to.not.be.undefined;
-      result!.dispose();
+      result.dispose();
 
       addonMock.verifyAll();
     });

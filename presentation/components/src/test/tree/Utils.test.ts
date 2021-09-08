@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { GroupingNodeKey, LabelDefinition, Node } from "@bentley/presentation-common";
+import { createRandomECInstancesNode, createRandomGroupingNodeKey } from "@bentley/presentation-common/cjs/test/_helpers/random";
+import { PageOptions } from "@bentley/ui-components";
 import { expect } from "chai";
 import * as faker from "faker";
-import { GroupingNodeKey, LabelDefinition, Node } from "@bentley/presentation-common";
-import { createRandomECInstancesNode, createRandomGroupingNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { PageOptions } from "@bentley/ui-components";
 import {
-  createPartialTreeNodeItem, createTreeNodeItem, createTreeNodeItems, pageOptionsUiToPresentation, PRESENTATION_TREE_NODE_KEY,
+  createPartialTreeNodeItem, createTreeNodeItem, createTreeNodeItems, pageOptionsUiToPresentation, PRESENTATION_TREE_NODE_KEY
 } from "../../presentation-components/tree/Utils";
 
 describe("Utils", () => {
@@ -103,8 +103,8 @@ describe("Utils", () => {
       const result = pageOptionsUiToPresentation(pageOptions);
 
       expect(result).to.not.be.undefined;
-      expect(result!.size).to.be.equal(size);
-      expect(result!.start).to.be.equal(start);
+      expect(result.size).to.be.equal(size);
+      expect(result.start).to.be.equal(start);
     });
   });
 });

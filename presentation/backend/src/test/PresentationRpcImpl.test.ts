@@ -3,9 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable deprecation/deprecation */
-import { expect } from "chai";
-import * as faker from "faker";
-import * as sinon from "sinon";
 import { ClientRequestContext, CompressedId64Set, Id64String } from "@bentley/bentleyjs-core";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import { IModelNotFoundResponse, IModelRpcProps } from "@bentley/imodeljs-common";
@@ -17,15 +14,18 @@ import {
   ExtendedContentRpcRequestOptions, ExtendedHierarchyRequestOptions, ExtendedHierarchyRpcRequestOptions, FieldDescriptor, FieldDescriptorType,
   HierarchyCompareInfo, HierarchyCompareOptions, HierarchyCompareRpcOptions, HierarchyRequestOptions, HierarchyRpcRequestOptions, InstanceKey, Item,
   KeySet, KeySetJSON, Node, NodeKey, NodePathElement, Paged, PageOptions, PresentationError, PresentationRpcRequestOptions, PresentationStatus,
-  RulesetVariable, RulesetVariableJSON, SelectClassInfo, SelectionScopeRequestOptions, VariableValueTypes,
+  RulesetVariable, RulesetVariableJSON, SelectClassInfo, SelectionScopeRequestOptions, VariableValueTypes
 } from "@bentley/presentation-common";
-import { createTestSelectClassInfo } from "@bentley/presentation-common/lib/test/_helpers/Content";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
+import { createTestSelectClassInfo } from "@bentley/presentation-common/cjs/test/_helpers/Content";
+import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
+import { ResolvablePromise } from "@bentley/presentation-common/cjs/test/_helpers/Promises";
 import {
   createRandomContent, createRandomDescriptor, createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeKey,
-  createRandomECInstancesNodeKeyJSON, createRandomId, createRandomLabelDefinitionJSON, createRandomNodePathElement, createRandomSelectionScope,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
+  createRandomECInstancesNodeKeyJSON, createRandomId, createRandomLabelDefinitionJSON, createRandomNodePathElement, createRandomSelectionScope
+} from "@bentley/presentation-common/cjs/test/_helpers/random";
+import { expect } from "chai";
+import * as faker from "faker";
+import * as sinon from "sinon";
 import { Presentation } from "../presentation-backend/Presentation";
 import { PresentationManager } from "../presentation-backend/PresentationManager";
 import { MAX_ALLOWED_PAGE_SIZE, PresentationRpcImpl } from "../presentation-backend/PresentationRpcImpl";

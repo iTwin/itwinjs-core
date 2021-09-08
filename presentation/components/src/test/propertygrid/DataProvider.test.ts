@@ -2,27 +2,27 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
-import { expect } from "chai";
-import * as path from "path";
-import * as sinon from "sinon";
 import { BeEvent, using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import {
   applyOptionalPrefix, ArrayTypeDescription, CategoryDescription, Content, ContentFlags, Field, Item, Property, PropertyValueFormat,
-  RelationshipMeaning, StructFieldMemberDescription, StructTypeDescription, TypeDescription, ValuesDictionary,
+  RelationshipMeaning, StructFieldMemberDescription, StructTypeDescription, TypeDescription, ValuesDictionary
 } from "@bentley/presentation-common";
 import {
   createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestNestedContentField, createTestPropertiesContentField,
-  createTestSimpleContentField,
-} from "@bentley/presentation-common/lib/test/_helpers/Content";
-import { createTestECClassInfo, createTestECInstanceKey, createTestPropertyInfo } from "@bentley/presentation-common/lib/test/_helpers/EC";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
+  createTestSimpleContentField
+} from "@bentley/presentation-common/cjs/test/_helpers/Content";
+import { createTestECClassInfo, createTestECInstanceKey, createTestPropertyInfo } from "@bentley/presentation-common/cjs/test/_helpers/EC";
+import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
+import { createRandomId } from "@bentley/presentation-common/cjs/test/_helpers/random";
 import { FavoritePropertiesManager, FavoritePropertiesScope, Presentation, PresentationManager } from "@bentley/presentation-frontend";
+import "@bentley/presentation-frontend/cjs/test/_helpers/MockFrontendEnvironment";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { PropertyCategory } from "@bentley/ui-components";
+import { expect } from "chai";
+import * as path from "path";
+import * as sinon from "sinon";
 import { CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";
 import { initializeLocalization } from "../../presentation-components/common/Utils";
 import { FAVORITES_CATEGORY_NAME } from "../../presentation-components/favorite-properties/DataProvider";
@@ -380,12 +380,12 @@ describe("PropertyDataProvider", () => {
           const descriptor = createTestContentDescriptor({ fields: [field] });
           const values = {
             [field.name]: {
-              [(field.type as StructTypeDescription).members[0].name]: "some value",
+              [(field.type).members[0].name]: "some value",
             },
           };
           const displayValues = {
             [field.name]: {
-              [(field.type as StructTypeDescription).members[0].name]: "some display value",
+              [(field.type).members[0].name]: "some display value",
             },
           };
           const record = createTestContentItem({ values, displayValues });
@@ -1092,14 +1092,14 @@ describe("PropertyDataProvider", () => {
               Primitive: "some value",
               Array: ["some value 1", "some value 2"],
               Struct: {
-                [(structField.type as StructTypeDescription).members[0].name]: "some value",
+                [(structField.type).members[0].name]: "some value",
               },
             };
             const displayValues = {
               Primitive: "some display value",
               Array: ["some display value 1", "some display value 2"],
               Struct: {
-                [(structField.type as StructTypeDescription).members[0].name]: "some display value",
+                [(structField.type).members[0].name]: "some display value",
               },
             };
             const record = createTestContentItem({ values, displayValues });

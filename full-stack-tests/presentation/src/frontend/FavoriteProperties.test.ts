@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import sinon from "sinon";
 import { IModelApp, IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { Field, KeySet } from "@bentley/presentation-common";
 import { PresentationPropertyDataProvider } from "@bentley/presentation-components";
-import { FAVORITES_CATEGORY_NAME } from "@bentley/presentation-components/lib/presentation-components/favorite-properties/DataProvider";
-import { DEFAULT_PROPERTY_GRID_RULESET } from "@bentley/presentation-components/lib/presentation-components/propertygrid/DataProvider";
+import { FAVORITES_CATEGORY_NAME } from "@bentley/presentation-components/cjs/presentation-components/favorite-properties/DataProvider";
+import { DEFAULT_PROPERTY_GRID_RULESET } from "@bentley/presentation-components/cjs/presentation-components/propertygrid/DataProvider";
 import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
 import { SettingsResult, SettingsStatus } from "@bentley/product-settings-client";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { PropertyData } from "@bentley/ui-components";
+import { expect } from "chai";
+import sinon from "sinon";
 import { initialize, initializeWithClientServices, terminate } from "../IntegrationTests";
 
 describe("Favorite properties", () => {
@@ -68,7 +68,7 @@ describe("Favorite properties", () => {
       // find the property record to make the property favorite
       const record = getPropertyRecordByLabel(propertyData, "Country")!;
       const field = await propertiesDataProvider.getFieldByPropertyRecord(record);
-      await Presentation.favoriteProperties.add(field!, imodel, FavoritePropertiesScope.Global);
+      await Presentation.favoriteProperties.add(field, imodel, FavoritePropertiesScope.Global);
 
       // verify we have a new favorites category
       propertyData = await propertiesDataProvider.getData();
@@ -91,7 +91,7 @@ describe("Favorite properties", () => {
       // find the property record to make the property favorite
       const record = getPropertyRecordByLabel(propertyData, "area")!;
       const field = await propertiesDataProvider.getFieldByPropertyRecord(record);
-      await Presentation.favoriteProperties.add(field!, imodel, FavoritePropertiesScope.Global);
+      await Presentation.favoriteProperties.add(field, imodel, FavoritePropertiesScope.Global);
 
       // request properties for 1 element again
       propertiesDataProvider.keys = new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]);
@@ -109,7 +109,7 @@ describe("Favorite properties", () => {
       // find the property record to make the property favorite
       const record = getPropertyRecordByLabel(propertyData, "Model")!;
       const field = await propertiesDataProvider.getFieldByPropertyRecord(record);
-      await Presentation.favoriteProperties.add(field!, imodel, FavoritePropertiesScope.Global);
+      await Presentation.favoriteProperties.add(field, imodel, FavoritePropertiesScope.Global);
 
       // verify the property is now in favorites group
       propertyData = await propertiesDataProvider.getData();
@@ -134,7 +134,7 @@ describe("Favorite properties", () => {
       const sourceInfoModelSourceCategory = propertyData.categories.find((c) => c.name.endsWith("model_source"))!;
       const sourceFileNameRecord = propertyData.records[sourceInfoModelSourceCategory.name][0];
       const field = await propertiesDataProvider.getFieldByPropertyRecord(sourceFileNameRecord);
-      await Presentation.favoriteProperties.add(field!, imodel, FavoritePropertiesScope.Global);
+      await Presentation.favoriteProperties.add(field, imodel, FavoritePropertiesScope.Global);
 
       // verify the property is now in favorites group
       propertyData = await propertiesDataProvider.getData();
@@ -158,7 +158,7 @@ describe("Favorite properties", () => {
     const makeFieldFavorite = async (propertyData: PropertyData, fieldLabel: string) => {
       const record = getPropertyRecordByLabel(propertyData, fieldLabel)!;
       const field = await propertiesDataProvider.getFieldByPropertyRecord(record);
-      await Presentation.favoriteProperties.add(field!, imodel, FavoritePropertiesScope.Global);
+      await Presentation.favoriteProperties.add(field, imodel, FavoritePropertiesScope.Global);
     };
 
     it("moves a field to the top", async () => {
@@ -180,7 +180,7 @@ describe("Favorite properties", () => {
 
       const record = getPropertyRecordByLabel(propertyData, "Category")!;
       const field = await propertiesDataProvider.getFieldByPropertyRecord(record);
-      await Presentation.favoriteProperties.changeFieldPriority(imodel, field!, undefined, visibleFavoriteFields as Field[]);
+      await Presentation.favoriteProperties.changeFieldPriority(imodel, field, undefined, visibleFavoriteFields as Field[]);
 
       propertyData = await propertiesDataProvider.getData();
       expect(propertyData.records[FAVORITES_CATEGORY_NAME][0].property.displayLabel).to.eq("Category");
@@ -286,7 +286,7 @@ describe("Favorite properties", () => {
       // find the property record to make the property favorite
       const record = getPropertyRecordByLabel(propertyData, "Model")!;
       const field = await propertiesDataProvider.getFieldByPropertyRecord(record);
-      await Presentation.favoriteProperties.add(field!, imodel, FavoritePropertiesScope.Global);
+      await Presentation.favoriteProperties.add(field, imodel, FavoritePropertiesScope.Global);
 
       // verify the property is now in favorites group
       propertyData = await propertiesDataProvider.getData();

@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
 import { AsyncMethodsOf, PromiseReturnType } from "@bentley/bentleyjs-core";
 import { IModelCloudEnvironment, IModelQuery } from "@bentley/imodelhub-client";
 import { AuthorizedFrontendRequestContext, IpcApp } from "@bentley/imodeljs-frontend";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
+import { TestUsers } from "@bentley/oidc-signin-tool/cjs/frontend";
+import { assert } from "chai";
 import { testIpcChannel, TestIpcInterface } from "../common/IpcInterfaces";
 import { IModelBankCloudEnv } from "./hub/IModelBankCloudEnv";
 import { IModelHubCloudEnv } from "./hub/IModelHubCloudEnv";

@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import {
-  createRandomBaseNodeKey, createRandomECInstanceKey, createRandomECInstancesNodeKey,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
+  createRandomBaseNodeKey, createRandomECInstanceKey, createRandomECInstancesNodeKey
+} from "@bentley/presentation-common/cjs/test/_helpers/random";
+import { expect } from "chai";
 import { SelectionHelper } from "../../presentation-frontend";
 
 describe("SelectionHelper", () => {

@@ -3,20 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
-import { expect } from "chai";
-import * as faker from "faker";
-import * as path from "path";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { KeySet, Ruleset } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
 import {
-  FavoritePropertiesManager, Presentation, PresentationManager, RulesetManager, SelectionManager, SelectionScopesManager,
+  FavoritePropertiesManager, Presentation, PresentationManager, RulesetManager, SelectionManager, SelectionScopesManager
 } from "@bentley/presentation-frontend";
+import "@bentley/presentation-frontend/cjs/test/_helpers/MockFrontendEnvironment";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { PropertyData } from "@bentley/ui-components";
+import { expect } from "chai";
+import * as faker from "faker";
+import * as path from "path";
 import { FavoritePropertiesDataProvider, getFavoritesCategory } from "../../presentation-components/favorite-properties/DataProvider";
 import { PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
 

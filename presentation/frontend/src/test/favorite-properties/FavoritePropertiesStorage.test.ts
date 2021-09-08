@@ -4,20 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable @typescript-eslint/promise-function-async */
 
-import { expect } from "chai";
-import sinon from "sinon";
-import * as moq from "typemoq";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { InternetConnectivityStatus } from "@bentley/imodeljs-common";
 import { AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
-import { configureForPromiseResult } from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
+import { configureForPromiseResult } from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
+import { ResolvablePromise } from "@bentley/presentation-common/cjs/test/_helpers/Promises";
 import { SettingsAdmin, SettingsStatus } from "@bentley/product-settings-client";
+import { expect } from "chai";
+import sinon from "sinon";
+import * as moq from "typemoq";
 import { IConnectivityInformationProvider } from "../../presentation-frontend/ConnectivityInformationProvider";
 import { FavoritePropertiesOrderInfo, PropertyFullName } from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager";
 import {
-  IModelAppFavoritePropertiesStorage, OfflineCachingFavoritePropertiesStorage,
+  IModelAppFavoritePropertiesStorage, OfflineCachingFavoritePropertiesStorage
 } from "../../presentation-frontend/favorite-properties/FavoritePropertiesStorage";
 
 describe("IModelAppFavoritePropertiesStorage", () => {

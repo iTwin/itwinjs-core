@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import faker from "faker";
-import fs from "fs";
 import { ClientRequestContext, Id64 } from "@bentley/bentleyjs-core";
 import { SnapshotDb } from "@bentley/imodeljs-backend";
 import { DuplicateRulesetHandlingStrategy, Presentation, RulesetEmbedder } from "@bentley/presentation-backend";
 import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@bentley/presentation-common";
-import { createRandomRuleset } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { createRandomRuleset } from "@bentley/presentation-common/cjs/test/_helpers/random";
+import { expect } from "chai";
+import faker from "faker";
+import fs from "fs";
 import { initialize, terminate } from "../IntegrationTests";
 
 const RULESET_1: Ruleset = {

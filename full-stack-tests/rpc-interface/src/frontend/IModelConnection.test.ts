@@ -11,7 +11,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { CheckpointConnection, IModelApp, IModelConnection, SpatialModelState, ViewState } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/itwin-client";
-import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
+import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/cjs/frontend";
 import { TestContext } from "./setup/TestContext";
 
 /* eslint-disable deprecation/deprecation */

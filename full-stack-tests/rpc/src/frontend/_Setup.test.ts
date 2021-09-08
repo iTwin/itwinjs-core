@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { executeBackendCallback } from "@bentley/certa/cjs/utils/CallbackUtils";
+import { ElectronApp } from "@bentley/electron-manager/cjs/ElectronFrontend";
 import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, RpcConfiguration, RpcDefaultConfiguration } from "@bentley/imodeljs-common";
-import { MobileRpcManager } from "@bentley/mobile-manager/lib/MobileFrontend";
+import { MobileRpcManager } from "@bentley/mobile-manager/cjs/MobileFrontend";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { AttachedInterface, MobileTestInterface, MultipleClientsInterface, rpcInterfaces } from "../common/TestRpcInterface";
 

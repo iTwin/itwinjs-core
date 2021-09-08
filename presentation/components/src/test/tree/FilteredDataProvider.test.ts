@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import * as faker from "faker";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { LabelDefinition, NodePathElement } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomECInstancesNodeKey, createRandomNodePathElement } from "@bentley/presentation-common/lib/test/_helpers/random";
+import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
+import { createRandomECInstancesNodeKey, createRandomNodePathElement } from "@bentley/presentation-common/cjs/test/_helpers/random";
 import { PageOptions } from "@bentley/ui-components";
+import { expect } from "chai";
+import * as faker from "faker";
 import { FilteredPresentationTreeDataProvider } from "../../presentation-components/tree/FilteredDataProvider";
 import { IPresentationTreeDataProvider } from "../../presentation-components/tree/IPresentationTreeDataProvider";
 import { createTreeNodeItem } from "../../presentation-components/tree/Utils";
@@ -218,8 +218,8 @@ describe("FilteredTreeDataProvider", () => {
       const result = provider.getActiveMatch(2);
 
       expect(result).to.not.be.undefined;
-      expect(result!.nodeId).to.be.eq(createTreeNodeItem(filteredNodePaths[1].node).id);
-      expect(result!.matchIndex).to.be.eq(0);
+      expect(result.nodeId).to.be.eq(createTreeNodeItem(filteredNodePaths[1].node).id);
+      expect(result.matchIndex).to.be.eq(0);
     });
 
     it("returns undefined when index is 0 or lower", () => {
