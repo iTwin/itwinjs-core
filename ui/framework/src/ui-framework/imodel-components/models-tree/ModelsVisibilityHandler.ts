@@ -8,7 +8,7 @@
 
 import { BeEvent, Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection, PerModelCategoryVisibility, Viewport } from "@bentley/imodeljs-frontend";
-import { ContentFlags, DescriptorOverrides, ECClassGroupingNodeKey, GroupingNodeKey, Keys, KeySet, NodeKey } from "@bentley/presentation-common";
+import { ContentFlags, ECClassGroupingNodeKey, GroupingNodeKey, Keys, KeySet, NodeKey } from "@bentley/presentation-common";
 import { ContentDataProvider, IFilteredPresentationTreeDataProvider, IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";
 import { TreeNodeItem } from "@bentley/ui-components";
@@ -463,12 +463,10 @@ class RulesetDrivenIdsProvider extends ContentDataProvider {
     super({ imodel, ruleset: rulesetId, displayType });
     this.keys = new KeySet(inputKeys);
   }
-  protected override shouldConfigureContentDescriptor() { return false; }
-  protected override getDescriptorOverrides(): DescriptorOverrides {
+  protected override async getDescriptorOverrides() {
     return {
       displayType: this.displayType,
       contentFlags: ContentFlags.KeysOnly,
-      hiddenFieldNames: [],
     };
   }
   protected async getResultIds() {

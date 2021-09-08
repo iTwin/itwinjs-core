@@ -389,9 +389,6 @@ public;ModelessDialogChangedEvent
 public;ModelessDialogManager
 public;ModelessDialogProps 
 public;ModelessDialogRenderer 
-internal;ModelSelectorWidget 
-deprecated;ModelSelectorWidget 
-internal;ModelSelectorWidgetControl 
 public;ModelsTree(props: ModelsTreeProps): JSX.Element
 beta;ModelsTreeNodeType
 public;ModelsTreeProps

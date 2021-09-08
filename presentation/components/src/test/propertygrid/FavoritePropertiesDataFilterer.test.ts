@@ -8,7 +8,7 @@ import sinon from "sinon";
 import * as moq from "typemoq";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Field } from "@bentley/presentation-common";
-import { createRandomPrimitiveField } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { createTestSimpleContentField } from "@bentley/presentation-common/lib/test/_helpers/Content";
 import { FavoritePropertiesManager, FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { IPresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
@@ -27,7 +27,7 @@ describe("FavoritePropertiesDataFilterer", () => {
 
   it("uses FavoritePropertiesManager to determine favorites if callback is not provided through props", async () => {
     const record = createPrimitiveStringProperty("Property", "Value");
-    matchingField = createRandomPrimitiveField();
+    matchingField = createTestSimpleContentField();
 
     const managerMock = moq.Mock.ofType<FavoritePropertiesManager>();
     managerMock.setup((x) => x.has(matchingField!, moq.It.isAny(), FavoritePropertiesScope.Global)).returns(() => true).verifiable();
@@ -127,33 +127,33 @@ describe("FavoritePropertiesDataFilterer", () => {
 
       it(`Should not match propertyRecord when record is not favorite and has no parents (type: ${recordType})`, async () => {
         isFavoriteStub.returns(false);
-        matchingField = createRandomPrimitiveField();
+        matchingField = createTestSimpleContentField();
         const matchResult = await filterer.recordMatchesFilter(record, []);
         expect(matchResult).to.deep.eq({ matchesFilter: false });
       });
 
       it(`Should not match propertyRecord when record is not favorite and has non favorite parents (type: ${recordType})`, async () => {
         isFavoriteStub.returns(false);
-        matchingField = createRandomPrimitiveField();
+        matchingField = createTestSimpleContentField();
         const matchResult = await filterer.recordMatchesFilter(record, [createStructProperty("Struct"), createArrayProperty("Array")]);
         expect(matchResult).to.deep.eq({ matchesFilter: false });
       });
 
       it(`Should match propertyRecord when record is favorite and has no parents (type: ${recordType})`, async () => {
         isFavoriteStub.returns(true);
-        matchingField = createRandomPrimitiveField();
+        matchingField = createTestSimpleContentField();
         const matchResult = await filterer.recordMatchesFilter(record, []);
         expect(matchResult).to.deep.eq({ matchesFilter: true, shouldExpandNodeParents: true });
       });
 
       it(`Should match propertyRecord when record is not favorite and has favorite parents (type: ${recordType})`, async () => {
         const favoriteParentRecord = createStructProperty("FavoriteStruct");
-        const favoriteParentField = createRandomPrimitiveField();
+        const favoriteParentField = createTestSimpleContentField();
         mockDataProvider.reset();
         mockDataProvider.setup(async (x) => x.getFieldByPropertyRecord(moq.It.isAny())).returns(async (argRecord: PropertyRecord) => {
           if (argRecord.property.name === favoriteParentRecord.property.name)
             return favoriteParentField;
-          return createRandomPrimitiveField();
+          return createTestSimpleContentField();
         });
 
         isFavoriteStub.returns(false);

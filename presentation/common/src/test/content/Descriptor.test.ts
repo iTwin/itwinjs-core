@@ -5,35 +5,30 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import { Id64String } from "@bentley/bentleyjs-core";
+import { CategoryDescription } from "../../presentation-common/content/Category";
 import {
-  CompressedDescriptorJSON, Descriptor, DescriptorJSON, DescriptorSource, SelectClassInfo, SelectClassInfoJSON, SortDirection,
+  Descriptor, DescriptorJSON, DescriptorSource, SelectClassInfo, SelectClassInfoJSON, SortDirection,
 } from "../../presentation-common/content/Descriptor";
-import {
-  Field, FieldDescriptorType, FieldJSON, NestedContentField, NestedContentFieldJSON, PropertiesFieldJSON,
-} from "../../presentation-common/content/Fields";
-import { PropertyValueFormat, StructTypeDescription } from "../../presentation-common/content/TypeDescription";
-import { ClassInfo, RelatedClassInfo, RelatedClassInfoJSON } from "../../presentation-common/EC";
+import { Field, FieldDescriptorType } from "../../presentation-common/content/Fields";
+import { PropertyValueFormat } from "../../presentation-common/content/TypeDescription";
+import { CompressedClassInfoJSON, RelatedClassInfo, RelatedClassInfoJSON } from "../../presentation-common/EC";
 import {
   createTestCategoryDescription, createTestContentDescriptor, createTestNestedContentField, createTestPropertiesContentField,
   createTestSelectClassInfo, createTestSimpleContentField,
 } from "../_helpers/Content";
-import { createTestECClassInfo, createTestPropertyInfo, createTestRelatedClassInfo, createTestRelationshipPath } from "../_helpers/EC";
-import {
-  createRandomCategory, createRandomCategoryJSON, createRandomDescriptor, createRandomDescriptorJSON, createRandomECClassInfo,
-  createRandomNestedFieldJSON, createRandomPrimitiveField, createRandomPrimitiveFieldJSON, createRandomPrimitiveTypeDescription,
-  createRandomRelationshipPath,
-} from "../_helpers/random";
+import { createTestPropertyInfo, createTestRelatedClassInfo, createTestRelationshipPath } from "../_helpers/EC";
 
 describe("Descriptor", () => {
 
   describe("constructor", () => {
 
     it("creates Descriptor from DescriptorSource without categories", () => {
-      const category = createRandomCategory();
+      const category = createTestCategoryDescription();
       const source: DescriptorSource = {
         contentFlags: 9,
         displayType: faker.random.word(),
-        fields: [createRandomPrimitiveField(category), createRandomPrimitiveField(category)],
+        categories: [category],
+        fields: [createTestSimpleContentField({ category }), createTestSimpleContentField({ category })],
         filterExpression: faker.random.words(),
         selectClasses: [],
       };
@@ -45,12 +40,12 @@ describe("Descriptor", () => {
     });
 
     it("creates Descriptor from DescriptorSource with categories", () => {
-      const category = createRandomCategory();
+      const category = createTestCategoryDescription();
       const source: DescriptorSource = {
         contentFlags: 9,
         displayType: faker.random.word(),
         categories: [category],
-        fields: [createRandomPrimitiveField(category), createRandomPrimitiveField(category)],
+        fields: [createTestSimpleContentField({ category }), createTestSimpleContentField({ category })],
         filterExpression: faker.random.words(),
         selectClasses: [],
       };
@@ -65,12 +60,6 @@ describe("Descriptor", () => {
 
   describe("fromJSON", () => {
 
-    let testDescriptorJSON!: DescriptorJSON;
-    beforeEach(() => {
-      testDescriptorJSON = createRandomDescriptorJSON();
-      testDescriptorJSON.fields.push(createRandomNestedFieldJSON(testDescriptorJSON.categories![0]));
-    });
-
     const validateParentship = (fields: Field[], parent?: Field) => {
       fields.forEach((field) => {
         expect(field.parent).to.eq(parent);
@@ -79,27 +68,8 @@ describe("Descriptor", () => {
       });
     };
 
-    it("creates valid Descriptor from valid JSON with categories", () => {
-      const descriptor = Descriptor.fromJSON(testDescriptorJSON);
-      validateParentship(descriptor!.fields);
-      expect(descriptor).to.matchSnapshot();
-    });
-
-    it("creates valid Descriptor from valid JSON without categories", () => {
-      testDescriptorJSON.fields.forEach((field) => field.category = createRandomCategoryJSON());
-      const descriptor = Descriptor.fromJSON({ ...testDescriptorJSON, categories: undefined });
-      validateParentship(descriptor!.fields);
-      expect(descriptor).to.matchSnapshot();
-    });
-
-    it("creates valid Descriptor from valid serialized JSON", () => {
-      const descriptor = Descriptor.fromJSON(JSON.stringify(testDescriptorJSON));
-      validateParentship(descriptor!.fields);
-      expect(descriptor).to.matchSnapshot();
-    });
-
-    it("creates valid Descriptor from CompressedDescriptorJSON", () => {
-      const testCategory = createRandomCategoryJSON();
+    it("creates valid Descriptor from valid JSON", () => {
+      const category = createTestCategoryDescription();
       const ids = ["0x1", "0x2", "0x3", "0x4"];
       const testRelatedClassInfo: RelatedClassInfoJSON<string> = {
         sourceClassInfo: ids[1],
@@ -107,63 +77,105 @@ describe("Descriptor", () => {
         relationshipInfo: ids[3],
         isForwardRelationship: true,
       };
-      const fields: FieldJSON<string>[] = [{
-        ...createRandomPrimitiveFieldJSON(testCategory),
-        properties: [{
-          property: {
-            classInfo: ids[0],
-            name: faker.lorem.words(),
-            type: faker.lorem.words(),
-          },
-          relatedClassPath: [testRelatedClassInfo],
-        }],
-      } as PropertiesFieldJSON<string>, {
-        ...createRandomPrimitiveFieldJSON(testCategory),
-        type: {
-          valueFormat: PropertyValueFormat.Struct,
-          typeName: faker.random.word(),
-          members: [{
-            type: createRandomPrimitiveTypeDescription(),
-            name: faker.random.word(),
-            label: faker.random.word(),
-          }],
-        } as StructTypeDescription,
-        contentClassInfo: ids[1],
-        pathToPrimaryClass: [testRelatedClassInfo],
-        nestedFields: [createRandomPrimitiveFieldJSON(testCategory)],
-        autoExpand: false,
-      } as NestedContentFieldJSON<string>];
-
-      const testCompressedDescriptorJSON: CompressedDescriptorJSON = {
-        connectionId: faker.random.uuid(),
-        inputKeysHash: faker.random.uuid(),
-        contentOptions: faker.random.objectElement(),
-        displayType: faker.lorem.words(),
-        selectClasses: [{
-          selectClassInfo: ids[0],
-          isSelectPolymorphic: true,
-          pathToPrimaryClass: [testRelatedClassInfo],
-          relatedPropertyPaths: [[testRelatedClassInfo]],
-          navigationPropertyClasses: [testRelatedClassInfo],
-          relatedInstanceClasses: [testRelatedClassInfo],
-        }],
-        categories: [testCategory],
-        fields,
+      const json: DescriptorJSON = {
+        connectionId: "",
+        categories: [CategoryDescription.toJSON(category)],
         contentFlags: 0,
+        contentOptions: 0,
+        displayType: "",
+        inputKeysHash: "",
         classesMap: {
           [ids[0]]: { name: "name1", label: "label1" },
           [ids[1]]: { name: "name2", label: "label2" },
           [ids[2]]: { name: "name3", label: "label3" },
           [ids[3]]: { name: "name4", label: "label4" },
         },
+        selectClasses: [{
+          selectClassInfo: ids[0],
+          isSelectPolymorphic: true,
+          pathFromInputToSelectClass: [testRelatedClassInfo],
+          relatedPropertyPaths: [[testRelatedClassInfo]],
+          navigationPropertyClasses: [testRelatedClassInfo],
+          relatedInstancePaths: [[testRelatedClassInfo]],
+        }],
+        fields: [{
+          name: "test-simple-field",
+          label: "Test Simple Field",
+          type: { valueFormat: PropertyValueFormat.Primitive, typeName: "string" },
+          category: category.name,
+          isReadonly: false,
+          priority: 0,
+        }, {
+          name: "test-properties-field",
+          label: "Test Properties Field",
+          type: { valueFormat: PropertyValueFormat.Primitive, typeName: "string" },
+          category: category.name,
+          isReadonly: false,
+          priority: 0,
+          properties: [{
+            property: {
+              classInfo: ids[0],
+              name: "PropertyName",
+              type: "TestPropertyType",
+            },
+          }],
+        }, {
+          name: "test-nested-content-field",
+          label: "Test Nested Content Field",
+          type: {
+            valueFormat: PropertyValueFormat.Struct,
+            typeName: "StructType",
+            members: [{
+              type: { valueFormat: PropertyValueFormat.Primitive, typeName: "string" },
+              name: "StringType",
+              label: "String Type",
+            }],
+          },
+          category: category.name,
+          isReadonly: false,
+          priority: 0,
+          contentClassInfo: ids[1],
+          pathToPrimaryClass: [testRelatedClassInfo],
+          nestedFields: [{
+            name: "test-nested-properties-field",
+            label: "Test Nested Properties Field",
+            type: { valueFormat: PropertyValueFormat.Primitive, typeName: "string" },
+            category: category.name,
+            isReadonly: false,
+            priority: 0,
+            properties: [{
+              property: {
+                classInfo: ids[1],
+                name: "NestedPropertyName",
+                type: "TestNestedPropertyType",
+              },
+            }],
+          }],
+          autoExpand: false,
+        }],
       };
-      const descriptorFromCompressedJSON = Descriptor.fromJSON(JSON.stringify(testCompressedDescriptorJSON));
-      expect(descriptorFromCompressedJSON).to.matchSnapshot();
+      const descriptor = Descriptor.fromJSON(json);
+      validateParentship(descriptor!.fields);
+      expect(descriptor).to.matchSnapshot();
     });
 
     it("skips fields that fail to deserialize", () => {
-      testDescriptorJSON.fields = [createRandomPrimitiveFieldJSON(testDescriptorJSON.categories![0]), undefined as any];
-      const descriptor = Descriptor.fromJSON(testDescriptorJSON);
+      const category = createTestCategoryDescription();
+      const json: DescriptorJSON = {
+        connectionId: "",
+        categories: [CategoryDescription.toJSON(category)],
+        contentFlags: 0,
+        contentOptions: 0,
+        displayType: "",
+        inputKeysHash: "",
+        selectClasses: [],
+        classesMap: {},
+        fields: [
+          createTestSimpleContentField({ category }).toJSON(),
+          undefined as any,
+        ],
+      };
+      const descriptor = Descriptor.fromJSON(json);
       expect(descriptor!.fields.length).to.eq(1);
     });
 
@@ -174,7 +186,7 @@ describe("Descriptor", () => {
 
   });
 
-  describe("toCompressedJSON", () => {
+  describe("toJSON", () => {
 
     it("creates valid CompressedDescriptorJSON", () => {
       const category = createTestCategoryDescription();
@@ -182,7 +194,7 @@ describe("Descriptor", () => {
         createTestSimpleContentField(),
         createTestPropertiesContentField({
           category,
-          properties: [{ property: createTestPropertyInfo(), relatedClassPath: [createTestRelatedClassInfo()] }],
+          properties: [{ property: createTestPropertyInfo() }],
         }),
         createTestNestedContentField({
           category,
@@ -191,9 +203,9 @@ describe("Descriptor", () => {
       ];
       const descriptor = createTestContentDescriptor({
         selectClasses: [createTestSelectClassInfo({
-          pathToPrimaryClass: [createTestRelatedClassInfo()],
+          pathFromInputToSelectClass: [createTestRelatedClassInfo()],
           navigationPropertyClasses: [createTestRelatedClassInfo()],
-          relatedInstanceClasses: [createTestRelatedClassInfo()],
+          relatedInstancePaths: [[createTestRelatedClassInfo()]],
           relatedPropertyPaths: [[createTestRelatedClassInfo()]],
         })],
         categories: [category],
@@ -203,7 +215,7 @@ describe("Descriptor", () => {
         sortingField: fields[0],
         sortDirection: SortDirection.Ascending,
       });
-      expect(descriptor.toCompressedJSON()).to.matchSnapshot();
+      expect(descriptor.toJSON()).to.matchSnapshot();
     });
 
   });
@@ -211,57 +223,36 @@ describe("Descriptor", () => {
   describe("getFieldByName", () => {
 
     it("returns undefined when there are no fields", () => {
-      const descriptor = createRandomDescriptor("type", []);
+      const descriptor = createTestContentDescriptor({ fields: [] });
       expect(descriptor.getFieldByName("test")).to.be.undefined;
     });
 
     it("returns undefined when field is not found", () => {
-      const descriptor = createRandomDescriptor();
-      const name = descriptor.fields.map((f) => f.name).join();
-      expect(descriptor.getFieldByName(name, true)).to.be.undefined;
+      const descriptor = createTestContentDescriptor({ fields: [createTestSimpleContentField()] });
+      expect(descriptor.getFieldByName("does-not-exist", true)).to.be.undefined;
     });
 
     it("returns a field", () => {
-      const descriptor = createRandomDescriptor();
-      const field = descriptor.fields[0];
+      const field = createTestSimpleContentField();
+      const descriptor = createTestContentDescriptor({ fields: [field] });
       expect(descriptor.getFieldByName(field.name)).to.eq(field);
     });
 
     it("returns undefined when descriptor contains nested fields but field is not found", () => {
-      const descriptor = createRandomDescriptor();
-      const primitiveField = createRandomPrimitiveField();
-      const descr: StructTypeDescription = {
-        valueFormat: PropertyValueFormat.Struct,
-        typeName: faker.random.word(),
-        members: [{
-          type: primitiveField.type,
-          label: primitiveField.label,
-          name: primitiveField.name,
-        }],
-      };
-      const nestedField = new NestedContentField(createRandomCategory(), faker.random.word(),
-        faker.random.words(), descr, faker.random.boolean(), faker.random.number(),
-        createRandomECClassInfo(), createRandomRelationshipPath(), [primitiveField], undefined, faker.random.boolean());
-      descriptor.fields.push(nestedField);
+      const primitiveField = createTestSimpleContentField();
+      const nestedContentField = createTestNestedContentField({
+        nestedFields: [primitiveField],
+      });
+      const descriptor = createTestContentDescriptor({ fields: [nestedContentField] });
       expect(descriptor.getFieldByName("does not exist", true)).to.be.undefined;
     });
 
     it("returns a nested field", () => {
-      const descriptor = createRandomDescriptor();
-      const primitiveField = createRandomPrimitiveField();
-      const descr: StructTypeDescription = {
-        valueFormat: PropertyValueFormat.Struct,
-        typeName: faker.random.word(),
-        members: [{
-          type: primitiveField.type,
-          label: primitiveField.label,
-          name: primitiveField.name,
-        }],
-      };
-      const nestedField = new NestedContentField(createRandomCategory(), faker.random.word(),
-        faker.random.words(), descr, faker.random.boolean(), faker.random.number(),
-        createRandomECClassInfo(), createRandomRelationshipPath(), [primitiveField], undefined, faker.random.boolean());
-      descriptor.fields.push(nestedField);
+      const primitiveField = createTestSimpleContentField();
+      const nestedContentField = createTestNestedContentField({
+        nestedFields: [primitiveField],
+      });
+      const descriptor = createTestContentDescriptor({ fields: [nestedContentField] });
       expect(descriptor.getFieldByName(primitiveField.name, true)).to.eq(primitiveField);
     });
 
@@ -270,76 +261,66 @@ describe("Descriptor", () => {
   describe("createDescriptorOverrides", () => {
 
     it("creates a valid object with default parameters", () => {
-      const descriptor = createRandomDescriptor("");
+      const descriptor = createTestContentDescriptor({
+        fields: [],
+      });
       expect(descriptor.createDescriptorOverrides()).to.deep.eq({});
     });
 
     it("creates a valid object with display type", () => {
-      const descriptorJSON = {
-        ...createRandomDescriptorJSON(),
+      const descriptor = createTestContentDescriptor({
+        fields: [],
         displayType: "test display type",
-      };
-      const descriptor = Descriptor.fromJSON(descriptorJSON)!;
-      const overrides = descriptor.createDescriptorOverrides();
-      expect(overrides).to.deep.eq({
-        displayType: descriptorJSON.displayType,
+      });
+      expect(descriptor.createDescriptorOverrides()).to.deep.eq({
+        displayType: "test display type",
       });
     });
 
     it("creates a valid object with content flags", () => {
-      const descriptorJSON = {
-        ...createRandomDescriptorJSON(""),
+      const descriptor = createTestContentDescriptor({
+        fields: [],
         contentFlags: 123,
-      };
-      const descriptor = Descriptor.fromJSON(descriptorJSON)!;
-      const overrides = descriptor.createDescriptorOverrides();
-      expect(overrides).to.deep.eq({
-        contentFlags: descriptorJSON.contentFlags,
+      });
+      expect(descriptor.createDescriptorOverrides()).to.deep.eq({
+        contentFlags: 123,
       });
     });
 
     it("creates a valid object with filter expression", () => {
-      const descriptorJSON = {
-        ...createRandomDescriptorJSON(""),
+      const descriptor = createTestContentDescriptor({
+        fields: [],
         filterExpression: "test filter",
-      };
-      const descriptor = Descriptor.fromJSON(descriptorJSON)!;
-      const overrides = descriptor.createDescriptorOverrides();
-      expect(overrides).to.deep.eq({
-        filterExpression: descriptorJSON.filterExpression,
+      });
+      expect(descriptor.createDescriptorOverrides()).to.deep.eq({
+        filterExpression: "test filter",
       });
     });
 
     it("creates a valid object with sorting field ascending", () => {
-      const categoryJSON = createRandomCategoryJSON();
-      const fieldJSON = createRandomPrimitiveFieldJSON(categoryJSON.name);
-      const descriptorJSON = {
-        ...createRandomDescriptorJSON("", [fieldJSON], [categoryJSON]),
-        sortingFieldName: fieldJSON.name,
-      };
-      const descriptor = Descriptor.fromJSON(descriptorJSON)!;
-      const overrides = descriptor.createDescriptorOverrides();
-      expect(overrides).to.deep.eq({
+      const field = createTestSimpleContentField();
+      const descriptor = createTestContentDescriptor({
+        fields: [field],
+        sortingField: field,
+      });
+      expect(descriptor.createDescriptorOverrides()).to.deep.eq({
         sorting: {
-          field: { type: FieldDescriptorType.Name, fieldName: descriptorJSON.sortingFieldName },
+          field: { type: FieldDescriptorType.Name, fieldName: field.name },
           direction: SortDirection.Ascending,
         },
       });
     });
 
     it("creates a valid object with sorting field descending", () => {
-      const fieldJSON = createRandomPrimitiveFieldJSON(createRandomCategoryJSON());
-      const descriptorJSON = {
-        ...createRandomDescriptorJSON("", [fieldJSON]),
-        categories: undefined,
-        sortingFieldName: fieldJSON.name,
+      const field = createTestSimpleContentField();
+      const descriptor = createTestContentDescriptor({
+        fields: [field],
+        sortingField: field,
         sortDirection: SortDirection.Descending,
-      };
-      const descriptor = Descriptor.fromJSON(descriptorJSON)!;
-      const overrides = descriptor.createDescriptorOverrides();
-      expect(overrides).to.deep.eq({
+      });
+      expect(descriptor.createDescriptorOverrides()).to.deep.eq({
         sorting: {
-          field: { type: FieldDescriptorType.Name, fieldName: descriptorJSON.sortingFieldName },
+          field: { type: FieldDescriptorType.Name, fieldName: field.name },
           direction: SortDirection.Descending,
         },
       });
@@ -351,49 +332,94 @@ describe("Descriptor", () => {
 
 describe("SelectClassInfo", () => {
 
-  const testSelectClassInfo = {
-    selectClassInfo: createTestECClassInfo({ id: "0x123" }),
-    isSelectPolymorphic: true,
-    pathToPrimaryClass: [],
-    navigationPropertyClasses: [],
-    relatedInstanceClasses: [],
-    relatedPropertyPaths: [],
-  };
+  let classesMap!: { [id: string]: CompressedClassInfoJSON };
+  let obj!: SelectClassInfo;
+  let json!: SelectClassInfoJSON;
+  let compressedJson!: SelectClassInfoJSON<Id64String>;
+
+  beforeEach(() => {
+    obj = {
+      selectClassInfo: {
+        id: "0x123",
+        name: "name",
+        label: "Label",
+      },
+      isSelectPolymorphic: true,
+    };
+    json = {
+      selectClassInfo: {
+        id: "0x123",
+        name: "name",
+        label: "Label",
+      },
+      isSelectPolymorphic: true,
+    };
+    compressedJson = {
+      selectClassInfo: "0x123",
+      isSelectPolymorphic: true,
+    };
+    classesMap = {
+      ["0x123"]: {
+        name: "name",
+        label: "Label",
+      },
+    };
+  });
 
   describe("fromJSON", () => {
 
     it("doesn't create unnecessary members", () => {
-      const json: SelectClassInfoJSON = {
-        ...testSelectClassInfo,
-        selectClassInfo: ClassInfo.toJSON(testSelectClassInfo.selectClassInfo),
-      };
       const result = SelectClassInfo.fromJSON(json);
       expect(result).to.not.haveOwnProperty("pathFromInputToSelectClass");
+      expect(result).to.not.haveOwnProperty("relatedPropertyPaths");
+      expect(result).to.not.haveOwnProperty("navigationPropertyClasses");
       expect(result).to.not.haveOwnProperty("relatedInstancePaths");
     });
 
     it("parses `pathFromInputToSelectClass`", () => {
       const pathFromInputToSelectClass = createTestRelationshipPath(2);
-      const json: SelectClassInfoJSON = {
-        ...testSelectClassInfo,
-        selectClassInfo: ClassInfo.toJSON(testSelectClassInfo.selectClassInfo),
+      json = {
+        ...json,
         pathFromInputToSelectClass: pathFromInputToSelectClass.map(RelatedClassInfo.toJSON),
       };
       expect(SelectClassInfo.fromJSON(json)).to.deep.eq({
-        ...testSelectClassInfo,
+        ...obj,
         pathFromInputToSelectClass,
+      });
+    });
+
+    it("parses `relatedPropertyPaths`", () => {
+      const relatedPropertyPaths = [createTestRelationshipPath(2)];
+      json = {
+        ...json,
+        relatedPropertyPaths: relatedPropertyPaths.map((p) => p.map(RelatedClassInfo.toJSON)),
+      };
+      expect(SelectClassInfo.fromJSON(json)).to.deep.eq({
+        ...obj,
+        relatedPropertyPaths,
+      });
+    });
+
+    it("parses `navigationPropertyClasses`", () => {
+      const navigationPropertyClasses = createTestRelationshipPath(2);
+      json = {
+        ...json,
+        navigationPropertyClasses: navigationPropertyClasses.map(RelatedClassInfo.toJSON),
+      };
+      expect(SelectClassInfo.fromJSON(json)).to.deep.eq({
+        ...obj,
+        navigationPropertyClasses,
       });
     });
 
     it("parses `relatedInstancePaths`", () => {
       const relatedInstancePaths = [createTestRelationshipPath(2)];
-      const json: SelectClassInfoJSON = {
-        ...testSelectClassInfo,
-        selectClassInfo: ClassInfo.toJSON(testSelectClassInfo.selectClassInfo),
+      json = {
+        ...json,
         relatedInstancePaths: relatedInstancePaths.map((p) => p.map(RelatedClassInfo.toJSON)),
       };
       expect(SelectClassInfo.fromJSON(json)).to.deep.eq({
-        ...testSelectClassInfo,
+        ...obj,
         relatedInstancePaths,
       });
     });
@@ -403,55 +429,57 @@ describe("SelectClassInfo", () => {
   describe("fromCompressedJSON", () => {
 
     it("doesn't create unnecessary members", () => {
-      const classesMap = {
-        [testSelectClassInfo.selectClassInfo.id]: {
-          name: testSelectClassInfo.selectClassInfo.name,
-          label: testSelectClassInfo.selectClassInfo.label,
-        },
-      };
-      const json: SelectClassInfoJSON<Id64String> = {
-        ...testSelectClassInfo,
-        selectClassInfo: testSelectClassInfo.selectClassInfo.id,
-      };
-      const result = SelectClassInfo.fromCompressedJSON(json, classesMap);
+      const result = SelectClassInfo.fromCompressedJSON(compressedJson, classesMap);
       expect(result).to.not.haveOwnProperty("pathFromInputToSelectClass");
+      expect(result).to.not.haveOwnProperty("relatedPropertyPaths");
+      expect(result).to.not.haveOwnProperty("navigationPropertyClasses");
       expect(result).to.not.haveOwnProperty("relatedInstancePaths");
     });
 
     it("parses `pathFromInputToSelectClass`", () => {
-      const classesMap = {
-        [testSelectClassInfo.selectClassInfo.id]: {
-          name: testSelectClassInfo.selectClassInfo.name,
-          label: testSelectClassInfo.selectClassInfo.label,
-        },
-      };
-      const pathFromInputToSelectClass = createTestRelationshipPath(1);
-      const json: SelectClassInfoJSON<Id64String> = {
-        ...testSelectClassInfo,
-        selectClassInfo: testSelectClassInfo.selectClassInfo.id,
+      const pathFromInputToSelectClass = createTestRelationshipPath(2);
+      compressedJson = {
+        ...compressedJson,
         pathFromInputToSelectClass: pathFromInputToSelectClass.map((item) => RelatedClassInfo.toCompressedJSON(item, classesMap)),
       };
-      expect(SelectClassInfo.fromCompressedJSON(json, classesMap)).to.deep.eq({
-        ...testSelectClassInfo,
+      expect(SelectClassInfo.fromCompressedJSON(compressedJson, classesMap)).to.deep.eq({
+        ...obj,
         pathFromInputToSelectClass,
       });
     });
 
-    it("parses `relatedInstancePaths`", () => {
-      const classesMap = {
-        [testSelectClassInfo.selectClassInfo.id]: {
-          name: testSelectClassInfo.selectClassInfo.name,
-          label: testSelectClassInfo.selectClassInfo.label,
-        },
+    it("parses `relatedPropertyPaths`", () => {
+      const relatedPropertyPaths = [createTestRelationshipPath(2)];
+      compressedJson = {
+        ...compressedJson,
+        relatedPropertyPaths: relatedPropertyPaths.map((p) => p.map((i) => RelatedClassInfo.toCompressedJSON(i, classesMap))),
       };
-      const relatedInstancePaths = [createTestRelationshipPath(1)];
-      const json: SelectClassInfoJSON<Id64String> = {
-        ...testSelectClassInfo,
-        selectClassInfo: testSelectClassInfo.selectClassInfo.id,
+      expect(SelectClassInfo.fromCompressedJSON(compressedJson, classesMap)).to.deep.eq({
+        ...obj,
+        relatedPropertyPaths,
+      });
+    });
+
+    it("parses `navigationPropertyClasses`", () => {
+      const navigationPropertyClasses = createTestRelationshipPath(2);
+      compressedJson = {
+        ...compressedJson,
+        navigationPropertyClasses: navigationPropertyClasses.map((item) => RelatedClassInfo.toCompressedJSON(item, classesMap)),
+      };
+      expect(SelectClassInfo.fromCompressedJSON(compressedJson, classesMap)).to.deep.eq({
+        ...obj,
+        navigationPropertyClasses,
+      });
+    });
+
+    it("parses `relatedInstancePaths`", () => {
+      const relatedInstancePaths = [createTestRelationshipPath(2)];
+      compressedJson = {
+        ...compressedJson,
         relatedInstancePaths: relatedInstancePaths.map((p) => p.map((i) => RelatedClassInfo.toCompressedJSON(i, classesMap))),
       };
-      expect(SelectClassInfo.fromCompressedJSON(json, classesMap)).to.deep.eq({
-        ...testSelectClassInfo,
+      expect(SelectClassInfo.fromCompressedJSON(compressedJson, classesMap)).to.deep.eq({
+        ...obj,
         relatedInstancePaths,
       });
     });
@@ -461,71 +489,77 @@ describe("SelectClassInfo", () => {
   describe("toCompressedJSON", () => {
 
     it("doesn't create unnecessary members", () => {
-      const classesMap = {};
-      const info: SelectClassInfo = {
-        ...testSelectClassInfo,
-      };
-      const json = SelectClassInfo.toCompressedJSON(info, classesMap);
-      expect(json).to.not.haveOwnProperty("pathFromInputToSelectClass");
-      expect(json).to.not.haveOwnProperty("relatedInstancePaths");
+      const actualCompressedJson = SelectClassInfo.toCompressedJSON(obj, {});
+      expect(actualCompressedJson).to.not.haveOwnProperty("pathFromInputToSelectClass");
+      expect(actualCompressedJson).to.not.haveOwnProperty("relatedPropertyPaths");
+      expect(actualCompressedJson).to.not.haveOwnProperty("navigationPropertyClasses");
+      expect(actualCompressedJson).to.not.haveOwnProperty("relatedInstancePaths");
     });
 
     it("serializes `pathFromInputToSelectClass`", () => {
-      const classesMap = {};
-      const pathFromInputToSelectClass = createTestRelationshipPath(1);
-      const info: SelectClassInfo = {
-        ...testSelectClassInfo,
+      const actualClassesMap = {};
+      const pathFromInputToSelectClass = createTestRelationshipPath(2);
+      obj = {
+        ...obj,
         pathFromInputToSelectClass,
       };
-      expect(SelectClassInfo.toCompressedJSON(info, classesMap)).to.deep.eq({
-        ...testSelectClassInfo,
-        selectClassInfo: testSelectClassInfo.selectClassInfo.id,
+      expect(SelectClassInfo.toCompressedJSON(obj, actualClassesMap)).to.deep.eq({
+        ...compressedJson,
         pathFromInputToSelectClass: pathFromInputToSelectClass.map((p) => RelatedClassInfo.toCompressedJSON(p, {})),
       });
+      expect(actualClassesMap).to.containSubset(classesMap);
+    });
+
+    it("serializes `relatedPropertyPaths`", () => {
+      const actualClassesMap = {};
+      const relatedPropertyPaths = [createTestRelationshipPath(2)];
+      obj = {
+        ...obj,
+        relatedPropertyPaths,
+      };
+      expect(SelectClassInfo.toCompressedJSON(obj, actualClassesMap)).to.deep.eq({
+        ...compressedJson,
+        relatedPropertyPaths: relatedPropertyPaths.map((p) => p.map((i) => RelatedClassInfo.toCompressedJSON(i, {}))),
+      });
+      expect(actualClassesMap).to.containSubset(classesMap);
+    });
+
+    it("serializes `navigationPropertyClasses`", () => {
+      const actualClassesMap = {};
+      const navigationPropertyClasses = createTestRelationshipPath(2);
+      obj = {
+        ...obj,
+        navigationPropertyClasses,
+      };
+      expect(SelectClassInfo.toCompressedJSON(obj, actualClassesMap)).to.deep.eq({
+        ...compressedJson,
+        navigationPropertyClasses: navigationPropertyClasses.map((p) => RelatedClassInfo.toCompressedJSON(p, {})),
+      });
+      expect(actualClassesMap).to.containSubset(classesMap);
     });
 
     it("serializes `relatedInstancePaths`", () => {
-      const classesMap = {};
-      const relatedInstancePaths = [createTestRelationshipPath(1)];
-      const info: SelectClassInfo = {
-        ...testSelectClassInfo,
+      const actualClassesMap = {};
+      const relatedInstancePaths = [createTestRelationshipPath(2)];
+      obj = {
+        ...obj,
         relatedInstancePaths,
       };
-      expect(SelectClassInfo.toCompressedJSON(info, classesMap)).to.deep.eq({
-        ...testSelectClassInfo,
-        selectClassInfo: testSelectClassInfo.selectClassInfo.id,
+      expect(SelectClassInfo.toCompressedJSON(obj, actualClassesMap)).to.deep.eq({
+        ...compressedJson,
         relatedInstancePaths: relatedInstancePaths.map((p) => p.map((i) => RelatedClassInfo.toCompressedJSON(i, {}))),
       });
+      expect(actualClassesMap).to.containSubset(classesMap);
     });
 
   });
 
   describe("listFromCompressedJSON", () => {
 
-    const classesMap = {
-      [testSelectClassInfo.selectClassInfo.id]: {
-        name: testSelectClassInfo.selectClassInfo.name,
-        label: testSelectClassInfo.selectClassInfo.label,
-      },
-    };
-    const compressedSelectClassInfoJson: Array<SelectClassInfoJSON<Id64String>> = [{
-      selectClassInfo: testSelectClassInfo.selectClassInfo.id,
-      isSelectPolymorphic: testSelectClassInfo.isSelectPolymorphic,
-      pathToPrimaryClass: [],
-      navigationPropertyClasses: [],
-      relatedInstanceClasses: [],
-      relatedPropertyPaths: [],
-    }];
-
     it("creates valid SelectClassInfo[] from compressed JSON", () => {
-      const result = SelectClassInfo.listFromCompressedJSON(compressedSelectClassInfoJson, classesMap);
-      expect(result).to.deep.equal([testSelectClassInfo]);
+      const result = SelectClassInfo.listFromCompressedJSON([compressedJson], classesMap);
+      expect(result).to.deep.equal([obj]);
     });
-
-    // it("creates valid SelectClassInfo[] from serialized compressed JSON", () => {
-    //   const result = SelectClassInfo.listFromCompressedJSON(JSON.stringify({ selectClassInfos: compressedSelectClassInfoJson, classesMap }));
-    //   expect(result).to.deep.equal([testSelectClassInfo]);
-    // });
 
   });
 

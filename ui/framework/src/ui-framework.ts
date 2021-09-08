@@ -121,7 +121,6 @@ export * from "./ui-framework/navigationaids/SheetsModalFrontstage";
 export * from "./ui-framework/navigationaids/StandardRotationNavigationAid";
 
 export * from "./ui-framework/pickers/ListPicker";
-export * from "./ui-framework/pickers/ModelSelector/ModelSelector";
 export * from "./ui-framework/pickers/ViewSelector";
 
 export * from "./ui-framework/childwindow/ChildWindowManager";
