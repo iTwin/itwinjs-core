@@ -183,18 +183,13 @@ export class PatternBuffers extends InstanceData {
     public readonly localToWorld: Matrix4,
     public readonly worldToModel: Matrix4,
     public readonly offsets: BufferHandle,
-    public readonly bytesPerOffset: 1 | 2 | 4,
     public readonly featureId?: number
   ) {
     super(count, shared, rtcCenter, range);
   }
 
   public static create(params: PatternGraphicParams, shared: boolean): PatternBuffers | undefined {
-    const bytesPerOffset = params.bytesPerOffset;
-    if (1 !== bytesPerOffset && 2 !== bytesPerOffset && 4 !== bytesPerOffset)
-        throw new Error("Invalid number of bytes per pattern offset");
-
-    const count = params.xyOffsets.byteLength / bytesPerOffset;
+    const count = params.xyOffsets.byteLength / 2;
     assert(Math.floor(count) === count);
 
     const offsets = BufferHandle.createArrayBuffer(params.xyOffsets);
@@ -211,17 +206,8 @@ export class PatternBuffers extends InstanceData {
       Matrix4.fromTransform(params.localToWorld),
       Matrix4.fromTransform(params.worldToModel),
       offsets,
-      bytesPerOffset,
       params.featureId
     );
-  }
-
-  public get offsetType(): GL.DataType {
-    switch (this.bytesPerOffset) {
-      case 1: return GL.DataType.UnsignedByte;
-      case 2: return GL.DataType.UnsignedShort;
-      case 4: return GL.DataType.UnsignedInt;
-    }
   }
 
   public get hasFeatures(): boolean {
@@ -312,8 +298,8 @@ export class InstancedGeometry extends CachedGeometry {
     const attrY = AttributeMap.findAttribute("a_patternY", techId, true);
     assert(undefined !== attrX && undefined !== attrY);
     container.addBuffer(buffers.offsets, [
-      BufferParameters.create(attrX.location, 1, buffers.offsetType, false, 2 * buffers.bytesPerOffset, 0, true),
-      BufferParameters.create(attrY.location, 1, buffers.offsetType, false, 2 * buffers.bytesPerOffset, buffers.bytesPerOffset, true),
+      BufferParameters.create(attrX.location, 1, GL.DataType.Float, false, 8, 0, true),
+      BufferParameters.create(attrY.location, 1, GL.DataType.Float, false, 8, 4, true),
     ]);
 
     return new this(repr, ownsRepr, buffers, container);

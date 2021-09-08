@@ -49,8 +49,7 @@ export interface InstancedGraphicParams {
  * @internal
  */
 export interface PatternGraphicParams {
-  readonly bytesPerOffset: 1 | 2 | 4;
-  readonly xyOffsets: Uint8Array;
+  readonly xyOffsets: Float32Array;
   readonly featureId?: number;
   readonly orgTransform: Transform;
   readonly scale: number;
