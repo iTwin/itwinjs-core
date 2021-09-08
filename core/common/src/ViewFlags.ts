@@ -191,7 +191,7 @@ export class ViewFlags {
   public forceSurfaceDiscard: boolean = false;
 
   /** Whether to apply white-on-white reversal.
-   * Some CAD applications use this to cause white geometry to be drawn as black if the view's background color is white.
+   * Some applications use this to cause white geometry to be drawn as black if the view's background color is white.
    * When enabled, the [[DisplayStyleSettings]]' [[WhiteOnWhiteReversalSettings]] control how white-on-white reversal is applied.
    * Default: true.
    */
