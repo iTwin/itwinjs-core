@@ -218,10 +218,6 @@
       "additionalProperties": false,
       "description": "Creates content for ECInstance(s) of specified classes.\n\nNote: this specification doesn't rely on selection. It always returns instances no matter\nwhat the selection is, so pre-filtering should be done in `ContentRule` condition and `instanceFilter`.",
       "properties": {
-        "arePolymorphic": {
-          "description": "Whether to get content from instances of derived `classes`.",
-          "type": "boolean"
-        },
         "calculatedProperties": {
           "description": "Specifications for including calculated properties",
           "items": {

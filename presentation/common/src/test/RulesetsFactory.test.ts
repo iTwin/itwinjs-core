@@ -85,7 +85,7 @@ describe("RulesetsFactory", () => {
         specifications: [{
           specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
           classes: { schemaName: "MySchema", classNames: ["MyClass"] },
-          arePolymorphic: true,
+          handleInstancesPolymorphically: true,
           relatedInstances: [],
           instanceFilter: `this.MyProperty = "test value with double ""quotes"""`,
         }],
@@ -118,7 +118,7 @@ describe("RulesetsFactory", () => {
         specifications: [{
           specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
           classes: { schemaName: "MySchema", classNames: ["MyClass"] },
-          arePolymorphic: true,
+          handleInstancesPolymorphically: true,
           relatedInstances: [],
           instanceFilter: `this.MyProperty = TRUE`,
         }],
@@ -151,7 +151,7 @@ describe("RulesetsFactory", () => {
         specifications: [{
           specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
           classes: { schemaName: "MySchema", classNames: ["MyClass"] },
-          arePolymorphic: true,
+          handleInstancesPolymorphically: true,
           relatedInstances: [],
           instanceFilter: `this.MyProperty = FALSE`,
         }],
@@ -184,7 +184,7 @@ describe("RulesetsFactory", () => {
         specifications: [{
           specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
           classes: { schemaName: "MySchema", classNames: ["MyClass"] },
-          arePolymorphic: true,
+          handleInstancesPolymorphically: true,
           relatedInstances: [],
           instanceFilter: `this.MyProperty = 123`,
         }],
@@ -217,7 +217,7 @@ describe("RulesetsFactory", () => {
         specifications: [{
           specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
           classes: { schemaName: "MySchema", classNames: ["MyClass"] },
-          arePolymorphic: true,
+          handleInstancesPolymorphically: true,
           relatedInstances: [],
           instanceFilter: `CompareDoubles(this.MyProperty, 123.456) = 0`,
         }],
@@ -250,7 +250,7 @@ describe("RulesetsFactory", () => {
         specifications: [{
           specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
           classes: { schemaName: "MySchema", classNames: ["MyClass"] },
-          arePolymorphic: true,
+          handleInstancesPolymorphically: true,
           relatedInstances: [],
           instanceFilter: `CompareDateTimes(this.MyProperty, "2007-07-13T07:18:07.000") = 0`,
         }],
@@ -283,7 +283,7 @@ describe("RulesetsFactory", () => {
         specifications: [{
           specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
           classes: { schemaName: "MySchema", classNames: ["MyClass"] },
-          arePolymorphic: true,
+          handleInstancesPolymorphically: true,
           relatedInstances: [],
           instanceFilter: `CompareDoubles(this.MyProperty.x, 1) = 0 AND CompareDoubles(this.MyProperty.y, 2) = 0`,
         }],
@@ -316,7 +316,7 @@ describe("RulesetsFactory", () => {
         specifications: [{
           specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
           classes: { schemaName: "MySchema", classNames: ["MyClass"] },
-          arePolymorphic: true,
+          handleInstancesPolymorphically: true,
           relatedInstances: [],
           instanceFilter: `CompareDoubles(this.MyProperty.x, 0) = 0 AND CompareDoubles(this.MyProperty.y, 0) = 0`,
         }],
@@ -349,7 +349,7 @@ describe("RulesetsFactory", () => {
         specifications: [{
           specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
           classes: { schemaName: "MySchema", classNames: ["MyClass"] },
-          arePolymorphic: true,
+          handleInstancesPolymorphically: true,
           relatedInstances: [],
           instanceFilter: `CompareDoubles(this.MyProperty.x, 1) = 0 AND CompareDoubles(this.MyProperty.y, 2) = 0 AND CompareDoubles(this.MyProperty.z, 3) = 0`,
         }],
@@ -382,7 +382,7 @@ describe("RulesetsFactory", () => {
         specifications: [{
           specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
           classes: { schemaName: "MySchema", classNames: ["MyClass"] },
-          arePolymorphic: true,
+          handleInstancesPolymorphically: true,
           relatedInstances: [],
           instanceFilter: `CompareDoubles(this.MyProperty.x, 1) = 0 AND CompareDoubles(this.MyProperty.y, 2) = 0 AND CompareDoubles(this.MyProperty.z, 0) = 0`,
         }],
@@ -415,7 +415,7 @@ describe("RulesetsFactory", () => {
         specifications: [{
           specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
           classes: { schemaName: "MySchema", classNames: ["MyClass"] },
-          arePolymorphic: true,
+          handleInstancesPolymorphically: true,
           relatedInstances: [],
           instanceFilter: `this.MyProperty = NULL`,
         }],
@@ -448,7 +448,7 @@ describe("RulesetsFactory", () => {
         specifications: [{
           specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
           classes: { schemaName: "MySchema", classNames: ["MyClass"] },
-          arePolymorphic: true,
+          handleInstancesPolymorphically: true,
           relatedInstances: [],
           instanceFilter: `this.MyProperty.Id = ${parseInt("0x16", 16)}`,
         }],
@@ -516,7 +516,7 @@ describe("RulesetsFactory", () => {
         specifications: [{
           specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
           classes: { schemaName: "MySchema", classNames: ["PrimaryClass"] },
-          arePolymorphic: true,
+          handleInstancesPolymorphically: true,
           relatedInstances: [{
             relationshipPath: [{
               relationship: { schemaName: "MySchema", className: "MyRelationship" },
@@ -592,7 +592,7 @@ describe("RulesetsFactory", () => {
         specifications: [{
           specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
           classes: { schemaName: "MySchema", classNames: ["PrimaryClass"] },
-          arePolymorphic: true,
+          handleInstancesPolymorphically: true,
           relatedInstances: [{
             relationshipPath: [{
               relationship: { schemaName: "MySchema", className: "MyRelationship" },
@@ -684,7 +684,7 @@ describe("RulesetsFactory", () => {
         specifications: [{
           specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
           classes: { schemaName: "MySchema", classNames: ["SelectClass"] },
-          arePolymorphic: true,
+          handleInstancesPolymorphically: true,
           relatedInstances: [{
             relationshipPath: [{
               relationship: { schemaName: "MySchema", className: "MyRelationship2" },
@@ -746,7 +746,7 @@ describe("RulesetsFactory", () => {
         specifications: [{
           specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
           classes: { schemaName: "MySchema", classNames: ["PrimaryClass"] },
-          arePolymorphic: true,
+          handleInstancesPolymorphically: true,
           relatedInstances: [{
             relationshipPath: [{
               relationship: { schemaName: "MySchema", className: "MyRelationship" },
@@ -804,7 +804,7 @@ describe("RulesetsFactory", () => {
         specifications: [{
           specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
           classes: { schemaName: "MySchema", classNames: ["PrimaryClass"] },
-          arePolymorphic: true,
+          handleInstancesPolymorphically: true,
           relatedInstances: [{
             relationshipPath: [{
               relationship: { schemaName: "MySchema", className: "MyRelationship" },
@@ -878,7 +878,7 @@ describe("RulesetsFactory", () => {
         specifications: [{
           specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
           classes: { schemaName: "MySchema", classNames: ["SelectClass"] },
-          arePolymorphic: true,
+          handleInstancesPolymorphically: true,
           relatedInstances: [{
             relationshipPath: [{
               relationship: { schemaName: "MySchema", className: "MyRelationship1" },
@@ -966,7 +966,7 @@ describe("RulesetsFactory", () => {
         specifications: [{
           specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
           classes: { schemaName: "MySchema", classNames: ["PrimaryClass"] },
-          arePolymorphic: true,
+          handleInstancesPolymorphically: true,
           relatedInstances: [{
             relationshipPath: [{
               relationship: { schemaName: "MySchema", className: "MyRelationship" },
@@ -1067,7 +1067,7 @@ describe("RulesetsFactory", () => {
         specifications: [{
           specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
           classes: { schemaName: "MySchema", classNames: ["RecordClass"] },
-          arePolymorphic: true,
+          handleInstancesPolymorphically: true,
           relatedInstances: [{
             relationshipPath: [{
               relationship: { schemaName: "MySchema", className: "MyRelationship2" },

@@ -27,12 +27,6 @@ export interface ContentInstancesOfSpecificClassesSpecification extends ContentS
    */
   classes: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
 
-  /**
-   * Whether to get content from instances of derived `classes`.
-   * @deprecated Renamed to [[handleInstancesPolymorphically]]. Will be removed in iModel.js 3.0
-   */
-  arePolymorphic?: boolean;
-
   /** Whether to get content from instances of derived `classes`. */
   handleInstancesPolymorphically?: boolean;
 

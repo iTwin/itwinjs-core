@@ -51,7 +51,7 @@ export class RulesetsFactory {
       specifications: [{
         specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
         classes: createMultiClassSpecification(record.classInfo),
-        arePolymorphic: true,
+        handleInstancesPolymorphically: true,
         relatedInstances: relatedInstanceSpecs,
         instanceFilter: createInstanceFilter(relatedInstanceSpecs, field.type, propertyName, propertyValue.raw),
       }],
