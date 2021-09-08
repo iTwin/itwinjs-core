@@ -9,6 +9,8 @@
 import { assert } from "@bentley/bentleyjs-core";
 import { VariableType, VertexShaderBuilder } from "../ShaderBuilder";
 import { System } from "../System";
+import { UniformHandle } from "../UniformHandle";
+import { Matrix4 } from "../Matrix";
 import { addExtractNthBit } from "./Common";
 import { addOvrFlagConstants } from "./FeatureSymbology";
 
@@ -27,9 +29,56 @@ const computeInstancedModelMatrixRTC = `
     a_instanceMatrixRow0.w, a_instanceMatrixRow1.w, a_instanceMatrixRow2.w, 1.0);
 `;
 
+function setMatrix(uniform: UniformHandle, matrix: Matrix4 | undefined): void {
+  if (matrix)
+    uniform.setMatrix4(matrix);
+}
+
+function addPatternTransforms(vert: VertexShaderBuilder): void {
+  vert.addUniform("u_patOrg", VariableType.Mat4, (prog) =>
+    prog.addGraphicUniform("u_patOrg", (uniform, params) =>
+      setMatrix(uniform, params.geometry.asInstanced?.patternTransforms?.orgTransform)));
+
+  vert.addUniform("u_patLocalToWorld", VariableType.Mat4, (prog) =>
+    prog.addGraphicUniform("u_patLocalToWorld", (uniform, params) =>
+      setMatrix(uniform, params.geometry.asInstanced?.patternTransforms?.localToWorld)));
+
+  vert.addUniform("u_patWorldToModel", VariableType.Mat4, (prog) =>
+    prog.addGraphicUniform("u_patWorldToModel", (uniform, params) =>
+      setMatrix(uniform, params.geometry.asInstanced?.patternTransforms?.worldToModel)));
+
+  vert.addUniform("u_patSymbolToLocal", VariableType.Mat4, (prog) =>
+    prog.addGraphicUniform("u_patSymbolToLocal", (uniform, params) =>
+      setMatrix(uniform, params.geometry.asInstanced?.patternTransforms?.symbolToLocal)));
+}
+
 /** @internal */
 export function addInstancedModelMatrixRTC(vert: VertexShaderBuilder) {
   assert(vert.usesInstancedGeometry);
+
+  vert.addUniform("u_patternParams", VariableType.Vec4, (prog) => {
+    prog.addGraphicUniform("u_patternParams", (uniform, params) => {
+      const inst = params.geometry.asInstanced;
+      assert(undefined !== inst);
+      if (inst)
+        uniform.setUniform4fv(inst.patternParams);
+    });
+  });
+
+  vert.addUniform("u_patternFeatureId", VariableType.Vec3, (prog) => {
+    prog.addGraphicUniform("u_patternFeatureId", (uniform, params) => {
+      const id = params.geometry.asInstanced?.patternFeatureId;
+      assert(undefined !== id);
+      if (id)
+        uniform.setUniform3fv(id);
+    });
+  });
+
+  addPatternTransforms(vert);
+
+  vert.addGlobal("g_isAreaPattern", VariableType.Boolean);
+  vert.addInitializer("g_isAreaPattern = 0.0 != u_patternParams.x;");
+
   vert.addGlobal("g_modelMatrixRTC", VariableType.Mat4);
   vert.addInitializer(computeInstancedModelMatrixRTC);
 }

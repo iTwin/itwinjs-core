@@ -55,7 +55,7 @@ export function addOvrFlagConstants(builder: ShaderBuilder): void {
 }
 
 const computeLUTFeatureIndex = `g_featureAndMaterialIndex.xyz`;
-const computeInstanceFeatureIndex = `a_featureId`;
+const computeInstanceFeatureIndex = `g_isAreaPattern ? u_patternFeatureId : a_featureId`;
 function computeFeatureIndex(vertex: VertexShaderBuilder): string {
   if (vertex.usesInstancedGeometry)
     return `g_featureIndex = ${computeInstanceFeatureIndex};`;
