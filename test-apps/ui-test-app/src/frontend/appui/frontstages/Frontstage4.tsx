@@ -146,7 +146,7 @@ export class Frontstage4 extends FrontstageProvider {
     const myContentGroup: ContentGroup = new ContentGroup(
       {
         id: "CubeContent",
-        preferredLayoutId: "SingleContent",
+        layout: "SingleContent",
         contents: [
           {
             id: "navigationCube",

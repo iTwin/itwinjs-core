@@ -41,7 +41,7 @@ describe("ContentGroup", () => {
   //  it("ContentGroupManager.loadGroup should throw Error if ContentGroupProps does not have an id", () => {
   //    const groupProps: ContentGroupProps = {
   //      id: "myContentGroup",
-  //      preferredLayoutId: "SingleContent",
+  //      layout: "SingleContent",
   //      contents: [{ id: "myContent", classId: TestContentControl }],
   //    };
   //    expect(() => ContentGroupManager.loadGroup(groupProps)).to.throw(Error);
@@ -51,7 +51,7 @@ describe("ContentGroup", () => {
     const contentProps: ContentProps = { id: "myContent", classId: "TestContentControl" };
     const groupProps: ContentGroupProps = {
       id: "testGroup",
-      preferredLayoutId: "SingleContent",
+      layout: "SingleContent",
       contents: [contentProps],
     };
     const contentGroup = new ContentGroup(groupProps);
@@ -68,7 +68,7 @@ describe("ContentGroup", () => {
     const contentProps: ContentProps = { id: "myContent", classId: "TestContentControl" };
     const groupProps: ContentGroupProps = {
       id: "testGroup",
-      preferredLayoutId: "SingleContent",
+      layout: "SingleContent",
       contents: [contentProps],
     };
     const contentGroup = new ContentGroup(groupProps);
@@ -82,7 +82,7 @@ describe("ContentGroup", () => {
     const contentProps: ContentProps = { id: "myContent", classId: TestContentControl };
     const groupProps: ContentGroupProps = {
       id: "testGroup",
-      preferredLayoutId: "SingleContent",
+      layout: "SingleContent",
       contents: [contentProps],
     };
     const contentGroup = new ContentGroup(groupProps);
@@ -97,7 +97,7 @@ describe("ContentGroup", () => {
     const contentProps: ContentProps = { id: "myContent", classId: TestContentControl };
     const groupProps: ContentGroupProps = {
       id: "testGroup",
-      preferredLayoutId: "SingleContent",
+      layout: "SingleContent",
       contents: [contentProps],
     };
     const contentGroup = new ContentGroup(groupProps);
@@ -115,7 +115,7 @@ describe("ContentGroup", () => {
     const contentProps: ContentProps = { id: "myContent", classId };
     const groupProps: ContentGroupProps = {
       id: "testGroup",
-      preferredLayoutId: "SingleContent",
+      layout: "SingleContent",
       contents: [contentProps],
     };
     const contentGroup = new ContentGroup(groupProps);
@@ -132,7 +132,7 @@ describe("ContentGroup", () => {
     const contentProps: ContentProps = { id: "myContent", classId: TestContentControl };
     const groupProps: ContentGroupProps = {
       id: "testGroup",
-      preferredLayoutId: "SingleContent",
+      layout: "SingleContent",
       contents: [contentProps],
     };
     const contentGroup = new ContentGroup(groupProps);

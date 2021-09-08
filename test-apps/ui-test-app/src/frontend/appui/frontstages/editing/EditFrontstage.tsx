@@ -79,7 +79,7 @@ export class EditFrontstage extends FrontstageProvider {
     }
     const myContentGroup: ContentGroup = new ContentGroup({
       id: "main-edit",
-      preferredLayoutId: "SingleContent",
+      layout: "SingleContent",
       contents: contentProps,
     });
     return (

@@ -26,24 +26,22 @@ import { ConditionalBooleanValue, WidgetState } from "@bentley/ui-abstract";
 export class Frontstage2 extends FrontstageProvider {
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
-    const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
-      { // Four Views, two stacked on the left, two stacked on the right.
-        id: "SampleApp:ContentLayoutDef.FourQuadrants",
-        description: "SampleApp:ContentLayoutDef.FourQuadrants",
-        verticalSplit: {
-          id: "SampleApp:FourQuadrantsVerticalSplit",
-          percentage: 0.50,
-          minSizeLeft: 100, minSizeRight: 100,
-          left: { horizontalSplit: { id: "SampleApp:FourQuadrantsLeftHorizontalSplit", percentage: 0.50, top: 0, bottom: 1, minSizeTop: 100, minSizeBottom: 100 } },
-          right: { horizontalSplit: { id: "SampleApp:FourQuadrantsRightHorizontalSplit", percentage: 0.50, top: 2, bottom: 3, minSizeTop: 100, minSizeBottom: 100 } },
-        },
+    const contentLayoutProps = {
+      id: "SampleApp:ContentLayoutDef.FourQuadrants",
+      description: "SampleApp:ContentLayoutDef.FourQuadrants",
+      verticalSplit: {
+        id: "SampleApp:FourQuadrantsVerticalSplit",
+        percentage: 0.50,
+        minSizeLeft: 100, minSizeRight: 100,
+        left: { horizontalSplit: { id: "SampleApp:FourQuadrantsLeftHorizontalSplit", percentage: 0.50, top: 0, bottom: 1, minSizeTop: 100, minSizeBottom: 100 } },
+        right: { horizontalSplit: { id: "SampleApp:FourQuadrantsRightHorizontalSplit", percentage: 0.50, top: 2, bottom: 3, minSizeTop: 100, minSizeBottom: 100 } },
       },
-    );
+    };
 
     const myContentGroup: ContentGroup = new ContentGroup(
       {
         id: "frontstage2",
-        preferredLayoutId: "FourQuadrants",
+        layout: contentLayoutProps,
         contents: [
           {
             id: "imodelView1",

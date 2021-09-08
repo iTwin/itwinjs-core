@@ -150,7 +150,7 @@ describe("FrontstageComposer", () => {
       contentGroup: new ContentGroup(
         {
           id: "test-group",
-          preferredLayoutId: "SingleContent",
+          layout: "SingleContent",
           contents: [
             {
               id: "main",

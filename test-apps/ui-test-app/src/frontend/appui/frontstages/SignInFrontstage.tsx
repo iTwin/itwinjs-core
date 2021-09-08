@@ -38,7 +38,7 @@ export class SignInFrontstage extends FrontstageProvider {
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const contentGroup: ContentGroup = new ContentGroup({
       id: "sign-in-stage",
-      preferredLayoutId: "SingleContent",
+      layout: "SingleContent",
       contents: [
         {
           id: "sign-in",

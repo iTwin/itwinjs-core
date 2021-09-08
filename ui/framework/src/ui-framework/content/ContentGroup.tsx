@@ -9,11 +9,12 @@
 import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
-import { UiError } from "@bentley/ui-abstract";
+import { ContentLayoutProps, UiError } from "@bentley/ui-abstract";
 import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { UiFramework } from "../UiFramework";
 import { ContentControl } from "./ContentControl";
+import { ContentLayoutManager } from "./ContentLayoutManager";
 
 /** Properties for content displayed in a content view
  * @public
@@ -35,8 +36,8 @@ export interface ContentProps {
 export interface ContentGroupProps {
   /** An optional id for the [[ContentGroup]] */
   id: string;
-  /** Preferred Layout Id */
-  preferredLayoutId: string;
+  /** Content Layout Id or complete set of [[ContentLayoutProps]]  */
+  layout: string | ContentLayoutProps;
   /** A collection of [[ContentProps]], one for each content view */
   contents: ContentProps[];
 }
@@ -51,13 +52,13 @@ export type ContentCallback = (content: ContentProps) => void;
  */
 export class ContentGroup {
   public groupId: string;
-  public preferredLayoutId: string;
+  public layout: ContentLayoutProps;
   public contentPropsList: ContentProps[];
   private _contentControls = new Map<string, ContentControl>();
   private _contentSetMap = new Map<string, ContentControl>();
 
   constructor(groupProps: ContentGroupProps) {
-    this.preferredLayoutId = groupProps.preferredLayoutId;
+    this.layout = ContentLayoutManager.findLayout(groupProps.layout);
     this.groupId = groupProps.id;
     this.contentPropsList = groupProps.contents;
   }
@@ -174,7 +175,7 @@ export class ContentGroup {
   public toJSON(contentCallback?: ContentCallback): ContentGroupProps {
     const contentGroupProps: ContentGroupProps = {
       id: this.groupId,
-      preferredLayoutId: this.preferredLayoutId,
+      layout: this.layout,
       contents: this.contentPropsList,
     };
 
@@ -237,14 +238,6 @@ export class ContentGroupManager {
     const groupProps = this._groupsProps.get(groupId);
     if (groupProps) {
       return new ContentGroup(groupProps);
-    }
-    return undefined;
-  }
-
-  public static getPreferredLayoutId(groupId: string): string | undefined {
-    const groupProps = this._groupsProps.get(groupId);
-    if (groupProps) {
-      return groupProps.preferredLayoutId;
     }
     return undefined;
   }

@@ -80,7 +80,7 @@ describe("IModelViewportControl", () => {
       const myContentGroup: ContentGroup = new ContentGroup(
         {
           id: "test",
-          preferredLayoutId: "SingleContent",
+          layout: "SingleContent",
           contents: [
             {
               id: "main",

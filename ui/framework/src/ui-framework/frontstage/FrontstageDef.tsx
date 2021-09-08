@@ -162,9 +162,9 @@ export class FrontstageDef {
         throw new UiError(UiFramework.loggerCategory(this), `onActivated: Content Group '${this.contentGroupId}' not registered`);
     }
 
-    this._contentLayoutDef = ContentLayoutManager.findLayout(this._contentGroup?.preferredLayoutId);
+    this._contentLayoutDef = ContentLayoutManager.findLayout(this._contentGroup?.layout);
     if (!this._contentLayoutDef)
-      throw new UiError(UiFramework.loggerCategory(this), `onActivated: Content Layout '${this._contentGroup?.preferredLayoutId}' not registered`);
+      throw new UiError(UiFramework.loggerCategory(this), `onActivated: Content Layout '${this._contentGroup?.layout}' not registered`);
 
     FrontstageManager.onContentLayoutActivatedEvent.emit({ contentLayout: this._contentLayoutDef, contentGroup: this._contentGroup });
 

@@ -154,7 +154,7 @@ describe("SavedViewLayout", () => {
       const myContentGroup: ContentGroup = new ContentGroup(
         {
           id: "MyContentGroup",
-          preferredLayoutId: "SingleContent",
+          layout: "SingleContent",
           contents: [
             {
               id: "TestViewport",

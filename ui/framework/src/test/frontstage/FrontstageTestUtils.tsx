@@ -72,7 +72,7 @@ export class TestFrontstage extends FrontstageProvider {
     const myContentGroup: ContentGroup = new ContentGroup(
       {
         id: "test-group",
-        preferredLayoutId: "SingleContent",
+        layout: "SingleContent",
         contents: [
           {
             id: "main",
@@ -166,7 +166,7 @@ export class TestFrontstage2 extends FrontstageProvider {
     const myContentGroup: ContentGroup = new ContentGroup(
       {
         id: "test-group",
-        preferredLayoutId: "SingleContent",
+        layout: "SingleContent",
         contents: [
           {
             id: "main",
@@ -260,7 +260,7 @@ export class TestFrontstage3 extends FrontstageProvider {
     const myContentGroup: ContentGroup = new ContentGroup(
       {
         id: "test-group",
-        preferredLayoutId: "SingleContent",
+        layout: "SingleContent",
         contents: [
           {
             id: "main", classId: TestContentControl,

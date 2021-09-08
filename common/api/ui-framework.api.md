@@ -1317,7 +1317,7 @@ export class ContentGroup {
     onFrontstageDeactivated(): void;
     onFrontstageReady(): void;
     // (undocumented)
-    preferredLayoutId: string;
+    layout: ContentLayoutProps
     refreshContentNodes(): void;
     toJSON(contentCallback?: ContentCallback): ContentGroupProps;
 }
@@ -1336,7 +1336,7 @@ export class ContentGroupManager {
 export interface ContentGroupProps {
     contents: ContentProps[];
     id: string;
-    preferredLayoutId: string;
+    layout: ContentLayoutProps
 }
 
 // @public

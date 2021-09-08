@@ -527,7 +527,7 @@ export class FrontstageManager {
    * @param contentGroup  Content Group to make active
    */
   public static async setActiveContentGroup(contentGroup: ContentGroup): Promise<void> {
-    const contentLayoutDef = ContentLayoutManager.findLayout(contentGroup.preferredLayoutId);
+    const contentLayoutDef = ContentLayoutManager.findLayout(contentGroup.layout);
     if (contentLayoutDef) {
       const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
       // istanbul ignore else

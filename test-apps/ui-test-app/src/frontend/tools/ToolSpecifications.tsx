@@ -444,7 +444,7 @@ export class AppTools {
             const contentGroup = new ContentGroup(
               {
                 id: "split-vertical-group",
-                preferredLayoutId: "TwoHalvesVertical",
+                layout: "TwoHalvesVertical",
                 contents: contentPropsArray,
               });
 
@@ -475,7 +475,7 @@ export class AppTools {
             const contentGroup = new ContentGroup(
               {
                 id: "single-content",
-                preferredLayoutId: "SingleContent",
+                layout: "SingleContent",
                 contents: contentPropsArray,
               });
 

@@ -145,7 +145,7 @@ export class TestUtils {
 
     const testContentGroup1: ContentGroupProps = {
       id: "TestContentGroup1",
-      preferredLayoutId: "FourQuadrants",
+      layout: "FourQuadrants",
       contents: [
         {
           id: "test:TestContentControl1",

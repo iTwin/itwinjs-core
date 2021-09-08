@@ -38,7 +38,7 @@ export class IModelIndexFrontstage extends FrontstageProvider {
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const contentGroup: ContentGroup = new ContentGroup({
       id: "imodelIndexGroup",
-      preferredLayoutId: "SingleContent",
+      layout: "SingleContent",
       contents: [
         {
           id: "imodelIndexView",

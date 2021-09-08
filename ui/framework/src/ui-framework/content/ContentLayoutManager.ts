@@ -6,7 +6,7 @@
  * @module ContentView
  */
 
-import { ContentLayoutProps, UiError } from "@bentley/ui-abstract";
+import { ContentLayoutProps, StandardContentLayouts, UiError } from "@bentley/ui-abstract";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { UiFramework } from "../UiFramework";
 import { ContentGroup } from "./ContentGroup";
@@ -42,8 +42,18 @@ export class ContentLayoutManager {
    * @param layoutId  the id of the Content Layout to find
    * @returns the [[ContentLayoutDef]] if found, or undefined otherwise
    */
-  public static findLayout(layoutId: string): ContentLayoutDef | undefined {
-    return ContentLayoutManager._layoutDefs.get(layoutId);
+  public static findLayout(layoutId: string | ContentLayoutProps): ContentLayoutDef {
+    const key = (typeof layoutId !== "string") ? layoutId.id : layoutId;
+    if (ContentLayoutManager._layoutDefs.has(key)) {
+      return ContentLayoutManager._layoutDefs.get(key)!;
+    } else if (typeof layoutId !== "string") {
+      const newLayoutDef = new ContentLayoutDef(layoutId);
+      this.addLayout(key, newLayoutDef);
+      return newLayoutDef;
+    } // else if (StandardContentLayouts.availableLayouts.
+    //  )
+
+    throw new Error(`Unable to located ContentLayout with id ${key}`);
   }
 
   /** Adds a Content Layout.

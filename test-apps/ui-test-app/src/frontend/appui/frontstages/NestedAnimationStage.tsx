@@ -13,7 +13,7 @@ export class NestedAnimationStage extends FrontstageProvider {
     const myContentGroup: ContentGroup = new ContentGroup(
       {
         id: "ScheduleAnimation",
-        preferredLayoutId: "SingleContent",
+        layout: "SingleContent",
         contents: [
           {
             id: "ScheduleAnimationView",

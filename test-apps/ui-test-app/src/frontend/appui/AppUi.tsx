@@ -73,12 +73,14 @@ const showCornerButtons = true;
 export class AppUi {
 
   public static initialize() {
-    AppUi.defineFrontstages();
+    // initialize content groups and layouts before any frontstages.
     AppUi.defineContentGroups();
     AppUi.defineContentLayouts();
+    AppUi.defineFrontstages();
     AppUi.defineTasksAndWorkflows();
     AppUi.defineKeyboardShortcuts();
 
+    // TODO: should this be removed in 3.0 and just use UiItemsProvider for consistent approach???
     // use to test WidgetProvider API - Note: this is different from UiItemsProvider
     AppUi.defineDynamicWidgets();
 
@@ -200,7 +202,7 @@ export class AppUi {
   private static defineContentGroups() {
     const singleIModelViewport: ContentGroupProps = {
       id: "singleIModelViewport",
-      preferredLayoutId: "SingleContent",
+      layout: "SingleContent",
       contents: [
         {
           classId: IModelViewportControl,
@@ -214,11 +216,11 @@ export class AppUi {
 
     // id: "FourQuadrants",
     // id: "ThreeRightStacked",
-    // preferredLayoutId: "TwoHalvesHorizontal",
+    // layout: "TwoHalvesHorizontal",
 
     const drawingAndSheetViewports: ContentGroupProps = {
       id: "DrawingAndSheetViewports",
-      preferredLayoutId: "TwoHalvesVertical",
+      layout: "TwoHalvesVertical",
       contents: [
         {
           classId: IModelViewportControl,
@@ -240,7 +242,7 @@ export class AppUi {
 
     const threeIModelViewportsWithItemsTable: ContentGroupProps = {
       id: "ThreeIModelViewportsWithItemsTable",
-      preferredLayoutId: "FourQuadrants",
+      layout: "FourQuadrants",
       contents: [
         {
           id: "primaryIModelView",
@@ -263,7 +265,7 @@ export class AppUi {
 
     const testContentGroup1: ContentGroupProps = {
       id: "TestContentGroup1",
-      preferredLayoutId: "FourQuadrants",
+      layout: "FourQuadrants",
       contents: [
         {
           id: "primaryIModelView",
@@ -290,7 +292,7 @@ export class AppUi {
 
     const testContentGroup2: ContentGroupProps = {
       id: "TestContentGroup2",
-      preferredLayoutId: "FourQuadrants",
+      layout: "FourQuadrants",
       contents: [
         {
           id: "primaryIModelView",
@@ -317,7 +319,7 @@ export class AppUi {
 
     const testContentGroup3: ContentGroupProps = {
       id: "TestContentGroup3",
-      preferredLayoutId: "FourQuadrants",
+      layout: "FourQuadrants",
       contents: [
         {
           id: "primaryIModelView",
@@ -344,7 +346,7 @@ export class AppUi {
 
     const testContentGroup4: ContentGroupProps = {
       id: "TestContentGroup4",
-      preferredLayoutId: "FourQuadrants",
+      layout: "FourQuadrants",
       contents: [
         {
           id: "primaryIModelView",

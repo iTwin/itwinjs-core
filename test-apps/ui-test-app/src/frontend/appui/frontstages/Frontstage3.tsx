@@ -39,7 +39,7 @@ export class Frontstage3 extends FrontstageProvider {
     const myContentGroup: ContentGroup = new ContentGroup(
       {
         id: "Frontstage4",
-        preferredLayoutId: "FourQuadrants",
+        layout: "FourQuadrants",
         contents: [
           {
             id: "imodelView1",

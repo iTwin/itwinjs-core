@@ -27,7 +27,7 @@ describe("ContentLayout", () => {
 
   const myContentGroup: ContentGroup = new ContentGroup({
     id: "testGroup",
-    preferredLayoutId: "SingleContent",
+    layout: "SingleContent",
     contents: [{ id: "myContent", classId: TestContentControl, applicationData: { name: "Test" } }],
   });
 
@@ -38,7 +38,7 @@ describe("ContentLayout", () => {
 
   const contentGroup2: ContentGroup = new ContentGroup({
     id: "contentGroup2",
-    preferredLayoutId: "FourQuadrants",
+    layout: "FourQuadrants",
     contents: [
       { id: "one", classId: TestContentControl, applicationData: "data1" },
       { id: "two", classId: TestContentControl, applicationData: "data2" },

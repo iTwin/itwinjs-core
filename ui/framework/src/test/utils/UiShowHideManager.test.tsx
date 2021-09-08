@@ -168,7 +168,7 @@ describe("UiShowHideManager localStorage Wrapper", () => {
 
       const myContentGroup: ContentGroup = new ContentGroup({
         id: "test-group",
-        preferredLayoutId: "SingleContent",
+        layout: "SingleContent",
         contents: [{ id: "myContent", classId: TestContentControl }],
       });
 

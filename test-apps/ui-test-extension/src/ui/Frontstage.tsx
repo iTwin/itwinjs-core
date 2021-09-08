@@ -45,7 +45,7 @@ export class ExtensionFrontstage extends FrontstageProvider {
     const pluginContentGroup: ContentGroup = new ContentGroup(
       {
         id: "ui-test:content-group",
-        preferredLayoutId: "ui-test.TwoHalvesHorizontal",
+        layout: "ui-test.TwoHalvesHorizontal",
         contents: [
           {
             id: "ui-test:primary",

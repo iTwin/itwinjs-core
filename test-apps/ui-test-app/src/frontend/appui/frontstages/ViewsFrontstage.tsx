@@ -221,8 +221,6 @@ export class ViewsFrontstage extends FrontstageProvider {
       throw (Error(`Could not find layout ContentLayoutProps when number of viewStates=${this.viewStates.length}`));
     }
 
-    const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(contentLayoutProps);
-
     // create the content props that specifies an iModelConnection and a viewState entry in the application data.
     const contentProps: ContentProps[] = [];
     this.viewStates.forEach((viewState, index) => {
@@ -249,7 +247,7 @@ export class ViewsFrontstage extends FrontstageProvider {
     const myContentGroup: ContentGroup = new ContentGroup(
       {
         id: "default-group",
-        preferredLayoutId: contentLayoutProps.id,
+        layout: contentLayoutProps,
         contents: contentProps,
       });
 
@@ -600,8 +598,12 @@ class AdditionalTools {
           // Create props for the Layout, ContentGroup and ViewStates
           const savedViewLayoutProps = SavedViewLayout.viewLayoutToProps(ContentLayoutManager.activeLayout, ContentLayoutManager.activeContentGroup, true,
             (contentProps: ContentProps) => {
-              if (contentProps.applicationData)
-                delete contentProps.applicationData;
+              if (contentProps.applicationData) {
+                if (contentProps.applicationData.iModelConnection)
+                  delete contentProps.applicationData.iModelConnection;
+                if (contentProps.applicationData.viewState)
+                  delete contentProps.applicationData.viewState;
+              }
             });
 
           // Save the SavedViewLayoutProps
@@ -611,7 +613,7 @@ class AdditionalTools {
     });
   }
 
-  private get _restoreContentLayout() {
+  private get _restoreSavedContentLayout() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.restoreContentLayout", badgeType: BadgeType.New, execute: async () => {
         const iModelConnection = UiFramework.getIModelConnection();
@@ -785,7 +787,7 @@ class AdditionalTools {
     const children = ToolbarHelper.constructChildToolbarItems([
       this._nestedGroup,
       this._saveContentLayout,
-      this._restoreContentLayout,
+      this._restoreSavedContentLayout,
       this._startCursorPopup,
       this._addCursorPopups,
       this._endCursorPopup,

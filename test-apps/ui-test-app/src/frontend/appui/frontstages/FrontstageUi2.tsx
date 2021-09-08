@@ -23,7 +23,7 @@ const supplyViewOverlay = (viewport: ScreenViewport) => {
 
 export const ui2ContentGroupProps: ContentGroupProps = {
   id: "main-content-group",
-  preferredLayoutId: "SingleContent",
+  layout: "SingleContent",
   contents: [
     {
       id: "primaryContent",
