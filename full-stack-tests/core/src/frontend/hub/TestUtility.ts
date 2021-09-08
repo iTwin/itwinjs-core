@@ -62,10 +62,8 @@ export class TestUtility {
     let authorizationClient: FrontendAuthorizationClient;
     if (NativeApp.isValid) {
       authorizationClient = new NativeAppAuthorization({ clientId: "testapp", redirectUri: "", scope: "" });
-      await NativeApp.callNativeHost("setAccessTokenProps", {
-        tokenString: await getAccessTokenFromBackend(user) ?? "",
-        expiresAt: undefined,
-      });
+      const token = await getAccessTokenFromBackend(user) ?? "";
+      await NativeApp.callNativeHost("setAccessToken", token);
     } else {
       authorizationClient = this.imodelCloudEnv.getAuthorizationClient(user) as FrontendAuthorizationClient;
       await authorizationClient.signIn();

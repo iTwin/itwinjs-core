@@ -43,13 +43,5 @@ if (!ProcessDetector.isElectronAppFrontend) {
         resolve();
       });
     });
-
-    it("should not recurse in auth call", async () => {
-      await NativeApp.startup(socket);
-      // TODO: Best way to replace line below?
-      // IModelApp.authorizationClient!.onUserStateChanged.raiseEvent(new AccessToken(undefined, undefined, new Date(0)));
-      await NativeApp.callNativeHost("getAccessTokenProps");
-      IModelApp.authorizationClient = undefined;
-    });
   });
 }

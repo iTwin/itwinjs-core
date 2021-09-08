@@ -34,14 +34,6 @@ export class SampleApp {
       await ElectronApp.startup({ iModelApp: iModelAppOpts });
       // __PUBLISH_EXTRACT_END__
     }
-    // else if (ProcessDetector.isBrowserProcess) {
-    //   await WebViewerApp.startup({
-    //     iModelApp: iModelAppOpts,
-    //     webViewerApp: {
-    //       rpcParams: { info: { title: "presentation-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" },
-    //     },
-    //   });
-    // }
     const readyPromises = new Array<Promise<void>>();
 
     const localizationNamespace = IModelApp.i18n.registerNamespace("Sample");

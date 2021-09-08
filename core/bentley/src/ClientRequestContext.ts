@@ -7,7 +7,6 @@
  */
 
 import { Guid, GuidString } from "./Id";
-// import { AccessTokenString } from "@bentley/itwin-client";
 
 // cSpell:ignore csrf
 

@@ -74,7 +74,6 @@ export * from "./ViewPose";
 export * from "./ViewRect";
 export * from "./ViewState";
 export * from "./ViewStatus";
-export * from "./WebViewerApp";
 export * from "./extension/Extension";
 export * from "./extension/ExtensionAdmin";
 export * from "./extension/loaders/ExternalServerExtensionLoader";

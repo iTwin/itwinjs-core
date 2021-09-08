@@ -12,7 +12,7 @@ import {
   BriefcaseProps, IModelError, InternetConnectivityStatus, LocalBriefcaseProps, NativeAppAuthorizationConfiguration, nativeAppChannel, NativeAppFunctions,
   NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, StorageValue,
 } from "@bentley/imodeljs-common";
-import { AccessTokenProps, AccessTokenString, AuthorizationClient, ImsAuthorizationClient, RequestGlobalOptions } from "@bentley/itwin-client";
+import { AccessTokenString, AuthorizationClient, ImsAuthorizationClient, RequestGlobalOptions } from "@bentley/itwin-client";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { Downloads } from "./CheckpointManager";
 import { IModelHost } from "./IModelHost";
@@ -65,8 +65,11 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
 class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   public get channelName() { return nativeAppChannel; }
 
-  public async setAccessTokenProps(token: AccessTokenProps) {
-    NativeHost.authorization.setAccessToken(token.tokenString);
+  public async setAccessToken(token: AccessTokenString) {
+    NativeHost.authorization.setAccessToken(token);
+  }
+  public async getAccessToken(): Promise<AccessTokenString | undefined> {
+    return NativeHost.authorization.getAccessToken();
   }
   public async initializeAuth(props: SessionProps, config?: NativeAppAuthorizationConfiguration): Promise<number> {
     IModelHost.session.applicationId = props.applicationId;
@@ -81,12 +84,6 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   }
   public async signOut(): Promise<void> {
     return NativeHost.authorization.signOut();
-  }
-  public async getAccessTokenProps(): Promise<AccessTokenProps> {
-    return {
-      tokenString: await NativeHost.authorization.getAccessToken() ?? "",
-      expiresAt: undefined,
-    };
   }
   public async checkInternetConnectivity(): Promise<InternetConnectivityStatus> {
     return NativeHost.checkInternetConnectivity();
@@ -234,10 +231,7 @@ export class NativeHost {
       this.onInternetConnectivityChanged.addListener((status: InternetConnectivityStatus) =>
         NativeHost.notifyNativeFrontend("notifyInternetConnectivityChanged", status));
       this.onUserStateChanged.addListener((token?: AccessTokenString) =>
-        NativeHost.notifyNativeFrontend("notifyUserStateChanged", {
-          tokenString: token ?? "",
-          expiresAt: undefined,
-        }));
+        NativeHost.notifyNativeFrontend("notifyUserStateChanged", token));
       this._applicationName = opt?.nativeHost?.applicationName ?? "iTwinApp";
     }
 

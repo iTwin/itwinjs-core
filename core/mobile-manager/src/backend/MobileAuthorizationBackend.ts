@@ -9,7 +9,7 @@
 import { assert } from "@bentley/bentleyjs-core";
 import { NativeAppAuthorizationBackend } from "@bentley/imodeljs-backend";
 import { NativeAppAuthorizationConfiguration } from "@bentley/imodeljs-common";
-import { AccessTokenProps, AccessTokenString } from "@bentley/itwin-client";
+import { AccessTokenString } from "@bentley/itwin-client";
 import { MobileHost } from "./MobileHost";
 
 /** Utility to provide OIDC/OAuth tokens from native ios app to frontend
@@ -28,13 +28,8 @@ export class MobileAuthorizationBackend extends NativeAppAuthorizationBackend {
     await super.initialize(config);
     assert(this.config !== undefined && this.issuerUrl !== undefined, "URL of authorization provider was not initialized");
 
-    MobileHost.device.authStateChanged = (tokenString?: string) => {
-      let token: AccessTokenString | undefined;
-      if (tokenString) {
-        const tokenJson = JSON.parse(tokenString) as AccessTokenProps;
-        token = tokenJson.tokenString;
-      }
-      this.setAccessToken(token);
+    MobileHost.device.authStateChanged = (tokenString?: AccessTokenString) => {
+      this.setAccessToken(tokenString);
     };
 
     return new Promise<void>((resolve, reject) => {
@@ -78,9 +73,9 @@ export class MobileAuthorizationBackend extends NativeAppAuthorizationBackend {
   /** return accessToken */
   public async refreshToken(): Promise<AccessTokenString> {
     return new Promise<AccessTokenString>((resolve, reject) => {
-      MobileHost.device.authGetAccessToken((tokenStringJson?: string, err?: string) => {
+      MobileHost.device.authGetAccessToken((tokenStringJson?: AccessTokenString, err?: string) => {
         if (!err && tokenStringJson) {
-          resolve((JSON.parse(tokenStringJson) as AccessTokenProps).tokenString);
+          resolve(tokenStringJson);
         } else {
           reject(new Error(err));
         }

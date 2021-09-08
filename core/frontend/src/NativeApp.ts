@@ -112,7 +112,7 @@ export class NativeAppAuthorization implements AuthorizationClient {
       }
 
       this._refreshingToken = true;
-      this._cachedToken = (await NativeApp.callNativeHost("getAccessTokenProps")).tokenString;
+      this._cachedToken = (await NativeApp.callNativeHost("getAccessToken"));
       this._refreshingToken = false;
     }
 

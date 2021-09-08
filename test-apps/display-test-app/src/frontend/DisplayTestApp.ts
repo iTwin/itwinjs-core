@@ -125,7 +125,7 @@ const dtaFrontendMain = async () => {
   if (configuration.useFakeCloudStorageTileCache)
     (CloudStorageTileCache as any)._instance = new FakeTileCache();
 
-  await DisplayTestApp.startup(configuration, renderSystemOptions);
+  await DisplayTestApp.startup(renderSystemOptions);
   if (false !== configuration.enableDiagnostics)
     IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
 

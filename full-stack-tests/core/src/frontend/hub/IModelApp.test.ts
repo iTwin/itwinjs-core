@@ -44,7 +44,7 @@ describe("IModelApp (#integration)", () => {
     const activityId = authorizedRequestContext.activityId;
 
     let actualAuthorizedRequestContext = await TestRpcInterface.getClient().reportAuthorizedRequestContext();
-    actualAccessTokenStr = actualAuthorizedRequestContext.accessToken.tokenString;
+    actualAccessTokenStr = actualAuthorizedRequestContext.accessToken;
     assert.equal(actualAccessTokenStr, expectedAccessTokenStr);
     assert.equal(actualAuthorizedRequestContext.applicationId, IModelApp.applicationId);
     assert.equal(actualAuthorizedRequestContext.sessionId, IModelApp.sessionId);
@@ -54,14 +54,14 @@ describe("IModelApp (#integration)", () => {
     authorizedRequestContext.useContextForRpc = true;
     actualAuthorizedRequestContext = await TestRpcInterface.getClient().reportAuthorizedRequestContext();
     assert.isFalse(authorizedRequestContext.useContextForRpc);
-    actualAccessTokenStr = actualAuthorizedRequestContext.accessToken.tokenString;
+    actualAccessTokenStr = actualAuthorizedRequestContext.accessToken;
     assert.equal(actualAccessTokenStr, expectedAccessTokenStr);
     assert.equal(actualAuthorizedRequestContext.applicationId, IModelApp.applicationId);
     assert.equal(actualAuthorizedRequestContext.sessionId, IModelApp.sessionId);
     assert.equal(actualAuthorizedRequestContext.activityId, activityId, "The activityId setup wasn't used by the RPC operation");
 
     actualAuthorizedRequestContext = await TestRpcInterface.getClient().reportAuthorizedRequestContext();
-    actualAccessTokenStr = actualAuthorizedRequestContext.accessToken.tokenString;
+    actualAccessTokenStr = actualAuthorizedRequestContext.accessToken;
     assert.equal(actualAccessTokenStr, expectedAccessTokenStr);
     assert.equal(actualAuthorizedRequestContext.applicationId, IModelApp.applicationId);
     assert.equal(actualAuthorizedRequestContext.sessionId, IModelApp.sessionId);

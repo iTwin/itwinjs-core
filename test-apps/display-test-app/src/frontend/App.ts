@@ -190,7 +190,7 @@ export class DisplayTestApp {
   public static get surface() { return this._surface!; }
   public static set surface(surface: Surface) { this._surface = surface; }
 
-  public static async startup(configuration: DtaConfiguration, renderSys: RenderSystem.Options): Promise<void> {
+  public static async startup(renderSys: RenderSystem.Options): Promise<void> {
     const opts = {
       iModelApp: {
         accuSnap: new DisplayTestAppAccuSnap(),
@@ -205,18 +205,6 @@ export class DisplayTestApp {
           IModelTileRpcInterface,
           SnapshotIModelRpcInterface,
         ],
-      },
-      webViewerApp: {
-        rpcParams: {
-          uriPrefix: configuration.customOrchestratorUri || "http://localhost:3001",
-          info: { title: "DisplayTestApp", version: "v1.0" },
-        },
-        authConfig: {
-          clientId: "imodeljs-spa-test",
-          redirectUri: "http://localhost:3000/signin-callback",
-          scope: "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party imodel-extension-service-api imodeljs-router",
-          responseType: "code",
-        },
       },
       localhostIpcApp: {
         socketPort: 3002,

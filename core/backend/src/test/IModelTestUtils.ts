@@ -21,7 +21,7 @@ import {
   RequestNewBriefcaseProps, RpcConfiguration, RpcManager, RpcPendingResponse, SkyBoxImageType, SubCategoryAppearance, SubCategoryOverride, SyncMode,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
-import { AccessTokenProps, AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
 import { TestUserCredentials, TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { BackendLoggerCategory as BackendLoggerCategory } from "../BackendLoggerCategory";
 import { CheckpointProps, V1CheckpointManager } from "../CheckpointManager";
@@ -160,11 +160,7 @@ export class IModelTestUtils {
      */
   public static async getUserContext(user: TestUserType): Promise<AuthorizedClientRequestContext> {
     if (HubMock.isValid) {
-      const props: AccessTokenProps = {
-        tokenString: "bogus",
-        expiresAt: new Date(Date.now() + 60 * 60 * 100).toJSON(), /* 1 hour from now */
-      };
-      return new AuthorizedClientRequestContext(props.tokenString);
+      return new AuthorizedClientRequestContext("bogusTokenString");
     }
 
     let credentials: TestUserCredentials;

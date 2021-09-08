@@ -195,7 +195,6 @@ export async function login(userCredentials?: TestUserCredentials): Promise<Acce
   const authorizationClient = getCloudEnv().getAuthorizationClient(userCredentials);
   const requestContext = new ClientRequestContext();
 
-  // await authorizationClient.signIn(requestContext);
   return authorizationClient.getAccessToken(requestContext);
 }
 

@@ -8,23 +8,22 @@ import * as ReactDOM from "react-dom";
 import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
-import { ClientRequestContext, Id64String, Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
+import { Id64String, Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
-import { BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
+import { IModelVersion, RpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
 import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import {
   AccuSnap, AuthorizedFrontendRequestContext, BriefcaseConnection, ExternalServerExtensionLoader, IModelApp, IModelConnection,
   LocalUnitFormatProvider, NativeApp, NativeAppLogger, NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState,
-  WebViewerAppOpts,
 } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { MarkupApp } from "@bentley/imodeljs-markup";
-import { AccessTokenString, ProgressInfo, UrlDiscoveryClient } from "@bentley/itwin-client";
+import { AccessTokenString, ProgressInfo } from "@bentley/itwin-client";
 // To test map-layer extension comment out the following and ensure ui-test-app\build\imjs_extensions contains map-layers, if not see Readme.md in map-layers package.
 import { MapLayersUI } from "@bentley/map-layers";
 import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
@@ -167,7 +166,7 @@ export class SampleAppIModelApp {
     return SampleAppIModelApp._UserUiSettingsStorage;
   }
 
-  public static async startup(opts: WebViewerAppOpts & NativeAppOpts): Promise<void> {
+  public static async startup(opts: NativeAppOpts): Promise<void> {
     if (ProcessDetector.isElectronAppFrontend) {
       await ElectronApp.startup(opts);
       NativeAppLogger.initialize();
@@ -175,8 +174,6 @@ export class SampleAppIModelApp {
       await IOSApp.startup(opts);
     } else if (ProcessDetector.isAndroidAppFrontend)
       await AndroidApp.startup(opts);
-    // else
-    //   await WebViewerApp.startup(opts);
 
     window.onerror = function (error) {
       // eslint-disable-next-line no-console
@@ -681,17 +678,7 @@ async function main() {
   SampleAppIModelApp.testAppConfiguration.useLocalSettings = SampleAppIModelApp.isEnvVarOn("IMJS_TESTAPP_USE_LOCAL_SETTINGS");
   Logger.logInfo("Configuration", JSON.stringify(SampleAppIModelApp.testAppConfiguration)); // eslint-disable-line no-console
 
-  let rpcParams: BentleyCloudRpcParams;
-  if (process.env.IMJS_GP_BACKEND) {
-    const urlClient = new UrlDiscoveryClient();
-    const requestContext = new ClientRequestContext();
-    const orchestratorUrl = await urlClient.discoverUrl(requestContext, "iModelJsOrchestrator.K8S", undefined);
-    rpcParams = { info: { title: "general-purpose-imodeljs-backend", version: "v2.0" }, uriPrefix: orchestratorUrl };
-  } else {
-    rpcParams = { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
-  }
-
-  const opts: WebViewerAppOpts & NativeAppOpts = {
+  const opts: NativeAppOpts = {
     iModelApp: {
       accuSnap: new SampleAppAccuSnap(),
       toolAdmin: new FrameworkToolAdmin(),
@@ -701,15 +688,6 @@ async function main() {
       viewManager: new AppViewManager(true),  // Favorite Properties Support
       renderSys: { displaySolarShadows: true },
       rpcInterfaces: getSupportedRpcs(),
-    },
-    webViewerApp: {
-      rpcParams,
-      authConfig: {
-        clientId: "imodeljs-spa-test",
-        redirectUri: "http://localhost:3000/signin-callback",
-        scope: baseOidcScopes.concat("imodeljs-router").join(" "),
-        responseType: "code",
-      },
     },
     nativeApp: {
       authConfig: {

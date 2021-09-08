@@ -7,13 +7,13 @@
  */
 
 import { ClientRequestContext, ClientRequestContextProps, Guid, GuidString, SessionProps } from "@bentley/bentleyjs-core";
-import { AccessTokenProps, AccessTokenString } from "./Token";
+import { AccessTokenString } from "./Token";
 
 /** The properties of AuthorizedSession.
  * @beta
  */
 export interface AuthorizedSessionProps extends SessionProps {
-  accessTokenProps: AccessTokenProps;
+  accessToken: AccessTokenString;
 }
 
 /** @beta */
@@ -25,7 +25,7 @@ export interface AuthorizedSession extends SessionProps {
  * @beta
  */
 export interface AuthorizedClientRequestContextProps extends ClientRequestContextProps {
-  accessToken: AccessTokenProps;
+  accessToken: AccessTokenString;
 }
 
 /** Provides generic context for a server application to get details of a particular request that originated at the client.
@@ -56,7 +56,7 @@ export class AuthorizedClientRequestContext extends ClientRequestContext {
   }
   /** @internal */
   public static override fromJSON(json: AuthorizedClientRequestContextProps): AuthorizedClientRequestContext {
-    return new AuthorizedClientRequestContext(json.accessToken.tokenString, json.activityId, json.applicationId, json.applicationVersion, json.sessionId);
+    return new AuthorizedClientRequestContext(json.accessToken, json.activityId, json.applicationId, json.applicationVersion, json.sessionId);
 
   }
 }
