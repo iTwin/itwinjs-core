@@ -15,6 +15,7 @@
 
 .components-virtualized-property-grid {
   user-select: none;
+  padding: 0px 3px 3px 3px;
 
   @include small-itwinui-expandable-block;
 }
@@ -46,8 +47,8 @@
 
     &:not(.components--selected) {
       &:hover {
-        // Highlight the whole row in expandable block
-        margin: 0 -12px;
+        // Highlight the whole row of inner-most expandable block
+        margin: 0 -4px;
         // Compensate the negative margin by adding padding
         padding: 0 12px;
 
@@ -57,8 +58,8 @@
   }
 
   .components--selected {
-    // Highlight the whole row in expandable block
-    margin: 0 -12px;
+    // Highlight the whole row of inner-most expandable block
+    margin: 0 -4px;
     // Compensate the negative margin by adding padding (minus one for border)
     padding: 0px 11px;
 
@@ -82,6 +83,10 @@
 
 .virtualized-grid-node-custom-category {
   padding-top: 4px;
+
+  .iui-expandable-content > div {
+    padding: 0 4px 4px 4px;
+  }
 }
 
 .virtualized-grid-node-content {

@@ -11,11 +11,11 @@ $text-font-color: $buic-text-color;
 .components-property-record--horizontal {
   height: 100%;
   display: grid;
+  padding: 0 8px;
 
   .components-property-record-label {
     font-size: $iui-font-size-small;
     color: $buic-foreground-muted;
-    margin-right: 5px;
   }
 
   .components-property-record-value {
@@ -28,23 +28,19 @@ $text-font-color: $buic-text-color;
 
 .components-property-record--vertical {
   height: 100%;
+  padding: 0 8px;
   display: grid;
+  align-content: center;
 
   .components-property-record-label {
     font-size: $iui-font-size-small;
     color: $buic-foreground-muted;
-    margin: 0 9px;
-    padding-top: 5px;
-    padding-bottom: 0px;
   }
 
   .components-property-record-value {
-    min-height: 24px;
+    min-height: 22px;
     font-size: $text-font-size;
     color: $text-font-color;
-    margin: 0 9px;
-    padding-top: 0px;
-    padding-bottom: 3px;
   }
 }
 
