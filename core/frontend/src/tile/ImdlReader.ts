@@ -127,7 +127,6 @@ interface ImdlAreaPattern {
   readonly orgTransform: TransformProps;
   /** Lookup key in ImdlReader._bufferViews. */
   readonly xyOffsets: string;
-  readonly bytesPerOffset: 1 | 2 | 4;
   readonly featureId: number;
   readonly localToWorld: TransformProps;
   readonly worldToModel: TransformProps;
@@ -480,8 +479,7 @@ export class ImdlReader extends GltfReader {
       return undefined;
 
     const pattern = this._system.createAreaPattern({
-      bytesPerOffset: json.bytesPerOffset,
-      xyOffsets,
+      xyOffsets: new Float32Array(xyOffsets.buffer, xyOffsets.byteOffset, xyOffsets.byteLength / 4),
       featureId: json.featureId,
       orgTransform: Transform.fromJSON(json.orgTransform),
       scale: json.scale,
