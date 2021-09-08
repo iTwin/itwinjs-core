@@ -266,6 +266,9 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
       applicationName: "display-test-app",
     },
     mobileHost: hostOpts?.mobileHost,
+    localhostIpcHost: {
+      noServer: true,
+    },
   };
 
   /** register the implementation of our RPCs. */

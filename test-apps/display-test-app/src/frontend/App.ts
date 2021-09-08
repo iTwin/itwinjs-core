@@ -12,7 +12,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import {
-  AccuDrawHintBuilder,   AccuDrawShortcuts, AccuSnap, ExternalServerExtensionLoader, IModelApp, IpcApp, LocalhostIpcApp, RenderSystem,
+  AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, ExternalServerExtensionLoader, IModelApp, IpcApp, LocalhostIpcApp, RenderSystem,
   SelectionTool, SnapMode, TileAdmin, Tool, ToolAdmin,
 } from "@bentley/imodeljs-frontend";
 import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
@@ -191,6 +191,10 @@ export class DisplayTestApp {
   public static set surface(surface: Surface) { this._surface = surface; }
 
   public static async startup(configuration: DtaConfiguration, renderSys: RenderSystem.Options): Promise<void> {
+    const socketUrl = new URL(configuration.customOrchestratorUri || "http://localhost:3001");
+    socketUrl.protocol = "ws";
+    socketUrl.pathname = [...socketUrl.pathname.split("/"), "ipc"].filter((v) => v).join("/");
+
     const opts = {
       iModelApp: {
         accuSnap: new DisplayTestAppAccuSnap(),
@@ -219,7 +223,7 @@ export class DisplayTestApp {
         },
       },
       localhostIpcApp: {
-        socketPort: 3002,
+        socketPath: socketUrl.toString(),
       },
     };
 

@@ -19,7 +19,7 @@ export interface LocalhostIpcHostOpts {
 
 class LocalTransport extends IpcWebSocketTransport {
   private _server: ws.Server | undefined;
-  private _connection: ws | undefined;
+  private _connections: Set<ws> = new Set();
 
   public constructor(opts: LocalhostIpcHostOpts) {
     super();
@@ -31,16 +31,20 @@ class LocalTransport extends IpcWebSocketTransport {
   }
 
   public send(message: IpcWebSocketMessage): void {
-    this._connection!.send(JSON.stringify(message));
+    this._connections.forEach((connection) => connection.send(JSON.stringify(message)));
   }
 
   public connect(connection: ws) {
-    this._connection = connection;
+    this._connections.add(connection);
 
-    this._connection.on("message", (data) => {
+    connection.on("message", (data) => {
       for (const listener of IpcWebSocket.receivers) {
         listener({} as Event, JSON.parse(data as string));
       }
+    });
+
+    connection.on("close", () => {
+      this._connections.delete(connection);
     });
   }
 }
