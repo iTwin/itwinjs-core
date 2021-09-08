@@ -107,7 +107,6 @@ export * from "./presentation-common/rules/content/SelectedNodeInstancesSpecific
 export * from "./presentation-common/rules/content/DefaultPropertyCategoryOverride";
 export * from "./presentation-common/rules/content/modifiers/CalculatedPropertiesSpecification";
 export * from "./presentation-common/rules/content/modifiers/ContentModifier";
-export * from "./presentation-common/rules/content/modifiers/PropertiesDisplaySpecification";
 export * from "./presentation-common/rules/content/modifiers/PropertyCategorySpecification";
 export * from "./presentation-common/rules/content/modifiers/PropertyEditorsSpecification";
 export * from "./presentation-common/rules/content/modifiers/CustomRendererSpecification";
