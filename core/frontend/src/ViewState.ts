@@ -1686,7 +1686,7 @@ export abstract class ViewState3d extends ViewState {
       newExtents = pArgs.newExtents;
     } else {
       const oArgs = args as LookAtOrthoArgs;
-      zVec = oArgs.viewDirection.clone();
+      zVec = oArgs.viewDirection.negate();
       if (!zVec.normalizeInPlace())
         return ViewStatus.InvalidDirection;
       focusDist = this.getFocusDistance();
