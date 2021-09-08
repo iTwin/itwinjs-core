@@ -37,6 +37,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
   private _configuration: AuthorizationServiceConfiguration | undefined;
   private _tokenResponse: TokenResponse | undefined;
   private _tokenStore?: ElectronTokenStore;
+  private _expiresAt?: Date;
   public get tokenStore() { return this._tokenStore!; }
 
   public constructor(config?: NativeAppAuthorizationConfiguration) {
@@ -215,24 +216,6 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
     });
   }
 
-  private async getUserProfile(tokenResponse: TokenResponse): Promise<any | undefined> {
-    const options: RequestOptions = {
-      method: "GET",
-      headers: {
-        authorization: `Bearer ${tokenResponse.accessToken}`,
-      },
-      accept: "application/json",
-    };
-
-    const httpContext = ClientRequestContext.fromJSON(IModelHost.session);
-    const response = await httpRequest(httpContext, this._configuration!.userInfoEndpoint!, options);
-    return response?.body;
-  }
-
-  private async createAccessTokenFromResponse(tokenResponse: TokenResponse): Promise<AccessToken> {
-    return tokenResponse.accessToken;
-  }
-
   private async clearTokenResponse() {
     this._tokenResponse = undefined;
     await this.tokenStore.delete();
@@ -240,11 +223,27 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
   }
 
   private async setTokenResponse(tokenResponse: TokenResponse): Promise<AccessToken> {
-    const accessToken = await this.createAccessTokenFromResponse(tokenResponse);
+    const accessToken = tokenResponse.accessToken;
     this._tokenResponse = tokenResponse;
+    const expiresAtMilliseconds = (tokenResponse.issuedAt + (tokenResponse.expiresIn ?? 0)) * 1000;
+    this._expiresAt = new Date(expiresAtMilliseconds);
+
     await this.tokenStore.save(this._tokenResponse);
     this.setAccessToken(accessToken);
     return accessToken;
+  }
+
+  private get _hasExpired(): boolean {
+    if (!this._expiresAt)
+      return false;
+
+    return this._expiresAt.getTime() - Date.now() <= 1 * 60 * 1000; // Consider 1 minute before expiry as expired
+  }
+
+  public override async getAccessToken(): Promise<AccessToken | undefined> {
+    if (this._hasExpired || !this._accessToken)
+      this.setAccessToken(await this.refreshToken());
+    return this._accessToken;
   }
 
   private async refreshAccessToken(refreshToken: string): Promise<AccessToken> {

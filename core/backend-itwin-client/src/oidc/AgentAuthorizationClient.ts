@@ -60,7 +60,7 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
 
     this._accessToken = tokenSet.access_token;
     if (tokenSet.expires_at)
-      this._expiresAt = new Date(tokenSet.expires_at); // TODO: Check if this is in proper format
+      this._expiresAt = new Date(tokenSet.expires_at * 1000);
     return this._accessToken;
   }
 
