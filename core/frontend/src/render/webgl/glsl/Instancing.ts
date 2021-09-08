@@ -22,11 +22,26 @@ float extractInstanceBit(uint flag) { return extractNthBit(a_instanceOverrides.r
 `;
 
 const computeInstancedModelMatrixRTC = `
-  g_modelMatrixRTC = mat4(
-    a_instanceMatrixRow0.x, a_instanceMatrixRow1.x, a_instanceMatrixRow2.x, 0.0,
-    a_instanceMatrixRow0.y, a_instanceMatrixRow1.y, a_instanceMatrixRow2.y, 0.0,
-    a_instanceMatrixRow0.z, a_instanceMatrixRow1.z, a_instanceMatrixRow2.z, 0.0,
-    a_instanceMatrixRow0.w, a_instanceMatrixRow1.w, a_instanceMatrixRow2.w, 1.0);
+  if (g_isAreaPattern) {
+    vec2 spacing = u_patternParams.yz;
+    float scale = u_patternParams.w;
+
+    float x = u_patternOrigin.x + a_patternX * spacing.x;
+    float y = u_patternOrigin.y + a_patternY * spacing.y;
+    vec4 translation = vec4(x / scale, y / scale, 0.0, 0.0);
+    mat4 symbolTrans = u_patOrg;
+    symbolTrans[3] = symbolTrans * translation;
+
+    mat4 symbolToLocal = symbolTrans * u_patSymbolToLocal;
+    mat4 symbolToWorld = u_patLocalToWorld * symbolToLocal;
+    g_modelMatrixRTC = u_patWorldToModel * symbolToWorld;
+  } else {
+    g_modelMatrixRTC = mat4(
+      a_instanceMatrixRow0.x, a_instanceMatrixRow1.x, a_instanceMatrixRow2.x, 0.0,
+      a_instanceMatrixRow0.y, a_instanceMatrixRow1.y, a_instanceMatrixRow2.y, 0.0,
+      a_instanceMatrixRow0.z, a_instanceMatrixRow1.z, a_instanceMatrixRow2.z, 0.0,
+      a_instanceMatrixRow0.w, a_instanceMatrixRow1.w, a_instanceMatrixRow2.w, 1.0);
+  }
 `;
 
 function setMatrix(uniform: UniformHandle, matrix: Matrix4 | undefined): void {
@@ -50,6 +65,14 @@ function addPatternTransforms(vert: VertexShaderBuilder): void {
   vert.addUniform("u_patSymbolToLocal", VariableType.Mat4, (prog) =>
     prog.addGraphicUniform("u_patSymbolToLocal", (uniform, params) =>
       setMatrix(uniform, params.geometry.asInstanced?.patternTransforms?.symbolToLocal)));
+
+  vert.addUniform("u_patternOrigin", VariableType.Vec2, (prog) => {
+    prog.addGraphicUniform("u_patternOrigin", (uniform, params) => {
+      const origin = params.geometry.asInstanced?.patternTransforms?.origin;
+      if (origin)
+        uniform.setUniform2fv(origin);
+    });
+  });
 }
 
 /** @internal */

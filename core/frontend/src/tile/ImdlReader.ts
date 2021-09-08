@@ -125,6 +125,7 @@ interface ImdlAreaPattern {
   readonly scale: number;
   readonly spacing: XYProps;
   readonly orgTransform: TransformProps;
+  readonly origin: XYProps;
   /** Lookup key in ImdlReader._bufferViews. */
   readonly xyOffsets: string;
   readonly featureId: number;
@@ -482,6 +483,7 @@ export class ImdlReader extends GltfReader {
       xyOffsets: new Float32Array(xyOffsets.buffer, xyOffsets.byteOffset, xyOffsets.byteLength / 4),
       featureId: json.featureId,
       orgTransform: Transform.fromJSON(json.orgTransform),
+      origin: Point2d.fromJSON(json.origin),
       scale: json.scale,
       spacing: Point2d.fromJSON(json.spacing),
       localToWorld: Transform.fromJSON(json.localToWorld),
