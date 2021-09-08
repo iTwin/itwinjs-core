@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-common",
+      "comment": "Added WhiteOnWhiteReversalSettings to control whether background color must be white for white-on-white reversal to apply.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common"
+}

@@ -2439,6 +2439,20 @@ export abstract class ViewportToggleTool extends Tool {
     protected abstract toggle(vp: Viewport, enable?: boolean): void;
 }
 
+// @beta
+export class WoWIgnoreBackgroundTool extends DisplayStyleTool {
+    // (undocumented)
+    execute(vp: Viewport): boolean;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parse(args: string[]): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
 
 // (No @packageDocumentation comment for this package)
 

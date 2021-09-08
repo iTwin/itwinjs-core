@@ -20,7 +20,9 @@ import { ChangeCameraTool, ChangeEmphasisSettingsTool, ChangeFlashSettingsTool, 
 import { AnimationIntervalTool } from "./tools/AnimationIntervalTool";
 import { ChangeUnitsTool } from "./tools/ChangeUnitsTool";
 import { ClipColorTool, TestClipStyleTool, ToggleSectionCutTool } from "./tools/ClipTools";
-import { ApplyRenderingStyleTool, ChangeViewFlagsTool, OverrideSubCategoryTool, SaveRenderingStyleTool, ToggleSkyboxTool } from "./tools/DisplayStyleTools";
+import {
+  ApplyRenderingStyleTool, ChangeViewFlagsTool, OverrideSubCategoryTool, SaveRenderingStyleTool, ToggleSkyboxTool, WoWIgnoreBackgroundTool,
+} from "./tools/DisplayStyleTools";
 import {
   ClearEmphasizedElementsTool, ClearIsolatedElementsTool, EmphasizeSelectedElementsTool, EmphasizeVisibleElementsTool, IsolateSelectedElementsTool,
 } from "./tools/EmphasizeElementsTool";
@@ -211,6 +213,7 @@ export class FrontendDevTools {
       MaskBackgroundMapByElementTool,
       MaskBackgroundMapByExcludedElementTool,
       UnmaskMapTool,
+      WoWIgnoreBackgroundTool,
     ];
 
     for (const tool of tools)
