@@ -3,17 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { ActionButton, BadgeType, CommonToolbarItem, SpecialKey, ToolbarItemUtilities } from "@bentley/ui-abstract";
+import { useTargeted } from "@bentley/ui-core";
+import { fireEvent, render } from "@testing-library/react";
 import { expect } from "chai";
 import React from "react";
 import * as sinon from "sinon";
-import { ActionButton, BadgeType, CommonToolbarItem, SpecialKey, ToolbarItemUtilities } from "@bentley/ui-abstract";
-import { fireEvent, render } from "@testing-library/react";
-import * as useTargetedModule from "@bentley/ui-core/lib/ui-core/utils/hooks/useTargeted";
-import { CustomToolbarItem, ToolbarOpacitySetting, ToolbarPanelAlignment, ToolbarPanelAlignmentHelpers } from "../../ui-components/toolbar/ToolbarWithOverflow";
-import { Toolbar } from "../../ui-components/toolbar/Toolbar";
-import { Direction } from "../../ui-components/toolbar/utilities/Direction";
 import { BackArrow } from "../../ui-components/toolbar/groupPanel/BackArrow";
 import { GroupTool } from "../../ui-components/toolbar/groupPanel/tool/Tool";
+import { Toolbar } from "../../ui-components/toolbar/Toolbar";
+import { CustomToolbarItem, ToolbarOpacitySetting, ToolbarPanelAlignment, ToolbarPanelAlignmentHelpers } from "../../ui-components/toolbar/ToolbarWithOverflow";
+import { Direction } from "../../ui-components/toolbar/utilities/Direction";
 
 // cSpell:ignore testid
 
@@ -223,7 +223,7 @@ describe("<Toolbar (No Overflow) />", () => {
 
   describe("<BackArrow />", () => {
     it("renders targeted correctly", () => {
-      sinon.stub(useTargetedModule, "useTargeted").returns(true);
+      sinon.stub(useTargeted as any, "useTargeted").returns(true);
       const renderedComponent = render(<BackArrow />);
       expect(renderedComponent.container.querySelector(".components-targeted")).to.not.be.null;
     });
@@ -238,7 +238,7 @@ describe("<Toolbar (No Overflow) />", () => {
     });
 
     it("renders targeted correctly", () => {
-      sinon.stub(useTargetedModule, "useTargeted").returns(true);
+      sinon.stub(useTargeted as any, "useTargeted").returns(true);
       const renderedComponent = render(<GroupTool item={item} />);
       expect(renderedComponent.container.querySelector(".components-targeted")).to.not.be.null;
     });

@@ -1,17 +1,12 @@
 {
   "extends": "./node_modules/@bentley/build-tools/tsconfig-base.json",
   "compilerOptions": {
-    "target": "es2017",
-    "skipLibCheck": true,
-    "module": "commonjs",
-    "outDir": "./lib",
     "jsx": "react",
     "types": [
       "sinon-chai",
       "chai-as-promised",
       "mocha",
       "chai-jest-snapshot",
-      "@bentley/react-scripts"
     ]
   },
   "include": [
@@ -19,7 +14,9 @@
     "src/test/ReactInstance.js"
   ],
   "exclude": [
-    "lib",
+    "esm",
+    "cjs",
+    "types",
     "node_modules"
   ]
 }

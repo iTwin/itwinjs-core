@@ -2,12 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import * as sinon from "sinon";
+import { Rectangle, ResizeObserver } from "@bentley/ui-core";
 import { render } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
-import { Rectangle } from "@bentley/ui-core";
-import * as ResizeObserverModule from "@bentley/ui-core/lib/ui-core/utils/hooks/ResizeObserverPolyfill";
+import * as React from "react";
+import * as sinon from "sinon";
 import { createNineZoneState, handleToCursorType, MeasureContext, NineZone, NineZoneDispatch, NineZoneLabels, NineZoneLabelsContext, sideToCursorType, useLabel } from "../../ui-ninezone";
 import { NineZoneProvider } from "../Providers";
 import { createBoundingClientRect, createDOMRect, flushAsyncOperations, ResizeObserverMock } from "../Utils";
@@ -53,7 +52,7 @@ describe("<NineZone />", () => {
   it("should dispatch RESIZE", async () => {
     let resizeObserver: ResizeObserverMock | undefined;
     let measurer: Element | undefined;
-    sinon.stub(ResizeObserverModule, "ResizeObserver").callsFake((callback) => new ResizeObserverMock(callback));
+    sinon.stub(ResizeObserver as any, "ResizeObserver").callsFake((callback) => new ResizeObserverMock(callback));
     sinon.stub(ResizeObserverMock.prototype, "observe").callsFake(function (this: ResizeObserverMock, element: Element) {
       resizeObserver = this;
       measurer = element;
@@ -85,7 +84,7 @@ describe("<NineZone />", () => {
   it("should not dispatch RESIZE if size did not change", async () => {
     let resizeObserver: ResizeObserverMock | undefined;
     let measurer: Element | undefined;
-    sinon.stub(ResizeObserverModule, "ResizeObserver").callsFake((callback) => new ResizeObserverMock(callback));
+    sinon.stub(ResizeObserver as any, "ResizeObserver").callsFake((callback) => new ResizeObserverMock(callback));
     sinon.stub(ResizeObserverMock.prototype, "observe").callsFake(function (this: ResizeObserverMock, element: Element) {
       resizeObserver = this;
       measurer = element;

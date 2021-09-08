@@ -3,6 +3,7 @@
   "version": "3.0.0-dev.49",
   "description": "UI framework",
   "main": "cjs/ui-framework.js",
+  "module": "esm/ui-framework.js",
   "typings": "types/ui-framework",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
@@ -12,16 +13,19 @@
   },
   "scripts": {
     "compile": "npm run build",
-    "copy:assets": "cpx \"./src/**/*.{*css,json,svg}\" \"./lib\" && cpx \"./public/**/*\" \"./lib/public\"",
-    "pseudolocalize": "betools pseudolocalize --englishDir ./public/locales/en --out ./lib/public/locales/en-PSEUDO",
-    "build": "npm run copy:assets && npm run pseudolocalize && tsc 1>&2",
+    "copy:cjs": "cpx \"./src/**/*.{*css,json,svg}\" \"./cjs\" && cpx \"./public/**/*\" \"./cjs/public\"",
+    "copy:esm": "cpx \"./src/**/*.{*css,json,svg}\" \"./esm\" && cpx \"./public/**/*\" \"./esm/public\"",
+    "pseudolocalize": "betools pseudolocalize --englishDir ./public/locales/en --out ./public/locales/en-PSEUDO",
+    "build": "npm run pseudolocalize && npm run build:cjs && npm run build:esm",
+    "build:cjs": "tsc 1>&2 --outDir cjs && npm run copy:cjs",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir esm --declarationDir types && npm run copy:esm",
     "build:watch": "tsc --w",
-    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "clean": "rimraf cjs esm types .rush/temp/package-deps*.json",
     "cover": "nyc npm test",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-framework/file.json --tsIndexFile=./ui-framework.ts --onlyJson",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
     "extract-api": "betools extract-api --entry=ui-framework",
-    "test": "mocha --config ../.mocharc.json \"./lib/test/**/*.test.js\"",
+    "test": "mocha --config ../.mocharc.json \"./cjs/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
   },
   "keywords": [
@@ -78,7 +82,6 @@
     "@bentley/presentation-frontend": "workspace:*",
     "@bentley/presentation-testing": "workspace:*",
     "@bentley/product-settings-client": "workspace:*",
-    "@bentley/react-scripts": "4.0.3",
     "@bentley/telemetry-client": "workspace:*",
     "@bentley/ui-abstract": "workspace:*",
     "@bentley/ui-components": "workspace:*",
@@ -150,8 +153,7 @@
     "react-dnd": "^11.1.3",
     "react-dnd-html5-backend": "^11.1.3",
     "react-split-pane": "0.1.92",
-    "rxjs": "^6.6.2",
-    "svg-sprite-loader": "4.2.1"
+    "rxjs": "^6.6.2"
   },
   "nyc": {
     "extends": "./node_modules/@bentley/build-tools/.nycrc",

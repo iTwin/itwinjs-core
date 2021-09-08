@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Timer } from "@bentley/ui-core";
 import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import * as timerModule from "@bentley/ui-core/lib/ui-core/utils/Timer";
 import { Toast } from "../../../ui-ninezone";
 import { createBoundingClientRect, mount } from "../../Utils";
 
@@ -20,9 +20,9 @@ describe("<Toast />", () => {
   });
 
   it("should stop the timer when unmounting", () => {
-    const timer = new timerModule.Timer(1000);
+    const timer = new Timer(1000);
     const stopSpy = sinon.spy(timer, "stop");
-    sinon.stub(timerModule, "Timer").returns(timer);
+    sinon.stub(Timer as any, "Timer").returns(timer);
 
     const sut = mount(<Toast />);
     sut.unmount();
