@@ -24,8 +24,11 @@ export interface IModelData {
   useName: boolean; // Defines whether or not to use the name of the iModel
   id?: string; // The iModel Id - This is not required
   name?: string; // The name is not required to actually get the iModel, only the id.
+  // SWB
   useProjectName: boolean;
+  // SWB
   projectId?: string;
+  // SWB
   projectName?: string;
   changeSetId?: string;
 }
@@ -127,6 +130,7 @@ export class Settings {
       this.gprid = process.env.GPRID;
 
     //  Parse the iModel variables
+    // SWB Should .env vars be renamed?
     if (!process.env.IMODEL_PROJECTID && !process.env.IMODEL_PROJECTNAME)
       throw new Error("Missing the 'IMODEL_PROJECTID' or 'IMODEL_PROJECTNAME' setting.");
 
@@ -138,8 +142,11 @@ export class Settings {
       useName: !process.env.IMODEL_IMODELID,
       id: process.env.IMODEL_IMODELID,
       name: process.env.IMODEL_IMODELNAME,
+      // SWB
       useProjectName: !process.env.IMODEL_PROJECTID,
+      // SWB
       projectId: process.env.IMODEL_PROJECTID,
+      // SWB
       projectName: process.env.IMODEL_PROJECTNAME,
 
       // Neither of the next 2 are needed but since they'll be undefined anyway, just always set it.
@@ -148,6 +155,7 @@ export class Settings {
 
     // If write rpc interface is defined expect a separate iModel to be used.
     if (this.runiModelWriteRpcTests) {
+      // SWB Change .env var names?
       if (!process.env.IMODEL_WRITE_PROJECTID && !process.env.IMODEL_WRITE_PROJECTNAME)
         throw new Error("Missing the 'IMODEL_WRITE_PROJECTID' or 'IMODEL_WRITE_PROJECTNAME' setting.");
 
@@ -158,8 +166,11 @@ export class Settings {
         useName: !process.env.IMODEL_WRITE_IMODELID,
         id: process.env.IMODEL_WRITE_IMODELID,
         name: process.env.IMODEL_WRITE_IMODELNAME,
+        // SWB
         useProjectName: !process.env.IMODEL_WRITE_PROJECTID,
+        // SWB
         projectId: process.env.IMODEL_WRITE_PROJECTID,
+        // SWB
         projectName: process.env.IMODEL_WRITE_PROJECTNAME,
       });
     }

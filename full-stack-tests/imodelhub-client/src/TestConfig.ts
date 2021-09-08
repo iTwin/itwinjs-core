@@ -34,7 +34,9 @@ function isOfflineSet(): boolean {
  */
 export class TestConfig {
   /** Name of project used by most tests */
+  // SWB
   public static readonly projectName: string = process.env.IMJS_TEST_PROJECT_NAME ?? "iModelJsIntegrationTest";
+  // SWB
   public static readonly assetName: string = process.env.IMJS_TEST_ASSET_NAME ?? "iModelJsAssetTest";
   public static readonly enableMocks: boolean = isOfflineSet();
   public static readonly enableIModelBank: boolean = process.env.IMJS_TEST_IMODEL_BANK !== undefined && !!JSON.parse(process.env.IMJS_TEST_IMODEL_BANK);

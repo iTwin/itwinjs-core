@@ -6,6 +6,7 @@
 import { TestUserCredentials } from "@bentley/oidc-signin-tool";
 
 export interface TestProjectProps {
+  // SWB
   projectName: string;
   iModelBank?: {
     url: string;

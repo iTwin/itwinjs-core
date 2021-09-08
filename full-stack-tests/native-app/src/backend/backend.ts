@@ -59,6 +59,7 @@ class TestIpcHandler extends IpcHandler implements TestIpcInterface {
     // first, perform silent login
     NativeHost.authorization.setAccessToken(await TestUtility.getAccessToken(user));
 
+    // SWB
     const projectName = process.env.IMJS_TEST_PROJECT_NAME ?? "";
 
     if (CloudEnv.cloudEnv.isIModelHub) {

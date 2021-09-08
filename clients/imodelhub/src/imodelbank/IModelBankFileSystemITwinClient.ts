@@ -29,6 +29,7 @@ export class IModelBankFileSystemITwinClient implements ITwinManagerClient {
   constructor(public baseUri: string) {
   }
 
+  // SWB What does context mean here
   private async queryContextProps(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<IModelFileSystemContextProps[]> {
     requestContext.enter();
     const url: string = `${this.baseUri}/sv1.0/Repositories/Global--main/GlobalScope/Context`;

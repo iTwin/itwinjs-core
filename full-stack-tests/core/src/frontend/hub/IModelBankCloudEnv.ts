@@ -43,6 +43,7 @@ export class IModelBankCloudEnv implements IModelCloudEnvironment {
       }
     }
 
+    // SWB What does context mean here
     await this.iTwinMgr.createContext(requestContext, projectName);
   }
 

@@ -38,6 +38,7 @@ export class ExternalIModel {
   /** Finds project and imodel ids using their names */
   // SWB
   private async getIModelInfo(): Promise<{ projectId: string, imodelId: string }> {
+    // SWB
     const projectName = this.projectName;
     const imodelName = this.imodelName;
 

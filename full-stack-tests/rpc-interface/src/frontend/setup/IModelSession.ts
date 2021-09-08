@@ -33,6 +33,7 @@ export class IModelSession {
     let imodelId;
 
     // Turn the project name into an id
+    // SWB
     if (iModelData.useProjectName) {
       if (!iModelData.projectName)
         throw new Error(`The iModel has no project name, so it cannot get the project.`);

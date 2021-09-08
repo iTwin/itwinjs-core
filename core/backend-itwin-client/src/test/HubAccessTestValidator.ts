@@ -14,6 +14,7 @@ chai.should();
 export class HubAccessTestValidator {
   private static _singletonInstance: HubAccessTestValidator;
 
+  // SWB
   private constructor(private _testProjectName: string, private _testProjectId: string, private _testIModelName: string, private _testIModelId: string) {
   }
 
@@ -24,6 +25,7 @@ export class HubAccessTestValidator {
     const accessToken: AccessToken = await TestUtility.getAccessToken(TestUsers.regular);
     const requestContext = new AuthorizedClientRequestContext(accessToken);
 
+    // SWB
     const testProjectName = "iModelJsIntegrationTest";
     const testIModelName = "ReadOnlyTest";
     const testProjectId: string = await TestConfig.getITwinIdByName(requestContext, testProjectName);

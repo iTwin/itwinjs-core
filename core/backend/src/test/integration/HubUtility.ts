@@ -182,6 +182,7 @@ export class HubUtility {
   /** Download an IModel's seed files and change sets from the Hub.
    *  A standard hierarchy of folders is created below the supplied downloadDir
    */
+  // SWB
   public static async downloadIModelByName(requestContext: AuthorizedClientRequestContext, projectName: string, iModelName: string, downloadDir: string, reDownload: boolean): Promise<void> {
     // SWB
     const projectId = await HubUtility.getITwinIdByName(requestContext, projectName);
@@ -194,6 +195,7 @@ export class HubUtility {
   }
 
   /** Delete an IModel from the hub */
+  // SWB
   public static async deleteIModel(requestContext: AuthorizedClientRequestContext, projectName: string, iModelName: string): Promise<void> {
     // SWB
     const contextId = await HubUtility.getITwinIdByName(requestContext, projectName);
@@ -362,6 +364,7 @@ export class HubUtility {
   /** Upload an IModel's seed files and change sets to the hub
    * It's assumed that the uploadDir contains a standard hierarchy of seed files and change sets.
    */
+  // SWB
   public static async pushIModelAndChangeSets(requestContext: AuthorizedClientRequestContext, projectName: string, uploadDir: string, iModelName?: string, overwrite?: boolean): Promise<GuidString> {
     // SWB
     const projectId = await HubUtility.getITwinIdByName(requestContext, projectName);
@@ -459,6 +462,7 @@ export class HubUtility {
   /**
    * Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded
    */
+  // SWB
   public static async purgeAcquiredBriefcases(requestContext: AuthorizedClientRequestContext, projectName: string, iModelName: string, acquireThreshold: number = 16): Promise<void> {
     assert.isTrue(this.allowHubBriefcases || HubMock.isValid, "Must use HubMock for tests that modify iModels");
     // SWB

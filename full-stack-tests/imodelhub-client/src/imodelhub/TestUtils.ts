@@ -735,6 +735,7 @@ export function getMockSeedFilePath() {
   return path.join(dir, fs.readdirSync(dir).find((value) => value.endsWith(".bim"))!);
 }
 
+// SWB
 export async function createIModel(requestContext: AuthorizedClientRequestContext, name: string, contextId?: string, useUniqueName = true, deleteIfExists = false, fromSeedFile = false) {
   if (TestConfig.enableMocks)
     return;
