@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { AccessTokenString } from "@bentley/itwin-client";
+import { AccessToken } from "@bentley/itwin-client";
 
 /** Implements the user permission abstraction by creating a dummy AccessToken. Note that the corresponding IModelBank server must
  * be able to tolerate this dummy token.
  * @internal
  */
 export class IModelBankDummyAuthorizationClient implements FrontendAuthorizationClient {
-  private _token?: AccessTokenString;
+  private _token?: AccessToken;
 
   public constructor(private _userCredentials: any) {
   }
@@ -40,7 +40,7 @@ export class IModelBankDummyAuthorizationClient implements FrontendAuthorization
     this.onUserStateChanged.raiseEvent(this._token);
   }
 
-  public readonly onUserStateChanged = new BeEvent<(token: AccessTokenString | undefined) => void>();
+  public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
   public get isAuthorized(): boolean {
     return !!this._token;
   }
@@ -51,7 +51,7 @@ export class IModelBankDummyAuthorizationClient implements FrontendAuthorization
     return !!this._token;
   }
 
-  public async getAccessToken(_requestContext?: ClientRequestContext): Promise<AccessTokenString> {
+  public async getAccessToken(_requestContext?: ClientRequestContext): Promise<AccessToken> {
     if (!this._token) {
       throw new Error("User is not signed in.");
     }

@@ -5,16 +5,16 @@
 
 import { AuthStatus, BeEvent, BentleyError } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { AccessTokenString } from "@bentley/itwin-client";
+import { AccessToken } from "@bentley/itwin-client";
 
 /**
  * Basic FrontendAuthorizationClient to use with an already created access token.
  * @internal
  */
 export class TestFrontendAuthorizationClient implements FrontendAuthorizationClient {
-  private _activeToken?: AccessTokenString;
+  private _activeToken?: AccessToken;
 
-  constructor(private _accessToken?: AccessTokenString) {
+  constructor(private _accessToken?: AccessToken) {
     this._activeToken = this._accessToken;
     this.onUserStateChanged.raiseEvent(this._activeToken);
   }
@@ -41,11 +41,11 @@ export class TestFrontendAuthorizationClient implements FrontendAuthorizationCli
     this.onUserStateChanged.raiseEvent(this._activeToken);
   }
 
-  public async getAccessToken(): Promise<AccessTokenString> {
+  public async getAccessToken(): Promise<AccessToken> {
     if (!this._activeToken)
       throw new BentleyError(AuthStatus.Error, "Cannot get access token");
     return this._activeToken;
   }
 
-  public readonly onUserStateChanged = new BeEvent<(token: AccessTokenString | undefined) => void>();
+  public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
 }

@@ -9,7 +9,7 @@ import {
   ChangeSetCreatedEvent, GetEventOperationType, GlobalCheckpointCreatedEvent, GlobalCheckpointV2CreatedEvent, GlobalEventSAS, GlobalEventSubscription, GlobalEventType, HardiModelDeleteEvent, HubIModel,
   IModelClient, IModelCreatedEvent, IModelHubGlobalEvent, NamedVersionCreatedEvent, SoftiModelDeleteEvent,
 } from "@bentley/imodelhub-client";
-import { AccessTokenString, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool";
 import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
@@ -125,7 +125,7 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
   let serviceAccount1: TestUserCredentials;
 
   before(async () => {
-    const accessToken: AccessTokenString | undefined = await utils.login();
+    const accessToken: AccessToken | undefined = await utils.login();
     requestContext = new AuthorizedClientRequestContext(accessToken);
     projectId = await utils.getProjectId(requestContext);
 

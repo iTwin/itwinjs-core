@@ -23,7 +23,7 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { MarkupApp } from "@bentley/imodeljs-markup";
-import { AccessTokenString, ProgressInfo } from "@bentley/itwin-client";
+import { AccessToken, ProgressInfo } from "@bentley/itwin-client";
 // To test map-layer extension comment out the following and ensure ui-test-app\build\imjs_extensions contains map-layers, if not see Readme.md in map-layers package.
 import { MapLayersUI } from "@bentley/map-layers";
 import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
@@ -578,7 +578,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
     return authorized ? SampleAppIModelApp.showSignedIn() : SampleAppIModelApp.showSignedOut();
   };
 
-  private _onUserStateChanged = async (_accessToken: AccessTokenString | undefined) => {
+  private _onUserStateChanged = async (_accessToken: AccessToken | undefined) => {
     const authorized = !!IModelApp.authorizationClient;
     const uiSettingsStorage = SampleAppIModelApp.getUiSettingsStorage();
     await UiFramework.setUiSettingsStorage(uiSettingsStorage);

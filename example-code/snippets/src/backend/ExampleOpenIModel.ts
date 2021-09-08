@@ -5,12 +5,12 @@
 import { ClientRequestContext, OpenMode } from "@bentley/bentleyjs-core";
 import { BriefcaseDb, ConcurrencyControl } from "@bentley/imodeljs-backend";
 import { IModelError, IModelStatus, OpenBriefcaseProps } from "@bentley/imodeljs-common";
-import { AccessTokenString, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUserCredentials, TestUtility } from "@bentley/oidc-signin-tool";
 
 /* eslint-disable @typescript-eslint/no-var-requires */
 
-async function getUserAccessToken(userCredentials: TestUserCredentials): Promise<AccessTokenString | undefined> {
+async function getUserAccessToken(userCredentials: TestUserCredentials): Promise<AccessToken | undefined> {
   return TestUtility.getAccessToken(userCredentials);
 }
 
@@ -40,7 +40,7 @@ const cred = {
   password: process.env.IMJS_TEST_REGULAR_USER_PASSWORD ?? "",
 };
 
-getUserAccessToken(cred).then((_accessToken: AccessTokenString | undefined) => { // eslint-disable-line @typescript-eslint/no-floating-promises
+getUserAccessToken(cred).then((_accessToken: AccessToken | undefined) => { // eslint-disable-line @typescript-eslint/no-floating-promises
 });
 
 configureIModel();

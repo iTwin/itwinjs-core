@@ -6,7 +6,7 @@
 import * as chai from "chai";
 import * as path from "path";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessTokenString } from "@bentley/itwin-client";
+import { AccessToken } from "@bentley/itwin-client";
 import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "../oidc/AgentAuthorizationClient";
 import { DelegationAuthorizationClient, DelegationAuthorizationClientConfiguration } from "../oidc/DelegationAuthorizationClient";
 import { HubAccessTestValidator } from "./HubAccessTestValidator";
@@ -34,7 +34,7 @@ chai.should();
 describe("DelegationAuthorizationClient (#integration)", () => {
 
   let validator: HubAccessTestValidator;
-  let jwt: AccessTokenString | undefined;
+  let jwt: AccessToken | undefined;
   const requestContext = new ClientRequestContext();
 
   before(async () => {

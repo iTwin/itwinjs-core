@@ -7,12 +7,12 @@
  */
 
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessTokenString } from "./Token";
+import { AccessToken } from "./Token";
 
 /** Interface to provide authorization information
  * @beta
  */
 export interface AuthorizationClient {
   /** Get the AccessToken of the currently authorized user. The token is refreshed if necessary and possible. */
-  getAccessToken(requestContext?: ClientRequestContext): Promise<AccessTokenString | undefined>;
+  getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken | undefined>;
 }

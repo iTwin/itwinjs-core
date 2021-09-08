@@ -5,7 +5,7 @@
 
 import * as path from "path";
 import { registerBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
-import { AccessTokenString } from "@bentley/itwin-client";
+import { AccessToken } from "@bentley/itwin-client";
 import { TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from "../TestUsers";
 import { TestUtility } from "../TestUtility";
 import { getTokenCallbackName } from "./certaCommon";
@@ -44,12 +44,12 @@ loadEnv(path.join(process.cwd(), ".env"));
  *
  * If the oidcConfig param is provided, it will always be used over the default.
  */
-async function signin(user: TestUserCredentials, oidcConfig?: TestBrowserAuthorizationClientConfiguration): Promise<AccessTokenString> {
+async function signin(user: TestUserCredentials, oidcConfig?: TestBrowserAuthorizationClientConfiguration): Promise<AccessToken> {
   // Handle OIDC signin
   // console.log("Starting OIDC signin...");
   // console.time("Finished OIDC signin in");
 
-  let token: AccessTokenString | undefined;
+  let token: AccessToken | undefined;
   if (undefined === oidcConfig || null === oidcConfig) {
     token = await TestUtility.getAccessToken(user);
   } else {

@@ -8,7 +8,7 @@ import {
   AllCodesDeletedEvent, AllLocksDeletedEvent, BriefcaseDeletedEvent, ChangeSetPostPushEvent, ChangeSetPrePushEvent, CheckpointCreatedEvent, CheckpointV2CreatedEvent, CodeEvent, EventSAS,
   EventSubscription, EventType, IModelClient, IModelDeletedEvent, IModelHubEvent, IModelHubEventType, LockEvent, LockLevel, LockType, VersionEvent,
 } from "@bentley/imodelhub-client";
-import { AccessTokenString, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool";
 import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
@@ -99,7 +99,7 @@ describe("iModelHub EventHandler", () => {
 
   before(async function () {
     this.timeout(0);
-    const accessToken: AccessTokenString | undefined = TestConfig.enableMocks ? "" : await utils.login(TestUsers.super);
+    const accessToken: AccessToken | undefined = TestConfig.enableMocks ? "" : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
     contextId = await utils.getProjectId(requestContext);

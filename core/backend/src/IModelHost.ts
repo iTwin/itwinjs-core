@@ -16,7 +16,7 @@ import {
 import { IModelClient } from "@bentley/imodelhub-client";
 import { BentleyStatus, IModelError, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
-import { AccessTokenString, AuthorizationClient, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
 import { AliCloudStorageService } from "./AliCloudStorageService";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -224,7 +224,7 @@ export class IModelHost {
   /** Get the active authorization/access token for use with various services
    * @throws if authorizationClient has not been set up
    */
-  public static async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessTokenString | undefined> {
+  public static async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken | undefined> {
     return this.authorizationClient!.getAccessToken(requestContext);
   }
   /** @internal */
@@ -269,7 +269,7 @@ export class IModelHost {
         return new ClientRequestContext(serializedContext.id, serializedContext.applicationId, serializedContext.applicationVersion, serializedContext.sessionId);
 
       // Setup an AuthorizationClientRequestContext if authorization is required for the RPC operation
-      let accessToken: AccessTokenString | undefined;
+      let accessToken: AccessToken | undefined;
       if (!IModelHost.authorizationClient) {
         // Determine the access token from the frontend request
         accessToken = serializedContext.authorization;

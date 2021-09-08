@@ -13,7 +13,7 @@ import { GuidString, Logger, ProcessDetector } from "@bentley/bentleyjs-core";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection, SnapMode, ViewState } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
-import { AccessTokenString } from "@bentley/itwin-client";
+import { AccessToken } from "@bentley/itwin-client";
 import { UserInfo } from "./UserInfo";
 import { Presentation } from "@bentley/presentation-frontend";
 import { TelemetryEvent } from "@bentley/telemetry-client";
@@ -567,7 +567,7 @@ export class UiFramework {
   };
 
   // istanbul ignore next
-  private static _handleUserStateChanged = (accessToken: AccessTokenString | undefined) => {
+  private static _handleUserStateChanged = (accessToken: AccessToken | undefined) => {
     if (accessToken === undefined) {
       ConfigurableUiManager.closeUi();
     }

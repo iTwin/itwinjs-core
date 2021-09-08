@@ -14,7 +14,7 @@ import {
 import { IModelClient } from "@bentley/imodelhub-client";
 import { IModelStatus, RpcConfiguration, RpcInterfaceDefinition, RpcRequest } from "@bentley/imodeljs-common";
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
-import { AccessTokenString, AuthorizationClient } from "@bentley/itwin-client";
+import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
 import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
 import { UiAdmin } from "@bentley/ui-abstract";
@@ -530,7 +530,7 @@ export class IModelApp {
 
     RpcConfiguration.requestContext.serialize = async (_request: RpcRequest): Promise<SerializedClientRequestContext> => {
       const id = _request.id;
-      let authorization: AccessTokenString | undefined;
+      let authorization: AccessToken | undefined;
       let userId: string | undefined;
       if (IModelApp.authorizationClient) {
         // todo: need to subscribe to token change events to avoid getting the string equivalent and compute length

@@ -7,7 +7,7 @@
  * @module Settings
  */
 import { assert, BentleyError, BentleyStatus, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessTokenString, AuthorizedClientRequestContext, Client, request, RequestOptions, Response } from "@bentley/itwin-client";
+import { AccessToken, AuthorizedClientRequestContext, Client, request, RequestOptions, Response } from "@bentley/itwin-client";
 import { SettingsAdmin, SettingsMapResult, SettingsResult, SettingsStatus } from "./SettingsAdmin";
 
 /** Client API for the iTwin Product Settings Service
@@ -151,7 +151,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     requestContext.enter();
     const baseUrl: string = await this.getUrl(requestContext);
     requestContext.enter();
-    const accessTokenString: AccessTokenString | undefined = requestContext.accessToken;
+    const accessTokenString: AccessToken | undefined = requestContext.accessToken;
 
     const options: RequestOptions = {
       method: "PUT",
@@ -179,7 +179,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
   // Retrieves previously saved user settings
   private async getAnySetting(requestContext: AuthorizedClientRequestContext, userSpecific: boolean, settingNamespace: string, settingName: string, applicationSpecific: boolean, shared: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult> {
     const baseUrl: string = await this.getUrl(requestContext);
-    const accessTokenString: AccessTokenString | undefined = requestContext.accessToken;
+    const accessTokenString: AccessToken | undefined = requestContext.accessToken;
 
     const options: RequestOptions = {
       method: "GET",
@@ -206,7 +206,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
   // Retrieves all saved settings with the same namespace.
   private async getAnySettingsByNamespace(requestContext: AuthorizedClientRequestContext, userSpecific: boolean, settingNamespace: string, applicationSpecific: boolean, shared: boolean, projectId?: string, iModelId?: string): Promise<SettingsMapResult> {
     const baseUrl: string = await this.getUrl(requestContext);
-    const accessTokenString: AccessTokenString | undefined = requestContext.accessToken;
+    const accessTokenString: AccessToken | undefined = requestContext.accessToken;
 
     const options: RequestOptions = {
       method: "GET",
@@ -251,7 +251,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
 
   private async deleteAnySetting(requestContext: AuthorizedClientRequestContext, userSpecific: boolean, settingNamespace: string, settingName: string, applicationSpecific: boolean, shared: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult> {
     const baseUrl: string = await this.getUrl(requestContext);
-    const accessTokenString: AccessTokenString | undefined = requestContext.accessToken;
+    const accessTokenString: AccessToken | undefined = requestContext.accessToken;
 
     const options: RequestOptions = {
       method: "DELETE",

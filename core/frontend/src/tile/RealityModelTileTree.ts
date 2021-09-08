@@ -14,7 +14,7 @@ import {
   Cartographic, GeoCoordStatus, IModelError, PlanarClipMaskPriority, PlanarClipMaskSettings,
   SpatialClassifiers, ViewFlagOverrides,
 } from "@bentley/imodeljs-common";
-import { AccessTokenString, request, RequestOptions } from "@bentley/itwin-client";
+import { AccessToken, request, RequestOptions } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
 import { DisplayStyleState } from "../DisplayStyleState";
@@ -624,10 +624,10 @@ export namespace RealityModelTileTree {
     return new RealityModelTileTree(params);
   }
 
-  async function getAccessToken(): Promise<AccessTokenString | undefined> {
+  async function getAccessToken(): Promise<AccessToken | undefined> {
     if (!IModelApp.authorizationClient)
       return undefined; // Not signed in
-    let accessToken: AccessTokenString | undefined;
+    let accessToken: AccessToken | undefined;
     try {
       accessToken = await IModelApp.authorizationClient.getAccessToken();
     } catch (error) {
@@ -834,13 +834,13 @@ export class RealityModelTileClient {
   public readonly rdsProps?: RDSClientProps; // For reality data stored on PW Context Share only. If undefined then Reality Data is not on Context Share.
   private _realityData?: RealityData;        // For reality data stored on PW Context Share only.
   private _baseUrl: string = "";             // For use by all Reality Data. For RD stored on PW Context Share, represents the portion from the root of the Azure Blob Container
-  private readonly _token?: AccessTokenString;     // Only used for accessing PW Context Share.
+  private readonly _token?: AccessToken;     // Only used for accessing PW Context Share.
   private static _client = new RealityDataClient();  // WSG Client for accessing Reality Data on PW Context Share
   private _requestAuthorization?: string;      // Request authorization for non PW ContextShare requests.
 
   // ###TODO we should be able to pass the projectId / tileId directly, instead of parsing the url
   // But if the present can also be used by non PW Context Share stored data then the url is required and token is not. Possibly two classes inheriting from common interface.
-  constructor(url: string, accessToken?: AccessTokenString, contextId?: string) {
+  constructor(url: string, accessToken?: AccessToken, contextId?: string) {
     this.rdsProps = this.parseUrl(url); // Note that returned is undefined if url does not refer to a PW Context Share reality data.
     if (contextId && this.rdsProps)
       this.rdsProps.projectId = contextId;

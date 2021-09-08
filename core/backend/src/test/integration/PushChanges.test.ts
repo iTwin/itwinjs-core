@@ -130,7 +130,7 @@ describe("PushChangesTest (#integration)", () => {
 
       iModel.saveChanges();
 
-      // Set the token to expire four minutes from now
+      // Set the token
       const jwt = requestContext.accessToken;
       const expiringContext = new AuthorizedClientRequestContext(jwt);
 

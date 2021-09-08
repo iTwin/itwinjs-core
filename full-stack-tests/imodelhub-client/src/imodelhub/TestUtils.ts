@@ -13,7 +13,7 @@ import {
   IModelCloudEnvironment, IModelHubClient, IModelQuery, LargeThumbnail, Lock, LockLevel, LockType, MultiCode, MultiLock, SmallThumbnail, Thumbnail,
   Version, VersionQuery,
 } from "@bentley/imodelhub-client";
-import { AccessTokenString, AuthorizedClientRequestContext, ECJsonTypeMap, ProgressInfo, WsgError } from "@bentley/itwin-client";
+import { AccessToken, AuthorizedClientRequestContext, ECJsonTypeMap, ProgressInfo, WsgError } from "@bentley/itwin-client";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool";
 import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
@@ -189,7 +189,7 @@ export async function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export async function login(userCredentials?: TestUserCredentials): Promise<AccessTokenString | undefined> {
+export async function login(userCredentials?: TestUserCredentials): Promise<AccessToken | undefined> {
   if (TestConfig.enableMocks)
     return "";
   const authorizationClient = getCloudEnv().getAuthorizationClient(userCredentials);

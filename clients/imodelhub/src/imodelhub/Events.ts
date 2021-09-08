@@ -6,7 +6,7 @@
  * @module iModelHubClient
  */
 import { ClientRequestContext, GuidString, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
-import { AccessTokenString, AuthorizedClientRequestContext, ECJsonTypeMap, request, Response, WsgInstance } from "@bentley/itwin-client";
+import { AccessToken, AuthorizedClientRequestContext, ECJsonTypeMap, request, Response, WsgInstance } from "@bentley/itwin-client";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { IModelBaseHandler } from "./BaseHandler";
 import { CodeState } from "./Codes";
@@ -541,7 +541,7 @@ export class EventHandler extends EventBaseHandler {
    * @returns Function that deletes the created listener.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if one of the arguments is undefined or has an invalid value.
    */
-  public createListener<T extends IModelHubEvent>(requestContext: ClientRequestContext, authenticationCallback: () => Promise<AccessTokenString | undefined>, subscriptionId: string, iModelId: GuidString, listener: (event: T) => void): () => void {
+  public createListener<T extends IModelHubEvent>(requestContext: ClientRequestContext, authenticationCallback: () => Promise<AccessToken | undefined>, subscriptionId: string, iModelId: GuidString, listener: (event: T) => void): () => void {
     requestContext.enter();
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.defined("authenticationCallback", authenticationCallback);

@@ -7,7 +7,7 @@ import { Guid, GuidString, Id64, Id64String, IModelHubStatus } from "@bentley/be
 import {
   AggregateResponseError, Briefcase, ChangeSet, ConflictingLocksError, IModelClient, IModelHubClientError, Lock, LockLevel, LockQuery, LockType,
 } from "@bentley/imodelhub-client";
-import { AccessTokenString, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool";
 import { ResponseBuilder } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
@@ -27,7 +27,7 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
   let requestContext: AuthorizedClientRequestContext;
 
   before(async () => {
-    const accessToken: AccessTokenString | undefined = TestConfig.enableMocks ? "" : await utils.login(TestUsers.super);
+    const accessToken: AccessToken | undefined = TestConfig.enableMocks ? "" : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
     contextId = await utils.getProjectId(requestContext);

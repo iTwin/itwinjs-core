@@ -66,7 +66,7 @@ describe("AgentAuthorizationClient (#integration)", () => {
   // it("should get valid OIDC tokens for agent applications", async () => {
   //   const agentClient = new AgentAuthorizationClient(agentConfiguration);
   //   const now = Date.now();
-  //   const jwt: AccessTokenString = await agentClient.getAccessToken(requestContext);
+  //   const jwt: AccessToken = await agentClient.getAccessToken(requestContext);
 
   //   const expiresAt = agentClient.expiry;
   //   chai.assert.isDefined(expiresAt);
@@ -75,7 +75,7 @@ describe("AgentAuthorizationClient (#integration)", () => {
   //   await validator.validateContextRegistryAccess(jwt);
   //   await validator.validateIModelHubAccess(jwt);
 
-  //   const refreshJwt: AccessTokenString = await agentClient.getAccessToken(requestContext);
+  //   const refreshJwt: AccessToken = await agentClient.getAccessToken(requestContext);
   //   await validator.validateContextRegistryAccess(refreshJwt);
   //   await validator.validateIModelHubAccess(refreshJwt);
   // });
@@ -83,11 +83,11 @@ describe("AgentAuthorizationClient (#integration)", () => {
   // it("should not refresh token unless necessary", async () => {
   //   const agentClient = new AgentAuthorizationClient(agentConfiguration);
 
-  //   const jwt: AccessTokenString = await agentClient.getAccessToken(requestContext);
+  //   const jwt: AccessToken = await agentClient.getAccessToken(requestContext);
 
   //   // Refresh after a second, and the token should remain the same
   //   await BeDuration.wait(1000);
-  //   const refreshJwt: AccessTokenString = await agentClient.getAccessToken(requestContext);
+  //   const refreshJwt: AccessToken = await agentClient.getAccessToken(requestContext);
   //   chai.assert.strictEqual(refreshJwt, jwt);
 
   // TODO: Should we remove these next two sections now that we are changing accessToken? Can me mock the expiry?

@@ -9,7 +9,7 @@ import { ElectronAuthorizationBackend } from "@bentley/electron-manager/lib/Elec
 import { Version } from "@bentley/imodelhub-client";
 import { BriefcaseDb, BriefcaseManager, IModelHost, IModelHubBackend, NativeHost, RequestNewBriefcaseArg } from "@bentley/imodeljs-backend";
 import { BriefcaseIdValue, ChangesetId, ChangesetIndex, ChangesetProps } from "@bentley/imodeljs-common";
-import { AccessTokenString, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 export namespace IModelHubUtils {
 
@@ -18,14 +18,14 @@ export namespace IModelHubUtils {
     return new AuthorizedClientRequestContext(accessToken);
   }
 
-  async function signIn(): Promise<AccessTokenString> {
+  async function signIn(): Promise<AccessToken> {
     const client = new ElectronAuthorizationBackend();
     await client.initialize({
       clientId: "imodeljs-electron-test",
       redirectUri: "http://localhost:3000/signin-callback",
       scope: "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party imodel-extension-service-api offline_access",
     });
-    return new Promise<AccessTokenString>((resolve, reject) => {
+    return new Promise<AccessToken>((resolve, reject) => {
       NativeHost.onUserStateChanged.addListener((token) => {
         if (token !== undefined) {
           resolve(token);

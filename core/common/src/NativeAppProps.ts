@@ -7,7 +7,7 @@
  */
 
 import { ClientRequestContextProps, GuidString } from "@bentley/bentleyjs-core";
-import { AccessTokenString } from "@bentley/itwin-client";
+import { AccessToken } from "@bentley/itwin-client";
 import { BriefcaseProps, LocalBriefcaseProps, RequestNewBriefcaseProps } from "./BriefcaseTypes";
 
 /** @internal */
@@ -43,7 +43,7 @@ export enum OverriddenBy {
  */
 export interface NativeAppNotifications {
   notifyInternetConnectivityChanged: (status: InternetConnectivityStatus) => void;
-  notifyUserStateChanged: (accessToken?: AccessTokenString) => void;
+  notifyUserStateChanged: (accessToken?: AccessToken) => void;
 }
 
 /**
@@ -82,9 +82,9 @@ export interface NativeAppAuthorizationConfiguration {
  * @internal
  */
 export interface NativeAppFunctions {
-  setAccessToken: (token: AccessTokenString) => Promise<void>;
+  setAccessToken: (token: AccessToken) => Promise<void>;
 
-  getAccessToken: () => Promise<AccessTokenString | undefined>;
+  getAccessToken: () => Promise<AccessToken | undefined>;
 
   /** returns expirySafety, in seconds */
   initializeAuth: (props: ClientRequestContextProps, config?: NativeAppAuthorizationConfiguration) => Promise<number>;

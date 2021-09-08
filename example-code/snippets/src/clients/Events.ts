@@ -6,7 +6,7 @@
 import { AgentAuthorizationClient, BackendAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
 import { ClientRequestContext, Guid, GuidString, Logger } from "@bentley/bentleyjs-core";
 import { EventSAS, EventSubscription, IModelHubClient, IModelHubEvent } from "@bentley/imodelhub-client";
-import { AccessTokenString, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 if (process.env.IMJS_AGENT_TEST_CLIENT_ID === undefined)
   throw new Error("Could not find IMJS_AGENT_TEST_CLIENT_ID");
@@ -26,7 +26,7 @@ const imodelHubClient: IModelHubClient = new IModelHubClient();
 const imodelId: GuidString = Guid.createValue();
 
 // __PUBLISH_EXTRACT_START__ EventHandler.createListener.authenticate.example-code
-async function authenticate(): Promise<AccessTokenString | undefined> {
+async function authenticate(): Promise<AccessToken | undefined> {
   const requestContext = new ClientRequestContext();
   return authorizationClient.getAccessToken(requestContext);
 }
@@ -40,7 +40,7 @@ function processEvent(event: IModelHubEvent): void {
 
 // enclosing function avoids compile errors and code analysis report.
 export async function testit() {
-  const accessToken: AccessTokenString = "";
+  const accessToken: AccessToken = "";
   const requestContext = new ClientRequestContext("b0f0808d-e76f-4615-acf4-95aa1b78eba5");
   const authorizedRequestContext = new AuthorizedClientRequestContext(accessToken, "b0f0808d-e76f-4615-acf4-95aa1b78eba5");
   // __PUBLISH_EXTRACT_START__ EventSubscriptionsHandler.create.example-code

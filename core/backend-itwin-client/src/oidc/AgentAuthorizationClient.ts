@@ -7,7 +7,7 @@
  */
 
 import { AuthStatus, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { AccessTokenString, AuthorizationClient } from "@bentley/itwin-client";
+import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
 import { GrantBody, TokenSet } from "openid-client";
 import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
 import { BackendAuthorizationClient, BackendAuthorizationClientConfiguration } from "./BackendAuthorizationClient";
@@ -33,14 +33,14 @@ export type AgentAuthorizationClientConfiguration = BackendAuthorizationClientCo
  * @beta
  */
 export class AgentAuthorizationClient extends BackendAuthorizationClient implements AuthorizationClient {
-  private _accessToken?: AccessTokenString;
+  private _accessToken?: AccessToken;
   private _expiresAt?: Date;
 
   constructor(agentConfiguration: AgentAuthorizationClientConfiguration) {
     super(agentConfiguration);
   }
 
-  private async generateAccessToken(requestContext: ClientRequestContext): Promise<AccessTokenString | undefined> {
+  private async generateAccessToken(requestContext: ClientRequestContext): Promise<AccessToken | undefined> {
     const scope = this._configuration.scope;
     if (scope.includes("openid") || scope.includes("email") || scope.includes("profile") || scope.includes("organization"))
       throw new BentleyError(AuthStatus.Error, "Scopes for an Agent cannot include 'openid email profile organization'");
@@ -91,7 +91,7 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
   /** Returns a promise that resolves to the AccessToken of the currently authorized client.
    * The token is refreshed if necessary.
    */
-  public async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessTokenString | undefined> {
+  public async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken | undefined> {
     if (this.isAuthorized)
       return this._accessToken;
     return this.generateAccessToken(requestContext || new ClientRequestContext());

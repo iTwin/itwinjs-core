@@ -8,7 +8,7 @@
  */
 
 import { assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, IDisposable, Logger } from "@bentley/bentleyjs-core";
-import { AccessTokenString, ImsAuthorizationClient } from "@bentley/itwin-client";
+import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
 import { User, UserManager, UserManagerSettings, WebStorageStateStore } from "oidc-client";
 import { FrontendAuthorizationClient } from "../../FrontendAuthorizationClient";
 import { FrontendAuthorizationClientLoggerCategory } from "../../FrontendAuthorizationClientLoggerCategory";
@@ -57,9 +57,9 @@ export interface BrowserAuthorizationClientRequestOptions {
  * @beta
  */
 export class BrowserAuthorizationClient extends BrowserAuthorizationBase<BrowserAuthorizationClientConfiguration> implements FrontendAuthorizationClient, IDisposable {
-  public readonly onUserStateChanged = new BeEvent<(token?: AccessTokenString) => void>();
+  public readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
 
-  protected _accessToken?: AccessTokenString;
+  protected _accessToken?: AccessToken;
 
   public get isAuthorized(): boolean {
     return this.hasSignedIn;
@@ -283,7 +283,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    * The token is refreshed as necessary.
    * @throws [BentleyError]($bentley) If signIn() was not called, or there was an authorization error.
    */
-  public async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessTokenString> {
+  public async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken> {
     if (this._accessToken)
       return this._accessToken;
     if (requestContext)

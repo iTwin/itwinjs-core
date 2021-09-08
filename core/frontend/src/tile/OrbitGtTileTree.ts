@@ -33,7 +33,7 @@ import {
   RealityModelTileClient, RealityModelTileTree, Tile, TileContent,
   TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeOwner, TileTreeParams, TileTreeSupplier, TileUsageMarker,
 } from "./internal";
-import { AccessTokenString } from "@bentley/itwin-client";
+import { AccessToken } from "@bentley/itwin-client";
 import { AuthorizedFrontendRequestContext } from "../FrontendRequestContext";
 import { RealityDataClient } from "@bentley/reality-data-client";
 
@@ -346,7 +346,7 @@ export namespace OrbitGtTileTree {
     modelId?: Id64String;
   }
 
-  async function getAccessTokenRDS(): Promise<AccessTokenString | undefined> {
+  async function getAccessTokenRDS(): Promise<AccessToken | undefined> {
 
     if (!IModelApp.authorizationClient)
       return undefined; // Not signed in
@@ -404,7 +404,7 @@ export namespace OrbitGtTileTree {
     return true;
   }
 
-  async function updateOrbitGtBlobPropsFromRdsUrl(rdsUrl: string | undefined, props: OrbitGtBlobProps, accessToken: AccessTokenString, containerId: string | undefined): Promise<boolean> {
+  async function updateOrbitGtBlobPropsFromRdsUrl(rdsUrl: string | undefined, props: OrbitGtBlobProps, accessToken: AccessToken, containerId: string | undefined): Promise<boolean> {
 
     if(!rdsUrl || !containerId)
       return false;
@@ -431,7 +431,7 @@ export namespace OrbitGtTileTree {
           return false;
     }
 
-    const accessToken: AccessTokenString | undefined = await getAccessTokenRDS();
+    const accessToken: AccessToken | undefined = await getAccessTokenRDS();
     if (!accessToken)
       return false;
 

@@ -11,7 +11,7 @@
  * @param accessToken Access token string
  * @internal
  */
-export function removeAccessTokenPrefix(accessToken: AccessTokenString | undefined): AccessTokenString | undefined {
+export function removeAccessTokenPrefix(accessToken: AccessToken | undefined): AccessToken | undefined {
   return accessToken ? accessToken.substr(accessToken.indexOf(" ") + 1) : undefined;
 }
 
@@ -23,4 +23,4 @@ class TokenPrefixToTypeContainer {
   public static tokenPrefixToConstructorDict: { [key: string]: any } = {};
 }
 
-export type AccessTokenString = string;
+export type AccessToken = string;

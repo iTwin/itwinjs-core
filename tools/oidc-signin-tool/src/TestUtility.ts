@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AccessTokenString, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestBrowserAuthorizationClient } from "./TestBrowserAuthorizationClient";
 import { TestBrowserAuthorizationClientConfiguration, TestUserCredentials, TestUsers } from "./TestUsers";
 
@@ -41,7 +41,7 @@ export class TestUtility {
    * @param user Test user credentials
    * @internal
    */
-  public static async getAccessToken(user: TestUserCredentials): Promise<AccessTokenString | undefined> {
+  public static async getAccessToken(user: TestUserCredentials): Promise<AccessToken | undefined> {
     const client = this.getAuthorizationClient(user);
     return client.getAccessToken();
   }

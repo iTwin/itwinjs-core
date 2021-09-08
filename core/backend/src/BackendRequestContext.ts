@@ -7,7 +7,7 @@
  */
 
 import { ClientRequestContext, Guid } from "@bentley/bentleyjs-core";
-import { AccessTokenString, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelHost } from "./IModelHost";
 
 /**
@@ -21,7 +21,7 @@ export class AuthorizedBackendRequestContext extends AuthorizedClientRequestCont
    * Create a new context for agent applications or long running backend operations to pass to various services
    * @see [[AuthorizedBackendRequestContext.create]] to create the request based on the authorization information supplied to IModelHost.
    */
-  public constructor(accessToken?: AccessTokenString, activityId: string = Guid.createValue()) {
+  public constructor(accessToken?: AccessToken, activityId: string = Guid.createValue()) {
     super(accessToken, activityId, IModelHost.applicationId, IModelHost.applicationVersion, IModelHost.sessionId);
   }
 

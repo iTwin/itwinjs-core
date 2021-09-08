@@ -19,7 +19,7 @@ import { FavoritePropertiesOrderInfo, PropertyFullName } from "../../presentatio
 import {
   IModelAppFavoritePropertiesStorage, OfflineCachingFavoritePropertiesStorage,
 } from "../../presentation-frontend/favorite-properties/FavoritePropertiesStorage";
-import { AccessTokenString } from "@bentley/itwin-client";
+import { AccessToken } from "@bentley/itwin-client";
 
 describe("IModelAppFavoritePropertiesStorage", () => {
 
@@ -35,7 +35,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
 
     authorizationClientMock = moq.Mock.ofType<FrontendAuthorizationClient>();
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    const accessToken: AccessTokenString = "TestToken";
+    const accessToken: AccessToken = "TestToken";
     authorizationClientMock.setup((x) => x.getAccessToken()).returns(() => Promise.resolve(accessToken));
     IModelApp.authorizationClient = authorizationClientMock.object;
 

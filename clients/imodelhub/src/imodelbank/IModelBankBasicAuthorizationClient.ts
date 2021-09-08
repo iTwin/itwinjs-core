@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { AccessTokenString } from "@bentley/itwin-client";
+import { AccessToken } from "@bentley/itwin-client";
 
-export function tokenFromUserCredentials(userCredentials: any): AccessTokenString {
+export function tokenFromUserCredentials(userCredentials: any): AccessToken {
   const tokenString = Buffer.from(`${userCredentials.email}:${userCredentials.password}`).toString("base64");
   return tokenString;
 }
@@ -16,7 +16,7 @@ export function tokenFromUserCredentials(userCredentials: any): AccessTokenStrin
  * @internal
  */
 export class IModelBankBasicAuthorizationClient implements FrontendAuthorizationClient {
-  private _token?: AccessTokenString;
+  private _token?: AccessToken;
 
   public constructor(private _userCredentials: any) {
   }
@@ -33,7 +33,7 @@ export class IModelBankBasicAuthorizationClient implements FrontendAuthorization
     this.onUserStateChanged.raiseEvent(this._token);
   }
 
-  public readonly onUserStateChanged = new BeEvent<(token: AccessTokenString | undefined) => void>();
+  public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
   public get isAuthorized(): boolean {
     return !!this._token;
   }
@@ -44,7 +44,7 @@ export class IModelBankBasicAuthorizationClient implements FrontendAuthorization
     return !!this._token;
   }
 
-  public async getAccessToken(_requestContext?: ClientRequestContext): Promise<AccessTokenString> {
+  public async getAccessToken(_requestContext?: ClientRequestContext): Promise<AccessToken> {
     if (!this._token) {
       throw new Error("User is not signed in.");
     }

@@ -14,7 +14,7 @@ import {
   NativeAppAuthorizationConfiguration, nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy,
   RequestNewBriefcaseProps, StorageValue, SyncMode,
 } from "@bentley/imodeljs-common";
-import { AccessTokenString, AuthorizationClient, ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
+import { AccessToken, AuthorizationClient, ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IModelApp } from "./IModelApp";
 import { IpcApp, IpcAppOptions, NotificationHandler } from "./IpcApp";
@@ -63,10 +63,10 @@ class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNot
  */
 export class NativeAppAuthorization implements AuthorizationClient {
   private _config?: NativeAppAuthorizationConfiguration;
-  private _cachedToken?: AccessTokenString;
+  private _cachedToken?: AccessToken;
   private _refreshingToken = false;
   protected _expireSafety = 60 * 10; // seconds before real expiration time so token will be refreshed before it expires
-  public readonly onUserStateChanged = new BeEvent<(token?: AccessTokenString) => void>();
+  public readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
   public get hasSignedIn() { return this._cachedToken !== undefined; }
   public get isAuthorized(): boolean {
     return this.hasSignedIn;
@@ -78,7 +78,7 @@ export class NativeAppAuthorization implements AuthorizationClient {
    */
   public constructor(config?: NativeAppAuthorizationConfiguration) {
     this._config = config;
-    this.onUserStateChanged.addListener((token?: AccessTokenString) => {
+    this.onUserStateChanged.addListener((token?: AccessToken) => {
       this._cachedToken = token;
     });
   }
@@ -104,7 +104,7 @@ export class NativeAppAuthorization implements AuthorizationClient {
    * - This method must be called to refresh the token - the client does NOT automatically monitor for token expiry.
    * - Getting or refreshing the token will trigger the [[onUserStateChanged]] event.
    */
-  public async getAccessToken(): Promise<AccessTokenString> {
+  public async getAccessToken(): Promise<AccessToken> {
     // if we have a valid token, return it. Otherwise call backend to refresh the token.
     if (!this.isAuthorized) {
       if (this._refreshingToken) {
