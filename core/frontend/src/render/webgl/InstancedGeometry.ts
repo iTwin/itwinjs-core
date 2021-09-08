@@ -56,14 +56,31 @@ class InstanceData {
   public getRtcOnlyTransform(): Transform {
     return this._rtcOnlyTransform;
   }
+
+  private static readonly _noFeatureId = new Float32Array([0, 0, 0]);
+  public get patternFeatureId(): Float32Array {
+    return InstanceData._noFeatureId;
+  }
+}
+
+/** @internal */
+export interface PatternTransforms {
+  readonly orgTransform: Matrix4;
+  readonly localToWorld: Matrix4;
+  readonly worldToModel: Matrix4;
+  readonly symbolToLocal: Matrix4;
 }
 
 /** @internal */
 export class InstanceBuffers extends InstanceData {
+  private static readonly _patternParams = new Float32Array([0, 0, 0, 0]);
+
   public readonly transforms: BufferHandle;
   public readonly featureIds?: BufferHandle;
   public readonly hasFeatures: boolean;
   public readonly symbology?: BufferHandle;
+  public readonly patternParams = InstanceBuffers._patternParams;
+  public readonly patternTransforms = undefined;
 
   private constructor(shared: boolean, count: number, transforms: BufferHandle, rtcCenter: Point3d, range: Range3d, symbology?: BufferHandle, featureIds?: BufferHandle) {
     super(count, shared, rtcCenter, range);
@@ -173,19 +190,30 @@ export class InstanceBuffers extends InstanceData {
 
 /** @internal */
 export class PatternBuffers extends InstanceData {
+  private readonly _featureId?: Float32Array;
+
   private constructor(
     count: number,
     shared: boolean,
     rtcCenter: Point3d,
     range: Range3d,
-    public readonly spacingAndScale: Float32Array,
+    public readonly patternParams: Float32Array, // [ isAreaPattern, spacingX, spacingY, scale, featureId ]
     public readonly orgTransform: Matrix4,
     public readonly localToWorld: Matrix4,
     public readonly worldToModel: Matrix4,
+    public readonly symbolToLocal: Matrix4,
     public readonly offsets: BufferHandle,
-    public readonly featureId?: number
+    featureId: number | undefined
   ) {
     super(count, shared, rtcCenter, range);
+    this.patternTransforms = this;
+    if (undefined !== featureId) {
+      this._featureId = new Float32Array([
+        (featureId & 0x0000ff) >>> 0,
+        (featureId & 0x00ff00) >>> 8,
+        (featureId & 0xff0000) >>> 16,
+      ]);
+    }
   }
 
   public static create(params: PatternGraphicParams, shared: boolean): PatternBuffers | undefined {
@@ -201,17 +229,24 @@ export class PatternBuffers extends InstanceData {
       shared,
       new Point3d(), // ###TODO May need to use this if symbols/patterns far from origin produce artifacts.
       params.range,
-      new Float32Array([params.spacing.x, params.spacing.y, params.scale]),
+      new Float32Array([1, params.spacing.x, params.spacing.y, params.scale]),
       Matrix4.fromTransform(params.orgTransform),
       Matrix4.fromTransform(params.localToWorld),
       Matrix4.fromTransform(params.worldToModel),
+      Matrix4.fromTransform(Transform.createTranslation(params.symbolTranslation)),
       offsets,
       params.featureId
     );
   }
 
+  public readonly patternTransforms: PatternTransforms;
+
   public get hasFeatures(): boolean {
-    return undefined !== this.featureId;
+    return undefined !== this._featureId;
+  }
+
+  public override get patternFeatureId(): Float32Array {
+    return this._featureId ?? super.patternFeatureId;
   }
 
   public get isDisposed(): boolean {
@@ -344,4 +379,8 @@ export class InstancedGeometry extends CachedGeometry {
     if (!this._buffers.shared)
       this._buffers.collectStatistics(stats);
   }
+
+  public get patternParams(): Float32Array { return this._buffers.patternParams; }
+  public get patternTransforms(): PatternTransforms | undefined { return this._buffers.patternTransforms; }
+  public get patternFeatureId(): Float32Array { return this._buffers.patternFeatureId; }
 }
