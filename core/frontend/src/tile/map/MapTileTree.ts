@@ -256,7 +256,7 @@ export class MapTileTree extends RealityTileTree {
     if (iModelCoordinates.missing)
       return undefined;
 
-    return iModelCoordinates.result.map((result) => !result || result.s ? undefined  : Point3d.fromJSON(result.p));
+    return iModelCoordinates.result.map((result) => !result || result.s ? undefined : Point3d.fromJSON(result.p));
   }
 
   // Minimize reprojection requests by requesting this corners tile and a grid that will include all points for 4 levels of descendants.
@@ -555,7 +555,7 @@ export class MapTileTreeReference extends TileTreeReference {
 
   /** Terrain  tiles do not contribute to the range used by "fit view". */
   public override unionFitRange(_range: Range3d): void { }
-  public get settings(): BackgroundMapSettings { return this._settings; }
+  //public get settings(): BackgroundMapSettings { return this._settings; }
   public set settings(settings: BackgroundMapSettings) {
     this._settings = settings;
     this._planarClipMask = settings.planarClipMask ? PlanarClipMaskState.create(settings.planarClipMask) : undefined;

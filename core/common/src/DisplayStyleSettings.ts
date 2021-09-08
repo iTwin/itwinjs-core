@@ -24,7 +24,7 @@ import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
 import { PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
 import { SubCategoryOverride } from "./SubCategoryOverride";
 import { LightSettings, LightSettingsProps } from "./LightSettings";
-import { MapImageryProps, MapImagerySettings } from "./MapImagerySettings";
+import { MapImageryProps, MapImageryProps2, MapImagerySettings, MapImagerySettings2 } from "./MapImagerySettings";
 import { PlanProjectionSettings, PlanProjectionSettingsProps } from "./PlanProjectionSettings";
 import { RenderSchedule } from "./RenderSchedule";
 import { SkyBoxProps } from "./SkyBox";
@@ -134,6 +134,8 @@ export interface DisplayStyleSettingsProps {
    * @alpha
    */
   mapImagery?: MapImageryProps;
+  mapImagery2?: MapImageryProps2;
+
   /** Overrides applied to the appearance of models in the view. */
   modelOvr?: DisplayStyleModelAppearanceProps[];
   /** Style applied by the view's [ClipVector]($geometry-core). */
@@ -450,6 +452,8 @@ export class DisplayStyleSettings {
   private readonly _excludedElements: ExcludedElements;
   private _backgroundMap: BackgroundMapSettings;
   private _mapImagery: MapImagerySettings;
+  private _mapImagery2: MapImagerySettings2;
+
   private _analysisStyle?: AnalysisStyle;
   private _clipStyle: ClipStyle;
   private readonly _contextRealityModels: ContextRealityModels;
@@ -547,6 +551,7 @@ export class DisplayStyleSettings {
 
     this._backgroundMap = BackgroundMapSettings.fromJSON(this._json.backgroundMap);
     this._mapImagery = MapImagerySettings.fromJSON(this._json.mapImagery, this._json.backgroundMap);
+    this._mapImagery2 = MapImagerySettings2.fromJSON(this._json.mapImagery2);
 
     this._excludedElements = new ExcludedElements(this._json);
 
@@ -650,6 +655,7 @@ export class DisplayStyleSettings {
    * @alpha
    */
   public get mapImagery(): MapImagerySettings { return this._mapImagery; }
+  public get mapImagery2(): MapImagerySettings2 { return this._mapImagery2; }
 
   public set mapImagery(mapImagery: MapImagerySettings) {
     this.onMapImageryChanged.raiseEvent(mapImagery);

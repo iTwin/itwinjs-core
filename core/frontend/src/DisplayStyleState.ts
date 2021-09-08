@@ -8,7 +8,7 @@
 import { assert, BeEvent, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Angle, Range1d, Vector3d } from "@bentley/geometry-core";
 import {
-  BackgroundMapProps, BackgroundMapSettings, BaseLayerSettings, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
+  BackgroundMapProps, BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapSettings, BaseLayerSettings, BaseLayerSettings2Props, BaseLayerSourceProps, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
   DisplayStyleProps, DisplayStyleSettings, EnvironmentProps, FeatureAppearance, GlobeMode, GroundPlane, LightSettings, MapLayerProps,
   MapLayerSettings, MapSubLayerProps, RenderSchedule, RenderTexture, RenderTimelineProps, SkyBoxImageType, SkyBoxProps,
   SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, TerrainHeightOriginMode, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
@@ -409,6 +409,35 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this._synchBackgroundMapImagery();
   }
 
+  public changeBaseMapSourceProps2(props: BaseLayerSourceProps) {
+    if (props instanceof ColorDef) {
+      let transparency = 0;
+      if (this.settings.mapImagery2.backgroundBase.source instanceof ColorDef)
+        transparency = this.settings.mapImagery2.backgroundBase.source.getTransparency();
+      this.settings.mapImagery.backgroundBase = props.withTransparency(transparency);
+    } else if (BackgroundMapProvider.isMatchingProps(props)) {
+      // BackgroundMapProvider
+      //if (BackgroundMapProvider.isMatchingProps(this.settings.mapImagery.backgroundBase) {
+      if (this.settings.mapImagery.backgroundBase instanceof BackgroundMapProvider) {
+        const mapProvider = this.settings.mapImagery2.backgroundBase.source as BackgroundMapProvider;
+        this.settings.mapImagery2.backgroundBase.source = mapProvider.clone(props as BackgroundMapProviderProps);
+      }
+      else {
+        this.settings.mapImagery2.backgroundBase.source = BackgroundMapProvider.fromJSON(props as BackgroundMapProviderProps);
+      }
+    } else {
+      // MapLayerSettings
+      if (this.settings.mapImagery2.backgroundBase.source instanceof MapLayerSettings)
+        this.settings.mapImagery2.backgroundBase.source = this.settings.mapImagery2.backgroundBase?.source.clone(props as MapLayerSettings);
+      else {
+        const backgroundLayerSettings = MapLayerSettings.fromJSON(props as MapLayerSettings);
+        if (backgroundLayerSettings)
+          this.settings.mapImagery.backgroundBase = backgroundLayerSettings;
+      }
+    }
+    this._synchBackgroundMapImagery();
+  }
+
   /** Return map base transparency as a number between 0 and 1.
    * @internal
    */
@@ -585,12 +614,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     return undefined !== this.iModel.ecefLocation && (this.viewFlags.backgroundMap || this.anyMapLayersVisible(false));
   }
   /** @internal */
-  public get backgroundMapElevationBias(): number | undefined{
+  public get backgroundMapElevationBias(): number | undefined {
     if (this.backgroundMapSettings.applyTerrain) {
       const terrainSettings = this.backgroundMapSettings.terrainSettings;
       switch (terrainSettings.heightOriginMode) {
         case TerrainHeightOriginMode.Ground:
-          return (undefined ===  this.iModel.projectCenterAltitude) ? undefined : terrainSettings.heightOrigin + terrainSettings.exaggeration * this.iModel.projectCenterAltitude;
+          return (undefined === this.iModel.projectCenterAltitude) ? undefined : terrainSettings.heightOrigin + terrainSettings.exaggeration * this.iModel.projectCenterAltitude;
 
         case TerrainHeightOriginMode.Geodetic:
           return terrainSettings.heightOrigin;

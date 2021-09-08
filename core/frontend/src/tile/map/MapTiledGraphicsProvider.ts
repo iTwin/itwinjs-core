@@ -16,7 +16,7 @@ import { MapLayerImageryProvider, MapTileTreeReference, TiledGraphicsProvider, T
 export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
   public readonly backgroundMap: MapTileTreeReference;
   public readonly overlayMap: MapTileTreeReference;
-  public readonly  backgroundDrapeMap: MapTileTreeReference;
+  public readonly backgroundDrapeMap: MapTileTreeReference;
   private readonly _detachFromDisplayStyle: VoidFunction[] = [];
 
   public forEachTileTreeRef(viewport: Viewport, func: (ref: TileTreeReference) => void): void {
@@ -27,11 +27,13 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
   }
   constructor(private readonly _vp: Viewport) {
     const displayStyle = _vp.displayStyle;
+    //const mapSettings = displayStyle.settings.mapImagery2.backgroundBase.displaySettings
+    //const mapImagery = displayStyle.settings.mapImagery2;
     const mapSettings = displayStyle.backgroundMapSettings;
     const mapImagery = displayStyle.settings.mapImagery;
     this.backgroundMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, displayStyle.iModel, _vp.viewportId, false, false, () => displayStyle.overrideTerrainDisplay());
     this.overlayMap = new MapTileTreeReference(mapSettings, undefined, mapImagery.overlayLayers, displayStyle.iModel, _vp.viewportId, true, false);
-    this.backgroundDrapeMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, displayStyle.iModel,  _vp.viewportId, false, true);
+    this.backgroundDrapeMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, displayStyle.iModel, _vp.viewportId, false, true);
     const removals = this._detachFromDisplayStyle;
 
     removals.push(displayStyle.settings.onBackgroundMapChanged.addListener((settings: BackgroundMapSettings) => {
