@@ -275,6 +275,11 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
         if (!this.toolWidgetDisplayCornerButton)
           items.push(ToolbarHelper.createToolbarItemFromItemDef(20, BackstageManager.getBackstageToggleCommand("icon-bentley-systems"), { groupPriority: 3000 }));
         return items;
+      } else if (toolbarUsage === ToolbarUsage.ViewNavigation && toolbarOrientation === ToolbarOrientation.Vertical) {
+        const items: CommonToolbarItem[] = [];
+        items.push(ToolbarHelper.createToolbarItemFromItemDef(10, AppTools.saveContentLayout, { groupPriority: 3000 }));
+        items.push(ToolbarHelper.createToolbarItemFromItemDef(15, AppTools.restoreSavedContentLayout, { groupPriority: 3000 }));
+        return items;
       }
     }
     return [];

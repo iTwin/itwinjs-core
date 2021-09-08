@@ -6,15 +6,18 @@
  * @module ContentView
  */
 
-import { EmphasizeElementsProps, ViewStateProps } from "@bentley/imodeljs-common";
+import { Logger } from "@bentley/bentleyjs-core";
+import { EmphasizeElementsProps, IModelError, IModelStatus, ViewStateProps } from "@bentley/imodeljs-common";
+import { EntityState } from "@bentley/imodeljs-frontend";
 import {
   DrawingViewState, EmphasizeElements, IModelConnection, ScreenViewport, SheetViewState, SpatialViewState, ViewState,
 } from "@bentley/imodeljs-frontend";
+import { UiFramework } from "../UiFramework";
 import { ViewUtilities } from "../utils/ViewUtilities";
 
 /** SavedViewProps interface for sharing ViewState and EmphasizeElements information.
  * @public
- */
+ */
 export interface SavedViewProps extends ViewStateProps {
   bisBaseClass: string;
   emphasizeElementsProps?: EmphasizeElementsProps;
@@ -22,31 +25,39 @@ export interface SavedViewProps extends ViewStateProps {
 
 /** SavedView class. Used to serialize/deserialize a ViewState.
  * @public
- */
+ */
 export class SavedView {
-
   /** Create a ViewState from the SavedView */
   public static async viewStateFromProps(iModelConnection: IModelConnection, savedViewProps: SavedViewProps): Promise<ViewState | undefined> {
-    const props: ViewStateProps = {
-      viewDefinitionProps: savedViewProps.viewDefinitionProps,
-      categorySelectorProps: savedViewProps.categorySelectorProps,
-      modelSelectorProps: savedViewProps.modelSelectorProps,
-      displayStyleProps: savedViewProps.displayStyleProps,
-      sheetProps: savedViewProps.sheetProps,
-      sheetAttachments: savedViewProps.sheetAttachments,
-    };
+    // const props: ViewStateProps = {
+    //  viewDefinitionProps: savedViewProps.viewDefinitionProps,
+    //  categorySelectorProps: savedViewProps.categorySelectorProps,
+    //  modelSelectorProps: savedViewProps.modelSelectorProps,
+    //  displayStyleProps: savedViewProps.displayStyleProps,
+    //  sheetProps: savedViewProps.sheetProps,
+    //  sheetAttachments: savedViewProps.sheetAttachments,
+    // };
+    //
+    // let viewState: ViewState | undefined;
+    //
+    // if (ViewUtilities.isSpatial(savedViewProps.bisBaseClass))
+    //  viewState = SpatialViewState.createFromProps(props, iModelConnection);
+    // else if (ViewUtilities.isDrawing(savedViewProps.bisBaseClass))
+    //  viewState = DrawingViewState.createFromProps(props, iModelConnection);
+    // else {
+    //  // istanbul ignore else
+    //  if (ViewUtilities.isSheet(savedViewProps.bisBaseClass))
+    //    viewState = SheetViewState.createFromProps(props, iModelConnection);
+    // }
+    //
+    const className = savedViewProps.viewDefinitionProps.classFullName;
+    const ctor = await iModelConnection.findClassFor<typeof EntityState>(className, undefined) as typeof ViewState | undefined;
 
-    let viewState: ViewState | undefined;
+    if (undefined === ctor)
+      throw new IModelError(IModelStatus.WrongClass, "Invalid ViewState class", Logger.logError, UiFramework.loggerCategory(this), () => savedViewProps);
 
-    if (ViewUtilities.isSpatial(savedViewProps.bisBaseClass))
-      viewState = SpatialViewState.createFromProps(props, iModelConnection);
-    else if (ViewUtilities.isDrawing(savedViewProps.bisBaseClass))
-      viewState = DrawingViewState.createFromProps(props, iModelConnection);
-    else {
-      // istanbul ignore else
-      if (ViewUtilities.isSheet(savedViewProps.bisBaseClass))
-        viewState = SheetViewState.createFromProps(props, iModelConnection);
-    }
+    const viewState = ctor.createFromProps(savedViewProps, iModelConnection)!;
+    await viewState.load(); // loads models for ModelSelector
 
     // istanbul ignore else
     if (viewState)

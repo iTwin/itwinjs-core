@@ -35,6 +35,7 @@ import { Tool2 } from "../tools/Tool2";
 import { ToolWithSettings } from "./ToolWithSettings";
 import { Radio } from "@itwin/itwinui-react";
 import { BeDuration } from "@bentley/bentleyjs-core";
+import { RestoreSavedContentLayoutTool, SaveContentLayoutTool } from "./UiProviderTool";
 
 // cSpell:ignore appui appuiprovider
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -794,6 +795,30 @@ export class AppTools {
   public static get activityMessageItem() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.activityMessage", execute: async () => { await this._activityTool(); },
+    });
+  }
+
+  public static get saveContentLayout() {
+    return new ToolItemDef({
+      toolId: SaveContentLayoutTool.toolId,
+      iconSpec: SaveContentLayoutTool.iconSpec,
+      label: SaveContentLayoutTool.flyover,
+      tooltip: SaveContentLayoutTool.description,
+      execute: () => {
+        IModelApp.tools.run(SaveContentLayoutTool.toolId);
+      },
+    });
+  }
+
+  public static get restoreSavedContentLayout() {
+    return new ToolItemDef({
+      toolId: RestoreSavedContentLayoutTool.toolId,
+      iconSpec: RestoreSavedContentLayoutTool.iconSpec,
+      label: RestoreSavedContentLayoutTool.flyover,
+      tooltip: RestoreSavedContentLayoutTool.description,
+      execute: () => {
+        IModelApp.tools.run(RestoreSavedContentLayoutTool.toolId);
+      },
     });
   }
 

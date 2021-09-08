@@ -50,8 +50,14 @@ export class ContentLayoutManager {
       const newLayoutDef = new ContentLayoutDef(layoutId);
       this.addLayout(key, newLayoutDef);
       return newLayoutDef;
-    } // else if (StandardContentLayouts.availableLayouts.
-    //  )
+    } else if (StandardContentLayouts.availableLayouts) {
+      const contentLayoutProps = StandardContentLayouts.availableLayouts.find((clp) => clp.id === key);
+      if (contentLayoutProps) {
+        const newLayoutDef = new ContentLayoutDef(contentLayoutProps);
+        this.addLayout(key, newLayoutDef);
+        return newLayoutDef;
+      }
+    }
 
     throw new Error(`Unable to located ContentLayout with id ${key}`);
   }

@@ -13,19 +13,23 @@ import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
 
 import {
   AbstractStatusBarItemUtilities, AbstractWidgetProps, BadgeType, CommonStatusBarItem, CommonToolbarItem, ConditionalBooleanValue,
-  ConditionalStringValue, IconSpecUtilities, StagePanelLocation, StagePanelSection, StageUsage, StatusBarSection, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
+  ConditionalStringValue, IconSpecUtilities, StagePanelLocation, StagePanelSection, StageUsage, StatusBarSection,
+  ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
   UiItemsManager, UiItemsProvider, WidgetState,
 } from "@bentley/ui-abstract";
-import { FillCentered } from "@bentley/ui-core";
+import { FillCentered, SessionSettingsStorage } from "@bentley/ui-core";
 import {
-  ActionCreatorsObject, ActionsUnion, ChildWindowLocationProps, createAction,
-  ReducerRegistryInstance, StateManager, StatusBarItemUtilities, SyncUiEventId, UiFramework, withStatusFieldProps,
+  ActionCreatorsObject, ActionsUnion, ChildWindowLocationProps, ContentGroup, ContentLayoutDef, ContentLayoutManager, ContentProps, createAction,
+  FrontstageManager, ReducerRegistryInstance, SavedViewLayout, SavedViewLayoutProps, StateManager, StatusBarItemUtilities, SyncUiEventId,
+  UiFramework, withStatusFieldProps,
 } from "@bentley/ui-framework";
 import { ShadowField } from "../appui/statusfields/ShadowField";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../index";
 import toolIconSvg from "@bentley/icons-generic/icons/window-add.svg?sprite";
 import tool2IconSvg from "@bentley/icons-generic/icons/window-maximize.svg?sprite";
 import tool3IconSvg from "@bentley/icons-generic/icons/3d-render.svg?sprite";
+import layoutSaveIconSvg from "@bentley/icons-generic/icons/folder-export.svg?sprite";
+import layoutRestoreIconSvg from "@bentley/icons-generic/icons/folder-import.svg?sprite";
 import { PopupTestPanel } from "./PopupTestPanel";
 import { PopupTestView } from "./PopupTestView";
 import { ComponentExamplesPage } from "../appui/frontstages/component-examples/ComponentExamples";
@@ -236,6 +240,102 @@ export class UiProviderTool extends Tool {
       UiProviderTool.testExtensionLoaded = testUiProvider.id;
     }
 
+    return true;
+  }
+}
+
+export class SaveContentLayoutTool extends Tool {
+  public static override toolId = "SaveContentLayoutTool";
+  public static override iconSpec = IconSpecUtilities.createSvgIconSpec(layoutSaveIconSvg);
+
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 0; }
+
+  public static override get keyin(): string {
+    return "save content layout";
+  }
+
+  public static override get englishKeyin(): string {
+    return this.keyin;
+  }
+
+  private async _run(): Promise<void> {
+    if (FrontstageManager.activeFrontstageDef && ContentLayoutManager.activeLayout && ContentLayoutManager.activeContentGroup) {
+      const sessionSettings = new SessionSettingsStorage();
+
+      // Create props for the Layout, ContentGroup and ViewStates
+      const savedViewLayoutProps = SavedViewLayout.viewLayoutToProps(ContentLayoutManager.activeLayout,
+        ContentLayoutManager.activeContentGroup, true, (contentProps: ContentProps) => {
+          if (contentProps.applicationData) {
+            if (contentProps.applicationData.iModelConnection)
+              delete contentProps.applicationData.iModelConnection;
+            if (contentProps.applicationData.viewState)
+              delete contentProps.applicationData.viewState;
+          }
+        });
+
+      await sessionSettings.saveSetting("SavedContentLayout",
+        FrontstageManager.activeFrontstageDef.id, JSON.stringify(savedViewLayoutProps));
+    }
+  }
+
+  public override run(): boolean {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    this._run();
+    return true;
+  }
+}
+
+export class RestoreSavedContentLayoutTool extends Tool {
+
+  public static override toolId = "RestoreSavedContentLayoutTool";
+  public static override iconSpec = IconSpecUtilities.createSvgIconSpec(layoutRestoreIconSvg);
+
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 0; }
+
+  public static override get keyin(): string {
+    return "restore saved content layout";
+  }
+  public static override get englishKeyin(): string {
+    return this.keyin;
+  }
+
+  private async _run(): Promise<void> {
+    const iModelConnection = UiFramework.getIModelConnection();
+
+    if (FrontstageManager.activeFrontstageDef && iModelConnection) {
+      const sessionSettings = new SessionSettingsStorage();
+
+      const result = await sessionSettings.getSetting("SavedContentLayout",
+        FrontstageManager.activeFrontstageDef.id);
+
+      if (result.setting) {
+        // Parse SavedViewLayoutProps
+        const savedViewLayoutProps: SavedViewLayoutProps = JSON.parse(result.setting);
+        // Create ContentLayoutDef
+        const contentLayoutDef = new ContentLayoutDef(savedViewLayoutProps.contentLayoutProps);
+        // Create ViewStates
+        const viewStates = await SavedViewLayout.viewStatesFromProps(iModelConnection, savedViewLayoutProps);
+
+        // Add applicationData to the ContentProps
+        savedViewLayoutProps.contentGroupProps.contents.forEach((contentProps: ContentProps, index: number) => {
+          contentProps.applicationData = { viewState: viewStates[index], iModelConnection };
+        });
+        const contentGroup = new ContentGroup(savedViewLayoutProps.contentGroupProps);
+
+        // activate the layout
+        await ContentLayoutManager.setActiveLayout(contentLayoutDef, contentGroup);
+
+        // emphasize the elements
+        SavedViewLayout.emphasizeElementsFromProps(contentGroup, savedViewLayoutProps);
+      }
+    }
+  }
+
+  public override run(): boolean {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    this._run();
     return true;
   }
 }

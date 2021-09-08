@@ -16,11 +16,11 @@ import {
 import { CustomToolbarItem, SelectionMode, useToolbarPopupContext } from "@bentley/ui-components";
 import { Point, ScrollView } from "@bentley/ui-core";
 import {
-  BasicNavigationWidget, BasicToolWidget, CommandItemDef, ConfigurableUiManager, ContentGroup, ContentLayoutDef, ContentLayoutManager,
+  BasicNavigationWidget, BasicToolWidget, CommandItemDef, ConfigurableUiManager, ContentGroup, ContentLayoutManager,
   ContentProps, ContentViewManager, CoreTools, CursorInformation, CursorPopupContent, CursorPopupManager, CursorUpdatedEventArgs,
   CustomItemDef, EmphasizeElementsChangedArgs, Frontstage, FrontstageDef, FrontstageManager, FrontstageProvider, GroupItemDef,
   HideIsolateEmphasizeAction, HideIsolateEmphasizeActionHandler, HideIsolateEmphasizeManager, IModelConnectedViewSelector, MessageManager,
-  ModalDialogManager, ModelessDialogManager, ModelSelectorWidgetControl, ModelsTreeNodeType, SavedViewLayout, SavedViewLayoutProps, StagePanel,
+  ModalDialogManager, ModelessDialogManager, ModelSelectorWidgetControl, ModelsTreeNodeType, StagePanel,
   SyncUiEventId, ToolbarHelper, UiFramework, Widget, WIDGET_OPACITY_DEFAULT, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
 import { Button, Slider } from "@itwin/itwinui-react";
@@ -591,56 +591,6 @@ class AdditionalTools {
     });
   }
 
-  private get _saveContentLayout() {
-    return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.saveContentLayout", badgeType: BadgeType.TechnicalPreview, execute: () => {
-        if (ContentLayoutManager.activeLayout && ContentLayoutManager.activeContentGroup) {
-          // Create props for the Layout, ContentGroup and ViewStates
-          const savedViewLayoutProps = SavedViewLayout.viewLayoutToProps(ContentLayoutManager.activeLayout, ContentLayoutManager.activeContentGroup, true,
-            (contentProps: ContentProps) => {
-              if (contentProps.applicationData) {
-                if (contentProps.applicationData.iModelConnection)
-                  delete contentProps.applicationData.iModelConnection;
-                if (contentProps.applicationData.viewState)
-                  delete contentProps.applicationData.viewState;
-              }
-            });
-
-          // Save the SavedViewLayoutProps
-          ViewsFrontstage.savedViewLayoutProps = JSON.stringify(savedViewLayoutProps);
-        }
-      },
-    });
-  }
-
-  private get _restoreSavedContentLayout() {
-    return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.restoreContentLayout", badgeType: BadgeType.New, execute: async () => {
-        const iModelConnection = UiFramework.getIModelConnection();
-        if (ViewsFrontstage.savedViewLayoutProps && iModelConnection) {
-          // Parse SavedViewLayoutProps
-          const savedViewLayoutProps: SavedViewLayoutProps = JSON.parse(ViewsFrontstage.savedViewLayoutProps);
-          // Create ContentLayoutDef
-          const contentLayoutDef = new ContentLayoutDef(savedViewLayoutProps.contentLayoutProps);
-          // Create ViewStates
-          const viewStates = await SavedViewLayout.viewStatesFromProps(iModelConnection, savedViewLayoutProps);
-
-          // Add applicationData to the ContentProps
-          savedViewLayoutProps.contentGroupProps.contents.forEach((contentProps: ContentProps, index: number) => {
-            contentProps.applicationData = { viewState: viewStates[index], iModelConnection };
-          });
-          const contentGroup = new ContentGroup(savedViewLayoutProps.contentGroupProps);
-
-          // activate the layout
-          await ContentLayoutManager.setActiveLayout(contentLayoutDef, contentGroup);
-
-          // emphasize the elements
-          SavedViewLayout.emphasizeElementsFromProps(contentGroup, savedViewLayoutProps);
-        }
-      },
-    });
-  }
-
   private get _startCursorPopup() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.startCursorPopup", execute: async () => {
@@ -786,8 +736,8 @@ class AdditionalTools {
   public getMiscGroupItem = (): CommonToolbarItem => {
     const children = ToolbarHelper.constructChildToolbarItems([
       this._nestedGroup,
-      this._saveContentLayout,
-      this._restoreSavedContentLayout,
+      AppTools.saveContentLayout,
+      AppTools.restoreSavedContentLayout,
       this._startCursorPopup,
       this._addCursorPopups,
       this._endCursorPopup,

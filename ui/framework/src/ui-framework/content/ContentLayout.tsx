@@ -347,7 +347,6 @@ class VerticalSplit extends BaseSplit implements LayoutSplit {
  * @public
  */
 export class ContentLayoutDef {
-  private static _sId = 0;
   private _layoutProps: ContentLayoutProps;
   private _rootSplit?: LayoutSplit;
 
@@ -357,14 +356,7 @@ export class ContentLayoutDef {
   public description: string = "";
   constructor(layoutProps: ContentLayoutProps) {
     this._layoutProps = layoutProps;
-
-    if (layoutProps.id)
-      this.id = layoutProps.id;
-    else {
-      ContentLayoutDef._sId++;
-      this.id = `ContentLayout-${ContentLayoutDef._sId}`;
-    }
-
+    this.id = layoutProps.id;
     if (layoutProps.description !== undefined)
       this.description = layoutProps.description;
   }
