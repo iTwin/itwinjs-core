@@ -77,7 +77,6 @@ export * from "./presentation-common/hierarchy/NodePathElement";
  * @docs-group-description PresentationRules
  * Types for defining the presentation ruleset.
  */
-export * from "./presentation-common/rules/hierarchy/AllInstanceNodesSpecification";
 export * from "./presentation-common/rules/hierarchy/ChildNodeRule";
 export * from "./presentation-common/rules/hierarchy/ChildNodeSpecification";
 export * from "./presentation-common/rules/hierarchy/CustomNodeSpecification";

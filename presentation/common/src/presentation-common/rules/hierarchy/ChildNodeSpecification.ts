@@ -7,7 +7,6 @@
  */
 
 import { RelatedInstanceSpecification } from "../RelatedInstanceSpecification";
-import { DEPRECATED_AllInstanceNodesSpecification } from "./AllInstanceNodesSpecification";
 import { ChildNodeRule } from "./ChildNodeRule";
 import { CustomNodeSpecification } from "./CustomNodeSpecification";
 import { CustomQueryInstanceNodesSpecification } from "./CustomQueryInstanceNodesSpecification";
@@ -20,7 +19,6 @@ import { RelatedInstanceNodesSpecification } from "./RelatedInstanceNodesSpecifi
  */
 export enum ChildNodeSpecificationTypes {
   // hierarchy specifications
-  DEPRECATED_AllInstanceNodes = "AllInstanceNodes", // eslint-disable-line @typescript-eslint/naming-convention
   RelatedInstanceNodes = "RelatedInstanceNodes",
   InstanceNodesOfSpecificClasses = "InstanceNodesOfSpecificClasses",
   CustomQueryInstanceNodes = "CustomQueryInstanceNodes",
@@ -119,6 +117,5 @@ export interface DefaultGroupingPropertiesContainer {
  * @public
  */
 export type ChildNodeSpecification =
-  DEPRECATED_AllInstanceNodesSpecification | // eslint-disable-line deprecation/deprecation
   CustomNodeSpecification | InstanceNodesOfSpecificClassesSpecification |
   RelatedInstanceNodesSpecification | CustomQueryInstanceNodesSpecification;

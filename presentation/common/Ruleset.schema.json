@@ -154,9 +154,6 @@
           "items": {
             "anyOf": [
               {
-                "$ref": "#/definitions/DEPRECATED_AllInstanceNodesSpecification"
-              },
-              {
                 "$ref": "#/definitions/CustomNodeSpecification"
               },
               {
@@ -738,89 +735,6 @@
       },
       "required": [
         "rendererName"
-      ],
-      "type": "object"
-    },
-    "DEPRECATED_AllInstanceNodesSpecification": {
-      "additionalProperties": false,
-      "description": "Creates nodes for all available instances filtered only by the\n`supportedSchemas` properties of the specification or the ruleset.",
-      "properties": {
-        "doNotSort": {
-          "description": "Set this flag to `true` to suppress default sorting of ECInstances returned by this specification.\n\nNote: setting this flag to `true` improves performance.",
-          "type": "boolean"
-        },
-        "groupByClass": {
-          "description": "Group instances by ECClass. Defaults to `true`.",
-          "type": "boolean"
-        },
-        "groupByLabel": {
-          "description": "Group instances by label. Defaults to `true`.",
-          "type": "boolean"
-        },
-        "hasChildren": {
-          "description": "This tells the rules engine that nodes produced using this\nspecification always or never have children. Defaults to `Unknown`.\n\nNote: setting this flag to `Always` or `Never` improves performance.",
-          "enum": [
-            "Always",
-            "Never",
-            "Unknown"
-          ],
-          "type": "string"
-        },
-        "hideExpression": {
-          "description": "An ECExpression which\nindicates whether a node should be hidden or not.",
-          "type": "string"
-        },
-        "hideIfNoChildren": {
-          "description": "Hide nodes if they don't have children.",
-          "type": "boolean"
-        },
-        "hideNodesInHierarchy": {
-          "description": "Hide instance nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
-          "type": "boolean"
-        },
-        "nestedRules": {
-          "description": "Nested rule specifications.",
-          "items": {
-            "$ref": "#/definitions/ChildNodeRule"
-          },
-          "type": "array"
-        },
-        "priority": {
-          "description": "Defines the order in which specifications are evaluated and executed. Defaults to `1000`.",
-          "type": "integer"
-        },
-        "relatedInstances": {
-          "description": "Specifications of related instances that can be used in nodes' creation.",
-          "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/DEPRECATED_RelatedInstanceSpecification"
-              },
-              {
-                "$ref": "#/definitions/RelatedInstanceSpecificationNew"
-              }
-            ]
-          },
-          "type": "array"
-        },
-        "specType": {
-          "description": "Used for serializing to JSON.",
-          "enum": [
-            "AllInstanceNodes"
-          ],
-          "type": "string"
-        },
-        "supportedSchemas": {
-          "$ref": "#/definitions/SchemasSpecification",
-          "description": "Specification of schemas whose instances should be returned."
-        },
-        "suppressSimilarAncestorsCheck": {
-          "description": "Suppress similar ancestor nodes' checking when creating nodes based on this specification.\n\nBy default we stop creating hierarchy at the node that has a similar ancestor representing\nthe same ECInstance and created using the same specification to prevent creating infinite\nhierarchies. With this flag enabled, we allow up to 10 similar ancestors before we consider\nthe hierarchy infinite.",
-          "type": "boolean"
-        }
-      },
-      "required": [
-        "specType"
       ],
       "type": "object"
     },
@@ -2846,9 +2760,6 @@
           "items": {
             "anyOf": [
               {
-                "$ref": "#/definitions/DEPRECATED_AllInstanceNodesSpecification"
-              },
-              {
                 "$ref": "#/definitions/CustomNodeSpecification"
               },
               {
@@ -2906,27 +2817,6 @@
       },
       "required": [
         "specType"
-      ],
-      "type": "object"
-    },
-    "SchemasSpecification": {
-      "additionalProperties": false,
-      "description": "Specification for a list of ECSchemas",
-      "properties": {
-        "isExclude": {
-          "description": "Should schemas specified in `schemaNames` be excluded rather than included.\nExclusion works by including everything except what's specified in `schemaNames`.",
-          "type": "boolean"
-        },
-        "schemaNames": {
-          "description": "ECSchema names",
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
-        }
-      },
-      "required": [
-        "schemaNames"
       ],
       "type": "object"
     },
@@ -3139,9 +3029,6 @@
           "description": "Child node specifications which are used if condition is satisfied",
           "items": {
             "anyOf": [
-              {
-                "$ref": "#/definitions/DEPRECATED_AllInstanceNodesSpecification"
-              },
               {
                 "$ref": "#/definitions/CustomNodeSpecification"
               },
