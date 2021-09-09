@@ -231,8 +231,8 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
     const categoryHeaderHeight = 32;
     const categoryHeaderPadding = 4;
     const categoryPropertyHeight = 27;
-    const bottomBorderPadding = 4;
-    const verticalPrimitivePropertyHeight = 59;
+    const bottomBorderPadding = 5;
+    const verticalPrimitivePropertyHeight = 55;
 
     return getPropertyHeight(this.state) + node.lastInNumberOfCategories * bottomBorderPadding;
 
@@ -244,7 +244,7 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
             + (node.isExpanded ? dynamicHeight + bottomBorderPadding : 0);
         }
 
-        return dynamicHeight + (state.orientation === Orientation.Vertical ? 31 : 0);
+        return dynamicHeight + (state.orientation === Orientation.Vertical ? 28 : 0);
       }
 
       if (node.type === FlatGridItemType.Category) {
@@ -525,7 +525,7 @@ const CustomCategoryContent: React.FC<CustomCategoryContentProps> = (props) => {
     () => {
       assert(divRef.current !== null);
       const contentHeight = divRef.current.getBoundingClientRect().height;
-      onHeightChanged(contentHeight + 13);
+      onHeightChanged(contentHeight);
     },
     [props.gridContext.orientation, onHeightChanged],
   );
