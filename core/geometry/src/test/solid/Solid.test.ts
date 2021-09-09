@@ -13,7 +13,7 @@ import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Path } from "../../curve/Path";
 import { StrokeOptions } from "../../curve/StrokeOptions";
-import { IndexedPolyface, PolyfaceQuery, Range1dArray } from "../../geometry-core";
+import { IndexedPolyface, PolyfaceQuery } from "../../geometry-core";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
@@ -271,7 +271,7 @@ describe("Solids", () => {
       // verify same surface area for all . . . .
       const area0 = PolyfaceQuery.sumFacetAreas(allPolyfaces[0]);
       for (let i = 1; i < allPolyfaces.length; i++){
-        ck.testCoordinate(area0, PolyfaceQuery.sumFacetAreas(allPolyfaces[i]), );
+        ck.testCoordinate(area0, PolyfaceQuery.sumFacetAreas(allPolyfaces[i]));
       }
       ck.testRange3d(rangeA, rangeB);
       ck.testRange3d(rangeA, rangeC);
