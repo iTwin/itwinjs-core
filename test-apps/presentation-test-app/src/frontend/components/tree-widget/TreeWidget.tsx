@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import { useResizeDetector } from "react-resize-detector";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { DiagnosticsProps } from "@bentley/presentation-components";
 import { FilteringInput } from "@bentley/ui-components";
@@ -15,8 +16,8 @@ interface Props {
 }
 
 export function TreeWidget(props: Props) {
+  const { rulesetId, imodel } = props;
   const [diagnosticsOptions, setDiagnosticsOptions] = React.useState<DiagnosticsProps>({ ruleDiagnostics: undefined, devDiagnostics: undefined });
-
   const [filter, setFilter] = React.useState("");
   const [isFiltering, setIsFiltering] = React.useState(false);
   const [matchesCount, setMatchesCount] = React.useState<number>();
@@ -27,12 +28,14 @@ export function TreeWidget(props: Props) {
     setMatchesCount(newMatchesCount);
   }, []);
 
+  const { width, height, ref } = useResizeDetector();
+
   return (
     <div className="treewidget">
       <div className="treewidget-header">
         <h3>{IModelApp.i18n.translate("Sample:controls.tree")}</h3>
         <DiagnosticsSelector onDiagnosticsOptionsChanged={setDiagnosticsOptions} />
-        {props.rulesetId ? <FilteringInput
+        {rulesetId ? <FilteringInput
           filteringInProgress={isFiltering}
           onFilterCancel={() => { setFilter(""); }}
           onFilterClear={() => { setFilter(""); }}
@@ -42,13 +45,15 @@ export function TreeWidget(props: Props) {
             resultCount: matchesCount || 0,
           }} /> : null}
       </div>
-      <div className="filteredTree">
-        {props.rulesetId ? <>
+      <div ref={ref} className="filteredTree">
+        {rulesetId && width && height ? <>
           <Tree
-            imodel={props.imodel}
-            rulesetId={props.rulesetId}
+            imodel={imodel}
+            rulesetId={rulesetId}
             diagnostics={diagnosticsOptions}
             filtering={{ filter, activeMatchIndex, onFilteringStateChange }}
+            width={width}
+            height={height}
           />
           {isFiltering ? <div className="filteredTreeOverlay" /> : null}
         </> : null}

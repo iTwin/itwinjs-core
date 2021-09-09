@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Point3d } from "@bentley/geometry-core";
-import { ColorDef, FeatureAppearance, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
+import { ColorDef, FeatureAppearance, RenderMode, ViewFlags, WhiteOnWhiteReversalSettings } from "@bentley/imodeljs-common";
 import {
   DecorateContext, FeatureSymbology, GraphicType, IModelApp, IModelConnection, SnapshotConnection, Viewport,
 } from "@bentley/imodeljs-frontend";
@@ -52,6 +52,18 @@ describe("White-on-white reversal", async () => {
     });
   });
 
+  function ignoreBackground(vp: Viewport): void {
+    vp.displayStyle.settings.whiteOnWhiteReversal = WhiteOnWhiteReversalSettings.fromJSON({ ignoreBackgroundColor: true });
+  }
+
+  it("should apply to non-white background if background color is ignored", async () => {
+    await test([red, black], (vp) => {
+      vp.displayStyle.backgroundColor = ColorDef.red;
+      ignoreBackground(vp);
+      return undefined;
+    });
+  });
+
   it("should apply if background is white and geometry is white", async () => {
     await test([black, white], (vp, _vf) => {
       vp.displayStyle.backgroundColor = ColorDef.white;
@@ -64,18 +76,31 @@ describe("White-on-white reversal", async () => {
       vp.displayStyle.backgroundColor = ColorDef.white;
       return vf.with("whiteOnWhiteReversal", false);
     });
+
+    await test([white, red], (vp, vf) => {
+      ignoreBackground(vp);
+      vp.displayStyle.backgroundColor = ColorDef.red;
+      return vf.with("whiteOnWhiteReversal", false);
+    });
   });
 
   it("should not apply if geometry is not white", async () => {
-    await test([white, blue], (vp, _vf) => {
-      class ColorOverride {
-        public addFeatureOverrides(ovrs: FeatureSymbology.Overrides, _viewport: Viewport): void {
-          ovrs.setDefaultOverrides(FeatureAppearance.fromRgb(ColorDef.blue));
-        }
+    class ColorOverride {
+      public addFeatureOverrides(ovrs: FeatureSymbology.Overrides, _viewport: Viewport): void {
+        ovrs.setDefaultOverrides(FeatureAppearance.fromRgb(ColorDef.blue));
       }
+    }
 
+    await test([white, blue], (vp, _vf) => {
       vp.displayStyle.backgroundColor = ColorDef.white;
       vp.addFeatureOverrideProvider(new ColorOverride());
+      return undefined;
+    });
+
+    await test([white, blue], (vp, _vf) => {
+      vp.displayStyle.backgroundColor = ColorDef.white;
+      vp.addFeatureOverrideProvider(new ColorOverride());
+      ignoreBackground(vp);
       return undefined;
     });
   });

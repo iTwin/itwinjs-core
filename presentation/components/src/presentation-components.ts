@@ -76,8 +76,6 @@ export * from "./presentation-components/tree/WithUnifiedSelection";
 export * from "./presentation-components/tree/WithFilteringSupport";
 export * from "./presentation-components/tree/controlled/UseUnifiedSelection";
 export * from "./presentation-components/tree/controlled/UseControlledTreeFiltering";
-export * from "./presentation-components/tree/controlled/WithFilteringSupport";
-export * from "./presentation-components/tree/controlled/WithVisibleNodes";
 export * from "./presentation-components/tree/controlled/TreeHooks";
 
 /**

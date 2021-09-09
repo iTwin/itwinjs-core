@@ -1017,6 +1017,7 @@ export abstract class Viewport implements IDisposable {
     removals.push(settings.onMonochromeModeChanged.addListener(displayStyleChanged));
     removals.push(settings.onClipStyleChanged.addListener(styleAndOverridesChanged));
     removals.push(settings.onPlanarClipMaskChanged.addListener(displayStyleChanged));
+    removals.push(settings.onWhiteOnWhiteReversalChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onPlanarClipMaskChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onAppearanceOverridesChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onChanged.addListener(displayStyleChanged));
@@ -3041,6 +3042,9 @@ export class ScreenViewport extends Viewport {
   public override synchWithView(options?: ViewChangeOptions | boolean): void {
     options = (undefined === options) ? {} :
       (typeof options !== "boolean") ? options : { noSaveInUndo: !options }; // for backwards compatibility, was "saveInUndo"
+
+    if (this.view.is3d() && options?.globalAlignment)
+      this.view.alignToGlobe(options.globalAlignment.target, options.globalAlignment.transition);
 
     super.synchWithView(options);
 

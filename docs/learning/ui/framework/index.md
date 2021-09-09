@@ -1,6 +1,6 @@
 # The ui-framework package
 
-The ui-framework package contains application fragments for Login, Project, iModel and View selection, and configuration of the application UI including the Backstage, Frontstages, Zones, Widgets, etc.
+The ui-framework package contains components for specifying the application UI consisting of the Backstage, Frontstages, Tool Bars, Status Bars, Widgets and Panels.
 
 ## Application UI Configuration
 

@@ -39,20 +39,8 @@ export { UnitSystem } from "./Metadata/UnitSystem";
 export * from "./PropertyTypes";
 export * from "./SchemaKey";
 export * from "./utils/FormatEnums";
-export * from "./Validation/Diagnostic";
-export * from "./Validation/DiagnosticReporter";
-/* eslint-disable-next-line deprecation/deprecation */
-export { DiagnosticCodes, Diagnostics, ECRuleSet } from "./Validation/ECRules";
-export * from "./Validation/LoggingDiagnosticReporter";
-export * from "./Validation/Rules";
-export * from "./Validation/SchemaValidationVisitor";
 export * from "./Validation/SchemaWalker";
 export * from "./SchemaPartVisitorDelegate";
-export * from "./Validation/SchemaCompareDiagnostics";
-/* eslint-disable-next-line deprecation/deprecation */
-export { ISuppressionRule, IRuleSuppressionSet, IRuleSuppressionMap } from "./Validation/RuleSuppressionSet";
-/* eslint-disable-next-line deprecation/deprecation */
-export { SchemaValidater } from "./Validation/SchemaValidater";
 export { CustomAttribute, CustomAttributeContainerProps} from "./Metadata/CustomAttribute";
 export { SchemaGraph } from "./utils/SchemaGraph";
 

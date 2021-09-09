@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/frontend-devtools",
+      "comment": "Add tool to ignore background color for white-on-white reversal.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/frontend-devtools"
+}

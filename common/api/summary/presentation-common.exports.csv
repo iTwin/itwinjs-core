@@ -284,7 +284,6 @@ internal;PresentationIpcInterface
 public;PresentationRpcInterface 
 public;PresentationRpcRequestOptions
 public;PresentationStatus
-beta;PresentationUnitSystem
 public;PrimitivePropertyValue = string | number | boolean | Point | InstanceKey | undefined
 public;PrimitiveTypeDescription 
 alpha;ProcessFieldHierarchiesProps
