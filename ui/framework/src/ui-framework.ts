@@ -265,7 +265,6 @@ export * from "./ui-framework/widgets/WidgetHost";
 export * from "./ui-framework/widgets/WidgetManager";
 export * from "./ui-framework/widgets/WidgetProps";
 export * from "./ui-framework/widgets/WidgetStack";
-export * from "./ui-framework/widgets/VisibilityWidget";
 
 export * from "./ui-framework/workflow/Task";
 export * from "./ui-framework/workflow/Workflow";
@@ -410,4 +409,3 @@ export * from "./ui-framework/zones/ZoneDef";
  * @docs-group-description Timeline
  * Classes for working with a TimelineComponent
  */
-

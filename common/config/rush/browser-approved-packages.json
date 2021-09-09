@@ -831,6 +831,10 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
+      "name": "react-resize-detector",
+      "allowedCategories": [ "extensions", "internal" ]
+    },
+    {
       "name": "react-router-dom",
       "allowedCategories": [ "internal" ]
     },
@@ -860,7 +864,7 @@
     },
     {
       "name": "react-virtualized-auto-sizer",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "react-window",

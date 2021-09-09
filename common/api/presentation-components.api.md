@@ -9,7 +9,6 @@ import { ActiveMatchInfo } from '@bentley/ui-components';
 import { CategoryDescription } from '@bentley/presentation-common';
 import { ColumnDescription } from '@bentley/ui-components';
 import { Content } from '@bentley/presentation-common';
-import { ControlledTreeProps } from '@bentley/ui-components';
 import { DelayLoadedTreeNodeItem } from '@bentley/ui-components';
 import { Descriptor } from '@bentley/presentation-common';
 import { DescriptorOverrides } from '@bentley/presentation-common';
@@ -158,21 +157,6 @@ export interface ControlledPresentationTreeFilteringProps {
 // @beta @deprecated
 export type ControlledTreeFilteringProps = ControlledPresentationTreeFilteringProps;
 
-// @beta @deprecated
-export interface ControlledTreeWithFilteringSupportProps {
-    activeMatchIndex?: number;
-    filter?: string;
-    nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
-    onFilterApplied?: (filter: string) => void;
-    onMatchesCounted?: (count: number) => void;
-    onNodeLoaderChanged?: (nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider> | undefined) => void;
-}
-
-// @beta @deprecated
-export interface ControlledTreeWithVisibleNodesProps extends Omit<ControlledTreeProps, "visibleNodes"> {
-    nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
-}
-
 // @alpha
 export function createDiagnosticsOptions(props: DiagnosticsProps): DiagnosticsOptionsWithHandler | undefined;
 
@@ -204,12 +188,6 @@ export interface DataProvidersFactoryProps {
 
 // @public
 export const DEFAULT_PROPERTY_GRID_RULESET: Ruleset;
-
-// @beta @deprecated
-export function DEPRECATED_controlledTreeWithFilteringSupport<P extends ControlledTreeWithVisibleNodesProps>(TreeComponent: React.FC<P>): React.FC<Omit<P & ControlledTreeWithFilteringSupportProps, "visibleNodes">>;
-
-// @beta @deprecated
-export function DEPRECATED_controlledTreeWithVisibleNodes<P extends ControlledTreeProps>(TreeComponent: React.FC<P>): React.FC<Omit<P & ControlledTreeWithVisibleNodesProps, "visibleNodes">>;
 
 // @public @deprecated
 export function DEPRECATED_treeWithFilteringSupport<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<P & TreeWithFilteringSupportProps>;

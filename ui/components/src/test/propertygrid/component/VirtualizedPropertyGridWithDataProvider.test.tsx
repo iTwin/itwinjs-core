@@ -549,7 +549,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
 
         fireEvent.click(category);
         expect(baseElement.querySelector(".iui-expanded")).to.exist;
-        expect(node.style.height).to.be.equal("553px");
+        expect(node.style.height).to.be.equal("541px");
       });
 
       it("updates node height on collapse", async () => {
@@ -562,7 +562,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
 
         const category = await findByText("test_category");
         const node = baseElement.querySelector(".virtualized-grid-node") as HTMLElement;
-        expect(node.style.height).to.be.equal("553px");
+        expect(node.style.height).to.be.equal("541px");
 
         fireEvent.click(category);
         expect(node.style.height).to.be.equal("36px");
@@ -603,7 +603,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       await findByText("Stub Component");
 
       const node = baseElement.querySelectorAll(".virtualized-grid-node")[1] as HTMLElement;
-      expect(node.style.height).to.be.equal("19px");
+      expect(node.style.height).to.be.equal("20px");
     });
 
     it("adds more height to dynamic nodes when orientation is vertical", async () => {
@@ -613,7 +613,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       await findByText("Stub Component");
 
       const node = baseElement.querySelectorAll(".virtualized-grid-node")[1] as HTMLElement;
-      expect(node.style.height).to.be.equal("50px");
+      expect(node.style.height).to.be.equal("48px");
     });
   });
 

@@ -9,7 +9,7 @@
 import { ClipVector, Point3d, Vector3d } from "@bentley/geometry-core";
 import {
   AmbientOcclusion, AnalysisStyle, ClipStyle, ColorDef, Frustum, GlobeMode, HiddenLine, Hilite, LightSettings, MonochromeMode, Npc, RenderTexture,
-  ThematicDisplay, ViewFlags,
+  ThematicDisplay, ViewFlags, WhiteOnWhiteReversalSettings,
 } from "@bentley/imodeljs-common";
 import { FlashSettings } from "../FlashSettings";
 import { Viewport } from "../Viewport";
@@ -45,6 +45,7 @@ export interface RenderPlan {
   readonly backgroundMapOn: boolean;
   readonly upVector: Vector3d;
   readonly lights?: LightSettings;
+  readonly whiteOnWhiteReversal: WhiteOnWhiteReversalSettings;
 }
 
 /** @internal */
@@ -66,6 +67,7 @@ export function createEmptyRenderPlan(): RenderPlan {
     isGlobeMode3D: false,
     backgroundMapOn: false,
     upVector: Vector3d.unitZ(),
+    whiteOnWhiteReversal: WhiteOnWhiteReversalSettings.fromJSON(),
   };
 }
 
@@ -138,5 +140,6 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
     backgroundMapOn,
     upVector,
     lights,
+    whiteOnWhiteReversal: vp.displayStyle.settings.whiteOnWhiteReversal,
   };
 }
