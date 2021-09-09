@@ -298,7 +298,7 @@ describe("FlatPropertyRenderer", () => {
       const { rerender } = render(renderFlatPropertyRenderer(false, onHeightChanged));
       expect(onHeightChanged).to.have.not.been.called;
       rerender(renderFlatPropertyRenderer(true, onHeightChanged));
-      expect(onHeightChanged).to.have.been.calledOnceWith(28);
+      expect(onHeightChanged).to.have.been.calledOnceWith(27);
     });
 
     it("does not get called when component is mounted in editing state", () => {

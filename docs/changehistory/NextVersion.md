@@ -8,7 +8,7 @@ publish: false
 Removed TSLint support from `@bentley/build-tools`. If you're still using it, please switch to ESLint.
 Also removed legacy `.eslintrc.js` file from the same package. Instead, use `@bentley/eslint-plugin` and the `imodeljs-recommended` config included in it.
 
-## `Viewport.zoomToElements` improvements
+## Viewport.zoomToElements improvements
 
 [Viewport.zoomToElements]($frontend) accepts any number of element Ids and fits the viewport to the union of their [Placement]($common)s. A handful of shortcomings of the previous implementation have been addressed:
 
@@ -36,6 +36,7 @@ Each of these interfaces originally had only a member `changeSetId: string`, In 
 ### Immutability
 
 [ViewFlags]($common) has long been a common source of surprising behavior. Consider the following code:
+
 ```ts
   function turnOnShadows(vp: Viewport) {
     vp.viewFlags.shadows = true;
@@ -43,6 +44,7 @@ Each of these interfaces originally had only a member `changeSetId: string`, In 
 ```
 
 You could be forgiven for expecting the image displayed in the Viewport to include shadows after calling this function, but that will not be the case. Instead, you must write the function as follows:
+
 ```ts
   function turnOnShadows(vp: Viewport) {
     const vf = vp.viewFlags.clone();
@@ -52,6 +54,7 @@ You could be forgiven for expecting the image displayed in the Viewport to inclu
 ```
 
 To rectify this, and to eliminate various other pitfalls associated with mutable state, ViewFlags has been converted to an immutable type - all of its properties are read-only and the only way to change a property is to create a copy. The function above can now be written as:
+
 ```ts
   function turnOnShadows(vp: Viewport) {
     vp.viewFlags = vp.viewFlags.with("shadows", true);
@@ -61,10 +64,12 @@ To rectify this, and to eliminate various other pitfalls associated with mutable
 ```
 
 Methods that mutate a ViewFlags object have been removed.
-- `clone` has been replaced with [ViewFlags.copy]($common), which returns a new object instead of modifying `this`.
-- `createFrom` has been removed. Because ViewFlags is immutable, it is never necessary to create an identical copy of one - just use the same object. Or, if for some reason you really want an identical copy, use the object spread operator.
+
+* `clone` has been replaced with [ViewFlags.copy]($common), which returns a new object instead of modifying `this`.
+* `createFrom` has been removed. Because ViewFlags is immutable, it is never necessary to create an identical copy of one - just use the same object. Or, if for some reason you really want an identical copy, use the object spread operator.
 
 If your code used to modify a single property, change it to use [ViewFlags.with]($common) or [ViewFlags.withRenderMode]($common):
+
 ```ts
   // Replace this...
   viewport.viewFlags.clipVolume = true;
@@ -73,6 +78,7 @@ If your code used to modify a single property, change it to use [ViewFlags.with]
 ```
 
 If your code used to modify multiple properties, change it to use [ViewFlags.copy]($common):
+
 ```ts
   // Replace this...
   viewport.viewFlags.shadows = viewport.viewFlags.lighting = true;
@@ -81,6 +87,7 @@ If your code used to modify multiple properties, change it to use [ViewFlags.cop
 ```
 
 If your code used to create a new ViewFlags and then modify its properties, pass the initial properties to [ViewFlags.create]($common) instead:
+
 ```ts
   // Replace this...
   const vf = new ViewFlags();
@@ -106,6 +113,7 @@ If you were using noCameraLights, noSourceLights, or noSolarLight, use [ViewFlag
 This cumbersome, inefficient class has been replaced with the identically-named [ViewFlagOverrides]($common) type, which is simply an interface that has all the same properties as [ViewFlags]($common), but each is optional. A flag is overridden if its value is not `undefined`.
 
 Upgrade instructions:
+
 ```
   let ovrs = new ViewFlagOverrides(); // Old code - nothing overridden.
   let ovrs = { }; // New code
@@ -257,6 +265,7 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `MutableTreeModel.computeVisibleNodes`  | `computeVisibleNodes` in @bentley/ui-components             |
 | `TreeModelSource.getVisibleNodes`       | memoized result of `computeVisibleNodes`                    |
 | `useVisibleTreeNodes`                   | `useTreeModel` and `computeVisibleNodes`                    |
+| `SignIn`                                | *eliminated*                                                |
 
 ### @bentley/ui-framework
 
@@ -325,11 +334,37 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `DEPRECATED_controlledTreeWithFilteringSupport`       | *eliminated*                                                                           |
 | `DEPRECATED_controlledTreeWithVisibleNodes`           | *eliminated*                                                                           |
 
+### @bentley/ecschema-metadata
+
+| Removed                                 | Replacement                                                                                 |
+| --------------------------------------- | --------------------------------------------------------------------------------------------|
+| `IDiagnostic`                           | `IDiagnostic` in @bentley/ecschema-editing                                                  |
+| `BaseDiagnostic`                        | `BaseDiagnostic` in @bentley/ecschema-editing                                               |
+| `DiagnosticType`                        | `DiagnosticType` in @bentley/ecschema-editing                                               |
+| `DiagnosticCategory`                    | `DiagnosticCategory` in @bentley/ecschema-editing                                           |
+| `DiagnosticCodes`                       | `DiagnosticCodes` in @bentley/ecschema-editing                                              |
+| `Diagnostics`                           | `Diagnostics` in @bentley/ecschema-editing                                                  |
+| `IDiagnosticReporter`                   | `IDiagnosticReporter` in @bentley/ecschema-editing                                          |
+| `SuppressionDiagnosticReporter`         | `SuppressionDiagnosticReporter` in @bentley/ecschema-editing                                |
+| `FormatDiagnosticReporter`              | `FormatDiagnosticReporter` in @bentley/ecschema-editing                                     |
+| `LoggingDiagnosticReporter`             | `LoggingDiagnosticReporter` in @bentley/ecschema-editing                                    |
+| `IRuleSet`                              | `IRuleSet` in @bentley/ecschema-editing                                                     |
+| `ECRuleSet`                             | `ECRuleSet` in @bentley/ecschema-editing                                                    |
+| `ISuppressionRule`                      | `ISuppressionRule` in @bentley/ecschema-editing                                             |
+| `BaseSuppressionRule`                   | `BaseSuppressionRule` in @bentley/ecschema-editing                                          |
+| `IRuleSuppressionMap`                   | `IRuleSuppressionMap` in @bentley/ecschema-editing                                          |
+| `BaseRuleSuppressionMap`                | `BaseRuleSuppressionMap` in @bentley/ecschema-editing                                       |
+| `IRuleSuppressionSet`                   | `IRuleSuppressionSet` in @bentley/ecschema-editing                                          |
+| `SchemaCompareCodes`                    | `SchemaCompareCodes` in @bentley/ecschema-editing                                           |
+| `SchemaCompareDiagnostics`              | `SchemaCompareDiagnostics` in @bentley/ecschema-editing                                     |
+| `SchemaValidater`                       | `SchemaValidater` in @bentley/ecschema-editing                                              |
+| `SchemaValidationVisitor`               | `SchemaValidationVisitor` in @bentley/ecschema-editing                                      |
+
 <!---
 User Interface Changes - section to comment below
 -->
 
-### User Interface Changes
+## User Interface Changes
 
 Several changes were made in the @bentley/ui-* packages.
 Some components in @bentley/ui-core were deprecated in favor of components in @itwinui-react.
@@ -340,14 +375,14 @@ The @bentley/ui-* and @bentley/presentation-components packages are now dependen
 
 For migration purposes, React 16 is included in the peerDependencies for the packages. React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
 
-#### New Floating Widget Capabilities
+### New Floating Widget Capabilities
 
 Widgets provided via UiItemsProviders may now set `defaultState: WidgetState.Floating` and `isFloatingStateSupported: true` to open
 the widget in a floating container. The property `defaultFloatingPosition` may also be specified to define the position of the floating container. If a position is not defined the container will be centered in the `AppUi` area.
 
 The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to retrieve the Ids for all floating widget containers for the active frontstage as specified by the `frontstageDef`. These ids can be used to query the size of the floating container via `frontstageDef.getFloatingWidgetContainerBounds`. The method `frontstageDef.setFloatingWidgetContainerBounds` can then be used to set the size and position of a floating widget container.
 
-#### `ControlledTree` API Changes
+### `ControlledTree` API Changes
 
 `ControlledTree` component has received the following breaking changes:
 
@@ -399,9 +434,9 @@ The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to 
 
   `width` and `height` props may be calculated dynamically using [ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver) API.
 
-### Deprecated ui-core Components in Favor of iTwinUI-react Components
+### Deprecated Components in Favor of iTwinUI-react Components
 
-Several UI components in the @bentley/ui-core package have been deprecated.
+Several UI components in the @bentley/ui-core and @bentley/ui-components packages have been deprecated.
 Developers should use equivalent components in @itwin/itwinui-react instead.
 
 | Deprecated in @bentley/ui-core | Use from @itwin/itwinui-react instead          |
@@ -436,6 +471,10 @@ Developers should use equivalent components in @itwin/itwinui-react instead.
 | Toggle                         | ToggleSwitch                                   |
 | Tooltip                        | Tooltip                                        |
 | TooltipPlacement               | Placement                                      |
+
+| Deprecated in @bentley/ui-components | Use from @itwin/itwinui-react instead          |
+| ------------------------------------ | ---------------------------------------------- |
+| Breadcrumb                           | Breadcrumbs                                    |
 
 #### Slider
 

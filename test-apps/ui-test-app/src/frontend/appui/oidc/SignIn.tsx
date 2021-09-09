@@ -10,7 +10,7 @@ import * as React from "react";
 import { ClientRequestContext, ProcessDetector } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient, isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { SignIn as SignInBase } from "@bentley/ui-components";
+import { SignInBase } from "./SignInBase";
 import { CommonProps } from "@bentley/ui-core";
 import { UiFramework } from "@bentley/ui-framework";
 

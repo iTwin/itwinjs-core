@@ -36,6 +36,7 @@ import { Cartographic } from "./geometry/Cartographic";
 import { IModel } from "./IModel";
 import { calculateSolarDirection } from "./SolarCalculate";
 import { ContextRealityModel, ContextRealityModelProps, ContextRealityModels } from "./ContextRealityModel";
+import { WhiteOnWhiteReversalProps, WhiteOnWhiteReversalSettings } from "./WhiteOnWhiteReversalSettings";
 
 /** Describes the [[SubCategoryOverride]]s applied to a [[SubCategory]] by a [[DisplayStyle]].
  * @see [[DisplayStyleSettingsProps]]
@@ -140,7 +141,8 @@ export interface DisplayStyleSettingsProps {
   clipStyle?: ClipStyleProps;
   /** Planar clip masks applied to reality models. */
   planarClipOvr?: DisplayStylePlanarClipMaskProps[];
-
+  /** @see [[DisplayStyleSettings.whiteOnWhiteReversal]]. */
+  whiteOnWhiteReversal?: WhiteOnWhiteReversalProps;
 }
 
 /** JSON representation of settings associated with a [[DisplayStyle3dProps]].
@@ -453,6 +455,7 @@ export class DisplayStyleSettings {
   private _analysisStyle?: AnalysisStyle;
   private _clipStyle: ClipStyle;
   private readonly _contextRealityModels: ContextRealityModels;
+  private _whiteOnWhiteReversal: WhiteOnWhiteReversalSettings;
 
   public is3d(): this is DisplayStyle3dSettings {
     return false;
@@ -526,6 +529,8 @@ export class DisplayStyleSettings {
   public readonly onPlanProjectionSettingsChanged = new BeEvent<(modelId: Id64String, newSettings: PlanProjectionSettings | undefined) => void>();
   /** Event raised just before adding or removing an entry from [[planarClipMasks]]. */
   public readonly onPlanarClipMaskChanged = new BeEvent<(modelId: Id64String, newSettings: PlanarClipMaskSettings | undefined) => void>();
+  /** Event raised just prior to assignment to the [[whiteOnWhiteReversal]] property. */
+  public readonly onWhiteOnWhiteReversalChanged = new BeEvent<(newSettings: WhiteOnWhiteReversalSettings) => void>();
 
   /** Construct a new DisplayStyleSettings from an [[ElementProps.jsonProperties]].
    * @param jsonProperties An object with an optional `styles` property containing a display style's settings.
@@ -553,6 +558,7 @@ export class DisplayStyleSettings {
     if (this._json.analysisStyle)
       this._analysisStyle = AnalysisStyle.fromJSON(this._json.analysisStyle);
 
+    this._whiteOnWhiteReversal = WhiteOnWhiteReversalSettings.fromJSON(this._json.whiteOnWhiteReversal);
     this._clipStyle = ClipStyle.fromJSON(this._json.clipStyle);
 
     this._subCategoryOverrides = new OverridesMap<DisplayStyleSubCategoryProps, SubCategoryOverride>(this._json, "subCategoryOvr", this.onSubCategoryOverridesChanged,
@@ -730,6 +736,21 @@ export class DisplayStyleSettings {
     this._json.analysisFraction = Math.max(0, Math.min(1, fraction));
   }
 
+  /** Settings controlling how white-on-white reversal is applied. */
+  public get whiteOnWhiteReversal(): WhiteOnWhiteReversalSettings { return this._whiteOnWhiteReversal; }
+  public set whiteOnWhiteReversal(settings: WhiteOnWhiteReversalSettings) {
+    if (settings.equals(this.whiteOnWhiteReversal))
+      return;
+
+    this.onWhiteOnWhiteReversalChanged.raiseEvent(settings);
+    this._whiteOnWhiteReversal = settings;
+    const json = settings.toJSON();
+    if (json)
+      this._json.whiteOnWhiteReversal = json;
+    else
+      delete this._json.whiteOnWhiteReversal;
+  }
+
   /** Customize the way geometry belonging to a [[SubCategory]] is drawn by this display style.
    * @param id The Id of the SubCategory whose appearance is to be overridden.
    * @param ovr The overrides to apply to the [[SubCategoryAppearance]].
@@ -890,6 +911,7 @@ export class DisplayStyleSettings {
       backgroundColor: this.backgroundColor.toJSON(),
       monochromeColor: this.monochromeColor.toJSON(),
       monochromeMode: this.monochromeMode,
+      whiteOnWhiteReversal: this.whiteOnWhiteReversal.toJSON() ?? { ignoreBackgroundColor: false },
     };
 
     if (options?.includeBackgroundMap)
@@ -988,6 +1010,9 @@ export class DisplayStyleSettings {
 
     if (overrides.analysisStyle)
       this.analysisStyle = AnalysisStyle.fromJSON(overrides.analysisStyle);
+
+    if (overrides.whiteOnWhiteReversal)
+      this.whiteOnWhiteReversal = WhiteOnWhiteReversalSettings.fromJSON(overrides.whiteOnWhiteReversal);
 
     if (undefined !== overrides.analysisFraction)
       this.analysisFraction = overrides.analysisFraction;
