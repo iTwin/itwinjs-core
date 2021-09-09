@@ -79,8 +79,6 @@ export * from "./ui-components/iconpicker/IconPickerButton";
 
 export * from "./ui-components/inputs/ParsedInput";
 
-export * from "./ui-components/oidc/SignIn";
-
 export * from "./ui-components/properties/LinkHandler";
 export * from "./ui-components/properties/ValueRendererManager";
 export * from "./ui-components/properties/renderers/NonPrimitivePropertyRenderer";
@@ -190,6 +188,7 @@ export * from "./ui-components/tree/controlled/internal/SparseTree";
 /**
  * @docs-group-description Breadcrumb
  * Classes and components for working with a Breadcrumb.
+ * As of version 3.0, the Breadcrumb is deprecated.
  */
 /**
  * @docs-group-description Date
