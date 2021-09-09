@@ -1,6 +1,13 @@
 # Change Log - @bentley/frontend-devtools
 
-This log was last generated on Wed, 08 Sep 2021 14:36:01 GMT and should not be manually modified.
+This log was last generated on Thu, 09 Sep 2021 21:04:57 GMT and should not be manually modified.
+
+## 2.19.11
+Thu, 09 Sep 2021 21:04:57 GMT
+
+### Updates
+
+- Add tool to ignore background color for white-on-white reversal.
 
 ## 2.19.10
 Wed, 08 Sep 2021 14:36:01 GMT
