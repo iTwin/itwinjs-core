@@ -314,6 +314,7 @@ import { ViewStateProps } from '@bentley/imodeljs-common';
 import { WebGLContext } from '@bentley/webgl-compatibility';
 import { WebGLExtensionName } from '@bentley/webgl-compatibility';
 import { WebGLRenderCompatibilityInfo } from '@bentley/webgl-compatibility';
+import { WhiteOnWhiteReversalSettings } from '@bentley/imodeljs-common';
 import { XAndY } from '@bentley/geometry-core';
 import { XYAndZ } from '@bentley/geometry-core';
 import { XYZ } from '@bentley/geometry-core';
@@ -5724,6 +5725,8 @@ export class MapTileTree extends RealityTileTree {
     // (undocumented)
     static minReprojectionDepth: number;
     // (undocumented)
+    get parentsAndChildrenExclusive(): boolean;
+    // (undocumented)
     pointAboveEllipsoid(point: Point3d): boolean;
     // (undocumented)
     sourceTilingScheme: MapTilingScheme;
@@ -8071,6 +8074,8 @@ export interface RenderPlan {
     readonly upVector: Vector3d;
     // (undocumented)
     readonly viewFlags: ViewFlags;
+    // (undocumented)
+    readonly whiteOnWhiteReversal: WhiteOnWhiteReversalSettings;
 }
 
 // @internal

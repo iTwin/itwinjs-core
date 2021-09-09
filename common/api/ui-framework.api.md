@@ -958,10 +958,12 @@ export interface CategoryTreeProps {
     enablePreloading?: boolean;
     // @alpha
     filterInfo?: VisibilityTreeFilterInfo;
+    height: number;
     iModel: IModelConnection;
     onFilterApplied?: (filteredDataProvider: IPresentationTreeDataProvider, matchesCount: number) => void;
     // @internal
     viewManager?: ViewManager;
+    width: number;
 }
 
 // @internal
@@ -3078,26 +3080,14 @@ export interface HTMLElementPopupProps extends PopupPropsBase {
 export class IModelAppUiSettings extends UserSettingsStorage {
 }
 
-// @beta
-export const IModelConnectedCategoryTree: import("react-redux").ConnectedComponent<typeof CategoryTree, any>;
-
-// @alpha
-export const IModelConnectedModelsTree: import("react-redux").ConnectedComponent<typeof ModelsTree, any>;
-
 // @beta @deprecated
 export const IModelConnectedNavigationWidget: import("react-redux").ConnectedComponent<typeof DefaultNavigationWidget, any>;
-
-// @beta
-export const IModelConnectedSpatialContainmentTree: import("react-redux").ConnectedComponent<typeof SpatialContainmentTree, any>;
 
 // @beta
 export const IModelConnectedViewport: import("react-redux").ConnectedComponent<React.ComponentType<import("@bentley/ui-imodel-components").ViewportProps & import("@bentley/presentation-components").ViewWithUnifiedSelectionProps>, any>;
 
 // @beta
 export const IModelConnectedViewSelector: import("react-redux").ConnectedComponent<typeof ViewSelector, any>;
-
-// @beta @deprecated
-export const IModelConnectedVisibilityComponent: import("react-redux").ConnectedComponent<typeof VisibilityComponent, any>;
 
 // @internal
 export interface IModelInfo {
@@ -4027,6 +4017,7 @@ export interface ModelsTreeProps {
     filteredElementIds?: Id64Array;
     // @alpha
     filterInfo?: VisibilityTreeFilterInfo;
+    height: number;
     iModel: IModelConnection;
     // @alpha
     modelsVisibilityHandler?: ModelsVisibilityHandler;
@@ -4035,6 +4026,7 @@ export interface ModelsTreeProps {
     selectionMode?: SelectionMode;
     // @alpha
     selectionPredicate?: ModelsTreeSelectionPredicate;
+    width: number;
 }
 
 // @beta
@@ -5522,35 +5514,6 @@ export const showWidget: (base: {
 }, id: string) => import("immer/dist/internal").WritableDraft<NineZoneState>;
 
 // @public
-export class SignIn extends React.PureComponent<SignInProps> {
-    constructor(props: SignInProps);
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    render(): JSX.Element;
-}
-
-// @public
-export interface SignInProps extends CommonProps {
-    onOffline?: () => void;
-    onRegister?: () => void;
-    onSignedIn?: () => void;
-    // @internal (undocumented)
-    onStartSignIn?: () => void;
-}
-
-// @public
-export class SignOutModalFrontstage implements ModalFrontstageInfo {
-    constructor(userInfo?: UserInfo);
-    // (undocumented)
-    get content(): React.ReactNode;
-    // (undocumented)
-    title: string;
-    }
-
-// @public
 export const SnapModeField: import("react-redux").ConnectedComponent<typeof SnapModeFieldComponent, import("react-redux").Omit<React.ClassAttributes<SnapModeFieldComponent> & SnapModeFieldProps, "setSnapMode" | "snapMode">>;
 
 // @alpha
@@ -5577,8 +5540,10 @@ export interface SpatialContainmentTreeProps {
     // @beta
     enableElementsClassGrouping?: ClassGroupingOption;
     enablePreloading?: boolean;
+    height: number;
     // (undocumented)
     iModel: IModelConnection;
+    width: number;
 }
 
 // @internal (undocumented)
@@ -6906,20 +6871,6 @@ export function useNineZoneDispatch(frontstageDef: FrontstageDef): NineZoneDispa
 // @internal (undocumented)
 export function useNineZoneState(frontstageDef: FrontstageDef): NineZoneState | undefined;
 
-// @public
-export class UserProfileBackstageItem extends React.PureComponent<UserProfileBackstageItemProps> {
-    // (undocumented)
-    render(): React.ReactNode | undefined;
-}
-
-// @public
-export interface UserProfileBackstageItemProps extends CommonProps {
-    // (undocumented)
-    onOpenSignOut?: () => void;
-    // (undocumented)
-    userInfo: UserInfo;
-}
-
 // @beta
 export interface UserSettingsProvider {
     loadUserSettings(storage: UiSettingsStorage): Promise<void>;
@@ -7134,50 +7085,6 @@ export class ViewUtilities {
 // @alpha
 export type VisibilityChangeListener = (nodeIds?: string[], visibilityStatus?: Map<string, VisibilityStatus>) => void;
 
-// @beta @deprecated
-export class VisibilityComponent extends React.Component<VisibilityComponentProps, VisibilityTreeState> {
-    constructor(props: any);
-    // (undocumented)
-    componentDidMount(): Promise<void>;
-    componentWillUnmount(): void;
-    // (undocumented)
-    render(): JSX.Element;
-    }
-
-// @beta @deprecated
-export interface VisibilityComponentConfig {
-    // (undocumented)
-    modelsTree?: {
-        selectionMode?: SelectionMode;
-        selectionPredicate?: ModelsTreeSelectionPredicate;
-        enableElementsClassGrouping?: ClassGroupingOption;
-        enableHierarchyAutoUpdate?: boolean;
-    };
-    // (undocumented)
-    spatialContainmentTree?: {
-        enableElementsClassGrouping?: ClassGroupingOption;
-    };
-}
-
-// @public @deprecated
-export enum VisibilityComponentHierarchy {
-    // (undocumented)
-    Categories = "categories",
-    // (undocumented)
-    Models = "models",
-    // (undocumented)
-    SpatialContainment = "spatial-containment"
-}
-
-// @beta @deprecated
-export interface VisibilityComponentProps {
-    activeTreeRef?: React.Ref<HTMLDivElement>;
-    activeViewport?: Viewport;
-    config?: VisibilityComponentConfig;
-    enableHierarchiesPreloading?: VisibilityComponentHierarchy[];
-    iModelConnection: IModelConnection;
-}
-
 // @alpha
 export interface VisibilityStatus {
     // (undocumented)
@@ -7233,19 +7140,6 @@ export interface VisibilityTreeNoFilteredDataProps {
 
 // @alpha
 export type VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => boolean;
-
-// @beta @deprecated
-export class VisibilityWidget extends WidgetControl {
-    constructor(info: ConfigurableCreateInfo, options: any);
-    // (undocumented)
-    static get iconSpec(): string;
-    // (undocumented)
-    static get label(): string;
-    // (undocumented)
-    restoreTransientState(): boolean;
-    // (undocumented)
-    saveTransientState(): void;
-}
 
 // @public
 export class Widget extends React.Component<WidgetProps> {

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-frontend",
+      "comment": "Allow white-on-white reversal to be applied regardless of background color.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend"
+}
