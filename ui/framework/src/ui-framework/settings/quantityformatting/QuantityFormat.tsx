@@ -10,9 +10,9 @@ import "./QuantityFormat.scss";
 import * as React from "react";
 import { DeepCompare } from "@bentley/geometry-core";
 import {
-  getQuantityTypeKey, IModelApp, QuantityFormatsChangedArgs, QuantityType, QuantityTypeArg, QuantityTypeKey, UnitSystemKey,
+  getQuantityTypeKey, IModelApp, QuantityFormatsChangedArgs, QuantityType, QuantityTypeArg, QuantityTypeKey,
 } from "@bentley/imodeljs-frontend";
-import { FormatProps, FormatterSpec } from "@bentley/imodeljs-quantity";
+import { FormatProps, FormatterSpec, UnitSystemKey } from "@bentley/imodeljs-quantity";
 import { DialogButtonType } from "@bentley/ui-abstract";
 import { FormatSample, QuantityFormatPanel } from "@bentley/ui-imodel-components";
 import {
@@ -21,7 +21,6 @@ import {
 } from "@bentley/ui-core";
 import { ModalDialogManager } from "../../dialog/ModalDialogManager";
 import { UiFramework } from "../../UiFramework";
-import { PresentationUnitSystem } from "@bentley/presentation-common";
 import { UnitSystemSelector } from "./UnitSystemSelector";
 import { Presentation } from "@bentley/presentation-frontend";
 import { Button } from "@itwin/itwinui-react";
@@ -176,24 +175,8 @@ export function QuantityFormatSettingsPage({ initialQuantityType, availableUnitS
   }, [activeQuantityType]);
 
   const processNewUnitSystem = React.useCallback(async (unitSystem: UnitSystemKey) => {
-    switch (unitSystem) {
-      case "imperial":
-        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.BritishImperial;
-        await IModelApp.quantityFormatter.setActiveUnitSystem(unitSystem);
-        break;
-      case "metric":
-        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.Metric;
-        await IModelApp.quantityFormatter.setActiveUnitSystem(unitSystem);
-        break;
-      case "usSurvey":
-        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.UsSurvey;
-        await IModelApp.quantityFormatter.setActiveUnitSystem(unitSystem);
-        break;
-      case "usCustomary":
-        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.UsCustomary;
-        await IModelApp.quantityFormatter.setActiveUnitSystem(unitSystem);
-        break;
-    }
+    Presentation.presentation.activeUnitSystem = unitSystem;
+    await IModelApp.quantityFormatter.setActiveUnitSystem(unitSystem);
   }, []);
 
   const handleUnitSystemSelected = React.useCallback(async (unitSystem: UnitSystemKey) => {

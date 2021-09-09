@@ -9,21 +9,19 @@
 import "./AccuDrawInputField.scss";
 import classnames from "classnames";
 import * as React from "react";
+import { ItemField } from "@bentley/imodeljs-frontend";
 import { CommonProps, Icon, IconSpec, useRefs } from "@bentley/ui-core";
-import {
-  AccuDrawField, AccuDrawSetFieldFocusEventArgs, AccuDrawSetFieldValueToUiEventArgs,
-  AccuDrawUiAdmin, isLetter, SpecialKey,
-} from "@bentley/ui-abstract";
+import { isLetter, SpecialKey } from "@bentley/ui-abstract";
 import { Input } from "@itwin/itwinui-react";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
-import { FrameworkAccuDraw } from "./FrameworkAccuDraw";
+import { AccuDrawSetFieldFocusEventArgs, AccuDrawSetFieldValueToUiEventArgs, FrameworkAccuDraw } from "./FrameworkAccuDraw";
 
 /** Properties for [[AccuDrawInputField]] component
- * @internal
+ * @alpha
  */
 export interface AccuDrawInputFieldProps extends CommonProps {
   /** Which AccuDraw field this represents */
-  field: AccuDrawField;
+  field: ItemField;
   /** id for the input element */
   id: string;
   /** Indicates whether field is locked */
@@ -63,8 +61,7 @@ const ForwardRefAccuDrawInput = React.forwardRef<HTMLInputElement, AccuDrawInput
     const refs = useRefs(inputElementRef, ref);  // combine ref needed for target with the forwardRef needed by the Parent when parent is a Type Editor.
 
     React.useEffect(() => {
-      const item = FrameworkAccuDraw.translateToItemField(field);
-      const formattedValue = FrameworkAccuDraw.getFieldDisplayValue(item);
+      const formattedValue = FrameworkAccuDraw.getFieldDisplayValue(field);
       setStringValue(formattedValue);
     }, [field]);
 
@@ -137,7 +134,7 @@ const ForwardRefAccuDrawInput = React.forwardRef<HTMLInputElement, AccuDrawInput
             setNeedSelection(true);
         }
       };
-      return AccuDrawUiAdmin.onAccuDrawSetFieldValueToUiEvent.addListener(handleSetFieldValueToUi);
+      return FrameworkAccuDraw.onAccuDrawSetFieldValueToUiEvent.addListener(handleSetFieldValueToUi);
     }, [field, isFocusField, stringValue]);
 
     React.useEffect(() => {
@@ -153,7 +150,7 @@ const ForwardRefAccuDrawInput = React.forwardRef<HTMLInputElement, AccuDrawInput
       const handleSetFieldFocus = (args: AccuDrawSetFieldFocusEventArgs) => {
         setIsFocusField(args.field === field);
       };
-      return AccuDrawUiAdmin.onAccuDrawSetFieldFocusEvent.addListener(handleSetFieldFocus);
+      return FrameworkAccuDraw.onAccuDrawSetFieldFocusEvent.addListener(handleSetFieldFocus);
     }, [field]);
 
     const inputClassNames = classnames("uifw-accudraw-input-field", className);
@@ -179,7 +176,7 @@ const ForwardRefAccuDrawInput = React.forwardRef<HTMLInputElement, AccuDrawInput
   }
 );
 
-/** Input field for AccuDraw
- * @internal
+/** Input field for AccuDraw Ui
+ * @alpha
  */
 export const AccuDrawInputField: (props: AccuDrawInputFieldProps) => JSX.Element | null = ForwardRefAccuDrawInput;

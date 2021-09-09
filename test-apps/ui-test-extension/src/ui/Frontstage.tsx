@@ -4,15 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import {
-  BasicNavigationWidget, BasicToolWidget, ClassGroupingOption, ContentGroup, ContentLayoutDef, CoreTools,
-  Frontstage, FrontstageProps, FrontstageProvider, IModelViewportControl, ModelsTreeNodeType, StagePanel,
-  StagePanelState, UiFramework, VisibilityComponentHierarchy, VisibilityWidget, Widget, Zone,
-} from "@bentley/ui-framework";
-import { SelectionMode } from "@bentley/ui-components";
 import { CommonToolbarItem, StageUsage, WidgetState } from "@bentley/ui-abstract";
-import { NodeKey } from "@bentley/presentation-common";
-
+import {
+  BasicNavigationWidget, BasicToolWidget, ContentGroup, ContentLayoutDef, CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
+  IModelViewportControl, StagePanel, StagePanelState, UiFramework, Widget, Zone,
+} from "@bentley/ui-framework";
 import { ExtensionStatusBarWidgetControl } from "./statusbar/StatusBar";
 import { GenericTool } from "./tools/GenericTool";
 
@@ -110,34 +106,6 @@ export class ExtensionFrontstage extends FrontstageProvider {
                 start: {
                   widgets: [
                     <Widget id="LeftStart1" defaultState={WidgetState.Closed} label="Start1" element={<h2>Left Start1 widget</h2>} />,
-                  ],
-                },
-              }}
-          />
-        }
-        rightPanel={
-          <StagePanel
-            defaultState={StagePanelState.Open}
-            panelZones={
-              {
-                middle: {
-                  widgets: [
-                    <Widget iconSpec={VisibilityWidget.iconSpec} label={VisibilityWidget.label} control={VisibilityWidget}
-                      applicationData={{
-                        iModelConnection: UiFramework.getIModelConnection(),
-                        enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories],
-                        config: {
-                          modelsTree: {
-                            selectionMode: SelectionMode.Extended,
-                            selectionPredicate: (_key: NodeKey, type: ModelsTreeNodeType) => (type === ModelsTreeNodeType.Element || type === ModelsTreeNodeType.Grouping),
-                            enableElementsClassGrouping: ClassGroupingOption.YesWithCounts,
-                          },
-                          spatialContainmentTree: {
-                            enableElementsClassGrouping: ClassGroupingOption.YesWithCounts,
-                          },
-                        },
-                      }}
-                      fillZone={true} />,
                   ],
                 },
               }}
