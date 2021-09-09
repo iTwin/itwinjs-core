@@ -5,8 +5,8 @@
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { MapSubLayerProps } from "@bentley/imodeljs-common";
 import { request, RequestBasicCredentials, RequestOptions } from "@bentley/itwin-client";
+import WMS from "wms-capabilities";
 import { MapCartoRectangle, WmsUtilities } from "../internal";
-import WMS = require("wms-capabilities");
 
 /** @packageDocumentation
  * @module Views
