@@ -85,8 +85,8 @@ describe("CategoryVisibilityHandler", () => {
       props.onViewedCategoriesChanged = new BeEvent<(vp: Viewport) => void>();
     const vpMock = moq.Mock.ofType<Viewport>();
     vpMock.setup((x) => x.iModel).returns(() => imodelMock.object);
-    vpMock.setup((x) => x.view).returns(() => props!.viewState);
-    vpMock.setup((x) => x.perModelCategoryVisibility).returns(() => props!.perModelCategoryVisibility);
+    vpMock.setup((x) => x.view).returns(() => props!.viewState!);
+    vpMock.setup((x) => x.perModelCategoryVisibility).returns(() => props!.perModelCategoryVisibility!);
     vpMock.setup((x) => x.onViewedCategoriesChanged).returns(() => props!.onViewedCategoriesChanged!);
     vpMock.setup((x) => x.onDisplayStyleChanged).returns(() => props!.onDisplayStyleChanged!);
     return vpMock;
@@ -110,7 +110,7 @@ describe("CategoryVisibilityHandler", () => {
     viewManagerMock.setup((x) => x.selectedView).returns(() => selectedViewMock.object);
     viewManagerMock
       .setup((x) => x[Symbol.iterator]())
-      .returns(() => [viewport][Symbol.iterator]())
+      .returns(() => [viewport as ScreenViewport][Symbol.iterator]())
       .verifiable(times);
   };
 

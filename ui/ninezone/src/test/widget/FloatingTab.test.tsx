@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Point } from "@bentley/ui-core";
+import { act, fireEvent, render } from "@testing-library/react";
 import produce from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Point } from "@bentley/ui-core";
-import { act, fireEvent, render } from "@testing-library/react";
 import {
-  addPanelWidget, addTab, createDraggedTabState, createNineZoneState, DragManager, FloatingTab, NineZoneDispatch,
+  addPanelWidget, addTab, createDraggedTabState, createNineZoneState, DragManager, FloatingTab, NineZoneDispatch
 } from "../../ui-ninezone";
-import { createDragItemInfo, NineZoneProvider } from "../Providers";
+import { createDragItemInfo, TestNineZoneProvider } from "../Providers";
 
 describe("FloatingTab", () => {
   it("should render", () => {
@@ -23,11 +23,11 @@ describe("FloatingTab", () => {
       });
     });
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
       >
         <FloatingTab />
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
@@ -44,13 +44,13 @@ describe("FloatingTab", () => {
       });
     });
     render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
         dispatch={dispatch}
         dragManagerRef={dragManager}
       >
         <FloatingTab />
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     act(() => {
       dragManager.current!.handleDragStart({
@@ -79,13 +79,13 @@ describe("FloatingTab", () => {
       });
     });
     render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
         dispatch={dispatch}
         dragManagerRef={dragManager}
       >
         <FloatingTab />
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     act(() => {
       dragManager.current!.handleDragStart({
@@ -118,13 +118,13 @@ describe("FloatingTab", () => {
       });
     });
     render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
         dispatch={dispatch}
         dragManagerRef={dragManager}
       >
         <FloatingTab />
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     act(() => {
       dragManager.current!.handleDragStart({
@@ -162,13 +162,13 @@ describe("FloatingTab", () => {
       });
     });
     render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
         dispatch={dispatch}
         dragManagerRef={dragManager}
       >
         <FloatingTab />
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     act(() => {
       dragManager.current!.handleDragStart({

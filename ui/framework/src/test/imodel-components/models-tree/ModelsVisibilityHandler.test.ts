@@ -62,8 +62,8 @@ describe("ModelsVisibilityHandler", () => {
       props.onNeverDrawnChanged = new BeEvent<() => void>();
     const vpMock = moq.Mock.ofType<Viewport>();
     vpMock.setup((x) => x.iModel).returns(() => imodelMock.object);
-    vpMock.setup((x) => x.view).returns(() => props!.viewState);
-    vpMock.setup((x) => x.perModelCategoryVisibility).returns(() => props!.perModelCategoryVisibility);
+    vpMock.setup((x) => x.view).returns(() => props!.viewState!);
+    vpMock.setup((x) => x.perModelCategoryVisibility).returns(() => props!.perModelCategoryVisibility!);
     vpMock.setup((x) => x.onViewedCategoriesPerModelChanged).returns(() => props!.onViewedCategoriesPerModelChanged!);
     vpMock.setup((x) => x.onViewedCategoriesChanged).returns(() => props!.onViewedCategoriesChanged!);
     vpMock.setup((x) => x.onViewedModelsChanged).returns(() => props!.onViewedModelsChanged!);

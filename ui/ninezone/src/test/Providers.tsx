@@ -2,29 +2,29 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Point, Rectangle, Size } from "@bentley/ui-core";
 import * as React from "react";
 import * as sinon from "sinon";
 import {
   createNineZoneState,
   DragManager,
   DragManagerContext,
-  NineZoneProvider as RealNineZoneProvider,
-  NineZoneProviderProps as RealNineZoneProviderProps,
+  NineZoneProvider,
+  NineZoneProviderProps
 } from "../ui-ninezone";
-import { Point, Rectangle, Size } from "@bentley/ui-core";
 
 type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
 /** @internal */
-export interface NineZoneProviderProps extends PartialBy<RealNineZoneProviderProps, "measure" | "state" | "dispatch"> {
+export interface TestNineZoneProviderProps extends PartialBy<NineZoneProviderProps, "measure" | "state" | "dispatch"> {
   dragManagerRef?: React.Ref<DragManager>;
 }
 
 /** @internal */
-export function NineZoneProvider(props: NineZoneProviderProps) {
+export function TestNineZoneProvider(props: TestNineZoneProviderProps) {
   const { children, dragManagerRef, ...otherProps } = props;
   return (
-    <RealNineZoneProvider
+    <NineZoneProvider
       state={createNineZoneState()}
       dispatch={sinon.stub()}
       measure={() => new Rectangle()}
@@ -35,7 +35,7 @@ export function NineZoneProvider(props: NineZoneProviderProps) {
         contextRef={dragManagerRef}
       />
       {children}
-    </RealNineZoneProvider>
+    </NineZoneProvider>
   );
 }
 

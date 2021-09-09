@@ -2,19 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import * as React from "react";
-import * as sinon from "sinon";
-import * as moq from "typemoq";
 import { BeEvent, Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection, ScreenViewport, SpatialViewState, SubCategoriesCache, ViewManager, Viewport } from "@bentley/imodeljs-frontend";
 import { ECInstancesNodeKey, KeySet, LabelDefinition, Node, NodePathElement, StandardNodeTypes } from "@bentley/presentation-common";
-import { IPresentationTreeDataProvider, PresentationTreeDataProvider } from "@bentley/presentation-components";
-import { mockPresentationManager } from "@bentley/presentation-components/lib/test/_helpers/UiComponents";
+import { IPresentationTreeDataProvider, mockPresentationManager, PresentationTreeDataProvider } from "@bentley/presentation-components";
 import { Presentation, PresentationManager, RulesetVariablesManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
 import { fireEvent, render, waitFor } from "@testing-library/react";
+import { expect } from "chai";
+import * as React from "react";
+import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { CategoryTree, toggleAllCategories } from "../../../ui-framework/imodel-components/category-tree/CategoriesTree";
 import { CategoryVisibilityHandler } from "../../../ui-framework/imodel-components/category-tree/CategoryVisibilityHandler";
 import { VisibilityChangeListener } from "../../../ui-framework/imodel-components/VisibilityTreeEventHandler";

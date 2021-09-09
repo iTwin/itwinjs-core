@@ -12,6 +12,9 @@ import * as faker from "faker";
 import * as moq from "typemoq";
 import { PRESENTATION_TREE_NODE_KEY } from "../../presentation-components/tree/Utils";
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomTreeNodeItem = (key?: NodeKey, parentId?: string): DelayLoadedTreeNodeItem => {
   const node = {
     id: faker.random.uuid(),
@@ -24,6 +27,9 @@ export const createRandomTreeNodeItem = (key?: NodeKey, parentId?: string): Dela
   return node;
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomPropertyRecord = (): PropertyRecord => {
   const value: PrimitiveValue = {
     valueFormat: PropertyValueFormat.Primitive,
@@ -38,6 +44,9 @@ export const createRandomPropertyRecord = (): PropertyRecord => {
   return new PropertyRecord(value, descr);
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const mockPresentationManager = () => {
   const onRulesetModified = new BeEvent<(curr: RegisteredRuleset, prev: Ruleset) => void>();
   const rulesetManagerMock = moq.Mock.ofType<RulesetManager>();

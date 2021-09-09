@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import * as sinon from "sinon";
 import { fireEvent } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
+import * as React from "react";
+import * as sinon from "sinon";
 import { createNineZoneState, createPanelsState, createVerticalPanelState, NineZoneDispatch, usePanelsAutoCollapse } from "../../ui-ninezone";
-import { NineZoneProvider, setRefValue } from "../Providers";
+import { setRefValue, TestNineZoneProvider } from "../Providers";
 
 describe("usePanelsAutoCollapse", () => {
   it("should collapse unpinned panels", () => {
@@ -20,7 +20,7 @@ describe("usePanelsAutoCollapse", () => {
       }),
     });
     const { result } = renderHook(() => usePanelsAutoCollapse(), {
-      wrapper: (props: any) => <NineZoneProvider // eslint-disable-line react/display-name
+      wrapper: (props: any) => <TestNineZoneProvider // eslint-disable-line react/display-name
         dispatch={dispatch}
         state={nineZone}
         {...props}

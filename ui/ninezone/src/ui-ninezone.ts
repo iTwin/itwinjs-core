@@ -165,6 +165,9 @@ export * from "./ui-ninezone/zones/target/Splitter";
 export * from "./ui-ninezone/zones/target/SplitterPane";
 export * from "./ui-ninezone/zones/target/StagePanel";
 
+export * from "./test/Providers";
+export * from "./test/Utils";
+
 /** @docs-package-description
  * The ui-ninezone package contains React components for application user interface layouts following the Bentley 9-Zone pattern.
  * For more information, see [learning about ui-ninezone]($docs/learning/ui/ninezone/index.md).

@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { fireEvent, render } from "@testing-library/react";
 import * as React from "react";
 import * as sinon from "sinon";
-import { fireEvent, render } from "@testing-library/react";
 import {
-  createHorizontalPanelState, createNineZoneState, createPanelsState, createVerticalPanelState, NineZoneDispatch, WidgetPanelExpander, WidgetPanelExpanders,
+  createHorizontalPanelState, createNineZoneState, createPanelsState, createVerticalPanelState, NineZoneDispatch, WidgetPanelExpander, WidgetPanelExpanders
 } from "../../ui-ninezone";
-import { NineZoneProvider } from "../Providers";
+import { TestNineZoneProvider } from "../Providers";
 
 describe("WidgetPanelExpanders", () => {
   it("should render", () => {
@@ -25,11 +25,11 @@ describe("WidgetPanelExpanders", () => {
       }),
     });
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         state={nineZone}
       >
         <WidgetPanelExpanders />
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
@@ -40,11 +40,11 @@ describe("WidgetPanelExpander", () => {
     const fakeTimers = sinon.useFakeTimers();
     const dispatch = sinon.stub<NineZoneDispatch>();
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         dispatch={dispatch}
       >
         <WidgetPanelExpander side="left" />
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     const expander = container.getElementsByClassName("nz-widgetPanels-expander")[0];
     fireEvent.mouseOver(expander);
@@ -61,11 +61,11 @@ describe("WidgetPanelExpander", () => {
     const fakeTimers = sinon.useFakeTimers();
     const dispatch = sinon.stub<NineZoneDispatch>();
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         dispatch={dispatch}
       >
         <WidgetPanelExpander side="left" />
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     const expander = container.getElementsByClassName("nz-widgetPanels-expander")[0];
     fireEvent.mouseOver(expander);
@@ -79,11 +79,11 @@ describe("WidgetPanelExpander", () => {
     const fakeTimers = sinon.useFakeTimers();
     const dispatch = sinon.stub<NineZoneDispatch>();
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         dispatch={dispatch}
       >
         <WidgetPanelExpander side="left" />
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     const expander = container.getElementsByClassName("nz-widgetPanels-expander")[0];
     fireEvent.mouseOver(expander);
@@ -106,11 +106,11 @@ describe("WidgetPanelExpander", () => {
     const fakeTimers = sinon.useFakeTimers();
     const dispatch = sinon.stub<NineZoneDispatch>();
     const { container } = render(
-      <NineZoneProvider
+      <TestNineZoneProvider
         dispatch={dispatch}
       >
         <WidgetPanelExpander side="left" />
-      </NineZoneProvider>,
+      </TestNineZoneProvider>,
     );
     const expander = container.getElementsByClassName("nz-widgetPanels-expander")[0];
     fireEvent.mouseOver(expander);

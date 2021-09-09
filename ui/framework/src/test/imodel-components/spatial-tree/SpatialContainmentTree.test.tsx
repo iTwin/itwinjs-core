@@ -2,17 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { ECInstancesNodeKey, KeySet, StandardNodeTypes } from "@bentley/presentation-common";
+import { mockPresentationManager, PresentationTreeDataProvider } from "@bentley/presentation-components";
+import { Presentation, PresentationManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
+import { render, waitFor } from "@testing-library/react";
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { ECInstancesNodeKey, KeySet, StandardNodeTypes } from "@bentley/presentation-common";
-import { PresentationTreeDataProvider } from "@bentley/presentation-components";
-import { mockPresentationManager } from "@bentley/presentation-components/lib/test/_helpers/UiComponents";
-import { Presentation, PresentationManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { render, waitFor } from "@testing-library/react";
 import { SpatialContainmentTree } from "../../../ui-framework";
 import TestUtils from "../../TestUtils";
 

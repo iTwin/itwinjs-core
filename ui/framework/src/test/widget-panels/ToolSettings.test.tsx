@@ -2,16 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { createNineZoneState, DragManager, DragManagerContext, TestNineZoneProvider, ToolSettingsStateContext } from "@bentley/ui-ninezone";
+import { render } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react-hooks";
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { createNineZoneState, DragManager, DragManagerContext, ToolSettingsStateContext } from "@bentley/ui-ninezone";
-import { NineZoneProvider } from "@bentley/ui-ninezone/lib/test/Providers";
-import { render } from "@testing-library/react";
-import { act, renderHook } from "@testing-library/react-hooks";
 import {
   ConfigurableCreateInfo, FrontstageDef, FrontstageManager, ToolSettingsContent, ToolSettingsDockedContent, ToolSettingsEntry, ToolSettingsGrid,
-  ToolUiProvider, useHorizontalToolSettingNodes, useToolSettingsNode, WidgetPanelsToolSettings, ZoneDef,
+  ToolUiProvider, useHorizontalToolSettingNodes, useToolSettingsNode, WidgetPanelsToolSettings, ZoneDef
 } from "../../ui-framework";
 
 describe("WidgetPanelsToolSettings", () => {
@@ -96,11 +95,11 @@ describe("ToolSettingsContent", () => {
     });
     const { container } = render(
       <ToolSettingsStateContext.Provider value={{ type: "widget" }}>
-        <NineZoneProvider state={state}>
+        <TestNineZoneProvider state={state}>
           <div className="nz-floating-toolsettings">
             <ToolSettingsContent />
           </div>
-        </NineZoneProvider>
+        </TestNineZoneProvider>
       </ToolSettingsStateContext.Provider>,
     );
     container.firstChild!.should.matchSnapshot();

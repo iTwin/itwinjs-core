@@ -8,7 +8,7 @@ import { renderHook } from "@testing-library/react-hooks";
 import * as React from "react";
 import * as sinon from "sinon";
 import { createNineZoneState, handleToCursorType, MeasureContext, NineZone, NineZoneDispatch, NineZoneLabels, NineZoneLabelsContext, sideToCursorType, useLabel } from "../../ui-ninezone";
-import { NineZoneProvider } from "../Providers";
+import { TestNineZoneProvider } from "../Providers";
 import { createBoundingClientRect, createDOMRect, flushAsyncOperations, ResizeObserverMock } from "../Utils";
 
 describe("<NineZone />", () => {
@@ -111,11 +111,11 @@ describe("<NineZone />", () => {
   });
 });
 
-describe("<NineZoneProvider />", () => {
+describe("<TestNineZoneProvider />", () => {
   it("renders correctly", () => {
-    const { container } = render(<NineZoneProvider>
+    const { container } = render(<TestNineZoneProvider>
       9-Zone
-    </NineZoneProvider>);
+    </TestNineZoneProvider>);
     container.firstChild!.should.matchSnapshot();
   });
 });

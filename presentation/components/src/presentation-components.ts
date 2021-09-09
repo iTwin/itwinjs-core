@@ -103,5 +103,8 @@ export * from "./presentation-components/labels/LabelsProvider";
  */
 export * from "./presentation-components/unified-selection/UnifiedSelectionContext";
 
+export * from "./test/_helpers/Properties";
+export * from "./test/_helpers/UiComponents";
+
 Presentation.registerInitializationHandler(initializeLocalization);
 Presentation.registerInitializationHandler(initializePropertyValueRenderers);

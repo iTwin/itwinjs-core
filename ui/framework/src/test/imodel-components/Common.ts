@@ -5,8 +5,8 @@
 
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { ECClassGroupingNodeKey, ECInstancesNodeKey, InstanceKey, StandardNodeTypes } from "@bentley/presentation-common";
+import { createRandomPropertyRecord, createRandomTreeNodeItem } from "@bentley/presentation-components";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { createRandomPropertyRecord, createRandomTreeNodeItem } from "@bentley/presentation-components/lib/test/_helpers/UiComponents";
 import { TreeModelNode } from "@bentley/ui-components";
 import { CheckBoxState } from "@bentley/ui-core";
 

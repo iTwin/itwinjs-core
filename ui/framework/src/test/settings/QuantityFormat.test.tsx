@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelApp, MockRender, QuantityType, QuantityTypeKey } from "@bentley/imodeljs-frontend";
 import { FormatProps, UnitSystemKey } from "@bentley/imodeljs-quantity";
-import { mockPresentationManager } from "@bentley/presentation-components/lib/test/_helpers/UiComponents";
+import { mockPresentationManager } from "@bentley/presentation-components";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import { fireEvent, render } from "@testing-library/react";
 import { expect } from "chai";

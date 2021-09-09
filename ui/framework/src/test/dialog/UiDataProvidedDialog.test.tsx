@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { fireEvent, render } from "@testing-library/react";
-import { /* ModelessDialogManager, */ UiDataProvidedDialog } from "../../ui-framework";
 import { DialogButtonDef, DialogButtonType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem, PropertyChangeResult, PropertyChangeStatus, PropertyDescription, StandardTypeNames } from "@bentley/ui-abstract";
-import TestUtils, { getButtonWithText, handleError } from "../TestUtils";
+import { fireEvent, render } from "@testing-library/react";
 import { expect } from "chai";
-import sinon = require("sinon");
+import * as React from "react";
+import sinon from "sinon";
+import { UiDataProvidedDialog } from "../../ui-framework";
+import TestUtils, { getButtonWithText, handleError } from "../TestUtils";
 
 const spyCancel = sinon.spy();
 const spyOK = sinon.spy();
