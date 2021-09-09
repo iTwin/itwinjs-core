@@ -32,6 +32,7 @@
     "forceConsistentCasingInFileNames": true,
     "incremental": true,
     "esModuleInterop": false,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "outDir": "cjs"
   }
 }

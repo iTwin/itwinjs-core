@@ -4,6 +4,8 @@
   "description": "APIs for determining the level of compatibility of a browser+device with the iModel.js rendering system.",
   "license": "MIT",
   "main": "cjs/webgl-compatibility.js",
+  "module": "esm/webgl-compatibility.js",
+  "typings": "types/webgl-compatibility.js",
   "imodeljsSharedLibrary": true,
   "scripts": {
     "compile": "npm run build",
