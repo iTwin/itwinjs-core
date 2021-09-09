@@ -96,11 +96,11 @@ interface BreadcrumbState {
 }
 
 /**
- * Breadcrumb navigation component, with two discrete modes: text mode, and dropdown mode.
+ * Breadcrumb navigation component, with two discrete modes: text mode and dropdown mode.
  * Text mode includes autocomplete suggestions.
  * Both dropdown and text mode support arrow and tab navigation.
  * @beta
- * @deprecated
+ * @deprecated Use Breadcrumbs from itwinui-react instead
  */
 export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState> {
   private _mounted: boolean = false;
