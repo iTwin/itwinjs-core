@@ -1697,6 +1697,8 @@ export abstract class Viewport implements IDisposable {
     const viewSpace = ViewingSpace.createFromViewport(this);
     if (undefined === viewSpace)
       return ViewStatus.InvalidViewport;
+    else if (this._viewingSpace)
+      viewSpace.setPrevious(this._viewingSpace);
 
     this._viewingSpace = viewSpace;
 

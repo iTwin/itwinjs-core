@@ -7,17 +7,20 @@
  */
 
 import {
-  AxisOrder, ClipPlaneContainment, Constant, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Point4d, Range1d, Range2d, Range3d, Transform, Vector3d, XYAndZ, XYZ,
+  AxisOrder, ClipPlaneContainment, Constant, Map4d, Matrix3d, Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Point4d, Range1d, Range2d, Range3d, Transform, Vector3d, XYAndZ, XYZ,
 } from "@bentley/geometry-core";
 import { Frustum, GridOrientationType, Npc, NpcCorners } from "@bentley/imodeljs-common";
+import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
+import { getFrustumPlaneIntersectionDepthRange } from "./BackgroundMapGeometry";
 import { CoordSystem } from "./CoordSystem";
+import { Frustum2d } from "./Frustum2d";
 import { Viewport } from "./Viewport";
 import { ViewRect } from "./ViewRect";
 import { ViewState } from "./ViewState";
-import { Frustum2d } from "./Frustum2d";
-import { getFrustumPlaneIntersectionDepthRange } from "./BackgroundMapGeometry";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const doPreviousDelta = false, preloadFrustumScale = 5;
 /** Describes a [[Viewport]]'s viewing volume, plus its size on the screen. A new
  * instance of ViewingSpace is created every time the Viewport's frustum changes.
  * @see [[Viewport.viewingSpace]].
@@ -55,6 +58,12 @@ export class ViewingSpace {
   public readonly zClipAdjusted: boolean = false;    // were the view z clip planes adjusted due to front/back clipping off?
   /** Eye point - undefined if not a perspective projection. */
   public readonly eyePoint: Point3d | undefined;
+  /** Previous delta transform */
+  private _previousDelta?: Matrix4d;
+  /** Expiration time stamp for previous delta */
+  private _previousDeltaExpiration?: BeTimePoint;
+
+  private static previousDeltaTimeout = BeDuration.fromSeconds(2);
 
   private _view: ViewState;
 
@@ -334,6 +343,10 @@ export class ViewingSpace {
     this.worldToViewMap.setFrom(this.calcNpcToView().multiplyMapMap(this.worldToNpcMap));
   }
 
+  public setPrevious(previous: ViewingSpace) {
+    this._previousDelta = this.worldToNpcMap.transform1.multiplyMatrixMatrix(previous.worldToNpcMap.transform0, this._previousDelta);     // oldWorldToNewWorld = newNpcToWorld * oldWorldToNpc
+    this._previousDeltaExpiration = BeTimePoint.fromNow(ViewingSpace.previousDeltaTimeout);
+  }
   /** Create from a Viewport. */
   public static createFromViewport(vp: Viewport): ViewingSpace | undefined {
     return new ViewingSpace(vp);
@@ -480,14 +493,15 @@ export class ViewingSpace {
   /** @internal */
   public getPreloadFrustum(transformOrScale?: Transform | number, result?: Frustum) {
     const viewFrustum = this.getFrustum(CoordSystem.World, true);
+    if (doPreviousDelta && this._previousDelta && this._previousDeltaExpiration && this._previousDeltaExpiration.isInFuture)
+      this._previousDelta.multiplyPoint3dArrayQuietNormalize(viewFrustum.points);
 
     if (transformOrScale && transformOrScale instanceof Transform) {
       return viewFrustum.transformBy(transformOrScale, result);
     } else {
-      const scale = transformOrScale === undefined ? 2 : transformOrScale;
-      const expandedFrustum = viewFrustum.clone(result);
-      expandedFrustum.scaleXYAboutCenter(scale);
-      return expandedFrustum;
+      const scale = transformOrScale === undefined ? preloadFrustumScale : transformOrScale;
+      viewFrustum.scaleAboutCenter(scale);
     }
+    return viewFrustum;
   }
 }

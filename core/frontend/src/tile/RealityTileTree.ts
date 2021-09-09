@@ -369,8 +369,8 @@ export class RealityTileTree extends TileTree {
       if (baseDepth > 0)        // Maps may force loading of low level globe tiles.
         rootTile.preloadRealityTilesAtDepth(baseDepth, context, args);
 
-      if (!freezeTiles)
-        this.preloadTilesForScene(args, context, undefined);
+      // if (!freezeTiles)
+      this.preloadTilesForScene(args, context, undefined);
     }
 
     if (!freezeTiles)

@@ -153,6 +153,11 @@ export class Frustum {
     return matrix;
   }
 
+  /** Returns true if the frustum represents a parallel projection */
+  public get isParallelProjection(): boolean {
+    return (Math.abs(this.getFraction() - 1) < 1E-8);
+  }
+
   /** Get the eye point  - undefined if parallel projection */
   public getEyePoint(result?: Point3d): Point3d | undefined {
     const fraction = this.getFraction();
