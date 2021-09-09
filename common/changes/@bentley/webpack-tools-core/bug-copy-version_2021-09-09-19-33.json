@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/webpack-tools-core",
+      "comment": "Revert copy-webpack-plugin min version",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webpack-tools-core"
+}
