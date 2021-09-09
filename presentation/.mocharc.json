@@ -6,10 +6,10 @@
   "checkLeaks": true,
   "timeout": 60000,
   "file": [
-    "lib/test/setup.js"
+    "cjs/test/setup.js"
   ],
   "exclude": [
-    "lib/test/coverage/**/*"
+    "cjs/test/coverage/**/*"
   ],
   "reporter": [
     "node_modules/@bentley/build-tools/mocha-reporter"

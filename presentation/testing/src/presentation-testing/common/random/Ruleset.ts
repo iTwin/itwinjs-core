@@ -25,6 +25,9 @@ const fixEmptyStrings = (obj: any) => {
   }
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomRuleset = async () => {
   const jsf = require("json-schema-faker"); // eslint-disable-line @typescript-eslint/no-var-requires
   jsf.option({

@@ -6,7 +6,7 @@
 import * as faker from "faker";
 import {
   CategoryDescription, CategoryDescriptionJSON, Content, Descriptor, EditorDescription, Field, NestedContentField, PrimitiveTypeDescription,
-  PropertiesField, PropertyValueFormat, StructTypeDescription, TypeDescription,
+  PropertiesField, PropertyValueFormat, StructTypeDescription, TypeDescription
 } from "../../../presentation-common";
 import { SelectClassInfoJSON } from "../../../presentation-common/content/Descriptor";
 import { BaseFieldJSON, FieldJSON, NestedContentFieldJSON, PropertiesFieldJSON } from "../../../presentation-common/content/Fields";
@@ -14,6 +14,9 @@ import { PropertyJSON } from "../../../presentation-common/content/Property";
 import { createRandomECClassInfoJSON, createRandomPropertyInfoJSON, createRandomRelatedClassInfoJSON, createRandomRelationshipPathJSON } from "./EC";
 import { nullable } from "./Misc";
 
+/**
+ * @internal Used for testing only.
+ */
 const createRandomSelectClassInfoJSON = (): SelectClassInfoJSON => {
   return {
     selectClassInfo: createRandomECClassInfoJSON(),
@@ -25,6 +28,9 @@ const createRandomSelectClassInfoJSON = (): SelectClassInfoJSON => {
   };
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomCategory = (id?: string): CategoryDescription => ({
   name: id ?? faker.random.word(),
   label: id ?? faker.random.words(),
@@ -33,10 +39,16 @@ export const createRandomCategory = (id?: string): CategoryDescription => ({
   expand: faker.random.boolean(),
 });
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomCategoryJSON = (): CategoryDescriptionJSON => {
   return CategoryDescription.toJSON(createRandomCategory());
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomPrimitiveTypeDescription = (): TypeDescription => {
   return {
     valueFormat: PropertyValueFormat.Primitive,
@@ -44,12 +56,18 @@ export const createRandomPrimitiveTypeDescription = (): TypeDescription => {
   } as PrimitiveTypeDescription;
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomEditorDescription = (): EditorDescription => {
   return {
     name: faker.random.word(),
   } as EditorDescription;
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomPrimitiveFieldJSON = (category?: CategoryDescriptionJSON | string, id?: string): BaseFieldJSON => ({
   category: category ?? createRandomCategoryJSON(),
   name: id ?? faker.random.word(),
@@ -61,6 +79,9 @@ export const createRandomPrimitiveFieldJSON = (category?: CategoryDescriptionJSO
   editor: nullable(createRandomEditorDescription),
 });
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomPrimitiveField = (category?: CategoryDescription, id?: string): Field => {
   const field = Field.fromJSON(createRandomPrimitiveFieldJSON(undefined, id))!;
   if (category)
@@ -68,16 +89,25 @@ export const createRandomPrimitiveField = (category?: CategoryDescription, id?: 
   return field;
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomPropertyJSON = (): PropertyJSON => ({
   property: createRandomPropertyInfoJSON(),
   relatedClassPath: createRandomRelationshipPathJSON(1),
 });
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomPropertiesFieldJSON = (category: CategoryDescriptionJSON | string | undefined, propertiesCount: number = 1): PropertiesFieldJSON => ({
   ...createRandomPrimitiveFieldJSON(category),
   properties: [...Array(propertiesCount).keys()].map(() => createRandomPropertyJSON()),
 });
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomPropertiesField = (category?: CategoryDescription, propertiesCount: number = 1): PropertiesField => {
   const field = PropertiesField.fromJSON(createRandomPropertiesFieldJSON(undefined, propertiesCount))!;
   if (category)
@@ -85,6 +115,9 @@ export const createRandomPropertiesField = (category?: CategoryDescription, prop
   return field;
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomNestedFieldJSON = (category?: CategoryDescriptionJSON | string): NestedContentFieldJSON => ({
   ...createRandomPrimitiveFieldJSON(category),
   type: {
@@ -103,12 +136,18 @@ export const createRandomNestedFieldJSON = (category?: CategoryDescriptionJSON |
   autoExpand: faker.random.boolean(),
 });
 
+/**
+ * @internal Used for testing only.
+ */
 const deepAssignCategory = (field: Field, category: CategoryDescription) => {
   field.category = category;
   if (field.isNestedContentField())
     field.nestedFields.forEach((f) => deepAssignCategory(f, category));
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomNestedContentField = (nestedFields?: Field[], category?: CategoryDescription): NestedContentField => {
   const nestedContentField = NestedContentField.fromJSON(createRandomNestedFieldJSON(undefined))!;
   if (category)
@@ -119,6 +158,9 @@ export const createRandomNestedContentField = (nestedFields?: Field[], category?
   return nestedContentField;
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomDescriptorJSON = (displayType?: string, fields?: FieldJSON[], categories?: CategoryDescriptionJSON[]) => {
   categories = categories ?? (fields ? undefined : [createRandomCategoryJSON()]);
   fields = fields ?? [createRandomPrimitiveFieldJSON(categories![0]), createRandomPrimitiveFieldJSON(categories![0]), createRandomPrimitiveFieldJSON(categories![0])];
@@ -134,6 +176,9 @@ export const createRandomDescriptorJSON = (displayType?: string, fields?: FieldJ
   };
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomDescriptor = (displayType?: string, fields?: Field[], categories?: CategoryDescription[]): Descriptor => {
   return Descriptor.fromJSON(createRandomDescriptorJSON(
     displayType,
@@ -142,6 +187,9 @@ export const createRandomDescriptor = (displayType?: string, fields?: Field[], c
   ))!;
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomContentJSON = () => {
   return {
     descriptor: createRandomDescriptorJSON(),
@@ -149,6 +197,9 @@ export const createRandomContentJSON = () => {
   };
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomContent = (): Content => {
   return Content.fromJSON(createRandomContentJSON())!;
 };
