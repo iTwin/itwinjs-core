@@ -13,6 +13,7 @@ import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Path } from "../../curve/Path";
 import { StrokeOptions } from "../../curve/StrokeOptions";
+import { Range1dArray } from "../../geometry-core";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
@@ -236,14 +237,22 @@ describe("Solids", () => {
       transformAndFacet(allGeometry, sphere, Transform.createFixedPointAndMatrix(Point3d.create(0, 0, radius), Matrix3d.createDirectionalScale(Vector3d.unitZ(), -1.0)), options, x0, y0);
       x0 += 5.0 * radius;
     }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Solids", "TransformedSpheres");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "TransformedSpheres");
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("Boxes", () => {
+  it.only("Boxes", () => {
     const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
     const boxes = Sample.createBoxes();
     exerciseSolids(ck, boxes, "Boxes");
+    const options = StrokeOptions.createForFacets();
+    const optionsC = StrokeOptions.createForFacets();
+    options.needNormals = true;
+    optionsC.needNormals = true;
+    optionsC.shouldTriangulate = true;
+    let x0 = 0;
+    const y0 = 0;
     for (const b of boxes) {
       const vectorX = b.getVectorX();
       const vectorY = b.getVectorY();
@@ -251,7 +260,14 @@ describe("Solids", () => {
       // well defined box will have independent vectors .
       const matrix = Matrix3d.createColumns(vectorX, vectorY, vectorZ);
       ck.testTrue(matrix.inverse() !== undefined, "Expect sample box to have good coordinate frame.");
+      const rangeA = transformAndFacet(allGeometry, b, undefined, undefined, x0, y0);
+      const rangeB = transformAndFacet(allGeometry, b, undefined, options, x0, y0 + 5.0 * rangeA.yLength ());
+      const rangeC = transformAndFacet(allGeometry, b, undefined, optionsC, x0, y0 + 15.0 * rangeA.yLength());
+      ck.testRange3d(rangeA, rangeB);
+      ck.testRange3d(rangeA, rangeC);
+      x0 += 10.0 * rangeA.xLength();
     }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "Boxes");
     expect(ck.getNumErrors()).equals(0);
   });
   it("TorusPipes", () => {
@@ -344,7 +360,7 @@ describe("Solids", () => {
       }
       dy += 100.0;
     }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "TransformedSolids", "RotationalSweep");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "RotationalSweep");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -401,7 +417,7 @@ describe("Solids", () => {
     GeometryCoreTestIO.captureGeometry(allGeometry, contourB.getCurves()!.clone(), 0, 0, 0);
     ck.testFalse(contourA.isAlmostEqual(contourB));
     ck.testFalse(contourA.isAlmostEqual(path));
-    GeometryCoreTestIO.saveGeometry(allGeometry, "TransformedSolids", "SweepContour");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "SweepContour");
     expect(ck.getNumErrors()).equals(0);
   });
 });
@@ -425,12 +441,22 @@ describe("CurveCurve", () => {
   });
 });
 
-function transformAndFacet(allGeometry: GeometryQuery[], g: GeometryQuery, transform: Transform, options: StrokeOptions, x0: number, y0: number) {
-  const g1 = g.cloneTransformed(transform);
+// output the geometry, then its facets shifted vertically.
+// return the geometry range
+function transformAndFacet(allGeometry: GeometryQuery[],
+  g: GeometryQuery,
+  transform: Transform | undefined,
+  options: StrokeOptions | undefined,
+  x0: number, y0: number): Range3d {
+  const g1 = transform ? g.cloneTransformed(transform) : g;
   if (g1) {
     const builder = PolyfaceBuilder.create(options);
     builder.addGeometryQuery(g1);
     const facets = builder.claimPolyface();
-    GeometryCoreTestIO.captureGeometry(allGeometry, facets, x0, y0);
+    const range = g1.range();
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, g1, x0, y0);
+    GeometryCoreTestIO.captureGeometry(allGeometry, facets, x0, y0 + 2.0 * range.yLength());
+    return range;
   }
+  return Range3d.createNull();
 }
