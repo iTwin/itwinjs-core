@@ -43,7 +43,7 @@ class BreadcrumbDemoWidget extends React.Component<Props, State> {
     checked: false,
   };
   public override render() {
-    const path = new BreadcrumbPath(demoMutableTreeDataProvider);
+    const path = new BreadcrumbPath(demoMutableTreeDataProvider); // eslint-disable-line deprecation/deprecation
 
     DragDropLayerManager.registerTypeLayer(TreeDragTypes.Parent, ParentDragLayer); // eslint-disable-line deprecation/deprecation
     DragDropLayerManager.registerTypeLayer(TreeDragTypes.Child, ChildDragLayer); // eslint-disable-line deprecation/deprecation
@@ -71,6 +71,7 @@ class BreadcrumbDemoWidget extends React.Component<Props, State> {
           this.setState({ checked: event.target.checked });
         }} />
         <div style={{ height: "calc(100% - 22px)" }}>
+          {/* eslint-disable-next-line deprecation/deprecation */}
           <DragDropBreadcrumb path={path} dataProvider={demoMutableTreeDataProvider} initialBreadcrumbMode={BreadcrumbMode.Input} delimiter={"\\"}
             dragProps={dragProps} dropProps={dropProps} />
           <DragDropBreadcrumbDetails path={path}

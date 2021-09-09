@@ -188,6 +188,7 @@ export * from "./ui-components/tree/controlled/internal/SparseTree";
 /**
  * @docs-group-description Breadcrumb
  * Classes and components for working with a Breadcrumb.
+ * As of version 3.0, the Breadcrumb is deprecated.
  */
 /**
  * @docs-group-description Date
