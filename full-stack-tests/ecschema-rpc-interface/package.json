@@ -30,6 +30,7 @@
     "@bentley/bentleyjs-core": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@bentley/certa": "workspace:*",
+    "@bentley/context-registry-client": "workspace:*",
     "@bentley/ecschema-metadata": "workspace:*",
     "@bentley/ecschema-rpcinterface-common": "workspace:*",
     "@bentley/geometry-core": "workspace:*",

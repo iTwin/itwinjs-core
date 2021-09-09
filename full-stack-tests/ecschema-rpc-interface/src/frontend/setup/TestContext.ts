@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { NoRenderApp } from "@bentley/imodeljs-frontend";
+import { AuthorizedFrontendRequestContext, NoRenderApp } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/itwin-client";
 import {
   getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials,
@@ -69,8 +69,9 @@ export class TestContext {
 
     const iModelData = this.settings.iModel;
 
-    this.contextId = iModelData.projectId;
-    this.iModelWithChangesets = new IModelSession(iModelData.id, this.contextId);
+    const requestContext = new AuthorizedFrontendRequestContext(this.adminUserAccessToken);
+    this.iModelWithChangesets = await IModelSession.create(requestContext, iModelData);
+    this.contextId = this.iModelWithChangesets.contextId;
 
     this.initializeRpcInterfaces({ title: this.settings.Backend.name, version: this.settings.Backend.version });
 

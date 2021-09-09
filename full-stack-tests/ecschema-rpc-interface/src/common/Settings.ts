@@ -15,9 +15,12 @@ export interface Backend {
 }
 
 export interface IModelData {
-  id: string;
-  projectId: string;
+  useName: boolean; // Defines whether or not to use the name of the iModel
+  id?: string; // The iModel Id - This is not required
   name?: string; // The name is not required to actually get the iModel, only the id.
+  useProjectName: boolean;
+  projectId?: string;
+  projectName?: string;
   changeSetId?: string;
 }
 
@@ -96,17 +99,19 @@ export class Settings {
       this.gprid = process.env.GPRID;
 
     //  Parse the iModel variables
-    if (undefined === process.env.IMODEL_PROJECTID)
-      throw new Error("Missing the 'IMODEL_PROJECTID' setting.");
+    if (!process.env.IMODEL_PROJECTID && !process.env.IMODEL_PROJECTNAME)
+      throw new Error("Missing the 'IMODEL_PROJECTID' or 'IMODEL_PROJECTNAME' setting.");
 
-    if (undefined === process.env.IMODEL_IMODELID)
-      throw new Error("Missing the 'IMODEL_IMODELID' setting.");
+    if (!process.env.IMODEL_IMODELID && !process.env.IMODEL_IMODELNAME)
+      throw new Error("Missing the 'IMODEL_IMODELID' or 'IMODEL_IMODELNAME' setting.");
 
     this.iModel = {
-      projectId: process.env.IMODEL_PROJECTID,
+      useName: !process.env.IMODEL_IMODELID,
       id: process.env.IMODEL_IMODELID,
-      // Neither of the next 2 are needed but since they'll be undefined anyway, just always set it.
       name: process.env.IMODEL_IMODELNAME,
+      useProjectName: !process.env.IMODEL_PROJECTID,
+      projectId: process.env.IMODEL_PROJECTID,
+      projectName: process.env.IMODEL_PROJECTNAME,
       changeSetId: process.env.IMODEL_CHANGESETID,
     };
 
