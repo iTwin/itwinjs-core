@@ -4,12 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { I18N } from "@bentley/imodeljs-i18n";
-import { applyOptionalPrefix, LabelCompositeValue, LabelDefinition } from "@bentley/presentation-common";
-import {
-  createRandomDescriptor, createRandomLabelCompositeValue, createRandomLabelDefinition, createRandomNestedContentField, createRandomPropertiesField
-} from "@bentley/presentation-common/cjs/test/_helpers/random";
+import { applyOptionalPrefix, createRandomDescriptor, createRandomLabelCompositeValue, createRandomLabelDefinition, createRandomNestedContentField, createRandomPropertiesField, LabelCompositeValue, LabelDefinition } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
-import { Primitives } from "@bentley/ui-abstract";
+import { Primitives, PrimitiveValue } from "@bentley/ui-abstract";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as React from "react";
@@ -74,7 +71,7 @@ describe("Utils", () => {
       const nestingField = createRandomNestedContentField([nestedField]);
       const descriptor = createRandomDescriptor(undefined, [nestingField]);
       const result = utils.findField(descriptor, applyOptionalPrefix(nestedField.name, nestingField.name));
-      expect(result.name).to.eq(nestedField.name);
+      expect(result!.name).to.eq(nestedField.name);
     });
 
   });
@@ -114,7 +111,7 @@ describe("Utils", () => {
     it("creates PropertyRecord for label with simple value", () => {
       const definition = createRandomLabelDefinition();
       const record = utils.createLabelRecord(definition, "test");
-      const primitiveValue = record.value;
+      const primitiveValue = record.value as PrimitiveValue;
       expect(primitiveValue.value).to.be.eq(definition.rawValue);
       expect(primitiveValue.displayValue).to.be.eq(definition.displayValue);
       expect(record.property.typename).to.be.eq(definition.typeName);
@@ -124,8 +121,8 @@ describe("Utils", () => {
       const compositeValue = createRandomLabelCompositeValue();
       const definition = { ...createRandomLabelDefinition(), rawValue: compositeValue, typeName: LabelDefinition.COMPOSITE_DEFINITION_TYPENAME };
       const record = utils.createLabelRecord(definition, "test");
-      const primitiveValue = record.value;
-      validateCompositeValue(primitiveValue.value, definition.rawValue);
+      const primitiveValue = record.value as PrimitiveValue;
+      validateCompositeValue(primitiveValue.value as Primitives.Composite, definition.rawValue);
       expect(primitiveValue.displayValue).to.be.eq(definition.displayValue);
       expect(record.property.typename).to.be.eq(definition.typeName);
     });

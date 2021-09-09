@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Content, createRandomDescriptor, createRandomECInstanceKey, createRandomTransientId, DEFAULT_KEYS_BATCH_SIZE, Item, KeySet } from "@bentley/presentation-common";
+import { Content, createRandomDescriptor, createRandomECInstanceKey, createRandomTransientId, DEFAULT_KEYS_BATCH_SIZE, isKeySet, Item, KeySet } from "@bentley/presentation-common";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
@@ -67,7 +67,7 @@ describe("HiliteSetProvider", () => {
       const transientKey = { className: TRANSIENT_ELEMENT_CLASSNAME, id: createRandomTransientId() };
 
       // eslint-disable-next-line deprecation/deprecation
-      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny(), moq.It.isAny(), moq.isKeySet(new KeySet()))).returns(async () => undefined);
+      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny(), moq.It.isAny(), isKeySet(new KeySet()))).returns(async () => undefined);
 
       const result = await provider.getHiliteSet(new KeySet([transientKey]));
       expect(result.models).to.be.undefined;

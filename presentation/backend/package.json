@@ -19,13 +19,17 @@
     "url": "http://www.bentley.com"
   },
   "main": "cjs/presentation-backend.js",
+  "module": "esm/presentation-backend.js",
   "typings": "types/presentation-backend",
   "scripts": {
     "compile": "npm run build",
-    "build": "tsc 1>&2 && npm run build:assets",
-    "build:assets": "cpx \"./assets/**/*\" ./lib/assets",
+    "build": "npm run build:cjs && npm run build:esm",
+    "build:cjs": "tsc 1>&2 --outDir cjs && npm run copy:cjs",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir esm --declarationDir types && npm run copy:esm",
+    "copy:cjs": "cpx \"./assets/**/*\" ./cjs/assets",
+    "copy:esm": "cpx \"./assets/**/*\" ./esm/assets",
     "build:watch": "npm run build:assets && tsc -w",
-    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "clean": "rimraf cjs esm types .rush/temp/package-deps*.json",
     "cover": "nyc npm test",
     "docs": "npm run docs:reference && npm run extract && npm run docs:changelog",
     "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/presentation-backend",
@@ -33,7 +37,7 @@
     "extract": "betools extract --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
     "extract-api": "betools extract-api --entry=presentation-backend",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "mocha --config ../.mocharc.json --file ./lib/test/index.test.js \"./lib/test/**/*.test.js\"",
+    "test": "mocha --config ../.mocharc.json --file ./cjs/test/index.test.js \"./cjs/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {

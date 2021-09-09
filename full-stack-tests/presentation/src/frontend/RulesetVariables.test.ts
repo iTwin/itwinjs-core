@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Guid, Id64 } from "@bentley/bentleyjs-core";
 import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import { ChildNodeSpecificationTypes, ContentSpecificationTypes, KeySet, Ruleset, RuleTypes } from "@bentley/presentation-common";
-import { createRandomId } from "@bentley/presentation-common/cjs/test/_helpers/random";
+import { ChildNodeSpecificationTypes, ContentSpecificationTypes, createRandomId, KeySet, Ruleset, RuleTypes } from "@bentley/presentation-common";
 import { Presentation, PresentationManager, RulesetVariablesManager } from "@bentley/presentation-frontend";
 import { expect } from "chai";
 import * as faker from "faker";

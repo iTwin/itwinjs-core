@@ -612,7 +612,7 @@ describe("ContentDataProvider", () => {
 
       const resultField = await provider.getFieldByPropertyRecord(propertyRecord);
       presentationManagerMock.verifyAll();
-      expect(resultField.name).to.eq(field.name);
+      expect(resultField!.name).to.eq(field.name);
     });
 
     it("return a nested field", async () => {
@@ -630,7 +630,7 @@ describe("ContentDataProvider", () => {
 
       const resultField = await provider.getFieldByPropertyRecord(propertyRecord);
       presentationManagerMock.verifyAll();
-      expect(resultField.name).to.eq(nestedField.name);
+      expect(resultField!.name).to.eq(nestedField.name);
     });
 
   });

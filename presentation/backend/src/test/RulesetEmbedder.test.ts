@@ -10,7 +10,7 @@ import {
   BisCoreSchema, CodeSpecs, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, IModelDb, KnownLocations, Model, Subject
 } from "@bentley/imodeljs-backend";
 import { BisCodeSpec, Code, CodeScopeSpec, CodeSpec, DefinitionElementProps } from "@bentley/imodeljs-common";
-import { Ruleset } from "@bentley/presentation-common";
+import { configureForPromiseResult, Ruleset } from "@bentley/presentation-common";
 import { expect } from "chai";
 import faker from "faker";
 import sinon from "sinon";
@@ -107,22 +107,22 @@ describe("RulesetEmbedder", () => {
 
     rootSubjectMock.setup((x) => x.id).returns(() => rootSubjectId);
     rootSubjectMock.setup((x) => x.model).returns(() => modelId);
-    moq.configureForPromiseResult(rootSubjectMock);
+    configureForPromiseResult(rootSubjectMock);
 
     presentationRulesSubjectMock.setup((x) => x.id).returns(() => presentationRulesSubjectId);
     presentationRulesSubjectMock.setup((x) => x.insert()).returns(() => presentationRulesSubjectId);
     presentationRulesSubjectMock.setup((x) => x.model).returns(() => modelId);
-    moq.configureForPromiseResult(presentationRulesSubjectMock);
+    configureForPromiseResult(presentationRulesSubjectMock);
 
     definitionPartitionMock.setup((x) => x.id).returns(() => definitionPartitionId);
     definitionPartitionMock.setup((x) => x.insert()).returns(() => definitionPartitionId);
     definitionPartitionMock.setup((x) => x.model).returns(() => modelId);
-    moq.configureForPromiseResult(definitionPartitionMock);
+    configureForPromiseResult(definitionPartitionMock);
 
-    moq.configureForPromiseResult(definitionElementMock);
+    configureForPromiseResult(definitionElementMock);
 
     rulesetModelMock.setup((x) => x.id).returns(() => modelId);
-    moq.configureForPromiseResult(rulesetModelMock);
+    configureForPromiseResult(rulesetModelMock);
   }
 
   function setupMocksForHandlingPrerequisites() {

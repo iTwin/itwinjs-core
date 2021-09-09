@@ -27,8 +27,8 @@ describe("RulesetManager", () => {
       const result = manager.get(ruleset.id);
       addonMock.verifyAll();
       expect(result).to.not.be.undefined;
-      expect(result.toJSON()).to.deep.eq(ruleset);
-      expect(result.uniqueIdentifier).to.deep.eq(hash);
+      expect(result!.toJSON()).to.deep.eq(ruleset);
+      expect(result!.uniqueIdentifier).to.deep.eq(hash);
     });
 
     it("handles empty array response", async () => {
@@ -47,8 +47,8 @@ describe("RulesetManager", () => {
       const result = manager.get(ruleset.id);
       addonMock.verifyAll();
       expect(result).to.not.be.undefined;
-      expect(result.toJSON()).to.deep.eq(ruleset);
-      expect(result.uniqueIdentifier).to.deep.eq(hash);
+      expect(result!.toJSON()).to.deep.eq(ruleset);
+      expect(result!.uniqueIdentifier).to.deep.eq(hash);
     });
 
   });
@@ -120,7 +120,7 @@ describe("RulesetManager", () => {
 
       const result = manager.get(ruleset.id);
       expect(result).to.not.be.undefined;
-      result.dispose();
+      result!.dispose();
 
       addonMock.verifyAll();
     });

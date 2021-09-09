@@ -3,14 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import * as moq from "typemoq";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet } from "@bentley/presentation-common";
-import { isKeySet } from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { createRandomECInstanceKey, isKeySet, KeySet } from "@bentley/presentation-common";
 import { ISelectionProvider, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler } from "@bentley/presentation-frontend";
 import { renderHook } from "@testing-library/react-hooks";
+import { expect } from "chai";
+import * as moq from "typemoq";
 import { IPresentationPropertyDataProvider, usePropertyDataProviderWithUnifiedSelection } from "../../presentation-components";
 
 describe("usePropertyDataProviderWithUnifiedSelection", () => {

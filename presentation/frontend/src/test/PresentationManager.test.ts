@@ -674,7 +674,7 @@ describe("PresentationManager", () => {
         .verifiable();
       const actualResult = await manager.getContentDescriptor(options, "test", keyset, undefined); // eslint-disable-line deprecation/deprecation
       expect(actualResult).to.be.instanceOf(Descriptor);
-      expect(actualResult.toJSON()).to.deep.eq(result.toJSON());
+      expect(actualResult!.toJSON()).to.deep.eq(result.toJSON());
       rpcRequestsHandlerMock.verifyAll();
     });
 
@@ -693,7 +693,7 @@ describe("PresentationManager", () => {
         .verifiable();
       const actualResult = await manager.getContentDescriptor(options);
       expect(actualResult).to.be.instanceOf(Descriptor);
-      expect(actualResult.toJSON()).to.deep.eq(result.toJSON());
+      expect(actualResult!.toJSON()).to.deep.eq(result.toJSON());
       rpcRequestsHandlerMock.verifyAll();
     });
 
@@ -814,8 +814,8 @@ describe("PresentationManager", () => {
         .verifiable();
       const actualResult = await manager.getContent(options, descriptor, keyset); // eslint-disable-line deprecation/deprecation
       expect(actualResult).to.be.instanceOf(Content);
-      expect(actualResult.descriptor).to.eq(descriptor);
-      expect(actualResult.contentSet).to.deep.eq(result.items);
+      expect(actualResult!.descriptor).to.eq(descriptor);
+      expect(actualResult!.contentSet).to.deep.eq(result.items);
       rpcRequestsHandlerMock.verifyAll();
     });
 
@@ -839,8 +839,8 @@ describe("PresentationManager", () => {
         .verifiable();
       const actualResult = await manager.getContent(options);
       expect(actualResult).to.be.instanceOf(Content);
-      expect(actualResult.descriptor).to.eq(descriptor);
-      expect(actualResult.contentSet).to.deep.eq(result.items);
+      expect(actualResult!.descriptor).to.eq(descriptor);
+      expect(actualResult!.contentSet).to.deep.eq(result.items);
       rpcRequestsHandlerMock.verifyAll();
     });
 
@@ -862,8 +862,8 @@ describe("PresentationManager", () => {
         .verifiable();
       const actualResult = await manager.getContent(options);
       expect(actualResult).to.be.instanceOf(Content);
-      expect(actualResult.descriptor).to.deep.eq(descriptor);
-      expect(actualResult.contentSet).to.deep.eq(items);
+      expect(actualResult!.descriptor).to.deep.eq(descriptor);
+      expect(actualResult!.contentSet).to.deep.eq(items);
       rpcRequestsHandlerMock.verifyAll();
     });
 

@@ -375,12 +375,12 @@ describe("PropertyDataProvider", () => {
           const descriptor = createTestContentDescriptor({ fields: [field] });
           const values = {
             [field.name]: {
-              [(field.type).members[0].name]: "some value",
+              [(field.type as StructTypeDescription).members[0].name]: "some value",
             },
           };
           const displayValues = {
             [field.name]: {
-              [(field.type).members[0].name]: "some display value",
+              [(field.type as StructTypeDescription).members[0].name]: "some display value",
             },
           };
           const record = createTestContentItem({ values, displayValues });
@@ -1087,14 +1087,14 @@ describe("PropertyDataProvider", () => {
               Primitive: "some value",
               Array: ["some value 1", "some value 2"],
               Struct: {
-                [(structField.type).members[0].name]: "some value",
+                [(structField.type as StructTypeDescription).members[0].name]: "some value",
               },
             };
             const displayValues = {
               Primitive: "some display value",
               Array: ["some display value 1", "some display value 2"],
               Struct: {
-                [(structField.type).members[0].name]: "some display value",
+                [(structField.type as StructTypeDescription).members[0].name]: "some display value",
               },
             };
             const record = createTestContentItem({ values, displayValues });

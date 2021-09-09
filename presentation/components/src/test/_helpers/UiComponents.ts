@@ -3,14 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as faker from "faker";
-import * as moq from "typemoq";
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { NodeKey, RegisteredRuleset, Ruleset, VariableValue } from "@bentley/presentation-common";
-import { createRandomECInstancesNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { createRandomECInstancesNodeKey, NodeKey, RegisteredRuleset, Ruleset, VariableValue } from "@bentley/presentation-common";
 import { IModelContentChangeEventArgs, IModelHierarchyChangeEventArgs, PresentationManager, RulesetManager, RulesetVariablesManager } from "@bentley/presentation-frontend";
 import { PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { DelayLoadedTreeNodeItem } from "@bentley/ui-components";
+import * as faker from "faker";
+import * as moq from "typemoq";
 import { PRESENTATION_TREE_NODE_KEY } from "../../presentation-components/tree/Utils";
 
 export const createRandomTreeNodeItem = (key?: NodeKey, parentId?: string): DelayLoadedTreeNodeItem => {

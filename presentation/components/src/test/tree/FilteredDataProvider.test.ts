@@ -217,8 +217,8 @@ describe("FilteredTreeDataProvider", () => {
       const result = provider.getActiveMatch(2);
 
       expect(result).to.not.be.undefined;
-      expect(result.nodeId).to.be.eq(createTreeNodeItem(filteredNodePaths[1].node).id);
-      expect(result.matchIndex).to.be.eq(0);
+      expect(result!.nodeId).to.be.eq(createTreeNodeItem(filteredNodePaths[1].node).id);
+      expect(result!.matchIndex).to.be.eq(0);
     });
 
     it("returns undefined when index is 0 or lower", () => {

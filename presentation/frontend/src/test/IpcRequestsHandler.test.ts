@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IpcApp } from "@bentley/imodeljs-frontend";
-import { NodeKey, PRESENTATION_IPC_CHANNEL_NAME, RulesetVariable, VariableValueTypes } from "@bentley/presentation-common";
-import { createRandomECInstancesNodeKey } from "@bentley/presentation-common/cjs/test/_helpers/random";
+import { createRandomECInstancesNodeKey, NodeKey, PRESENTATION_IPC_CHANNEL_NAME, RulesetVariable, VariableValueTypes } from "@bentley/presentation-common";
 import { expect } from "chai";
 import sinon from "sinon";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";

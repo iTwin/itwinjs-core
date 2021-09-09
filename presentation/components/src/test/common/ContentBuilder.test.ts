@@ -6,7 +6,7 @@ import {
   createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestECInstanceKey, createTestNestedContentField, createTestPropertiesContentField, createTestPropertyInfo, createTestSimpleContentField,
   EnumerationInfo, FieldHierarchy, traverseContentItem
 } from "@bentley/presentation-common";
-import { PropertyRecord } from "@bentley/ui-abstract";
+import { ArrayValue, PropertyRecord, StructValue } from "@bentley/ui-abstract";
 import { expect } from "chai";
 import { FieldHierarchyRecord, IPropertiesAppender, PropertyRecordsBuilder } from "../../presentation-components/common/ContentBuilder";
 
@@ -97,8 +97,8 @@ describe("PropertyRecordsBuilder", () => {
     expect(builder.entries.length).to.eq(1);
     const record = builder.entries[0].record;
     expect(record.autoExpand).to.be.true;
-    expect((record.value).items[0].autoExpand).to.be.true;
-    expect(((record.value).items[0].value).members.child.autoExpand).to.be.undefined;
+    expect((record.value as ArrayValue).items[0].autoExpand).to.be.true;
+    expect(((record.value as ArrayValue).items[0].value as StructValue).members.child.autoExpand).to.be.undefined;
   });
 
 });

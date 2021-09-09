@@ -90,7 +90,7 @@ describe("DataProvidersFactory", () => {
       expect(dataProvider).to.be.instanceOf(PresentationTableDataProvider);
       expect(dataProvider.rulesetId).to.eq(ruleset.id);
       expect(dataProvider.description).to.eq("test str");
-      expect((dataProvider).shouldRequestContentForEmptyKeyset()).to.be.true;
+      expect((dataProvider as any).shouldRequestContentForEmptyKeyset()).to.be.true;
     });
 
     it("uses record's display value for navigation properties", async () => {

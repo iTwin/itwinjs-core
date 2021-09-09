@@ -2,20 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import * as sinon from "sinon";
-
-import * as React from "react";
-import { fireEvent, render } from "@testing-library/react";
 import { IModelApp, MockRender, QuantityType, QuantityTypeKey } from "@bentley/imodeljs-frontend";
-import TestUtils, { getButtonWithText, handleError, selectChangeValueByText, stubScrollIntoView } from "../TestUtils";
-import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { mockPresentationManager } from "@bentley/presentation-components/lib/test/_helpers/UiComponents";
-import { getQuantityFormatsSettingsManagerEntry } from "../../ui-framework/settings/quantityformatting/QuantityFormat";
-import { ModalDialogRenderer } from "../../ui-framework/dialog/ModalDialogManager";
 import { FormatProps, UnitSystemKey } from "@bentley/imodeljs-quantity";
+import { mockPresentationManager } from "@bentley/presentation-components/lib/test/_helpers/UiComponents";
+import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
+import { fireEvent, render } from "@testing-library/react";
+import { expect } from "chai";
+import * as React from "react";
+import * as sinon from "sinon";
+import * as moq from "typemoq";
+import { ModalDialogRenderer } from "../../ui-framework/dialog/ModalDialogManager";
+import { getQuantityFormatsSettingsManagerEntry } from "../../ui-framework/settings/quantityformatting/QuantityFormat";
 import { UiFramework } from "../../ui-framework/UiFramework";
+import TestUtils, { getButtonWithText, handleError, selectChangeValueByText, stubScrollIntoView } from "../TestUtils";
+
 
 describe("QuantityFormatSettingsPage", () => {
 

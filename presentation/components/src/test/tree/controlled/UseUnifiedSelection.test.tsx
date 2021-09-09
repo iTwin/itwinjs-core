@@ -2,28 +2,26 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { BeUiEvent } from "@bentley/bentleyjs-core";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { createRandomECInstancesNodeKey, createRandomGroupingNodeKey, Keys, KeySet, NodeKey, ResolvablePromise } from "@bentley/presentation-common";
+import {
+  ISelectionProvider, Presentation, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler, SelectionHelper, SelectionManager
+} from "@bentley/presentation-frontend";
+import {
+  AbstractTreeNodeLoaderWithProvider, MutableTreeModelNode, TreeModel, TreeModelChanges, TreeModelSource, TreeNodeItem,
+  TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs
+} from "@bentley/ui-components";
+import { CheckBoxState } from "@bentley/ui-core";
+import { renderHook } from "@testing-library/react-hooks";
 import { expect } from "chai";
 import { from } from "rxjs/internal/observable/from";
 import { finalize } from "rxjs/internal/operators/finalize";
 import { ObservableInput } from "rxjs/internal/types";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { BeUiEvent } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Keys, KeySet, NodeKey } from "@bentley/presentation-common";
-import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
-import { createRandomECInstancesNodeKey, createRandomGroupingNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
 import {
-  ISelectionProvider, Presentation, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler, SelectionHelper, SelectionManager,
-} from "@bentley/presentation-frontend";
-import {
-  AbstractTreeNodeLoaderWithProvider, MutableTreeModelNode, TreeModel, TreeModelChanges, TreeModelSource, TreeNodeItem,
-  TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
-} from "@bentley/ui-components";
-import { CheckBoxState } from "@bentley/ui-core";
-import { renderHook } from "@testing-library/react-hooks";
-import {
-  IPresentationTreeDataProvider, UnifiedSelectionTreeEventHandler, useUnifiedSelectionTreeEventHandler,
+  IPresentationTreeDataProvider, UnifiedSelectionTreeEventHandler, useUnifiedSelectionTreeEventHandler
 } from "../../../presentation-components";
 import { UnifiedSelectionTreeEventHandlerParams } from "../../../presentation-components/tree/controlled/UseUnifiedSelection";
 import { PRESENTATION_TREE_NODE_KEY } from "../../../presentation-components/tree/Utils";

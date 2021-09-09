@@ -3,24 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Id64, Id64Arg, Id64String } from "@bentley/bentleyjs-core";
+import { Code, ElementProps } from "@bentley/imodeljs-common";
+import { HiliteSet as IModelHiliteSet, IModelApp, IModelConnection, NoRenderApp, SelectionSet, ViewState3d } from "@bentley/imodeljs-frontend";
+import { createRandomECInstanceKey, createRandomId, KeySet, ResolvablePromise, waitForAllAsyncs } from "@bentley/presentation-common";
+import {
+  HiliteSet, Presentation, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionManager, SelectionScopesManager
+} from "@bentley/presentation-frontend";
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
+import { ViewportComponent } from "@bentley/ui-imodel-components";
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as faker from "faker";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Id64, Id64Arg, Id64String } from "@bentley/bentleyjs-core";
-import { Code, ElementProps } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, HiliteSet as IModelHiliteSet, NoRenderApp, SelectionSet, ViewState3d } from "@bentley/imodeljs-frontend";
-import { KeySet } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { waitForAllAsyncs } from "@bentley/presentation-common/lib/test/_helpers/PendingAsyncsHelper";
-import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
-import { createRandomECInstanceKey, createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
-import {
-  HiliteSet, Presentation, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionManager, SelectionScopesManager,
-} from "@bentley/presentation-frontend";
-import { ViewportComponent } from "@bentley/ui-imodel-components";
+import * as moq from "typemoq";
 import { IUnifiedSelectionComponent, viewWithUnifiedSelection } from "../../presentation-components";
 import { ViewportSelectionHandler } from "../../presentation-components/viewport/WithUnifiedSelection";
 
@@ -96,7 +93,7 @@ describe("Viewport withUnifiedSelection", () => {
       />).instance() as any as IUnifiedSelectionComponent;
 
       expect(viewport.selectionHandler).to.not.be.undefined;
-      expect(viewport.selectionHandler!.imodel).to.eq(imodelMock.object);
+      expect(viewport.selectionHandler?.imodel).to.eq(imodelMock.object);
     });
 
     it("applies current selection after mounting", () => {

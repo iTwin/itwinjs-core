@@ -3,27 +3,26 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { I18N } from "@bentley/imodeljs-i18n";
+import { BaseNodeKey, createRandomECInstancesNodeKey, KeySet } from "@bentley/presentation-common";
+import {
+  ISelectionProvider, Presentation, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler, SelectionHelper,
+  SelectionManager
+} from "@bentley/presentation-frontend";
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
+import { DEPRECATED_Tree as Tree, TreeNodeItem, TreeProps, UiComponents } from "@bentley/ui-components";
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as faker from "faker";
 import * as React from "react";
 import * as sinon from "sinon";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { I18N } from "@bentley/imodeljs-i18n";
-import { BaseNodeKey, KeySet } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomECInstancesNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
-import {
-  ISelectionProvider, Presentation, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler, SelectionHelper,
-  SelectionManager,
-} from "@bentley/presentation-frontend";
-import { DEPRECATED_Tree as Tree, TreeNodeItem, TreeProps, UiComponents } from "@bentley/ui-components";
+import * as moq from "typemoq";
 import { IUnifiedSelectionComponent } from "../../presentation-components/common/IUnifiedSelectionComponent";
 import { IPresentationTreeDataProvider } from "../../presentation-components/tree/IPresentationTreeDataProvider";
 import { PRESENTATION_TREE_NODE_KEY } from "../../presentation-components/tree/Utils";
 import {
-  DEPRECATED_treeWithUnifiedSelection as treeWithUnifiedSelection, TreeWithUnifiedSelectionProps,
+  DEPRECATED_treeWithUnifiedSelection as treeWithUnifiedSelection, TreeWithUnifiedSelectionProps
 } from "../../presentation-components/tree/WithUnifiedSelection";
 import { createRandomTreeNodeItem } from "../_helpers/UiComponents";
 
@@ -103,9 +102,9 @@ describe("Tree withUnifiedSelection", () => {
     />).dive().instance() as any as IUnifiedSelectionComponent;
 
     expect(tree.selectionHandler).to.not.be.undefined;
-    expect(tree.selectionHandler!.name).to.not.be.undefined;
-    expect(tree.selectionHandler!.rulesetId).to.eq(testRulesetId);
-    expect(tree.selectionHandler!.imodel).to.eq(imodelMock.object);
+    expect(tree.selectionHandler?.name).to.not.be.undefined;
+    expect(tree.selectionHandler?.rulesetId).to.eq(testRulesetId);
+    expect(tree.selectionHandler?.imodel).to.eq(imodelMock.object);
   });
 
   it("renders correctly", () => {

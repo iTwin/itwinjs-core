@@ -70,8 +70,9 @@ export * from "./presentation-components/table/WithUnifiedSelection";
  * Presentation features for [Tree]($ui-components:Tree) component.
  */
 export * from "./presentation-components/tree/DataProvider";
-export * from "./presentation-components/tree/IPresentationTreeDataProvider";
 export * from "./presentation-components/tree/FilteredDataProvider";
+export * from "./presentation-components/tree/IPresentationTreeDataProvider";
+export * from "./presentation-components/tree/Utils";
 export * from "./presentation-components/tree/WithUnifiedSelection";
 export * from "./presentation-components/tree/WithFilteringSupport";
 export * from "./presentation-components/tree/controlled/UseUnifiedSelection";
