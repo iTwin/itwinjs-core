@@ -434,9 +434,9 @@ The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to 
 
   `width` and `height` props may be calculated dynamically using [ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver) API.
 
-### Deprecated ui-core Components in Favor of iTwinUI-react Components
+### Deprecated Components in Favor of iTwinUI-react Components
 
-Several UI components in the @bentley/ui-core package have been deprecated.
+Several UI components in the @bentley/ui-core and @bentley/ui-components packages have been deprecated.
 Developers should use equivalent components in @itwin/itwinui-react instead.
 
 | Deprecated in @bentley/ui-core | Use from @itwin/itwinui-react instead          |
@@ -472,6 +472,10 @@ Developers should use equivalent components in @itwin/itwinui-react instead.
 | Tooltip                        | Tooltip                                        |
 | TooltipPlacement               | Placement                                      |
 
+| Deprecated in @bentley/ui-components | Use from @itwin/itwinui-react instead          |
+| ------------------------------------ | ---------------------------------------------- |
+| Breadcrumb                           | Breadcrumbs                                    |
+
 #### Slider
 
 The deprecated [Slider]($ui-core) was a wrapper around the react-compound-slider that does not work properly in popout windows. To eliminate this issue, the deprecated `Slider`will now wrap the  `Slider` component from @itwin/itwinui-react. This result is a couple prop changes. The `onSlideStart` or `onSlideEnd` props are ignored, use `onUpdate` and `onChange` props if needed. The only two `modes` that remain supported are 1 and 2.
@@ -489,10 +493,6 @@ Some have replacements within the @bentley/ui-core package.
 | DialogButtonType in @bentley/ui-core  | DialogButtonType in @bentley/ui-abstract   |
 | LocalUiSettings in @bentley/ui-core   | LocalSettingsStorage in @bentley/ui-core   |
 | SessionUiSettings in @bentley/ui-core | SessionSettingsStorage in @bentley/ui-core |
-
-### Breadcrumb is deprecated
-
-The Breadcrumb component and related components, enums and interfaces are now deprecated. Currently, there is no alternative.
 
 ### New @bentley/ui-imodel-components package
 
