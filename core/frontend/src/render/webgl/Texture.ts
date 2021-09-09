@@ -566,8 +566,11 @@ export interface ExternalTextureRequest {
 
 /** @internal */
 export class ExternalTextureLoader { /* currently exported for tests only */
-  // public static readonly instance = new ExternalTextureLoader(10); // orig 10, tested 2
-  public static readonly instance = new ExternalTextureLoader(1);
+  // Originally 10 was used for maxActiveRequests for ExternalTextureLoader, but after switching to using createImageBitmap,
+  // which from other testing does not like many instances of it going (and is threaded anyway), changed this to 1.
+  // Could still have multiple queryTextureimage calls outstanding on backend, best guess is just need 2 max, but would
+  // have to rework this code to only thread that portion.
+  public static readonly instance = new ExternalTextureLoader(2);
   public readonly onTexturesLoaded = new BeEvent<() => void>();
   private readonly _maxActiveRequests: number;
   private _activeRequests: Array<ExternalTextureRequest> = [];
