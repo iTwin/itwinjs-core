@@ -12,7 +12,7 @@ import { assert } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   addFieldHierarchy, CategoryDescription, ContentFlags, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, Field, FieldHierarchy,
-  InstanceKey, NestedContentValue, ProcessFieldHierarchiesProps, ProcessPrimitiveValueProps, PropertyValueFormat as PresentationPropertyValueFormat,
+  InstanceKey, NestedContentValue, PropertyValueFormat as PresentationPropertyValueFormat, ProcessFieldHierarchiesProps, ProcessPrimitiveValueProps,
   RelationshipMeaning, Ruleset, StartArrayProps, StartCategoryProps, StartContentProps, StartStructProps, traverseContentItem, traverseFieldHierarchy,
   Value, ValuesMap,
 } from "@bentley/presentation-common";
