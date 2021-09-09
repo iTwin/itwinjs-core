@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { using } from "@bentley/bentleyjs-core";
-import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
 import { expect } from "chai";
 import * as lolex from "lolex";
 import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { TemporaryStorage } from "../presentation-backend/TemporaryStorage";
 
 describe("TemporaryStorage", () => {

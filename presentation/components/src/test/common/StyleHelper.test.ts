@@ -3,8 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { LabelDefinition, Node } from "@bentley/presentation-common";
-import { createRandomECInstancesNodeKey } from "@bentley/presentation-common/cjs/test/_helpers/random";
+import { createRandomECInstancesNodeKey, LabelDefinition, Node } from "@bentley/presentation-common";
 import { expect } from "chai";
 import * as faker from "faker";
 import { StyleHelper } from "../../presentation-components/common/StyleHelper";

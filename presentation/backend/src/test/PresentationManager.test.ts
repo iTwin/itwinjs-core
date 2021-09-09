@@ -7,25 +7,17 @@ import { ClientRequestContext, DbResult, Id64String, using } from "@bentley/bent
 import { BriefcaseDb, ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IpcHost } from "@bentley/imodeljs-backend";
 import {
   ArrayTypeDescription, Content, ContentDescriptorRequestOptions, ContentFlags, ContentJSON, ContentRequestOptions, ContentSourcesRequestOptions,
-  DefaultContentDisplayTypes, Descriptor, DescriptorJSON, DiagnosticsOptions, DiagnosticsScopeLogs, DisplayLabelRequestOptions,
-  DisplayLabelsRequestOptions, DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, ExtendedContentRequestOptions,
-  ExtendedHierarchyRequestOptions, FieldDescriptor, FieldDescriptorType, FieldJSON, getLocalesDirectory, HierarchyCompareInfo,
-  HierarchyCompareInfoJSON, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, IntRulesetVariable, ItemJSON, KeySet, KindOfQuantityInfo,
-  LabelDefinition, LabelRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationError, PrimitiveTypeDescription,
-  PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RequestPriority, Ruleset, SelectClassInfoJSON, SelectionInfo,
-  SelectionScope, StandardNodeTypes, StructTypeDescription, VariableValueTypes
+  createRandomCategory, createRandomDescriptor, createRandomDescriptorJSON, createRandomECClassInfoJSON, createRandomECInstanceKey, createRandomECInstanceKeyJSON,
+  createRandomECInstancesNodeJSON, createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON, createRandomId, createRandomLabelDefinitionJSON,
+  createRandomNodePathElementJSON, createRandomRelatedClassInfoJSON, createRandomRelationshipPathJSON, createRandomRuleset, createTestCategoryDescription, createTestContentDescriptor,
+  createTestContentItem, createTestECClassInfo, createTestSimpleContentField, DefaultContentDisplayTypes, Descriptor, DescriptorJSON, DiagnosticsOptions, DiagnosticsScopeLogs,
+  DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, FieldDescriptor, FieldDescriptorType,
+  FieldJSON, getLocalesDirectory, HierarchyCompareInfo, HierarchyCompareInfoJSON, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, IntRulesetVariable,
+  ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition, LabelRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationError, PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON,
+  PropertyJSON, RegisteredRuleset, RequestPriority, Ruleset, SelectClassInfoJSON,
+  SelectionInfo, SelectionScope, StandardNodeTypes, StructTypeDescription,
+  VariableValueTypes
 } from "@bentley/presentation-common";
-import {
-  createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestSimpleContentField
-} from "@bentley/presentation-common/cjs/test/_helpers/Content";
-import { createTestECClassInfo } from "@bentley/presentation-common/cjs/test/_helpers/EC";
-import "@bentley/presentation-common/cjs/test/_helpers/Promises";
-import {
-  createRandomCategory, createRandomDescriptor, createRandomDescriptorJSON, createRandomECClassInfoJSON, createRandomECInstanceKey,
-  createRandomECInstanceKeyJSON, createRandomECInstancesNodeJSON, createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON, createRandomId,
-  createRandomLabelDefinitionJSON, createRandomNodePathElementJSON, createRandomRelatedClassInfoJSON, createRandomRelationshipPathJSON,
-  createRandomRuleset
-} from "@bentley/presentation-common/cjs/test/_helpers/random";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as path from "path";

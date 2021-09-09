@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { BeEvent, BeUiEvent, using } from "@bentley/bentleyjs-core";
+import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
+import { SelectionHandler } from "@bentley/presentation-frontend";
+import { AbstractTreeNodeLoaderWithProvider, TreeModel, TreeModelChanges, TreeModelSource } from "@bentley/ui-components";
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { BeEvent, BeUiEvent, using } from "@bentley/bentleyjs-core";
-import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
+import * as moq from "typemoq";
 import { IVisibilityHandler, VisibilityChangeListener, VisibilityStatus, VisibilityTreeEventHandler, VisibilityTreeEventHandlerParams } from "../../ui-framework/imodel-components/VisibilityTreeEventHandler";
-import { AbstractTreeNodeLoaderWithProvider, TreeModel, TreeModelChanges, TreeModelSource } from "@bentley/ui-components";
-import { SelectionHandler } from "@bentley/presentation-frontend";
-import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
-import { createSimpleTreeModelNode } from "./Common";
 import TestUtils from "../TestUtils";
+import { createSimpleTreeModelNode } from "./Common";
 
 describe("VisibilityTreeEventHandler", () => {
 

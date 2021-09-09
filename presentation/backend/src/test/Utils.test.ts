@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { DbResult } from "@bentley/bentleyjs-core";
 import { ECSqlStatement, ECSqlValue, IModelDb } from "@bentley/imodeljs-backend";
-import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
-import { createRandomId } from "@bentley/presentation-common/cjs/test/_helpers/random";
+import { createRandomId } from "@bentley/presentation-common";
 import { expect } from "chai";
+import * as moq from "typemoq";
 import { getElementKey, normalizeVersion } from "../presentation-backend/Utils";
 
 describe("getElementKey", () => {

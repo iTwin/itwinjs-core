@@ -8,24 +8,19 @@ import { IModelDb } from "@bentley/imodeljs-backend";
 import { IModelNotFoundResponse, IModelRpcProps } from "@bentley/imodeljs-common";
 import {
   ContentDescriptorRequestOptions, ContentDescriptorRpcRequestOptions, ContentRequestOptions, ContentRpcRequestOptions, ContentSourcesRequestOptions,
-  ContentSourcesRpcRequestOptions, ContentSourcesRpcResult, Descriptor, DescriptorJSON, DescriptorOverrides, DiagnosticsScopeLogs,
-  DisplayLabelRequestOptions, DisplayLabelRpcRequestOptions, DisplayLabelsRequestOptions, DisplayLabelsRpcRequestOptions,
-  DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, ElementPropertiesRpcRequestOptions, ExtendedContentRequestOptions,
-  ExtendedContentRpcRequestOptions, ExtendedHierarchyRequestOptions, ExtendedHierarchyRpcRequestOptions, FieldDescriptor, FieldDescriptorType,
-  HierarchyCompareInfo, HierarchyCompareOptions, HierarchyCompareRpcOptions, HierarchyRequestOptions, HierarchyRpcRequestOptions, InstanceKey, Item,
-  KeySet, KeySetJSON, Node, NodeKey, NodePathElement, Paged, PageOptions, PresentationError, PresentationRpcRequestOptions, PresentationStatus,
-  RulesetVariable, RulesetVariableJSON, SelectClassInfo, SelectionScopeRequestOptions, VariableValueTypes
+  ContentSourcesRpcRequestOptions, ContentSourcesRpcResult, createRandomContent, createRandomDescriptor, createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeKey,
+  createRandomECInstancesNodeKeyJSON, createRandomId, createRandomLabelDefinitionJSON, createRandomNodePathElement, createRandomSelectionScope, createTestSelectClassInfo, Descriptor, DescriptorJSON, DescriptorOverrides,
+  DiagnosticsScopeLogs, DisplayLabelRequestOptions, DisplayLabelRpcRequestOptions, DisplayLabelsRequestOptions,
+  DisplayLabelsRpcRequestOptions, DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, ElementPropertiesRpcRequestOptions,
+  ExtendedContentRequestOptions, ExtendedContentRpcRequestOptions, ExtendedHierarchyRequestOptions, ExtendedHierarchyRpcRequestOptions, FieldDescriptor,
+  FieldDescriptorType, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyCompareRpcOptions, HierarchyRequestOptions, HierarchyRpcRequestOptions, InstanceKey,
+  Item, KeySet, KeySetJSON, Node, NodeKey, NodePathElement, Paged, PageOptions, PresentationError, PresentationRpcRequestOptions,
+  PresentationStatus, ResolvablePromise, RulesetVariable, RulesetVariableJSON, SelectClassInfo, SelectionScopeRequestOptions, VariableValueTypes
 } from "@bentley/presentation-common";
-import { createTestSelectClassInfo } from "@bentley/presentation-common/cjs/test/_helpers/Content";
-import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
-import { ResolvablePromise } from "@bentley/presentation-common/cjs/test/_helpers/Promises";
-import {
-  createRandomContent, createRandomDescriptor, createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeKey,
-  createRandomECInstancesNodeKeyJSON, createRandomId, createRandomLabelDefinitionJSON, createRandomNodePathElement, createRandomSelectionScope
-} from "@bentley/presentation-common/cjs/test/_helpers/random";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { Presentation } from "../presentation-backend/Presentation";
 import { PresentationManager } from "../presentation-backend/PresentationManager";
 import { MAX_ALLOWED_PAGE_SIZE, PresentationRpcImpl } from "../presentation-backend/PresentationRpcImpl";

@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelDb, IModelHost, IModelJsNative } from "@bentley/imodeljs-backend";
 import { DiagnosticsScopeLogs, PresentationError, UpdateInfo, VariableValueTypes } from "@bentley/presentation-common";
-import "@bentley/presentation-common/cjs/test/_helpers/Promises";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "typemoq";

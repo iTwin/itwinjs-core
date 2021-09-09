@@ -4,10 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { I18N } from "@bentley/imodeljs-i18n";
-import { Content, Item, LabelDefinition } from "@bentley/presentation-common";
-import {
-  createRandomDescriptor, createRandomECInstancesNode, createRandomLabelCompositeValue, createRandomLabelDefinition
-} from "@bentley/presentation-common/cjs/test/_helpers/random";
+import { Content, createRandomDescriptor, createRandomECInstancesNode, createRandomLabelCompositeValue, createRandomLabelDefinition, Item, LabelDefinition } from "@bentley/presentation-common";
 import { expect } from "chai";
 import * as moq from "typemoq";
 import { LocalizationHelper } from "../presentation-frontend/LocalizationHelper";

@@ -3,8 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Field } from "@bentley/presentation-common";
-import { createRandomPrimitiveField } from "@bentley/presentation-common/cjs/test/_helpers/random";
+import { createRandomPrimitiveField, Field } from "@bentley/presentation-common";
 import { FavoritePropertiesManager, FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { expect } from "chai";

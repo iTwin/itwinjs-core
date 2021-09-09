@@ -120,3 +120,5 @@ export * from "./presentation-common/rules/Rule";
 export * from "./presentation-common/rules/Ruleset";
 export * from "./presentation-common/rules/SchemasSpecification";
 export * from "./presentation-common/rules/Variables";
+
+export * from "./test/_helpers";

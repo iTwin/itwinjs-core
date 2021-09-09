@@ -7,12 +7,12 @@ import {
   IModelConnection, PerModelCategoryVisibility, ScreenViewport, SubCategoriesCache, ViewManager, Viewport, ViewState
 } from "@bentley/imodeljs-frontend";
 import { ECInstancesNodeKey, StandardNodeTypes } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import * as UiComponents from "@bentley/ui-components";
 import { renderHook } from "@testing-library/react-hooks";
 import { expect } from "chai";
 import * as sinon from "sinon";
+import * as moq from "typemoq";
 import {
   Category, CategoryVisibilityHandler, CategoryVisibilityHandlerParams, useCategories
 } from "../../../ui-framework/imodel-components/category-tree/CategoryVisibilityHandler";

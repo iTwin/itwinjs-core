@@ -9,21 +9,18 @@ import { IModelConnection, IpcApp } from "@bentley/imodeljs-frontend";
 import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
 import { UnitSystemKey } from "@bentley/imodeljs-quantity";
 import {
-  Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, ContentSourcesRpcResult, Descriptor,
+  Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, ContentSourcesRpcResult, createRandomBaseNodeKey, createRandomDescriptor, createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeJSON,
+  createRandomECInstancesNodeKey, createRandomLabelDefinition, createRandomNodePathElement, createRandomRuleset, createRandomTransientId, Descriptor,
   DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties,
   ElementPropertiesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, FieldDescriptor, FieldDescriptorType,
   HierarchyCompareInfoJSON, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, Item, KeySet, LabelDefinition, LabelRequestOptions, Node,
   NodeKey, NodePathElement, Paged, PartialHierarchyModification, PresentationError, PresentationIpcEvents, PresentationStatus, RegisteredRuleset,
   RpcRequestsHandler, Ruleset, RulesetVariable, SelectClassInfo, UpdateInfo, VariableValueTypes
 } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
-import {
-  createRandomBaseNodeKey, createRandomDescriptor, createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeJSON,
-  createRandomECInstancesNodeKey, createRandomLabelDefinition, createRandomNodePathElement, createRandomRuleset, createRandomTransientId
-} from "@bentley/presentation-common/cjs/test/_helpers/random";
 import { expect } from "chai";
 import * as faker from "faker";
 import sinon from "sinon";
+import * as moq from "typemoq";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
 import { Presentation } from "../presentation-frontend/Presentation";
 import {

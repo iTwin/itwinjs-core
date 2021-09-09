@@ -11,10 +11,10 @@ import {
 } from "@bentley/imodeljs-backend";
 import { BisCodeSpec, Code, CodeScopeSpec, CodeSpec, DefinitionElementProps } from "@bentley/imodeljs-common";
 import { Ruleset } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
 import { expect } from "chai";
 import faker from "faker";
 import sinon from "sinon";
+import * as moq from "typemoq";
 import { PresentationRules } from "../presentation-backend/domain/PresentationRulesDomain";
 import * as RulesetElements from "../presentation-backend/domain/RulesetElements";
 import { DuplicateRulesetHandlingStrategy, RulesetEmbedder } from "../presentation-backend/RulesetEmbedder";

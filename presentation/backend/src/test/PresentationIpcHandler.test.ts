@@ -4,10 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelDb, IModelJsNative } from "@bentley/imodeljs-backend";
 import {
-  NodeKeyJSON, RulesetVariableJSON, SetRulesetVariableParams, StringRulesetVariable, UnsetRulesetVariableParams, UpdateHierarchyStateParams,
-  VariableValueTypes
+  createRandomBaseNodeKey, NodeKeyJSON, RulesetVariableJSON, SetRulesetVariableParams, StringRulesetVariable, UnsetRulesetVariableParams,
+  UpdateHierarchyStateParams, VariableValueTypes
 } from "@bentley/presentation-common";
-import { createRandomBaseNodeKey } from "@bentley/presentation-common/cjs/test/_helpers/random";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";

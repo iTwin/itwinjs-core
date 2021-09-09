@@ -5,14 +5,14 @@
 
 import { BeEvent, Id64String, using } from "@bentley/bentleyjs-core";
 import { IModelConnection, PerModelCategoryVisibility, SpatialViewState, Viewport, ViewState, ViewState3d } from "@bentley/imodeljs-frontend";
-import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
-import { createRandomId } from "@bentley/presentation-common/cjs/test/_helpers/random";
+import { createRandomId } from "@bentley/presentation-common";
 import { FilteredPresentationTreeDataProvider } from "@bentley/presentation-components/cjs/presentation-components/tree/FilteredDataProvider";
 import { IModelHierarchyChangeEventArgs, Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { isPromiseLike } from "@bentley/ui-core";
 import { expect } from "chai";
 import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { ModelsVisibilityHandler, ModelsVisibilityHandlerProps } from "../../../ui-framework/imodel-components/models-tree/ModelsVisibilityHandler";
 import { TestUtils } from "../../TestUtils";
 import { createCategoryNode, createElementClassGroupingNode, createElementNode, createModelNode, createSubjectNode } from "../Common";

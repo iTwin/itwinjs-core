@@ -2,22 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { IModelRpcProps } from "@bentley/imodeljs-common";
+import { IModelApp, IModelConnection, MockRender, ScreenViewport, SelectionSet } from "@bentley/imodeljs-frontend";
+import { createRandomECInstanceKey, createRandomId, createRandomSelectionScope, InstanceKey, RpcRequestsHandler } from "@bentley/presentation-common";
+import { Presentation, SelectionManager, SelectionScopesManager, SelectionScopesManagerProps } from "@bentley/presentation-frontend";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { IModelRpcProps } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, MockRender, ScreenViewport, SelectionSet } from "@bentley/imodeljs-frontend";
-import { InstanceKey, RpcRequestsHandler } from "@bentley/presentation-common";
-import { createRandomECInstanceKey, createRandomId, createRandomSelectionScope } from "@bentley/presentation-common/cjs/test/_helpers/random";
-import { Presentation, SelectionManager, SelectionScopesManager, SelectionScopesManagerProps } from "@bentley/presentation-frontend";
 import {
   ContentControlActivatedEventArgs, ContentLayoutActivatedEventArgs, NavigationAidActivatedEventArgs, SyncUiEventArgs, SyncUiEventDispatcher,
-  UiFramework, WidgetStateChangedEventArgs,
+  UiFramework, WidgetStateChangedEventArgs
 } from "../../ui-framework";
 import { Backstage, BackstageEventArgs } from "../../ui-framework/backstage/Backstage";
 import { ActiveContentChangedEventArgs, ContentViewManager } from "../../ui-framework/content/ContentViewManager";
 import {
-  FrontstageActivatedEventArgs, FrontstageManager, FrontstageReadyEventArgs, ModalFrontstageChangedEventArgs, ToolActivatedEventArgs,
+  FrontstageActivatedEventArgs, FrontstageManager, FrontstageReadyEventArgs, ModalFrontstageChangedEventArgs, ToolActivatedEventArgs
 } from "../../ui-framework/frontstage/FrontstageManager";
 import { TaskActivatedEventArgs, WorkflowActivatedEventArgs, WorkflowManager } from "../../ui-framework/workflow/Workflow";
 import TestUtils from "../TestUtils";

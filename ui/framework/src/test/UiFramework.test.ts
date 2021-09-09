@@ -4,22 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 // cSpell:ignore typemoq, tabid
 
-import { expect } from "chai";
-import * as moq from "typemoq";
-import * as sinon from "sinon";
-import { IModelRpcProps } from "@bentley/imodeljs-common";
-import { RpcRequestsHandler } from "@bentley/presentation-common";
-import { createRandomSelectionScope } from "@bentley/presentation-common/cjs/test/_helpers/random";
 import { Id64String, Logger } from "@bentley/bentleyjs-core";
+import { IModelRpcProps } from "@bentley/imodeljs-common";
 import { IModelApp, IModelConnection, MockRender, SelectionSet, ViewState } from "@bentley/imodeljs-frontend";
+import { createRandomSelectionScope, RpcRequestsHandler } from "@bentley/presentation-common";
 import { Presentation, SelectionManager, SelectionScopesManager, SelectionScopesManagerProps } from "@bentley/presentation-frontend";
 import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@bentley/presentation-testing";
+import { LocalSettingsStorage, UiSettingsStorage } from "@bentley/ui-core";
+import { expect } from "chai";
+import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { ColorTheme, CursorMenuData, SettingsModalFrontstage, UiFramework, UserSettingsProvider } from "../ui-framework";
 import { DefaultIModelServices } from "../ui-framework/clientservices/DefaultIModelServices";
 import { DefaultProjectServices } from "../ui-framework/clientservices/DefaultProjectServices";
-import TestUtils, { mockUserInfo, storageMock } from "./TestUtils";
-import { LocalSettingsStorage, UiSettingsStorage } from "@bentley/ui-core";
 import { OpenSettingsTool } from "../ui-framework/tools/OpenSettingsTool";
+import TestUtils, { mockUserInfo, storageMock } from "./TestUtils";
 
 describe("UiFramework localStorage Wrapper", () => {
 

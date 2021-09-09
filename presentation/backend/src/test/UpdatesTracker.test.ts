@@ -5,10 +5,10 @@
 import { using } from "@bentley/bentleyjs-core";
 import { IModelDb, IpcHost } from "@bentley/imodeljs-backend";
 import { PresentationIpcEvents, UpdateInfoJSON } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
 import { expect } from "chai";
 import * as lolex from "lolex";
 import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
 import { UpdatesTracker } from "../presentation-backend/UpdatesTracker";
 

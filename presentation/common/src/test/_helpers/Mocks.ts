@@ -5,7 +5,6 @@
 import * as moq from "typemoq";
 import { Keys, KeySet } from "../../presentation-common";
 
-export * from "typemoq";
 const deepEqual = require("deep-equal"); // eslint-disable-line @typescript-eslint/no-var-requires
 
 /**

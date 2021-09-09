@@ -5,18 +5,14 @@
 
 import { BeEvent, Logger } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Node, RegisteredRuleset } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
-import { PromiseContainer, ResolvablePromise } from "@bentley/presentation-common/cjs/test/_helpers/Promises";
-import {
-  createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomNodePathElement, createRandomRuleset
-} from "@bentley/presentation-common/cjs/test/_helpers/random";
+import { createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomNodePathElement, createRandomRuleset, Node, PromiseContainer, RegisteredRuleset, ResolvablePromise } from "@bentley/presentation-common";
 import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@bentley/presentation-frontend";
 import "@bentley/presentation-frontend/cjs/test/_helpers/MockFrontendEnvironment";
 import { PageOptions } from "@bentley/ui-components";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { PresentationTreeDataProvider } from "../../presentation-components/tree/DataProvider";
 import { pageOptionsUiToPresentation } from "../../presentation-components/tree/Utils";
 import { createRandomTreeNodeItem } from "../_helpers/UiComponents";

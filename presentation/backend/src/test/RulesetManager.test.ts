@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { RegisteredRuleset } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
 import { expect } from "chai";
 import * as faker from "faker";
+import * as moq from "typemoq";
 import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
 import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
 

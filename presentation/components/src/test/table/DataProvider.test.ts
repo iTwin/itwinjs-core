@@ -6,14 +6,8 @@
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import {
-  Content, DefaultContentDisplayTypes, Descriptor, DisplayValue, FieldDescriptorType, Item, KeySet, NestedContentValue, PresentationError, RelationshipMeaning, SortDirection as PresentationSortDirection, ValuesDictionary
+  Content, createRandomDescriptor, createRandomECInstanceKey, createRandomNestedContentField, createRandomPrimitiveField, createTestContentDescriptor, createTestSimpleContentField, DefaultContentDisplayTypes, Descriptor, DisplayValue, FieldDescriptorType, Item, KeySet, NestedContentValue, PresentationError, PromiseContainer, RelationshipMeaning, SortDirection as PresentationSortDirection, ValuesDictionary
 } from "@bentley/presentation-common";
-import { createTestContentDescriptor, createTestSimpleContentField } from "@bentley/presentation-common/cjs/test/_helpers/Content";
-import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
-import { PromiseContainer } from "@bentley/presentation-common/cjs/test/_helpers/Promises";
-import {
-  createRandomDescriptor, createRandomECInstanceKey, createRandomNestedContentField, createRandomPrimitiveField
-} from "@bentley/presentation-common/cjs/test/_helpers/random";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import "@bentley/presentation-frontend/cjs/test/_helpers/MockFrontendEnvironment";
 import { RowItem } from "@bentley/ui-components";
@@ -22,6 +16,7 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as path from "path";
 import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";
 import { initializeLocalization } from "../../presentation-components/common/Utils";
 import { PresentationTableDataProvider, TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE } from "../../presentation-components/table/DataProvider";

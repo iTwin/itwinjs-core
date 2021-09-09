@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { NodeKey } from "@bentley/presentation-common";
-import { createRandomECInstancesNodeKey } from "@bentley/presentation-common/cjs/test/_helpers/random";
+import { createRandomECInstancesNodeKey, NodeKey } from "@bentley/presentation-common";
 import { Presentation, StateTracker } from "@bentley/presentation-frontend";
 import { TreeModelNodeInput, TreeModelSource, TreeNodeItem } from "@bentley/ui-components";
 import { cleanup, renderHook } from "@testing-library/react-hooks";

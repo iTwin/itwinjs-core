@@ -3,11 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64String, OrderedId64Iterable } from "@bentley/bentleyjs-core";
-import { VariableValueTypes } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
-import { createRandomId } from "@bentley/presentation-common/cjs/test/_helpers/random";
+import { createRandomId, VariableValueTypes } from "@bentley/presentation-common";
 import { expect } from "chai";
 import * as faker from "faker";
+import * as moq from "typemoq";
 import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
 import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager";
 

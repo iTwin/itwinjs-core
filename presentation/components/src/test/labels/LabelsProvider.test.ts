@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { DEFAULT_KEYS_BATCH_SIZE } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
-import { createRandomECInstanceKey } from "@bentley/presentation-common/cjs/test/_helpers/random";
+import * as moq from "typemoq";
+import { createRandomECInstanceKey } from "@bentley/presentation-common";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import "@bentley/presentation-frontend/cjs/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";

@@ -3,11 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64 } from "@bentley/bentleyjs-core";
-import { Content, PropertyValueFormat } from "@bentley/presentation-common";
-import {
-  createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestSimpleContentField
-} from "@bentley/presentation-common/cjs/test/_helpers/Content";
-import { createTestECClassInfo, createTestECInstanceKey } from "@bentley/presentation-common/cjs/test/_helpers/EC";
+import { Content, createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestECClassInfo, createTestECInstanceKey, createTestSimpleContentField, PropertyValueFormat } from "@bentley/presentation-common";
 import { expect } from "chai";
 import { buildElementProperties } from "../presentation-backend/ElementPropertiesHelper";
 

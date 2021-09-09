@@ -3,16 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Content, Item, RulesetsFactory } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
-import {
-  createRandomContent, createRandomDescriptor, createRandomPrimitiveField, createRandomRuleset
-} from "@bentley/presentation-common/cjs/test/_helpers/random";
+import { Content, createRandomContent, createRandomDescriptor, createRandomPrimitiveField, createRandomRuleset, Item, RulesetsFactory } from "@bentley/presentation-common";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import "@bentley/presentation-frontend/cjs/test/_helpers/MockFrontendEnvironment";
 import { TypeConverter, TypeConverterManager } from "@bentley/ui-components";
 import { expect } from "chai";
 import * as sinon from "sinon";
+import * as moq from "typemoq";
 import {
   DataProvidersFactory, DataProvidersFactoryProps, IPresentationPropertyDataProvider, PresentationTableDataProvider
 } from "../presentation-components";

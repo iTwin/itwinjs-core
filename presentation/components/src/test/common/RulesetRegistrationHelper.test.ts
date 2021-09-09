@@ -3,13 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BeDuration, using } from "@bentley/bentleyjs-core";
-import { RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
-import { ResolvablePromise } from "@bentley/presentation-common/cjs/test/_helpers/Promises";
+import { RegisteredRuleset, ResolvablePromise, Ruleset } from "@bentley/presentation-common";
 import { Presentation, RulesetManager } from "@bentley/presentation-frontend";
 import "@bentley/presentation-frontend/cjs/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { RulesetRegistrationHelper } from "../../presentation-components/common/RulesetRegistrationHelper";
 import { mockPresentationManager } from "../_helpers/UiComponents";
 

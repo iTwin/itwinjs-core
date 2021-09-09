@@ -6,21 +6,17 @@
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
-  Content, ContentDescriptorRequestOptions, Descriptor, DescriptorOverrides, ExtendedContentRequestOptions, Field, FIELD_NAMES_SEPARATOR, Item,
-  KeySet, NestedContentField, Paged, RegisteredRuleset, SelectionInfo
+  Content, ContentDescriptorRequestOptions, createRandomCategory, createRandomContent, createRandomDescriptor, createRandomECClassInfo, createRandomECInstanceKey, createRandomPrimitiveField,
+  createRandomPrimitiveTypeDescription, createRandomPropertiesField, createRandomRelationshipPath, createRandomRuleset, Descriptor, DescriptorOverrides, ExtendedContentRequestOptions, Field, FIELD_NAMES_SEPARATOR, Item,
+  KeySet, NestedContentField, Paged, PromiseContainer, RegisteredRuleset, ResolvablePromise, SelectionInfo
 } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
-import { PromiseContainer, ResolvablePromise } from "@bentley/presentation-common/cjs/test/_helpers/Promises";
-import {
-  createRandomCategory, createRandomContent, createRandomDescriptor, createRandomECClassInfo, createRandomECInstanceKey, createRandomPrimitiveField,
-  createRandomPrimitiveTypeDescription, createRandomPropertiesField, createRandomRelationshipPath, createRandomRuleset
-} from "@bentley/presentation-common/cjs/test/_helpers/random";
 import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
 import "@bentley/presentation-frontend/cjs/test/_helpers/MockFrontendEnvironment";
 import { PrimitiveValue, PropertyDescription, PropertyRecord } from "@bentley/ui-abstract";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { CacheInvalidationProps, ContentDataProvider, ContentDataProviderProps } from "../../presentation-components/common/ContentDataProvider";
 import { mockPresentationManager } from "../_helpers/UiComponents";
 

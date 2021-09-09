@@ -4,11 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Content, DEFAULT_KEYS_BATCH_SIZE, Item, KeySet } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
-import { createRandomDescriptor, createRandomECInstanceKey, createRandomTransientId } from "@bentley/presentation-common/cjs/test/_helpers/random";
+import { Content, createRandomDescriptor, createRandomECInstanceKey, createRandomTransientId, DEFAULT_KEYS_BATCH_SIZE, Item, KeySet } from "@bentley/presentation-common";
 import { expect } from "chai";
 import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { HiliteSetProvider, Presentation, PresentationManager } from "../../presentation-frontend";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "../../presentation-frontend/selection/SelectionManager";
 

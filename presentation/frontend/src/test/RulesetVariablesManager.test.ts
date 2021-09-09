@@ -5,12 +5,11 @@
 
 import { Id64 } from "@bentley/bentleyjs-core";
 import { IpcApp } from "@bentley/imodeljs-frontend";
-import { RulesetVariable, VariableValueTypes } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
-import { createRandomId } from "@bentley/presentation-common/cjs/test/_helpers/random";
+import { createRandomId, RulesetVariable, VariableValueTypes } from "@bentley/presentation-common";
 import { expect } from "chai";
 import * as faker from "faker";
 import sinon from "sinon";
+import * as moq from "typemoq";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
 import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
 

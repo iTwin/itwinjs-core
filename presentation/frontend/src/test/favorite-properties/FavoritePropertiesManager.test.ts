@@ -5,10 +5,7 @@
 /* eslint-disable @typescript-eslint/promise-function-async, deprecation/deprecation */
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Field, NestedContentField, PropertiesField, PropertyInfo } from "@bentley/presentation-common";
-import {
-  createRandomNestedContentField, createRandomPrimitiveField, createRandomPropertiesField, createRandomRelatedClassInfo
-} from "@bentley/presentation-common/cjs/test/_helpers/random";
+import { createRandomNestedContentField, createRandomPrimitiveField, createRandomPropertiesField, createRandomRelatedClassInfo, Field, NestedContentField, PropertiesField, PropertyInfo } from "@bentley/presentation-common";
 import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";

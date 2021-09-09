@@ -4,12 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { LabelDefinition, NodePathElement } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/cjs/test/_helpers/Mocks";
-import { createRandomECInstancesNodeKey, createRandomNodePathElement } from "@bentley/presentation-common/cjs/test/_helpers/random";
+import { createRandomECInstancesNodeKey, createRandomNodePathElement, LabelDefinition, NodePathElement } from "@bentley/presentation-common";
 import { PageOptions } from "@bentley/ui-components";
 import { expect } from "chai";
 import * as faker from "faker";
+import * as moq from "typemoq";
 import { FilteredPresentationTreeDataProvider } from "../../presentation-components/tree/FilteredDataProvider";
 import { IPresentationTreeDataProvider } from "../../presentation-components/tree/IPresentationTreeDataProvider";
 import { createTreeNodeItem } from "../../presentation-components/tree/Utils";
