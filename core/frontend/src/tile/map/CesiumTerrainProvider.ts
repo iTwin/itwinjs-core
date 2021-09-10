@@ -41,6 +41,7 @@ export function getCesiumOSMBuildingsUrl() {
 }
 
 /** @internal */
+// SWB What does asset mean here?
 export async function getCesiumAccessTokenAndEndpointUrl(assetId = 1, requestKey?: string): Promise<{ token?: string, url?: string }> {
   const requestContext = new ClientRequestContext("");
   const _requestKey = requestKey ? requestKey : bentleyCesiumIonRequestKey;

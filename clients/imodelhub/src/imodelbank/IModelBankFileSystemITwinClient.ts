@@ -75,7 +75,7 @@ export class IModelBankFileSystemITwinClient implements ITwinManagerClient {
     return props[0] as ITwin;
   }
 
-  // SWB
+  // SWB What does context mean here
   public async createContext(requestContext: AuthorizedClientRequestContext, name: string): Promise<void> {
     requestContext.enter();
     const url: string = `${this.baseUri}/sv1.0/Repositories/Global--main/GlobalScope/Context`;
@@ -93,7 +93,7 @@ export class IModelBankFileSystemITwinClient implements ITwinManagerClient {
     await request(requestContext, url, options);
   }
 
-  // SWB
+  // SWB What does context mean here
   public async deleteContext(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<void> {
     requestContext.enter();
     const url: string = `${this.baseUri}/sv1.0/Repositories/Global--main/GlobalScope/Context/${contextId}`;

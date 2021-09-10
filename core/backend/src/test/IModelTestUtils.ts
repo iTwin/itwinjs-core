@@ -323,6 +323,7 @@ export class IModelTestUtils {
   }
 
   /** Resolve an asset file path from the asset name by looking in the known assets directory */
+  // SWB What does asset mean here?
   public static resolveAssetFile(assetName: string): string {
     const assetFile = path.join(KnownTestLocations.assetsDir, assetName);
     assert.isTrue(IModelJsFs.existsSync(assetFile));

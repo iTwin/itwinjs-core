@@ -154,7 +154,7 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
    */
   private async getByQuery(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<ITwin[]> {
     // Spread operator possible since there are no nested properties
-    const innerQuery = {...queryOptions};
+    const innerQuery = { ...queryOptions };
 
     // Alter to get all items including those asked to skip
     innerQuery.$top = innerQuery.$top ? innerQuery.$top + (innerQuery.$skip ?? 0) : undefined;
@@ -178,12 +178,12 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
     if (innerQuery?.$top) {
       // Either take half the elements, or more than half if the other list is too short
       projectRange.top = Math.max(
-        Math.ceil( innerQuery.$top / 2), // Ceil to add an extra Project if top is Odd
+        Math.ceil(innerQuery.$top / 2), // Ceil to add an extra Project if top is Odd
         innerQuery.$top - assetITwins.length
       );
 
       assetRange.top = Math.max(
-        Math.floor( innerQuery.$top / 2),
+        Math.floor(innerQuery.$top / 2),
         innerQuery.$top - projectITwins.length
       );
     }
@@ -192,12 +192,12 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
     if (queryOptions?.$skip) {
       // Either skip half the elements, or skip more if the other list is too short
       projectRange.skip = Math.max(
-        Math.ceil( queryOptions.$skip / 2), // Ceil to skip project on Odd skips
+        Math.ceil(queryOptions.$skip / 2), // Ceil to skip project on Odd skips
         queryOptions.$skip - assetITwins.length
       );
 
       assetRange.skip = Math.max(
-        Math.floor( queryOptions.$skip / 2), // Floor to skip asset on Even skips
+        Math.floor(queryOptions.$skip / 2), // Floor to skip asset on Even skips
         queryOptions.$skip - projectITwins.length
       );
     }

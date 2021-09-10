@@ -248,6 +248,7 @@ function mockUpdateiModel(contextId: string, imodel: HubIModel) {
 describe("iModelHub iModelsHandler", () => {
   // SWB
   let projectId: string;
+  // SWB
   let assetId: string;
   let imodelId: GuidString;
   let iModelClient: IModelClient;

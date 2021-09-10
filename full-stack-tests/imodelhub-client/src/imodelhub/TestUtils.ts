@@ -25,6 +25,7 @@ import { HttpRequestHost } from "@bentley/backend-itwin-client";
 
 const loggingCategory = "backend-itwin-client.TestUtils";
 
+  // SWB
 const bankProjects: string[] = [];
 
 export const sharedimodelName = "imodeljs-clients Shared iModel";
@@ -251,6 +252,7 @@ export async function getAssetId(requestContext: AuthorizedClientRequestContext,
   const iTwin: ITwin = await getCloudEnv().iTwinMgr.getITwinByName(requestContext, assetName);
 
   if (!iTwin || !iTwin.id)
+  // SWB
     throw new Error(`Asset with name ${assetName} doesn't exist.`);
 
   return iTwin.id;

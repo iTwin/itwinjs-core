@@ -5,6 +5,7 @@
 
 import { TestUserCredentials } from "@bentley/oidc-signin-tool";
 
+// SWB
 export interface TestProjectProps {
   // SWB
   projectName: string;
@@ -21,5 +22,6 @@ export interface TestIpcInterface {
   purgeStorageCache: () => Promise<void>;
   beginOfflineScope: () => Promise<void>;
   endOfflineScope: () => Promise<void>;
+  // SWB
   getTestProjectProps: (user: TestUserCredentials) => Promise<TestProjectProps>;
 }

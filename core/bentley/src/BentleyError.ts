@@ -62,6 +62,7 @@ export enum IModelStatus {
   MissingId = IMODEL_ERROR_BASE + 33,
   NoGeometry = IMODEL_ERROR_BASE + 34,
   NoMultiTxnOperation = IMODEL_ERROR_BASE + 35,
+  // SWB
   NotDgnMarkupProject = IMODEL_ERROR_BASE + 36,
   NotEnabled = IMODEL_ERROR_BASE + 37,
   NotFound = IMODEL_ERROR_BASE + 38,
@@ -303,12 +304,15 @@ export enum IModelHubStatus {
   EventSubscriptionAlreadyExists = IMODELHUBERROR_BASE + 34,
   // SWB
   ProjectIdIsNotSpecified = IMODELHUBERROR_BASE + 35,
+  // SWB
   FailedToGetProjectPermissions = IMODELHUBERROR_BASE + 36,
+  // SWB
   FailedToGetProjectMembers = IMODELHUBERROR_BASE + 37,
   ChangeSetAlreadyHasVersion = IMODELHUBERROR_BASE + 38,
   VersionAlreadyExists = IMODELHUBERROR_BASE + 39,
   JobSchedulingFailed = IMODELHUBERROR_BASE + 40,
   ConflictsAggregate = IMODELHUBERROR_BASE + 41,
+  // SWB
   FailedToGetProjectById = IMODELHUBERROR_BASE + 42,
 
   DatabaseOperationFailed = IMODELHUBERROR_BASE + 43,
@@ -460,6 +464,7 @@ export class BentleyError extends Error {
       case IModelStatus.MissingId: return "Missing Id";
       case IModelStatus.NoGeometry: return "No Geometry";
       case IModelStatus.NoMultiTxnOperation: return "NoMultiTxnOperation";
+      // SWB
       case IModelStatus.NotDgnMarkupProject: return "NotDgnMarkupProject";
       case IModelStatus.NotEnabled: return "Not Enabled";
       case IModelStatus.NotFound: return "Not Found";
@@ -700,7 +705,9 @@ export class BentleyError extends Error {
       case IModelHubStatus.EventSubscriptionAlreadyExists: return "Event subscription already exists";
       // SWB
       case IModelHubStatus.ProjectIdIsNotSpecified: return "Project Id is not specified";
+      // SWB
       case IModelHubStatus.FailedToGetProjectPermissions: return "Failed to get project permissions";
+      // SWB
       case IModelHubStatus.FailedToGetProjectMembers: return "Failed to get project members";
       case IModelHubStatus.FailedToGetAssetPermissions: return "Failed to get asset permissions";
       case IModelHubStatus.FailedToGetAssetMembers: return "Failed to get asset members";
@@ -708,6 +715,7 @@ export class BentleyError extends Error {
       case IModelHubStatus.VersionAlreadyExists: return "Version already exists";
       case IModelHubStatus.JobSchedulingFailed: return "Failed to schedule a background job";
       case IModelHubStatus.ConflictsAggregate: return "Codes or locks are owned by another briefcase";
+      // SWB
       case IModelHubStatus.FailedToGetProjectById: return "Failed to query project by its id";
       case IModelHubStatus.FailedToGetProductSettings: return "Failed to get product settings";
       case IModelHubStatus.DatabaseOperationFailed: return "Database operation has failed";

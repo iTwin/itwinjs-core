@@ -38,6 +38,7 @@ interface IModelOpenState {
 }
 
 /**
+  // SWB
  * Open component showing projects and iModels
  */
 export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState> {
@@ -47,10 +48,12 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
 
     // SWB
     this.state = {
+      // SWB
       isLoadingProjects: true,
       isLoadingiModels: false,
       isLoadingiModel: false,
       isNavigationExpanded: false,
+      // SWB
       prompt: "Fetching project information...",
     };
   }
@@ -62,9 +65,11 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
       currentProject.id = "";
 
       this.setState({
+        // SWB
         isLoadingProjects: false,
         isLoadingiModels: false,
         isLoadingiModel: false,
+        // SWB
         currentProject: this.props.initialIModels[0].projectInfo, // eslint-disable-line @bentley/react-set-state-usage
         iModels: this.props.initialIModels,  // eslint-disable-line @bentley/react-set-state-usage
       });
@@ -77,7 +82,9 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
     this.setState({
       prompt: "Fetching iModel information...",
       isLoadingiModels: true,
+      // SWB
       isLoadingProjects: false,
+      // SWB
       currentProject: project,
     });
     const iModelInfos: IModelInfo[] = await UiFramework.iModelServices.getIModels(project, 80, 0);
@@ -109,6 +116,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
   };
 
   private renderIModels() {
+    // SWB
     if (this.state.isLoadingProjects || this.state.isLoadingiModels) {
       return (
         <BlockingPrompt prompt={this.state.prompt} />
@@ -157,9 +165,13 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
             <div className="backstage-icon">
               <span className="icon icon-home" onPointerUp={() => AppTools.backstageToggleCommand.execute()} />
             </div>
+            {/* // SWB */}
             <div className="project-picker-content">
+              {/* // SWB */}
               <span className="projects-label">Projects</span>
+              {/* // SWB */}
               <div className="project-picker">
+                {/* // SWB */}
                 <ProjectDropdown currentProject={this.state.currentProject} recentProjects={this.state.recentProjects} onProjectClicked={this._selectProject.bind(this)} />
               </div>
             </div>
@@ -173,6 +185,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
             <NavigationItem label="Share" icon="icon-placeholder" />
             <NavigationItem label="Share Point" icon="icon-placeholder" />
             <NavigationItem label="Reality Data" icon="icon-placeholder" />
+            {/* // SWB */}
             <NavigationItem label="New Project..." icon="icon-placeholder" />
           </NavigationList>
           <div className={contentStyle}>

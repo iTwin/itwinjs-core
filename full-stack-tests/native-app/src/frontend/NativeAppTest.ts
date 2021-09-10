@@ -19,8 +19,10 @@ export class NativeAppTest {
     return IpcApp.callIpcChannel(testIpcChannel, methodName, ...args) as PromiseReturnType<TestIpcInterface[T]>;
   }
 
+  // SWB
   public static async initializeTestProject(): Promise<string> {
     const user = TestUsers.regular;
+    // SWB
     const props = await NativeAppTest.callBackend("getTestProjectProps", user);
     if (props.iModelBank) {
       const bank = new IModelBankCloudEnv(props.iModelBank.url, false);
