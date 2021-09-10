@@ -319,19 +319,22 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @bentley/ui-components
 
-| Removed                                | Replacement                                      |
-| -------------------------------------- | ------------------------------------------------ |
-| `hasFlag`                              | `hasSelectionModeFlag` in @bentley/ui-components |
-| `StandardEditorNames`                  | `StandardEditorNames` in @bentley/ui-abstract    |
-| `StandardTypeConverterTypeNames`       | `StandardTypeNames` in @bentley/ui-abstract      |
-| `StandardTypeNames`                    | `StandardTypeNames` in @bentley/ui-abstract      |
-| `Timeline`                             | `TimelineComponent` in @bentley/ui-components    |
-| `ControlledTreeProps.treeEvents`       | `ControlledTreeProps.eventsHandler`              |
-| `ControlledTreeProps.visibleNodes`     | `ControlledTreeProps.model`                      |
-| `MutableTreeModel.computeVisibleNodes` | `computeVisibleNodes` in @bentley/ui-components  |
-| `TreeModelSource.getVisibleNodes`      | memoized result of `computeVisibleNodes`         |
-| `useVisibleTreeNodes`                  | `useTreeModel` and `computeVisibleNodes`         |
-| `SignIn`                               | *eliminated*                                     |
+| Removed                                             | Replacement                                                           |
+| --------------------------------------------------- | --------------------------------------------------------------------- |
+| `hasFlag`                                           | `hasSelectionModeFlag` in @bentley/ui-components                      |
+| `StandardEditorNames`                               | `StandardEditorNames` in @bentley/ui-abstract                         |
+| `StandardTypeConverterTypeNames`                    | `StandardTypeNames` in @bentley/ui-abstract                           |
+| `StandardTypeNames`                                 | `StandardTypeNames` in @bentley/ui-abstract                           |
+| `Timeline`                                          | `TimelineComponent` in @bentley/ui-components                         |
+| `ControlledTreeProps.treeEvents`                    | `ControlledTreeProps.eventsHandler`                                   |
+| `ControlledTreeProps.visibleNodes`                  | `ControlledTreeProps.model`                                           |
+| `MutableTreeModel.computeVisibleNodes`              | `computeVisibleNodes` in @bentley/ui-components                       |
+| `TreeModelSource.getVisibleNodes`                   | memoized result of `computeVisibleNodes`                              |
+| `useVisibleTreeNodes`                               | `useTreeModel` and `computeVisibleNodes`                              |
+| `SignIn`                                            | *eliminated*                                                          |
+| All drag & drop related APIs                        | Third party components. E.g. see this [example](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=drag-and-drop) |
+| `DEPRECATED_Tree`, `BeInspireTree` and related APIs | `ControlledTree`                                                      |
+| `PropertyValueRendererContext.decoratedTextElement` | `IPropertyValueRenderer` that can properly render a `PropertyRecord`  |
 
 ### @bentley/ui-framework
 
@@ -358,6 +361,7 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `CategoryTreeWithSearchBox`             | *eliminated*                                                                           |
 | `VisibilityComponent`                   | `TreeWidgetComponent` in @bentley/tree-widget-react                                    |
 | `VisibilityWidget`                      | `TreeWidgetControl` in @bentley/tree-widget-react                                      |
+| All drag & drop related APIs            | Third party components. E.g. see this [example](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=drag-and-drop) |
 
 ### @bentley/bentleyjs-core
 

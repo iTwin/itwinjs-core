@@ -66,9 +66,6 @@ export * from "./ui-framework/dialog/ModelessDialogManager";
 export * from "./ui-framework/dialog/StandardMessageBox";
 export * from "./ui-framework/dialog/UiDataProvidedDialog";
 
-export * from "./ui-framework/dragdrop/DragDropLayerManager";
-export * from "./ui-framework/dragdrop/ZoneTargets";
-
 export * from "./ui-framework/feedback/ValidationTextbox";
 export * from "./ui-framework/feedback/ElementTooltip";
 

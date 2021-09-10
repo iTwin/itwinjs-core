@@ -7,7 +7,7 @@ import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { BackTarget, MergeTarget, WidgetZoneId, ZoneTargetType } from "@bentley/ui-ninezone";
-import { ZoneTargets } from "../../ui-framework";
+import { ZoneTargets } from "../../ui-framework/dragdrop/ZoneTargets";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("ZoneTargets", () => {

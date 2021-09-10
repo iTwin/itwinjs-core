@@ -10,16 +10,15 @@ import classnames from "classnames";
 import * as React from "react";
 import { using } from "@bentley/bentleyjs-core";
 import { CommonProps } from "@bentley/ui-core";
-import { getPropertyRecordAsString } from "../../common/getPropertyRecordAsString";
-import { Table, TableProps } from "../../table/component/Table";
-import { ColumnDescription, RowItem, TableDataProvider } from "../../table/TableDataProvider";
+import { Table, TableProps } from "../table/component/Table";
+import { ColumnDescription, RowItem, TableDataProvider } from "../table/TableDataProvider";
+import { DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, isTreeDataProviderInterface, TreeNodeItem } from "../tree/TreeDataProvider";
+import { UiComponents } from "../UiComponents";
 import {
   BeInspireTree, BeInspireTreeEvent, BeInspireTreeNode, BeInspireTreeNodeConfig, BeInspireTreeNodes, MapPayloadToInspireNodeCallback, toNodes,
-} from "../../tree/deprecated/component/BeInspireTree";
-import { DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, isTreeDataProviderInterface, TreeNodeItem } from "../../tree/TreeDataProvider";
-import { UiComponents } from "../../UiComponents";
-import { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "../BreadcrumbPath";
-import { BreadcrumbTreeUtils, DataRowItem } from "../BreadcrumbTreeUtils";
+} from "./BeInspireTree";
+import { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "./BreadcrumbPath";
+import { BreadcrumbTreeUtils, DataRowItem, getPropertyRecordAsString } from "./BreadcrumbTreeUtils";
 
 /* eslint-disable deprecation/deprecation */
 

@@ -166,7 +166,7 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
   /* render the 3d Models tab */
   private _render3dModels = () => {
     return (<ModelsTab key={2} iModelConnection={this.props.iModelConnection}
-      showFlatList={true} onEnter={this._onEnter} showToast={false} />);
+      onEnter={this._onEnter} showToast={false} />);
   };
 
   private _renderWaiting() {

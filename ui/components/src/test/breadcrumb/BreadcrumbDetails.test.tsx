@@ -6,14 +6,13 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { render, RenderResult, waitFor } from "@testing-library/react";
-import { BreadcrumbDetails, BreadcrumbPath } from "../../../ui-components";
-import { getPropertyRecordAsString } from "../../../ui-components/common/getPropertyRecordAsString";
-import { Table, TableProps } from "../../../ui-components/table/component/Table";
-import { ImmediatelyLoadedTreeNodeItem, TreeNodeItem } from "../../../ui-components/tree/TreeDataProvider";
-import { waitForUpdate } from "../../test-helpers/misc";
-import TestUtils from "../../TestUtils";
-import { mockInterfaceTreeDataProvider, mockRawTreeDataProvider } from "../mockTreeDataProvider";
-import { createDOMRect } from "../../Utils";
+import { BreadcrumbDetails, BreadcrumbPath } from "../../ui-components";
+import { Table, TableProps } from "../../ui-components/table/component/Table";
+import { ImmediatelyLoadedTreeNodeItem, TreeNodeItem } from "../../ui-components/tree/TreeDataProvider";
+import { waitForUpdate } from "../test-helpers/misc";
+import TestUtils from "../TestUtils";
+import { mockInterfaceTreeDataProvider, mockRawTreeDataProvider } from "./mockTreeDataProvider";
+import { createDOMRect } from "../Utils";
 
 /* eslint-disable deprecation/deprecation */
 
@@ -71,16 +70,14 @@ describe("BreadcrumbDetails", () => {
       const path = new BreadcrumbPath(mockRawTreeDataProvider);
       path.setCurrentNode(undefined);
       await waitForUpdate(() => renderedComponent = render(<BreadcrumbDetails onRender={renderSpy} path={path} />), renderSpy, 13);
-      const node = mockRawTreeDataProvider[1];
-      expect(await waitFor(() => renderedComponent.getByText(getPropertyRecordAsString(node.label)))).to.exist;
+      expect(await waitFor(() => renderedComponent.getByText("Raw Node 2"))).to.exist;
     });
 
     it("should render when node is defined", async () => {
       const path = new BreadcrumbPath(mockRawTreeDataProvider);
       path.setCurrentNode(mockRawTreeDataProvider[1]);
       await waitForUpdate(() => renderedComponent = render(<BreadcrumbDetails onRender={renderSpy} path={path} />), renderSpy, 10);
-      const node = mockRawTreeDataProvider[1].children![0];
-      expect(await waitFor(() => renderedComponent.getByText(getPropertyRecordAsString(node.label)))).to.exist;
+      expect(await waitFor(() => renderedComponent.getByText("Raw Node 2.1"))).to.exist;
     });
 
     it("should change path", async () => {
@@ -91,19 +88,17 @@ describe("BreadcrumbDetails", () => {
     });
 
     it("should rerender from interface dataProvider to raw dataProvider", async () => {
-      const nodeInterface = (await mockInterfaceTreeDataProvider.getNodes())[1];
       const path = new BreadcrumbPath(mockInterfaceTreeDataProvider);
       renderedComponent = render(<BreadcrumbDetails onRender={renderSpy} path={path} />);
-      expect(await waitFor(() => renderedComponent.getByText(getPropertyRecordAsString(nodeInterface.label)))).to.exist;
+      expect(await waitFor(() => renderedComponent.getByText("Interface Node 2"))).to.exist;
       path.setDataProvider(mockRawTreeDataProvider);
       await waitForUpdate(() => renderedComponent.rerender(<BreadcrumbDetails onRender={renderSpy} path={path} />), renderSpy, 9);
     });
 
     it("should rerender from raw dataProvider to interface dataProvider", async () => {
-      const nodeRaw = mockRawTreeDataProvider[1];
       const path = new BreadcrumbPath(mockRawTreeDataProvider);
       renderedComponent = render(<BreadcrumbDetails onRender={renderSpy} path={path} />);
-      expect(await waitFor(() => renderedComponent.getByText(getPropertyRecordAsString(nodeRaw.label)))).to.exist;
+      expect(await waitFor(() => renderedComponent.getByText("Raw Node 2"))).to.exist;
       path.setDataProvider(mockInterfaceTreeDataProvider);
       await waitForUpdate(() => renderedComponent.rerender(<BreadcrumbDetails onChildrenLoaded={renderSpy} path={path} />), renderSpy, 4);
     });
@@ -144,12 +139,11 @@ describe("BreadcrumbDetails", () => {
     });
 
     it("calls onRowsSelected when row is clicked and sets currentNode to path", async () => {
-      const node = mockRawTreeDataProvider[1];
       const path = new BreadcrumbPath(mockRawTreeDataProvider);
       const pathUpdateSpy = sinon.stub();
       path.BreadcrumbUpdateEvent.addListener(pathUpdateSpy);
       await waitForUpdate(() => renderedComponent = render(<BreadcrumbDetails onRender={renderSpy} path={path} />), renderSpy, 13);
-      const listRow = renderedComponent.getByText(getPropertyRecordAsString(node.label));
+      const listRow = renderedComponent.getByText("Raw Node 2");
       const event = new MouseEvent("click", { bubbles: true });
       await waitForUpdate(() => listRow.dispatchEvent(event), pathUpdateSpy, 1);
       expect(pathUpdateSpy).to.have.been.called;
