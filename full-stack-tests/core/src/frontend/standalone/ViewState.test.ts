@@ -416,7 +416,7 @@ describe("ViewState", () => {
 
     orthoArgs.verticalSize = -5;
     status = viewState3.lookAt(orthoArgs);
-    expect(ViewStatus.InvalidViewToWorldScale === status, "lookAt should return status of InvalidViewToWorldScale").to.be.true;
+    expect(ViewStatus.InvalidViewSize === status, "lookAt should return status of InvalidViewSize").to.be.true;
     orthoArgs.verticalSize = verticalSize;
 
     orthoArgs.viewDirection = Vector3d.createZero();
