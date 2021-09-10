@@ -5093,7 +5093,6 @@ export interface LookAtArgs {
 export interface LookAtOrthoArgs extends LookAtArgs {
     // (undocumented)
     readonly lensAngle?: never;
-    readonly newExtents?: XAndY;
     // (undocumented)
     readonly targetPoint?: never;
     readonly viewDirection: XYAndZ;
@@ -12924,11 +12923,11 @@ export enum ViewStatus {
     // (undocumented)
     AlreadyAttached = 2,
     // (undocumented)
-    DegenerateGeometry = 22,
+    DegenerateGeometry = 21,
     // (undocumented)
     DrawFailure = 4,
     // (undocumented)
-    HeightBelowTransition = 23,
+    HeightBelowTransition = 22,
     // (undocumented)
     InvalidDirection = 16,
     // (undocumented)
@@ -12939,8 +12938,6 @@ export enum ViewStatus {
     InvalidUpVector = 12,
     // (undocumented)
     InvalidViewport = 15,
-    // (undocumented)
-    InvalidViewSize = 17,
     // (undocumented)
     InvalidWindow = 7,
     // (undocumented)
@@ -12956,15 +12953,15 @@ export enum ViewStatus {
     // (undocumented)
     NotAttached = 3,
     // (undocumented)
-    NotCameraView = 19,
+    NotCameraView = 18,
     // (undocumented)
-    NotEllipsoidGlobeMode = 20,
+    NotEllipsoidGlobeMode = 19,
     // (undocumented)
-    NotGeolocated = 18,
+    NotGeolocated = 17,
     // (undocumented)
-    NotOrthographicView = 21,
+    NotOrthographicView = 20,
     // (undocumented)
-    NoTransitionRequired = 24,
+    NoTransitionRequired = 23,
     // (undocumented)
     NotResized = 5,
     // (undocumented)

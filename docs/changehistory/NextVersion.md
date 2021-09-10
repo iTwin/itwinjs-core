@@ -31,9 +31,11 @@ Each of these interfaces originally had only a member `changeSetId: string`, In 
 
 > Note: "Changeset" is one word. Apis should not use a capital "S" when referring to them.
 
-### ViewState3d.lookAt
+### ViewState3d.lookAt Argument Changed
 
-This method previously took 6 arguments that specified the new `ViewState3d`. There were also two methods `ViewState3d.lookAtPerspectiveOrOrtho` and `ViewState3d.lookAtUsingLensAngle` that also established a new `ViewState3d`. They have all been replaced with a new method `ViewState3d.lookAt` that accepts named parameters. If you were using the previous versions, you will need to replace your arguments with a single object with the appropriate names. E.g.:
+This method previously took 6 arguments. In addition the method `ViewState3d.lookAtUsingLensAngle` also established a perspective `ViewState3d` from a field-of-view lens angle with many of the same arguments. There is now a new implementation of `ViewState3d.lookAt` that accepts named parameters using the interfaces [LookAtPerspectiveArgs]($frontend), [LookAtOrthoArgs]($frontend), or [LookAtUsingLensAngle]($frontend).[ViewState3d.lookAt]($frontend) can now be used to set up either a perspective or orthographic ViewState3d.
+
+This is a breaking change, so you may need to modify your code and replace the previous arguments with a single object with the appropriate names. For example,:
 
 ```ts
   viewState.lookAt(eye, target, upVector, newExtents, undefined, backDistance, opts);
