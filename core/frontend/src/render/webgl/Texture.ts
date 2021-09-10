@@ -7,7 +7,7 @@
  */
 
 import { assert, BeEvent, dispose, Id64String } from "@bentley/bentleyjs-core";
-import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture } from "@bentley/imodeljs-common";
+import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture, TextureData } from "@bentley/imodeljs-common";
 import { getImageSourceMimeType, imageBufferToPngDataUrl, imageElementFromImageSource, openImageDataUrlInNewWindow } from "../../ImageUtil";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
@@ -565,19 +565,24 @@ export interface ExternalTextureRequest {
 }
 
 /** @internal */
+interface TextureConvertRequest {
+  req: ExternalTextureRequest;
+  texData: TextureData;
+}
+
+/** @internal */
 export class ExternalTextureLoader { /* currently exported for tests only */
-  // Originally 10 was used for maxActiveRequests for ExternalTextureLoader, but after switching to using createImageBitmap,
-  // which from other testing does not like many instances of it going (and is threaded anyway), changed this to 1.
-  // Could still have multiple queryTextureimage calls outstanding on backend, best guess is just need 2 max, but would
-  // have to rework this code to only thread that portion.
   public static readonly instance = new ExternalTextureLoader(2);
   public readonly onTexturesLoaded = new BeEvent<() => void>();
   private readonly _maxActiveRequests: number;
   private _activeRequests: Array<ExternalTextureRequest> = [];
   private _pendingRequests: Array<ExternalTextureRequest> = [];
+  private _convertRequests: Array<TextureConvertRequest> = [];
+  private _convertPending = false;
 
   public get numActiveRequests() { return this._activeRequests.length; }
   public get numPendingRequests() { return this._pendingRequests.length; }
+  public get numConvertRequests() { return this._convertRequests.length; }
   public get maxActiveRequests() { return this._maxActiveRequests; }
 
   private constructor(maxActiveRequests: number) {
@@ -590,59 +595,79 @@ export class ExternalTextureLoader { /* currently exported for tests only */
       const req = this._pendingRequests.shift()!;
       await this._activateRequest(req);
     }
-    if (this._activeRequests.length < 1 && this._pendingRequests.length < 1)
+    if (this._activeRequests.length < 1 && this._pendingRequests.length < 1) {
+      const t0 = new Date("2021-09-08T17:15:00.0Z").getTime();  // dbg
+      console.log(`%[${Date.now()-t0}] Texture Requests Finished%`); // eslint-disable-line no-console
       this.onTexturesLoaded.raiseEvent();
+    }
   }
 
   private async _activateRequest(req: ExternalTextureRequest) {
     if (req.imodel.isClosed)
       return;
-    const t0 = new Date("2021-08-18T17:15:00.0Z").getTime();
+    const t0 = new Date("2021-09-08T17:15:00.0Z").getTime();  // dbg
 
     this._activeRequests.push(req);
 
     try {
       if (!req.imodel.isClosed) {
         const maxTextureSize = System.instance.capabilities.maxTexSizeAllow;
-        const t1 = Date.now();
+        const t1 = Date.now();  // dbg
         const texData = await req.imodel.queryTextureImage({ name: req.name, maxTextureSize });
-        const t2 = Date.now();
-        let t3 = t2, t4 = t2, t5 = t2, t6 = t2;
+        const t2 = Date.now();  // dbg
         if (undefined !== texData) {
-          const imageSource = new ImageSource(texData.bytes, req.format);
-          if (System.instance.capabilities.supportsCreateImageBitmap) {
-            const blob = new Blob([imageSource.data], { type: getImageSourceMimeType(imageSource.format) });
-            t3 = Date.now();
-            const image = await createImageBitmap (blob, 0, 0, texData.width, texData.height);
-            t4 = Date.now();
-            if (!req.imodel.isClosed) {
-              t5 = Date.now();
-              req.handle.reload(Texture2DCreateParams.createForImageBitmap(image, ImageSourceFormat.Png === req.format, req.type));
-              t6 = Date.now();
-            }
-          } else {
-            t3 = Date.now();
-            const image = await imageElementFromImageSource(imageSource);
-            t4 = Date.now();
-            if (!req.imodel.isClosed) {
-              t5 = Date.now();
-              req.handle.reload(Texture2DCreateParams.createForImage(image, ImageSourceFormat.Png === req.format, req.type));
-              t6 = Date.now();
-            }
-          }
-          const t7 = Date.now();
+          const cnvReq = { req, texData };
+          this._convertRequests.push(cnvReq);
+          do {
+            if (!this._convertPending)
+              await this._convertTexture();
+          } while (!this._convertPending && this._convertRequests.length > 0);
+          const t3 = Date.now();  // dbg
           if (!req.imodel.isClosed) { // is this check necessary?
             IModelApp.tileAdmin.invalidateAllScenes();
             if (undefined !== req.onLoaded)
               req.onLoaded(req);
           }
-          const t8 = Date.now();
-          console.log(`%[${t1-t0}] _activateReq: queryTex ${t2-t1}, use CIB ${System.instance.capabilities.supportsCreateImageBitmap}, image ${t4-t3}, texCreate ${t6-t5} end ${t8-t7}, tot ${t8-t1} ms [${req.name}] ${texData.width} x ${texData.height}%`); // eslint-disable-line no-console
+          const t4 = Date.now();  // dbg
+          console.log(`%[${t1-t0}] _activateReq: queryTex ${t2-t1}, end ${t4-t3}, tot ${t4-t1} ms [${req.name}] ${texData.width} x ${texData.height}%`); // eslint-disable-line no-console
         }
       }
     } catch (_e) { }
 
     return this._nextRequest(req);
+  }
+
+  private async _convertTexture(): Promise<void> {
+    this._convertPending = true;
+    const t0 = new Date("2021-09-08T17:15:00.0Z").getTime();  // dbg
+    const t1 = Date.now();  // dbg
+    let t2 = t1, t3 = t1, t4 = t1, t5 = t1;  // dbg
+    const cnvReq = this._convertRequests.shift();
+    if (undefined !== cnvReq) {
+      const imageSource = new ImageSource(cnvReq.texData.bytes, cnvReq.req.format);
+      if (System.instance.capabilities.supportsCreateImageBitmap) {
+        const blob = new Blob([imageSource.data], { type: getImageSourceMimeType(imageSource.format) });
+        t2 = Date.now();  // dbg
+        const image = await createImageBitmap (blob, 0, 0, cnvReq.texData.width, cnvReq.texData.height);
+        t3 = Date.now();  // dbg
+        if (!cnvReq.req.imodel.isClosed) {
+          t4 = Date.now();  // dbg
+          cnvReq.req.handle.reload(Texture2DCreateParams.createForImageBitmap(image, ImageSourceFormat.Png === cnvReq.req.format, cnvReq.req.type));
+          t5 = Date.now();  // dbg
+        }
+      } else {
+        t2 = Date.now();  // dbg
+        const image = await imageElementFromImageSource(imageSource);
+        t3 = Date.now();  // dbg
+        if (!cnvReq.req.imodel.isClosed) {
+          t4 = Date.now();  // dbg
+          cnvReq.req.handle.reload(Texture2DCreateParams.createForImage(image, ImageSourceFormat.Png === cnvReq.req.format, cnvReq.req.type));
+          t5 = Date.now();  // dbg
+        }
+      }
+      console.log(`%[${t1-t0}] _convertTexture, use CIB ${System.instance.capabilities.supportsCreateImageBitmap}, image ${t3-t2}, texCreate ${t5-t4}, tot ${t5-t1} ms [${cnvReq.req.name}] ${cnvReq.texData.width} x ${cnvReq.texData.height}%`); // eslint-disable-line no-console
+    }
+    this._convertPending = false;
   }
 
   private _requestExists(reqToCheck: ExternalTextureRequest) {
