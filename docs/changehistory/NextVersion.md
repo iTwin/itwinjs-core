@@ -29,7 +29,33 @@ Each of these interfaces originally had only a member `changeSetId: string`, In 
 
 > Note: "Changeset" is one word. Apis should not use a capital "S" when referring to them.
 
-## Concurrency Control
+## ViewState3d.lookAt Arguments Changed
+
+[ViewState3d.lookAt]($frontend) previously took 6 arguments. In addition the method `ViewState3d.lookAtUsingLensAngle` also established a perspective `ViewState3d` from a field-of-view lens angle with many of the same arguments. There is now a new implementation of `ViewState3d.lookAt` that accepts named parameters to set up either a perspective or orthographic view, using the interfaces [LookAtPerspectiveArgs]($frontend), [LookAtOrthoArgs]($frontend), or [LookAtUsingLensAngle]($frontend).
+
+This is a breaking change, so you may need to modify your code and replace the previous arguments with a single object with the appropriate names. For example,:
+
+```ts
+  viewState.lookAt(eye, target, upVector, newExtents, undefined, backDistance, opts);
+```
+
+can become:
+
+```ts
+  viewState.lookAt( {eyePoint: eye, targetPoint: target , upVector, newExtents, backDistance, opts} );
+```
+
+likewise
+
+```ts
+    viewState.lookAtUsingLensAngle(eye, target, up, lens, frontDistance, backDistance);
+```
+
+can become:
+
+```ts
+  viewState.lookAt( {eyePoint: eye, targetPoint: target , upVector: up, lensAngle: lens, frontDistance, backDistance} );
+```
 
 ## ViewFlags
 
@@ -231,8 +257,10 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `OidcFrontendClientConfiguration`      | `BrowserAuthorizationClientConfiguration`                 |
 | `RemoteBriefcaseConnection`            | `CheckpointConnection`                                    |
 | `ScreenViewport.decorationDiv`         | `DecorateContext.addHtmlDecoration`                       |
-| `ViewManager.forEachViewport`          | Use a `for..of` loop                                      |
 | `UnitSystemKey`                        | Moved to `@bentley/imodeljs-quantity`                     |
+| `ViewManager.forEachViewport`          | Use a `for..of` loop                                      |
+| `ViewState3d.lookAtPerspectiveOrOrtho` | `ViewState3d.LookAt`                                      |
+| `ViewState3d.lookAtUsingLensAngle`     | `ViewState3d.lookAt`                                      |
 
 ### @bentley/backend-itwin-client
 

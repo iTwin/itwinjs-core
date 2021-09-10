@@ -318,6 +318,7 @@ public;LookAndMoveTool
 beta;LookAtArgs
 beta;LookAtOrthoArgs 
 beta;LookAtPerspectiveArgs 
+beta;LookAtUsingLensAngle 
 public;LookViewTool 
 internal;LRUTileList
 internal;LRUTileListNode

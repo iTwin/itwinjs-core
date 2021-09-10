@@ -5084,20 +5084,35 @@ export interface LookAtArgs {
     readonly backDistance?: number;
     readonly eyePoint: XYAndZ;
     readonly frontDistance?: number;
+    readonly newExtents?: XAndY;
     readonly opts?: ViewChangeOptions;
     readonly upVector: Vector3d;
 }
 
 // @beta
 export interface LookAtOrthoArgs extends LookAtArgs {
-    readonly viewDirection: Vector3d;
-    readonly viewToWorldScale: number;
+    // (undocumented)
+    readonly lensAngle?: never;
+    // (undocumented)
+    readonly targetPoint?: never;
+    readonly viewDirection: XYAndZ;
 }
 
 // @beta
 export interface LookAtPerspectiveArgs extends LookAtArgs {
-    readonly newExtents?: XAndY;
+    // (undocumented)
+    readonly lensAngle?: never;
     readonly targetPoint: XYAndZ;
+    // (undocumented)
+    readonly viewDirection?: never;
+}
+
+// @beta
+export interface LookAtUsingLensAngle extends LookAtArgs {
+    readonly lensAngle: Angle;
+    readonly targetPoint: XYAndZ;
+    // (undocumented)
+    readonly viewDirection?: never;
 }
 
 // @public
@@ -12866,12 +12881,10 @@ export abstract class ViewState3d extends ViewState {
     isEyePointGlobalView(eyePoint: XYAndZ): boolean;
     // (undocumented)
     get isGlobalView(): boolean;
-    lookAt(eyePoint: XYAndZ, targetPoint: XYAndZ, upVector: Vector3d, newExtents?: XAndY, frontDistance?: number, backDistance?: number, opts?: ViewChangeOptions): ViewStatus;
+    // @beta
+    lookAt(args: LookAtPerspectiveArgs | LookAtOrthoArgs | LookAtUsingLensAngle): ViewStatus;
     lookAtGlobalLocation(eyeHeight: number, pitchAngleRadians?: number, location?: GlobalLocation, eyePoint?: Point3d): number;
     lookAtGlobalLocationFromGcs(eyeHeight: number, pitchAngleRadians?: number, location?: GlobalLocation, eyePoint?: Point3d): Promise<number>;
-    // @beta
-    lookAtPerspectiveOrOrtho(args: LookAtPerspectiveArgs | LookAtOrthoArgs): ViewStatus;
-    lookAtUsingLensAngle(eyePoint: Point3d, targetPoint: Point3d, upVector: Vector3d, fov: Angle, frontDistance?: number, backDistance?: number, opts?: ViewChangeOptions): ViewStatus;
     // (undocumented)
     minimumFrontDistance(): number;
     moveCameraGlobal(fromPoint: Point3d, toPoint: Point3d): ViewStatus;
@@ -12910,11 +12923,11 @@ export enum ViewStatus {
     // (undocumented)
     AlreadyAttached = 2,
     // (undocumented)
-    DegenerateGeometry = 22,
+    DegenerateGeometry = 21,
     // (undocumented)
     DrawFailure = 4,
     // (undocumented)
-    HeightBelowTransition = 23,
+    HeightBelowTransition = 22,
     // (undocumented)
     InvalidDirection = 16,
     // (undocumented)
@@ -12925,8 +12938,6 @@ export enum ViewStatus {
     InvalidUpVector = 12,
     // (undocumented)
     InvalidViewport = 15,
-    // (undocumented)
-    InvalidViewToWorldScale = 17,
     // (undocumented)
     InvalidWindow = 7,
     // (undocumented)
@@ -12942,15 +12953,15 @@ export enum ViewStatus {
     // (undocumented)
     NotAttached = 3,
     // (undocumented)
-    NotCameraView = 19,
+    NotCameraView = 18,
     // (undocumented)
-    NotEllipsoidGlobeMode = 20,
+    NotEllipsoidGlobeMode = 19,
     // (undocumented)
-    NotGeolocated = 18,
+    NotGeolocated = 17,
     // (undocumented)
-    NotOrthographicView = 21,
+    NotOrthographicView = 20,
     // (undocumented)
-    NoTransitionRequired = 24,
+    NoTransitionRequired = 23,
     // (undocumented)
     NotResized = 5,
     // (undocumented)
