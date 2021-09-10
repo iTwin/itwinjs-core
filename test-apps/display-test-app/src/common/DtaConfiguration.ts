@@ -40,4 +40,6 @@ export interface DtaConfiguration {
   alwaysSubdivideIncompleteTiles?: boolean; // default OFF
   antialiasSamples?: number; // default 1 (No antialiasing)
   openReadWrite?: boolean; // default false
+  mapBoxKey?: string; // default undefined
+  bingMapsKey?: string; // default undefined
 }

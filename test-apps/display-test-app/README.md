@@ -162,6 +162,10 @@ You can use these environment variables to alter the default behavior of various
   * See TileAdmin.Props.minimumSpatialTolerance.
 * SVT_NO_EXTERNAL_TEXTURES
   * If defined, the backend will embed all texture image data directly in the tiles.
+* SVT_MAPBOX_KEY
+  * If defined, sets the MapBox key for the `MapLayerOptions` as an "access_token".
+* SVT_BING_MAPS_KEY
+  * If defined, sets a Bing Maps key within the `MapLayerOptions` as a "key" type.
 
 ## Key-ins
 

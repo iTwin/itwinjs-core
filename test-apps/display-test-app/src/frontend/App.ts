@@ -221,6 +221,10 @@ export class DisplayTestApp {
       localhostIpcApp: {
         socketPort: 3002,
       },
+      mapLayerOptions: {
+        MapBoxImagery: configuration.mapBoxKey ? { key: "access_token", value: configuration.mapBoxKey } : undefined,
+        BingMaps: configuration.bingMapsKey ? { key: "key", value: configuration.bingMapsKey } : undefined,
+      },
     };
 
     if (ProcessDetector.isElectronAppFrontend) {

@@ -157,6 +157,12 @@ const setupStandaloneConfiguration = () => {
   if (undefined !== process.env.SVT_DEBUG_SHADERS)
     configuration.debugShaders = true;
 
+  if (undefined !== process.env.SVT_BING_MAPS_KEY)
+    configuration.bingMapsKey = process.env.SVT_BING_MAPS_KEY;
+
+  if (undefined !== process.env.SVT_MAPBOX_KEY)
+    configuration.bingMapsKey = process.env.SVT_MAPBOX_KEY;
+
   configuration.useProjectExtents = undefined === process.env.SVT_NO_USE_PROJECT_EXTENTS;
 
   const parseSeconds = (key: string) => {
