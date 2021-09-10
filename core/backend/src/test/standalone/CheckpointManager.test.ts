@@ -18,6 +18,7 @@ import { IModelHubBackend } from "../../IModelHubBackend";
 describe("V1 Checkpoint Manager", () => {
   it("empty props", async () => {
     const props = {
+      // SWB
       contextId: "",
       iModelId: "",
       changeset: { id: "" },
@@ -28,6 +29,7 @@ describe("V1 Checkpoint Manager", () => {
 
   it("changeset only props", async () => {
     const props = {
+      // SWB
       contextId: "",
       iModelId: "",
       changeset: { id: "1234" },
@@ -36,8 +38,10 @@ describe("V1 Checkpoint Manager", () => {
     assert.equal(V1CheckpointManager.getFileName(props), path.join(IModelHost.cacheDir, "imodels", "checkpoints", "1234.bim"));
   });
 
+  // SWB
   it("changeset+context props", async () => {
     const props = {
+      // SWB
       contextId: "5678",
       iModelId: "",
       changeset: { id: "1234" },
@@ -46,8 +50,10 @@ describe("V1 Checkpoint Manager", () => {
     assert.equal(V1CheckpointManager.getFileName(props), path.join(IModelHost.cacheDir, "imodels", "checkpoints", "1234.bim"));
   });
 
+  // SWB
   it("changeset+context+imodel props", async () => {
     const props = {
+      // SWB
       contextId: "5678",
       iModelId: "910",
       changeset: { id: "1234" },
@@ -65,6 +71,7 @@ describe("V1 Checkpoint Manager", () => {
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
     const iModelId = Guid.createValue();  // This is wrong - it should be `snapshot.getGuid()`!
+    // SWB
     const contextId = Guid.createValue();
     const changeset = IModelTestUtils.generateChangeSetId();
     snapshot.nativeDb.saveProjectGuid(Guid.normalize(contextId));
@@ -98,6 +105,7 @@ describe("Checkpoint Manager", () => {
 
   it("open missing local file should return undefined", async () => {
     const checkpoint = {
+      // SWB
       contextId: "5678",
       iModelId: "910",
       changeset: { id: "1234" },
@@ -113,6 +121,7 @@ describe("Checkpoint Manager", () => {
 
   it("open a bad bim file should return undefined", async () => {
     const checkpoint = {
+      // SWB
       contextId: "5678",
       iModelId: "910",
       changeset: { id: "1234" },
@@ -143,6 +152,7 @@ describe("Checkpoint Manager", () => {
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
     const iModelId = snapshot.getGuid();
+    // SWB
     const contextId = Guid.createValue();
     const changeset = IModelTestUtils.generateChangeSetId();
     snapshot.nativeDb.saveProjectGuid(Guid.normalize(contextId));

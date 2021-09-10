@@ -19,6 +19,7 @@ import { LockStatusExclusive, LockStatusShared } from "../LocalHub";
 
 describe("HubMock", () => {
   const tmpDir = join(KnownTestLocations.outputDir, "HubMockTest");
+  // SWB
   const contextId = Guid.createValue();
   const revision0 = IModelTestUtils.resolveAssetFile("test.bim");
   let requestContext: AuthorizedClientRequestContext;
@@ -228,6 +229,7 @@ describe("HubMock", () => {
     assert.equal(briefcase.briefcaseId, 2);
     assert.equal(briefcase.changeset.id, "");
     assert.equal(briefcase.iModelId, iModelId);
+    // SWB
     assert.equal(briefcase.contextId, contextId);
     await IModelHost.hubAccess.deleteIModel({ contextId, iModelId });
   });

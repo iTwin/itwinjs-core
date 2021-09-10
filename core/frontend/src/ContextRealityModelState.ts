@@ -93,6 +93,7 @@ export class ContextRealityModelState extends ContextRealityModel {
  */
 export interface RealityDataQueryCriteria {
   /** The Id of the iTwin context. */
+  // SWB
   contextId: GuidString;
   /** If supplied, only reality data overlapping this range will be included. */
   range?: CartographicRange;
@@ -103,6 +104,7 @@ export interface RealityDataQueryCriteria {
 /** @deprecated Use queryRealityData
  * @internal
  */
+// SWB
 export async function findAvailableRealityModels(contextId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]> {
   return queryRealityData({ contextId, range: modelCartographicRange });
 }
@@ -110,6 +112,7 @@ export async function findAvailableRealityModels(contextId: GuidString, modelCar
 /** @deprecated Use queryRealityData
  * @internal
  */
+// SWB
 export async function findAvailableUnattachedRealityModels(contextId: GuidString, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]> {
   return queryRealityData({ contextId, filterIModel: iModel, range: modelCartographicRange });
 }
@@ -120,6 +123,7 @@ export async function findAvailableUnattachedRealityModels(contextId: GuidString
  * @public
  */
 export async function queryRealityData(criteria: RealityDataQueryCriteria): Promise<ContextRealityModelProps[]> {
+  // SWB
   const contextId = criteria.contextId;
   const availableRealityModels: ContextRealityModelProps[] = [];
 

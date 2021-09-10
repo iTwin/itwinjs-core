@@ -19,6 +19,7 @@ export class IModelSession {
 
   private _iModel?: CheckpointConnection;
 
+  // SWB
   private constructor(contextId: string, imodelId: string, changesetId?: string) {
     this.contextId = contextId;
     this.iModelId = imodelId;
@@ -60,6 +61,7 @@ export class IModelSession {
       const imodelClient = new IModelHubClient();
       const imodels = await imodelClient.iModels.get(requestContext, contextId, new IModelQuery().byName(iModelData.name!));
       if (undefined === imodels || imodels.length === 0)
+      // SWB
         throw new Error(`The iModel ${iModelData.name} does not exist in project ${contextId}.`);
       imodelId = imodels[0].wsgId;
     } else

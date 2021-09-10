@@ -24,6 +24,7 @@ import { ThumbnailProps } from "./Thumbnail";
  */
 export interface IModelRpcOpenProps {
   /** The context (Project, Asset, or other infrastructure) in which the iModel exists - must be defined for briefcases that are synchronized with iModelHub. */
+  // SWB
   readonly contextId?: GuidString;
   /** Guid of the iModel. */
   readonly iModelId?: GuidString;
@@ -473,8 +474,10 @@ export abstract class IModel implements IModelProps {
   public get key(): string { return this._fileKey; }
 
   /** @internal */
+  // SWB
   protected _contextId?: GuidString;
   /** The Guid that identifies the *context* that owns this iModel. */
+  // SWB
   public get contextId(): GuidString | undefined { return this._contextId; }
 
   /** The Guid that identifies this iModel. */
@@ -494,6 +497,7 @@ export abstract class IModel implements IModelProps {
 
     return {
       key: this._fileKey,
+      // SWB
       contextId: this.contextId,
       iModelId: this.iModelId,
       changeset: this.changeset,
@@ -506,6 +510,7 @@ export abstract class IModel implements IModelProps {
     this._fileKey = "";
     if (tokenProps) {
       this._fileKey = tokenProps.key;
+      // SWB
       this._contextId = tokenProps.contextId;
       this._iModelId = tokenProps.iModelId;
       if (tokenProps.changeset)

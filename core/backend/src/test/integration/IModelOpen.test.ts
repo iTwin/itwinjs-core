@@ -17,6 +17,7 @@ describe("IModelOpen (#integration)", () => {
 
   let requestContext: AuthorizedBackendRequestContext;
   let testIModelId: GuidString;
+  // SWB
   let testContextId: GuidString;
 
   before(async () => {
@@ -37,6 +38,7 @@ describe("IModelOpen (#integration)", () => {
     const badRequestContext = new AuthorizedBackendRequestContext(badToken);
 
     // Try the bad request context
+    // SWB
     await expect(IModelTestUtils.downloadAndOpenCheckpoint({ requestContext: badRequestContext, contextId: testContextId, iModelId: testIModelId }))
       .to.be.rejectedWith(BentleyError).to.eventually.have.property("status", 401);
 
@@ -51,6 +53,7 @@ describe("IModelOpen (#integration)", () => {
     // Open iModel with no timeout, and ensure all promises resolve to the same briefcase
     const openPromises = new Array<Promise<SnapshotDb>>();
     for (let ii = 0; ii < numTries; ii++) {
+      // SWB
       const open = IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testContextId, iModelId: testIModelId });
       openPromises.push(open);
     }
@@ -70,6 +73,7 @@ describe("IModelOpen (#integration)", () => {
     const numChangeSets = changeSets.length;
     assert.isAbove(numChangeSets, 10);
 
+    // SWB
     const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testContextId, iModelId: testIModelId, asOf: IModelVersion.asOfChangeSet(changeSets[9].id).toJSON() });
     assert.isDefined(iModel);
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);

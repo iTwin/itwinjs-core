@@ -40,6 +40,7 @@ describe("RpcRequestsHandler", () => {
 
   let clientId: string;
   let defaultRpcHandlerOptions: { imodel: IModelRpcProps };
+  // SWB
   const token: IModelRpcProps = { key: "test", iModelId: "test", contextId: "test" };
   const successResponse = async <TResult>(result: TResult, diagnostics?: DiagnosticsScopeLogs[]): PresentationRpcResponse<TResult> => ({ statusCode: PresentationStatus.Success, result, diagnostics });
   const errorResponse = async (statusCode: PresentationStatus, errorMessage?: string, diagnostics?: DiagnosticsScopeLogs[]): PresentationRpcResponse => ({ statusCode, errorMessage, result: undefined, diagnostics });

@@ -23,6 +23,7 @@ import { HubUtility } from "./HubUtility";
 
 describe("Schema XML Import Tests (#integration)", () => {
   let requestContext: AuthorizedBackendRequestContext;
+  // SWB
   let testContextId: string;
   let readWriteTestIModelId: GuidString;
 
@@ -35,6 +36,7 @@ describe("Schema XML Import Tests (#integration)", () => {
 
   after(async () => {
     try {
+      // SWB
       await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: testContextId, iModelId: readWriteTestIModelId });
       HubMock.shutdown();
     } catch (err) {
@@ -47,6 +49,7 @@ describe("Schema XML Import Tests (#integration)", () => {
     const schemaFilePath = path.join(KnownTestLocations.assetsDir, "Test3.ecschema.xml");
     const schemaString = fs.readFileSync(schemaFilePath, "utf8");
 
+    // SWB
     const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: testContextId, iModelId: readWriteTestIModelId });
     await iModel.importSchemaStrings(requestContext, [schemaString]); // will throw an exception if import fails
 

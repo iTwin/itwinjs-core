@@ -542,6 +542,7 @@ export class UiFramework {
    * @internal
    */
   // istanbul ignore next
+  // SWB
   public static async postTelemetry(eventName: string, eventId?: GuidString, contextId?: GuidString, iModeId?: GuidString, changeSetId?: string, time?: TrackingTime, additionalProperties?: { [key: string]: any }): Promise<void> {
     if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.hasSignedIn)
       return;

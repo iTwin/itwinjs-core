@@ -225,8 +225,10 @@ export class MapLayerSources {
       (await ArcGisUtilities.getSourcesFromQuery(sourceRange)).forEach((queriedSource) => addSource(queriedSource));
     }
 
+    // SWB
     if (iModel && iModel.contextId && iModel.iModelId) {
       try {
+        // SWB
         (await MapLayerSettingsService.getSourcesFromSettingsService(iModel.contextId, iModel.iModelId)).forEach((source) => addSource(source));
       } catch (err) {
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.i18n.translate("mapLayers:CustomAttach.ErrorLoadingLayers"), err.toString()));

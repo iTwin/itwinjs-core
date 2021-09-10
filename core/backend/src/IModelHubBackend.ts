@@ -85,6 +85,7 @@ export class IModelHubBackend {
     return this.getLatestChangeset(arg);
   }
 
+  // SWB
   public static async createIModel(arg: { requestContext?: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string, description?: string, revision0?: string }): Promise<GuidString> {
     if (this.isUsingIModelBankClient)
       throw new IModelError(IModelStatus.BadRequest, "This is a iModelHub only operation");
@@ -95,6 +96,7 @@ export class IModelHubBackend {
     return hubIModel.wsgId;
   }
 
+  // SWB
   public static async deleteIModel(arg: IModelIdArg & { contextId: GuidString }): Promise<void> {
     const dirName = BriefcaseManager.getIModelPath(arg.iModelId);
     if (IModelJsFs.existsSync(dirName)) {
@@ -104,6 +106,7 @@ export class IModelHubBackend {
     return this.iModelClient.iModels.delete(await this.getRequestContext(arg), arg.contextId, arg.iModelId);
   }
 
+  // SWB
   public static async queryIModelByName(arg: { requestContext?: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string }): Promise<GuidString | undefined> {
     const iModels = await this.iModelClient.iModels.get(await this.getRequestContext(arg), arg.contextId, new IModelQuery().byName(arg.iModelName));
     return iModels.length === 0 ? undefined : iModels[0].id!;

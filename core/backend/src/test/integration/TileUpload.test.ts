@@ -60,6 +60,7 @@ export async function getTileProps(iModel: IModelDb, requestContext: AuthorizedB
 describe("TileUpload (#integration)", () => {
   let requestContext: AuthorizedBackendRequestContext;
   let testIModelId: GuidString;
+  // SWB
   let testContextId: GuidString;
   let tileRpcInterface: IModelTileRpcInterface;
   let serviceUrl: Azure.ServiceURL;
@@ -98,6 +99,7 @@ describe("TileUpload (#integration)", () => {
     (IModelHost.tileCacheService as any)._service = serviceUrl;
 
     // Open and close the iModel to ensure it works and is closed
+    // SWB
     const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testContextId, iModelId: testIModelId });
     assert.isDefined(iModel);
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
@@ -110,6 +112,7 @@ describe("TileUpload (#integration)", () => {
   });
 
   it("should upload tile to external cache with metadata", async () => {
+    // SWB
     const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testContextId, iModelId: testIModelId });
     assert.isDefined(iModel);
 

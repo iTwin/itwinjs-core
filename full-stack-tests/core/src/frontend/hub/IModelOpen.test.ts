@@ -12,6 +12,7 @@ import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { TestUtility } from "./TestUtility";
 
 describe("Opening IModelConnection (#integration)", () => {
+  // SWB
   let testContextId: GuidString;
   let testIModelId: GuidString;
   let testChangeSetId: string;

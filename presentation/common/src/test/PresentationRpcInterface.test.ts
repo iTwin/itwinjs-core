@@ -27,6 +27,7 @@ describe("PresentationRpcInterface", () => {
   }
 
   it("finds imodel tokens in RPC requests", () => {
+    // SWB
     const token: IModelRpcProps = { key: "test", iModelId: "test", contextId: "test" };
     const parameters = [
       token,
@@ -55,6 +56,7 @@ describe("PresentationRpcInterface", () => {
 
     let rpcInterface: PresentationRpcInterface;
     let spy: sinon.SinonSpy<[IArguments], Promise<any>>;
+    // SWB
     const token: IModelRpcProps = { key: "test", iModelId: "test", contextId: "test" };
 
     beforeEach(() => {

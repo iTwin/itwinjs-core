@@ -19,11 +19,13 @@ import { HubUtility } from "./HubUtility";
 
 describe("ChangedElements (#integration)", () => {
   let requestContext: AuthorizedBackendRequestContext;
+  // SWB
   let testContextId: GuidString;
   let testIModelId: GuidString;
 
   before(async () => {
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+    // SWB
     testContextId = await HubUtility.getTestContextId(requestContext);
     testIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.readOnly);
 
@@ -34,6 +36,7 @@ describe("ChangedElements (#integration)", () => {
     if (IModelJsFs.existsSync(cacheFilePath))
       IModelJsFs.removeSync(cacheFilePath);
 
+    // SWB
     const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testContextId, iModelId: testIModelId, asOf: IModelVersion.first().toJSON() });
     const changeSets = await IModelHost.hubAccess.queryChangesets({ requestContext, iModelId: testIModelId });
     assert.exists(iModel);
@@ -169,6 +172,7 @@ describe("ChangedElements (#integration)", () => {
     if (IModelJsFs.existsSync(cacheFilePath))
       IModelJsFs.removeSync(cacheFilePath);
 
+    // SWB
     const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testContextId, iModelId: testIModelId, asOf: IModelVersion.first().toJSON() });
     const changeSets = await IModelHost.hubAccess.queryChangesets({ requestContext, iModelId: testIModelId });
     assert.exists(iModel);

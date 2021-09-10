@@ -118,6 +118,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     return types;
   });
 
+  // SWB
   const [isSettingsStorageAvailable] = React.useState(props?.activeViewport?.iModel?.contextId && props?.activeViewport?.iModel?.iModelId);
 
   // Even though the settings storage is available,
@@ -224,6 +225,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
             } else {
               // Update service settings if storage is available and we are not prompting user for credentials
               if (!settingsStorageDisabled && !props.layerRequiringCredentials) {
+                // SWB
                 if (!(await MapLayerSettingsService.storeSourceInSettingsService(source, storeOnIModel, vp.iModel.contextId!, vp.iModel.iModelId!)))
                   return;
               }
@@ -303,6 +305,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
           const vp = props.activeViewport;
           void (async () => {
             if (isSettingsStorageAvailable && vp) {
+              // SWB
               if (!(await MapLayerSettingsService.replaceSourceInSettingsService(props.mapLayerSourceToEdit!, source, vp.iModel.contextId!, vp.iModel.iModelId!))) {
                 const errorMessage = IModelApp.i18n.translate("mapLayers:Messages.MapLayerEditError", { layerName: props.mapLayerSourceToEdit?.name });
                 IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, errorMessage));

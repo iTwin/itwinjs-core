@@ -79,6 +79,7 @@ export class HubMock {
     IModelJsFs.purgeDirSync(this.mockRoot);
     this._saveHubAccess = IModelHost.hubAccess;
     IModelHost.setHubAccess(this);
+    // SWB
     HubUtility.contextId = Guid.createValue(); // all iModels for this test get the same "contextId"
 
     sinon.stub(IModelHubBackend, "iModelClient").get(() => {
@@ -239,15 +240,18 @@ export class HubMock {
     return false;
   }
 
+  // SWB
   public static async queryIModelByName(arg: { requestContext?: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string }): Promise<GuidString | undefined> {
     for (const hub of this.hubs) {
       const localHub = hub[1];
+      // SWB
       if (localHub.contextId === arg.contextId && localHub.iModelName === arg.iModelName)
         return localHub.iModelId;
     }
     return undefined;
   }
 
+  // SWB
   public static async createIModel(arg: { requestContext?: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string, description?: string, revision0?: LocalFileName }): Promise<GuidString> {
     const revision0 = arg.revision0 ?? join(this.mockRoot!, "revision0.bim");
 
@@ -265,6 +269,7 @@ export class HubMock {
     return localProps.iModelId;
   }
 
+  // SWB
   public static async deleteIModel(arg: IModelIdArg & { contextId: GuidString }): Promise<void> {
     return this.destroy(arg.iModelId);
   }

@@ -28,6 +28,7 @@ const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
  */
 export class CheckpointConnection extends IModelConnection {
   /** The Guid that identifies the *context* that owns this iModel. */
+  // SWB
   public override get contextId(): GuidString { return super.contextId!; } // GuidString | undefined for the superclass, but required for BriefcaseConnection
   /** The Guid that identifies this iModel. */
   public override get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for the superclass, but required for BriefcaseConnection
@@ -42,6 +43,7 @@ export class CheckpointConnection extends IModelConnection {
   /**
    * Open a readonly IModelConnection to an iModel over RPC.
    */
+  // SWB
   public static async openRemote(contextId: string, iModelId: string, version: IModelVersion = IModelVersion.latest()): Promise<CheckpointConnection> {
     const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
 

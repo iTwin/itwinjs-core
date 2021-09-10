@@ -56,6 +56,7 @@ export class HubUtility {
 
   // SWB
   public static async queryIModelByName(requestContext: AuthorizedClientRequestContext, projectId: string, iModelName: string): Promise<GuidString | undefined> {
+    // SWB
     return IModelHost.hubAccess.queryIModelByName({ requestContext, contextId: projectId, iModelName });
   }
 
@@ -73,8 +74,8 @@ export class HubUtility {
    * @param name Name of iTwin
    * @throws If the iTwin is not found, or there is more than one iTwin with the supplied name
    */
-  // SWB
   public static async getITwinIdByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<string> {
+    // SWB
     if (undefined !== HubUtility.contextId)
       return HubUtility.contextId;
 
@@ -367,10 +368,12 @@ export class HubUtility {
     if (iModelId) {
       if (!overwrite)
         return iModelId;
+        // SWB
       await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: projectId, iModelId });
     }
 
     // Upload a new iModel
+    // SWB
     return IModelHost.hubAccess.createIModel({ requestContext, contextId: projectId, iModelName: locIModelName, revision0: pathname });
   }
 
@@ -592,6 +595,7 @@ export class HubUtility {
   /** Deletes and re-creates an iModel with the provided name in the Context.
    * @returns the iModelId of the newly created iModel.
   */
+  // SWB
   public static async recreateIModel(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string): Promise<GuidString> {
     assert.isTrue(HubMock.isValid, "Must use HubMock for tests that modify iModels");
     const deleteIModel = await HubUtility.queryIModelByName(requestContext, contextId, iModelName);
@@ -603,6 +607,7 @@ export class HubUtility {
   }
 
   /** Create an iModel with the name provided if it does not already exist. If it does exist, the iModelId is returned. */
+  // SWB
   public static async createIModel(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string): Promise<GuidString> {
     assert.isTrue(HubMock.isValid, "Must use HubMock for tests that modify iModels");
     let iModelId = await HubUtility.queryIModelByName(requestContext, contextId, iModelName);

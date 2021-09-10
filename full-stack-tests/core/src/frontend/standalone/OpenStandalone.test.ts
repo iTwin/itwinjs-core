@@ -37,6 +37,7 @@ if (ProcessDetector.isElectronAppFrontend) { // BriefcaseConnection tests only r
       assert.isFalse(connection.isSnapshot);
       assert.isFalse(connection.isBlank);
 
+      // SWB
       assert.equal(connection.contextId, Guid.empty, "standalone imodels have empty contextId");
       await expect(connection.pushChanges("bad")).to.eventually.be.rejectedWith(IModelError); // standalone imodels can't push changes
       await expect(connection.pullAndMergeChanges()).to.eventually.be.rejectedWith(IModelError);// standalone imodels can't pull changes

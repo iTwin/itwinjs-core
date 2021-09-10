@@ -215,6 +215,7 @@ export class IModelTestUtils {
 
     const openArgs: DownloadAndOpenArgs = {
       tokenProps: {
+        // SWB
         contextId: args.contextId,
         iModelId: args.iModelId,
         changeset: (await BriefcaseManager.changesetFromVersion(args.requestContext, IModelVersion.fromJSON(args.asOf), args.iModelId)),
@@ -236,11 +237,13 @@ export class IModelTestUtils {
   }
 
   /** Downloads and opens a v1 checkpoint */
+  // SWB
   public static async downloadAndOpenCheckpoint(args: { requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, asOf?: IModelVersionProps }): Promise<SnapshotDb> {
     if (undefined === args.asOf)
       args.asOf = IModelVersion.latest().toJSON();
 
     const checkpoint: CheckpointProps = {
+      // SWB
       contextId: args.contextId,
       iModelId: args.iModelId,
       requestContext: args.requestContext,
@@ -258,6 +261,7 @@ export class IModelTestUtils {
     const changeset = await BriefcaseManager.changesetFromVersion(args.requestContext, IModelVersion.fromJSON(args.asOf), args.iModelId);
     const openArgs: DownloadAndOpenArgs = {
       tokenProps: {
+        // SWB
         contextId: args.contextId,
         iModelId: args.iModelId,
         changeset,

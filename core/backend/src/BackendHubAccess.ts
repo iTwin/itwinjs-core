@@ -63,6 +63,7 @@ export interface IModelIdArg {
  */
 export interface IModelNameArg {
   requestContext?: AuthorizedClientRequestContext;
+  // SWB
   contextId: GuidString;
   iModelName: string;
 }
@@ -172,6 +173,7 @@ export interface BackendHubAccess {
   /** create a new iModel. Returns the Guid of the newly created iModel */
   createIModel(arg: IModelNameArg & { description?: string, revision0?: LocalFileName }): Promise<GuidString>;
   /** delete an iModel  */
+  // SWB
   deleteIModel(arg: IModelIdArg & { contextId: GuidString }): Promise<void>;
 }
 

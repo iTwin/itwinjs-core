@@ -19,20 +19,24 @@ import { createFileHandler } from "./FileHandler";
 
 const defaultDataLocationId: GuidString = "99999999-9999-9999-9999-999999999999";
 
+// SWB
 function mockGetIModelByName(contextId: string, name: string, description = "", imodelId?: GuidString, initialized = true, iModelType = IModelType.Undefined, extent: number[] = [], returnsInstances = true) {
   mockGetIModelWithFilter(`?$filter=Name+eq+%27${encodeURIComponent(name)}%27`, contextId, name, description, imodelId, initialized, "Empty", iModelType, extent, returnsInstances);
 }
 
+// SWB
 function mockGetIModelByType(contextId: string, name: string, imodelId: GuidString | undefined, iModelType: IModelType, returnsInstances = true) {
   mockGetIModelWithFilter(`?$filter=Type+eq+${iModelType}`, contextId, name, "", imodelId, true, "Empty", iModelType, [], returnsInstances);
 }
 
+// SWB
 function mockGetIModelByTemplate(contextId: string, name: string, imodelId: GuidString | undefined, template: string, returnsInstances = true) {
   mockGetIModelWithFilter(`?$filter=iModelTemplate+eq+%27${encodeURIComponent(template)}%27`, contextId, name, "", imodelId, true, template, IModelType.Undefined, [], returnsInstances);
 }
 
 function mockGetIModelWithFilter(
   query: string,
+  // SWB
   contextId: string,
   name: string,
   description: string,
@@ -62,6 +66,7 @@ function mockGetIModelWithFilter(
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
+// SWB
 function mockGetIModel(contextId: string, imodelName: string, imodelId: GuidString, imodelsCount?: number, description = "", extent?: number[]) {
   if (!TestConfig.enableMocks)
     return;
@@ -82,6 +87,7 @@ function mockGetIModel(contextId: string, imodelName: string, imodelId: GuidStri
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
+// SWB
 function mockPostiModel(contextId: string, imodelId: GuidString, imodelName: string, description?: string, iModelTemplate?: string, iModelType?: IModelType, extent?: number[]) {
   if (!TestConfig.enableMocks)
     return;
@@ -200,6 +206,7 @@ function mockGetSeedFile(imodelId: GuidString, getFileUrl = false) {
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
+// SWB
 function mockCreateiModel(contextId: string, imodelId: GuidString, imodelName: string, description: string, filePath: string, chunks = 1, extent?: number[]) {
   if (!TestConfig.enableMocks)
     return;

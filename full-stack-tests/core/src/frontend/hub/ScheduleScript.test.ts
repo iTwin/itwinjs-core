@@ -36,6 +36,7 @@ describe("Schedule script (#integration)", () => {
       applicationVersion: "1.2.1.1",
     });
 
+    // SWB
     const contextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
     const oldIModelId = await TestUtility.queryIModelIdbyName(contextId, TestUtility.testIModelNames.synchro);
     dbOld = await CheckpointConnection.openRemote(contextId, oldIModelId);

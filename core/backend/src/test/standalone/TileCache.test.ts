@@ -72,6 +72,7 @@ describe("TileCache, open v2", async () => {
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim");
     const snapshot = IModelTestUtils.createSnapshotFromSeed(dbPath, IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
     const iModelId = snapshot.getGuid();
+    // SWB
     const contextId = Guid.createValue();
     const changeset = IModelTestUtils.generateChangeSetId();
     snapshot.nativeDb.saveProjectGuid(Guid.normalize(contextId));

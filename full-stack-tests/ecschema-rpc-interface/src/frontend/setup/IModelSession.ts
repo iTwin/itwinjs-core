@@ -7,11 +7,13 @@ import { CheckpointConnection } from "@bentley/imodeljs-frontend";
 
 export class IModelSession {
 
+  // SWB
   public contextId: string;
   public iModelId: string;
 
   private _iModel?: CheckpointConnection;
 
+  // SWB
   public constructor(iModelId: string, contextId: string) {
     this.contextId = contextId;
     this.iModelId = iModelId;

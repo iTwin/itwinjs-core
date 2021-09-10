@@ -101,6 +101,7 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
   private async startRetrieveIModelInfo() {
     const hubClient: IModelClient = new IModelHubClient();
     const requestContext: AuthorizedFrontendRequestContext = await AuthorizedFrontendRequestContext.create();
+    // SWB
     const contextId = this.props.iModelConnection.contextId!;
     const iModelId = this.props.iModelConnection.iModelId!;
 

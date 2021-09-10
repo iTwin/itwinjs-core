@@ -23,6 +23,7 @@ import { currentEnvironment } from "./_Setup.test";
 // cspell:ignore oldvalue newvalue
 
 const timeout = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+// SWB
 const testToken: IModelRpcProps = { key: "test", contextId: "test", iModelId: "test", changeset: { id: "test" } };
 
 describe("RpcInterface", () => {
@@ -249,9 +250,12 @@ describe("RpcInterface", () => {
     assert.isTrue(endpointsRestored[0].compatible);
 
     const originalToken = RpcOperation.fallbackToken;
+    // SWB
     RpcOperation.fallbackToken = { key: "test", contextId: "test", iModelId: "test", changeset: { id: "test" } };
+    // SWB
     assert.equal(controlPolicy.token(undefined as any)!.contextId, "test");
     RpcOperation.fallbackToken = originalToken;
+    // SWB
     assert.equal(controlPolicy.token(undefined as any)!.contextId, originalToken ? originalToken.contextId : "none");
   });
 
@@ -469,6 +473,7 @@ describe("RpcInterface", () => {
   it("should transport imodel tokens correctly", async () => {
     RpcOperation.lookup(TestRpcInterface, "op16").policy.token = new RpcOperationPolicy().token;
 
+    // SWB
     async function check(key: string, contextId?: string, iModelId?: string, changeset?: ChangesetIdWithIndex) {
       const token: IModelRpcProps = { key, contextId, iModelId, changeset };
       const values: TokenValues = { key, contextId, iModelId, changeset };

@@ -280,6 +280,7 @@ export function getUniqueIModelName(imodelName: string): string {
   return `${imodelName} - ${getTestInstanceId()}`;
 }
 
+// SWB
 export async function deleteIModelByName(requestContext: AuthorizedClientRequestContext, contextId: string, imodelName: string, useUniqueName = true): Promise<void> {
   if (TestConfig.enableMocks)
     return;

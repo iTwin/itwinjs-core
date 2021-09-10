@@ -32,6 +32,7 @@ async function getIModelAfterApplyingCS(requestContext: AuthorizedClientRequestC
   const firstChangeSetId = changeSets[0].wsgId;
   const secondChangeSetId = changeSets[1].wsgId;
 
+  // SWB
   const args = { requestContext, contextId: projectId, iModelId: imodelId };
   // open imodel first time from imodel-hub with first revision
   const startTime = new Date().getTime();
@@ -76,6 +77,7 @@ async function getIModelAfterApplyingCS(requestContext: AuthorizedClientRequestC
 
 // SWB
 async function pushIModelAfterMetaChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string, imodelPushId: string) {
+  // SWB
   const iModelPullAndPush = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: imodelPushId });
   assert.exists(iModelPullAndPush);
   iModelPullAndPush.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
@@ -133,11 +135,14 @@ async function pushIModelAfterDataChanges(requestContext: AuthorizedClientReques
   // delete any existing imodel with given name
   const iModels = await IModelHubBackend.iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
   for (const iModelTemp of iModels) {
+    // SWB
     await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: projectId, iModelId: iModelTemp.id! });
   }
   // create new imodel with given name
+  // SWB
   const rwIModelId = await IModelHost.hubAccess.createIModel({ requestContext, contextId: projectId, iModelName, description: "TestSubject" });
   assert.isNotEmpty(rwIModelId);
+  // SWB
   const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: rwIModelId });
 
   // create new model, category and physical element, and insert in imodel
@@ -161,11 +166,14 @@ async function pushIModelAfterSchemaChanges(requestContext: AuthorizedClientRequ
   // delete any existing imodel with given name
   const iModels = await IModelHubBackend.iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
   for (const iModelTemp of iModels) {
+    // SWB
     await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: projectId, iModelId: iModelTemp.id! });
   }
   // create new imodel with given name
+  // SWB
   const rwIModelId = await IModelHost.hubAccess.createIModel({ requestContext, contextId: projectId, iModelName, description: "TestSubject" });
   assert.isNotEmpty(rwIModelId);
+  // SWB
   const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: rwIModelId });
 
   assert.isNotEmpty(rwIModelId);
@@ -193,6 +201,7 @@ const getElementCount = (iModel: IModelDb): number => {
 
 // SWB
 async function executeQueryTime(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string, imodelId: string) {
+  // SWB
   const iModelDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: imodelId, asOf: IModelVersion.named("latest").toJSON() });
   assert.exists(iModelDb);
   const startTime = new Date().getTime();
@@ -210,11 +219,14 @@ async function reverseChanges(requestContext: AuthorizedClientRequestContext, re
   // delete any existing imodel with given name
   const iModels = await IModelHubBackend.iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
   for (const iModelTemp of iModels)
+  // SWB
     await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: projectId, iModelId: iModelTemp.id! });
 
   // create new imodel with given name
+  // SWB
   const rwIModelId = await IModelHost.hubAccess.createIModel({ requestContext, contextId: projectId, iModelName, description: "TestSubject" });
   assert.isNotEmpty(rwIModelId);
+  // SWB
   const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: rwIModelId });
 
   // create new model, category and physical element, and insert in imodel, and push these changes
@@ -257,11 +269,14 @@ async function reinstateChanges(requestContext: AuthorizedClientRequestContext, 
   // delete any existing imodel with given name
   const iModels = await IModelHubBackend.iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
   for (const iModelTemp of iModels)
+  // SWB
     await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: projectId, iModelId: iModelTemp.id! });
 
   // create new imodel with given name
+  // SWB
   const rwIModelId = await IModelHost.hubAccess.createIModel({ requestContext, contextId: projectId, iModelName, description: "TestSubject" });
   assert.isNotEmpty(rwIModelId);
+  // SWB
   const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: rwIModelId });
 
   // create new model, category and physical element, and insert in imodel, and push these changes
@@ -528,6 +543,7 @@ describe("ImodelChangesetPerformance big datasets", () => {
       };
 
       const firstChangeSetId = changeSets[startNum].wsgId;
+      // SWB
       const iModelDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: imodelId, asOf: IModelVersion.asOfChangeSet(firstChangeSetId).toJSON() });
 
       for (let j = startNum; j < endNum; ++j) {
@@ -635,6 +651,7 @@ describe("ImodelChangesetPerformance own data", () => {
 
   async function setupLocalIModel(projId: string, modelId: string, localPath: string) {
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+    // SWB
     const iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: projId, iModelId: modelId, asOf: IModelVersion.named(seedVersionName).toJSON() });
     const pathName = iModelDb.pathName;
     iModelDb.close();

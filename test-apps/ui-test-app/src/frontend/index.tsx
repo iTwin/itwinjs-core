@@ -396,6 +396,7 @@ export class SampleAppIModelApp {
     await LocalFileOpenFrontstage.open();
   }
 
+  // SWB
   public static async showIModelIndex(contextId: string, iModelId: string) {
     const currentConnection = UiFramework.getIModelConnection();
     if (!currentConnection || (currentConnection.iModelId !== iModelId)) {

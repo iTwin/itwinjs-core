@@ -69,6 +69,7 @@ export interface ChangeSummaryExtractOptions {
  */
 export interface CreateChangeSummaryArgs {
   /** Id of the context that contains the iModel */
+  // SWB
   contextId: GuidString;
 
   /** Id of the iModel */
@@ -554,6 +555,7 @@ export class ChangeSummaryManager {
    */
   public static async createChangeSummaries(args: CreateChangeSummaryArgs): Promise<Id64String[]> {
     const requestContext = args.requestContext ?? await IModelHost.getAuthorizedContext();
+    // SWB
     const { iModelId, contextId, range } = args;
     range.end = range.end ?? (await IModelHost.hubAccess.getChangesetFromVersion({ requestContext, iModelId, version: IModelVersion.latest() })).index;
     if (range.first > range.end)
@@ -570,6 +572,7 @@ export class ChangeSummaryManager {
     let iModel: BriefcaseDb | undefined;
     try {
       // Download a version that has the first change set applied
+      // SWB
       const props = await BriefcaseManager.downloadBriefcase(requestContext, { contextId, iModelId, asOf: { afterChangeSetId: changesets[0].id }, briefcaseId: 0, fileName });
       iModel = await BriefcaseDb.open(requestContext, { fileName: props.fileName });
 

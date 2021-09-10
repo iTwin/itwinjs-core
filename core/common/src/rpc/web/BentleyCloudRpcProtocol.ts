@@ -77,6 +77,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
     const operationId = `${operation.interfaceDefinition.interfaceName}-${operation.interfaceVersion}-${operation.operationName}`;
 
     let appMode: string = "";
+    // SWB
     let contextId: string = "";
     let iModelId: string = "";
     let routeChangeSetId: string | undefined;
@@ -88,6 +89,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
 
     if (request === undefined) {
       appMode = "{modeId}";
+      // SWB
       contextId = "{contextId}";
       iModelId = "{iModelId}";
       routeChangeSetId = "{changeSetId}";
@@ -102,6 +104,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
         }
       }
 
+      // SWB
       contextId = encodeURIComponent(token.contextId || "");
       iModelId = encodeURIComponent(token.iModelId!);
 
@@ -121,6 +124,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
 
     const iModelKey = tokenFromBody.key;
     let iModelId = tokenFromBody.iModelId;
+    // SWB
     let contextId = tokenFromBody.contextId;
     const changeset = { id: tokenFromBody.changeset?.id ?? "0", index: tokenFromBody.changeset?.index };
 
@@ -150,6 +154,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
   public supplyPathParametersForOperation(_operation: RpcOperation): OpenAPIParameter[] {
     return [
       { name: "modeId", in: "path", required: true, schema: { type: "string" } },
+      // SWB
       { name: "contextId", in: "path", required: true, schema: { type: "string" } },
       { name: "iModelId", in: "path", required: true, schema: { type: "string" } },
       { name: "changeSetId", in: "path", required: false, schema: { type: "string" } },

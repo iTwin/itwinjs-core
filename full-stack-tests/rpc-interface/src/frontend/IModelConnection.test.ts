@@ -39,6 +39,7 @@ describe("IModel Connection", () => {
   });
 
   it("should successfully open an IModelConnection for read", async () => {
+    // SWB
     const contextId = testContext.iModelWithChangesets!.contextId;
     const iModelId = testContext.iModelWithChangesets!.iModelId;
 
@@ -52,6 +53,7 @@ describe("IModel Connection", () => {
 
   it("should successfully close an open an IModelConnection", async () => {
     const iModelId = testContext.iModelWithChangesets!.iModelId;
+    // SWB
     const contextId = testContext.iModelWithChangesets!.contextId;
     const iModel = await CheckpointConnection.openRemote(contextId, iModelId);
 
@@ -76,6 +78,7 @@ describe("IModel Connection with client credentials", () => {
   });
 
   it("should successfully open an IModelConnection for read", async () => {
+    // SWB
     const contextId = testContext.iModelWithChangesets!.contextId;
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     const changeSetId = (await testContext.iModelWithChangesets!.getConnection()).changeset.id;
@@ -91,6 +94,7 @@ describe("IModel Connection with client credentials", () => {
 
 describe("IModelReadRpcInterface Methods requestable from an IModelConnection", () => {
   let iModel: IModelConnection;
+  // SWB
   let contextId: string;
   let accessToken: AccessToken;
   let testContext: TestContext;
@@ -103,6 +107,7 @@ describe("IModelReadRpcInterface Methods requestable from an IModelConnection", 
     }
 
     const iModelId = testContext.iModelWithChangesets!.iModelId;
+    // SWB
     contextId = testContext.iModelWithChangesets!.contextId;
     accessToken = testContext.adminUserAccessToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
@@ -323,6 +328,7 @@ describe("IModelReadRpcInterface Methods requestable from an IModelConnection", 
 
 describe("Snapping", () => {
   let iModel: IModelConnection;
+  // SWB
   let contextId: string;
   let accessToken: AccessToken;
   let testContext: TestContext;
@@ -334,6 +340,7 @@ describe("Snapping", () => {
       this.skip();
 
     const iModelId = testContext.iModelWithChangesets!.iModelId;
+    // SWB
     contextId = testContext.iModelWithChangesets!.contextId;
     accessToken = testContext.adminUserAccessToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);

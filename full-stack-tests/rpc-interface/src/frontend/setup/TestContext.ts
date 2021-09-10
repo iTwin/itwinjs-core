@@ -26,6 +26,7 @@ export class TestContext {
 
   public iModelWithChangesets?: IModelSession;
   public iModelForWrite?: IModelSession;
+  // SWB
   public contextId?: string;
 
   public settings: Settings;
@@ -88,6 +89,7 @@ export class TestContext {
 
     const requestContext = new AuthorizedFrontendRequestContext(this.adminUserAccessToken);
     this.iModelWithChangesets = await IModelSession.create(requestContext, this.settings.iModel);
+    // SWB
     this.contextId = this.iModelWithChangesets.contextId;
     if (this.settings.runiModelWriteRpcTests)
       this.iModelForWrite = await IModelSession.create(requestContext, this.settings.writeIModel);

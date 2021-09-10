@@ -194,7 +194,6 @@ export class MapLayerSettingsService {
    * @param iModelId id of the iModel
    * @throws error if any of the calls to grab settings fail.
    */
-
   // SWB
   public static async getSourcesFromSettingsService(projectId: GuidString, iModelId: GuidString): Promise<MapLayerSource[]> {
     const requestContext = await AuthorizedFrontendRequestContext.create();

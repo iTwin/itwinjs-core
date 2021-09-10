@@ -70,6 +70,7 @@ async function getITwinByName(requestContext: AuthorizedClientRequestContext, na
   return iTwinList[0];
 }
 
+// SWB
 async function createIModel(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, seedFile: string) {
   try {
     const iModelId = await IModelHost.hubAccess.queryIModelByName({ requestContext, contextId, iModelName });

@@ -379,6 +379,7 @@ describe("IModelTransformerHub (#integration)", () => {
     const masterSeedDb = SnapshotDb.createEmpty(masterSeedFileName, { rootSubject: { name: "Master" } });
     populateMaster(masterSeedDb, state0);
     assert.isTrue(IModelJsFs.existsSync(masterSeedFileName));
+    // SWB
     masterSeedDb.nativeDb.saveProjectGuid(projectId); // WIP: attempting a workaround for "ContextId was not properly setup in the checkpoint" issue
     masterSeedDb.saveChanges();
     masterSeedDb.close();
@@ -390,6 +391,7 @@ describe("IModelTransformerHub (#integration)", () => {
     const masterDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: masterIModelId });
     masterDb.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
     assert.isTrue(masterDb.isBriefcaseDb());
+    // SWB
     assert.equal(masterDb.contextId, projectId);
     assert.equal(masterDb.iModelId, masterIModelId);
     assertPhysicalObjects(masterDb, state0);
@@ -404,6 +406,7 @@ describe("IModelTransformerHub (#integration)", () => {
     const branchDb1 = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: branchIModelId1 });
     branchDb1.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
     assert.isTrue(branchDb1.isBriefcaseDb());
+    // SWB
     assert.equal(branchDb1.contextId, projectId);
     assertPhysicalObjects(branchDb1, state0);
     const changeSetBranch1First = branchDb1.changeset.id;

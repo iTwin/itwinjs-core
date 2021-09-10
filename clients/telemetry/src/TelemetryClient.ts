@@ -24,6 +24,7 @@ export class TelemetryEvent {
      */
     public readonly eventId?: GuidString,
     /** iModel project id/sub-context id */
+    // SWB
     public readonly contextId?: GuidString,
     public readonly iModelId?: GuidString,
     public readonly changeSetId?: GuidString,
@@ -43,6 +44,7 @@ export class TelemetryEvent {
     const properties: { [key: string]: any } = {
       eventName: this.eventName,
       eventId: this.eventId,
+      // SWB
       contextId: this.contextId,
       iModelId: this.iModelId,
       changeSetId: this.changeSetId,

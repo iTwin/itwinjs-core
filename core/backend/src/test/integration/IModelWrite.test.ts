@@ -58,6 +58,7 @@ function toHubLock(props: LockProps, briefcaseId: number): Lock {
 describe("IModelWriteTest (#integration)", () => {
   let managerRequestContext: AuthorizedBackendRequestContext;
   let superRequestContext: AuthorizedBackendRequestContext;
+  // SWB
   let testContextId: string;
   let readWriteTestIModelId: GuidString;
 
@@ -90,6 +91,7 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it("acquire codespec lock", async () => {
+    // SWB
     const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: superRequestContext, contextId: testContextId, iModelId: readWriteTestIModelId });
     const codeSpec1 = CodeSpec.create(iModel, "MyCodeSpec1", CodeScopeSpec.Type.Model);
     iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
@@ -115,6 +117,7 @@ describe("IModelWriteTest (#integration)", () => {
     let found = false;
     let briefcases = BriefcaseManager.getCachedBriefcases(readWriteTestIModelId);
     for (const briefcase of briefcases) {
+      // SWB
       if (briefcase.briefcaseId === iModel.briefcaseId && briefcase.contextId === testContextId && briefcase.iModelId === readWriteTestIModelId) {
         assert.equal(briefcase.fileName, iModel.pathName);
         found = true;
@@ -126,6 +129,7 @@ describe("IModelWriteTest (#integration)", () => {
     found = false;
     briefcases = BriefcaseManager.getCachedBriefcases(); // test getCachedBriefcases without iModelId
     for (const briefcase of briefcases) {
+      // SWB
       if (briefcase.briefcaseId === iModel.briefcaseId && briefcase.contextId === testContextId && briefcase.iModelId === readWriteTestIModelId)
         found = true;
     }
@@ -174,8 +178,11 @@ describe("IModelWriteTest (#integration)", () => {
     const secondUserRequestContext = await IModelTestUtils.getUserContext(TestUserType.SuperManager);
     const neutralObserverUserRequestContext = await IModelTestUtils.getUserContext(TestUserType.Manager);
 
+    // SWB
     const firstIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: firstUserRequestContext, contextId: testContextId, iModelId: readWriteTestIModelId });
+    // SWB
     const secondIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: secondUserRequestContext, contextId: testContextId, iModelId: readWriteTestIModelId });
+    // SWB
     const neutralObserverIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: neutralObserverUserRequestContext, contextId: testContextId, iModelId: readWriteTestIModelId });
     assert.notEqual(firstIModel, secondIModel);
     assert.equal(firstIModel.nativeDb.getBriefcaseId(), firstIModel.briefcaseId);
@@ -327,6 +334,7 @@ describe("IModelWriteTest (#integration)", () => {
 
   // Does not work with mocks
   it("should build concurrency control request", async () => {
+    // SWB
     const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: managerRequestContext, contextId: testContextId, iModelId: readWriteTestIModelId });
 
     const el: Element = iModel.elements.getRootSubject();
@@ -354,8 +362,10 @@ describe("IModelWriteTest (#integration)", () => {
 
     // Create a new empty iModel on the Hub & obtain a briefcase
     timer = new Timer("create iModel");
+    // SWB
     const rwIModelId = await IModelHost.hubAccess.createIModel({ requestContext: adminRequestContext, contextId: testContextId, iModelName, description: "TestSubject" });
     assert.isNotEmpty(rwIModelId);
+    // SWB
     const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: adminRequestContext, contextId: testContextId, iModelId: rwIModelId });
     timer.end();
 
@@ -410,11 +420,14 @@ describe("IModelWriteTest (#integration)", () => {
     const iModelName = HubUtility.generateUniqueName("ConcurrencyControlBulkModeTest");
     const deleteIModel = await HubUtility.queryIModelByName(adminRequestContext, testContextId, iModelName);
     if (undefined !== deleteIModel)
+    // SWB
       await IModelHost.hubAccess.deleteIModel({ requestContext: adminRequestContext, contextId: testContextId, iModelId: deleteIModel });
 
     // Create a new empty iModel on the Hub & obtain a briefcase
+    // SWB
     const rwIModelId = await IModelHost.hubAccess.createIModel({ requestContext: adminRequestContext, contextId: testContextId, iModelName, description: "TestSubject" });
     assert.isNotEmpty(rwIModelId);
+    // SWB
     const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: adminRequestContext, contextId: testContextId, iModelId: rwIModelId });
 
     const dictionary = rwIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
@@ -474,15 +487,19 @@ describe("IModelWriteTest (#integration)", () => {
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "CodesUndoRedoPushTest";
+    // SWB
     const iModelId = await IModelHost.hubAccess.queryIModelByName({ requestContext: adminRequestContext, contextId: testContextId, iModelName });
     if (iModelId)
+    // SWB
       await IModelHost.hubAccess.deleteIModel({ requestContext: adminRequestContext, contextId: testContextId, iModelId });
     timer.end();
 
     // Create a new empty iModel on the Hub & obtain a briefcase
     timer = new Timer("create iModel");
+    // SWB
     const rwIModelId = await IModelHost.hubAccess.createIModel({ requestContext: adminRequestContext, contextId: testContextId, iModelName, description: "TestSubject" });
     assert.isNotEmpty(rwIModelId);
+    // SWB
     const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: adminRequestContext, contextId: testContextId, iModelId: rwIModelId });
     timer.end();
 
@@ -542,14 +559,18 @@ describe("IModelWriteTest (#integration)", () => {
     const adminRequestContext = await IModelTestUtils.getUserContext(TestUserType.SuperManager);
     let timer = new Timer("delete iModels");
     const iModelName = "LocksConflictTest";
+    // SWB
     const iModelId = await IModelHost.hubAccess.queryIModelByName({ requestContext: adminRequestContext, contextId: testContextId, iModelName });
     if (iModelId)
+    // SWB
       await IModelHost.hubAccess.deleteIModel({ requestContext: adminRequestContext, contextId: testContextId, iModelId });
     timer.end();
 
     timer = new Timer("create iModel");
+    // SWB
     const rwIModelId = await IModelHost.hubAccess.createIModel({ requestContext: adminRequestContext, contextId: testContextId, iModelName, description: "TestSubject" });
 
+    // SWB
     const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: adminRequestContext, contextId: testContextId, iModelId: rwIModelId });
     adminRequestContext.enter();
     timer.end();
@@ -658,13 +679,17 @@ describe("IModelWriteTest (#integration)", () => {
     const adminRequestContext = await IModelTestUtils.getUserContext(TestUserType.SuperManager);
     let timer = new Timer("delete iModels");
     const iModelName = "LocksConflictTestII";
+    // SWB
     const iModelId = await IModelHost.hubAccess.queryIModelByName({ requestContext: adminRequestContext, contextId: testContextId, iModelName });
     if (iModelId)
+    // SWB
       await IModelHost.hubAccess.deleteIModel({ requestContext: adminRequestContext, contextId: testContextId, iModelId });
     timer.end();
 
     timer = new Timer("create iModel");
+    // SWB
     const rwIModelId = await IModelHost.hubAccess.createIModel({ requestContext: adminRequestContext, contextId: testContextId, iModelName, description: "TestSubject" });
+    // SWB
     const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: adminRequestContext, contextId: testContextId, iModelId: rwIModelId });
     adminRequestContext.enter();
     timer.end();
@@ -691,6 +716,7 @@ describe("IModelWriteTest (#integration)", () => {
 
     //  --- Briefcase 2
     //  Have another briefcase take out an exclusive lock on element #1
+    // SWB
     const briefcase2 = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: superRequestContext, contextId: testContextId, iModelId: rwIModelId });
     superRequestContext.enter();
 
@@ -714,15 +740,19 @@ describe("IModelWriteTest (#integration)", () => {
     const adminRequestContext = await IModelTestUtils.getUserContext(TestUserType.SuperManager);
     let timer = new Timer("delete iModels");
     const iModelName = "CodesConflictTest";
+    // SWB
     const iModelId = await IModelHost.hubAccess.queryIModelByName({ requestContext: adminRequestContext, contextId: testContextId, iModelName });
     if (iModelId)
+    // SWB
       await IModelHost.hubAccess.deleteIModel({ requestContext: adminRequestContext, contextId: testContextId, iModelId });
     timer.end();
 
     timer = new Timer("create iModel");
+    // SWB
     const rwIModelId = await IModelHost.hubAccess.createIModel({ requestContext: adminRequestContext, contextId: testContextId, iModelName, description: "TestSubject" });
     assert.isNotEmpty(rwIModelId);
 
+    // SWB
     const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: adminRequestContext, contextId: testContextId, iModelId: rwIModelId });
     timer.end();
 
@@ -767,8 +797,10 @@ describe("IModelWriteTest (#integration)", () => {
 
     // Create a new empty iModel on the Hub & obtain a briefcase
     let timer = new Timer("create iModel");
+    // SWB
     const rwIModelId = await IModelHost.hubAccess.createIModel({ requestContext: adminRequestContext, contextId: testContextId, iModelName, description: "TestSubject" });
     assert.isNotEmpty(rwIModelId);
+    // SWB
     const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: adminRequestContext, contextId: testContextId, iModelId: rwIModelId });
     timer.end();
 
@@ -864,16 +896,19 @@ describe("IModelWriteTest (#integration)", () => {
     timer.end();
 
     // Open a readonly copy of the iModel
+    // SWB
     const roIModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext: adminRequestContext, contextId: testContextId, iModelId: rwIModelId });
     assert.exists(roIModel);
 
     await IModelTestUtils.closeAndDeleteBriefcaseDb(adminRequestContext, rwIModel);
     roIModel.close();
 
+    // SWB
     await IModelHost.hubAccess.deleteIModel({ requestContext: adminRequestContext, contextId: testContextId, iModelId: rwIModelId });
   });
 
   it("Run plain SQL against fixed version connection", async () => {
+    // SWB
     const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: managerRequestContext, contextId: testContextId, iModelId: readWriteTestIModelId });
     try {
       iModel.withPreparedSqliteStatement("CREATE TABLE Test(Id INTEGER PRIMARY KEY, Name TEXT NOT NULL, Code INTEGER)", (stmt: SqliteStatement) => {
@@ -946,6 +981,7 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it("Run plain SQL against readonly connection", async () => {
+    // SWB
     const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext: managerRequestContext, contextId: testContextId, iModelId: readWriteTestIModelId });
 
     iModel.withPreparedSqliteStatement("SELECT Name,StrData FROM be_Prop WHERE Namespace='ec_Db'", (stmt: SqliteStatement) => {

@@ -35,6 +35,7 @@ describe("PresentationRpcInterface tests", () => {
     await Presentation.initialize();
 
     const iModelId = testContext.iModelWithChangesets!.iModelId;
+    // SWB
     const contextId = testContext.iModelWithChangesets!.contextId;
     const accessToken = testContext.adminUserAccessToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);

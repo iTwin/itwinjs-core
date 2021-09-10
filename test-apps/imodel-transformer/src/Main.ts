@@ -22,6 +22,7 @@ import { loggerCategory, Transformer, TransformerOptions } from "./Transformer";
 interface CommandLineArgs {
   hub?: string;
   sourceFile?: string;
+  // SWB
   sourceContextId?: GuidString;
   sourceIModelId?: GuidString;
   sourceIModelName?: string;
@@ -33,6 +34,7 @@ interface CommandLineArgs {
   targetFile: string;
   /** location to create a new target file */
   targetDestination: string;
+  // SWB
   targetContextId?: GuidString;
   targetIModelId?: GuidString;
   targetIModelName?: string;
@@ -137,9 +139,12 @@ void (async () => {
       assert(requestContext instanceof AuthorizedClientRequestContext);
       assert(undefined !== iTwinAccessClient);
       assert(undefined !== args.sourceIModelId);
+      // SWB
       const sourceContextId = Guid.normalize(args.sourceContextId);
+      // SWB
       const sourceIModelId = Guid.normalize(args.sourceIModelId);
       let sourceEndVersion = IModelVersion.latest();
+      // SWB
       Logger.logInfo(loggerCategory, `sourceContextId=${sourceContextId}`);
       Logger.logInfo(loggerCategory, `sourceIModelId=${sourceIModelId}`);
       if (args.sourceStartChangesetIndex || args.sourceStartChangesetId) {
@@ -177,6 +182,7 @@ void (async () => {
       }
 
       sourceDb = await IModelHubUtils.downloadAndOpenBriefcase(requestContext, {
+        // SWB
         contextId: sourceContextId,
         iModelId: sourceIModelId,
         asOf: sourceEndVersion.toJSON(),
@@ -201,17 +207,20 @@ void (async () => {
       // target is from iModelHub
       assert(requestContext instanceof AuthorizedClientRequestContext);
       assert(undefined !== args.targetIModelId || undefined !== args.targetIModelName, "must be able to identify the iModel by either name or id");
+      // SWB
       const targetContextId = Guid.normalize(args.targetContextId);
       let targetIModelId = args.targetIModelId ? Guid.normalize(args.targetIModelId) : undefined;
       if (undefined !== args.targetIModelName) {
         assert(undefined === targetIModelId, "should not specify targetIModelId if targetIModelName is specified");
         targetIModelId = await IModelHubUtils.queryIModelId(requestContext, targetContextId, args.targetIModelName);
         if ((args.clean) && (undefined !== targetIModelId)) {
+          // SWB
           await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: targetContextId, iModelId: targetIModelId });
           targetIModelId = undefined;
         }
         if (undefined === targetIModelId) {
           // create target iModel if it doesn't yet exist or was just cleaned/deleted above
+          // SWB
           targetIModelId = await IModelHost.hubAccess.createIModel({ requestContext, contextId: targetContextId, iModelName: args.targetIModelName });
         }
       }
@@ -232,6 +241,7 @@ void (async () => {
       }
 
       targetDb = await IModelHubUtils.downloadAndOpenBriefcase(requestContext, {
+        // SWB
         contextId: targetContextId,
         iModelId: targetIModelId,
       });

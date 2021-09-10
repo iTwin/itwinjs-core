@@ -69,6 +69,7 @@ function getChangeSummaryAsJson(iModel: BriefcaseDb, changeSummaryId: string) {
 
 describe("ChangeSummary (#integration)", () => {
   let requestContext: AuthorizedBackendRequestContext;
+  // SWB
   let contextId: string;
   let iModelId: GuidString;
 
@@ -76,6 +77,7 @@ describe("ChangeSummary (#integration)", () => {
     HubUtility.allowHubBriefcases = true;
     requestContext = await IModelTestUtils.getUserContext(TestUserType.Regular);
 
+    // SWB
     contextId = await HubUtility.getTestContextId(requestContext);
     iModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.readOnly);
 
@@ -374,6 +376,7 @@ describe("ChangeSummary (#integration)", () => {
 
     // Recreate iModel
     const managerRequestContext = await IModelTestUtils.getUserContext(TestUserType.Manager);
+    // SWB
     const testContextId = await HubUtility.getTestContextId(managerRequestContext);
     const testIModelId = await HubUtility.recreateIModel(managerRequestContext, testContextId, iModelName);
 
@@ -381,6 +384,7 @@ describe("ChangeSummary (#integration)", () => {
     setupTest(testIModelId);
 
     // Populate the iModel with 3 elements
+    // SWB
     const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: managerRequestContext, contextId: testContextId, iModelId: testIModelId });
     iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
     const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(iModel, IModelTestUtils.getUniqueModelCode(iModel, "TestPhysicalModel"), true);
@@ -447,6 +451,7 @@ describe("ChangeSummary (#integration)", () => {
       await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
     }
 
+    // SWB
     await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: testContextId, iModelId: testIModelId });
   });
 
@@ -501,6 +506,7 @@ describe("ChangeSummary (#integration)", () => {
   it("Detaching and reattaching change cache", async () => {
     setupTest(iModelId);
     const changeSets = await IModelHost.hubAccess.queryChangesets({ requestContext, iModelId });
+    // SWB
     const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId, iModelId, asOf: IModelVersion.first().toJSON(), briefcaseId: 0 });
     try {
       for (const changeSet of changeSets) {
@@ -642,6 +648,7 @@ describe("ChangeSummary (#integration)", () => {
 
     const first = (await IModelHost.hubAccess.getChangesetFromVersion({ requestContext, iModelId, version: IModelVersion.latest() })).index;
     try {
+      // SWB
       await ChangeSummaryManager.createChangeSummaries({ requestContext, contextId, iModelId, range: { first, end: 0 } });
     } catch (err) {
       errorThrown = true;

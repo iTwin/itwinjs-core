@@ -105,6 +105,7 @@ export interface LocalBriefcaseProps {
   fileName: string;
 
   /** Context (Project or Asset) of the iModel. */
+  // SWB
   contextId: GuidString;
 
   /** The iModelId. */
@@ -127,6 +128,7 @@ export interface LocalBriefcaseProps {
  */
 export interface RequestNewBriefcaseProps {
   /** Context (Project or Asset) that the iModel belongs to. */
+  // SWB
   contextId: GuidString;
 
   /** The iModelId for the new briefcase. */

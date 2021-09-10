@@ -121,6 +121,7 @@ export class BriefcaseManager {
             const fileName = path.join(bcPath, briefcaseName);
             const fileSize = IModelJsFs.lstatSync(fileName)?.size ?? 0;
             const db = IModelDb.openDgnDb({ path: fileName }, OpenMode.Readonly);
+            // SWB
             briefcaseList.push({ fileName, contextId: db.queryProjectGuid(), iModelId: db.getDbGuid(), briefcaseId: db.getBriefcaseId(), changeset: db.getParentChangeset(), fileSize });
             db.closeIModel();
           } catch (_err) {
@@ -185,6 +186,7 @@ export class BriefcaseManager {
       localFile: fileName,
       checkpoint: {
         requestContext,
+        // SWB
         contextId: request.contextId,
         iModelId: request.iModelId,
         changeset,
@@ -198,6 +200,7 @@ export class BriefcaseManager {
       fileName,
       briefcaseId,
       iModelId: request.iModelId,
+      // SWB
       contextId: request.contextId,
       changeset: args.checkpoint.changeset,
       fileSize,
@@ -556,6 +559,7 @@ export class BriefcaseManager {
   /** Create an iModel on iModelHub
    * @deprecated use IModelHost.hubAccess.createIModel
    */
+  // SWB
   public static async create(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: GuidString, args: CreateIModelProps): Promise<GuidString> {
     return IModelHost.hubAccess.createIModel({ requestContext, contextId, iModelName, description: args.rootSubject.description });
   }
@@ -572,6 +576,7 @@ export class BriefcaseManager {
     const telemetryEvent = new TelemetryEvent(
       "imodeljs-backend - Open iModel",
       "7a6424d1-2114-4e89-b13b-43670a38ccd4", // Feature: "iModel Use"
+      // SWB
       token.contextId,
       token.iModelId,
       token.changeset?.id,

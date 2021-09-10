@@ -399,7 +399,9 @@ export class IModelsHandler {
    * @param contextId Id of the context.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    */
+  // SWB
   private getRelativeUrl(contextId: string, iModelId?: GuidString) {
+    // SWB
     return `/Repositories/Context--${this._handler.formatContextIdForUrl(contextId)}/ContextScope/iModel/${iModelId || ""}`;
   }
 
@@ -411,10 +413,13 @@ export class IModelsHandler {
    * @throws [WsgError]($itwin-client) with [WSStatus.InstanceNotFound]($bentley) if [[InstanceIdQuery.byId]] is used and an HubIModel with the specified id could not be found.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
+  // SWB
   public async get(requestContext: AuthorizedClientRequestContext, contextId: string, query: IModelQuery = new IModelQuery()): Promise<HubIModel[]> {
     requestContext.enter();
+    // SWB
     Logger.logInfo(loggerCategory, `Started querying iModels in context`, () => ({ contextId }));
     ArgumentCheck.defined("requestContext", requestContext);
+    // SWB
     ArgumentCheck.defined("contextId", contextId); // contextId is a GUID for iModelHub and a JSON representation of an IModelBankAccessContext for iModelBank.
 
     const imodels = await this._handler.getInstances<HubIModel>(requestContext, HubIModel, this.getRelativeUrl(contextId, query.getId()), query.getQueryOptions());
@@ -432,10 +437,12 @@ export class IModelsHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have DeleteiModel permission.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
+  // SWB
   public async delete(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: GuidString): Promise<void> {
     requestContext.enter();
     Logger.logInfo(loggerCategory, "Started deleting iModel", () => ({ iModelId, contextId }));
     ArgumentCheck.defined("requestContext", requestContext);
+    // SWB
     ArgumentCheck.validGuid("contextId", contextId);
     ArgumentCheck.validGuid("iModelId", iModelId);
 
@@ -460,6 +467,7 @@ export class IModelsHandler {
    * @param iModelTemplate iModel template.
    * @param iModelType iModel type.
    */
+  // SWB
   private async createIModelInstance(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, description?: string, iModelTemplate?: string, iModelType?: IModelType, extent?: number[]): Promise<HubIModel> {
     requestContext.enter();
     Logger.logInfo(loggerCategory, `Creating iModel with name ${iModelName}`, () => ({ contextId }));
@@ -547,6 +555,7 @@ export class IModelsHandler {
    * @param imodel iModel instance that will be returned if initialization is successful.
    * @param timeOutInMilliseconds Maximum time to wait for the initialization.
    */
+  // SWB
   private async waitForInitialization(requestContext: AuthorizedClientRequestContext, contextId: string, imodel: HubIModel, timeOutInMilliseconds: number): Promise<HubIModel> {
     requestContext.enter();
     const errorMessage = "iModel initialization failed";
@@ -619,10 +628,12 @@ export class IModelsHandler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    * @internal
    */
+  // SWB
   public async create(requestContext: AuthorizedClientRequestContext, contextId: string, name: string, createOptions?: IModelCreateOptions): Promise<HubIModel> {
     requestContext.enter();
     Logger.logInfo(loggerCategory, "Creating iModel", () => ({ contextId }));
     ArgumentCheck.defined("requestContext", requestContext);
+    // SWB
     ArgumentCheck.validGuid("contextId", contextId);
     ArgumentCheck.defined("name", name);
 
@@ -676,10 +687,12 @@ export class IModelsHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.iModelAlreadyExists]$(bentley) if iModel with specified name already exists.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
+  // SWB
   public async update(requestContext: AuthorizedClientRequestContext, contextId: string, imodel: HubIModel): Promise<HubIModel> {
     requestContext.enter();
     Logger.logInfo(loggerCategory, "Updating iModel", () => ({ contextId, iModelId: imodel.id }));
     ArgumentCheck.defined("requestContext", requestContext);
+    // SWB
     ArgumentCheck.validGuid("contextId", contextId);
 
     const updatedIModel = await this._handler.postInstance<HubIModel>(requestContext, HubIModel, this.getRelativeUrl(contextId, imodel.id), imodel);
@@ -747,6 +760,7 @@ export class IModelHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
+  // SWB
   public async get(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<HubIModel> {
     requestContext.enter();
 
@@ -768,6 +782,7 @@ export class IModelHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have DeleteiModel permission.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
+  // SWB
   public async delete(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<void> {
     const imodel = await this.get(requestContext, contextId);
     await this._handler.delete(requestContext, contextId, imodel.id!);
@@ -783,6 +798,7 @@ export class IModelHandler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    * @internal
    */
+  // SWB
   public async getInitializationState(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<InitializationState> {
     const imodel = await this.get(requestContext, contextId);
     return this._handler.getInitializationState(requestContext, imodel.id!);
@@ -800,6 +816,7 @@ export class IModelHandler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    * @internal
    */
+  // SWB
   public async create(requestContext: AuthorizedClientRequestContext, contextId: string, name: string, createOptions?: IModelCreateOptions): Promise<HubIModel> {
     requestContext.enter();
 
@@ -831,6 +848,7 @@ export class IModelHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.iModelAlreadyExists]$(bentley) if iModel with specified name already exists.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
+  // SWB
   public async update(requestContext: AuthorizedClientRequestContext, contextId: string, imodel: HubIModel): Promise<HubIModel> {
     return this._handler.update(requestContext, contextId, imodel);
   }
@@ -845,6 +863,7 @@ export class IModelHandler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    * @internal
    */
+  // SWB
   public async download(requestContext: AuthorizedClientRequestContext, contextId: string, path: string, progressCallback?: ProgressCallback): Promise<void> {
     const imodel = await this.get(requestContext, contextId);
     await this._handler.download(requestContext, imodel.id!, path, progressCallback);

@@ -54,6 +54,7 @@ export class WebAppRpcLogging {
   }
 
   private static findPathIds(path: string) {
+    // SWB
     let contextId = "";
     let iModelId = "";
 

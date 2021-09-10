@@ -23,6 +23,7 @@ describe("ApplyChangesets (#integration)", () => {
 
   // SWB
   const testOpen = async (requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: string) => {
+    // SWB
     const iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: projectId, iModelId });
     assert.isDefined(iModelDb);
     iModelDb.close();

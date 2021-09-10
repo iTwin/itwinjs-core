@@ -363,6 +363,7 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
 
     chai.expect(event).to.be.instanceof(IModelCreatedEvent);
     chai.assert(!!event!.iModelId);
+    // SWB
     chai.expect(event!.contextId).to.be.eq(assetId);
   });
 });

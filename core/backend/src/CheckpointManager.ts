@@ -30,6 +30,7 @@ export interface CheckpointProps {
   readonly expectV2?: boolean;
 
   /** Context (Project or Asset) that the iModel belongs to */
+  // SWB
   readonly contextId: GuidString;
 
   /** Id of the iModel */
@@ -214,6 +215,7 @@ export class CheckpointManager {
   public static async updateToRequestedVersion(request: DownloadRequest) {
     const checkpoint = request.checkpoint;
     const targetFile = request.localFile;
+    // SWB
     const traceInfo = { contextId: checkpoint.contextId, iModelId: checkpoint.iModelId, changeSetId: checkpoint.changeset.id };
     try {
       // Open checkpoint for write
@@ -278,6 +280,7 @@ export class CheckpointManager {
 
   /** checks a file's dbGuid & contextId for consistency, and updates the dbGuid when possible */
   public static validateCheckpointGuids(checkpoint: CheckpointProps, nativeDb: IModelJsNative.DgnDb) {
+    // SWB
     const traceInfo = { contextId: checkpoint.contextId, iModelId: checkpoint.iModelId };
 
     const dbChangeset = nativeDb.getParentChangeset();
@@ -294,8 +297,11 @@ export class CheckpointManager {
         nativeDb.saveLocalValue("parentChangeSet", JSON.stringify(dbChangeset));
     }
 
+    // SWB
     const dbContextGuid = Guid.normalize(nativeDb.queryProjectGuid());
+    // SWB
     if (dbContextGuid !== Guid.normalize(checkpoint.contextId))
+    // SWB
       throw new IModelError(IModelStatus.ValidationFailed, "ContextId was not properly set up in the checkpoint");
   }
 

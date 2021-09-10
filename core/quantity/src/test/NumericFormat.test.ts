@@ -30,6 +30,7 @@ describe("Numeric Formats tests:", () => {
     assert.isTrue(!format.hasUnits);
 
     const testQuantityData = [
+      // SWB What does context mean here
       { magnitude: -12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "-12.5417 ft" },
       { magnitude: 12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12.5417 ft" },
       { magnitude: 3000.99999999, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "3,001.0000 ft" },

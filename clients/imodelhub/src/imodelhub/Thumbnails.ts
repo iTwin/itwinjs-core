@@ -46,6 +46,7 @@ export class LargeThumbnail extends Thumbnail { }
  */
 export interface TipThumbnail {
   /** Id of the iModel's context ([[ITwin]]). */
+  // SWB
   contextId: string;
   /** Size of the [[Thumbnail]]. */
   size: ThumbnailSize;
@@ -91,7 +92,9 @@ export class ThumbnailHandler {
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param size Size of the thumbnail.
    */
+  // SWB
   private getRelativeContextUrl(contextId: string, iModelId: GuidString, size: ThumbnailSize) {
+    // SWB
     return `/Repositories/Context--${this._handler.formatContextIdForUrl(contextId)}/ContextScope/${size}Thumbnail/${iModelId.toString()}/$file`;
   }
 
@@ -108,6 +111,7 @@ export class ThumbnailHandler {
    * @param thumbnail SmallThumbnail, LargeThumbnail or TipThumbnail.
    */
   private isTipThumbnail(thumbnail: Thumbnail | TipThumbnail): thumbnail is TipThumbnail {
+    // SWB
     return (thumbnail as TipThumbnail).contextId !== undefined;
   }
 
@@ -145,10 +149,12 @@ export class ThumbnailHandler {
    * @param size Size of the thumbnail. Pass 'Small' for 400x250 PNG image, and 'Large' for a 800x500 PNG image.
    * @return String for the PNG image that includes the base64 encoded array of the image bytes.
    */
+  // SWB
   private async downloadTipThumbnail(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: GuidString, size: ThumbnailSize): Promise<string> {
     requestContext.enter();
     Logger.logInfo(loggerCategory, `Downloading tip ${size}Thumbnail`, () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
+    // SWB
     ArgumentCheck.validGuid("contextId", contextId);
     ArgumentCheck.validGuid("iModelId", iModelId);
 
@@ -199,6 +205,7 @@ export class ThumbnailHandler {
     ArgumentCheck.validGuid("iModelId", iModelId);
 
     if (this.isTipThumbnail(thumbnail)) {
+      // SWB
       return this.downloadTipThumbnail(requestContext, thumbnail.contextId, iModelId, thumbnail.size);
     }
 

@@ -47,6 +47,7 @@ export namespace IModelHubUtils {
     process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION = String(value);
   }
 
+  // SWB
   export async function queryIModelId(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string): Promise<GuidString | undefined> {
     return IModelHost.hubAccess.queryIModelByName({ requestContext, contextId, iModelName });
   }

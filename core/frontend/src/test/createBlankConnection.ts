@@ -11,6 +11,7 @@ import { BlankConnection } from "../IModelConnection";
 export function createBlankConnection(name = "test-blank-connection",
   location = Cartographic.fromDegrees(-75.686694, 40.065757, 0),
   extents = new Range3d(-1000, -1000, -100, 1000, 1000, 100),
+  // SWB
   contextId = Guid.createValue()): BlankConnection {
   return BlankConnection.create({ name, location, extents, contextId });
 }

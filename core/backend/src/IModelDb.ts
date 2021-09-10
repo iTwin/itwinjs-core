@@ -2179,6 +2179,7 @@ export class BriefcaseDb extends IModelDb {
   }
 
   /** The Guid that identifies the *context* that owns this iModel. */
+  // SWB
   public override get contextId(): GuidString { return super.contextId!; } // GuidString | undefined for the superclass, but required for BriefcaseDb
 
   /** Get the ConcurrencyControl for this iModel.
@@ -2287,6 +2288,7 @@ export class BriefcaseDb extends IModelDb {
     const token: IModelRpcProps = {
       key: file.key ?? Guid.createValue(),
       iModelId: nativeDb.getDbGuid(),
+      // SWB
       contextId: nativeDb.queryProjectGuid(),
       changeset,
     };
@@ -2514,6 +2516,7 @@ export class SnapshotDb extends IModelDb {
    */
   public static openCheckpointV1(fileName: string, checkpoint: CheckpointProps) {
     const snapshot = this.openFile(fileName, { key: CheckpointManager.getKey(checkpoint) });
+    // SWB
     snapshot._contextId = checkpoint.contextId;
     return snapshot;
   }
@@ -2533,6 +2536,7 @@ export class SnapshotDb extends IModelDb {
     // NOTE: Currently the key contains a ':' which can not be part of a filename on windows, so it can not be used as the tempFileBase.
     const tempFileBase = join(IModelHost.cacheDir, `${checkpoint.iModelId}\$${checkpoint.changeset.id}`); // temp files for this checkpoint should go in the cacheDir.
     const snapshot = SnapshotDb.openFile(filePath, { lazyBlockCache: true, key, tempFileBase });
+    // SWB
     snapshot._contextId = checkpoint.contextId;
     try {
       CheckpointManager.validateCheckpointGuids(checkpoint, snapshot.nativeDb);
@@ -2552,6 +2556,7 @@ export class SnapshotDb extends IModelDb {
    */
   public override async reattachDaemon(requestContext: AuthorizedClientRequestContext): Promise<void> {
     if (undefined !== this._reattachDueTimestamp && this._reattachDueTimestamp <= Date.now()) {
+      // SWB
       const { expiryTimestamp } = await V2CheckpointManager.attach({ requestContext, contextId: this.contextId!, iModelId: this.iModelId, changeset: this.changeset });
       this.setReattachDueTimestamp(expiryTimestamp);
     }
@@ -2585,6 +2590,7 @@ export class SnapshotDb extends IModelDb {
  * optionally choose to upgrade to iModelHub.
  *
  * Some additional details. Standalone iModels:
+  // SWB
  * - always have [Guid.empty]($bentley) for their contextId (they are "unassociated" files)
  * - always have BriefcaseId === [BriefcaseIdValue.Unassigned]($common)
  * - are connected to the frontend via [BriefcaseConnection.openStandalone]($frontend)
@@ -2609,6 +2615,7 @@ export class StandaloneDb extends IModelDb {
   }
 
   private constructor(nativeDb: IModelJsNative.DgnDb, key: string) {
+    // SWB
     const iModelRpcProps: IModelRpcProps = { key, iModelId: nativeDb.getDbGuid(), contextId: Guid.empty };
     super(nativeDb, iModelRpcProps);
     this._openMode = nativeDb.isReadonly() ? OpenMode.Readonly : OpenMode.ReadWrite;

@@ -53,6 +53,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
   }, []);
 
   const { loadingSources, sources, activeViewport, backgroundLayers, overlayLayers, mapTypesOptions } = useSourceMapContext();
+  // SWB
   const contextId = activeViewport?.iModel?.contextId;
   const iModelId = activeViewport?.iModel?.iModelId;
 

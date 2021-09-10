@@ -14,6 +14,7 @@ import { IModelApp } from "../IModelApp";
  * @beta
  */
 export interface ExtensionProps {
+  // SWB
   contextId: string;
   extensionName: string;
   version: string;

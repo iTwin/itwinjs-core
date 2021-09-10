@@ -45,6 +45,7 @@ describe("Render Compatibility", () => {
     expect(canvas).to.not.be.undefined;
     // force canvas to fail context creation if webgl2 is requested
     const originalMethod = canvas!.getContext.bind(canvas);
+    // SWB
     (canvas as any).getContext = (contextId: any, args?: any) => {
       if (contextId === "webgl2")
         return null;

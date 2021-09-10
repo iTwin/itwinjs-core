@@ -13,6 +13,7 @@ import { SettingsResult, SettingsStatus } from "@bentley/product-settings-client
 
 chai.should();
 describe("MapLayerSettingsService (#integration)", () => {
+  // SWB
   let contextId: GuidString;
   let iModelId: GuidString;
   let requestContext: AuthorizedClientRequestContext;

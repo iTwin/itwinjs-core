@@ -85,6 +85,7 @@ export class TestChangeSetUtility {
     if (!this._iModel)
       throw new Error("Must first call createTestIModel");
     await IModelTestUtils.closeAndDeleteBriefcaseDb(this._requestContext, this._iModel);
+    // SWB
     await IModelHost.hubAccess.deleteIModel({ requestContext: this._requestContext, contextId: this.projectId, iModelId: this.iModelId });
   }
 }

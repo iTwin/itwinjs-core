@@ -24,6 +24,7 @@ describe("SnapshotDb.reattachDaemon", () => {
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
     const requestContext = {} as any;
 
+    // SWB
     const checkpoint = await SnapshotDb.openCheckpointV2({ requestContext, contextId: "fakeContextId", iModelId: "fake1", changeset: { id: "fakeChangeSetId" } });
     expect(openDgnDbStub.calledOnce).to.be.true;
     expect(openDgnDbStub.firstCall.firstArg.path).to.equal("testFilePath1");
@@ -34,6 +35,7 @@ describe("SnapshotDb.reattachDaemon", () => {
 
     expect(attachStub.calledTwice).to.be.true;
     expect(attachStub.secondCall.firstArg.requestContext).to.equal(requestContext);
+    // SWB
     expect(attachStub.secondCall.firstArg.contextId).to.equal("fakeContextId");
     expect(attachStub.secondCall.firstArg.iModelId).to.equal("fakeIModelId");
     expect(attachStub.secondCall.firstArg.changeset.id).to.equal("fakeChangeSetId");
@@ -51,6 +53,7 @@ describe("SnapshotDb.reattachDaemon", () => {
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
     const requestContext = {} as any;
 
+    // SWB
     const checkpoint = await SnapshotDb.openCheckpointV2({ requestContext, contextId: "fakeContextId", iModelId: "fake1", changeset: { id: "fakeChangeSetId" } });
     expect(openDgnDbStub.calledOnce).to.be.true;
     expect(openDgnDbStub.firstCall.firstArg.path).to.equal("testFilePath1");
@@ -72,6 +75,7 @@ describe("SnapshotDb.reattachDaemon", () => {
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
     const requestContext = {} as any;
 
+    // SWB
     const snapshot = SnapshotDb.openCheckpointV1("fakeFilePath", { requestContext, contextId: "fakeContextId", iModelId: "fake1", changeset: { id: "fakeChangeSetId" } });
     const nowStub = sinon.stub(Date, "now");
     await snapshot.reattachDaemon({} as any);

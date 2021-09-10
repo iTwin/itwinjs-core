@@ -159,6 +159,7 @@ export class BriefcaseConnection extends IModelConnection {
   public override isBriefcaseConnection(): this is BriefcaseConnection { return true; }
 
   /** The Guid that identifies the *context* that owns this iModel. */
+  // SWB
   public override get contextId(): GuidString { return super.contextId!; } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
 
   /** The Guid that identifies this iModel. */
@@ -210,6 +211,7 @@ export class BriefcaseConnection extends IModelConnection {
   }
 
   private requireTimeline() {
+    // SWB
     if (this.contextId === Guid.empty)
       throw new IModelError(IModelStatus.WrongIModel, "iModel has no timeline");
   }

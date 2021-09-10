@@ -25,6 +25,7 @@ function mockDownloadThumbnail(requestPath: string, size: ThumbnailSize) {
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, { response });
 }
 
+// SWB
 function mockDownloadLatestThumbnail(_contextId: string, imodelId: GuidString, size: ThumbnailSize) {
   const requestPath = utils.createRequestUrl(ScopeType.Context, _contextId, `${size}Thumbnail`, `${imodelId}/$file`);
   mockDownloadThumbnail(requestPath, size);

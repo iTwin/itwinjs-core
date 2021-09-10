@@ -46,6 +46,7 @@ export interface BlankConnectionProps {
   /** An offset to be applied to all spatial coordinates. */
   globalOrigin?: XYZProps;
   /** The optional Guid that identifies the *context* associated with the [[BlankConnection]]. */
+  // SWB
   contextId?: GuidString;
 }
 
@@ -612,7 +613,9 @@ export class BlankConnection extends IModelConnection {
   /** The Guid that identifies the *context* for this BlankConnection.
    * @note This can also be set via the [[create]] method using [[BlankConnectionProps.contextId]].
    */
+  // SWB
   public override get contextId(): GuidString | undefined { return this._contextId; }
+  // SWB
   public override set contextId(contextId: GuidString | undefined) { this._contextId = contextId; }
   /** A BlankConnection does not have an associated iModel, so its `iModelId` is alway `undefined`. */
   public override get iModelId(): undefined { return undefined; } // GuidString | undefined for the superclass, but always undefined for BlankConnection
@@ -633,6 +636,7 @@ export class BlankConnection extends IModelConnection {
       globalOrigin: props.globalOrigin,
       ecefLocation: props.location instanceof Cartographic ? EcefLocation.createFromCartographicOrigin(props.location) : props.location,
       key: "",
+      // SWB
       contextId: props.contextId,
     });
   }

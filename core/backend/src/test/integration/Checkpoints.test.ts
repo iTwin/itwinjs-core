@@ -20,6 +20,7 @@ import { HubUtility } from "./HubUtility";
 describe("Checkpoints (#integration)", () => {
   let requestContext: AuthorizedBackendRequestContext;
   let testIModelId: GuidString;
+  // SWB
   let testContextId: GuidString;
   let testChangeSet: ChangesetProps;
 
@@ -68,12 +69,14 @@ describe("Checkpoints (#integration)", () => {
   it("should be able to open and read V2 checkpoint", async () => {
     const iModel = await SnapshotDb.openCheckpointV2({
       requestContext,
+      // SWB
       contextId: testContextId,
       iModelId: testIModelId,
       changeset: testChangeSet,
     });
     assert.equal(iModel.getGuid(), testIModelId);
     assert.equal(iModel.changeset.id, testChangeSet.id);
+    // SWB
     assert.equal(iModel.contextId, testContextId);
     assert.equal(iModel.rootSubject.name, "Stadium Dataset 1");
     let numModels = await iModel.queryRowCount("SELECT * FROM bis.model");

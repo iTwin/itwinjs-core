@@ -76,6 +76,7 @@ export class RpcBriefcaseUtility {
 
     // no local briefcase available. Download one and open it.
     const request: RequestNewBriefcaseProps = {
+      // SWB
       contextId: tokenProps.contextId!,
       iModelId,
       briefcaseId: args.syncMode === SyncMode.PullOnly ? 0 : undefined, // if briefcaseId is undefined, we'll acquire a new one.
@@ -132,6 +133,7 @@ export class RpcBriefcaseUtility {
 
     const checkpoint: CheckpointProps = {
       iModelId: tokenProps.iModelId!,
+      // SWB
       contextId: tokenProps.contextId!,
       changeset: tokenProps.changeset!,
       requestContext,

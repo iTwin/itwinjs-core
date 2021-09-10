@@ -57,6 +57,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
   }
 
   // gets the portion of the Url that encapsulates the type of setting requested.
+  // SWB
   private getUrlOptions(forRead: boolean, settingNamespace: string | undefined, settingName: string | undefined, userSpecific: boolean, applicationSpecific: boolean, shared: boolean, contextId?: string, iModelId?: string) {
 
     //  /Context/{ContextId}/Settings

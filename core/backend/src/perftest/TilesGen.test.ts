@@ -33,6 +33,7 @@ interface TileResult {
 }
 
 interface ConfigData {
+  // SWB
   contextId: string;
   iModelName: string;
   changesetId: string;
@@ -126,9 +127,11 @@ async function generateIModelDbTiles(requestContext: AuthorizedClientRequestCont
   if (config.localPath) {
     iModelDb = StandaloneDb.openFile(config.localPath, OpenMode.Readonly);
   } else {
+    // SWB
     const iModelId = await HubUtility.queryIModelIdByName(requestContext, config.contextId, config.iModelName);
     const version: IModelVersion = config.changesetId ? IModelVersion.asOfChangeSet(config.changesetId) : IModelVersion.latest();
 
+    // SWB
     iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: config.contextId, iModelId, asOf: version.toJSON() });
   }
   assert.exists(iModelDb.isOpen, `iModel "${config.iModelName}" not opened`);
@@ -197,7 +200,9 @@ describe("TilesGenerationPerformance", () => {
 
   before(async () => {
     assert.isDefined(config.regionId, "No Region defined");
+    // SWB
     assert.isDefined(config.contextId, "No ContextId defined");
+    // SWB
     imodels.forEach((element) => element.contextId = config.contextId);
 
     IModelTestUtils.setupLogging();

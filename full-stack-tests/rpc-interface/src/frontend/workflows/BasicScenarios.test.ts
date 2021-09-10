@@ -22,6 +22,7 @@ describe("Basic Scenarios", async () => {
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
   });
 
+  // SWB
   async function openIModelAndQueryPage(contextId: string, iModelId: string) {
     const iModel = await CheckpointConnection.openRemote(contextId, iModelId);
     expect(iModel).to.exist;
@@ -34,6 +35,7 @@ describe("Basic Scenarios", async () => {
   }
 
   it("should successfully open a new IModel with changesets for read and Get Properties for an Element TestCase:819342", async () => {
+    // SWB
     const contextId = testContext.contextId;
 
     const iModelId = testContext.iModelWithChangesets!.iModelId;
@@ -42,6 +44,7 @@ describe("Basic Scenarios", async () => {
 
   // imodeljs does not allow this -- changesetid must be non-empty for routing purposes.
   it.skip("should successfully open a new IModel without changesets for read and Get Properties for an Element TestCase:872675", async () => {
+    // SWB
     const contextId = testContext.contextId;
 
     const iModelId = testContext.iModelWithChangesets!.iModelId;
@@ -64,6 +67,7 @@ describe("Basic Scenarios", async () => {
         for the second connection.
   it("should not affect other users when iModel is closed TestCase:819344 #orchestrator", async () => {
     const iModelId = testContext.iModelWithChangesets.iModelId;
+  // SWB
     const contextId = testContext.iModelWithChangesets.contextId;
     const openMode = OpenMode.Readonly;
 

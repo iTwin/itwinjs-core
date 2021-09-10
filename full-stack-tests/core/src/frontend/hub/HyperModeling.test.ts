@@ -30,6 +30,7 @@ describe("HyperModeling (#integration)", () => {
     await HyperModeling.initialize();
     imodel = await SnapshotConnection.openFile(TestUtility.testSnapshotIModels.mirukuru);
 
+    // SWB
     const testContextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
     const testIModelId = await TestUtility.queryIModelIdbyName(testContextId, TestUtility.testIModelNames.sectionDrawingLocations);
 

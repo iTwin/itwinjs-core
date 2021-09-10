@@ -19,6 +19,7 @@ export class TestContext {
   public adminUserAccessToken!: AccessToken;
 
   public iModelWithChangesets?: IModelSession;
+  // SWB
   public contextId?: string;
 
   public settings: Settings;

@@ -215,6 +215,7 @@ export class NativeApp {
     this._isValid = false;
   }
 
+  // SWB
   public static async requestDownloadBriefcase(contextId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions,
     asOf: IModelVersion = IModelVersion.latest(), progress?: ProgressCallback): Promise<BriefcaseDownloader> {
 

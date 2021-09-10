@@ -1905,6 +1905,7 @@ describe("iModel", () => {
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
     const iModelId = snapshot.getGuid();
+    // SWB
     const contextId = Guid.createValue();
     const changeset = IModelTestUtils.generateChangeSetId();
     snapshot.nativeDb.saveProjectGuid(Guid.normalize(contextId));
@@ -1937,6 +1938,7 @@ describe("iModel", () => {
     const checkpoint = await SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId, iModelId, changeset });
     const props = checkpoint.getRpcProps();
     assert.equal(props.iModelId, iModelId);
+    // SWB
     assert.equal(props.contextId, contextId);
     assert.equal(props.changeset?.id, changeset.id);
     assert.equal(commandStub.callCount, 1);
@@ -1957,6 +1959,7 @@ describe("iModel", () => {
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
     const iModelId = Guid.createValue();  // This is wrong - it should be `snapshot.getGuid()`!
+    // SWB
     const contextId = Guid.createValue();
     const changeset = IModelTestUtils.generateChangeSetId();
     snapshot.nativeDb.saveProjectGuid(Guid.normalize(contextId));
@@ -1986,6 +1989,7 @@ describe("iModel", () => {
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
 
     process.env.BLOCKCACHE_DIR = ""; // try without setting daemon dir
+    // SWB
     let error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.BadRequest, error); // bad request because daemon dir wasn't set
 
@@ -2001,10 +2005,12 @@ describe("iModel", () => {
     sinon.stub(IModelHubBackend.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
 
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
+    // SWB
     let error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.NotFound, error);
 
     hubMock.callsFake(async () => [{} as any]);
+    // SWB
     error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.NotFound, error);
   });
@@ -2039,6 +2045,7 @@ describe("iModel", () => {
     assert.equal(standaloneDb1.elements.getRootSubject().code.value, standaloneRootSubjectName);
     assert.isTrue(standaloneDb1.isOpen);
     assert.isTrue(Guid.isV4Guid(standaloneDb1.iModelId));
+    // SWB
     assert.equal(standaloneDb1.contextId, Guid.empty);
     assert.strictEqual("", standaloneDb1.changeset.id);
     assert.strictEqual(0, standaloneDb1.changeset.index);

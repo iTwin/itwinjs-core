@@ -441,6 +441,7 @@ export namespace OrbitGtTileTree {
       authRequestContext.enter();
 
       const rdClient: RealityDataClient = new RealityDataClient();
+      // SWB
       props.rdsUrl = await rdClient.getRealityDataUrl(authRequestContext, iModel.contextId, props.containerName);
     }
 
@@ -449,6 +450,7 @@ export namespace OrbitGtTileTree {
       return true;
 
     // Otherwise, refresh using RDS URL
+    // SWB
     return updateOrbitGtBlobPropsFromRdsUrl(props.rdsUrl, props, accessToken, iModel.contextId);
   }
 

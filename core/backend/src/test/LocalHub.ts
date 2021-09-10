@@ -22,6 +22,7 @@ export interface MockBriefcaseIdProps {
 
 /** @internal */
 export interface LocalHubProps {
+  // SWB
   readonly contextId: GuidString;
   readonly iModelId: GuidString;
   readonly iModelName: string;
@@ -52,6 +53,7 @@ type LockStatus = LockStatusNone | LockStatusExclusive | LockStatusShared;
  * @internal
  */
 export class LocalHub {
+  // SWB
   public readonly contextId: GuidString;
   public readonly iModelId: GuidString;
   public readonly iModelName: string;
@@ -62,6 +64,7 @@ export class LocalHub {
   public get latestChangesetIndex() { return this._latestChangesetIndex; }
 
   public constructor(public readonly rootDir: string, arg: LocalHubProps) {
+    // SWB
     this.contextId = arg.contextId;
     this.iModelId = arg.iModelId;
     this.iModelName = arg.iModelName;
@@ -88,6 +91,7 @@ export class LocalHub {
     const path = this.uploadCheckpoint({ changesetIndex: 0, localFile: arg.revision0 });
     const nativeDb = IModelDb.openDgnDb({ path }, OpenMode.ReadWrite);
     try {
+      // SWB
       nativeDb.saveProjectGuid(this.contextId);
       nativeDb.setDbGuid(this.iModelId);
       nativeDb.saveChanges();
