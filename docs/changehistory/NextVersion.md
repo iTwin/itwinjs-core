@@ -424,7 +424,7 @@ Some components in @bentley/ui-core were deprecated in favor of components in @i
 A few constructs were deprecated in @bentley/ui-core package with alternatives elsewhere.
 A new @bentley/ui-imodel-components package has been added and contains items related to Color, Cube, LineWeight, Navigation Aids, Quantity Inputs, Timeline and Viewport.
 
-The @bentley/ui-* and @bentley/presentation-components packages are now dependent on React version 17. **Applications using the ui packages must update React 17.** Details about React version 17 can be found in the [React Blog](https://reactjs.org/blog/2020/10/20/react-v17.html).
+The @bentley/ui-* and @bentley/presentation-components packages are now dependent on React version 17. **Applications using the ui packages must update to React 17.** Details about React version 17 can be found in the [React Blog](https://reactjs.org/blog/2020/10/20/react-v17.html).
 
 For migration purposes, React 16 is included in the peerDependencies for the packages. React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
 
@@ -563,6 +563,11 @@ The following items were moved into the ui-imodel-components package. For a comp
 * TimelineComponent, TimelineDataProvider, TimelineMenuItemProps
 * ViewportComponent, ViewportComponentEvents
 * LineWeightSwatch, WeightPickerButton, WeightPropertyEditor
+
+### Tasks and Workflows Deprecated
+
+Classes and methods pertaining to Tasks and Workflows have been deprecated due to a change in the UX design.
+Please continue to use Frontstages.
 
 <!---
 User Interface Changes - section above this point

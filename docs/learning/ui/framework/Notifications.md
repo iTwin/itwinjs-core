@@ -16,12 +16,22 @@ There are several types of notifications and messages that can be displayed usin
 ## AppNotificationManager
 
 To display prompts and messages correctly, the [AppNotificationManager]($ui-framework) subclass of NotificationManager from ui-framework
-should be set to `IModelAppOptions.notifications` in the application's call to `IModelApp.startup`.
+should be set to `iModelApp.notifications` in the application's call to `IModelApp.startup`.
 Thereafter, the NotificationManager methods are available via `IModelApp.notifications`.
 
 ```ts
 // Use the AppNotificationManager subclass from ui-framework to get prompts and messages
-IModelApp.startup({notifications:  new AppNotificationManager()});
+import { AppNotificationManager } from "@bentley/ui-framework";
+. . .
+  const opts: WebViewerAppOpts & NativeAppOpts = {
+    iModelApp: {
+      . . .
+      notifications: new AppNotificationManager(),
+      . . .
+    },
+  . . .
+  // Start the app.
+  await SampleAppIModelApp.startup(opts);
 ```
 
 ## MessageManager and React-based Messages

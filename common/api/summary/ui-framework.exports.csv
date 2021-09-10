@@ -1,25 +1,25 @@
 sep=;
 Release Tag;API Item
-alpha;AccuDrawCommandItems
-alpha;AccuDrawDialog(props: AccuDrawDialogProps): JSX.Element
-alpha;AccuDrawDialogProps 
-alpha;AccuDrawGrabInputFocusEvent 
-alpha;AccuDrawKeyboardShortcuts
+beta;AccuDrawCommandItems
+beta;AccuDrawDialog(props: AccuDrawDialogProps): JSX.Element
+beta;AccuDrawDialogProps 
+beta;AccuDrawGrabInputFocusEvent 
+beta;AccuDrawKeyboardShortcuts
 alpha;AccuDrawPopupManager
-alpha;AccuDrawSetCompassModeEvent 
-alpha;AccuDrawSetCompassModeEventArgs
-alpha;AccuDrawSetFieldFocusEvent 
-alpha;AccuDrawSetFieldFocusEventArgs
-alpha;AccuDrawSetFieldLockEvent 
-alpha;AccuDrawSetFieldLockEventArgs
-alpha;AccuDrawSetFieldValueFromUiEvent 
-alpha;AccuDrawSetFieldValueFromUiEventArgs
-alpha;AccuDrawSetFieldValueToUiEvent 
-alpha;AccuDrawSetFieldValueToUiEventArgs
-alpha;AccuDrawUiSettings
-alpha;AccuDrawUiSettingsChangedEvent 
-alpha;AccuDrawWidget(): JSX.Element
-alpha;AccuDrawWidgetControl 
+beta;AccuDrawSetCompassModeEvent 
+beta;AccuDrawSetCompassModeEventArgs
+beta;AccuDrawSetFieldFocusEvent 
+beta;AccuDrawSetFieldFocusEventArgs
+beta;AccuDrawSetFieldLockEvent 
+beta;AccuDrawSetFieldLockEventArgs
+beta;AccuDrawSetFieldValueFromUiEvent 
+beta;AccuDrawSetFieldValueFromUiEventArgs
+beta;AccuDrawSetFieldValueToUiEvent 
+beta;AccuDrawSetFieldValueToUiEventArgs
+beta;AccuDrawUiSettings
+beta;AccuDrawUiSettingsChangedEvent 
+beta;AccuDrawWidget(): JSX.Element
+beta;AccuDrawWidgetControl 
 public;Action
 internal;ActionButtonItem(props: ActionButtonProps): JSX.Element
 public;class ActionButtonItemDef 
@@ -222,7 +222,7 @@ beta;featureOverridesActiveStateFunc(state: Readonly
 alpha;FocusToolSettings 
 public;FooterModeField 
 public;FooterModeFieldProps 
-alpha;FrameworkAccuDraw 
+beta;FrameworkAccuDraw 
 beta;FrameworkRootState
 internal;FrameworkStagePanel 
 internal;FrameworkStagePanelProps
@@ -346,7 +346,6 @@ alpha;KeyinPalettePopup({ el, id, keyins, onCancel, onItemExecuted }: KeyinPalet
 alpha;KeyinPalettePopupProps
 public;LayoutFragmentProps
 public;LayoutHorizontalSplitProps 
-public;LayoutSplit
 public;LayoutSplitPropsBase
 public;LayoutVerticalSplitProps 
 beta;ListItem
@@ -574,14 +573,22 @@ public;SyncUiEventId
 public;SYSTEM_PREFERRED_COLOR_THEME = "SYSTEM_PREFERRED"
 internal;TabLocation
 public;TargetChangeHandler
-public;Task 
-public;TaskActivatedEvent 
-public;TaskActivatedEventArgs
-public;TaskLaunchBackstageItem 
-public;TaskLaunchBackstageItemProps 
-public;TaskManager
-public;TaskProps 
-public;TaskPropsList
+internal;Task 
+deprecated;Task 
+internal;TaskActivatedEvent 
+deprecated;TaskActivatedEvent 
+internal;TaskActivatedEventArgs
+deprecated;TaskActivatedEventArgs
+internal;TaskLaunchBackstageItem 
+deprecated;TaskLaunchBackstageItem 
+internal;TaskLaunchBackstageItemProps 
+deprecated;TaskLaunchBackstageItemProps 
+internal;TaskManager
+deprecated;TaskManager
+internal;TaskProps 
+deprecated;TaskProps 
+internal;TaskPropsList
+deprecated;TaskPropsList
 public;ThemeManager: import("react-redux").ConnectedComponent
 beta;TileLoadingIndicator 
 beta;ToastMessage(props: ToastMessageProps): JSX.Element
@@ -754,12 +761,18 @@ public;WidgetType
 public;withMessageCenterFieldProps: 
 public;withSafeArea: 
 public;withStatusFieldProps: 
-public;Workflow 
-public;WorkflowActivatedEvent 
-public;WorkflowActivatedEventArgs
-public;WorkflowManager
-public;WorkflowProps 
-public;WorkflowPropsList
+internal;Workflow 
+deprecated;Workflow 
+internal;WorkflowActivatedEvent 
+deprecated;WorkflowActivatedEvent 
+internal;WorkflowActivatedEventArgs
+deprecated;WorkflowActivatedEventArgs
+internal;WorkflowManager
+deprecated;WorkflowManager
+internal;WorkflowProps 
+deprecated;WorkflowProps 
+internal;WorkflowPropsList
+deprecated;WorkflowPropsList
 public;Zone 
 public;ZoneDef 
 public;ZoneDefProvider
