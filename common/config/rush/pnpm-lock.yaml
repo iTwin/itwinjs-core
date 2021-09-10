@@ -4053,7 +4053,7 @@ importers:
 
   ../../tools/extension-webpack:
     specifiers:
-      '@babel/core': 7.7.4
+      '@babel/core': ^7.7.4
       '@bentley/webpack-tools-core': workspace:*
       '@svgr/webpack': 5.5.0
       babel-loader: 8.1.0
@@ -4093,11 +4093,11 @@ importers:
       yargonaut: ^1.1.2
       yargs: ^16.0.0
     dependencies:
-      '@babel/core': 7.7.4
+      '@babel/core': 7.15.0
       '@bentley/webpack-tools-core': link:../webpack-core
       '@svgr/webpack': 5.5.0
-      babel-loader: 8.1.0_@babel+core@7.7.4+webpack@4.42.0
-      babel-plugin-named-asset-import: 0.3.7_@babel+core@7.7.4
+      babel-loader: 8.1.0_3b5f51d86b00c3770d461b39ebffde05
+      babel-plugin-named-asset-import: 0.3.7_@babel+core@7.15.0
       babel-preset-react-app: 9.1.2
       browserslist: 4.16.7
       case-sensitive-paths-webpack-plugin: 2.4.0
@@ -5358,6 +5358,7 @@ packages:
       source-map: 0.5.7
     transitivePeerDependencies:
       - supports-color
+    dev: true
 
   /@babel/core/7.9.0:
     resolution: {integrity: sha512-kWc7L0fw1xwvI0zi8OKVBuxRVefwGOrKSQMvrQ3dW+bIIavBY3/NpXmpjMy7bQnLgwgzWQZ8TlM57YHpHNHz4w==}
@@ -11580,6 +11581,22 @@ packages:
       - supports-color
     dev: true
 
+  /babel-loader/8.1.0_3b5f51d86b00c3770d461b39ebffde05:
+    resolution: {integrity: sha512-7q7nC1tYOrqvUrN3LQK4GwSk/TQorZSOlO9C+RZDZpODgyN4ZlCqE5q9cDsyWOliN+aU9B4JX01xK9eJXowJLw==}
+    engines: {node: '>= 6.9'}
+    peerDependencies:
+      '@babel/core': ^7.0.0
+      webpack: '>=2'
+    dependencies:
+      '@babel/core': 7.15.0
+      find-cache-dir: 2.1.0
+      loader-utils: 1.4.0
+      mkdirp: 0.5.5
+      pify: 4.0.1
+      schema-utils: 2.7.1
+      webpack: 4.42.0
+    dev: false
+
   /babel-loader/8.1.0_427212bc1158d185e577033f19ca0757:
     resolution: {integrity: sha512-7q7nC1tYOrqvUrN3LQK4GwSk/TQorZSOlO9C+RZDZpODgyN4ZlCqE5q9cDsyWOliN+aU9B4JX01xK9eJXowJLw==}
     engines: {node: '>= 6.9'}
@@ -11595,22 +11612,6 @@ packages:
       schema-utils: 2.7.1
       webpack: 4.44.2
     dev: true
-
-  /babel-loader/8.1.0_@babel+core@7.7.4+webpack@4.42.0:
-    resolution: {integrity: sha512-7q7nC1tYOrqvUrN3LQK4GwSk/TQorZSOlO9C+RZDZpODgyN4ZlCqE5q9cDsyWOliN+aU9B4JX01xK9eJXowJLw==}
-    engines: {node: '>= 6.9'}
-    peerDependencies:
-      '@babel/core': ^7.0.0
-      webpack: '>=2'
-    dependencies:
-      '@babel/core': 7.7.4
-      find-cache-dir: 2.1.0
-      loader-utils: 1.4.0
-      mkdirp: 0.5.5
-      pify: 4.0.1
-      schema-utils: 2.7.1
-      webpack: 4.42.0
-    dev: false
 
   /babel-messages/6.23.0:
     resolution: {integrity: sha1-8830cDhYA1sqKVHG7F7fbGLyYw4=}
@@ -11680,12 +11681,12 @@ packages:
       '@babel/core': 7.12.3
     dev: true
 
-  /babel-plugin-named-asset-import/0.3.7_@babel+core@7.7.4:
+  /babel-plugin-named-asset-import/0.3.7_@babel+core@7.15.0:
     resolution: {integrity: sha512-squySRkf+6JGnvjoUtDEjSREJEBirnXi9NqP6rjSYsylxQxqBTz+pkmf395i9E2zsvmYUaI40BHo6SqZUdydlw==}
     peerDependencies:
       '@babel/core': ^7.1.0
     dependencies:
-      '@babel/core': 7.7.4
+      '@babel/core': 7.15.0
     dev: false
 
   /babel-plugin-polyfill-corejs2/0.2.2_@babel+core@7.12.3:

@@ -1,38 +1,35 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "lib": [
-      // Required for async iterators/generators:
-      "esnext.asynciterable",
-      // These are the defaults for "target": "es2017", but they have to be explicitly specified if we want to add anything to "lib":
-      "es2017",
-      "dom",
-      "dom.iterable",
-      "scripthost"
-    ],
-    "module": "commonjs",
-    "stripInternal": false,
-    "declaration": true,
-    "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "noImplicitThis": true,
     "alwaysStrict": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noImplicitOverride": true,
-    "noFallthroughCasesInSwitch": false,
-    "experimentalDecorators": true,
-    "skipLibCheck": true,
-    "sourceMap": true,
-    "inlineSources": true,
+    "declaration": true,
     "declarationMap": true,
-    "jsx": "react",
+    "esModuleInterop": false,
+    "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "incremental": true,
-    "esModuleInterop": false,
+    "inlineSources": true,
+    "jsx": "react",
+    "lib": [
+      "Es2020",
+      "DOM",
+      "DOM.Iterable",
+      "ScriptHost"
+    ],
+    "module": "commonjs",
     "moduleResolution": "node",
-    "outDir": "cjs"
+    "noFallthroughCasesInSwitch": false,
+    "noImplicitAny": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": true,
+    "outDir": "cjs",
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "stripInternal": false,
+    "target": "ES2020"
   }
 }
