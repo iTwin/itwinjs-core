@@ -7,7 +7,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
 import {
-  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroup, ContentGroupManager, ContentGroupProps, ContentProps,
+  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroup, ContentGroupProps, ContentProps,
   NavigationAidControl,
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";

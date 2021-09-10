@@ -1242,6 +1242,8 @@ export class LocalSettingsStorage implements UiSettingsStorage {
     // (undocumented)
     getSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
     // (undocumented)
+    hasSetting(settingNamespace: string, settingName: string): Promise<boolean>;
+    // (undocumented)
     saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult>;
     // (undocumented)
     w: Window;
@@ -1807,6 +1809,8 @@ export class SessionSettingsStorage implements UiSettingsStorage {
     deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
     // (undocumented)
     getSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
+    // (undocumented)
+    hasSetting(settingNamespace: string, settingName: string): Promise<boolean>;
     // (undocumented)
     saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult>;
     // (undocumented)

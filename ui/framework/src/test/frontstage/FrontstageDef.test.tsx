@@ -46,12 +46,12 @@ describe("FrontstageDef", () => {
   class BadGroupFrontstage extends FrontstageProvider {
     public get frontstage(): React.ReactElement<FrontstageProps> {
 
-      const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
-        {
-          id: "SingleContent",
-          description: "App:ContentLayoutDef.SingleContent",
-        },
-      );
+      // const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
+      //   {
+      //     id: "SingleContent",
+      //     description: "App:ContentLayoutDef.SingleContent",
+      //   },
+      // );
 
       return (
         <Frontstage

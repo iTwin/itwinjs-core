@@ -21,7 +21,7 @@ import {
 } from "@bentley/ui-abstract";
 import { Dialog, ReactMessage, SvgPath, SvgSprite, UnderlinedButton } from "@bentley/ui-core";
 import {
-  Backstage, CommandItemDef, ContentGroup, ContentProps, ContentViewManager, FrontstageManager, IModelViewportControl, MessageManager, ModalDialogManager, ReactNotifyMessageDetails,
+  Backstage, CommandItemDef, ContentGroup, ContentLayoutManager, ContentProps, ContentViewManager, FrontstageManager, IModelViewportControl, MessageManager, ModalDialogManager, ReactNotifyMessageDetails,
   StatusBarItemUtilities, SyncUiEventDispatcher, SyncUiEventId, ToolItemDef, withStatusFieldProps,
 } from "@bentley/ui-framework";
 import { FooterSeparator } from "@bentley/ui-ninezone";
@@ -818,6 +818,44 @@ export class AppTools {
       tooltip: RestoreSavedContentLayoutTool.description,
       execute: () => {
         IModelApp.tools.run(RestoreSavedContentLayoutTool.toolId);
+      },
+    });
+  }
+
+  public static get switchLayout1() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder",
+      label: "Horizontal Layout",
+      execute: async () => {
+        const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+        if (activeFrontstageDef?.contentGroup && activeFrontstageDef?.contentGroup.getContentControls().length > 1) {
+          const contentLayout = ContentLayoutManager.getLayoutForGroup(activeFrontstageDef.contentGroup, StandardContentLayouts.twoHorizontalSplit);
+          if (contentLayout && activeFrontstageDef.contentGroup) {
+            await ContentLayoutManager.setActiveLayout(contentLayout, activeFrontstageDef.contentGroup);
+          } else {
+            IModelApp.notifications.outputMessage(
+              new NotifyMessageDetails(OutputMessagePriority.Info, "Content group must contain 2 or more content definition to be shown in this layout."));
+          }
+        }
+      },
+    });
+  }
+
+  public static get switchLayout2() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder",
+      label: "Vertical Layout",
+      execute: async () => {
+        const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+        if (activeFrontstageDef?.contentGroup && activeFrontstageDef?.contentGroup.getContentControls().length > 1) {
+          const contentLayout = ContentLayoutManager.getLayoutForGroup(activeFrontstageDef.contentGroup, StandardContentLayouts.twoVerticalSplit);
+          if (contentLayout && activeFrontstageDef.contentGroup) {
+            await ContentLayoutManager.setActiveLayout(contentLayout, activeFrontstageDef.contentGroup);
+          } else {
+            IModelApp.notifications.outputMessage(
+              new NotifyMessageDetails(OutputMessagePriority.Info, "Content group must contain 2 or more content definition to be shown in this layout."));
+          }
+        }
       },
     });
   }

@@ -12,7 +12,7 @@ import {
   getDefaultNineZoneStagePanelsManagerProps, getDefaultZonesManagerProps, NineZoneManagerProps, StagePanelsManager,
 } from "@bentley/ui-ninezone";
 import {
-  ContentGroup, ContentLayoutDef, CoreTools, FrontstageComposer, FrontstageDef, FrontstageManager, getNestedStagePanelKey, isCollapsedToPanelState,
+  ContentGroup, CoreTools, FrontstageComposer, FrontstageDef, FrontstageManager, getNestedStagePanelKey, isCollapsedToPanelState,
   ModalFrontstageInfo, StagePanelDef, StagePanelState,
 } from "../../ui-framework";
 import TestUtils, { mount } from "../TestUtils";

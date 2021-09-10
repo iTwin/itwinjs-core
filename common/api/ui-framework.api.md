@@ -1302,11 +1302,11 @@ export interface ContentControlActivatedEventArgs {
 
 // @public
 export class ContentGroup {
-    constructor(groupProps: ContentGroupProps);
+    constructor(groupProps: (() => ContentGroupProps) | ContentGroupProps);
     clearContentControls(): void;
     // (undocumented)
     contentPropsList: ContentProps[];
-    getContentControl(contentProps: ContentProps, index: number): ContentControl | undefined;
+    getContentControl(contentProps: ContentProps, _index: number): ContentControl | undefined;
     getContentControlById(id: string): ContentControl | undefined;
     getContentControls(): ContentControl[];
     getContentNodes(): React.ReactNode[];
@@ -1315,6 +1315,8 @@ export class ContentGroup {
     getViewports(): Array<ScreenViewport | undefined>;
     // (undocumented)
     groupId: string;
+    // (undocumented)
+    get id(): string;
     // (undocumented)
     layout: ContentLayoutProps;
     onFrontstageDeactivated(): void;
@@ -1392,7 +1394,13 @@ export class ContentLayoutManager {
     static get activeContentGroup(): ContentGroup | undefined;
     static get activeLayout(): ContentLayoutDef | undefined;
     static addLayout(layoutId: string, layoutDef: ContentLayoutDef): void;
-    static findLayout(layoutId: string | ContentLayoutProps): ContentLayoutDef;
+    static findLayout(layoutKey: string): ContentLayoutDef | undefined;
+    static getLayoutForGroup(contentGroupProps: ContentGroupProps | ContentGroup, overrideContentLayout?: ContentLayoutProps): ContentLayoutDef;
+    static getLayoutKey(props: {
+        contentGroupId: string;
+        layoutId: string;
+    }): string;
+    static getLayoutPropsForGroup(contentGroupProps: ContentGroupProps | ContentGroup): ContentLayoutProps;
     static loadLayout(layoutProps: ContentLayoutProps): void;
     static loadLayouts(layoutPropsList: ContentLayoutProps[]): void;
     static refreshActiveLayout(): void;
@@ -5827,10 +5835,10 @@ export class StandardContentToolsProvider implements UiItemsProvider {
 }
 
 // @beta (undocumented)
-export interface StandardFrontstageProp {
+export interface StandardFrontstageProps {
     applicationData?: any;
     bottomPanelProps?: WidgetPanelProps;
-    contentGroupProps: ContentGroupProps;
+    contentGroupProps: (() => ContentGroupProps) | ContentGroupProps;
     cornerButton?: React.ReactNode;
     hideNavigationAid?: boolean;
     hideStatusBar?: boolean;
@@ -5847,7 +5855,7 @@ export interface StandardFrontstageProp {
 
 // @beta (undocumented)
 export class StandardFrontstageProvider extends FrontstageProvider {
-    constructor(props: StandardFrontstageProp);
+    constructor(props: StandardFrontstageProps);
     // (undocumented)
     get frontstage(): React.ReactElement<FrontstageProps>;
     }

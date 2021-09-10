@@ -4,38 +4,116 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import {
-  ContentGroup, ContentGroupProps, ContentToolWidgetComposer,
-  CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
-  IModelViewportControl, StagePanel, StagePanelState, SyncUiEventArgs, SyncUiEventDispatcher,
-  UiFramework, ViewToolWidgetComposer, Widget, Zone,
+  BackstageAppButton, ConfigurableUiManager, ContentGroupProps,
+  IModelViewportControl, StandardContentToolsProvider, StandardFrontstageProps, StandardFrontstageProvider,
+  StandardNavigationToolsProvider,
+  StandardStatusbarItemsProvider,
+  SyncUiEventArgs, SyncUiEventDispatcher,
+  UiFramework,
 } from "@bentley/ui-framework";
 import { StageUsage, StandardContentLayouts } from "@bentley/ui-abstract";
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
+import { AppUi2StageItemsProvider } from "../../tools/AppUi2StageItemsProvider";
 
-/* eslint-disable react/jsx-key */
-const supplyViewOverlay = (viewport: ScreenViewport) => {
-  if (viewport.view) {
-    return <MyCustomViewOverlay />;
+export class FrontstageUi2 {
+  private static showCornerButtons = true;
+
+  /* eslint-disable react/jsx-key */
+  private static supplyViewOverlay = (viewport: ScreenViewport) => {
+    if (viewport.view) {
+      return <MyCustomViewOverlay />;
+    }
+    return null;
+  };
+
+  private static supplyAppData(_id: string, _applicationData?: any) {
+    return {
+      viewState: UiFramework.getDefaultViewState,
+      iModelConnection: UiFramework.getIModelConnection,
+    };
   }
-  return null;
-};
 
-export const ui2ContentGroupProps: ContentGroupProps = {
-  id: "main-content-group",
-  layout: StandardContentLayouts.singleView,
-  contents: [
-    {
-      id: "primaryContent",
-      classId: IModelViewportControl.id,
-      applicationData: {
-        viewState: UiFramework.getDefaultViewState,
-        iModelConnection: UiFramework.getIModelConnection,
-        supplyViewOverlay,
+  private static ui2ContentGroupProps(): ContentGroupProps {
+    return {
+      id: "main-content-group",
+      layout: StandardContentLayouts.singleView,
+      contents: [
+        {
+          id: "primaryContent",
+          classId: IModelViewportControl.id,
+          applicationData: {
+            supplyViewOverlay: FrontstageUi2.supplyViewOverlay,
+            isPrimaryView: true,
+            supports: ["issueResolutionMarkers", "viewIdSelection", "3dModels", "2dModels"],
+          },
+          appDataProvider: FrontstageUi2.supplyAppData,
+        },
+      ],
+    };
+  }
+
+  public static register() {
+    const cornerButton = FrontstageUi2.showCornerButtons ? <BackstageAppButton key="ui2-backstage" icon={"icon-bentley-systems"} /> : undefined;
+    const hideNavigationAid = !FrontstageUi2.showCornerButtons;
+    const setUpCustomToolGroups = true;
+    const applicationData = setUpCustomToolGroups ? {
+      defaultContentTools: {
+        vertical: {
+          selectElementGroupPriority: 100,
+          measureGroupPriority: 200,
+          selectionGroupPriority: 300,
+        },
+        horizontal: {
+          clearSelectionGroupPriority: 100,
+          overridesGroupPriority: 200,
+        },
       },
-    },
-  ],
-};
+    } : undefined;
+
+    const ui2StageProps: StandardFrontstageProps = {
+      id: "Ui2",
+      version: 1.1,
+      contentGroupProps: FrontstageUi2.ui2ContentGroupProps,
+      hideNavigationAid,
+      cornerButton,
+      usage: StageUsage.General,
+      applicationData,
+    };
+
+    ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(ui2StageProps));
+    this.registerToolProviders();
+  }
+
+  private static registerToolProviders() {
+
+    // Provides standard tools for ToolWidget in ui2.0 stage
+    StandardContentToolsProvider.register({
+      horizontal: {
+        clearSelection: true,
+        clearDisplayOverrides: true,
+        hide: "group",
+        isolate: "group",
+        emphasize: "element",
+      },
+    }, (stageId: string, _stageUsage: string, _applicationData: any) => {
+      return stageId === "Ui2";
+    });
+
+    // Provides standard tools for NavigationWidget in ui2.0 stage
+    StandardNavigationToolsProvider.register(undefined, (stageId: string, _stageUsage: string, _applicationData: any) => {
+      return stageId === "Ui2";
+    });
+
+    // Provides standard status fields for ui2.0 stage
+    StandardStatusbarItemsProvider.register(undefined, (stageId: string, _stageUsage: string, _applicationData: any) => {
+      return stageId === "Ui2";
+    });
+
+    // Provides example widgets ui2.0 stage
+    AppUi2StageItemsProvider.register(FrontstageUi2.showCornerButtons);
+  }
+}
 
 export function MyCustomViewOverlay() {
   const [syncIdsOfInterest] = React.useState([SampleAppUiActionId.setTestProperty]);
@@ -75,104 +153,4 @@ export function MyCustomViewOverlay() {
         <div>(turn off using Hide/Show items tool in horizontal toolbar at top-left)</div>
       </div>
     </div> : null;
-}
-
-export class FrontstageUi2 extends FrontstageProvider {
-  private _supplyViewOverlay = (viewport: ScreenViewport) => {
-    if (viewport.view) {
-      return <MyCustomViewOverlay />;
-    }
-    return null;
-  };
-
-  public get frontstage(): React.ReactElement<FrontstageProps> {
-    const myContentGroup: ContentGroup = new ContentGroup(ui2ContentGroupProps);
-
-    return (
-      <Frontstage id="Ui2"
-        version={1.1}
-        defaultTool={CoreTools.selectElementCommand}
-        contentGroup={myContentGroup}
-        defaultContentId="singleIModelView"
-        isInFooterMode={true}
-        usage={StageUsage.General}
-        applicationData={{
-          defaultContentTools: {
-            vertical: {
-              selectElementGroupPriority: 100,
-              measureGroupPriority: 200,
-              selectionGroupPriority: 300,
-            },
-            horizontal: {
-              clearSelectionGroupPriority: 100,
-              overridesGroupPriority: 200,
-            },
-          },
-        }}
-
-        contentManipulationTools={
-          < Zone
-            widgets={
-              [
-                <Widget isFreeform={true}
-                  element={<ContentToolWidgetComposer />} /* cornerButton={<BackstageAppButton icon={"icon-bentley-systems"} />} */
-                />,
-              ]}
-          />
-        }
-        viewNavigationTools={
-          < Zone
-            widgets={
-              [
-                <Widget isFreeform={true} element={<ViewToolWidgetComposer hideNavigationAid />} />,
-              ]}
-          />
-        }
-        toolSettings={
-          < Zone
-            widgets={
-              [
-                <Widget isToolSettings={true} />,
-              ]}
-          />
-        }
-        statusBar={ /* if stage does not need statusBar then do not include this entry */
-          < Zone
-            widgets={
-              [
-                <Widget isStatusBar={true} />, // <Widget isStatusBar={true} control={StatusBarWidgetComposerControl} />,
-              ]}
-          />
-        }
-
-        leftPanel={
-          < StagePanel
-            size={300}
-            defaultState={StagePanelState.Minimized}
-          />
-        }
-
-        topPanel={
-          < StagePanel
-            size={90}
-            pinned={false}
-            defaultState={StagePanelState.Minimized}
-          />
-        }
-
-        rightPanel={
-          < StagePanel
-            defaultState={StagePanelState.Open}
-          />
-        }
-
-        bottomPanel={
-          < StagePanel
-            size={180}
-            defaultState={StagePanelState.Open}
-          />
-        }
-      />
-    );
-  }
 }

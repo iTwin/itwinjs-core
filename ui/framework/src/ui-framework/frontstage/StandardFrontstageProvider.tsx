@@ -24,15 +24,15 @@ export type WidgetPanelProps = Omit<StagePanelProps, "widgets" | "runtimeProps" 
 /**
  * @beta
  */
-export interface StandardFrontstageProp {
+export interface StandardFrontstageProps {
   /* unique stage id */
   id: string;
   /* version id that is used to store state of stage */
   version?: number;
   // Usage of stage, if not specified StageUsage.General is used
   usage?: StageUsage | string;
-  /** Definition of available content groups */
-  contentGroupProps: ContentGroupProps;
+  /** Definition of available content groups or a function that provides them */
+  contentGroupProps: (() => ContentGroupProps) | ContentGroupProps;
   /** Specify button to use to open backstage. Leave undefined for no backstage button.
    * ```
    * <BackstageAppButton icon={"icon-bentley-systems"} />
@@ -67,7 +67,7 @@ export interface StandardFrontstageProp {
  */
 export class StandardFrontstageProvider extends FrontstageProvider {
 
-  constructor(private props: StandardFrontstageProp) {
+  constructor(private props: StandardFrontstageProps) {
     super();
   }
 

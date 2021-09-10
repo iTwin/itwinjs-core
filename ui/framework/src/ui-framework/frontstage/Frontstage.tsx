@@ -16,7 +16,7 @@ import {
   ZonesManagerProps,
 } from "@bentley/ui-ninezone";
 import { ContentGroup } from "../content/ContentGroup";
-import { ContentLayout, ContentLayoutDef } from "../content/ContentLayout";
+import { ContentLayout } from "../content/ContentLayout";
 import { ToolItemDef } from "../shared/ToolItemDef";
 import { getNestedStagePanelKey, StagePanelProps, StagePanelRuntimeProps } from "../stagepanels/StagePanel";
 import { StagePanelDef } from "../stagepanels/StagePanelDef";

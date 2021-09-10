@@ -8,9 +8,8 @@
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { EmphasizeElementsProps, IModelError, IModelStatus, ViewStateProps } from "@bentley/imodeljs-common";
-import { EntityState } from "@bentley/imodeljs-frontend";
 import {
-  DrawingViewState, EmphasizeElements, IModelConnection, ScreenViewport, SheetViewState, SpatialViewState, ViewState,
+  EmphasizeElements, EntityState, IModelConnection, ScreenViewport, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { UiFramework } from "../UiFramework";
 import { ViewUtilities } from "../utils/ViewUtilities";
@@ -29,27 +28,6 @@ export interface SavedViewProps extends ViewStateProps {
 export class SavedView {
   /** Create a ViewState from the SavedView */
   public static async viewStateFromProps(iModelConnection: IModelConnection, savedViewProps: SavedViewProps): Promise<ViewState | undefined> {
-    // const props: ViewStateProps = {
-    //  viewDefinitionProps: savedViewProps.viewDefinitionProps,
-    //  categorySelectorProps: savedViewProps.categorySelectorProps,
-    //  modelSelectorProps: savedViewProps.modelSelectorProps,
-    //  displayStyleProps: savedViewProps.displayStyleProps,
-    //  sheetProps: savedViewProps.sheetProps,
-    //  sheetAttachments: savedViewProps.sheetAttachments,
-    // };
-    //
-    // let viewState: ViewState | undefined;
-    //
-    // if (ViewUtilities.isSpatial(savedViewProps.bisBaseClass))
-    //  viewState = SpatialViewState.createFromProps(props, iModelConnection);
-    // else if (ViewUtilities.isDrawing(savedViewProps.bisBaseClass))
-    //  viewState = DrawingViewState.createFromProps(props, iModelConnection);
-    // else {
-    //  // istanbul ignore else
-    //  if (ViewUtilities.isSheet(savedViewProps.bisBaseClass))
-    //    viewState = SheetViewState.createFromProps(props, iModelConnection);
-    // }
-    //
     const className = savedViewProps.viewDefinitionProps.classFullName;
     const ctor = await iModelConnection.findClassFor<typeof EntityState>(className, undefined) as typeof ViewState | undefined;
 

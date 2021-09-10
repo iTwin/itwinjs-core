@@ -540,7 +540,7 @@ public;StagePanelZoneProps
 internal;StagePanelZonesDef
 public;StagePanelZonesProps
 beta;StandardContentToolsProvider 
-beta;StandardFrontstageProp
+beta;StandardFrontstageProps
 beta;StandardFrontstageProvider 
 public;StandardMessageBox 
 public;StandardMessageBoxProps 

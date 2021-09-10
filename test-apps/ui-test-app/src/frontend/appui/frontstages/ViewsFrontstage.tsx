@@ -20,7 +20,7 @@ import {
   ContentProps, ContentViewManager, CoreTools, CursorInformation, CursorPopupContent, CursorPopupManager, CursorUpdatedEventArgs,
   CustomItemDef, EmphasizeElementsChangedArgs, Frontstage, FrontstageDef, FrontstageManager, FrontstageProvider, GroupItemDef,
   HideIsolateEmphasizeAction, HideIsolateEmphasizeActionHandler, HideIsolateEmphasizeManager, IModelConnectedViewSelector, MessageManager,
-  ModalDialogManager, ModelessDialogManager, ModelSelectorWidgetControl, ModelsTreeNodeType, StagePanel,
+  ModalDialogManager, ModelessDialogManager, ModelSelectorWidgetControl, ModelsTreeNodeType, SavedViewLayout, StagePanel,
   SyncUiEventId, ToolbarHelper, UiFramework, Widget, WIDGET_OPACITY_DEFAULT, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
 import { Button, Slider } from "@itwin/itwinui-react";
@@ -30,7 +30,7 @@ import { SampleAppIModelApp, SampleAppUiActionId } from "../../../frontend/index
 import { AccuDrawPopupTools } from "../../tools/AccuDrawPopupTools";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { ToolWithDynamicSettings } from "../../tools/ToolWithDynamicSettings";
-import { OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool } from "../../tools/UiProviderTool";
+import { getSavedViewLayoutProps, OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool } from "../../tools/UiProviderTool";
 import { AppUi } from "../AppUi";
 // cSpell:Ignore contentviews statusbars uitestapp
 import { IModelViewportControl } from "../contentviews/IModelViewport";
@@ -138,7 +138,7 @@ export class ViewsFrontstage extends FrontstageProvider {
       this.applyVisibilityOverrideToSpatialViewports(FrontstageManager.activeFrontstageDef, args.viewport, args.action); // eslint-disable-line @typescript-eslint/no-floating-promises
   };
 
-  constructor(public viewStates: ViewState[], public iModelConnection: IModelConnection) {
+  constructor(public iModelConnection: IModelConnection, public contentGroup: ContentGroup) {
     super();
 
     HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.addListener(this._onEmphasizeElementsChangedHandler);
@@ -157,38 +157,6 @@ export class ViewsFrontstage extends FrontstageProvider {
   }
 
   /** Commands that opens switches the content layout */
-  private get _switchLayout1() {
-    return new CommandItemDef({
-      iconSpec: "icon-placeholder",
-      label: "Horizontal Layout",
-      execute: async () => {
-        const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
-        if (activeFrontstageDef) {
-          const contentLayout = ContentLayoutManager.findLayout("TwoHalvesHorizontal");
-          if (contentLayout && activeFrontstageDef.contentGroup) {
-            await ContentLayoutManager.setActiveLayout(contentLayout, activeFrontstageDef.contentGroup);
-          }
-        }
-      },
-    });
-  }
-
-  private get _switchLayout2() {
-    return new CommandItemDef({
-      iconSpec: "icon-placeholder",
-      label: "Vertical Layout",
-      execute: async () => {
-        const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
-        if (activeFrontstageDef) {
-          const contentLayout = ContentLayoutManager.findLayout("TwoHalvesVertical");
-          if (contentLayout && activeFrontstageDef.contentGroup) {
-            await ContentLayoutManager.setActiveLayout(contentLayout, activeFrontstageDef.contentGroup);
-          }
-        }
-      },
-    });
-  }
-
   private get _additionalNavigationVerticalToolbarItems() {
     const customPopupButton: CustomToolbarItem = {
       isCustom: true,
@@ -207,29 +175,37 @@ export class ViewsFrontstage extends FrontstageProvider {
           label: "Layout Demos",
           panelLabel: "Layout Demos",
           iconSpec: "icon-placeholder",
-          items: [this._switchLayout1, this._switchLayout2],
+          items: [AppTools.switchLayout1, AppTools.switchLayout2],
         }),
       ),
       customPopupButton,
     ];
   }
 
-  public get frontstage() {
+  private static async getContentGroup(viewStates: ViewState[], iModelConnection: IModelConnection) {
+    if (0 === viewStates.length) {
+      const savedViewLayoutProps = await getSavedViewLayoutProps(ViewsFrontstage.stageId, iModelConnection);
+      if (savedViewLayoutProps) {
+        return new ContentGroup(savedViewLayoutProps.contentGroupProps);
+      }
+      throw (Error(`Could not load saved layout ContentLayoutProps`));
+    }
+
     // first find an appropriate layout
-    const contentLayoutProps: ContentLayoutProps | undefined = AppUi.findLayoutFromContentCount(this.viewStates.length);
+    const contentLayoutProps: ContentLayoutProps | undefined = AppUi.findLayoutFromContentCount(viewStates.length);
     if (!contentLayoutProps) {
-      throw (Error(`Could not find layout ContentLayoutProps when number of viewStates=${this.viewStates.length}`));
+      throw (Error(`Could not find layout ContentLayoutProps when number of viewStates=${viewStates.length}`));
     }
 
     // create the content props that specifies an iModelConnection and a viewState entry in the application data.
     const contentProps: ContentProps[] = [];
-    this.viewStates.forEach((viewState, index) => {
+    viewStates.forEach((viewState, index) => {
       const thisContentProps: ContentProps = {
         id: `imodel-view-${index}`,
         classId: IModelViewportControl,
         applicationData:
         {
-          viewState, iModelConnection: this.iModelConnection,
+          viewState, iModelConnection,
           featureOptions:
           {
             defaultViewOverlay: {
@@ -243,13 +219,22 @@ export class ViewsFrontstage extends FrontstageProvider {
       contentProps.push(thisContentProps);
     });
 
-    // TODO - add this group to ContentGroupManager ???
     const myContentGroup: ContentGroup = new ContentGroup(
       {
         id: "default-group",
         layout: contentLayoutProps,
         contents: contentProps,
       });
+    return myContentGroup;
+  }
+
+  public static async createFrontstageProvider(viewStates: ViewState[], iModelConnection: IModelConnection) {
+    const contentGroup = await ViewsFrontstage.getContentGroup(viewStates, iModelConnection);
+    return new ViewsFrontstage(iModelConnection, contentGroup);
+  }
+
+  public get frontstage() {
+    const myContentGroup = this.contentGroup;
 
     return (
       <Frontstage id={ViewsFrontstage.stageId}
@@ -782,3 +767,4 @@ class AdditionalTools {
   ], 100, { groupPriority: 20 }), this.getMiscGroupItem(), OpenComponentExamplesPopoutTool.getActionButtonDef(400, 40),
   OpenCustomPopoutTool.getActionButtonDef(410, 40), OpenViewPopoutTool.getActionButtonDef(420, 40)];
 }
+

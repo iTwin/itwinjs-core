@@ -72,11 +72,6 @@ describe("WidgetStack", () => {
         contents: [{ id: "main", classId: "TestContentControl2" }],
       });
 
-      const myContentLayout: ContentLayoutDef = new ContentLayoutDef({
-        id: "SingleContent",
-        description: "UiFramework:tests.singleContent",
-      });
-
       return (
         <Frontstage
           id="WidgetStack-Frontstage"

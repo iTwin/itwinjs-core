@@ -57,20 +57,20 @@ export class ContentGroup {
   private _contentControls = new Map<string, ContentControl>();
   private _contentSetMap = new Map<string, ContentControl>();
 
-  constructor(groupProps: ContentGroupProps) {
-    this.layout = ContentLayoutManager.findLayout(groupProps.layout);
-    this.groupId = groupProps.id;
-    this.contentPropsList = groupProps.contents;
+  public get id() {
+    return this.groupId;
+  }
+
+  constructor(groupProps: (() => ContentGroupProps) | ContentGroupProps) {
+    const contentGroupProps = typeof groupProps === "function" ? groupProps() : groupProps;
+    this.layout = ContentLayoutManager.getLayoutPropsForGroup(contentGroupProps);
+    this.groupId = contentGroupProps.id;
+    this.contentPropsList = contentGroupProps.contents;
   }
 
   /** Gets a [[ContentControl]] from the Content Group based on its [[ContentProps]]. */
-  public getContentControl(contentProps: ContentProps, index: number): ContentControl | undefined {
-    let id: string;
-    if (contentProps.id !== undefined)  // is now required should either remove or throw is undefined
-      id = contentProps.id;
-    else
-      id = `${this.groupId}-${index}`;
-
+  public getContentControl(contentProps: ContentProps, _index: number): ContentControl | undefined {
+    const id = contentProps.id;
     let contentControl: ContentControl | undefined;
 
     if (!this._contentControls.get(id)) {

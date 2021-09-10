@@ -62,13 +62,6 @@ export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
 export class TestFrontstage extends FrontstageProvider {
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
-    const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
-      {
-        id: "SingleContent",
-        description: "App:ContentLayoutDef.SingleContent",
-      },
-    );
-
     const myContentGroup: ContentGroup = new ContentGroup(
       {
         id: "test-group",
@@ -156,13 +149,6 @@ export class TestFrontstage extends FrontstageProvider {
 export class TestFrontstage2 extends FrontstageProvider {
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
-    const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
-      {
-        id: "SingleContent",
-        description: "App:ContentLayoutDef.SingleContent",
-      },
-    );
-
     const myContentGroup: ContentGroup = new ContentGroup(
       {
         id: "test-group",
@@ -250,13 +236,6 @@ export class TestFrontstage2 extends FrontstageProvider {
 export class TestFrontstage3 extends FrontstageProvider {
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
-    const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
-      {
-        id: "SingleContent",
-        description: "App:ContentLayoutDef.SingleContent",
-      },
-    );
-
     const myContentGroup: ContentGroup = new ContentGroup(
       {
         id: "test-group",

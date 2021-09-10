@@ -327,38 +327,40 @@ export class SampleAppIModelApp {
   }
 
   public static async openViews(iModelConnection: IModelConnection, viewIdsSelected: Id64String[]) {
-    let viewIdsParam = "";
-    viewIdsSelected.forEach((viewId: string, index: number) => {
-      if (index > 0)
-        viewIdsParam += `&`;
-      viewIdsParam += `viewId=${viewId}`;
-    });
-    Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `openViews: ${viewIdsParam}`);
+    // we create a Frontstage that contains the views that we want.
+    let stageId: string;
+    const defaultFrontstage = this.allowWrite ? EditFrontstage.stageId : ViewsFrontstage.stageId;
 
     // store the IModelConnection in the sample app store - this may trigger redux connected components
     UiFramework.setIModelConnection(iModelConnection, true);
     const viewStates: ViewState[] = [];
-    let defaultViewState: ViewState | undefined;
 
-    // store the first selected viewId as default - mostly used by frontstages defined in extensions that want to open a IModelViewport
-    if (viewIdsSelected && viewIdsSelected.length > 0) {
-      for (const viewId of viewIdsSelected) {
-        const viewState = await iModelConnection.views.load(viewId);
-        if (viewState) {
-          if (!defaultViewState) {
-            defaultViewState = viewState;
-            ActiveSettingsManager.onViewOpened(viewState); // Review TODO
+    if (viewIdsSelected.length) {
+      let viewIdsParam = "";
+      viewIdsSelected.forEach((viewId: string, index: number) => {
+        if (index > 0)
+          viewIdsParam += `&`;
+        viewIdsParam += `viewId=${viewId}`;
+      });
+      Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `openViews: ${viewIdsParam}`);
+
+      let defaultViewState: ViewState | undefined;
+      // store the first selected viewId as default - mostly used by frontstages defined in extensions that want to open a IModelViewport
+      if (viewIdsSelected && viewIdsSelected.length > 0) {
+        for (const viewId of viewIdsSelected) {
+          const viewState = await iModelConnection.views.load(viewId);
+          if (viewState) {
+            if (!defaultViewState) {
+              defaultViewState = viewState;
+              ActiveSettingsManager.onViewOpened(viewState); // Review TODO
+            }
+            viewStates.push(viewState);
           }
-          viewStates.push(viewState);
         }
+        if (defaultViewState)
+          UiFramework.setDefaultViewState(defaultViewState);
       }
-      if (defaultViewState)
-        UiFramework.setDefaultViewState(defaultViewState);
     }
-
-    // we create a Frontstage that contains the views that we want.
-    let stageId: string;
-    const defaultFrontstage = this.allowWrite ? EditFrontstage.stageId : ViewsFrontstage.stageId;
 
     if (this.iModelParams && this.iModelParams.stageId)
       stageId = this.iModelParams.stageId;
@@ -368,7 +370,7 @@ export class SampleAppIModelApp {
     let frontstageDef: FrontstageDef | undefined;
     if (stageId === defaultFrontstage) {
       if (stageId === ViewsFrontstage.stageId) {
-        const frontstageProvider = new ViewsFrontstage(viewStates, iModelConnection);
+        const frontstageProvider = await ViewsFrontstage.createFrontstageProvider(viewStates, iModelConnection);
         FrontstageManager.addFrontstageProvider(frontstageProvider);
         frontstageDef = frontstageProvider.frontstageDef;
       } else {
@@ -384,10 +386,10 @@ export class SampleAppIModelApp {
       FrontstageManager.setActiveFrontstageDef(frontstageDef).then(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
         // Frontstage & ScreenViewports are ready
         Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Frontstage & ScreenViewports are ready`);
-        if (false && ProcessDetector.isElectronAppFrontend) { // used for testing pop-out support
-          // delay 5 seconds to see if window opens - since web browser will block pop-out if we wait. Also web browser will not allow multiple pop-outs.
-          setTimeout(() => { IModelApp.tools.run(OpenCustomPopoutTool.toolId); /* IModelApp.tools.run(OpenWidgetPopoutTool.toolId); */ }, 5000);
-        }
+        // if (false && ProcessDetector.isElectronAppFrontend) { // used for testing pop-out support
+        //   // delay 5 seconds to see if window opens - since web browser will block pop-out if we wait. Also web browser will not allow multiple pop-outs.
+        //   setTimeout(() => { IModelApp.tools.run(OpenCustomPopoutTool.toolId); /* IModelApp.tools.run(OpenWidgetPopoutTool.toolId); */ }, 5000);
+        // }
       });
     } else {
       throw new Error(`Frontstage with id "${stageId}" does not exist`);

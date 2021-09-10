@@ -37,7 +37,7 @@ import {
   KeyboardShortcutManager,
   KeyboardShortcutProps,
   StandardContentToolsProvider,
-  StandardFrontstageProp,
+  StandardFrontstageProps,
   StandardFrontstageProvider,
   StandardNavigationToolsProvider,
   StandardStatusbarItemsProvider,
@@ -61,12 +61,9 @@ import { SignInFrontstage } from "./frontstages/SignInFrontstage";
 import { AccuDrawPopupTools } from "../tools/AccuDrawPopupTools";
 import { AppTools } from "../tools/ToolSpecifications";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
-import { AppUi2StageItemsProvider } from "../tools/AppUi2StageItemsProvider";
-import { ui2ContentGroupProps } from "./frontstages/FrontstageUi2";
+import { FrontstageUi2 } from "./frontstages/FrontstageUi2";
 
 // cSpell:ignore uitestapp
-
-const showCornerButtons = true;
 
 /** Example Ui Configuration for an iModelJS App
  */
@@ -85,53 +82,7 @@ export class AppUi {
     AppUi.defineDynamicWidgets();
 
     // AppUi.setAccuDrawUiSettings();
-
-    // Provides standard tools for ToolWidget in ui2.0 stage
-    StandardContentToolsProvider.register({
-      horizontal: {
-        clearSelection: true,
-        clearDisplayOverrides: true,
-        hide: "group",
-        isolate: "group",
-        emphasize: "element",
-      },
-    }, (stageId: string, _stageUsage: string, _applicationData: any) => {
-      return stageId === "Ui2";
-    });
-
-    // Provides standard tools for NavigationWidget in ui2.0 stage
-    StandardNavigationToolsProvider.register(undefined, (stageId: string, _stageUsage: string, _applicationData: any) => {
-      return stageId === "Ui2";
-    });
-
-    // Provides standard status fields for ui2.0 stage
-    StandardStatusbarItemsProvider.register(undefined, (stageId: string, _stageUsage: string, _applicationData: any) => {
-      return stageId === "Ui2";
-    });
-
-    // Provides example widgets ui2.0 stage
-    AppUi2StageItemsProvider.register(showCornerButtons);
   }
-
-  // export const panelProps = {
-  //   leftPanelProps: {
-  //     size: 300,
-  //     defaultState: StagePanelState.Minimized,
-  //   },
-  //   topPanelProps: {
-  //     size: 90,
-  //     pinned: false,
-  //     defaultState: StagePanelState.Minimized,
-  //   },
-  //   rightPanelProps: {
-  //     defaultState: StagePanelState.Open,
-  //   },
-  //
-  //   bottomPanelProps: {
-  //     size: 180,
-  //     defaultState: StagePanelState.Open,
-  //   },
-  // };
 
   /** Define Frontstages
    */
@@ -141,36 +92,7 @@ export class AppUi {
     ConfigurableUiManager.addFrontstageProvider(new Frontstage2());
     ConfigurableUiManager.addFrontstageProvider(new Frontstage3());
     ConfigurableUiManager.addFrontstageProvider(new Frontstage4());
-    // ConfigurableUiManager.addFrontstageProvider(new FrontstageUi2());
-
-    const cornerButton = showCornerButtons ? <BackstageAppButton key="ui2-backstage" icon={"icon-bentley-systems"} /> : undefined;
-    const hideNavigationAid = !showCornerButtons;
-    const setUpCustomToolGroups = false;
-    const applicationData = setUpCustomToolGroups ? {
-      defaultContentTools: {
-        vertical: {
-          selectElementGroupPriority: 100,
-          measureGroupPriority: 200,
-          selectionGroupPriority: 300,
-        },
-        horizontal: {
-          clearSelectionGroupPriority: 100,
-          overridesGroupPriority: 200,
-        },
-      },
-    } : undefined;
-
-    const ui2StageProps: StandardFrontstageProp = {
-      id: "Ui2",
-      version: 1.1,
-      contentGroupProps: ui2ContentGroupProps,
-      hideNavigationAid,
-      cornerButton,
-      usage: StageUsage.General,
-      applicationData,
-    };
-
-    ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(ui2StageProps));
+    FrontstageUi2.register();
     ConfigurableUiManager.addFrontstageProvider(new IModelIndexFrontstage());
     ConfigurableUiManager.addFrontstageProvider(new IModelOpenFrontstage());
     ConfigurableUiManager.addFrontstageProvider(new SignInFrontstage());

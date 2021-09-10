@@ -40,10 +40,10 @@ describe("ContentControl", () => {
       ],
     });
 
-    const myContentLayout: ContentLayoutDef = new ContentLayoutDef({
-      id: "SingleContent",
-      description: "UiFramework:tests.singleContent",
-    });
+    // const myContentLayout: ContentLayoutDef = new ContentLayoutDef({
+    //   id: "SingleContent",
+    //   description: "UiFramework:tests.singleContent",
+    // });
 
     class Frontstage1 extends FrontstageProvider {
       public get frontstage(): React.ReactElement<FrontstageProps> {
@@ -96,11 +96,11 @@ describe("ContentControl", () => {
       ],
     });
 
-    const contentLayout2: ContentLayoutDef = new ContentLayoutDef({
-      id: "TwoHalvesVertical",
-      description: "App:ContentLayoutDef.TwoHalvesVertical",
-      verticalSplit: { id: "TwoHalvesVertical.VerticalSplit", percentage: 0.50, left: 0, right: 1 },
-    });
+    // const contentLayout2: ContentLayoutDef = new ContentLayoutDef({
+    //   id: "TwoHalvesVertical",
+    //   description: "App:ContentLayoutDef.TwoHalvesVertical",
+    //   verticalSplit: { id: "TwoHalvesVertical.VerticalSplit", percentage: 0.50, left: 0, right: 1 },
+    // });
 
     class Frontstage2 extends FrontstageProvider {
       public get frontstage(): React.ReactElement<FrontstageProps> {
