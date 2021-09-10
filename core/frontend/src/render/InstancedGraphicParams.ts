@@ -61,4 +61,5 @@ export interface PatternGraphicParams {
   /** Range of pattern boundary in model (tile tree, usually) coordinates. */
   readonly range: Range3d;
   readonly symbolTranslation: Point3d;
+  readonly viewIndependentOrigin?: Point3d;
 }
