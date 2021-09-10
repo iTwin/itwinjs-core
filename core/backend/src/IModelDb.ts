@@ -2242,7 +2242,7 @@ export class BriefcaseDb extends IModelDb {
    * [[include:BriefcaseDb.onOpened]]
    * ```
    */
-  public static readonly onOpened = new BeEvent<(_iModelDb: BriefcaseDb, _args: OpenBriefcaseArgs,) => void>();
+  public static readonly onOpened = new BeEvent<(_iModelDb: BriefcaseDb, _args: OpenBriefcaseArgs) => void>();
 
   public static override findByKey(key: string): BriefcaseDb {
     return super.findByKey(key) as BriefcaseDb;
