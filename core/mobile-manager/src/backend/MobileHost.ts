@@ -149,8 +149,11 @@ export class MobileHost {
   /** Start the backend of a mobile app. */
   public static async startup(opt?: MobileHostOpts): Promise<void> {
     if (!this.isValid) {
-      setupMobileRpc();
       this._device = opt?.mobileHost?.device ?? new (MobileDevice as any)();
+      // set global device interface.
+      (global as any).__iTwinJsNativeBridge = this._device;
+      // following will provide impl for device specific api.
+      setupMobileRpc();
     }
 
     await NativeHost.startup(opt);
