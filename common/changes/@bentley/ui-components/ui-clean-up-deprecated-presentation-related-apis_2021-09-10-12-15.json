@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "Clean up deprecated FilteringInput and PropertyGrid props",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components"
+}

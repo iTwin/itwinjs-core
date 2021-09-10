@@ -157,45 +157,6 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       expect(categoryBlocks.length, "Wrong amount of categories").to.be.equal(2);
     });
 
-    it("sets passed onPropertyLinkClick event handler to records with link property", async () => {
-      const testOnClick = (_text: string) => [];
-      const testNestedRecord1 = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
-      const testNestedRecord2 = TestUtils.createPrimitiveStringProperty("CADID1", "0000 0005 00E0 02D8");
-      const testStructRecord = TestUtils.createStructProperty("testStructRecord", { testProperty: testNestedRecord2 });
-      const testArrayRecord = TestUtils.createArrayProperty("testArrayRecord", [testNestedRecord1, testStructRecord]);
-      testNestedRecord1.links = {
-        onClick: testOnClick,
-      };
-      testNestedRecord2.links = {
-        onClick: testOnClick,
-      };
-      testStructRecord.links = {
-        onClick: testOnClick,
-      };
-
-      dataProvider.getData = async (): Promise<PropertyData> => ({
-        label: PropertyRecord.fromString(faker.random.word()),
-        description: faker.random.words(),
-        categories: [...categories],
-        records: {
-          Group_1: [testArrayRecord],
-          Group_2: [records[0]],
-        },
-      });
-      const propertyLinkClickFnSpy = sinon.spy();
-      render(
-        <VirtualizedPropertyGridWithDataProvider {...defaultProps} onPropertyLinkClick={propertyLinkClickFnSpy} />,
-      );
-
-      await TestUtils.flushAsyncOperations();
-
-      testNestedRecord1.links.onClick("test");
-      testStructRecord.links.onClick("test");
-      testNestedRecord2.links.onClick("test");
-
-      expect(propertyLinkClickFnSpy.calledThrice).to.be.true;
-    });
-
     it("renders PropertyCategoryBlock as collapsed when it gets clicked", async () => {
       const { container } = render(<VirtualizedPropertyGridWithDataProvider  {...defaultProps} />);
 

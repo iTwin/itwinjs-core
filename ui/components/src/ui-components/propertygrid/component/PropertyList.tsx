@@ -12,9 +12,9 @@ import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { CommonProps, Orientation, RatioChangeResult } from "@bentley/ui-core";
 import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
 import { ActionButtonRenderer } from "../../properties/renderers/ActionButtonRenderer";
+import { PropertyGridColumnInfo } from "../../properties/renderers/PropertyGridColumns";
 import { PropertyRenderer } from "../../properties/renderers/PropertyRenderer";
 import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
-import { PropertyGridColumnInfo } from "../../properties/renderers/PropertyGridColumns";
 import { PropertyCategory } from "../PropertyDataProvider";
 
 /** Properties of [[PropertyList]] React component
@@ -139,7 +139,6 @@ export class PropertyList extends React.Component<PropertyListProps, PropertyLis
               onRightClick={propertyRecord.value.valueFormat === PropertyValueFormat.Primitive ? this.props.onPropertyRightClicked : undefined}
               onContextMenu={this.props.onPropertyContextMenu}
               columnRatio={this.props.columnRatio}
-              // eslint-disable-next-line deprecation/deprecation
               onColumnRatioChanged={this.props.onColumnChanged}
               propertyValueRendererManager={this.props.propertyValueRendererManager}
               isEditing={key === this.props.editingPropertyKey}

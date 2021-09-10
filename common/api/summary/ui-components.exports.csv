@@ -85,8 +85,6 @@ public;DateTimeTypeConverter
 public;class DateTimeTypeConverterBase 
 beta;DEFAULT_LINKS_HANDLER: LinkElementsInfo
 public;DelayLoadedTreeNodeItem 
-public;DEPRECATED_FilteringInputProps 
-deprecated;DEPRECATED_FilteringInputProps 
 beta;Direction
 internal;DirectionHelpers
 beta;DisplayValuePropertyDataFilterer 
@@ -117,7 +115,7 @@ public;class FilterDescriptorCollectionBase
 beta;FilteredPropertyData 
 beta;FilteredType
 public;FilteringInput 
-public;FilteringInputProps = DEPRECATED_FilteringInputProps | NEW_FilteringInputProps
+public;FilteringInputProps 
 beta;FilteringInputStatus
 beta;FilteringPropertyDataProvider 
 public;FilterOperator
@@ -136,8 +134,6 @@ beta;GridCategoryItem
 internal;GroupPopupItem({ item, addGroupSeparator }:
 internal;handleLoadedNodeHierarchy(modelSource: TreeModelSource, loadedHierarchy: LoadedNodeHierarchy): void
 public;hasChildren: (node: TreeNodeItem) => boolean
-public;hasLinks: (record: PropertyRecord) => boolean
-deprecated;hasLinks: (record: PropertyRecord) => boolean
 public;hasSelectionModeFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean
 public;HexadecimalTypeConverter 
 public;HighlightableTreeNodeProps
@@ -216,7 +212,6 @@ public;MutableTreeModel
 public;MutableTreeModelNode 
 public;NavigationPropertyTypeConverter 
 public;NavigationPropertyValueRenderer 
-public;NEW_FilteringInputProps 
 public;NextObserver
 internal;Node
 public;NonPrimitivePropertyLabelRenderer 

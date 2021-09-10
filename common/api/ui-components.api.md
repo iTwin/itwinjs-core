@@ -501,8 +501,6 @@ export interface CommonPropertyGridProps extends CommonProps {
     onPropertyContextMenu?: (args: PropertyGridContextMenuArgs) => void;
     // @beta
     onPropertyEditing?: (args: PropertyEditingArgs, category: PropertyCategory) => void;
-    // @beta @deprecated
-    onPropertyLinkClick?: (property: PropertyRecord, text: string) => void;
     onPropertySelectionChanged?: (property: PropertyRecord) => void;
     // @beta
     onPropertyUpdated?: (args: PropertyUpdatedArgs, category: PropertyCategory) => Promise<boolean>;
@@ -811,17 +809,6 @@ export interface DelayLoadedTreeNodeItem extends TreeNodeItem {
     hasChildren?: boolean;
 }
 
-// @public @deprecated
-export interface DEPRECATED_FilteringInputProps extends CommonProps {
-    autoFocus?: boolean;
-    // @deprecated
-    filteringInProgress: boolean;
-    onFilterCancel: () => void;
-    onFilterClear: () => void;
-    onFilterStart: (searchText: string) => void;
-    resultSelectorProps?: ResultSelectorProps;
-}
-
 // @beta
 export enum Direction {
     // (undocumented)
@@ -1114,15 +1101,19 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
     // @internal (undocumented)
     componentDidUpdate(prevProps: FilteringInputProps): void;
     // (undocumented)
-    static getDerivedStateFromProps(nextProps: FilteringInputProps, prevState: FilteringInputState): {
-        searchStarted: boolean;
-    } | null;
-    // (undocumented)
     render(): JSX.Element;
     }
 
 // @public
-export type FilteringInputProps = DEPRECATED_FilteringInputProps | NEW_FilteringInputProps;
+export interface FilteringInputProps extends CommonProps {
+    autoFocus?: boolean;
+    onFilterCancel: () => void;
+    onFilterClear: () => void;
+    onFilterStart: (searchText: string) => void;
+    resultSelectorProps?: ResultSelectorProps;
+    // @beta
+    status: FilteringInputStatus;
+}
 
 // @beta
 export enum FilteringInputStatus {
@@ -1292,9 +1283,6 @@ export function handleLoadedNodeHierarchy(modelSource: TreeModelSource, loadedHi
 
 // @public
 export const hasChildren: (node: TreeNodeItem) => boolean;
-
-// @public @deprecated
-export const hasLinks: (record: PropertyRecord) => boolean;
 
 // @public
 export const hasSelectionModeFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean;
@@ -2067,17 +2055,6 @@ export class NavigationPropertyValueRenderer implements IPropertyValueRenderer {
 }
 
 // @public
-export interface NEW_FilteringInputProps extends CommonProps {
-    autoFocus?: boolean;
-    onFilterCancel: () => void;
-    onFilterClear: () => void;
-    onFilterStart: (searchText: string) => void;
-    resultSelectorProps?: ResultSelectorProps;
-    // @beta
-    status: FilteringInputStatus;
-}
-
-// @public
 export interface NextObserver<T> {
     // (undocumented)
     closed?: boolean;
@@ -2548,8 +2525,6 @@ export interface PropertyGridCategory {
 
 // @internal (undocumented)
 export class PropertyGridCommons {
-    // (undocumented)
-    static assignRecordClickHandlers(records: PropertyRecord[], onPropertyLinkClick: (property: PropertyRecord, text: string) => void): void;
     // (undocumented)
     static getCurrentOrientation(width: number, preferredOrientation?: Orientation, isOrientationFixed?: boolean, horizontalOrientationMinWidth?: number): Orientation;
     static getLinks: (value: string) => Array<{
@@ -4270,7 +4245,6 @@ export function usePagedTreeNodeLoader<TDataProvider extends TreeDataProvider>(d
 // @beta
 export function usePropertyData(props: {
     dataProvider: IPropertyDataProvider;
-    onPropertyLinkClick?: (property: PropertyRecord, text: string) => void;
 }): {
     value: import("../PropertyDataProvider").PropertyData | undefined;
     inProgress: boolean;
@@ -4289,7 +4263,6 @@ export function usePropertyGridModel(props: {
 // @beta
 export function usePropertyGridModelSource(props: {
     dataProvider: IPropertyDataProvider;
-    onPropertyLinkClick?: (property: PropertyRecord, text: string) => void;
 }): PropertyGridModelSource;
 
 // @internal (undocumented)
