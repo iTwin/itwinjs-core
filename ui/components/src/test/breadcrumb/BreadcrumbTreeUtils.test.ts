@@ -10,6 +10,8 @@ import { ImmediatelyLoadedTreeNodeItem, TreeDataProvider } from "../../ui-compon
 import TestUtils from "../TestUtils";
 import { mockInterfaceTreeDataProvider } from "./mockTreeDataProvider";
 
+/* eslint-disable deprecation/deprecation */
+
 describe("BreadcrumbTreeUtils", () => {
   before(async () => {
     await TestUtils.initializeUiComponents();

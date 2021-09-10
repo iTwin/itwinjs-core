@@ -121,7 +121,6 @@ export * from "./ui-framework/navigationaids/SheetsModalFrontstage";
 export * from "./ui-framework/navigationaids/StandardRotationNavigationAid";
 
 export * from "./ui-framework/pickers/ListPicker";
-export * from "./ui-framework/pickers/ModelSelector/ModelSelector";
 export * from "./ui-framework/pickers/ViewSelector";
 
 export * from "./ui-framework/childwindow/ChildWindowManager";
@@ -266,7 +265,6 @@ export * from "./ui-framework/widgets/WidgetHost";
 export * from "./ui-framework/widgets/WidgetManager";
 export * from "./ui-framework/widgets/WidgetProps";
 export * from "./ui-framework/widgets/WidgetStack";
-export * from "./ui-framework/widgets/VisibilityWidget";
 
 export * from "./ui-framework/workflow/Task";
 export * from "./ui-framework/workflow/Workflow";
@@ -411,4 +409,3 @@ export * from "./ui-framework/zones/ZoneDef";
  * @docs-group-description Timeline
  * Classes for working with a TimelineComponent
  */
-
