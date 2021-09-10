@@ -9,6 +9,7 @@ import React from "react";
 
 /** @internal */
 export function createContextWithMandatoryProvider<T>(
+  // SWB What does context mean here?
   contextName: string,
 ): [
     React.ProviderExoticComponent<React.ProviderProps<T>>,

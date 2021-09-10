@@ -22,6 +22,7 @@ export class HubUtility {
   public static logCategory = "HubUtility";
   public static allowHubBriefcases = false;
 
+  // SWB
   public static testContextName = "iModelJsIntegrationTest";
   public static testIModelNames = {
     noVersions: "NoVersionsTest",

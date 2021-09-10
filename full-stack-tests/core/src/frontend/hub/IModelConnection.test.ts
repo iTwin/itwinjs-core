@@ -34,6 +34,7 @@ describe("IModelConnection (#integration)", () => {
     Logger.initializeToConsole();
     Logger.setLevel("imodeljs-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
 
+    // SWB
     const authorizationClient = await TestUtility.initializeTestProject(TestUtility.testContextName, TestUsers.regular);
     IModelApp.authorizationClient = authorizationClient;
 

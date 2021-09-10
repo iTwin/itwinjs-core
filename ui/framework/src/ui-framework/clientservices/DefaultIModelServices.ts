@@ -83,6 +83,7 @@ export class DefaultIModelServices implements IModelServices {
   }
 
   /** Open the specified version of the IModel */
+  // SWB
   public async openIModel(contextId: string, iModelId: GuidString, changeSetId?: string): Promise<IModelConnection> {
     try {
       // GatewayProxyApi.setAccessToken(accessToken);
@@ -95,9 +96,11 @@ export class DefaultIModelServices implements IModelServices {
   }
 
   /** Get the thumbnail for the iModel */
+  // SWB
   public async getThumbnail(contextId: string, iModelId: GuidString): Promise<string | undefined> {
     const requestContext = await AuthorizedFrontendRequestContext.create();
     try {
+      // SWB
       const pngImage = await this._hubClient.thumbnails.download(requestContext, iModelId, { contextId, size: "Small" });
       return pngImage;
     } catch (err) {

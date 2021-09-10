@@ -20,6 +20,7 @@ describe("MapLayerSettingsService (#integration)", () => {
   const testName: string = `test${Guid.createValue()}`;
 
   before(async () => {
+    // SWB
     const authorizationClient = await TestUtility.initializeTestProject(TestUtility.testContextName, TestUsers.regular);
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
 
@@ -29,6 +30,7 @@ describe("MapLayerSettingsService (#integration)", () => {
     };
     await IModelApp.shutdown();
     await IModelApp.startup(options);
+    // SWB
     contextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
     chai.assert.isDefined(contextId);
     iModelId = await TestUtility.queryIModelIdbyName(contextId, TestUtility.testIModelNames.readOnly);

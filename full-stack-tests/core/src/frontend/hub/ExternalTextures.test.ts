@@ -36,6 +36,7 @@ describe("external texture requests (#integration)", () => {
 
   before(async () => {
     await IModelApp.startup({
+      // SWB
       authorizationClient: await TestUtility.initializeTestProject(TestUtility.testContextName, TestUsers.regular),
       imodelClient: TestUtility.imodelCloudEnv.imodelClient,
       applicationVersion: "1.2.1.1",

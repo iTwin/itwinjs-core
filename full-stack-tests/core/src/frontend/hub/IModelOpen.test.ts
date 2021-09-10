@@ -23,6 +23,7 @@ describe("Opening IModelConnection (#integration)", () => {
     });
     Logger.initializeToConsole();
 
+    // SWB
     const authorizationClient = await TestUtility.initializeTestProject(TestUtility.testContextName, TestUsers.regular);
     IModelApp.authorizationClient = authorizationClient;
 

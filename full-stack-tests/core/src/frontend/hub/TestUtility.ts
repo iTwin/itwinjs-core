@@ -15,6 +15,7 @@ import { IModelHubCloudEnv } from "./IModelHubCloudEnv";
 import { ITwin } from "@bentley/itwin-registry-client";
 
 export class TestUtility {
+  // SWB
   public static testContextName = "iModelJsIntegrationTest";
   public static testIModelNames = {
     noVersions: "NoVersionsTest",
@@ -55,6 +56,7 @@ export class TestUtility {
     return new AuthorizedClientRequestContext(accessToken);
   }
 
+  // SWB
   public static async initializeTestProject(testContextName: string, user: TestUserCredentials): Promise<FrontendAuthorizationClient> {
     const cloudParams = await TestRpcInterface.getClient().getCloudEnv();
     if (cloudParams.iModelBank) {
