@@ -71,6 +71,8 @@ export interface LookAtArgs {
   readonly eyePoint: XYAndZ;
   /** A vector that orients the camera's "up" (view y). This vector must not be parallel to the view direction. */
   readonly upVector: Vector3d;
+  /** The new size (width and height) of the view rectangle on the focus plane centered on the targetPoint. If undefined, the existing size is unchanged. */
+  readonly newExtents?: XAndY;
   /** The distance from the eyePoint to the front plane. If undefined, the existing front distance is used. */
   readonly frontDistance?: number;
   /** The distance from the eyePoint to the back plane. If undefined, the existing back distance is used. */
@@ -85,13 +87,8 @@ export interface LookAtArgs {
 export interface LookAtPerspectiveArgs extends LookAtArgs {
   /** The new location to which the camera should point. This becomes the center of the view on the focus plane. */
   readonly targetPoint: XYAndZ;
-  /** The new size (width and height) of the view rectangle. The view rectangle is on the focus plane centered on the targetPoint.
-   * If newExtents is undefined, the existing size is unchanged.
-   */
-  readonly newExtents?: XAndY;
 
   readonly viewDirection?: never;
-  readonly verticalSize?: never;
   readonly lensAngle?: never;
 }
 
@@ -101,11 +98,10 @@ export interface LookAtPerspectiveArgs extends LookAtArgs {
 export interface LookAtOrthoArgs extends LookAtArgs {
   /** The direction in which the view should look. */
   readonly viewDirection: XYAndZ;
-  /** The vertical size of the view. */
-  readonly verticalSize: number;
+  /** The new size (width and height) of the view rectangle. If undefined, the existing size is unchanged. */
+  readonly newExtents?: XAndY;
 
   readonly targetPoint?: never;
-  readonly newExtents?: never;
   readonly lensAngle?: never;
 }
 
@@ -119,8 +115,6 @@ export interface LookAtUsingLensAngle extends LookAtArgs {
   readonly lensAngle: Angle;
 
   readonly viewDirection?: never;
-  readonly verticalSize?: never;
-  readonly newExtents?: never;
 }
 
 /** Decorates the viewport with the view's grid. Graphics are cached as long as scene remains valid. */
@@ -1682,7 +1676,7 @@ export abstract class ViewState3d extends ViewState {
       const extent = 2.0 * Math.tan(lensAngle.radians / 2.0) * focus;
       const newDelta = Vector2d.create(this.extents.x, this.extents.y);
       newDelta.scale(extent / newDelta.x, newDelta);
-      args = { eyePoint, targetPoint: args.targetPoint, upVector: args.upVector, newExtents: newDelta, frontDistance: args.frontDistance, backDistance: args.backDistance, opts: args.opts };
+      args = { ...args, eyePoint, targetPoint: args.targetPoint };
     }
 
     const isPerspective = undefined !== args.targetPoint;
@@ -1696,19 +1690,14 @@ export abstract class ViewState3d extends ViewState {
 
     let zVec: Vector3d;
     let focusDist: number;
-    let newExtents;
     if (args.targetPoint) {
       zVec = Vector3d.createStartEnd(args.targetPoint, eye); // z defined by direction from eye to target
       focusDist = zVec.normalizeWithLength(zVec).mag; // set focus at target point
-      newExtents = args.newExtents;
     } else {
       zVec = Vector3d.createFrom(args.viewDirection).negate();
       if (!zVec.normalizeInPlace())
         return ViewStatus.InvalidDirection;
       focusDist = this.getFocusDistance();
-      if (args.verticalSize <= 0)
-        return ViewStatus.InvalidViewSize;
-      newExtents = Vector2d.create(this.getAspectRatio() * args.verticalSize, args.verticalSize);
     }
     const minFrontDist = this.minimumFrontDistance();
 
@@ -1730,7 +1719,7 @@ export abstract class ViewState3d extends ViewState {
     let backDist = args.backDistance ? args.backDistance : this.getBackDistance();
     let frontDist = args.frontDistance ? args.frontDistance : this.getFrontDistance();
 
-    const delta = newExtents ? new Vector3d(Math.abs(newExtents.x), Math.abs(newExtents.y), this.extents.z) : this.extents.clone();
+    const delta = args.newExtents ? new Vector3d(Math.abs(args.newExtents.x), Math.abs(args.newExtents.y), this.extents.z) : this.extents.clone();
 
     // The front/back distance are relatively arbitrary -- the frustum will be adjusted to include geometry.
     // Set them here to reasonable in front of eye and just beyond target.

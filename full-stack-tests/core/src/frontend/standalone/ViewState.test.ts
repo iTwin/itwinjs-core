@@ -8,11 +8,12 @@ import {
   AmbientOcclusion, BackgroundMapSettings, BackgroundMapType, ColorDef, HiddenLine, RenderMode, SpatialViewDefinitionProps, ViewDefinitionProps,
 } from "@bentley/imodeljs-common";
 import {
-  AuxCoordSystemSpatialState, CategorySelectorState, DrawingModelState, DrawingViewState, IModelConnection, MarginPercent,
+  AuxCoordSystemSpatialState, CategorySelectorState, DrawingModelState, DrawingViewState, IModelConnection, LookAtOrthoArgs, MarginPercent,
   MockRender, ModelSelectorState, SheetModelState, SheetViewState, SnapshotConnection, SpatialModelState, SpatialViewState, StandardView,
   StandardViewId, ViewState, ViewState3d, ViewStatus,
 } from "@bentley/imodeljs-frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
+import { Mutable } from "@bentley/bentleyjs-core";
 
 describe("ViewState", () => {
   let imodel: IModelConnection;
@@ -398,11 +399,10 @@ describe("ViewState", () => {
     perspectiveArgs.targetPoint = testParams.target;
 
     const viewDirection = Vector3d.createStartEnd(testParams.eye, testParams.target);
-    const verticalSize = extents.y;
-    const orthoArgs = {
+    const orthoArgs: Mutable<LookAtOrthoArgs> = {
       eyePoint: testParams.eye,
       viewDirection,
-      verticalSize,
+      newExtents: extents,
       upVector: testParams.up,
       frontDistance: testParams.front,
       backDistance: testParams.back,
@@ -413,11 +413,6 @@ describe("ViewState", () => {
 
     viewState.turnCameraOff();
     compareView(viewState, viewState3.toJSON(), "lookAt");
-
-    orthoArgs.verticalSize = -5;
-    status = viewState3.lookAt(orthoArgs);
-    expect(ViewStatus.InvalidViewSize === status, "lookAt should return status of InvalidViewSize").to.be.true;
-    orthoArgs.verticalSize = verticalSize;
 
     orthoArgs.viewDirection = Vector3d.createZero();
     status = viewState3.lookAt(orthoArgs);

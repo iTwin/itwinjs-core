@@ -5084,6 +5084,7 @@ export interface LookAtArgs {
     readonly backDistance?: number;
     readonly eyePoint: XYAndZ;
     readonly frontDistance?: number;
+    readonly newExtents?: XAndY;
     readonly opts?: ViewChangeOptions;
     readonly upVector: Vector3d;
 }
@@ -5091,37 +5092,28 @@ export interface LookAtArgs {
 // @beta
 export interface LookAtOrthoArgs extends LookAtArgs {
     // (undocumented)
-    lensAngle?: never;
+    readonly lensAngle?: never;
+    readonly newExtents?: XAndY;
     // (undocumented)
-    newExtents?: never;
-    // (undocumented)
-    targetPoint?: never;
-    readonly verticalSize: number;
-    readonly viewDirection: XAndY;
+    readonly targetPoint?: never;
+    readonly viewDirection: XYAndZ;
 }
 
 // @beta
 export interface LookAtPerspectiveArgs extends LookAtArgs {
     // (undocumented)
-    lensAngle?: never;
-    readonly newExtents?: XAndY;
+    readonly lensAngle?: never;
     readonly targetPoint: XYAndZ;
     // (undocumented)
-    verticalSize?: never;
-    // (undocumented)
-    viewDirection?: never;
+    readonly viewDirection?: never;
 }
 
 // @beta
 export interface LookAtUsingLensAngle extends LookAtArgs {
     readonly lensAngle: Angle;
-    // (undocumented)
-    newExtents?: never;
     readonly targetPoint: XYAndZ;
     // (undocumented)
-    verticalSize?: never;
-    // (undocumented)
-    viewDirection?: never;
+    readonly viewDirection?: never;
 }
 
 // @public
@@ -12948,7 +12940,7 @@ export enum ViewStatus {
     // (undocumented)
     InvalidViewport = 15,
     // (undocumented)
-    InvalidViewToWorldScale = 17,
+    InvalidViewSize = 17,
     // (undocumented)
     InvalidWindow = 7,
     // (undocumented)
