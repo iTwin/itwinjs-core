@@ -78,7 +78,7 @@ describe("ViewState", () => {
     assert.notEqual(v2.camera, viewState.camera);
     assert.notEqual(v2.jsonProperties, viewState.jsonProperties);
     assert.notEqual(v2.rotation, viewState.rotation);
-    const stat = v2.lookAt(new Point3d(1, 2, 3), new Point3d(100, 100, 100), new Vector3d(0, 1, 0));
+    const stat = v2.lookAt({ eyePoint: new Point3d(1, 2, 3), targetPoint: new Point3d(100, 100, 100), upVector: new Vector3d(0, 1, 0) });
     assert.equal(stat, ViewStatus.Success);
     assert.notDeepEqual(v2, viewState);
 
@@ -337,7 +337,7 @@ describe("ViewState", () => {
     viewState.setFocusDistance(191);
     viewState.setEyePoint(Point3d.create(-64, 120, 500));
     const cppView: SpatialViewDefinitionProps = await unitTestRpcImp.executeTest(imodel.getRpcProps(), "lookAtUsingLensAngle", testParams);
-    viewState.lookAtUsingLensAngle(testParams.eye, testParams.target, testParams.up, testParams.lens, testParams.front, testParams.back);
+    viewState.lookAt({ eyePoint: testParams.eye, targetPoint: testParams.target, upVector: testParams.up, lensAngle: testParams.lens, frontDistance: testParams.front, backDistance: testParams.back });
     compareToCppView(viewState, cppView, 116.961632, "lookAtUsingLensAngle");
 
     // changing the focus distance shouldn't change the viewing frustum
@@ -347,7 +347,7 @@ describe("ViewState", () => {
     assert.equal(200, viewState.camera.focusDist);
   });
 
-  it("lookAtPerspectiveOrOrtho should work", async () => {
+  it("lookAt should work", async () => {
     const testParams: any = {
       view: viewState,
       eye: Point3d.create(8, 6, 7),
@@ -366,7 +366,7 @@ describe("ViewState", () => {
     viewState.setEyePoint(Point3d.create(-64, 120, 500));
     const viewState2 = viewState.clone();
     const viewState3 = viewState.clone();
-    viewState.lookAtUsingLensAngle(testParams.eye, testParams.target, testParams.up, testParams.lens, testParams.front, testParams.back);
+    viewState.lookAt({ eyePoint: testParams.eye, targetPoint: testParams.target, upVector: testParams.up, lensAngle: testParams.lens, frontDistance: testParams.front, backDistance: testParams.back });
     const extents = viewState.getExtents();
 
     const perspectiveArgs = {
@@ -377,51 +377,51 @@ describe("ViewState", () => {
       frontDistance: testParams.front,
       backDistance: testParams.back,
     };
-    let status = viewState2.lookAtPerspectiveOrOrtho(perspectiveArgs);
-    expect(ViewStatus.Success === status, "lookAtPerspectiveOrOrtho should return status of Success").to.be.true;
+    let status = viewState2.lookAt(perspectiveArgs);
+    expect(ViewStatus.Success === status, "lookAt should return status of Success").to.be.true;
     expect(viewState2.isCameraOn, "Camera should be on").to.be.true;
-    compareView(viewState, viewState2.toJSON(), "lookAtPerspectiveOrOrtho");
+    compareView(viewState, viewState2.toJSON(), "lookAt");
 
     perspectiveArgs.upVector = Vector3d.createZero();
-    status = viewState2.lookAtPerspectiveOrOrtho(perspectiveArgs);
-    expect(ViewStatus.InvalidUpVector === status, "lookAtPerspectiveOrOrtho should return status of InvalidUpVector").to.be.true;
+    status = viewState2.lookAt(perspectiveArgs);
+    expect(ViewStatus.InvalidUpVector === status, "lookAt should return status of InvalidUpVector").to.be.true;
     perspectiveArgs.upVector = testParams.up;
 
     viewState2.setAllow3dManipulations(false);
-    status = viewState2.lookAtPerspectiveOrOrtho(perspectiveArgs);
-    expect(ViewStatus.NotCameraView === status, "lookAtPerspectiveOrOrtho should return status of NotCameraView").to.be.true;
+    status = viewState2.lookAt(perspectiveArgs);
+    expect(ViewStatus.NotCameraView === status, "lookAt should return status of NotCameraView").to.be.true;
     viewState2.setAllow3dManipulations(true);
 
     perspectiveArgs.targetPoint = testParams.eye;
-    status = viewState2.lookAtPerspectiveOrOrtho(perspectiveArgs);
-    expect(ViewStatus.InvalidTargetPoint === status, "lookAtPerspectiveOrOrtho should return status of InvalidTargetPoint").to.be.true;
+    status = viewState2.lookAt(perspectiveArgs);
+    expect(ViewStatus.InvalidTargetPoint === status, "lookAt should return status of InvalidTargetPoint").to.be.true;
     perspectiveArgs.targetPoint = testParams.target;
 
     const viewDirection = Vector3d.createStartEnd(testParams.eye, testParams.target);
-    const viewToWorldScale = extents.y;
+    const verticalSize = extents.y;
     const orthoArgs = {
       eyePoint: testParams.eye,
       viewDirection,
-      viewToWorldScale,
+      verticalSize,
       upVector: testParams.up,
       frontDistance: testParams.front,
       backDistance: testParams.back,
     };
-    status = viewState3.lookAtPerspectiveOrOrtho(orthoArgs);
-    expect(ViewStatus.Success === status, "lookAtPerspectiveOrOrtho should return status of Success").to.be.true;
+    status = viewState3.lookAt(orthoArgs);
+    expect(ViewStatus.Success === status, "lookAt should return status of Success").to.be.true;
     expect(viewState3.isCameraOn, "Camera should not be on").to.be.false;
 
     viewState.turnCameraOff();
-    compareView(viewState, viewState3.toJSON(), "lookAtPerspectiveOrOrtho");
+    compareView(viewState, viewState3.toJSON(), "lookAt");
 
-    orthoArgs.viewToWorldScale = -5;
-    status = viewState3.lookAtPerspectiveOrOrtho(orthoArgs);
-    expect(ViewStatus.InvalidViewToWorldScale === status, "lookAtPerspectiveOrOrtho should return status of InvalidViewToWorldScale").to.be.true;
-    orthoArgs.viewToWorldScale = viewToWorldScale;
+    orthoArgs.verticalSize = -5;
+    status = viewState3.lookAt(orthoArgs);
+    expect(ViewStatus.InvalidViewToWorldScale === status, "lookAt should return status of InvalidViewToWorldScale").to.be.true;
+    orthoArgs.verticalSize = verticalSize;
 
     orthoArgs.viewDirection = Vector3d.createZero();
-    status = viewState3.lookAtPerspectiveOrOrtho(orthoArgs);
-    expect(ViewStatus.InvalidDirection === status, "lookAtPerspectiveOrOrtho should return status of InvalidDirection").to.be.true;
+    status = viewState3.lookAt(orthoArgs);
+    expect(ViewStatus.InvalidDirection === status, "lookAt should return status of InvalidDirection").to.be.true;
     orthoArgs.viewDirection = viewDirection;
   });
 

@@ -5090,14 +5090,38 @@ export interface LookAtArgs {
 
 // @beta
 export interface LookAtOrthoArgs extends LookAtArgs {
-    readonly viewDirection: Vector3d;
-    readonly viewToWorldScale: number;
+    // (undocumented)
+    lensAngle?: never;
+    // (undocumented)
+    newExtents?: never;
+    // (undocumented)
+    targetPoint?: never;
+    readonly verticalSize: number;
+    readonly viewDirection: XAndY;
 }
 
 // @beta
 export interface LookAtPerspectiveArgs extends LookAtArgs {
+    // (undocumented)
+    lensAngle?: never;
     readonly newExtents?: XAndY;
     readonly targetPoint: XYAndZ;
+    // (undocumented)
+    verticalSize?: never;
+    // (undocumented)
+    viewDirection?: never;
+}
+
+// @beta
+export interface LookAtUsingLensAngle extends LookAtArgs {
+    readonly lensAngle: Angle;
+    // (undocumented)
+    newExtents?: never;
+    readonly targetPoint: XYAndZ;
+    // (undocumented)
+    verticalSize?: never;
+    // (undocumented)
+    viewDirection?: never;
 }
 
 // @public
@@ -12866,12 +12890,10 @@ export abstract class ViewState3d extends ViewState {
     isEyePointGlobalView(eyePoint: XYAndZ): boolean;
     // (undocumented)
     get isGlobalView(): boolean;
-    lookAt(eyePoint: XYAndZ, targetPoint: XYAndZ, upVector: Vector3d, newExtents?: XAndY, frontDistance?: number, backDistance?: number, opts?: ViewChangeOptions): ViewStatus;
+    // @beta
+    lookAt(args: LookAtPerspectiveArgs | LookAtOrthoArgs | LookAtUsingLensAngle): ViewStatus;
     lookAtGlobalLocation(eyeHeight: number, pitchAngleRadians?: number, location?: GlobalLocation, eyePoint?: Point3d): number;
     lookAtGlobalLocationFromGcs(eyeHeight: number, pitchAngleRadians?: number, location?: GlobalLocation, eyePoint?: Point3d): Promise<number>;
-    // @beta
-    lookAtPerspectiveOrOrtho(args: LookAtPerspectiveArgs | LookAtOrthoArgs): ViewStatus;
-    lookAtUsingLensAngle(eyePoint: Point3d, targetPoint: Point3d, upVector: Vector3d, fov: Angle, frontDistance?: number, backDistance?: number, opts?: ViewChangeOptions): ViewStatus;
     // (undocumented)
     minimumFrontDistance(): number;
     moveCameraGlobal(fromPoint: Point3d, toPoint: Point3d): ViewStatus;
