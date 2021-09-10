@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core";
+import { ElectronHost } from "@bentley/electron-manager/cjs/ElectronBackend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { initializeBackend } from "./backend";
-import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
 
 const dptaElectronMain = async () => {
 

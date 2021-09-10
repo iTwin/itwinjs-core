@@ -38,7 +38,7 @@ import {
   ISchemaChanges,
   AnyDiagnostic,
 } from "@bentley/ecschema-metadata";
-import { IModelSchemaLoader } from "@bentley/imodeljs-backend/lib/IModelSchemaLoader";
+import { IModelSchemaLoader } from "@bentley/imodeljs-backend/cjs/IModelSchemaLoader";
 import { MutableSchema } from "@bentley/ecschema-metadata/cjs/Metadata/Schema";
 import { ItemState } from "@bentley/imodel-bridge/lib/Synchronizer";
 import { DOMParser, XMLSerializer } from "xmldom";

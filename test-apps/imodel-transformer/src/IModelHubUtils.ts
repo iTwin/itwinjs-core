@@ -5,7 +5,7 @@
 // cspell:words buddi urlps
 
 import { GuidString } from "@bentley/bentleyjs-core";
-import { ElectronAuthorizationBackend } from "@bentley/electron-manager/lib/ElectronBackend";
+import { ElectronAuthorizationBackend } from "@bentley/electron-manager/cjs/ElectronBackend";
 import { Version } from "@bentley/imodelhub-client";
 import { BriefcaseDb, BriefcaseManager, IModelHost, IModelHubBackend, NativeHost, RequestNewBriefcaseArg } from "@bentley/imodeljs-backend";
 import { BriefcaseIdValue, ChangesetId, ChangesetIndex, ChangesetProps } from "@bentley/imodeljs-common";

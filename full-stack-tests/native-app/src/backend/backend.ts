@@ -5,7 +5,7 @@
 
 // required to get certa to read the .env file - should be reworked
 import { BentleyLoggerCategory, ClientRequestContext, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
+import { ElectronHost } from "@bentley/electron-manager/cjs/ElectronBackend";
 import { IModelBankClient, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
 import { BackendLoggerCategory, BriefcaseDb, BriefcaseManager, ChangeSummaryManager, IModelHostConfiguration, IModelJsFs, IpcHandler, NativeHost, NativeLoggerCategory } from "@bentley/imodeljs-backend";
 import { IModelRpcProps, RpcConfiguration } from "@bentley/imodeljs-common";

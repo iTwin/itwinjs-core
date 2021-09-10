@@ -2,14 +2,14 @@
   "name": "@bentley/analytical-backend",
   "version": "3.0.0-dev.49",
   "main": "cjs/analytical-backend.js",
-  "typings": "types/analytical-backend",
+  "typings": "cjs/analytical-backend",
   "license": "MIT",
   "engines": {
     "node": ">=10.17.0 <15.0"
   },
   "scripts": {
     "compile": "npm run build",
-    "build": "tsc 1>&2 --outDir cjs --declarationDir types && npm run copy:test-assets",
+    "build": "tsc 1>&2 --outDir cjs && npm run copy:test-assets",
     "clean": "rimraf cjs types .rush/temp/package-deps*.json",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./cjs/test/assets",
     "cover": "nyc npm test",

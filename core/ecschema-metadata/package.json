@@ -4,7 +4,7 @@
   "description": "ECObjects core concepts in typescript",
   "license": "MIT",
   "main": "cjs/ecschema-metadata.js",
-  "typings": "types/ecschema-metadata",
+  "typings": "cjs/ecschema-metadata",
   "imodeljsSharedLibrary": true,
   "repository": {
     "type": "git",
@@ -13,7 +13,7 @@
   "scripts": {
     "compile": "npm run build",
     "build": "npm run build:cjs",
-    "build:cjs": "tsc 1>&2 --outDir cjs --declarationDir types && npm run copy:test-assets",
+    "build:cjs": "tsc 1>&2 --outDir cjs && npm run copy:test-assets",
     "clean": "rimraf cjs types .rush/temp/package-deps*.json",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./cjs/test/assets",
     "extract-api": "betools extract-api --entry=ecschema-metadata",
