@@ -190,10 +190,6 @@ export class InstanceBuffers extends InstanceData {
   }
 }
 
-// ###TODO: This almost works. In a top view it appears to work perfectly, but as you rotate towards more of a front view
-// the clip seems to skew, revealing portions of symbol outside the pattern boundary.
-const supportViewIndependentPatterns = false;
-
 /** @internal */
 export class PatternBuffers extends InstanceData {
   private readonly _featureId?: Float32Array;
@@ -222,9 +218,6 @@ export class PatternBuffers extends InstanceData {
         (featureId & 0xff0000) >>> 16,
       ]);
     }
-
-    if (!supportViewIndependentPatterns)
-      this.viewIndependentOrigin = undefined;
   }
 
   public static create(params: PatternGraphicParams, shared: boolean): PatternBuffers | undefined {
