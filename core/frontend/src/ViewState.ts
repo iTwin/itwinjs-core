@@ -115,7 +115,7 @@ export interface LookAtOrthoArgs extends LookAtArgs {
 export interface LookAtUsingLensAngle extends LookAtArgs {
   /** The new location to which the camera should point. This becomes the center of the view on the focus plane. */
   readonly targetPoint: XYAndZ;
-  /** The angle, in radians, that defines the field-of-view for the camera. Must be between .0001 and pi. */
+  /** The angle that defines the field-of-view for the camera. Must be between .0001 and pi. */
   readonly lensAngle: Angle;
 
   readonly viewDirection?: never;
