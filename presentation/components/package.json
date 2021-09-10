@@ -118,7 +118,7 @@
     "check-coverage": true,
     "statements": 100,
     "functions": 100,
-    "branches": 99,
+    "branches": 100,
     "lines": 100,
     "require": [
       "source-map-support/register",

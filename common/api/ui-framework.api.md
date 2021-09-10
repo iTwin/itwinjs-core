@@ -4,7 +4,6 @@
 
 ```ts
 
-import * as _ from 'lodash';
 import { AbstractMenuItemProps } from '@bentley/ui-abstract';
 import { AbstractStatusBarCustomItem } from '@bentley/ui-abstract';
 import { AbstractToolbarProps } from '@bentley/ui-abstract';
@@ -39,7 +38,6 @@ import { ConditionalStringValue } from '@bentley/ui-abstract';
 import * as CSS from 'csstype';
 import { CustomButtonDefinition } from '@bentley/ui-abstract';
 import { CustomToolbarItem } from '@bentley/ui-components';
-import { DelayLoadedTreeNodeItem } from '@bentley/ui-components';
 import { DialogItem } from '@bentley/ui-abstract';
 import { DialogLayoutDataProvider } from '@bentley/ui-abstract';
 import { DialogPropertySyncItem } from '@bentley/ui-abstract';
@@ -88,7 +86,6 @@ import { NineZoneState } from '@bentley/ui-ninezone';
 import { NoChildrenProps } from '@bentley/ui-core';
 import { NodeCheckboxRenderProps } from '@bentley/ui-core';
 import { NodeKey } from '@bentley/presentation-common';
-import { NodePathElement } from '@bentley/presentation-common';
 import { NotificationManager } from '@bentley/imodeljs-frontend';
 import { NotifyMessageDetails } from '@bentley/imodeljs-frontend';
 import { Omit } from '@bentley/ui-core';
@@ -100,7 +97,6 @@ import { Orientation } from '@bentley/ui-core';
 import { OutputMessageAlert } from '@bentley/imodeljs-frontend';
 import { OutputMessagePriority } from '@bentley/imodeljs-frontend';
 import { OutputMessageType } from '@bentley/imodeljs-frontend';
-import { PageOptions } from '@bentley/ui-components';
 import { PanelSide } from '@bentley/ui-ninezone';
 import { PlaybackSettings } from '@bentley/ui-imodel-components';
 import { Point } from '@bentley/ui-core';
@@ -114,7 +110,6 @@ import * as PropTypes from 'prop-types';
 import { QuantityTypeArg } from '@bentley/imodeljs-frontend';
 import * as React from 'react';
 import { RectangleProps } from '@bentley/ui-core';
-import { RegisteredRuleset } from '@bentley/presentation-common';
 import { RelativePosition } from '@bentley/ui-abstract';
 import { ResizeHandle } from '@bentley/ui-ninezone';
 import { Ruleset } from '@bentley/presentation-common';
@@ -153,7 +148,6 @@ import { ToolbarUsage } from '@bentley/ui-abstract';
 import { ToolSettingsWidgetManagerProps } from '@bentley/ui-ninezone';
 import { ToolTipOptions } from '@bentley/imodeljs-frontend';
 import { TreeCheckboxStateChangeEventArgs } from '@bentley/ui-components';
-import { TreeDataChangesListener } from '@bentley/ui-components';
 import { TreeNodeItem } from '@bentley/ui-components';
 import { TreeNodeRendererProps } from '@bentley/ui-components';
 import { TreeRendererProps } from '@bentley/ui-components';
@@ -955,7 +949,6 @@ export interface CategoryTreeProps {
     allViewports?: boolean;
     // @internal
     categoryVisibilityHandler?: CategoryVisibilityHandler;
-    enablePreloading?: boolean;
     // @alpha
     filterInfo?: VisibilityTreeFilterInfo;
     height: number;
@@ -3969,22 +3962,6 @@ export class ModelessDialogRenderer extends React.PureComponent<CommonProps> {
     render(): React.ReactNode;
 }
 
-// @internal @deprecated
-export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProps, ModelSelectorWidgetState> {
-    constructor(props: ModelSelectorWidgetProps);
-    // (undocumented)
-    componentDidMount(): Promise<void>;
-    // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    render(): JSX.Element;
-    }
-
-// @internal
-export class ModelSelectorWidgetControl extends WidgetControl {
-    constructor(info: ConfigurableCreateInfo, options: any);
-}
-
 // @public
 export function ModelsTree(props: ModelsTreeProps): JSX.Element;
 
@@ -5539,7 +5516,6 @@ export function SpatialContainmentTree(props: SpatialContainmentTreeProps): JSX.
 export interface SpatialContainmentTreeProps {
     // @beta
     enableElementsClassGrouping?: ClassGroupingOption;
-    enablePreloading?: boolean;
     height: number;
     // (undocumented)
     iModel: IModelConnection;
