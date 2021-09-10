@@ -133,6 +133,7 @@ interface ImdlAreaPattern {
   readonly worldToModel: TransformProps;
   readonly range: Range3dProps;
   readonly symbolTranslation: XYZProps;
+  readonly viewIndependentOrigin?: XYZProps;
 }
 
 interface ImdlSurface {
@@ -479,6 +480,7 @@ export class ImdlReader extends GltfReader {
     if (!clipVolume)
       return undefined;
 
+    const viewIndependentOrigin = json.viewIndependentOrigin ? Point3d.fromJSON(json.viewIndependentOrigin) : undefined;
     const pattern = this._system.createAreaPattern({
       xyOffsets: new Float32Array(xyOffsets.buffer, xyOffsets.byteOffset, xyOffsets.byteLength / 4),
       featureId: json.featureId,
@@ -490,6 +492,7 @@ export class ImdlReader extends GltfReader {
       worldToModel: Transform.fromJSON(json.worldToModel),
       range: Range3d.fromJSON(json.range),
       symbolTranslation: Point3d.fromJSON(json.symbolTranslation),
+      viewIndependentOrigin,
     });
 
     if (!pattern)

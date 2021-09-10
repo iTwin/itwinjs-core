@@ -82,6 +82,7 @@ export class InstanceBuffers extends InstanceData {
   public readonly symbology?: BufferHandle;
   public readonly patternParams = InstanceBuffers._patternParams;
   public readonly patternTransforms = undefined;
+  public readonly viewIndependentOrigin = undefined;
 
   private constructor(shared: boolean, count: number, transforms: BufferHandle, rtcCenter: Point3d, range: Range3d, symbology?: BufferHandle, featureIds?: BufferHandle) {
     super(count, shared, rtcCenter, range);
@@ -189,6 +190,10 @@ export class InstanceBuffers extends InstanceData {
   }
 }
 
+// ###TODO: This almost works. In a top view it appears to work perfectly, but as you rotate towards more of a front view
+// the clip seems to skew, revealing portions of symbol outside the pattern boundary.
+const supportViewIndependentPatterns = false;
+
 /** @internal */
 export class PatternBuffers extends InstanceData {
   private readonly _featureId?: Float32Array;
@@ -205,7 +210,8 @@ export class PatternBuffers extends InstanceData {
     public readonly worldToModel: Matrix4,
     public readonly symbolToLocal: Matrix4,
     public readonly offsets: BufferHandle,
-    featureId: number | undefined
+    featureId: number | undefined,
+    public readonly viewIndependentOrigin: Point3d | undefined
   ) {
     super(count, shared, rtcCenter, range);
     this.patternTransforms = this;
@@ -216,6 +222,9 @@ export class PatternBuffers extends InstanceData {
         (featureId & 0xff0000) >>> 16,
       ]);
     }
+
+    if (!supportViewIndependentPatterns)
+      this.viewIndependentOrigin = undefined;
   }
 
   public static create(params: PatternGraphicParams, shared: boolean): PatternBuffers | undefined {
@@ -238,7 +247,8 @@ export class PatternBuffers extends InstanceData {
       Matrix4.fromTransform(params.worldToModel),
       Matrix4.fromTransform(Transform.createTranslation(params.symbolTranslation)),
       offsets,
-      params.featureId
+      params.featureId,
+      params.viewIndependentOrigin,
     );
   }
 
@@ -274,6 +284,8 @@ export class InstancedGeometry extends CachedGeometry {
 
   public getRtcModelTransform(modelMatrix: Transform) { return this._buffers.getRtcModelTransform(modelMatrix); }
   public getRtcOnlyTransform() { return this._buffers.getRtcOnlyTransform(); }
+
+  public override get viewIndependentOrigin(): Point3d | undefined { return this._buffers.viewIndependentOrigin; }
 
   public override get asInstanced() { return this; }
   public override get asLUT() { return this._repr.asLUT; }
