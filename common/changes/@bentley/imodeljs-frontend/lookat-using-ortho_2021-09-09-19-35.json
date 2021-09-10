@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/imodeljs-frontend",
-      "comment": "Allow white-on-white reversal to be applied regardless of background color.",
+      "comment": "Added lookAtPerspectiveOrOrtho to ViewState3d",
       "type": "none"
     }
   ],
