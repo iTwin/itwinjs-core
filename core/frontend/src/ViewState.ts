@@ -90,9 +90,9 @@ export interface LookAtPerspectiveArgs extends LookAtArgs {
    */
   readonly newExtents?: XAndY;
 
-  viewDirection?: never;
-  verticalSize?: never;
-  lensAngle?: never;
+  readonly viewDirection?: never;
+  readonly verticalSize?: never;
+  readonly lensAngle?: never;
 }
 
 /** Arguments to [[ViewState3d.lookAt]] to set up an orthographic view
@@ -100,13 +100,13 @@ export interface LookAtPerspectiveArgs extends LookAtArgs {
  */
 export interface LookAtOrthoArgs extends LookAtArgs {
   /** The direction in which the view should look. */
-  readonly viewDirection: XAndY;
+  readonly viewDirection: XYAndZ;
   /** The vertical size of the view. */
   readonly verticalSize: number;
 
-  targetPoint?: never;
-  newExtents?: never;
-  lensAngle?: never;
+  readonly targetPoint?: never;
+  readonly newExtents?: never;
+  readonly lensAngle?: never;
 }
 
 /** Arguments to [[ViewState3d.lookAt]] to set up an perspective view using a (field-of-view) lens angle.
@@ -118,9 +118,9 @@ export interface LookAtUsingLensAngle extends LookAtArgs {
   /** The angle, in radians, that defines the field-of-view for the camera. Must be between .0001 and pi. */
   readonly lensAngle: Angle;
 
-  viewDirection?: never;
-  verticalSize?: never;
-  newExtents?: never;
+  readonly viewDirection?: never;
+  readonly verticalSize?: never;
+  readonly newExtents?: never;
 }
 
 /** Decorates the viewport with the view's grid. Graphics are cached as long as scene remains valid. */
