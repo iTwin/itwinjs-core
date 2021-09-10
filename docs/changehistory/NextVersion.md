@@ -33,7 +33,7 @@ Each of these interfaces originally had only a member `changeSetId: string`, In 
 
 ### ViewState3d.lookAt Argument Changed
 
-This method previously took 6 arguments. In addition the method `ViewState3d.lookAtUsingLensAngle` also established a perspective `ViewState3d` from a field-of-view lens angle with many of the same arguments. There is now a new implementation of `ViewState3d.lookAt` that accepts named parameters using the interfaces [LookAtPerspectiveArgs]($frontend), [LookAtOrthoArgs]($frontend), or [LookAtUsingLensAngle]($frontend).[ViewState3d.lookAt]($frontend) can now be used to set up either a perspective or orthographic ViewState3d.
+[ViewState3d.lookAt]($frontend) previously took 6 arguments. In addition the method `ViewState3d.lookAtUsingLensAngle` also established a perspective `ViewState3d` from a field-of-view lens angle with many of the same arguments. There is now a new implementation of `ViewState3d.lookAt` that accepts named parameters to set up either a perspective or orthographic view, using the interfaces [LookAtPerspectiveArgs]($frontend), [LookAtOrthoArgs]($frontend), or [LookAtUsingLensAngle]($frontend).
 
 This is a breaking change, so you may need to modify your code and replace the previous arguments with a single object with the appropriate names. For example,:
 
