@@ -410,7 +410,7 @@ export class BooleanTypeConverter extends TypeConverter {
     sortCompare(a: Primitives.Boolean, b: Primitives.Boolean, _ignoreCase?: boolean): number;
 }
 
-// @beta
+// @beta @deprecated
 export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState> {
     // @internal
     constructor(props: BreadcrumbProps);
@@ -432,7 +432,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
     readonly state: Readonly<BreadcrumbState>;
 }
 
-// @beta
+// @beta @deprecated
 export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, BreadcrumbDetailsState> {
     // @internal
     constructor(props: BreadcrumbDetailsProps);
@@ -461,7 +461,7 @@ export interface BreadcrumbDetailsDragDropProps<DragDropObject = any> {
 // @beta @deprecated
 export type BreadcrumbDetailsDragDropType = {} | TreeNodeItem | TableDataProvider;
 
-// @beta
+// @beta @deprecated
 export interface BreadcrumbDetailsProps extends CommonProps {
     // (undocumented)
     columns?: ColumnDescription[];
@@ -524,7 +524,7 @@ export interface BreadcrumbInputState {
     messageBoxOpened: boolean;
 }
 
-// @beta
+// @beta @deprecated
 export enum BreadcrumbMode {
     // (undocumented)
     Dropdown = "dropdown",
@@ -532,7 +532,7 @@ export enum BreadcrumbMode {
     Input = "input"
 }
 
-// @beta
+// @beta @deprecated
 export class BreadcrumbNode extends React.Component<BreadcrumbNodeProps> {
     constructor(props: BreadcrumbNodeProps);
     // (undocumented)
@@ -543,7 +543,7 @@ export class BreadcrumbNode extends React.Component<BreadcrumbNodeProps> {
     render(): React.ReactNode;
 }
 
-// @beta
+// @beta @deprecated
 export interface BreadcrumbNodeProps {
     icon: string;
     label: PropertyRecord;
@@ -554,7 +554,7 @@ export interface BreadcrumbNodeProps {
 // @internal (undocumented)
 export type BreadcrumbNodeRenderer = (props: BreadcrumbNodeProps, node?: TreeNodeItem, parent?: TreeNodeItem) => React.ReactNode;
 
-// @beta
+// @beta @deprecated
 export class BreadcrumbPath {
     constructor(dataProvider: TreeDataProvider);
     // (undocumented)
@@ -569,7 +569,7 @@ export class BreadcrumbPath {
     setDataProvider(dataProvider: TreeDataProvider): void;
 }
 
-// @beta
+// @beta @deprecated
 export interface BreadcrumbProps extends CommonProps {
     background?: boolean;
     dataProvider: TreeDataProvider;
@@ -592,16 +592,16 @@ export interface BreadcrumbProps extends CommonProps {
     width?: number | string;
 }
 
-// @beta
+// @beta @deprecated
 export class BreadcrumbTreeUtils {
     static aliasNodeListToTableDataProvider(nodes: TreeNodeItem[], columns: ColumnDescription[], treeDataProvider?: TreeDataProvider): TableDataProvider;
     }
 
-// @beta
+// @beta @deprecated
 export class BreadcrumbUpdateEvent extends UiEvent<BreadcrumbUpdateEventArgs> {
 }
 
-// @beta
+// @beta @deprecated
 export interface BreadcrumbUpdateEventArgs {
     // (undocumented)
     currentNode: TreeNodeItem | undefined;

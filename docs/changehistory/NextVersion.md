@@ -64,6 +64,7 @@ To rectify this, and to eliminate various other pitfalls associated with mutable
 ```
 
 Methods that mutate a ViewFlags object have been removed.
+
 * `clone` has been replaced with [ViewFlags.copy]($common), which returns a new object instead of modifying `this`.
 * `createFrom` has been removed. Because ViewFlags is immutable, it is never necessary to create an identical copy of one - just use the same object. Or, if for some reason you really want an identical copy, use the object spread operator.
 
@@ -308,37 +309,90 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @bentley/presentation-common
 
-| Removed                                  | Replacement                                                                            |
-| ---------------------------------------- | -------------------------------------------------------------------------------------- |
-| `PresentationRpcInterface.loadHierarchy` | *eliminated*                                                                           |
-| `PresentationUnitSystem`                 | Removed in favor of `UnitSystemKey` from `@bentley/imodeljs-quantity`                  |
+| Removed                                               | Replacement                                                                 |
+| ----------------------------------------------------- | --------------------------------------------------------------------------- |
+| `CompressedDescriptorJSON`                            | `DescriptorJSON`                                                            |
+| `Descriptor.toCompressedJSON`                         | `Descriptor.toJSON`                                                         |
+| `DescriptorOverrides.hiddenFieldNames`                | `DescriptorOverrides.fieldsSelector`                                        |
+| `DescriptorOverrides.sortDirection`                   | `DescriptorOverrides.sorting.direction`                                     |
+| `DescriptorOverrides.sortingFieldName`                | `DescriptorOverrides.sorting.field`                                         |
+| `ECPropertyGroupingNodeKey.groupingValue`             | `ECPropertyGroupingNodeKey.groupingValues`                                  |
+| `ExtendedContentRequestOptions`                       | `ContentRequestOptions`                                                     |
+| `ExtendedContentRpcRequestOptions`                    | `ContentRpcRequestOptions`                                                  |
+| `ExtendedHierarchyRequestOptions`                     | `HierarchyRequestOptions`                                                   |
+| `ExtendedHierarchyRpcRequestOptions`                  | `HierarchyRpcRequestOptions`                                                |
+| `Field.fromJSON`                                      | `Field.fromCompressedJSON`                                                  |
+| `HierarchyCompareRpcOptions`                          | *eliminated*                                                                |
+| `LabelRequestOptions`                                 | `DisplayLabelRequestOptions`                                                |
+| `LabelRpcRequestOptions`                              | `DisplayLabelRpcRequestOptions`                                             |
+| `LoggingNamespaces`                                   | `PresentationBackendLoggerCategory`, `PresentationBackendNativeLoggerCategory`, `PresentationFrontendLoggerCategory` or `PresentationComponentsLoggerCategory` |
+| `NodeDeletionInfo.target`                             | `NodeDeletionInfo.parent` and `NodeDeletionInfo.position`                   |
+| `NodeDeletionInfoJSON.target`                         | `NodeDeletionInfoJSON.parent` and `NodeDeletionInfoJSON.position`           |
+| `PresentationDataCompareOptions`                      | *eliminated*                                                                |
+| `PresentationRpcInterface.compareHierarchies`         | *eliminated*                                                                |
+| `PresentationRpcInterface.compareHierarchiesPaged`    | *eliminated*                                                                |
+| `PresentationRpcInterface.getContent`                 | `PresentationRpcInterface.getPagedContent` and `getPagedContentSet`         |
+| `PresentationRpcInterface.getContentAndSize`          | `PresentationRpcInterface.getPagedContent` and `getPagedContentSet`         |
+| `PresentationRpcInterface.getDisplayLabelDefinitions` | `PresentationRpcInterface.getPagedDisplayLabelDefinitions`                  |
+| `PresentationRpcInterface.getDistinctValues`          | `PresentationRpcInterface.getPagedDistinctValues`                           |
+| `PresentationRpcInterface.getNodes`                   | `PresentationRpcInterface.getPagedNodes`                                    |
+| `PresentationRpcInterface.getNodesAndCount`           | `PresentationRpcInterface.getPagedNodes`                                    |
+| `PresentationRpcInterface.loadHierarchy`              | *eliminated*                                                                |
+| `PresentationUnitSystem`                              | `UnitSystemKey` in `@bentley/imodeljs-quantity`                             |
+| `PropertiesFieldDescriptor.propertyClass`             | `PropertiesFieldDescriptor.properties.class`                                |
+| `PropertiesFieldDescriptor.propertyName`              | `PropertiesFieldDescriptor.properties.name`                                 |
+| `Property.relatedClassPath`                           | `NestedContentField.pathToPrimaryClass`                                     |
+| `PropertyJSON.relatedClassPath`                       | `NestedContentFieldJSON.pathToPrimaryClass`                                 |
+| `SelectClassInfo.pathToPrimaryClass`                  | `SelectClassInfo.pathFromInputToSelectClass`                                |
+| `SelectClassInfo.relatedInstanceClasses`              | `SelectClassInfo.relatedInstancePaths`                                      |
+| `SelectClassInfoJSON.pathToPrimaryClass`              | `SelectClassInfoJSON.pathFromInputToSelectClass`                            |
+| `SelectClassInfoJSON.relatedInstanceClasses`          | `SelectClassInfoJSON.relatedInstancePaths`                                  |
 
 ### @bentley/presentation-backend
 
 | Removed                                     | Replacement                                                                            |
 | ------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `PresentationManager.loadHierarchy`         | *eliminated*                                                                           |
-| `UnitSystemFormat.unitSystems`              | Changed type from `PresentationUnitSystem[]` to `UnitSystemKey[]`                      |
-| `PresentationManagerProps.activeUnitSystem` | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
+| `DuplicateRulesetHandlingStrategy`          | `RulesetInsertOptions`                                                                 |
 | `PresentationManager.activeUnitSystem`      | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
+| `PresentationManager.getContentAndSize`     | `PresentationManager.getContent` and `getContentSetSize`                               |
+| `PresentationManager.getDistinctValues`     | `PresentationManager.getPagedDistinctValues`                                           |
+| `PresentationManager.getNodesAndCount`      | `PresentationManager.getNodes` and `getNodesCount`                                     |
+| `PresentationManager.loadHierarchy`         | *eliminated*                                                                           |
+| `PresentationManagerProps.activeUnitSystem` | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
+| `UnitSystemFormat.unitSystems`              | Changed type from `PresentationUnitSystem[]` to `UnitSystemKey[]`                      |
 
 ### @bentley/presentation-frontend
 
 | Removed                                     | Replacement                                                                            |
 | ------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `PresentationManager.activeUnitSystem`      | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
+| `PresentationManager.compareHierarchies`    | *eliminated*                                                                           |
+| `PresentationManager.getDistinctValues`     | `PresentationManager.getPagedDistinctValues`                                           |
 | `PresentationManager.loadHierarchy`         | *eliminated*                                                                           |
 | `PresentationManagerProps.activeUnitSystem` | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
-| `PresentationManager.activeUnitSystem`      | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
 
 ### @bentley/presentation-components
 
 | Removed                                               | Replacement                                                                            |
 | ----------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `IPresentationTreeDataProvider.loadHierarchy`         | *eliminated*                                                                           |
-| `PresentationTreeDataProvider.loadHierarchy`          | *eliminated*                                                                           |
-| `FilteredPresentationTreeDataProvider.loadHierarchy`  | *eliminated*                                                                           |
+| `ContentDataProvider.configureContentDescriptor`      | `ContentDataProvider.getDescriptorOverrides`                                           |
+| `ContentDataProvider.isFieldHidden`                   | `ContentDataProvider.getDescriptorOverrides`                                           |
+| `ContentDataProvider.shouldConfigureContentDescriptor`| *eliminated*                                                                           |
+| `ContentDataProvider.shouldExcludeFromDescriptor`     | `ContentDataProvider.getDescriptorOverrides`                                           |
+| `ControlledTreeFilteringProps`                        | `ControlledPresentationTreeFilteringProps`                                             |
 | `DEPRECATED_controlledTreeWithFilteringSupport`       | *eliminated*                                                                           |
 | `DEPRECATED_controlledTreeWithVisibleNodes`           | *eliminated*                                                                           |
+| `DEPRECATED_treeWithFilteringSupport`                 | `useControlledPresentationTreeFiltering`                                               |
+| `DEPRECATED_treeWithUnifiedSelection`                 | `useUnifiedSelectionTreeEventHandler`                                                  |
+| `FilteredPresentationTreeDataProvider.loadHierarchy`  | *eliminated*                                                                           |
+| `IPresentationTreeDataProvider.loadHierarchy`         | *eliminated*                                                                           |
+| `PresentationTreeDataProvider.loadHierarchy`          | *eliminated*                                                                           |
+| `PresentationTreeNodeLoaderProps.preloadingEnabled`   | *eliminated*                                                                           |
+| `propertyGridWithUnifiedSelection`                    | `usePropertyDataProviderWithUnifiedSelection`                                          |
+| `PropertyGridWithUnifiedSelectionProps`               | `PropertyDataProviderWithUnifiedSelectionProps`                                        |
+| `TreeWithFilteringSupportProps`                       | `ControlledPresentationTreeFilteringProps`                                             |
+| `TreeWithUnifiedSelectionProps`                       | `UnifiedSelectionTreeEventHandlerParams`                                               |
+| `useControlledTreeFiltering`                          | `useControlledPresentationTreeFiltering`                                               |
 
 ### @bentley/ecschema-metadata
 
@@ -370,7 +424,7 @@ SAML support has officially been dropped as a supported workflow. All related AP
 User Interface Changes - section to comment below
 -->
 
-### User Interface Changes
+## User Interface Changes
 
 Several changes were made in the @bentley/ui-* packages.
 Some components in @bentley/ui-core were deprecated in favor of components in @itwinui-react.
@@ -381,14 +435,14 @@ The @bentley/ui-* and @bentley/presentation-components packages are now dependen
 
 For migration purposes, React 16 is included in the peerDependencies for the packages. React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
 
-#### New Floating Widget Capabilities
+### New Floating Widget Capabilities
 
 Widgets provided via UiItemsProviders may now set `defaultState: WidgetState.Floating` and `isFloatingStateSupported: true` to open
 the widget in a floating container. The property `defaultFloatingPosition` may also be specified to define the position of the floating container. If a position is not defined the container will be centered in the `AppUi` area.
 
 The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to retrieve the Ids for all floating widget containers for the active frontstage as specified by the `frontstageDef`. These ids can be used to query the size of the floating container via `frontstageDef.getFloatingWidgetContainerBounds`. The method `frontstageDef.setFloatingWidgetContainerBounds` can then be used to set the size and position of a floating widget container.
 
-#### `ControlledTree` API Changes
+### `ControlledTree` API Changes
 
 `ControlledTree` component has received the following breaking changes:
 
@@ -440,9 +494,9 @@ The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to 
 
   `width` and `height` props may be calculated dynamically using [ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver) API.
 
-### Deprecated ui-core Components in Favor of iTwinUI-react Components
+### Deprecated Components in Favor of iTwinUI-react Components
 
-Several UI components in the @bentley/ui-core package have been deprecated.
+Several UI components in the @bentley/ui-core and @bentley/ui-components packages have been deprecated.
 Developers should use equivalent components in @itwin/itwinui-react instead.
 
 | Deprecated in @bentley/ui-core | Use from @itwin/itwinui-react instead          |
@@ -477,6 +531,10 @@ Developers should use equivalent components in @itwin/itwinui-react instead.
 | Toggle                         | ToggleSwitch                                   |
 | Tooltip                        | Tooltip                                        |
 | TooltipPlacement               | Placement                                      |
+
+| Deprecated in @bentley/ui-components | Use from @itwin/itwinui-react instead          |
+| ------------------------------------ | ---------------------------------------------- |
+| Breadcrumb                           | Breadcrumbs                                    |
 
 #### Slider
 

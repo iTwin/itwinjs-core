@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Wed, 08 Sep 2021 14:36:01 GMT and should not be manually modified.
+This log was last generated on Thu, 09 Sep 2021 21:04:58 GMT and should not be manually modified.
+
+## 2.19.11
+Thu, 09 Sep 2021 21:04:58 GMT
+
+### Updates
+
+- Allow white-on-white reversal to be applied regardless of background color.
 
 ## 2.19.10
 Wed, 08 Sep 2021 14:36:01 GMT

@@ -5079,6 +5079,27 @@ export class LookAndMoveTool extends ViewManip {
     static toolId: string;
 }
 
+// @beta
+export interface LookAtArgs {
+    readonly backDistance?: number;
+    readonly eyePoint: XYAndZ;
+    readonly frontDistance?: number;
+    readonly opts?: ViewChangeOptions;
+    readonly upVector: Vector3d;
+}
+
+// @beta
+export interface LookAtOrthoArgs extends LookAtArgs {
+    readonly viewDirection: Vector3d;
+    readonly viewToWorldScale: number;
+}
+
+// @beta
+export interface LookAtPerspectiveArgs extends LookAtArgs {
+    readonly newExtents?: XAndY;
+    readonly targetPoint: XYAndZ;
+}
+
 // @public
 export class LookViewTool extends ViewManip {
     constructor(vp: ScreenViewport, oneShot?: boolean, isDraggingRequired?: boolean);
@@ -12848,6 +12869,8 @@ export abstract class ViewState3d extends ViewState {
     lookAt(eyePoint: XYAndZ, targetPoint: XYAndZ, upVector: Vector3d, newExtents?: XAndY, frontDistance?: number, backDistance?: number, opts?: ViewChangeOptions): ViewStatus;
     lookAtGlobalLocation(eyeHeight: number, pitchAngleRadians?: number, location?: GlobalLocation, eyePoint?: Point3d): number;
     lookAtGlobalLocationFromGcs(eyeHeight: number, pitchAngleRadians?: number, location?: GlobalLocation, eyePoint?: Point3d): Promise<number>;
+    // @beta
+    lookAtPerspectiveOrOrtho(args: LookAtPerspectiveArgs | LookAtOrthoArgs): ViewStatus;
     lookAtUsingLensAngle(eyePoint: Point3d, targetPoint: Point3d, upVector: Vector3d, fov: Angle, frontDistance?: number, backDistance?: number, opts?: ViewChangeOptions): ViewStatus;
     // (undocumented)
     minimumFrontDistance(): number;
@@ -12887,11 +12910,13 @@ export enum ViewStatus {
     // (undocumented)
     AlreadyAttached = 2,
     // (undocumented)
-    DegenerateGeometry = 20,
+    DegenerateGeometry = 22,
     // (undocumented)
     DrawFailure = 4,
     // (undocumented)
-    HeightBelowTransition = 21,
+    HeightBelowTransition = 23,
+    // (undocumented)
+    InvalidDirection = 16,
     // (undocumented)
     InvalidLens = 14,
     // (undocumented)
@@ -12900,6 +12925,8 @@ export enum ViewStatus {
     InvalidUpVector = 12,
     // (undocumented)
     InvalidViewport = 15,
+    // (undocumented)
+    InvalidViewToWorldScale = 17,
     // (undocumented)
     InvalidWindow = 7,
     // (undocumented)
@@ -12915,15 +12942,15 @@ export enum ViewStatus {
     // (undocumented)
     NotAttached = 3,
     // (undocumented)
-    NotCameraView = 17,
+    NotCameraView = 19,
     // (undocumented)
-    NotEllipsoidGlobeMode = 18,
+    NotEllipsoidGlobeMode = 20,
     // (undocumented)
-    NotGeolocated = 16,
+    NotGeolocated = 18,
     // (undocumented)
-    NotOrthographicView = 19,
+    NotOrthographicView = 21,
     // (undocumented)
-    NoTransitionRequired = 22,
+    NoTransitionRequired = 24,
     // (undocumented)
     NotResized = 5,
     // (undocumented)
