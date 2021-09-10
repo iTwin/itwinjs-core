@@ -31,6 +31,34 @@ Each of these interfaces originally had only a member `changeSetId: string`, In 
 
 > Note: "Changeset" is one word. Apis should not use a capital "S" when referring to them.
 
+### ViewState3d.lookAt Argument Changed
+
+[ViewState3d.lookAt]($frontend) previously took 6 arguments. In addition the method `ViewState3d.lookAtUsingLensAngle` also established a perspective `ViewState3d` from a field-of-view lens angle with many of the same arguments. There is now a new implementation of `ViewState3d.lookAt` that accepts named parameters to set up either a perspective or orthographic view, using the interfaces [LookAtPerspectiveArgs]($frontend), [LookAtOrthoArgs]($frontend), or [LookAtUsingLensAngle]($frontend).
+
+This is a breaking change, so you may need to modify your code and replace the previous arguments with a single object with the appropriate names. For example,:
+
+```ts
+  viewState.lookAt(eye, target, upVector, newExtents, undefined, backDistance, opts);
+```
+
+can become
+
+```ts
+  viewState.lookAt( {eyePoint: eye, targetPoint: target , upVector, newExtents, backDistance, opts} );
+```
+
+likewise
+
+```ts
+    viewState.lookAtUsingLensAngle(eye, target, up, lens, frontDistance, backDistance);
+```
+
+can become:
+
+```ts
+  viewState.lookAt( {eyePoint: eye, targetPoint: target , upVector: up, lensAngle: lens, frontDistance, backDistance} );
+```
+
 ## ViewFlags
 
 ### Immutability
@@ -195,26 +223,26 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 
 ### @bentley/imodeljs-common
 
-| Removed                                       | Replacement                                                     |
-| --------------------------------------------- | --------------------------------------------------------------- |
-| `Code.getValue`                               | `Code.value`                                                    |
-| `CodeSpec.specScopeType`                      | `CodeSpec.scopeType`                                            |
-| `IModel.changeSetId`                          | `IModel.changeset.id`                                           |
-| `IModelVersion.evaluateChangeSet`             | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion`  |
-| `IModelVersion.fromJson`                      | `IModelVersion.fromJSON`                                        |
-| `IModelVersion.getChangeSetFromNamedVersion`  | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion`  |
-| `IModelVersion.getLatestChangeSetId`          | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion`  |
-| `IModelWriteRpcInterface`                     | Use IPC for writing to iModels                                  |
-| `ViewFlagOverrides` class                     | [ViewFlagOverrides]($common) type                               |
-| `ViewFlagProps.edgeMask`                      | *eliminated*                                                    |
-| `ViewFlagProps.hlMatColors`                   | *eliminated*                                                    |
-| `ViewFlags.clone`                             | [ViewFlags.copy]($common)
-| `ViewFlags.edgeMask`                          | *eliminated*                                                    |
-| `ViewFlags.hLineMaterialColors`               | *eliminated*                                                    |
-| `ViewFlags.noCameraLights`                    | [ViewFlags.lighting]($common)                                   |
-| `ViewFlags.noGeometryMap`                     | *eliminated*                                                    |
-| `ViewFlags.noSolarLight`                      | [ViewFlags.lighting]($common)                                   |
-| `ViewFlags.noSourceLights`                    | [ViewFlags.lighting]($common)                                   |
+| Removed                                      | Replacement                                                    |
+| -------------------------------------------- | -------------------------------------------------------------- |
+| `Code.getValue`                              | `Code.value`                                                   |
+| `CodeSpec.specScopeType`                     | `CodeSpec.scopeType`                                           |
+| `IModel.changeSetId`                         | `IModel.changeset.id`                                          |
+| `IModelVersion.evaluateChangeSet`            | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
+| `IModelVersion.fromJson`                     | `IModelVersion.fromJSON`                                       |
+| `IModelVersion.getChangeSetFromNamedVersion` | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
+| `IModelVersion.getLatestChangeSetId`         | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
+| `IModelWriteRpcInterface`                    | Use IPC for writing to iModels                                 |
+| `ViewFlagOverrides` class                    | [ViewFlagOverrides]($common) type                              |
+| `ViewFlagProps.edgeMask`                     | *eliminated*                                                   |
+| `ViewFlagProps.hlMatColors`                  | *eliminated*                                                   |
+| `ViewFlags.clone`                            | [ViewFlags.copy]($common)                                      |
+| `ViewFlags.edgeMask`                         | *eliminated*                                                   |
+| `ViewFlags.hLineMaterialColors`              | *eliminated*                                                   |
+| `ViewFlags.noCameraLights`                   | [ViewFlags.lighting]($common)                                  |
+| `ViewFlags.noGeometryMap`                    | *eliminated*                                                   |
+| `ViewFlags.noSolarLight`                     | [ViewFlags.lighting]($common)                                  |
+| `ViewFlags.noSourceLights`                   | [ViewFlags.lighting]($common)                                  |
 
 ### @bentley/imodeljs-frontend
 
@@ -231,8 +259,10 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `OidcFrontendClientConfiguration`      | `BrowserAuthorizationClientConfiguration`                 |
 | `RemoteBriefcaseConnection`            | `CheckpointConnection`                                    |
 | `ScreenViewport.decorationDiv`         | `DecorateContext.addHtmlDecoration`                       |
-| `ViewManager.forEachViewport`          | Use a `for..of` loop                                      |
 | `UnitSystemKey`                        | Moved to `@bentley/imodeljs-quantity`                     |
+| `ViewManager.forEachViewport`          | Use a `for..of` loop                                      |
+| `ViewState3d.lookAtPerspectiveOrOrtho` | `ViewState3d.LookAt`                                      |
+| `ViewState3d.lookAtUsingLensAngle`     | `ViewState3d.lookAt`                                      |
 
 ### @bentley/backend-itwin-client
 
@@ -253,19 +283,19 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @bentley/ui-components
 
-| Removed                                 | Replacement                                                 |
-| --------------------------------------- | ----------------------------------------------------------- |
-| `hasFlag`                               | `hasSelectionModeFlag` in @bentley/ui-components            |
-| `StandardEditorNames`                   | `StandardEditorNames` in @bentley/ui-abstract               |
-| `StandardTypeConverterTypeNames`        | `StandardTypeNames` in @bentley/ui-abstract                 |
-| `StandardTypeNames`                     | `StandardTypeNames` in @bentley/ui-abstract                 |
-| `Timeline`                              | `TimelineComponent` in @bentley/ui-components               |
-| `ControlledTreeProps.treeEvents`        | `ControlledTreeProps.eventsHandler`                         |
-| `ControlledTreeProps.visibleNodes`      | `ControlledTreeProps.model`                                 |
-| `MutableTreeModel.computeVisibleNodes`  | `computeVisibleNodes` in @bentley/ui-components             |
-| `TreeModelSource.getVisibleNodes`       | memoized result of `computeVisibleNodes`                    |
-| `useVisibleTreeNodes`                   | `useTreeModel` and `computeVisibleNodes`                    |
-| `SignIn`                                | *eliminated*                                                |
+| Removed                                | Replacement                                      |
+| -------------------------------------- | ------------------------------------------------ |
+| `hasFlag`                              | `hasSelectionModeFlag` in @bentley/ui-components |
+| `StandardEditorNames`                  | `StandardEditorNames` in @bentley/ui-abstract    |
+| `StandardTypeConverterTypeNames`       | `StandardTypeNames` in @bentley/ui-abstract      |
+| `StandardTypeNames`                    | `StandardTypeNames` in @bentley/ui-abstract      |
+| `Timeline`                             | `TimelineComponent` in @bentley/ui-components    |
+| `ControlledTreeProps.treeEvents`       | `ControlledTreeProps.eventsHandler`              |
+| `ControlledTreeProps.visibleNodes`     | `ControlledTreeProps.model`                      |
+| `MutableTreeModel.computeVisibleNodes` | `computeVisibleNodes` in @bentley/ui-components  |
+| `TreeModelSource.getVisibleNodes`      | memoized result of `computeVisibleNodes`         |
+| `useVisibleTreeNodes`                  | `useTreeModel` and `computeVisibleNodes`         |
+| `SignIn`                               | *eliminated*                                     |
 
 ### @bentley/ui-framework
 
@@ -295,123 +325,123 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @bentley/bentleyjs-core
 
-| Removed                                | Replacement                                                                            |
-| -------------------------------------- | -------------------------------------------------------------------------------------- |
-| `Config`                               | Use `process.env` to access environment variables directly |
-| `EnvMacroSubst`                        | *eliminated*  |
+| Removed         | Replacement                                                |
+| --------------- | ---------------------------------------------------------- |
+| `Config`        | Use `process.env` to access environment variables directly |
+| `EnvMacroSubst` | *eliminated*                                               |
 
 ### @bentley/presentation-common
 
-| Removed                                               | Replacement                                                                 |
-| ----------------------------------------------------- | --------------------------------------------------------------------------- |
-| `CompressedDescriptorJSON`                            | `DescriptorJSON`                                                            |
-| `Descriptor.toCompressedJSON`                         | `Descriptor.toJSON`                                                         |
-| `DescriptorOverrides.hiddenFieldNames`                | `DescriptorOverrides.fieldsSelector`                                        |
-| `DescriptorOverrides.sortDirection`                   | `DescriptorOverrides.sorting.direction`                                     |
-| `DescriptorOverrides.sortingFieldName`                | `DescriptorOverrides.sorting.field`                                         |
-| `ECPropertyGroupingNodeKey.groupingValue`             | `ECPropertyGroupingNodeKey.groupingValues`                                  |
-| `ExtendedContentRequestOptions`                       | `ContentRequestOptions`                                                     |
-| `ExtendedContentRpcRequestOptions`                    | `ContentRpcRequestOptions`                                                  |
-| `ExtendedHierarchyRequestOptions`                     | `HierarchyRequestOptions`                                                   |
-| `ExtendedHierarchyRpcRequestOptions`                  | `HierarchyRpcRequestOptions`                                                |
-| `Field.fromJSON`                                      | `Field.fromCompressedJSON`                                                  |
-| `HierarchyCompareRpcOptions`                          | *eliminated*                                                                |
-| `LabelRequestOptions`                                 | `DisplayLabelRequestOptions`                                                |
-| `LabelRpcRequestOptions`                              | `DisplayLabelRpcRequestOptions`                                             |
+| Removed                                               | Replacement                                                                                                                                                    |
+| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CompressedDescriptorJSON`                            | `DescriptorJSON`                                                                                                                                               |
+| `Descriptor.toCompressedJSON`                         | `Descriptor.toJSON`                                                                                                                                            |
+| `DescriptorOverrides.hiddenFieldNames`                | `DescriptorOverrides.fieldsSelector`                                                                                                                           |
+| `DescriptorOverrides.sortDirection`                   | `DescriptorOverrides.sorting.direction`                                                                                                                        |
+| `DescriptorOverrides.sortingFieldName`                | `DescriptorOverrides.sorting.field`                                                                                                                            |
+| `ECPropertyGroupingNodeKey.groupingValue`             | `ECPropertyGroupingNodeKey.groupingValues`                                                                                                                     |
+| `ExtendedContentRequestOptions`                       | `ContentRequestOptions`                                                                                                                                        |
+| `ExtendedContentRpcRequestOptions`                    | `ContentRpcRequestOptions`                                                                                                                                     |
+| `ExtendedHierarchyRequestOptions`                     | `HierarchyRequestOptions`                                                                                                                                      |
+| `ExtendedHierarchyRpcRequestOptions`                  | `HierarchyRpcRequestOptions`                                                                                                                                   |
+| `Field.fromJSON`                                      | `Field.fromCompressedJSON`                                                                                                                                     |
+| `HierarchyCompareRpcOptions`                          | *eliminated*                                                                                                                                                   |
+| `LabelRequestOptions`                                 | `DisplayLabelRequestOptions`                                                                                                                                   |
+| `LabelRpcRequestOptions`                              | `DisplayLabelRpcRequestOptions`                                                                                                                                |
 | `LoggingNamespaces`                                   | `PresentationBackendLoggerCategory`, `PresentationBackendNativeLoggerCategory`, `PresentationFrontendLoggerCategory` or `PresentationComponentsLoggerCategory` |
-| `NodeDeletionInfo.target`                             | `NodeDeletionInfo.parent` and `NodeDeletionInfo.position`                   |
-| `NodeDeletionInfoJSON.target`                         | `NodeDeletionInfoJSON.parent` and `NodeDeletionInfoJSON.position`           |
-| `PresentationDataCompareOptions`                      | *eliminated*                                                                |
-| `PresentationRpcInterface.compareHierarchies`         | *eliminated*                                                                |
-| `PresentationRpcInterface.compareHierarchiesPaged`    | *eliminated*                                                                |
-| `PresentationRpcInterface.getContent`                 | `PresentationRpcInterface.getPagedContent` and `getPagedContentSet`         |
-| `PresentationRpcInterface.getContentAndSize`          | `PresentationRpcInterface.getPagedContent` and `getPagedContentSet`         |
-| `PresentationRpcInterface.getDisplayLabelDefinitions` | `PresentationRpcInterface.getPagedDisplayLabelDefinitions`                  |
-| `PresentationRpcInterface.getDistinctValues`          | `PresentationRpcInterface.getPagedDistinctValues`                           |
-| `PresentationRpcInterface.getNodes`                   | `PresentationRpcInterface.getPagedNodes`                                    |
-| `PresentationRpcInterface.getNodesAndCount`           | `PresentationRpcInterface.getPagedNodes`                                    |
-| `PresentationRpcInterface.loadHierarchy`              | *eliminated*                                                                |
-| `PresentationUnitSystem`                              | `UnitSystemKey` in `@bentley/imodeljs-quantity`                             |
-| `PropertiesFieldDescriptor.propertyClass`             | `PropertiesFieldDescriptor.properties.class`                                |
-| `PropertiesFieldDescriptor.propertyName`              | `PropertiesFieldDescriptor.properties.name`                                 |
-| `Property.relatedClassPath`                           | `NestedContentField.pathToPrimaryClass`                                     |
-| `PropertyJSON.relatedClassPath`                       | `NestedContentFieldJSON.pathToPrimaryClass`                                 |
-| `SelectClassInfo.pathToPrimaryClass`                  | `SelectClassInfo.pathFromInputToSelectClass`                                |
-| `SelectClassInfo.relatedInstanceClasses`              | `SelectClassInfo.relatedInstancePaths`                                      |
-| `SelectClassInfoJSON.pathToPrimaryClass`              | `SelectClassInfoJSON.pathFromInputToSelectClass`                            |
-| `SelectClassInfoJSON.relatedInstanceClasses`          | `SelectClassInfoJSON.relatedInstancePaths`                                  |
+| `NodeDeletionInfo.target`                             | `NodeDeletionInfo.parent` and `NodeDeletionInfo.position`                                                                                                      |
+| `NodeDeletionInfoJSON.target`                         | `NodeDeletionInfoJSON.parent` and `NodeDeletionInfoJSON.position`                                                                                              |
+| `PresentationDataCompareOptions`                      | *eliminated*                                                                                                                                                   |
+| `PresentationRpcInterface.compareHierarchies`         | *eliminated*                                                                                                                                                   |
+| `PresentationRpcInterface.compareHierarchiesPaged`    | *eliminated*                                                                                                                                                   |
+| `PresentationRpcInterface.getContent`                 | `PresentationRpcInterface.getPagedContent` and `getPagedContentSet`                                                                                            |
+| `PresentationRpcInterface.getContentAndSize`          | `PresentationRpcInterface.getPagedContent` and `getPagedContentSet`                                                                                            |
+| `PresentationRpcInterface.getDisplayLabelDefinitions` | `PresentationRpcInterface.getPagedDisplayLabelDefinitions`                                                                                                     |
+| `PresentationRpcInterface.getDistinctValues`          | `PresentationRpcInterface.getPagedDistinctValues`                                                                                                              |
+| `PresentationRpcInterface.getNodes`                   | `PresentationRpcInterface.getPagedNodes`                                                                                                                       |
+| `PresentationRpcInterface.getNodesAndCount`           | `PresentationRpcInterface.getPagedNodes`                                                                                                                       |
+| `PresentationRpcInterface.loadHierarchy`              | *eliminated*                                                                                                                                                   |
+| `PresentationUnitSystem`                              | `UnitSystemKey` in `@bentley/imodeljs-quantity`                                                                                                                |
+| `PropertiesFieldDescriptor.propertyClass`             | `PropertiesFieldDescriptor.properties.class`                                                                                                                   |
+| `PropertiesFieldDescriptor.propertyName`              | `PropertiesFieldDescriptor.properties.name`                                                                                                                    |
+| `Property.relatedClassPath`                           | `NestedContentField.pathToPrimaryClass`                                                                                                                        |
+| `PropertyJSON.relatedClassPath`                       | `NestedContentFieldJSON.pathToPrimaryClass`                                                                                                                    |
+| `SelectClassInfo.pathToPrimaryClass`                  | `SelectClassInfo.pathFromInputToSelectClass`                                                                                                                   |
+| `SelectClassInfo.relatedInstanceClasses`              | `SelectClassInfo.relatedInstancePaths`                                                                                                                         |
+| `SelectClassInfoJSON.pathToPrimaryClass`              | `SelectClassInfoJSON.pathFromInputToSelectClass`                                                                                                               |
+| `SelectClassInfoJSON.relatedInstanceClasses`          | `SelectClassInfoJSON.relatedInstancePaths`                                                                                                                     |
 
 ### @bentley/presentation-backend
 
-| Removed                                     | Replacement                                                                            |
-| ------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `DuplicateRulesetHandlingStrategy`          | `RulesetInsertOptions`                                                                 |
-| `PresentationManager.activeUnitSystem`      | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
-| `PresentationManager.getContentAndSize`     | `PresentationManager.getContent` and `getContentSetSize`                               |
-| `PresentationManager.getDistinctValues`     | `PresentationManager.getPagedDistinctValues`                                           |
-| `PresentationManager.getNodesAndCount`      | `PresentationManager.getNodes` and `getNodesCount`                                     |
-| `PresentationManager.loadHierarchy`         | *eliminated*                                                                           |
-| `PresentationManagerProps.activeUnitSystem` | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
-| `UnitSystemFormat.unitSystems`              | Changed type from `PresentationUnitSystem[]` to `UnitSystemKey[]`                      |
+| Removed                                     | Replacement                                                       |
+| ------------------------------------------- | ----------------------------------------------------------------- |
+| `DuplicateRulesetHandlingStrategy`          | `RulesetInsertOptions`                                            |
+| `PresentationManager.activeUnitSystem`      | Changed type from `PresentationUnitSystem` to `UnitSystemKey`     |
+| `PresentationManager.getContentAndSize`     | `PresentationManager.getContent` and `getContentSetSize`          |
+| `PresentationManager.getDistinctValues`     | `PresentationManager.getPagedDistinctValues`                      |
+| `PresentationManager.getNodesAndCount`      | `PresentationManager.getNodes` and `getNodesCount`                |
+| `PresentationManager.loadHierarchy`         | *eliminated*                                                      |
+| `PresentationManagerProps.activeUnitSystem` | Changed type from `PresentationUnitSystem` to `UnitSystemKey`     |
+| `UnitSystemFormat.unitSystems`              | Changed type from `PresentationUnitSystem[]` to `UnitSystemKey[]` |
 
 ### @bentley/presentation-frontend
 
-| Removed                                     | Replacement                                                                            |
-| ------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `PresentationManager.activeUnitSystem`      | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
-| `PresentationManager.compareHierarchies`    | *eliminated*                                                                           |
-| `PresentationManager.getDistinctValues`     | `PresentationManager.getPagedDistinctValues`                                           |
-| `PresentationManager.loadHierarchy`         | *eliminated*                                                                           |
-| `PresentationManagerProps.activeUnitSystem` | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
+| Removed                                     | Replacement                                                   |
+| ------------------------------------------- | ------------------------------------------------------------- |
+| `PresentationManager.activeUnitSystem`      | Changed type from `PresentationUnitSystem` to `UnitSystemKey` |
+| `PresentationManager.compareHierarchies`    | *eliminated*                                                  |
+| `PresentationManager.getDistinctValues`     | `PresentationManager.getPagedDistinctValues`                  |
+| `PresentationManager.loadHierarchy`         | *eliminated*                                                  |
+| `PresentationManagerProps.activeUnitSystem` | Changed type from `PresentationUnitSystem` to `UnitSystemKey` |
 
 ### @bentley/presentation-components
 
-| Removed                                               | Replacement                                                                            |
-| ----------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `ContentDataProvider.configureContentDescriptor`      | `ContentDataProvider.getDescriptorOverrides`                                           |
-| `ContentDataProvider.isFieldHidden`                   | `ContentDataProvider.getDescriptorOverrides`                                           |
-| `ContentDataProvider.shouldConfigureContentDescriptor`| *eliminated*                                                                           |
-| `ContentDataProvider.shouldExcludeFromDescriptor`     | `ContentDataProvider.getDescriptorOverrides`                                           |
-| `ControlledTreeFilteringProps`                        | `ControlledPresentationTreeFilteringProps`                                             |
-| `DEPRECATED_controlledTreeWithFilteringSupport`       | *eliminated*                                                                           |
-| `DEPRECATED_controlledTreeWithVisibleNodes`           | *eliminated*                                                                           |
-| `DEPRECATED_treeWithFilteringSupport`                 | `useControlledPresentationTreeFiltering`                                               |
-| `DEPRECATED_treeWithUnifiedSelection`                 | `useUnifiedSelectionTreeEventHandler`                                                  |
-| `FilteredPresentationTreeDataProvider.loadHierarchy`  | *eliminated*                                                                           |
-| `IPresentationTreeDataProvider.loadHierarchy`         | *eliminated*                                                                           |
-| `PresentationTreeDataProvider.loadHierarchy`          | *eliminated*                                                                           |
-| `PresentationTreeNodeLoaderProps.preloadingEnabled`   | *eliminated*                                                                           |
-| `propertyGridWithUnifiedSelection`                    | `usePropertyDataProviderWithUnifiedSelection`                                          |
-| `PropertyGridWithUnifiedSelectionProps`               | `PropertyDataProviderWithUnifiedSelectionProps`                                        |
-| `TreeWithFilteringSupportProps`                       | `ControlledPresentationTreeFilteringProps`                                             |
-| `TreeWithUnifiedSelectionProps`                       | `UnifiedSelectionTreeEventHandlerParams`                                               |
-| `useControlledTreeFiltering`                          | `useControlledPresentationTreeFiltering`                                               |
+| Removed                                                | Replacement                                     |
+| ------------------------------------------------------ | ----------------------------------------------- |
+| `ContentDataProvider.configureContentDescriptor`       | `ContentDataProvider.getDescriptorOverrides`    |
+| `ContentDataProvider.isFieldHidden`                    | `ContentDataProvider.getDescriptorOverrides`    |
+| `ContentDataProvider.shouldConfigureContentDescriptor` | *eliminated*                                    |
+| `ContentDataProvider.shouldExcludeFromDescriptor`      | `ContentDataProvider.getDescriptorOverrides`    |
+| `ControlledTreeFilteringProps`                         | `ControlledPresentationTreeFilteringProps`      |
+| `DEPRECATED_controlledTreeWithFilteringSupport`        | *eliminated*                                    |
+| `DEPRECATED_controlledTreeWithVisibleNodes`            | *eliminated*                                    |
+| `DEPRECATED_treeWithFilteringSupport`                  | `useControlledPresentationTreeFiltering`        |
+| `DEPRECATED_treeWithUnifiedSelection`                  | `useUnifiedSelectionTreeEventHandler`           |
+| `FilteredPresentationTreeDataProvider.loadHierarchy`   | *eliminated*                                    |
+| `IPresentationTreeDataProvider.loadHierarchy`          | *eliminated*                                    |
+| `PresentationTreeDataProvider.loadHierarchy`           | *eliminated*                                    |
+| `PresentationTreeNodeLoaderProps.preloadingEnabled`    | *eliminated*                                    |
+| `propertyGridWithUnifiedSelection`                     | `usePropertyDataProviderWithUnifiedSelection`   |
+| `PropertyGridWithUnifiedSelectionProps`                | `PropertyDataProviderWithUnifiedSelectionProps` |
+| `TreeWithFilteringSupportProps`                        | `ControlledPresentationTreeFilteringProps`      |
+| `TreeWithUnifiedSelectionProps`                        | `UnifiedSelectionTreeEventHandlerParams`        |
+| `useControlledTreeFiltering`                           | `useControlledPresentationTreeFiltering`        |
 
 ### @bentley/ecschema-metadata
 
-| Removed                                 | Replacement                                                                                 |
-| --------------------------------------- | --------------------------------------------------------------------------------------------|
-| `IDiagnostic`                           | `IDiagnostic` in @bentley/ecschema-editing                                                  |
-| `BaseDiagnostic`                        | `BaseDiagnostic` in @bentley/ecschema-editing                                               |
-| `DiagnosticType`                        | `DiagnosticType` in @bentley/ecschema-editing                                               |
-| `DiagnosticCategory`                    | `DiagnosticCategory` in @bentley/ecschema-editing                                           |
-| `DiagnosticCodes`                       | `DiagnosticCodes` in @bentley/ecschema-editing                                              |
-| `Diagnostics`                           | `Diagnostics` in @bentley/ecschema-editing                                                  |
-| `IDiagnosticReporter`                   | `IDiagnosticReporter` in @bentley/ecschema-editing                                          |
-| `SuppressionDiagnosticReporter`         | `SuppressionDiagnosticReporter` in @bentley/ecschema-editing                                |
-| `FormatDiagnosticReporter`              | `FormatDiagnosticReporter` in @bentley/ecschema-editing                                     |
-| `LoggingDiagnosticReporter`             | `LoggingDiagnosticReporter` in @bentley/ecschema-editing                                    |
-| `IRuleSet`                              | `IRuleSet` in @bentley/ecschema-editing                                                     |
-| `ECRuleSet`                             | `ECRuleSet` in @bentley/ecschema-editing                                                    |
-| `ISuppressionRule`                      | `ISuppressionRule` in @bentley/ecschema-editing                                             |
-| `BaseSuppressionRule`                   | `BaseSuppressionRule` in @bentley/ecschema-editing                                          |
-| `IRuleSuppressionMap`                   | `IRuleSuppressionMap` in @bentley/ecschema-editing                                          |
-| `BaseRuleSuppressionMap`                | `BaseRuleSuppressionMap` in @bentley/ecschema-editing                                       |
-| `IRuleSuppressionSet`                   | `IRuleSuppressionSet` in @bentley/ecschema-editing                                          |
-| `SchemaCompareCodes`                    | `SchemaCompareCodes` in @bentley/ecschema-editing                                           |
-| `SchemaCompareDiagnostics`              | `SchemaCompareDiagnostics` in @bentley/ecschema-editing                                     |
-| `SchemaValidater`                       | `SchemaValidater` in @bentley/ecschema-editing                                              |
-| `SchemaValidationVisitor`               | `SchemaValidationVisitor` in @bentley/ecschema-editing                                      |
+| Removed                         | Replacement                                                  |
+| ------------------------------- | ------------------------------------------------------------ |
+| `IDiagnostic`                   | `IDiagnostic` in @bentley/ecschema-editing                   |
+| `BaseDiagnostic`                | `BaseDiagnostic` in @bentley/ecschema-editing                |
+| `DiagnosticType`                | `DiagnosticType` in @bentley/ecschema-editing                |
+| `DiagnosticCategory`            | `DiagnosticCategory` in @bentley/ecschema-editing            |
+| `DiagnosticCodes`               | `DiagnosticCodes` in @bentley/ecschema-editing               |
+| `Diagnostics`                   | `Diagnostics` in @bentley/ecschema-editing                   |
+| `IDiagnosticReporter`           | `IDiagnosticReporter` in @bentley/ecschema-editing           |
+| `SuppressionDiagnosticReporter` | `SuppressionDiagnosticReporter` in @bentley/ecschema-editing |
+| `FormatDiagnosticReporter`      | `FormatDiagnosticReporter` in @bentley/ecschema-editing      |
+| `LoggingDiagnosticReporter`     | `LoggingDiagnosticReporter` in @bentley/ecschema-editing     |
+| `IRuleSet`                      | `IRuleSet` in @bentley/ecschema-editing                      |
+| `ECRuleSet`                     | `ECRuleSet` in @bentley/ecschema-editing                     |
+| `ISuppressionRule`              | `ISuppressionRule` in @bentley/ecschema-editing              |
+| `BaseSuppressionRule`           | `BaseSuppressionRule` in @bentley/ecschema-editing           |
+| `IRuleSuppressionMap`           | `IRuleSuppressionMap` in @bentley/ecschema-editing           |
+| `BaseRuleSuppressionMap`        | `BaseRuleSuppressionMap` in @bentley/ecschema-editing        |
+| `IRuleSuppressionSet`           | `IRuleSuppressionSet` in @bentley/ecschema-editing           |
+| `SchemaCompareCodes`            | `SchemaCompareCodes` in @bentley/ecschema-editing            |
+| `SchemaCompareDiagnostics`      | `SchemaCompareDiagnostics` in @bentley/ecschema-editing      |
+| `SchemaValidater`               | `SchemaValidater` in @bentley/ecschema-editing               |
+| `SchemaValidationVisitor`       | `SchemaValidationVisitor` in @bentley/ecschema-editing       |
 
 <!---
 User Interface Changes - section to comment below
@@ -525,9 +555,9 @@ Developers should use equivalent components in @itwin/itwinui-react instead.
 | Tooltip                        | Tooltip                                        |
 | TooltipPlacement               | Placement                                      |
 
-| Deprecated in @bentley/ui-components | Use from @itwin/itwinui-react instead          |
-| ------------------------------------ | ---------------------------------------------- |
-| Breadcrumb                           | Breadcrumbs                                    |
+| Deprecated in @bentley/ui-components | Use from @itwin/itwinui-react instead |
+| ------------------------------------ | ------------------------------------- |
+| Breadcrumb                           | Breadcrumbs                           |
 
 #### Slider
 
