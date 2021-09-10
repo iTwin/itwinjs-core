@@ -98,8 +98,6 @@ export interface LookAtPerspectiveArgs extends LookAtArgs {
 export interface LookAtOrthoArgs extends LookAtArgs {
   /** The direction in which the view should look. */
   readonly viewDirection: XYAndZ;
-  /** The new size (width and height) of the view rectangle. If undefined, the existing size is unchanged. */
-  readonly newExtents?: XAndY;
 
   readonly targetPoint?: never;
   readonly lensAngle?: never;
@@ -1673,10 +1671,10 @@ export abstract class ViewState3d extends ViewState {
       if (lensAngle.radians < .0001 || lensAngle.radians > Math.PI)
         return ViewStatus.InvalidLens;
 
-      const extent = 2.0 * Math.tan(lensAngle.radians / 2.0) * focus;
-      const newDelta = Vector2d.create(this.extents.x, this.extents.y);
-      newDelta.scale(extent / newDelta.x, newDelta);
-      args = { ...args, eyePoint, targetPoint: args.targetPoint };
+      const width = 2.0 * Math.tan(lensAngle.radians / 2.0) * focus;
+      const newExtents = Vector2d.createFrom(args.newExtents ?? this.extents);
+      newExtents.scale(width / newExtents.x, newExtents);
+      args = { ...args, newExtents };
     }
 
     const isPerspective = undefined !== args.targetPoint;
