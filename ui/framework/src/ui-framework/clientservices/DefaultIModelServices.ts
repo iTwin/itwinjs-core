@@ -84,7 +84,7 @@ export class DefaultIModelServices implements IModelServices {
   public async openIModel(iTwinId: string, iModelId: GuidString, changeSetId?: string): Promise<IModelConnection> {
     try {
       // GatewayProxyApi.setAccessToken(accessToken);
-      const iModelConnection = await CheckpointConnection.openRemote(iTwinId, iModelId, changeSetId ? IModelVersion.asOfChangeSet(changeSetId) : IModelVersion.latest()); // eslint-disable-line deprecation/deprecation
+      const iModelConnection = await CheckpointConnection.openRemote(iTwinId, iModelId, changeSetId ? IModelVersion.asOfChangeSet(changeSetId) : IModelVersion.latest());
       return iModelConnection;
     } catch (e) {
       alert(JSON.stringify(e));
