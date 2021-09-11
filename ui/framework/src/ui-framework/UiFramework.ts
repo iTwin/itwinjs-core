@@ -555,11 +555,11 @@ export class UiFramework {
    * @internal
    */
   // istanbul ignore next
-  public static async postTelemetry(eventName: string, eventId?: GuidString, contextId?: GuidString, iModeId?: GuidString, changeSetId?: string, time?: TrackingTime, additionalProperties?: { [key: string]: any }): Promise<void> {
+  public static async postTelemetry(eventName: string, eventId?: GuidString, iTwinId?: GuidString, iModeId?: GuidString, changeSetId?: string, time?: TrackingTime, additionalProperties?: { [key: string]: any }): Promise<void> {
     if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.hasSignedIn)
       return;
     const requestContext = await AuthorizedFrontendRequestContext.create();
-    const telemetryEvent = new TelemetryEvent(eventName, eventId, contextId, iModeId, changeSetId, time, additionalProperties);
+    const telemetryEvent = new TelemetryEvent(eventName, eventId, iTwinId, iModeId, changeSetId, time, additionalProperties);
     await IModelApp.telemetry.postTelemetry(requestContext, telemetryEvent);
   }
   private static _handleFrameworkVersionChangedEvent = (args: FrameworkVersionChangedEventArgs) => {

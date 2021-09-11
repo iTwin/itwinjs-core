@@ -92,7 +92,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
     const range = new CartographicRange(this._vp.iModel.projectExtents, ecef.getTransform());
     let available;
     try {
-      available = await queryRealityData({ contextId: "fb1696c8-c074-4c76-a539-a5546e048cc6", range });
+      available = await queryRealityData({ iTwinId: "fb1696c8-c074-4c76-a539-a5546e048cc6", range });
     } catch (_error) {
       available = new Array<ContextRealityModelProps>();
     }
