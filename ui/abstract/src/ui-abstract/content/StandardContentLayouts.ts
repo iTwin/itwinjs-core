@@ -25,11 +25,11 @@ export class StandardContentLayouts {
     verticalSplit: {
       id: "uia:fourQuadrantVerticalSplit",
       percentage: 0.50,
-      lock: true,
+      lock: false,
       minSizeLeft: 100,
       minSizeRight: 100,
-      left: { horizontalSplit: { id: "uia:fourQuadrantsLeftHorizontal", percentage: 0.50, top: 0, bottom: 1, lock: true, minSizeTop: 50, minSizeBottom: 50 } },
-      right: { horizontalSplit: { id: "uia:fourQuadrantsRightHorizontal", percentage: 0.50, top: 2, bottom: 3, lock: true, minSizeTop: 50, minSizeBottom: 50 } },
+      left: { horizontalSplit: { id: "uia:fourQuadrantsLeftHorizontal", percentage: 0.50, top: 0, bottom: 1, lock: false, minSizeTop: 50, minSizeBottom: 50 } },
+      right: { horizontalSplit: { id: "uia:fourQuadrantsRightHorizontal", percentage: 0.50, top: 2, bottom: 3, lock: false, minSizeTop: 50, minSizeBottom: 50 } },
     },
   };
 
@@ -49,7 +49,7 @@ export class StandardContentLayouts {
     horizontalSplit: {
       id: "uia:twoViewsHorizontalSplit",
       percentage: 0.50,
-      lock: true,
+      lock: false,
       top: 0,
       bottom: 1,
     },
@@ -61,7 +61,7 @@ export class StandardContentLayouts {
     verticalSplit: {
       id: "uia:twoViewsOnLeftSplit",
       percentage: 0.50,
-      left: { horizontalSplit: { id: "uia:twoViewsOnLeftHorizontal", percentage: 0.50, top: 0, bottom: 1, lock: true, minSizeTop: 50, minSizeBottom: 50 } },
+      left: { horizontalSplit: { id: "uia:twoViewsOnLeftHorizontal", percentage: 0.50, top: 0, bottom: 1, lock: false, minSizeTop: 50, minSizeBottom: 50 } },
       right: 2,
     },
   };
@@ -73,7 +73,7 @@ export class StandardContentLayouts {
       id: "uia:twoViewsOnRightSplit",
       percentage: 0.50,
       left: 0,
-      right: { horizontalSplit: { id: "uia:twoViewsOnRightHorizontal", percentage: 0.50, top: 1, bottom: 2, lock: true, minSizeTop: 50, minSizeBottom: 50 } },
+      right: { horizontalSplit: { id: "uia:twoViewsOnRightHorizontal", percentage: 0.50, top: 1, bottom: 2, lock: false, minSizeTop: 50, minSizeBottom: 50 } },
     },
   };
 
@@ -83,9 +83,9 @@ export class StandardContentLayouts {
     horizontalSplit: {
       id: "uia:threeViewsTwoOnBottomHorizontal",
       percentage: 0.50,
-      lock: true,
+      lock: false,
       top: 0,
-      bottom: { verticalSplit: { id: "uia:twoViewsOnBottomVertical", percentage: 0.50, left: 1, right: 2, lock: true, minSizeLeft: 50, minSizeRight: 50 } },
+      bottom: { verticalSplit: { id: "uia:twoViewsOnBottomVertical", percentage: 0.50, left: 1, right: 2, lock: false, minSizeLeft: 50, minSizeRight: 50 } },
     },
   };
 
@@ -95,8 +95,8 @@ export class StandardContentLayouts {
     horizontalSplit: {
       id: "uia:twoViewsOnTopHorizontal",
       percentage: 0.50,
-      lock: true,
-      top: { verticalSplit: { id: "uia:twoViewsOnTopVertical", percentage: 0.50, left: 0, right: 1, lock: true, minSizeLeft: 50, minSizeRight: 50 } },
+      lock: false,
+      top: { verticalSplit: { id: "uia:twoViewsOnTopVertical", percentage: 0.50, left: 0, right: 1, lock: false, minSizeLeft: 50, minSizeRight: 50 } },
       bottom: 2,
     },
   };
