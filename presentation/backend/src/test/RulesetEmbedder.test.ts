@@ -124,7 +124,7 @@ describe("RulesetEmbedder", () => {
 
   function setupMocksForHandlingPrerequisites() {
     imodelMock.setup((x) => x.containsClass(RulesetElements.Ruleset.classFullName)).returns(() => false);
-    imodelMock.setup(async (x) => x.importSchemas(moq.It.isAny(), moq.It.isAny())).returns(async () => undefined);
+    imodelMock.setup(async (x) => x.importSchemas(moq.It.isAny())).returns(async () => undefined);
     codeSpecsMock.setup((x) => x.insert(rulesetCodeSpec)).returns(() => faker.random.uuid());
   }
 
@@ -218,7 +218,7 @@ describe("RulesetEmbedder", () => {
 
       await embedder.insertRuleset(ruleset);
 
-      imodelMock.verify(async (x) => x.importSchemas(moq.It.isAny(), moq.It.isAny()), moq.Times.once());
+      imodelMock.verify(async (x) => x.importSchemas(moq.It.isAny()), moq.Times.once());
       codeSpecsMock.verify((x) => x.insert(rulesetCodeSpec), moq.Times.once());
       rulesetModelMock.verify((x) => x.insert(), moq.Times.once());
       imodelMock.verify((x) => x.saveChanges(), moq.Times.exactly(2));

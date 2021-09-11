@@ -87,7 +87,7 @@ class ChangedEntitiesArray {
       // New entity - insert corresponding class index entry.
       this._classIndices.splice(entityIndex, 0, classIndex);
     } else {
-      // Existing entity - update corresponding class index enty.
+      // Existing entity - update corresponding class index.
       // (We do this because apparently connectors can (very rarely) change the class Id of an existing element).
       this._classIndices[entityIndex] = classIndex;
     }
@@ -158,7 +158,7 @@ class ChangedEntitiesProc {
     evt.raiseEvent(txnEntities);
 
     // Notify frontend listeners.
-    const entities: ChangedEntities = { };
+    const entities: ChangedEntities = {};
     this._inserted.addToChangedEntities(entities, "inserted");
     this._deleted.addToChangedEntities(entities, "deleted");
     this._updated.addToChangedEntities(entities, "updated");
@@ -364,10 +364,8 @@ export class TxnManager {
     this._nativeDb.restartTxnSession();
   }
 
-  /** Determine whether undo is possible
-   * @deprecated - use [[isUndoPossible]]
-   */
-  public checkUndoPossible() { return this._nativeDb.isUndoPossible(); }
+  /** Determine whether current txn is propagating indirect changes or not. */
+  public get isIndirectChanges(): boolean { return this._nativeDb.isIndirectChanges(); }
 
   /** Determine if there are currently any reversible (undoable) changes from this editing session. */
   public get isUndoPossible(): boolean { return this._nativeDb.isUndoPossible(); }

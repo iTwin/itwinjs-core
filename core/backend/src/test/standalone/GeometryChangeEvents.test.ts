@@ -25,7 +25,7 @@ describe("Model geometry changes", () => {
     IModelJsFs.copySync(seedFileName, testFileName);
 
     // Upgrade the schema to include the GeometryGuid and LastMod model properties.
-    StandaloneDb.upgradeSchemas(testFileName);
+    StandaloneDb.upgradeStandaloneSchemas(testFileName);
     imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
     modelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, "TestModel");
     categoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));

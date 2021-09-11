@@ -661,11 +661,14 @@ export interface BRepThickenProps {
 
 // @public
 export interface BriefcaseDownloader {
-    briefcaseId: number;
-    downloadPromise: Promise<void>;
-    fileName: string;
-    requestCancel: () => Promise<boolean>;
+    readonly briefcaseId: BriefcaseId;
+    readonly downloadPromise: Promise<void>;
+    readonly fileName: LocalFileName;
+    readonly requestCancel: () => Promise<boolean>;
 }
+
+// @public
+export type BriefcaseId = number;
 
 // @public
 export enum BriefcaseIdValue {
@@ -682,8 +685,8 @@ export enum BriefcaseIdValue {
 
 // @public
 export interface BriefcaseProps {
-    briefcaseId: number;
-    iModelId: GuidString;
+    readonly briefcaseId: BriefcaseId;
+    readonly iModelId: GuidString;
 }
 
 export { BriefcaseStatus }
@@ -1698,20 +1701,20 @@ export type CreateEmptyStandaloneIModelProps = CreateIModelProps & CreateStandal
 
 // @public
 export interface CreateIModelProps extends IModelProps {
-    client?: string;
-    guid?: GuidString;
+    readonly client?: string;
+    readonly guid?: GuidString;
     // @alpha
-    thumbnail?: ThumbnailProps;
+    readonly thumbnail?: ThumbnailProps;
 }
 
 // @public
 export interface CreateSnapshotIModelProps extends IModelEncryptionProps {
-    createClassViews?: boolean;
+    readonly createClassViews?: boolean;
 }
 
 // @internal
 export interface CreateStandaloneIModelProps extends IModelEncryptionProps {
-    allowEdit?: string;
+    readonly allowEdit?: string;
 }
 
 // @internal (undocumented)
@@ -2133,11 +2136,11 @@ export class EcefLocation implements EcefLocationProps {
 
 // @public
 export interface EcefLocationProps {
-    cartographicOrigin?: LatLongAndHeight;
-    orientation: YawPitchRollProps;
-    origin: XYZProps;
-    xVector?: XYZProps;
-    yVector?: XYZProps;
+    readonly cartographicOrigin?: LatLongAndHeight;
+    readonly orientation: YawPitchRollProps;
+    readonly origin: XYZProps;
+    readonly xVector?: XYZProps;
+    readonly yVector?: XYZProps;
 }
 
 // @public
@@ -2827,9 +2830,9 @@ export interface FilePropertyProps {
     // (undocumented)
     id?: number | string;
     // (undocumented)
-    name: string;
+    readonly name: string;
     // (undocumented)
-    namespace: string;
+    readonly namespace: string;
     // (undocumented)
     subId?: number | string;
 }
@@ -4208,7 +4211,7 @@ export interface IModelCoordinatesResponseProps {
 
 // @public
 export interface IModelEncryptionProps {
-    password?: string;
+    readonly password?: string;
 }
 
 // @public
@@ -4224,12 +4227,12 @@ export class IModelNotFoundResponse extends RpcNotFoundResponse {
 
 // @public
 export interface IModelProps {
-    ecefLocation?: EcefLocationProps;
-    geographicCoordinateSystem?: GeographicCRSProps;
-    globalOrigin?: XYZProps;
-    name?: string;
-    projectExtents?: Range3dProps;
-    rootSubject: RootSubjectProps;
+    readonly ecefLocation?: EcefLocationProps;
+    readonly geographicCoordinateSystem?: GeographicCRSProps;
+    readonly globalOrigin?: XYZProps;
+    readonly name?: string;
+    readonly projectExtents?: Range3dProps;
+    readonly rootSubject: RootSubjectProps;
 }
 
 // @internal
@@ -4443,7 +4446,7 @@ export interface IpcAppFunctions {
     log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
     openBriefcase: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
     openStandalone: (_filePath: string, _openMode: OpenMode, _opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
-    pullAndMergeChanges: (key: string, version?: IModelVersionProps) => Promise<ChangesetIndexAndId>;
+    pullChanges: (key: string, toIndex?: ChangesetIndex) => Promise<ChangesetIndexAndId>;
     pushChanges: (key: string, description: string) => Promise<ChangesetIndexAndId>;
     queryConcurrency: (pool: "io" | "cpu") => Promise<number>;
     // (undocumented)
@@ -4750,12 +4753,12 @@ export type LocalAlignedBox3d = Range3d;
 
 // @public
 export interface LocalBriefcaseProps {
-    briefcaseId: number;
-    changeset: ChangesetIdWithIndex;
-    contextId: GuidString;
-    fileName: string;
-    fileSize: number;
-    iModelId: GuidString;
+    readonly briefcaseId: BriefcaseId;
+    readonly changeset: ChangesetIdWithIndex;
+    readonly fileName: LocalFileName;
+    readonly fileSize: number;
+    readonly iModelId: GuidString;
+    readonly iTwinId: GuidString;
 }
 
 // @public (undocumented)
@@ -5403,19 +5406,19 @@ export interface OpenAPISchema {
 
 // @public
 export interface OpenBriefcaseOptions {
-    openAsReadOnly?: boolean;
+    readonly openAsReadOnly?: boolean;
 }
 
 // @public
 export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey {
-    fileName: string;
-    readonly?: boolean;
+    readonly fileName: LocalFileName;
+    readonly readonly?: boolean;
 }
 
 // @public
 export interface OpenDbKey {
     // (undocumented)
-    key?: string;
+    readonly key?: string;
 }
 
 // @internal (undocumented)
@@ -6595,10 +6598,10 @@ export { RepositoryStatus }
 // @public
 export interface RequestNewBriefcaseProps {
     asOf?: IModelVersionProps;
-    briefcaseId?: number;
-    contextId: GuidString;
-    fileName?: string;
-    iModelId: GuidString;
+    briefcaseId?: BriefcaseId;
+    readonly fileName?: LocalFileName;
+    readonly iModelId: GuidString;
+    readonly iTwinId: GuidString;
 }
 
 // @public (undocumented)
@@ -6672,8 +6675,8 @@ export type RgbFactorProps = number[];
 
 // @public
 export interface RootSubjectProps {
-    description?: string;
-    name: string;
+    readonly description?: string;
+    readonly name: string;
 }
 
 // @public
@@ -7551,11 +7554,11 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface {
 // @public
 export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
     // @internal (undocumented)
-    autoUploadBlocks?: boolean;
+    readonly autoUploadBlocks?: boolean;
     // @internal (undocumented)
-    lazyBlockCache?: boolean;
+    readonly lazyBlockCache?: boolean;
     // @internal
-    tempFileBase?: string;
+    readonly tempFileBase?: string;
 }
 
 // @public
@@ -8470,8 +8473,8 @@ export type UpdateCallback = (obj: any, t: number) => void;
 
 // @beta
 export interface UpgradeOptions {
-    domain?: DomainOptions;
-    profile?: ProfileOptions;
+    readonly domain?: DomainOptions;
+    readonly profile?: ProfileOptions;
 }
 
 // @public
