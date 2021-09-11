@@ -409,8 +409,7 @@ export class PresentationManager {
   }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  private onIModelOpened = (requestContext: ClientRequestContext, imodel: BriefcaseDb) => {
-    requestContext.enter();
+  private onIModelOpened = (imodel: BriefcaseDb) => {
     const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.getNativePlatform().forceLoadSchemas(imodelAddon);

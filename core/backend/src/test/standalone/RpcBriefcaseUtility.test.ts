@@ -40,7 +40,7 @@ describe("RpcBriefcaseUtility.findOrOpen", () => {
     expect(reattachStub.called).to.be.false;
     expect(openStub.calledOnce).to.be.true;
     expect(Object.keys(openStub.firstCall.firstArg).length).to.equal(4);
-    expect(openStub.firstCall.firstArg.requestContext).to.equal("fakeRequestContext");
+    expect(openStub.firstCall.firstArg.user).to.equal("fakeRequestContext");
     expect(openStub.firstCall.firstArg.tokenProps).to.equal(fakeIModelProps);
     expect(openStub.firstCall.firstArg.syncMode).to.equal("fakeSyncMode");
     expect(openStub.firstCall.firstArg.timeout).to.be.greaterThan(0);
