@@ -582,7 +582,6 @@ export class ExternalTextureLoader { /* currently exported for tests only */
 
   public get numActiveRequests() { return this._activeRequests.length; }
   public get numPendingRequests() { return this._pendingRequests.length; }
-  public get numConvertRequests() { return this._convertRequests.length; }
   public get maxActiveRequests() { return this._maxActiveRequests; }
 
   private constructor(maxActiveRequests: number) {
@@ -595,26 +594,20 @@ export class ExternalTextureLoader { /* currently exported for tests only */
       const req = this._pendingRequests.shift()!;
       await this._activateRequest(req);
     }
-    if (this._activeRequests.length < 1 && this._pendingRequests.length < 1) {
-      const t0 = new Date("2021-09-08T17:15:00.0Z").getTime();  // dbg
-      console.log(`%[${Date.now()-t0}] Texture Requests Finished%`); // eslint-disable-line no-console
+    if (this._activeRequests.length < 1 && this._pendingRequests.length < 1)
       this.onTexturesLoaded.raiseEvent();
-    }
   }
 
   private async _activateRequest(req: ExternalTextureRequest) {
     if (req.imodel.isClosed)
       return;
-    const t0 = new Date("2021-09-08T17:15:00.0Z").getTime();  // dbg
 
     this._activeRequests.push(req);
 
     try {
       if (!req.imodel.isClosed) {
         const maxTextureSize = System.instance.capabilities.maxTexSizeAllow;
-        const t1 = Date.now();  // dbg
         const texData = await req.imodel.queryTextureImage({ name: req.name, maxTextureSize });
-        const t2 = Date.now();  // dbg
         if (undefined !== texData) {
           const cnvReq = { req, texData };
           this._convertRequests.push(cnvReq);
@@ -622,14 +615,11 @@ export class ExternalTextureLoader { /* currently exported for tests only */
             if (!this._convertPending)
               await this._convertTexture();
           } while (!this._convertPending && this._convertRequests.length > 0);
-          const t3 = Date.now();  // dbg
           if (!req.imodel.isClosed) { // is this check necessary?
             IModelApp.tileAdmin.invalidateAllScenes();
             if (undefined !== req.onLoaded)
               req.onLoaded(req);
           }
-          const t4 = Date.now();  // dbg
-          console.log(`%[${t1-t0}] _activateReq: queryTex ${t2-t1}, end ${t4-t3}, tot ${t4-t1} ms [${req.name}] ${texData.width} x ${texData.height}%`); // eslint-disable-line no-console
         }
       }
     } catch (_e) { }
@@ -639,33 +629,21 @@ export class ExternalTextureLoader { /* currently exported for tests only */
 
   private async _convertTexture(): Promise<void> {
     this._convertPending = true;
-    const t0 = new Date("2021-09-08T17:15:00.0Z").getTime();  // dbg
-    const t1 = Date.now();  // dbg
-    let t2 = t1, t3 = t1, t4 = t1, t5 = t1;  // dbg
     const cnvReq = this._convertRequests.shift();
     if (undefined !== cnvReq) {
       const imageSource = new ImageSource(cnvReq.texData.bytes, cnvReq.req.format);
       if (System.instance.capabilities.supportsCreateImageBitmap) {
         const blob = new Blob([imageSource.data], { type: getImageSourceMimeType(imageSource.format) });
-        t2 = Date.now();  // dbg
         const image = await createImageBitmap (blob, 0, 0, cnvReq.texData.width, cnvReq.texData.height);
-        t3 = Date.now();  // dbg
         if (!cnvReq.req.imodel.isClosed) {
-          t4 = Date.now();  // dbg
           cnvReq.req.handle.reload(Texture2DCreateParams.createForImageBitmap(image, ImageSourceFormat.Png === cnvReq.req.format, cnvReq.req.type));
-          t5 = Date.now();  // dbg
         }
       } else {
-        t2 = Date.now();  // dbg
         const image = await imageElementFromImageSource(imageSource);
-        t3 = Date.now();  // dbg
         if (!cnvReq.req.imodel.isClosed) {
-          t4 = Date.now();  // dbg
           cnvReq.req.handle.reload(Texture2DCreateParams.createForImage(image, ImageSourceFormat.Png === cnvReq.req.format, cnvReq.req.type));
-          t5 = Date.now();  // dbg
         }
       }
-      console.log(`%[${t1-t0}] _convertTexture, use CIB ${System.instance.capabilities.supportsCreateImageBitmap}, image ${t3-t2}, texCreate ${t5-t4}, tot ${t5-t1} ms [${cnvReq.req.name}] ${cnvReq.texData.width} x ${cnvReq.texData.height}%`); // eslint-disable-line no-console
     }
     this._convertPending = false;
   }
