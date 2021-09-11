@@ -21,6 +21,7 @@ import { ClipPlane } from "./ClipPlane";
 import { ClipPlaneContainment } from "./ClipUtils";
 import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets, UnionOfConvexClipPlaneSetsProps } from "./UnionOfConvexClipPlaneSets";
+import { Point3dArray } from "../geometry3d/PointHelpers";
 
 /**
  * Bit mask type for referencing subsets of 6 planes of range box.
@@ -285,7 +286,7 @@ class PolyEdge {
 /**
  * A clipping volume defined by a shape (an array of 3d points using only x and y dimensions).
  * May be given either a ClipPlaneSet to store directly, or an array of polygon points as well as other parameters
- * for parsing clipplanes from the shape later.
+ * for parsing ClipPlanes from the shape later.
  * @public
  */
 export class ClipShape extends ClipPrimitive {
@@ -427,7 +428,7 @@ export class ClipShape extends ClipPrimitive {
     const pPoints = polygon.slice(0);
     // Add closure point
     if (!pPoints[0].isExactEqual(pPoints[pPoints.length - 1]))
-      pPoints.push(pPoints[0]);
+      pPoints.push(pPoints[0].clone ());
     if (result) {
       result._clipPlanes = undefined; // Start as undefined
       result._invisible = invisible;
@@ -484,12 +485,15 @@ export class ClipShape extends ClipPrimitive {
       this.parseLinearPlanes(set, this._polygon[0], this._polygon[1]);
       return true;
     }
-    const direction = PolygonOps.testXYPolygonTurningDirections(points);
+    let direction = PolygonOps.testXYPolygonTurningDirections(points);
+    if (this.isMask)
+      direction = -direction;
+    // const direction = 0;
     if (0 !== direction) {
-      this.parseConvexPolygonPlanes(set, this._polygon, direction);
+      this.parseConvexPolygonPlanes(set, this._polygon, direction, this.isMask);
       return true;
     } else {
-      this.parseConcavePolygonPlanes(set, this._polygon);
+      this.parseConcavePolygonPlanes(set, this._polygon, this.isMask);
       return false;
     }
   }
@@ -525,10 +529,11 @@ export class ClipShape extends ClipPrimitive {
     return true;
   }
   /** Given a convex polygon defined as an array of points, populate the given UnionOfConvexClipPlaneSets with ConvexClipPlaneSets defining the bounded region. Returns true if successful. */
-  private parseConvexPolygonPlanes(set: UnionOfConvexClipPlaneSets, polygon: Point3d[], direction: number, cameraFocalLength?: number): boolean {
+  private parseConvexPolygonPlanes(set: UnionOfConvexClipPlaneSets, polygon: Point3d[], direction: number, buildExteriorClipper: boolean, cameraFocalLength?: number): boolean {
     const samePointTolerance = 1.0e-8; // This could possibly be replaced with more widely used constants
     const edges: PolyEdge[] = [];
-    const reverse = (direction < 0) !== this._isMask;
+    //  const reverse = (direction < 0) !== this._isMask;
+    const reverse = direction < 0;
     for (let i = 0; i < polygon.length - 1; i++) {
       const z = (cameraFocalLength === undefined) ? 0.0 : -cameraFocalLength;
       const dir = Vector2d.createFrom((polygon[i + 1].minus(polygon[i])));
@@ -542,7 +547,7 @@ export class ClipShape extends ClipPrimitive {
     if (edges.length < 3) {
       return false;
     }
-    if (this._isMask) {
+    if (buildExteriorClipper) {
       const last = edges.length - 1;
       for (let i = 0; i <= last; i++) {
         const edge = edges[i];
@@ -581,24 +586,47 @@ export class ClipShape extends ClipPrimitive {
     return true;
   }
   /** Given a concave polygon defined as an array of points, populate the given UnionOfConvexClipPlaneSets with multiple ConvexClipPlaneSets defining the bounded region. Returns true if successful. */
-  private parseConcavePolygonPlanes(set: UnionOfConvexClipPlaneSets, polygon: Point3d[], cameraFocalLength?: number): boolean {
-    const triangulatedPolygon = Triangulator.createTriangulatedGraphFromSingleLoop(polygon);
+  private parseConcavePolygonPlanes(set: UnionOfConvexClipPlaneSets, polygon: Point3d[], isMask: boolean, cameraFocalLength?: number): boolean {
+    const hullPoints: Point3d[] = [];
+    const insidePoints: Point3d[] = [];
+    const expandedHull: Point3d[] = [];
+    let triangulatedPolygon;
+    if (isMask){
+    Point3dArray.computeConvexHullXY(polygon, hullPoints, insidePoints, false);
+    if (hullPoints.length < 3)
+      return false;
+    // YIKES -- convex hull is pointers to originals !! Can't transform in place!!!
+    // Move the hull points out so there is a clean space to triangulate "between" the polygon and expanded hull.
+    const centroid = Point3dArray.centroid(hullPoints);
+    for (const p of hullPoints) {
+      expandedHull.push (centroid.interpolate(2.0, p));
+    }
+    expandedHull.push(expandedHull[0].clone());
+
+    triangulatedPolygon = Triangulator.createTriangulatedGraphFromLoops([expandedHull, polygon]);
+    } else {
+      triangulatedPolygon = Triangulator.createTriangulatedGraphFromSingleLoop(polygon);
+}
     if (triangulatedPolygon === undefined)
       return false;
-    Triangulator.flipTriangles(triangulatedPolygon);
-    triangulatedPolygon.announceFaceLoops((_graph: HalfEdgeGraph, edge: HalfEdge): boolean => {
+      Triangulator.flipTriangles(triangulatedPolygon);
+      triangulatedPolygon.announceFaceLoops((_graph: HalfEdgeGraph, edge: HalfEdge): boolean => {
       if (!edge.isMaskSet(HalfEdgeMask.EXTERIOR)) {
         const convexFacetPoints = edge.collectAroundFace((node: HalfEdge): any => {
           if (!node.isMaskSet(HalfEdgeMask.EXTERIOR))
             return Point3d.create(node.x, node.y, 0);
         });
         // parseConvexPolygonPlanes expects a closed loop (pushing the reference doesn't matter)
-        convexFacetPoints.push(convexFacetPoints[0]);
+        convexFacetPoints.push(convexFacetPoints[0].clone());
         const direction = PolygonOps.testXYPolygonTurningDirections(convexFacetPoints); // ###TODO: Can we expect a direction coming out of graph facet?
-        this.parseConvexPolygonPlanes(set, convexFacetPoints, direction, cameraFocalLength);
+        this.parseConvexPolygonPlanes(set, convexFacetPoints, direction, false, cameraFocalLength);
       }
       return true;
-    });
+      });
+    if (isMask){
+      const direction1 = PolygonOps.testXYPolygonTurningDirections(expandedHull); // ###TODO: Can we expect a direction coming out of graph facet?
+      this.parseConvexPolygonPlanes(set, expandedHull, -direction1, true, cameraFocalLength);
+    }
     return true;
   }
   /**

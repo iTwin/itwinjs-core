@@ -15,6 +15,8 @@ import { Matrix4d } from "../../geometry4d/Matrix4d";
 import { Checker } from "../Checker";
 // External test functions
 import { clipPrimitivesAreEqual } from "./ClipPrimitives.test";
+import { Angle, GeometryQuery, GrowableXYZArray, PolygonOps, Sample } from "../../geometry-core";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 /** Enumerated type for point manipulation at the extremities of a ClipVector's ClipShape. */
 const enum PointAdjustment { // eslint-disable-line no-restricted-syntax
@@ -358,4 +360,95 @@ describe("StringifiedClipVector", () => {
 
     expect(StringifiedClipVector.fromClipVector(cv)).to.equal(scv);
   });
+
+  it("OuterAndMask", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const outer = [[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]];
+    const triangle = [[2, 2], [8, 2], [5, 6], [2, 2]];
+    const innerNonConvex = [[2, 6], [5, 6], [5, 1], [4, 4], [2, 6]];
+    const innerCircle = Sample.createArcStrokes(2, Point3d.create(5, 4), 2.0, Angle.createDegrees(12), Angle.createDegrees(360));
+    const innerU = [[2,1],[4,2],[4,5],[5,6],[5,2],[8,3],[9,8],[3,7],[2,1]];
+    for (const isMask of [true, false]){
+    const jsonA = [{ shape: { points: outer } }, { shape: { points: triangle, mask: isMask } }];
+    const jsonB = [{ shape: { points: outer } }, { shape: { points: innerCircle, mask: isMask}}];
+    const jsonC = [{ shape: { points: outer } }, { shape: { points: innerNonConvex, mask: isMask}}];
+    const jsonD = [{ shape: { points: outer } }, { shape: { points: innerU, mask: isMask}}];
+    // const polygonToClip = Sample.createArcStrokes(3, Point3d.create(5, 5), 6.0, Angle.createDegrees(0), Angle.createDegrees(360));
+    const polygonToClip = Sample.createRectangleXY(-10, -10, 30, 30);
+    let x0 = 0;
+    const y0 = 0;
+    for (const json of [jsonA, jsonC, jsonB, jsonD]) {
+      const primitive = ClipPrimitive.fromJSON(json[json.length - 1]);
+      if (primitive) {
+        exerciseClipPrimitive(ck, allGeometry, primitive, polygonToClip, isMask, x0, y0);
+      }
+      x0 += 50.0;
+    }
+}
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipVector", "OuterAndMask");
+    expect(ck.getNumErrors()).equals(0);
+  });
 });
+
+function _exerciseClipVector(ck: Checker, allGeometry: GeometryQuery[], cv: ClipVector, polygonToClip: Point3d[], x0: number, y0: number) {
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, polygonToClip, x0, y0);
+  const range = Range3d.createArray(polygonToClip);
+  const a = 2 * range.yLength();
+  if (ck.testType(cv, ClipVector, "parsed clip vector")) {
+    for (const p of cv.clips) {
+      y0 += a;
+      const planes = p.fetchClipPlanesRef();
+      // eslint-disable-next-line no-console
+      // console.log(planes?.toJSON());
+      if (planes) {
+        const clips: GrowableXYZArray[] = [];
+        planes.polygonClip(polygonToClip, clips);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, clips, x0, y0);
+      }
+    }
+  }
+}
+export function exerciseClipPrimitive(ck: Checker, allGeometry: GeometryQuery[], primitive: ClipPrimitive, polygonToClip: Point3d[],
+  expectContainment: boolean, // true if caller expects that the primitive shape is contained in the polygonToClip
+  x0: number, y0: number) {
+    const range2 = Range3d.createArray(polygonToClip);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, polygonToClip, x0, y0);
+  const range = Range3d.createArray(polygonToClip);
+  const a = 2 * range.yLength();
+  y0 += a;
+  const planeSets = primitive.fetchClipPlanesRef();
+  // eslint-disable-next-line no-console
+  // console.log(planeSets?.toJSON());
+  const workArray = new GrowableXYZArray();
+  if (planeSets) {
+    const convexSets = planeSets.convexSets;
+    let area0 = 0.0;
+    for (let i = 0; i < convexSets.length; i++) {
+      const convexSet = planeSets.convexSets[i];
+      // const clips: GrowableXYZArray[] = [];
+      const xyz = GrowableXYZArray.create(polygonToClip);
+      convexSet.clipConvexPolygonInPlace(xyz, workArray);
+      // convexSet.polygonClip(polygonToClip, clips);
+      xyz.forceClosure();
+      area0 += PolygonOps.areaXY(xyz);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, xyz, x0, y0);
+      }
+      if (primitive instanceof ClipShape && expectContainment){
+        const range1 = Range3d.createArray(primitive.polygon);
+        if (range1.containsRange(range2)) {
+          const area1 = PolygonOps.areaXY(primitive.polygon);
+          const area2 = PolygonOps.areaXY(polygonToClip);
+          if (primitive.isMask)
+            ck.testCoordinate(area0, area2 - area1, "Expect mask to remove clip shape from containing polygon");
+          else
+            ck.testCoordinate(area0, area1, "Expect clipper to excise clip shape from containing polygon");
+        }
+      }
+    const compositeClip: GrowableXYZArray[] = [];
+    primitive.fetchClipPlanesRef()?.polygonClip(polygonToClip, compositeClip);
+    for (const c of compositeClip)
+      c.forceClosure();
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, compositeClip, x0, y0 + 2 * range2.yLength());
+  }
+}

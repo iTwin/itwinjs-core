@@ -10,6 +10,7 @@ import { ClipUtilities } from "../../clipping/ClipUtils";
 import { ClipVector } from "../../clipping/ClipVector";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets";
+import { GeometryQuery, Point3dArray, Sample } from "../../geometry-core";
 import { Angle } from "../../geometry3d/Angle";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
@@ -18,7 +19,9 @@ import { Transform } from "../../geometry3d/Transform";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
 import { Triangulator } from "../../topology/Triangulation";
 import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
+import { exerciseClipPrimitive } from "./ClipVector.test";
 
 /* eslint-disable no-console */
 
@@ -444,18 +447,29 @@ describe("ClipPrimitive", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("ClipShape creation (polygonal) and point proximity", () => {
+  it("ClipShapePointTests", () => {
     const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
     const minZ = -5;
     const maxZ = 5;
     // Test point location
     const clipShape0 = ClipShape.createEmpty();
+    let x0 = 0;
+    const y0 = 0;
+    const circlePoints = Sample.createArcStrokes(0, Point3d.create(1, 2), 2.0, Angle.createDegrees(0), Angle.createDegrees(360));
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, circlePoints, x0, y0);
+    const rectanglePoints = Sample.createRectangleXY(-2, -2, 8, 8);
     ck.testFalse(clipShape0.isXYPolygon, "ClipShape does not contain polygon when no points are present");
-    ck.testTrue(ClipShape.createShape(octagonalPoints, minZ, maxZ, undefined, true, true, clipShape0) !== undefined);
-    const midpoint = Point3d.create((min2D.x + max2D.x) / 2, (min2D.y + max2D.y) / 2, (minZ + maxZ) / 2);    // Is midpoint of polygon
+    ck.testTrue(ClipShape.createShape(circlePoints, minZ, maxZ, undefined, true, true, clipShape0) !== undefined);
+    exerciseClipPrimitive(ck, allGeometry, clipShape0, rectanglePoints, true, x0, y0);
+    const midpoint = Point3dArray.centroid(circlePoints);
+    GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, midpoint, 0.25, x0, y0);
     ck.testFalse(clipShape0.pointInside(midpoint, 0), "Midpoint of polygon is not inside due to mask.");
     ck.testExactNumber(clipShape0.classifyPointContainment([midpoint], false), 3, "Midpoint is completely outside when ClipShape is a mask");
-    const clipShape1 = ClipShape.createShape(octagonalPoints, minZ, maxZ, undefined, false, false);
+    const clipShape1 = ClipShape.createShape(circlePoints, minZ, maxZ, undefined, false, false);
+    exerciseClipPrimitive(ck, allGeometry, clipShape1!, rectanglePoints, false, x0 += 10, y0);
+    GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, midpoint, 0.25, x0, y0);
+
     ck.testTrue(clipShape1!.pointInside(midpoint, 0), "Midpoint of polygon is inside.");
 
     // Test createFrom method
@@ -485,6 +499,7 @@ describe("ClipPrimitive", () => {
     clipShape2.transformInPlace(generalTransform);
     ck.testFalse(clipShape2.isXYPolygon);
     ck.checkpoint();
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipPrimitive", "ClipShapePointTests");
     expect(ck.getNumErrors()).equals(0);
   });
 
