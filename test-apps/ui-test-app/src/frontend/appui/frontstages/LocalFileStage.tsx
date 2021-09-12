@@ -47,7 +47,8 @@ export class LocalFileOpenFrontstage extends FrontstageProvider {
     if (LocalFileSupport.localFilesSupported()) {
       const frontstageProvider = new LocalFileOpenFrontstage();
       FrontstageManager.addFrontstageProvider(frontstageProvider);
-      await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+      const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+      await FrontstageManager.setActiveFrontstageDef(frontstageDef);
     }
   }
 

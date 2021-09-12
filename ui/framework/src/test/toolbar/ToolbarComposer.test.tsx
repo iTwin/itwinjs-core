@@ -262,9 +262,13 @@ describe("<ToolbarComposer  />", async () => {
 
     /** Id for the Frontstage */
     const oldProps: FrontstageProps = { id: "old", defaultTool: CoreTools.selectElementCommand, contentGroup: "single" };
-    const oldStageDef = new FrontstageDef(oldProps);
+    const oldStageDef = new FrontstageDef();
+    await oldStageDef.initializeFromProps(oldProps);
+
     const newProps: FrontstageProps = { id: "new", defaultTool: CoreTools.selectElementCommand, contentGroup: "single" };
-    const newStageDef = new FrontstageDef(newProps);
+    const newStageDef = new FrontstageDef();
+    await newStageDef.initializeFromProps(newProps);
+
     FrontstageManager.onFrontstageActivatedEvent.emit({ deactivatedFrontstageDef: oldStageDef, activatedFrontstageDef: newStageDef } as FrontstageActivatedEventArgs);
 
     expect(await waitFor(() => renderedComponent.queryByTitle("addon-tool-1"))).to.exist;

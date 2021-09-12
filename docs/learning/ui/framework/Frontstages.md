@@ -111,7 +111,7 @@ const frontstageProvider = new SampleFrontstage();
 FrontstageManager.addFrontstageProvider(frontstageProvider);
 
 // Set the Frontstage active
-FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef).then(() => {
+FrontstageManager.setActiveFrontstage(frontstageProvider.frontstage.props.id).then(() => {
   // Frontstage is ready
 });
 ```

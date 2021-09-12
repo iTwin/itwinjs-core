@@ -27,6 +27,7 @@ import { FrontstageDef, FrontstageEventArgs, FrontstageNineZoneStateChangedEvent
 import { FrontstageProvider } from "./FrontstageProvider";
 import { TimeTracker } from "../configurableui/TimeTracker";
 import { ContentLayoutManager } from "../content/ContentLayoutManager";
+import { truncate } from "lodash";
 
 // -----------------------------------------------------------------------------
 // Frontstage Events
@@ -190,6 +191,7 @@ export class FrontstageManager {
   private static _frontstageDefs = new Map<string, FrontstageDef>();
   private static _modalFrontstages: ModalFrontstageItem[] = new Array<ModalFrontstageItem>();
   private static _nineZoneManagers = new Map<string, NineZoneManager>();
+  private static _frontstageProviders = new Map<string, FrontstageProvider>();
   private static _nineZoneSize: Size | undefined = undefined;
 
   private static _nestedFrontstages: FrontstageDef[] = new Array<FrontstageDef>();
@@ -370,7 +372,7 @@ export class FrontstageManager {
    * @param frontstageProvider  FrontstageProvider representing the Frontstage to add
    */
   public static addFrontstageProvider(frontstageProvider: FrontstageProvider): void {
-    FrontstageManager.addFrontstageDef(frontstageProvider.initializeDef());
+    FrontstageManager._frontstageProviders.set(frontstageProvider.frontstage.props.id, frontstageProvider);
   }
 
   /** Find a loaded Frontstage with a given id. If the id is not provided, the active Frontstage is returned.
@@ -383,6 +385,32 @@ export class FrontstageManager {
     const frontstageDef = FrontstageManager._frontstageDefs.get(id);
     if (frontstageDef instanceof FrontstageDef)
       return frontstageDef;
+    return undefined;
+  }
+
+  private static findFrontstageProvider(id?: string): FrontstageProvider | undefined {
+    return id ? FrontstageManager._frontstageProviders.get(id) : undefined;
+  }
+
+  /** Find a loaded Frontstage with a given id. If the id is not provided, the active Frontstage is returned.
+   * @param id  Id of the Frontstage to find
+   * @returns  FrontstageDef with a given id if found, or undefined if not found.
+   */
+  public static async getFrontstageDef(id?: string): Promise<FrontstageDef | undefined> {
+    let frontstageDef = FrontstageManager.findFrontstageDef(id);
+    if (frontstageDef)
+      return frontstageDef;
+
+    if (id) {
+      const frontstageProvider = FrontstageManager.findFrontstageProvider(id);
+      if (frontstageProvider) {
+        frontstageDef = await FrontstageDef.create(frontstageProvider);
+        if (frontstageDef)
+          FrontstageManager._frontstageDefs.set(id, frontstageDef);
+        return frontstageDef;
+      }
+    }
+
     return undefined;
   }
 
@@ -401,14 +429,22 @@ export class FrontstageManager {
     return (activeFrontstage) ? activeFrontstage.id : "";
   }
 
-  /** Sets the active FrontstageDef.
+  public static hasFrontstage(frontstageId: string) {
+    if (FrontstageManager.findFrontstageDef(frontstageId))
+      return true;
+    if (FrontstageManager.findFrontstageProvider(frontstageId))
+      return true;
+    return false;
+  }
+
+  /** Sets the active FrontstageDef give the stageId.
    * @param  frontstageId  Id of the Frontstage to set active.
    * @returns A Promise that is fulfilled when the [[Frontstage]] is ready.
    */
   public static async setActiveFrontstage(frontstageId: string): Promise<void> {
-    const frontstageDef = FrontstageManager.findFrontstageDef(frontstageId);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageId);
     if (!frontstageDef) {
-      Logger.logError(UiFramework.loggerCategory(this), `setActiveFrontstage: Could not find Frontstage with id of '${frontstageId}'`);
+      Logger.logError(UiFramework.loggerCategory(this), `setActiveFrontstage: Could not load a FrontstageDef with id of '${frontstageId}'`);
       return;
     }
 

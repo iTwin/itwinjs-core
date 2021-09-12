@@ -111,9 +111,10 @@ describe("ViewportContentControl", () => {
   it("Frontstage should support ViewportContentControl", async () => {
     const frontstageProvider = new Frontstage1();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
-    if (frontstageProvider.frontstageDef) {
+    if (frontstageDef) {
       expect(ContentLayoutManager.activeLayout).to.eq(frontstageProvider.contentLayoutDef);
 
       const contentControl = ContentViewManager.getActiveContentControl();
@@ -133,9 +134,10 @@ describe("ViewportContentControl", () => {
   it("ViewportContentControl should return proper navigation aid for class name", async () => {
     const frontstageProvider = new Frontstage1();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
-    if (frontstageProvider.frontstageDef) {
+    if (frontstageDef) {
       expect(ContentLayoutManager.activeLayout).to.eq(frontstageProvider.contentLayoutDef);
 
       const contentControl = ContentViewManager.getActiveContentControl();
@@ -166,9 +168,10 @@ describe("ViewportContentControl", () => {
 
     const frontstageProvider = new Frontstage1();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
-    if (frontstageProvider.frontstageDef) {
+    if (frontstageDef) {
       expect(ContentLayoutManager.activeLayout).to.eq(frontstageProvider.contentLayoutDef);
 
       const contentControl = ContentViewManager.getActiveContentControl();
@@ -197,7 +200,8 @@ describe("ViewportContentControl", () => {
 
     const frontstageProvider = new Frontstage1();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
     await TestUtils.flushAsyncOperations();
     expect(spyMethod.called).to.be.true;

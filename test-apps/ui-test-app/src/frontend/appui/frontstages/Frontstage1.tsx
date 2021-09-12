@@ -242,10 +242,11 @@ export class Frontstage1 extends FrontstageProvider {
  */
 class FrontstageToolWidget extends React.Component {
   private static _frontstage1Def: FrontstageDef | undefined;
-  private static get frontstage1Def(): FrontstageDef {
+
+  private static async getFrontstage1Def() {
     if (!this._frontstage1Def) {
       const frontstageProvider = new NestedFrontstage1();
-      this._frontstage1Def = frontstageProvider.initializeDef();
+      this._frontstage1Def = await FrontstageDef.create(frontstageProvider);
     }
     return this._frontstage1Def;
   }
@@ -256,7 +257,8 @@ class FrontstageToolWidget extends React.Component {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.openNestedFrontstage1",
       execute: async () => {
-        await FrontstageManager.openNestedFrontstage(FrontstageToolWidget.frontstage1Def);
+        const frontstage1Def = await FrontstageToolWidget.getFrontstage1Def();
+        await FrontstageManager.openNestedFrontstage(frontstage1Def);
       },
     });
   }

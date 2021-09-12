@@ -76,10 +76,10 @@ export class NestedFrontstage1 extends FrontstageProvider {
  */
 class FrontstageToolWidget extends React.Component {
   private static _frontstage2Def: FrontstageDef | undefined;
-  private static get frontstage2Def(): FrontstageDef {
+  private static async getFrontstage2Def() {
     if (!this._frontstage2Def) {
       const frontstageProvider = new NestedFrontstage2();
-      this._frontstage2Def = frontstageProvider.initializeDef();
+      this._frontstage2Def = await FrontstageDef.create(frontstageProvider);
     }
     return this._frontstage2Def;
   }
@@ -90,7 +90,8 @@ class FrontstageToolWidget extends React.Component {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.openNestedFrontstage2",
       execute: async () => {
-        await FrontstageManager.openNestedFrontstage(FrontstageToolWidget.frontstage2Def);
+        const frontstage2Def = await FrontstageToolWidget.getFrontstage2Def();
+        await FrontstageManager.openNestedFrontstage(frontstage2Def);
       },
     });
   }

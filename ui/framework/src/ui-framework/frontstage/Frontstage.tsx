@@ -209,11 +209,6 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     this.forceUpdate();
   }
 
-  /** Initializes a FrontstageDef from FrontstageProps */
-  public static initializeFrontstageDef(frontstageDef: FrontstageDef, props: FrontstageProps): void {
-    frontstageDef.initializeFromProps(props);
-  }
-
   /** @internal */
   public static createZoneDef(zoneNode: React.ReactElement<ZoneProps> | undefined, zoneLocation: ZoneLocation, props: FrontstageProps): ZoneDef | undefined {
     if (zoneNode) {

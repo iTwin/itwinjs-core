@@ -62,7 +62,7 @@ import { ToolWithDynamicSettings } from "./tools/ToolWithDynamicSettings";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
 import {
   OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool,
-  RestoreSavedContentLayoutTool, SaveContentLayoutTool, UiProviderTool,
+  RemoveSavedContentLayoutTool, RestoreSavedContentLayoutTool, SaveContentLayoutTool, UiProviderTool,
 } from "./tools/UiProviderTool";
 
 // Initialize my application gateway configuration for the frontend
@@ -229,6 +229,7 @@ export class SampleAppIModelApp {
     OpenComponentExamplesPopoutTool.register(this.sampleAppNamespace);
     OpenCustomPopoutTool.register(this.sampleAppNamespace);
     OpenViewPopoutTool.register(this.sampleAppNamespace);
+    RemoveSavedContentLayoutTool.register(this.sampleAppNamespace);
     RestoreSavedContentLayoutTool.register(this.sampleAppNamespace);
     SaveContentLayoutTool.register(this.sampleAppNamespace);
 
@@ -372,14 +373,14 @@ export class SampleAppIModelApp {
       if (stageId === ViewsFrontstage.stageId) {
         const frontstageProvider = await ViewsFrontstage.createFrontstageProvider(viewStates, iModelConnection);
         FrontstageManager.addFrontstageProvider(frontstageProvider);
-        frontstageDef = frontstageProvider.frontstageDef;
       } else {
         const frontstageProvider = new EditFrontstage(viewStates, iModelConnection);
         FrontstageManager.addFrontstageProvider(frontstageProvider);
-        frontstageDef = frontstageProvider.frontstageDef;
       }
+      frontstageDef = await FrontstageManager.getFrontstageDef(stageId);
+
     } else {
-      frontstageDef = FrontstageManager.findFrontstageDef(stageId);
+      frontstageDef = await FrontstageManager.getFrontstageDef(stageId);
     }
 
     if (frontstageDef) {
@@ -537,7 +538,7 @@ export class SampleAppIModelApp {
   }
 
   public static async showFrontstage(frontstageId: string) {
-    const frontstageDef = FrontstageManager.findFrontstageDef(frontstageId);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageId);
     FrontstageManager.setActiveFrontstageDef(frontstageDef); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 }

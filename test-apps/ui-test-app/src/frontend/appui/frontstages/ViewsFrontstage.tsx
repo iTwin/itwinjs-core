@@ -185,6 +185,10 @@ export class ViewsFrontstage extends FrontstageProvider {
     if (0 === viewStates.length) {
       const savedViewLayoutProps = await getSavedViewLayoutProps(ViewsFrontstage.stageId, iModelConnection);
       if (savedViewLayoutProps) {
+        const viewState = savedViewLayoutProps.contentGroupProps.contents[0].applicationData?.viewState;
+        if (viewState) {
+          UiFramework.setDefaultViewState(viewState);
+        }
         return new ContentGroup(savedViewLayoutProps.contentGroupProps);
       }
       throw (Error(`Could not load saved layout ContentLayoutProps`));
@@ -199,6 +203,9 @@ export class ViewsFrontstage extends FrontstageProvider {
     // create the content props that specifies an iModelConnection and a viewState entry in the application data.
     const contentProps: ContentProps[] = [];
     viewStates.forEach((viewState, index) => {
+      if (0 === index) {
+        UiFramework.setDefaultViewState(viewState);
+      }
       const thisContentProps: ContentProps = {
         id: `imodel-view-${index}`,
         classId: IModelViewportControl,
@@ -374,9 +381,11 @@ class AdditionalTools {
       if (activeContentControl && activeContentControl.viewport &&
         (undefined !== activeContentControl.viewport.view.analysisStyle || undefined !== activeContentControl.viewport.view.scheduleScript)) {
         const frontstageProvider = new NestedAnimationStage();
-        const frontstageDef = frontstageProvider.initializeDef();
-        SampleAppIModelApp.saveAnimationViewId(activeContentControl.viewport.view.id);
-        await FrontstageManager.openNestedFrontstage(frontstageDef);
+        const frontstageDef = await FrontstageDef.create(frontstageProvider);
+        if (frontstageDef) {
+          SampleAppIModelApp.saveAnimationViewId(activeContentControl.viewport.view.id);
+          await FrontstageManager.openNestedFrontstage(frontstageDef);
+        }
       }
     },
     isHidden: new ConditionalBooleanValue(() => {

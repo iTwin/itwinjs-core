@@ -193,11 +193,12 @@ describe("StagePanel", () => {
 
     const frontstageProvider = new Frontstage1();
     ConfigurableUiManager.addFrontstageProvider(frontstageProvider);
-    expect(frontstageProvider.frontstageDef).to.not.be.undefined;
-    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    expect(frontstageDef).to.not.be.undefined;
+    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
-    if (frontstageProvider.frontstageDef) {
-      const widgetDef = frontstageProvider.frontstageDef.findWidgetDef("stagePanelWidget");
+    if (frontstageDef) {
+      const widgetDef = frontstageDef.findWidgetDef("stagePanelWidget");
       expect(widgetDef).to.not.be.undefined;
     }
 

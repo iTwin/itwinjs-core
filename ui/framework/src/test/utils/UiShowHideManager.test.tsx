@@ -149,7 +149,8 @@ describe("UiShowHideManager localStorage Wrapper", () => {
 
         const frontstageProvider = new TestFrontstage();
         FrontstageManager.addFrontstageProvider(frontstageProvider);
-        await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+        const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+        await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
         await TestUtils.flushAsyncOperations();
         expect(UiShowHideManager.isUiVisible).to.eq(true);

@@ -71,7 +71,8 @@ describe("ContentLayout", () => {
 
     const frontstageProvider = new TestFrontstage2();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
   });
 
   after(async () => {

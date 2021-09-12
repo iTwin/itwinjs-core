@@ -164,7 +164,8 @@ describe("FrontstageDef", () => {
     it("should add extension widgets to stage panel zones", async () => {
       const frontstageProvider = new EmptyFrontstageProvider();
       FrontstageManager.addFrontstageProvider(frontstageProvider);
-      await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+      const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+      await FrontstageManager.setActiveFrontstageDef(frontstageDef);
       const sut = FrontstageManager.activeFrontstageDef!;
       sut.rightPanel!.panelZones.start.widgetDefs.map((w) => w.id).should.eql(["WidgetsProviderR1"]);
       sut.rightPanel!.panelZones.middle.widgetDefs.map((w) => w.id).should.eql(["WidgetsProviderRM1"]);

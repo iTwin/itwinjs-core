@@ -147,10 +147,15 @@ export class FrontstageDef {
   /** @internal */
   public get timeTracker(): TimeTracker { return this._timeTracker; }
 
-  /** Constructs the [[FrontstageDef]]  */
-  constructor(props?: FrontstageProps) {
-    if (props)
-      this.initializeFromProps(props);
+  /** Created a [[FrontstageDef]] and initialize it */
+  public static async create(provider: FrontstageProvider) {
+    const def = new FrontstageDef();
+    def._frontstageProvider = provider;
+
+    if (provider.frontstage.props)
+      await def.initializeFromProps(provider.frontstage.props);
+
+    return def;
   }
 
   /** Handles when the Frontstage becomes activated */
@@ -467,22 +472,10 @@ export class FrontstageDef {
     return [];
   }
 
-  /**
-   * Initializes this [[FrontstageDef]] from a [[FrontstageProvider]]
-   * @param frontstageProvider The FrontstageProvider to initialize from
-   */
-  public initializeFromProvider(frontstageProvider: FrontstageProvider) {
-    // istanbul ignore else
-    if (frontstageProvider.frontstage && React.isValidElement(frontstageProvider.frontstage)) {
-      Frontstage.initializeFrontstageDef(this, frontstageProvider.frontstage.props);
-      this._frontstageProvider = frontstageProvider;
-    }
-  }
-
   /** Initializes a FrontstageDef from FrontstageProps
    * @internal
    */
-  public initializeFromProps(props: FrontstageProps): void {
+  public async initializeFromProps(props: FrontstageProps): Promise<void> {
     this._id = props.id;
 
     this._defaultTool = props.defaultTool;

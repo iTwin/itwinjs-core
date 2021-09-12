@@ -111,7 +111,8 @@ describe("ModalSettingsStage", () => {
     const settingsManager = UiFramework.settingsManager;
 
     const dummy: FrontstageProps = { id: "old", usage: "General", defaultTool: CoreTools.selectElementCommand, contentGroup: "single" };
-    const frontstageDef = new FrontstageDef(dummy);
+    const frontstageDef = new FrontstageDef();
+    await frontstageDef.initializeFromProps(dummy);
     sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
 
     settingsManager.addSettingsProvider(new TestSettingsProvider());
@@ -147,7 +148,8 @@ describe("ModalSettingsStage", () => {
     const settingsManager = UiFramework.settingsManager;
 
     const dummy: FrontstageProps = { id: "old", usage: "General", defaultTool: CoreTools.selectElementCommand, contentGroup: "single" };
-    const frontstageDef = new FrontstageDef(dummy);
+    const frontstageDef = new FrontstageDef();
+    await frontstageDef.initializeFromProps(dummy);
     sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
 
     settingsManager.addSettingsProvider(new TestSettingsProvider());
@@ -169,7 +171,8 @@ describe("ModalSettingsStage", () => {
     const settingsManager = UiFramework.settingsManager;
 
     const dummy: FrontstageProps = { id: "old", usage: "General", defaultTool: CoreTools.selectElementCommand, contentGroup: "single" };
-    const frontstageDef = new FrontstageDef(dummy);
+    const frontstageDef = new FrontstageDef();
+    await frontstageDef.initializeFromProps(dummy);
     sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
 
     settingsManager.addSettingsProvider(new TestSettingsProvider());

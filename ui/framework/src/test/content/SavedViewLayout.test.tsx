@@ -199,9 +199,10 @@ describe("SavedViewLayout", () => {
 
     const frontstageProvider = new Frontstage1();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
-    if (frontstageProvider.frontstageDef) {
+    if (frontstageDef) {
       if (ContentLayoutManager.activeLayout && ContentLayoutManager.activeContentGroup) {
         const savedViewLayoutProps = SavedViewLayout.viewLayoutToProps(ContentLayoutManager.activeLayout, ContentLayoutManager.activeContentGroup);
         const serialized = JSON.stringify(savedViewLayoutProps);
@@ -250,9 +251,10 @@ describe("SavedViewLayout", () => {
 
     const frontstageProvider = new Frontstage1();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
-    if (frontstageProvider.frontstageDef) {
+    if (frontstageDef) {
       if (ContentLayoutManager.activeLayout && ContentLayoutManager.activeContentGroup) {
         const getEmphasizeElements = EmphasizeElements.get;
         EmphasizeElements.get = () => emphasizeElements;
@@ -309,9 +311,10 @@ describe("SavedViewLayout", () => {
 
     const frontstageProvider = new Frontstage1();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
-    if (frontstageProvider.frontstageDef) {
+    if (frontstageDef) {
       if (ContentLayoutManager.activeLayout && ContentLayoutManager.activeContentGroup) {
         const savedViewLayoutProps = SavedViewLayout.viewLayoutToProps(ContentLayoutManager.activeLayout, ContentLayoutManager.activeContentGroup, true,
           (contentProps: ContentProps) => {

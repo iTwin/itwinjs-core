@@ -54,10 +54,9 @@ export function BackstageComposerStageLauncher({ item }: BackstageComposerStageL
   const manager = useBackstageManager();
   const handleClick = React.useCallback(() => {
     manager.close();
-    const frontstageDef = FrontstageManager.findFrontstageDef(item.stageId);
-    if (!frontstageDef)
+    if (!FrontstageManager.hasFrontstage(item.stageId))
       return Logger.logError("BackstageComposerStageLauncher", `Frontstage with id '${item.stageId}' not found`);
-    FrontstageManager.setActiveFrontstageDef(frontstageDef); // eslint-disable-line @typescript-eslint/no-floating-promises
+    void FrontstageManager.setActiveFrontstage(item.stageId);
   }, [manager, item.stageId]);
   const activeFrontstageId = useActiveFrontstageId();
   const isActive = ConditionalBooleanValue.getValue(item.isActive ?? item.stageId === activeFrontstageId);

@@ -43,7 +43,9 @@ describe("Frontstage", () => {
   it("FrontstageProvider supplies valid Frontstage", async () => {
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+
+    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
     const widgetDef = FrontstageManager.findWidget("widget1");
     expect(widgetDef).to.not.be.undefined;
 
@@ -62,8 +64,9 @@ describe("Frontstage", () => {
 
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
 
+    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
     const widgetDef2 = FrontstageManager.findWidget("widget2");
     expect(widgetDef2).to.not.be.undefined;
     if (widgetDef2) {
@@ -85,7 +88,8 @@ describe("Frontstage", () => {
     const wrapper = mount<FrontstageComposer>(<FrontstageComposer />);
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
     wrapper.update();
 
     const widget = FrontstageManager.findWidget("widget3");
@@ -111,7 +115,8 @@ describe("Frontstage", () => {
     const wrapper = mount<FrontstageComposer>(<FrontstageComposer />);
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
     wrapper.update();
 
     const contentRenderer = wrapper.find("WidgetContentRenderer").at(2);
@@ -143,7 +148,8 @@ describe("Frontstage", () => {
     const wrapper = mount<FrontstageComposer>(<FrontstageComposer />);
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
     wrapper.update();
 
     const contentRenderer = wrapper.find("WidgetContentRenderer").at(2);
@@ -175,7 +181,8 @@ describe("Frontstage", () => {
     const wrapper = mount<FrontstageComposer>(<FrontstageComposer />);
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
     wrapper.update();
 
     const contentRenderer = wrapper.find("WidgetContentRenderer").at(2);
@@ -207,7 +214,8 @@ describe("Frontstage", () => {
     const wrapper = mount(<FrontstageComposer />);
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
     wrapper.update();
 
     const contentRenderer = wrapper.find("WidgetContentRenderer").at(2);
@@ -236,11 +244,12 @@ describe("Frontstage", () => {
     const wrapper = mount(<FrontstageComposer />);
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
     wrapper.update();
 
-    if (frontstageProvider.frontstageDef) {
-      const foundWidgetDef = frontstageProvider.frontstageDef.findWidgetDef(widgetId);
+    if (frontstageDef) {
+      const foundWidgetDef = frontstageDef.findWidgetDef(widgetId);
       expect(foundWidgetDef).to.not.be.undefined;
     }
   });
@@ -249,15 +258,16 @@ describe("Frontstage", () => {
     const wrapper = mount(<FrontstageComposer />);
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
     wrapper.update();
 
     const widgetId = "DynamicTest";
     const widgetDef = new WidgetDef({ id: widgetId });
     UiFramework.widgetManager.addWidgetDef(widgetDef, "TestFrontstage", undefined, ZoneLocation.CenterLeft);
 
-    if (frontstageProvider.frontstageDef) {
-      const foundWidgetDef = frontstageProvider.frontstageDef.findWidgetDef(widgetId);
+    if (frontstageDef) {
+      const foundWidgetDef = frontstageDef.findWidgetDef(widgetId);
       expect(foundWidgetDef).to.not.be.undefined;
     }
   });
@@ -266,7 +276,8 @@ describe("Frontstage", () => {
     const wrapper = mount(<FrontstageComposer />);
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
     wrapper.update();
 
     const widgetId = "ProviderTest";
@@ -284,8 +295,8 @@ describe("Frontstage", () => {
     UiFramework.widgetManager.addWidgetProvider(provider);
     expect(UiFramework.widgetManager.providers.length).to.eq(1);
 
-    if (frontstageProvider.frontstageDef) {
-      const foundWidgetDef = frontstageProvider.frontstageDef.findWidgetDef(widgetId);
+    if (frontstageDef) {
+      const foundWidgetDef = frontstageDef.findWidgetDef(widgetId);
       expect(foundWidgetDef).to.not.be.undefined;
     }
   });
