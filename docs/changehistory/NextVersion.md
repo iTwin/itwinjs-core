@@ -207,7 +207,7 @@ See the [ConcurrencyControl]($docs/learning/backend/ConcurrencyControl.md) learn
 
 Several api's in `iTwin.js` refer to the "context" for an iModel, meaning the *project or asset* to which the iModel belongs, as its `contextId`. That is very confusing, as the term "context" is very overloaded in computer science in general, and in iTwin.js in particular. That is resolved in iTwin.js V3.0 by recognizing that every iModel exists within an **iTwin**, and every iTwin has a GUID called its `iTwinId`. All instances of `contextId` in public apis are now replaced by 'iTwinId'.
 
-This is a breaking change for places like [IModel.contextId]($common). However, it should be a straightforward search-and-replace 'contextId -> iTwinId` anywhere you get compilation errors in your code.
+This is a breaking change for places like `IModel.contextId`. However, it should be a straightforward search-and-replace 'contextId -> iTwinId` anywhere you get compilation errors in your code.
 
 ## BriefcaseManager, BriefcaseDb, and IModelDb changes
 
