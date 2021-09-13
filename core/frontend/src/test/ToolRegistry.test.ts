@@ -73,15 +73,15 @@ describe("ToolRegistry", () => {
     assert.equal(command, TestImmediate, "Found TestImmediate");
     assert.equal(command.minArgs, 2);
     assert.equal(command.maxArgs, 2);
-    let cmdReturn = new command().run(4, 22);
+    let cmdReturn = await new command().run(4, 22);
     assert.isTrue(cmdReturn);
     assert.equal(testVal1, 4, "TestImmediate tool set values");
     assert.equal(testVal2, 22);
-    cmdReturn = new TestImmediate().parseAndRun("5", "33");
+    cmdReturn = await new TestImmediate().parseAndRun("5", "33");
     assert.isTrue(cmdReturn);
     assert.equal(testVal1, 5, "From parseAndRun");
     assert.equal(testVal2, 33);
-    cmdReturn = new command().parseAndRun("125");
+    cmdReturn = await new command().parseAndRun("125");
     assert.isFalse(cmdReturn);
   });
 
@@ -151,7 +151,7 @@ describe("ToolRegistry", () => {
     const command = IModelApp.tools.findExactMatch("inputmanager training");
     assert.isDefined(command, "Found inputmanager training command");
     if (command) {
-      assert.isTrue(IModelApp.tools.run(command.toolId));
+      assert.isTrue(await IModelApp.tools.run(command.toolId));
       assert.equal(lastCommand, "inputmanager training");
     }
   });
