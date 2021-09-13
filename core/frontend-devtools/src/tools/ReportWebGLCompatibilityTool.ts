@@ -14,7 +14,7 @@ import { IModelApp, MessageBoxIconType, MessageBoxType, Tool } from "@bentley/im
  */
 export class ReportWebGLCompatibilityTool extends Tool {
   public static override toolId = "ReportWebGLCompatibility";
-  public override run(_args: any[]): boolean {
+  public override async run(_args: any[]): Promise<boolean> {
     const info = IModelApp.queryRenderCompatibility();
     const statuses = ["OK", "Missing Optional Features", "Major Performance Caveat", "Missing Required Features", "Failed to Create Context"];
     const status = info.status < statuses.length ? statuses[info.status] : "UNKNOWN";

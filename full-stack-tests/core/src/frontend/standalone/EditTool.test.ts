@@ -23,7 +23,7 @@ let cmdStr: string;
 class TestEditTool1 extends PrimitiveTool {
   public static override toolId = "TestEditTool1";
   public override isCompatibleViewport(_vp: Viewport | undefined, _isSelectedViewChange: boolean): boolean { return true; }
-  public onRestartTool() { this.exitTool(); }
+  public async onRestartTool() { return this.exitTool(); }
   public static callCommand<T extends keyof TestCommandIpc>(method: T, ...args: Parameters<TestCommandIpc[T]>): ReturnType<TestCommandIpc[T]> {
     return EditTools.callCommand(method, ...args) as ReturnType<TestCommandIpc[T]>;
   }

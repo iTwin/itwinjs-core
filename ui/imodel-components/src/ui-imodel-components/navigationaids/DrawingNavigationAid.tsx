@@ -754,7 +754,7 @@ export class DrawingNavigationCanvas extends React.Component<DrawingNavigationCa
       this._vp = screenViewport.create(this._canvasElement, this.props.view);
       this.customizeViewport(this._vp);
       viewManager.addViewport(this._vp);
-      viewManager.setSelectedView(previousView); // switch to original viewport
+      void viewManager.setSelectedView(previousView); // switch to original viewport
       this._update();
     }
   }
@@ -794,7 +794,7 @@ export class DrawingNavigationCanvas extends React.Component<DrawingNavigationCa
           this._vp = screenViewport.create(this._canvasElement, this.props.view.clone());
           this.customizeViewport(this._vp);
           viewManager.addViewport(this._vp);
-          viewManager.setSelectedView(previousView); // switch to original viewport
+          void viewManager.setSelectedView(previousView); // switch to original viewport
           this._update();
         }
       } else if (!this.props.origin.isExactEqual(oldProps.origin) || !this.props.extents.isExactEqual(oldProps.extents) || this.props.zoom !== oldProps.zoom || !this.props.rotation.isExactEqual(oldProps.rotation)) {

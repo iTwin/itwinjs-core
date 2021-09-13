@@ -564,8 +564,8 @@ export class SelectionTool extends PrimitiveTool {
     return EventHandled.Yes;
   }
 
-  public override onSuspend(): void { this._isSuspended = true; if (this.wantEditManipulators()) IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Suspend); }
-  public override onUnsuspend(): void { this._isSuspended = false; if (this.wantEditManipulators()) IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Unsuspend); this.showPrompt(this.selectionMode, this.selectionMethod); }
+  public override async onSuspend() { this._isSuspended = true; if (this.wantEditManipulators()) IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Suspend); }
+  public override async onUnsuspend() { this._isSuspended = false; if (this.wantEditManipulators()) IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Unsuspend); this.showPrompt(this.selectionMode, this.selectionMethod); }
 
   public override async onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> {
     if (startEv.isSingleTouch && !this._isSelectByPoints)
@@ -598,15 +598,15 @@ export class SelectionTool extends PrimitiveTool {
     return status;
   }
 
-  public onRestartTool(): void { this.exitTool(); }
+  public async onRestartTool(): Promise<void> { return this.exitTool(); }
 
-  public override onCleanup(): void {
+  public override async onCleanup() {
     if (this.wantEditManipulators())
       IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Stop);
   }
 
-  public override onPostInstall(): void {
-    super.onPostInstall();
+  public override async onPostInstall() {
+    await super.onPostInstall();
     if (!this.targetView)
       return;
     if (this.wantEditManipulators())
@@ -614,7 +614,7 @@ export class SelectionTool extends PrimitiveTool {
     this.initSelectTool();
   }
 
-  public static startTool(): boolean { return new SelectionTool().run(); }
+  public static async startTool(): Promise<boolean> { return new SelectionTool().run(); }
 
   private syncSelectionMode(): void {
     if (SelectionMode.Remove === this.selectionMode && !this.iModel.selectionSet.isActive) {
@@ -658,7 +658,7 @@ export class SelectionTool extends PrimitiveTool {
   /** Used to send changes from UI back to Tool
    * @beta
    */
-  public override applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean {
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
     let changed = false;
     if (updatedValue.propertyName === SelectionTool._methodsName) {
       const saveWantManipulators = this.wantEditManipulators();

@@ -28,14 +28,14 @@ export class DeleteElementsTool extends ElementSetTool {
       await EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, this.iModel.key);
       if (IModelStatus.Success === await DeleteElementsTool.callCommand("deleteElements", this.agenda.compressIds()))
         await this.saveChanges();
-    } catch (err) {
+    } catch (err: any) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
     }
   }
 
-  public onRestartTool(): void {
+  public async onRestartTool() {
     const tool = new DeleteElementsTool();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 }

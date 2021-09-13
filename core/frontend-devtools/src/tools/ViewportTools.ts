@@ -24,7 +24,7 @@ export abstract class ViewportToggleTool extends Tool {
 
   protected abstract toggle(vp: Viewport, enable?: boolean): void;
 
-  public override run(enable?: boolean): boolean {
+  public override async run(enable?: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp)
       this.toggle(vp, enable);
@@ -32,10 +32,10 @@ export abstract class ViewportToggleTool extends Tool {
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const enable = parseToggle(args[0]);
     if (typeof enable !== "string")
-      this.run(enable);
+      await this.run(enable);
 
     return true;
   }
@@ -72,7 +72,7 @@ export class ShowTileVolumesTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 1; }
 
-  public override run(boxes?: TileBoundingBoxes): boolean {
+  public override async run(boxes?: TileBoundingBoxes): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp)
       return true;
@@ -84,7 +84,7 @@ export class ShowTileVolumesTool extends Tool {
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     let boxes: TileBoundingBoxes | undefined;
     if (0 !== args.length) {
       const arg = args[0].toLowerCase();
@@ -114,7 +114,7 @@ export class SetAspectRatioSkewTool extends Tool {
   /** This method runs the tool, setting the aspect ratio skew for the selected viewport.
    * @param skew the aspect ratio (x/y) skew value; 1.0 or undefined removes any skew
    */
-  public override run(skew?: number): boolean {
+  public override async run(skew?: number): Promise<boolean> {
     if (undefined === skew)
       skew = 1.0;
 
@@ -131,7 +131,7 @@ export class SetAspectRatioSkewTool extends Tool {
    * @param args the first entry of this array contains the `skew` argument
    * @see [[run]]
    */
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const skew = args.length > 0 ? parseFloat(args[0]) : 1.0;
     return !Number.isNaN(skew) && this.run(skew);
   }
@@ -144,7 +144,7 @@ export abstract class ChangeHiliteTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 6; }
 
-  public override run(settings?: Hilite.Settings): boolean {
+  public override async run(settings?: Hilite.Settings): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp)
       this.apply(vp, settings);
@@ -155,7 +155,7 @@ export abstract class ChangeHiliteTool extends Tool {
   protected abstract apply(vp: Viewport, settings: Hilite.Settings | undefined): void;
   protected abstract getCurrentSettings(vp: Viewport): Hilite.Settings;
 
-  public override parseAndRun(...inputArgs: string[]): boolean {
+  public override async parseAndRun(...inputArgs: string[]): Promise<boolean> {
     if (0 === inputArgs.length)
       return this.run();
 
@@ -245,7 +245,7 @@ export class ChangeFlashSettingsTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 3; }
 
-  public override run(settings?: FlashSettings): boolean {
+  public override async run(settings?: FlashSettings): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (vp)
       vp.flashSettings = settings ?? new FlashSettings();
@@ -253,7 +253,7 @@ export class ChangeFlashSettingsTool extends Tool {
     return true;
   }
 
-  public override parseAndRun(...inputArgs: string[]): boolean {
+  public override async parseAndRun(...inputArgs: string[]): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (!vp)
       return true;
@@ -313,7 +313,7 @@ export class DefaultTileSizeModifierTool extends Tool {
   /** This method runs the tool, setting the default tile size modifier used for all viewports that don't explicitly override it.
    * @param modifier the tile size modifier to use; if undefined, do not set modifier
    */
-  public override run(modifier?: number): boolean {
+  public override async run(modifier?: number): Promise<boolean> {
     if (undefined !== modifier)
       IModelApp.tileAdmin.defaultTileSizeModifier = modifier;
 
@@ -323,7 +323,7 @@ export class DefaultTileSizeModifierTool extends Tool {
   /** Executes this tool's run method with args[0] containing `modifier`.
    * @see [[run]]
    */
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     return this.run(Number.parseFloat(args[0]));
   }
 }
@@ -339,7 +339,7 @@ export class ViewportTileSizeModifierTool extends Tool {
   /** This method runs the tool, setting the tile size modifier used for the selected viewport.
    * @param modifier the tile size modifier to use; if undefined, reset the modifier
    */
-  public override run(modifier?: number): boolean {
+  public override async run(modifier?: number): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp)
       vp.setTileSizeModifier(modifier);
@@ -350,7 +350,7 @@ export class ViewportTileSizeModifierTool extends Tool {
   /** Executes this tool's run method with args[0] containing the `modifier` argument or the string "reset" in order to reset the modifier.
    * @see [[run]]
    */
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const arg = args[0].toLowerCase();
     const modifier = "reset" === arg ? undefined : Number.parseFloat(args[0]);
     return this.run(modifier);
@@ -368,7 +368,7 @@ export class ViewportAddRealityModel extends Tool {
   /** This method runs the tool, adding a reality model to the viewport
    * @param url the URL which points to the reality model tileset
    */
-  public override run(url: string): boolean {
+  public override async run(url: string): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp)
       vp.displayStyle.attachRealityModel({ tilesetUrl: url });
@@ -379,7 +379,7 @@ export class ViewportAddRealityModel extends Tool {
   /** Executes this tool's run method with args[0] containing the `url` argument.
    * @see [[run]]
    */
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     return this.run(args[0]);
   }
 }
@@ -399,7 +399,7 @@ export class Toggle3dManipulationsTool extends ViewportToggleTool {
 
     if (allow !== vp.view.allow3dManipulations()) {
       vp.view.setAllow3dManipulations(allow);
-      IModelApp.toolAdmin.startDefaultTool();
+      void IModelApp.toolAdmin.startDefaultTool();
     }
   }
 }
@@ -483,7 +483,7 @@ export class ChangeCameraTool extends Tool {
   public static override get maxArgs() { return 2; }
   public static override toolId = "ChangeCamera";
 
-  public override run(camera?: Camera): boolean {
+  public override async run(camera?: Camera): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (camera && vp && vp.view.is3d()) {
       const view = vp.view.clone();
@@ -494,7 +494,7 @@ export class ChangeCameraTool extends Tool {
     return true;
   }
 
-  public override parseAndRun(...inArgs: string[]): boolean {
+  public override async parseAndRun(...inArgs: string[]): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (!vp || !vp.view.is3d())
       return false;

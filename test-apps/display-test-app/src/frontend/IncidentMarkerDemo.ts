@@ -247,7 +247,7 @@ export class IncidentMarkerDemo {
 
 export class IncidentMarkerDemoTool extends Tool {
   public static override toolId = "ToggleIncidentMarkers";
-  public override run(_args: any[]): boolean {
+  public override async run(_args: any[]): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp && vp.view.isSpatialView())
       IncidentMarkerDemo.toggle(vp.view.iModel.projectExtents);

@@ -58,7 +58,7 @@ class DisplayTestAppAccuSnap extends AccuSnap {
 
 class DisplayTestAppToolAdmin extends ToolAdmin {
   /** Process shortcut key events */
-  public override processShortcutKey(keyEvent: KeyboardEvent, wentDown: boolean): boolean {
+  public override async processShortcutKey(keyEvent: KeyboardEvent, wentDown: boolean): Promise<boolean> {
     if (wentDown && AccuDrawHintBuilder.isEnabled)
       return AccuDrawShortcuts.processShortcutKey(keyEvent);
     return false;
@@ -77,7 +77,7 @@ class SVTSelectionTool extends SelectionTool {
 
 class SignInTool extends Tool {
   public static override toolId = "SignIn";
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     signIn(); // eslint-disable-line @typescript-eslint/no-floating-promises
     return true;
   }
@@ -88,7 +88,7 @@ class PushChangesTool extends Tool {
   public static override get maxArgs() { return 1; }
   public static override get minArgs() { return 1; }
 
-  public override run(description?: string): boolean {
+  public override async run(description?: string): Promise<boolean> {
     if (!description || "string" !== typeof description)
       return false;
 
@@ -100,7 +100,7 @@ class PushChangesTool extends Tool {
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     return this.run(args[0]);
   }
 }
@@ -108,7 +108,7 @@ class PushChangesTool extends Tool {
 class PullChangesTool extends Tool {
   public static override toolId = "PullChanges";
 
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     const imodel = IModelApp.viewManager.selectedView?.iModel;
     if (!imodel || !imodel.isBriefcaseConnection())
       return false;
@@ -128,7 +128,7 @@ class RefreshTilesTool extends Tool {
   public static override toolId = "RefreshTiles";
   public static override get maxArgs() { return undefined; }
 
-  public override run(changedModelIds?: string[]): boolean {
+  public override async run(changedModelIds?: string[]): Promise<boolean> {
     if (undefined !== changedModelIds && 0 === changedModelIds.length)
       changedModelIds = undefined;
 
@@ -136,7 +136,7 @@ class RefreshTilesTool extends Tool {
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     return this.run(args);
   }
 }
@@ -146,7 +146,7 @@ class PurgeTileTreesTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return undefined; }
 
-  public override run(modelIds?: string[]): boolean {
+  public override async run(modelIds?: string[]): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp)
       return true;
@@ -161,7 +161,7 @@ class PurgeTileTreesTool extends Tool {
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     return this.run(args);
   }
 }
@@ -169,7 +169,7 @@ class PurgeTileTreesTool extends Tool {
 class ShutDownTool extends Tool {
   public static override toolId = "ShutDown";
 
-  public override run(_args: any[]): boolean {
+  public override async run(_args: any[]): Promise<boolean> {
     DisplayTestApp.surface.closeAllViewers();
     if (ElectronApp.isValid)
       ElectronApp.shutdown();// eslint-disable-line @typescript-eslint/no-floating-promises

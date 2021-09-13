@@ -185,7 +185,7 @@ export class Surface {
       setTitle(iModel);
       const viewer = await this.createViewer({ iModel });
       viewer.dock(Dock.Full);
-    } catch (err) {
+    } catch (err: any) {
       alert(`Error opening iModel: ${err.toString()}`);
     }
   }
@@ -420,12 +420,12 @@ export class CreateWindowTool extends Tool {
   public static override get minArgs() { return 1; }
   public static override get maxArgs() { return undefined; }
 
-  public override run(props: NamedWindowProps): boolean {
+  public override async run(props: NamedWindowProps): Promise<boolean> {
     DisplayTestApp.surface.createNamedWindow(props);
     return true;
   }
 
-  public override parseAndRun(...inputArgs: string[]): boolean {
+  public override async parseAndRun(...inputArgs: string[]): Promise<boolean> {
     let name: string | undefined;
     const props: WindowProps = {};
 
@@ -447,7 +447,7 @@ export class CreateWindowTool extends Tool {
 
     if (undefined !== name) {
       const namedProps: NamedWindowProps = { id: name, ...props };
-      this.run(namedProps);
+      await this.run(namedProps);
     }
 
     return true;
@@ -460,7 +460,7 @@ export abstract class WindowIdTool extends Tool {
 
   public abstract execute(_window: Window): void;
 
-  public override run(windowId?: string): boolean {
+  public override async run(windowId?: string): Promise<boolean> {
     const window = undefined !== windowId ? Surface.instance.findWindowById(windowId) : Surface.instance.focusedWindow;
     if (undefined !== window)
       this.execute(window);
@@ -468,7 +468,7 @@ export abstract class WindowIdTool extends Tool {
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     return this.run(args[0]);
   }
 }
@@ -506,7 +506,7 @@ export class ResizeWindowTool extends Tool {
   public static override get minArgs() { return 2; }
   public static override get maxArgs() { return 3; }
 
-  public override run(width: number, height: number, id?: string): boolean {
+  public override async run(width: number, height: number, id?: string): Promise<boolean> {
     const window = undefined !== id ? Surface.instance.findWindowById(id) : Surface.instance.focusedWindow;
     if (undefined !== window)
       window.resizeContent(width, height);
@@ -515,11 +515,11 @@ export class ResizeWindowTool extends Tool {
   }
 
   // width height [id]
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const w = parseInt(args[0], 10);
     const h = parseInt(args[1], 10);
     if (!Number.isNaN(w) || !Number.isNaN(h))
-      this.run(w, h, args[2]);
+      await this.run(w, h, args[2]);
 
     return true;
   }
@@ -530,7 +530,7 @@ export class DockWindowTool extends Tool {
   public static override get minArgs() { return 1; }
   public static override get maxArgs() { return 2; }
 
-  public override run(dock: Dock, windowId?: string): boolean {
+  public override async run(dock: Dock, windowId?: string): Promise<boolean> {
     const window = undefined !== windowId ? Surface.instance.findWindowById(windowId) : Surface.instance.focusedWindow;
     if (undefined !== window)
       window.dock(dock);
@@ -538,7 +538,7 @@ export class DockWindowTool extends Tool {
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     let dock = 0;
     for (const c of args[0].toLowerCase()) {
       switch (c) {
@@ -560,7 +560,7 @@ export class DockWindowTool extends Tool {
     }
 
     if (0 !== dock)
-      this.run(dock, args[1]);
+      await this.run(dock, args[1]);
 
     return true;
   }
@@ -571,7 +571,7 @@ export class CloneViewportTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 1; }
 
-  public override run(viewportId?: number): boolean {
+  public override async run(viewportId?: number): Promise<boolean> {
     if (undefined === viewportId) {
       const selectedView = IModelApp.viewManager.selectedView;
       if (undefined === selectedView)
@@ -588,7 +588,7 @@ export class CloneViewportTool extends Tool {
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const viewportId = parseInt(args[0], 10);
     return undefined !== viewportId && !Number.isNaN(viewportId) && this.run(viewportId);
   }
@@ -599,12 +599,12 @@ export class OpenIModelTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 1; }
 
-  public override run(filename?: string): boolean {
+  public override async run(filename?: string): Promise<boolean> {
     Surface.instance.openFile(filename); // eslint-disable-line @typescript-eslint/no-floating-promises
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     return this.run(args[0]);
   }
 }
@@ -612,7 +612,7 @@ export class OpenIModelTool extends Tool {
 export class CloseIModelTool extends Tool {
   public static override toolId = "CloseIModel";
 
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     Surface.instance.closeAllViewers();
     return true;
   }
@@ -621,7 +621,7 @@ export class CloseIModelTool extends Tool {
 export class ReopenIModelTool extends Tool {
   public static override toolId = "ReopenIModel";
 
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     const viewer = Surface.instance.firstViewer;
     if (undefined !== viewer)
       viewer.openFile(viewer.viewport.iModel.key); // eslint-disable-line @typescript-eslint/no-floating-promises

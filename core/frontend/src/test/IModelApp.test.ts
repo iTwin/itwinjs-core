@@ -63,7 +63,7 @@ class TestApp extends MockRender.App {
     IModelApp.toolAdmin.onInitialized();
 
     // register an anonymous class with the toolId "Null.Tool"
-    const testNull = class extends Tool { public static override toolId = "Null.Tool"; public override run() { testVal1 = "fromNullTool"; return true; } };
+    const testNull = class extends Tool { public static override toolId = "Null.Tool"; public override async run() { testVal1 = "fromNullTool"; return true; } };
     testNull.register(this.testNamespace);
   }
 

@@ -22,14 +22,14 @@ export abstract class SourceAspectIdTool extends Tool {
 
   protected abstract getECSql(queryId: string): string;
 
-  public override run(idToQuery?: string, copyToClipboard?: boolean): boolean {
+  public override async run(idToQuery?: string, copyToClipboard?: boolean): Promise<boolean> {
     if (typeof idToQuery === "string")
       this.doQuery(idToQuery, true === copyToClipboard); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     return true;
   }
 
-  public override parseAndRun(...keyinArgs: string[]): boolean {
+  public override async parseAndRun(...keyinArgs: string[]): Promise<boolean> {
     const args = parseArgs(keyinArgs);
     return this.run(args.get("i"), args.getBoolean("c"));
   }
@@ -43,7 +43,7 @@ export abstract class SourceAspectIdTool extends Tool {
     try {
       for await (const row of imodel.query(this.getECSql(queryId), undefined, 1))
         resultId = row.resultId;
-    } catch (ex) {
+    } catch (ex: any) {
       resultId = ex.toString();
     }
 

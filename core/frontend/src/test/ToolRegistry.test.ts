@@ -17,14 +17,14 @@ let lastCommand: string;
 /** class to test immediate tool */
 class TestImmediate extends Tool {
   public static override toolId = "Test.Immediate";
-  public override run(v1: number, v2: number): boolean {
+  public override async run(v1: number, v2: number): Promise<boolean> {
     testVal1 = v1;
     testVal2 = v2;
     return true;
   }
   public static override get minArgs() { return 2; }
   public static override get maxArgs() { return 2; }
-  public override parseAndRun(v1: string, v2: string): boolean {
+  public override async parseAndRun(v1: string, v2: string): Promise<boolean> {
     if (arguments.length !== 2)
       return false;
     return this.run(parseInt(v1, 10), parseInt(v2, 10));
@@ -231,7 +231,7 @@ function showSearchResultsUsingIndexApi(title: string, searchResults?: FuzzySear
 function registerTestClass(id: string, keyin: string, ns: I18NNamespace) {
   (class extends Tool {
     public static override toolId = id;
-    public override run(): boolean { lastCommand = keyin; return true; }
+    public override async run(): Promise<boolean> { lastCommand = keyin; return true; }
     public static override get keyin(): string { return keyin; }
 
   }).register(ns);

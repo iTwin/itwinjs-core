@@ -207,12 +207,12 @@ export abstract class CreateElementTool extends PrimitiveTool {
   /** Orchestrates advancing the internal state of the tool on a data button event.
    * - Gather input: Initiates element dynamics and accepts additional points as required.
    * - Complete operation: Create new element, restart or exit tool.
-   * @returns EventHandled.Yes if onReinitalize was called to restart or exit tool.
+   * @returns EventHandled.Yes if onReinitialize was called to restart or exit tool.
    */
   protected async processDataButton(ev: BeButtonEvent): Promise<EventHandled> {
     if (this.isComplete(ev)) {
       await this.createElement();
-      this.onReinitialize();
+      await this.onReinitialize();
 
       return EventHandled.Yes;
     }
@@ -230,18 +230,18 @@ export abstract class CreateElementTool extends PrimitiveTool {
   }
 
   public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
-    this.onReinitialize();
+    await this.onReinitialize();
     return EventHandled.No;
   }
 
   /** Setup initial tool state, prompts, etc. */
-  public override onPostInstall() {
-    super.onPostInstall();
+  public override async onPostInstall() {
+    await super.onPostInstall();
     this.setupAndPromptForNextAction();
   }
 
   /** Restore tool assistance after no longer being suspended by either a [[ViewTool]] or [[InputCollector]]. */
-  public override onUnsuspend(): void {
+  public override async onUnsuspend() {
     this.provideToolAssistance();
   }
 
@@ -255,7 +255,7 @@ export abstract class CreateElementTool extends PrimitiveTool {
   protected provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void {
     const mainMsg = "ElementSet.Prompts.IdentifyPoint";
     const leftMsg = "ElementSet.Inputs.AcceptPoint";
-    const rghtMsg = "ElementSet.Inputs.Cancel";
+    const rightMsg = "ElementSet.Inputs.Cancel";
 
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
@@ -264,8 +264,8 @@ export abstract class CreateElementTool extends PrimitiveTool {
       touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, CoreTools.translate(leftMsg), false, ToolAssistanceInputMethod.Touch));
     mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, CoreTools.translate(leftMsg), false, ToolAssistanceInputMethod.Mouse));
 
-    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, CoreTools.translate(rghtMsg), false, ToolAssistanceInputMethod.Touch));
-    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, CoreTools.translate(rghtMsg), false, ToolAssistanceInputMethod.Mouse));
+    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, CoreTools.translate(rightMsg), false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, CoreTools.translate(rightMsg), false, ToolAssistanceInputMethod.Mouse));
 
     if (undefined !== additionalInstr) {
       for (const instr of additionalInstr) {

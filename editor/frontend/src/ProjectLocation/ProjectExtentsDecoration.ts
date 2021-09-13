@@ -94,7 +94,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
   protected _removeViewCloseListener?: () => void;
   public suspendGeolocationDecorations = false;
 
-  /** Called when project extents or geolocation is modfied */
+  /** Called when project extents or geolocation is modified */
   public readonly onChanged = new BeEvent<(iModel: IModelConnection, ev: ProjectLocationChanged) => void>();
 
   public constructor(public viewport: ScreenViewport) {
@@ -275,14 +275,14 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     super.clearControls();
   }
 
-  protected modifyControls(hit: HitDetail, _ev: BeButtonEvent): boolean {
+  protected async modifyControls(hit: HitDetail, _ev: BeButtonEvent): Promise<boolean> {
     if (undefined === this._clip || hit.sourceId === this._clipId)
       return false;
 
     const saveQualifiers = IModelApp.toolAdmin.currentInputState.qualifiers;
     if (undefined !== this._clipShape) {
       const clipShapeModifyTool = new ViewClipShapeModifyTool(this, this._clip, this.viewport, hit.sourceId, this._controlIds, this._controls);
-      this._suspendDecorator = clipShapeModifyTool.run();
+      this._suspendDecorator = await clipShapeModifyTool.run();
     }
 
     if (this._suspendDecorator)
@@ -298,13 +298,13 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
   public override async onDecorationButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> {
     if (hit.sourceId === this._monumentId) {
       if (BeButton.Data === ev.button && !ev.isDown && !ev.isDragging)
-        ProjectGeolocationPointTool.startTool();
+        await ProjectGeolocationPointTool.startTool();
       return EventHandled.Yes; // Only pickable for tooltip, don't allow selection...
     }
 
     if (hit.sourceId === this._northId) {
       if (BeButton.Data === ev.button && !ev.isDown && !ev.isDragging)
-        ProjectGeolocationNorthTool.startTool();
+        await ProjectGeolocationNorthTool.startTool();
       return EventHandled.Yes; // Only pickable for tooltip, don't allow selection...
     }
 
@@ -884,11 +884,11 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
 export class ProjectLocationShowTool extends Tool {
   public static override toolId = "ProjectLocation.Show";
 
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp || !ProjectExtentsClipDecoration.show(vp))
       return false;
-    IModelApp.toolAdmin.startDefaultTool();
+    await IModelApp.toolAdmin.startDefaultTool();
     return true;
   }
 }
@@ -899,9 +899,9 @@ export class ProjectLocationShowTool extends Tool {
 export class ProjectLocationHideTool extends Tool {
   public static override toolId = "ProjectLocation.Hide";
 
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     ProjectExtentsClipDecoration.hide();
-    IModelApp.toolAdmin.startDefaultTool();
+    await IModelApp.toolAdmin.startDefaultTool();
     return true;
   }
 }
@@ -912,9 +912,9 @@ export class ProjectLocationHideTool extends Tool {
 export class ProjectLocationCancelTool extends Tool {
   public static override toolId = "ProjectLocation.Cancel";
 
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     ProjectExtentsClipDecoration.clear();
-    IModelApp.toolAdmin.startDefaultTool();
+    await IModelApp.toolAdmin.startDefaultTool();
     return true;
   }
 }
@@ -960,16 +960,16 @@ export class ProjectLocationSaveTool extends Tool {
 
       await deco.iModel.saveChanges(this.toolId);
       await deco.iModel.txns.restartTxnSession();
-    } catch (err) {
+    } catch (err: any) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
     }
 
     deco.onChanged.raiseEvent(deco.iModel, ProjectLocationChanged.Save);
     ProjectExtentsClipDecoration.update();
-    IModelApp.toolAdmin.startDefaultTool();
+    return IModelApp.toolAdmin.startDefaultTool();
   }
 
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     const deco = ProjectExtentsClipDecoration.get();
     if (undefined === deco) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, translateMessage("NotActive")));

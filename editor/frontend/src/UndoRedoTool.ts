@@ -8,7 +8,7 @@ import { IModelApp, IpcApp, Tool } from "@bentley/imodeljs-frontend";
 /** @alpha Undo all element changes */
 export class UndoAllTool extends Tool {
   public static override toolId = "UndoAll";
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     const imodel = IModelApp.viewManager.selectedView?.view.iModel;
     if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection)
       return true;
@@ -26,7 +26,7 @@ export class UndoAllTool extends Tool {
 /** @alpha Undo active tool steps, or element changes */
 export class UndoTool extends Tool {
   public static override toolId = "Undo";
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises,deprecation/deprecation
     IModelApp.toolAdmin.doUndoOperation();
     return true;
@@ -36,7 +36,7 @@ export class UndoTool extends Tool {
 /** @alpha Redo active tool steps, or element changes */
 export class RedoTool extends Tool {
   public static override toolId = "Redo";
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises,deprecation/deprecation
     IModelApp.toolAdmin.doRedoOperation();
     return true;

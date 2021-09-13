@@ -324,7 +324,7 @@ export class OutputShadersTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 2; }
 
-  public override run(compile: boolean, usedFlag: string, typeFlag: string, langFlag: string, outputDir: string): boolean {
+  public override async run(compile: boolean, usedFlag: string, typeFlag: string, langFlag: string, outputDir: string): Promise<boolean> {
     if (compile) {
       const compiled = IModelApp.renderSystem.debugControl?.compileAllShaders();
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(compiled ? OutputMessagePriority.Info : OutputMessagePriority.Error, `${compiled ? "No" : "Some"} compilation errors occurred.`));
@@ -338,7 +338,7 @@ export class OutputShadersTool extends Tool {
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     let compile = false;
     let usedFlag;
     let typeFlag;

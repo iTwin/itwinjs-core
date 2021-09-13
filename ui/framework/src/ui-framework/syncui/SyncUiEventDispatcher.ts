@@ -282,7 +282,7 @@ export class SyncUiEventDispatcher {
 
         // if this is the first view being opened up start the default tool so tool admin is happy.
         if (undefined === args.previous) {
-          IModelApp.toolAdmin.startDefaultTool();
+          void IModelApp.toolAdmin.startDefaultTool();
         } else {
           // istanbul ignore next
           if (args.previous.onViewChanged && typeof args.previous.onViewChanged.removeListener === "function")  // not set during unit test
