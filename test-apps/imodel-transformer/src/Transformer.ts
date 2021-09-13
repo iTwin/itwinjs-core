@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, ClientRequestContext, DbResult, Id64, Id64Array, Id64Set, Id64String, Logger } from "@bentley/bentleyjs-core";
+import { assert, DbResult, Id64, Id64Array, Id64Set, Id64String, Logger } from "@bentley/bentleyjs-core";
 import {
   Category, CategorySelector, DisplayStyle, DisplayStyle3d, ECSqlStatement, Element, ElementRefersToElements, GeometricModel3d, GeometryPart,
   IModelDb, ModelSelector, PhysicalModel, PhysicalPartition, Relationship, SpatialCategory,
@@ -25,7 +25,6 @@ export interface TransformerOptions extends IModelTransformOptions {
 }
 
 export class Transformer extends IModelTransformer {
-  private _authorizedClientRequestContext?: AuthorizedClientRequestContext;
   private _numSourceElements = 0;
   private _numSourceElementsProcessed = 0;
   private _numSourceRelationships = 0;
@@ -33,12 +32,11 @@ export class Transformer extends IModelTransformer {
   private _startTime = new Date();
   private _targetPhysicalModelId = Id64.invalid; // will be valid when PhysicalModels are being combined
 
-  public static async transformAll(requestContext: AuthorizedClientRequestContext | ClientRequestContext, sourceDb: IModelDb, targetDb: IModelDb, options?: TransformerOptions): Promise<void> {
-    requestContext.enter();
+  public static async transformAll(sourceDb: IModelDb, targetDb: IModelDb, options?: TransformerOptions): Promise<void> {
     // might need to inject RequestContext for schemaExport.
     const transformer = new Transformer(sourceDb, targetDb, options);
     transformer.initialize(options);
-    await transformer.processSchemas(requestContext);
+    await transformer.processSchemas();
     await transformer.saveChanges("processSchemas");
     await transformer.processAll();
     await transformer.saveChanges("processAll");
@@ -53,11 +51,11 @@ export class Transformer extends IModelTransformer {
   public static async transformChanges(requestContext: AuthorizedClientRequestContext, sourceDb: IModelDb, targetDb: IModelDb, sourceStartChangesetId: string, options?: TransformerOptions): Promise<void> {
     if ("" === sourceDb.changeset.id) {
       assert("" === sourceStartChangesetId);
-      return this.transformAll(requestContext, sourceDb, targetDb, options);
+      return this.transformAll(sourceDb, targetDb, options);
     }
     const transformer = new Transformer(sourceDb, targetDb, options);
     transformer.initialize(options);
-    await transformer.processSchemas(requestContext);
+    await transformer.processSchemas();
     await transformer.saveChanges("processSchemas");
     await transformer.processChanges(requestContext, sourceStartChangesetId);
     await transformer.saveChanges("processChanges");
@@ -257,13 +255,7 @@ export class Transformer extends IModelTransformer {
   }
 
   private async saveChanges(description: string): Promise<void> {
-    if (this.targetDb.isBriefcaseDb()) {
-      assert(this._authorizedClientRequestContext !== undefined);
-      await this.targetDb.concurrencyControl.request(this._authorizedClientRequestContext);
-      this.targetDb.saveChanges(description);
-    } else {
-      this.targetDb.saveChanges(description);
-    }
+    this.targetDb.saveChanges(description);
   }
 
   private logElapsedTime(): void {
