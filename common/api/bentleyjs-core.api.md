@@ -1076,7 +1076,7 @@ export interface LoggerLevelsConfig {
     defaultLevel?: string;
 }
 
-// @internal (undocumented)
+// @internal
 export type LogIntercept = (level: LogLevel, category: string, message: string, metaData?: GetMetaDataFunction) => boolean;
 
 // @public
@@ -1266,6 +1266,7 @@ export class ProcessDetector {
     static get isAndroidAppFrontend(): boolean;
     static get isAndroidBrowser(): boolean;
     static get isBrowserProcess(): boolean;
+    static get isChromeEdgeElectron(): boolean;
     static get isElectronAppBackend(): boolean;
     static get isElectronAppFrontend(): boolean;
     static get isIOSAppBackend(): boolean;
