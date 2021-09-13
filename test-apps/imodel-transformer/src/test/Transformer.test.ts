@@ -7,7 +7,7 @@ import { assert } from "chai";
 import * as path from "path";
 import { DbResult, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import {
-  BackendRequestContext, Category, ECSqlStatement, Element, GeometricElement2d, GeometricElement3d, IModelDb, IModelHost,
+  Category, ECSqlStatement, Element, GeometricElement2d, GeometricElement3d, IModelDb, IModelHost,
   IModelJsFs, PhysicalModel, PhysicalPartition, SnapshotDb, SpatialCategory, SpatialElement,
 } from "@bentley/imodeljs-backend";
 import { TransformerLoggerCategory } from "@bentley/imodeljs-transformer";
@@ -64,7 +64,7 @@ describe("imodel-transformer", () => {
       ecefLocation: sourceDb.ecefLocation,
     });
 
-    await Transformer.transformAll(new BackendRequestContext(), sourceDb, targetDb, { simplifyElementGeometry: true });
+    await Transformer.transformAll(sourceDb, targetDb, { simplifyElementGeometry: true });
     const numSourceElements = count(sourceDb, Element.classFullName);
     assert.isAtLeast(numSourceElements, 50);
     assert.equal(count(targetDb, Element.classFullName), numSourceElements);
@@ -78,7 +78,7 @@ describe("imodel-transformer", () => {
       ecefLocation: sourceDb.ecefLocation,
     });
 
-    await Transformer.transformAll(new BackendRequestContext(), sourceDb, targetDb, { combinePhysicalModels: true });
+    await Transformer.transformAll(sourceDb, targetDb, { combinePhysicalModels: true });
     const numSourceSpatialElements = count(sourceDb, SpatialElement.classFullName);
     assert.isAtLeast(numSourceSpatialElements, 6);
     assert.equal(count(targetDb, SpatialElement.classFullName), numSourceSpatialElements);
@@ -96,7 +96,7 @@ describe("imodel-transformer", () => {
 
     const testCategory = "TestSpatialCategory";
 
-    await Transformer.transformAll(new BackendRequestContext(), sourceDb, targetDb, { excludeCategories: [testCategory] });
+    await Transformer.transformAll(sourceDb, targetDb, { excludeCategories: [testCategory] });
 
     async function getElementCountInTestCategory(db: IModelDb) {
       // do two queries because querying abstract GeometricElement won't contain the category
@@ -159,9 +159,7 @@ describe("imodel-transformer", () => {
     IModelJsFs.copySync(sourceDbFileName, newSchemaSourceDbPath);
     const newSchemaSourceDb = SnapshotDb.createFrom(sourceDb, newSchemaSourceDbPath);
 
-    const requestContext = new BackendRequestContext();
-
-    await newSchemaSourceDb.importSchemas(requestContext, [testSchemaPath]);
+    await newSchemaSourceDb.importSchemas([testSchemaPath]);
 
     const [firstModelId] = newSchemaSourceDb.queryEntityIds({ from: PhysicalModel.classFullName, limit: 1 });
     assert.isString(firstModelId);
@@ -191,9 +189,9 @@ describe("imodel-transformer", () => {
 
     const testSchemaPathUpgrade = initOutputFile("TestSchema-StructArrayClone.01.01.ecschema.xml");
     IModelJsFs.writeFileSync(testSchemaPathUpgrade, makeSchema("01.01"));
-    await targetDb.importSchemas(requestContext, [testSchemaPathUpgrade]);
+    await targetDb.importSchemas([testSchemaPathUpgrade]);
 
-    await Transformer.transformAll(requestContext, newSchemaSourceDb, targetDb);
+    await Transformer.transformAll(newSchemaSourceDb, targetDb);
 
     async function getStructInstances(db: IModelDb): Promise<typeof elementProps | {}> {
       let result: any = [{}];
@@ -228,9 +226,7 @@ describe("imodel-transformer", () => {
     IModelJsFs.copySync(sourceDbFileName, newSchemaSourceDbPath);
     const newSchemaSourceDb = SnapshotDb.createFrom(sourceDb, newSchemaSourceDbPath);
 
-    const requestContext = new BackendRequestContext();
-
-    await newSchemaSourceDb.importSchemas(requestContext, [testSchemaPath]);
+    await newSchemaSourceDb.importSchemas([testSchemaPath]);
 
     const [firstModelId] = newSchemaSourceDb.queryEntityIds({ from: PhysicalModel.classFullName, limit: 1 });
     assert.isString(firstModelId);
@@ -256,7 +252,7 @@ describe("imodel-transformer", () => {
       ecefLocation: newSchemaSourceDb.ecefLocation,
     });
 
-    await Transformer.transformAll(requestContext, newSchemaSourceDb, targetDb);
+    await Transformer.transformAll(newSchemaSourceDb, targetDb);
 
     async function getStructValue(db: IModelDb): Promise<typeof elementProps | {}> {
       let result: any = [{}];

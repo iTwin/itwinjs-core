@@ -33,10 +33,6 @@ export interface SpatialContainmentTreeProps {
   /** Height of the component */
   height: number;
   /**
-   * Start loading hierarchy as soon as the component is created
-   */
-  enablePreloading?: boolean;
-  /**
    * Should the tree group displayed element nodes by class.
    * @beta
    */
@@ -53,7 +49,6 @@ export function SpatialContainmentTree(props: SpatialContainmentTreeProps) {
     ruleset: (!props.enableElementsClassGrouping) ? RULESET_SPATIAL_BREAKDOWN : /* istanbul ignore next */ RULESET_SPATIAL_BREAKDOWN_GROUPED_BY_CLASS,
     appendChildrenCountForGroupingNodes: (props.enableElementsClassGrouping === ClassGroupingOption.YesWithCounts),
     pagingSize: PAGING_SIZE,
-    preloadingEnabled: props.enablePreloading,
   });
 
   const eventHandler = useDisposable(React.useCallback(() => new UnifiedSelectionTreeEventHandler({

@@ -46,10 +46,6 @@ export interface CategoryTreeProps {
   /** Height of the component */
   height: number;
   /**
-   * Start loading hierarchy as soon as the component is created
-   */
-  enablePreloading?: boolean;
-  /**
    * Information for tree filtering.
    * @alpha
    */
@@ -79,7 +75,6 @@ export function CategoryTree(props: CategoryTreeProps) {
     imodel: props.iModel,
     ruleset: RULESET_CATEGORIES,
     pagingSize: PAGING_SIZE,
-    preloadingEnabled: props.enablePreloading,
   });
 
   const { filteredNodeLoader, isFiltering, nodeHighlightingProps } = useVisibilityTreeFiltering(nodeLoader, props.filterInfo, props.onFilterApplied);

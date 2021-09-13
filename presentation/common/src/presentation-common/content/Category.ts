@@ -32,21 +32,22 @@ export interface CategoryDescription {
 export namespace CategoryDescription {
   /** Serialize given category to JSON */
   export function toJSON(category: CategoryDescription): CategoryDescriptionJSON {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { parent, ...rest } = category;
     return {
-      ...category,
-      parent: category.parent?.name,
+      ...rest,
+      ...(category.parent ? { parent: category.parent.name } : {}),
     };
   }
 
   /**
-   * Deserialize [[CategoryDescription]] from JSON. The `parent` is not assigned - use listFromJSON
+   * Deserialize [[CategoryDescription]] from JSON. The `parent` is not assigned - use [[CategoryDescription.listFromJSON]]
    * to deserialize the whole categories list and set parents.
    */
   export function fromJSON(json: CategoryDescriptionJSON): CategoryDescription {
-    return {
-      ...json,
-      parent: undefined,
-    };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { parent, ...rest } = json;
+    return rest;
   }
 
   function createCategoriesHierarchy(json: CategoryDescriptionJSON, categoriesMap: Map<string, CategoryDescription>): CategoryDescription {
@@ -61,7 +62,7 @@ export namespace CategoryDescription {
   /** Deserialize a list of [[CategoryDescription]] from JSON. */
   export function listFromJSON(json: CategoryDescriptionJSON[]): CategoryDescription[] {
     const categoriesMap = new Map<string, CategoryDescription>();
-    json.forEach((categoryJson) => categoriesMap.set(categoryJson.name, { ...categoryJson, parent: undefined }));
+    json.forEach((categoryJson) => categoriesMap.set(categoryJson.name, CategoryDescription.fromJSON(categoryJson)));
     return json.map((categoryJson) => createCategoriesHierarchy(categoryJson, categoriesMap));
   }
 }

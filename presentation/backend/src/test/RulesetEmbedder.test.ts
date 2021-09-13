@@ -2,9 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
-/* eslint-disable deprecation/deprecation */
-
 import { expect } from "chai";
 import faker from "faker";
 import sinon from "sinon";
@@ -17,7 +14,7 @@ import { Ruleset } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { PresentationRules } from "../presentation-backend/domain/PresentationRulesDomain";
 import * as RulesetElements from "../presentation-backend/domain/RulesetElements";
-import { DuplicateRulesetHandlingStrategy, RulesetEmbedder } from "../presentation-backend/RulesetEmbedder";
+import { RulesetEmbedder } from "../presentation-backend/RulesetEmbedder";
 import { normalizeVersion } from "../presentation-backend/Utils";
 
 describe("RulesetEmbedder", () => {
@@ -127,7 +124,7 @@ describe("RulesetEmbedder", () => {
 
   function setupMocksForHandlingPrerequisites() {
     imodelMock.setup((x) => x.containsClass(RulesetElements.Ruleset.classFullName)).returns(() => false);
-    imodelMock.setup(async (x) => x.importSchemas(moq.It.isAny(), moq.It.isAny())).returns(async () => undefined);
+    imodelMock.setup(async (x) => x.importSchemas(moq.It.isAny())).returns(async () => undefined);
     codeSpecsMock.setup((x) => x.insert(rulesetCodeSpec)).returns(() => faker.random.uuid());
   }
 
@@ -221,7 +218,7 @@ describe("RulesetEmbedder", () => {
 
       await embedder.insertRuleset(ruleset);
 
-      imodelMock.verify(async (x) => x.importSchemas(moq.It.isAny(), moq.It.isAny()), moq.Times.once());
+      imodelMock.verify(async (x) => x.importSchemas(moq.It.isAny()), moq.Times.once());
       codeSpecsMock.verify((x) => x.insert(rulesetCodeSpec), moq.Times.once());
       rulesetModelMock.verify((x) => x.insert(), moq.Times.once());
       imodelMock.verify((x) => x.saveChanges(), moq.Times.exactly(2));
@@ -281,21 +278,6 @@ describe("RulesetEmbedder", () => {
 
       const insertId = await embedder.insertRuleset(ruleset, { skip: "same-id" });
       expect(insertId).to.eq(rulesetElementId);
-    });
-
-    it("[deprecated] skips inserting ruleset with same id and version", async () => {
-      const ruleset: Ruleset = { id: "test", version: "1.2.3", rules: [] };
-      const rulesetElementId = "0x123";
-
-      setupMocksForGettingRulesetModel();
-      setupMocksForQueryingExistingRulesets("test", [{
-        ruleset,
-        elementId: rulesetElementId,
-      }]);
-
-      const insertId = await embedder.insertRuleset(ruleset, DuplicateRulesetHandlingStrategy.Skip);
-      expect(insertId).to.eq(rulesetElementId);
-      elementsMock.verify((x) => x.insertElement(createRulesetElementProps(ruleset)), moq.Times.never());
     });
 
     it("skips inserting ruleset with same id and version", async () => {
@@ -361,25 +343,6 @@ describe("RulesetEmbedder", () => {
 
       const insertId = await embedder.insertRuleset(ruleset, { skip: "same-id-and-version-gte" });
       expect(insertId).to.eq(rulesetElementId);
-    });
-
-    it("[deprecated] updates a duplicate ruleset with same id and version", async () => {
-      const ruleset: Ruleset = { id: "test", rules: [] };
-      const rulesetElementId = "0x123";
-
-      setupMocksForGettingRulesetModel();
-      setupMocksForQueryingExistingRulesets("test", [{
-        ruleset,
-        elementId: rulesetElementId,
-      }]);
-
-      const rulesetElementMock = moq.Mock.ofType<RulesetElements.Ruleset>();
-      rulesetElementMock.setup((x) => x.id).returns(() => rulesetElementId);
-      elementsMock.setup((x) => x.tryGetElement(rulesetElementId)).returns(() => rulesetElementMock.object);
-
-      const insertId = await embedder.insertRuleset(ruleset, DuplicateRulesetHandlingStrategy.Replace);
-      expect(insertId).to.eq(rulesetElementId);
-      rulesetElementMock.verify((x) => x.update(), moq.Times.once());
     });
 
     it("updates a duplicate ruleset with same id and version", async () => {
