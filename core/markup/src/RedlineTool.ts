@@ -437,7 +437,8 @@ export class SketchTool extends RedlineTool {
     const evPt = MarkupApp.convertVpToVb(ev.viewPoint);
     if (undefined !== ev.viewport && this._points.length > 0 && evPt.distanceSquaredXY(this._points[this._points.length - 1]) > this._minDistSquared)
       this._points.push(evPt);
-    super.onMouseMotion(ev); // eslint-disable-line @typescript-eslint/no-floating-promises
+
+    return super.onMouseMotion(ev);
   }
 }
 
