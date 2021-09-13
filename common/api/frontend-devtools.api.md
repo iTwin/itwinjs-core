@@ -779,7 +779,7 @@ export class ExplosionEffect extends Tool {
 // @beta
 export class FadeOutTool extends ViewportToggleTool {
     // (undocumented)
-    protected toggle(vp: Viewport, enable?: boolean): void;
+    protected toggle(vp: Viewport, enable?: boolean): Promise<void>;
     // (undocumented)
     static toolId: string;
 }
@@ -829,7 +829,7 @@ export class FpsTracker {
 // @beta
 export class FreezeSceneTool extends ViewportToggleTool {
     // (undocumented)
-    protected toggle(vp: Viewport, enable?: boolean): void;
+    protected toggle(vp: Viewport, enable?: boolean): Promise<void>;
     // (undocumented)
     static toolId: string;
 }
@@ -2060,7 +2060,7 @@ export class TileStatisticsTracker {
 // @beta
 export class Toggle3dManipulationsTool extends ViewportToggleTool {
     // (undocumented)
-    protected toggle(vp: Viewport, allow?: boolean): void;
+    protected toggle(vp: Viewport, allow?: boolean): Promise<void>;
     // (undocumented)
     static toolId: string;
 }
@@ -2090,7 +2090,7 @@ export class ToggleDrapeFrustumTool extends RenderTargetDebugControlToggleTool {
 // @beta
 export class ToggleDrawingGraphicsTool extends ViewportToggleTool {
     // (undocumented)
-    protected toggle(vp: Viewport, enable?: boolean): void;
+    protected toggle(vp: Viewport, enable?: boolean): Promise<void>;
     // (undocumented)
     static toolId: string;
 }
@@ -2209,7 +2209,7 @@ export class ToggleSectionCutTool extends Tool {
 // @beta
 export class ToggleSectionDrawingSpatialViewTool extends ViewportToggleTool {
     // (undocumented)
-    protected toggle(vp: Viewport, enable?: boolean): void;
+    protected toggle(vp: Viewport, enable?: boolean): Promise<void>;
     // (undocumented)
     static toolId: string;
 }
@@ -2311,7 +2311,7 @@ export class ToggleToolTipsTool extends Tool {
 // @beta
 export class ToggleViewAttachmentBoundariesTool extends ViewportToggleTool {
     // (undocumented)
-    protected toggle(vp: Viewport, enable?: boolean): void;
+    protected toggle(vp: Viewport, enable?: boolean): Promise<void>;
     // (undocumented)
     static toolId: string;
 }
@@ -2319,7 +2319,7 @@ export class ToggleViewAttachmentBoundariesTool extends ViewportToggleTool {
 // @beta
 export class ToggleViewAttachmentClipShapesTool extends ViewportToggleTool {
     // (undocumented)
-    protected toggle(vp: Viewport, enable?: boolean): void;
+    protected toggle(vp: Viewport, enable?: boolean): Promise<void>;
     // (undocumented)
     static toolId: string;
 }
@@ -2327,7 +2327,7 @@ export class ToggleViewAttachmentClipShapesTool extends ViewportToggleTool {
 // @beta
 export class ToggleViewAttachmentsTool extends ViewportToggleTool {
     // (undocumented)
-    protected toggle(vp: Viewport, enable?: boolean): void;
+    protected toggle(vp: Viewport, enable?: boolean): Promise<void>;
     // (undocumented)
     static toolId: string;
 }
@@ -2436,7 +2436,7 @@ export abstract class ViewportToggleTool extends Tool {
     // (undocumented)
     run(enable?: boolean): Promise<boolean>;
     // (undocumented)
-    protected abstract toggle(vp: Viewport, enable?: boolean): void;
+    protected abstract toggle(vp: Viewport, enable?: boolean): Promise<void>;
 }
 
 // @beta
