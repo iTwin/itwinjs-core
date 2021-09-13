@@ -17,7 +17,7 @@ import { HubUtility } from "./HubUtility";
 describe("Agent iModel Download (#integration)", () => {
   let testProjectId: string;
   let testReadIModelId: string;
-  let requestContext: AuthorizedBackendRequestContext;
+  let user: AuthorizedBackendRequestContext;
 
   before(async () => {
     // IModelTestUtils.setupDebugLogLevels();
@@ -35,15 +35,15 @@ describe("Agent iModel Download (#integration)", () => {
 
     const agentClient = new AgentAuthorizationClient(agentConfiguration);
     const jwt = await agentClient.getAccessToken(new ClientRequestContext());
-    requestContext = new AuthorizedBackendRequestContext(jwt);
-    requestContext.enter();
+    user = new AuthorizedBackendRequestContext(jwt);
+    user.enter();
 
-    testProjectId = await HubUtility.getTestContextId(requestContext);
-    testReadIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.readOnly);
+    testProjectId = await HubUtility.getTestITwinId(user);
+    testReadIModelId = await HubUtility.getTestIModelId(user, HubUtility.testIModelNames.readOnly);
   });
 
   it("Agent should be able to open a checkpoint", async () => {
-    const iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testProjectId, iModelId: testReadIModelId });
+    const iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId: testProjectId, iModelId: testReadIModelId });
     assert.isDefined(iModelDb);
     iModelDb.close();
   });

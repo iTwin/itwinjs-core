@@ -8,19 +8,18 @@ import * as path from "path";
 import { DbResult, Id64, Id64Set, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Angle, Point2d, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
+  DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel, DocumentListModel, Drawing, DrawingCategory,
+  DrawingGraphic, DrawingModel, ECSqlStatement, Element, ElementOwnsChildElements, EntityClassType, IModelDb, IModelJsFs, LinkElement,
+  PhysicalElement, PhysicalElementIsOfType, PhysicalModel, PhysicalObject, PhysicalType, RecipeDefinitionElement, RepositoryLink, SnapshotDb,
+  SpatialCategory, TemplateRecipe2d, TemplateRecipe3d, TypeDefinitionElement,
+} from "@bentley/imodeljs-backend";
+import { IModelTestUtils } from "@bentley/imodeljs-backend/lib/test/IModelTestUtils";
+import { KnownTestLocations } from "@bentley/imodeljs-backend/lib/test/KnownTestLocations";
+import {
   Code, CodeScopeSpec, DefinitionElementProps, GeometricElement2dProps, GeometryStreamProps, IModel, PhysicalElementProps, Placement2d, Placement3d,
   RepositoryLinkProps, SubCategoryAppearance,
 } from "@bentley/imodeljs-common";
-import {
-  BackendRequestContext, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel,
-  DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element, ElementOwnsChildElements, EntityClassType,
-  IModelDb, IModelJsFs, LinkElement, PhysicalElement, PhysicalElementIsOfType, PhysicalModel, PhysicalObject, PhysicalType,
-  RecipeDefinitionElement, RepositoryLink, SnapshotDb, SpatialCategory, TemplateRecipe2d, TemplateRecipe3d,
-  TypeDefinitionElement,
-} from "@bentley/imodeljs-backend";
 import { IModelTransformer, IModelTransformOptions, TemplateModelCloner, TransformerLoggerCategory } from "../../imodeljs-transformer";
-import { IModelTestUtils } from "@bentley/imodeljs-backend/lib/test/IModelTestUtils";
-import { KnownTestLocations } from "@bentley/imodeljs-backend/lib/test/KnownTestLocations";
 
 const createClassViews = false; // can set to true to make it easier to debug the catalog structure
 
@@ -55,7 +54,7 @@ const createClassViews = false; // can set to true to make it easier to debug th
 async function createAcmeCatalog(dbFile: string): Promise<void> {
   const db = SnapshotDb.createEmpty(dbFile, { rootSubject: { name: "ACME Equipment" }, createClassViews });
   const domainSchemaFilePath = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
-  await db.importSchemas(new BackendRequestContext(), [domainSchemaFilePath]);
+  await db.importSchemas([domainSchemaFilePath]);
   const manufacturerName = "ACME";
   const productLineName = `${manufacturerName} Product Line A`;
   const containerCodeSpecId = db.codeSpecs.insert("ACME:Equipment", CodeScopeSpec.Type.Repository); // A catalog creator should insert their own CodeSpec for DefinitionContainers
@@ -126,7 +125,7 @@ async function createAcmeCatalog(dbFile: string): Promise<void> {
 async function createBestCatalog(dbFile: string): Promise<void> {
   const db = SnapshotDb.createEmpty(dbFile, { rootSubject: { name: "Best Equipment" } });
   const domainSchemaFilePath = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
-  await db.importSchemas(new BackendRequestContext(), [domainSchemaFilePath]);
+  await db.importSchemas([domainSchemaFilePath]);
   const manufacturerName = "Best";
   const containerCodeSpecId = db.codeSpecs.insert(`${manufacturerName}:Equipment`, CodeScopeSpec.Type.Repository);
 
@@ -591,7 +590,7 @@ describe("Catalog", () => {
     const iModelFile = IModelTestUtils.prepareOutputFile("Catalog", "Facility.bim");
     const iModelDb = SnapshotDb.createEmpty(iModelFile, { rootSubject: { name: "Facility" }, createClassViews });
     const domainSchemaFilePath = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
-    await iModelDb.importSchemas(new BackendRequestContext(), [domainSchemaFilePath]);
+    await iModelDb.importSchemas([domainSchemaFilePath]);
     const physicalModelId = PhysicalModel.insert(iModelDb, IModel.rootSubjectId, "Physical");
     const spatialCategoryId = SpatialCategory.insert(iModelDb, IModel.dictionaryId, "Equipment", new SubCategoryAppearance());
     const standardSpatialCategories = new Map<string, Id64String>();
@@ -769,7 +768,7 @@ describe("Catalog", () => {
     const targetDb = SnapshotDb.createEmpty(targetFile, { rootSubject: { name: "Facility" }, createClassViews });
     const cloner = new IModelTransformer(sourceDb, targetDb);
     cloner.importer.autoExtendProjectExtents = false; // WIP: how should a catalog handle projectExtents?
-    await cloner.processSchemas(new BackendRequestContext());
+    await cloner.processSchemas();
     await cloner.processAll();
     cloner.dispose();
 
