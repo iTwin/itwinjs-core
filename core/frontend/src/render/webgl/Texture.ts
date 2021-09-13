@@ -615,7 +615,7 @@ export class ExternalTextureLoader { /* currently exported for tests only */
             if (!this._convertPending)
               await this._convertTexture();
           } while (!this._convertPending && this._convertRequests.length > 0);
-          if (!req.imodel.isClosed) { // is this check necessary?
+          if (!req.imodel.isClosed) {
             IModelApp.tileAdmin.invalidateAllScenes();
             if (undefined !== req.onLoaded)
               req.onLoaded(req);
@@ -629,22 +629,24 @@ export class ExternalTextureLoader { /* currently exported for tests only */
 
   private async _convertTexture(): Promise<void> {
     this._convertPending = true;
-    const cnvReq = this._convertRequests.shift();
-    if (undefined !== cnvReq) {
-      const imageSource = new ImageSource(cnvReq.texData.bytes, cnvReq.req.format);
-      if (System.instance.capabilities.supportsCreateImageBitmap) {
-        const blob = new Blob([imageSource.data], { type: getImageSourceMimeType(imageSource.format) });
-        const image = await createImageBitmap (blob, 0, 0, cnvReq.texData.width, cnvReq.texData.height);
-        if (!cnvReq.req.imodel.isClosed) {
-          cnvReq.req.handle.reload(Texture2DCreateParams.createForImageBitmap(image, ImageSourceFormat.Png === cnvReq.req.format, cnvReq.req.type));
-        }
-      } else {
-        const image = await imageElementFromImageSource(imageSource);
-        if (!cnvReq.req.imodel.isClosed) {
-          cnvReq.req.handle.reload(Texture2DCreateParams.createForImage(image, ImageSourceFormat.Png === cnvReq.req.format, cnvReq.req.type));
+    try {
+      const cnvReq = this._convertRequests.shift();
+      if (undefined !== cnvReq) {
+        const imageSource = new ImageSource(cnvReq.texData.bytes, cnvReq.req.format);
+        if (System.instance.capabilities.supportsCreateImageBitmap) {
+          const blob = new Blob([imageSource.data], { type: getImageSourceMimeType(imageSource.format) });
+          const image = await createImageBitmap (blob, 0, 0, cnvReq.texData.width, cnvReq.texData.height);
+          if (!cnvReq.req.imodel.isClosed) {
+            cnvReq.req.handle.reload(Texture2DCreateParams.createForImageBitmap(image, ImageSourceFormat.Png === cnvReq.req.format, cnvReq.req.type));
+          }
+        } else {
+          const image = await imageElementFromImageSource(imageSource);
+          if (!cnvReq.req.imodel.isClosed) {
+            cnvReq.req.handle.reload(Texture2DCreateParams.createForImage(image, ImageSourceFormat.Png === cnvReq.req.format, cnvReq.req.type));
+          }
         }
       }
-    }
+    } catch (_e) { }
     this._convertPending = false;
   }
 
