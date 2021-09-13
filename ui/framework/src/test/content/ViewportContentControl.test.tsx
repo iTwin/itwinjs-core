@@ -58,6 +58,10 @@ describe("ViewportContentControl", () => {
 
   }
   class Frontstage1 extends FrontstageProvider {
+    public static stageId = "Test1";
+    public get id(): string {
+      return Frontstage1.stageId;
+    }
 
     public contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
       {
@@ -84,7 +88,7 @@ describe("ViewportContentControl", () => {
 
       return (
         <Frontstage
-          id="Test1"
+          id={this.id}
           defaultTool={CoreTools.selectElementCommand}
           contentGroup={myContentGroup}
 
@@ -111,7 +115,7 @@ describe("ViewportContentControl", () => {
   it("Frontstage should support ViewportContentControl", async () => {
     const frontstageProvider = new Frontstage1();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(Frontstage1.stageId);
     await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
     if (frontstageDef) {
@@ -134,7 +138,7 @@ describe("ViewportContentControl", () => {
   it("ViewportContentControl should return proper navigation aid for class name", async () => {
     const frontstageProvider = new Frontstage1();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(Frontstage1.stageId);
     await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
     if (frontstageDef) {
@@ -168,7 +172,7 @@ describe("ViewportContentControl", () => {
 
     const frontstageProvider = new Frontstage1();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(Frontstage1.stageId);
     await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
     if (frontstageDef) {
@@ -200,7 +204,7 @@ describe("ViewportContentControl", () => {
 
     const frontstageProvider = new Frontstage1();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(Frontstage1.stageId);
     await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
     await TestUtils.flushAsyncOperations();

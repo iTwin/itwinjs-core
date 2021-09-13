@@ -141,6 +141,10 @@ describe("SavedViewLayout", () => {
     }
   }
   class Frontstage1 extends FrontstageProvider {
+    public static stageId = "Test1";
+    public get id(): string {
+      return Frontstage1.stageId;
+    }
 
     public contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
       {
@@ -167,7 +171,7 @@ describe("SavedViewLayout", () => {
 
       return (
         <Frontstage
-          id="Test1"
+          id={this.id}
           defaultTool={CoreTools.selectElementCommand}
           contentGroup={myContentGroup}
 
@@ -199,7 +203,7 @@ describe("SavedViewLayout", () => {
 
     const frontstageProvider = new Frontstage1();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(Frontstage1.stageId);
     await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
     if (frontstageDef) {

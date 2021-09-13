@@ -67,6 +67,10 @@ describe("IModelViewportControl", () => {
   }
 
   class Frontstage1 extends FrontstageProvider {
+    public static stageId = "Test1";
+    public get id(): string {
+      return Frontstage1.stageId;
+    }
 
     public contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
       {
@@ -93,7 +97,7 @@ describe("IModelViewportControl", () => {
 
       return (
         <Frontstage
-          id="Test1"
+          id={this.id}
           defaultTool={CoreTools.selectElementCommand}
           contentGroup={myContentGroup}
 
@@ -120,7 +124,7 @@ describe("IModelViewportControl", () => {
   it("Overridden IModelViewportControl should deferNodeInitialization", async () => {
     const frontstageProvider = new Frontstage1();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(Frontstage1.stageId);
     await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
     if (frontstageDef) {

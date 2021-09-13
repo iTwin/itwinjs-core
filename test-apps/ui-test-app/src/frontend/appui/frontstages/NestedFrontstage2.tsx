@@ -16,10 +16,13 @@ import { HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl 
 /* eslint-disable react/jsx-key, deprecation/deprecation */
 
 export class NestedFrontstage2 extends FrontstageProvider {
+  public get id(): string {
+    return "NestedFrontstage2";
+  }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
     return (
-      <Frontstage id="NestedFrontstage2"
+      <Frontstage id={this.id}
         defaultTool={CoreTools.rotateViewCommand}
         contentGroup="TestContentGroup2"
         isInFooterMode={false}

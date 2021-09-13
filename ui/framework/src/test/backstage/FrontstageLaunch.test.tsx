@@ -39,10 +39,15 @@ describe("Backstage", () => {
       };
 
       class Frontstage1 extends FrontstageProvider {
+        public static stageId = "Test1";
+        public get id(): string {
+          return Frontstage1.stageId;
+        }
+
         public get frontstage(): React.ReactElement<FrontstageProps> {
           return (
             <Frontstage
-              id="Test1"
+              id={this.id}
               defaultTool={CoreTools.selectElementCommand}
               contentGroup="TestContentGroup1"
             />
@@ -53,7 +58,7 @@ describe("Backstage", () => {
 
       const spy = sinon.spy(FrontstageManager.onFrontstageActivatedEvent, "emit");
       const wrapper = mount(
-        <FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder"
+        <FrontstageLaunchBackstageItem frontstageId={Frontstage1.stageId} labelKey="UiFramework:tests.label" iconSpec="icon-placeholder"
           isEnabled={true} isActive={false}
           stateSyncIds={[testEventId]} stateFunc={stateFunc} />,
       );
@@ -88,7 +93,7 @@ describe("Backstage", () => {
     });
 
     it("FrontstageLaunchBackstageItem renders correctly when active", async () => {
-      const frontstageDef = FrontstageManager.findFrontstageDef("Test1");
+      const frontstageDef = await FrontstageManager.getFrontstageDef("Test1");
       expect(frontstageDef).to.not.be.undefined;
 
       if (frontstageDef) {
@@ -103,7 +108,7 @@ describe("Backstage", () => {
       const wrapper = mount(<FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />);
       expect(wrapper.find("li.nz-active").length).to.eq(0);
 
-      const frontstageDef = FrontstageManager.findFrontstageDef("Test1");
+      const frontstageDef = await FrontstageManager.getFrontstageDef("Test1");
       expect(frontstageDef).to.not.be.undefined;
 
       await FrontstageManager.setActiveFrontstageDef(frontstageDef);

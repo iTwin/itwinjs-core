@@ -66,9 +66,12 @@ export interface StandardFrontstageProps {
  * @beta
  */
 export class StandardFrontstageProvider extends FrontstageProvider {
-
   constructor(private props: StandardFrontstageProps) {
     super();
+  }
+
+  public get id(): string {
+    return this.props.id;
   }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {

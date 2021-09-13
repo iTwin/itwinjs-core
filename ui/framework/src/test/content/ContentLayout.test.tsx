@@ -56,9 +56,14 @@ describe("ContentLayout", () => {
   const standardContentLayout1: ContentLayoutDef = new ContentLayoutDef(StandardContentLayouts.fourQuadrants);
 
   class TestFrontstage2 extends FrontstageProvider {
+    public static stageId = "TestFrontstage2";
+    public get id(): string {
+      return TestFrontstage2.stageId;
+    }
+
     public get frontstage(): React.ReactElement<FrontstageProps> {
       return (
-        <Frontstage id="TestFrontstage2" defaultTool={CoreTools.selectElementCommand}
+        <Frontstage id={this.id} defaultTool={CoreTools.selectElementCommand}
           contentGroup={contentGroup2} />
       );
     }
@@ -71,7 +76,7 @@ describe("ContentLayout", () => {
 
     const frontstageProvider = new TestFrontstage2();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(TestFrontstage2.stageId);
     await FrontstageManager.setActiveFrontstageDef(frontstageDef);
   });
 

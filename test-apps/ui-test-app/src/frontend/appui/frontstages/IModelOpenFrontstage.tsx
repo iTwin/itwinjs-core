@@ -28,6 +28,9 @@ class IModelOpenControl extends ContentControl {
 }
 
 export class IModelOpenFrontstage extends FrontstageProvider {
+  public get id(): string {
+    return "IModelOpen";
+  }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const contentGroup: ContentGroup = new ContentGroup({
@@ -42,7 +45,7 @@ export class IModelOpenFrontstage extends FrontstageProvider {
     });
 
     return (
-      <Frontstage id="IModelOpen"
+      <Frontstage id={this.id}
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={contentGroup}
         isInFooterMode={false}

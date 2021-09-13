@@ -140,10 +140,15 @@ describe("DefaultToolUiSettingsProvider", () => {
     await TestUtils.initializeUiFramework();
 
     class Frontstage1 extends FrontstageProvider {
+      public static stageId = "ToolUiProvider-TestFrontstage";
+      public get id(): string {
+        return Frontstage1.stageId;
+      }
+
       public get frontstage(): React.ReactElement<FrontstageProps> {
         return (
           <Frontstage
-            id="ToolUiProvider-TestFrontstage"
+            id={this.id}
             defaultTool={CoreTools.selectElementCommand}
             contentGroup="TestContentGroup1"
             topCenter={
@@ -168,7 +173,7 @@ describe("DefaultToolUiSettingsProvider", () => {
   });
 
   it("starting a tool with undefined tool settings", async () => {
-    const frontstageDef = FrontstageManager.findFrontstageDef("ToolUiProvider-TestFrontstage");
+    const frontstageDef = await FrontstageManager.getFrontstageDef("ToolUiProvider-TestFrontstage");
     expect(frontstageDef).to.not.be.undefined;
     if (frontstageDef) {
       await FrontstageManager.setActiveFrontstageDef(frontstageDef);
@@ -193,7 +198,7 @@ describe("DefaultToolUiSettingsProvider", () => {
   });
 
   it("starting a tool with tool settings", async () => {
-    const frontstageDef = FrontstageManager.findFrontstageDef("ToolUiProvider-TestFrontstage");
+    const frontstageDef = await FrontstageManager.getFrontstageDef("ToolUiProvider-TestFrontstage");
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {

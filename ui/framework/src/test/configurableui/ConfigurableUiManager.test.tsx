@@ -44,10 +44,15 @@ describe("ConfigurableUiManager", () => {
 
   it("addFrontstageProvider & findFrontstageDef", async () => {
     class Frontstage1 extends FrontstageProvider {
+      public static stageId = "TestFrontstage2";
+      public get id(): string {
+        return Frontstage1.stageId;
+      }
+
       public get frontstage(): React.ReactElement<FrontstageProps> {
         return (
           <Frontstage
-            id="TestFrontstage2"
+            id={Frontstage1.stageId}
             defaultTool={CoreTools.selectElementCommand}
             contentGroup="TestContentGroup1"
           />
@@ -55,8 +60,7 @@ describe("ConfigurableUiManager", () => {
       }
     }
     ConfigurableUiManager.addFrontstageProvider(new Frontstage1());
-
-    const frontstageDef2 = ConfigurableUiManager.findFrontstageDef("TestFrontstage2");
+    const frontstageDef2 = await FrontstageManager.getFrontstageDef(Frontstage1.stageId);
     expect(frontstageDef2).to.not.be.undefined;
     await FrontstageManager.setActiveFrontstageDef(frontstageDef2);
   });

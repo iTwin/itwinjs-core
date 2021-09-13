@@ -24,7 +24,7 @@ export class RestoreFrontstageLayoutTool extends Tool {
   // istanbul ignore next
   public static override get maxArgs() { return 1; }
 
-  public override run(frontstageId?: string): boolean {
+  private async runAsync(frontstageId?: string) {
     let frontstageDef: FrontstageDef | undefined;
 
     if (frontstageId) {
@@ -37,6 +37,10 @@ export class RestoreFrontstageLayoutTool extends Tool {
       frontstageDef.restoreLayout();
     else
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, UiFramework.translate("tools.RestoreFrontstageLayout.noStageFound")));
+  }
+
+  public override run(frontstageId?: string): boolean {
+    void this.runAsync(frontstageId);
     return true;
   }
 

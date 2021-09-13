@@ -43,6 +43,10 @@ class LocalFileOpenControl extends ContentControl {
 
 /** LocalFileOpenFrontstage displays the file picker and view picker. */
 export class LocalFileOpenFrontstage extends FrontstageProvider {
+  public get id(): string {
+    return "LocalFileOpen";
+  }
+
   public static async open() {
     if (LocalFileSupport.localFilesSupported()) {
       const frontstageProvider = new LocalFileOpenFrontstage();
@@ -65,7 +69,7 @@ export class LocalFileOpenFrontstage extends FrontstageProvider {
     });
 
     return (
-      <Frontstage id="LocalFileOpen"
+      <Frontstage id={this.id}
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={contentGroup}
         isInFooterMode={false}

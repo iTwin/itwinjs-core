@@ -372,7 +372,7 @@ export class FrontstageManager {
    * @param frontstageProvider  FrontstageProvider representing the Frontstage to add
    */
   public static addFrontstageProvider(frontstageProvider: FrontstageProvider): void {
-    FrontstageManager._frontstageProviders.set(frontstageProvider.frontstage.props.id, frontstageProvider);
+    FrontstageManager._frontstageProviders.set(frontstageProvider.id, frontstageProvider);
   }
 
   /** Find a loaded Frontstage with a given id. If the id is not provided, the active Frontstage is returned.

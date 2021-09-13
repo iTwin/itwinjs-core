@@ -46,10 +46,15 @@ describe("ContentControl", () => {
     // });
 
     class Frontstage1 extends FrontstageProvider {
+      public static stageId = "ContentFrontstage1";
+      public get id(): string {
+        return Frontstage1.stageId;
+      }
+
       public get frontstage(): React.ReactElement<FrontstageProps> {
         return (
           <Frontstage
-            id="ContentFrontstage1"
+            id={this.id}
             defaultTool={CoreTools.selectElementCommand}
             contentGroup={myContentGroup}
           />
@@ -58,7 +63,7 @@ describe("ContentControl", () => {
     }
     ConfigurableUiManager.addFrontstageProvider(new Frontstage1());
 
-    const frontstageDef = ConfigurableUiManager.findFrontstageDef("ContentFrontstage1");
+    const frontstageDef = await FrontstageManager.getFrontstageDef(Frontstage1.stageId);
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {
@@ -103,10 +108,15 @@ describe("ContentControl", () => {
     // });
 
     class Frontstage2 extends FrontstageProvider {
+      public static stageId = "ContentFrontstage2";
+      public get id(): string {
+        return Frontstage2.stageId;
+      }
+
       public get frontstage(): React.ReactElement<FrontstageProps> {
         return (
           <Frontstage
-            id="ContentFrontstage2"
+            id={this.id}
             defaultTool={CoreTools.selectElementCommand}
             contentGroup={contentGroup2}
           />
@@ -115,7 +125,7 @@ describe("ContentControl", () => {
     }
     ConfigurableUiManager.addFrontstageProvider(new Frontstage2());
 
-    const frontstageDef = ConfigurableUiManager.findFrontstageDef("ContentFrontstage2");
+    const frontstageDef = await FrontstageManager.getFrontstageDef(Frontstage2.stageId);
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {

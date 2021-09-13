@@ -24,6 +24,9 @@ import { ConditionalBooleanValue, StandardContentLayouts, WidgetState } from "@b
 /* eslint-disable react/jsx-key, deprecation/deprecation */
 
 export class Frontstage2 extends FrontstageProvider {
+  public get id(): string {
+    return "Test2";
+  }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const myContentGroup: ContentGroup = new ContentGroup(
@@ -56,7 +59,7 @@ export class Frontstage2 extends FrontstageProvider {
     );
 
     return (
-      <Frontstage id="Test2"
+      <Frontstage id={this.id}
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={myContentGroup}
         isInFooterMode={false} applicationData={{ key: "value" }}

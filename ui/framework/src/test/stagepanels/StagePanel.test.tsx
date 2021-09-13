@@ -136,6 +136,11 @@ describe("StagePanel", () => {
 
   it("Panels should render in a Frontstage", async () => {
     class Frontstage1 extends FrontstageProvider {
+      public static stageId = "Test1";
+      public get id(): string {
+        return Frontstage1.stageId;
+      }
+
       public get frontstage(): React.ReactElement<FrontstageProps> {
         return (
           <Frontstage
@@ -193,7 +198,7 @@ describe("StagePanel", () => {
 
     const frontstageProvider = new Frontstage1();
     ConfigurableUiManager.addFrontstageProvider(frontstageProvider);
-    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(Frontstage1.stageId);
     expect(frontstageDef).to.not.be.undefined;
     await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 

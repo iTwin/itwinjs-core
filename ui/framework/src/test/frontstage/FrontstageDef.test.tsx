@@ -30,12 +30,16 @@ describe("FrontstageDef", () => {
   });
 
   class BadLayoutFrontstage extends FrontstageProvider {
+    public static stageId = "BadLayout";
+    public get id(): string {
+      return BadLayoutFrontstage.stageId;
+    }
 
     public get frontstage(): React.ReactElement<FrontstageProps> {
 
       return (
         <Frontstage
-          id="BadLayout"
+          id={this.id}
           defaultTool={CoreTools.selectElementCommand}
           contentGroup="def"
         />
@@ -44,6 +48,11 @@ describe("FrontstageDef", () => {
   }
 
   class BadGroupFrontstage extends FrontstageProvider {
+    public static stageId = "BadGroup";
+    public get id(): string {
+      return BadGroupFrontstage.stageId;
+    }
+
     public get frontstage(): React.ReactElement<FrontstageProps> {
 
       // const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
@@ -55,7 +64,7 @@ describe("FrontstageDef", () => {
 
       return (
         <Frontstage
-          id="BadGroup"
+          id={this.id}
           defaultTool={CoreTools.selectElementCommand}
           contentGroup="def"
         />
@@ -139,10 +148,15 @@ describe("FrontstageDef", () => {
     }
 
     class EmptyFrontstageProvider extends FrontstageProvider {
+      public static stageId = "TestFrontstageUi2";
+      public get id(): string {
+        return EmptyFrontstageProvider.stageId;
+      }
+
       public get frontstage() {
         return (
           <Frontstage
-            id="TestFrontstageUi2"
+            id={this.id}
             defaultTool={CoreTools.selectElementCommand}
             contentGroup="TestContentGroup1"
             defaultContentId="defaultContentId"
@@ -164,7 +178,7 @@ describe("FrontstageDef", () => {
     it("should add extension widgets to stage panel zones", async () => {
       const frontstageProvider = new EmptyFrontstageProvider();
       FrontstageManager.addFrontstageProvider(frontstageProvider);
-      const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+      const frontstageDef = await FrontstageManager.getFrontstageDef(EmptyFrontstageProvider.stageId);
       await FrontstageManager.setActiveFrontstageDef(frontstageDef);
       const sut = FrontstageManager.activeFrontstageDef!;
       sut.rightPanel!.panelZones.start.widgetDefs.map((w) => w.id).should.eql(["WidgetsProviderR1"]);

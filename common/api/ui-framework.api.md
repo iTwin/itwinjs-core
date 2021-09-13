@@ -2499,7 +2499,6 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     static createStagePanelDef(panelLocation: StagePanelLocation_2, props: FrontstageProps): StagePanelDef | undefined;
     // @internal (undocumented)
     static createZoneDef(zoneNode: React.ReactElement<ZoneProps> | undefined, zoneLocation: ZoneLocation, props: FrontstageProps): ZoneDef | undefined;
-    static initializeFrontstageDef(frontstageDef: FrontstageDef, props: FrontstageProps): void;
     // @internal
     render(): React.ReactNode;
     }
@@ -2583,7 +2582,6 @@ export interface FrontstageDeactivatedEventArgs {
 
 // @public
 export class FrontstageDef {
-    constructor(props?: FrontstageProps);
     // (undocumented)
     get applicationData(): any | undefined;
     // (undocumented)
@@ -2607,6 +2605,7 @@ export class FrontstageDef {
     get contentGroupId(): string;
     // (undocumented)
     get contentLayoutDef(): ContentLayoutDef | undefined;
+    static create(provider: FrontstageProvider): Promise<FrontstageDef>;
     // (undocumented)
     get defaultContentId(): string;
     // (undocumented)
@@ -2634,8 +2633,7 @@ export class FrontstageDef {
     // (undocumented)
     get id(): string;
     // @internal
-    initializeFromProps(props: FrontstageProps): void;
-    initializeFromProvider(frontstageProvider: FrontstageProvider): void;
+    initializeFromProps(props: FrontstageProps): Promise<void>;
     // (undocumented)
     get isApplicationClosing(): boolean;
     // (undocumented)
@@ -2752,6 +2750,9 @@ export class FrontstageManager {
     static ensureToolInformationIsSet(toolId: string): void;
     static findFrontstageDef(id?: string): FrontstageDef | undefined;
     static findWidget(widgetId: string): WidgetDef | undefined;
+    static getFrontstageDef(id?: string): Promise<FrontstageDef | undefined>;
+    // (undocumented)
+    static hasFrontstage(frontstageId: string): boolean;
     static initialize(): void;
     // @internal (undocumented)
     static get isInitialized(): boolean;
@@ -2866,9 +2867,9 @@ export interface FrontstageProps extends CommonProps {
 
 // @public
 export abstract class FrontstageProvider {
+    // (undocumented)
     abstract get frontstage(): React.ReactElement<FrontstageProps>;
-    get frontstageDef(): FrontstageDef | undefined;
-    initializeDef(frontstageDef?: FrontstageDef): FrontstageDef;
+    abstract get id(): string;
 }
 
 // @public
@@ -5834,6 +5835,8 @@ export class StandardFrontstageProvider extends FrontstageProvider {
     constructor(props: StandardFrontstageProps);
     // (undocumented)
     get frontstage(): React.ReactElement<FrontstageProps>;
+    // (undocumented)
+    get id(): string;
     }
 
 // @public

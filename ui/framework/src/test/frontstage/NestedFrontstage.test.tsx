@@ -13,6 +13,10 @@ import TestUtils from "../TestUtils";
 import { AppStatusBarWidgetControl, TestContentControl, TestFrontstage } from "./FrontstageTestUtils";
 
 class TestNestedFrontstage extends FrontstageProvider {
+  public static stageId = "Test1";
+  public get id(): string {
+    return TestNestedFrontstage.stageId;
+  }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
@@ -38,7 +42,7 @@ class TestNestedFrontstage extends FrontstageProvider {
 
     return (
       <Frontstage
-        id="Test1"
+        id={this.id}
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={myContentGroup}
         defaultContentId="defaultContentId"

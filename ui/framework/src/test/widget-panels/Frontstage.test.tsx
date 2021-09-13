@@ -54,10 +54,15 @@ function createFrontstageState(nineZone = createSavedNineZoneState()): WidgetPan
 
 /** @internal */
 export class TestFrontstageUi2 extends FrontstageProvider {
+  public static stageId = "TestFrontstageUi2";
+  public get id(): string {
+    return TestFrontstageUi2.stageId;
+  }
+
   public get frontstage() {
     return (
       <Frontstage
-        id="TestFrontstageUi2"
+        id={this.id}
         defaultTool={CoreTools.selectElementCommand}
         contentGroup="TestContentGroup1"
         leftPanel={
@@ -83,10 +88,15 @@ export class TestFrontstageUi2 extends FrontstageProvider {
 
 /** @internal */
 export class TestFrontstageUi1 extends FrontstageProvider {
+  public static stageId = "TestFrontstageUi1";
+  public get id(): string {
+    return TestFrontstageUi1.stageId;
+  }
+
   public get frontstage() {
     return (
       <Frontstage
-        id="TestFrontstageUi1"
+        id={this.id}
         defaultTool={CoreTools.selectElementCommand}
         contentGroup="TestContentGroup1"
         centerLeft={
@@ -316,7 +326,10 @@ export class TestFrontstageUi1 extends FrontstageProvider {
 
 /** @internal */
 export class TestUi2Provider implements UiItemsProvider {
-  public readonly id = "TestUi2Provider";
+  public static stageId = "TestUi2Provider";
+  public get id(): string {
+    return TestUi2Provider.stageId;
+  }
 
   public provideWidgets(_stageId: string, _stageUsage: string, location: StagePanelLocation, section?: StagePanelSection) {
     const widgets: Array<AbstractWidgetProps> = [];

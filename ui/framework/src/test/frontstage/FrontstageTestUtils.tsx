@@ -60,6 +60,10 @@ export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
 
 /** @internal */
 export class TestFrontstage extends FrontstageProvider {
+  public static stageId = "TestFrontstage";
+  public get id(): string {
+    return TestFrontstage.stageId;
+  }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const myContentGroup: ContentGroup = new ContentGroup(
@@ -78,7 +82,7 @@ export class TestFrontstage extends FrontstageProvider {
 
     return (
       <Frontstage
-        id="TestFrontstage"
+        id={this.id}
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={myContentGroup}
         defaultContentId="defaultContentId"
@@ -147,6 +151,10 @@ export class TestFrontstage extends FrontstageProvider {
 
 /** @internal */
 export class TestFrontstage2 extends FrontstageProvider {
+  public static stageId = "TestFrontstage2";
+  public get id(): string {
+    return TestFrontstage2.stageId;
+  }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const myContentGroup: ContentGroup = new ContentGroup(
@@ -165,7 +173,7 @@ export class TestFrontstage2 extends FrontstageProvider {
 
     return (
       <Frontstage
-        id="TestFrontstage2"
+        id={this.id}
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={myContentGroup}
         defaultContentId="defaultContentId"
@@ -234,6 +242,10 @@ export class TestFrontstage2 extends FrontstageProvider {
 
 /** @internal */
 export class TestFrontstage3 extends FrontstageProvider {
+  public static stageId = "TestFrontstage3";
+  public get id(): string {
+    return TestFrontstage3.stageId;
+  }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const myContentGroup: ContentGroup = new ContentGroup(
@@ -250,7 +262,7 @@ export class TestFrontstage3 extends FrontstageProvider {
 
     return (
       <Frontstage
-        id="TestFrontstage3"
+        id={this.id}
         defaultTool={new ToolItemDef({ toolId: "test" })}
         contentGroup={myContentGroup}
         defaultContentId="defaultContentId"

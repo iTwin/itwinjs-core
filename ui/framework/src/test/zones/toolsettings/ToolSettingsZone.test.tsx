@@ -80,10 +80,15 @@ describe("ToolSettingsZone", () => {
     await TestUtils.initializeUiFramework();
 
     class Frontstage1 extends FrontstageProvider {
+      public static stageId = "ToolSettingsZone-TestFrontstage";
+      public get id(): string {
+        return Frontstage1.stageId;
+      }
+
       public get frontstage(): React.ReactElement<FrontstageProps> {
         return (
           <Frontstage
-            id="ToolSettingsZone-TestFrontstage"
+            id={this.id}
             defaultTool={CoreTools.selectElementCommand}
             contentGroup="TestContentGroup1"
             topCenter={
@@ -100,10 +105,15 @@ describe("ToolSettingsZone", () => {
     ConfigurableUiManager.addFrontstageProvider(new Frontstage1());
 
     class Frontstage2 extends FrontstageProvider {
+      public static stageId = "ToolSettingsZone-TestFrontstage2";
+      public get id(): string {
+        return Frontstage2.stageId;
+      }
+
       public get frontstage(): React.ReactElement<FrontstageProps> {
         return (
           <Frontstage
-            id="ToolSettingsZone-TestFrontstage2"
+            id={this.id}
             defaultTool={CoreTools.selectElementCommand}
             contentGroup="TestContentGroup1"
             topCenter={
@@ -132,7 +142,7 @@ describe("ToolSettingsZone", () => {
 
     const wrapper = mount(<FrontstageComposer />);
 
-    const frontstageDef = FrontstageManager.findFrontstageDef("ToolSettingsZone-TestFrontstage");
+    const frontstageDef = await FrontstageManager.getFrontstageDef("ToolSettingsZone-TestFrontstage");
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {
@@ -171,7 +181,7 @@ describe("ToolSettingsZone", () => {
 
     const wrapper = mount(<FrontstageComposer />);
 
-    const frontstageDef = FrontstageManager.findFrontstageDef("ToolSettingsZone-TestFrontstage2");
+    const frontstageDef = await FrontstageManager.getFrontstageDef("ToolSettingsZone-TestFrontstage2");
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {

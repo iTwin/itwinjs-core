@@ -9,6 +9,9 @@ import {
 import { StandardContentLayouts } from "@bentley/ui-abstract";
 
 export class NestedAnimationStage extends FrontstageProvider {
+  public get id(): string {
+    return "NestedAnimationStage";
+  }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const myContentGroup: ContentGroup = new ContentGroup(
@@ -25,7 +28,7 @@ export class NestedAnimationStage extends FrontstageProvider {
     );
 
     return (
-      <Frontstage id="NestedAnimationStage"
+      <Frontstage id={this.id}
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={myContentGroup}
         isInFooterMode={false}

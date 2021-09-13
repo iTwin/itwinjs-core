@@ -76,6 +76,10 @@ function SampleTimelineComponent() {
 }
 
 export class Frontstage1 extends FrontstageProvider {
+  public get id(): string {
+    return "Test1";
+  }
+
   private _topMostPanel = {
     widgets: [
       <Widget element={<>
@@ -129,7 +133,7 @@ export class Frontstage1 extends FrontstageProvider {
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
     return (
-      <Frontstage id="Test1"
+      <Frontstage id={this.id}
         version={1}
         defaultTool={CoreTools.selectElementCommand}
         contentGroup="TestContentGroup1"

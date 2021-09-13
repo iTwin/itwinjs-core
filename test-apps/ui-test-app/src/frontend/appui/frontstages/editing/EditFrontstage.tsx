@@ -26,6 +26,9 @@ import sketchIconSvg from "../../icons/draw.svg?sprite";
 
 export class EditFrontstage extends FrontstageProvider {
   public static stageId = "EditFrontstage";
+  public get id(): string {
+    return EditFrontstage.stageId;
+  }
 
   private _additionalTools = new AdditionalTools();
 
@@ -81,7 +84,7 @@ export class EditFrontstage extends FrontstageProvider {
       contents: contentProps,
     });
     return (
-      <Frontstage id="EditFrontstage"
+      <Frontstage id={this.id}
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={myContentGroup}
         isInFooterMode={true} applicationData={{ key: "value" }}

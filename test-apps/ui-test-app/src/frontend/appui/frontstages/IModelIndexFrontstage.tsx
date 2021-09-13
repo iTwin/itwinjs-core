@@ -34,6 +34,9 @@ class IModelIndexControl extends ContentControl {
 }
 
 export class IModelIndexFrontstage extends FrontstageProvider {
+  public get id(): string {
+    return "IModelIndex";
+  }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const contentGroup: ContentGroup = new ContentGroup({
@@ -48,7 +51,7 @@ export class IModelIndexFrontstage extends FrontstageProvider {
     });
 
     return (
-      <Frontstage id="IModelIndex"
+      <Frontstage id={this.id}
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={contentGroup}
         isInFooterMode={false}

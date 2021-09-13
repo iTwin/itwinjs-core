@@ -34,6 +34,9 @@ class SignInControl extends ContentControl {
 }
 
 export class SignInFrontstage extends FrontstageProvider {
+  public get id(): string {
+    return "SignIn";
+  }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const contentGroup: ContentGroup = new ContentGroup({
@@ -48,7 +51,7 @@ export class SignInFrontstage extends FrontstageProvider {
     });
 
     return (
-      <Frontstage id="SignIn"
+      <Frontstage id={this.id}
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={contentGroup}
         isInFooterMode={false}

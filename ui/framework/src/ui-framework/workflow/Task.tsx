@@ -30,7 +30,7 @@ export interface TaskPropsList {
  * A Task is a specific piece of work to accomplish.
  * A Task refers to a Frontstage to activate.
  * @public
- */
+ */
 export class Task extends ItemDefBase {
   public taskId: string;
   public primaryStageId: string;
@@ -60,7 +60,7 @@ export class Task extends ItemDefBase {
   }
 
   public async onActivated(): Promise<void> {
-    const frontstage = FrontstageManager.findFrontstageDef(this.primaryStageId);
+    const frontstage = await FrontstageManager.getFrontstageDef(this.primaryStageId);
     if (frontstage)
       await FrontstageManager.setActiveFrontstageDef(frontstage);
   }
@@ -70,7 +70,7 @@ export class Task extends ItemDefBase {
 
 /** Task Manager class.
  * @public
- */
+ */
 export class TaskManager {
   private static _tasks: Map<string, Task> = new Map<string, Task>();
 

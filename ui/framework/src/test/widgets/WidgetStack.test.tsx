@@ -64,6 +64,10 @@ describe("WidgetStack", () => {
   }
 
   class Frontstage1 extends FrontstageProvider {
+    public static stageId = "WidgetStack-Frontstage";
+    public get id(): string {
+      return Frontstage1.stageId;
+    }
 
     public get frontstage(): React.ReactElement<FrontstageProps> {
       const myContentGroup: ContentGroup = new ContentGroup({
@@ -74,7 +78,7 @@ describe("WidgetStack", () => {
 
       return (
         <Frontstage
-          id="WidgetStack-Frontstage"
+          id={this.id}
           defaultTool={CoreTools.selectElementCommand}
           contentGroup={myContentGroup}
           centerRight={
@@ -118,7 +122,7 @@ describe("WidgetStack", () => {
     await FrontstageManager.setActiveFrontstageDef(undefined);
     const wrapper = mount(<FrontstageComposer />);
 
-    const frontstageDef = ConfigurableUiManager.findFrontstageDef("WidgetStack-Frontstage");
+    const frontstageDef = await FrontstageManager.getFrontstageDef(Frontstage1.stageId);
     expect(frontstageDef).to.not.be.undefined;
     await FrontstageManager.setActiveFrontstageDef(frontstageDef);
     wrapper.update();

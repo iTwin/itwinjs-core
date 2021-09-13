@@ -7,6 +7,9 @@ import { ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvide
 import { StandardContentLayouts } from "@bentley/ui-abstract";
 
 export class ScheduleAnimationFrontstage extends FrontstageProvider {
+  public get id(): string {
+    return "ScheduleAnimationFrontstage";
+  }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
 
@@ -24,7 +27,7 @@ export class ScheduleAnimationFrontstage extends FrontstageProvider {
     );
 
     return (
-      <Frontstage id="ScheduleAnimationFrontstage"
+      <Frontstage id={this.id}
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={myContentGroup}
         isInFooterMode={false}

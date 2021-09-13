@@ -141,6 +141,9 @@ class DynamicModalUiDataProvider extends DialogLayoutDataProvider {
 }
 
 export class Frontstage4 extends FrontstageProvider {
+  public get id(): string {
+    return "Test4";
+  }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const myContentGroup: ContentGroup = new ContentGroup(
@@ -158,7 +161,7 @@ export class Frontstage4 extends FrontstageProvider {
 
     return (
       <Frontstage
-        id="Test4"
+        id={this.id}
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={myContentGroup}
         defaultContentId="TestContent1"

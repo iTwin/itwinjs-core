@@ -77,6 +77,10 @@ function MySliderPanel() {
 
 export class ViewsFrontstage extends FrontstageProvider {
   public static stageId = "ViewsFrontstage";
+  public get id(): string {
+    return ViewsFrontstage.stageId;
+  }
+
   public static unifiedSelectionPropertyGridId = "UnifiedSelectionPropertyGrid";
   private _additionalTools = new AdditionalTools();
 

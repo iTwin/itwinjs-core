@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { CommonToolbarItem, StageUsage, WidgetState } from "@bentley/ui-abstract";
+import { CommonToolbarItem, StageUsage, StandardContentLayouts, WidgetState } from "@bentley/ui-abstract";
 import {
   BasicNavigationWidget, BasicToolWidget, ContentGroup, ContentLayoutDef, CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
   IModelViewportControl, StagePanel, StagePanelState, UiFramework, Widget, Zone,
@@ -15,8 +15,9 @@ import { GenericTool } from "./tools/GenericTool";
 /* eslint-disable react/jsx-key, deprecation/deprecation */
 
 export class ExtensionFrontstage extends FrontstageProvider {
-  public static get id() {
-    return "ui-test.SampleStage";
+  public static stageId = "ui-test.SampleStage";
+  public get id(): string {
+    return ExtensionFrontstage.stageId;
   }
 
   private get _additionalVerticalToolWidgetItems(): CommonToolbarItem[] {
@@ -35,17 +36,10 @@ export class ExtensionFrontstage extends FrontstageProvider {
   };
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
-    const pluginContentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
-      {
-        id: "ui-test.TwoHalvesHorizontal",
-        description: "ContentDef.TwoStacked",
-        horizontalSplit: { id: "TwoHalvesHorizontal.HorizontalSplit", percentage: 0.80, top: 0, bottom: 1 },
-      });
-
     const pluginContentGroup: ContentGroup = new ContentGroup(
       {
         id: "ui-test:content-group",
-        layout: "ui-test.TwoHalvesHorizontal",
+        layout: StandardContentLayouts.twoHorizontalSplit,
         contents: [
           {
             id: "ui-test:primary",
@@ -61,7 +55,7 @@ export class ExtensionFrontstage extends FrontstageProvider {
     );
 
     return (
-      <Frontstage id={ExtensionFrontstage.id}
+      <Frontstage id={this.id}
         version={1.2}
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={pluginContentGroup}

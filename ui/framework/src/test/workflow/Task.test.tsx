@@ -23,10 +23,15 @@ describe("Task", () => {
 
   it("Task should activate Frontstage", async () => {
     class Frontstage1 extends FrontstageProvider {
+      public static stageId = "Test1";
+      public get id(): string {
+        return Frontstage1.stageId;
+      }
+
       public get frontstage(): React.ReactElement<FrontstageProps> {
         return (
           <Frontstage
-            id="Test1"
+            id={this.id}
             defaultTool={CoreTools.selectElementCommand}
             contentGroup="TestContentGroup1"
           />

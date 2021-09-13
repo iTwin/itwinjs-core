@@ -20,6 +20,10 @@ import { ReactTableDemoContentControl } from "../table-demo/ReactTableDemo";
 /* eslint-disable react/jsx-key, deprecation/deprecation */
 
 export class Frontstage3 extends FrontstageProvider {
+  public get id(): string {
+    return "Test3";
+  }
+
   private getDefaultViewState = () => {
     return UiFramework.getDefaultViewState()?.clone();
   };
@@ -55,7 +59,7 @@ export class Frontstage3 extends FrontstageProvider {
 
     return (
       <Frontstage
-        id="Test3"
+        id={this.id}
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={myContentGroup}
         isInFooterMode={true}

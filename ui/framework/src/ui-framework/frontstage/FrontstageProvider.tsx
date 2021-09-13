@@ -15,5 +15,6 @@ import { FrontstageProps } from "./Frontstage";
  */
 export abstract class FrontstageProvider {
   /** Get the Frontstage React based definition */
+  public abstract get id(): string;
   public abstract get frontstage(): React.ReactElement<FrontstageProps>;
 }

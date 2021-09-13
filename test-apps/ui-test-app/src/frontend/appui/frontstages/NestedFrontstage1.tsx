@@ -17,10 +17,13 @@ import { NestedFrontstage2 } from "./NestedFrontstage2";
 /* eslint-disable react/jsx-key */
 
 export class NestedFrontstage1 extends FrontstageProvider {
+  public get id(): string {
+    return "NestedFrontstage1";
+  }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
     return (
-      <Frontstage id="NestedFrontstage1"
+      <Frontstage id={this.id}
         defaultTool={CoreTools.rotateViewCommand}
         contentGroup="TestContentGroup2"
         isInFooterMode={false}
