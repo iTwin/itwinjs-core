@@ -51,7 +51,7 @@ import { SubCategoriesCache } from "./SubCategoriesCache";
 import { DisclosedTileTreeSet, MapLayerImageryProvider, MapTiledGraphicsProvider, MapTileTreeReference, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
-import { Animator, ViewAnimationOptions, ViewChangeOptions } from "./ViewAnimation";
+import { Animator, OnViewExtentsError, ViewAnimationOptions, ViewChangeOptions } from "./ViewAnimation";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { GlobalLocation } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
@@ -1649,7 +1649,7 @@ export abstract class Viewport implements IDisposable {
 
     let status;
     if (view.isCameraOn) {
-      status = view.lookAt({ eyePoint: view.getEyePoint(), targetPoint: view.getTargetPoint(), upVector: view.getYVector(),  lensAngle });
+      status = view.lookAt({ eyePoint: view.getEyePoint(), targetPoint: view.getTargetPoint(), upVector: view.getYVector(), lensAngle });
     } else {
       // We need to figure out a new camera target. To do that, we need to know where the geometry is in the view.
       // We use the depth of the center of the view for that.
@@ -1671,7 +1671,7 @@ export abstract class Viewport implements IDisposable {
       const targetPoint = corners[0].interpolate(0.5, corners[1]); // middle of halfway plane
       const backDistance = eyePoint.distance(targetPoint) * 2.0;
       const frontDistance = view.minimumFrontDistance();
-      status = view.lookAt({ eyePoint, targetPoint, upVector: view.getYVector(),  lensAngle, frontDistance, backDistance });
+      status = view.lookAt({ eyePoint, targetPoint, upVector: view.getYVector(), lensAngle, frontDistance, backDistance });
     }
 
     if (ViewStatus.Success === status)
@@ -1834,7 +1834,7 @@ export abstract class Viewport implements IDisposable {
    * @param factor the zoom factor.
    * @param options options for behavior of view change
    */
-  public zoom(newCenter: Point3d | undefined, factor: number, options?: ViewChangeOptions): ViewStatus {
+  public zoom(newCenter: Point3d | undefined, factor: number, options?: ViewChangeOptions & OnViewExtentsError): ViewStatus {
     const view = this.view;
     if (undefined === view)
       return ViewStatus.InvalidViewport;
@@ -1916,7 +1916,7 @@ export abstract class Viewport implements IDisposable {
     for (const placement of placements)
       viewRange.extendArray(placement.getWorldCorners(frust).points, viewTransform);
 
-    const ignoreError: ViewChangeOptions = {
+    const ignoreError: ViewChangeOptions & OnViewExtentsError = {
       ...options,
       onExtentsError: () => ViewStatus.Success,
     };

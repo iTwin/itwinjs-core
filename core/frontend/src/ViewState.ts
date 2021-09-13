@@ -35,7 +35,7 @@ import { SheetViewState } from "./SheetViewState";
 import { SpatialViewState } from "./SpatialViewState";
 import { StandardView, StandardViewId } from "./StandardView";
 import { DisclosedTileTreeSet, TileTreeReference } from "./tile/internal";
-import { ViewChangeOptions } from "./ViewAnimation";
+import { OnViewExtentsError, ViewChangeOptions } from "./ViewAnimation";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { areaToEyeHeight, areaToEyeHeightFromGcs, GlobalLocation } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
@@ -78,7 +78,7 @@ export interface LookAtArgs {
   /** The distance from the eyePoint to the back plane. If undefined, the existing back distance is used. */
   readonly backDistance?: number;
   /** Used for providing onExtentsError. */
-  readonly opts?: ViewChangeOptions;
+  readonly opts?: OnViewExtentsError;
 }
 
 /** Arguments to [[ViewState3d.lookAt]] to set up a perspective view
@@ -641,7 +641,7 @@ export abstract class ViewState extends ElementState {
    * @param opts for providing onExtentsError
    * @return Success if the frustum was successfully updated, or an appropriate error code.
    */
-  public setupFromFrustum(inFrustum: Frustum, opts?: ViewChangeOptions): ViewStatus {
+  public setupFromFrustum(inFrustum: Frustum, opts?: ViewChangeOptions & OnViewExtentsError): ViewStatus {
     const frustum = inFrustum.clone(); // make sure we don't modify input frustum
     frustum.fixPointOrder();
     const frustPts = frustum.points;
@@ -740,7 +740,7 @@ export abstract class ViewState extends ElementState {
   }
 
   /** @internal */
-  public adjustViewDelta(delta: Vector3d, origin: XYZ, rot: Matrix3d, aspect?: number, opts?: ViewChangeOptions): ViewStatus {
+  public adjustViewDelta(delta: Vector3d, origin: XYZ, rot: Matrix3d, aspect?: number, opts?: OnViewExtentsError): ViewStatus {
     const origDelta = delta.clone();
 
     let status = ViewStatus.Success;
@@ -949,7 +949,7 @@ export abstract class ViewState extends ElementState {
    * @param options for providing MarginPercent and onExtentsError
    * @see lookAtVolume
    */
-  public lookAtViewAlignedVolume(volume: Range3d, aspect?: number, options?: ViewChangeOptions) {
+  public lookAtViewAlignedVolume(volume: Range3d, aspect?: number, options?: ViewChangeOptions & OnViewExtentsError) {
     if (volume.isNull) // make sure volume is valid
       return;
 
