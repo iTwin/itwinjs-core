@@ -77,17 +77,17 @@ describe("IModelApp", () => {
   });
   after(async () => TestApp.shutdown());
 
-  it("TestApp should override correctly", () => {
+  it("TestApp should override correctly", async () => {
     assert.instanceOf(IModelApp.accuDraw, TestAccuDraw, "accudraw override");
     assert.instanceOf(IModelApp.toolAdmin.idleTool, TestIdleTool, "idle tool override");
-    assert.isTrue(IModelApp.tools.run("Test.Immediate", "test1", "test2"), "immediate tool ran");
+    assert.isTrue(await IModelApp.tools.run("Test.Immediate", "test1", "test2"), "immediate tool ran");
     assert.equal(testVal1, "test1", "arg1 was correct");
     assert.equal(testVal2, "test2", "arg2 was correct");
-    assert.isFalse(IModelApp.tools.run("Not.Found"), "toolId is not registered");
-    assert.isTrue(IModelApp.tools.run("View.Pan"), "run view pan");
+    assert.isFalse(await IModelApp.tools.run("Not.Found"), "toolId is not registered");
+    assert.isTrue(await IModelApp.tools.run("View.Pan"), "run view pan");
     assert.instanceOf(IModelApp.toolAdmin.viewTool, PanViewTool, "pan tool is active");
 
-    assert.isTrue(IModelApp.tools.run("Null.Tool"), "run null");
+    assert.isTrue(await IModelApp.tools.run("Null.Tool"), "run null");
     assert.equal(testVal1, "fromNullTool");
   });
 
