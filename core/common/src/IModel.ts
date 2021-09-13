@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, BeEvent, GeoServiceStatus, GuidString, Id64, Id64String, IModelStatus, Logger, OpenMode,
+  assert, BeEvent, GeoServiceStatus, GuidString, Id64, Id64String, IModelStatus, Logger, Mutable, OpenMode,
 } from "@bentley/bentleyjs-core";
 import {
   Angle, AxisIndex, AxisOrder, Constant, Geometry, Matrix3d, Point3d, Range3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps, YawPitchRollAngles, YawPitchRollProps,
@@ -47,15 +47,15 @@ export interface IModelRpcProps extends IModelRpcOpenProps {
  */
 export interface EcefLocationProps {
   /** The Origin of an iModel on the earth in ECEF coordinates */
-  origin: XYZProps;
+  readonly origin: XYZProps;
   /** The [orientation](https://en.wikipedia.org/wiki/Geographic_coordinate_conversion) of an iModel on the earth. */
-  orientation: YawPitchRollProps;
+  readonly orientation: YawPitchRollProps;
   /** Optional position on the earth used to establish the ECEF coordinates. */
-  cartographicOrigin?: LatLongAndHeight;
+  readonly cartographicOrigin?: LatLongAndHeight;
   /** Optional X column vector used with [[yVector]] to calculate potentially non-rigid transform if a projection is present. */
-  xVector?: XYZProps;
+  readonly xVector?: XYZProps;
   /** Optional Y column vector used with [[xVector]] to calculate potentially non-rigid transform if a projection is present. */
-  yVector?: XYZProps;
+  readonly yVector?: XYZProps;
 }
 
 /** Properties of the [Root Subject]($docs/bis/intro/glossary#subject-root).
@@ -63,9 +63,9 @@ export interface EcefLocationProps {
  */
 export interface RootSubjectProps {
   /** The name of the root subject. */
-  name: string;
+  readonly name: string;
   /** Description of the root subject (optional). */
-  description?: string;
+  readonly description?: string;
 }
 
 /** Properties of an iModel that are always held in memory whenever one is opened, both on the frontend and on the backend .
@@ -73,17 +73,17 @@ export interface RootSubjectProps {
  */
 export interface IModelProps {
   /** The name and description of the root subject of this iModel */
-  rootSubject: RootSubjectProps;
+  readonly rootSubject: RootSubjectProps;
   /** The volume of the entire project, in spatial coordinates */
-  projectExtents?: Range3dProps;
+  readonly projectExtents?: Range3dProps;
   /** An offset to be applied to all spatial coordinates. This is normally used to transform spatial coordinates into the Cartesian coordinate system of a Geographic Coordinate System. */
-  globalOrigin?: XYZProps;
+  readonly globalOrigin?: XYZProps;
   /** The location of the iModel in Earth Centered Earth Fixed coordinates. iModel units are always meters */
-  ecefLocation?: EcefLocationProps;
+  readonly ecefLocation?: EcefLocationProps;
   /** The Geographic Coordinate Reference System indicating the projection and datum used. */
-  geographicCoordinateSystem?: GeographicCRSProps;
+  readonly geographicCoordinateSystem?: GeographicCRSProps;
   /** The name of the iModel. */
-  name?: string;
+  readonly name?: string;
 }
 
 /** The properties returned by the backend when creating a new [[IModelConnection]] from the frontend, either with Rpc or with Ipc.
@@ -98,13 +98,13 @@ export type IModelConnectionProps = IModelProps & IModelRpcProps;
  */
 export interface CreateIModelProps extends IModelProps {
   /** The GUID of new iModel. If not present, a GUID will be generated. */
-  guid?: GuidString;
+  readonly guid?: GuidString;
   /** Client name for new iModel */
-  client?: string;
+  readonly client?: string;
   /** Thumbnail for new iModel
    * @alpha
    */
-  thumbnail?: ThumbnailProps;
+  readonly thumbnail?: ThumbnailProps;
 }
 
 /** Encryption-related properties that can be supplied when creating or opening snapshot iModels.
@@ -112,7 +112,7 @@ export interface CreateIModelProps extends IModelProps {
  */
 export interface IModelEncryptionProps {
   /** The password used to encrypt/decrypt the snapshot iModel. */
-  password?: string;
+  readonly password?: string;
 }
 
 /**
@@ -124,7 +124,7 @@ export interface IModelEncryptionProps {
  * @public
  */
 export interface OpenDbKey {
-  key?: string;
+  readonly key?: string;
 }
 
 /** Options to open a [SnapshotDb]($backend).
@@ -132,9 +132,9 @@ export interface OpenDbKey {
  */
 export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
   /** @internal */
-  lazyBlockCache?: boolean;
+  readonly lazyBlockCache?: boolean;
   /** @internal */
-  autoUploadBlocks?: boolean;
+  readonly autoUploadBlocks?: boolean;
   /**
    * The "base" name that can be used for creating temporary files related to this Db.
    * The string should be a name related to the current Db filename using some known pattern so that all files named "baseName*" can be deleted externally during cleanup.
@@ -142,7 +142,7 @@ export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
    * If not present, the baseName will default to the database's file name (including the path).
    * @internal
    */
-  tempFileBase?: string;
+  readonly tempFileBase?: string;
 }
 
 /** Options to open a [StandaloneDb]($backend) via [StandaloneDb.openFile]($backend) from the backend,
@@ -158,7 +158,7 @@ export interface CreateSnapshotIModelProps extends IModelEncryptionProps {
   /** If true, then create SQLite views for Model, Element, ElementAspect, and Relationship classes.
    * These database views can often be useful for interoperability workflows.
    */
-  createClassViews?: boolean;
+  readonly createClassViews?: boolean;
 }
 
 /** The options that can be specified when creating an *empty* snapshot iModel.
@@ -172,7 +172,7 @@ export type CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotI
  */
 export interface CreateStandaloneIModelProps extends IModelEncryptionProps {
   /** If present, file will allow local editing, but cannot be used to create changesets */
-  allowEdit?: string;
+  readonly allowEdit?: string;
 }
 
 /** The options that can be specified when creating an *empty* standalone iModel.
@@ -183,8 +183,8 @@ export type CreateEmptyStandaloneIModelProps = CreateIModelProps & CreateStandal
 
 /** @public */
 export interface FilePropertyProps {
-  namespace: string;
-  name: string;
+  readonly namespace: string;
+  readonly name: string;
   id?: number | string;
   subId?: number | string;
 }
@@ -284,7 +284,7 @@ export class EcefLocation implements EcefLocationProps {
   }
 
   public toJSON(): EcefLocationProps {
-    const props: EcefLocationProps = {
+    const props: Mutable<EcefLocationProps> = {
       origin: this.origin.toJSON(),
       orientation: this.orientation.toJSON(),
     };

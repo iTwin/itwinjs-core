@@ -15,9 +15,7 @@ Also removed legacy `.eslintrc.js` file from the same package. Instead, use `@be
 * Previously, the element Ids were passed to [IModelConnection.Elements.getProps]($frontend), which returned **all** of the element's properties (potentially many megabytes of data), only to extract the [PlacementProps]($common) for each element and discard the rest. Now, it uses the new [IModelConnection.Elements.getPlacements]($frontend) function to query only the placements.
 * Previously, if a mix of 2d and 3d elements were specified, the viewport would attempt to union their 2d and 3d placements, typically causing it to fit incorrectly because 2d elements reside in a different coordinate space than 3d elements. Now, the viewport ignores 2d elements if it is viewing a 3d view, and vice-versa.
 
-## Breaking changes
-
-### Continued transition to `ChangesetIndex`
+## Continued transition to `ChangesetIndex`
 
 Every Changeset has both an Id (a string hash of its content and parent changeset) and an Index (a small integer representing its relative position on the iModel's timeline.) Either value can be used to uniquely identify a changeset. However, it is often necessary to compare two changeset identifiers to determine relative order, or to supply a range of changesets of interest. In this case, Id is not useful and must be converted to an index via a round-trip to an iModelHub server. Unfortunately, much of the iModel.js api uses only [ChangesetId]($common) to identify a changeset. That was unfortunate, since [ChangesetIndex]($common) is frequently needed and `ChangesetId` is rarely useful. For this reason we are migrating the api to prefer `ChangesetIndex` over several releases.
 
@@ -31,7 +29,7 @@ Each of these interfaces originally had only a member `changeSetId: string`, In 
 
 > Note: "Changeset" is one word. Apis should not use a capital "S" when referring to them.
 
-### ViewState3d.lookAt Argument Changed
+## ViewState3d.lookAt Arguments Changed
 
 [ViewState3d.lookAt]($frontend) previously took 6 arguments. In addition the method `ViewState3d.lookAtUsingLensAngle` also established a perspective `ViewState3d` from a field-of-view lens angle with many of the same arguments. There is now a new implementation of `ViewState3d.lookAt` that accepts named parameters to set up either a perspective or orthographic view, using the interfaces [LookAtPerspectiveArgs]($frontend), [LookAtOrthoArgs]($frontend), or [LookAtUsingLensAngle]($frontend).
 
@@ -41,7 +39,7 @@ This is a breaking change, so you may need to modify your code and replace the p
   viewState.lookAt(eye, target, upVector, newExtents, undefined, backDistance, opts);
 ```
 
-can become
+can become:
 
 ```ts
   viewState.lookAt( {eyePoint: eye, targetPoint: target , upVector, newExtents, backDistance, opts} );
@@ -142,7 +140,7 @@ This cumbersome, inefficient class has been replaced with the identically-named 
 
 Upgrade instructions:
 
-```
+```ts
   let ovrs = new ViewFlagOverrides(); // Old code - nothing overridden.
   let ovrs = { }; // New code
 
@@ -193,6 +191,42 @@ Upgrade instructions:
 
 The [AsyncFunction]($bentleyjs-core), [AsyncMethodsOf]($bentleyjs-core), and [PromiseReturnType]($bentleyjs-core) types have moved to the @bentley/bentleyjs-core package. The ones in @bentley/imodeljs-frontend have been deprecated.
 
+## Concurrency Control
+
+The previous implementation of `ConcurrencyControl` for locking elements has been replaced with the [LockControl]($backend) interface.
+
+`ConcurrencyControl` relied on detecting a list of changed elements and deferring the acquisition of locks until the application called the asynchronous `request` method to acquire locks, after the fact, but before calling [BriefcaseDb.saveChanges]($backend). The new approach is to require applications to call the asynchronous [LockControl.acquireExclusiveLock]($backend) on elements before update or delete, and to call [LockControl.acquireSharedLock]($backend) on parents and models before insert. If an attempt is made to modify or insert without the required locks, an exception is thrown when the change is attempted. This will require tools to make the necessary lock calls.
+
+Previously the concurrency "mode" was determined by applications when opening a briefcase. It is now established as a property of an iModel when it is first created (and "revision0" is uploaded.) By default, iModels use pessimistic (i.e. locks) mode, so all previously created iModels will require locks. If you pass `noLocks: true` as an argument to [BackendHubAccess.createNewIModel]($backend), a briefcase-local value is saved in rev0.bim before it is uploaded. Thereafter, all briefcases of that iModel will use use optimistic (i.e. no locks, change merging) mode, since everyone will use briefcases derived from rev0.bim. The value is inspected in the `BriefcaseDb.useLockServer` method called by [BriefcaseDb.open]($backend).
+
+Locks apply to Elements only. The "schema lock" is acquired by exclusively locking element id 0x1 (the root subject id). Models are locked via their modeled element (which has the same id as the model)
+
+See the [ConcurrencyControl]($docs/learning/backend/ConcurrencyControl.md) learning article for more information and examples.
+
+## ITwinId
+
+Several api's in `iTwin.js` refer to the "context" for an iModel, meaning the *project or asset* to which the iModel belongs, as its `contextId`. That is very confusing, as the term "context" is very overloaded in computer science in general, and in iTwin.js in particular. That is resolved in iTwin.js V3.0 by recognizing that every iModel exists within an **iTwin**, and every iTwin has a GUID called its `iTwinId`. All instances of `contextId` in public apis are now replaced by 'iTwinId'.
+
+This is a breaking change for places like [IModel.contextId]($common). However, it should be a straightforward search-and-replace 'contextId -> iTwinId` anywhere you get compilation errors in your code.
+
+## BriefcaseManager, BriefcaseDb, and IModelDb changes
+
+The signatures to several methods in [BriefcaseManager]($backend) and [BriefcaseDb]($backend) have been changed to make optional the previously required argument called `requestContext`. That argument is poorly named, but used (only) to identify a "user access token". Since anywhere briefcases are relevant an authenticated user access token is available the static method `IModelHost.getAccessToken`. The only (rare) case where a called needs to supply that argument is for tests the wish to simulate multiple users via a single backend (which is not permitted outside of tests.)
+
+In certain cases methods were renamed at the same time for consistency.
+
+| Method                                   | New arguments                                         | notes                            |
+| ---------------------------------------- | ----------------------------------------------------- | -------------------------------- |
+| `BriefcaseDb.onOpen`                     | [OpenBriefcaseArgs]($backend)                         | event signature change           |
+| `BriefcaseDb.onOpened`                   | [BriefcaseDb]($backend),[OpenBriefcaseArgs]($backend) | event signature change           |
+| `BriefcaseDb.open`                       | [OpenBriefcaseArgs]($backend)                         | `requestContext` removed         |
+| `BriefcaseDb.pullChanges`                | [PullChangesArgs]($backend)                           | was called `pullAndMergeChanges` |
+| `BriefcaseDb.pushChanges`                | [PushChangesArgs]($backend)                           |                                  |
+| `BriefcaseDb.upgradeSchemas`             | [OpenBriefcaseArgs]($backend)                         | `requestContext` removed         |
+| `BriefcaseManager.acquireNewBriefcaseId` | [IModelIdArg]($backend)                               |                                  |
+| `BriefcaseManager.downloadBriefcase`     | [RequestNewBriefcaseArg]($backend)                    |                                  |
+| `IModelDb.importSchemas`                 | `LocalFileName[]`                                     | `requestContext` removed         |
+
 ## Removal of previously deprecated APIs
 
 In this 3.0 major release, we have removed several APIs that were previously marked as deprecated in 2.x. Generally, the reason for the deprecation as well as the alternative suggestions can be found in the 2.x release notes. They are summarized here for quick reference.
@@ -202,6 +236,8 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | Removed                                                      | Replacement                                    |
 | ------------------------------------------------------------ | ---------------------------------------------- |
 | `AutoPush`                                                   | *eliminated*                                   |
+| `BriefcaseDb.reinstateChanges`                               | `BriefcaseDb.pullChanges`                      |
+| `BriefcaseDb.reverseChanges`                                 | `BriefcaseDb.pullChanges`                      |
 | `BriefcaseIdValue`                                           | `BriefcaseIdValue` in @bentley/imodeljs-common |
 | `BriefcaseManager.getCompatibilityFileName`                  | *eliminated*                                   |
 | `BriefcaseManager.getCompatibilityPath`                      | *eliminated*                                   |
