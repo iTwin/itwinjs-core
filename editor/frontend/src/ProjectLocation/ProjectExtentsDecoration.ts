@@ -865,7 +865,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     ProjectExtentsClipDecoration._decorator = undefined;
   }
 
-  public static update(): void {
+  public static async update(): Promise<void> {
     const deco = ProjectExtentsClipDecoration._decorator;
     if (undefined === deco)
       return;
@@ -873,8 +873,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     clipToProjectExtents(deco.viewport);
     deco.init();
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    deco.updateControls();
+    return deco.updateControls();
   }
 }
 
@@ -965,7 +964,7 @@ export class ProjectLocationSaveTool extends Tool {
     }
 
     deco.onChanged.raiseEvent(deco.iModel, ProjectLocationChanged.Save);
-    ProjectExtentsClipDecoration.update();
+    await ProjectExtentsClipDecoration.update();
     return IModelApp.toolAdmin.startDefaultTool();
   }
 
@@ -989,8 +988,7 @@ export class ProjectLocationSaveTool extends Tool {
       return true;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.saveChanges(deco, extents, ecefLocation);
+    await this.saveChanges(deco, extents, ecefLocation);
     return true;
   }
 }

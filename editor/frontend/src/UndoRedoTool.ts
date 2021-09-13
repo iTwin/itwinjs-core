@@ -13,8 +13,7 @@ export class UndoAllTool extends Tool {
     if (undefined === imodel || imodel.isReadonly || !imodel.isBriefcaseConnection)
       return true;
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises,deprecation/deprecation
-    IpcApp.callIpcHost("reverseAllTxn", imodel.key);
+    await IpcApp.callIpcHost("reverseAllTxn", imodel.key);
 
     // ### TODO Restart of primitive tool should be handled by Txn event listener...needs to happen even if not the active tool...
     if (undefined !== IModelApp.toolAdmin.primitiveTool)
@@ -27,8 +26,7 @@ export class UndoAllTool extends Tool {
 export class UndoTool extends Tool {
   public static override toolId = "Undo";
   public override async run(): Promise<boolean> {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises,deprecation/deprecation
-    IModelApp.toolAdmin.doUndoOperation();
+    await IModelApp.toolAdmin.doUndoOperation();
     return true;
   }
 }
@@ -37,8 +35,7 @@ export class UndoTool extends Tool {
 export class RedoTool extends Tool {
   public static override toolId = "Redo";
   public override async run(): Promise<boolean> {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises,deprecation/deprecation
-    IModelApp.toolAdmin.doRedoOperation();
+    await IModelApp.toolAdmin.doRedoOperation();
     return true;
   }
 }

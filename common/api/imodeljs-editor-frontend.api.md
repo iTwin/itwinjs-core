@@ -706,7 +706,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     // (undocumented)
     testDecorationHit(id: string): boolean;
     // (undocumented)
-    static update(): void;
+    static update(): Promise<void>;
     // (undocumented)
     protected updateDecorationListener(_add: boolean): void;
     // (undocumented)

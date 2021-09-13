@@ -1230,8 +1230,8 @@ export class CreateArcTool extends CreateOrContinuePathTool {
       IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.radiusProperty.item);
       // If radius is changed when creating arc by start/center after center has been defined, back up a step to defined a new center point...
       if (ArcMethod.StartCenter === this.method && this.useRadius && 2 === this.accepted.length)
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        this.onUndoPreviousStep();
+        await this.onUndoPreviousStep();
+
       return true;
     } else if (updatedValue.propertyName === this.sweepProperty.name) {
       if (!updatedValue.value.value) {

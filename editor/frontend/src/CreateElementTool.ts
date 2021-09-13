@@ -130,13 +130,12 @@ export class DynamicGraphicsProvider {
   public createGraphicAndUpdateDynamics(ev: BeButtonEvent, categoryId: Id64String, placement: PlacementProps, geometry: JsonGeometryStream | FlatBufferGeometryStream): void {
     const promise = this._graphicPromise = this.createGraphic(categoryId, placement, geometry);
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     promise.then(() => {
       if (promise !== this._graphicPromise)
         return; // abandoned this request...
 
       IModelApp.toolAdmin.updateDynamics(ev);
-    });
+    }).catch((_) => { });
   }
 
   /** Call to dispose of [[RenderGraphic]] held by [[RenderGraphicOwner]].
