@@ -245,7 +245,7 @@ export class SnowEffect extends Tool {
   public override async run(enable?: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (vp)
-      SnowDecorator.toggle(vp, enable); // eslint-disable-line @typescript-eslint/no-floating-promises
+      await SnowDecorator.toggle(vp, enable);
 
     return true;
   }
