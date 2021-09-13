@@ -242,8 +242,7 @@ export class OpenComponentExamplesPopoutTool extends Tool {
   public static override get maxArgs() { return 0; }
 
   public override async run(): Promise<boolean> {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this._run();
+    await this._run();
     return true;
   }
 
@@ -290,8 +289,7 @@ export class OpenCustomPopoutTool extends Tool {
   public static override get maxArgs() { return 0; }
 
   public override async run(): Promise<boolean> {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this._run();
+    await this._run();
     return true;
   }
 
@@ -335,8 +333,7 @@ export class OpenViewPopoutTool extends Tool {
   public static override get maxArgs() { return 0; }
 
   public override async run(): Promise<boolean> {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this._run();
+    await this._run();
     return true;
   }
 
