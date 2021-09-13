@@ -1212,7 +1212,6 @@ export class ConfigurableUiManager {
     // @internal (undocumented)
     static closeUi(): void;
     static createControl(classId: string, uniqueId: string, options?: any): ConfigurableUiElement | undefined;
-    static findFrontstageDef(id?: string): FrontstageDef | undefined;
     // @internal
     static getConstructorClassId(constructor: ConfigurableUiControlConstructor): string | undefined;
     static getWrapperElement(): HTMLElement;
@@ -2719,7 +2718,7 @@ export class FrontstageLaunchBackstageItem extends React.PureComponent<Frontstag
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    execute: () => void;
+    execute: () => Promise<void>;
     // (undocumented)
     render(): React.ReactNode;
     // @internal (undocumented)
@@ -2748,7 +2747,6 @@ export class FrontstageManager {
     static deactivateFrontstageDef(): Promise<void>;
     // @internal
     static ensureToolInformationIsSet(toolId: string): void;
-    static findFrontstageDef(id?: string): FrontstageDef | undefined;
     static findWidget(widgetId: string): WidgetDef | undefined;
     static getFrontstageDef(id?: string): Promise<FrontstageDef | undefined>;
     // (undocumented)

@@ -37,12 +37,12 @@ describe("ConfigurableUiManager", () => {
     TestUtils.terminateUiFramework();
   });
 
-  it("findFrontstageDef passed no argument", async () => {
+  it("setActiveFrontstageDef passed no argument", async () => {
     await FrontstageManager.setActiveFrontstageDef(undefined);
-    expect(ConfigurableUiManager.findFrontstageDef()).to.be.undefined;
+    expect(FrontstageManager.activeFrontstageDef).to.be.undefined;
   });
 
-  it("addFrontstageProvider & findFrontstageDef", async () => {
+  it("addFrontstageProvider & getFrontstageDef", async () => {
     class Frontstage1 extends FrontstageProvider {
       public static stageId = "TestFrontstage2";
       public get id(): string {

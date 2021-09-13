@@ -32,7 +32,7 @@ export const useUiItemsProviderStatusBarItems = (manager: StatusBarItemsManager)
     // istanbul ignore else
     if (providersRef.current !== uiProviders || currentStageRef.current !== stageId) {
       currentStageRef.current = stageId;
-      const frontstageDef = FrontstageManager.findFrontstageDef(stageId);
+      const frontstageDef = FrontstageManager.activeFrontstageDef;
       // istanbul ignore next
       const usage = frontstageDef?.usage ? frontstageDef.usage : StageUsage.General;
       providersRef.current = uiProviders;

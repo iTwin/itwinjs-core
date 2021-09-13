@@ -72,7 +72,7 @@ describe("BackstageComposerItem", () => {
       const backstageItem = sut.find(NZ_BackstageItem);
 
       const frontstageDef = new FrontstageDef();
-      sinon.stub(FrontstageManager, "findFrontstageDef").withArgs("Frontstage-1").returns(frontstageDef);
+      sinon.stub(FrontstageManager, "getFrontstageDef").withArgs("Frontstage-1").returns(Promise.resolve(frontstageDef));
       const spy = sinon.stub(FrontstageManager, "setActiveFrontstageDef").returns(Promise.resolve());
       backstageItem.prop("onClick")!();
 
@@ -85,7 +85,7 @@ describe("BackstageComposerItem", () => {
       const sut = shallow(<BackstageComposerStageLauncher item={getStageLauncherItem()} />);
       const backstageItem = sut.find(NZ_BackstageItem);
 
-      sinon.stub(FrontstageManager, "findFrontstageDef").returns(undefined);
+      sinon.stub(FrontstageManager, "getFrontstageDef").returns(Promise.resolve(undefined));
       const spy = sinon.spy(FrontstageManager, "setActiveFrontstageDef");
       backstageItem.prop("onClick")!();
 

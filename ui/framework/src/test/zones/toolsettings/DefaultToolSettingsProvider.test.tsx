@@ -291,7 +291,7 @@ describe("DefaultToolUiSettingsProvider", () => {
   });
 
   it("starting a tool with nested lock toggle in tool settings", async () => {
-    const frontstageDef = FrontstageManager.findFrontstageDef("ToolUiProvider-TestFrontstage");
+    const frontstageDef = await FrontstageManager.getFrontstageDef("ToolUiProvider-TestFrontstage");
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {

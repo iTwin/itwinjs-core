@@ -169,17 +169,6 @@ export class ConfigurableUiManager {
     FrontstageManager.addFrontstageProvider(frontstageProvider);
   }
 
-  /** Finds a FrontstageDef, given its id.
-   * @param id  the id of the FrontstageDef to find
-   * @returns the FrontstageDef with the given id, or undefined if not found
-   */
-  public static findFrontstageDef(id?: string): FrontstageDef | undefined {
-    const frontstageDef = FrontstageManager.findFrontstageDef(id);
-    if (frontstageDef && frontstageDef instanceof FrontstageDef)
-      return frontstageDef;
-    return undefined;
-  }
-
   /** Loads one or more ContentGroups into the [[ContentGroupManager]].
    * @param groupPropsList  the list of ContentGroups to load
    */

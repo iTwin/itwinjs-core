@@ -376,10 +376,12 @@ export class FrontstageManager {
   }
 
   /** Find a loaded Frontstage with a given id. If the id is not provided, the active Frontstage is returned.
+   * If the FrontstageDef has not been cached by FrontstageDef then it will not be found. See async function
+   * `getFrontstageDef` to get a FrontstageDef.
    * @param id  Id of the Frontstage to find
    * @returns  FrontstageDef with a given id if found, or undefined if not found.
    */
-  public static findFrontstageDef(id?: string): FrontstageDef | undefined {
+  private static findFrontstageDef(id?: string): FrontstageDef | undefined {
     if (!id)
       return FrontstageManager.activeFrontstageDef;
     const frontstageDef = FrontstageManager._frontstageDefs.get(id);
@@ -392,7 +394,9 @@ export class FrontstageManager {
     return id ? FrontstageManager._frontstageProviders.get(id) : undefined;
   }
 
-  /** Find a loaded Frontstage with a given id. If the id is not provided, the active Frontstage is returned.
+  /** Find a loaded Frontstage with a given id. If the id is not provided, the active Frontstage is returned. If
+   * no cached FrontstageDef is found but a FrontstageProvider is registered a FronstageDef will be created, cached, and
+   * returned.
    * @param id  Id of the Frontstage to find
    * @returns  FrontstageDef with a given id if found, or undefined if not found.
    */
