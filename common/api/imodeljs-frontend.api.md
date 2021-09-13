@@ -5085,7 +5085,7 @@ export interface LookAtArgs {
     readonly eyePoint: XYAndZ;
     readonly frontDistance?: number;
     readonly newExtents?: XAndY;
-    readonly opts?: ViewChangeOptions;
+    readonly opts?: OnViewExtentsError;
     readonly upVector: Vector3d;
 }
 
@@ -6841,6 +6841,11 @@ export class OnScreenTarget extends Target {
     // (undocumented)
     updateViewRect(): boolean;
     }
+
+// @public
+export interface OnViewExtentsError {
+    onExtentsError?: (status: ViewStatus) => ViewStatus;
+}
 
 // @beta
 export function openImageDataUrlInNewWindow(url: string, title?: string): void;
@@ -11206,7 +11211,6 @@ export interface ViewChangeOptions extends ViewAnimationOptions {
     globalAlignment?: GlobalAlignmentOptions;
     marginPercent?: MarginPercent;
     noSaveInUndo?: boolean;
-    onExtentsError?: (status: ViewStatus) => ViewStatus;
 }
 
 // @public
@@ -12429,7 +12433,7 @@ export abstract class Viewport implements IDisposable {
     worldToView4dArray(worldPts: Point3d[], viewPts: Point4d[]): void;
     worldToViewArray(pts: Point3d[]): void;
     get worldToViewMap(): Map4d;
-    zoom(newCenter: Point3d | undefined, factor: number, options?: ViewChangeOptions): ViewStatus;
+    zoom(newCenter: Point3d | undefined, factor: number, options?: ViewChangeOptions & OnViewExtentsError): ViewStatus;
     zoomToElementProps(elementProps: ElementProps[], options?: ViewChangeOptions & ZoomToOptions): void;
     zoomToElements(ids: Id64Arg, options?: ViewChangeOptions & ZoomToOptions): Promise<void>;
     zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions & ZoomToOptions): void;
@@ -12586,7 +12590,7 @@ export abstract class ViewState extends ElementState {
     protected constructor(props: ViewDefinitionProps, iModel: IModelConnection, categoryOrClone: CategorySelectorState, displayStyle: DisplayStyleState);
     adjustAspectRatio(aspect: number): void;
     // @internal (undocumented)
-    adjustViewDelta(delta: Vector3d, origin: XYZ, rot: Matrix3d, aspect?: number, opts?: ViewChangeOptions): ViewStatus;
+    adjustViewDelta(delta: Vector3d, origin: XYZ, rot: Matrix3d, aspect?: number, opts?: OnViewExtentsError): ViewStatus;
     abstract allow3dManipulations(): boolean;
     get analysisStyle(): AnalysisStyle | undefined;
     // @internal (undocumented)
@@ -12689,7 +12693,7 @@ export abstract class ViewState extends ElementState {
     // @internal (undocumented)
     isSubCategoryVisible(id: Id64String): boolean;
     load(): Promise<void>;
-    lookAtViewAlignedVolume(volume: Range3d, aspect?: number, options?: ViewChangeOptions): void;
+    lookAtViewAlignedVolume(volume: Range3d, aspect?: number, options?: ViewChangeOptions & OnViewExtentsError): void;
     lookAtVolume(volume: LowAndHighXYZ | LowAndHighXY, aspect?: number, options?: ViewChangeOptions): void;
     // @internal
     get maxGlobalScopeFactor(): number;
@@ -12726,7 +12730,7 @@ export abstract class ViewState extends ElementState {
     setRotationAboutPoint(rotation: Matrix3d, point?: Point3d): void;
     setStandardGlobalRotation(id: StandardViewId): void;
     setStandardRotation(id: StandardViewId): void;
-    setupFromFrustum(inFrustum: Frustum, opts?: ViewChangeOptions): ViewStatus;
+    setupFromFrustum(inFrustum: Frustum, opts?: ViewChangeOptions & OnViewExtentsError): ViewStatus;
     setViewClip(clip?: ClipVector): void;
     toJSON(): ViewDefinitionProps;
     toProps(): ViewStateProps;
