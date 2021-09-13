@@ -9,7 +9,7 @@ import {
   BriefcaseIdValue,
   Code, ColorDef, ElementAspectProps, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance,
 } from "@bentley/imodeljs-common";
-import { BackendRequestContext, ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../../imodeljs-backend";
+import { ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../../imodeljs-backend";
 import { ElementRefersToElements } from "../../Relationship";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -461,7 +461,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     IModelJsFs.writeFileSync(testSchemaPath, testSchema);
 
     const imodel = SnapshotDb.createEmpty(iModelPath, { rootSubject: { name: "RoundTripTest" } });
-    await imodel.importSchemas(new BackendRequestContext(), [testSchemaPath]);
+    await imodel.importSchemas([testSchemaPath]);
     imodel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);

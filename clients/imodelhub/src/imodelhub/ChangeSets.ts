@@ -450,7 +450,7 @@ export class ChangeSetHandler {
   }
 
   /**
-   * Download the [[ChangeSet]]s that match provided query. If you want to [pull]($docs/learning/Glossary.md#pull) and [merge]($docs/learning/Glossary.md#merge) ChangeSets from iModelHub to your [[Briefcase]], you should use [BriefcaseDb.pullAndMergeChanges]($backend) instead.
+   * Download the [[ChangeSet]]s that match provided query. If you want to [pull]($docs/learning/Glossary.md#pull) and [merge]($docs/learning/Glossary.md#merge) ChangeSets from iModelHub to your [[Briefcase]], you should use [BriefcaseDb.pullChanges]($backend) instead.
    *
    * This method creates the directory containing the ChangeSets if necessary. If there is an error in downloading some of the ChangeSets, all partially downloaded ChangeSets are deleted from disk.
    * @param requestContext The client request context

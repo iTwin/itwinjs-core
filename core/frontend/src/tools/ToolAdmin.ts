@@ -1256,7 +1256,7 @@ export class ToolAdmin {
   }
 
   /** Process key down events while the Ctrl key is pressed */
-  public async onCtrlKeyPressed(keyEvent: KeyboardEvent): Promise<{handled: boolean, result: boolean}> {
+  public async onCtrlKeyPressed(keyEvent: KeyboardEvent): Promise<{ handled: boolean, result: boolean }> {
     let handled = false;
     let result = false;
 
@@ -1862,7 +1862,7 @@ export class WheelEventProcessor {
       const zDir = view.getZVector();
       target.setFrom(newEye.plusScaled(zDir, zDir.dotProduct(newEye.vectorTo(target))));
 
-      if (ViewStatus.Success === (status = view.lookAtUsingLensAngle(newEye, target, view.getYVector(), view.camera.lens, undefined, undefined, animationOptions)))
+      if (ViewStatus.Success === (status = view.lookAt({ eyePoint: newEye, targetPoint: target, upVector: view.getYVector(), lensAngle: view.camera.lens, opts: animationOptions })))
         vp.synchWithView(animationOptions);
     } else {
       const targetNpc = vp.worldToNpc(target);

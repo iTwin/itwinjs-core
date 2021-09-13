@@ -14,7 +14,7 @@ import {
   UpgradeOptions,
 } from "@bentley/imodeljs-common";
 import {
-  BackendRequestContext, ElementDrivesElementProps, IModelHost, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb,
+  ElementDrivesElementProps, IModelHost, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb,
 } from "../../imodeljs-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 
@@ -144,7 +144,6 @@ class TestHelper {
 
 describe("ElementDependencyGraph", () => {
   let testFileName: string;
-  const requestContext = new BackendRequestContext();
   let dbInfo: DbInfo;
 
   const performUpgrade = (pathname: string) => {
@@ -166,7 +165,7 @@ describe("ElementDependencyGraph", () => {
     IModelJsFs.copySync(seedFileName, testFileName);
     performUpgrade(testFileName);
     const imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
-    await imodel.importSchemas(requestContext, [schemaFileName]); // will throw an exception if import fails
+    await imodel.importSchemas([schemaFileName]); // will throw an exception if import fails
     const physicalModelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, "EDGTestModel");
     const codeSpecId = imodel.codeSpecs.insert(CodeSpec.create(imodel, "EDGTestCodeSpec", CodeScopeSpec.Type.Model));
     const spatialCategoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "EDGTestSpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));

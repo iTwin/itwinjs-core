@@ -53,6 +53,7 @@ public;BRepPrimitive
 alpha;BRepRoundProps
 alpha;BRepThickenProps
 public;BriefcaseDownloader
+public;BriefcaseId = number
 public;BriefcaseIdValue
 public;BriefcaseProps
 public;calculateSolarAngles(date: Date, location: Cartographic):
@@ -687,6 +688,8 @@ public;ViewStateProps
 internal;WEB_RPC_CONSTANTS:
 public;class WebAppRpcProtocol 
 public;WebAppRpcRequest 
+public;WhiteOnWhiteReversalProps
+public;WhiteOnWhiteReversalSettings
 internal;class WipRpcInterface 
 public;XyzRotation 
 public;XyzRotationProps

@@ -24,25 +24,15 @@ export interface SelectClassInfo {
   /** Is the class handled polymorphically */
   isSelectPolymorphic: boolean;
 
-  /**
-   * Relationship path to the [Primary class]($docs/learning/presentation/Content/Terminology#primary-class).
-   * @deprecated Use [[pathFromInputToSelectClass]]
-   */
-  pathToPrimaryClass: RelationshipPath;
   /** Relationship path from input class to the select class. */
   pathFromInputToSelectClass?: RelationshipPath;
 
   /** Relationship paths to [Related property]($docs/learning/presentation/Content/Terminology#related-properties) classes */
-  relatedPropertyPaths: RelationshipPath[];
+  relatedPropertyPaths?: RelationshipPath[];
 
   /** Relationship paths to navigation property classes */
-  navigationPropertyClasses: RelatedClassInfo[];
+  navigationPropertyClasses?: RelatedClassInfo[];
 
-  /**
-   * Relationship paths to [Related instance]($docs/learning/presentation/Content/Terminology#related-instance) classes.
-   * @deprecated Use [[relatedInstancePaths]]
-   */
-  relatedInstanceClasses: RelatedClassInfo[];
   /** Relationship paths to [related instance]($docs/learning/presentation/Content/Terminology#related-instance) classes. */
   relatedInstancePaths?: RelationshipPath[];
 }
@@ -54,13 +44,9 @@ export interface SelectClassInfo {
 export interface SelectClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
   selectClassInfo: TClassInfoJSON;
   isSelectPolymorphic: boolean;
-  /** @deprecated Use [[pathFromInputToSelectClass]] */
-  pathToPrimaryClass: RelationshipPathJSON<TClassInfoJSON>;
   pathFromInputToSelectClass?: RelationshipPathJSON<TClassInfoJSON>;
-  relatedPropertyPaths: RelationshipPathJSON<TClassInfoJSON>[];
-  navigationPropertyClasses: RelatedClassInfoJSON<TClassInfoJSON>[];
-  /** @deprecated Use [[relatedInstancePaths]] */
-  relatedInstanceClasses: RelatedClassInfoJSON<TClassInfoJSON>[];
+  relatedPropertyPaths?: RelationshipPathJSON<TClassInfoJSON>[];
+  navigationPropertyClasses?: RelatedClassInfoJSON<TClassInfoJSON>[];
   relatedInstancePaths?: RelationshipPathJSON<TClassInfoJSON>[];
 }
 
@@ -71,13 +57,9 @@ export namespace SelectClassInfo {
     return {
       selectClassInfo: ClassInfo.fromJSON(json.selectClassInfo),
       isSelectPolymorphic: json.isSelectPolymorphic,
-      // eslint-disable-next-line deprecation/deprecation
-      pathToPrimaryClass: json.pathToPrimaryClass.map(RelatedClassInfo.fromJSON),
       ...(json.pathFromInputToSelectClass ? { pathFromInputToSelectClass: json.pathFromInputToSelectClass.map(RelatedClassInfo.fromJSON) } : undefined),
-      relatedPropertyPaths: json.relatedPropertyPaths.map((rp) => rp.map(RelatedClassInfo.fromJSON)),
-      navigationPropertyClasses: json.navigationPropertyClasses.map(RelatedClassInfo.fromJSON),
-      // eslint-disable-next-line deprecation/deprecation
-      relatedInstanceClasses: json.relatedInstanceClasses.map(RelatedClassInfo.fromJSON),
+      ...(json.relatedPropertyPaths ? { relatedPropertyPaths: json.relatedPropertyPaths.map((rp) => rp.map(RelatedClassInfo.fromJSON)) } : undefined),
+      ...(json.navigationPropertyClasses ? { navigationPropertyClasses: json.navigationPropertyClasses.map(RelatedClassInfo.fromJSON) } : undefined),
       ...(json.relatedInstancePaths ? { relatedInstancePaths: json.relatedInstancePaths.map((rip) => rip.map(RelatedClassInfo.fromJSON)) } : undefined),
     };
   }
@@ -87,14 +69,10 @@ export namespace SelectClassInfo {
     return {
       selectClassInfo: { id: json.selectClassInfo, ...classesMap[json.selectClassInfo] },
       isSelectPolymorphic: json.isSelectPolymorphic,
-      navigationPropertyClasses: json.navigationPropertyClasses.map((item) => RelatedClassInfo.fromCompressedJSON(item, classesMap)),
-      // eslint-disable-next-line deprecation/deprecation
-      relatedInstanceClasses: json.relatedInstanceClasses.map((item) => RelatedClassInfo.fromCompressedJSON(item, classesMap)),
+      ...(json.navigationPropertyClasses ? { navigationPropertyClasses: json.navigationPropertyClasses.map((item) => RelatedClassInfo.fromCompressedJSON(item, classesMap)) } : undefined),
       ...(json.relatedInstancePaths ? { relatedInstancePaths: json.relatedInstancePaths.map((rip) => rip.map((item) => RelatedClassInfo.fromCompressedJSON(item, classesMap))) } : undefined),
-      // eslint-disable-next-line deprecation/deprecation
-      pathToPrimaryClass: json.pathToPrimaryClass.map((item) => RelatedClassInfo.fromCompressedJSON(item, classesMap)),
       ...(json.pathFromInputToSelectClass ? { pathFromInputToSelectClass: json.pathFromInputToSelectClass.map((item) => RelatedClassInfo.fromCompressedJSON(item, classesMap)) } : undefined),
-      relatedPropertyPaths: json.relatedPropertyPaths.map((path) => path.map((item) => RelatedClassInfo.fromCompressedJSON(item, classesMap))),
+      ...(json.relatedPropertyPaths ? { relatedPropertyPaths: json.relatedPropertyPaths.map((path) => path.map((item) => RelatedClassInfo.fromCompressedJSON(item, classesMap))) } : undefined),
     };
   }
 
@@ -106,14 +84,10 @@ export namespace SelectClassInfo {
     return {
       selectClassInfo: id,
       isSelectPolymorphic: selectClass.isSelectPolymorphic,
-      // eslint-disable-next-line deprecation/deprecation
-      relatedInstanceClasses: selectClass.relatedInstanceClasses.map((instanceClass) => RelatedClassInfo.toCompressedJSON(instanceClass, classesMap)),
       ...(selectClass.relatedInstancePaths ? { relatedInstancePaths: selectClass.relatedInstancePaths.map((rip) => rip.map((item) => RelatedClassInfo.toCompressedJSON(item, classesMap))) } : undefined),
-      navigationPropertyClasses: selectClass.navigationPropertyClasses.map((propertyClass) => RelatedClassInfo.toCompressedJSON(propertyClass, classesMap)),
-      // eslint-disable-next-line deprecation/deprecation
-      pathToPrimaryClass: selectClass.pathToPrimaryClass.map((relatedClass) => RelatedClassInfo.toCompressedJSON(relatedClass, classesMap)),
+      ...(selectClass.navigationPropertyClasses ? { navigationPropertyClasses: selectClass.navigationPropertyClasses.map((propertyClass) => RelatedClassInfo.toCompressedJSON(propertyClass, classesMap)) } : undefined),
       ...(selectClass.pathFromInputToSelectClass ? { pathFromInputToSelectClass: selectClass.pathFromInputToSelectClass.map((item) => RelatedClassInfo.toCompressedJSON(item, classesMap)) } : undefined),
-      relatedPropertyPaths: selectClass.relatedPropertyPaths.map((path) => path.map((relatedClass) => RelatedClassInfo.toCompressedJSON(relatedClass, classesMap))),
+      ...(selectClass.relatedPropertyPaths ? { relatedPropertyPaths: selectClass.relatedPropertyPaths.map((path) => path.map((relatedClass) => RelatedClassInfo.toCompressedJSON(relatedClass, classesMap))) } : undefined),
     };
   }
 
@@ -188,34 +162,21 @@ export interface SelectionInfo {
  * @public
  */
 export interface DescriptorJSON {
+  classesMap: { [id: string]: CompressedClassInfoJSON };
   connectionId: string;
   inputKeysHash: string;
   contentOptions: any;
   selectionInfo?: SelectionInfo;
   displayType: string;
-  selectClasses: SelectClassInfoJSON[];
-  categories?: CategoryDescriptionJSON[]; // TODO: make required in 3.0
-  fields: FieldJSON[];
+  selectClasses: SelectClassInfoJSON<Id64String>[];
+  categories: CategoryDescriptionJSON[];
+  fields: FieldJSON<Id64String>[];
   sortingFieldName?: string;
   sortDirection?: SortDirection;
   contentFlags: number;
   filterExpression?: string;
 }
 
-/**
- * Serialized [[Descriptor]] JSON representation.
- * @public
- */
-export type CompressedDescriptorJSON = Omit<DescriptorJSON, "selectClasses" | "fields" | "categories"> & {
-  selectClasses: SelectClassInfoJSON<string>[];
-  categories: CategoryDescriptionJSON[];
-  classesMap: { [id: string]: CompressedClassInfoJSON };
-  fields: FieldJSON<string>[];
-};
-
-function isCompressedDescriptorJSON(descriptorJSON: DescriptorJSON | CompressedDescriptorJSON): descriptorJSON is CompressedDescriptorJSON {
-  return (descriptorJSON as CompressedDescriptorJSON).classesMap !== undefined;
-}
 /**
  * Descriptor overrides that can be used to customize content
  * @public
@@ -230,15 +191,7 @@ export interface DescriptorOverrides {
   /** Content flags used for content customization. See [[ContentFlags]] */
   contentFlags?: number;
 
-  /**
-   * Names of fields which should be excluded from content
-   * @deprecated Use [[fieldsSelector]]
-   */
-  hiddenFieldNames?: string[];
-  /**
-   * Fields selector that allows excluding or including only specified fields
-   * @public
-   */
+  /** Fields selector that allows excluding or including only specified fields. */
   fieldsSelector?: {
     /** Should the specified fields be included or excluded */
     type: "include" | "exclude";
@@ -246,20 +199,7 @@ export interface DescriptorOverrides {
     fields: FieldDescriptor[];
   };
 
-  /**
-   * Name of the sorting field
-   * @deprecated Use [[sorting]]
-   */
-  sortingFieldName?: string;
-  /**
-   * Sort direction. Defaults to [[SortDirection.Ascending]]
-   * @deprecated Use [[sorting]]
-   */
-  sortDirection?: SortDirection;
-  /**
-   * Specification for sorting data
-   * @public
-   */
+  /** Specification for sorting data. */
   sorting?: {
     /** Identifier of the field to use for sorting */
     field: FieldDescriptor;
@@ -267,7 +207,7 @@ export interface DescriptorOverrides {
     direction: SortDirection;
   };
 
-  /** [ECExpression]($docs/learning/presentation/ECExpressions.md) for filtering content */
+  /** [ECExpression]($docs/learning/presentation/ECExpressions.md) for filtering content. */
   filterExpression?: string;
 }
 
@@ -276,6 +216,10 @@ export interface DescriptorOverrides {
  * @public
  */
 export interface DescriptorSource {
+  /** Id of the connection used to create the descriptor */
+  readonly connectionId?: string;
+  /** Hash of the input keys used to create the descriptor */
+  readonly inputKeysHash?: string;
   /** Selection info used to create the descriptor */
   readonly selectionInfo?: SelectionInfo;
   /** Display type used to create the descriptor */
@@ -283,7 +227,7 @@ export interface DescriptorSource {
   /** A list of classes that will be selected from when creating content with this descriptor */
   readonly selectClasses: SelectClassInfo[];
   /** A list of content field categories used in this descriptor */
-  readonly categories?: CategoryDescription[]; // TODO: make required in 3.0
+  readonly categories: CategoryDescription[];
   /** A list of fields contained in the descriptor */
   readonly fields: Field[];
   /** [[ContentFlags]] used to create the descriptor */
@@ -304,23 +248,23 @@ export interface DescriptorSource {
  */
 export class Descriptor implements DescriptorSource {
   /** Id of the connection used to create the descriptor */
-  public readonly connectionId!: string;
+  public readonly connectionId?: string;
   /** Hash of the input keys used to create the descriptor */
-  public readonly inputKeysHash!: string;
+  public readonly inputKeysHash?: string;
   /** Extended options used to create the descriptor */
   public readonly contentOptions: any;
   /** Selection info used to create the descriptor */
   public readonly selectionInfo?: SelectionInfo;
   /** Display type used to create the descriptor */
-  public readonly displayType!: string;
+  public readonly displayType: string;
   /** A list of classes that will be selected when creating content with this descriptor */
-  public readonly selectClasses!: SelectClassInfo[];
+  public readonly selectClasses: SelectClassInfo[];
   /** A list of content field categories used in this descriptor */
-  public readonly categories!: CategoryDescription[];
+  public readonly categories: CategoryDescription[];
   /** A list of fields contained in the descriptor */
-  public readonly fields!: Field[];
+  public readonly fields: Field[];
   /** [[ContentFlags]] used to create the descriptor */
-  public readonly contentFlags!: number;
+  public readonly contentFlags: number;
   /** Field used to sort the content */
   public sortingField?: Field;
   /** Sorting direction */
@@ -328,27 +272,23 @@ export class Descriptor implements DescriptorSource {
   /** Content filtering [ECExpression]($docs/learning/presentation/ECExpressions) */
   public filterExpression?: string;
 
-  /** Construct a new Descriptor using a `DescriptorSource` */
+  /** Construct a new Descriptor using a [[DescriptorSource]] */
   public constructor(source: DescriptorSource) {
-    const fields = [...source.fields];
-    Object.assign(this, source, {
-      selectClasses: [...source.selectClasses],
-      categories: [...(source.categories ?? Descriptor.getCategoriesFromFields(fields))],
-      fields,
-    });
+    this.connectionId = source.connectionId;
+    this.inputKeysHash = source.inputKeysHash;
+    this.selectionInfo = source.selectionInfo;
+    this.displayType = source.displayType;
+    this.contentFlags = source.contentFlags;
+    this.selectClasses = [...source.selectClasses];
+    this.categories = [...source.categories];
+    this.fields = [...source.fields];
+    this.sortingField = source.sortingField;
+    this.sortDirection = source.sortDirection;
+    this.filterExpression = source.filterExpression;
   }
 
-  /** Serialize this object to JSON */
+  /** Serialize [[Descriptor]] to JSON */
   public toJSON(): DescriptorJSON {
-    return {
-      ...this,
-      categories: this.categories.map(CategoryDescription.toJSON),
-      fields: this.fields.map((field: Field) => field.toJSON()),
-    };
-  }
-
-  /** Serialize [[Descriptor]] to compressed JSON */
-  public toCompressedJSON(): CompressedDescriptorJSON {
     const classesMap: { [id: string]: CompressedClassInfoJSON } = {};
     const selectClasses: SelectClassInfoJSON<string>[] = this.selectClasses.map((selectClass) => SelectClassInfo.toCompressedJSON(selectClass, classesMap));
     const fields: FieldJSON<string>[] = this.fields.map((field) => field.toCompressedJSON(classesMap));
@@ -372,42 +312,10 @@ export class Descriptor implements DescriptorSource {
   }
 
   /** Deserialize [[Descriptor]] from JSON */
-  public static fromJSON(json: DescriptorJSON | CompressedDescriptorJSON | string | undefined): Descriptor | undefined {
+  public static fromJSON(json: DescriptorJSON | undefined): Descriptor | undefined {
     if (!json)
       return undefined;
-    if (typeof json === "string")
-      return JSON.parse(json, Descriptor.reviver);
-    if (isCompressedDescriptorJSON(json))
-      return Descriptor.fromCompressedJSON(json);
-    return json.categories
-      ? this.fromJSONWithCategories(json as DescriptorJSON & { categories: CategoryDescriptionJSON[] })
-      : this.fromJSONWithoutCategories(json as DescriptorJSON & { categories: undefined });
-  }
 
-  private static fromJSONWithCategories(json: DescriptorJSON & { categories: CategoryDescriptionJSON[] }): Descriptor {
-    const categories = CategoryDescription.listFromJSON(json.categories);
-    const fields = this.getFieldsFromJSON(json.fields, (fieldJson) => Field.fromJSON(fieldJson, categories));
-    return new Descriptor({
-      ...json,
-      selectClasses: json.selectClasses.map(SelectClassInfo.fromJSON),
-      categories,
-      fields,
-      sortingField: getFieldByName(fields, json.sortingFieldName, true),
-    });
-  }
-
-  private static fromJSONWithoutCategories(json: DescriptorJSON & { categories: undefined }): Descriptor {
-    const fields = this.getFieldsFromJSON(json.fields, /* eslint-disable-line deprecation/deprecation */ Field.fromJSON);
-    return new Descriptor({
-      ...json,
-      selectClasses: json.selectClasses.map(SelectClassInfo.fromJSON),
-      categories: this.getCategoriesFromFields(fields),
-      fields,
-      sortingField: getFieldByName(fields, json.sortingFieldName, true),
-    });
-  }
-
-  private static fromCompressedJSON(json: CompressedDescriptorJSON): Descriptor {
     const { classesMap, ...leftOverJson } = json;
     const categories = CategoryDescription.listFromJSON(json.categories);
     const selectClasses = SelectClassInfo.listFromCompressedJSON(json.selectClasses, classesMap);
@@ -428,36 +336,6 @@ export class Descriptor implements DescriptorSource {
         field.rebuildParentship();
       return field;
     }).filter((field): field is Field => !!field);
-  }
-
-  private static getCategoriesFromFields(fields: Field[]): CategoryDescription[] {
-    const categories = new Map<string, CategoryDescription>();
-    const forEachField = (fieldsInternal: Field[], cb: (field: Field) => void) => {
-      fieldsInternal.forEach((field) => {
-        cb(field);
-        if (field.isNestedContentField())
-          forEachField(field.nestedFields, cb);
-      });
-    };
-    forEachField(fields, (field: Field) => {
-      const name = field.category.name;
-      const existingCategory = categories.get(name);
-      if (existingCategory)
-        field.category = existingCategory;
-      else
-        categories.set(name, field.category);
-    });
-    return [...categories.values()];
-  }
-
-  /**
-   * Reviver function that can be used as a second argument for
-   * `JSON.parse` method when parsing Content objects.
-   *
-   * @internal
-   */
-  public static reviver(key: string, value: any): any {
-    return key === "" ? Descriptor.fromJSON(value) : value;
   }
 
   /**

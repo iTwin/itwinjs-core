@@ -315,6 +315,10 @@ public;LocateResponse
 internal;LockedStates
 internal;loggerCategory = "imodeljs-frontend.Extension"
 public;LookAndMoveTool 
+beta;LookAtArgs
+beta;LookAtOrthoArgs 
+beta;LookAtPerspectiveArgs 
+beta;LookAtUsingLensAngle 
 public;LookViewTool 
 internal;LRUTileList
 internal;LRUTileListNode
