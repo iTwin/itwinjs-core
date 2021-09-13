@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-frontend",
+      "comment": "tool.run and tool.parseAndRun are now async methods",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend"
+}
