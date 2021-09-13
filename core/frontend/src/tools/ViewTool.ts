@@ -3159,7 +3159,7 @@ export class FitViewTool extends ViewTool {
       this.provideToolAssistance();
 
     if (this.viewport)
-      this.doFit(this.viewport, this.oneShot, this.doAnimate, this.isolatedOnly); // eslint-disable-line @typescript-eslint/no-floating-promises
+      await this.doFit(this.viewport, this.oneShot, this.doAnimate, this.isolatedOnly);
   }
 
   public async doFit(viewport: ScreenViewport, oneShot: boolean, doAnimate = true, isolatedOnly = true): Promise<boolean> {
