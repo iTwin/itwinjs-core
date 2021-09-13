@@ -41,7 +41,7 @@ class HyperModelingTool extends Tool {
   public override async run(enable?: boolean, vp?: ScreenViewport): Promise<boolean> {
     vp = vp ?? IModelApp.viewManager.selectedView;
     if (vp)
-      HyperModeling.startOrStop(vp, enable); // eslint-disable-line @typescript-eslint/no-floating-promises
+      await HyperModeling.startOrStop(vp, enable);
 
     return true;
   }
