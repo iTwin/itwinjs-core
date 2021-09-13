@@ -16,8 +16,6 @@ export class AndroidHost extends MobileHost {
    */
   public static override async startup(opt?: AndroidHostOpts): Promise<void> {
     const device = opt?.mobileHost?.device ?? new (MobileDevice as any)();
-    // The abstract functions of MobileDevice are implemented at runtime in native code.
-    (global as any).__iTwinJsNativeBridge = device; // for native side
     const socket = opt?.ipcHost?.socket ?? new IpcWebSocketBackend();
     return MobileHost.startup({ ...opt, mobileHost: { ...opt?.mobileHost, device }, ipcHost: { ...opt?.ipcHost, socket } });
   }
