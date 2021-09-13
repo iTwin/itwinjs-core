@@ -125,8 +125,11 @@ describe("ConnectSettingsClient-User (#integration)", () => {
   });
 
   // Project/Application/User -specific  Setting
+  // SWB What does project mean here?
   it("should save and retrieve a Project User setting for this Application (#integration)", async () => {
+    // SWB
     const appProjectUserSetting = { appString: "application/Project User String", appNumber: 213, appArray: [10, 20, 30, 40, 50] };
+    // SWB
     const settingName = `AppProjectUser${settingGuids[0]}`;
 
     // start by deleting the setting we're going to create.
@@ -146,6 +149,7 @@ describe("ConnectSettingsClient-User (#integration)", () => {
     chai.assert(arraysEqual(getResult.setting.appArray, appProjectUserSetting.appArray), `Retrieved array contents are not equal for ${settingName}.`);
 
     // change the value of an existing setting
+    // SWB
     appProjectUserSetting.appString = "new Application Project User String";
     appProjectUserSetting.appNumber = 8;
     appProjectUserSetting.appArray.splice(2, 1);
@@ -203,8 +207,11 @@ describe("ConnectSettingsClient-User (#integration)", () => {
   });
 
   // Project/User -specific  Setting
+  // SWB What does project mean here?
   it("should save and retrieve a Project User setting (Application independent) (#integration)", async () => {
+    // SWB
     const projectUserSetting = { projString: "Project User String", projNumber: 213, projArray: [1, 3, 5, 7, 11, 13, 17] };
+    // SWB
     const settingName = `ProjectUser${settingGuids[0]}`;
 
     // start by deleting the setting we're going to create.
@@ -224,6 +231,7 @@ describe("ConnectSettingsClient-User (#integration)", () => {
     chai.assert(arraysEqual(getResult.setting.projArray, projectUserSetting.projArray), "retrieved array contents correct");
 
     // change the value of an existing setting
+    // SWB
     projectUserSetting.projString = "new Project User String";
     projectUserSetting.projNumber = 8;
     projectUserSetting.projArray.splice(2, 2);
@@ -358,8 +366,11 @@ describe("ConnectSettingsClient-Administrator (#integration)", () => {
   });
 
   // Application/Project Setting
+  // SWB What does project mean here?
   it("should save and retrieve a Project/Application Setting (#integration)", async () => {
+    // SWB
     const projectAppSetting = { projAppString: "project Application String", projAppNumber: 592, projAppArray: [2101, 2102, 2103, 2104] };
+    // SWB
     const settingName = `AppProjectSetting${settingGuids[0]}`;
 
     // start by deleting the setting we're going to create.
@@ -379,6 +390,7 @@ describe("ConnectSettingsClient-Administrator (#integration)", () => {
     chai.assert(arraysEqual(getResult.setting.projAppArray, projectAppSetting.projAppArray), "retrieved array contents correct");
 
     // change the value of an existing setting
+    // SWB
     projectAppSetting.projAppString = "new Project Application String";
     projectAppSetting.projAppNumber = 1578;
     projectAppSetting.projAppArray.splice(2, 1);
@@ -436,29 +448,35 @@ describe("ConnectSettingsClient-Administrator (#integration)", () => {
   });
 
   // Project Setting (application independent)
+  // SWB What does project mean here?
   it("should save and retrieve a Project Setting (Application independent) (#integration)", async () => {
+    // SWB
     const projectSettingTemplate = { projNumber: 592, projArray: [8765, 4321, 9876, 5432, 1987] };
-
+    // SWB
     const projectSettings: any[] = [];
     for (let iSetting = 0; iSetting < 5; iSetting++) {
       const tmpArray = projectSettingTemplate.projArray.map((value) => value * Math.pow(10, iSetting - 1));
+      // SWB
       projectSettings.push({ projString: `Project String ${iSetting}`, projNumber: projectSettingTemplate.projNumber + 2 * iSetting, projArray: tmpArray });
     }
 
     // start by deleting the settings we're going to create.
     for (let iSetting = 0; iSetting < 5; iSetting++) {
+      // SWB
       const deleteResult: SettingsResult = await settingsClient.deleteSetting(requestContext, "TestSettings", `ProjectSettings${settingGuids[iSetting]}`, false, projectId);
       chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), "Delete should work or give SettingNotFound");
     }
 
     // save new settings (deleted above, so we know they are new)
     for (let iSetting = 0; iSetting < 5; iSetting++) {
+      // SWB
       const saveResult: SettingsResult = await settingsClient.saveSetting(requestContext, projectSettings[iSetting], "TestSettings", `ProjectSettings${settingGuids[iSetting]}`, false, projectId);
       chai.assert(SettingsStatus.Success === saveResult.status, "Save should work");
     }
 
     // read back the result.
     for (let iSetting = 0; iSetting < 5; iSetting++) {
+      // SWB
       const getResult: SettingsResult = await settingsClient.getSetting(requestContext, "TestSettings", `ProjectSettings${settingGuids[iSetting]}`, false, projectId);
       chai.assert(SettingsStatus.Success === getResult.status, "Retrieval should work");
       chai.assert(getResult.setting, "Setting should be returned");
@@ -468,11 +486,14 @@ describe("ConnectSettingsClient-Administrator (#integration)", () => {
     }
 
     // change the value of an existing setting
+    // SWB
     projectSettings[1].projString = "new Project String";
     projectSettings[1].projNumber = 1578;
     projectSettings[1].projArray.splice(2, 1);
+    // SWB
     const saveResult2: SettingsResult = await settingsClient.saveSetting(requestContext, projectSettings[1], "TestSettings", `ProjectSettings${settingGuids[1]}`, false, projectId);
     chai.assert(SettingsStatus.Success === saveResult2.status, "Second save should work");
+    // SWB
     const getResult2: SettingsResult = await settingsClient.getSetting(requestContext, "TestSettings", `ProjectSettings${settingGuids[1]}`, false, projectId);
     chai.assert(SettingsStatus.Success === getResult2.status, "Retrieval should work");
     chai.assert(getResult2.setting, "Setting should be returned");
@@ -480,10 +501,12 @@ describe("ConnectSettingsClient-Administrator (#integration)", () => {
     chai.expect(getResult2.setting.projNumber).equals(projectSettings[1].projNumber);
     chai.assert(arraysEqual(getResult2.setting.projArray, projectSettings[1].projArray), "retrieved array contents correct");
 
+    // SWB
     // now try getting all the Project settings by namespace
     const filterResult: SettingsMapResult = await settingsClient.getSettingsByNamespace(requestContext, "TestSettings", false, projectId);
     chai.assert(SettingsStatus.Success === filterResult.status, "Return by namespace should work");
     for (let iSetting: number = 0; iSetting < 5; iSetting++) {
+      // SWB
       const settingName = `ProjectSettings${settingGuids[iSetting]}`;
       const setting: any | undefined = filterResult.settingsMap!.get(settingName);
       chai.assert(setting !== undefined, `Setting named '${settingName}' should be found in namespace 'TestSettings'`);
@@ -494,6 +517,7 @@ describe("ConnectSettingsClient-Administrator (#integration)", () => {
 
     // Clean up
     for (let iSetting = 0; iSetting < 5; iSetting++) {
+      // SWB
       const deleteResult: SettingsResult = await settingsClient.deleteSetting(requestContext, "TestSettings", `ProjectSettings${settingGuids[iSetting]}`, false, projectId);
       chai.assert((SettingsStatus.Success === deleteResult.status) || (SettingsStatus.SettingNotFound === deleteResult.status), "Delete should work or give SettingNotFound");
     }
@@ -558,8 +582,10 @@ describe("Reading non-user settings from ordinary user (#integration)", () => {
     // Setup settings if they do not already exist -- We do not delete these settings since they will be shared by multiple concurrent test runs.
     const adminContext = await TestConfig.getAuthorizedClientRequestContext(TestUsers.super);
     await settingsClient.saveSetting(adminContext, { appString: "new Application String" }, "TestSettings", "AppSetting", true);
+    // SWB
     await settingsClient.saveSetting(adminContext, { projAppString: "new Project Application String" }, "TestSettings", "AppProjectSetting", true, projectId);
     await settingsClient.saveSetting(adminContext, { iModelAppString: "new IModel Application String" }, "TestSettings", "AppIModelSettings", true, projectId, iModelId);
+    // SWB
     await settingsClient.saveSetting(adminContext, { projString: "new Project String" }, "TestSettings", "ProjectSettings", false, projectId);
     await settingsClient.saveSetting(adminContext, { iModelString: "new IModel String" }, "TestSettings", "IModelSettings", false, projectId, iModelId);
   });
@@ -573,11 +599,14 @@ describe("Reading non-user settings from ordinary user (#integration)", () => {
   });
 
   // Application/Project Setting
+  // SWB What does project mean here?
   it("should successfully retrieve a Project/Application Setting (#integration)", async () => {
     // read back the result.
+    // SWB
     const getResult: SettingsResult = await settingsClient.getSetting(requestContext, "TestSettings", "AppProjectSetting", true, projectId);
     chai.assert(SettingsStatus.Success === getResult.status, "Retrieval should work");
     chai.assert(getResult.setting, "Setting should be returned");
+    // SWB
     chai.expect(getResult.setting.projAppString).equals("new Project Application String");
   });
 
@@ -591,11 +620,14 @@ describe("Reading non-user settings from ordinary user (#integration)", () => {
   });
 
   // Project Setting (application independent)
+  // SWB What does project mean here?
   it("should successfully retrieve a Project Setting (Application independent)  (#integration)", async () => {
     // read back the result.
+    // SWB
     const getResult: SettingsResult = await settingsClient.getSetting(requestContext, "TestSettings", "ProjectSettings1", false, projectId);
     chai.assert(SettingsStatus.Success === getResult.status, "Retrieval should work");
     chai.assert(getResult.setting, "Setting should be returned");
+    // SWB
     chai.expect(getResult.setting.projString).equals("new Project String");
   });
 
@@ -629,8 +661,11 @@ describe("ConnectSettingsClient-Shared (#integration)", () => {
   // Note: There is no Application Shared Setting, so don't test that.
 
   // Project/Application/Shared -specific  Setting
+  // SWB What does project mean here?
   it("should save and retrieve a Project Shared setting for this Application (#integration)", async () => {
+    // SWB
     const appProjectSharedSetting = { appString: "application/Project Shared String", appNumber: 213, appArray: [10, 20, 30, 40, 50] };
+    // SWB
     const settingName = `AppProjectShared${settingGuids[0]}`;
 
     // start by deleting the setting we're going to create.
@@ -650,6 +685,7 @@ describe("ConnectSettingsClient-Shared (#integration)", () => {
     chai.assert(arraysEqual(getResult.setting.appArray, appProjectSharedSetting.appArray), "retrieved array contents correct");
 
     // change the value of an existing setting
+    // SWB
     appProjectSharedSetting.appString = "new Application Project Shared String";
     appProjectSharedSetting.appNumber = 8;
     appProjectSharedSetting.appArray.splice(2, 1);
@@ -707,8 +743,11 @@ describe("ConnectSettingsClient-Shared (#integration)", () => {
   });
 
   // Project/Shared -specific  Setting
+  // SWB What does project mean here?
   it("should save and retrieve a Project Shared setting (Application independent) (#integration)", async () => {
+    // SWB
     const projectSharedSetting = { projString: "Project Shared String", projNumber: 213, projArray: [1, 3, 5, 7, 11, 13, 17] };
+    // SWB
     const settingName = `ProjectShared${settingGuids[0]}`;
 
     // start by deleting the setting we're going to create.
@@ -728,6 +767,7 @@ describe("ConnectSettingsClient-Shared (#integration)", () => {
     chai.assert(arraysEqual(getResult.setting.projArray, projectSharedSetting.projArray), "retrieved array contents correct");
 
     // change the value of an existing setting
+    // SWB
     projectSharedSetting.projString = "new Project Shared String";
     projectSharedSetting.projNumber = 8;
     projectSharedSetting.projArray.splice(2, 2);

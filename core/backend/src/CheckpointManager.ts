@@ -29,6 +29,7 @@ const loggerCategory = BackendLoggerCategory.IModelDb;
 export interface CheckpointProps {
   readonly expectV2?: boolean;
 
+  // SWB
   /** Context (Project or Asset) that the iModel belongs to */
   // SWB
   readonly contextId: GuidString;
@@ -301,7 +302,7 @@ export class CheckpointManager {
     const dbContextGuid = Guid.normalize(nativeDb.queryProjectGuid());
     // SWB
     if (dbContextGuid !== Guid.normalize(checkpoint.contextId))
-    // SWB
+      // SWB
       throw new IModelError(IModelStatus.ValidationFailed, "ContextId was not properly set up in the checkpoint");
   }
 

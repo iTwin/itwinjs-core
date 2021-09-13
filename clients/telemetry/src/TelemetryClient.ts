@@ -23,6 +23,7 @@ export class TelemetryEvent {
      * This field is required when posting a telemetry event as feature usage to ULAS.
      */
     public readonly eventId?: GuidString,
+    // SWB What does project mean here?
     /** iModel project id/sub-context id */
     // SWB
     public readonly contextId?: GuidString,

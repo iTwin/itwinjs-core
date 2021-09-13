@@ -14,6 +14,7 @@ function isOfflineSet(): boolean {
 /** Basic configuration used by all tests
  */
 export class TestConfig {
+  // SWB
   /** Name of iTwins (Projects or Assets) used by most tests */
   // SWB
   public static readonly iTwinName: string = "iModelJsIntegrationTest";
@@ -33,7 +34,8 @@ export class TestConfig {
         searchString: name,
         propertyName: ITwinSearchableProperty.Name,
         exactMatch: true,
-      }});
+      }
+    });
 
     if (iTwinList.length === 0)
       throw new Error(`ITwin ${name} was not found for user.`);

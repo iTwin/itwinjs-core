@@ -33,6 +33,7 @@ function scaleSpatialRange(range: Range3d): Range3d {
   return result;
 }
 
+// SWB What does project mean here?
 // The tile tree range is equal to the scaled+skewed project extents translated to align with the origin of the model range.
 function almostEqualRange(a: Range3d, b: Range3d): boolean {
   return a.diagonal().isAlmostEqual(b.diagonal());
@@ -63,6 +64,7 @@ function insertPhysicalModel(db: IModelDb): Id64String {
   return modelId;
 }
 
+// SWB What does project mean here?
 function scaleProjectExtents(db: IModelDb, scale: number): Range3d {
   const range = db.projectExtents.clone();
   range.scaleAboutCenterInPlace(scale);
@@ -90,6 +92,7 @@ describe("tile tree", () => {
       rootSubject: { name: "TileTreeTest", description: "Test purgeTileTrees" },
       client: "TileTree",
       globalOrigin: { x: 0, y: 0 },
+      // SWB What does project mean here?
       projectExtents: defaultExtents,
       guid: Guid.createValue(),
     };
@@ -136,7 +139,9 @@ describe("tile tree", () => {
     db.nativeDb.purgeTileTrees(undefined);
   });
 
+  // SWB What does project mean here?
   it("should update after changing project extents and purging", async () => {
+    // SWB What does project mean here?
     // "_x-" holds the flags - 0 = don't use project extents as basis of tile tree range; 1 = use them.
     let treeId = `8_0-${modelId}`;
     const context = new BackendRequestContext();
@@ -161,6 +166,7 @@ describe("tile tree", () => {
     expect(tree.contentIdQualifier).not.to.be.undefined;
     let prevQualifier = tree.contentIdQualifier;
 
+    // SWB What does project mean here?
     // Change the project extents - nothing should change - we haven't yet purged our model's tile tree.
     let newExtents = scaleProjectExtents(db, 2.0);
 
@@ -239,6 +245,7 @@ describe("tile tree", () => {
     };
 
     const options = { ...defaultTileOptions };
+    // SWB What does project mean here?
     options.useProjectExtents = false;
 
     const context = new BackendRequestContext();
@@ -247,12 +254,14 @@ describe("tile tree", () => {
     let tree = await loadTree();
     expect(tree.contentIdQualifier).to.be.undefined;
 
+    // SWB What does project mean here?
     options.useProjectExtents = true;
     tree = await loadTree();
     const extentsChecksum = tree.contentIdQualifier!;
     expect(extentsChecksum).not.to.be.undefined;
     expect(extentsChecksum.length).least(1);
 
+    // SWB What does project mean here?
     options.useProjectExtents = false;
     treeId.animationId = renderTimelineId;
     tree = await loadTree();
@@ -260,6 +269,7 @@ describe("tile tree", () => {
     expect(scriptChecksum).not.to.be.undefined;
     expect(scriptChecksum.length).least(1);
 
+    // SWB What does project mean here?
     options.useProjectExtents = true;
     tree = await loadTree();
     expect(tree.contentIdQualifier).to.equal(`${scriptChecksum}${extentsChecksum}`);
@@ -273,6 +283,7 @@ describe("tile tree", () => {
     };
 
     const options = { ...defaultTileOptions };
+    // SWB What does project mean here?
     options.useProjectExtents = false;
 
     const context = new BackendRequestContext();

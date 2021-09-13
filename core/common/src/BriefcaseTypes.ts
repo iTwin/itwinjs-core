@@ -104,6 +104,7 @@ export interface LocalBriefcaseProps {
   /** Full path of local file. */
   fileName: string;
 
+  // SWB
   /** Context (Project or Asset) of the iModel. */
   // SWB
   contextId: GuidString;
@@ -127,6 +128,7 @@ export interface LocalBriefcaseProps {
  * @public
  */
 export interface RequestNewBriefcaseProps {
+  // SWB
   /** Context (Project or Asset) that the iModel belongs to. */
   // SWB
   contextId: GuidString;

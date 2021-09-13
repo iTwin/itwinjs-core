@@ -12,6 +12,7 @@ import {
 } from "@bentley/itwin-client";
 import { URL } from "url";
 
+// SWB What to do here, keep PW reference?
 /** Currenlty supported  ProjectWise ContextShare reality data types
  * @internal
  */
@@ -24,13 +25,16 @@ export enum RealityDataType {
 }
 
 /** RealityData
+// SWB What to do here, keep PW reference?
  * This class implements a Reality Data stored in ProjectWise Context Share (Reality Data Service)
  * Data is accessed directly through methods of the reality data instance.
  * Access to the data required a properly entitled token though the access to the blob is controlled through
  * an Azure blob URL, the token may be required to obtain this Azure blob URL or refresh it.
  * The Azure blob URL is considered valid for an hour and is refreshed after 50 minutes.
  * In addition to the reality data properties, and Azure blob URL and internal states, a reality data also contains
+// SWB
  * the identification of the iTwin project to identify the context(used for access permissions resolution) and
+// SWB What to do here, keep PW reference?
  * may contain a RealityDataClient to obtain the WSG client specialization to communicate with ProjectWise Context Share (to obtain the Azure blob URL).
  * @internal
  */
@@ -164,7 +168,9 @@ export class RealityData extends WsgInstance {
   // Link to client to fetch the blob url
   public client: undefined | RealityDataClient;
 
+  // SWB
   // project id used when using the client. If defined must contain the GUID of the iTwin
+  // SWB
   // project or "Server" to indicate access is performed out of context (for accessing PUBLIC or ENTERPRISE data).
   // If undefined when accessing reality data tiles then it will automatically be set to "Server"
   // SWB
@@ -319,6 +325,7 @@ export class FileAccessKey extends WsgInstance {
 }
 
 /** RealityDataRelationship
+  // SWB
  * This class is used to represent relationships with a Reality Data and iTwin Context (Project or Asset)
  * @internal
  */
@@ -347,6 +354,7 @@ export class RealityDataRelationship extends WsgInstance {
  * @Internal
  */
 export interface RealityDataRequestQueryOptions extends RequestQueryOptions {
+  // SWB
   /** Set to limit result to a single project  */
   // SWB
   project?: string;
@@ -377,8 +385,11 @@ export class DataLocation extends WsgInstance {
 
 /**
  * Client wrapper to Reality Data Service.
+// SWB What to do here, keep PW reference?
  * An instance of this class is used to extract reality data from the ProjectWise Context Share (Reality Data Service)
+  // SWB
  * Most important methods enable to obtain a specific reality data, fetch all reality data associated to a project and
+  // SWB
  * all reality data of a project within a provided spatial extent.
  * This class also implements extraction of the Azure blob address.
  * @internal
@@ -474,6 +485,7 @@ export class RealityDataClient extends WsgClient {
   }
 
   /**
+  // SWB
    * Gets all reality data associated to the project. Consider using getRealityDataInProjectOverlapping() if spatial extent is known.
    * @param requestContext The client request context.
    * @param projectId id of associated iTwin project
@@ -493,6 +505,7 @@ export class RealityDataClient extends WsgClient {
   }
 
   /**
+  // SWB
    * Gets all reality data that has a footprint defined that overlaps the given area and that are associated with the project. Reality Data returned must be accessible by user
    * as public, enterprise data, private or accessible through context RBAC rights attributed to user.
    * @param requestContext The client request context.
@@ -603,6 +616,7 @@ export class RealityDataClient extends WsgClient {
   }
 
   /**
+  // SWB
    * Gets all reality data relationships associated to the given reality id, not only the relationship for given project.
    * @param requestContext The client request context.
    * @param projectId id of associated iTwin project in which to make to call for permission reason
@@ -617,6 +631,7 @@ export class RealityDataClient extends WsgClient {
   }
 
   /**
+  // SWB
    * Gets all reality data relationships associated to the given reality id, not only the relationship for given project.
    * @param requestContext The client request context.
    * @param projectId id of associated iTwin project in which to make to call for permission reason
@@ -634,6 +649,7 @@ export class RealityDataClient extends WsgClient {
   }
 
   /**
+  // SWB
    * Gets all reality data relationships associated to the given reality id, not only the relationship for given project.
    * @param requestContext The client request context.
    * @param projectId id of associated iTwin project in which to make to call for permission reason
@@ -667,11 +683,13 @@ export class RealityDataClient extends WsgClient {
       return this.getInstances<FileAccessKey>(requestContext, FileAccessKey, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData/${path}/FileAccess.FileAccessKey?$filter=Permissions+eq+%27Read%27`);
   }
 
+  // SWB
   // ###TODO temporary means of extracting the tileId and projectId from the given url
   // This is the method that determines if the url refers to Reality Data stored on PW Context Share. If not then undefined is returned.
   /**
    * This is the method that determines if the url refers to Reality Data stored on PW Context Share. If not then undefined is returned.
    * @param url A fully formed URL to a reality data or a reality data folder or document of the form:
+  // SWB
    *              https://{Host}/{version}/Repositories/S3MXECPlugin--{ProjectId}/S3MX/RealityData/{RealityDataId}
    *              https://{Host}/{version}/Repositories/S3MXECPlugin--{ProjectId}/S3MX/Folder/{RealityDataId}~2F{Folder}
    *              https://{Host}/{version}/Repositories/S3MXECPlugin--{ProjectId}/S3MX/Document/{RealityDataId}~2F{Full Document Path and name}'

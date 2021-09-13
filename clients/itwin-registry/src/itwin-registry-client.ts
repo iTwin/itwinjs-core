@@ -5,7 +5,7 @@
 export * from "./ITwinRegistryClient";
 export * from "./ITwinAccessProps";
 /** @docs-package-description
- * The itwin-registry-client package provides a means of interfacing with services relating to projects and other contexts which surround iModels.
+ * The itwin-registry-client package provides a means of interfacing with services relating to projects, assets, and other contexts which surround iModels.
  */
 
 /**

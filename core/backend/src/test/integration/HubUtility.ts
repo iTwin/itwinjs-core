@@ -90,6 +90,7 @@ export class HubUtility {
   /**
    * Queries the iModel id by its name
    * @param requestContext The client request context
+  // SWB
    * @param projectId Id of the project
    * @param iModelName Name of the iModel
    * @throws If the iModel is not found, or if there is more than one iModel with the supplied name
@@ -618,7 +619,10 @@ export class HubUtility {
   }
 }
 
+  // SWB What does project mean here? Should this class be renamed?
 /** An implementation of IModelProjectAbstraction backed by an iTwin project */
+
+  // SWB
 class TestIModelHubProject {
   public get isIModelHub(): boolean { return true; }
   public terminate(): void { }
@@ -662,7 +666,9 @@ class TestIModelHubProject {
   }
 }
 
+// SWB
 let projectAbstraction: TestIModelHubProject;
+// SWB What does project mean here?
 export function getIModelProjectAbstraction(): TestIModelHubProject {
   if (projectAbstraction !== undefined)
     return projectAbstraction;

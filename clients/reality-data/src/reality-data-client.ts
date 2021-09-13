@@ -5,6 +5,7 @@
 export * from "./RealityDataClient";
 
 /** @docs-package-description
+      // SWB What should change here, keep ProjectWise references?
  * The reality-data-client package enables integration with reality data stored in ProjectWise Context Share (Reality Data Service).
  */
 

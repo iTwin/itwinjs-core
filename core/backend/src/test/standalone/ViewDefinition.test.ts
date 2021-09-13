@@ -27,6 +27,7 @@ describe("ViewDefinition", () => {
       rootSubject: { name: "ViewDefinition tests", description: "ViewDefinition tests" },
       client: "ViewDefinition",
       globalOrigin: { x: 0, y: 0 },
+      // SWB What does project mean here?
       projectExtents: { low: { x: -500, y: -500, z: -50 }, high: { x: 500, y: 500, z: 50 } },
       guid: Guid.createValue(),
     });
@@ -79,6 +80,7 @@ describe("ViewDefinition", () => {
     assert.isTrue(Id64.isValid(viewDefinitionId));
 
     // Best way to create and insert
+    // SWB What does project mean here?
     viewDefinitionId = SpatialViewDefinition.insertWithCamera(iModel, IModel.dictionaryId, "default", modelSelectorId, categorySelectorId, displayStyleId, iModel.projectExtents);
     iModel.views.setDefaultViewId(viewDefinitionId);
   });

@@ -108,7 +108,9 @@ describe("PushChangesTest (#integration)", () => {
       iModel = await BriefcaseDb.open(requestContext, { fileName: briefcaseProps.fileName });
       iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
 
+      // SWB What does project mean here?
       // Initialize project extents
+      // SWB What does project mean here?
       const projectExtents = new Range3d(-1000, -1000, -1000, 1000, 1000, 1000);
       iModel.updateProjectExtents(projectExtents);
 

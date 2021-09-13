@@ -155,6 +155,7 @@ export class IModelTestUtils {
 
   /** get an AuthorizedClientRequestContext for a [[TestUserType]].
      * @note if the current test is using [[HubMock]], calling this method multiple times with the same type will return users from the same organization,
+     * // SWB
      * but with different credentials. This can be useful for simulating more than one user of the same type on the same project.
      * However, if a real IModelHub is used, the credentials are supplied externally and will always return the same value (because otherwise they would not be valid.)
      */
@@ -820,7 +821,9 @@ export class ExtensiveTestScenario {
       assert.exists(sourceDb.fontMap.getFont("Arial"));
       assert.exists(sourceDb.fontMap.getFont(1));
     }
+    // SWB What does project mean here?
     // Initialize project extents
+    // SWB What does project mean here?
     const projectExtents = new Range3d(-1000, -1000, -1000, 1000, 1000, 1000);
     sourceDb.updateProjectExtents(projectExtents);
     // Insert CodeSpecs
@@ -1111,6 +1114,7 @@ export class ExtensiveTestScenario {
     const displayStyle3dId: Id64String = displayStyle3d.insert();
     assert.isTrue(Id64.isValidId64(displayStyle3dId));
     // Insert ViewDefinitions
+    // SWB What does project mean here?
     const viewId = OrthographicViewDefinition.insert(sourceDb, definitionModelId, "Orthographic View", modelSelectorId, spatialCategorySelectorId, displayStyle3dId, projectExtents, StandardViewIndex.Iso);
     assert.isTrue(Id64.isValidId64(viewId));
     sourceDb.views.setDefaultViewId(viewId);

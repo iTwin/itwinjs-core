@@ -38,7 +38,8 @@ export class TestConfig {
         searchString: name,
         propertyName: ITwinSearchableProperty.Name,
         exactMatch: true,
-      }});
+      }
+    });
 
     if (iTwinList.length === 0) {
       const userInfo = requestContext.accessToken.getUserInfo();
@@ -58,6 +59,7 @@ export class TestConfig {
     const iModel: HubIModel = (await imodelHubClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName)))[0];
     if (!iModel || !iModel.wsgId || iModel.name !== iModelName) {
       const userInfo = requestContext.accessToken.getUserInfo();
+      // SWB
       throw new Error(`iModel ${iModelName} not found for project ${projectId} for user ${!userInfo ? "n/a" : userInfo.email}.`);
     }
 

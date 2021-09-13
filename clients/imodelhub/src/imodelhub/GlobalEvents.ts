@@ -47,9 +47,11 @@ export type GlobalEventType =
 export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
   /** Id of the iModel that caused this event. */
   public iModelId?: GuidString;
+  // SWB
   /** Id of the [[Project]] that this iModel belongs to. */
   // SWB
   public projectId?: string;
+  // SWB
   /** Id of the context ([[Project]] or [[Asset]]) that this iModel belongs to. */
   // SWB
   public contextId?: string;

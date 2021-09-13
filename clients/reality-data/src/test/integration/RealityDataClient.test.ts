@@ -59,6 +59,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
     chai.assert(realityData.projectId === projectId);
   });
 
+  // SWB
   it("should be able to retrieve reality data properties for every reality data associated to project", async () => {
     const realityData: RealityData[] = await realityDataServiceClient.getRealityDataInProject(requestContext, projectId);
 
@@ -72,7 +73,9 @@ describe("RealityServicesClient Normal (#integration)", () => {
     chai.assert(realityData);
   });
 
+  // SWB
   it("should be able to retrieve reality data properties for every reality data associated to project within an extent", async () => {
+    // SWB
     const theRange = Range2d.createXYXY(-81 * 3.1416 / 180, 39 * 3.1416 / 180, -74 * 3.1416 / 180, 42 * 3.1416 / 180); // Range encloses Pennsylvania and should gather Shell project
     const minLongDeg = Angle.radiansToDegrees(theRange.low.x);
     const maxLongDeg = Angle.radiansToDegrees(theRange.high.x);
@@ -140,7 +143,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
 
     const modelData: any = await realityData.getTileContent(requestContext, modelName);
     chai.assert(modelData);
-    const modelDataString = decoder.decode(new Uint8Array(modelData)).substring(0,4);
+    const modelDataString = decoder.decode(new Uint8Array(modelData)).substring(0, 4);
     chai.assert(modelDataString === "b3dm");
   });
 

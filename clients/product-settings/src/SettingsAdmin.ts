@@ -19,6 +19,7 @@ export enum SettingsStatus {
   AuthorizationError = SETTINGS_ERROR_BASE + 1,
   /** The Url for the setting is not properly formed. Check the characters in the setting name. */
   UrlError = SETTINGS_ERROR_BASE + 2,
+  // SWB
   /** An invalid projectId was specified. */
   // SWB
   ProjectInvalid = SETTINGS_ERROR_BASE + 3,
@@ -62,6 +63,7 @@ export class SettingsMapResult {
   }
 }
 
+// SWB
 /** Methods available to save and get Settings objects on behalf of combinations of the Application, Project, iModel, and User
  * @beta
  */
@@ -73,7 +75,9 @@ export interface SettingsAdmin {
    * @param namespace A program-supplied namespace that is used to organize settings and prevent name collisions.
    * @param name The name of the setting. Acceptable characters are alphanumeric and the period character.
    * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
+  // SWB
    * @param projectId The wsgId of the Project, if the settings is specific to a project, otherwise undefined.
+  // SWB
    * @param iModelId The wsgId of the iModel, if the setting is specific to an iModel, otherwise undefined. The projectId must be specified if iModelId is specified.
    * @return The result of the save operation. The setting member is undefined for save operations.
    */
@@ -85,7 +89,9 @@ export interface SettingsAdmin {
    * @param namespace A program-supplied namespace that is used to organize settings and prevent name collisions.
    * @param name The name of the setting. Acceptable characters are alphanumeric and the period character.
    * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
+  // SWB
    * @param projectId The wsgId of the Project, if the settings is specific to a project, otherwise undefined.
+  // SWB
    * @param iModelId The wsgId of the iModel, if the setting is specific to an iModel, otherwise undefined. The projectId must be specified if iModelId is specified.
    * @return The result of the retrieval operation. The setting member contains the setting if the operation succeeds.
    */
@@ -96,7 +102,9 @@ export interface SettingsAdmin {
    * @param namespace A program-supplied namespace that is used to organize settings and prevent name collisions.
    * @param name The name of the setting. Acceptable characters are alphanumeric and the period character.
    * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
+  // SWB
    * @param projectId The wsgId of the Project, if the settings is specific to a project, otherwise undefined.
+  // SWB
    * @param iModelId The wsgId of the iModel, if the setting is specific to an iModel, otherwise undefined. The projectId must be specified if iModelId is specified.
    * @return The result of the save operation. The setting member is undefined for delete operations. If the setting specified for deletion
    * does not exists, the SettingsResult.status is SettingsStatus.SettingNotFound.
@@ -108,7 +116,9 @@ export interface SettingsAdmin {
    * @param requestContext The client request context.
    * @param namespace A program - supplied namespace that is used to organize settings and prevent name collisions.
    * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
+  // SWB
    * @param projectId The wsgId of the Project, to retrieve settings specific to a project, otherwise undefined.
+  // SWB
    * @param iModelId The wsgId of the iModel, to retrieve settings specific to an iModel, otherwise undefined. The projectId must be specified if iModelId is specified.
    * @return The result of the retrieval operation. If successful, SettingsResult.settingsMap contains a map of string to settings values containing all of the settings stored with the specified namespace.
    */
@@ -121,7 +131,9 @@ export interface SettingsAdmin {
    * @param namespace A program-supplied namespace that is used to organize settings and prevent name collisions.
    * @param name The name of the setting. Acceptable characters are alphanumeric and the period character.
    * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
+  // SWB
    * @param projectId The wsgId of the Project, if the settings is specific to a project, otherwise undefined.
+  // SWB
    * @param iModelId The wsgId of the iModel, if the setting is specific to an iModel, otherwise undefined. The projectId must be specified if iModelId is specified.
    * @return The result of the save operation. The setting member is undefined for save operations.
    */
@@ -133,6 +145,7 @@ export interface SettingsAdmin {
    * @param namespace A program-supplied namespace that is used to organize settings and prevent name collisions.
    * @param name The name of the setting. Acceptable characters are alphanumeric and the period character.
    * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
+  // SWB
    * @param projectId The wsgId of the Project (required for Shared Setting).
    * @param iModelId The wsgId of the iModel, if the setting is specific to an iModel, otherwise undefined.
    * @return The result of the retrieval operation. The setting member contains the setting if the operation succeeds.
@@ -144,6 +157,7 @@ export interface SettingsAdmin {
    * @param namespace A program-supplied namespace that is used to organize settings and prevent name collisions.
    * @param name The name of the setting. Acceptable characters are alphanumeric and the period character.
    * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
+  // SWB
    * @param projectId The wsgId of the Project (required for Shared Setting).
    * @param iModelId The wsgId of the iModel, if the setting is specific to an iModel, otherwise undefined.
    * @return The result of the save operation. The setting member is undefined for delete operations. If the setting specified for deletion
@@ -156,6 +170,7 @@ export interface SettingsAdmin {
    * @param requestContext The client request context.
    * @param namespace A program - supplied namespace that is used to organize settings and prevent name collisions.
    * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
+  // SWB
    * @param projectId The wsgId of the Project (required for Shared Setting).
    * @param iModelId The wsgId of the iModel, to retrieve settings specific to an iModel, otherwise undefined.
    * @return The result of the retrieval operation. If successful, SettingsResult.settingsMap contains a map of string to settings values containing all of the settings stored with the specified namespace.
@@ -169,7 +184,9 @@ export interface SettingsAdmin {
    * @param namespace A program-supplied namespace that is used to organize settings and prevent name collisions.
    * @param name The name of the setting. Acceptable characters are alphanumeric and the period character.
    * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
+  // SWB
    * @param projectId The wsgId of the Project, if the settings is specific to a project, otherwise undefined.
+  // SWB
    * @param iModelId The wsgId of the iModel, if the setting is specific to an iModel, otherwise undefined. The projectId must be specified if iModelId is specified.
    * @return The result of the save operation. The setting member is undefined for save operations.
    * @note The logged in user must have the appropriate permissions to save a non-user-specific setting.
@@ -182,7 +199,9 @@ export interface SettingsAdmin {
    * @param namespace A program-supplied namespace that is used to organize settings and prevent name collisions.
    * @param name The name of the setting. Acceptable characters are alphanumeric and the period character.
    * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
+  // SWB
    * @param projectId The wsgId of the Project, if the settings is specific to a project, otherwise undefined.
+  // SWB
    * @param iModelId The wsgId of the iModel, if the setting is specific to an iModel, otherwise undefined. The projectId must be specified if iModelId is specified.
    * @return The result of the retrieval operation. The setting member contains the setting if the operation succeeds.
    */
@@ -194,7 +213,9 @@ export interface SettingsAdmin {
    * @param namespace A program-supplied namespace that is used to organize settings and prevent name collisions.
    * @param name The name of the setting. Acceptable characters are alphanumeric and the period character.
    * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
+  // SWB
    * @param projectId The wsgId of the Project, if the settings is specific to a project, otherwise undefined.
+  // SWB
    * @param iModelId The wsgId of the iModel, if the setting is specific to an iModel, otherwise undefined. The projectId must be specified if iModelId is specified.
    * @return The result of the save operation. The setting member is undefined for delete operations. If the setting specified for deletion
    * does not exists, the SettingsResult.status is SettingsStatus.SettingNotFound.
@@ -207,7 +228,9 @@ export interface SettingsAdmin {
    * @param requestContext The client request context.
    * @param namespace A program - supplied namespace that is used to organize settings and prevent name collisions.
    * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
+  // SWB
    * @param projectId The wsgId of the Project, to retrieve settings specific to a project, otherwise undefined.
+  // SWB
    * @param iModelId The wsgId of the iModel, to retrieve settings specific to an iModel, otherwise undefined. The projectId must be specified if iModelId is specified.
    * @return The result of the retrieval operation. If successful, SettingsResult.settingsMap contains a map of string to settings values containing all of the settings stored with the specified namespace.
    */

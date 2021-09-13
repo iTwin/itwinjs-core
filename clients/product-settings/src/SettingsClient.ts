@@ -77,10 +77,14 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     //  /Application/{AppId}/Context/{ContextId}/iModel/{iModelId}/User/Settings
 
     // The types of settings are:
+    // SWB What does project mean here
     // Application, Project, iModel, and User specific.
+    // SWB
     // Application, Project, and User Specific
     // Application and User Specific
+    // SWB
     // Project, iModel, and User specific
+    // SWB
     // Project and User Specific
     // Application Specific
     let urlTerminator: string;
@@ -125,6 +129,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
           urlOptions = `/Context/${contextId}${urlTerminator}`;
         }
       } else {
+        // SWB What does project mean here
         // settings must depend on at least one of Application and Project
         throw new BentleyError(BentleyStatus.ERROR, "Improperly specified setting");
       }
@@ -137,6 +142,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
    */
   public formErrorResponse(response: Response): SettingsResult {
     if (400 === response.status) {
+      // SWB
       return new SettingsResult(SettingsStatus.ProjectInvalid, `Malformed URL or invalid Project ${JSON.stringify(response)}`);
     } else if (401 === response.status) {
       return new SettingsResult(SettingsStatus.AuthorizationError, `Authorization failure ${JSON.stringify(response)}`);

@@ -238,6 +238,7 @@ describe("Functional Domain", () => {
       rootSubject: { name: "FunctionalTest", description: "Test of the Functional domain schema." },
       client: "Functional",
       globalOrigin: { x: 0, y: 0 },
+      // SWB What does project mean here?
       projectExtents: { low: { x: -500, y: -500, z: -50 }, high: { x: 500, y: 500, z: 50 } },
       guid: Guid.createValue(),
     });

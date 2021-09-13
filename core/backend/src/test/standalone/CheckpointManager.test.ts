@@ -74,6 +74,7 @@ describe("V1 Checkpoint Manager", () => {
     // SWB
     const contextId = Guid.createValue();
     const changeset = IModelTestUtils.generateChangeSetId();
+    // SWB
     snapshot.nativeDb.saveProjectGuid(Guid.normalize(contextId));
     snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id);
     snapshot.saveChanges();
@@ -155,6 +156,7 @@ describe("Checkpoint Manager", () => {
     // SWB
     const contextId = Guid.createValue();
     const changeset = IModelTestUtils.generateChangeSetId();
+    // SWB
     snapshot.nativeDb.saveProjectGuid(Guid.normalize(contextId));
     snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id);
     snapshot.saveChanges();
