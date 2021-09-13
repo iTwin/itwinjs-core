@@ -796,7 +796,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
       }
     }
 
-    IModelApp.accuSnap.resetButton(); // eslint-disable-line @typescript-eslint/no-floating-promises
+    await IModelApp.accuSnap.resetButton();
     return EventHandled.No;
   }
 
@@ -947,7 +947,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
     this.setupAndPromptForNextAction();
 
     if (this.isSelectionSetModify)
-      this.doProcessSelectionSetImmediate(); // eslint-disable-line @typescript-eslint/no-floating-promises
+      await this.doProcessSelectionSetImmediate();
   }
 
   /** Make sure elements from [[ElementSetTool.agenda]] that aren't also from [[SelectionSet]] aren't left hilited. */

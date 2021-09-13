@@ -930,7 +930,7 @@ export class ViewClipByElementTool extends ViewClipTool {
       let useSelection = true;
       this.targetView.iModel.selectionSet.elements.forEach((val) => { if (Id64.isInvalid(val) || Id64.isTransient(val)) useSelection = false; });
       if (useSelection) {
-        this.doClipToSelectedElements(this.targetView); // eslint-disable-line @typescript-eslint/no-floating-promises
+        await this.doClipToSelectedElements(this.targetView);
         return;
       }
     }

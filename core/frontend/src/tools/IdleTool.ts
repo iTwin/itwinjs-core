@@ -110,11 +110,11 @@ export class IdleTool extends InteractiveTool {
   public override async onTouchTap(ev: BeTouchEvent): Promise<EventHandled> {
     if (ev.isSingleTap) {
       // Send data down/up for single finger tap.
-      IModelApp.toolAdmin.convertTouchTapToButtonDownAndUp(ev, BeButton.Data); // eslint-disable-line @typescript-eslint/no-floating-promises
+      await IModelApp.toolAdmin.convertTouchTapToButtonDownAndUp(ev, BeButton.Data);
       return EventHandled.Yes;
     } else if (ev.isTwoFingerTap) {
       // Send reset down/up for two finger tap.
-      IModelApp.toolAdmin.convertTouchTapToButtonDownAndUp(ev, BeButton.Reset); // eslint-disable-line @typescript-eslint/no-floating-promises
+      await IModelApp.toolAdmin.convertTouchTapToButtonDownAndUp(ev, BeButton.Reset);
       return EventHandled.Yes;
     } else if (ev.isDoubleTap) {
       // Fit view on single finger double tap.

@@ -55,7 +55,7 @@ export class ZoomToSelectedElementsTool extends Tool {
   public override async run(_args: any[]): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp)
-      zoomToSelectedElements(vp); // eslint-disable-line @typescript-eslint/no-floating-promises
+      await zoomToSelectedElements(vp);
 
     return true;
   }
@@ -132,7 +132,7 @@ export class MarkupTool extends Tool {
     } else {
       MarkupApp.props.active.element.stroke = "white"; // as an example, set default color for elements
       MarkupApp.markupSelectToolId = "Markup.TestSelect"; // as an example override the default markup select tool to launch redline tools using key events
-      MarkupApp.start(vp, wantSavedData ? MarkupTool.savedData : undefined); // eslint-disable-line @typescript-eslint/no-floating-promises
+      await MarkupApp.start(vp, wantSavedData ? MarkupTool.savedData : undefined);
     }
 
     return true;
@@ -218,8 +218,8 @@ export class Viewer extends Window {
     this.toolBar.addItem(createToolButton({
       iconUnicode: "\ue9cc",
       tooltip: "Open iModel from disk",
-      click: () => {
-        this.selectIModel(); // eslint-disable-line @typescript-eslint/no-floating-promises
+      click: async () => {
+        await this.selectIModel();
       },
     }));
 
@@ -506,7 +506,9 @@ export class Viewer extends Window {
   public override onClosed(): void {
     if (undefined === IModelApp.viewManager.selectedView) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Closing iModel..."));
-      this.closeIModel().then(() => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "iModel closed."))); // eslint-disable-line @typescript-eslint/no-floating-promises
+
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      this.closeIModel().then(() => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "iModel closed.")));
     }
   }
 

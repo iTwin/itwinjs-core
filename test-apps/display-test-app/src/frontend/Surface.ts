@@ -122,16 +122,16 @@ export class Surface {
     tb.addItem(createToolButton({
       iconUnicode: "\ue9cc", // "briefcases"
       tooltip: "Open iModel from disk",
-      click: () => {
-        this.openIModel(); // eslint-disable-line @typescript-eslint/no-floating-promises
+      click: async () => {
+        await this.openIModel();
       },
     }));
 
     tb.addItem(createToolButton({
       iconUnicode: "\ue9d8", // "property-data"
       tooltip: "Open Blank Connection",
-      click: () => {
-        this.openBlankConnection(); // eslint-disable-line @typescript-eslint/no-floating-promises
+      click: async () => {
+        await this.openBlankConnection();
       },
     }));
 
@@ -139,10 +139,12 @@ export class Surface {
       iconUnicode: "\uea32", // play
       tooltip: "Analysis Style Example",
       click: async () => {
-        this.openBlankConnection({ // eslint-disable-line @typescript-eslint/no-floating-promises
+        const viewer = await this.openBlankConnection({
           name: "Analysis Style Example",
           extents: new Range3d(0, 0, -30, 100, 100, 20),
-        }).then(async (viewer) => openAnalysisStyleExample(viewer));
+        });
+
+        await openAnalysisStyleExample(viewer);
       },
     }));
 
@@ -150,10 +152,11 @@ export class Surface {
       iconUnicode: "\ue9d8",
       tooltip: "Decoration Geometry Example",
       click: async () => {
-        this.openBlankConnection({ // eslint-disable-line @typescript-eslint/no-floating-promises
+        const viewer = await this.openBlankConnection({
           name: "Decoration Geometry Example",
           extents: new Range3d(-1, -1, -1, 13, 2, 2),
-        }).then(async (viewer) => openDecorationGeometryExample(viewer));
+        });
+        openDecorationGeometryExample(viewer);
       },
     }));
 
@@ -600,7 +603,7 @@ export class OpenIModelTool extends Tool {
   public static override get maxArgs() { return 1; }
 
   public override async run(filename?: string): Promise<boolean> {
-    Surface.instance.openFile(filename); // eslint-disable-line @typescript-eslint/no-floating-promises
+    await Surface.instance.openFile(filename);
     return true;
   }
 
@@ -624,7 +627,7 @@ export class ReopenIModelTool extends Tool {
   public override async run(): Promise<boolean> {
     const viewer = Surface.instance.firstViewer;
     if (undefined !== viewer)
-      viewer.openFile(viewer.viewport.iModel.key); // eslint-disable-line @typescript-eslint/no-floating-promises
+      await viewer.openFile(viewer.viewport.iModel.key);
 
     return true;
   }

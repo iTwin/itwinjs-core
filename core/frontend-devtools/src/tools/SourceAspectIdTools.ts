@@ -24,7 +24,7 @@ export abstract class SourceAspectIdTool extends Tool {
 
   public override async run(idToQuery?: string, copyToClipboard?: boolean): Promise<boolean> {
     if (typeof idToQuery === "string")
-      this.doQuery(idToQuery, true === copyToClipboard); // eslint-disable-line @typescript-eslint/no-floating-promises
+      await this.doQuery(idToQuery, true === copyToClipboard);
 
     return true;
   }

@@ -505,15 +505,15 @@ export class SelectionTool extends PrimitiveTool {
 
       switch (this.selectionMode) {
         case SelectionMode.Replace:
-          this.processSelection(hit.sourceId, ev.isControlKey ? SelectionProcessing.InvertElementInSelection : SelectionProcessing.ReplaceSelectionWithElement); // eslint-disable-line @typescript-eslint/no-floating-promises
+          await this.processSelection(hit.sourceId, ev.isControlKey ? SelectionProcessing.InvertElementInSelection : SelectionProcessing.ReplaceSelectionWithElement);
           break;
 
         case SelectionMode.Add:
-          this.processSelection(hit.sourceId, SelectionProcessing.AddElementToSelection); // eslint-disable-line @typescript-eslint/no-floating-promises
+          await this.processSelection(hit.sourceId, SelectionProcessing.AddElementToSelection);
           break;
 
         case SelectionMode.Remove:
-          this.processSelection(hit.sourceId, SelectionProcessing.RemoveElementFromSelection); // eslint-disable-line @typescript-eslint/no-floating-promises
+          await this.processSelection(hit.sourceId, SelectionProcessing.RemoveElementFromSelection);
           break;
       }
       return EventHandled.Yes;
@@ -548,11 +548,12 @@ export class SelectionTool extends PrimitiveTool {
 
         // remove element(s) previously selected if in replace mode, or if we have a next element in add mode
         if (SelectionMode.Replace === this.selectionMode || undefined !== nextHit)
-          this.processSelection(lastHit.sourceId, SelectionProcessing.RemoveElementFromSelection); // eslint-disable-line @typescript-eslint/no-floating-promises
+          await this.processSelection(lastHit.sourceId, SelectionProcessing.RemoveElementFromSelection);
 
         // add element(s) located via reset button
         if (undefined !== nextHit)
-          this.processSelection(nextHit.sourceId, SelectionProcessing.AddElementToSelection); // eslint-disable-line @typescript-eslint/no-floating-promises
+          await this.processSelection(nextHit.sourceId, SelectionProcessing.AddElementToSelection);
+
         return EventHandled.Yes;
       }
     }
@@ -560,12 +561,23 @@ export class SelectionTool extends PrimitiveTool {
     if (EventHandled.Yes === await this.selectDecoration(ev, IModelApp.accuSnap.currHit))
       return EventHandled.Yes;
 
-    IModelApp.accuSnap.resetButton(); // eslint-disable-line @typescript-eslint/no-floating-promises
+    await IModelApp.accuSnap.resetButton();
     return EventHandled.Yes;
   }
 
-  public override async onSuspend() { this._isSuspended = true; if (this.wantEditManipulators()) IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Suspend); }
-  public override async onUnsuspend() { this._isSuspended = false; if (this.wantEditManipulators()) IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Unsuspend); this.showPrompt(this.selectionMode, this.selectionMethod); }
+  public override async onSuspend() {
+    this._isSuspended = true;
+    if (this.wantEditManipulators())
+      IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Suspend);
+  }
+
+  public override async onUnsuspend() {
+    this._isSuspended = false;
+    if (this.wantEditManipulators())
+      IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Unsuspend);
+
+    this.showPrompt(this.selectionMode, this.selectionMethod);
+  }
 
   public override async onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> {
     if (startEv.isSingleTouch && !this._isSelectByPoints)

@@ -22,12 +22,12 @@ export abstract class ViewportToggleTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 1; }
 
-  protected abstract toggle(vp: Viewport, enable?: boolean): void;
+  protected abstract toggle(vp: Viewport, enable?: boolean): Promise<void>;
 
   public override async run(enable?: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp)
-      this.toggle(vp, enable);
+      await this.toggle(vp, enable);
 
     return true;
   }
@@ -47,9 +47,11 @@ export abstract class ViewportToggleTool extends Tool {
 export class FreezeSceneTool extends ViewportToggleTool {
   public static override toolId = "FreezeScene";
 
-  protected toggle(vp: Viewport, enable?: boolean): void {
+  protected override async toggle(vp: Viewport, enable?: boolean) {
     if (undefined === enable || enable !== vp.freezeScene)
       vp.freezeScene = !vp.freezeScene;
+
+    return Promise.resolve();
   }
 }
 
@@ -296,9 +298,11 @@ export class ChangeFlashSettingsTool extends Tool {
 export class FadeOutTool extends ViewportToggleTool {
   public static override toolId = "FadeOut";
 
-  protected toggle(vp: Viewport, enable?: boolean): void {
+  protected override async toggle(vp: Viewport, enable?: boolean): Promise<void> {
     if (undefined === enable || enable !== vp.isFadeOutActive)
       vp.isFadeOutActive = !vp.isFadeOutActive;
+
+    return Promise.resolve();
   }
 }
 
@@ -390,9 +394,9 @@ export class ViewportAddRealityModel extends Tool {
 export class Toggle3dManipulationsTool extends ViewportToggleTool {
   public static override toolId = "Toggle3dManipulations";
 
-  protected toggle(vp: Viewport, allow?: boolean): void {
+  protected override async toggle(vp: Viewport, allow?: boolean): Promise<void> {
     if (!vp.view.is3d())
-      return;
+      return Promise.resolve();
 
     if (undefined === allow)
       allow = !vp.view.allow3dManipulations();
@@ -401,6 +405,8 @@ export class Toggle3dManipulationsTool extends ViewportToggleTool {
       vp.view.setAllow3dManipulations(allow);
       void IModelApp.toolAdmin.startDefaultTool();
     }
+
+    return Promise.resolve();
   }
 }
 
@@ -410,9 +416,11 @@ export class Toggle3dManipulationsTool extends ViewportToggleTool {
 export class ToggleViewAttachmentsTool extends ViewportToggleTool {
   public static override toolId = "ToggleViewAttachments";
 
-  protected toggle(vp: Viewport, enable?: boolean): void {
+  protected override async toggle(vp: Viewport, enable?: boolean): Promise<void> {
     if (undefined === enable || enable !== vp.wantViewAttachments)
       vp.wantViewAttachments = !vp.wantViewAttachments;
+
+    return Promise.resolve();
   }
 }
 
@@ -422,9 +430,11 @@ export class ToggleViewAttachmentsTool extends ViewportToggleTool {
 export class ToggleViewAttachmentBoundariesTool extends ViewportToggleTool {
   public static override toolId = "ToggleViewAttachmentBoundaries";
 
-  protected toggle(vp: Viewport, enable?: boolean): void {
+  protected override async toggle(vp: Viewport, enable?: boolean): Promise<void> {
     if (undefined === enable || enable !== vp.wantViewAttachmentBoundaries)
       vp.wantViewAttachmentBoundaries = !vp.wantViewAttachmentBoundaries;
+
+    return Promise.resolve();
   }
 }
 
@@ -434,9 +444,11 @@ export class ToggleViewAttachmentBoundariesTool extends ViewportToggleTool {
 export class ToggleViewAttachmentClipShapesTool extends ViewportToggleTool {
   public static override toolId = "ToggleViewAttachmentClipShapes";
 
-  protected toggle(vp: Viewport, enable?: boolean): void {
+  protected override async toggle(vp: Viewport, enable?: boolean): Promise<void> {
     if (undefined === enable || enable !== vp.wantViewAttachmentClipShapes)
       vp.wantViewAttachmentClipShapes = !vp.wantViewAttachmentClipShapes;
+
+    return Promise.resolve();
   }
 }
 
@@ -446,11 +458,13 @@ export class ToggleViewAttachmentClipShapesTool extends ViewportToggleTool {
 export class ToggleDrawingGraphicsTool extends ViewportToggleTool {
   public static override toolId = "ToggleDrawingGraphics";
 
-  protected toggle(vp: Viewport, enable?: boolean): void {
+  protected override async toggle(vp: Viewport, enable?: boolean): Promise<void> {
     if (undefined === enable || enable !== DrawingViewState.hideDrawingGraphics) {
       DrawingViewState.hideDrawingGraphics = !DrawingViewState.hideDrawingGraphics;
       vp.invalidateScene();
     }
+
+    return Promise.resolve();
   }
 }
 
@@ -461,15 +475,15 @@ export class ToggleDrawingGraphicsTool extends ViewportToggleTool {
 export class ToggleSectionDrawingSpatialViewTool extends ViewportToggleTool {
   public static override toolId = "ToggleSectionDrawingSpatialView";
 
-  protected toggle(vp: Viewport, enable?: boolean): void {
+  protected async toggle(vp: Viewport, enable?: boolean): Promise<void> {
     if (undefined === enable || enable !== DrawingViewState.alwaysDisplaySpatialView) {
       DrawingViewState.alwaysDisplaySpatialView = !DrawingViewState.alwaysDisplaySpatialView;
       if (vp.view instanceof DrawingViewState) {
         // Force the view to update its section drawing attachment.
         const view = vp.view.clone();
-        view.changeViewedModel(view.baseModelId).then(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
-          view.load().then(() => vp.changeView(view)); // eslint-disable-line @typescript-eslint/no-floating-promises
-        });
+        await view.changeViewedModel(view.baseModelId);
+        await view.load();
+        vp.changeView(view);
       }
     }
   }

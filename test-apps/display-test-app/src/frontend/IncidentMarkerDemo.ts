@@ -32,8 +32,11 @@ class IncidentMarker extends Marker {
 
   // when someone clicks on our marker, open a message box with the severity of the incident.
   public override onMouseButton(ev: BeButtonEvent): boolean {
-    if (ev.button === BeButton.Data && ev.isDown)
-      IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, `severity = ${this.severity}`, MessageBoxIconType.Information); // eslint-disable-line @typescript-eslint/no-floating-promises
+    if (ev.button === BeButton.Data && ev.isDown) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, `severity = ${this.severity}`, MessageBoxIconType.Information);
+    }
+
     return true;
   }
 

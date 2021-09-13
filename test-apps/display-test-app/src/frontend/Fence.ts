@@ -70,7 +70,7 @@ export class FenceClassifySelectedTool extends Tool {
       return false;
 
     vp.iModel.selectionSet.emptyAll();
-    this.doClassify(vp, candidates, vp.view.getViewClip()!, insideOnly ? false : true); // eslint-disable-line @typescript-eslint/no-floating-promises
+    await this.doClassify(vp, candidates, vp.view.getViewClip()!, insideOnly ? false : true);
     return true;
   }
 

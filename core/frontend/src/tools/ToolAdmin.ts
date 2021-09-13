@@ -616,7 +616,7 @@ export class ToolAdmin {
         current.lastTouchStart = ev;
         IModelApp.accuSnap.onTouchStart(ev);
         if (undefined !== tool)
-          tool.onTouchStart(ev); // eslint-disable-line @typescript-eslint/no-floating-promises
+          await tool.onTouchStart(ev);
         return;
       }
 
@@ -658,8 +658,8 @@ export class ToolAdmin {
         if (undefined === current.touchTapTimer) {
           current.touchTapTimer = Date.now();
           current.touchTapCount = 1;
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises,@typescript-eslint/unbound-method
-          ToolSettings.doubleTapTimeout.executeAfter(this.doubleTapTimeout, this);
+          // eslint-disable-next-line @typescript-eslint/unbound-method
+          await ToolSettings.doubleTapTimeout.executeAfter(this.doubleTapTimeout, this);
         } else if (undefined !== current.touchTapCount) {
           current.touchTapCount++;
         }
@@ -670,13 +670,13 @@ export class ToolAdmin {
         current.lastTouchStart = undefined;
         IModelApp.accuSnap.onTouchCancel(ev);
         if (undefined !== tool)
-          tool.onTouchCancel(ev); // eslint-disable-line @typescript-eslint/no-floating-promises
+          await tool.onTouchCancel(ev);
         return;
       }
 
       case "touchmove": {
         if (!IModelApp.accuSnap.onTouchMove(ev) && undefined !== tool)
-          tool.onTouchMove(ev); // eslint-disable-line @typescript-eslint/no-floating-promises
+          await tool.onTouchMove(ev);
 
         if (undefined === current.lastTouchStart)
           return;
@@ -705,7 +705,8 @@ export class ToolAdmin {
             return;
 
           if (undefined === tool || EventHandled.Yes !== await tool.onTouchMoveStart(ev, touchStart))
-            this.idleTool.onTouchMoveStart(ev, touchStart); // eslint-disable-line @typescript-eslint/no-floating-promises
+            await this.idleTool.onTouchMoveStart(ev, touchStart);
+
           return;
         }
         return;
@@ -880,7 +881,6 @@ export class ToolAdmin {
     const vp = ev.viewport;
     const motion = ev;
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     toolPromise.then(() => {
       if (toolPromise !== this._toolMotionPromise)
         return;
@@ -895,7 +895,7 @@ export class ToolAdmin {
       const context = new DynamicsContext(vp);
       tool.onDynamicFrame(motion, context);
       context.changeDynamics();
-    });
+    }).catch((_) => { });
   }
 
   public async sendEndDragEvent(ev: BeButtonEvent): Promise<any> {
@@ -985,7 +985,6 @@ export class ToolAdmin {
 
     const snapPromise = this._snapMotionPromise = this.onMotionSnap(ev);
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     snapPromise.then((snapOk) => {
       if (!snapOk || snapPromise !== this._snapMotionPromise)
         return;
@@ -1014,7 +1013,7 @@ export class ToolAdmin {
 
       this.updateDynamics(ev);
       return;
-    });
+    }).catch((_) => { });
 
     if (this.isLocateCircleOn)
       vp.invalidateDecorations();

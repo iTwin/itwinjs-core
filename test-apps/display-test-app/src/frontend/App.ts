@@ -78,7 +78,7 @@ class SVTSelectionTool extends SelectionTool {
 class SignInTool extends Tool {
   public static override toolId = "SignIn";
   public override async run(): Promise<boolean> {
-    signIn(); // eslint-disable-line @typescript-eslint/no-floating-promises
+    await signIn();
     return true;
   }
 }
@@ -96,7 +96,7 @@ class PushChangesTool extends Tool {
     if (!imodel || !imodel.isBriefcaseConnection())
       return false;
 
-    imodel.pushChanges(description); // eslint-disable-line @typescript-eslint/no-floating-promises
+    await imodel.pushChanges(description);
     return true;
   }
 
@@ -113,7 +113,7 @@ class PullChangesTool extends Tool {
     if (!imodel || !imodel.isBriefcaseConnection())
       return false;
 
-    imodel.pullChanges(); // eslint-disable-line @typescript-eslint/no-floating-promises
+    await imodel.pullChanges();
     return true;
   }
 }
@@ -154,9 +154,8 @@ class PurgeTileTreesTool extends Tool {
     if (undefined !== modelIds && 0 === modelIds.length)
       modelIds = undefined;
 
-    vp.iModel.tiles.purgeTileTrees(modelIds).then(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
-      IModelApp.viewManager.refreshForModifiedModels(modelIds);
-    });
+    await vp.iModel.tiles.purgeTileTrees(modelIds);
+    IModelApp.viewManager.refreshForModifiedModels(modelIds);
 
     return true;
   }
@@ -171,10 +170,9 @@ class ShutDownTool extends Tool {
 
   public override async run(_args: any[]): Promise<boolean> {
     DisplayTestApp.surface.closeAllViewers();
-    if (ElectronApp.isValid)
-      ElectronApp.shutdown();// eslint-disable-line @typescript-eslint/no-floating-promises
-    else
-      IModelApp.shutdown(); // eslint-disable-line @typescript-eslint/no-floating-promises
+    const app = ElectronApp.isValid ? ElectronApp : IModelApp;
+    await app.shutdown();
+
     debugger; // eslint-disable-line no-debugger
     return true;
   }

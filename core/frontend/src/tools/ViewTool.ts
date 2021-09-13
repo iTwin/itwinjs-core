@@ -469,7 +469,7 @@ export abstract class ViewManip extends ViewTool {
     if (this.viewHandles.onWheel(ev)) // notify handles that wheel has rolled.
       return EventHandled.Yes;
 
-    IModelApp.toolAdmin.processWheelEvent(ev, false); // eslint-disable-line @typescript-eslint/no-floating-promises
+    await IModelApp.toolAdmin.processWheelEvent(ev, false);
     return EventHandled.Yes;
   }
 
@@ -488,7 +488,7 @@ export abstract class ViewManip extends ViewTool {
     this.isDragging = true;
 
     if (0 === this.nPts)
-      this.onDataButtonDown(ev); // eslint-disable-line @typescript-eslint/no-floating-promises
+      await this.onDataButtonDown(ev);
 
     return EventHandled.Yes;
   }
@@ -3208,13 +3208,14 @@ export class ViewGlobeSatelliteTool extends ViewTool {
   private async _beginSatelliteView(viewport: ScreenViewport, oneShot: boolean, doAnimate = true): Promise<boolean> {
     const carto = await eyeToCartographicOnGlobeFromGcs(viewport);
     if (carto !== undefined) {
-      (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
+      try {
         let elevationOffset = 0;
         const elevation = await queryTerrainElevationOffset(viewport, carto);
         if (elevation !== undefined)
           elevationOffset = elevation;
-        return this._doSatelliteView(viewport, oneShot, doAnimate, elevationOffset);
-      })().catch(() => { });
+        return await this._doSatelliteView(viewport, oneShot, doAnimate, elevationOffset);
+      } catch (_) {
+      }
     }
     return true;
   }
@@ -3261,13 +3262,14 @@ export class ViewGlobeBirdTool extends ViewTool {
   private async _beginDoBirdView(viewport: ScreenViewport, oneShot: boolean, doAnimate = true): Promise<boolean> {
     const carto = await eyeToCartographicOnGlobeFromGcs(viewport);
     if (carto !== undefined) {
-      (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
+      try {
         let elevationOffset = 0;
         const elevation = await queryTerrainElevationOffset(viewport, carto);
         if (elevation !== undefined)
           elevationOffset = elevation;
-        return this._doBirdView(viewport, oneShot, doAnimate, elevationOffset);
-      })().catch(() => { });
+        return await this._doBirdView(viewport, oneShot, doAnimate, elevationOffset);
+      } catch (_) {
+      }
     }
     return true;
   }
@@ -3320,7 +3322,7 @@ export class ViewGlobeLocationTool extends ViewTool {
     if (this._globalLocation === undefined) {
       const locationString = args.join(" ");
       const bingLocationProvider = new BingLocationProvider();
-      (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
+      try {
         this._globalLocation = await bingLocationProvider.getLocation(locationString);
         if (this._globalLocation !== undefined) {
           const viewport = undefined === this.viewport ? IModelApp.viewManager.selectedView : this.viewport;
@@ -3331,7 +3333,8 @@ export class ViewGlobeLocationTool extends ViewTool {
           }
           await this._doLocationView();
         }
-      })().catch(() => { });
+      } catch (_) {
+      }
     }
 
     if (this._globalLocation !== undefined)
