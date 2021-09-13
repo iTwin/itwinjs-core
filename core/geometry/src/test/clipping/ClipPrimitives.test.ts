@@ -308,25 +308,12 @@ function pointArrayIsSubsetOfOther(arrayA: Point3d[], arrayB: Point3d[]): boolea
 }
 
 describe("ClipPrimitive", () => {
-  const min2D = Point3d.create(-54, 18);  // Bottom left point of the octagon formed from octagonalPoints
-  const max2D = Point3d.create(-42, 42);  // Top right point of the octagon formed from octagonalPoints
-  let octagonalPoints: Point3d[];         // Points array representing an octagon in quadrant II
   let clipPointsA: Point3d[];
   let polygonA: Point3d[];
   let clipPointsB: Point3d[];
   let polygonB: Point3d[];
 
   before(() => {
-    octagonalPoints = [
-      min2D,
-      Point3d.create(max2D.x, min2D.y),
-      Point3d.create(max2D.x + 5, min2D.y + 5),
-      Point3d.create(max2D.x + 5, max2D.y - 5),
-      max2D,
-      Point3d.create(min2D.x, max2D.y),
-      Point3d.create(min2D.x - 5, max2D.y - 5),
-      Point3d.create(min2D.x - 5, min2D.y + 5),
-    ];
     clipPointsA = [
       Point3d.create(0, 0, 0),
       Point3d.create(100, 0, 0),

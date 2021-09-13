@@ -368,24 +368,24 @@ describe("StringifiedClipVector", () => {
     const triangle = [[2, 2], [8, 2], [5, 6], [2, 2]];
     const innerNonConvex = [[2, 6], [5, 6], [5, 1], [4, 4], [2, 6]];
     const innerCircle = Sample.createArcStrokes(2, Point3d.create(5, 4), 2.0, Angle.createDegrees(12), Angle.createDegrees(360));
-    const innerU = [[2,1],[4,2],[4,5],[5,6],[5,2],[8,3],[9,8],[3,7],[2,1]];
-    for (const isMask of [true, false]){
-    const jsonA = [{ shape: { points: outer } }, { shape: { points: triangle, mask: isMask } }];
-    const jsonB = [{ shape: { points: outer } }, { shape: { points: innerCircle, mask: isMask}}];
-    const jsonC = [{ shape: { points: outer } }, { shape: { points: innerNonConvex, mask: isMask}}];
-    const jsonD = [{ shape: { points: outer } }, { shape: { points: innerU, mask: isMask}}];
-    // const polygonToClip = Sample.createArcStrokes(3, Point3d.create(5, 5), 6.0, Angle.createDegrees(0), Angle.createDegrees(360));
-    const polygonToClip = Sample.createRectangleXY(-10, -10, 30, 30);
+    const innerU = [[2,1],[4,2],[4,5],[5,6],[5,2],[8,1],[9,8],[3,7],[2,1]];
     let x0 = 0;
-    const y0 = 0;
-    for (const json of [jsonA, jsonC, jsonB, jsonD]) {
-      const primitive = ClipPrimitive.fromJSON(json[json.length - 1]);
-      if (primitive) {
-        exerciseClipPrimitive(ck, allGeometry, primitive, polygonToClip, isMask, x0, y0);
+    for (const isMask of [true, false]){
+      const jsonA = [{ shape: { points: outer } }, { shape: { points: triangle, mask: isMask } }];
+      const jsonB = [{ shape: { points: outer } }, { shape: { points: innerCircle, mask: isMask}}];
+      const jsonC = [{ shape: { points: outer } }, { shape: { points: innerNonConvex, mask: isMask}}];
+      const jsonD = [{ shape: { points: outer } }, { shape: { points: innerU, mask: isMask}}];
+      // const polygonToClip = Sample.createArcStrokes(3, Point3d.create(5, 5), 6.0, Angle.createDegrees(0), Angle.createDegrees(360));
+      const polygonToClip = Sample.createRectangleXY(-10, -10, 30, 30);
+      const y0 = 0;
+      for (const json of [jsonA, jsonC, jsonB, jsonD]) {
+        const primitive = ClipPrimitive.fromJSON(json[json.length - 1]);
+        if (primitive) {
+          exerciseClipPrimitive(ck, allGeometry, primitive, polygonToClip, isMask, x0, y0);
+        }
+        x0 += 50.0;
       }
-      x0 += 50.0;
     }
-}
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipVector", "OuterAndMask");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -413,7 +413,9 @@ export function exerciseClipPrimitive(ck: Checker, allGeometry: GeometryQuery[],
   expectContainment: boolean, // true if caller expects that the primitive shape is contained in the polygonToClip
   x0: number, y0: number) {
     const range2 = Range3d.createArray(polygonToClip);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, polygonToClip, x0, y0);
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, polygonToClip, x0, y0);
+  if (primitive instanceof ClipShape)
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, primitive.polygon, x0, y0);
   const range = Range3d.createArray(polygonToClip);
   const a = 2 * range.yLength();
   y0 += a;
