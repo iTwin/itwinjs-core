@@ -386,15 +386,12 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       expect(container.querySelector(".components-property-record--vertical")).to.be.not.null;
     });
 
-    it("changes orientation when props change and size is not specified", async () => {
-      sinon.stub(HTMLElement.prototype, "offsetHeight").get(() => 1200);
-      sinon.stub(HTMLElement.prototype, "offsetWidth").get(() => 500);
-
+    it("changes orientation when prop changes", async () => {
       const { container, rerender, findByText } = render(
         <VirtualizedPropertyGridWithDataProvider
           {...defaultProps}
-          width={undefined}
-          height={undefined}
+          width={500}
+          height={1200}
           orientation={Orientation.Horizontal}
           isOrientationFixed={true}
         />,
@@ -406,8 +403,8 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       rerender(
         <VirtualizedPropertyGridWithDataProvider
           {...defaultProps}
-          width={undefined}
-          height={undefined}
+          width={500}
+          height={1200}
           orientation={Orientation.Vertical}
           isOrientationFixed={true}
         />,

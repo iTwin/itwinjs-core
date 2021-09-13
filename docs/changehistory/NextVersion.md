@@ -340,6 +340,7 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `onPropertyLinkClick` prop in `usePropertyGridModelSource`  | `PropertyRecord.links.onClick`                                        |
 | `FilteringInputProps.filteringInProgress`                   | `FilteringInputProps.status`                                          |
 | `hasLinks`                                                  | `!!PropertyRecord.links?.length`                                      |
+| `PropertyListProps.onListWidthChanged`                      | Width is now passed to `PropertyList` through `PropertyListProps.width` prop |
 
 ### @bentley/ui-framework
 
@@ -561,6 +562,26 @@ The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to 
   ```
 
   `width` and `height` props may be calculated dynamically using [ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver) API.
+
+### PropertyGrid - related API Changes
+
+`width` and `height` are now required props for `VirtualizedPropertyGrid` and `VirtualizedPropertyGridWithDataProvider`. Also, `width` is now a required property for `PropertyList`. Previously they were optional and forced us to use non-optimal approach when not provided. Now it's up to the consumer to tell the size of the component. Typical migration:
+
+**Before:**
+
+```tsx
+return <VirtualizedPropertyGrid {...props} />;
+```
+
+**After:**
+
+```tsx
+const width = 100;
+const height = 100;
+return <VirtualizedPropertyGrid width={width} height={height} {...props} />;
+```
+
+`width` and `height` props may be calculated dynamically using [ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver) API.
 
 ### Deprecated Components in Favor of iTwinUI-react Components
 

@@ -997,10 +997,7 @@ export class FavoritePropertiesRenderer {
 }
 
 // @alpha
-export class FavoritePropertyList extends React.PureComponent<FavoritePropertyListProps> {
-    // @internal (undocumented)
-    render(): JSX.Element | null;
-}
+export function FavoritePropertyList(props: FavoritePropertyListProps): JSX.Element | null;
 
 // @alpha
 export interface FavoritePropertyListProps {
@@ -2617,16 +2614,10 @@ export interface PropertyLabelRendererProps {
 }
 
 // @public
-export class PropertyList extends React.Component<PropertyListProps, PropertyListState> {
+export class PropertyList extends React.Component<PropertyListProps> {
     constructor(props: PropertyListProps);
     // @internal (undocumented)
-    componentDidMount(): void;
-    // @internal (undocumented)
-    componentDidUpdate(): void;
-    // @internal (undocumented)
     render(): JSX.Element;
-    // @internal (undocumented)
-    readonly state: PropertyListState;
 }
 
 // @public
@@ -2649,7 +2640,6 @@ export interface PropertyListProps extends CommonProps {
     onEditCancel?: () => void;
     // (undocumented)
     onEditCommit?: (args: PropertyUpdatedArgs, category: PropertyCategory) => void;
-    onListWidthChanged?: (width: number) => void;
     // (undocumented)
     onPropertyClicked?: (property: PropertyRecord, key?: string) => void;
     // (undocumented)
@@ -2666,6 +2656,8 @@ export interface PropertyListProps extends CommonProps {
     propertyValueRendererManager?: PropertyValueRendererManager;
     // (undocumented)
     selectedPropertyKey?: string;
+    // (undocumented)
+    width: number;
 }
 
 // @public
@@ -4373,7 +4365,7 @@ export interface VirtualizedPropertyGridProps extends CommonPropertyGridProps {
     // (undocumented)
     eventHandler: IPropertyGridEventHandler;
     // (undocumented)
-    height?: number;
+    height: number;
     // (undocumented)
     highlight?: HighlightingComponentProps & {
         filteredTypes?: FilteredType[];
@@ -4383,7 +4375,7 @@ export interface VirtualizedPropertyGridProps extends CommonPropertyGridProps {
     // (undocumented)
     propertyCategoryRendererManager?: PropertyCategoryRendererManager;
     // (undocumented)
-    width?: number;
+    width: number;
 }
 
 // @beta
@@ -4394,7 +4386,7 @@ export interface VirtualizedPropertyGridWithDataProviderProps extends CommonProp
     // (undocumented)
     dataProvider: IPropertyDataProvider;
     // (undocumented)
-    height?: number;
+    height: number;
     // (undocumented)
     highlight?: HighlightingComponentProps & {
         filteredTypes?: FilteredType[];
@@ -4402,7 +4394,7 @@ export interface VirtualizedPropertyGridWithDataProviderProps extends CommonProp
     // (undocumented)
     propertyCategoryRendererManager?: PropertyCategoryRendererManager;
     // (undocumented)
-    width?: number;
+    width: number;
 }
 
 // @public

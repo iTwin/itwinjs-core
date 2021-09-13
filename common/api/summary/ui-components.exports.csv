@@ -103,7 +103,7 @@ public;EnumTypeConverter
 public;ErrorObserver
 beta;ExtendedTreeNodeRendererProps 
 beta;FavoritePropertiesRenderer
-alpha;FavoritePropertyList 
+alpha;FavoritePropertyList(props: FavoritePropertyListProps): JSX.Element | null
 alpha;FavoritePropertyListProps
 public;FieldFilterDescriptor 
 public;FilterableColumn

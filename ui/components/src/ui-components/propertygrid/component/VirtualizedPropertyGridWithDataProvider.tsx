@@ -26,8 +26,8 @@ export interface VirtualizedPropertyGridWithDataProviderProps extends CommonProp
     filteredTypes?: FilteredType[];
   };
   propertyCategoryRendererManager?: PropertyCategoryRendererManager;
-  width?: number;
-  height?: number;
+  width: number;
+  height: number;
 }
 
 /**
