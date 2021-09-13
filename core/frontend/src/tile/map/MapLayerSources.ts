@@ -27,8 +27,7 @@ export enum MapLayerSourceStatus {
 /** JSON representation of a map layer source.
  * @internal
  */
-interface MapLayerSourceProps
-{
+interface MapLayerSourceProps {
   /** Identifies the map layers source. Defaults to 'WMS'. */
   formatId?: string;
   /** Name */
@@ -50,7 +49,7 @@ interface MapLayerSourceProps
 /** A source for map layers.  These may be catalogued for convenient use by users or applications.
  * @internal
  */
-export class MapLayerSource  {
+export class MapLayerSource {
   public formatId: string;
   public name: string;
   public url: string;
@@ -97,7 +96,7 @@ export class MapLayerSource  {
 
   public toLayerSettings(subLayers?: MapSubLayerProps[]): MapLayerSettings | undefined {
     // When MapLayerSetting is created from a MapLayerSource, sub-layers and credentials need to be set separately.
-    const layerSettings = MapLayerSettings.fromJSON({...this, subLayers });
+    const layerSettings = MapLayerSettings.fromJSON({ ...this, subLayers });
     layerSettings?.setCredentials(this.userName, this.password);
     return layerSettings;
   }
@@ -115,7 +114,7 @@ export class MapLayerSources {
   private static _instance?: MapLayerSources;
   private constructor(private _sources: MapLayerSource[]) { }
 
-  public static getInstance() {return MapLayerSources._instance;}
+  public static getInstance() { return MapLayerSources._instance; }
 
   public findByName(name: string, baseMap: boolean = false): MapLayerSource | undefined {
     const nameTest = name.toLowerCase();
@@ -225,9 +224,9 @@ export class MapLayerSources {
       (await ArcGisUtilities.getSourcesFromQuery(sourceRange)).forEach((queriedSource) => addSource(queriedSource));
     }
 
-    if (iModel && iModel.contextId && iModel.iModelId) {
+    if (iModel && iModel.iTwinId && iModel.iModelId) {
       try {
-        (await MapLayerSettingsService.getSourcesFromSettingsService(iModel.contextId, iModel.iModelId)).forEach((source) => addSource(source));
+        (await MapLayerSettingsService.getSourcesFromSettingsService(iModel.iTwinId, iModel.iModelId)).forEach((source) => addSource(source));
       } catch (err) {
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.i18n.translate("mapLayers:CustomAttach.ErrorLoadingLayers"), err.toString()));
       }

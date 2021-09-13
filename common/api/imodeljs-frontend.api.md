@@ -1604,20 +1604,20 @@ export class BlankConnection extends IModelConnection {
     close(): Promise<void>;
     // @internal (undocumented)
     closeSync(): void;
-    get contextId(): GuidString | undefined;
-    set contextId(contextId: GuidString | undefined);
     static create(props: BlankConnectionProps): BlankConnection;
     get iModelId(): undefined;
     // (undocumented)
     isBlankConnection(): this is BlankConnection;
     get isClosed(): boolean;
+    get iTwinId(): GuidString | undefined;
+    set iTwinId(iTwinId: GuidString | undefined);
 }
 
 // @public
 export interface BlankConnectionProps {
-    contextId?: GuidString;
     extents: Range3dProps;
     globalOrigin?: XYZProps;
+    iTwinId?: GuidString;
     location: Cartographic | EcefLocationProps;
     name: string;
 }
@@ -1626,7 +1626,6 @@ export interface BlankConnectionProps {
 export class BriefcaseConnection extends IModelConnection {
     protected constructor(props: IModelConnectionProps, openMode: OpenMode);
     close(): Promise<void>;
-    get contextId(): GuidString;
     get editingScope(): GraphicalEditingScope | undefined;
     enterEditingScope(): Promise<GraphicalEditingScope>;
     hasPendingTxns(): Promise<boolean>;
@@ -1636,6 +1635,7 @@ export class BriefcaseConnection extends IModelConnection {
     get isClosed(): boolean;
     // (undocumented)
     protected _isClosed?: boolean;
+    get iTwinId(): GuidString;
     // @internal
     readonly onBufferedModelChanges: BeEvent<(changedModelIds: Set<string>) => void>;
     static openFile(briefcaseProps: OpenBriefcaseProps): Promise<BriefcaseConnection>;
@@ -1863,13 +1863,13 @@ export interface CheckboxFormatPropEditorSpec extends CustomFormatPropEditorSpec
 // @public
 export class CheckpointConnection extends IModelConnection {
     close(): Promise<void>;
-    get contextId(): GuidString;
     get iModelId(): GuidString;
     isCheckpointConnection(): this is CheckpointConnection;
     get isClosed(): boolean;
     // (undocumented)
     protected _isClosed?: boolean;
-    static openRemote(contextId: string, iModelId: string, version?: IModelVersion): Promise<CheckpointConnection>;
+    get iTwinId(): GuidString;
+    static openRemote(iTwinId: string, iModelId: string, version?: IModelVersion): Promise<CheckpointConnection>;
     }
 
 // @public
@@ -3053,10 +3053,10 @@ export namespace FeatureSymbology {
 }
 
 // @internal @deprecated (undocumented)
-export function findAvailableRealityModels(contextId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]>;
+export function findAvailableRealityModels(iTwinId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]>;
 
 // @internal @deprecated (undocumented)
-export function findAvailableUnattachedRealityModels(contextId: GuidString, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]>;
+export function findAvailableUnattachedRealityModels(iTwinId: GuidString, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]>;
 
 // @public
 export class FitViewTool extends ViewTool {
@@ -7457,8 +7457,8 @@ export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConn
 
 // @public
 export interface RealityDataQueryCriteria {
-    contextId: GuidString;
     filterIModel?: IModelConnection;
+    iTwinId: GuidString;
     range?: CartographicRange;
 }
 
@@ -7467,7 +7467,7 @@ export type RealityModelSource = ViewState | DisplayStyleState;
 
 // @internal
 export class RealityModelTileClient {
-    constructor(url: string, accessToken?: AccessToken, contextId?: string);
+    constructor(url: string, accessToken?: AccessToken, iTwinId?: string);
     // (undocumented)
     getBlobAccessData(): Promise<URL | undefined>;
     getRealityDataType(): Promise<string | undefined>;

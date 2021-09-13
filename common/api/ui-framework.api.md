@@ -3118,7 +3118,7 @@ export interface IModelServices {
     getUser(iModelId: string, userId: string): Promise<IModelUserInfo[]>;
     getUsers(iModelId: string): Promise<IModelUserInfo[]>;
     getVersions(iModelId: string): Promise<VersionInfo[]>;
-    openIModel(contextId: string, iModelId: string, changeSetId?: string): Promise<IModelConnection>;
+    openIModel(iTwinId: string, iModelId: string, changeSetId?: string): Promise<IModelConnection>;
 }
 
 // @internal
@@ -6634,7 +6634,7 @@ export class UiFramework {
     // @internal (undocumented)
     static get packageName(): string;
     // @internal
-    static postTelemetry(eventName: string, eventId?: GuidString, contextId?: GuidString, iModeId?: GuidString, changeSetId?: string, time?: TrackingTime, additionalProperties?: {
+    static postTelemetry(eventName: string, eventId?: GuidString, iTwinId?: GuidString, iModeId?: GuidString, changeSetId?: string, time?: TrackingTime, additionalProperties?: {
         [key: string]: any;
     }): Promise<void>;
     // @internal (undocumented)
