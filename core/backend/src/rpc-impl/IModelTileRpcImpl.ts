@@ -34,7 +34,7 @@ function generateTileRequestKey(props: TileRequestProps): string {
   const token = props.tokenProps;
   return `${JSON.stringify({
     key: token.key,
-    contextId: token.contextId,
+    iTwinId: token.iTwinId,
     iModelId: token.iModelId,
     changeSetId: token.changeset?.id,
   })}:${props.treeId}`;

@@ -205,21 +205,19 @@ See the [ConcurrencyControl]($docs/learning/backend/ConcurrencyControl.md) learn
 
 ## ITwinId
 
-Several api's in `iTwin.js` refer to the "context" for an iModel, meaning the *project or asset* to which the iModel belongs, as its `contextId`. That is very confusing, as the term "context" is very overloaded in computer science in general, and in iTwin.js in particular. That is resolved in iTwin.js V3.0 by recognizing that every iModel exists within an **iTwin**, and every iTwin has a GUID called its `iTwinId`. All instances of `contextId` in public apis are now replaced by 'iTwinId'.
+Several api's in **iTwin.js** refer to the "context" for an iModel, meaning the *project or asset* to which the iModel belongs, as its `contextId`. That is very confusing, as the term "context" is very overloaded in computer science in general, and in iTwin.js in particular. That is resolved in iTwin.js V3.0 by recognizing that every iModel exists within an **iTwin**, and every iTwin has a GUID called its `iTwinId`. All instances of `contextId` in public apis that mean *the iTwin for this iModel* are now replaced by `iTwinId`.
 
-This is a breaking change for places like [IModel.contextId]($common). However, it should be a straightforward search-and-replace 'contextId -> iTwinId` anywhere you get compilation errors in your code.
+This is a breaking change for places like `IModel.contextId`. However, it should be a straightforward search-and-replace `contextId` -> `iTwinId` anywhere you get compilation errors in your code.
 
 ## BriefcaseManager, BriefcaseDb, and IModelDb changes
 
-The signatures to several methods in [BriefcaseManager]($backend) and [BriefcaseDb]($backend) have been changed to make optional the previously required argument called `requestContext`. That argument is poorly named, but used (only) to identify a "user access token". Since anywhere briefcases are relevant an authenticated user access token is available the static method `IModelHost.getAccessToken`. The only (rare) case where a called needs to supply that argument is for tests the wish to simulate multiple users via a single backend (which is not permitted outside of tests.)
-
-In certain cases methods were renamed at the same time for consistency.
+The signatures to several methods in [BriefcaseManager]($backend) and [BriefcaseDb]($backend) have been changed to make optional the previously required argument called `requestContext`. That argument was poorly named, but used only to supply a "user access token". Since anywhere briefcases are relevant, an authenticated user access token is available via the static method `IModelHost.getAccessToken`, this argument is rarely needed. The only case where a caller needs to supply that argument is for tests that wish to simulate multiple users via a single backend (which is not permitted outside of tests.) It is now optional and called `user`.
 
 | Method                                   | New arguments                                         | notes                            |
 | ---------------------------------------- | ----------------------------------------------------- | -------------------------------- |
 | `BriefcaseDb.onOpen`                     | [OpenBriefcaseArgs]($backend)                         | event signature change           |
 | `BriefcaseDb.onOpened`                   | [BriefcaseDb]($backend),[OpenBriefcaseArgs]($backend) | event signature change           |
-| `BriefcaseDb.open`                       | [OpenBriefcaseArgs]($backend)                         | `requestContext` removed         |
+| `BriefcaseDb.open`                       | [OpenBriefcaseArgs]($backend)                         |                                  |
 | `BriefcaseDb.pullChanges`                | [PullChangesArgs]($backend)                           | was called `pullAndMergeChanges` |
 | `BriefcaseDb.pushChanges`                | [PushChangesArgs]($backend)                           |                                  |
 | `BriefcaseDb.upgradeSchemas`             | [OpenBriefcaseArgs]($backend)                         | `requestContext` removed         |

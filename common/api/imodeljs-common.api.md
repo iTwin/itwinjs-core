@@ -4138,9 +4138,6 @@ export abstract class IModel implements IModelProps {
     cartographicToSpatialFromEcef(cartographic: Cartographic, result?: Point3d): Point3d;
     // (undocumented)
     changeset: ChangesetIdWithIndex;
-    get contextId(): GuidString | undefined;
-    // @internal (undocumented)
-    protected _contextId?: GuidString;
     static readonly dictionaryId: Id64String;
     get ecefLocation(): EcefLocation | undefined;
     set ecefLocation(ecefLocation: EcefLocation | undefined);
@@ -4164,6 +4161,9 @@ export abstract class IModel implements IModelProps {
     // (undocumented)
     abstract get isOpen(): boolean;
     abstract get isSnapshot(): boolean;
+    get iTwinId(): GuidString | undefined;
+    // @internal (undocumented)
+    protected _iTwinId?: GuidString;
     get key(): string;
     get name(): string;
     set name(name: string);
@@ -4296,8 +4296,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
 // @public
 export interface IModelRpcOpenProps {
     readonly changeset?: ChangesetIdWithIndex;
-    readonly contextId?: GuidString;
     readonly iModelId?: GuidString;
+    readonly iTwinId?: GuidString;
 }
 
 // @public
