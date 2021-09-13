@@ -284,7 +284,7 @@ export class FrontstageDef {
     if (contentControl) {
       ContentViewManager.setActiveContent(contentControl.reactNode, true);
       if (contentControl.viewport)
-        IModelApp.viewManager.setSelectedView(contentControl.viewport);
+        void IModelApp.viewManager.setSelectedView(contentControl.viewport);
       activated = true;
     }
 

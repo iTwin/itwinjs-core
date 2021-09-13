@@ -120,7 +120,7 @@ export class ContentViewManager {
               this.onActiveContentChangedEvent.emit({ activeContent, oldContent });
             } else {
               if (activeContentControl.viewport && activeContentControl.viewport !== IModelApp.viewManager.selectedView) {
-                IModelApp.viewManager.setSelectedView(activeContentControl.viewport);
+                void IModelApp.viewManager.setSelectedView(activeContentControl.viewport);
               }
             }
           }

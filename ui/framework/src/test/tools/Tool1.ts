@@ -12,7 +12,7 @@ export class Tool1 extends PrimitiveTool {
   public readonly points: Point3d[] = [];
 
   public override requireWriteableTarget(): boolean { return false; }
-  public override async onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
 
   public setupAndPromptForNextAction(): void {
     IModelApp.notifications.outputPromptByKey("SampleApp:tools.Tool1.Prompts.GetPoint");
@@ -25,13 +25,13 @@ export class Tool1 extends PrimitiveTool {
   }
 
   public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
-    IModelApp.toolAdmin.startDefaultTool();
+    await IModelApp.toolAdmin.startDefaultTool();
     return EventHandled.No;
   }
 
   public async onRestartTool() {
     const tool = new Tool1();
     if (!await tool.run())
-      this.exitTool();
+      return this.exitTool();
   }
 }
