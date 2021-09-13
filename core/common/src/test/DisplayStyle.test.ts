@@ -251,25 +251,25 @@ describe("DisplayStyleSettings", () => {
   });
 
   // ###TODO @rbbentley
-  it.skip("synchronizes BackgroundMapSettings with MapLayerSettings", () => {
-    const style = new DisplayStyleSettings({});
-    expect(style.backgroundMap.providerName).to.equal("BingProvider");
-    expect(style.backgroundMap.mapType).to.equal(BackgroundMapType.Hybrid);
+  // it.skip("synchronizes BackgroundMapSettings with MapLayerSettings", () => {
+  //   const style = new DisplayStyleSettings({});
+  //   expect(style.backgroundMap.providerName).to.equal("BingProvider");
+  //   expect(style.backgroundMap.mapType).to.equal(BackgroundMapType.Hybrid);
 
-    let base = style.mapImagery.backgroundBase as MapLayerSettings;
-    expect(base).instanceOf(MapLayerSettings);
-    expect(base.formatId).to.equal("BingMaps");
-    expect(base.url.indexOf("AerialWithLabels")).least(1);
+  //   let base = style.mapImagery.backgroundBase as MapLayerSettings;
+  //   expect(base).instanceOf(MapLayerSettings);
+  //   expect(base.formatId).to.equal("BingMaps");
+  //   expect(base.url.indexOf("AerialWithLabels")).least(1);
 
-    style.backgroundMap = style.backgroundMap.clone({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street } });
-    base = style.mapImagery.backgroundBase as MapLayerSettings;
-    expect(base.formatId).to.equal("MapboxImagery");
-    expect(base.url.indexOf("mapbox.streets/")).least(1);
+  //   style.backgroundMap = style.backgroundMap.clone({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street } });
+  //   base = style.mapImagery.backgroundBase as MapLayerSettings;
+  //   expect(base.formatId).to.equal("MapboxImagery");
+  //   expect(base.url.indexOf("mapbox.streets/")).least(1);
 
-    style.mapImagery.backgroundBase = MapLayerSettings.fromMapSettings(style.backgroundMap.clone({ providerData: { mapType: BackgroundMapType.Aerial } }));
-    expect(style.backgroundMap.providerName).to.equal("MapBoxProvider");
-    expect(style.backgroundMap.mapType).to.equal(BackgroundMapType.Aerial);
-  });
+  //   style.mapImagery.backgroundBase = MapLayerSettings.fromMapSettings(style.backgroundMap.clone({ providerData: { mapType: BackgroundMapType.Aerial } }));
+  //   expect(style.backgroundMap.providerName).to.equal("MapBoxProvider");
+  //   expect(style.backgroundMap.mapType).to.equal(BackgroundMapType.Aerial);
+  // });
 });
 
 describe("DisplayStyleSettings overrides", () => {
@@ -346,9 +346,9 @@ describe("DisplayStyleSettings overrides", () => {
   const mapProps: DisplayStyle3dSettingsProps = {
     backgroundMap: {
       groundBias: 42,
-      providerData: {
-        mapType: BackgroundMapType.Aerial,
-      },
+      // providerData: {
+      //   mapType: BackgroundMapType.Aerial,
+      // },
       transparency: 0.5,
       useDepthBuffer: true,
       globeMode: GlobeMode.Plane,
@@ -547,7 +547,7 @@ describe("DisplayStyleSettings overrides", () => {
       viewflags,
       backgroundMap: {
         groundBias: 84,
-        providerData: { mapType: BackgroundMapType.Street },
+        // providerData: { mapType: BackgroundMapType.Street },
         applyTerrain: true,
         terrainSettings: { exaggeration: 0.5, heightOriginMode: 1 },
       },

@@ -40,16 +40,18 @@ export enum GlobeMode {
 export interface BackgroundMapProps {
   /** The elevation of the map in meters relative the WGS84 ellipsoid. Default value: 0. */
   groundBias?: number;
-  /** Identifies the source of the map tiles. Currently supported providers are "BingProvider" and "MapBoxProvider". Support for additional providers may be added in the future.
-   *
-   * Default value: "BingProvider"
-   */
-  providerName?: string;
-  /** Options for customizing the tiles supplied by the provider. If undefined, default values of all members are used. */
-  providerData?: {
-    /** The type of map graphics to request. Default value: BackgroundMapType.Hybrid. */
-    mapType?: BackgroundMapType;
-  };
+
+  // /** Identifies the source of the map tiles. Currently supported providers are "BingProvider" and "MapBoxProvider". Support for additional providers may be added in the future.
+  //  *
+  //  * Default value: "BingProvider"
+  //  */
+  // providerName?: string;
+  // /** Options for customizing the tiles supplied by the provider. If undefined, default values of all members are used. */
+  // providerData?: {
+  //   /** The type of map graphics to request. Default value: BackgroundMapType.Hybrid. */
+  //   mapType?: BackgroundMapType;
+  // };
+
   /** A transparency value from 0.0 (fully opaque) to 1.0 (fully transparent) to apply to map graphics when drawing, or false to indicate the transparency should not be overridden. Default value: false. */
   transparency?: number | false;
   /** If set to true, the map tiles will be rendered with depth, allowing them to obscure other geometry. Otherwise, they are always rendered behind all other geometry. Default value: false. */
@@ -75,15 +77,15 @@ export interface BackgroundMapProps {
  */
 export type BackgroundMapProviderName = "BingProvider" | "MapBoxProvider";
 
-function normalizeMapType(props: BackgroundMapProps): BackgroundMapType {
-  switch (props.providerData?.mapType) {
-    case BackgroundMapType.Street:
-    case BackgroundMapType.Aerial:
-      return props.providerData.mapType;
-    default:
-      return BackgroundMapType.Hybrid;
-  }
-}
+// function normalizeMapType(props: BackgroundMapProps): BackgroundMapType {
+//   switch (props.providerData?.mapType) {
+//     case BackgroundMapType.Street:
+//     case BackgroundMapType.Aerial:
+//       return props.providerData.mapType;
+//     default:
+//       return BackgroundMapType.Hybrid;
+//   }
+// }
 
 function normalizeGlobeMode(mode?: GlobeMode): GlobeMode {
   return GlobeMode.Plane === mode ? mode : GlobeMode.Ellipsoid;
@@ -107,9 +109,9 @@ export class BackgroundMapSettings {
   /** Elevation in meters, relative to WGS84 Ellipsoid.. */
   public readonly groundBias: number;
   /** Identifies the provider from which map image will be obtained. */
-  public readonly providerName: BackgroundMapProviderName;
+  // public readonly providerName: BackgroundMapProviderName;
   /** The type of map graphics to be drawn. */
-  public readonly mapType: BackgroundMapType;
+  // public readonly mapType: BackgroundMapType;
   /** A transparency value from 0.0 (fully opaque) to 1.0 (fully transparent) to apply to map graphics when drawing, or false to indicate the transparency should not be overridden. Default value: false. */
   public readonly transparency: number | false;
   /** If set to true, the map tiles will be rendered with depth, allowing them to obscure other geometry. Otherwise, they are always rendered behind all other geometry. Default value: false. */
@@ -143,8 +145,8 @@ export class BackgroundMapSettings {
 
   private constructor(props: BackgroundMapProps) {
     this.groundBias = props.groundBias ?? 0;
-    this.providerName = normalizeProviderName(props.providerName);
-    this.mapType = normalizeMapType(props);
+    // this.providerName = normalizeProviderName(props.providerName);
+    // this.mapType = normalizeMapType(props);
     this.transparency = normalizeTransparency(props.transparency);
     this.useDepthBuffer = props.useDepthBuffer ?? false;
     this.applyTerrain = props.applyTerrain ?? false;
@@ -163,12 +165,12 @@ export class BackgroundMapSettings {
     const props: BackgroundMapProps = {};
     if (0 !== this.groundBias)
       props.groundBias = this.groundBias;
-    if ("BingProvider" !== this.providerName)
-      props.providerName = this.providerName;
+    // if ("BingProvider" !== this.providerName)
+    //   props.providerName = this.providerName;
     if (this.applyTerrain)
       props.applyTerrain = true;
-    if (BackgroundMapType.Hybrid !== this.mapType)
-      props.providerData = { mapType: this.mapType };
+    // if (BackgroundMapType.Hybrid !== this.mapType)
+    //   props.providerData = { mapType: this.mapType };
     if (false !== this.transparency)
       props.transparency = this.transparency;
     if (GlobeMode.Ellipsoid !== this.globeMode)
@@ -197,7 +199,8 @@ export class BackgroundMapSettings {
   }
 
   public equals(other: BackgroundMapSettings): boolean {
-    return this.groundBias === other.groundBias && this.providerName === other.providerName && this.mapType === other.mapType
+    // return this.groundBias === other.groundBias && this.providerName === other.providerName && this.mapType === other.mapType
+    return this.groundBias === other.groundBias
       && this.useDepthBuffer === other.useDepthBuffer && this.transparency === other.transparency && this.globeMode === other.globeMode
       && this._locatable === other._locatable && this.applyTerrain === other.applyTerrain && this.terrainSettings.equals(other.terrainSettings) && this.planarClipMask.equals(other.planarClipMask);
   }
@@ -212,7 +215,7 @@ export class BackgroundMapSettings {
       return this;
 
     const props = {
-      providerName: changedProps.providerName ?? this.providerName,
+      // providerName: changedProps.providerName ?? this.providerName,
       groundBias: changedProps.groundBias ?? this.groundBias,
       transparency: changedProps.transparency ?? this.transparency,
       useDepthBuffer: changedProps.useDepthBuffer ?? this.useDepthBuffer,
@@ -220,9 +223,9 @@ export class BackgroundMapSettings {
       nonLocatable: changedProps.nonLocatable ?? !this._locatable,
       applyTerrain: changedProps.applyTerrain ?? this.applyTerrain,
       terrainSettings: changedProps.terrainSettings ? this.terrainSettings.clone(changedProps.terrainSettings).toJSON() : this.terrainSettings.toJSON(),
-      providerData: {
-        mapType: changedProps.providerData?.mapType ?? this.mapType,
-      },
+      // providerData: {
+      //   mapType: changedProps.providerData?.mapType ?? this.mapType,
+      // },
       planarClipMask: changedProps.planarClipMask ? this.planarClipMask.clone(changedProps.planarClipMask).toJSON() : this.planarClipMask.toJSON(),
     };
 
@@ -230,29 +233,29 @@ export class BackgroundMapSettings {
   }
 
   /** @internal */
-  public static providerFromMapLayer(props: MapLayerProps): BackgroundMapProps | undefined {
-    let providerName, mapType;
-    if (!props.url)
-      return undefined;
-    if (props.formatId === "BingMaps") {
-      providerName = "BingProvider";
-      if (props.url.indexOf("Road") > 0)
-        mapType = BackgroundMapType.Street;
-      else if (props.url.indexOf("AerialWithLabels") > 0)
-        mapType = BackgroundMapType.Hybrid;
-      else if (props.url.indexOf("Aerial") > 0)
-        mapType = BackgroundMapType.Aerial;
-    } else if (props.formatId === "MapboxImagery") {
-      providerName = "MapBoxProvider";
-      if (props.url.indexOf("streets-satellite") > 0)
-        mapType = BackgroundMapType.Hybrid;
-      else if (props.url.indexOf("streets") > 0)
-        mapType = BackgroundMapType.Street;
-      else if (props.url.indexOf("satellite") > 0)
-        mapType = BackgroundMapType.Aerial;
-    } else
-      return undefined;
+  // public static providerFromMapLayer(props: MapLayerProps): BackgroundMapProps | undefined {
+  //   let providerName, mapType;
+  //   if (!props.url)
+  //     return undefined;
+  //   if (props.formatId === "BingMaps") {
+  //     providerName = "BingProvider";
+  //     if (props.url.indexOf("Road") > 0)
+  //       mapType = BackgroundMapType.Street;
+  //     else if (props.url.indexOf("AerialWithLabels") > 0)
+  //       mapType = BackgroundMapType.Hybrid;
+  //     else if (props.url.indexOf("Aerial") > 0)
+  //       mapType = BackgroundMapType.Aerial;
+  //   } else if (props.formatId === "MapboxImagery") {
+  //     providerName = "MapBoxProvider";
+  //     if (props.url.indexOf("streets-satellite") > 0)
+  //       mapType = BackgroundMapType.Hybrid;
+  //     else if (props.url.indexOf("streets") > 0)
+  //       mapType = BackgroundMapType.Street;
+  //     else if (props.url.indexOf("satellite") > 0)
+  //       mapType = BackgroundMapType.Aerial;
+  //   } else
+  //     return undefined;
 
-    return mapType !== undefined && providerName !== undefined ?  { providerName, providerData: { mapType } } : undefined;
-  }
+  //   return mapType !== undefined && providerName !== undefined ?  { providerName, providerData: { mapType } } : undefined;
+  // }
 }

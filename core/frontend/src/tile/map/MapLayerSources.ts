@@ -79,18 +79,18 @@ export class MapLayerSource  {
   public async validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
     return IModelApp.mapLayerFormatRegistry.validateSource(this.formatId, this.url, this.getCredentials(), ignoreCache);
   }
-  public static fromBackgroundMapProps(props: BackgroundMapProps) {
-    const settings = BackgroundMapSettings.fromJSON(props);
-    if (undefined !== settings) {
-      const layerSettings = MapLayerSettings.fromMapSettings(settings);
-      if (undefined !== layerSettings) {
-        const source = MapLayerSource.fromJSON(layerSettings);
-        source!.baseMap = true;
-        return source;
-      }
-    }
-    return undefined;
-  }
+  // public static fromBackgroundMapProps(props: BackgroundMapProps) {
+  //   const settings = BackgroundMapSettings.fromJSON(props);
+  //   if (undefined !== settings) {
+  //     const layerSettings = MapLayerSettings.fromMapSettings(settings);
+  //     if (undefined !== layerSettings) {
+  //       const source = MapLayerSource.fromJSON(layerSettings);
+  //       source!.baseMap = true;
+  //       return source;
+  //     }
+  //   }
+  //   return undefined;
+  // }
   public toJSON() {
     return { url: this.url, name: this.name, formatId: this.formatId, transparentBackground: this.transparentBackground };
   }
@@ -153,17 +153,17 @@ export class MapLayerSources {
 
   private static getBingMapLayerSource(): MapLayerSource[] {
     const mapLayerSources: MapLayerSource[] = [];
-    mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Street } })!);
-    mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Aerial } })!);
-    mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid } })!);
+    // mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Street } })!);
+    // mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Aerial } })!);
+    // mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid } })!);
     return mapLayerSources;
   }
 
   private static getMapBoxLayerSource(): MapLayerSource[] {
     const mapLayerSources: MapLayerSource[] = [];
-    mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street } })!);
-    mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Aerial } })!);
-    mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Hybrid } })!);
+    // mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street } })!);
+    // mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Aerial } })!);
+    // mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Hybrid } })!);
     return mapLayerSources;
   }
 

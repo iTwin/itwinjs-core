@@ -55,7 +55,7 @@ export class GeoJsonImporter {
 
     this._viewFlags = new ViewFlags({ renderMode: RenderMode.SmoothShade, backgroundMap: undefined !== mapType });
     if (undefined !== mapType)
-      this._backgroundMap = { providerName: "BingProvider", groundBias: mapGroundBias, providerData: { mapType } };
+      //this._backgroundMap = { providerName: "BingProvider", groundBias: mapGroundBias, providerData: { mapType } };
   }
 
   /** Perform the import */

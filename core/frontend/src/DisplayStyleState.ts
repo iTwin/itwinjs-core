@@ -167,10 +167,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public changeBackgroundMapProps(props: BackgroundMapProps): void {
     const newSettings = this.backgroundMapSettings.clone(props);
     this.backgroundMapSettings = newSettings;
+    /* Disabled:  changebasemapprops should be used instead.
     if (props.providerName !== undefined || props.providerData?.mapType !== undefined) {
       const mapBase = MapLayerSettings.fromMapSettings(newSettings);
       this.settings.mapImagery.backgroundBase = mapBase;
     }
+    */
   }
 
   /** Call a function for each reality model attached to this display style.
@@ -402,9 +404,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
         if (backgroundLayerSettings)
           this.settings.mapImagery.backgroundBase = backgroundLayerSettings;
       }
-      const mapProvider = BackgroundMapSettings.providerFromMapLayer(props);
-      if (mapProvider)
-        this.backgroundMapSettings = this.backgroundMapSettings.clone(mapProvider);
+      // const mapProvider = BackgroundMapSettings.providerFromMapLayer(props);
+      // if (mapProvider)
+      //   this.backgroundMapSettings = this.backgroundMapSettings.clone(mapProvider);
     }
     this._synchBackgroundMapImagery();
   }
@@ -414,15 +416,14 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       let transparency = 0;
       if (this.settings.mapImagery2.backgroundBase.source instanceof ColorDef)
         transparency = this.settings.mapImagery2.backgroundBase.source.getTransparency();
-      this.settings.mapImagery.backgroundBase = props.withTransparency(transparency);
+      this.settings.mapImagery2.backgroundBase.source = props.withTransparency(transparency);
     } else if (BackgroundMapProvider.isMatchingProps(props)) {
       // BackgroundMapProvider
-      //if (BackgroundMapProvider.isMatchingProps(this.settings.mapImagery.backgroundBase) {
-      if (this.settings.mapImagery.backgroundBase instanceof BackgroundMapProvider) {
+      // if (BackgroundMapProvider.isMatchingProps(this.settings.mapImagery.backgroundBase) {
+      if (this.settings.mapImagery2.backgroundBase instanceof BackgroundMapProvider) {
         const mapProvider = this.settings.mapImagery2.backgroundBase.source as BackgroundMapProvider;
         this.settings.mapImagery2.backgroundBase.source = mapProvider.clone(props as BackgroundMapProviderProps);
-      }
-      else {
+      } else {
         this.settings.mapImagery2.backgroundBase.source = BackgroundMapProvider.fromJSON(props as BackgroundMapProviderProps);
       }
     } else {
@@ -432,7 +433,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       else {
         const backgroundLayerSettings = MapLayerSettings.fromJSON(props as MapLayerSettings);
         if (backgroundLayerSettings)
-          this.settings.mapImagery.backgroundBase = backgroundLayerSettings;
+          this.settings.mapImagery2.backgroundBase.source = backgroundLayerSettings;
       }
     }
     this._synchBackgroundMapImagery();

@@ -65,13 +65,68 @@ export class BackgroundMapProvider {
   }
 
   public toJSON(): BackgroundMapProviderProps {
-    const props: BackgroundMapProps = {};
+    const props: BackgroundMapProviderProps = {};
 
     if ("BingProvider" !== this.providerName)
       props.providerName = this.providerName;
     if (BackgroundMapType.Hybrid !== this.mapType)
       props.providerData = { mapType: this.mapType };
     return props;
+  }
+
+  private mapTypeName() {   // TBD.. Localization.
+    switch (this.mapType) {
+      case BackgroundMapType.Aerial:
+        return "Aerial Imagery";
+      default:
+      case BackgroundMapType.Hybrid:
+        return "Aerial Imagery with labels";
+      case BackgroundMapType.Street:
+        return "Streets";
+    }
+  }
+
+  public toMapSettings(): MapLayerSettings {
+    let formatId: string, url: string, name: string;
+    switch (this.providerName) {
+      case "BingProvider":
+      default:
+        formatId = "BingMaps";
+
+        let imagerySet;
+        switch (this.mapType) {
+          case BackgroundMapType.Street:
+            imagerySet = "Road";
+            break;
+          case BackgroundMapType.Aerial:
+            imagerySet = "Aerial";
+            break;
+          case BackgroundMapType.Hybrid:
+          default:
+            imagerySet = "AerialWithLabels";
+            break;
+        }
+        name = `Bing Maps: ${this.mapTypeName()}`;
+        url = `https://dev.virtualearth.net/REST/v1/Imagery/Metadata/${imagerySet}?o=json&incl=ImageryProviders&key={bingKey}`;
+        break;
+
+      case "MapBoxProvider":
+        formatId = "MapboxImagery";
+        name = `MapBox: ${this.mapTypeName()}`;
+        switch (this.mapType) {
+          case BackgroundMapType.Street:
+            url = "https://api.mapbox.com/v4/mapbox.streets/";
+            break;
+          case BackgroundMapType.Aerial:
+            url = "https://api.mapbox.com/v4/mapbox.satellite/";
+            break;
+          case BackgroundMapType.Hybrid:
+            url = "https://api.mapbox.com/v4/mapbox.streets-satellite/";
+            break;
+        }
+        break;
+    }
+    return MapLayerSettings.fromJSON({ name, formatId, url, transparentBackground: false, isBase: true })!;
   }
 
   public clone(changedProps: BackgroundMapProviderProps): BackgroundMapProvider {
@@ -93,8 +148,8 @@ export class BackgroundMapProvider {
     return new BackgroundMapProvider(props);
   }
 
-  public static isMatchingProps(props: any) : boolean {
-    return props?.hasOwnProperty('providerName');
+  public static isMatchingProps(props: any): boolean {
+    return props?.hasOwnProperty("providerName");
   }
 }
 
@@ -105,7 +160,6 @@ export type BaseLayerSettings = MapLayerSettings | ColorDef;
 
 export type BaseLayerSource = MapLayerSettings | ColorDef | BackgroundMapProvider;
 export type BaseLayerSourceProps = MapLayerProps | ColorDefProps | BackgroundMapProviderProps;
-
 
 export interface BaseLayerSettings2Props {
   displaySettings: BackgroundMapProps;
@@ -118,20 +172,20 @@ export class BaseLayerSettings2 {
   private constructor(sourceProps?: BaseLayerSourceProps, displaySettingsProps?: BackgroundMapProps) {
 
     let source;
-     if (typeof sourceProps === "number") {
-      source = ColorDef.create(sourceProps)
-     } else if (BackgroundMapProvider.isMatchingProps(sourceProps)) {
-        source = BackgroundMapProvider.fromJSON(sourceProps as BackgroundMapProviderProps)
-     } else {
+    if (typeof sourceProps === "number") {
+      source = ColorDef.create(sourceProps);
+    } else if (BackgroundMapProvider.isMatchingProps(sourceProps)) {
+      source = BackgroundMapProvider.fromJSON(sourceProps as BackgroundMapProviderProps);
+    } else {
       source = MapLayerSettings.fromJSON(sourceProps as MapLayerProps|undefined);
-     }
+    }
 
     if (source) {
       this._source = source;
     } else {
       // Default to Bing aerial
-      this._source = BackgroundMapProvider.fromJSON({providerName: "Bing", "providerData" : {mapType: BackgroundMapType.Aerial}});
-    };
+      this._source = BackgroundMapProvider.fromJSON({providerName: "Bing", providerData : {mapType: BackgroundMapType.Aerial}});
+    }
 
     this._displaySettings = BackgroundMapSettings.fromJSON(displaySettingsProps);
 
@@ -142,7 +196,6 @@ export class BaseLayerSettings2 {
 
   public get source(): BaseLayerSource { return this._source; }
   public set source(source: BaseLayerSource) { this._source = source; }
-
 
   /** Construct from JSON, performing validation and applying default values for undefined fields. */
   public static fromJSON(baseLayerSettingsProps?: BaseLayerSettings2Props) {
@@ -156,7 +209,7 @@ export class BaseLayerSettings2 {
   public toJSON(): BaseLayerSettings2Props {
     return {
       displaySettings: this._displaySettings.toJSON(),
-      source: this._source.toJSON()
+      source: this._source.toJSON(),
     };
   }
 
@@ -169,14 +222,13 @@ export class BaseLayerSettings2 {
  * @beta
  */
 
-
- export interface MapImageryProps2 {
+export interface MapImageryProps2 {
   backgroundBase?: BaseLayerSettings2Props;
   backgroundLayers?: MapLayerProps[];
   overlayLayers?: MapLayerProps[];
 }
 
- export class MapImagerySettings2 {
+export class MapImagerySettings2 {
   private _backgroundBase: BaseLayerSettings2;
   private _backgroundLayers = new Array<MapLayerSettings>();
   private _overlayLayers = new Array<MapLayerSettings>();
@@ -214,14 +266,14 @@ export class BaseLayerSettings2 {
    * @internal
    */
   public get baseTransparency(): number {
-    this._backgroundBase.source
+    this._backgroundBase.source;
     if  (this._backgroundBase.source instanceof ColorDef) {
       return (this._backgroundBase.source.getTransparency() / 255);
     } else if (BackgroundMapProvider.isMatchingProps(this._backgroundBase.source )) {
       // TODO: Review this, we don't have transparency on BackgroundMapProvider
       return 0;
     } else {
-      return  (this._backgroundBase.source as MapLayerSettings).transparency
+      return  (this._backgroundBase.source as MapLayerSettings).transparency;
     }
 
   }
@@ -245,9 +297,12 @@ export class MapImagerySettings {
   private _backgroundLayers = new Array<MapLayerSettings>();
   private _overlayLayers = new Array<MapLayerSettings>();
 
-  private constructor(backgroundBaseProps?: BaseLayerProps, backgroundLayerProps?: MapLayerProps[], overlayLayersProps?: MapLayerProps[], mapProps?: BackgroundMapProps) {
+  private constructor(backgroundBaseProps?: BaseLayerProps, backgroundLayerProps?: MapLayerProps[], overlayLayersProps?: MapLayerProps[], _mapProps?: BackgroundMapProps) {
     const base = typeof backgroundBaseProps === "number" ? ColorDef.create(backgroundBaseProps) : MapLayerSettings.fromJSON(backgroundBaseProps);
-    this._backgroundBase = base ? base : MapLayerSettings.fromMapSettings(BackgroundMapSettings.fromJSON(mapProps));
+
+    // If could not create a BaseLayerSettings from backgroundBaseProps, then defaults to Bing aerial
+    //      this._backgroundBase = base ? base : MapLayerSettings.fromMapSettings({BackgroundMapSettings.fromJSON(mapProps)});
+    this._backgroundBase = base ? base : MapLayerSettings.fromJSON({ name:"Bing maps", formatId:"BingMaps", url:"https://dev.virtualearth.net/REST/v1/Imagery/Metadata/AerialWithLabels?o=json&incl=ImageryProviders&key={bingKey}", transparentBackground: false, isBase: true })!;
     if (backgroundLayerProps) {
       for (const layerProps of backgroundLayerProps) {
         const layer = MapLayerSettings.fromJSON(layerProps);

@@ -492,6 +492,7 @@ export class DisplayStyleSettings {
    * @alpha
    */
   public readonly onMapImageryChanged = new BeEvent<(newImagery: Readonly<MapImagerySettings>) => void>();
+  public readonly onMapImageryChanged2 = new BeEvent<(newImagery: Readonly<MapImagerySettings2>) => void>();
   /** Event raised just prior to assignment to the `scheduleScriptProps` property.
    * @deprecated Use onRenderTimelineChanged
    * @internal
@@ -657,6 +658,12 @@ export class DisplayStyleSettings {
   public get mapImagery(): MapImagerySettings { return this._mapImagery; }
   public get mapImagery2(): MapImagerySettings2 { return this._mapImagery2; }
 
+  public set mapImagery2(mapImagery: MapImagerySettings2) {
+    this.onMapImageryChanged2.raiseEvent(mapImagery);
+    this._mapImagery2 = mapImagery;
+    this._json.mapImagery = this._mapImagery.toJSON();
+  }
+
   public set mapImagery(mapImagery: MapImagerySettings) {
     this.onMapImageryChanged.raiseEvent(mapImagery);
     this._mapImagery = mapImagery;
@@ -668,6 +675,7 @@ export class DisplayStyleSettings {
    */
   public synchMapImagery() {
     this.onMapImageryChanged.raiseEvent(this._mapImagery);
+    this.onMapImageryChanged2.raiseEvent(this._mapImagery2);
     this._json.mapImagery = this._mapImagery.toJSON();
   }
 
