@@ -8,8 +8,8 @@
 
 import { SectionType } from "@bentley/imodeljs-common";
 import {
-  I18N,
-  I18NNamespace,
+  LocalizationNamespace,
+  LocalizationProvider,
 } from "@bentley/imodeljs-i18n";
 import {
   IModelApp,
@@ -198,7 +198,7 @@ class SectionMarkerDecoratorConfigTool extends SectionMarkerConfigTool {
 }
 
 /** @internal */
-export function registerTools(namespace: I18NNamespace | undefined, i18n: I18N): void {
+export function registerTools(namespace: LocalizationNamespace | undefined, i18n: LocalizationProvider): void {
   const register = (tool: typeof Tool) => IModelApp.tools.register(tool, namespace, i18n);
   register(HyperModelingTool);
   register(SectionGraphicsConfigTool);

@@ -10,7 +10,7 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { Point3d, XAndY } from "@bentley/geometry-core";
 import { ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
 import { FrontendLoggerCategory, imageElementFromImageSource, IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
-import { I18NNamespace } from "@bentley/imodeljs-i18n";
+import { LocalizationNamespace } from "@bentley/imodeljs-i18n";
 import { adopt, create, G, Matrix, Point, Svg, SVG } from "@svgdotjs/svg.js";
 import * as redlineTool from "./RedlineTool";
 import { MarkupSelected, SelectTool } from "./SelectTool";
@@ -55,7 +55,7 @@ export class MarkupApp {
   /** the current Markup being created */
   public static markup?: Markup;
   /** The namespace for the Markup tools */
-  public static namespace: I18NNamespace;
+  public static namespace?: LocalizationNamespace;
   /** By setting members of this object, applications can control the appearance and behavior of various parts of MarkupApp. */
   public static props = {
     /** the UI controls displayed on Elements by the Select Tool to allow users to modify them. */
@@ -204,7 +204,7 @@ export class MarkupApp {
   }
 
   /** @internal */
-  public static getActionName(action: string) { return IModelApp.i18n.translate(`${this.namespace.name}:actions.${action}`); }
+  public static getActionName(action: string) { return IModelApp.localizationProvider.getLocalizedString(`${this.namespace?.name}:actions.${action}`); }
 
   /** Start a markup session */
   public static async start(view: ScreenViewport, markupData?: MarkupSvgData): Promise<void> {
@@ -265,12 +265,12 @@ export class MarkupApp {
    */
   public static async initialize(): Promise<void> {
     if (undefined === this.namespace) {     // only need to do this once
-      this.namespace = IModelApp.i18n.registerNamespace("MarkupTools");
+      this.namespace = IModelApp.localizationProvider.registerNamespace("MarkupTools");
       IModelApp.tools.register(SelectTool, this.namespace);
       IModelApp.tools.registerModule(redlineTool, this.namespace);
       IModelApp.tools.registerModule(textTool, this.namespace);
     }
-    return this.namespace.readFinished; // so caller can make sure localized messages are ready.
+    return this.namespace?.readFinished; // so caller can make sure localized messages are ready.
   }
 
   /** convert the current markup SVG into a string, but don't include decorations or dynamics

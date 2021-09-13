@@ -127,7 +127,7 @@ export abstract class MapLayerImageryProvider {
         // and then encountered an error, otherwise I assume an error was already reported
         // through the source validation process.
         if (this._hasSuccessfullyFetchedTile) {
-          const msg = IModelApp.i18n.translate("iModelJs:MapLayers.Messages.LoadTileTokenError", { layerName: this._settings.name });
+          const msg = IModelApp.localizationProvider.getLocalizedString("iModelJs:MapLayers.Messages.LoadTileTokenError", { layerName: this._settings.name });
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
         }
 

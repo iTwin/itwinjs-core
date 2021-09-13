@@ -683,7 +683,7 @@ export abstract class ViewState extends ElementState {
 
   /** @internal */
   public outputStatusMessage(status: ViewStatus): ViewStatus {
-    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.i18n.translate(`Viewing.${ViewStatus[status]}`)));
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.localizationProvider.getLocalizedString(`Viewing.${ViewStatus[status]}`)));
     return status;
   }
 

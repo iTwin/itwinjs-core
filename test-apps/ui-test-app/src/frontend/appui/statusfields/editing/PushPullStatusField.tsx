@@ -17,7 +17,7 @@ import { ProgressRadial } from "@itwin/itwinui-react";
 import { ErrorHandling } from "../../../api/ErrorHandling";
 
 function translate(prompt: string) {
-  return IModelApp.i18n.translate(`SampleApp:statusFields.${prompt}`);
+  return IModelApp.localizationProvider.getLocalizedString(`SampleApp:statusFields.${prompt}`);
 }
 
 interface PushPullState {

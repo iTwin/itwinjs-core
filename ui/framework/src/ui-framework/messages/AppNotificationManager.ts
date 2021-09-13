@@ -24,10 +24,10 @@ import { PointerMessage } from "./Pointer";
  */
 export class AppNotificationManager extends NotificationManager {
 
-  /** Output a prompt, given an i18n key.
+  /** Output a prompt, given an localizationProvider key.
    */
   public override outputPromptByKey(key: string): void {
-    this.outputPrompt(UiFramework.i18n.translate(key));
+    this.outputPrompt(UiFramework.localizationProvider.getLocalizedString(key));
   }
 
   /** Output a prompt to the user. A 'prompt' indicates an action the user should take to proceed.

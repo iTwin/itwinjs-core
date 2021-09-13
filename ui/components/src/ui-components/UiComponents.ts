@@ -8,7 +8,7 @@
 
 import { enablePatches } from "immer";
 import { Logger } from "@bentley/bentleyjs-core";
-import { I18N } from "@bentley/imodeljs-i18n";
+import { LocalizationProvider } from "@bentley/imodeljs-i18n";
 import { getClassName, UiError } from "@bentley/ui-abstract";
 import { UiCore } from "@bentley/ui-core";
 
@@ -18,31 +18,31 @@ import { UiCore } from "@bentley/ui-core";
  */
 export class UiComponents {
   private static _initialized = false;
-  private static _i18n?: I18N;
+  private static _localizationProvider?: LocalizationProvider;
 
   /**
-   * Registers the I18N service namespace for UiComponents. Also initializes UiCore.
-   * @param i18n The internationalization service created by the application.
+   * Registers the LocalizationProvider service namespace for UiComponents. Also initializes UiCore.
+   * @param localizationProvider The internationalization service created by the application.
    */
-  public static async initialize(i18n: I18N): Promise<void> {
+  public static async initialize(i18n: LocalizationProvider): Promise<void> {
     if (UiComponents._initialized) {
       Logger.logInfo(UiComponents.loggerCategory(UiComponents), `UiComponents.initialize already called`);
       return;
     }
 
     enablePatches();
-    UiComponents._i18n = i18n;
-    await UiComponents._i18n.registerNamespace(UiComponents.i18nNamespace).readFinished;
+    UiComponents._localizationProvider = i18n;
+    await UiComponents._localizationProvider.registerNamespace(UiComponents.localizationNamespace)?.readFinished;
 
-    await UiCore.initialize(UiComponents._i18n);
+    await UiCore.initialize(UiComponents._localizationProvider);
     UiComponents._initialized = true;
   }
 
-  /** Unregisters the UiComponents I18N namespace */
+  /** Unregisters the UiComponents localization namespace */
   public static terminate() {
-    if (UiComponents._i18n)
-      UiComponents._i18n.unregisterNamespace(UiComponents.i18nNamespace);
-    UiComponents._i18n = undefined;
+    if (UiComponents._localizationProvider)
+      UiComponents._localizationProvider.unregisterNamespace(UiComponents.localizationNamespace);
+    UiComponents._localizationProvider = undefined;
 
     UiCore.terminate();
     UiComponents._initialized = false;
@@ -52,14 +52,14 @@ export class UiComponents {
   public static get initialized(): boolean { return UiComponents._initialized; }
 
   /** The internationalization service created by the application. */
-  public static get i18n(): I18N {
-    if (!UiComponents._i18n)
-      throw new UiError(UiComponents.loggerCategory(this), "i18n: UiComponents.initialize has not been called. Unable to return I18N object.");
-    return UiComponents._i18n;
+  public static get localizationProvider(): LocalizationProvider {
+    if (!UiComponents._localizationProvider)
+      throw new UiError(UiComponents.loggerCategory(this), "i18n: UiComponents.initialize has not been called. Unable to return LocalizationProvider object.");
+    return UiComponents._localizationProvider;
   }
 
   /** The internationalization service namespace. */
-  public static get i18nNamespace(): string {
+  public static get localizationNamespace(): string {
     return "UiComponents";
   }
 
@@ -68,15 +68,15 @@ export class UiComponents {
     return "ui-components";
   }
 
-  /** Calls i18n.translateWithNamespace with the "UiComponents" namespace. Do NOT include the namespace in the key.
+  /** Calls localizationProvider.getLocalizedStringWithNamespace with the "UiComponents" namespace. Do NOT include the namespace in the key.
    * @internal
    */
   public static translate(key: string | string[]): string {
-    if (!UiComponents.initialized) {
+    if (!UiComponents.initialized || UiComponents._localizationProvider === undefined) {
       Logger.logError(UiComponents.loggerCategory(this), `translate: UiComponents.initialize has not been called. Returning blank string.`);
       return "";
     }
-    return UiComponents.i18n.translateWithNamespace(UiComponents.i18nNamespace, key);
+    return UiComponents._localizationProvider.getLocalizedStringWithNamespace(UiComponents.localizationNamespace, key);
   }
 
   /** @internal */

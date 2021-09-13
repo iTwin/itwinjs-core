@@ -6,7 +6,7 @@
  * @module Diagnostic
  */
 
-import { I18N } from "@bentley/imodeljs-i18n";
+import { I18N, LocalizationProvider } from "@bentley/imodeljs-i18n";
 import { AnyDiagnostic } from "./Diagnostic";
 
 import assert = require("assert");
@@ -95,15 +95,15 @@ export abstract class FormatDiagnosticReporter extends SuppressionDiagnosticRepo
   /**
    * Initializes a new FormatDiagnosticReporter
    * @param suppressions A Map where the key is a schema full name and the value is collection of diagnostic codes to suppress.
-   * @param i18n The I18N instance to use to translate validation messages.
+   * @param localizationProvider The I18N instance to use to translate validation messages.
    */
-  constructor(suppressions?: Map<string, string[]>, i18n?: I18N) {
+  constructor(suppressions?: Map<string, string[]>, localizationProvider?: LocalizationProvider) {
     super(suppressions);
-    this.i18N = i18n;
+    this.localizationProvider = localizationProvider;
   }
 
   /** The I18N object to use for message translation. If undefined, no translation will occur. */
-  public i18N?: I18N;
+  public localizationProvider?: LocalizationProvider;
 
   /**
    * Prior to reporting the [[IDiagnostic]], the diagnostic message is formatted (with translations)
@@ -143,10 +143,10 @@ export abstract class FormatDiagnosticReporter extends SuppressionDiagnosticRepo
   }
 
   private translateMessage(diagnostic: AnyDiagnostic): string {
-    if (!this.i18N)
+    if (!this.localizationProvider)
       return diagnostic.messageText;
 
-    return this.i18N.translate(this.getTranslationKey(diagnostic));
+    return this.localizationProvider.getLocalizedString(this.getTranslationKey(diagnostic));
   }
 
   private getTranslationKey(diagnostic: AnyDiagnostic): string {

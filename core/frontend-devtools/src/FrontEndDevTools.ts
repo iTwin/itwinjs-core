@@ -79,7 +79,7 @@ export class FrontendDevTools {
 
     this._initialized = true;
 
-    const i18n = IModelApp.i18n.registerNamespace("FrontendDevTools");
+    const namespace = IModelApp.localizationProvider.registerNamespace("FrontendDevTools");
     const tools = [
       AttachMapLayerTool,
       AttachMapOverlayTool,
@@ -215,8 +215,8 @@ export class FrontendDevTools {
     ];
 
     for (const tool of tools)
-      tool.register(i18n);
+      tool.register(namespace);
 
-    return i18n.readFinished;
+    return namespace?.readFinished;
   }
 }

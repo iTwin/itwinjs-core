@@ -33,7 +33,7 @@ export function TreeWidget(props: Props) {
   return (
     <div className="treewidget">
       <div className="treewidget-header">
-        <h3>{IModelApp.i18n.translate("Sample:controls.tree")}</h3>
+        <h3>{IModelApp.localizationProvider.getLocalizedString("Sample:controls.tree")}</h3>
         <DiagnosticsSelector onDiagnosticsOptionsChanged={setDiagnosticsOptions} />
         {rulesetId ? <FilteringInput
           filteringInProgress={isFiltering}

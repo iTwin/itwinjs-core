@@ -1296,7 +1296,7 @@ describe("Tree", () => {
       await waitForUpdate(() => {
         renderedTree = render(<Tree {...defaultProps} dataProvider={[]} />);
       }, renderSpy, 2);
-      const expectedContent = TestUtils.i18n.translate("Components:general.noData");
+      const expectedContent = TestUtils.i18n.getLocalizedString("Components:general.noData");
       expect(renderedTree.getByText(expectedContent)).to.not.not.undefined;
     });
 
@@ -1308,7 +1308,7 @@ describe("Tree", () => {
           nodeHighlightingProps={{ activeMatch: { nodeId: "", matchIndex: 0 }, searchText: "test" }}
         />);
       }, renderSpy, 2);
-      const expectedContent = TestUtils.i18n.translate("Components:tree.noResultsForFilter", { test: "test" });
+      const expectedContent = TestUtils.i18n.getLocalizedString("Components:tree.noResultsForFilter", { test: "test" });
       expect(renderedTree.getByText(expectedContent)).to.not.not.undefined;
     });
 

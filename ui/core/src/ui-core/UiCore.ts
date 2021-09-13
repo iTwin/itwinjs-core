@@ -13,7 +13,7 @@ import "./layout-variables.scss";
 import "./classes.scss";
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { I18N } from "@bentley/imodeljs-i18n";
+import { LocalizationProvider } from "@bentley/imodeljs-i18n";
 import { getClassName, UiAbstract, UiError } from "@bentley/ui-abstract";
 
 // cSpell:ignore colorthemes colorvariables
@@ -24,29 +24,29 @@ import { getClassName, UiAbstract, UiError } from "@bentley/ui-abstract";
  */
 export class UiCore {
   private static _initialized = false;
-  private static _i18n?: I18N;
+  private static _localizationProvider?: LocalizationProvider;
 
   /**
    * Registers the I18N service namespace for UiCore. Also initializes UiAbstract.
    * @param i18n The internationalization service created by the application.
    */
-  public static async initialize(i18n: I18N): Promise<void> {
+  public static async initialize(localizationProvider: LocalizationProvider): Promise<void> {
     if (UiCore._initialized) {
       Logger.logInfo(UiCore.loggerCategory(UiCore), `UiCore.initialize already called`);
       return;
     }
 
-    UiCore._i18n = i18n;
-    await UiCore._i18n.registerNamespace(UiCore.i18nNamespace).readFinished;
-    await UiAbstract.initialize(i18n);
+    UiCore._localizationProvider = localizationProvider;
+    await UiCore._localizationProvider.registerNamespace(UiCore.i18nNamespace)?.readFinished;
+    await UiAbstract.initialize(localizationProvider);
     UiCore._initialized = true;
   }
 
   /** Unregisters the UiCore I18N namespace */
   public static terminate() {
-    if (UiCore._i18n)
-      UiCore._i18n.unregisterNamespace(UiCore.i18nNamespace);
-    UiCore._i18n = undefined;
+    if (UiCore._localizationProvider)
+      UiCore._localizationProvider.unregisterNamespace(UiCore.i18nNamespace);
+    UiCore._localizationProvider = undefined;
 
     UiAbstract.terminate();
     UiCore._initialized = false;
@@ -56,10 +56,10 @@ export class UiCore {
   public static get initialized(): boolean { return UiCore._initialized; }
 
   /** The internationalization service created by the application. */
-  public static get i18n(): I18N {
-    if (!UiCore._i18n)
+  public static get localizationProvider(): LocalizationProvider {
+    if (!UiCore._localizationProvider)
       throw new UiError(UiCore.loggerCategory(this), "i18n: UiCore.initialize has not been called. Unable to return I18N object.");
-    return UiCore._i18n;
+    return UiCore._localizationProvider;
   }
 
   /** The internationalization service namespace. */
@@ -75,7 +75,7 @@ export class UiCore {
       Logger.logError(UiCore.loggerCategory(this), `translate: UiCore.initialize has not been called. Returning blank string.`);
       return "";
     }
-    return UiCore.i18n.translateWithNamespace(UiCore.i18nNamespace, key);
+    return UiCore.localizationProvider.getLocalizedStringWithNamespace(UiCore.i18nNamespace, key);
   }
 
   /** @internal */

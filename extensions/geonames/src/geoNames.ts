@@ -47,7 +47,7 @@ class GeoNameMarker extends Marker {
     this.labelOffset = { x: 0, y: -24 };
     this.title = props.name;
     if (props.population)
-      this.title = `${this.title} (${GeoNameExtension.extension!.i18n.translate("geoNames:misc.Population")}: ${props.population})`;
+      this.title = `${this.title} (${GeoNameExtension.extension!.localizationProvider.getLocalizedString("geoNames:misc.Population")}: ${props.population})`;
 
     // it would be better to use "this.label" here for a pure text string. We'll do it this way just to show that you can use HTML too
     // this.htmlElement = document.createElement("div");
@@ -125,7 +125,7 @@ export class GeoNameMarkerManager {
   }
 
   private outputInfoMessage(messageKey: string) {
-    const message: string = GeoNameExtension.extension!.i18n.translate(`geoNames:messages.${messageKey}`);
+    const message: string = GeoNameExtension.extension!.localizationProvider.getLocalizedString(`geoNames:messages.${messageKey}`);
     const msgDetails: NotifyMessageDetails = new NotifyMessageDetails(OutputMessagePriority.Info, message);
     IModelApp.notifications.outputMessage(msgDetails);
   }
@@ -224,11 +224,11 @@ export class GeoNameExtension extends Extension {
     // store the extension in the tool prototype.
     GeoNameExtension.extension = this;
 
-    this._i18NNamespace = this.i18n.getNamespace(this._defaultNs);
+    this._i18NNamespace = this.localizationProvider.getNamespace(this._defaultNs);
     await this._i18NNamespace!.readFinished;
-    IModelApp.tools.register(GeoNameOnTool, this._i18NNamespace, this.i18n);
-    IModelApp.tools.register(GeoNameOffTool, this._i18NNamespace, this.i18n);
-    IModelApp.tools.register(GeoNameUpdateTool, this._i18NNamespace, this.i18n);
+    IModelApp.tools.register(GeoNameOnTool, this._i18NNamespace, this.localizationProvider);
+    IModelApp.tools.register(GeoNameOffTool, this._i18NNamespace, this.localizationProvider);
+    IModelApp.tools.register(GeoNameUpdateTool, this._i18NNamespace, this.localizationProvider);
     if (undefined !== IModelApp.viewManager.selectedView)
       await GeoNameMarkerManager.show(IModelApp.viewManager.selectedView);
   }

@@ -229,7 +229,7 @@ export class MapLayerSources {
       try {
         (await MapLayerSettingsService.getSourcesFromSettingsService(iModel.contextId, iModel.iModelId)).forEach((source) => addSource(source));
       } catch (err) {
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.i18n.translate("mapLayers:CustomAttach.ErrorLoadingLayers"), err.toString()));
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.localizationProvider.getLocalizedString("mapLayers:CustomAttach.ErrorLoadingLayers"), err.toString()));
       }
     }
 

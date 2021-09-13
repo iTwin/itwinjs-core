@@ -61,7 +61,7 @@ export function PropertiesWidget(props: Props) {
 
   return (
     <div className="PropertiesWidget">
-      <h3>{IModelApp.i18n.translate("Sample:controls.properties.widget-label")}</h3>
+      <h3>{IModelApp.localizationProvider.getLocalizedString("Sample:controls.properties.widget-label")}</h3>
       <DiagnosticsSelector onDiagnosticsOptionsChanged={setDiagnosticsOptions} />
       {rulesetId
         ? (<div className="SearchBar">
@@ -161,11 +161,11 @@ function PropertyGrid(props: PropertyGridProps) {
   }, [onFindSimilarProp, dataProvider]);
 
   if (numSelectedElements === 0) {
-    return <FillCentered>{IModelApp.i18n.translate("Sample:property-grid.no-elements-selected")}</FillCentered>;
+    return <FillCentered>{IModelApp.localizationProvider.getLocalizedString("Sample:property-grid.no-elements-selected")}</FillCentered>;
   }
 
   if (isOverLimit) {
-    return <FillCentered>{IModelApp.i18n.translate("Sample:property-grid.too-many-elements-selected")}</FillCentered>;
+    return <FillCentered>{IModelApp.localizationProvider.getLocalizedString("Sample:property-grid.too-many-elements-selected")}</FillCentered>;
   }
 
   return <>
@@ -219,15 +219,15 @@ function PropertiesWidgetContextMenu(props: PropertiesWidgetContextMenuProps) {
         items.push({
           key: "remove-favorite",
           onSelect: async () => removeFavorite(field),
-          title: IModelApp.i18n.translate("Sample:controls.properties.context-menu.remove-favorite.description"),
-          label: IModelApp.i18n.translate("Sample:controls.properties.context-menu.remove-favorite.label"),
+          title: IModelApp.localizationProvider.getLocalizedString("Sample:controls.properties.context-menu.remove-favorite.description"),
+          label: IModelApp.localizationProvider.getLocalizedString("Sample:controls.properties.context-menu.remove-favorite.label"),
         });
       } else {
         items.push({
           key: "add-favorite",
           onSelect: async () => addFavorite(field),
-          title: IModelApp.i18n.translate("Sample:controls.properties.context-menu.add-favorite.description"),
-          label: IModelApp.i18n.translate("Sample:controls.properties.context-menu.add-favorite.label"),
+          title: IModelApp.localizationProvider.getLocalizedString("Sample:controls.properties.context-menu.add-favorite.description"),
+          label: IModelApp.localizationProvider.getLocalizedString("Sample:controls.properties.context-menu.add-favorite.label"),
         });
       }
     }
@@ -235,8 +235,8 @@ function PropertiesWidgetContextMenu(props: PropertiesWidgetContextMenuProps) {
       items.push({
         key: "find-similar",
         onSelect: onFindSimilar,
-        title: IModelApp.i18n.translate("Sample:controls.properties.context-menu.find-similar.description"),
-        label: IModelApp.i18n.translate("Sample:controls.properties.context-menu.find-similar.label"),
+        title: IModelApp.localizationProvider.getLocalizedString("Sample:controls.properties.context-menu.find-similar.description"),
+        label: IModelApp.localizationProvider.getLocalizedString("Sample:controls.properties.context-menu.find-similar.label"),
       });
     }
     return items;

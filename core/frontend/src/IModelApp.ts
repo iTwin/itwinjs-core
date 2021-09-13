@@ -14,7 +14,7 @@ import {
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelClient } from "@bentley/imodelhub-client";
 import { IModelStatus, RpcConfiguration, RpcInterfaceDefinition, RpcRequest } from "@bentley/imodeljs-common";
-import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
+import { LocalizationClient, LocalizationProvider } from "@bentley/imodeljs-i18n";
 import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
 import { UiAdmin } from "@bentley/ui-abstract";
@@ -103,8 +103,8 @@ export interface IModelAppOptions {
   accuDraw?: AccuDraw;
   /** If present, supplies the [[AccuSnap]] for this session. */
   accuSnap?: AccuSnap;
-  /** If present, supplies the [[I18N]] for this session. May be either an I18N instance or an I18NOptions used to create an I18N */
-  i18n?: I18N | I18NOptions;
+  /** If present, supplies the [[LocalizationClient]] for this session. */
+  localizationClient?: LocalizationClient;
   /** If present, supplies the authorization information for various frontend APIs */
   authorizationClient?: FrontendAuthorizationClient;
   /** If present, supplies security options for the frontend. */
@@ -174,7 +174,7 @@ export class IModelApp {
   private static _accuSnap: AccuSnap;
   private static _applicationId: string;
   private static _applicationVersion: string;
-  private static _i18n: I18N;
+  private static _localizationProvider: LocalizationProvider;
   private static _locateManager: ElementLocateManager;
   private static _notifications: NotificationManager;
   private static _extensionAdmin: ExtensionAdmin;
@@ -232,8 +232,8 @@ export class IModelApp {
   public static get locateManager(): ElementLocateManager { return this._locateManager; }
   /** @internal */
   public static get tentativePoint(): TentativePoint { return this._tentativePoint; }
-  /** The [[I18N]] for this session. */
-  public static get i18n(): I18N { return this._i18n; }
+  /** The [[LocalizationProvider]] for this session. */
+  public static get localizationProvider(): LocalizationProvider { return this._localizationProvider; }
   /** The [[SettingsAdmin]] for this session. */
   public static get settings(): SettingsAdmin { return this._settings; }
   /** The Id of this application. Applications must set this to the Global Product Registry ID (GPRID) for usage logging. */
@@ -342,10 +342,10 @@ export class IModelApp {
     this._setupRpcRequestContext();
 
     // get the localization system set up so registering tools works. At startup, the only namespace is the system namespace.
-    this._i18n = (opts.i18n instanceof I18N) ? opts.i18n : new I18N("iModelJs", opts.i18n);
+    this._localizationProvider = new LocalizationProvider(opts.localizationClient);
 
     // first register all the core tools. Subclasses may choose to override them.
-    const coreNamespace = this.i18n.registerNamespace("CoreTools");
+    const namespace = this.localizationProvider.registerNamespace("CoreTools");
     [
       selectTool,
       idleTool,
@@ -354,7 +354,7 @@ export class IModelApp {
       measureTool,
       accudrawTool,
       extensionTool,
-    ].forEach((tool) => this.tools.registerModule(tool, coreNamespace));
+    ].forEach((tool) => this.tools.registerModule(tool, namespace));
 
     this.registerEntityState(EntityState.classFullName, EntityState);
     [
@@ -696,7 +696,7 @@ export class IModelApp {
   public static makeIModelJsLogoCard() {
     return this.makeLogoCard({
       iconSrc: "images/about-imodeljs.svg",
-      heading: `<span style="font-weight:normal">${this.i18n.translate("Notices.PoweredBy")}</span>&nbsp;iModel.js`,
+      heading: `<span style="font-weight:normal">${this.localizationProvider.getLocalizedString("Notices.PoweredBy")}</span>&nbsp;iModel.js`,
       notice: `${require("../package.json").version}<br>${copyrightNotice}`, // eslint-disable-line @typescript-eslint/no-var-requires
     });
   }
@@ -706,7 +706,7 @@ export class IModelApp {
    */
   public static formatElementToolTip(msg: string[]): HTMLElement {
     let out = "";
-    msg.forEach((line) => out += `${IModelApp.i18n.translateKeys(line)}<br>`);
+    msg.forEach((line) => out += `${IModelApp.localizationProvider.getLocalizedKeys(line)}<br>`);
     const div = document.createElement("div");
     div.innerHTML = out;
     return div;
@@ -731,6 +731,6 @@ export class IModelApp {
         key = { scope: "Errors", val: "Status", status: status.toString() };
     }
 
-    return this.i18n.translate(`${key.scope}.${key.val}`, key);
+    return this.localizationProvider.getLocalizedString(`${key.scope}.${key.val}`);
   }
 }

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { I18N } from "@bentley/imodeljs-i18n";
+import { LocalizationProvider } from "@bentley/imodeljs-i18n";
 import { UnitSystemKey } from "@bentley/imodeljs-quantity";
 import { Presentation } from "@bentley/presentation-frontend";
 import {
@@ -15,11 +15,11 @@ import {
  * in an iModel.js app and to apply changes only when the user hits the OK button.
  */
 export class UnitsPopupUiDataProvider extends DialogLayoutDataProvider {
-  public static i18n: I18N;
+  public static localizationProvider: LocalizationProvider;
 
-  constructor(i18N: I18N) {
+  constructor(localizationProvider: LocalizationProvider) {
     super();
-    UnitsPopupUiDataProvider.i18n = i18N;
+    UnitsPopupUiDataProvider.localizationProvider = localizationProvider;
   }
 
   private _handleOK = async () => {
@@ -40,14 +40,14 @@ export class UnitsPopupUiDataProvider extends DialogLayoutDataProvider {
   private static _getEnumAsPicklistDescription = (): PropertyDescription => {
     return {
       name: UnitsPopupUiDataProvider._optionsName,
-      displayLabel: UnitsPopupUiDataProvider.i18n.translate("uiTestExtension:StatusBar.Units"),
+      displayLabel: UnitsPopupUiDataProvider.localizationProvider.getLocalizedString("uiTestExtension:StatusBar.Units"),
       typename: "enum",
       enum: {
         choices: [
-          { label: UnitsPopupUiDataProvider.i18n.translate("uiTestExtension:StatusBar.Metric"), value: "metric" },
-          { label: UnitsPopupUiDataProvider.i18n.translate("uiTestExtension:StatusBar.Imperial"), value: "imperial" },
-          { label: UnitsPopupUiDataProvider.i18n.translate("uiTestExtension:StatusBar.UsSurvey"), value: "usSurvey" },
-          { label: UnitsPopupUiDataProvider.i18n.translate("uiTestExtension:StatusBar.UsCustomary"), value: "usCustomary" },
+          { label: UnitsPopupUiDataProvider.localizationProvider.getLocalizedString("uiTestExtension:StatusBar.Metric"), value: "metric" },
+          { label: UnitsPopupUiDataProvider.localizationProvider.getLocalizedString("uiTestExtension:StatusBar.Imperial"), value: "imperial" },
+          { label: UnitsPopupUiDataProvider.localizationProvider.getLocalizedString("uiTestExtension:StatusBar.UsSurvey"), value: "usSurvey" },
+          { label: UnitsPopupUiDataProvider.localizationProvider.getLocalizedString("uiTestExtension:StatusBar.UsCustomary"), value: "usCustomary" },
         ],
       },
     };

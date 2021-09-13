@@ -43,15 +43,17 @@ export class SampleApp {
     }
     const readyPromises = new Array<Promise<void>>();
 
-    const localizationNamespace = IModelApp.i18n.registerNamespace("Sample");
-    readyPromises.push(localizationNamespace.readFinished);
+    const localizationNamespace = IModelApp.localizationProvider.registerNamespace("Sample");
+    if (localizationNamespace !== undefined) {
+      readyPromises.push(localizationNamespace.readFinished);
+    }
 
     // Configure a CORS proxy in development mode.
     if (process.env.NODE_ENV === "development")
       process.env.IMJS_DEV_CORS_PROXY_SERVER = `http://${window.location.hostname}:3001`; // By default, this will run on port 3001
 
     readyPromises.push(this.initializePresentation());
-    readyPromises.push(UiComponents.initialize(IModelApp.i18n));
+    readyPromises.push(UiComponents.initialize(IModelApp.localizationProvider));
     this._ready = Promise.all(readyPromises).then(() => { });
   }
 
@@ -63,7 +65,7 @@ export class SampleApp {
       clientId: MyAppFrontend.getClientId(),
 
       // specify locale for localizing presentation data
-      activeLocale: IModelApp.i18n.languageList()[0],
+      activeLocale: IModelApp.localizationProvider.languageList()[0],
 
       // specify the preferred unit system
       activeUnitSystem: "metric",

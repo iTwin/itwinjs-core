@@ -10,7 +10,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { FrontendRequestContext, IModelApp, IModelAppOptions, NativeAppAuthorization } from "@bentley/imodeljs-frontend";
 import { BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
-import { I18NOptions } from "@bentley/imodeljs-i18n";
+import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
 import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@bentley/hypermodeling-frontend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 
@@ -24,7 +24,7 @@ class MarkerHandler extends SectionMarkerHandler {
 export class DisplayPerfTestApp {
   public static async startup(iModelApp?: IModelAppOptions): Promise<void> {
     iModelApp = iModelApp ?? {};
-    iModelApp.i18n = { urlTemplate: "locales/en/{{ns}}.json" } as I18NOptions;
+    iModelApp.localizationClient = new I18N("iModelJs", { urlTemplate: "locales/en/{{ns}}.json" } as I18NOptions);
 
     iModelApp.rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
     if (ProcessDetector.isElectronAppFrontend)

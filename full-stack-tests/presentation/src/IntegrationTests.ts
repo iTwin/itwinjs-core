@@ -11,7 +11,7 @@ import * as path from "path";
 import sinonChai from "sinon-chai";
 import { ClientRequestContext, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelAppOptions, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { I18NOptions } from "@bentley/imodeljs-i18n";
+import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "@bentley/oidc-signin-tool/lib/TestUtility";
 import {
@@ -73,7 +73,7 @@ class IntegrationTestsApp extends NoRenderApp {
   }
 
   public static override async startup(opts?: IModelAppOptions): Promise<void> {
-    await NoRenderApp.startup({ ...opts, i18n: this.supplyI18NOptions() });
+    await NoRenderApp.startup({ ...opts, localizationClient: new I18N("iModelJs", this.supplyI18NOptions()) });
     cpx.copySync(`assets/**/*`, "lib/assets");
     copyBentleyBackendAssets("lib/assets");
     copyBentleyFrontendAssets("lib/public");

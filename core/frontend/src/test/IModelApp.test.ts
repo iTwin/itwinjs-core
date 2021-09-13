@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { I18NNamespace } from "@bentley/imodeljs-i18n";
+import { I18N, LocalizationNamespace } from "@bentley/imodeljs-i18n";
 import { AccuDraw } from "../AccuDraw";
 import { IModelApp, IModelAppOptions } from "../IModelApp";
 import { MockRender } from "../render/MockRender";
@@ -44,15 +44,15 @@ class TestRotateTool extends RotateViewTool { }
 class TestSelectTool extends SelectionTool { }
 
 class TestApp extends MockRender.App {
-  public static testNamespace?: I18NNamespace;
+  public static testNamespace?: LocalizationNamespace;
 
   public static override async startup(opts?: IModelAppOptions): Promise<void> {
     opts = opts ? opts : {};
     opts.accuDraw = new TestAccuDraw();
-    opts.i18n = this.supplyI18NOptions();
+    opts.localizationClient = new I18N("iModelJs", this.supplyI18NOptions());
     await MockRender.App.startup(opts);
 
-    this.testNamespace = IModelApp.i18n.registerNamespace("TestApp");
+    this.testNamespace = IModelApp.localizationProvider.registerNamespace("TestApp");
     TestImmediate.register(this.testNamespace);
     AnotherImmediate.register(this.testNamespace);
     ThirdImmediate.register(this.testNamespace);
@@ -73,7 +73,7 @@ class TestApp extends MockRender.App {
 describe("IModelApp", () => {
   before(async () => {
     await TestApp.startup();
-    await TestApp.testNamespace!.readFinished;  // we must wait for the localization read to finish.
+    await TestApp.testNamespace?.readFinished;  // we must wait for the localization read to finish.
   });
   after(async () => TestApp.shutdown());
 
@@ -116,16 +116,16 @@ describe("IModelApp", () => {
 
   it("Should do localizations", () => {
     // we have "TrivialTest.Test1" as the key in TestApp.json
-    assert.equal(IModelApp.i18n.translate("TestApp:TrivialTests.Test1"), "Localized Trivial Test 1");
-    assert.equal(IModelApp.i18n.translate("TestApp:TrivialTests.Test2"), "Localized Trivial Test 2");
-    assert.equal(IModelApp.i18n.translate("LocateFailure.NoElements"), "No Elements Found", "message from default (iModelJs) namespace");
+    assert.equal(IModelApp.localizationProvider.getLocalizedString("TestApp:TrivialTests.Test1"), "Localized Trivial Test 1");
+    assert.equal(IModelApp.localizationProvider.getLocalizedString("TestApp:TrivialTests.Test2"), "Localized Trivial Test 2");
+    assert.equal(IModelApp.localizationProvider.getLocalizedString("LocateFailure.NoElements"), "No Elements Found", "message from default (iModelJs) namespace");
 
     // there is no key for TrivialTest.Test3
-    assert.equal(IModelApp.i18n.translate("TestApp:TrivialTests.Test3"), "TrivialTests.Test3");
+    assert.equal(IModelApp.localizationProvider.getLocalizedString("TestApp:TrivialTests.Test3"), "TrivialTests.Test3");
 
     // Should properly substitute the values in localized strings with interpolations
-    assert.equal(IModelApp.i18n.translate("TestApp:SubstitutionTests.Test1", { varA: "Variable1", varB: "Variable2" }), "Substitute Variable1 and Variable2");
-    assert.equal(IModelApp.i18n.translate("TestApp:SubstitutionTests.Test2", { varA: "Variable1", varB: "Variable2" }), "Reverse substitute Variable2 and Variable1");
+    assert.equal(IModelApp.localizationProvider.getLocalizedString("TestApp:SubstitutionTests.Test1", { varA: "Variable1", varB: "Variable2" }), "Substitute Variable1 and Variable2");
+    assert.equal(IModelApp.localizationProvider.getLocalizedString("TestApp:SubstitutionTests.Test2", { varA: "Variable1", varB: "Variable2" }), "Reverse substitute Variable2 and Variable1");
 
     assert.equal(IModelApp.translateStatus(IModelStatus.AlreadyOpen), "Already open");
     assert.equal(IModelApp.translateStatus(IModelStatus.DuplicateCode), "Duplicate code");

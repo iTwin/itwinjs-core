@@ -12,6 +12,75 @@ import XHR, { I18NextXhrBackend } from "i18next-xhr-backend";
 import { Logger } from "@bentley/bentleyjs-core";
 
 /** @public */
+export interface LocalizationClient {
+  getLocalizedString(key: string | string[], options?: any): string;
+  getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: any): string;
+  getEnglishString(namespace: string, key: string | string[], options?: any): string;
+  getLocalizedKeys(inputString: string, options?: any): string;
+  registerNamespace(namespace: string): LocalizationNamespace | undefined;
+  unregisterNamespace(namespace: string): void;
+  getNamespace(name: string): LocalizationNamespace | undefined;
+  waitForAllRead(): Promise<void[]>;
+  languageList(): string[];
+}
+export interface LocalizationNamespace {
+  name: string;
+  readFinished: Promise<void>;
+}
+
+export class LocalizationProvider {
+  protected readonly _client?: LocalizationClient;
+
+  constructor(client?: LocalizationClient) {
+    this._client = client;
+  }
+
+  public getLocalizedString(key: string | string[], options?: any): string {
+    if (this._client === undefined) {
+      return typeof(key) === "string" ? key : key[0];
+    }
+    return this._client.getLocalizedString(key, options);
+  }
+
+  public getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: any): string {
+    if (this._client === undefined) {
+      return typeof(key) === "string" ? key : key[0];
+    }
+    return this._client.getLocalizedStringWithNamespace(namespace, key, options);
+  }
+
+  public getEnglishString(namespace: string, key: string | string[], options?: any): string {
+    if (this._client === undefined) {
+      return typeof(key) === "string" ? key : key[0];
+    }
+    return this._client.getEnglishString(namespace, key, options);
+  }
+
+  public getLocalizedKeys(inputString: string, options?: any): string {
+    return this._client ? this._client.getLocalizedKeys(inputString, options) : inputString;
+  }
+
+  public registerNamespace(namespace: string): LocalizationNamespace | undefined {
+    return this._client?.registerNamespace(namespace);
+  }
+
+  public unregisterNamespace(namespace: string): void {
+    this._client?.unregisterNamespace(namespace);
+  }
+
+  public getNamespace(name: string): LocalizationNamespace | undefined {
+    return this._client?.getNamespace(name);
+  }
+
+  public async waitForAllRead(): Promise<void[] | undefined> {
+    return this._client?.waitForAllRead();
+  }
+
+  public languageList(): string[] {
+    return this._client ? this._client.languageList() : [];
+  }
+}
+
 export interface I18NOptions {
   urlTemplate?: I18NextXhrBackend.LoadPathOption;
 }
@@ -20,7 +89,7 @@ export interface I18NOptions {
  * @note Internally, this class uses the [i18next](https://www.i18next.com/) package.
  * @public
  */
-export class I18N {
+export class I18N implements LocalizationClient {
   private _i18next: i18n;
   private readonly _namespaceRegistry: Map<string, I18NNamespace> = new Map<string, I18NNamespace>();
 
@@ -96,7 +165,7 @@ export class I18N {
    * @returns The line with all %{keys} translated
    * @public
    */
-  public translateKeys(line: string): string { return line.replace(/\%\{(.+?)\}/g, (_match, tag) => this.translate(tag)); }
+  public getLocalizedKeys(line: string): string { return line.replace(/\%\{(.+?)\}/g, (_match, tag) => this.getLocalizedString(tag)); }
 
   /** Return the translated value of a key.
    * @param key - the key that matches a property in the JSON localization file.
@@ -104,14 +173,14 @@ export class I18N {
    * followed by a colon, followed by the property in the JSON file.
    * For example:
    * ``` ts
-   * const dataString: string = IModelApp.i18n.translate("iModelJs:BackgroundMap.BingDataAttribution");
+   * const dataString: string = IModelApp.localizationProvider.getLocalizedString("iModelJs:BackgroundMap.BingDataAttribution");
    *  ```
    * assigns to dataString the string with property BackgroundMap.BingDataAttribution from the iModelJs.json localization file.
    * @returns The string corresponding to the first key that resolves.
    * @throws Error if no keys resolve to a string.
    * @public
    */
-  public translate(key: string | string[], options?: TranslationOptions): string {
+  public getLocalizedString(key: string | string[], options?: TranslationOptions): string {
     const value = this._i18next.t(key, options);
     if (typeof value !== "string")
       throw new Error("Translation key(s) not found");
@@ -126,7 +195,7 @@ export class I18N {
    * @throws Error if no keys resolve to a string.
    * @internal
    */
-  public translateWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): string {
+  public getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): string {
     let fullKey: string | string[] = "";
 
     if (typeof key === "string") {
@@ -137,7 +206,7 @@ export class I18N {
       });
     }
 
-    return this.translate(fullKey, options);
+    return this.getLocalizedString(fullKey, options);
   }
 
   /** Gets the English translation.
@@ -147,7 +216,7 @@ export class I18N {
    * @throws Error if no keys resolve to a string.
    * @internal
    */
-  public getEnglishTranslation(namespace: string, key: string | string[], options?: TranslationOptions): string {
+  public getEnglishString(namespace: string, key: string | string[], options?: TranslationOptions): string {
     const en = this._i18next.getFixedT("en", namespace);
     const str = en(key, options);
     if (typeof str !== "string")
@@ -178,7 +247,7 @@ export class I18N {
    * @see [Localization in iModel.js]($docs/learning/frontend/Localization.md)
    * @public
    */
-  public registerNamespace(name: string): I18NNamespace {
+  public registerNamespace(name: string): LocalizationNamespace {
     const existing = this._namespaceRegistry.get(name);
     if (existing !== undefined)
       return existing;
@@ -203,7 +272,7 @@ export class I18N {
         }
         // if we removed every locale from the array, it wasn't loaded.
         if (locales.length === 0)
-          Logger.logError("I81N", `The resource for namespace ${name} could not be loaded`);
+          Logger.logError("I18N", `The resource for namespace ${name} could not be loaded`);
 
         resolve();
       });

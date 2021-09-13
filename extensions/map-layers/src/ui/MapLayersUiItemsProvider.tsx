@@ -5,7 +5,7 @@
 
 import * as React from "react";
 import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, StageUsage, UiItemsProvider } from "@bentley/ui-abstract";
-import { I18N } from "@bentley/imodeljs-i18n";
+import { LocalizationProvider } from "@bentley/imodeljs-i18n";
 import { MapLayersWidget } from "./widget/MapLayersWidget";
 import { ConfigurableCreateInfo, WidgetControl } from "@bentley/ui-framework";
 import { IModelApp } from "@bentley/imodeljs-frontend";
@@ -13,10 +13,10 @@ import { MapLayerOptions } from "./Interfaces";
 
 export class MapLayersUiItemsProvider implements UiItemsProvider {
   public readonly id = "MapLayersUiItemsProvider";
-  public static i18n: I18N;
+  public static localizationProvider: LocalizationProvider;
 
-  public constructor(i18n: I18N) {
-    MapLayersUiItemsProvider.i18n = i18n;
+  public constructor(localizationProvider: LocalizationProvider) {
+    MapLayersUiItemsProvider.localizationProvider = localizationProvider;
   }
 
   public provideWidgets(_stageId: string, stageUsage: string, location: StagePanelLocation, section: StagePanelSection | undefined): ReadonlyArray<AbstractWidgetProps> {
@@ -30,7 +30,7 @@ export class MapLayersUiItemsProvider implements UiItemsProvider {
     if (stageUsage === StageUsage.General && location === StagePanelLocation.Right && section === StagePanelSection.Start) {
       widgets.push({
         id: "map-layers:mapLayersWidget",
-        label: MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.Label"),
+        label: MapLayersUiItemsProvider.localizationProvider.getLocalizedString("mapLayers:Widget.Label"),
         icon: "icon-map",
         getWidgetContent: () => <MapLayersWidget mapLayerOptions={mapLayerOptions} />, // eslint-disable-line react/display-name
       });
@@ -51,7 +51,7 @@ export class MapLayersWidgetControl extends WidgetControl {
   public static iconSpec = "icon-map";
 
   public static get label(): string {
-    return IModelApp.i18n.translate("mapLayers:Widget.Label");
+    return IModelApp.localizationProvider.getLocalizedString("mapLayers:Widget.Label");
   }
 
   constructor(info: ConfigurableCreateInfo, mapLayerOptions: MapLayerOptions | undefined) {

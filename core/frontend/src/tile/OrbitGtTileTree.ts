@@ -543,10 +543,10 @@ class OrbitGtTreeReference extends RealityModelTileTree.Reference {
       return undefined;
 
     const strings = [];
-    strings.push(IModelApp.i18n.translate("iModelJs:RealityModelTypes.OrbitGTPointCloud"));
+    strings.push(IModelApp.localizationProvider.getLocalizedString("iModelJs:RealityModelTypes.OrbitGTPointCloud"));
 
     if (this._name)
-      strings.push(`${IModelApp.i18n.translate("iModelJs:TooltipInfo.Name")} ${this._name}`);
+      strings.push(`${IModelApp.localizationProvider.getLocalizedString("iModelJs:TooltipInfo.Name")} ${this._name}`);
 
     const div = document.createElement("div");
     div.innerHTML = strings.join("<br>");

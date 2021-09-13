@@ -8,7 +8,7 @@ import {
   CommonStatusBarItem, CommonToolbarItem, StagePanelLocation, StagePanelSection,
   StageUsage, StatusBarSection, ToolbarOrientation, ToolbarUsage, UiItemsProvider, WidgetState,
 } from "@bentley/ui-abstract";
-import { I18N } from "@bentley/imodeljs-i18n";
+import { LocalizationProvider } from "@bentley/imodeljs-i18n";
 import { UiFramework } from "@bentley/ui-framework";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import statusBarButtonSvg from "./StatusField.svg?sprite"; // use once svg are working again.
@@ -18,11 +18,11 @@ import { ExtensionFrontstage } from "./Frontstage";
 import { PresentationPropertyGridWidget, PresentationPropertyGridWidgetControl } from "./widgets/PresentationPropertyGridWidget";
 export class ExtensionUiItemsProvider implements UiItemsProvider {
   public readonly id = "ExtensionUiItemsProvider";
-  public static i18n: I18N;
+  public static localizationProvider: LocalizationProvider;
   private _backstageItems?: BackstageItem[];
 
-  public constructor(i18n: I18N) {
-    ExtensionUiItemsProvider.i18n = i18n;
+  public constructor(localizationProvider: LocalizationProvider) {
+    ExtensionUiItemsProvider.localizationProvider = localizationProvider;
   }
 
   /** provideToolbarButtonItems() is called for each registered UI provider as the Frontstage is building toolbars. We are adding
@@ -38,7 +38,7 @@ export class ExtensionUiItemsProvider implements UiItemsProvider {
 
   /** provide backstage item to the host application */
   public provideBackstageItems(): BackstageItem[] {
-    const label = ExtensionUiItemsProvider.i18n.translate("uiTestExtension:backstage.stageName");
+    const label = ExtensionUiItemsProvider.localizationProvider.getLocalizedString("uiTestExtension:backstage.stageName");
     if (!this._backstageItems) {
       this._backstageItems = [
         BackstageItemUtilities.createStageLauncher(ExtensionFrontstage.id, 100, 10, label, undefined, undefined),
@@ -55,9 +55,9 @@ export class ExtensionUiItemsProvider implements UiItemsProvider {
     const statusBarItems: CommonStatusBarItem[] = [];
     if (stageUsage === StageUsage.General) {
       statusBarItems.push(
-        AbstractStatusBarItemUtilities.createActionItem("UiTestExtension:UnitsStatusBarItem", StatusBarSection.Center, 100, unitsIcon, ExtensionUiItemsProvider.i18n.translate("uiTestExtension:StatusBar.UnitsFlyover"),
+        AbstractStatusBarItemUtilities.createActionItem("UiTestExtension:UnitsStatusBarItem", StatusBarSection.Center, 100, unitsIcon, ExtensionUiItemsProvider.localizationProvider.getLocalizedString("uiTestExtension:StatusBar.UnitsFlyover"),
           () => {
-            IModelApp.uiAdmin.openDialog(new UnitsPopupUiDataProvider(ExtensionUiItemsProvider.i18n), ExtensionUiItemsProvider.i18n.translate("uiTestExtension:StatusBar.Units"),
+            IModelApp.uiAdmin.openDialog(new UnitsPopupUiDataProvider(ExtensionUiItemsProvider.localizationProvider), ExtensionUiItemsProvider.localizationProvider.getLocalizedString("uiTestExtension:StatusBar.Units"),
               true, "uiTestExtension:units-popup", { movable: true, width: 280, minWidth: 280 });
           }
         ));

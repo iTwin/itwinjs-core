@@ -145,7 +145,7 @@ describe("FrameworkUiAdmin", () => {
 
     uiAdmin = new FrameworkUiAdmin();
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup({ i18n: TestUtils.i18n });
+    await MockRender.App.startup({ localizationClient: TestUtils.i18n });
   });
 
   after(async () => {

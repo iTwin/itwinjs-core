@@ -181,7 +181,7 @@ class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageSta
 
   public override render() {
     if (!this.state.iModelConnection) {
-      const title = UiFramework.i18n.translate("SampleApp:localFileStage.localFile");
+      const title = UiFramework.localizationProvider.getLocalizedString("SampleApp:localFileStage.localFile");
 
       return (
         <>
@@ -195,7 +195,7 @@ class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageSta
                 style={{ display: "none" }} />
             }
             <Button size="large" styleType="cta" onClick={this._handleButtonClick}>
-              {UiFramework.i18n.translate("SampleApp:localFileStage.selectFile")}
+              {UiFramework.localizationProvider.getLocalizedString("SampleApp:localFileStage.selectFile")}
             </Button>
           </FillCentered >
         </>

@@ -50,12 +50,12 @@ describe("UiFramework localStorage Wrapper", () => {
       expect(() => UiFramework.store).to.throw(Error);
     });
 
-    it("i18n should throw Error without initialize", () => {
-      expect(() => UiFramework.i18n).to.throw(Error);
+    it("localizationProvider should throw Error without initialize", () => {
+      expect(() => UiFramework.localizationProvider).to.throw(Error);
     });
 
-    it("i18nNamespace should return UiFramework", () => {
-      expect(UiFramework.i18nNamespace).to.eq("UiFramework");
+    it("localizationNamespace should return UiFramework", () => {
+      expect(UiFramework.localizationNamespace).to.eq("UiFramework");
     });
 
     it("packageName should return ui-framework", () => {
@@ -120,7 +120,7 @@ describe("UiFramework localStorage Wrapper", () => {
       await MockRender.App.startup();
 
       await UiFramework.initialize(TestUtils.store);
-      expect(UiFramework.i18n).to.eq(IModelApp.i18n);
+      expect(UiFramework.localizationProvider).to.eq(IModelApp.localizationProvider);
 
       await MockRender.App.shutdown();
     });

@@ -900,7 +900,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
       return (
         <p className="components-tree-errormessage">
           {this.props.nodeHighlightingProps ?
-            UiComponents.i18n.translateWithNamespace(UiComponents.i18nNamespace, "tree.noResultsForFilter", { searchText: this.props.nodeHighlightingProps.searchText }) :
+            UiComponents.localizationProvider.getLocalizedStringWithNamespace(UiComponents.localizationNamespace, "tree.noResultsForFilter", { searchText: this.props.nodeHighlightingProps.searchText }) :
             UiComponents.translate("general.noData")}
         </p>
       );

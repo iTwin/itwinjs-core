@@ -44,7 +44,7 @@ export class EditTools {
   }
 
   /** @internal */
-  public static translate(prompt: string) { return IModelApp.i18n.translate(this.tools + prompt); }
+  public static translate(prompt: string) { return IModelApp.localizationProvider.getLocalizedString(this.tools + prompt); }
 
   /** Call this before using the package (e.g., before attempting to use any of its tools.)
    * To initialize when starting up your app:
@@ -62,7 +62,7 @@ export class EditTools {
     //       The active command will be cleared whenever another edit tool calls startCommand.
     this._initialized = true;
 
-    const i18n = IModelApp.i18n.registerNamespace(this.namespace);
+    const localizationNamespace = IModelApp.localizationProvider.registerNamespace(this.namespace);
     const registerAllTools = options?.registerAllTools;
 
     // Register requested tools...
@@ -74,7 +74,7 @@ export class EditTools {
       ];
 
       for (const tool of tools)
-        tool.register(i18n);
+        tool.register(localizationNamespace);
     }
 
     if (registerAllTools || options?.registerProjectLocationTools) {
@@ -89,7 +89,7 @@ export class EditTools {
       ];
 
       for (const tool of tools)
-        tool.register(i18n);
+        tool.register(localizationNamespace);
     }
 
     if (registerAllTools || options?.registerBasicManipulationTools) {
@@ -100,7 +100,7 @@ export class EditTools {
       ];
 
       for (const tool of tools)
-        tool.register(i18n);
+        tool.register(localizationNamespace);
     }
 
     if (registerAllTools || options?.registerSketchTools) {
@@ -114,9 +114,9 @@ export class EditTools {
       ];
 
       for (const tool of tools)
-        tool.register(i18n);
+        tool.register(localizationNamespace);
     }
 
-    return i18n.readFinished;
+    return localizationNamespace?.readFinished;
   }
 }

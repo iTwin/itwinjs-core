@@ -165,7 +165,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
   }
 
   public override getLogo(): HTMLTableRowElement {
-    return IModelApp.makeLogoCard({ iconSrc: "images/cesium-ion.svg", heading: "Cesium Ion", notice: IModelApp.i18n.translate("iModelJs:BackgroundMap.CesiumWorldTerrainAttribution") });
+    return IModelApp.makeLogoCard({ iconSrc: "images/cesium-ion.svg", heading: "Cesium Ion", notice: IModelApp.localizationProvider.getLocalizedString("iModelJs:BackgroundMap.CesiumWorldTerrainAttribution") });
   }
 
   public get maxDepth(): number { return this._maxDepth; }

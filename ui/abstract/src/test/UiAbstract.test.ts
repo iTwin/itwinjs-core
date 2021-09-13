@@ -17,7 +17,7 @@ describe("UiAbstract", () => {
   });
 
   it("i18n should throw Error without initialize", () => {
-    expect(() => UiAbstract.i18n).to.throw(Error);
+    expect(() => UiAbstract.localizationProvider).to.throw(Error);
   });
 
   it("terminate should run even if no i18n to unregister", () => {
