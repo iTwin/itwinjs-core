@@ -286,14 +286,7 @@
         "relatedProperties": {
           "description": "Specifications for including properties of related instances",
           "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/DEPRECATED_RelatedPropertiesSpecification"
-              },
-              {
-                "$ref": "#/definitions/RelatedPropertiesSpecificationNew"
-              }
-            ]
+            "$ref": "#/definitions/RelatedPropertiesSpecification"
           },
           "type": "array"
         },
@@ -355,14 +348,7 @@
         "relatedProperties": {
           "description": "Specifications for including properties of related instances",
           "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/DEPRECATED_RelatedPropertiesSpecification"
-              },
-              {
-                "$ref": "#/definitions/RelatedPropertiesSpecificationNew"
-              }
-            ]
+            "$ref": "#/definitions/RelatedPropertiesSpecification"
           },
           "type": "array"
         },
@@ -435,14 +421,7 @@
         "relatedProperties": {
           "description": "Specifications for including properties of related instances",
           "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/DEPRECATED_RelatedPropertiesSpecification"
-              },
-              {
-                "$ref": "#/definitions/RelatedPropertiesSpecificationNew"
-              }
-            ]
+            "$ref": "#/definitions/RelatedPropertiesSpecification"
           },
           "type": "array"
         },
@@ -801,14 +780,7 @@
         "relatedProperties": {
           "description": "Specifications for including properties of related instances",
           "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/DEPRECATED_RelatedPropertiesSpecification"
-              },
-              {
-                "$ref": "#/definitions/RelatedPropertiesSpecificationNew"
-              }
-            ]
+            "$ref": "#/definitions/RelatedPropertiesSpecification"
           },
           "type": "array"
         },
@@ -1024,131 +996,6 @@
         "relationship",
         "requiredDirection"
       ],
-      "type": "object"
-    },
-    "DEPRECATED_RelatedPropertiesSpecification": {
-      "additionalProperties": false,
-      "description": "Sub-specification to include additional related instance properties.",
-      "properties": {
-        "autoExpand": {
-          "description": "Should field containing related properties be automatically expanded. This only takes effect when\ncontent class is related to properties source class through a one-to-many or many-to-many relationship.",
-          "type": "boolean"
-        },
-        "handleTargetClassPolymorphically": {
-          "description": "Should the target class specified in `relatedClasses` be handled\npolymorphically. This means properties of not only the target class, but also all its subclasses\nare loaded.",
-          "type": "boolean"
-        },
-        "isPolymorphic": {
-          "description": "Should `relationships` and `relatedClasses` be handled polymorphically.",
-          "type": "boolean"
-        },
-        "nestedRelatedProperties": {
-          "description": "Specifications for nested related properties",
-          "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/DEPRECATED_RelatedPropertiesSpecification"
-              },
-              {
-                "$ref": "#/definitions/RelatedPropertiesSpecificationNew"
-              }
-            ]
-          },
-          "type": "array"
-        },
-        "properties": {
-          "anyOf": [
-            {
-              "items": {
-                "anyOf": [
-                  {
-                    "$ref": "#/definitions/PropertySpecification"
-                  },
-                  {
-                    "type": "string"
-                  }
-                ]
-              },
-              "type": "array"
-            },
-            {
-              "enum": [
-                "*",
-                "_none_"
-              ],
-              "type": "string"
-            }
-          ],
-          "description": "A list of property names or specifications that should be included in the content. All\nproperties are included if this attribute is not specified."
-        },
-        "propertyNames": {
-          "anyOf": [
-            {
-              "items": {
-                "type": "string"
-              },
-              "type": "array"
-            },
-            {
-              "enum": [
-                "*",
-                "_none_"
-              ],
-              "type": "string"
-            }
-          ],
-          "description": "List of names of related class properties that should be included in the content.\nAll properties are included if not specified."
-        },
-        "relatedClasses": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/MultiSchemaClassesSpecification"
-            },
-            {
-              "items": {
-                "$ref": "#/definitions/MultiSchemaClassesSpecification"
-              },
-              "type": "array"
-            }
-          ],
-          "description": "Specifications of related ECClasses. Optional if `relationships` is specified."
-        },
-        "relationshipMeaning": {
-          "description": "Meaning of the relationship which tells how to categorize the related properties. Defaults to `RelationshipMeaning.RelatedInstance`.",
-          "enum": [
-            "RelatedInstance",
-            "SameInstance"
-          ],
-          "type": "string"
-        },
-        "relationships": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/MultiSchemaClassesSpecification"
-            },
-            {
-              "items": {
-                "$ref": "#/definitions/MultiSchemaClassesSpecification"
-              },
-              "type": "array"
-            }
-          ],
-          "description": "Specifications of ECRelationshipClasses. Optional if `relatedClasses` is specified."
-        },
-        "requiredDirection": {
-          "description": "Direction that will be followed in the relationship select criteria.\nDefaults to `RelationshipDirection.Both`.",
-          "enum": [
-            "Backward",
-            "Both",
-            "Forward"
-          ],
-          "type": "string"
-        },
-        "skipIfDuplicate": {
-          "description": "Should this related properties specification be ignored if it duplicates another higher priority specification for the same relationship.",
-          "type": "boolean"
-        }
-      },
       "type": "object"
     },
     "DefaultPropertyCategoryOverride": {
@@ -2501,7 +2348,7 @@
       ],
       "type": "object"
     },
-    "RelatedPropertiesSpecificationNew": {
+    "RelatedPropertiesSpecification": {
       "additionalProperties": false,
       "description": "Sub-specification to include additional related instance properties.",
       "properties": {
@@ -2512,6 +2359,13 @@
         "handleTargetClassPolymorphically": {
           "description": "Should the target class specified in `propertiesSource` be handled\npolymorphically. This means properties of not only the target class, but also all its subclasses\nare loaded.",
           "type": "boolean"
+        },
+        "nestedRelatedProperties": {
+          "description": "Specifications for nested related properties",
+          "items": {
+            "$ref": "#/definitions/RelatedPropertiesSpecification"
+          },
+          "type": "array"
         },
         "properties": {
           "anyOf": [
@@ -2882,14 +2736,7 @@
         "relatedProperties": {
           "description": "Specifications for including properties of related instances",
           "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/DEPRECATED_RelatedPropertiesSpecification"
-              },
-              {
-                "$ref": "#/definitions/RelatedPropertiesSpecificationNew"
-              }
-            ]
+            "$ref": "#/definitions/RelatedPropertiesSpecification"
           },
           "type": "array"
         },
