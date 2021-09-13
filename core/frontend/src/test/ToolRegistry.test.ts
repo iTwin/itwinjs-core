@@ -150,10 +150,8 @@ describe("ToolRegistry", () => {
   it("Should find the MicroStation inputmanager training command", async () => {
     const command = IModelApp.tools.findExactMatch("inputmanager training");
     assert.isDefined(command, "Found inputmanager training command");
-    if (command) {
-      assert.isTrue(await IModelApp.tools.run(command.toolId));
-      assert.equal(lastCommand, "inputmanager training");
-    }
+    assert.isTrue(await IModelApp.tools.run(command!.toolId));
+    assert.equal(lastCommand, "inputmanager training");
   });
 
   it("Should find some partial matches for 'plac'", async () => {

@@ -51,7 +51,7 @@ if (ProcessDetector.isElectronAppFrontend) {
     });
 
     it("should start edit commands", async () => {
-      expect(IModelApp.tools.run("TestEditTool1")).to.be.true;
+      expect(await IModelApp.tools.run("TestEditTool1")).to.be.true;
       const tool = IModelApp.toolAdmin.currentTool as TestEditTool1;
       assert.isTrue(tool instanceof TestEditTool1);
       const str1 = "abc";
