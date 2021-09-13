@@ -42,7 +42,6 @@ export * from "./presentation-components/properties/InstanceKeyValueRenderer";
  * Presentation features for [PropertyGrid]($ui-components) component.
  */
 export * from "./presentation-components/propertygrid/DataProvider";
-export * from "./presentation-components/propertygrid/WithUnifiedSelection";
 export * from "./presentation-components/propertygrid/FavoritePropertiesDataFilterer";
 export * from "./presentation-components/propertygrid/UseUnifiedSelection";
 
@@ -72,8 +71,6 @@ export * from "./presentation-components/table/WithUnifiedSelection";
 export * from "./presentation-components/tree/DataProvider";
 export * from "./presentation-components/tree/IPresentationTreeDataProvider";
 export * from "./presentation-components/tree/FilteredDataProvider";
-export * from "./presentation-components/tree/WithUnifiedSelection";
-export * from "./presentation-components/tree/WithFilteringSupport";
 export * from "./presentation-components/tree/controlled/UseUnifiedSelection";
 export * from "./presentation-components/tree/controlled/UseControlledTreeFiltering";
 export * from "./presentation-components/tree/controlled/TreeHooks";

@@ -20,7 +20,7 @@ import {
   ContentLayoutProps, ContentProps, ContentViewManager, CoreTools, CursorInformation, CursorPopupContent, CursorPopupManager, CursorUpdatedEventArgs,
   CustomItemDef, EmphasizeElementsChangedArgs, Frontstage, FrontstageDef, FrontstageManager, FrontstageProvider, GroupItemDef,
   HideIsolateEmphasizeAction, HideIsolateEmphasizeActionHandler, HideIsolateEmphasizeManager, IModelConnectedViewSelector, MessageManager,
-  ModalDialogManager, ModelessDialogManager, ModelSelectorWidgetControl, ModelsTreeNodeType, SavedViewLayout, SavedViewLayoutProps, StagePanel,
+  ModalDialogManager, ModelessDialogManager, ModelsTreeNodeType, SavedViewLayout, SavedViewLayoutProps, StagePanel,
   SyncUiEventId, ToolbarHelper, UiFramework, Widget, WIDGET_OPACITY_DEFAULT, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
 import { Button, Slider } from "@itwin/itwinui-react";
@@ -280,21 +280,6 @@ export class ViewsFrontstage extends FrontstageProvider {
                 <Widget isFreeform={true} element={
                   <BasicNavigationWidget additionalVerticalItems={this._additionalNavigationVerticalToolbarItems} />
                 } />,
-              ]}
-          />
-        }
-        centerLeft={
-          <Zone
-            allowsMerging
-            defaultState={ZoneState.Minimized}
-            initialWidth={250}
-            widgets={
-              [
-                <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.ModelSelector" control={ModelSelectorWidgetControl}
-                  applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true}
-                  syncEventIds={[SampleAppUiActionId.setTestProperty]}
-                  stateFunc={(): WidgetState => SampleAppIModelApp.getTestProperty() !== "HIDE" ? WidgetState.Closed : WidgetState.Hidden}
-                />,
               ]}
           />
         }

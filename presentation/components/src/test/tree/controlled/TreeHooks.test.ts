@@ -276,18 +276,6 @@ describe("usePresentationNodeLoader", () => {
       const oldNodeLoader = result.current.nodeLoader;
 
       const currRuleset = new RegisteredRuleset({ id: rulesetId, rules: [] }, "", () => { });
-      presentationManagerMock
-        .setup(async (x) => x.compareHierarchies({
-          imodel: imodelMock.object,
-          prev: {
-            rulesetOrId: currRuleset.toJSON(),
-          },
-          rulesetOrId: currRuleset.toJSON(),
-          expandedNodeKeys: [],
-        }))
-        .returns(async () => [])
-        .verifiable();
-
       onRulesetModified.raiseEvent(currRuleset, currRuleset.toJSON());
 
       expect(result.current.nodeLoader).to.eq(oldNodeLoader);
@@ -315,9 +303,6 @@ describe("usePresentationNodeLoader", () => {
       initialModelSource.modifyModel((treeModel) => treeModel.insertChild(undefined, createNodeInput("test"), 0));
 
       // Update tree so that `info.treeModel` is not undefined
-      presentationManagerMock
-        .setup(async (x) => x.compareHierarchies(moq.It.isAny()))
-        .returns(async () => [{ type: "Update", target: createNode("test").key, changes: createNode("test_updated") }]);
       onRulesetModified.raiseEvent(
         new RegisteredRuleset({ id: "initial", rules: [] }, "", () => { }),
         { id: "initial", rules: [] },

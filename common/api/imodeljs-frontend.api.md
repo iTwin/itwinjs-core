@@ -43,6 +43,7 @@ import { Cartographic } from '@bentley/imodeljs-common';
 import { CartographicRange } from '@bentley/imodeljs-common';
 import { CategorySelectorProps } from '@bentley/imodeljs-common';
 import { ChangedEntities } from '@bentley/imodeljs-common';
+import { ChangesetIndex } from '@bentley/imodeljs-common';
 import { ChangesetIndexAndId } from '@bentley/imodeljs-common';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ClipPlane } from '@bentley/geometry-core';
@@ -150,7 +151,6 @@ import { IModelStatus } from '@bentley/imodeljs-common';
 import { IModelTileTreeId } from '@bentley/imodeljs-common';
 import { IModelTileTreeProps } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
-import { IModelVersionProps } from '@bentley/imodeljs-common';
 import { IndexedPolyface } from '@bentley/geometry-core';
 import { IndexMap } from '@bentley/bentleyjs-core';
 import { InternetConnectivityStatus } from '@bentley/imodeljs-common';
@@ -314,6 +314,7 @@ import { ViewStateProps } from '@bentley/imodeljs-common';
 import { WebGLContext } from '@bentley/webgl-compatibility';
 import { WebGLExtensionName } from '@bentley/webgl-compatibility';
 import { WebGLRenderCompatibilityInfo } from '@bentley/webgl-compatibility';
+import { WhiteOnWhiteReversalSettings } from '@bentley/imodeljs-common';
 import { XAndY } from '@bentley/geometry-core';
 import { XYAndZ } from '@bentley/geometry-core';
 import { XYZ } from '@bentley/geometry-core';
@@ -1639,7 +1640,7 @@ export class BriefcaseConnection extends IModelConnection {
     readonly onBufferedModelChanges: BeEvent<(changedModelIds: Set<string>) => void>;
     static openFile(briefcaseProps: OpenBriefcaseProps): Promise<BriefcaseConnection>;
     static openStandalone(filePath: string, openMode?: OpenMode, opts?: StandaloneOpenOptions): Promise<BriefcaseConnection>;
-    pullAndMergeChanges(version?: IModelVersionProps): Promise<void>;
+    pullChanges(toIndex?: ChangesetIndex): Promise<void>;
     pushChanges(description: string): Promise<ChangesetIndexAndId>;
     saveChanges(description?: string): Promise<void>;
     supportsGraphicalEditing(): Promise<boolean>;
@@ -5078,6 +5079,42 @@ export class LookAndMoveTool extends ViewManip {
     static toolId: string;
 }
 
+// @beta
+export interface LookAtArgs {
+    readonly backDistance?: number;
+    readonly eyePoint: XYAndZ;
+    readonly frontDistance?: number;
+    readonly newExtents?: XAndY;
+    readonly opts?: ViewChangeOptions;
+    readonly upVector: Vector3d;
+}
+
+// @beta
+export interface LookAtOrthoArgs extends LookAtArgs {
+    // (undocumented)
+    readonly lensAngle?: never;
+    // (undocumented)
+    readonly targetPoint?: never;
+    readonly viewDirection: XYAndZ;
+}
+
+// @beta
+export interface LookAtPerspectiveArgs extends LookAtArgs {
+    // (undocumented)
+    readonly lensAngle?: never;
+    readonly targetPoint: XYAndZ;
+    // (undocumented)
+    readonly viewDirection?: never;
+}
+
+// @beta
+export interface LookAtUsingLensAngle extends LookAtArgs {
+    readonly lensAngle: Angle;
+    readonly targetPoint: XYAndZ;
+    // (undocumented)
+    readonly viewDirection?: never;
+}
+
 // @public
 export class LookViewTool extends ViewManip {
     constructor(vp: ScreenViewport, oneShot?: boolean, isDraggingRequired?: boolean);
@@ -6525,7 +6562,7 @@ export class NativeApp {
     // @internal (undocumented)
     static overrideInternetConnectivity(status: InternetConnectivityStatus): Promise<void>;
     // (undocumented)
-    static requestDownloadBriefcase(contextId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions, asOf?: IModelVersion, progress?: ProgressCallback): Promise<BriefcaseDownloader>;
+    static requestDownloadBriefcase(iTwinId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions, asOf?: IModelVersion, progress?: ProgressCallback): Promise<BriefcaseDownloader>;
     // @internal (undocumented)
     static shutdown(): Promise<void>;
     // @internal
@@ -8073,6 +8110,8 @@ export interface RenderPlan {
     readonly upVector: Vector3d;
     // (undocumented)
     readonly viewFlags: ViewFlags;
+    // (undocumented)
+    readonly whiteOnWhiteReversal: WhiteOnWhiteReversalSettings;
 }
 
 // @internal
@@ -12842,10 +12881,10 @@ export abstract class ViewState3d extends ViewState {
     isEyePointGlobalView(eyePoint: XYAndZ): boolean;
     // (undocumented)
     get isGlobalView(): boolean;
-    lookAt(eyePoint: XYAndZ, targetPoint: XYAndZ, upVector: Vector3d, newExtents?: XAndY, frontDistance?: number, backDistance?: number, opts?: ViewChangeOptions): ViewStatus;
+    // @beta
+    lookAt(args: LookAtPerspectiveArgs | LookAtOrthoArgs | LookAtUsingLensAngle): ViewStatus;
     lookAtGlobalLocation(eyeHeight: number, pitchAngleRadians?: number, location?: GlobalLocation, eyePoint?: Point3d): number;
     lookAtGlobalLocationFromGcs(eyeHeight: number, pitchAngleRadians?: number, location?: GlobalLocation, eyePoint?: Point3d): Promise<number>;
-    lookAtUsingLensAngle(eyePoint: Point3d, targetPoint: Point3d, upVector: Vector3d, fov: Angle, frontDistance?: number, backDistance?: number, opts?: ViewChangeOptions): ViewStatus;
     // (undocumented)
     minimumFrontDistance(): number;
     moveCameraGlobal(fromPoint: Point3d, toPoint: Point3d): ViewStatus;
@@ -12884,11 +12923,13 @@ export enum ViewStatus {
     // (undocumented)
     AlreadyAttached = 2,
     // (undocumented)
-    DegenerateGeometry = 20,
+    DegenerateGeometry = 21,
     // (undocumented)
     DrawFailure = 4,
     // (undocumented)
-    HeightBelowTransition = 21,
+    HeightBelowTransition = 22,
+    // (undocumented)
+    InvalidDirection = 16,
     // (undocumented)
     InvalidLens = 14,
     // (undocumented)
@@ -12912,15 +12953,15 @@ export enum ViewStatus {
     // (undocumented)
     NotAttached = 3,
     // (undocumented)
-    NotCameraView = 17,
+    NotCameraView = 18,
     // (undocumented)
-    NotEllipsoidGlobeMode = 18,
+    NotEllipsoidGlobeMode = 19,
     // (undocumented)
-    NotGeolocated = 16,
+    NotGeolocated = 17,
     // (undocumented)
-    NotOrthographicView = 19,
+    NotOrthographicView = 20,
     // (undocumented)
-    NoTransitionRequired = 22,
+    NoTransitionRequired = 23,
     // (undocumented)
     NotResized = 5,
     // (undocumented)

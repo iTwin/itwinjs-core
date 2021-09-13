@@ -8,16 +8,14 @@ publish: false
 Removed TSLint support from `@bentley/build-tools`. If you're still using it, please switch to ESLint.
 Also removed legacy `.eslintrc.js` file from the same package. Instead, use `@bentley/eslint-plugin` and the `imodeljs-recommended` config included in it.
 
-## `Viewport.zoomToElements` improvements
+## Viewport.zoomToElements improvements
 
 [Viewport.zoomToElements]($frontend) accepts any number of element Ids and fits the viewport to the union of their [Placement]($common)s. A handful of shortcomings of the previous implementation have been addressed:
 
 * Previously, the element Ids were passed to [IModelConnection.Elements.getProps]($frontend), which returned **all** of the element's properties (potentially many megabytes of data), only to extract the [PlacementProps]($common) for each element and discard the rest. Now, it uses the new [IModelConnection.Elements.getPlacements]($frontend) function to query only the placements.
 * Previously, if a mix of 2d and 3d elements were specified, the viewport would attempt to union their 2d and 3d placements, typically causing it to fit incorrectly because 2d elements reside in a different coordinate space than 3d elements. Now, the viewport ignores 2d elements if it is viewing a 3d view, and vice-versa.
 
-## Breaking changes
-
-### Continued transition to `ChangesetIndex`
+## Continued transition to `ChangesetIndex`
 
 Every Changeset has both an Id (a string hash of its content and parent changeset) and an Index (a small integer representing its relative position on the iModel's timeline.) Either value can be used to uniquely identify a changeset. However, it is often necessary to compare two changeset identifiers to determine relative order, or to supply a range of changesets of interest. In this case, Id is not useful and must be converted to an index via a round-trip to an iModelHub server. Unfortunately, much of the iModel.js api uses only [ChangesetId]($common) to identify a changeset. That was unfortunate, since [ChangesetIndex]($common) is frequently needed and `ChangesetId` is rarely useful. For this reason we are migrating the api to prefer `ChangesetIndex` over several releases.
 
@@ -31,11 +29,40 @@ Each of these interfaces originally had only a member `changeSetId: string`, In 
 
 > Note: "Changeset" is one word. Apis should not use a capital "S" when referring to them.
 
+## ViewState3d.lookAt Arguments Changed
+
+[ViewState3d.lookAt]($frontend) previously took 6 arguments. In addition the method `ViewState3d.lookAtUsingLensAngle` also established a perspective `ViewState3d` from a field-of-view lens angle with many of the same arguments. There is now a new implementation of `ViewState3d.lookAt` that accepts named parameters to set up either a perspective or orthographic view, using the interfaces [LookAtPerspectiveArgs]($frontend), [LookAtOrthoArgs]($frontend), or [LookAtUsingLensAngle]($frontend).
+
+This is a breaking change, so you may need to modify your code and replace the previous arguments with a single object with the appropriate names. For example,:
+
+```ts
+  viewState.lookAt(eye, target, upVector, newExtents, undefined, backDistance, opts);
+```
+
+can become:
+
+```ts
+  viewState.lookAt( {eyePoint: eye, targetPoint: target , upVector, newExtents, backDistance, opts} );
+```
+
+likewise
+
+```ts
+    viewState.lookAtUsingLensAngle(eye, target, up, lens, frontDistance, backDistance);
+```
+
+can become:
+
+```ts
+  viewState.lookAt( {eyePoint: eye, targetPoint: target , upVector: up, lensAngle: lens, frontDistance, backDistance} );
+```
+
 ## ViewFlags
 
 ### Immutability
 
 [ViewFlags]($common) has long been a common source of surprising behavior. Consider the following code:
+
 ```ts
   function turnOnShadows(vp: Viewport) {
     vp.viewFlags.shadows = true;
@@ -43,6 +70,7 @@ Each of these interfaces originally had only a member `changeSetId: string`, In 
 ```
 
 You could be forgiven for expecting the image displayed in the Viewport to include shadows after calling this function, but that will not be the case. Instead, you must write the function as follows:
+
 ```ts
   function turnOnShadows(vp: Viewport) {
     const vf = vp.viewFlags.clone();
@@ -52,6 +80,7 @@ You could be forgiven for expecting the image displayed in the Viewport to inclu
 ```
 
 To rectify this, and to eliminate various other pitfalls associated with mutable state, ViewFlags has been converted to an immutable type - all of its properties are read-only and the only way to change a property is to create a copy. The function above can now be written as:
+
 ```ts
   function turnOnShadows(vp: Viewport) {
     vp.viewFlags = vp.viewFlags.with("shadows", true);
@@ -61,10 +90,12 @@ To rectify this, and to eliminate various other pitfalls associated with mutable
 ```
 
 Methods that mutate a ViewFlags object have been removed.
-- `clone` has been replaced with [ViewFlags.copy]($common), which returns a new object instead of modifying `this`.
-- `createFrom` has been removed. Because ViewFlags is immutable, it is never necessary to create an identical copy of one - just use the same object. Or, if for some reason you really want an identical copy, use the object spread operator.
+
+* `clone` has been replaced with [ViewFlags.copy]($common), which returns a new object instead of modifying `this`.
+* `createFrom` has been removed. Because ViewFlags is immutable, it is never necessary to create an identical copy of one - just use the same object. Or, if for some reason you really want an identical copy, use the object spread operator.
 
 If your code used to modify a single property, change it to use [ViewFlags.with]($common) or [ViewFlags.withRenderMode]($common):
+
 ```ts
   // Replace this...
   viewport.viewFlags.clipVolume = true;
@@ -73,6 +104,7 @@ If your code used to modify a single property, change it to use [ViewFlags.with]
 ```
 
 If your code used to modify multiple properties, change it to use [ViewFlags.copy]($common):
+
 ```ts
   // Replace this...
   viewport.viewFlags.shadows = viewport.viewFlags.lighting = true;
@@ -81,6 +113,7 @@ If your code used to modify multiple properties, change it to use [ViewFlags.cop
 ```
 
 If your code used to create a new ViewFlags and then modify its properties, pass the initial properties to [ViewFlags.create]($common) instead:
+
 ```ts
   // Replace this...
   const vf = new ViewFlags();
@@ -106,7 +139,8 @@ If you were using noCameraLights, noSourceLights, or noSolarLight, use [ViewFlag
 This cumbersome, inefficient class has been replaced with the identically-named [ViewFlagOverrides]($common) type, which is simply an interface that has all the same properties as [ViewFlags]($common), but each is optional. A flag is overridden if its value is not `undefined`.
 
 Upgrade instructions:
-```
+
+```ts
   let ovrs = new ViewFlagOverrides(); // Old code - nothing overridden.
   let ovrs = { }; // New code
 
@@ -157,6 +191,42 @@ Upgrade instructions:
 
 The [AsyncFunction]($bentleyjs-core), [AsyncMethodsOf]($bentleyjs-core), and [PromiseReturnType]($bentleyjs-core) types have moved to the @bentley/bentleyjs-core package. The ones in @bentley/imodeljs-frontend have been deprecated.
 
+## Concurrency Control
+
+The previous implementation of `ConcurrencyControl` for locking elements has been replaced with the [LockControl]($backend) interface.
+
+`ConcurrencyControl` relied on detecting a list of changed elements and deferring the acquisition of locks until the application called the asynchronous `request` method to acquire locks, after the fact, but before calling [BriefcaseDb.saveChanges]($backend). The new approach is to require applications to call the asynchronous [LockControl.acquireExclusiveLock]($backend) on elements before update or delete, and to call [LockControl.acquireSharedLock]($backend) on parents and models before insert. If an attempt is made to modify or insert without the required locks, an exception is thrown when the change is attempted. This will require tools to make the necessary lock calls.
+
+Previously the concurrency "mode" was determined by applications when opening a briefcase. It is now established as a property of an iModel when it is first created (and "revision0" is uploaded.) By default, iModels use pessimistic (i.e. locks) mode, so all previously created iModels will require locks. If you pass `noLocks: true` as an argument to [BackendHubAccess.createNewIModel]($backend), a briefcase-local value is saved in rev0.bim before it is uploaded. Thereafter, all briefcases of that iModel will use use optimistic (i.e. no locks, change merging) mode, since everyone will use briefcases derived from rev0.bim. The value is inspected in the `BriefcaseDb.useLockServer` method called by [BriefcaseDb.open]($backend).
+
+Locks apply to Elements only. The "schema lock" is acquired by exclusively locking element id 0x1 (the root subject id). Models are locked via their modeled element (which has the same id as the model)
+
+See the [ConcurrencyControl]($docs/learning/backend/ConcurrencyControl.md) learning article for more information and examples.
+
+## ITwinId
+
+Several api's in `iTwin.js` refer to the "context" for an iModel, meaning the *project or asset* to which the iModel belongs, as its `contextId`. That is very confusing, as the term "context" is very overloaded in computer science in general, and in iTwin.js in particular. That is resolved in iTwin.js V3.0 by recognizing that every iModel exists within an **iTwin**, and every iTwin has a GUID called its `iTwinId`. All instances of `contextId` in public apis are now replaced by 'iTwinId'.
+
+This is a breaking change for places like [IModel.contextId]($common). However, it should be a straightforward search-and-replace 'contextId -> iTwinId` anywhere you get compilation errors in your code.
+
+## BriefcaseManager, BriefcaseDb, and IModelDb changes
+
+The signatures to several methods in [BriefcaseManager]($backend) and [BriefcaseDb]($backend) have been changed to make optional the previously required argument called `requestContext`. That argument is poorly named, but used (only) to identify a "user access token". Since anywhere briefcases are relevant an authenticated user access token is available the static method `IModelHost.getAccessToken`. The only (rare) case where a called needs to supply that argument is for tests the wish to simulate multiple users via a single backend (which is not permitted outside of tests.)
+
+In certain cases methods were renamed at the same time for consistency.
+
+| Method                                   | New arguments                                         | notes                            |
+| ---------------------------------------- | ----------------------------------------------------- | -------------------------------- |
+| `BriefcaseDb.onOpen`                     | [OpenBriefcaseArgs]($backend)                         | event signature change           |
+| `BriefcaseDb.onOpened`                   | [BriefcaseDb]($backend),[OpenBriefcaseArgs]($backend) | event signature change           |
+| `BriefcaseDb.open`                       | [OpenBriefcaseArgs]($backend)                         | `requestContext` removed         |
+| `BriefcaseDb.pullChanges`                | [PullChangesArgs]($backend)                           | was called `pullAndMergeChanges` |
+| `BriefcaseDb.pushChanges`                | [PushChangesArgs]($backend)                           |                                  |
+| `BriefcaseDb.upgradeSchemas`             | [OpenBriefcaseArgs]($backend)                         | `requestContext` removed         |
+| `BriefcaseManager.acquireNewBriefcaseId` | [IModelIdArg]($backend)                               |                                  |
+| `BriefcaseManager.downloadBriefcase`     | [RequestNewBriefcaseArg]($backend)                    |                                  |
+| `IModelDb.importSchemas`                 | `LocalFileName[]`                                     | `requestContext` removed         |
+
 ## Removal of previously deprecated APIs
 
 In this 3.0 major release, we have removed several APIs that were previously marked as deprecated in 2.x. Generally, the reason for the deprecation as well as the alternative suggestions can be found in the 2.x release notes. They are summarized here for quick reference.
@@ -166,6 +236,8 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | Removed                                                      | Replacement                                    |
 | ------------------------------------------------------------ | ---------------------------------------------- |
 | `AutoPush`                                                   | *eliminated*                                   |
+| `BriefcaseDb.reinstateChanges`                               | `BriefcaseDb.pullChanges`                      |
+| `BriefcaseDb.reverseChanges`                                 | `BriefcaseDb.pullChanges`                      |
 | `BriefcaseIdValue`                                           | `BriefcaseIdValue` in @bentley/imodeljs-common |
 | `BriefcaseManager.getCompatibilityFileName`                  | *eliminated*                                   |
 | `BriefcaseManager.getCompatibilityPath`                      | *eliminated*                                   |
@@ -187,26 +259,26 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 
 ### @bentley/imodeljs-common
 
-| Removed                                       | Replacement                                                     |
-| --------------------------------------------- | --------------------------------------------------------------- |
-| `Code.getValue`                               | `Code.value`                                                    |
-| `CodeSpec.specScopeType`                      | `CodeSpec.scopeType`                                            |
-| `IModel.changeSetId`                          | `IModel.changeset.id`                                           |
-| `IModelVersion.evaluateChangeSet`             | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion`  |
-| `IModelVersion.fromJson`                      | `IModelVersion.fromJSON`                                        |
-| `IModelVersion.getChangeSetFromNamedVersion`  | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion`  |
-| `IModelVersion.getLatestChangeSetId`          | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion`  |
-| `IModelWriteRpcInterface`                     | Use IPC for writing to iModels                                  |
-| `ViewFlagOverrides` class                     | [ViewFlagOverrides]($common) type                               |
-| `ViewFlagProps.edgeMask`                      | *eliminated*                                                    |
-| `ViewFlagProps.hlMatColors`                   | *eliminated*                                                    |
-| `ViewFlags.clone`                             | [ViewFlags.copy]($common)
-| `ViewFlags.edgeMask`                          | *eliminated*                                                    |
-| `ViewFlags.hLineMaterialColors`               | *eliminated*                                                    |
-| `ViewFlags.noCameraLights`                    | [ViewFlags.lighting]($common)                                   |
-| `ViewFlags.noGeometryMap`                     | *eliminated*                                                    |
-| `ViewFlags.noSolarLight`                      | [ViewFlags.lighting]($common)                                   |
-| `ViewFlags.noSourceLights`                    | [ViewFlags.lighting]($common)                                   |
+| Removed                                      | Replacement                                                    |
+| -------------------------------------------- | -------------------------------------------------------------- |
+| `Code.getValue`                              | `Code.value`                                                   |
+| `CodeSpec.specScopeType`                     | `CodeSpec.scopeType`                                           |
+| `IModel.changeSetId`                         | `IModel.changeset.id`                                          |
+| `IModelVersion.evaluateChangeSet`            | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
+| `IModelVersion.fromJson`                     | `IModelVersion.fromJSON`                                       |
+| `IModelVersion.getChangeSetFromNamedVersion` | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
+| `IModelVersion.getLatestChangeSetId`         | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
+| `IModelWriteRpcInterface`                    | Use IPC for writing to iModels                                 |
+| `ViewFlagOverrides` class                    | [ViewFlagOverrides]($common) type                              |
+| `ViewFlagProps.edgeMask`                     | *eliminated*                                                   |
+| `ViewFlagProps.hlMatColors`                  | *eliminated*                                                   |
+| `ViewFlags.clone`                            | [ViewFlags.copy]($common)                                      |
+| `ViewFlags.edgeMask`                         | *eliminated*                                                   |
+| `ViewFlags.hLineMaterialColors`              | *eliminated*                                                   |
+| `ViewFlags.noCameraLights`                   | [ViewFlags.lighting]($common)                                  |
+| `ViewFlags.noGeometryMap`                    | *eliminated*                                                   |
+| `ViewFlags.noSolarLight`                     | [ViewFlags.lighting]($common)                                  |
+| `ViewFlags.noSourceLights`                   | [ViewFlags.lighting]($common)                                  |
 
 ### @bentley/imodeljs-frontend
 
@@ -223,8 +295,10 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `OidcFrontendClientConfiguration`      | `BrowserAuthorizationClientConfiguration`                 |
 | `RemoteBriefcaseConnection`            | `CheckpointConnection`                                    |
 | `ScreenViewport.decorationDiv`         | `DecorateContext.addHtmlDecoration`                       |
-| `ViewManager.forEachViewport`          | Use a `for..of` loop                                      |
 | `UnitSystemKey`                        | Moved to `@bentley/imodeljs-quantity`                     |
+| `ViewManager.forEachViewport`          | Use a `for..of` loop                                      |
+| `ViewState3d.lookAtPerspectiveOrOrtho` | `ViewState3d.LookAt`                                      |
+| `ViewState3d.lookAtUsingLensAngle`     | `ViewState3d.lookAt`                                      |
 
 ### @bentley/backend-itwin-client
 
@@ -245,18 +319,19 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @bentley/ui-components
 
-| Removed                                 | Replacement                                                 |
-| --------------------------------------- | ----------------------------------------------------------- |
-| `hasFlag`                               | `hasSelectionModeFlag` in @bentley/ui-components            |
-| `StandardEditorNames`                   | `StandardEditorNames` in @bentley/ui-abstract               |
-| `StandardTypeConverterTypeNames`        | `StandardTypeNames` in @bentley/ui-abstract                 |
-| `StandardTypeNames`                     | `StandardTypeNames` in @bentley/ui-abstract                 |
-| `Timeline`                              | `TimelineComponent` in @bentley/ui-components               |
-| `ControlledTreeProps.treeEvents`        | `ControlledTreeProps.eventsHandler`                         |
-| `ControlledTreeProps.visibleNodes`      | `ControlledTreeProps.model`                                 |
-| `MutableTreeModel.computeVisibleNodes`  | `computeVisibleNodes` in @bentley/ui-components             |
-| `TreeModelSource.getVisibleNodes`       | memoized result of `computeVisibleNodes`                    |
-| `useVisibleTreeNodes`                   | `useTreeModel` and `computeVisibleNodes`                    |
+| Removed                                | Replacement                                      |
+| -------------------------------------- | ------------------------------------------------ |
+| `hasFlag`                              | `hasSelectionModeFlag` in @bentley/ui-components |
+| `StandardEditorNames`                  | `StandardEditorNames` in @bentley/ui-abstract    |
+| `StandardTypeConverterTypeNames`       | `StandardTypeNames` in @bentley/ui-abstract      |
+| `StandardTypeNames`                    | `StandardTypeNames` in @bentley/ui-abstract      |
+| `Timeline`                             | `TimelineComponent` in @bentley/ui-components    |
+| `ControlledTreeProps.treeEvents`       | `ControlledTreeProps.eventsHandler`              |
+| `ControlledTreeProps.visibleNodes`     | `ControlledTreeProps.model`                      |
+| `MutableTreeModel.computeVisibleNodes` | `computeVisibleNodes` in @bentley/ui-components  |
+| `TreeModelSource.getVisibleNodes`      | memoized result of `computeVisibleNodes`         |
+| `useVisibleTreeNodes`                  | `useTreeModel` and `computeVisibleNodes`         |
+| `SignIn`                               | *eliminated*                                     |
 
 ### @bentley/ui-framework
 
@@ -286,50 +361,129 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @bentley/bentleyjs-core
 
-| Removed                                | Replacement                                                                            |
-| -------------------------------------- | -------------------------------------------------------------------------------------- |
-| `Config`                               | Use `process.env` to access environment variables directly |
-| `EnvMacroSubst`                        | *eliminated*  |
+| Removed         | Replacement                                                |
+| --------------- | ---------------------------------------------------------- |
+| `Config`        | Use `process.env` to access environment variables directly |
+| `EnvMacroSubst` | *eliminated*                                               |
 
 ### @bentley/presentation-common
 
-| Removed                                  | Replacement                                                                            |
-| ---------------------------------------- | -------------------------------------------------------------------------------------- |
-| `PresentationRpcInterface.loadHierarchy` | *eliminated*                                                                           |
-| `PresentationUnitSystem`                 | Removed in favor of `UnitSystemKey` from `@bentley/imodeljs-quantity`                  |
+| Removed                                               | Replacement                                                                                                                                                    |
+| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CompressedDescriptorJSON`                            | `DescriptorJSON`                                                                                                                                               |
+| `Descriptor.toCompressedJSON`                         | `Descriptor.toJSON`                                                                                                                                            |
+| `DescriptorOverrides.hiddenFieldNames`                | `DescriptorOverrides.fieldsSelector`                                                                                                                           |
+| `DescriptorOverrides.sortDirection`                   | `DescriptorOverrides.sorting.direction`                                                                                                                        |
+| `DescriptorOverrides.sortingFieldName`                | `DescriptorOverrides.sorting.field`                                                                                                                            |
+| `ECPropertyGroupingNodeKey.groupingValue`             | `ECPropertyGroupingNodeKey.groupingValues`                                                                                                                     |
+| `ExtendedContentRequestOptions`                       | `ContentRequestOptions`                                                                                                                                        |
+| `ExtendedContentRpcRequestOptions`                    | `ContentRpcRequestOptions`                                                                                                                                     |
+| `ExtendedHierarchyRequestOptions`                     | `HierarchyRequestOptions`                                                                                                                                      |
+| `ExtendedHierarchyRpcRequestOptions`                  | `HierarchyRpcRequestOptions`                                                                                                                                   |
+| `Field.fromJSON`                                      | `Field.fromCompressedJSON`                                                                                                                                     |
+| `HierarchyCompareRpcOptions`                          | *eliminated*                                                                                                                                                   |
+| `LabelRequestOptions`                                 | `DisplayLabelRequestOptions`                                                                                                                                   |
+| `LabelRpcRequestOptions`                              | `DisplayLabelRpcRequestOptions`                                                                                                                                |
+| `LoggingNamespaces`                                   | `PresentationBackendLoggerCategory`, `PresentationBackendNativeLoggerCategory`, `PresentationFrontendLoggerCategory` or `PresentationComponentsLoggerCategory` |
+| `NodeDeletionInfo.target`                             | `NodeDeletionInfo.parent` and `NodeDeletionInfo.position`                                                                                                      |
+| `NodeDeletionInfoJSON.target`                         | `NodeDeletionInfoJSON.parent` and `NodeDeletionInfoJSON.position`                                                                                              |
+| `PresentationDataCompareOptions`                      | *eliminated*                                                                                                                                                   |
+| `PresentationRpcInterface.compareHierarchies`         | *eliminated*                                                                                                                                                   |
+| `PresentationRpcInterface.compareHierarchiesPaged`    | *eliminated*                                                                                                                                                   |
+| `PresentationRpcInterface.getContent`                 | `PresentationRpcInterface.getPagedContent` and `getPagedContentSet`                                                                                            |
+| `PresentationRpcInterface.getContentAndSize`          | `PresentationRpcInterface.getPagedContent` and `getPagedContentSet`                                                                                            |
+| `PresentationRpcInterface.getDisplayLabelDefinitions` | `PresentationRpcInterface.getPagedDisplayLabelDefinitions`                                                                                                     |
+| `PresentationRpcInterface.getDistinctValues`          | `PresentationRpcInterface.getPagedDistinctValues`                                                                                                              |
+| `PresentationRpcInterface.getNodes`                   | `PresentationRpcInterface.getPagedNodes`                                                                                                                       |
+| `PresentationRpcInterface.getNodesAndCount`           | `PresentationRpcInterface.getPagedNodes`                                                                                                                       |
+| `PresentationRpcInterface.loadHierarchy`              | *eliminated*                                                                                                                                                   |
+| `PresentationUnitSystem`                              | `UnitSystemKey` in `@bentley/imodeljs-quantity`                                                                                                                |
+| `PropertiesFieldDescriptor.propertyClass`             | `PropertiesFieldDescriptor.properties.class`                                                                                                                   |
+| `PropertiesFieldDescriptor.propertyName`              | `PropertiesFieldDescriptor.properties.name`                                                                                                                    |
+| `Property.relatedClassPath`                           | `NestedContentField.pathToPrimaryClass`                                                                                                                        |
+| `PropertyJSON.relatedClassPath`                       | `NestedContentFieldJSON.pathToPrimaryClass`                                                                                                                    |
+| `SelectClassInfo.pathToPrimaryClass`                  | `SelectClassInfo.pathFromInputToSelectClass`                                                                                                                   |
+| `SelectClassInfo.relatedInstanceClasses`              | `SelectClassInfo.relatedInstancePaths`                                                                                                                         |
+| `SelectClassInfoJSON.pathToPrimaryClass`              | `SelectClassInfoJSON.pathFromInputToSelectClass`                                                                                                               |
+| `SelectClassInfoJSON.relatedInstanceClasses`          | `SelectClassInfoJSON.relatedInstancePaths`                                                                                                                     |
 
 ### @bentley/presentation-backend
 
-| Removed                                     | Replacement                                                                            |
-| ------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `PresentationManager.loadHierarchy`         | *eliminated*                                                                           |
-| `UnitSystemFormat.unitSystems`              | Changed type from `PresentationUnitSystem[]` to `UnitSystemKey[]`                      |
-| `PresentationManagerProps.activeUnitSystem` | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
-| `PresentationManager.activeUnitSystem`      | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
+| Removed                                     | Replacement                                                       |
+| ------------------------------------------- | ----------------------------------------------------------------- |
+| `DuplicateRulesetHandlingStrategy`          | `RulesetInsertOptions`                                            |
+| `PresentationManager.activeUnitSystem`      | Changed type from `PresentationUnitSystem` to `UnitSystemKey`     |
+| `PresentationManager.getContentAndSize`     | `PresentationManager.getContent` and `getContentSetSize`          |
+| `PresentationManager.getDistinctValues`     | `PresentationManager.getPagedDistinctValues`                      |
+| `PresentationManager.getNodesAndCount`      | `PresentationManager.getNodes` and `getNodesCount`                |
+| `PresentationManager.loadHierarchy`         | *eliminated*                                                      |
+| `PresentationManagerProps.activeUnitSystem` | Changed type from `PresentationUnitSystem` to `UnitSystemKey`     |
+| `UnitSystemFormat.unitSystems`              | Changed type from `PresentationUnitSystem[]` to `UnitSystemKey[]` |
 
 ### @bentley/presentation-frontend
 
-| Removed                                     | Replacement                                                                            |
-| ------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `PresentationManager.loadHierarchy`         | *eliminated*                                                                           |
-| `PresentationManagerProps.activeUnitSystem` | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
-| `PresentationManager.activeUnitSystem`      | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
+| Removed                                     | Replacement                                                   |
+| ------------------------------------------- | ------------------------------------------------------------- |
+| `PresentationManager.activeUnitSystem`      | Changed type from `PresentationUnitSystem` to `UnitSystemKey` |
+| `PresentationManager.compareHierarchies`    | *eliminated*                                                  |
+| `PresentationManager.getDistinctValues`     | `PresentationManager.getPagedDistinctValues`                  |
+| `PresentationManager.loadHierarchy`         | *eliminated*                                                  |
+| `PresentationManagerProps.activeUnitSystem` | Changed type from `PresentationUnitSystem` to `UnitSystemKey` |
 
 ### @bentley/presentation-components
 
-| Removed                                               | Replacement                                                                            |
-| ----------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `IPresentationTreeDataProvider.loadHierarchy`         | *eliminated*                                                                           |
-| `PresentationTreeDataProvider.loadHierarchy`          | *eliminated*                                                                           |
-| `FilteredPresentationTreeDataProvider.loadHierarchy`  | *eliminated*                                                                           |
-| `DEPRECATED_controlledTreeWithFilteringSupport`       | *eliminated*                                                                           |
-| `DEPRECATED_controlledTreeWithVisibleNodes`           | *eliminated*                                                                           |
+| Removed                                                | Replacement                                     |
+| ------------------------------------------------------ | ----------------------------------------------- |
+| `ContentDataProvider.configureContentDescriptor`       | `ContentDataProvider.getDescriptorOverrides`    |
+| `ContentDataProvider.isFieldHidden`                    | `ContentDataProvider.getDescriptorOverrides`    |
+| `ContentDataProvider.shouldConfigureContentDescriptor` | *eliminated*                                    |
+| `ContentDataProvider.shouldExcludeFromDescriptor`      | `ContentDataProvider.getDescriptorOverrides`    |
+| `ControlledTreeFilteringProps`                         | `ControlledPresentationTreeFilteringProps`      |
+| `DEPRECATED_controlledTreeWithFilteringSupport`        | *eliminated*                                    |
+| `DEPRECATED_controlledTreeWithVisibleNodes`            | *eliminated*                                    |
+| `DEPRECATED_treeWithFilteringSupport`                  | `useControlledPresentationTreeFiltering`        |
+| `DEPRECATED_treeWithUnifiedSelection`                  | `useUnifiedSelectionTreeEventHandler`           |
+| `FilteredPresentationTreeDataProvider.loadHierarchy`   | *eliminated*                                    |
+| `IPresentationTreeDataProvider.loadHierarchy`          | *eliminated*                                    |
+| `PresentationTreeDataProvider.loadHierarchy`           | *eliminated*                                    |
+| `PresentationTreeNodeLoaderProps.preloadingEnabled`    | *eliminated*                                    |
+| `propertyGridWithUnifiedSelection`                     | `usePropertyDataProviderWithUnifiedSelection`   |
+| `PropertyGridWithUnifiedSelectionProps`                | `PropertyDataProviderWithUnifiedSelectionProps` |
+| `TreeWithFilteringSupportProps`                        | `ControlledPresentationTreeFilteringProps`      |
+| `TreeWithUnifiedSelectionProps`                        | `UnifiedSelectionTreeEventHandlerParams`        |
+| `useControlledTreeFiltering`                           | `useControlledPresentationTreeFiltering`        |
+
+### @bentley/ecschema-metadata
+
+| Removed                         | Replacement                                                  |
+| ------------------------------- | ------------------------------------------------------------ |
+| `IDiagnostic`                   | `IDiagnostic` in @bentley/ecschema-editing                   |
+| `BaseDiagnostic`                | `BaseDiagnostic` in @bentley/ecschema-editing                |
+| `DiagnosticType`                | `DiagnosticType` in @bentley/ecschema-editing                |
+| `DiagnosticCategory`            | `DiagnosticCategory` in @bentley/ecschema-editing            |
+| `DiagnosticCodes`               | `DiagnosticCodes` in @bentley/ecschema-editing               |
+| `Diagnostics`                   | `Diagnostics` in @bentley/ecschema-editing                   |
+| `IDiagnosticReporter`           | `IDiagnosticReporter` in @bentley/ecschema-editing           |
+| `SuppressionDiagnosticReporter` | `SuppressionDiagnosticReporter` in @bentley/ecschema-editing |
+| `FormatDiagnosticReporter`      | `FormatDiagnosticReporter` in @bentley/ecschema-editing      |
+| `LoggingDiagnosticReporter`     | `LoggingDiagnosticReporter` in @bentley/ecschema-editing     |
+| `IRuleSet`                      | `IRuleSet` in @bentley/ecschema-editing                      |
+| `ECRuleSet`                     | `ECRuleSet` in @bentley/ecschema-editing                     |
+| `ISuppressionRule`              | `ISuppressionRule` in @bentley/ecschema-editing              |
+| `BaseSuppressionRule`           | `BaseSuppressionRule` in @bentley/ecschema-editing           |
+| `IRuleSuppressionMap`           | `IRuleSuppressionMap` in @bentley/ecschema-editing           |
+| `BaseRuleSuppressionMap`        | `BaseRuleSuppressionMap` in @bentley/ecschema-editing        |
+| `IRuleSuppressionSet`           | `IRuleSuppressionSet` in @bentley/ecschema-editing           |
+| `SchemaCompareCodes`            | `SchemaCompareCodes` in @bentley/ecschema-editing            |
+| `SchemaCompareDiagnostics`      | `SchemaCompareDiagnostics` in @bentley/ecschema-editing      |
+| `SchemaValidater`               | `SchemaValidater` in @bentley/ecschema-editing               |
+| `SchemaValidationVisitor`       | `SchemaValidationVisitor` in @bentley/ecschema-editing       |
 
 <!---
 User Interface Changes - section to comment below
 -->
 
-### User Interface Changes
+## User Interface Changes
 
 Several changes were made in the @bentley/ui-* packages.
 Some components in @bentley/ui-core were deprecated in favor of components in @itwinui-react.
@@ -340,14 +494,14 @@ The @bentley/ui-* and @bentley/presentation-components packages are now dependen
 
 For migration purposes, React 16 is included in the peerDependencies for the packages. React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
 
-#### New Floating Widget Capabilities
+### New Floating Widget Capabilities
 
 Widgets provided via UiItemsProviders may now set `defaultState: WidgetState.Floating` and `isFloatingStateSupported: true` to open
 the widget in a floating container. The property `defaultFloatingPosition` may also be specified to define the position of the floating container. If a position is not defined the container will be centered in the `AppUi` area.
 
 The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to retrieve the Ids for all floating widget containers for the active frontstage as specified by the `frontstageDef`. These ids can be used to query the size of the floating container via `frontstageDef.getFloatingWidgetContainerBounds`. The method `frontstageDef.setFloatingWidgetContainerBounds` can then be used to set the size and position of a floating widget container.
 
-#### `ControlledTree` API Changes
+### `ControlledTree` API Changes
 
 `ControlledTree` component has received the following breaking changes:
 
@@ -399,9 +553,9 @@ The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to 
 
   `width` and `height` props may be calculated dynamically using [ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver) API.
 
-### Deprecated ui-core Components in Favor of iTwinUI-react Components
+### Deprecated Components in Favor of iTwinUI-react Components
 
-Several UI components in the @bentley/ui-core package have been deprecated.
+Several UI components in the @bentley/ui-core and @bentley/ui-components packages have been deprecated.
 Developers should use equivalent components in @itwin/itwinui-react instead.
 
 | Deprecated in @bentley/ui-core | Use from @itwin/itwinui-react instead          |
@@ -436,6 +590,10 @@ Developers should use equivalent components in @itwin/itwinui-react instead.
 | Toggle                         | ToggleSwitch                                   |
 | Tooltip                        | Tooltip                                        |
 | TooltipPlacement               | Placement                                      |
+
+| Deprecated in @bentley/ui-components | Use from @itwin/itwinui-react instead |
+| ------------------------------------ | ------------------------------------- |
+| Breadcrumb                           | Breadcrumbs                           |
 
 #### Slider
 

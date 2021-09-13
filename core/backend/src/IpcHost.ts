@@ -6,12 +6,11 @@
  * @module NativeApp
  */
 
-import { ClientRequestContext, IModelStatus, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { IModelStatus, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import {
-  ChangesetIndexAndId,
-  EditingScopeNotifications, IModelConnectionProps, IModelError, IModelRpcProps, IModelVersion, IModelVersionProps,
-  IpcAppChannel, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel, OpenBriefcaseProps,
-  RemoveFunction, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
+  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, IModelConnectionProps, IModelError, IModelRpcProps, IpcAppChannel, IpcAppFunctions,
+  IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel, OpenBriefcaseProps, RemoveFunction, StandaloneOpenOptions,
+  TileTreeContentIds, TxnNotifications,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BriefcaseDb, IModelDb, StandaloneDb } from "./IModelDb";
@@ -159,7 +158,7 @@ export abstract class IpcHandler {
           throw new IModelError(IModelStatus.FunctionNotFound, `Method "${impl.constructor.name}.${funcName}" not found on IpcHandler registered for channel: ${impl.channelName}`);
 
         return { result: await func.call(impl, ...args) };
-      } catch (err) {
+      } catch (err: any) {
         const ret: IpcInvokeReturn = { error: { name: err.constructor.name, message: err.message ?? "", errorNumber: err.errorNumber ?? 0 } };
         if (!IpcHost.noStack)
           ret.error.stack = err.stack ?? "";
@@ -185,8 +184,7 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     return IModelDb.findByKey(key).nativeDb.cancelElementGraphicsRequests(requestIds);
   }
   public async openBriefcase(args: OpenBriefcaseProps): Promise<IModelConnectionProps> {
-    const requestContext = args.readonly === true ? new ClientRequestContext() : await IModelHost.getAuthorizedContext();
-    const db = await BriefcaseDb.open(requestContext, args);
+    const db = await BriefcaseDb.open(args);
     return db.toJSON();
   }
   public async openStandalone(filePath: string, openMode: OpenMode, opts?: StandaloneOpenOptions): Promise<IModelConnectionProps> {
@@ -215,15 +213,15 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     return IModelDb.findByKey(key).nativeDb.getUndoString();
   }
 
-  public async pullAndMergeChanges(key: string, version?: IModelVersionProps): Promise<ChangesetIndexAndId> {
+  public async pullChanges(key: string, toIndex?: ChangesetIndex): Promise<ChangesetIndexAndId> {
     const iModelDb = BriefcaseDb.findByKey(key);
-    const requestContext = await IModelHost.getAuthorizedContext();
-    return iModelDb.pullAndMergeChanges(requestContext, version ? IModelVersion.fromJSON(version) : undefined);
+    await iModelDb.pullChanges({ toIndex });
+    return iModelDb.changeset as ChangesetIndexAndId;
   }
   public async pushChanges(key: string, description: string): Promise<ChangesetIndexAndId> {
     const iModelDb = BriefcaseDb.findByKey(key);
-    const requestContext = await IModelHost.getAuthorizedContext();
-    return iModelDb.pushChanges(requestContext, description);
+    await iModelDb.pushChanges({ description });
+    return iModelDb.changeset as ChangesetIndexAndId;
   }
 
   public async toggleGraphicalEditingScope(key: string, startSession: boolean): Promise<boolean> {
