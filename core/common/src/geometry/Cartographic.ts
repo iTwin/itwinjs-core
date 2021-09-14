@@ -156,8 +156,14 @@ export class Cartographic implements CartographicProps {
   }
 
   /** Duplicates a Cartographic. */
-  public clone(): Cartographic {
-    return Cartographic.fromJSON({longitude: this.longitude, latitude: this.latitude, height: this.height});
+  public clone(result?: Cartographic): Cartographic {
+    if (!result)
+      return Cartographic.fromJSON({longitude: this.longitude, latitude: this.latitude, height: this.height});
+
+    result.longitude = this.longitude;
+    result.latitude = this.latitude;
+    result.height = this.height;
+    return result;
   }
 
   /** Return true if this Cartographic is the same as right */
