@@ -119,7 +119,6 @@ importers:
       '@types/node': 10.14.1
       '@types/qs': ^6.5.0
       '@types/superagent': ^4.1.7
-      '@types/xmldom': ^0.1.30
       chai: ^4.1.2
       deep-assign: ^2.0.0
       eslint: ^7.11.0
@@ -154,7 +153,6 @@ importers:
       '@types/node': 10.14.1
       '@types/qs': 6.9.7
       '@types/superagent': 4.1.12
-      '@types/xmldom': 0.1.31
       chai: 4.3.4
       eslint: 7.31.0
       mocha: 8.4.0
