@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-editor-frontend",
+      "comment": "Change Cartographic creation API so it takes an interface as an argument with named propreties. This will avoid callers mixing up the order of longitude, latitude, and height.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-editor-frontend"
+}

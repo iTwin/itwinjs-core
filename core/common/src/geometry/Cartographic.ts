@@ -11,7 +11,10 @@ import { assert } from "@bentley/bentleyjs-core";
 
 // portions adapted from Cesium.js Copyright 2011 - 2017 Cesium Contributors
 
-/** @public */
+/** JSON representation of a Cartographic object.
+ * @see [[Cartographic]]
+ * @public
+ * */
 export interface CartographicProps {
   /** If true, latitude and longitude are specified in degrees; defaults to false. */
   isDegrees?: boolean;
@@ -39,8 +42,9 @@ export class Cartographic implements CartographicProps {
     return Cartographic.fromJSON({longitude: 0, latitude: 0, height: 0});
   }
 
-  /**
+  /** Creates a Cartographic object from a JSON representation.
    * @param props object containing longitude, latitude, and height information.
+   * @see [[CartographicProps]]
    */
   public static fromJSON(props: CartographicProps, result?: Cartographic): Cartographic {
     let longitude = 0;
@@ -64,6 +68,7 @@ export class Cartographic implements CartographicProps {
     return result;
   }
 
+  /** Returns a JSON representation of a Cartographic object. */
   public toJSON(): CartographicProps {
     return {
       latitude: this.latitude,
