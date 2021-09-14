@@ -21,8 +21,7 @@ import { ClipPlane } from "./ClipPlane";
 import { ClipPlaneContainment } from "./ClipUtils";
 import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets, UnionOfConvexClipPlaneSetsProps } from "./UnionOfConvexClipPlaneSets";
-import { Point3dArray } from "../geometry3d/PointHelpers";
-import { AlternatingCCTreeBuilder, AlternatingCCTreeNode } from "./AlternatingConvexClipTree";
+import { AlternatingCCTreeNode } from "./AlternatingConvexClipTree";
 
 /**
  * Bit mask type for referencing subsets of 6 planes of range box.
