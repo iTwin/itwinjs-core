@@ -664,4 +664,4 @@ were removed from the `@bentley/imodeljs-backend` package and moved to a new pac
 
 ## @bentley/imodeljs-common
 
-The following methods have been removed from [Cartographic]($common): `fromDegrees`, `fromAngles`, `fromRadians`, and the public constructor. These have been replaced with a single `fromJSON` method which takes a [CartographicProps]($common) as an argument. This will help callers avoid misordering longitude, latitude, and height.
+The following methods have been removed from [Cartographic]($common): `fromDegrees`, `fromAngles`, `fromRadians`, and the public constructor. These have been replaced with a single `fromJSON` method which takes a [CartographicProps]($common) as an argument. This will help callers avoid misordering longitude, latitude, and height. The `LatAndLong` and `LatLongAndHeight` interfaces have been removed and replaced with a single [CartographicProps]($common) interface.
