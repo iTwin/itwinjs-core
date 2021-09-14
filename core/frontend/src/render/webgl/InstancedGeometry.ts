@@ -229,7 +229,7 @@ export class PatternBuffers extends InstanceData {
     return new PatternBuffers(
       count,
       shared,
-      new Point3d(), // ###TODO May need to use this if symbols/patterns far from origin produce artifacts.
+      new Point3d(),
       params.range,
       new Float32Array([1, params.spacing.x, params.spacing.y, params.scale]),
       new Float32Array([params.origin.x, params.origin.y]),
