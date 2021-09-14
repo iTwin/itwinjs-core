@@ -1076,7 +1076,7 @@ export interface LoggerLevelsConfig {
     defaultLevel?: string;
 }
 
-// @internal (undocumented)
+// @internal
 export type LogIntercept = (level: LogLevel, category: string, message: string, metaData?: GetMetaDataFunction) => boolean;
 
 // @public
