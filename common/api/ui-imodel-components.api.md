@@ -951,41 +951,23 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
 
 // @public
 export interface TimelineComponentProps {
-    // (undocumented)
     alwaysMinimized?: boolean;
-    // (undocumented)
     appMenuItemOption?: TimelineMenuItemOption;
-    // (undocumented)
     appMenuItems?: TimelineMenuItemProps[];
-    // (undocumented)
     componentId?: string;
-    // (undocumented)
     endDate?: Date;
-    // (undocumented)
     includeRepeat?: boolean;
-    // (undocumented)
     initialDuration?: number;
-    // (undocumented)
     markDate?: TimelineDateMarkerProps;
-    // (undocumented)
     minimized?: boolean;
-    // (undocumented)
     onChange?: (duration: number) => void;
-    // (undocumented)
     onJump?: (forward: boolean) => void;
-    // (undocumented)
     onPlayPause?: (playing: boolean) => void;
-    // (undocumented)
     onSettingsChange?: (arg: PlaybackSettings) => void;
-    // (undocumented)
     repeat?: boolean;
-    // (undocumented)
     showDuration?: boolean;
-    // (undocumented)
     startDate?: Date;
-    // (undocumented)
     timeZoneOffset?: number;
-    // (undocumented)
     totalDuration: number;
 }
 
@@ -1017,9 +999,7 @@ export enum TimelineDateDisplay {
 
 // @public
 export interface TimelineDateMarkerProps {
-    // (undocumented)
     date?: Date;
-    // (undocumented)
     dateMarker?: React.ReactNode;
 }
 
