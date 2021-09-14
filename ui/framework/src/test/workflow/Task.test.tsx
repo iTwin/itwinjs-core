@@ -11,6 +11,8 @@ import {
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 
+/* eslint-disable deprecation/deprecation */
+
 describe("Task", () => {
 
   before(async () => {

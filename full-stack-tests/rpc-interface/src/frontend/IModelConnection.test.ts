@@ -39,10 +39,10 @@ describe("IModel Connection", () => {
   });
 
   it("should successfully open an IModelConnection for read", async () => {
-    const contextId = testContext.iModelWithChangesets!.contextId;
+    const iTwinId = testContext.iModelWithChangesets!.iTwinId;
     const iModelId = testContext.iModelWithChangesets!.iModelId;
 
-    const iModel: IModelConnection = await CheckpointConnection.openRemote(contextId, iModelId);
+    const iModel: IModelConnection = await CheckpointConnection.openRemote(iTwinId, iModelId);
 
     expect(iModel).to.exist.and.be.not.empty;
 
@@ -52,8 +52,8 @@ describe("IModel Connection", () => {
 
   it("should successfully close an open an IModelConnection", async () => {
     const iModelId = testContext.iModelWithChangesets!.iModelId;
-    const contextId = testContext.iModelWithChangesets!.contextId;
-    const iModel = await CheckpointConnection.openRemote(contextId, iModelId);
+    const iTwinId = testContext.iModelWithChangesets!.iTwinId;
+    const iModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
 
     expect(iModel).to.exist;
     return expect(iModel.close()).to.eventually.be.fulfilled;
@@ -76,11 +76,11 @@ describe("IModel Connection with client credentials", () => {
   });
 
   it("should successfully open an IModelConnection for read", async () => {
-    const contextId = testContext.iModelWithChangesets!.contextId;
+    const iTwinId = testContext.iModelWithChangesets!.iTwinId;
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     const changeSetId = (await testContext.iModelWithChangesets!.getConnection()).changeset.id;
 
-    const iModel: IModelConnection = await CheckpointConnection.openRemote(contextId, iModelId, undefined === changeSetId ? IModelVersion.latest() : IModelVersion.asOfChangeSet(changeSetId));
+    const iModel: IModelConnection = await CheckpointConnection.openRemote(iTwinId, iModelId, undefined === changeSetId ? IModelVersion.latest() : IModelVersion.asOfChangeSet(changeSetId));
 
     expect(iModel).to.exist.and.be.not.empty;
 
@@ -91,7 +91,7 @@ describe("IModel Connection with client credentials", () => {
 
 describe("IModelReadRpcInterface Methods requestable from an IModelConnection", () => {
   let iModel: IModelConnection;
-  let contextId: string;
+  let iTwinId: string;
   let accessToken: AccessToken;
   let testContext: TestContext;
 
@@ -103,10 +103,10 @@ describe("IModelReadRpcInterface Methods requestable from an IModelConnection", 
     }
 
     const iModelId = testContext.iModelWithChangesets!.iModelId;
-    contextId = testContext.iModelWithChangesets!.contextId;
+    iTwinId = testContext.iModelWithChangesets!.iTwinId;
     accessToken = testContext.adminUserAccessToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
-    iModel = await CheckpointConnection.openRemote(contextId, iModelId);
+    iModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
   });
 
   it("IModelReadRpcInterface method queryEntityIds should work as expected", async () => {
@@ -323,7 +323,7 @@ describe("IModelReadRpcInterface Methods requestable from an IModelConnection", 
 
 describe("Snapping", () => {
   let iModel: IModelConnection;
-  let contextId: string;
+  let iTwinId: string;
   let accessToken: AccessToken;
   let testContext: TestContext;
 
@@ -334,10 +334,10 @@ describe("Snapping", () => {
       this.skip();
 
     const iModelId = testContext.iModelWithChangesets!.iModelId;
-    contextId = testContext.iModelWithChangesets!.contextId;
+    iTwinId = testContext.iModelWithChangesets!.iTwinId;
     accessToken = testContext.adminUserAccessToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
-    iModel = await CheckpointConnection.openRemote(contextId, iModelId);
+    iModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
   });
 
   it("should be able to request a snap", async () => {

@@ -12,7 +12,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import {
-  AccuDrawHintBuilder,   AccuDrawShortcuts, AccuSnap, ExternalServerExtensionLoader, IModelApp, IpcApp, LocalhostIpcApp, RenderSystem,
+  AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, ExternalServerExtensionLoader, IModelApp, IpcApp, LocalhostIpcApp, RenderSystem,
   SelectionTool, SnapMode, TileAdmin, Tool, ToolAdmin,
 } from "@bentley/imodeljs-frontend";
 import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
@@ -113,7 +113,7 @@ class PullChangesTool extends Tool {
     if (!imodel || !imodel.isBriefcaseConnection())
       return false;
 
-    imodel.pullAndMergeChanges(); // eslint-disable-line @typescript-eslint/no-floating-promises
+    imodel.pullChanges(); // eslint-disable-line @typescript-eslint/no-floating-promises
     return true;
   }
 }

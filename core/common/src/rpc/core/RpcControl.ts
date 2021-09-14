@@ -125,7 +125,7 @@ export class RpcControlChannel {
     }
 
     this._clientActive = true;
-    const token: IModelRpcProps = { key: "none", contextId: "none", iModelId: "none", changeset: { id: "none" } };
+    const token: IModelRpcProps = { key: "none", iTwinId: "none", iModelId: "none", changeset: { id: "none" } };
     RpcOperation.forEach(this._channelInterface, (operation) => operation.policy.token = (_request) => RpcOperation.fallbackToken ?? token);
     const client = RpcManager.getClientForInterface(this._channelInterface);
     this._describeEndpoints = async () => client.describeEndpoints();

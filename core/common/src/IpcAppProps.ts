@@ -10,10 +10,9 @@ import { GuidString, Id64String, IModelStatus, LogLevel, OpenMode } from "@bentl
 import { Range3dProps, XYZProps } from "@bentley/geometry-core";
 import { OpenBriefcaseProps } from "./BriefcaseTypes";
 import { ChangedEntities } from "./ChangedEntities";
-import { ChangesetIndexAndId } from "./ChangesetProps";
+import { ChangesetIndex, ChangesetIndexAndId } from "./ChangesetProps";
 import { GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
 import { EcefLocationProps, IModelConnectionProps, IModelRpcProps, RootSubjectProps, StandaloneOpenOptions } from "./IModel";
-import { IModelVersionProps } from "./IModelVersion";
 import { ModelGeometryChangesProps } from "./ModelGeometryChanges";
 
 /** Identifies a list of tile content Ids belonging to a single tile tree.
@@ -118,8 +117,8 @@ export interface IpcAppFunctions {
   /** see BriefcaseTxns.getRedoString */
   getRedoString: (key: string) => Promise<string>;
 
-  /** see BriefcaseConnection.pullAndMergeChanges */
-  pullAndMergeChanges: (key: string, version?: IModelVersionProps) => Promise<ChangesetIndexAndId>;
+  /** see BriefcaseConnection.pullChanges */
+  pullChanges: (key: string, toIndex?: ChangesetIndex) => Promise<ChangesetIndexAndId>;
   /** see BriefcaseConnection.pushChanges */
   pushChanges: (key: string, description: string) => Promise<ChangesetIndexAndId>;
   /** Cancels currently pending or active generation of tile content.  */

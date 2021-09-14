@@ -71,7 +71,6 @@ describe("iModel", () => {
   let imodel4: SnapshotDb;
   let imodel5: SnapshotDb;
   let originalEnv: any;
-  const requestContext = new BackendRequestContext();
 
   before(async () => {
     originalEnv = { ...process.env };
@@ -83,7 +82,7 @@ describe("iModel", () => {
     imodel5 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim"), IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
 
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-    await imodel1.importSchemas(requestContext, [schemaPathname]); // will throw an exception if import fails
+    await imodel1.importSchemas([schemaPathname]); // will throw an exception if import fails
   });
 
   after(() => {
@@ -1386,7 +1385,7 @@ describe("iModel", () => {
 
   it("snapping", async () => {
     const worldToView = Matrix4d.createIdentity();
-    const response = await imodel2.requestSnap(requestContext, "0x222", { testPoint: { x: 1, y: 2, z: 3 }, closePoint: { x: 1, y: 2, z: 3 }, id: "0x111", worldToView: worldToView.toJSON() });
+    const response = await imodel2.requestSnap("0x222", { testPoint: { x: 1, y: 2, z: 3 }, closePoint: { x: 1, y: 2, z: 3 }, id: "0x111", worldToView: worldToView.toJSON() });
     assert.isDefined(response.status);
   });
 
@@ -1905,9 +1904,9 @@ describe("iModel", () => {
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
     const iModelId = snapshot.getGuid();
-    const contextId = Guid.createValue();
+    const iTwinId = Guid.createValue();
     const changeset = IModelTestUtils.generateChangeSetId();
-    snapshot.nativeDb.saveProjectGuid(Guid.normalize(contextId));
+    snapshot.nativeDb.saveProjectGuid(Guid.normalize(iTwinId));
     snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id); // even fake checkpoints need a changeSetId!
     snapshot.saveChanges();
     snapshot.close();
@@ -1933,21 +1932,21 @@ describe("iModel", () => {
     const commandStub = sinon.stub(BlobDaemon, "command").callsFake(async () => daemonSuccessResult);
 
     process.env.BLOCKCACHE_DIR = "/foo/";
-    const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const checkpoint = await SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId, iModelId, changeset });
+    const user = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const checkpoint = await SnapshotDb.openCheckpointV2({ user, iTwinId, iModelId, changeset });
     const props = checkpoint.getRpcProps();
     assert.equal(props.iModelId, iModelId);
-    assert.equal(props.contextId, contextId);
+    assert.equal(props.iTwinId, iTwinId);
     assert.equal(props.changeset?.id, changeset.id);
     assert.equal(commandStub.callCount, 1);
     assert.equal(commandStub.firstCall.firstArg, "attach");
 
-    await checkpoint.reattachDaemon(ctx);
+    await checkpoint.reattachDaemon(user);
     assert.equal(commandStub.callCount, 2);
     assert.equal(commandStub.secondCall.firstArg, "attach");
 
     commandStub.callsFake(async () => daemonErrorResult);
-    const error = await getIModelError(checkpoint.reattachDaemon(ctx));
+    const error = await getIModelError(checkpoint.reattachDaemon(user));
     expectIModelError(DbResult.BE_SQLITE_ERROR, error);
 
     checkpoint.close();
@@ -1957,9 +1956,9 @@ describe("iModel", () => {
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
     const iModelId = Guid.createValue();  // This is wrong - it should be `snapshot.getGuid()`!
-    const contextId = Guid.createValue();
+    const iTwinId = Guid.createValue();
     const changeset = IModelTestUtils.generateChangeSetId();
-    snapshot.nativeDb.saveProjectGuid(Guid.normalize(contextId));
+    snapshot.nativeDb.saveProjectGuid(Guid.normalize(iTwinId));
     snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id);
     snapshot.saveChanges();
     snapshot.close();
@@ -1983,14 +1982,14 @@ describe("iModel", () => {
     const daemonSuccessResult = { result: DbResult.BE_SQLITE_OK, errMsg: "" };
     sinon.stub(BlobDaemon, "command").callsFake(async () => daemonSuccessResult);
 
-    const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const user = ClientRequestContext.current as AuthorizedClientRequestContext;
 
     process.env.BLOCKCACHE_DIR = ""; // try without setting daemon dir
-    let error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
+    let error = await getIModelError(SnapshotDb.openCheckpointV2({ user, iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.BadRequest, error); // bad request because daemon dir wasn't set
 
     process.env.BLOCKCACHE_DIR = "/foo/";
-    error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId, iModelId, changeset }));
+    error = await getIModelError(SnapshotDb.openCheckpointV2({ user, iTwinId, iModelId, changeset }));
     expectIModelError(IModelStatus.ValidationFailed, error);
   });
 
@@ -2000,12 +1999,12 @@ describe("iModel", () => {
     const hubMock = sinon.stub(checkpointsV2Handler, "get").callsFake(async () => []);
     sinon.stub(IModelHubBackend.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
 
-    const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    let error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
+    const user = ClientRequestContext.current as AuthorizedClientRequestContext;
+    let error = await getIModelError(SnapshotDb.openCheckpointV2({ user, iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.NotFound, error);
 
     hubMock.callsFake(async () => [{} as any]);
-    error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
+    error = await getIModelError(SnapshotDb.openCheckpointV2({ user, iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.NotFound, error);
   });
 
@@ -2039,7 +2038,7 @@ describe("iModel", () => {
     assert.equal(standaloneDb1.elements.getRootSubject().code.value, standaloneRootSubjectName);
     assert.isTrue(standaloneDb1.isOpen);
     assert.isTrue(Guid.isV4Guid(standaloneDb1.iModelId));
-    assert.equal(standaloneDb1.contextId, Guid.empty);
+    assert.equal(standaloneDb1.iTwinId, Guid.empty);
     assert.strictEqual("", standaloneDb1.changeset.id);
     assert.strictEqual(0, standaloneDb1.changeset.index);
     assert.equal(standaloneDb1.openMode, OpenMode.ReadWrite);
@@ -2136,11 +2135,6 @@ describe("iModel", () => {
     snapshotDb2.close();
     snapshotDb3.close();
 
-    assert.throws(() => { StandaloneDb.openFile(snapshotFile1); }); // attempt to open snapshot writeable should throw
-    snapshotDb1 = StandaloneDb.openFile(snapshotFile1, OpenMode.Readonly);
-    assert.isDefined(snapshotDb1, "should open readonly");
-    snapshotDb1.close();
-
     assert.isUndefined(SnapshotDb.tryFindByKey(snapshotDb1.key));
     assert.isUndefined(SnapshotDb.tryFindByKey(snapshotDb2.key));
     assert.isUndefined(SnapshotDb.tryFindByKey(snapshotDb3.key));
@@ -2212,7 +2206,7 @@ describe("iModel", () => {
     const schemaState: SchemaState = StandaloneDb.validateSchemas(testFileName, true);
     assert.strictEqual(schemaState, SchemaState.UpgradeRecommended);
 
-    StandaloneDb.upgradeSchemas(testFileName);
+    StandaloneDb.upgradeStandaloneSchemas(testFileName);
 
     iModel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
     const afterVersion = iModel.querySchemaVersion("BisCore");
