@@ -4,15 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  ExpandedNodeUpdateRecord,
-  ExpandedNodeUpdateRecordJSON,
-  HierarchyCompareInfo, HierarchyCompareInfoJSON, HierarchyUpdateInfo, HierarchyUpdateInfoJSON, HierarchyUpdateRecord, HierarchyUpdateRecordJSON, Node, NodeDeletionInfo, NodeDeletionInfoJSON,
-  NodeInsertionInfo, NodeInsertionInfoJSON, NodeJSON, NodeUpdateInfo, NodeUpdateInfoJSON, PartialHierarchyModification, StandardNodeTypes, UpdateInfo,
-  UpdateInfoJSON,
+  ExpandedNodeUpdateRecord, ExpandedNodeUpdateRecordJSON, HierarchyCompareInfo, HierarchyCompareInfoJSON, HierarchyUpdateInfo,
+  HierarchyUpdateInfoJSON, HierarchyUpdateRecord, HierarchyUpdateRecordJSON, Node, NodeDeletionInfo, NodeDeletionInfoJSON, NodeInsertionInfo,
+  NodeInsertionInfoJSON, NodeJSON, NodeUpdateInfo, NodeUpdateInfoJSON, PartialHierarchyModification, StandardNodeTypes, UpdateInfo, UpdateInfoJSON,
 } from "../presentation-common";
 
 const testNode: Node = {
   key: {
+    version: 0,
     instanceKeys: [],
     pathFromRoot: [],
     type: StandardNodeTypes.ECInstancesNode,
