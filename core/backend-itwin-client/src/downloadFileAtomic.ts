@@ -14,7 +14,7 @@ import { BufferedStream } from "./imodelhub/AzureFileHandler";
 const pipeline = promisify(pipeline_callback);
 
 /** @internal */
-export async function downloadFileAtomic(requestContext: ClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest, bufferThreshold?: number): Promise<void> {
+export async function downloadFileAtomic(downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest, bufferThreshold?: number): Promise<void> {
   let retryCount = 0;
   let closePromise: Promise<void>;
 
@@ -49,7 +49,6 @@ export async function downloadFileAtomic(requestContext: ClientRequestContext, d
         fileStream,
       );
     } catch (error) {
-      requestContext.enter();
       if (error instanceof got.CancelError)
         throw new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download", Logger.logWarning);
 

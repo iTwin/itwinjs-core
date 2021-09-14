@@ -271,7 +271,6 @@ const logRequest = (req: sarequest.SuperAgentRequest): sarequest.SuperAgentReque
  * @internal
  */
 export async function request(requestContext: ClientRequestContext, url: string, options: RequestOptions): Promise<Response> {
-  requestContext.enter();
   if (!RequestGlobalOptions.online) {
     throw new ResponseError(503, "Service unavailable");
   }

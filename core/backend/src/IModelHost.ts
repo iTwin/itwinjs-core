@@ -20,7 +20,6 @@ import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext, UserI
 import { TelemetryManager } from "@bentley/telemetry-client";
 import { AliCloudStorageService } from "./AliCloudStorageService";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BackendRequestContext } from "./BackendRequestContext";
 import { BisCoreSchema } from "./BisCoreSchema";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { AzureBlobStorage, CloudStorageService, CloudStorageServiceCredentials, CloudStorageTileUploader } from "./CloudStorageBackend";
@@ -327,10 +326,6 @@ export class IModelHost {
     this.logStartup();
 
     await HttpRequestHost.initialize(); // Initialize configuration for HTTP requests at the backend.
-
-    // Setup a current context for all requests that originate from this backend
-    const requestContext = new BackendRequestContext();
-    requestContext.enter();
 
     this.backendVersion = require("../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
     initializeRpcBackend();

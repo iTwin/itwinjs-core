@@ -1151,8 +1151,7 @@ export abstract class IModelDb extends IModel {
    * @returns the Uint8Array or undefined if the texture image is not present.
    * @alpha
    */
-  public async getTextureImage(requestContext: ClientRequestContext, props: TextureLoadProps): Promise<Uint8Array | undefined> {
-    requestContext.enter();
+  public async getTextureImage(props: TextureLoadProps): Promise<Uint8Array | undefined> {
     return new Promise<Uint8Array | undefined>((resolve, reject) => {
       this.nativeDb.getTextureImage(props, (result) => {
         if (result instanceof Error)
@@ -2136,11 +2135,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public constructor(private _iModel: IModelDb) { }
 
     /** @internal */
-    public async requestTileTreeProps(requestContext: ClientRequestContext, id: string): Promise<IModelTileTreeProps> {
-      requestContext.enter();
+    public async requestTileTreeProps(id: string): Promise<IModelTileTreeProps> {
 
       return new Promise<IModelTileTreeProps>((resolve, reject) => {
-        requestContext.enter();
         this._iModel.nativeDb.getTileTree(id, (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, any>) => {
           if (undefined !== ret.error)
             reject(new IModelError(ret.error.status, `TreeId=${id}`));
@@ -2150,8 +2147,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       });
     }
 
-    private pollTileContent(resolve: (arg0: IModelJsNative.TileContent) => void, reject: (err: Error) => void, treeId: string, tileId: string, requestContext: ClientRequestContext) {
-      requestContext.enter();
+    private pollTileContent(resolve: (arg0: IModelJsNative.TileContent) => void, reject: (err: Error) => void, treeId: string, tileId: string) {
 
       let ret;
       try {
@@ -2183,16 +2179,15 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         resolve(res);
       } else { // if the type is a number, it's the TileContentState enum
         // ###TODO: Decide appropriate timeout interval. May want to switch on state (new vs loading vs pending)
-        setTimeout(() => this.pollTileContent(resolve, reject, treeId, tileId, requestContext), 10);
+        setTimeout(() => this.pollTileContent(resolve, reject, treeId, tileId), 10);
       }
     }
 
     /** @internal */
-    public async requestTileContent(requestContext: ClientRequestContext, treeId: string, tileId: string): Promise<IModelJsNative.TileContent> {
-      requestContext.enter();
+    public async requestTileContent(treeId: string, tileId: string): Promise<IModelJsNative.TileContent> {
 
       return new Promise<IModelJsNative.TileContent>((resolve, reject) => {
-        this.pollTileContent(resolve, reject, treeId, tileId, requestContext);
+        this.pollTileContent(resolve, reject, treeId, tileId);
       });
     }
 

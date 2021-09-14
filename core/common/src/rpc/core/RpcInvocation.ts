@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { BentleyStatus, IModelStatus, Logger, RpcInterfaceStatus } from "@bentley/bentleyjs-core";
+import { BentleyStatus, ClientRequestContext, IModelStatus, Logger, RpcInterfaceStatus } from "@bentley/bentleyjs-core";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
@@ -118,9 +118,8 @@ export class RpcInvocation {
   }
 
   private async resolve(): Promise<any> {
+    const clientRequestContext = await RpcConfiguration.requestContext.deserialize(this.request);
     try {
-      const clientRequestContext = await RpcConfiguration.requestContext.deserialize(this.request);
-      clientRequestContext.enter();
 
       this.protocol.events.raiseEvent(RpcProtocolEvent.RequestReceived, this);
 
@@ -133,7 +132,8 @@ export class RpcInvocation {
       // @typescript-eslint/return-await doesn't agree with awaiting values that *might* be a promise
       // eslint-disable-next-line @typescript-eslint/return-await
       return await op.call(impl, ...parameters);
-    } catch (error) {
+    } catch (error: any) {
+      Logger.logError(error.message, clientRequestContext.activityId);
       return this.reject(error);
     }
   }

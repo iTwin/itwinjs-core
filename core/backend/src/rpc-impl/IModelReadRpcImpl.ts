@@ -40,18 +40,15 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return true;
   }
 
-  public async queryRows(tokenProps: IModelRpcProps, ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string, abbreviateBlobs?: boolean): Promise<QueryResponse> {
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+  public async queryRows(requestContex: ClientRequestContext, tokenProps: IModelRpcProps, ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string, abbreviateBlobs?: boolean): Promise<QueryResponse> {
     const iModelDb: IModelDb = await RpcBriefcaseUtility.findOrOpen(requestContext, tokenProps, SyncMode.FixedVersion);
-    requestContext.enter();
-    return iModelDb.queryRows(ecsql, bindings, limit, quota, priority, restartToken, abbreviateBlobs);
+    return iModelDb.queryRows(requestContext, ecsql, bindings, limit, quota, priority, restartToken, abbreviateBlobs);
   }
 
   public async queryModelRanges(tokenProps: IModelRpcProps, modelIdsList: Id64String[]): Promise<Range3dProps[]> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     const modelIds = new Set(modelIdsList);
     const iModelDb: IModelDb = await RpcBriefcaseUtility.findOrOpen(requestContext, tokenProps, SyncMode.FixedVersion);
-    requestContext.enter();
     const ranges: Range3dProps[] = [];
     for (const id of modelIds) {
       const val = iModelDb.nativeDb.queryModelExtents(JSON.stringify({ id: id.toString() }));
@@ -77,7 +74,6 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     const modelIds = new Set(modelIdsList);
     const iModelDb: IModelDb = await RpcBriefcaseUtility.findOrOpen(requestContext, tokenProps, SyncMode.FixedVersion);
-    requestContext.enter();
     const modelJsonArray: ModelProps[] = [];
     for (const id of modelIds) {
       try {
@@ -100,7 +96,6 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     const elementIds = new Set(elementIdsList);
     const iModelDb: IModelDb = await RpcBriefcaseUtility.findOrOpen(requestContext, tokenProps, SyncMode.FixedVersion);
-    requestContext.enter();
     const elementProps: ElementProps[] = [];
     for (const id of elementIds) {
       try {

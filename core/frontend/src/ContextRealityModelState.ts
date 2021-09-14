@@ -28,7 +28,7 @@ async function getAccessToken(): Promise<AccessToken | undefined> {
     return undefined; // Not signed in
 
   try {
-    return await IModelApp.authorizationClient.getAccessToken();
+    return IModelApp.authorizationClient.getAccessToken();
   } catch (_) {
     return undefined;
   }
@@ -128,7 +128,6 @@ export async function queryRealityData(criteria: RealityDataQueryCriteria): Prom
     return availableRealityModels;
 
   const requestContext = await AuthorizedFrontendRequestContext.create();
-  requestContext.enter();
 
   const client = new RealityDataClient();
 
@@ -142,8 +141,6 @@ export async function queryRealityData(criteria: RealityDataQueryCriteria): Prom
   } else {
     realityData = await client.getRealityDataInProject(requestContext, iTwinId);
   }
-
-  requestContext.enter();
 
   // Get set of URLs that are directly attached to the model.
   const modelRealityDataIds = new Set<string>();
@@ -189,7 +186,6 @@ export async function queryRealityData(criteria: RealityDataQueryCriteria): Prom
         };
       }
 
-      requestContext.enter();
       if (!modelRealityDataIds.has(currentRealityData.id))
         availableRealityModels.push({
           tilesetUrl: url, name: realityDataName, description: (currentRealityData.description ? currentRealityData.description : ""),

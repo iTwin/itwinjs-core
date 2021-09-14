@@ -22,7 +22,7 @@ const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
 /** @internal */
 export interface DownloadAndOpenArgs {
-  user: AuthorizedClientRequestContext;
+  user?: AuthorizedClientRequestContext;
   tokenProps: IModelRpcOpenProps;
   syncMode: SyncMode;
   fileNameResolvers?: ((arg: BriefcaseProps) => string)[];
@@ -102,13 +102,12 @@ export class RpcBriefcaseUtility {
     }
   }
 
-  public static async findOrOpen(requestContext: AuthorizedClientRequestContext, iModel: IModelRpcProps, syncMode: SyncMode): Promise<IModelDb> {
+  public static async findOrOpen(iModel: IModelRpcProps, syncMode: SyncMode): Promise<IModelDb> {
     const iModelDb = IModelDb.tryFindByKey(iModel.key);
     if (undefined === iModelDb) {
-      return this.open({ user: requestContext, tokenProps: iModel, syncMode, timeout: 1000 });
+      return this.open({ tokenProps: iModel, syncMode, timeout: 1000 });
     }
     await iModelDb.reattachDaemon(requestContext);
-    requestContext.enter();
     return iModelDb;
   }
 

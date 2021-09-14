@@ -429,7 +429,7 @@ describe("Logger", () => {
     clearOutlets();
     try {
       throw new Error("error message");
-    } catch (err) {
+    } catch (err: any) {
       Logger.logException("testcat", err);
     }
     checkOutlets(["testcat", "Error: error message", { ExceptionType: "Error" }], [], [], []);
@@ -458,12 +458,12 @@ describe("Logger", () => {
       (c, m, d) => outtrace = [c, m, d ? d() : {}]);
     Logger.setLevel("testcat", LogLevel.Error);
 
-    const lctx1 = new ClientRequestContext("activity1").enter();
+    const lctx1 = new ClientRequestContext("activity1");
     clearOutlets();
     Logger.logError("testcat", "message1");
     checkOutlets(["testcat", "message1", { ActivityId: lctx1.activityId }], [], [], []);
 
-    const lctx2 = new ClientRequestContext("activity2").enter();
+    const lctx2 = new ClientRequestContext("activity2");
     clearOutlets();
     Logger.logError("testcat", "message2");
     checkOutlets(["testcat", "message2", { ActivityId: lctx2.activityId }], [], [], []);
@@ -483,7 +483,7 @@ describe("Logger", () => {
       (c, m, d) => outinfo = [c, m, d],
       (c, m, d) => outtrace = [c, m, d]);
 
-    const lctx1 = new ClientRequestContext("activity1").enter();
+    const lctx1 = new ClientRequestContext("activity1");
     const md = Logger.makeMetaData(() => { });
     assert.include(md, {
       ActivityId: lctx1.activityId,

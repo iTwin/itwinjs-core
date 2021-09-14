@@ -63,19 +63,6 @@ export class ClientRequestContext {
     this._useContextForRpc = false;
   }
 
-  /** Get the current client request context */
-  public static get current() { return ClientRequestContext._current; }
-  protected static _current: ClientRequestContext = new ClientRequestContext();
-
-  /**
-   * Set or reset the current ClientRequestContext to be this object. Should be called by async functions and the functions that they call
-   * at every resume point. See [ClientRequestContext rules]($docs/learning/backend/managingclientrequestcontext.md).
-   */
-  public enter(): this {
-    ClientRequestContext._current = this;
-    return this;
-  }
-
   /** Setup use of this context for the next RPC call
    * @internal
    */
@@ -108,14 +95,3 @@ export interface SerializedClientRequestContext {
   userId?: string;
   csrfToken?: { headerName: string, headerValue: string };
 }
-
-/** Used by Logger to set ClientRequestContext metadata
- * @internal
- */
-export const addClientRequestContext = (metaData: any) => {
-  const requestContext = ClientRequestContext.current;
-  metaData.ActivityId = requestContext.activityId;
-  metaData.SessionId = requestContext.sessionId;
-  metaData.ApplicationId = requestContext.applicationId;
-  metaData.ApplicationVersion = requestContext.applicationVersion;
-};

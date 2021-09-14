@@ -180,10 +180,8 @@ describe("iModel", () => {
     Logger.setLevel("ECSqlStepWorkerTestCategory", LogLevel.Error);
     const stmt = imodel1.prepareStatement("SELECT * from bis.Element");
 
-    contextForStepAsync.enter();        // the statement should run entirely in contextForStepAsync
     const stepPromise = stmt.stepAsync();
 
-    contextForTest.enter();             // while the statement runs, the test switches to a new context
     Logger.logError("ECSqlStepWorkerTestCategory", testMessage);
 
     const res = await stepPromise;      // now the statement completes.
@@ -740,8 +738,7 @@ describe("iModel", () => {
 
   it("should find a tile tree for a geometric model", async () => {
     // Note: this is an empty model.
-    const requestContext2 = new BackendRequestContext();
-    const tree = await imodel1.tiles.requestTileTreeProps(requestContext2, "0x1c");
+    const tree = await imodel1.tiles.requestTileTreeProps("0x1c");
     expect(tree).not.to.be.undefined;
 
     expect(tree.id).to.equal("0x1c");
@@ -767,24 +764,23 @@ describe("iModel", () => {
   });
 
   it("should throw on invalid tile requests", async () => {
-    const requestContext2 = new ClientRequestContext("invalidTileRequests");
     await using(new DisableNativeAssertions(), async (_r) => {
-      let error = await getIModelError(imodel1.tiles.requestTileTreeProps(requestContext2, "0x12345"));
+      let error = await getIModelError(imodel1.tiles.requestTileTreeProps("0x12345"));
       expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileTreeProps(requestContext2, "NotAValidId"));
+      error = await getIModelError(imodel1.tiles.requestTileTreeProps("NotAValidId"));
       expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileContent(requestContext2, "0x1c", "0/0/0/0"));
+      error = await getIModelError(imodel1.tiles.requestTileContent("0x1c", "0/0/0/0"));
       expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileContent(requestContext2, "0x12345", "0/0/0/0/1"));
+      error = await getIModelError(imodel1.tiles.requestTileContent("0x12345", "0/0/0/0/1"));
       expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileContent(requestContext2, "0x1c", "V/W/X/Y/Z"));
+      error = await getIModelError(imodel1.tiles.requestTileContent("0x1c", "V/W/X/Y/Z"));
       expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileContent(requestContext2, "0x1c", "NotAValidId"));
+      error = await getIModelError(imodel1.tiles.requestTileContent("0x1c", "NotAValidId"));
       expectIModelError(IModelStatus.InvalidId, error);
     });
   });
