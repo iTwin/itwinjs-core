@@ -796,7 +796,7 @@ describe("Triangulation", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("DartInTriangle", () => {
+  it("DartInTriangle", () => {
     // This simple dart-inside-triangle showed an error in a special case test in the earcut triangulator.
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];

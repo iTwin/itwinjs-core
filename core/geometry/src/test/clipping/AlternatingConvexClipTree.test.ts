@@ -231,7 +231,7 @@ describe("RecursiveClipSets", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("HullAndInlets", () => {
+  it("HullAndInlets", () => {
     const ck = new Checker();
     let x0 = 0;
 
