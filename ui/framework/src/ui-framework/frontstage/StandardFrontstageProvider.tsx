@@ -5,7 +5,7 @@
 import * as React from "react";
 import { StageUsage } from "@bentley/ui-abstract";
 import { StagePanel, StagePanelProps } from "../stagepanels/StagePanel";
-import { ContentGroup, ContentGroupProps } from "../content/ContentGroup";
+import { ContentGroup, ContentGroupProps, ContentGroupProvider } from "../content/ContentGroup";
 import { FrontstageProvider } from "./FrontstageProvider";
 import { Frontstage, FrontstageProps } from "./Frontstage";
 import { CoreTools } from "../tools/CoreToolDefinitions";
@@ -32,7 +32,7 @@ export interface StandardFrontstageProps {
   // Usage of stage, if not specified StageUsage.General is used
   usage?: StageUsage | string;
   /** Definition of available content groups or a function that provides them */
-  contentGroupProps: (() => ContentGroupProps) | ContentGroupProps;
+  contentGroupProps: ContentGroupProps | ContentGroupProvider;
   /** Specify button to use to open backstage. Leave undefined for no backstage button.
    * ```
    * <BackstageAppButton icon={"icon-bentley-systems"} />
@@ -75,13 +75,14 @@ export class StandardFrontstageProvider extends FrontstageProvider {
   }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
+    const contentGroup = (this.props.contentGroupProps instanceof ContentGroupProvider) ? this.props.contentGroupProps : new ContentGroup(this.props.contentGroupProps);
     return (
       <Frontstage
         key={this.props.id}
         id={this.props.id}
         version={this.props.version ?? 1.0}
         defaultTool={CoreTools.selectElementCommand}
-        contentGroup={new ContentGroup(this.props.contentGroupProps)}
+        contentGroup={contentGroup}
         isInFooterMode={true}
         usage={this.props.usage ?? StageUsage.General}
         applicationData={this.props.applicationData}

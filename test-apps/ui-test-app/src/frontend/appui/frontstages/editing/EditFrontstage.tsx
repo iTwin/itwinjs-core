@@ -23,8 +23,10 @@ import { Orientation } from "@bentley/ui-core";
 /* eslint-disable react/jsx-key, deprecation/deprecation */
 
 import sketchIconSvg from "../../icons/draw.svg?sprite";
+import { ViewsFrontstageContentGroupProvider } from "../ViewsFrontstage";
 
 export class EditFrontstage extends FrontstageProvider {
+  private _contentGroupProvider = new ViewsFrontstageContentGroupProvider();
   public static stageId = "EditFrontstage";
   public get id(): string {
     return EditFrontstage.stageId;
@@ -39,10 +41,6 @@ export class EditFrontstage extends FrontstageProvider {
       <Widget id={AccuDrawWidgetControl.id} label={AccuDrawWidgetControl.label} control={AccuDrawWidgetControl} />,
     ],
   };
-
-  constructor(public viewStates: ViewState[], public iModelConnection: IModelConnection) {
-    super();
-  }
 
   /** Get the CustomItemDef for ViewSelector  */
   private get _viewSelectorItemDef() {
@@ -62,31 +60,10 @@ export class EditFrontstage extends FrontstageProvider {
   }
 
   public get frontstage() {
-    // first find an appropriate layout
-    const contentLayoutProps: ContentLayoutProps | undefined = AppUi.findLayoutFromContentCount(this.viewStates.length);
-    if (!contentLayoutProps) {
-      throw (Error(`Could not find layout ContentLayoutProps when number of viewStates=${this.viewStates.length}`));
-    }
-
-    // create the content props that specifies an iModelConnection and a viewState entry in the application data.
-    const contentProps: ContentProps[] = [];
-    for (const viewState of this.viewStates) {
-      const thisContentProps: ContentProps = {
-        id: "edit-MainView",
-        classId: IModelViewportControl,
-        applicationData: { viewState, iModelConnection: this.iModelConnection },
-      };
-      contentProps.push(thisContentProps);
-    }
-    const myContentGroup: ContentGroup = new ContentGroup({
-      id: "main-edit",
-      layout: StandardContentLayouts.singleView,
-      contents: contentProps,
-    });
     return (
       <Frontstage id={this.id}
         defaultTool={CoreTools.selectElementCommand}
-        contentGroup={myContentGroup}
+        contentGroup={this._contentGroupProvider}
         isInFooterMode={true} applicationData={{ key: "value" }}
         usage={StageUsage.Edit}
         contentManipulationTools={

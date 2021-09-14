@@ -569,19 +569,7 @@ export class FrontstageManager {
   public static async setActiveContentGroup(contentGroup: ContentGroup): Promise<void> {
     const contentLayoutDef = ContentLayoutManager.getLayoutForGroup(contentGroup);
     if (contentLayoutDef) {
-      const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
-      // istanbul ignore else
-      if (activeFrontstageDef) {
-        FrontstageManager._isLoading = false;
-
-        activeFrontstageDef.setContentLayoutAndGroup(contentLayoutDef, contentGroup);
-        FrontstageManager.onContentLayoutActivatedEvent.emit({ contentLayout: contentLayoutDef, contentGroup });
-
-        await activeFrontstageDef.waitUntilReady();
-        FrontstageManager._isLoading = false;
-
-        activeFrontstageDef.setActiveContent();
-      }
+      FrontstageManager.setActiveLayout(contentLayoutDef, contentGroup);
     }
   }
 

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import {
-  BackstageAppButton, ConfigurableUiManager, ContentGroupProps,
+  BackstageAppButton, ConfigurableUiManager, ContentGroup, ContentGroupProvider, FrontstageProps,
   IModelViewportControl, StandardContentToolsProvider, StandardFrontstageProps, StandardFrontstageProvider,
   StandardNavigationToolsProvider,
   StandardStatusbarItemsProvider,
@@ -15,27 +15,24 @@ import { StageUsage, StandardContentLayouts } from "@bentley/ui-abstract";
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
 import { AppUi2StageItemsProvider } from "../../tools/AppUi2StageItemsProvider";
+import { getSavedViewLayoutProps } from "../../tools/UiProviderTool";
 
-export class FrontstageUi2 {
-  private static showCornerButtons = true;
+export class FrontstageUi2ContentGroupProvider extends ContentGroupProvider {
 
-  /* eslint-disable react/jsx-key */
-  private static supplyViewOverlay = (viewport: ScreenViewport) => {
-    if (viewport.view) {
-      return <MyCustomViewOverlay />;
+  public async provideContentGroup(props: FrontstageProps): Promise<ContentGroup> {
+    const iModelConnection = UiFramework.getIModelConnection();
+
+    const savedViewLayoutProps = await getSavedViewLayoutProps(props.id, iModelConnection);
+    if (savedViewLayoutProps) {
+      const viewState = savedViewLayoutProps.contentGroupProps.contents[0].applicationData?.viewState;
+      if (viewState) {
+        UiFramework.setDefaultViewState(viewState);
+      }
+      // TODO: determine the best way to provide overlay data when retrieving layout from state
+      return new ContentGroup(savedViewLayoutProps.contentGroupProps);
     }
-    return null;
-  };
 
-  private static supplyAppData(_id: string, _applicationData?: any) {
-    return {
-      viewState: UiFramework.getDefaultViewState,
-      iModelConnection: UiFramework.getIModelConnection,
-    };
-  }
-
-  private static ui2ContentGroupProps(): ContentGroupProps {
-    return {
+    return new ContentGroup({
       id: "main-content-group",
       layout: StandardContentLayouts.singleView,
       contents: [
@@ -50,6 +47,26 @@ export class FrontstageUi2 {
           appDataProvider: FrontstageUi2.supplyAppData,
         },
       ],
+    });
+  }
+}
+
+export class FrontstageUi2 {
+  private static _contentGroupProvider = new FrontstageUi2ContentGroupProvider();
+  private static showCornerButtons = true;
+
+  /* eslint-disable react/jsx-key */
+  public static supplyViewOverlay = (viewport: ScreenViewport) => {
+    if (viewport.view) {
+      return <MyCustomViewOverlay />;
+    }
+    return null;
+  };
+
+  public static supplyAppData(_id: string, _applicationData?: any) {
+    return {
+      viewState: UiFramework.getDefaultViewState,
+      iModelConnection: UiFramework.getIModelConnection,
     };
   }
 
@@ -74,7 +91,7 @@ export class FrontstageUi2 {
     const ui2StageProps: StandardFrontstageProps = {
       id: "Ui2",
       version: 1.1,
-      contentGroupProps: FrontstageUi2.ui2ContentGroupProps,
+      contentGroupProps: FrontstageUi2._contentGroupProvider,
       hideNavigationAid,
       cornerButton,
       usage: StageUsage.General,

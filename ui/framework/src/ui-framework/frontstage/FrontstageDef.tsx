@@ -17,7 +17,7 @@ import {
   NineZoneManagerProps, NineZoneState, popoutWidgetToChildWindow, setFloatingWidgetContainerBounds,
 } from "@bentley/ui-ninezone";
 import { ContentControl } from "../content/ContentControl";
-import { ContentGroup, ContentGroupManager } from "../content/ContentGroup";
+import { ContentGroup, ContentGroupManager, ContentGroupProvider } from "../content/ContentGroup";
 import { ContentLayoutDef } from "../content/ContentLayout";
 import { ContentLayoutManager } from "../content/ContentLayoutManager";
 import { ContentViewManager } from "../content/ContentViewManager";
@@ -86,7 +86,6 @@ export class FrontstageDef {
   public get id(): string { return this._id; }
   public get defaultTool(): ToolItemDef | undefined { return this._defaultTool; }
   public get defaultContentId(): string { return this._defaultContentId; }
-  public get contentGroupId(): string { return this._contentGroupId; }
   public get isInFooterMode(): boolean { return this._isInFooterMode; }
   public get applicationData(): any | undefined { return this._applicationData; }
   public get usage(): string { return this._usage !== undefined ? this._usage : StageUsage.General; }
@@ -165,11 +164,8 @@ export class FrontstageDef {
   public onActivated(): void {
     this.updateWidgetDefs();
 
-    if (!this._contentGroup) {
-      this._contentGroup = ContentGroupManager.findGroup(this.contentGroupId);
-      if (!this._contentGroup)
-        throw new UiError(UiFramework.loggerCategory(this), `onActivated: Content Group '${this.contentGroupId}' not registered`);
-    }
+    if (!this._contentGroup)
+      throw new UiError(UiFramework.loggerCategory(this), `onActivated: Content Group not defined`);
 
     this._contentLayoutDef = ContentLayoutManager.getLayoutForGroup(this._contentGroup);
     if (!this._contentLayoutDef)
@@ -483,10 +479,13 @@ export class FrontstageDef {
     if (props.defaultContentId !== undefined)
       this._defaultContentId = props.defaultContentId;
 
-    if (typeof props.contentGroup === "string")
-      this._contentGroupId = props.contentGroup;
-    else
+    if (typeof props.contentGroup === "string") {
+      this._contentGroup = ContentGroupManager.findGroup(props.contentGroup);
+    } else if (props.contentGroup instanceof ContentGroupProvider) {
+      this._contentGroup = await props.contentGroup.provideContentGroup(props);
+    } else {
       this._contentGroup = props.contentGroup;
+    }
 
     if (props.isInFooterMode !== undefined)
       this._isInFooterMode = props.isInFooterMode;

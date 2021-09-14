@@ -15,6 +15,7 @@ import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { UiFramework } from "../UiFramework";
 import { ContentControl } from "./ContentControl";
 import { ContentLayoutManager } from "./ContentLayoutManager";
+import { FrontstageProps } from "../frontstage/Frontstage";
 
 /** Properties for content displayed in a content view
  * @public
@@ -42,6 +43,13 @@ export interface ContentGroupProps {
   contents: ContentProps[];
 }
 
+/**
+ * @beta
+ */
+export abstract class ContentGroupProvider {
+  abstract provideContentGroup(props: FrontstageProps): Promise<ContentGroup>;
+}
+
 /** Callback to process content properties during toJSON method
  * @public
  */
@@ -51,6 +59,7 @@ export type ContentCallback = (content: ContentProps) => void;
  * @public
  */
 export class ContentGroup {
+  private static _sId = 0;
   public groupId: string;
   public layout: ContentLayoutProps;
   public contentPropsList: ContentProps[];
@@ -64,13 +73,15 @@ export class ContentGroup {
   constructor(groupProps: (() => ContentGroupProps) | ContentGroupProps) {
     const contentGroupProps = typeof groupProps === "function" ? groupProps() : groupProps;
     this.layout = ContentLayoutManager.getLayoutPropsForGroup(contentGroupProps);
-    this.groupId = contentGroupProps.id;
+    // ensure we have a unique groupId for each instance of a content group - this will be used to generate a key in the React controls
+    this.groupId = `[${contentGroupProps.id}-${ContentGroup._sId++}]`;
     this.contentPropsList = contentGroupProps.contents;
   }
 
   /** Gets a [[ContentControl]] from the Content Group based on its [[ContentProps]]. */
   public getContentControl(contentProps: ContentProps, _index: number): ContentControl | undefined {
-    const id = contentProps.id;
+    // ensure we have a unique control Id for each instance of a content control - this will be used as a key for the React control - see `ContentControl.getKeyedReactNode`
+    const id = `${this.groupId}-${contentProps.id}`;
     let contentControl: ContentControl | undefined;
 
     if (!this._contentControls.get(id)) {

@@ -40,7 +40,8 @@ export interface ViewportProps extends CommonProps {
   viewState?: ViewStateProp;
   /** Function to get a reference to the ScreenViewport */
   viewportRef?: (v: ScreenViewport) => void;
-
+  /** Function to get a reference to the ScreenViewport */
+  uniqueId?: string;
   /** @internal */
   onContextMenu?: (e: React.MouseEvent) => boolean;
   /** @internal */
@@ -311,6 +312,7 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
         <div
           ref={this._viewportDiv}
           data-testid="viewport-component"
+          data-viewport-id={this.props.uniqueId}
           className={this.props.className}
           style={viewportDivStyle}
           onContextMenu={this._handleContextMenu}

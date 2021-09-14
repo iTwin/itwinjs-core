@@ -15,7 +15,7 @@ import {
   HorizontalAnchor, Zones as NZ_Zones, StagePanels, StagePanelsManager, ToolSettingsWidgetMode, WidgetZoneId, widgetZoneIds, ZoneManagerProps,
   ZonesManagerProps,
 } from "@bentley/ui-ninezone";
-import { ContentGroup } from "../content/ContentGroup";
+import { ContentGroup, ContentGroupProvider } from "../content/ContentGroup";
 import { ContentLayout } from "../content/ContentLayout";
 import { ToolItemDef } from "../shared/ToolItemDef";
 import { getNestedStagePanelKey, StagePanelProps, StagePanelRuntimeProps } from "../stagepanels/StagePanel";
@@ -40,7 +40,7 @@ export interface FrontstageProps extends CommonProps {
   /** Tool that is started once the Frontstage is activated */
   defaultTool: ToolItemDef;
   /** The Content Group providing the Content Views */
-  contentGroup: string | ContentGroup;
+  contentGroup: string | ContentGroup | ContentGroupProvider;
   /** Id of the Content View to be activated initially */
   defaultContentId?: string;
   /** Indicated whether the StatusBar is in footer mode or widget mode. Defaults to true. */

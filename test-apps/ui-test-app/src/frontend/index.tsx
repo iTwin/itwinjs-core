@@ -78,18 +78,21 @@ export enum SampleAppUiActionId {
   setTestProperty = "sampleapp:settestproperty",
   setAnimationViewId = "sampleapp:setAnimationViewId",
   setIsIModelLocal = "sampleapp:setisimodellocal",
+  setInitialViewIds = "sampleapp:setInitialViewIds",
 }
 
 export interface SampleAppState {
   testProperty: string;
   animationViewId: string;
   isIModelLocal: boolean;
+  initialViewIds: string[];
 }
 
 const initialState: SampleAppState = {
   testProperty: "",
   animationViewId: "",
   isIModelLocal: false,
+  initialViewIds: [],
 };
 
 // An object with a function that creates each OpenIModelAction that can be handled by our reducer.
@@ -97,6 +100,7 @@ export const SampleAppActions = {
   setTestProperty: (testProperty: string) => createAction(SampleAppUiActionId.setTestProperty, testProperty),
   setAnimationViewId: (viewId: string) => createAction(SampleAppUiActionId.setAnimationViewId, viewId),
   setIsIModelLocal: (isIModelLocal: boolean) => createAction(SampleAppUiActionId.setIsIModelLocal, isIModelLocal),
+  setInitialViewIds: (viewIds: string[]) => createAction(SampleAppUiActionId.setInitialViewIds, viewIds),
 };
 
 class SampleAppAccuSnap extends AccuSnap {
@@ -130,6 +134,9 @@ function SampleAppReducer(state: SampleAppState = initialState, action: SampleAp
     }
     case SampleAppUiActionId.setIsIModelLocal: {
       return { ...state, isIModelLocal: action.payload };
+    }
+    case SampleAppUiActionId.setInitialViewIds: {
+      return { ...state, initialViewIds: action.payload };
     }
   }
   return state;
@@ -334,33 +341,8 @@ export class SampleAppIModelApp {
 
     // store the IModelConnection in the sample app store - this may trigger redux connected components
     UiFramework.setIModelConnection(iModelConnection, true);
-    const viewStates: ViewState[] = [];
-
     if (viewIdsSelected.length) {
-      let viewIdsParam = "";
-      viewIdsSelected.forEach((viewId: string, index: number) => {
-        if (index > 0)
-          viewIdsParam += `&`;
-        viewIdsParam += `viewId=${viewId}`;
-      });
-      Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `openViews: ${viewIdsParam}`);
-
-      let defaultViewState: ViewState | undefined;
-      // store the first selected viewId as default - mostly used by frontstages defined in extensions that want to open a IModelViewport
-      if (viewIdsSelected && viewIdsSelected.length > 0) {
-        for (const viewId of viewIdsSelected) {
-          const viewState = await iModelConnection.views.load(viewId);
-          if (viewState) {
-            if (!defaultViewState) {
-              defaultViewState = viewState;
-              ActiveSettingsManager.onViewOpened(viewState); // Review TODO
-            }
-            viewStates.push(viewState);
-          }
-        }
-        if (defaultViewState)
-          UiFramework.setDefaultViewState(defaultViewState);
-      }
+      SampleAppIModelApp.setInitialViewIds(viewIdsSelected);
     }
 
     if (this.iModelParams && this.iModelParams.stageId)
@@ -371,10 +353,10 @@ export class SampleAppIModelApp {
     let frontstageDef: FrontstageDef | undefined;
     if (stageId === defaultFrontstage) {
       if (stageId === ViewsFrontstage.stageId) {
-        const frontstageProvider = await ViewsFrontstage.createFrontstageProvider(viewStates, iModelConnection);
+        const frontstageProvider = new ViewsFrontstage();
         FrontstageManager.addFrontstageProvider(frontstageProvider);
       } else {
-        const frontstageProvider = new EditFrontstage(viewStates, iModelConnection);
+        const frontstageProvider = new EditFrontstage();
         FrontstageManager.addFrontstageProvider(frontstageProvider);
       }
       frontstageDef = await FrontstageManager.getFrontstageDef(stageId);
@@ -511,6 +493,11 @@ export class SampleAppIModelApp {
     }
   }
 
+
+  public static getInitialViewIds() {
+    return SampleAppIModelApp.store.getState().sampleAppState.initialViewIds;
+  }
+
   public static getTestProperty(): string {
     return SampleAppIModelApp.store.getState().sampleAppState.testProperty;
   }
@@ -533,13 +520,17 @@ export class SampleAppIModelApp {
     UiFramework.dispatchActionToStore(SampleAppUiActionId.setIsIModelLocal, isIModelLocal, immediateSync);
   }
 
+  public static setInitialViewIds(viewIds: string[], immediateSync = false) {
+    UiFramework.dispatchActionToStore(SampleAppUiActionId.setInitialViewIds, viewIds, immediateSync);
+  }
+
   public static get isIModelLocal(): boolean {
     return SampleAppIModelApp.store.getState().sampleAppState.isIModelLocal;
   }
 
   public static async showFrontstage(frontstageId: string) {
     const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageId);
-    FrontstageManager.setActiveFrontstageDef(frontstageDef); // eslint-disable-line @typescript-eslint/no-floating-promises
+    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
   }
 }
 
