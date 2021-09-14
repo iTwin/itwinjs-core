@@ -75,7 +75,7 @@ export interface TimelineComponentProps {
   onChange?: (duration: number) => void;
   /** Callback triggered when play/pause button is pressed */
   onPlayPause?: (playing: boolean) => void;
-    /** Callback triggered when backward/forward buttons are pressed */
+  /** Callback triggered when backward/forward buttons are pressed */
   onJump?: (forward: boolean) => void;
   /** Callback triggered when a setting is changed */
   onSettingsChange?: (arg: PlaybackSettings) => void;

@@ -63,7 +63,7 @@ function getDateMarker(dateMarkerPropsIn: TimelineDateMarkerProps, startDate: Da
   return {datePercentage: percentage, dateMarker: marker};
 }
 
-function markDateInTimelineRange (dateMarkerProps?: TimelineDateMarkerProps, startDate?: Date, endDate?: Date): boolean {
+function markDateInTimelineRange(dateMarkerProps?: TimelineDateMarkerProps, startDate?: Date, endDate?: Date): boolean {
   // istanbul ignore else
   if (dateMarkerProps && startDate && endDate) {
     const inDate = dateMarkerProps.date ? dateMarkerProps.date : new Date();
