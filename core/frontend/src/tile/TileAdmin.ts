@@ -589,6 +589,11 @@ export class TileAdmin {
     this.initializeRpc();
     const props = this.getTileRequestProps(tile);
     const retrieveMethod = await IModelTileRpcInterface.getClient().generateTileContent(props.tokenProps, props.treeId, props.contentId, props.guid);
+    if (tile.request?.isCanceled) {
+      // the content is no longer needed, return an empty array.
+      return new Uint8Array();
+    }
+
     if (retrieveMethod === TileContentSource.ExternalCache) {
       const tileContent = await this.requestCachedTileContent(tile);
       if (tileContent === undefined)
