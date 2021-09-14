@@ -234,7 +234,7 @@ export class PatternBuffers extends InstanceData {
       new Float32Array([1, params.spacing.x, params.spacing.y, params.scale]),
       new Float32Array([params.origin.x, params.origin.y]),
       Matrix4.fromTransform(params.orgTransform),
-      Matrix4.fromTransform(params.worldToModel.multiplyTransformTransform(params.localToWorld)),
+      Matrix4.fromTransform(params.patternToModel),
       Matrix4.fromTransform(Transform.createTranslation(params.symbolTranslation)),
       offsets,
       params.featureId,

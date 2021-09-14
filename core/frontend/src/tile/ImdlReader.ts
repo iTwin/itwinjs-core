@@ -129,8 +129,7 @@ interface ImdlAreaPattern {
   /** Lookup key in ImdlReader._bufferViews. */
   readonly xyOffsets: string;
   readonly featureId: number;
-  readonly localToWorld: TransformProps;
-  readonly worldToModel: TransformProps;
+  readonly modelTransform: TransformProps;
   readonly range: Range3dProps;
   readonly symbolTranslation: XYZProps;
   readonly viewIndependentOrigin?: XYZProps;
@@ -488,8 +487,7 @@ export class ImdlReader extends GltfReader {
       origin: Point2d.fromJSON(json.origin),
       scale: json.scale,
       spacing: Point2d.fromJSON(json.spacing),
-      localToWorld: Transform.fromJSON(json.localToWorld),
-      worldToModel: Transform.fromJSON(json.worldToModel),
+      patternToModel: Transform.fromJSON(json.modelTransform),
       range: Range3d.fromJSON(json.range),
       symbolTranslation: Point3d.fromJSON(json.symbolTranslation),
       viewIndependentOrigin,
