@@ -8,7 +8,7 @@
 
 import { join } from "path";
 import {
-  BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
+  BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
   IModelStatus, JsonUtils, Logger, OpenMode,
 } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
@@ -451,7 +451,7 @@ export abstract class IModelDb extends IModel {
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @internal
    */
-  public async queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string, abbreviateBlobs?: boolean): Promise<QueryResponse> {
+  public async queryRows(sessionId: string, ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string, abbreviateBlobs?: boolean): Promise<QueryResponse> {
     const stats = this._concurrentQueryStats;
     const config = IModelHost.configuration!.concurrentQuery;
     stats.lastActivityTime = Date.now();
@@ -514,7 +514,7 @@ export abstract class IModelDb extends IModel {
       } else {
         let sessionRestartToken = restartToken ? restartToken.trim() : "";
         if (sessionRestartToken !== "")
-          sessionRestartToken = `${ClientRequestContext.current.sessionId}:${sessionRestartToken}`;
+          sessionRestartToken = `${sessionId}:${sessionRestartToken}`;
 
         const postResult = this.nativeDb.postConcurrentQuery(ecsql, JSON.stringify(bindings, Base64EncodedString.replacer), limit!, quota!, priority!, sessionRestartToken, abbreviateBlobs);
         if (postResult.status !== IModelJsNative.ConcurrentQuery.PostStatus.Done)
@@ -573,9 +573,9 @@ export abstract class IModelDb extends IModel {
     let offset: number = 0;
     let rowsToGet = limitRows ? limitRows : -1;
     do {
-      result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, undefined, abbreviateBlobs);
+      result = await this.queryRows(IModelHost.sessionId, ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, undefined, abbreviateBlobs);
       while (result.status === QueryResponseStatus.Timeout) {
-        result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, undefined, abbreviateBlobs);
+        result = await this.queryRows(IModelHost.sessionId, ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, undefined, abbreviateBlobs);
       }
 
       if (result.status === QueryResponseStatus.Error) {
@@ -627,9 +627,9 @@ export abstract class IModelDb extends IModel {
     let offset: number = 0;
     let rowsToGet = limitRows ? limitRows : -1;
     do {
-      result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, token);
+      result = await this.queryRows(IModelHost.sessionId, ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, token);
       while (result.status === QueryResponseStatus.Timeout) {
-        result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, token);
+        result = await this.queryRows(IModelHost.sessionId, ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, token);
       }
       if (result.status === QueryResponseStatus.Cancelled) {
         throw new IModelError(DbResult.BE_SQLITE_INTERRUPT, `Query cancelled`);

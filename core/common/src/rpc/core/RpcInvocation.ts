@@ -30,6 +30,7 @@ export type RpcInvocationCallback_T = (invocation: RpcInvocation) => void;
  * @public
  */
 export class RpcInvocation {
+  public static currentRequest: ClientRequestContext;
   private _threw: boolean = false;
   private _pending: boolean = false;
   private _notFound: boolean = false;
@@ -118,9 +119,8 @@ export class RpcInvocation {
   }
 
   private async resolve(): Promise<any> {
-    const clientRequestContext = await RpcConfiguration.requestContext.deserialize(this.request);
+    const currentRequest = await RpcConfiguration.requestContext.deserialize(this.request);
     try {
-
       this.protocol.events.raiseEvent(RpcProtocolEvent.RequestReceived, this);
 
       const parameters = RpcMarshaling.deserialize(this.protocol, this.request.parameters);
@@ -129,11 +129,13 @@ export class RpcInvocation {
       (impl as any)[CURRENT_INVOCATION] = this;
       const op = this.lookupOperationFunction(impl);
 
+      RpcInvocation.currentRequest = currentRequest; // this is a "pseudo-magic-argument" to every RPC call
+
       // @typescript-eslint/return-await doesn't agree with awaiting values that *might* be a promise
       // eslint-disable-next-line @typescript-eslint/return-await
       return await op.call(impl, ...parameters);
     } catch (error: any) {
-      Logger.logError(error.message, clientRequestContext.activityId);
+      Logger.logException("RPC Error", error, undefined, () => currentRequest);
       return this.reject(error);
     }
   }

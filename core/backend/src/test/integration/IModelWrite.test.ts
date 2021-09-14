@@ -15,10 +15,9 @@ import { HubMock } from "../HubMock";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
-export async function createNewModelAndCategory(requestContext: AuthorizedBackendRequestContext, rwIModel: BriefcaseDb, parent?: Id64String) {
+export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: Id64String) {
   // Create a new physical model.
   const [, modelId] = await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true, parent);
-  requestContext.enter();
 
   // Find or create a SpatialCategory.
   const dictionary: DictionaryModel = rwIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
@@ -81,7 +80,6 @@ describe("IModelWriteTest (#integration)", () => {
     // create and insert a new model with code1
     const code1 = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel1");
     await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(rwIModel, code1, true);
-    adminRequestContext.enter();
 
     assert.isTrue(rwIModel.elements.getElement(code1) !== undefined); // throws if element is not found
 
@@ -103,7 +101,6 @@ describe("IModelWriteTest (#integration)", () => {
     // Create and insert a model with code2
     const code2 = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel2");
     await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(rwIModel, code2, true);
-    adminRequestContext.enter();
 
     rwIModel.saveChanges("inserted generic objects");
 

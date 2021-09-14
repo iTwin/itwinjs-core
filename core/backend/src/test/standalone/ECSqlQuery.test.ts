@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { DbResult, Id64 } from "@bentley/bentleyjs-core";
-import { IModelDb, SnapshotDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { SequentialLogMatcher } from "../SequentialLogMatcher";
+import { IModelDb, SnapshotDb } from "../../IModelDb";
+import { IModelHost } from "../../IModelHost";
 
 // cspell:ignore mirukuru ibim
 
@@ -100,7 +100,7 @@ describe("ECSql Query", () => {
           }
           successful++;
           resolve();
-        } catch (err) {
+        } catch (err: any) {
           // we expect query to be cancelled
           if (err.errorNumber === DbResult.BE_SQLITE_INTERRUPT) {
             cancelled++;
@@ -154,7 +154,7 @@ describe("ECSql Query", () => {
       const i = dbs.indexOf(db);
       const rowPerPage = getRowPerPage(pageSize, expected[i]);
       for (let k = 0; k < rowPerPage.length; k++) {
-        const rs = await db.queryRows(query, undefined, { maxRowAllowed: pageSize, startRowOffset: k * pageSize });
+        const rs = await db.queryRows(IModelHost.sessionId, query, undefined, { maxRowAllowed: pageSize, startRowOffset: k * pageSize });
         assert.equal(rs.rows.length, rowPerPage[k]);
       }
     }

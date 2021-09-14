@@ -6,7 +6,7 @@
 import { assert } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
-import { ClientRequestContext, Guid, IModelHubStatus } from "@bentley/bentleyjs-core";
+import { Guid, IModelHubStatus } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizedClientRequestContext, WsgError } from "@bentley/itwin-client";
 import { CheckpointManager, V1CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
 import { SnapshotDb } from "../../IModelDb";
@@ -79,10 +79,9 @@ describe("V1 Checkpoint Manager", () => {
       return changeset.id;
     });
 
-    const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
     const localFile = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint2.bim");
 
-    const request = { localFile, checkpoint: { user: ctx, iTwinId, iModelId, changeset } };
+    const request = { localFile, checkpoint: { iTwinId, iModelId, changeset } };
     await CheckpointManager.downloadCheckpoint(request);
     const db = SnapshotDb.openCheckpointV1(localFile, request.checkpoint);
     assert.equal(iModelId, db.nativeDb.getDbGuid(), "expected the V1 Checkpoint download to fix the improperly set dbGuid.");
@@ -159,10 +158,9 @@ describe("Checkpoint Manager", () => {
       return changeset.id;
     });
 
-    const user = ClientRequestContext.current as AuthorizedClientRequestContext;
     const localFile = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint2.bim");
 
-    const request = { localFile, checkpoint: { user, iTwinId, iModelId, changeset } };
+    const request = { localFile, checkpoint: { iTwinId, iModelId, changeset } };
     await CheckpointManager.downloadCheckpoint(request);
     assert.isTrue(v1Spy.calledOnce);
   });

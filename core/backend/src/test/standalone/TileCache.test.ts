@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ClientRequestContext, DbResult, Guid } from "@bentley/bentleyjs-core";
-import { IModelTileRpcInterface, RpcManager, RpcRegistry } from "@bentley/imodeljs-common";
-import { SnapshotDb } from "../../IModelDb";
-import { IModelHost, IModelHostConfiguration } from "../../imodeljs-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
 import * as path from "path";
-import { IModelJsFs } from "../../IModelJsFs";
-import { IModelHubBackend } from "../../IModelHubBackend";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { BlobDaemon } from "@bentley/imodeljs-native";
-import { getTileProps } from "../integration/TileUpload.test";
+import { DbResult, Guid } from "@bentley/bentleyjs-core";
 import { CheckpointV2 } from "@bentley/imodelhub-client";
+import { IModelTileRpcInterface, RpcManager, RpcRegistry } from "@bentley/imodeljs-common";
+import { BlobDaemon } from "@bentley/imodeljs-native";
+import { SnapshotDb } from "../../IModelDb";
+import { IModelHubBackend } from "../../IModelHubBackend";
+import { AuthorizedBackendRequestContext, IModelHost, IModelHostConfiguration } from "../../imodeljs-backend";
+import { IModelJsFs } from "../../IModelJsFs";
+import { IModelTestUtils } from "../IModelTestUtils";
+import { getTileProps } from "../integration/TileUpload.test";
+
 import sinon = require("sinon");
 
 describe("TileCache open v1", () => {
@@ -29,9 +29,8 @@ describe("TileCache open v1", () => {
 
     const iModel = SnapshotDb.openFile(dbPath);
     assert.isDefined(iModel);
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     // Generate tile
-    const tileProps = await getTileProps(iModel, requestContext);
+    const tileProps = await getTileProps(iModel);
     assert.isDefined(tileProps);
     await tileRpcInterface.generateTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid);
 
@@ -101,12 +100,12 @@ describe("TileCache, open v2", async () => {
     sinon.stub(BlobDaemon, "getDbFileName").callsFake(() => dbPath);
 
     process.env.BLOCKCACHE_DIR = "/foo/";
-    const user = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const user = await AuthorizedBackendRequestContext.create();
     const checkpointProps = { user, iTwinId, iModelId, changeset };
     const checkpoint = await SnapshotDb.openCheckpointV2(checkpointProps);
 
     // Generate tile
-    const tileProps = await getTileProps(checkpoint, user);
+    const tileProps = await getTileProps(checkpoint);
     assert.isDefined(tileProps);
     await tileRpcInterface.generateTileContent(checkpoint.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid);
 

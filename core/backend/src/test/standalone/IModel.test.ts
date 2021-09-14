@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
+import { Base64 } from "js-base64";
 import * as path from "path";
 import * as semver from "semver";
 import {
@@ -15,16 +16,17 @@ import {
 import { CheckpointV2 } from "@bentley/imodelhub-client";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
-  DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeographicCRS, GeometricElement3dProps,
-  GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError, IModelStatus, MapImageryProps, ModelProps,
-  PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance,
-  TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
+  DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeographicCRS,
+  GeometricElement3dProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError, IModelStatus,
+  MapImageryProps, ModelProps, PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState,
+  SpatialViewDefinitionProps, SubCategoryAppearance, TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { BlobDaemon } from "@bentley/imodeljs-native";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { V2CheckpointManager } from "../../CheckpointManager";
 import { BriefcaseDb } from "../../IModelDb";
+import { IModelHubBackend } from "../../IModelHubBackend";
 import {
-  BackendRequestContext, BisCoreSchema, Category, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions,
+  AuthorizedBackendRequestContext, BackendRequestContext, BisCoreSchema, Category, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions,
   DefinitionModel, DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic,
   ECSqlStatement, Element, ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d,
   GeometricModel, GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation,
@@ -35,10 +37,6 @@ import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 import sinon = require("sinon");
-import { IModelHubBackend } from "../../IModelHubBackend";
-import { V2CheckpointManager } from "../../CheckpointManager";
-import { Base64 } from "js-base64";
-
 // spell-checker: disable
 
 async function getIModelError<T>(promise: Promise<T>): Promise<IModelError | undefined> {
@@ -175,7 +173,7 @@ describe("iModel", () => {
 
     const msgs: any[] = [];
     Logger.initialize((_category: string, message: string, _metaData?: GetMetaDataFunction) => {
-      msgs.push({ message, ctx: ClientRequestContext.current });
+      msgs.push({ message });
     });
     Logger.setLevel("ECSqlStepWorkerTestCategory", LogLevel.Error);
     const stmt = imodel1.prepareStatement("SELECT * from bis.Element");
@@ -186,8 +184,6 @@ describe("iModel", () => {
 
     const res = await stepPromise;      // now the statement completes.
     assert.equal(res, DbResult.BE_SQLITE_ROW);
-
-    assert.strictEqual(ClientRequestContext.current, contextForTest);
 
     assert.equal(msgs.length, expectedMsgsInOrder.length);
     for (let i = 0; i < msgs.length; ++i) {
@@ -253,7 +249,7 @@ describe("iModel", () => {
     try {
       imodel1.elements.getElement(badCode); // throws Error
       assert.fail(); // this line should be skipped
-    } catch (error) {
+    } catch (error: any) {
       assert.instanceOf(error, Error);
       assert.instanceOf(error, IModelError);
       assert.equal(error.errorNumber, IModelStatus.NotFound);
@@ -666,7 +662,7 @@ describe("iModel", () => {
     try {
       imodel1.models.getSubModel(rootSubject.id); // throws error
       assert.fail(); // this line should be skipped
-    } catch (error) {
+    } catch (error: any) {
       assert.isTrue(error instanceof Error);
       assert.isTrue(error instanceof IModelError);
       assert.equal(error.errorNumber, IModelStatus.NotFound);
@@ -1928,8 +1924,7 @@ describe("iModel", () => {
     const commandStub = sinon.stub(BlobDaemon, "command").callsFake(async () => daemonSuccessResult);
 
     process.env.BLOCKCACHE_DIR = "/foo/";
-    const user = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const checkpoint = await SnapshotDb.openCheckpointV2({ user, iTwinId, iModelId, changeset });
+    const checkpoint = await SnapshotDb.openCheckpointV2({ iTwinId, iModelId, changeset });
     const props = checkpoint.getRpcProps();
     assert.equal(props.iModelId, iModelId);
     assert.equal(props.iTwinId, iTwinId);
@@ -1937,6 +1932,7 @@ describe("iModel", () => {
     assert.equal(commandStub.callCount, 1);
     assert.equal(commandStub.firstCall.firstArg, "attach");
 
+    const user = new BackendRequestContext() as AuthorizedBackendRequestContext;
     await checkpoint.reattachDaemon(user);
     assert.equal(commandStub.callCount, 2);
     assert.equal(commandStub.secondCall.firstArg, "attach");
@@ -1978,14 +1974,12 @@ describe("iModel", () => {
     const daemonSuccessResult = { result: DbResult.BE_SQLITE_OK, errMsg: "" };
     sinon.stub(BlobDaemon, "command").callsFake(async () => daemonSuccessResult);
 
-    const user = ClientRequestContext.current as AuthorizedClientRequestContext;
-
     process.env.BLOCKCACHE_DIR = ""; // try without setting daemon dir
-    let error = await getIModelError(SnapshotDb.openCheckpointV2({ user, iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
+    let error = await getIModelError(SnapshotDb.openCheckpointV2({ iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.BadRequest, error); // bad request because daemon dir wasn't set
 
     process.env.BLOCKCACHE_DIR = "/foo/";
-    error = await getIModelError(SnapshotDb.openCheckpointV2({ user, iTwinId, iModelId, changeset }));
+    error = await getIModelError(SnapshotDb.openCheckpointV2({ iTwinId, iModelId, changeset }));
     expectIModelError(IModelStatus.ValidationFailed, error);
   });
 
@@ -1995,20 +1989,19 @@ describe("iModel", () => {
     const hubMock = sinon.stub(checkpointsV2Handler, "get").callsFake(async () => []);
     sinon.stub(IModelHubBackend.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
 
-    const user = ClientRequestContext.current as AuthorizedClientRequestContext;
-    let error = await getIModelError(SnapshotDb.openCheckpointV2({ user, iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
+    let error = await getIModelError(SnapshotDb.openCheckpointV2({ iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.NotFound, error);
 
     hubMock.callsFake(async () => [{} as any]);
-    error = await getIModelError(SnapshotDb.openCheckpointV2({ user, iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
+    error = await getIModelError(SnapshotDb.openCheckpointV2({ iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.NotFound, error);
   });
 
   it("attempting to re-attach a non-checkpoint snapshot should be a no-op", async () => {
     process.env.BLOCKCACHE_DIR = "/foo/";
-    const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const user = await AuthorizedBackendRequestContext.create();
     const attachMock = sinon.stub(V2CheckpointManager, "attach").callsFake(async () => ({ filePath: "BAD", expiryTimestamp: Date.now() }));
-    await imodel1.reattachDaemon(ctx);
+    await imodel1.reattachDaemon(user);
     assert.isTrue(attachMock.notCalled);
   });
 
