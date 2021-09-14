@@ -93,9 +93,9 @@ interface DrawingNavigationAidState {
  * @beta
  */
 export class DrawingNavigationAid extends React.Component<DrawingNavigationAidProps, DrawingNavigationAidState> {
-  private _rootElement: HTMLDivElement | null = null;
-  private _viewContainerElement: HTMLDivElement | null = null;
-  private _viewElement: HTMLDivElement | null = null;
+  private _rootElement = React.createRef<HTMLDivElement>();
+  private _viewContainerElement = React.createRef<HTMLDivElement>();
+  private _viewElement = React.createRef<HTMLDivElement>();
   private _rootOffset: ClientRect = { left: 0, right: 0, width: 0, top: 0, bottom: 0, height: 0 };
   private _viewport: Viewport | undefined;
   private _animationFrame: any;
@@ -201,7 +201,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
     const nodes = (
       <div className={classnames("components-drawing-navigation-aid", this.props.className)}
         data-testid="components-drawing-navigation-aid"
-        ref={this._rootElementRef}
+        ref={this._rootElement}
         onWheel={this._handleWheel}
         onMouseDown={this._handleDrawingMouseDown}
         style={rootStyle}
@@ -209,13 +209,13 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
         <DrawingNavigationCanvas view={this.state.view} viewManagerOverride={viewManager} screenViewportOverride={screenViewport} viewId={viewId} origin={map.plus(offset).minus(mapOffset)} extents={e} zoom={dz} rotation={rotateMinimapWithView || is3D ? rotation : Matrix3d.createIdentity()} />
         <div className="drawing-container"
           data-testid="drawing-container"
-          ref={this._viewContainerElementRef}>
+          ref={this._viewContainerElement}>
           <div className="drawing-view-window"
             data-testid="drawing-view-window"
             onMouseDown={this._handleWindowMouseDown}
             onTouchStart={this._handleWindowTouchStart}
             style={viewWindowStyle}
-            ref={this._viewElementRef}
+            ref={this._viewElement}
             role="presentation" />
           {!is3D &&
             <div className={classnames("toggle-rotate-style", "icon", "icon-rotate-left", { checked: rotateMinimapWithView })} data-testid="toggle-rotate-style"
@@ -259,21 +259,10 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
     return this.state.view !== undefined && this.state.view.is3d();
   };
 
-  private _rootElementRef = (el: HTMLDivElement | null) => {
-    this._rootElement = el;
-  };
-
-  private _viewElementRef = (el: HTMLDivElement | null) => {
-    this._viewElement = el;
-  };
-
-  private _viewContainerElementRef = (el: HTMLDivElement | null) => {
-    this._viewContainerElement = el;
-  };
-
   private _lastTime: number | undefined;
 
   private static _animationFn = (t: number) => t < .5 ? 2 * t ** 2 : -1 + (4 - 2 * t) * t;
+
   private _animation = () => {
     const t = Date.now();
     const delta = this._lastTime ? t - this._lastTime : 16;
@@ -426,6 +415,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
   };
 
   private _lastClientXY: Point2d = Point2d.createZero();
+
   private _processWindowDrag(movement: Point2d) {
     const vect = Vector3d.create(movement.x / this.state.drawingZoom, -movement.y / this.state.drawingZoom, 0);
     const offset = this.state.rotateMinimapWithView || this._isViewport3D() ? this.state.rotation.multiplyTransposeVector(vect) : vect;
@@ -439,6 +429,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
       }
     });
   }
+
   private _processWindowEndDrag() {
     this.setState({ isMoving: false });
     this._updateFrustum(true);
@@ -497,7 +488,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
     const mouse = Point2d.create(event.clientX, event.clientY);
     if (mouse.isAlmostEqual(this.state.mouseStart) &&
       this.state.mode === MapMode.Closed &&
-      (event.target === this._viewContainerElement || event.target === this._viewElement)) {
+      (event.target === this._viewContainerElement.current || event.target === this._viewElement.current)) {
       this._openLargeMap();
     } else if (this.state.isMoving) {
       this._processWindowEndDrag();
@@ -507,7 +498,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
         event.stopPropagation();
         this.setState({ isPanning: false });
       }
-    } else if ((!(event.target instanceof Node) || this._rootElement && !this._rootElement.contains(event.target)) && mouse.isAlmostEqual(this.state.mouseStart)) {
+    } else if ((!(event.target instanceof Node) || this._rootElement.current && !this._rootElement.current.contains(event.target)) && mouse.isAlmostEqual(this.state.mouseStart)) {
       this._closeLargeMap();
     }
     this._lastClientXY = Point2d.create(event.clientX, event.clientY);
@@ -562,6 +553,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
       return DrawingNavigationAid.getDefaultClosedMapSize();
     return this.props.closeSize;
   };
+
   private _getOpenedMapSize = (): Vector3d => {
     if (this.props.openSize === undefined)
       return DrawingNavigationAid.getDefaultOpenedMapSize(this._rootOffset.right, this._rootOffset.top);
@@ -572,8 +564,8 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
     // istanbul ignore else
     if (this.state.mode === MapMode.Closed && this.state.animation === 1.0) {
       // istanbul ignore else
-      if (this._rootElement) {
-        const rect = this._rootElement.getBoundingClientRect();
+      if (this._rootElement.current) {
+        const rect = this._rootElement.current.getBoundingClientRect();
         this._rootOffset = rect;
       }
       const startMapExtents = Vector3d.createFrom(this.state.mapExtents);
@@ -735,23 +727,25 @@ export interface DrawingNavigationCanvasProps {
 
 /** @internal */
 export class DrawingNavigationCanvas extends React.Component<DrawingNavigationCanvasProps> {
-  private _canvasElement: HTMLDivElement | null = null;
+  private _canvasElement = React.createRef<HTMLDivElement>();
   private _vp?: ScreenViewport;
+
   public override render(): React.ReactNode {
     return (
       <div className="drawing-canvas"
         data-testid="drawing-canvas"
-        ref={this._canvasElementRef}>
+        ref={this._canvasElement}>
       </div>
     );
   }
+
   public override componentDidMount() {
-    if (this._canvasElement && this.props.view !== undefined) {
+    if (this._canvasElement.current && this.props.view !== undefined) {
       const viewManager = this.props.viewManagerOverride ? this.props.viewManagerOverride : /* istanbul ignore next */ IModelApp.viewManager;
       /* istanbul ignore next */
       const screenViewport = this.props.screenViewportOverride ? this.props.screenViewportOverride : /* istanbul ignore next */ ScreenViewport;
       const previousView = viewManager.selectedView;
-      this._vp = screenViewport.create(this._canvasElement, this.props.view);
+      this._vp = screenViewport.create(this._canvasElement.current, this.props.view);
       this.customizeViewport(this._vp);
       viewManager.addViewport(this._vp);
       viewManager.setSelectedView(previousView); // switch to original viewport
@@ -764,6 +758,7 @@ export class DrawingNavigationCanvas extends React.Component<DrawingNavigationCa
     if (vp.logo.style)
       vp.logo.style.display = "none";
 
+    /* istanbul ignore next */
     if (vp.viewFlags.acsTriad)
       vp.viewFlags = vp.viewFlags.with("acsTriad", false);
   }
@@ -789,9 +784,11 @@ export class DrawingNavigationCanvas extends React.Component<DrawingNavigationCa
           viewManager.dropViewport(this._vp, true);
         }
         // istanbul ignore else
-        if (this._canvasElement && (this.props.canvasSizeOverride || ( /* istanbul ignore next */ this._canvasElement.clientWidth !== 0 && /* istanbul ignore next */ this._canvasElement.clientHeight !== 0))) {
+        if (this._canvasElement.current &&
+          (this.props.canvasSizeOverride ||
+            ( /* istanbul ignore next */ this._canvasElement.current.clientWidth !== 0 && /* istanbul ignore next */ this._canvasElement.current.clientHeight !== 0))) {
           const previousView = viewManager.selectedView;
-          this._vp = screenViewport.create(this._canvasElement, this.props.view.clone());
+          this._vp = screenViewport.create(this._canvasElement.current, this.props.view.clone());
           this.customizeViewport(this._vp);
           viewManager.addViewport(this._vp);
           viewManager.setSelectedView(previousView); // switch to original viewport
@@ -809,9 +806,5 @@ export class DrawingNavigationCanvas extends React.Component<DrawingNavigationCa
       viewManager.dropViewport(this._vp, true);
     }
   }
-
-  private _canvasElementRef = (el: HTMLDivElement | null) => {
-    this._canvasElement = el;
-  };
 
 }

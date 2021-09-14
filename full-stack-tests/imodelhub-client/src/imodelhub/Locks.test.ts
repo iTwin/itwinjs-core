@@ -16,7 +16,7 @@ import * as utils from "./TestUtils";
 chai.should();
 
 describe("iModelHubClient LockHandler (#iModelBank)", () => {
-  let contextId: string;
+  let iTwinId: string;
   let imodelId: GuidString;
   let iModelClient: IModelClient;
   let briefcases: Briefcase[];
@@ -30,10 +30,10 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
     const accessToken: AccessToken | undefined = TestConfig.enableMocks ? "" : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
-    contextId = await utils.getProjectId(requestContext);
+    iTwinId = await utils.getProjectId(requestContext);
     // Does not create an imodel right now, but should in the future
-    await utils.createIModel(requestContext, utils.sharedimodelName, contextId, true, true);
-    imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);
+    await utils.createIModel(requestContext, utils.sharedimodelName, iTwinId, true, true);
+    imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, iTwinId);
     iModelClient = utils.getDefaultClient();
     briefcases = (await utils.getBriefcases(requestContext, imodelId, 2));
     lastObjectId = await utils.getLastLockObjectId(requestContext, imodelId);
@@ -57,7 +57,7 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
 
   after(async () => {
     if (TestConfig.enableIModelBank) {
-      await utils.deleteIModelByName(requestContext, contextId, utils.sharedimodelName);
+      await utils.deleteIModelByName(requestContext, iTwinId, utils.sharedimodelName);
     }
   });
 

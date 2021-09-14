@@ -35,12 +35,12 @@ export class TestUtility {
     mirukuru: "mirukuru.ibim",
   };
 
-  private static contextId: GuidString | undefined = undefined;
+  private static iTwinId: GuidString | undefined = undefined;
   /** Returns the ContextId if a Context with the name exists. Otherwise, returns undefined. */
   public static async getTestContextId(requestContext: AuthorizedClientRequestContext): Promise<GuidString> {
     requestContext.enter();
-    if (undefined !== TestUtility.contextId)
-      return TestUtility.contextId;
+    if (undefined !== TestUtility.iTwinId)
+      return TestUtility.iTwinId;
     return TestUtility.queryContextIdByName(TestUtility.testContextName);
   }
 
@@ -83,9 +83,9 @@ export class TestUtility {
     return project.wsgId;
   }
 
-  public static async queryIModelIdbyName(contextId: string, iModelName: string): Promise<string> {
+  public static async queryIModelIdbyName(iTwinId: string, iModelName: string): Promise<string> {
     const requestContext = await AuthorizedFrontendRequestContext.create();
-    const iModels = await this.imodelCloudEnv.imodelClient.iModels.get(requestContext, contextId, new IModelQuery().byName(iModelName));
+    const iModels = await this.imodelCloudEnv.imodelClient.iModels.get(requestContext, iTwinId, new IModelQuery().byName(iModelName));
     assert(iModels.length > 0);
     assert(iModels[0].wsgId);
 

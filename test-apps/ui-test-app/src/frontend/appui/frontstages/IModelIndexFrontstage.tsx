@@ -25,9 +25,9 @@ class IModelIndexControl extends ContentControl {
   private _onOpen = async (viewIds: Id64String[]) => {
     const iModelConnection = UiFramework.getIModelConnection();
     if (iModelConnection) {
-      const contextId = iModelConnection.contextId!;
+      const iTwinId = iModelConnection.iTwinId!;
       const iModelId = iModelConnection.iModelId!;
-      await SampleAppIModelApp.openIModelAndViews(contextId, iModelId, viewIds);
+      await SampleAppIModelApp.openIModelAndViews(iTwinId, iModelId, viewIds);
     }
   };
 }

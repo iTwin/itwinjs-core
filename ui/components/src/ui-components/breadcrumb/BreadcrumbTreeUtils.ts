@@ -16,6 +16,7 @@ import { UiComponents } from "../UiComponents";
 /**
  * Utility class for tree searching and manipulation in the Breadcrumb component.
  * @beta
+ * @deprecated
  */
 export class BreadcrumbTreeUtils {
 
