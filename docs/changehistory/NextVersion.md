@@ -661,3 +661,7 @@ The property `InterpolationCurve3dOptions.isChordLenTangent` has been deprecated
 
 The iModel Transformer APIs, such as the classes [IModelExporter]($transformer), [IModelImporter]($transformer), and [IModelTransformer]($transformer)
 were removed from the `@bentley/imodeljs-backend` package and moved to a new package, `@bentley/imodeljs-transformer`.
+
+## @bentley/imodeljs-common
+
+The following methods have been removed from [Cartographic]($common): `fromDegrees`, `fromAngles`, `fromRadians`, and the public constructor. These have been replaced with a single `fromJSON` method which takes a [CartographicProps]($common) as an argument. This will help callers avoid misordering longitude, latitude, and height.
