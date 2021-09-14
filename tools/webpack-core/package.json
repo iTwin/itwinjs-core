@@ -1,6 +1,6 @@
 {
   "name": "@bentley/webpack-tools-core",
-  "version": "2.19.10",
+  "version": "2.19.11",
   "description": "Set of Webpack Plugins and Loaders used for building iModel.js applications",
   "license": "MIT",
   "repository": {
@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "chalk": "^3.0.0",
-    "copy-webpack-plugin": "^9.0.1",
+    "copy-webpack-plugin": "^6.2.1",
     "file-loader": "^4.2.0",
     "findup": "0.1.5",
     "fs-extra": "^8.1.0",

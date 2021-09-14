@@ -106,7 +106,7 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /common/**/ui-*/                                  @imodeljs/ui
 /common/**/webgl-compatibility.*                  @imodeljs/display @Ellord207
 /common/**/webgl-compatibility/                   @imodeljs/display @Ellord207
-/common/**/webpack-tools-core/                    @calebmshafer @wgoehrig
+/common/**/webpack-tools-core/                    @calebmshafer @wgoehrig @aruniverse
 
 /common/config/azure-pipelines  @calebmshafer @wgoehrig @ColinKerr
 
