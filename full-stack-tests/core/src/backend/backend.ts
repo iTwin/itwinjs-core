@@ -118,7 +118,6 @@ async function init() {
   Logger.setLevel("imodeljs-backend.IModelReadRpcImpl", LogLevel.Error);  // Change to trace to debug
   Logger.setLevel("imodeljs-backend.IModelDb", LogLevel.Error);  // Change to trace to debug
   Logger.setLevel("Performance", LogLevel.Error);  // Change to Info to capture
-  Logger.setLevel("imodeljs-backend.ConcurrencyControl", LogLevel.Error);
 }
 
 /** A FileNameResolver for resolving test iModel files from core/backend */

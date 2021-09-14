@@ -410,7 +410,7 @@ export class BooleanTypeConverter extends TypeConverter {
     sortCompare(a: Primitives.Boolean, b: Primitives.Boolean, _ignoreCase?: boolean): number;
 }
 
-// @beta
+// @beta @deprecated
 export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState> {
     // @internal
     constructor(props: BreadcrumbProps);
@@ -432,7 +432,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
     readonly state: Readonly<BreadcrumbState>;
 }
 
-// @beta
+// @beta @deprecated
 export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, BreadcrumbDetailsState> {
     // @internal
     constructor(props: BreadcrumbDetailsProps);
@@ -461,7 +461,7 @@ export interface BreadcrumbDetailsDragDropProps<DragDropObject = any> {
 // @beta @deprecated
 export type BreadcrumbDetailsDragDropType = {} | TreeNodeItem | TableDataProvider;
 
-// @beta
+// @beta @deprecated
 export interface BreadcrumbDetailsProps extends CommonProps {
     // (undocumented)
     columns?: ColumnDescription[];
@@ -524,7 +524,7 @@ export interface BreadcrumbInputState {
     messageBoxOpened: boolean;
 }
 
-// @beta
+// @beta @deprecated
 export enum BreadcrumbMode {
     // (undocumented)
     Dropdown = "dropdown",
@@ -532,7 +532,7 @@ export enum BreadcrumbMode {
     Input = "input"
 }
 
-// @beta
+// @beta @deprecated
 export class BreadcrumbNode extends React.Component<BreadcrumbNodeProps> {
     constructor(props: BreadcrumbNodeProps);
     // (undocumented)
@@ -543,7 +543,7 @@ export class BreadcrumbNode extends React.Component<BreadcrumbNodeProps> {
     render(): React.ReactNode;
 }
 
-// @beta
+// @beta @deprecated
 export interface BreadcrumbNodeProps {
     icon: string;
     label: PropertyRecord;
@@ -554,7 +554,7 @@ export interface BreadcrumbNodeProps {
 // @internal (undocumented)
 export type BreadcrumbNodeRenderer = (props: BreadcrumbNodeProps, node?: TreeNodeItem, parent?: TreeNodeItem) => React.ReactNode;
 
-// @beta
+// @beta @deprecated
 export class BreadcrumbPath {
     constructor(dataProvider: TreeDataProvider);
     // (undocumented)
@@ -569,7 +569,7 @@ export class BreadcrumbPath {
     setDataProvider(dataProvider: TreeDataProvider): void;
 }
 
-// @beta
+// @beta @deprecated
 export interface BreadcrumbProps extends CommonProps {
     background?: boolean;
     dataProvider: TreeDataProvider;
@@ -592,16 +592,16 @@ export interface BreadcrumbProps extends CommonProps {
     width?: number | string;
 }
 
-// @beta
+// @beta @deprecated
 export class BreadcrumbTreeUtils {
     static aliasNodeListToTableDataProvider(nodes: TreeNodeItem[], columns: ColumnDescription[], treeDataProvider?: TreeDataProvider): TableDataProvider;
     }
 
-// @beta
+// @beta @deprecated
 export class BreadcrumbUpdateEvent extends UiEvent<BreadcrumbUpdateEventArgs> {
 }
 
-// @beta
+// @beta @deprecated
 export interface BreadcrumbUpdateEventArgs {
     // (undocumented)
     currentNode: TreeNodeItem | undefined;
@@ -714,6 +714,7 @@ export interface ColumnDescription {
     showFieldFilters?: boolean;
     sortable?: boolean;
     sortIgnoreCase?: boolean;
+    sortType?: string;
     width?: number;
 }
 
@@ -809,6 +810,9 @@ export class CompositeTypeConverter extends TypeConverter {
     sortCompare(valueA: Primitives.Composite, valueB: Primitives.Composite, ignoreCase?: boolean | undefined): number;
 }
 
+// @public
+export function computeVisibleNodes(model: TreeModel): VisibleTreeNodes;
+
 // @beta
 export function ControlledSelectableContent(props: ControlledSelectableContentProps): JSX.Element;
 
@@ -830,8 +834,10 @@ export function ControlledTree(props: ControlledTreeProps): JSX.Element;
 // @public
 export interface ControlledTreeProps extends CommonProps {
     descriptionsEnabled?: boolean;
-    height?: number;
+    eventsHandler: TreeEvents;
+    height: number;
     iconsEnabled?: boolean;
+    model: TreeModel;
     noDataRenderer?: () => React.ReactElement;
     nodeHighlightingProps?: HighlightableTreeProps;
     nodeLoader: ITreeNodeLoader;
@@ -839,10 +845,8 @@ export interface ControlledTreeProps extends CommonProps {
     onItemsRendered?: (items: RenderedItemsRange) => void;
     selectionMode: SelectionMode;
     spinnerRenderer?: () => React.ReactElement;
-    treeEvents: TreeEvents;
     treeRenderer?: (props: TreeRendererProps) => React.ReactElement;
-    visibleNodes: VisibleTreeNodes;
-    width?: number;
+    width: number;
 }
 
 // @public
@@ -1629,6 +1633,9 @@ export function getPropertyKey(propertyCategory: PropertyCategory, propertyRecor
 // @internal (undocumented)
 export const getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection;
 
+// @internal
+export function getVisibleDescendants(model: TreeModel, parentNode: TreeModelNode | TreeModelRootNode, result?: Array<TreeModelNode | TreeModelNodePlaceholder>): Array<TreeModelNode | TreeModelNodePlaceholder>;
+
 // @beta
 export interface GridCategoryItem extends FlatGridItemBase {
     // (undocumented)
@@ -2384,7 +2391,6 @@ export class MutableTreeModel implements TreeModel {
     [immerable]: boolean;
     changeNodeId(currentId: string, newId: string): boolean;
     clearChildren(parentId: string | undefined): void;
-    computeVisibleNodes(): VisibleTreeNodes;
     getChildOffset(parentId: string | undefined, childId: string): number | undefined;
     getChildren(parentId: string | undefined): SparseArray<string> | undefined;
     getNode(id: string): MutableTreeModelNode | undefined;
@@ -3403,24 +3409,6 @@ export interface ShowHideMenuProps<T extends ShowHideID> extends GlobalContextMe
 }
 
 // @public
-export class SignIn extends React.PureComponent<SignInProps, SignInState> {
-    constructor(props: SignInProps);
-    // (undocumented)
-    render(): JSX.Element;
-}
-
-// @public
-export interface SignInProps extends CommonProps {
-    // @internal
-    disableSignInOnClick?: boolean;
-    onOffline?: () => void;
-    onRegister?: () => void;
-    onSignIn: () => void;
-    // @internal
-    signingInMessage?: string;
-}
-
-// @public
 export class SimplePropertyDataProvider implements IPropertyDataProvider, PropertyData {
     // (undocumented)
     addCategory(category: PropertyCategory): number;
@@ -4163,10 +4151,10 @@ export class ToolbarPanelAlignmentHelpers {
     static readonly START_CLASS_NAME = "components-panel-alignment-start";
 }
 
-// @internal
+// @public
 export const ToolbarPopupContext: React.Context<ToolbarPopupContextProps>;
 
-// @internal (undocumented)
+// @public (undocumented)
 export interface ToolbarPopupContextProps {
     // (undocumented)
     readonly closePanel: () => void;
@@ -4461,10 +4449,9 @@ export interface TreeModelRootNode {
 export class TreeModelSource {
     constructor(_model?: MutableTreeModel);
     getModel(): TreeModel;
-    getVisibleNodes(): VisibleTreeNodes;
     modifyModel(callback: (model: MutableTreeModel) => void): void;
     onModelChanged: BeUiEvent<[TreeModel, TreeModelChanges]>;
-    }
+}
 
 // @public @deprecated
 export class TreeNode extends React.Component<TreeNodeProps> {
@@ -4648,7 +4635,7 @@ export class TreeRenderer extends React.Component<TreeRendererProps> implements 
     render(): JSX.Element;
     // (undocumented)
     scrollToNode(nodeId: string, alignment?: Alignment): void;
-    }
+}
 
 // @public
 export interface TreeRendererAttributes {
@@ -4690,7 +4677,7 @@ TreeRendererContextProvider: React.ProviderExoticComponent<React.ProviderProps<T
 
 // @public
 export interface TreeRendererProps {
-    height?: number;
+    height: number;
     nodeHeight: (node: TreeModelNode | TreeModelNodePlaceholder, index: number) => number;
     nodeHighlightingProps?: HighlightableTreeProps;
     // (undocumented)
@@ -4703,7 +4690,7 @@ export interface TreeRendererProps {
     // (undocumented)
     treeActions: TreeActions;
     visibleNodes: VisibleTreeNodes;
-    width?: number;
+    width: number;
 }
 
 // @public
@@ -4837,7 +4824,7 @@ export function useRenderedStringValue(record: PropertyRecord, stringValueCalcul
     element: React.ReactNode;
 };
 
-// @internal (undocumented)
+// @public
 export function useToolbarPopupContext(): ToolbarPopupContextProps;
 
 // @internal (undocumented)
@@ -4848,6 +4835,9 @@ export function useToolItemEntryContext(): ToolbarItemContextArgs;
 
 // @public
 export function useTreeEventsHandler<TEventsHandler extends TreeEventHandler>(factoryOrParams: (() => TEventsHandler) | TreeEventHandlerParams): TreeEventHandler;
+
+// @public
+export function useTreeModel(modelSource: TreeModelSource): TreeModel;
 
 // @public
 export function useTreeModelSource(dataProvider: TreeDataProvider): TreeModelSource;
@@ -4862,9 +4852,6 @@ export const
  * @beta
  */
 useTreeRendererContext: <P>(component: React.ComponentType<P>) => TreeRendererContext;
-
-// @public
-export function useVisibleTreeNodes(modelSource: TreeModelSource): VisibleTreeNodes;
 
 // @beta
 export class VirtualizedPropertyGrid extends React.Component<VirtualizedPropertyGridProps, VirtualizedPropertyGridState> {

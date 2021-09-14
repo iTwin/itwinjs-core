@@ -87,7 +87,7 @@ export class Frustum {
   /** Multiply all the points of this Frustum by a Transform, in place. */
   public multiply(trans: Transform): void { trans.multiplyPoint3dArrayInPlace(this.points); }
   /** Offset all of the points of this Frustum by a vector. */
-  public translate(offset: XYAndZ): void { for (const pt of this.points) pt.plus(offset); }
+  public translate(offset: XYAndZ): void { for (const pt of this.points) pt.plus(offset, pt); }
   /** Transform all the points of this Frustum and return the result in another Frustum. */
   public transformBy(trans: Transform, result?: Frustum): Frustum { result = result ? result : new Frustum(); trans.multiplyPoint3dArray(this.points, result.points); return result; }
   /** Calculate a bounding range from the 8 points in this Frustum. */

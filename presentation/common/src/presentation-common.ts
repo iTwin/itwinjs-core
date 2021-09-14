@@ -14,7 +14,6 @@ export * from "./presentation-common/EC";
 export * from "./presentation-common/Error";
 export * from "./presentation-common/KeySet";
 export * from "./presentation-common/LabelDefinition";
-export * from "./presentation-common/Logging";
 export * from "./presentation-common/PresentationManagerOptions";
 export * from "./presentation-common/RegisteredRuleset";
 export * from "./presentation-common/RulesetVariables";

@@ -6,11 +6,14 @@
  * @module Breadcrumb
  */
 
+/* eslint-disable deprecation/deprecation */
+
 import { UiEvent } from "@bentley/ui-core";
 import { TreeDataProvider, TreeNodeItem } from "../tree/TreeDataProvider";
 
 /** BreadcrumbChangeEvent Event Args class.
  * @beta
+ * @deprecated
  */
 export interface BreadcrumbUpdateEventArgs {
   dataProvider: TreeDataProvider;
@@ -20,11 +23,13 @@ export interface BreadcrumbUpdateEventArgs {
 
 /** BreadcrumbChangeEvent Event class.
  * @beta
+ * @deprecated
  */
 export class BreadcrumbUpdateEvent extends UiEvent<BreadcrumbUpdateEventArgs> { }
 
 /** Breadcrumb Path class.
  * @beta
+ * @deprecated
  */
 export class BreadcrumbPath {
   private _dataProvider: TreeDataProvider;

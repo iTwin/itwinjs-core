@@ -21,7 +21,7 @@ interface TileContentRequestProps {
 }
 
 // Goes through models in imodel until it finds a root tile for a non empty model, returns tile content request props for that tile
-async function getTileProps(iModel: IModelDb, requestContext: AuthorizedBackendRequestContext): Promise<TileContentRequestProps | undefined> {
+export async function getTileProps(iModel: IModelDb, requestContext: AuthorizedBackendRequestContext): Promise<TileContentRequestProps | undefined> {
   const queryParams = { from: GeometricModel3d.classFullName, limit: IModelDb.maxLimit };
   for (const modelId of iModel.queryEntityIds(queryParams)) {
     let model;
@@ -58,7 +58,7 @@ async function getTileProps(iModel: IModelDb, requestContext: AuthorizedBackendR
 }
 
 describe("TileUpload (#integration)", () => {
-  let requestContext: AuthorizedBackendRequestContext;
+  let user: AuthorizedBackendRequestContext;
   let testIModelId: GuidString;
   let testContextId: GuidString;
   let tileRpcInterface: IModelTileRpcInterface;
@@ -85,9 +85,9 @@ describe("TileUpload (#integration)", () => {
     RpcManager.initializeInterface(IModelTileRpcInterface);
     tileRpcInterface = RpcRegistry.instance.getImplForInterface<IModelTileRpcInterface>(IModelTileRpcInterface);
 
-    requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-    testContextId = await HubUtility.getTestContextId(requestContext);
-    testIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.stadium);
+    user = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+    testContextId = await HubUtility.getTestITwinId(user);
+    testIModelId = await HubUtility.getTestIModelId(user, HubUtility.testIModelNames.stadium);
 
     // Get URL for cached tile
     const credentials = new Azure.SharedKeyCredential(config.tileCacheCredentials.account, config.tileCacheCredentials.accessKey);
@@ -98,9 +98,9 @@ describe("TileUpload (#integration)", () => {
     (IModelHost.tileCacheService as any)._service = serviceUrl;
 
     // Open and close the iModel to ensure it works and is closed
-    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testContextId, iModelId: testIModelId });
+    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId: testContextId, iModelId: testIModelId });
     assert.isDefined(iModel);
-    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
+    await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModel);
   });
 
   after(async () => {
@@ -110,12 +110,12 @@ describe("TileUpload (#integration)", () => {
   });
 
   it("should upload tile to external cache with metadata", async () => {
-    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testContextId, iModelId: testIModelId });
+    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId: testContextId, iModelId: testIModelId });
     assert.isDefined(iModel);
 
     // Generate tile
     // eslint-disable-next-line deprecation/deprecation
-    const tileProps = await getTileProps(iModel, requestContext);
+    const tileProps = await getTileProps(iModel, user);
     assert.isDefined(tileProps);
     const tile = await tileRpcInterface.requestTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, undefined, tileProps!.guid); // eslint-disable-line deprecation/deprecation
 
@@ -135,6 +135,6 @@ describe("TileUpload (#integration)", () => {
     assert.equal(blobProperties.metadata!.tilesize, tile.byteLength.toString());
 
     await blockBlobUrl.delete(Azure.Aborter.none);
-    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
+    await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModel);
   });
 });

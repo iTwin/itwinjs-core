@@ -1,6 +1,6 @@
 {
   "name": "@bentley/physical-material-backend",
-  "version": "3.0.0-dev.41",
+  "version": "3.0.0-dev.56",
   "main": "lib/physical-material-backend.js",
   "typings": "lib/physical-material-backend",
   "license": "MIT",
@@ -31,9 +31,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.41",
-    "@bentley/imodeljs-backend": "workspace:^3.0.0-dev.41",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.41"
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.56",
+    "@bentley/imodeljs-backend": "workspace:^3.0.0-dev.56",
+    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.56"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",

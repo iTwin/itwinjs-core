@@ -46,14 +46,19 @@
 
 @mixin small-itwinui-expandable-block {
 
+  $small-space: 5px;
+
   .iui-expandable-block {
     > .iui-header {
-      padding: $iui-xs $iui-xs !important;
+      padding: $small-space $small-space !important;
 
       > .iui-icon {
         width: $uicore-icons-x-small !important;
         height: $uicore-icons-x-small !important;
-        margin-top: $iui-xs !important;
+
+        margin-top: $small-space !important;
+        margin-left: $iui-xs !important;
+        margin-right: $iui-s !important;
       }
     }
 

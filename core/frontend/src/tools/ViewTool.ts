@@ -797,7 +797,7 @@ export abstract class ViewManip extends ViewTool {
   public static fitViewWithGlobeAnimation(viewport: ScreenViewport, animateFrustumChange: boolean, options?: ViewChangeOptions) {
     const range = this.computeFitRange(viewport);
 
-    if (animateFrustumChange && viewport.isCameraOn && viewport.viewingGlobe) {
+    if (animateFrustumChange && (viewport.viewingGlobe || !viewport.view.getIsViewingProject())) {
       const view3d = viewport.view as ViewState3d;
       const cartographicCenter = view3d.rootToCartographic(range.center);
       if (undefined !== cartographicCenter) {
@@ -833,7 +833,7 @@ export abstract class ViewManip extends ViewTool {
       return ViewStatus.InvalidViewport;
 
     const result = (retainEyePoint && view.isCameraOn) ?
-      view.lookAtUsingLensAngle(view.getEyePoint(), view.getTargetPoint(), view.getYVector(), lensAngle) :
+      view.lookAt({ eyePoint: view.getEyePoint(), targetPoint: view.getTargetPoint(), upVector: view.getYVector(), lensAngle }) :
       vp.turnCameraOn(lensAngle);
 
     if (result !== ViewStatus.Success)
@@ -1092,11 +1092,13 @@ class ViewPan extends HandleWithInertia {
     const tool = this.viewTool;
     const vp = tool.viewport!;
     const view = vp.view;
-    const dist = vp.npcToWorld(thisPtNpc).vectorTo(vp.npcToWorld(this._lastPtNpc));
-
+    const lastWorld = vp.npcToWorld(this._lastPtNpc);
+    const thisWorld = vp.npcToWorld(thisPtNpc);
+    const dist = thisWorld.vectorTo(lastWorld);
     if (view.is3d()) {
-      if (ViewStatus.Success !== view.moveCameraWorld(dist))
+      if (ViewStatus.Success !== (view.isGlobalView ? view.moveCameraGlobal(lastWorld, thisWorld) : view.moveCameraWorld(dist)))
         return false;
+
       this.changeFocusFromDepthPoint(); // if we have a valid depth point, set it focus distance from it
     } else {
       view.setOrigin(view.getOrigin().plus(dist));
@@ -1207,6 +1209,8 @@ class ViewRotate extends HandleWithInertia {
       const worldTransform = Transform.createFixedPointAndMatrix(worldPt, worldMatrix);
       const frustum = this._frustum.transformBy(worldTransform);
       view.setupFromFrustum(frustum);
+      if (view.is3d())
+        view.alignToGlobe(view.getCenter());
       this.changeFocusFromDepthPoint(); // if we have a valid depth point, set it focus distance from it
       vp.setupFromView();
     }
@@ -3627,6 +3631,7 @@ export class WindowAreaTool extends ViewTool {
       onExtentsError: (stat) => view.outputStatusMessage(stat),
     };
 
+    let globalAlignment;
     if (view.isCameraEnabled()) {
       const windowArray: Point3d[] = [corners[0].clone(), corners[1].clone()];
       vp.worldToViewArray(windowArray);
@@ -3654,8 +3659,9 @@ export class WindowAreaTool extends ViewTool {
       const newTarget = corners[0].interpolate(.5, corners[1]);
       const newEye = newTarget.plusScaled(view.getZVector(), focusDist);
 
-      if (ViewStatus.Success !== view.lookAtUsingLensAngle(newEye, newTarget, view.getYVector(), lensAngle, undefined, undefined, opts))
+      if (ViewStatus.Success !== view.lookAt({ eyePoint: newEye, targetPoint: newTarget, upVector: view.getYVector(), lensAngle, opts }))
         return;
+      globalAlignment = { target: newTarget };
     } else {
       const rot = vp.rotation;
       rot.multiplyVectorArrayInPlace(corners);
@@ -3674,9 +3680,11 @@ export class WindowAreaTool extends ViewTool {
 
       view.setExtents(delta);
       view.setOrigin(originVec);
+      if (view.is3d())
+        globalAlignment = { target: range.center };
     }
 
-    vp.synchWithView({ animateFrustumChange: true });
+    vp.synchWithView({ animateFrustumChange: true, globalAlignment });
   }
 }
 
@@ -4172,10 +4180,10 @@ export class SetupCameraTool extends PrimitiveTool {
     if (!view.is3d() || !view.allow3dManipulations())
       return;
 
-    const eyePtWorld = this.getAdjustedEyePoint();
-    const targetPtWorld = this.getAdjustedTargetPoint();
+    const eyePoint = this.getAdjustedEyePoint();
+    const targetPoint = this.getAdjustedTargetPoint();
     const lensAngle = ToolSettings.walkCameraAngle;
-    if (ViewStatus.Success !== view.lookAtUsingLensAngle(eyePtWorld, targetPtWorld, Vector3d.unitZ(), lensAngle))
+    if (ViewStatus.Success !== view.lookAt({ eyePoint, targetPoint, upVector: Vector3d.unitZ(),  lensAngle }))
       return;
 
     vp.synchWithView({ animateFrustumChange: true });
@@ -4464,10 +4472,10 @@ export class SetupWalkCameraTool extends PrimitiveTool {
     if (!view.is3d() || !view.allow3dManipulations())
       return;
 
-    const eyePtWorld = this.getAdjustedEyePoint();
-    const targetPtWorld = this.getAdjustedTargetPoint();
+    const eyePoint = this.getAdjustedEyePoint();
+    const targetPoint = this.getAdjustedTargetPoint();
     const lensAngle = ToolSettings.walkCameraAngle;
-    if (ViewStatus.Success !== view.lookAtUsingLensAngle(eyePtWorld, targetPtWorld, Vector3d.unitZ(), lensAngle))
+    if (ViewStatus.Success !== view.lookAt({ eyePoint, targetPoint, upVector: Vector3d.unitZ(),  lensAngle }))
       return;
 
     vp.synchWithView({ animateFrustumChange: true });

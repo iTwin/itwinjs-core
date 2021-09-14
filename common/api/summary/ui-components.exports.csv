@@ -48,26 +48,37 @@ beta;BooleanEditor
 beta;BooleanPropertyEditor 
 public;BooleanTypeConverter 
 beta;Breadcrumb 
+deprecated;Breadcrumb 
 beta;BreadcrumbDetails 
+deprecated;BreadcrumbDetails 
 beta;BreadcrumbDetailsDragDropProps
 deprecated;BreadcrumbDetailsDragDropProps
 beta;BreadcrumbDetailsDragDropType = {} | TreeNodeItem | TableDataProvider
 deprecated;BreadcrumbDetailsDragDropType = {} | TreeNodeItem | TableDataProvider
 beta;BreadcrumbDetailsProps 
+deprecated;BreadcrumbDetailsProps 
 beta;BreadcrumbDragDropProps
 deprecated;BreadcrumbDragDropProps
 internal;BreadcrumbInput 
 internal;BreadcrumbInputProps
 internal;BreadcrumbInputState
 beta;BreadcrumbMode
+deprecated;BreadcrumbMode
 beta;BreadcrumbNode 
+deprecated;BreadcrumbNode 
 beta;BreadcrumbNodeProps
+deprecated;BreadcrumbNodeProps
 internal;BreadcrumbNodeRenderer = (props: BreadcrumbNodeProps, node?: TreeNodeItem, parent?: TreeNodeItem) => React.ReactNode
 beta;BreadcrumbPath
+deprecated;BreadcrumbPath
 beta;BreadcrumbProps 
+deprecated;BreadcrumbProps 
 beta;BreadcrumbTreeUtils
+deprecated;BreadcrumbTreeUtils
 beta;BreadcrumbUpdateEvent 
+deprecated;BreadcrumbUpdateEvent 
 beta;BreadcrumbUpdateEventArgs
+deprecated;BreadcrumbUpdateEventArgs
 beta;CategorizedPropertyItem 
 beta;CategorizedPropertyTypes = FlatGridItemType.Array | FlatGridItemType.Primitive | FlatGridItemType.Struct
 beta;CategoryRecordsDict
@@ -86,6 +97,7 @@ public;CompositeFilterDescriptorCollection
 beta;CompositeFilterType
 beta;CompositePropertyDataFilterer 
 public;CompositeTypeConverter 
+public;computeVisibleNodes(model: TreeModel): VisibleTreeNodes
 beta;ControlledSelectableContent(props: ControlledSelectableContentProps): JSX.Element
 beta;ControlledSelectableContentProps
 public;ControlledTree(props: ControlledTreeProps): JSX.Element
@@ -182,6 +194,7 @@ beta;GetCurrentlyEditedNode = () => BeInspireTreeNode
 deprecated;GetCurrentlyEditedNode = () => BeInspireTreeNode
 internal;getPropertyKey(propertyCategory: PropertyCategory, propertyRecord: PropertyRecord): string
 internal;getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection
+internal;getVisibleDescendants(model: TreeModel, parentNode: TreeModelNode | TreeModelRootNode, result?: Array
 beta;GridCategoryItem 
 internal;GroupPopupItem({ item, addGroupSeparator }:
 internal;handleLoadedNodeHierarchy(modelSource: TreeModelSource, loadedHierarchy: LoadedNodeHierarchy): void
@@ -387,8 +400,6 @@ public;ShowHideID = string | number | symbol
 public;ShowHideItem
 public;ShowHideMenu
 public;ShowHideMenuProps
-public;SignIn 
-public;SignInProps 
 public;SimplePropertyDataProvider 
 public;SimpleTableDataProvider 
 public;SimpleTreeDataProvider 
@@ -461,8 +472,8 @@ beta;ToolbarOpacitySetting
 internal;ToolbarOverflowContextProps
 beta;ToolbarPanelAlignment
 internal;ToolbarPanelAlignmentHelpers
-internal;ToolbarPopupContext: React.Context
-internal;ToolbarPopupContextProps
+public;ToolbarPopupContext: React.Context
+public;ToolbarPopupContextProps
 beta;ToolbarProps 
 beta;ToolbarWithOverflow(props: ToolbarWithOverflowProps): JSX.Element
 internal;ToolbarWithOverflowDirectionContext: React.Context
@@ -540,13 +551,13 @@ beta;usePropertyGridEventHandler(props:
 beta;usePropertyGridModel(props:
 beta;usePropertyGridModelSource(props:
 internal;useRenderedStringValue(record: PropertyRecord, stringValueCalculator: (record: PropertyRecord) => string | Promise
-internal;useToolbarPopupContext(): ToolbarPopupContextProps
+public;useToolbarPopupContext(): ToolbarPopupContextProps
 internal;useToolbarWithOverflowDirectionContext(): ToolbarOverflowContextProps
 internal;useToolItemEntryContext(): ToolbarItemContextArgs
 public;useTreeEventsHandler
+public;useTreeModel(modelSource: TreeModelSource): TreeModel
 public;useTreeModelSource(dataProvider: TreeDataProvider): TreeModelSource
 public;useTreeNodeLoader
-public;useVisibleTreeNodes(modelSource: TreeModelSource): VisibleTreeNodes
 beta;VirtualizedPropertyGrid 
 beta;VirtualizedPropertyGridContext
 beta;VirtualizedPropertyGridProps 
