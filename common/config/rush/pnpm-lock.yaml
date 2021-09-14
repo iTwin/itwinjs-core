@@ -610,7 +610,7 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       '@types/sinon': ^9.0.0
-      '@types/xmldom': ^0.1.30
+      '@xmldom/xmldom': ^0.7.0
       almost-equal: ^1.1.0
       benchmark: ^2.1.4
       chai: ^4.1.2
@@ -623,7 +623,6 @@ importers:
       rimraf: ^3.0.2
       sinon: ^9.0.2
       typescript: ~4.3.0
-      xmldom: ^0.6.0
       xmlhttprequest: ^1.8.0
     dependencies:
       almost-equal: 1.1.0
@@ -642,7 +641,7 @@ importers:
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       '@types/sinon': 9.0.11
-      '@types/xmldom': 0.1.31
+      '@xmldom/xmldom': 0.7.5
       benchmark: 2.1.4
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
@@ -654,7 +653,6 @@ importers:
       rimraf: 3.0.2
       sinon: 9.2.4
       typescript: 4.3.5
-      xmldom: 0.6.0
       xmlhttprequest: 1.8.0
 
   ../../core/ecschema-locaters:
@@ -668,7 +666,7 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       '@types/sinon': ^9.0.0
-      '@types/xmldom': ^0.1.30
+      '@xmldom/xmldom': ^0.7.0
       chai: ^4.1.2
       chai-as-promised: ^7
       eslint: ^7.11.0
@@ -677,7 +675,6 @@ importers:
       nyc: ^15.1.0
       rimraf: ^3.0.2
       typescript: ~4.3.0
-      xmldom: ^0.6.0
     dependencies:
       glob: 7.1.7
     devDependencies:
@@ -690,7 +687,7 @@ importers:
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       '@types/sinon': 9.0.11
-      '@types/xmldom': 0.1.31
+      '@xmldom/xmldom': 0.7.5
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
       eslint: 7.31.0
@@ -698,7 +695,6 @@ importers:
       nyc: 15.1.0
       rimraf: 3.0.2
       typescript: 4.3.5
-      xmldom: 0.6.0
 
   ../../core/ecschema-metadata:
     specifiers:
@@ -715,7 +711,7 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       '@types/sinon': ^9.0.0
-      '@types/xmldom': ^0.1.30
+      '@xmldom/xmldom': ^0.7.0
       almost-equal: ^1.1.0
       benchmark: ^2.1.4
       chai: ^4.1.2
@@ -728,7 +724,6 @@ importers:
       rimraf: ^3.0.2
       sinon: ^9.0.2
       typescript: ~4.3.0
-      xmldom: ^0.6.0
       xmlhttprequest: ^1.8.0
     dependencies:
       almost-equal: 1.1.0
@@ -746,7 +741,7 @@ importers:
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       '@types/sinon': 9.0.11
-      '@types/xmldom': 0.1.31
+      '@xmldom/xmldom': 0.7.5
       benchmark: 2.1.4
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
@@ -758,7 +753,6 @@ importers:
       rimraf: 3.0.2
       sinon: 9.2.4
       typescript: 4.3.5
-      xmldom: 0.6.0
       xmlhttprequest: 1.8.0
 
   ../../core/ecschema-rpc/common:
@@ -3954,7 +3948,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
-      '@types/xmldom': ^0.1.30
+      '@xmldom/xmldom': ^0.7.0
       chai: ^4.1.2
       chai-string: ^1.5.0
       chalk: ^3.0.0
@@ -3967,7 +3961,6 @@ importers:
       rimraf: ^3.0.2
       source-map-support: ^0.5.6
       typescript: ~4.3.0
-      xmldom: ^0.6.0
     dependencies:
       '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/bentleyjs-core': link:../../core/bentley
@@ -3979,11 +3972,11 @@ importers:
       '@bentley/imodeljs-backend': link:../../core/backend
       '@bentley/imodeljs-common': link:../../core/common
       '@bentley/itwin-client': link:../../clients/itwin
+      '@xmldom/xmldom': 0.7.5
       chai-string: 1.5.0_chai@4.3.4
       chalk: 3.0.0
       commander: 2.20.3
       fs-extra: 8.1.0
-      xmldom: 0.6.0
     devDependencies:
       '@bentley/build-tools': link:../build
       '@bentley/eslint-plugin': link:../eslint-plugin
@@ -3992,7 +3985,6 @@ importers:
       '@types/fs-extra': 4.0.12
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
-      '@types/xmldom': 0.1.31
       chai: 4.3.4
       cpx: 1.5.0
       eslint: 7.31.0
@@ -10575,10 +10567,6 @@ packages:
       '@types/node': 10.14.1
     dev: true
 
-  /@types/xmldom/0.1.31:
-    resolution: {integrity: sha512-bVy7s0nvaR5D1mT1a8ZkByHWNOGb6Vn4yi5TWhEdmyKlAG+08SA7Md6+jH+tYmMLueAwNeWvHHpeKrr6S4c4BA==}
-    dev: true
-
   /@types/yargs-parser/20.2.1:
     resolution: {integrity: sha512-7tFImggNeNBVMsn0vLrpn1H1uPrUBdnARPTpZoitY37ZrdJREzf7I16tMrlK3hen349gr1NYh8CmZQa7CTG6Aw==}
     dev: true
@@ -11141,6 +11129,10 @@ packages:
       prop-types: 15.7.2
       react: 17.0.2
     dev: true
+
+  /@xmldom/xmldom/0.7.5:
+    resolution: {integrity: sha512-V3BIhmY36fXZ1OtVcI9W+FxQqxVLsPKcNjWigIaa81dLC9IolJl5Mt4Cvhmr0flUnjSpTdrbMTSbXqYqV5dT6A==}
+    engines: {node: '>=10.0.0'}
 
   /@xtuc/ieee754/1.2.0:
     resolution: {integrity: sha512-DX8nKgqcGwsc0eJSqYt5lwP4DH5FlHnmuWWBRy7X0NcaGR0ZtuyeESgMwTYVEtxmsNGY+qit4QYT/MIYTOTPeA==}
@@ -25044,6 +25036,7 @@ packages:
   /xmldom/0.6.0:
     resolution: {integrity: sha512-iAcin401y58LckRZ0TkI4k0VSM1Qg0KGSc3i8rU+xrxe19A/BN1zHyVSJY7uoutVlaTSzYyk/v5AmkewAP7jtg==}
     engines: {node: '>=10.0.0'}
+    dev: true
 
   /xmlhttprequest/1.8.0:
     resolution: {integrity: sha1-Z/4HXFwk/vOfnWX197f+dRcZaPw=}
