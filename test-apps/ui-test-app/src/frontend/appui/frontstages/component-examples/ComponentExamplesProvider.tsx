@@ -43,7 +43,7 @@ import { FormatPopupButton } from "./FormatPopupButton";
 import { AccudrawSettingsPageComponent } from "../Settings";
 import { ExpandableBlock } from "@itwin/itwinui-react";
 import { TableExampleContent } from "../../contentviews/TableExampleContent";
-import { ItemsAppendedSampleTimeline, ItemsPrefixedSampleTimeline, ItemsReplacedSampleTimeline, LocalizedTimeSampleTimeline, NoLocalizedTimeSampleTimeline, NoRepeatSampleTimeline } from "./SampleTimelineComponent";
+import { CurrentDateMarkedCustomIconSampleTimeline, CurrentDateMarkedSampleTimeline, ItemsAppendedSampleTimeline, ItemsPrefixedSampleTimeline, ItemsReplacedSampleTimeline, LocalizedTimeSampleTimeline, NoLocalizedTimeSampleTimeline, NoRepeatSampleTimeline } from "./SampleTimelineComponent";
 
 function MySettingsPage() {
   const tabs: SettingsTabEntry[] = [
@@ -1314,6 +1314,8 @@ export class ComponentExamplesProvider {
       createComponentExample("TimelineComponent", "With no repeat option", <NoRepeatSampleTimeline />),
       createComponentExample("TimelineComponent", "With timezone offset of 0", <NoLocalizedTimeSampleTimeline />),
       createComponentExample("TimelineComponent", "With no timezone offset specified", <LocalizedTimeSampleTimeline />),
+      createComponentExample("TimelineComponent", "With with today's date marked by the default marker", <CurrentDateMarkedSampleTimeline />),
+      createComponentExample("TimelineComponent", "With with today's date marked by a star", <CurrentDateMarkedCustomIconSampleTimeline />),
     );
     return {
       title: "Timelines",
