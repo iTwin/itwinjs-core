@@ -66,8 +66,7 @@ class InstanceData {
 /** @internal */
 export interface PatternTransforms {
   readonly orgTransform: Matrix4;
-  readonly localToWorld: Matrix4;
-  readonly worldToModel: Matrix4;
+  readonly localToModel: Matrix4;
   readonly symbolToLocal: Matrix4;
   readonly origin: Float32Array;
 }
@@ -202,8 +201,7 @@ export class PatternBuffers extends InstanceData {
     public readonly patternParams: Float32Array, // [ isAreaPattern, spacingX, spacingY, scale ]
     public readonly origin: Float32Array, // [ x, y ]
     public readonly orgTransform: Matrix4,
-    public readonly localToWorld: Matrix4,
-    public readonly worldToModel: Matrix4,
+    public readonly localToModel: Matrix4,
     public readonly symbolToLocal: Matrix4,
     public readonly offsets: BufferHandle,
     featureId: number | undefined,
@@ -236,8 +234,7 @@ export class PatternBuffers extends InstanceData {
       new Float32Array([1, params.spacing.x, params.spacing.y, params.scale]),
       new Float32Array([params.origin.x, params.origin.y]),
       Matrix4.fromTransform(params.orgTransform),
-      Matrix4.fromTransform(params.localToWorld),
-      Matrix4.fromTransform(params.worldToModel),
+      Matrix4.fromTransform(params.worldToModel.multiplyTransformTransform(params.localToWorld)),
       Matrix4.fromTransform(Transform.createTranslation(params.symbolTranslation)),
       offsets,
       params.featureId,

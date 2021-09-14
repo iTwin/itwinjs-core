@@ -32,9 +32,7 @@ const computeInstancedModelMatrixRTC = `
     mat4 symbolTrans = u_patOrg;
     symbolTrans[3] = symbolTrans * translation;
 
-    mat4 symbolToLocal = symbolTrans * u_patSymbolToLocal;
-    mat4 symbolToWorld = u_patLocalToWorld * symbolToLocal;
-    g_modelMatrixRTC = u_patWorldToModel * symbolToWorld;
+    g_modelMatrixRTC = u_patLocalToModel * symbolTrans * u_patSymbolToLocal;
   } else {
     g_modelMatrixRTC = mat4(
       a_instanceMatrixRow0.x, a_instanceMatrixRow1.x, a_instanceMatrixRow2.x, 0.0,
@@ -43,7 +41,6 @@ const computeInstancedModelMatrixRTC = `
       a_instanceMatrixRow0.w, a_instanceMatrixRow1.w, a_instanceMatrixRow2.w, 1.0);
   }
 `;
-
 function setMatrix(uniform: UniformHandle, matrix: Matrix4 | undefined): void {
   if (matrix)
     uniform.setMatrix4(matrix);
@@ -54,13 +51,9 @@ function addPatternTransforms(vert: VertexShaderBuilder): void {
     prog.addGraphicUniform("u_patOrg", (uniform, params) =>
       setMatrix(uniform, params.geometry.asInstanced?.patternTransforms?.orgTransform)));
 
-  vert.addUniform("u_patLocalToWorld", VariableType.Mat4, (prog) =>
-    prog.addGraphicUniform("u_patLocalToWorld", (uniform, params) =>
-      setMatrix(uniform, params.geometry.asInstanced?.patternTransforms?.localToWorld)));
-
-  vert.addUniform("u_patWorldToModel", VariableType.Mat4, (prog) =>
-    prog.addGraphicUniform("u_patWorldToModel", (uniform, params) =>
-      setMatrix(uniform, params.geometry.asInstanced?.patternTransforms?.worldToModel)));
+  vert.addUniform("u_patLocalToModel", VariableType.Mat4, (prog) =>
+    prog.addGraphicUniform("u_patLocalToModel", (uniform, params) =>
+      setMatrix(uniform, params.geometry.asInstanced?.patternTransforms?.localToModel)));
 
   vert.addUniform("u_patSymbolToLocal", VariableType.Mat4, (prog) =>
     prog.addGraphicUniform("u_patSymbolToLocal", (uniform, params) =>
