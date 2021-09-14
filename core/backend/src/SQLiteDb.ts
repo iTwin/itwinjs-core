@@ -20,7 +20,6 @@ export class SQLiteDb implements IDisposable {
 
   /** @internal */
   public get nativeDb(): IModelJsNative.SQLiteDb {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     return this._nativeDb!;
   }
 

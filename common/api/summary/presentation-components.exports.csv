@@ -6,18 +6,12 @@ public;CacheInvalidationProps
 public;ContentDataProvider 
 public;ContentDataProviderProps 
 public;ControlledPresentationTreeFilteringProps
-beta;ControlledTreeFilteringProps = ControlledPresentationTreeFilteringProps
-deprecated;ControlledTreeFilteringProps = ControlledPresentationTreeFilteringProps
 alpha;createDiagnosticsOptions(props: DiagnosticsProps): DiagnosticsOptionsWithHandler | undefined
 internal;createFieldInfo(field: Field, namePrefix?: string):
 internal;createPropertyDescriptionFromFieldInfo(info: FieldInfo): PropertyDescription
 public;DataProvidersFactory
 public;DataProvidersFactoryProps
 public;DEFAULT_PROPERTY_GRID_RULESET: Ruleset
-public;DEPRECATED_treeWithFilteringSupport
-deprecated;DEPRECATED_treeWithFilteringSupport
-public;DEPRECATED_treeWithUnifiedSelection
-deprecated;DEPRECATED_treeWithUnifiedSelection
 public;DiagnosticsProps
 beta;FavoritePropertiesDataFilterer 
 beta;FavoritePropertiesDataFiltererProps
@@ -54,10 +48,6 @@ public;PresentationTreeDataProviderProps
 public;PresentationTreeNodeLoaderProps 
 public;PresentationTreeNodeLoaderResult
 public;PropertyDataProviderWithUnifiedSelectionProps
-public;propertyGridWithUnifiedSelection
-deprecated;propertyGridWithUnifiedSelection
-public;PropertyGridWithUnifiedSelectionProps
-deprecated;PropertyGridWithUnifiedSelectionProps
 internal;class PropertyRecordsBuilder 
 internal;ReloadedHierarchyPart
 internal;reloadVisibleHierarchyParts(visibleNodes: VisibleTreeNodes, renderedItems: RenderedItemsRange, dataProvider: IPresentationTreeDataProvider): Promise
@@ -65,10 +55,6 @@ public;TABLE_DATA_PROVIDER_DEFAULT_CACHED_PAGES_COUNT = 5
 public;TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE = 20
 public;tableWithUnifiedSelection
 public;TableWithUnifiedSelectionProps
-public;TreeWithFilteringSupportProps
-deprecated;TreeWithFilteringSupportProps
-public;TreeWithUnifiedSelectionProps
-deprecated;TreeWithUnifiedSelectionProps
 beta;UnifiedSelectionContext
 beta;UnifiedSelectionContextProvider(props: UnifiedSelectionContextProviderProps): React.ReactElement
 beta;UnifiedSelectionContextProviderProps
@@ -76,8 +62,6 @@ beta;UnifiedSelectionState = (selectionLevel?: number) => Readonly
 public;UnifiedSelectionTreeEventHandler 
 public;UnifiedSelectionTreeEventHandlerParams
 public;useControlledPresentationTreeFiltering(props: ControlledPresentationTreeFilteringProps):
-beta;useControlledTreeFiltering: typeof useControlledPresentationTreeFiltering
-deprecated;useControlledTreeFiltering: typeof useControlledPresentationTreeFiltering
 internal;useFilteredNodeLoader(nodeLoader: AbstractTreeNodeLoaderWithProvider
 internal;useNodeHighlightingProps(filter: string | undefined, filteredNodeLoader?: ITreeNodeLoaderWithProvider
 public;usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps): PresentationTreeNodeLoaderResult
