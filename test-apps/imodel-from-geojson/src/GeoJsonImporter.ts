@@ -81,10 +81,10 @@ export class GeoJsonImporter {
       /** To geo-locate the project, we need to first scan the GeoJSon and extract range. This would not be required
        * if the bounding box was directly available.
        */
-      const featureMin = new Cartographic(), featureMax = new Cartographic();
+      const featureMin = Cartographic.createEmpty(), featureMax = Cartographic.createEmpty();
       if (!this.getFeatureRange(featureMin, featureMax))
         return;
-      const featureCenter = new Cartographic((featureMin.longitude + featureMax.longitude) / 2, (featureMin.latitude + featureMax.latitude) / 2);
+      const featureCenter = Cartographic.fromJSON({longitude: (featureMin.longitude + featureMax.longitude) / 2, latitude: (featureMin.latitude + featureMax.latitude) / 2});
 
       this.iModelDb.setEcefLocation(EcefLocation.createFromCartographicOrigin(featureCenter));
       this.convertFeatureCollection();
@@ -273,7 +273,7 @@ export class GeoJsonImporter {
         return undefined;   // TBD... Multi-loop Regions,
     }
   }
-  private static _scratchCartographic = new Cartographic();
+  private static _scratchCartographic = Cartographic.createEmpty();
 
   /** Convert a GeoJSON LineString into an @bentley/geometry-core Loop */
   private convertLoop(inLoop: GeoJson.LineString): Loop | undefined {

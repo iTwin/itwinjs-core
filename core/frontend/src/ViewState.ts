@@ -1358,7 +1358,7 @@ export abstract class ViewState3d extends ViewState {
   public get isCameraOn(): boolean { return this._cameraOn; }
 
   private static _minGlobeEyeHeight = Constant.earthRadiusWGS84.equator / 4;  // View as globe if more than a quarter of earth radius from surface.
-  private static _scratchGlobeCarto = Cartographic.fromRadians(0, 0, 0);
+  private static _scratchGlobeCarto = Cartographic.createEmpty();
 
   public get isGlobalView() {
     if (undefined === this.iModel.ecefLocation)

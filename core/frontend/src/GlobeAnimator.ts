@@ -142,7 +142,7 @@ export class GlobeAnimator implements Animator {
     // Starting cartographic position is the eye projected onto the globe.
     let startCartographic = eyeToCartographicOnGlobe(viewport);
     if (startCartographic === undefined) {
-      startCartographic = Cartographic.fromDegrees(0, 0, 0);
+      startCartographic = Cartographic.createEmpty();
     }
     this._startCartographic = startCartographic;
 

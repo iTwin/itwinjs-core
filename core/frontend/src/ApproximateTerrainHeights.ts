@@ -23,7 +23,7 @@ export class ApproximateTerrainHeights {
   public static readonly maxLevel = 6;
   public readonly globalHeightRange = Range1d.createXX(-400, 90000); // Dead Sea to Mount Everest.
   private _terrainHeights: any;
-  private readonly _scratchCorners = [new Cartographic(), new Cartographic(), new Cartographic(), new Cartographic()];
+  private readonly _scratchCorners = [Cartographic.createEmpty(), Cartographic.createEmpty(), Cartographic.createEmpty(), Cartographic.createEmpty()];
   private readonly _tilingScheme = new GeographicTilingScheme(2, 1, true); // Y at top... ?
   private readonly _scratchTileXY = Point2d.createZero();
 
@@ -87,10 +87,10 @@ export class ApproximateTerrainHeights {
   }
 
   private _getTileXYLevel(rectangle: Range2d): { x: number, y: number, level: number } | undefined {
-    Cartographic.fromRadians(rectangle.low.x, rectangle.high.y, 0.0, this._scratchCorners[0]);
-    Cartographic.fromRadians(rectangle.high.x, rectangle.high.y, 0.0, this._scratchCorners[1]);
-    Cartographic.fromRadians(rectangle.low.x, rectangle.low.y, 0.0, this._scratchCorners[2]);
-    Cartographic.fromRadians(rectangle.high.x, rectangle.low.y, 0.0, this._scratchCorners[3]);
+    Cartographic.fromJSON({longitude: rectangle.low.x, latitude: rectangle.high.y, height: 0.0}, this._scratchCorners[0]);
+    Cartographic.fromJSON({longitude: rectangle.high.x, latitude: rectangle.high.y, height: 0.0}, this._scratchCorners[1]);
+    Cartographic.fromJSON({longitude: rectangle.low.x, latitude: rectangle.low.y, height: 0.0}, this._scratchCorners[2]);
+    Cartographic.fromJSON({longitude: rectangle.high.x, latitude: rectangle.low.y, height: 0.0}, this._scratchCorners[3]);
 
     // Determine which tile the bounding rectangle is in
     let lastLevelX = 0, lastLevelY = 0;

@@ -304,7 +304,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     if (undefined === deco)
       return;
 
-    const origin = new Cartographic(this.longitude, this.latitude, this.altitude);
+    const origin = Cartographic.fromJSON({longitude: this.longitude, latitude: this.latitude, height: this.altitude});
     if (!deco.updateEcefLocation(origin, this._origin, Angle.createRadians(this.north)))
       return;
 

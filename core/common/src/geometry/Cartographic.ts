@@ -12,29 +12,49 @@ import { assert } from "@bentley/bentleyjs-core";
 // portions adapted from Cesium.js Copyright 2011 - 2017 Cesium Contributors
 
 /** @public */
-export interface LatAndLong { longitude: number, latitude: number }
-
-/** @public */
-export interface LatLongAndHeight extends LatAndLong { height: number }
+export interface CartographicProps {
+  /** If true, latitude and longitude are specified in degrees; defaults to false. */
+  isDegrees?: boolean;
+  /** Latitude in radians or degrees. */
+  latitude: number;
+  /** Longitude in radians or degrees. */
+  longitude: number;
+  /** Height in meters above the ellipsoid; defaults to zero. */
+  height?: number;
+}
 
 /** A position on the earth defined by longitude, latitude, and height above the [WGS84](https://en.wikipedia.org/wiki/World_Geodetic_System) ellipsoid.
  * @public
  */
-export class Cartographic implements LatLongAndHeight {
+export class Cartographic implements CartographicProps {
   /**
    * @param longitude longitude, in radians.
    * @param latitude latitude, in radians.
    * @param height The height, in meters, above the ellipsoid.
    */
-  constructor(public longitude: number = 0, public latitude: number = 0, public height: number = 0) { }
+  private constructor(public longitude: number = 0, public latitude: number = 0, public height: number = 0) { }
 
-  /** Create a new Cartographic from longitude and latitude specified in radians.
-   * @param longitude longitude, in radians.
-   * @param latitude latitude, in radians.
-   * @param height The height, in meters, above the ellipsoid.
-   * @param result The object onto which to store the result.
+  /** Create an empty Cartographic object */
+  public static createEmpty(): Cartographic {
+    return Cartographic.fromJSON({longitude: 0, latitude: 0, height: 0});
+  }
+
+  /**
+   * @param props object containing longitude, latitude, and height information.
    */
-  public static fromRadians(longitude: number, latitude: number, height: number = 0, result?: Cartographic) {
+  public static fromJSON(props: CartographicProps, result?: Cartographic): Cartographic {
+    let longitude = 0;
+    let latitude = 0;
+
+    if (true === props.isDegrees) { // ensure stored in radians
+      longitude = Angle.degreesToRadians(props.longitude);
+      latitude = Angle.degreesToRadians(props.latitude);
+    } else { // already stored in radians
+      longitude = props.longitude;
+      latitude = props.latitude;
+    }
+    const height = props.height !== undefined ? props.height : 0;
+
     if (!result)
       return new Cartographic(longitude, latitude, height);
 
@@ -44,7 +64,7 @@ export class Cartographic implements LatLongAndHeight {
     return result;
   }
 
-  public toJSON(): LatLongAndHeight {
+  public toJSON(): CartographicProps {
     return {
       latitude: this.latitude,
       longitude: this.longitude,
@@ -83,26 +103,6 @@ export class Cartographic implements LatLongAndHeight {
     return Math.atan(Cartographic._oneMinusF * Cartographic._oneMinusF * Cartographic._equatorOverPolar * Math.tan(geodeticLatitude));
   }
 
-  /** Create a new Cartographic from longitude and latitude specified in degrees. The values in the resulting object will be in radians.
-   * @param longitude longitude, in degrees.
-   * @param latitude latitude, in degrees.
-   * @param height The height, in meters, above the ellipsoid.
-   * @param result The object onto which to store the result.
-   */
-  public static fromDegrees(longitude: number, latitude: number, height: number, result?: Cartographic) {
-    return Cartographic.fromRadians(Angle.degreesToRadians(longitude), Angle.degreesToRadians(latitude), height, result);
-  }
-
-  /** Create a new Cartographic from longitude and latitude in [Angle]($geometry)s. The values in the resulting object will be in radians.
-   * @param longitude longitude.
-   * @param latitude latitude.
-   * @param height The height, in meters, above the ellipsoid.
-   * @param result The object into which to store the result (optional)
-   */
-  public static fromAngles(longitude: Angle, latitude: Angle, height: number, result?: Cartographic) {
-    return Cartographic.fromRadians(longitude.radians, latitude.radians, height, result);
-  }
-
   private static _cartesianToCartographicN = new Point3d();
   private static _cartesianToCartographicP = new Point3d();
   private static _cartesianToCartographicH = new Vector3d();
@@ -135,7 +135,7 @@ export class Cartographic implements LatLongAndHeight {
     const height = Math.sign(h.dotProduct(cartesian)) * h.magnitude();
 
     if (!result)
-      return new Cartographic(longitude, latitude, height);
+      return Cartographic.fromJSON({longitude, latitude, height});
 
     result.longitude = longitude;
     result.latitude = latitude;
@@ -156,18 +156,12 @@ export class Cartographic implements LatLongAndHeight {
   }
 
   /** Duplicates a Cartographic. */
-  public clone(result?: Cartographic): Cartographic {
-    if (!result)
-      return new Cartographic(this.longitude, this.latitude, this.height);
-
-    result.longitude = this.longitude;
-    result.latitude = this.latitude;
-    result.height = this.height;
-    return result;
+  public clone(): Cartographic {
+    return Cartographic.fromJSON({longitude: this.longitude, latitude: this.latitude, height: this.height});
   }
 
   /** Return true if this Cartographic is the same as right */
-  public equals(right: LatLongAndHeight): boolean {
+  public equals(right: CartographicProps): boolean {
     return (this === right) ||
       ((this.longitude === right.longitude) &&
         (this.latitude === right.latitude) &&
@@ -175,11 +169,12 @@ export class Cartographic implements LatLongAndHeight {
   }
 
   /** Compares this Cartographic component-wise and returns true if they are within the provided epsilon, */
-  public equalsEpsilon(right: LatLongAndHeight, epsilon: number): boolean {
+  public equalsEpsilon(right: CartographicProps, epsilon: number): boolean {
+    const rHeight = right.height !== undefined ? right.height : 0;
     return (this === right) ||
       ((Math.abs(this.longitude - right.longitude) <= epsilon) &&
         (Math.abs(this.latitude - right.latitude) <= epsilon) &&
-        (Math.abs(this.height - right.height) <= epsilon));
+        (Math.abs(this.height - rHeight) <= epsilon));
   }
 
   private static normalize(cartesian: XYZ, result: XYZ) {
@@ -347,10 +342,8 @@ export class CartographicRange {
         high = geoPt.clone();
         continue;
       }
-      low.latitude = Math.min(low.latitude, geoPt.latitude);
-      low.longitude = Math.min(low.longitude, geoPt.longitude);
-      high.latitude = Math.max(high.latitude, geoPt.latitude);
-      high.longitude = Math.max(high.longitude, geoPt.longitude);
+      low = Cartographic.fromJSON({latitude: Math.min(low.latitude, geoPt.latitude), longitude: Math.min(low.longitude, geoPt.longitude), height: low.height});
+      high = Cartographic.fromJSON({latitude: Math.max(high.latitude, geoPt.latitude), longitude: Math.max(high.longitude, geoPt.longitude), height: high.height});
     }
 
     if (!low || !high) {

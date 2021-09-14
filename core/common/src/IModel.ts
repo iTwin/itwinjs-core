@@ -13,7 +13,7 @@ import {
   Angle, AxisIndex, AxisOrder, Constant, Geometry, Matrix3d, Point3d, Range3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps, YawPitchRollAngles, YawPitchRollProps,
 } from "@bentley/geometry-core";
 import { ChangesetIdWithIndex } from "./ChangesetProps";
-import { Cartographic, LatLongAndHeight } from "./geometry/Cartographic";
+import { Cartographic, CartographicProps } from "./geometry/Cartographic";
 import { GeographicCRS, GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
 import { AxisAlignedBox3d } from "./geometry/Placement";
 import { IModelError } from "./IModelError";
@@ -51,7 +51,7 @@ export interface EcefLocationProps {
   /** The [orientation](https://en.wikipedia.org/wiki/Geographic_coordinate_conversion) of an iModel on the earth. */
   orientation: YawPitchRollProps;
   /** Optional position on the earth used to establish the ECEF coordinates. */
-  cartographicOrigin?: LatLongAndHeight;
+  cartographicOrigin?: CartographicProps;
   /** Optional X column vector used with [[yVector]] to calculate potentially non-rigid transform if a projection is present. */
   xVector?: XYZProps;
   /** Optional Y column vector used with [[xVector]] to calculate potentially non-rigid transform if a projection is present. */
@@ -215,7 +215,7 @@ export class EcefLocation implements EcefLocationProps {
     this.origin = Point3d.fromJSON(props.origin).freeze();
     this.orientation = YawPitchRollAngles.fromJSON(props.orientation).freeze();
     if (props.cartographicOrigin)
-      this.cartographicOrigin = Cartographic.fromRadians(props.cartographicOrigin.longitude, props.cartographicOrigin.latitude, props.cartographicOrigin.height).freeze();
+      this.cartographicOrigin = Cartographic.fromJSON({longitude: props.cartographicOrigin.longitude, latitude: props.cartographicOrigin.latitude, height: props.cartographicOrigin.height}).freeze();
     if (props.xVector && props.yVector) {
       this.xVector = Vector3d.fromJSON(props.xVector);
       this.yVector = Vector3d.fromJSON(props.yVector);
@@ -236,8 +236,8 @@ export class EcefLocation implements EcefLocationProps {
   public static createFromCartographicOrigin(origin: Cartographic, point?: Point3d, angle?: Angle) {
     const ecefOrigin = origin.toEcef();
     const deltaRadians = 10 / Constant.earthRadiusWGS84.polar;
-    const northCarto = Cartographic.fromRadians(origin.longitude, origin.latitude + deltaRadians, origin.height);
-    const eastCarto = Cartographic.fromRadians(origin.longitude + deltaRadians, origin.latitude, origin.height);
+    const northCarto = Cartographic.fromJSON({longitude: origin.longitude, latitude: origin.latitude + deltaRadians, height: origin.height});
+    const eastCarto = Cartographic.fromJSON({longitude: origin.longitude + deltaRadians, latitude: origin.latitude, height: origin.height});
     const ecefNorth = northCarto.toEcef();
     const ecefEast = eastCarto.toEcef();
     const xVector = Vector3d.createStartEnd(ecefOrigin, ecefEast).normalize();

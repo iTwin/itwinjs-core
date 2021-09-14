@@ -59,7 +59,7 @@ class GeoNameMarker extends Marker {
       if (BeButton.Data === ev.button) {
         const evViewport = ev.viewport;
         (async () => {
-          await evViewport.animateFlyoverToGlobalLocation({ center: new Cartographic(this.props.lng * Angle.radiansPerDegree, this.props.lat * Angle.radiansPerDegree) });
+          await evViewport.animateFlyoverToGlobalLocation({ center: Cartographic.fromJSON({longitude: this.props.lng * Angle.radiansPerDegree, latitude: this.props.lat * Angle.radiansPerDegree}) });
         })().catch(() => { });
       } else if (BeButton.Reset === ev.button && undefined !== this.props.wikipedia && 0 !== this.props.wikipedia.length)
         window.open(`https://${this.props.wikipedia}`);
@@ -77,7 +77,7 @@ export class GeoNameMarkerManager {
   private _markerSet: GeoNameMarkerSet;
   public static decorator?: GeoNameMarkerManager; // static variable so we can tell if the manager is active.
   protected _requestContext = new ClientRequestContext("");
-  private static _scratchCarto = new Cartographic(0, 0, 0);
+  private static _scratchCarto = Cartographic.createEmpty();
   private static _scratchPoint = Point3d.createZero();
 
   public constructor(vp: ScreenViewport, private _cityMarkerImage: HTMLImageElement, private _cityCount = 50) { this._markerSet = new GeoNameMarkerSet(vp); }

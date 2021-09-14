@@ -45,10 +45,10 @@ export class BingLocationProvider {
       const northLatitude = bbox[2];
       const eastLongitude = bbox[3];
       return {
-        center: Cartographic.fromRadians(Angle.degreesToRadians(point.coordinates[1]), Angle.degreesToRadians(point.coordinates[0])),
+        center: Cartographic.fromJSON({longitude: Angle.degreesToRadians(point.coordinates[1]), latitude: Angle.degreesToRadians(point.coordinates[0])}),
         area: {
-          southwest: Cartographic.fromRadians(Angle.degreesToRadians(westLongitude), Angle.degreesToRadians(southLatitude)),
-          northeast: Cartographic.fromRadians(Angle.degreesToRadians(eastLongitude), Angle.degreesToRadians(northLatitude)),
+          southwest: Cartographic.fromJSON({longitude: Angle.degreesToRadians(westLongitude), latitude: Angle.degreesToRadians(southLatitude)}),
+          northeast: Cartographic.fromJSON({longitude: Angle.degreesToRadians(eastLongitude), latitude: Angle.degreesToRadians(northLatitude)}),
         },
       };
     } catch (error) {
