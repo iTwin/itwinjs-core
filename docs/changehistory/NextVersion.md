@@ -3,6 +3,12 @@ publish: false
 ---
 # NextVersion
 
+## Dependency Updates
+
+The following dependencies of iTwin.js have been updated;
+
+- `openid-client` updated to from `^3.15.3` -> `^4.7.4`,
+
 ## Build tools changes
 
 Removed TSLint support from `@bentley/build-tools`. If you're still using it, please switch to ESLint.
@@ -12,8 +18,8 @@ Also removed legacy `.eslintrc.js` file from the same package. Instead, use `@be
 
 [Viewport.zoomToElements]($frontend) accepts any number of element Ids and fits the viewport to the union of their [Placement]($common)s. A handful of shortcomings of the previous implementation have been addressed:
 
-* Previously, the element Ids were passed to [IModelConnection.Elements.getProps]($frontend), which returned **all** of the element's properties (potentially many megabytes of data), only to extract the [PlacementProps]($common) for each element and discard the rest. Now, it uses the new [IModelConnection.Elements.getPlacements]($frontend) function to query only the placements.
-* Previously, if a mix of 2d and 3d elements were specified, the viewport would attempt to union their 2d and 3d placements, typically causing it to fit incorrectly because 2d elements reside in a different coordinate space than 3d elements. Now, the viewport ignores 2d elements if it is viewing a 3d view, and vice-versa.
+- Previously, the element Ids were passed to [IModelConnection.Elements.getProps]($frontend), which returned **all** of the element's properties (potentially many megabytes of data), only to extract the [PlacementProps]($common) for each element and discard the rest. Now, it uses the new [IModelConnection.Elements.getPlacements]($frontend) function to query only the placements.
+- Previously, if a mix of 2d and 3d elements were specified, the viewport would attempt to union their 2d and 3d placements, typically causing it to fit incorrectly because 2d elements reside in a different coordinate space than 3d elements. Now, the viewport ignores 2d elements if it is viewing a 3d view, and vice-versa.
 
 ## Continued transition to `ChangesetIndex`
 
@@ -21,9 +27,9 @@ Every Changeset has both an Id (a string hash of its content and parent changese
 
 In version 2.19, we introduced the type [ChangesetIdWithIndex]($common) to begin that migration. However, for 2.x compatibility we could not use it several places where it would have been helpful:
 
-* [IModelRpcOpenProps]($common)
-* [CheckpointProps]($backend)
-* [LocalBriefcaseProps]($common)
+- [IModelRpcOpenProps]($common)
+- [CheckpointProps]($backend)
+- [LocalBriefcaseProps]($common)
 
 Each of these interfaces originally had only a member `changeSetId: string`, In 2.19, for backwards compatibility, a new member `changeSetIndex?: number` was added. In V3 those two members are now replaced with a single member `changeset: ChangesetIdWithIndex`. Note that this is a breaking change, and you may have to adjust your code. To get the changeset Id, use `changeset.id`. To get the changeset Index, use `changeset.index` (may be undefined). In V4, this will become `changeset: ChangesetIndexAndId` and index will be required.
 
@@ -91,8 +97,8 @@ To rectify this, and to eliminate various other pitfalls associated with mutable
 
 Methods that mutate a ViewFlags object have been removed.
 
-* `clone` has been replaced with [ViewFlags.copy]($common), which returns a new object instead of modifying `this`.
-* `createFrom` has been removed. Because ViewFlags is immutable, it is never necessary to create an identical copy of one - just use the same object. Or, if for some reason you really want an identical copy, use the object spread operator.
+- `clone` has been replaced with [ViewFlags.copy]($common), which returns a new object instead of modifying `this`.
+- `createFrom` has been removed. Because ViewFlags is immutable, it is never necessary to create an identical copy of one - just use the same object. Or, if for some reason you really want an identical copy, use the object spread operator.
 
 If your code used to modify a single property, change it to use [ViewFlags.with]($common) or [ViewFlags.withRenderMode]($common):
 
@@ -503,7 +509,7 @@ The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to 
 
 `ControlledTree` component has received the following breaking changes:
 
-* The component now takes `TreeModel` rather than `VisibleTreeNodes` as a prop to avoid requiring consumers to manage `VisibleTreeNodes` object. As a result, the `useVisibleTreeNodes` hook was replaced with `useTreeModel` hook. Typical migration:
+- The component now takes `TreeModel` rather than `VisibleTreeNodes` as a prop to avoid requiring consumers to manage `VisibleTreeNodes` object. As a result, the `useVisibleTreeNodes` hook was replaced with `useTreeModel` hook. Typical migration:
 
   **Before:**
 
@@ -519,7 +525,7 @@ The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to 
   return <ControlledTree model={treeModel} {...otherProps} />;
   ```
 
-* Name of the `treeEvents` prop was changed to `eventsHandler` to make it clearer. Typical migration:
+- Name of the `treeEvents` prop was changed to `eventsHandler` to make it clearer. Typical migration:
 
   **Before:**
 
@@ -533,7 +539,7 @@ The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to 
   return <ControlledTree eventsHandler={eventsHandler} {...otherProps} />;
   ```
 
-* `width` and `height` properties are now required. Previously they were optional and forced us to use non-optimal approach when not provided. Now it's up to the consumer to tell the size of the component. Typical migration:
+- `width` and `height` properties are now required. Previously they were optional and forced us to use non-optimal approach when not provided. Now it's up to the consumer to tell the size of the component. Typical migration:
 
   **Before:**
 
@@ -620,13 +626,13 @@ The items moved to ui-imodel-components are related to Color, Cube, LineWeight, 
 
 The following items were moved into the ui-imodel-components package. For a complete list, see [iTwin.js Documentation](https://www.itwinjs.org/reference/ui-imodel-components/all).
 
-* ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorPropertyEditor, ColorSwatch
-* Cube, CubeNavigationAid, CubeRotationChangeEventArgs
-* DrawingNavigationAid
-* QuantityInput, QuantityNumberInput
-* TimelineComponent, TimelineDataProvider, TimelineMenuItemProps
-* ViewportComponent, ViewportComponentEvents
-* LineWeightSwatch, WeightPickerButton, WeightPropertyEditor
+- ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorPropertyEditor, ColorSwatch
+- Cube, CubeNavigationAid, CubeRotationChangeEventArgs
+- DrawingNavigationAid
+- QuantityInput, QuantityNumberInput
+- TimelineComponent, TimelineDataProvider, TimelineMenuItemProps
+- ViewportComponent, ViewportComponentEvents
+- LineWeightSwatch, WeightPickerButton, WeightPropertyEditor
 
 ### Tasks and Workflows Deprecated
 
