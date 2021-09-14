@@ -2,7 +2,7 @@
   "name": "@bentley/imodeljs-transformer",
   "version": "3.0.0-dev.49",
   "description": "API for exporting an iModel's parts and also importing them into another iModel",
-  "main": "cjs/imodeljs-transformer.js",
+  "main": "lib/cjs/imodeljs-transformer.js",
   "typings": "cjs/imodeljs-transformer",
   "license": "MIT",
   "engines": {
@@ -11,7 +11,7 @@
   "scripts": {
     "compile": "npm run build",
     "build": "npm run build:cjs && npm run copy:test-assets",
-    "build:cjs": "tsc 1>&2 --outDir cjs",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs --declaration false --declarationMap false",
     "clean": "rimraf cjs types .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-transformer/file.json --tsIndexFile=./imodeljs-transformer.ts --onlyJson",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./cjs/test/assets",

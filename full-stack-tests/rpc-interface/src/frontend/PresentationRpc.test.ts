@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { Id64, using } from "@bentley/bentleyjs-core";
 import { RpcManager } from "@bentley/imodeljs-common";
 import { CheckpointConnection, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/cjs/frontend";
+import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool";
 import {
   ContentRpcRequestOptions, Descriptor, DistinctValuesRpcRequestOptions, FieldDescriptorType, HierarchyCompareRpcOptions, HierarchyRpcRequestOptions,
-  InstanceKey, KeySet, Paged, PresentationRpcInterface, PresentationStatus, RegisteredRuleset, Ruleset,
+  InstanceKey, KeySet, Paged, PresentationRpcInterface, PresentationStatus, RegisteredRuleset, Ruleset
 } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
+import { expect } from "chai";
 import * as defaultRuleset from "./rulesets/default.json";
 import * as getRelatedDistinctValues from "./rulesets/DistinctValues/getRelatedDistinctValues.json";
 import * as getFilteredNodePaths from "./rulesets/NodePaths/getFilteredNodePaths.json";

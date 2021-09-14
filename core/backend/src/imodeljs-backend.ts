@@ -52,6 +52,7 @@ export * from "./AliCloudStorageService";
 export * from "./DevTools";
 export * from "./LocalhostIpcHost";
 export * from "./ElementGraphics";
+export * from "./test";
 export * from "./IModelDb"; // must be last
 
 /** @docs-package-description

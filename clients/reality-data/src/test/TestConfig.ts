@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { getAccessTokenFromBackend, TestUserCredentials, TestUsers } from "@bentley/oidc-signin-tool/cjs/frontend";
+import { getAccessTokenFromBackend, TestUserCredentials, TestUsers } from "@bentley/oidc-signin-tool";
 
 function isOfflineSet(): boolean {
   const index = process.argv.indexOf("--offline");

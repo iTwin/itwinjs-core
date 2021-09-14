@@ -2,7 +2,7 @@
   "name": "@bentley/frontend-devtools",
   "version": "3.0.0-dev.49",
   "description": "Debug menu and supporting UI widgets",
-  "main": "cjs/frontend-devtools.js",
+  "main": "lib/cjs/frontend-devtools.js",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
@@ -10,7 +10,7 @@
     "build": "npm run copy:assets && tsc 1>&2",
     "build:extension": "extension-webpack-tools build -s ./src/extension.ts -o ./lib/extension --sourceMap",
     "copy:assets": "cpx \"./public/**/*\" ./lib/public",
-    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "clean": "rimraf lib cjs esm types .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/frontend-devtools/file.json --tsIndexFile=./frontend-devtools.ts --onlyJson",
     "extract-api": "betools extract-api --entry=frontend-devtools",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",

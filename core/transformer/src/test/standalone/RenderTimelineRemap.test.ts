@@ -5,9 +5,8 @@
 import { CompressedId64Set, Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Box, Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  GenericSchema, PhysicalModel, PhysicalObject, PhysicalPartition, RenderTimeline, SpatialCategory, StandaloneDb, SubjectOwnsPartitionElements
+  GenericSchema, IModelTestUtils, PhysicalModel, PhysicalObject, PhysicalPartition, RenderTimeline, SpatialCategory, StandaloneDb, SubjectOwnsPartitionElements
 } from "@bentley/imodeljs-backend";
-import { IModelTestUtils } from "@bentley/imodeljs-backend/cjs/test/IModelTestUtils";
 import {
   Code, GeometryStreamBuilder, IModel, PhysicalElementProps, RenderSchedule, RenderTimelineProps
 } from "@bentley/imodeljs-common";

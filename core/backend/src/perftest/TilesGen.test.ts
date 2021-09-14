@@ -6,7 +6,7 @@ import { Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { Reporter } from "@bentley/perf-tools/cjs/Reporter";
+import { Reporter } from "@bentley/perf-tools";
 import { assert } from "chai";
 import * as fs from "fs-extra";
 import * as os from "os";

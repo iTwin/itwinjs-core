@@ -3,9 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { using } from "@bentley/bentleyjs-core";
-import { PresentationManagerMode } from "@bentley/presentation-backend";
-import { createDefaultNativePlatform, NativePlatformDefinition } from "@bentley/presentation-backend/cjs/presentation-backend/NativePlatform";
-import { RulesetManagerImpl } from "@bentley/presentation-backend/cjs/presentation-backend/RulesetManager";
+import { createDefaultNativePlatform, NativePlatformDefinition, PresentationManagerMode, RulesetManagerImpl } from "@bentley/presentation-backend";
 import { createRandomRuleset, Ruleset } from "@bentley/presentation-common";
 import { expect } from "chai";
 import { initialize, terminate } from "../IntegrationTests";

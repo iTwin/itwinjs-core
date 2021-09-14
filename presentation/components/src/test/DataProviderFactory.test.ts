@@ -5,7 +5,7 @@
 
 import { Content, createRandomContent, createRandomDescriptor, createRandomPrimitiveField, createRandomRuleset, Item, RulesetsFactory } from "@bentley/presentation-common";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
-import "@bentley/presentation-frontend/cjs/test/_helpers/MockFrontendEnvironment";
+import "@bentley/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import { TypeConverter, TypeConverterManager } from "@bentley/ui-components";
 import { expect } from "chai";
 import * as sinon from "sinon";

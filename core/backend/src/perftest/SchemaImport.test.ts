@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Reporter } from "@bentley/perf-tools/cjs/Reporter";
+import { Reporter } from "@bentley/perf-tools";
 import { assert } from "chai";
 import * as path from "path";
 import { IModelJsFs } from "../IModelJsFs";

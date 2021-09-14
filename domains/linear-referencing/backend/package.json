@@ -1,7 +1,7 @@
 {
   "name": "@bentley/linear-referencing-backend",
   "version": "3.0.0-dev.49",
-  "main": "cjs/linear-referencing-backend.js",
+  "main": "lib/cjs/linear-referencing-backend.js",
   "typings": "cjs/linear-referencing-backend",
   "license": "MIT",
   "engines": {

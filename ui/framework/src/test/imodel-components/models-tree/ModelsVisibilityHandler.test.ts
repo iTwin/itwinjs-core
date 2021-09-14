@@ -6,7 +6,7 @@
 import { BeEvent, Id64String, using } from "@bentley/bentleyjs-core";
 import { IModelConnection, PerModelCategoryVisibility, SpatialViewState, Viewport, ViewState, ViewState3d } from "@bentley/imodeljs-frontend";
 import { createRandomId } from "@bentley/presentation-common";
-import { FilteredPresentationTreeDataProvider } from "@bentley/presentation-components/cjs/presentation-components/tree/FilteredDataProvider";
+import { FilteredPresentationTreeDataProvider } from "@bentley/presentation-components";
 import { IModelHierarchyChangeEventArgs, Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { isPromiseLike } from "@bentley/ui-core";

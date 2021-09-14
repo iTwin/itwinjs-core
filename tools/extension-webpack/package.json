@@ -14,7 +14,7 @@
   "scripts": {
     "compile": "npm run build",
     "build": "",
-    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "clean": "rimraf lib cjs esm types .rush/temp/package-deps*.json",
     "docs": "",
     "lint": "",
     "test": "",

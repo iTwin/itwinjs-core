@@ -5,7 +5,7 @@
 import { BeDuration, using } from "@bentley/bentleyjs-core";
 import { RegisteredRuleset, ResolvablePromise, Ruleset } from "@bentley/presentation-common";
 import { Presentation, RulesetManager } from "@bentley/presentation-frontend";
-import "@bentley/presentation-frontend/cjs/test/_helpers/MockFrontendEnvironment";
+import "@bentley/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";

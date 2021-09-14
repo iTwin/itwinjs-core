@@ -5,7 +5,7 @@
 import { ImageSource, ImageSourceFormat, RenderTexture } from "@bentley/imodeljs-common";
 import { CheckpointConnection, imageElementFromImageSource, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { ExternalTextureLoader, ExternalTextureRequest, GL, Texture2DHandle } from "@bentley/imodeljs-frontend/cjs/webgl";
-import { TestUsers } from "@bentley/oidc-signin-tool/cjs/frontend";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 import { expect } from "chai";
 import { TestUtility } from "./TestUtility";
 

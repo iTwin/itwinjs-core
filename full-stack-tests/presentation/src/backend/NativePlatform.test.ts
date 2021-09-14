@@ -3,8 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { SnapshotDb } from "@bentley/imodeljs-backend";
-import { HierarchyCacheMode, PresentationManagerMode } from "@bentley/presentation-backend";
-import { createDefaultNativePlatform, NativePlatformDefinition } from "@bentley/presentation-backend/cjs/presentation-backend/NativePlatform";
+import { createDefaultNativePlatform, HierarchyCacheMode, NativePlatformDefinition, PresentationManagerMode } from "@bentley/presentation-backend";
 import { PresentationError } from "@bentley/presentation-common";
 import { expect } from "chai";
 import * as path from "path";

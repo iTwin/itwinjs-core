@@ -10,7 +10,7 @@ import { KeySet, Ruleset } from "@bentley/presentation-common";
 import {
   FavoritePropertiesManager, Presentation, PresentationManager, RulesetManager, SelectionManager, SelectionScopesManager
 } from "@bentley/presentation-frontend";
-import "@bentley/presentation-frontend/cjs/test/_helpers/MockFrontendEnvironment";
+import "@bentley/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { PropertyData } from "@bentley/ui-components";
 import { expect } from "chai";

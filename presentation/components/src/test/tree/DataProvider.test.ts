@@ -7,7 +7,7 @@ import { BeEvent, Logger } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomNodePathElement, createRandomRuleset, Node, PromiseContainer, RegisteredRuleset, ResolvablePromise } from "@bentley/presentation-common";
 import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@bentley/presentation-frontend";
-import "@bentley/presentation-frontend/cjs/test/_helpers/MockFrontendEnvironment";
+import "@bentley/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import { PageOptions } from "@bentley/ui-components";
 import { expect } from "chai";
 import * as faker from "faker";

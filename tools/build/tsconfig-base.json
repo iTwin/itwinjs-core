@@ -18,7 +18,7 @@
     "noImplicitThis": true,
     "noUnusedLocals": false,
     "noUnusedParameters": true,
-    "outDir": "cjs",
+    "outDir": "lib/cjs",
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,

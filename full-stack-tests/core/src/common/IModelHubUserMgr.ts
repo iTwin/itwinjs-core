@@ -6,7 +6,7 @@
 import { BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { AccessToken, UserInfo } from "@bentley/itwin-client";
-import { getAccessTokenFromBackend } from "@bentley/oidc-signin-tool/cjs/frontend";
+import { getAccessTokenFromBackend } from "@bentley/oidc-signin-tool";
 
 export class IModelHubUserMgr implements FrontendAuthorizationClient {
   private _token: AccessToken | undefined;

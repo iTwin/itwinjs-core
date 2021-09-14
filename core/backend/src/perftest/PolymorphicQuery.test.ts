@@ -5,7 +5,7 @@
 import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Arc3d, IModelJson as GeomJson, Point3d } from "@bentley/geometry-core";
 import { BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
-import { Reporter } from "@bentley/perf-tools/cjs/Reporter";
+import { Reporter } from "@bentley/perf-tools";
 import { assert } from "chai";
 import * as path from "path";
 import { BackendRequestContext, ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../imodeljs-backend";

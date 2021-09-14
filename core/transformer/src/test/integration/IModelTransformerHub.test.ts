@@ -6,14 +6,9 @@
 import { DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  BisCoreSchema, BriefcaseDb, BriefcaseManager, ConcurrencyControl, ECSqlStatement, Element, ElementRefersToElements,
-  ExternalSourceAspect, GenericSchema, IModelDb, IModelHost, IModelJsFs, IModelJsNative, NativeLoggerCategory,
-  PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory
+  BisCoreSchema, BriefcaseDb, BriefcaseManager, ConcurrencyControl, ECSqlStatement, Element, ElementRefersToElements, ExtensiveTestScenario, ExternalSourceAspect, GenericSchema, HubMock, HubUtility, IModelDb, IModelHost, IModelJsFs, IModelJsNative, IModelTestUtils, KnownTestLocations, NativeLoggerCategory,
+  PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory, TestUserType
 } from "@bentley/imodeljs-backend";
-import { HubMock } from "@bentley/imodeljs-backend/cjs/test/HubMock";
-import { ExtensiveTestScenario, IModelTestUtils, TestUserType } from "@bentley/imodeljs-backend/cjs/test/IModelTestUtils";
-import { HubUtility } from "@bentley/imodeljs-backend/cjs/test/integration/HubUtility";
-import { KnownTestLocations } from "@bentley/imodeljs-backend/cjs/test/KnownTestLocations";
 import { ChangesetType, Code, ColorDef, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { assert } from "chai";

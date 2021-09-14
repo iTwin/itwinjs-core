@@ -8,11 +8,10 @@ import { Point3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
   AuxCoordSystem, AuxCoordSystem2d, BackendRequestContext, CategorySelector, DefinitionModel, DisplayStyle3d, DrawingCategory, DrawingGraphicRepresentsElement, ECSqlStatement, Element, ElementAspect, ElementMultiAspect,
   ElementRefersToElements,
-  ElementUniqueAspect, ExternalSourceAspect, FunctionalSchema, GeometricElement3d, GeometryPart, IModelDb, IModelJsFs, InformationPartitionElement,
+  ElementUniqueAspect, ExtensiveTestScenario, ExternalSourceAspect, FunctionalSchema, GeometricElement3d, GeometryPart, IModelDb, IModelJsFs, IModelTestUtils, InformationPartitionElement,
   InformationRecordModel, Model, ModelSelector, OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform, Relationship,
   RelationshipProps, RenderMaterialElement, SnapshotDb, SpatialCategory, SpatialLocationModel, SpatialViewDefinition, SubCategory, Subject, Texture
 } from "@bentley/imodeljs-backend";
-import { ExtensiveTestScenario, IModelTestUtils } from "@bentley/imodeljs-backend/cjs/test/IModelTestUtils";
 import {
   Base64EncodedString,
   BisCodeSpec,

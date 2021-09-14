@@ -14,9 +14,7 @@
     "src/test/ReactInstance.js"
   ],
   "exclude": [
-    "esm",
-    "cjs",
-    "types",
+    "lib",
     "node_modules"
   ]
 }

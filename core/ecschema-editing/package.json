@@ -3,8 +3,8 @@
   "version": "3.0.0-dev.49",
   "description": "ECSchema editing and validation API",
   "license": "MIT",
-  "main": "cjs/ecschema-editing.js",
-  "typings": "types/ecschema-editing",
+  "main": "lib/cjs/ecschema-editing.js",
+  "typings": "lib/types/ecschema-editing",
   "repository": {
     "type": "git",
     "url": "https://github.com/imodeljs/imodeljs/tree/master/core/ecschema-editing"
@@ -12,8 +12,8 @@
   "scripts": {
     "compile": "npm run build",
     "build": "tsc 1>&2 && npm run createLocalization && npm run copy:test-assets",
-    "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
+    "clean": "rimraf lib cjs esm types .rush/temp/package-deps*.json",
+    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
     "extract-api": "betools extract-api --entry=ecschema-editing",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "betools test",

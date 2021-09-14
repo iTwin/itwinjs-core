@@ -5,7 +5,7 @@
 import { ClientRequestContext, ClientRequestContextProps } from "@bentley/bentleyjs-core";
 import { AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { TestFrontendAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/cjs/frontend";
+import { TestFrontendAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { TestUtility } from "./TestUtility";
@@ -36,7 +36,7 @@ describe("IModelApp (#integration)", () => {
     let authorizedRequestContext: AuthorizedClientRequestContext = await AuthorizedFrontendRequestContext.create();
     authorizedRequestContext.enter();
 
-    authorizedRequestContext = ClientRequestContext.current as AuthorizedFrontendRequestContext;
+    authorizedRequestContext = ClientRequestContext.current;
     let actualAccessTokenStr = authorizedRequestContext.accessToken.toTokenString();
     assert.equal(actualAccessTokenStr, expectedAccessTokenStr);
     assert.equal(authorizedRequestContext.applicationId, IModelApp.applicationId);

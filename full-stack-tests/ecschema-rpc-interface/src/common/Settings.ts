@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { LogLevel } from "@bentley/bentleyjs-core";
-import { ECSchemaRpcInterface } from "@bentley/ecschema-rpcinterface-common/cjs/ECSchemaRpcInterface";
+import { ECSchemaRpcInterface } from "@bentley/ecschema-rpcinterface-common";
 import { IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool";
 

@@ -9,7 +9,7 @@ import {
   Content, createRandomDescriptor, createRandomECInstanceKey, createRandomNestedContentField, createRandomPrimitiveField, createTestContentDescriptor, createTestSimpleContentField, DefaultContentDisplayTypes, Descriptor, DisplayValue, FieldDescriptorType, Item, KeySet, NestedContentValue, PresentationError, PromiseContainer, RelationshipMeaning, SortDirection as PresentationSortDirection, ValuesDictionary
 } from "@bentley/presentation-common";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
-import "@bentley/presentation-frontend/cjs/test/_helpers/MockFrontendEnvironment";
+import "@bentley/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import { RowItem } from "@bentley/ui-components";
 import { HorizontalAlignment, SortDirection } from "@bentley/ui-core";
 import { expect } from "chai";

@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { app } from "electron";
-import * as fs from "fs";
-import * as path from "path";
 import { ProcessDetector } from "@bentley/bentleyjs-core";
 import { IModelHost, IModelJsFs } from "@bentley/imodeljs-backend";
 import { RpcManager } from "@bentley/imodeljs-common";
-import { Reporter } from "@bentley/perf-tools/lib/Reporter";
+import { Reporter } from "@bentley/perf-tools";
+import { app } from "electron";
+import * as fs from "fs";
+import * as path from "path";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { addColumnsToCsvFile, addDataToCsvFile, addEndOfTestToCsvFile, createFilePath, createNewCsvFile } from "./CsvWriter";
 

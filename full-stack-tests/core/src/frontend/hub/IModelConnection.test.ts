@@ -9,7 +9,7 @@ import {
   CategorySelectorState, CheckpointConnection, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, IModelApp, IModelConnection, MockRender,
   ModelSelectorState, OrthographicViewState, ViewState
 } from "@bentley/imodeljs-frontend";
-import { TestUsers } from "@bentley/oidc-signin-tool/cjs/frontend";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 import { assert, expect } from "chai";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { TestUtility } from "./TestUtility";
@@ -95,7 +95,7 @@ describe("IModelConnection (#integration)", () => {
     assert.instanceOf(viewState, OrthographicViewState);
     assert.instanceOf(viewState.categorySelector, CategorySelectorState);
     assert.instanceOf(viewState.displayStyle, DisplayStyle3dState);
-    assert.instanceOf((viewState as OrthographicViewState).modelSelector, ModelSelectorState);
+    assert.instanceOf((viewState).modelSelector, ModelSelectorState);
 
     viewDefinitions = await iModel.views.getViewList({ from: "BisCore.DrawingViewDefinition" });
     assert.isAtLeast(viewDefinitions.length, 1);

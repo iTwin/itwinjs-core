@@ -3,13 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { DEFAULT_KEYS_BATCH_SIZE } from "@bentley/presentation-common";
-import * as moq from "typemoq";
-import { createRandomECInstanceKey } from "@bentley/presentation-common";
+import { createRandomECInstanceKey, DEFAULT_KEYS_BATCH_SIZE } from "@bentley/presentation-common";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
-import "@bentley/presentation-frontend/cjs/test/_helpers/MockFrontendEnvironment";
+import "@bentley/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as faker from "faker";
+import * as moq from "typemoq";
 import { PresentationLabelsProvider } from "../../presentation-components/labels/LabelsProvider";
 
 describe("PresentationLabelsProvider", () => {

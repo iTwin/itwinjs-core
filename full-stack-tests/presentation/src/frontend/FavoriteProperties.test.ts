@@ -4,9 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelApp, IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { Field, KeySet } from "@bentley/presentation-common";
-import { PresentationPropertyDataProvider } from "@bentley/presentation-components";
-import { FAVORITES_CATEGORY_NAME } from "@bentley/presentation-components/cjs/presentation-components/favorite-properties/DataProvider";
-import { DEFAULT_PROPERTY_GRID_RULESET } from "@bentley/presentation-components/cjs/presentation-components/propertygrid/DataProvider";
+import { DEFAULT_PROPERTY_GRID_RULESET, FAVORITES_CATEGORY_NAME, PresentationPropertyDataProvider } from "@bentley/presentation-components";
 import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
 import { SettingsResult, SettingsStatus } from "@bentley/product-settings-client";
 import { PropertyRecord } from "@bentley/ui-abstract";

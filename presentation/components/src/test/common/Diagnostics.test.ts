@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as PresentationFrontendDiagnostics from "@bentley/presentation-frontend/cjs/presentation-frontend/Diagnostics";
+import { createCombinedDiagnosticsHandler } from "@bentley/presentation-frontend";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { createDiagnosticsOptions } from "../../presentation-components/common/Diagnostics";
@@ -34,7 +34,7 @@ describe("createDiagnosticsOptions", () => {
 
   it("returns options with combined handler when rule and dev props have different handlers", () => {
     const combinedHandler = sinon.stub();
-    const combineFunc = sinon.stub(PresentationFrontendDiagnostics, "createCombinedDiagnosticsHandler").returns(combinedHandler);
+    const combineFunc = sinon.stub(createCombinedDiagnosticsHandler as any, "createCombinedDiagnosticsHandler").returns(combinedHandler);
     const handler1 = sinon.stub();
     const handler2 = sinon.stub();
     expect(createDiagnosticsOptions({

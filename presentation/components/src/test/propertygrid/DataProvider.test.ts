@@ -11,7 +11,7 @@ import {
   RelationshipMeaning, StructFieldMemberDescription, StructTypeDescription, TypeDescription, ValuesDictionary
 } from "@bentley/presentation-common";
 import { FavoritePropertiesManager, FavoritePropertiesScope, Presentation, PresentationManager } from "@bentley/presentation-frontend";
-import "@bentley/presentation-frontend/cjs/test/_helpers/MockFrontendEnvironment";
+import "@bentley/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { PropertyCategory } from "@bentley/ui-components";
 import { expect } from "chai";

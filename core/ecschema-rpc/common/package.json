@@ -2,8 +2,8 @@
   "name": "@bentley/ecschema-rpcinterface-common",
   "version": "3.0.0-dev.49",
   "description": "Schema RPC Interface common interface",
-  "main": "cjs/ecschema-rpc-interface.js",
-  "typings": "types/ecschema-rpc-interface",
+  "main": "lib/cjs/ecschema-rpc-interface.js",
+  "typings": "lib/types/ecschema-rpc-interface",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -12,9 +12,9 @@
   "scripts": {
     "compile": "npm run build",
     "build": "npm run build:cjs && npm run build:esm",
-    "build:cjs": "tsc 1>&2 --outDir cjs",
-    "build:esm": "tsc 1>&2 --module ES2020 --outDir esm --declarationDir types",
-    "clean": "rimraf cjs esm types .rush/temp/package-deps*.json",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs --declaration false --declarationMap false",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm --declarationDir lib/types",
+    "clean": "rimraf lib cjs esm types .rush/temp/package-deps*.json",
     "cover": "",
     "docs": "",
     "extract-api": "betools extract-api --entry=ecschema-rpc-interface",

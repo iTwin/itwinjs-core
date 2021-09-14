@@ -11,7 +11,7 @@ import {
   KeySet, NestedContentField, Paged, PromiseContainer, RegisteredRuleset, ResolvablePromise, SelectionInfo
 } from "@bentley/presentation-common";
 import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
-import "@bentley/presentation-frontend/cjs/test/_helpers/MockFrontendEnvironment";
+import "@bentley/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import { PrimitiveValue, PropertyDescription, PropertyRecord } from "@bentley/ui-abstract";
 import { expect } from "chai";
 import * as faker from "faker";

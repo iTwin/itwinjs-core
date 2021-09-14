@@ -2,12 +2,12 @@
   "name": "@bentley/backend-itwin-client",
   "version": "3.0.0-dev.49",
   "description": "Clients for various Bentley Services used by iModel.js at the backend",
-  "main": "cjs/backend-itwin-client.js",
-  "module": "esm/backend-itwin-client.js",
+  "main": "lib/cjs/backend-itwin-client.js",
+  "module": "lib/esm/backend-itwin-client.js",
   "browser": {
     "./cjs/backend-itwin-client.js": "./cjs/backend-itwin-client-mobile.js"
   },
-  "typings": "types/backend-itwin-client",
+  "typings": "lib/types/backend-itwin-client",
   "license": "MIT",
   "engines": {
     "node": ">=10.17.0 <15.0"
@@ -15,9 +15,9 @@
   "scripts": {
     "compile": "npm run build",
     "build": "npm run build:cjs && npm run build:esm",
-    "build:cjs": "tsc 1>&2 --outDir cjs",
-    "build:esm": "tsc 1>&2 --module ES2020 --outDir esm --declarationDir types",
-    "clean": "rimraf cjs esm types .rush/temp/package-deps*.json",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs --declaration false --declarationMap false",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm --declarationDir lib/types",
+    "clean": "rimraf lib cjs esm types .rush/temp/package-deps*.json",
     "cover": "nyc npm test",
     "cover:integration": "nyc --report-dir ./cjs/test/coverage/integration npm run test:integration",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/backend-itwin-client/file.json --tsIndexFile=backend-itwin-client.ts --onlyJson",

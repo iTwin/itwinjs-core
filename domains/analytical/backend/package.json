@@ -1,7 +1,7 @@
 {
   "name": "@bentley/analytical-backend",
   "version": "3.0.0-dev.49",
-  "main": "cjs/analytical-backend.js",
+  "main": "lib/cjs/analytical-backend.js",
   "typings": "cjs/analytical-backend",
   "license": "MIT",
   "engines": {

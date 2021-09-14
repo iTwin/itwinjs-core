@@ -14,7 +14,7 @@
   "scripts": {
     "compile": "npm run build",
     "build": "tsc 1>&2",
-    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "clean": "rimraf lib cjs esm types .rush/temp/package-deps*.json",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "",
     "docs": "",
