@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-framework",
+      "comment": "rename contextId -> iTwinId",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework"
+}

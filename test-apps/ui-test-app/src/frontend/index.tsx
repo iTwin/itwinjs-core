@@ -393,7 +393,7 @@ export class SampleAppIModelApp {
     await LocalFileOpenFrontstage.open();
   }
 
-  public static async showIModelIndex(contextId: string, iModelId: string) {
+  public static async showIModelIndex(iTwinId: string, iModelId: string) {
     const currentConnection = UiFramework.getIModelConnection();
     if (!currentConnection || (currentConnection.iModelId !== iModelId)) {
       // Close the current iModelConnection
@@ -401,18 +401,18 @@ export class SampleAppIModelApp {
 
       // open the imodel
       Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
-        `showIModelIndex: projectId=${contextId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
+        `showIModelIndex: projectId=${iTwinId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
 
       let iModelConnection: IModelConnection | undefined;
       if (ProcessDetector.isMobileAppFrontend) {
-        const req = await NativeApp.requestDownloadBriefcase(contextId, iModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(), async (progress: ProgressInfo) => {
+        const req = await NativeApp.requestDownloadBriefcase(iTwinId, iModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(), async (progress: ProgressInfo) => {
           // eslint-disable-next-line no-console
           console.log(`Progress (${progress.loaded}/${progress.total}) -> ${progress.percent}%`);
         });
         await req.downloadPromise;
         iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
       } else {
-        iModelConnection = await UiFramework.iModelServices.openIModel(contextId, iModelId);
+        iModelConnection = await UiFramework.iModelServices.openIModel(iTwinId, iModelId);
       }
 
       SampleAppIModelApp.setIsIModelLocal(false, true);

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ClientRequestContext, Id64, Id64String, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { Angle, Point3d } from "@bentley/geometry-core";
 import { IModelJsFs, PhysicalModel, StandaloneDb } from "@bentley/imodeljs-backend";
@@ -18,10 +18,8 @@ import { RobotWorld } from "../RobotWorldSchema";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { IModelTestUtils } from "./Utils";
 
-const requestContext = new ClientRequestContext();
-
 async function simulateBackendDeployment(): Promise<void> {
-  await RobotWorldEngine.initialize(requestContext);
+  await RobotWorldEngine.initialize();
 }
 
 async function simulateBackendShutdown() {
@@ -34,7 +32,7 @@ async function setUpTest() {
   const seedFile = IModelTestUtils.resolveAssetFile("empty.bim");
   IModelJsFs.copySync(seedFile, iModelFile);
   const iModel = StandaloneDb.openFile(iModelFile, OpenMode.ReadWrite);
-  await RobotWorld.importSchema(requestContext, iModel);
+  await RobotWorld.importSchema(iModel);
   iModel.saveChanges();
   PhysicalModel.insert(iModel, IModel.rootSubjectId, "test");
   iModel.saveChanges();

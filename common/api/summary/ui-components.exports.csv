@@ -48,26 +48,37 @@ beta;BooleanEditor
 beta;BooleanPropertyEditor 
 public;BooleanTypeConverter 
 beta;Breadcrumb 
+deprecated;Breadcrumb 
 beta;BreadcrumbDetails 
+deprecated;BreadcrumbDetails 
 beta;BreadcrumbDetailsDragDropProps
 deprecated;BreadcrumbDetailsDragDropProps
 beta;BreadcrumbDetailsDragDropType = {} | TreeNodeItem | TableDataProvider
 deprecated;BreadcrumbDetailsDragDropType = {} | TreeNodeItem | TableDataProvider
 beta;BreadcrumbDetailsProps 
+deprecated;BreadcrumbDetailsProps 
 beta;BreadcrumbDragDropProps
 deprecated;BreadcrumbDragDropProps
 internal;BreadcrumbInput 
 internal;BreadcrumbInputProps
 internal;BreadcrumbInputState
 beta;BreadcrumbMode
+deprecated;BreadcrumbMode
 beta;BreadcrumbNode 
+deprecated;BreadcrumbNode 
 beta;BreadcrumbNodeProps
+deprecated;BreadcrumbNodeProps
 internal;BreadcrumbNodeRenderer = (props: BreadcrumbNodeProps, node?: TreeNodeItem, parent?: TreeNodeItem) => React.ReactNode
 beta;BreadcrumbPath
+deprecated;BreadcrumbPath
 beta;BreadcrumbProps 
+deprecated;BreadcrumbProps 
 beta;BreadcrumbTreeUtils
+deprecated;BreadcrumbTreeUtils
 beta;BreadcrumbUpdateEvent 
+deprecated;BreadcrumbUpdateEvent 
 beta;BreadcrumbUpdateEventArgs
+deprecated;BreadcrumbUpdateEventArgs
 beta;CategorizedPropertyItem 
 beta;CategorizedPropertyTypes = FlatGridItemType.Array | FlatGridItemType.Primitive | FlatGridItemType.Struct
 beta;CategoryRecordsDict

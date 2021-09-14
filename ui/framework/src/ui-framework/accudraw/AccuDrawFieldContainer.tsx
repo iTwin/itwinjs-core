@@ -24,7 +24,7 @@ import angleIconSvg from "./angle.svg?sprite";
 import distanceIconSvg from "./distance.svg?sprite";
 
 /** Properties for [[AccuDrawFieldContainer]] component
- * @alpha */
+ * @beta */
 export interface AccuDrawFieldContainerProps extends CommonProps {
   /** Orientation of the fields */
   orientation: Orientation;
@@ -48,7 +48,7 @@ const defaultAngleIcon = IconSpecUtilities.createSvgIconSpec(angleIconSvg);
 const defaultDistanceIcon = IconSpecUtilities.createSvgIconSpec(distanceIconSvg);
 
 /** AccuDraw Ui Field Container displays [[AccuDrawInputField]] for each field
- * @alpha */
+ * @beta */
 export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { className, style, orientation, uiSettingsStorage, showZOverride, ...otherProps } = props;

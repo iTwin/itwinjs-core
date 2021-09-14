@@ -35,11 +35,6 @@ export type WithClientRequestContext<T> = T & {
 };
 
 /** @internal */
-export function isEnum<TEnum>(e: TEnum, arg: any): arg is TEnum[keyof TEnum] {
-  return Object.values(e).includes(arg as TEnum[keyof TEnum]);
-}
-
-/** @internal */
 export function normalizeVersion(version?: string) {
   if (version) {
     const parsedVersion = parseVersion(version, true);

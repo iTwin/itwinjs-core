@@ -81,10 +81,10 @@ export class DefaultIModelServices implements IModelServices {
   }
 
   /** Open the specified version of the IModel */
-  public async openIModel(contextId: string, iModelId: GuidString, changeSetId?: string): Promise<IModelConnection> {
+  public async openIModel(iTwinId: string, iModelId: GuidString, changeSetId?: string): Promise<IModelConnection> {
     try {
       // GatewayProxyApi.setAccessToken(accessToken);
-      const iModelConnection = await CheckpointConnection.openRemote(contextId, iModelId, changeSetId ? IModelVersion.asOfChangeSet(changeSetId) : IModelVersion.latest()); // eslint-disable-line deprecation/deprecation
+      const iModelConnection = await CheckpointConnection.openRemote(iTwinId, iModelId, changeSetId ? IModelVersion.asOfChangeSet(changeSetId) : IModelVersion.latest());
       return iModelConnection;
     } catch (e) {
       alert(JSON.stringify(e));
@@ -93,10 +93,10 @@ export class DefaultIModelServices implements IModelServices {
   }
 
   /** Get the thumbnail for the iModel */
-  public async getThumbnail(contextId: string, iModelId: GuidString): Promise<string | undefined> {
+  public async getThumbnail(iTwinId: string, iModelId: GuidString): Promise<string | undefined> {
     const requestContext = await AuthorizedFrontendRequestContext.create();
     try {
-      const pngImage = await this._hubClient.thumbnails.download(requestContext, iModelId, { contextId, size: "Small" });
+      const pngImage = await this._hubClient.thumbnails.download(requestContext, iModelId, { contextId: iTwinId, size: "Small" });
       return pngImage;
     } catch (err) {
       // No image available

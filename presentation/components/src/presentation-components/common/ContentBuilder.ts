@@ -57,7 +57,7 @@ export function createPropertyDescriptionFromFieldInfo(info: FieldInfo) {
   }
 
   if (info.editor) {
-    descr.editor = { name: info.editor.name, params: [] } as PropertyEditorInfo;
+    descr.editor = { name: info.editor.name } as PropertyEditorInfo;
   }
 
   if (info.type.valueFormat === PresentationPropertyValueFormat.Primitive && info.enum) {
