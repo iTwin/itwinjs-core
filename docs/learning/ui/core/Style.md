@@ -65,7 +65,7 @@ Since there are variables defined for the different background contexts, they sh
 `$buic-background-1` through `$buic-background-5` variables should rarely be used directly.
 
 ```scss
-@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "~@bentley/ui-core/lib/cjs/ui-core/style/themecolors";
 
 .my-component {
 
@@ -93,7 +93,7 @@ Several breakpoints are defined for dealing with screens and devices with differ
 ### Example
 
 ```scss
-@import "~@bentley/ui-core/lib/ui-core/style/breakpoints";
+@import "~@bentley/ui-core/lib/cjs/ui-core/style/breakpoints";
 
 .toolAssistance-separator {
   @include for-tablet-landscape-down {
@@ -208,7 +208,7 @@ For any container CSS class that shows a scrollbar, the `uicore-touch-scrolling`
 ### Example
 
 ```scss
-@import "~@bentley/ui-core/lib/ui-core/scrollbar";
+@import "~@bentley/ui-core/lib/cjs/ui-core/scrollbar";
 
 .my-scrollable-container {
 
@@ -248,7 +248,7 @@ listed in order from lowest to top-most:
 ### Example
 
 ```scss
-@import "~@bentley/ui-core/lib/ui-core/z-index";
+@import "~@bentley/ui-core/lib/cjs/ui-core/z-index";
 
 .my-tooltip {
 

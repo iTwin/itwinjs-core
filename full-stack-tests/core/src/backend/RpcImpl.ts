@@ -5,7 +5,7 @@
 import { ClientRequestContext, ClientRequestContextProps } from "@bentley/bentleyjs-core";
 import { IModelBankClient } from "@bentley/imodelhub-client";
 import { IModelDb, IModelHost, IModelJsFs } from "@bentley/imodeljs-backend";
-import { V1CheckpointManager } from "@bentley/imodeljs-backend/cjs/CheckpointManager";
+import { V1CheckpointManager } from "@bentley/imodeljs-backend";
 import { IModelRpcProps, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, AuthorizedClientRequestContextProps } from "@bentley/itwin-client";
 import { CloudEnvProps, TestRpcInterface } from "../common/RpcInterfaces";

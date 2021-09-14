@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/base/base";
-@import "~@bentley/ui-core/lib/ui-core/text/mixins";
+@import "~@bentley/ui-core/lib/cjs/ui-core/base/base";
+@import "~@bentley/ui-core/lib/cjs/ui-core/text/mixins";
 
 .uifw-accudraw-input-label {
   min-width: 16px;

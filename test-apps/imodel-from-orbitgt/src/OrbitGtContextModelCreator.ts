@@ -9,9 +9,8 @@ import {
 } from "@bentley/imodeljs-backend";
 import { AxisAlignedBox3d, Cartographic, ContextRealityModelProps, EcefLocation, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
 import {
-  ALong, CRSManager, Downloader, OnlineEngine, OPCReader, OrbitGtBounds, PageCachedFile, PointCloudReader, UrlFS
+  ALong, CRSManager, Downloader, DownloaderNode, OnlineEngine, OPCReader, OrbitGtBounds, PageCachedFile, PointCloudReader, UrlFS
 } from "@bentley/orbitgt-core";
-import { DownloaderNode } from "@bentley/orbitgt-core/cjs/system/runtime/DownloaderNode";
 import * as fs from "fs";
 
 interface OrbitGtPointCloudProps {
