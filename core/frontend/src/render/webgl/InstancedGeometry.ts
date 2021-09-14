@@ -12,7 +12,6 @@ import { InstancedGraphicParams, PatternGraphicParams } from "../InstancedGraphi
 import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
 import { CachedGeometry, LUTGeometry } from "./CachedGeometry";
-import { WebGLDisposable } from "./Disposable";
 import { ShaderProgramParams } from "./DrawCommand";
 import { GL } from "./GL";
 import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";

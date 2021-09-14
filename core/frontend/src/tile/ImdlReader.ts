@@ -7,7 +7,7 @@
  */
 
 import { assert, ByteStream, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { ClipVector, ClipVectorProps, Point2d, Point3d, Range2d, Range2dProps, Range3d, Range3dProps, Transform, TransformProps, XYProps, XYZ, XYZProps } from "@bentley/geometry-core";
+import { ClipVector, ClipVectorProps, Point2d, Point3d, Range2d, Range3d, Range3dProps, Transform, TransformProps, XYProps, XYZProps } from "@bentley/geometry-core";
 import {
   BatchType, ColorDef, ColorDefProps, ElementAlignedBox3d, FeatureIndexType, FeatureTableHeader, FillFlags, Gradient, ImageSource, ImdlHeader, LinePixels,
   PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, readTileContentDescription, RenderMaterial, RenderTexture, TextureMapping,
@@ -16,7 +16,7 @@ import {
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { GraphicBranch } from "../render/GraphicBranch";
-import { InstancedGraphicParams, PatternGraphicParams } from "../render/InstancedGraphicParams";
+import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
 import { AuxChannelTable, AuxChannelTableProps } from "../render/primitives/AuxChannelTable";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
@@ -180,7 +180,7 @@ export class ImdlReader extends GltfReader {
   private readonly _sizeMultiplier?: number;
   private readonly _loadEdges: boolean;
   private readonly _options: BatchOptions;
-  private readonly _patternSymbols: { [key: string]: ImdlAreaPatternSymbol | undefined; };
+  private readonly _patternSymbols: { [key: string]: ImdlAreaPatternSymbol | undefined };
   private readonly _patternGeometry = new Map<string, RenderGeometry[]>();
 
   /** Attempt to initialize an ImdlReader to deserialize iModel tile data beginning at the stream's current position. */
@@ -453,7 +453,7 @@ export class ImdlReader extends GltfReader {
     this._sizeMultiplier = sizeMultiplier;
     this._loadEdges = loadEdges;
     this._options = options ?? {};
-    this._patternSymbols = props.scene.patternSymbols as any ?? { };
+    this._patternSymbols = props.scene.patternSymbols ?? { };
   }
 
   private static skipFeatureTable(stream: ByteStream): boolean {
@@ -791,7 +791,6 @@ export class ImdlReader extends GltfReader {
 
     const viOrigin = primitive.viewIndependentOrigin ? Point3d.fromJSON(primitive.viewIndependentOrigin) : undefined;
     const isPlanar = !this._is3d || JsonUtils.asBool(primitive.isPlanar);
-    let geometry;
     switch (primitive.type) {
       case Mesh.PrimitiveType.Mesh:
         return this.createMeshGeometry(primitive, displayParams, vertices, isPlanar, this.readAuxChannelTable(primitive), viOrigin);

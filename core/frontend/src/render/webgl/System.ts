@@ -35,7 +35,7 @@ import {
 import { RenderTarget } from "../RenderTarget";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "../ScreenSpaceEffectBuilder";
 import { BackgroundMapDrape } from "./BackgroundMapDrape";
-import { CachedGeometry, SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
+import { SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { ClipVolume } from "./ClipVolume";
 import { isInstancedGraphicParams, PatternBuffers } from "./InstancedGeometry";
 import { Debug } from "./Diagnostics";
@@ -550,7 +550,6 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
   public override createRenderGraphic(geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined {
-    // ###TODO Take InstanceBuffers or PatternBuffers, not Params.
     if (!(geometry instanceof MeshRenderGeometry)) {
       if (geometry instanceof PolylineGeometry || geometry instanceof PointStringGeometry)
         return Primitive.create(geometry, instances);
@@ -592,12 +591,11 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
   public override createSkyBox(params: SkyBox.CreateParams): RenderGraphic | undefined {
-    if (undefined !== params.cube) {
-      return SkyCubePrimitive.create(SkyBoxQuadsGeometry.create(params.cube!));
-    } else {
-      assert(undefined !== params.sphere || undefined !== params.gradient);
-      return SkySpherePrimitive.create(SkySphereViewportQuadGeometry.createGeometry(params));
-    }
+    if (undefined !== params.cube)
+      return SkyCubePrimitive.create(SkyBoxQuadsGeometry.create(params.cube));
+
+    assert(undefined !== params.sphere || undefined !== params.gradient);
+    return SkySpherePrimitive.create(SkySphereViewportQuadGeometry.createGeometry(params));
   }
 
   public override createScreenSpaceEffectBuilder(params: ScreenSpaceEffectBuilderParams): ScreenSpaceEffectBuilder {

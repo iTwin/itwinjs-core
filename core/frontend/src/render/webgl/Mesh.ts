@@ -9,7 +9,7 @@
 import { assert, dispose } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d } from "@bentley/geometry-core";
 import { FeatureIndexType, FillFlags, LinePixels, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
-import { InstancedGraphicParams, PatternGraphicParams } from "../InstancedGraphicParams";
+import { InstancedGraphicParams } from "../InstancedGraphicParams";
 import { MeshParams, SegmentEdgeParams, SilhouetteParams, SurfaceType, TesselatedPolyline, VertexIndices } from "../primitives/VertexTable";
 import { RenderMemory } from "../RenderMemory";
 import { RenderGeometry } from "../RenderSystem";
