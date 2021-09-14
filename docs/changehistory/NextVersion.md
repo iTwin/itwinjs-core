@@ -55,7 +55,14 @@ can become:
 
 ```ts
   viewState.lookAt( {eyePoint: eye, targetPoint: target , upVector: up, lensAngle: lens, frontDistance, backDistance} );
+
 ```
+
+### OnViewExtentsError and MarginOptions Separated from ViewChangeOptions
+
+The `opts` argument to [Viewstate3d.lookAt]($frontend) was previously declared to be of type [ViewChangeOptions]($frontend). However, it only used the `onExtentsError` member to handle invalid view extents. That caused confusion because it led you to believe that [Viewstate3d.lookAt]($frontend) performed a view change when it doesn't, it merely modifies the `ViewState3d`.
+
+There is now a separate interface [OnViewExtentsError]($frontend) that `Viewstate3d.lookAt` accepts it as its `opts` argument. Likewise, [ViewState3d.lookAtVolume]($frontend) and [ViewState3d.lookAtViewAlignedVolume]($frontend) accepts a "[MarginOptions]($frontend) & [OnViewExtentsError]($frontend)" as its `opts` argument.
 
 ## ViewFlags
 

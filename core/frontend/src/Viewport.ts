@@ -1024,7 +1024,7 @@ export abstract class Viewport implements IDisposable {
 
     removals.push(style.onOSMBuildingDisplayChanged.addListener(() => {
       displayStyleChanged();
-      this.synchWithView(false); // May change frustum depth.
+      this.synchWithView({ noSaveInUndo: true }); // May change frustum depth.
     }));
 
     const analysisChanged = () => {
@@ -1719,9 +1719,8 @@ export abstract class Viewport implements IDisposable {
 
   /** Call [[setupFromView]] on this Viewport and then apply optional behavior.
    * @param options _options for behavior of view change. If undefined, all options have their default values (see [[ViewChangeOptions]] for details.)
-   * @note In previous versions, the argument was a boolean `saveInUndo`. For backwards compatibility, if `_options` is a boolean, it is interpreted as "{ noSaveInUndo: !_options }"
    */
-  public synchWithView(_options?: ViewChangeOptions | boolean): void { this.setupFromView(); }
+  public synchWithView(_options?: ViewChangeOptions): void { this.setupFromView(); }
 
   /** Convert an array of points from CoordSystem.View to CoordSystem.Npc */
   public viewToNpcArray(pts: Point3d[]): void { this._viewingSpace.viewToNpcArray(pts); }
@@ -3039,9 +3038,8 @@ export class ScreenViewport extends Viewport {
   }
 
   /** @internal */
-  public override synchWithView(options?: ViewChangeOptions | boolean): void {
-    options = (undefined === options) ? {} :
-      (typeof options !== "boolean") ? options : { noSaveInUndo: !options }; // for backwards compatibility, was "saveInUndo"
+  public override synchWithView(options?: ViewChangeOptions): void {
+    options = options ?? {};
 
     if (this.view.is3d() && options?.globalAlignment)
       this.view.alignToGlobe(options.globalAlignment.target, options.globalAlignment.transition);
@@ -3070,8 +3068,7 @@ export class ScreenViewport extends Viewport {
 
     this.setAnimator(undefined); // make sure we clear any active animators before we change views.
 
-    if (opts === undefined)
-      opts = { animationTime: ScreenViewport.animation.time.slow.milliseconds };
+    opts = opts ?? { animationTime: ScreenViewport.animation.time.slow.milliseconds };
 
     // determined whether we can animate this ViewState change
     const doAnimate = this.view && this.view.hasSameCoordinates(view) && false !== opts.animateFrustumChange;
