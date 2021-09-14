@@ -228,16 +228,16 @@ function getImodelSpecificKey(inKey: string, iModelConnection: IModelConnection 
 
 export async function hasSavedViewLayoutProps(activeFrontstageId: string, iModelConnection: IModelConnection | undefined) {
   const localSettings = new LocalSettingsStorage();
-  return localSettings.hasSetting("SavedContentLayout", getImodelSpecificKey(activeFrontstageId, iModelConnection));
+  return localSettings.hasSetting("ContentGroupLayout", getImodelSpecificKey(activeFrontstageId, iModelConnection));
 }
 
 export async function getSavedViewLayoutProps(activeFrontstageId: string, iModelConnection: IModelConnection | undefined) {
   const localSettings = new LocalSettingsStorage();
-  const result = await localSettings.getSetting("SavedContentLayout", getImodelSpecificKey(activeFrontstageId, iModelConnection));
+  const result = await localSettings.getSetting("ContentGroupLayout", getImodelSpecificKey(activeFrontstageId, iModelConnection));
 
   if (result.setting) {
     // Parse SavedViewLayoutProps
-    const savedViewLayoutProps: SavedViewLayoutProps = JSON.parse(result.setting);
+    const savedViewLayoutProps: SavedViewLayoutProps = result.setting;
     if (iModelConnection) {
       // Create ViewStates
       const viewStates = await SavedViewLayout.viewStatesFromProps(iModelConnection, savedViewLayoutProps);
@@ -303,9 +303,15 @@ export class SaveContentLayoutTool extends Tool {
           }
         });
 
-      await localSettings.saveSetting("SavedContentLayout",
+      if (savedViewLayoutProps.contentLayoutProps)
+        delete savedViewLayoutProps.contentLayoutProps;
+
+      if (FrontstageManager.activeFrontstageDef.contentGroupProvider)
+        savedViewLayoutProps.contentGroupProps = FrontstageManager.activeFrontstageDef.contentGroupProvider.prepareToSaveProps(savedViewLayoutProps.contentGroupProps);
+
+      await localSettings.saveSetting("ContentGroupLayout",
         getImodelSpecificKey(FrontstageManager.activeFrontstageDef.id, UiFramework.getIModelConnection()),
-        JSON.stringify(savedViewLayoutProps));
+        savedViewLayoutProps);
     }
   }
 
@@ -332,7 +338,10 @@ export class RestoreSavedContentLayoutTool extends Tool {
     if (FrontstageManager.activeFrontstageDef) {
       const savedViewLayoutProps = await getSavedViewLayoutProps(FrontstageManager.activeFrontstageDef.id, UiFramework.getIModelConnection());
       if (savedViewLayoutProps) {
-        const contentGroup = new ContentGroup(savedViewLayoutProps.contentGroupProps);
+        let contentGroupProps = savedViewLayoutProps.contentGroupProps;
+        if (FrontstageManager.activeFrontstageDef.contentGroupProvider)
+          contentGroupProps = FrontstageManager.activeFrontstageDef.contentGroupProvider.applyUpdatesToSavedProps(savedViewLayoutProps.contentGroupProps);
+        const contentGroup = new ContentGroup(contentGroupProps);
 
         // activate the layout
         await ContentLayoutManager.setActiveContentGroup(contentGroup);
@@ -366,7 +375,7 @@ export class RemoveSavedContentLayoutTool extends Tool {
     if (FrontstageManager.activeFrontstageDef) {
       const localSettings = new LocalSettingsStorage();
 
-      await localSettings.deleteSetting("SavedContentLayout",
+      await localSettings.deleteSetting("ContentGroupLayout",
         getImodelSpecificKey(FrontstageManager.activeFrontstageDef.id, UiFramework.getIModelConnection()));
     }
   }

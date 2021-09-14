@@ -569,7 +569,7 @@ export class FrontstageManager {
   public static async setActiveContentGroup(contentGroup: ContentGroup): Promise<void> {
     const contentLayoutDef = ContentLayoutManager.getLayoutForGroup(contentGroup);
     if (contentLayoutDef) {
-      FrontstageManager.setActiveLayout(contentLayoutDef, contentGroup);
+      await FrontstageManager.setActiveLayout(contentLayoutDef, contentGroup);
     }
   }
 

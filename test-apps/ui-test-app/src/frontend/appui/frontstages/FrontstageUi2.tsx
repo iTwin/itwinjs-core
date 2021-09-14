@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import {
-  BackstageAppButton, ConfigurableUiManager, ContentGroup, ContentGroupProvider, FrontstageProps,
+  BackstageAppButton, ConfigurableUiManager, ContentGroup, ContentGroupProps, ContentGroupProvider, ContentProps, FrontstageProps,
   IModelViewportControl, StandardContentToolsProvider, StandardFrontstageProps, StandardFrontstageProvider,
   StandardNavigationToolsProvider,
   StandardStatusbarItemsProvider,
@@ -18,6 +18,40 @@ import { AppUi2StageItemsProvider } from "../../tools/AppUi2StageItemsProvider";
 import { getSavedViewLayoutProps } from "../../tools/UiProviderTool";
 
 export class FrontstageUi2ContentGroupProvider extends ContentGroupProvider {
+  /* eslint-disable react/jsx-key */
+  public static supplyViewOverlay = (viewport: ScreenViewport) => {
+    if (viewport.view) {
+      return <MyCustomViewOverlay />;
+    }
+    return null;
+  };
+
+  public override prepareToSaveProps(contentGroupProps: ContentGroupProps) {
+    const newContentsArray = contentGroupProps.contents.map((content: ContentProps) => {
+      const newContent = { ...content };
+      if (newContent.applicationData)
+        delete newContent.applicationData;
+      return newContent;
+    });
+    return { ...contentGroupProps, contents: newContentsArray };
+  }
+
+  public override applyUpdatesToSavedProps(contentGroupProps: ContentGroupProps) {
+    const newContentsArray = contentGroupProps.contents.map((content: ContentProps, index) => {
+      const newContent = { ...content };
+
+      if (newContent.classId === IModelViewportControl.id) {
+        newContent.applicationData = {
+          ...newContent.applicationData,
+          supplyViewOverlay: index === 0 ? FrontstageUi2ContentGroupProvider.supplyViewOverlay : undefined,
+          supports: ["issueResolutionMarkers", "viewIdSelection", "3dModels", "2dModels"],
+          isPrimaryView: true,
+        };
+      }
+      return newContent;
+    });
+    return { ...contentGroupProps, contents: newContentsArray };
+  }
 
   public async provideContentGroup(props: FrontstageProps): Promise<ContentGroup> {
     const iModelConnection = UiFramework.getIModelConnection();
@@ -28,8 +62,8 @@ export class FrontstageUi2ContentGroupProvider extends ContentGroupProvider {
       if (viewState) {
         UiFramework.setDefaultViewState(viewState);
       }
-      // TODO: determine the best way to provide overlay data when retrieving layout from state
-      return new ContentGroup(savedViewLayoutProps.contentGroupProps);
+      const contentGroupProps = this.applyUpdatesToSavedProps(savedViewLayoutProps.contentGroupProps);
+      return new ContentGroup(contentGroupProps);
     }
 
     return new ContentGroup({
@@ -40,11 +74,12 @@ export class FrontstageUi2ContentGroupProvider extends ContentGroupProvider {
           id: "primaryContent",
           classId: IModelViewportControl.id,
           applicationData: {
-            supplyViewOverlay: FrontstageUi2.supplyViewOverlay,
+            supplyViewOverlay: FrontstageUi2ContentGroupProvider.supplyViewOverlay,
             isPrimaryView: true,
             supports: ["issueResolutionMarkers", "viewIdSelection", "3dModels", "2dModels"],
+            viewState: UiFramework.getDefaultViewState,
+            iModelConnection: UiFramework.getIModelConnection,
           },
-          appDataProvider: FrontstageUi2.supplyAppData,
         },
       ],
     });
@@ -54,14 +89,6 @@ export class FrontstageUi2ContentGroupProvider extends ContentGroupProvider {
 export class FrontstageUi2 {
   private static _contentGroupProvider = new FrontstageUi2ContentGroupProvider();
   private static showCornerButtons = true;
-
-  /* eslint-disable react/jsx-key */
-  public static supplyViewOverlay = (viewport: ScreenViewport) => {
-    if (viewport.view) {
-      return <MyCustomViewOverlay />;
-    }
-    return null;
-  };
 
   public static supplyAppData(_id: string, _applicationData?: any) {
     return {

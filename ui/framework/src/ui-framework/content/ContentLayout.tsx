@@ -476,6 +476,7 @@ export class ContentLayoutActivatedEvent extends UiEvent<ContentLayoutActivatedE
 interface ContentLayoutState {
   contentLayoutDef: ContentLayoutDef;
   contentContainer?: React.ReactNode;
+  contentGroupId?: string;
 }
 
 /** Properties for the [[ContentLayout]] React component.
@@ -507,6 +508,7 @@ export class ContentLayout extends React.Component<ContentLayoutComponentProps, 
     this.state = {
       contentLayoutDef: this.props.contentLayout,
       contentContainer,
+      contentGroupId: this.props.contentGroup.groupId,
     };
   }
 
@@ -528,13 +530,15 @@ export class ContentLayout extends React.Component<ContentLayoutComponentProps, 
     this.setState({
       contentLayoutDef: args.contentLayout,
       contentContainer,
+      contentGroupId: contentGroup.groupId,
     });
   };
 
   public override render(): React.ReactNode {
     if (this.state.contentContainer) {
       return (
-        <div id="uifw-contentlayout-div" className={this.props.className} style={this.props.style} key={this.state.contentLayoutDef.id}
+        <div id="uifw-contentlayout-div" className={this.props.className} style={this.props.style}
+          key={`${this.state.contentGroupId}-${this.state.contentLayoutDef.id}`}
           onMouseDown={this._onMouseDown} onMouseUp={this._onMouseUp} role="presentation"
         >
           {this.state.contentContainer}

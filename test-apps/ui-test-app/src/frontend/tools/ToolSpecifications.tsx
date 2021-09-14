@@ -21,7 +21,8 @@ import {
 } from "@bentley/ui-abstract";
 import { Dialog, ReactMessage, SvgPath, SvgSprite, UnderlinedButton } from "@bentley/ui-core";
 import {
-  Backstage, CommandItemDef, ContentGroup, ContentLayoutManager, ContentProps, ContentViewManager, FrontstageManager, IModelViewportControl, MessageManager, ModalDialogManager, ReactNotifyMessageDetails,
+  Backstage, CommandItemDef, ContentGroup, ContentGroupProps, ContentLayoutManager, ContentProps, ContentViewManager,
+  FrontstageManager, IModelViewportControl, MessageManager, ModalDialogManager, ReactNotifyMessageDetails,
   StatusBarItemUtilities, SyncUiEventDispatcher, SyncUiEventId, ToolItemDef, withStatusFieldProps,
 } from "@bentley/ui-framework";
 import { FooterSeparator } from "@bentley/ui-ninezone";
@@ -409,46 +410,34 @@ export class AppTools {
             const contentPropsArray: ContentProps[] = [];
             contentPropsArray.push({
               id: "imodel-view-0",
-              classId: IModelViewportControl,
+              classId: IModelViewportControl.id,
               applicationData:
               {
                 viewState: vp.view.clone(),
                 iModelConnection: vp.view.iModel,
-                featureOptions:
-                {
-                  defaultViewOverlay: {
-                    enableScheduleAnimationViewOverlay: true,
-                    enableAnalysisTimelineViewOverlay: true,
-                    enableSolarTimelineViewOverlay: true,
-                  },
-                },
+
               },
             });
             contentPropsArray.push({
               id: "imodel-view-1",
-              classId: IModelViewportControl,
+              classId: IModelViewportControl.id,
               applicationData:
               {
                 viewState: vp.view.clone(),
                 iModelConnection: vp.view.iModel,
-                featureOptions:
-                {
-                  defaultViewOverlay: {
-                    enableScheduleAnimationViewOverlay: true,
-                    enableAnalysisTimelineViewOverlay: true,
-                    enableSolarTimelineViewOverlay: true,
-                  },
-                },
               },
             });
 
-            const contentGroup = new ContentGroup(
-              {
-                id: "split-vertical-group",
-                layout: StandardContentLayouts.twoVerticalSplit,
-                contents: contentPropsArray,
-              });
+            let contentGroupProps: ContentGroupProps = {
+              id: "split-vertical-group",
+              layout: StandardContentLayouts.twoVerticalSplit,
+              contents: contentPropsArray,
+            };
 
+            if (activeFrontstageDef.contentGroupProvider)
+              contentGroupProps = activeFrontstageDef.contentGroupProvider.applyUpdatesToSavedProps(contentGroupProps);
+
+            const contentGroup = new ContentGroup(contentGroupProps);
             await FrontstageManager.setActiveContentGroup(contentGroup);
           }
         } else if (activeFrontstageDef && 2 === activeFrontstageDef.contentControls?.length &&
@@ -458,28 +447,23 @@ export class AppTools {
             const contentPropsArray: ContentProps[] = [];
             contentPropsArray.push({
               id: "imodel-view-0",
-              classId: IModelViewportControl,
+              classId: IModelViewportControl.id,
               applicationData:
               {
                 viewState: vp.view.clone(),
                 iModelConnection: vp.view.iModel,
-                featureOptions:
-                {
-                  defaultViewOverlay: {
-                    enableScheduleAnimationViewOverlay: true,
-                    enableAnalysisTimelineViewOverlay: true,
-                    enableSolarTimelineViewOverlay: true,
-                  },
-                },
               },
             });
-            const contentGroup = new ContentGroup(
-              {
-                id: "single-content",
-                layout: StandardContentLayouts.singleView,
-                contents: contentPropsArray,
-              });
 
+            let contentGroupProps: ContentGroupProps = {
+              id: "single-content",
+              layout: StandardContentLayouts.singleView,
+              contents: contentPropsArray,
+            };
+            if (activeFrontstageDef.contentGroupProvider)
+              contentGroupProps = activeFrontstageDef.contentGroupProvider.applyUpdatesToSavedProps(contentGroupProps);
+
+            const contentGroup = new ContentGroup(contentGroupProps);
             await FrontstageManager.setActiveContentGroup(contentGroup);
           }
         }

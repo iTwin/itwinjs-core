@@ -39,7 +39,10 @@ export class ContentLayoutManager {
    * @returns the [[ContentLayoutDef]] if found, or throws if the ContentLayoutProps can't be returned
    */
   public static getLayoutPropsForGroup(contentGroupProps: ContentGroupProps | ContentGroup): ContentLayoutProps {
-    const layoutId = (typeof contentGroupProps.layout !== "string") ? contentGroupProps.layout.id : contentGroupProps.layout;
+    if (typeof contentGroupProps.layout !== "string")
+      return contentGroupProps.layout;
+
+    const layoutId = contentGroupProps.layout;
     if (ContentLayoutManager._layoutProps.has(layoutId)) {
       return ContentLayoutManager._layoutProps.get(layoutId)!;
     } else if (typeof contentGroupProps.layout !== "string") {

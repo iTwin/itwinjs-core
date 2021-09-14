@@ -16,7 +16,7 @@ import {
 import { CustomToolbarItem, SelectionMode, useToolbarPopupContext } from "@bentley/ui-components";
 import { Point, ScrollView } from "@bentley/ui-core";
 import {
-  BasicNavigationWidget, BasicToolWidget, CommandItemDef, ConfigurableUiManager, ContentGroup,
+  BasicNavigationWidget, BasicToolWidget, CommandItemDef, ConfigurableUiManager, ContentGroup, ContentGroupProps,
   ContentGroupProvider, ContentProps, ContentViewManager, CoreTools, CursorInformation,
   CursorPopupContent, CursorPopupManager, CursorUpdatedEventArgs, CustomItemDef,
   EmphasizeElementsChangedArgs, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider,
@@ -79,6 +79,37 @@ function MySliderPanel() {
 }
 
 export class ViewsFrontstageContentGroupProvider extends ContentGroupProvider {
+  public override prepareToSaveProps(contentGroupProps: ContentGroupProps) {
+    const newContentsArray = contentGroupProps.contents.map((content: ContentProps) => {
+      const newContent = { ...content };
+      if (newContent.applicationData)
+        delete newContent.applicationData;
+      return newContent;
+    });
+    return { ...contentGroupProps, contents: newContentsArray };
+  }
+
+  public override applyUpdatesToSavedProps(contentGroupProps: ContentGroupProps) {
+    const newContentsArray = contentGroupProps.contents.map((content: ContentProps) => {
+      const newContent = { ...content };
+
+      if (newContent.classId === IModelViewportControl.id) {
+        newContent.applicationData = {
+          ...newContent.applicationData,
+          featureOptions:
+          {
+            defaultViewOverlay: {
+              enableScheduleAnimationViewOverlay: true,
+              enableAnalysisTimelineViewOverlay: true,
+              enableSolarTimelineViewOverlay: true,
+            },
+          },
+        };
+      }
+      return newContent;
+    });
+    return { ...contentGroupProps, contents: newContentsArray };
+  }
 
   public async provideContentGroup(props: FrontstageProps): Promise<ContentGroup> {
     const viewIdsSelected = SampleAppIModelApp.getInitialViewIds();

@@ -43,11 +43,26 @@ export interface ContentGroupProps {
   contents: ContentProps[];
 }
 
-/**
- * @beta
+/** Abstract class that can be implemented and specified by frontstage to dynamically construct
+ * content group just prior to activating the frontstage.
+ * @public
  */
 export abstract class ContentGroupProvider {
   abstract provideContentGroup(props: FrontstageProps): Promise<ContentGroup>;
+
+  /** Allow provider to update any data stored in ContentGroupProps. Typically this may
+   * be to remove applicationData entries.
+   */
+  public prepareToSaveProps(contentGroupProps: ContentGroupProps) {
+    return contentGroupProps;
+  }
+
+  /** Allow provider to update any stored ContentGroupProps be it is to be used to create ContentGroup and layouts.
+   * Typically this may be to add applicationData to content entries.
+   */
+  public applyUpdatesToSavedProps(contentGroupProps: ContentGroupProps) {
+    return contentGroupProps;
+  }
 }
 
 /** Callback to process content properties during toJSON method
@@ -61,6 +76,7 @@ export type ContentCallback = (content: ContentProps) => void;
 export class ContentGroup {
   private static _sId = 0;
   public groupId: string;
+  public propsId: string;
   public layout: ContentLayoutProps;
   public contentPropsList: ContentProps[];
   private _contentControls = new Map<string, ContentControl>();
@@ -73,6 +89,7 @@ export class ContentGroup {
   constructor(groupProps: (() => ContentGroupProps) | ContentGroupProps) {
     const contentGroupProps = typeof groupProps === "function" ? groupProps() : groupProps;
     this.layout = ContentLayoutManager.getLayoutPropsForGroup(contentGroupProps);
+    this.propsId = contentGroupProps.id;
     // ensure we have a unique groupId for each instance of a content group - this will be used to generate a key in the React controls
     this.groupId = `[${contentGroupProps.id}-${ContentGroup._sId++}]`;
     this.contentPropsList = contentGroupProps.contents;
@@ -185,7 +202,7 @@ export class ContentGroup {
    */
   public toJSON(contentCallback?: ContentCallback): ContentGroupProps {
     const contentGroupProps: ContentGroupProps = {
-      id: this.groupId,
+      id: this.propsId,
       layout: this.layout,
       contents: this.contentPropsList,
     };

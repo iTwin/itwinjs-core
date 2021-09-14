@@ -82,8 +82,10 @@ export class FrontstageDef {
   private _nineZone?: NineZoneManagerProps;
   private _timeTracker: TimeTracker = new TimeTracker();
   private _nineZoneState?: NineZoneState;
+  private _contentGroupProvider?: ContentGroupProvider;
 
   public get id(): string { return this._id; }
+  public get contentGroupProvider(): ContentGroupProvider | undefined { return this._contentGroupProvider; }
   public get defaultTool(): ToolItemDef | undefined { return this._defaultTool; }
   public get defaultContentId(): string { return this._defaultContentId; }
   public get isInFooterMode(): boolean { return this._isInFooterMode; }
@@ -482,6 +484,7 @@ export class FrontstageDef {
     if (typeof props.contentGroup === "string") {
       this._contentGroup = ContentGroupManager.findGroup(props.contentGroup);
     } else if (props.contentGroup instanceof ContentGroupProvider) {
+      this._contentGroupProvider = props.contentGroup;
       this._contentGroup = await props.contentGroup.provideContentGroup(props);
     } else {
       this._contentGroup = props.contentGroup;

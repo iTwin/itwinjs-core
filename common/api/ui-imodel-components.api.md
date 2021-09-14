@@ -1150,6 +1150,7 @@ export interface ViewportProps extends CommonProps {
     screenViewportOverride?: typeof ScreenViewport;
     // @internal
     tentativePointOverride?: TentativePoint;
+    uniqueId?: string;
     viewDefinitionId?: Id64String;
     // @internal
     viewManagerOverride?: ViewManager;

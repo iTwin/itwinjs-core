@@ -1316,6 +1316,8 @@ export class ContentGroup {
     layout: ContentLayoutProps;
     onFrontstageDeactivated(): void;
     onFrontstageReady(): void;
+    // (undocumented)
+    propsId: string;
     refreshContentNodes(): void;
     toJSON(contentCallback?: ContentCallback): ContentGroupProps;
 }
@@ -1337,6 +1339,8 @@ export interface ContentGroupProps {
 
 // @public
 export abstract class ContentGroupProvider {
+    applyUpdatesToSavedProps(contentGroupProps: ContentGroupProps): ContentGroupProps;
+    prepareToSaveProps(contentGroupProps: ContentGroupProps): ContentGroupProps;
     // (undocumented)
     abstract provideContentGroup(props: FrontstageProps): Promise<ContentGroup>;
 }
@@ -2609,6 +2613,8 @@ export class FrontstageDef {
     get contentControls(): ContentControl[];
     // (undocumented)
     get contentGroup(): ContentGroup | undefined;
+    // (undocumented)
+    get contentGroupProvider(): ContentGroupProvider | undefined;
     // (undocumented)
     get contentLayoutDef(): ContentLayoutDef | undefined;
     static create(provider: FrontstageProvider): Promise<FrontstageDef>;
@@ -4676,7 +4682,7 @@ export interface SavedViewLayoutProps {
     // (undocumented)
     contentGroupProps: ContentGroupProps;
     // (undocumented)
-    contentLayoutProps: ContentLayoutProps;
+    contentLayoutProps?: ContentLayoutProps;
     // (undocumented)
     savedViews: SavedViewProps[];
 }
