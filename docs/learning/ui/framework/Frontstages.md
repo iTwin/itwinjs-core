@@ -126,4 +126,5 @@ FrontstageManager.setActiveFrontstage(frontstageProvider.frontstage.props.id).th
 
 ## API Reference
 
+- [Frontstage]($ui-framework:Frontstage)
 - [Zone]($ui-framework:Zone)

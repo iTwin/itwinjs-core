@@ -3,6 +3,12 @@ publish: false
 ---
 # NextVersion
 
+## Dependency Updates
+
+The following dependencies of iTwin.js have been updated;
+
+- `openid-client` updated to from `^3.15.3` -> `^4.7.4`,
+
 ## Build tools changes
 
 Removed TSLint support from `@bentley/build-tools`. If you're still using it, please switch to ESLint.
@@ -12,8 +18,8 @@ Also removed legacy `.eslintrc.js` file from the same package. Instead, use `@be
 
 [Viewport.zoomToElements]($frontend) accepts any number of element Ids and fits the viewport to the union of their [Placement]($common)s. A handful of shortcomings of the previous implementation have been addressed:
 
-* Previously, the element Ids were passed to [IModelConnection.Elements.getProps]($frontend), which returned **all** of the element's properties (potentially many megabytes of data), only to extract the [PlacementProps]($common) for each element and discard the rest. Now, it uses the new [IModelConnection.Elements.getPlacements]($frontend) function to query only the placements.
-* Previously, if a mix of 2d and 3d elements were specified, the viewport would attempt to union their 2d and 3d placements, typically causing it to fit incorrectly because 2d elements reside in a different coordinate space than 3d elements. Now, the viewport ignores 2d elements if it is viewing a 3d view, and vice-versa.
+- Previously, the element Ids were passed to [IModelConnection.Elements.getProps]($frontend), which returned **all** of the element's properties (potentially many megabytes of data), only to extract the [PlacementProps]($common) for each element and discard the rest. Now, it uses the new [IModelConnection.Elements.getPlacements]($frontend) function to query only the placements.
+- Previously, if a mix of 2d and 3d elements were specified, the viewport would attempt to union their 2d and 3d placements, typically causing it to fit incorrectly because 2d elements reside in a different coordinate space than 3d elements. Now, the viewport ignores 2d elements if it is viewing a 3d view, and vice-versa.
 
 ## Continued transition to `ChangesetIndex`
 
@@ -21,9 +27,9 @@ Every Changeset has both an Id (a string hash of its content and parent changese
 
 In version 2.19, we introduced the type [ChangesetIdWithIndex]($common) to begin that migration. However, for 2.x compatibility we could not use it several places where it would have been helpful:
 
-* [IModelRpcOpenProps]($common)
-* [CheckpointProps]($backend)
-* [LocalBriefcaseProps]($common)
+- [IModelRpcOpenProps]($common)
+- [CheckpointProps]($backend)
+- [LocalBriefcaseProps]($common)
 
 Each of these interfaces originally had only a member `changeSetId: string`, In 2.19, for backwards compatibility, a new member `changeSetIndex?: number` was added. In V3 those two members are now replaced with a single member `changeset: ChangesetIdWithIndex`. Note that this is a breaking change, and you may have to adjust your code. To get the changeset Id, use `changeset.id`. To get the changeset Index, use `changeset.index` (may be undefined). In V4, this will become `changeset: ChangesetIndexAndId` and index will be required.
 
@@ -91,8 +97,8 @@ To rectify this, and to eliminate various other pitfalls associated with mutable
 
 Methods that mutate a ViewFlags object have been removed.
 
-* `clone` has been replaced with [ViewFlags.copy]($common), which returns a new object instead of modifying `this`.
-* `createFrom` has been removed. Because ViewFlags is immutable, it is never necessary to create an identical copy of one - just use the same object. Or, if for some reason you really want an identical copy, use the object spread operator.
+- `clone` has been replaced with [ViewFlags.copy]($common), which returns a new object instead of modifying `this`.
+- `createFrom` has been removed. Because ViewFlags is immutable, it is never necessary to create an identical copy of one - just use the same object. Or, if for some reason you really want an identical copy, use the object spread operator.
 
 If your code used to modify a single property, change it to use [ViewFlags.with]($common) or [ViewFlags.withRenderMode]($common):
 
@@ -205,21 +211,19 @@ See the [ConcurrencyControl]($docs/learning/backend/ConcurrencyControl.md) learn
 
 ## ITwinId
 
-Several api's in `iTwin.js` refer to the "context" for an iModel, meaning the *project or asset* to which the iModel belongs, as its `contextId`. That is very confusing, as the term "context" is very overloaded in computer science in general, and in iTwin.js in particular. That is resolved in iTwin.js V3.0 by recognizing that every iModel exists within an **iTwin**, and every iTwin has a GUID called its `iTwinId`. All instances of `contextId` in public apis are now replaced by 'iTwinId'.
+Several api's in **iTwin.js** refer to the "context" for an iModel, meaning the *project or asset* to which the iModel belongs, as its `contextId`. That is very confusing, as the term "context" is very overloaded in computer science in general, and in iTwin.js in particular. That is resolved in iTwin.js V3.0 by recognizing that every iModel exists within an **iTwin**, and every iTwin has a GUID called its `iTwinId`. All instances of `contextId` in public apis that mean *the iTwin for this iModel* are now replaced by `iTwinId`.
 
-This is a breaking change for places like [IModel.contextId]($common). However, it should be a straightforward search-and-replace 'contextId -> iTwinId` anywhere you get compilation errors in your code.
+This is a breaking change for places like `IModel.contextId`. However, it should be a straightforward search-and-replace `contextId` -> `iTwinId` anywhere you get compilation errors in your code.
 
 ## BriefcaseManager, BriefcaseDb, and IModelDb changes
 
-The signatures to several methods in [BriefcaseManager]($backend) and [BriefcaseDb]($backend) have been changed to make optional the previously required argument called `requestContext`. That argument is poorly named, but used (only) to identify a "user access token". Since anywhere briefcases are relevant an authenticated user access token is available the static method `IModelHost.getAccessToken`. The only (rare) case where a called needs to supply that argument is for tests the wish to simulate multiple users via a single backend (which is not permitted outside of tests.)
-
-In certain cases methods were renamed at the same time for consistency.
+The signatures to several methods in [BriefcaseManager]($backend) and [BriefcaseDb]($backend) have been changed to make optional the previously required argument called `requestContext`. That argument was poorly named, but used only to supply a "user access token". Since anywhere briefcases are relevant, an authenticated user access token is available via the static method `IModelHost.getAccessToken`, this argument is rarely needed. The only case where a caller needs to supply that argument is for tests that wish to simulate multiple users via a single backend (which is not permitted outside of tests.) It is now optional and called `user`.
 
 | Method                                   | New arguments                                         | notes                            |
 | ---------------------------------------- | ----------------------------------------------------- | -------------------------------- |
 | `BriefcaseDb.onOpen`                     | [OpenBriefcaseArgs]($backend)                         | event signature change           |
 | `BriefcaseDb.onOpened`                   | [BriefcaseDb]($backend),[OpenBriefcaseArgs]($backend) | event signature change           |
-| `BriefcaseDb.open`                       | [OpenBriefcaseArgs]($backend)                         | `requestContext` removed         |
+| `BriefcaseDb.open`                       | [OpenBriefcaseArgs]($backend)                         |                                  |
 | `BriefcaseDb.pullChanges`                | [PullChangesArgs]($backend)                           | was called `pullAndMergeChanges` |
 | `BriefcaseDb.pushChanges`                | [PushChangesArgs]($backend)                           |                                  |
 | `BriefcaseDb.upgradeSchemas`             | [OpenBriefcaseArgs]($backend)                         | `requestContext` removed         |
@@ -497,7 +501,7 @@ Some components in @bentley/ui-core were deprecated in favor of components in @i
 A few constructs were deprecated in @bentley/ui-core package with alternatives elsewhere.
 A new @bentley/ui-imodel-components package has been added and contains items related to Color, Cube, LineWeight, Navigation Aids, Quantity Inputs, Timeline and Viewport.
 
-The @bentley/ui-* and @bentley/presentation-components packages are now dependent on React version 17. **Applications using the ui packages must update React 17.** Details about React version 17 can be found in the [React Blog](https://reactjs.org/blog/2020/10/20/react-v17.html).
+The @bentley/ui-* and @bentley/presentation-components packages are now dependent on React version 17. **Applications using the ui packages must update to React 17.** Details about React version 17 can be found in the [React Blog](https://reactjs.org/blog/2020/10/20/react-v17.html).
 
 For migration purposes, React 16 is included in the peerDependencies for the packages. React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
 
@@ -512,7 +516,7 @@ The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to 
 
 `ControlledTree` component has received the following breaking changes:
 
-* The component now takes `TreeModel` rather than `VisibleTreeNodes` as a prop to avoid requiring consumers to manage `VisibleTreeNodes` object. As a result, the `useVisibleTreeNodes` hook was replaced with `useTreeModel` hook. Typical migration:
+- The component now takes `TreeModel` rather than `VisibleTreeNodes` as a prop to avoid requiring consumers to manage `VisibleTreeNodes` object. As a result, the `useVisibleTreeNodes` hook was replaced with `useTreeModel` hook. Typical migration:
 
   **Before:**
 
@@ -528,7 +532,7 @@ The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to 
   return <ControlledTree model={treeModel} {...otherProps} />;
   ```
 
-* Name of the `treeEvents` prop was changed to `eventsHandler` to make it clearer. Typical migration:
+- Name of the `treeEvents` prop was changed to `eventsHandler` to make it clearer. Typical migration:
 
   **Before:**
 
@@ -542,7 +546,7 @@ The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to 
   return <ControlledTree eventsHandler={eventsHandler} {...otherProps} />;
   ```
 
-* `width` and `height` properties are now required. Previously they were optional and forced us to use non-optimal approach when not provided. Now it's up to the consumer to tell the size of the component. Typical migration:
+- `width` and `height` properties are now required. Previously they were optional and forced us to use non-optimal approach when not provided. Now it's up to the consumer to tell the size of the component. Typical migration:
 
   **Before:**
 
@@ -629,13 +633,18 @@ The items moved to ui-imodel-components are related to Color, Cube, LineWeight, 
 
 The following items were moved into the ui-imodel-components package. For a complete list, see [iTwin.js Documentation](https://www.itwinjs.org/reference/ui-imodel-components/all).
 
-* ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorPropertyEditor, ColorSwatch
-* Cube, CubeNavigationAid, CubeRotationChangeEventArgs
-* DrawingNavigationAid
-* QuantityInput, QuantityNumberInput
-* TimelineComponent, TimelineDataProvider, TimelineMenuItemProps
-* ViewportComponent, ViewportComponentEvents
-* LineWeightSwatch, WeightPickerButton, WeightPropertyEditor
+- ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorPropertyEditor, ColorSwatch
+- Cube, CubeNavigationAid, CubeRotationChangeEventArgs
+- DrawingNavigationAid
+- QuantityInput, QuantityNumberInput
+- TimelineComponent, TimelineDataProvider, TimelineMenuItemProps
+- ViewportComponent, ViewportComponentEvents
+- LineWeightSwatch, WeightPickerButton, WeightPropertyEditor
+
+### Tasks and Workflows Deprecated
+
+Classes and methods pertaining to Tasks and Workflows have been deprecated due to a change in the UX design.
+Please continue to use Frontstages.
 
 <!---
 User Interface Changes - section above this point

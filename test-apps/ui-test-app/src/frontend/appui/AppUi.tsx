@@ -28,7 +28,6 @@ import {
   AccuDrawCommandItems,
   AccuDrawKeyboardShortcuts,
   AccuDrawUiSettings,
-  BackstageAppButton,
   CommandItemDef,
   ConfigurableUiManager,
   ContentGroupProps,
@@ -36,17 +35,9 @@ import {
   FrontstageManager,
   KeyboardShortcutManager,
   KeyboardShortcutProps,
-  StandardContentToolsProvider,
-  StandardFrontstageProps,
-  StandardFrontstageProvider,
-  StandardNavigationToolsProvider,
-  StandardStatusbarItemsProvider,
-  TaskPropsList,
   UiFramework,
   WidgetDef,
   WidgetProvider,
-  WorkflowProps,
-  WorkflowPropsList,
   ZoneLocation,
 } from "@bentley/ui-framework";
 import { IModelViewportControl } from "./contentviews/IModelViewport";
@@ -74,7 +65,6 @@ export class AppUi {
     AppUi.defineContentGroups();
     AppUi.defineContentLayouts();
     AppUi.defineFrontstages();
-    AppUi.defineTasksAndWorkflows();
     AppUi.defineKeyboardShortcuts();
 
     // TODO: should this be removed in 3.0 and just use UiItemsProvider for consistent approach???
@@ -87,7 +77,6 @@ export class AppUi {
   /** Define Frontstages
    */
   private static defineFrontstages() {
-
     ConfigurableUiManager.addFrontstageProvider(new Frontstage1());
     ConfigurableUiManager.addFrontstageProvider(new Frontstage2());
     ConfigurableUiManager.addFrontstageProvider(new Frontstage3());
@@ -218,56 +207,6 @@ export class AppUi {
       default:
         return StandardContentLayouts.fourQuadrants;
     }
-  }
-
-  /** Define Tasks list and Workflows list.
-   */
-  private static defineTasksAndWorkflows() {
-    const taskPropsList: TaskPropsList = {
-      tasks: [
-        {
-          id: "Task1",
-          primaryStageId: "Test1",
-          iconSpec: "icon-placeholder",
-          labelKey: "SampleApp:backstage.task1",
-        },
-        {
-          id: "Task2",
-          primaryStageId: "ViewsFrontstage",
-          iconSpec: "icon-placeholder",
-          labelKey: "SampleApp:backstage.task2",
-        },
-      ],
-    };
-
-    ConfigurableUiManager.loadTasks(taskPropsList);
-
-    // Test Workflows
-    const workflowProps: WorkflowProps = {
-      id: "ExampleWorkflow",
-      iconSpec: "icon-placeholder",
-      labelKey: "SampleApp:Test.my-label",
-      defaultTaskId: "task1",
-      tasks: ["Task1", "Task2"],
-    };
-
-    ConfigurableUiManager.loadWorkflow(workflowProps);
-
-    // Test Workflows
-    const workflowPropsList: WorkflowPropsList = {
-      defaultWorkflowId: "ExampleWorkflow",
-      workflows: [
-        {
-          id: "ExampleWorkflow",
-          iconSpec: "icon-placeholder",
-          labelKey: "SampleApp:Test.my-label",
-          defaultTaskId: "task1",
-          tasks: ["Task1", "Task2"],
-        },
-      ],
-    };
-
-    ConfigurableUiManager.loadWorkflows(workflowPropsList);
   }
 
   /** Define Keyboard Shortcuts list.

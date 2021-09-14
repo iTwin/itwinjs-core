@@ -186,7 +186,7 @@ import { ZonesManagerProps } from '@bentley/ui-ninezone';
 import { ZonesManagerWidgetsProps } from '@bentley/ui-ninezone';
 import { ZoneTargetType } from '@bentley/ui-ninezone';
 
-// @alpha
+// @beta
 export class AccuDrawCommandItems {
     // (undocumented)
     static get bumpToolSetting(): ToolItemDef;
@@ -226,10 +226,10 @@ export class AccuDrawCommandItems {
     static get setOrigin(): ToolItemDef;
 }
 
-// @alpha
+// @beta
 export function AccuDrawDialog(props: AccuDrawDialogProps): JSX.Element;
 
-// @alpha
+// @beta
 export interface AccuDrawDialogProps extends CommonProps {
     dialogId: string;
     onClose?: () => void;
@@ -237,11 +237,11 @@ export interface AccuDrawDialogProps extends CommonProps {
     orientation?: Orientation;
 }
 
-// @alpha
+// @beta
 export class AccuDrawGrabInputFocusEvent extends BeUiEvent<{}> {
 }
 
-// @alpha
+// @beta
 export class AccuDrawKeyboardShortcuts {
     static getDefaultShortcuts(): KeyboardShortcutProps[];
 }
@@ -264,31 +264,31 @@ export class AccuDrawPopupManager {
     static showMenuButton(id: string, el: HTMLElement, pt: XAndY, menuItemsProps: AbstractMenuItemProps[]): boolean;
 }
 
-// @alpha
+// @beta
 export class AccuDrawSetCompassModeEvent extends BeUiEvent<AccuDrawSetCompassModeEventArgs> {
 }
 
-// @alpha
+// @beta
 export interface AccuDrawSetCompassModeEventArgs {
     // (undocumented)
     mode: CompassMode;
 }
 
-// @alpha
+// @beta
 export class AccuDrawSetFieldFocusEvent extends BeUiEvent<AccuDrawSetFieldFocusEventArgs> {
 }
 
-// @alpha
+// @beta
 export interface AccuDrawSetFieldFocusEventArgs {
     // (undocumented)
     field: ItemField;
 }
 
-// @alpha
+// @beta
 export class AccuDrawSetFieldLockEvent extends BeUiEvent<AccuDrawSetFieldLockEventArgs> {
 }
 
-// @alpha
+// @beta
 export interface AccuDrawSetFieldLockEventArgs {
     // (undocumented)
     field: ItemField;
@@ -296,11 +296,11 @@ export interface AccuDrawSetFieldLockEventArgs {
     lock: boolean;
 }
 
-// @alpha
+// @beta
 export class AccuDrawSetFieldValueFromUiEvent extends BeUiEvent<AccuDrawSetFieldValueFromUiEventArgs> {
 }
 
-// @alpha
+// @beta
 export interface AccuDrawSetFieldValueFromUiEventArgs {
     // (undocumented)
     field: ItemField;
@@ -308,11 +308,11 @@ export interface AccuDrawSetFieldValueFromUiEventArgs {
     stringValue: string;
 }
 
-// @alpha
+// @beta
 export class AccuDrawSetFieldValueToUiEvent extends BeUiEvent<AccuDrawSetFieldValueToUiEventArgs> {
 }
 
-// @alpha
+// @beta
 export interface AccuDrawSetFieldValueToUiEventArgs {
     // (undocumented)
     field: ItemField;
@@ -322,7 +322,7 @@ export interface AccuDrawSetFieldValueToUiEventArgs {
     value: number;
 }
 
-// @alpha
+// @beta
 export interface AccuDrawUiSettings {
     angleBackgroundColor?: ColorDef | string;
     angleForegroundColor?: ColorDef | string;
@@ -351,14 +351,14 @@ export interface AccuDrawUiSettings {
     zStyle?: React_2.CSSProperties;
 }
 
-// @alpha
+// @beta
 export class AccuDrawUiSettingsChangedEvent extends BeUiEvent<{}> {
 }
 
-// @alpha
+// @beta
 export function AccuDrawWidget(): JSX.Element;
 
-// @alpha
+// @beta
 export class AccuDrawWidgetControl extends WidgetControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     // (undocumented)
@@ -1222,8 +1222,11 @@ export class ConfigurableUiManager {
     static loadContentLayout(layoutProps: ContentLayoutProps): void;
     static loadContentLayouts(layoutPropsList: ContentLayoutProps[]): void;
     static loadKeyboardShortcuts(shortcutList: KeyboardShortcutProps[]): void;
+    // @internal @deprecated
     static loadTasks(taskPropsList: TaskPropsList): void;
+    // @internal @deprecated
     static loadWorkflow(workflowProps: WorkflowProps): void;
+    // @internal @deprecated
     static loadWorkflows(workflowPropsList: WorkflowPropsList): void;
     // @internal (undocumented)
     static readonly onUiActivityEvent: UiActivityEvent;
@@ -1330,6 +1333,12 @@ export interface ContentGroupProps {
     contents: ContentProps[];
     id: string;
     layout: string | ContentLayoutProps;
+}
+
+// @public
+export abstract class ContentGroupProvider {
+    // (undocumented)
+    abstract provideContentGroup(props: FrontstageProps): Promise<ContentGroup>;
 }
 
 // @public
@@ -2239,7 +2248,7 @@ export interface FooterModeFieldProps extends StatusFieldProps {
     children?: React.ReactNode;
 }
 
-// @alpha
+// @beta
 export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider {
     constructor();
     static get displayNotifications(): boolean;
@@ -2601,8 +2610,6 @@ export class FrontstageDef {
     // (undocumented)
     get contentGroup(): ContentGroup | undefined;
     // (undocumented)
-    get contentGroupId(): string;
-    // (undocumented)
     get contentLayoutDef(): ContentLayoutDef | undefined;
     static create(provider: FrontstageProvider): Promise<FrontstageDef>;
     // (undocumented)
@@ -2830,7 +2837,7 @@ export interface FrontstageProps extends CommonProps {
     centerLeft?: React.ReactElement<ZoneProps>;
     // @deprecated
     centerRight?: React.ReactElement<ZoneProps>;
-    contentGroup: string | ContentGroup;
+    contentGroup: string | ContentGroup | ContentGroupProvider;
     // @beta
     contentManipulationTools?: React.ReactElement<ZoneProps>;
     defaultContentId?: string;
@@ -3201,7 +3208,7 @@ export interface IModelServices {
     getUser(iModelId: string, userId: string): Promise<IModelUserInfo[]>;
     getUsers(iModelId: string): Promise<IModelUserInfo[]>;
     getVersions(iModelId: string): Promise<VersionInfo[]>;
-    openIModel(contextId: string, iModelId: string, changeSetId?: string): Promise<IModelConnection>;
+    openIModel(iTwinId: string, iModelId: string, changeSetId?: string): Promise<IModelConnection>;
 }
 
 // @internal
@@ -3617,14 +3624,6 @@ export interface KeyinPalettePopupProps {
     onCancel?: OnCancelFunc;
     // (undocumented)
     onItemExecuted?: OnItemExecutedFunc;
-}
-
-// @public
-export interface LayoutSplit {
-    // (undocumented)
-    createContentContainer(contentNodes: React.ReactNode[], resizable: boolean): React.ReactNode;
-    // (undocumented)
-    isLocked: boolean;
 }
 
 // @beta
@@ -4158,9 +4157,7 @@ export function NavigationAidHost(props: NavigationAidHostProps): JSX.Element;
 
 // @public
 export interface NavigationAidHostProps {
-    // (undocumented)
     minHeight?: string;
-    // (undocumented)
     minWidth?: string;
 }
 
@@ -5813,7 +5810,7 @@ export class StandardContentToolsProvider implements UiItemsProvider {
 export interface StandardFrontstageProps {
     applicationData?: any;
     bottomPanelProps?: WidgetPanelProps;
-    contentGroupProps: (() => ContentGroupProps) | ContentGroupProps;
+    contentGroupProps: ContentGroupProps | ContentGroupProvider;
     cornerButton?: React.ReactNode;
     hideNavigationAid?: boolean;
     hideStatusBar?: boolean;
@@ -6132,11 +6129,13 @@ export enum SyncUiEventId {
     SettingsProvidersChanged = "settingsproviderschanged",
     // (undocumented)
     ShowHideManagerSettingChange = "show-hide-setting-change",
+    // @deprecated
     TaskActivated = "taskactivated",
     ToolActivated = "toolactivated",
     UiSettingsChanged = "uisettingschanged",
     ViewStateChanged = "viewstatechanged",
     WidgetStateChanged = "widgetstatechanged",
+    // @deprecated
     WorkflowActivated = "workflowactivated"
 }
 
@@ -6161,7 +6160,7 @@ export interface TargetChangeHandler {
     handleTargetChanged(zoneId: WidgetZoneId, type: ZoneTargetType, isTargeted: boolean): void;
 }
 
-// @public
+// @internal @deprecated
 export class Task extends ItemDefBase {
     constructor(taskProps: TaskProps);
     // (undocumented)
@@ -6177,11 +6176,11 @@ export class Task extends ItemDefBase {
     taskId: string;
 }
 
-// @public
+// @internal @deprecated
 export class TaskActivatedEvent extends UiEvent<TaskActivatedEventArgs> {
 }
 
-// @public
+// @internal @deprecated
 export interface TaskActivatedEventArgs {
     // (undocumented)
     task?: Task;
@@ -6193,7 +6192,7 @@ export interface TaskActivatedEventArgs {
     workflowId: string;
 }
 
-// @public
+// @internal @deprecated
 export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBackstageItemProps, BackstageItemState> {
     constructor(props: TaskLaunchBackstageItemProps);
     // (undocumented)
@@ -6208,17 +6207,17 @@ export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBacks
     get id(): string;
     // (undocumented)
     render(): React.ReactNode;
-    // @internal (undocumented)
+    // (undocumented)
     readonly state: Readonly<BackstageItemState>;
     }
 
-// @public
+// @internal @deprecated
 export interface TaskLaunchBackstageItemProps extends BackstageItemProps {
     taskId: string;
     workflowId: string;
 }
 
-// @public
+// @internal @deprecated
 export class TaskManager {
     // (undocumented)
     static addTask(taskId: string, task: Task): void;
@@ -6232,7 +6231,7 @@ export class TaskManager {
     static loadTasks(taskListDef: TaskPropsList): void;
     }
 
-// @public
+// @internal @deprecated
 export interface TaskProps extends ItemProps {
     // (undocumented)
     id: string;
@@ -6240,7 +6239,7 @@ export interface TaskProps extends ItemProps {
     primaryStageId: string;
 }
 
-// @public
+// @internal @deprecated
 export interface TaskPropsList {
     // (undocumented)
     tasks: TaskProps[];
@@ -6776,7 +6775,7 @@ export class UiFramework {
     // @internal (undocumented)
     static get packageName(): string;
     // @internal
-    static postTelemetry(eventName: string, eventId?: GuidString, contextId?: GuidString, iModeId?: GuidString, changeSetId?: string, time?: TrackingTime, additionalProperties?: {
+    static postTelemetry(eventName: string, eventId?: GuidString, iTwinId?: GuidString, iModeId?: GuidString, changeSetId?: string, time?: TrackingTime, additionalProperties?: {
         [key: string]: any;
     }): Promise<void>;
     // @internal (undocumented)
@@ -7793,7 +7792,7 @@ export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: R
 // @public
 export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: React.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget">>) => JSX.Element;
 
-// @public
+// @internal @deprecated
 export class Workflow extends ItemDefBase {
     constructor(workflowDef: WorkflowProps);
     get activeTask(): Task | undefined;
@@ -7810,11 +7809,11 @@ export class Workflow extends ItemDefBase {
     workflowId: string;
 }
 
-// @public
+// @internal @deprecated
 export class WorkflowActivatedEvent extends UiEvent<WorkflowActivatedEventArgs> {
 }
 
-// @public
+// @internal @deprecated
 export interface WorkflowActivatedEventArgs {
     // (undocumented)
     workflow?: Workflow;
@@ -7822,7 +7821,7 @@ export interface WorkflowActivatedEventArgs {
     workflowId?: string;
 }
 
-// @public
+// @internal @deprecated
 export class WorkflowManager {
     static get activeTask(): Task | undefined;
     static get activeTaskId(): string;
@@ -7843,7 +7842,7 @@ export class WorkflowManager {
     static setDefaultWorkflowId(id: string): void;
     }
 
-// @public
+// @internal @deprecated
 export interface WorkflowProps extends ItemProps {
     // (undocumented)
     defaultTaskId: string;
@@ -7855,7 +7854,7 @@ export interface WorkflowProps extends ItemProps {
     tasks: string[];
 }
 
-// @public
+// @internal @deprecated
 export interface WorkflowPropsList {
     // (undocumented)
     defaultWorkflowId: string;

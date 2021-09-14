@@ -491,7 +491,7 @@ export class BriefcaseManager {
     const telemetryEvent = new TelemetryEvent(
       "imodeljs-backend - Open iModel",
       "7a6424d1-2114-4e89-b13b-43670a38ccd4", // Feature: "iModel Use"
-      imodel.contextId,
+      imodel.iTwinId,
       imodel.iModelId,
       imodel.changeset?.id,
     );
