@@ -181,6 +181,7 @@ export class MapTileTree extends RealityTileTree {
     if (childDepth < MapTileTree.maxGlobeDisplayDepth)     // If the depth is too low (tile is too large) display as globe.
       return true;
 
+    // SWB What does project mean here?
     return false;  // Display as globe if more than 100 KM from project.
   }
   public override doReprojectChildren(tile: Tile): boolean {
@@ -260,7 +261,7 @@ export class MapTileTree extends RealityTileTree {
     if (iModelCoordinates.missing)
       return undefined;
 
-    return iModelCoordinates.result.map((result) => !result || result.s ? undefined  : Point3d.fromJSON(result.p));
+    return iModelCoordinates.result.map((result) => !result || result.s ? undefined : Point3d.fromJSON(result.p));
   }
 
   // Minimize reprojection requests by requesting this corners tile and a grid that will include all points for 4 levels of descendants.

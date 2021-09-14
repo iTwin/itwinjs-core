@@ -35,6 +35,7 @@ export class IModelBankCloudEnv implements IModelCloudEnvironment {
     try {
       iTwin = await this.iTwinMgr.getITwinByName(requestContext, projectName);
       if (iTwin === undefined)
+        // SWB Needs Better error code message
         throw new Error("what happened?");
       await this.iTwinMgr.deleteContext(requestContext, iTwin.id);
     } catch (err) {

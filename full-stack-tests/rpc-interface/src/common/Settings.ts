@@ -132,6 +132,7 @@ export class Settings {
     //  Parse the iModel variables
     // SWB Should .env vars be renamed?
     if (!process.env.IMODEL_PROJECTID && !process.env.IMODEL_PROJECTNAME)
+      // SWB
       throw new Error("Missing the 'IMODEL_PROJECTID' or 'IMODEL_PROJECTNAME' setting.");
 
     if (!process.env.IMODEL_IMODELID && !process.env.IMODEL_IMODELNAME)
@@ -157,6 +158,7 @@ export class Settings {
     if (this.runiModelWriteRpcTests) {
       // SWB Change .env var names?
       if (!process.env.IMODEL_WRITE_PROJECTID && !process.env.IMODEL_WRITE_PROJECTNAME)
+        // SWB
         throw new Error("Missing the 'IMODEL_WRITE_PROJECTID' or 'IMODEL_WRITE_PROJECTNAME' setting.");
 
       if (!process.env.IMODEL_WRITE_IMODELID && !process.env.IMODEL_WRITE_IMODELNAME)

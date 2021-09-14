@@ -75,6 +75,7 @@ export class TestUtility {
     }
     const accessToken = await authorizationClient.getAccessToken();
     if (this.imodelCloudEnv instanceof IModelBankCloudEnv) {
+      // SWB
       await this.imodelCloudEnv.bootstrapIModelBankProject(new AuthorizedClientRequestContext(accessToken), testContextName);
     }
 

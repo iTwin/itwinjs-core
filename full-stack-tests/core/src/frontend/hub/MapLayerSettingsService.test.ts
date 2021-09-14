@@ -62,6 +62,7 @@ describe("MapLayerSettingsService (#integration)", () => {
     chai.expect(settingsResult.status).to.be.equal(SettingsStatus.Success);
   });
 
+  // SWB
   it("should not be able to store model setting if same setting exists as project setting", async () => {
     const layer = MapLayerSource.fromJSON({
       url: "test12345",
@@ -77,6 +78,7 @@ describe("MapLayerSettingsService (#integration)", () => {
     chai.expect(settingsResult.status).to.be.equal(SettingsStatus.Success);
   });
 
+  // SWB
   it("should be able to store project setting if same setting exists as project setting", async () => {
     const layer = MapLayerSource.fromJSON({
       url: "test12345",
@@ -92,6 +94,7 @@ describe("MapLayerSettingsService (#integration)", () => {
     chai.expect(settingsResult.status).to.be.equal(SettingsStatus.Success);
   });
 
+  // SWB
   it("should be able to delete a mapSource stored on project and imodel level", async () => {
     const layer = MapLayerSource.fromJSON({
       url: "test12345",

@@ -34,10 +34,12 @@ export class IModelSession {
     let contextId;
     let imodelId;
 
+    // SWB
     // Turn the project name into an id
     // SWB
     if (iModelData.useProjectName) {
       if (!iModelData.projectName)
+      // SWB
         throw new Error(`The iModel has no project name, so it cannot get the project.`);
       const client = new ITwinAccessClient();
       const iTwinList: ITwin[] = await client.getAll(requestContext, {

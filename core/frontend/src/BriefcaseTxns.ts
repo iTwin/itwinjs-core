@@ -267,6 +267,7 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
   }
 
   /** @internal */
+  // SWB What does project mean here?
   public notifyProjectExtentsChanged(range: Range3dProps) {
     this._iModel.projectExtents = Range3d.fromJSON(range);
   }

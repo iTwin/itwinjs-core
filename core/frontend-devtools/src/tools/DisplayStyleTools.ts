@@ -144,6 +144,7 @@ export class ToggleSkyboxTool extends DisplayStyleTool {
  * Arguments:
  *  * `all`: include all settings.
  *  * `imodel`: include iModel-specific settings.
+  // SWB What does project mean here?
  *  * `project`: include project-specific settings.
  *  * `map`: include background map settings.
  *  * `drawingaids`: include drawing aid decoration settings.
@@ -169,6 +170,7 @@ export class SaveRenderingStyleTool extends DisplayStyleTool {
 
     this._options.includeAll = getArg("a");
     this._options.includeIModelSpecific = getArg("i");
+    // SWB What does project mean here?
     this._options.includeProjectSpecific = getArg("p");
     this._options.includeBackgroundMap = getArg("m");
     this._options.includeDrawingAids = getArg("d");

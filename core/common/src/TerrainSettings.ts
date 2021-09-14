@@ -26,6 +26,7 @@ export interface TerrainProps {
   exaggeration?: number;
   /**  Applying lighting can help to visualize subtle terrain variation.  Default value: true */
   applyLighting?: boolean;
+  // SWB What does project mean here?
   /** Origin value - height of the IModel origin at the project center as defined by heightOriginMode. Default value: 0.0 */
   heightOrigin?: number;
   /** Determines how/if the heightOrigin is applied to the terrain height. Default value: Geodetic */
@@ -43,6 +44,7 @@ export enum TerrainHeightOriginMode {
   Geodetic = 0,
   /** Height value indicates the geoidal height of the IModel origin (commonly referred to as sea level). */
   Geoid = 1,
+  // SWB What does project mean here?
   /** Height value indicates the height of the IModel origin relative to ground level at project center. */
   Ground = 2,
 }
@@ -57,6 +59,7 @@ export class TerrainSettings {
   public readonly exaggeration: number;
   /**  Applying lighting can help to visualize subtle terrain variations. Default value: false */
   public readonly applyLighting: boolean;
+  // SWB What does project mean here?
   /** Origin value - height of the IModel origin at the project center as defined by heightOriginMode. Default value 0.0 */
   public readonly heightOrigin: number;
   /** Determines how/if the heightOrigin is applied to the terrain height. Default value: Geodetic */

@@ -33,6 +33,7 @@ function isOfflineSet(): boolean {
 /** Basic configuration used by all tests
  */
 export class TestConfig {
+  // SWB
   /** Name of project used by most tests */
   // SWB
   public static readonly projectName: string = process.env.IMJS_TEST_PROJECT_NAME ?? "iModelJsIntegrationTest";

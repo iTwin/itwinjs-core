@@ -27,6 +27,7 @@ export interface GraphicsRequestProps {
    * @alpha
    */
   readonly formatVersion?: number;
+  // SWB What does project mean here?
   /** Optional flags. [[TreeFlags.UseProjectExtents]] has no effect. [[TreeFlags.EnforceDisplayPriority]] is not yet implemented. @alpha */
   readonly treeFlags?: TreeFlags;
   /** Optional flags. [[ContentFlags.ImprovedElision]] has no effect. @alpha */
@@ -35,6 +36,7 @@ export interface GraphicsRequestProps {
   readonly location?: TransformProps;
   /** If true, surface edges will be omitted from the graphics. */
   readonly omitEdges?: boolean;
+  // SWB What does project mean here?
   /** If true, the element's graphics will be clipped against the iModel's project extents. */
   readonly clipToProjectExtents?: boolean;
   /** If defined, the compact string representation of a [ClipVector]($geometry-core) to be applied to the geometry to produce section-cut

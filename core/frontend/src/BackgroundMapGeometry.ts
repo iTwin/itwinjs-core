@@ -61,7 +61,7 @@ export function getFrustumPlaneIntersectionDepthRange(frustum: Frustum, plane: P
   const intersectRange = Range3d.createNull();
   accumulateFrustumPlaneDepthRange(frustum, plane, viewRotation, intersectRange, eyePoint);
 
-  return intersectRange.isNull ? Range1d.createNull(): Range1d.createXX(intersectRange.low.z, intersectRange.high.z);
+  return intersectRange.isNull ? Range1d.createNull() : Range1d.createXX(intersectRange.low.z, intersectRange.high.z);
 }
 
 /** Geometry of background map - either an ellipsoid or a plane as defined by GlobeMode.
@@ -81,6 +81,7 @@ export class BackgroundMapGeometry {
   private _mercatorFractionToDb: Transform;
   private _mercatorTilingScheme: WebMercatorTilingScheme;
   private _ecefToDb: Transform;
+  // SWB What does project mean here?
   public static maxCartesianDistance = 1E4;           // If globe is 3D we still consider the map geometry flat within this distance of the project extents.
   private static _transitionDistanceMultiplier = .25;  // In the transition range which extends beyond the cartesian range we interpolate between cartesian and ellipsoid.
 

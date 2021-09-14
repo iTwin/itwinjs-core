@@ -48,6 +48,7 @@ export namespace TextureMapping { // eslint-disable-line no-redeclare
     /** @internal */
     Solid = 7,
     /** @internal Only valid for lights */
+    // SWB What does project mean here?
     FrontProject = 8,
   }
 

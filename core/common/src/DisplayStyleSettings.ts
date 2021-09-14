@@ -190,6 +190,7 @@ export interface DisplayStyle3dProps extends DisplayStyleProps {
 }
 
 /** Controls which settings are serialized by [[DisplayStyleSettings.toOverrides]]. A display style includes some settings that are specific to a given iModel - for example,
+// SWB What does project mean here?
  * the subcategory overrides are indexed by subcategory Ids and model appearance overrides are indexed by model ids. Other settings are specific to a given project, like the set of displayed context reality models. Such settings can be useful
  * when creating display style overrides intended for use with a specific iModel or project, but should be omitted when creating general-purpose display style overrides intended
  * for use with any iModel or project. This is the default behavior if no more specific options are provided.
@@ -198,6 +199,7 @@ export interface DisplayStyle3dProps extends DisplayStyleProps {
 export interface DisplayStyleOverridesOptions {
   /** Serialize all settings. Applying the resultant [[DisplayStyleSettingsProps]] will produce a [[DisplayStyleSettings]] identical to the original settings. */
   includeAll?: true;
+  // SWB What does project mean here?
   /** Serialize iModel-specific settings. These settings are only meaningful within the context of a specific iModel. Setting this to `true` implies all project-specific settings will be serialized too.
    * The following are iModel-specific settings:
    *  * Subcategory overrides.
@@ -211,11 +213,14 @@ export interface DisplayStyleOverridesOptions {
    *    * If the display style settings are associated with a [DisplayStyleState]($frontend), then overriding thematic settings will compute a default height range based on the iModel's project extents.
    */
   includeIModelSpecific?: true;
+  // SWB What does project mean here?
   /** Serialize project-specific settings. These settings are only meaningful within the context of a specific project. These settings are always included if `includeIModelSpecific` is `true`.
    * The following are project-specific settings:
+// SWB What does context mean here?
    *  * Context reality models. If iModel-specific settings are *not* serialized, the classifiers will be omitted.
    *  * Time point.
    */
+  // SWB What does project mean here?
   includeProjectSpecific?: true;
   /** Serialize settings related to drawing aid decorations (the ACS triad and the grid). */
   includeDrawingAids?: true;
@@ -871,6 +876,7 @@ export class DisplayStyleSettings {
   }
 
   /** Serialize a subset of these settings to JSON, such that they can be applied to another DisplayStyleSettings to selectively override those settings.
+// SWB What does project/context mean here?
    * @param options Specifies which settings should be serialized. By default, settings that are specific to an iModel (e.g., subcategory overrides) or project (e.g., context reality models)
    * are omitted, as are drawing aids (e.g., ACS triad and grid).
    * @returns a JSON representation of the selected settings suitable for passing to [[applyOverrides]].
@@ -902,6 +908,7 @@ export class DisplayStyleSettings {
       delete viewflags.grid;
     }
 
+    // SWB What does project mean here?
     if (options?.includeProjectSpecific || options?.includeIModelSpecific) {
       props.timePoint = this.timePoint;
       if (this._json.contextRealityModels) {
@@ -1110,6 +1117,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
       };
 
       if (ThematicDisplayMode.Height === props.thematic.displayMode) {
+        // SWB What does project mean here?
         // DisplayStyle3dState will compute range based on project extents.
         props.thematic.range = undefined;
       }

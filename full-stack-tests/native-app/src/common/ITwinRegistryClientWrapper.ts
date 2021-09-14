@@ -6,6 +6,7 @@ import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwi
 import { ITwinManagerClient } from "@bentley/imodelhub-client";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
+// SWB
 /** An implementation of IModelProjectAbstraction backed by an iTwin project */
 // SWB
 export class ITwinRegistryClientWrapper implements ITwinManagerClient {
@@ -16,7 +17,8 @@ export class ITwinRegistryClientWrapper implements ITwinManagerClient {
         searchString: name,
         propertyName: ITwinSearchableProperty.Name,
         exactMatch: true,
-      }});
+      }
+    });
 
     if (iTwinList.length === 0)
       throw new Error(`ITwin ${name} was not found for the user.`);

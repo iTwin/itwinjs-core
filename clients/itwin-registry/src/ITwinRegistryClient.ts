@@ -147,6 +147,7 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
     return this.getByQuery(requestContext, queryOptions);
   }
 
+  // SWB
   /** Gets all iTwins (projects or assets) using the given query options
    * @param requestContext The client request context
    * @param queryOptions Use the mapped EC property names in the query strings and not the TypeScript property names.

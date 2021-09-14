@@ -124,7 +124,7 @@ const scratchRay = Ray3d.createXAxis();
 
 /** @internal */
 export class RealityTileRegion {
-  constructor(values: { minLongitude: number, minLatitude: number, minHeight: number, maxLongitude: number, maxLatitude: number, maxHeight: number}) {
+  constructor(values: { minLongitude: number, minLatitude: number, minHeight: number, maxLongitude: number, maxLatitude: number, maxHeight: number }) {
     this.minLongitude = values.minLongitude;
     this.minLatitude = values.minLatitude;
     this.minHeight = values.minHeight;
@@ -146,13 +146,13 @@ export class RealityTileRegion {
     const maxLongitude = region[2];
     const minLatitude = Cartographic.parametricLatitudeFromGeodeticLatitude(region[1]);
     const maxLatitude = Cartographic.parametricLatitudeFromGeodeticLatitude(region[3]);
-    return new RealityTileRegion({minLongitude, minLatitude, minHeight, maxLongitude, maxLatitude, maxHeight});
+    return new RealityTileRegion({ minLongitude, minLatitude, minHeight, maxLongitude, maxLatitude, maxHeight });
   }
 
   public static isGlobal(boundingVolume: any) {
     return Array.isArray(boundingVolume?.region) && (boundingVolume.region[2] - boundingVolume.region[0]) > Angle.piRadians && (boundingVolume.region[3] - boundingVolume.region[1]) > Angle.piOver2Radians;
   }
-  public getRange(): {range: Range3d, corners?: Point3d[] } {
+  public getRange(): { range: Range3d, corners?: Point3d[] } {
     const maxAngle = Math.max(Math.abs(this.maxLatitude - this.minLatitude), Math.abs(this.maxLongitude - this.minLongitude));
     let corners;
     let range: Range3d;
@@ -176,13 +176,13 @@ export class RealityTileRegion {
       range = minEllipsoid.patchRangeStartEndRadians(this.minLongitude, this.maxLongitude, this.minLatitude, this.maxLatitude);
       range.extendRange(maxEllipsoid.patchRangeStartEndRadians(this.minLongitude, this.maxLongitude, this.minLatitude, this.maxLatitude));
     }
-    return { range, corners};
+    return { range, corners };
   }
 }
 
 /** @internal */
 export class RealityModelTileUtils {
-  public static rangeFromBoundingVolume(boundingVolume: any): { range: Range3d, corners?: Point3d[], region?: RealityTileRegion  } | undefined {
+  public static rangeFromBoundingVolume(boundingVolume: any): { range: Range3d, corners?: Point3d[], region?: RealityTileRegion } | undefined {
     if (undefined === boundingVolume)
       return undefined;
 
@@ -840,6 +840,7 @@ export class RealityModelTileClient {
   private static _client = new RealityDataClient();  // WSG Client for accessing Reality Data on PW Context Share
   private _requestAuthorization?: string;      // Request authorization for non PW ContextShare requests.
 
+  // SWB
   // ###TODO we should be able to pass the projectId / tileId directly, instead of parsing the url
   // But if the present can also be used by non PW Context Share stored data then the url is required and token is not. Possibly two classes inheriting from common interface.
   // SWB
@@ -869,9 +870,11 @@ export class RealityModelTileClient {
     }
   }
 
+  // SWB
   // ###TODO temporary means of extracting the tileId and projectId from the given url
   // This is the method that determines if the url refers to Reality Data stored on PW Context Share. If not then undefined is returned.
   // ###TODO This method should be replaced by realityDataServiceClient.getRealityDataIdFromUrl()
+  // SWB
   // We obtain the projectId from URL but it should be used normally. The iModel context should be used everywhere: verify!
   // SWB
   private parseUrl(url: string): RDSClientProps | undefined {
@@ -885,6 +888,7 @@ export class RealityModelTileClient {
       let projectId = urlParts.find((val: string) => val.includes("--"))!.split("--")[1];
 
       // ###TODO This is a temporary workaround for accessing the reality meshes with a test account
+      // SWB
       // The hardcoded project id corresponds to a project setup to yield access to the test account which is linked to the tileId
       if (projectId === "Server")
         projectId = "fb1696c8-c074-4c76-a539-a5546e048cc6";

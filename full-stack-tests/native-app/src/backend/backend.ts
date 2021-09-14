@@ -15,6 +15,7 @@ import { IModelRpcProps, RpcConfiguration } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
 import { TestUtility } from "@bentley/oidc-signin-tool";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool/lib/TestUsers";
+// SWB
 import { testIpcChannel, TestIpcInterface, TestProjectProps } from "../common/IpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 import * as fs from "fs";
@@ -55,6 +56,7 @@ export function setupDebugLogLevels() {
 class TestIpcHandler extends IpcHandler implements TestIpcInterface {
   public get channelName() { return testIpcChannel; }
 
+  // SWB
   public async getTestProjectProps(user: TestUserCredentials): Promise<TestProjectProps> {
     // first, perform silent login
     NativeHost.authorization.setAccessToken(await TestUtility.getAccessToken(user));

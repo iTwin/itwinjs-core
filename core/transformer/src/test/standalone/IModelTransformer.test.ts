@@ -1138,6 +1138,7 @@ describe("IModelTransformer", () => {
     nativeDb.openIModel(iModelName, OpenMode.ReadWrite);
     // SWB
     nativeDb.saveProjectGuid(Guid.empty); // empty projectId means "standalone"
+    // SWB
     nativeDb.saveChanges(); // save change to ProjectId
     nativeDb.deleteAllTxns(); // necessary before resetting briefcaseId
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned); // standalone iModels should always have BriefcaseId unassigned

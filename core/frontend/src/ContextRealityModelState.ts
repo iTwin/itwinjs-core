@@ -139,6 +139,7 @@ export async function queryRealityData(criteria: RealityDataQueryCriteria): Prom
   let realityData: RealityData[];
   if (criteria.range) {
     const iModelRange = criteria.range.getLongitudeLatitudeBoundingBox();
+    // SWB What does project mean here?
     realityData = await client.getRealityDataInProjectOverlapping(requestContext, contextId, Angle.radiansToDegrees(iModelRange.low.x),
       Angle.radiansToDegrees(iModelRange.high.x),
       Angle.radiansToDegrees(iModelRange.low.y),

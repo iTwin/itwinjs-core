@@ -83,6 +83,7 @@ describe("TileMetadata", () => {
     interface TestCase {
       // inputs
       id: IModelTileTreeId;
+      // SWB What does project mean here?
       ignoreProjectExtents?: true;
       noOptimizeBReps?: true;
       maxVersion?: number;
@@ -92,6 +93,7 @@ describe("TileMetadata", () => {
     }
 
     const kNone = TreeFlags.None;
+    // SWB What does project mean here?
     const kExtents = TreeFlags.UseProjectExtents;
     const kBReps = TreeFlags.OptimizeBRepProcessing;
     const kPriority = TreeFlags.EnforceDisplayPriority;
@@ -111,6 +113,7 @@ describe("TileMetadata", () => {
       },
       {
         id: primaryId(true),
+        // SWB What does project mean here?
         ignoreProjectExtents: true,
         baseId: "",
         flags: kBReps,
@@ -124,18 +127,21 @@ describe("TileMetadata", () => {
       {
         id: primaryId(true),
         noOptimizeBReps: true,
+        // SWB What does project mean here?
         ignoreProjectExtents: true,
         baseId: "",
         flags: kNone,
       },
       {
         id: primaryId(false),
+        // SWB What does project mean here?
         ignoreProjectExtents: true,
         baseId: "E:0_",
         flags: kBReps,
       },
       {
         id: primaryId(false, true),
+        // SWB What does project mean here?
         ignoreProjectExtents: true,
         baseId: "E:0_",
         flags: kPriority | kBReps,
@@ -162,6 +168,7 @@ describe("TileMetadata", () => {
       },
       {
         id: primaryId(false, false, undefined, { id: "0xfde" }),
+        // SWB What does project mean here?
         ignoreProjectExtents: true,
         baseId: "A:0xfde_#ffffffff_E:0_",
         flags: kBReps,
@@ -208,16 +215,20 @@ describe("TileMetadata", () => {
         baseId: "CP:123456789.000000_",
         flags: kDefaults,
       },
+      // SWB What does project mean here?
       // Planar classifiers can ignore project extents.
       {
         id: classifierId(),
+        // SWB What does project mean here?
         ignoreProjectExtents: true,
         baseId: "CP:1.000000_",
         flags: kBReps,
       },
+      // SWB What does project mean here?
       // Volume classifiers always use project extents.
       {
         id: classifierId(1, false),
+        // SWB What does project mean here?
         ignoreProjectExtents: true,
         baseId: "C:1.000000_",
         flags: kDefaults,
@@ -227,6 +238,7 @@ describe("TileMetadata", () => {
     for (const test of testCases) {
       const options = {
         ...defaultTileOptions,
+        // SWB What does project mean here?
         useProjectExtents: true !== test.ignoreProjectExtents,
         optimizeBRepProcessing: true !== test.noOptimizeBReps,
       };
@@ -249,6 +261,7 @@ describe("TileMetadata", () => {
       elision?: boolean;
       noPatterns?: boolean;
       externalTextures?: boolean;
+      // SWB What does project mean here?
       projectExtents?: boolean;
     }
 
@@ -262,6 +275,7 @@ describe("TileMetadata", () => {
           enableImprovedElision: true === expected.elision,
           ignoreAreaPatterns: true === expected.noPatterns,
           enableExternalTextures: true === expected.externalTextures,
+          // SWB What does project mean here?
           useProjectExtents: true === expected.projectExtents,
           disableMagnification: false,
           alwaysSubdivideIncompleteTiles: false,
@@ -282,12 +296,15 @@ describe("TileMetadata", () => {
     test("4_1-0x1c", "0-1-2-3-4-5", "content");
 
     test("4_0-0x1c", "-0-0", { version: 4 });
+    // SWB What does project mean here?
     test("Ad_1", "-0-0", { version: 0xad, projectExtents: true });
     test("f_2", "-0-0", { version: 15 });
+    // SWB What does project mean here?
     test("f_3", "-0-0", { version: 15, projectExtents: true });
 
     test("4_0", "-3-0", { version: 4, elision: true, instancing: true });
     test("4_0", "-c-5", { version: 4, noPatterns: true, externalTextures: true });
+    // SWB What does project mean here?
     test("a_1", "-F-2", { version: 10, projectExtents: true, noPatterns: true, externalTextures: true, instancing: true, elision: true });
   });
 
@@ -311,8 +328,10 @@ describe("TileMetadata", () => {
     test("0x1c", { type: BatchType.Primary, edgesRequired: false } as PrimaryTileTreeId, { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 }, { ...defaultTileOptions, enableImprovedElision: false });
     test("0x1c", { type: BatchType.Primary, edgesRequired: false } as PrimaryTileTreeId, { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 }, { ...defaultTileOptions, ignoreAreaPatterns: true });
     test("0x1c", { type: BatchType.Primary, edgesRequired: false } as PrimaryTileTreeId, { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 }, { ...defaultTileOptions, enableExternalTextures: false });
+    // SWB What does project mean here?
     test("0x1c", { type: BatchType.Primary, edgesRequired: false } as PrimaryTileTreeId, { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 }, { ...defaultTileOptions, useProjectExtents: false });
     // disableMagnification and alwaysSubdivideIncompleteTiles intentionally left out - they're not included in tileTreeId and contentId strings
+    // SWB What does project mean here?
     test("0x1c", { type: BatchType.Primary, edgesRequired: false } as PrimaryTileTreeId, { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 }, { ...defaultTileOptions, enableInstancing: false, enableImprovedElision: false, ignoreAreaPatterns: true, enableExternalTextures: false, useProjectExtents: false });
 
     test("0x1d", { type: BatchType.Primary, edgesRequired: true } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultTileOptions);
@@ -343,6 +362,7 @@ describe("TileMetadata", () => {
         elision?: boolean;
         noPatterns?: boolean;
         externalTextures?: boolean;
+        // SWB What does project mean here?
         projectExtents?: boolean;
         optimizeBReps?: boolean;
       };
@@ -358,6 +378,7 @@ describe("TileMetadata", () => {
           enableImprovedElision: true === expected.tileOptions.elision,
           ignoreAreaPatterns: true === expected.tileOptions.noPatterns,
           enableExternalTextures: true === expected.tileOptions.externalTextures,
+          // SWB What does project mean here?
           useProjectExtents: true === expected.tileOptions.projectExtents,
           disableMagnification: false,
           alwaysSubdivideIncompleteTiles: false,
@@ -389,6 +410,7 @@ describe("TileMetadata", () => {
         instancing: true,
         noPatterns: false,
         version: 25,
+        // SWB What does project mean here?
         projectExtents: true,
         externalTextures: true,
         optimizeBReps: true,

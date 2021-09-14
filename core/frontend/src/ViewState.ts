@@ -456,6 +456,7 @@ export abstract class ViewState extends ElementState {
   /** Orient this view to one of the [[StandardView]] rotations. */
   public setStandardRotation(id: StandardViewId) { this.setRotation(ViewState.getStandardViewMatrix(id)); }
 
+  // SWB What does project mean here?
   /** Orient this view to one of the [[StandardView]] rotations, if the the view is not viewing the project then the
    * standard rotation is relative to the global position rather than the project.
    */
@@ -1036,11 +1037,12 @@ export abstract class ViewState extends ElementState {
     return normal;
   }
 
+  // SWB What does project mean here?
   /** Return true if the view is looking at the current iModel project extents or
    * false if the viewed area do does not include more than one percent of the project.
    */
   public getIsViewingProject(): boolean {
-    const worldToNpc =  this.computeWorldToNpc();
+    const worldToNpc = this.computeWorldToNpc();
     if (!worldToNpc || !worldToNpc.map)
       return false;
     const expandedRange = this.iModel.projectExtents.clone();
@@ -1057,6 +1059,7 @@ export abstract class ViewState extends ElementState {
     return area > 1.0E-2;
   }
 
+  // SWB What does project mean here?
   /** If the view is not of the project as determined by [[getIsViewingProject]] then return
    * the rotation from a global reference frame to world coordinates.  The global reference frame includes
    * Y vector towards true north, X parallel to the equator and Z perpendicular to the ellipspoid surface
@@ -2137,7 +2140,7 @@ export abstract class ViewState3d extends ViewState {
       return ViewStatus.DegenerateGeometry;
 
     frustum.multiply(transitionTransform);
-    return  this.setupFromFrustum(frustum);
+    return this.setupFromFrustum(frustum);
   }
 }
 

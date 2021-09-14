@@ -10,6 +10,7 @@ import { AuthorizedClientRequestContext, UserInfo } from "@bentley/itwin-client"
 import { getIModelHubClient } from "./TestUtils";
 import { TestIModelHubOidcAuthorizationClient } from "../TestIModelHubOidcAuthorizationClient";
 
+// SWB
 /** An implementation of IModelProjectAbstraction backed by a iModelHub/iTwin project */
 // SWB
 class TestITwinManagerClient implements ITwinManagerClient {
@@ -20,7 +21,8 @@ class TestITwinManagerClient implements ITwinManagerClient {
         searchString: name,
         propertyName: ITwinSearchableProperty.Name,
         exactMatch: true,
-      }});
+      }
+    });
 
     if (iTwinList.length === 0)
       throw new Error(`ITwin ${name} was not found for the user.`);

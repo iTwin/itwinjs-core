@@ -17,6 +17,7 @@ import { IFavoritePropertiesStorage } from "./FavoritePropertiesStorage";
  */
 export enum FavoritePropertiesScope {
   Global,
+  // SWB
   Project,
   IModel,
 }

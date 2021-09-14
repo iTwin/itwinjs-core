@@ -263,6 +263,7 @@ export async function getProjectId(requestContext: AuthorizedClientRequestContex
   if (TestConfig.enableMocks)
     return Guid.createValue();
 
+  // SWB
   projectName = projectName || TestConfig.projectName;
 
   await bootstrapBankProject(requestContext, projectName);
@@ -270,6 +271,7 @@ export async function getProjectId(requestContext: AuthorizedClientRequestContex
   const iTwin: ITwin = await getCloudEnv().iTwinMgr.getITwinByName(requestContext, projectName);
 
   if (!iTwin || !iTwin.id)
+  // SWB
     throw new Error(`Project with name ${TestConfig.projectName} doesn't exist.`);
 
   return iTwin.id;

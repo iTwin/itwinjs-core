@@ -95,6 +95,7 @@ export class Settings {
     //  Parse the iModel variables
     // SWB Change .env vars?
     if (undefined === process.env.IMODEL_PROJECTID)
+    // SWB
       throw new Error("Missing the 'IMODEL_PROJECTID' setting.");
 
     if (undefined === process.env.IMODEL_IMODELID)

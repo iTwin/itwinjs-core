@@ -24,7 +24,7 @@ export interface IModelFileSystemContextProps {
 }
 
 /** @internal */
-// SWB uses
+// SWB
 export class IModelBankFileSystemITwinClient implements ITwinManagerClient {
   constructor(public baseUri: string) {
   }

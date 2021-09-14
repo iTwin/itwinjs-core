@@ -35,8 +35,10 @@ export class MapLayerSettingsService {
 
   /**
    * Store the source in the settings service. Returns false if the settings object would override some other settings object in a larger scope i.e. storing settings on model when
+  // SWB
    * a project setting exists with same name or map layer url.
    * @param source source to be stored on the setting service
+  // SWB
    * @param storeOnIModel if true store the settings object on the model, if false store it on the project
    */
   // SWB
@@ -74,6 +76,7 @@ export class MapLayerSettingsService {
     result = await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, oldSource.name, true, projectId, iModelId);
     requestContext.enter();
 
+  // SWB
     // Make a second attempt at project level
     if (result.status === SettingsStatus.SettingNotFound) {
       result = await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, oldSource.name, true, projectId, undefined);
@@ -109,6 +112,7 @@ export class MapLayerSettingsService {
     result = await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, source.name, true, projectId, iModelId);
     requestContext.enter();
 
+  // SWB
     // Make a second attempt at project level
     if (result.status === SettingsStatus.SettingNotFound) {
       result = await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, source.name, true, projectId, undefined);
@@ -122,6 +126,7 @@ export class MapLayerSettingsService {
     return result.status === SettingsStatus.Success;
   }
 
+  // SWB
   // This method prevents users from overwriting project settings with model settings. If setting to be added is in same scope as the setting that it collides with
   // then it can be overwritten. This method knows scope of setting to be added is model if storeOnIModel is true
   // returns false if we should not save the setting the user added because we output an error to the user here saying it cannot be done
@@ -131,6 +136,7 @@ export class MapLayerSettingsService {
     const settingFromName = await IModelApp.settings.getSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, name, true, projectId, undefined);
     requestContext.enter();
     if (settingFromName.setting && storeOnIModel) {
+      // SWB What should be done for localization?
       const errorMessage = IModelApp.i18n.translate("mapLayers:CustomAttach.LayerExistsAsProjectSetting", { layer: settingFromName.setting.name });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, errorMessage));
       return false;
@@ -144,6 +150,7 @@ export class MapLayerSettingsService {
     const settingFromUrl = await MapLayerSettingsService.getSettingFromUrl(requestContext, url, projectId, undefined); // check if setting with url already exists, if it does, delete it
     requestContext.enter();
     if (settingFromUrl && storeOnIModel) {
+      // SWB What should be done for localization?
       const errorMessage = IModelApp.i18n.translate("mapLayers:CustomAttach.LayerWithUrlExistsAsProjectSetting", { url: settingFromUrl.url, name: settingFromUrl.name });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, errorMessage));
       return false;
@@ -189,7 +196,9 @@ export class MapLayerSettingsService {
     return savedMapLayer;
   }
   /**
+  // SWB
    * Grabs any MapLayerSources in the user's settings, the shared settings on the iModel, and the shared settings on the project.
+  // SWB
    * @param projectId id of the project
    * @param iModelId id of the iModel
    * @throws error if any of the calls to grab settings fail.
@@ -197,6 +206,7 @@ export class MapLayerSettingsService {
   // SWB
   public static async getSourcesFromSettingsService(projectId: GuidString, iModelId: GuidString): Promise<MapLayerSource[]> {
     const requestContext = await AuthorizedFrontendRequestContext.create();
+    // SWB
     const userResultByProjectPromise = IModelApp.settings.getUserSettingsByNamespace(
       requestContext,
       MapLayerSettingsService.SourceNamespace,
@@ -216,6 +226,7 @@ export class MapLayerSettingsService {
       true,
       projectId,
       iModelId);
+      // SWB
     const sharedResultByProjectPromise = IModelApp.settings.getSharedSettingsByNamespace(requestContext,
       MapLayerSettingsService.SourceNamespace,
       true,
@@ -223,11 +234,14 @@ export class MapLayerSettingsService {
       undefined);
     const settingsMapArray: SettingsMapResult[] = await Promise.all([userResultByProjectPromise, userResultByImodelPromise, sharedResultByImodelPromise, sharedResultByProjectPromise]);
     requestContext.enter();
+    // SWB
     const userResultByProject = settingsMapArray[0];
     const userResultByImodel = settingsMapArray[1];
     const sharedResultByImodel = settingsMapArray[2];
+    // SWB
     const sharedResultByProject = settingsMapArray[3];
     if (userResultByProject.status !== SettingsStatus.Success || !userResultByProject.settingsMap) {
+      // SWB What to do about localization?
       throw new Error(IModelApp.i18n.translate("mapLayers:CustomAttach.ErrorRetrieveUserProject", { errorMessage: userResultByProject.errorMessage }));
     }
     if (userResultByImodel.status !== SettingsStatus.Success || !userResultByImodel.settingsMap) {
@@ -238,6 +252,7 @@ export class MapLayerSettingsService {
       throw new Error(IModelApp.i18n.translate("mapLayers:CustomAttach.ErrorRetrieveSharedModel", { errorMessage: sharedResultByImodel.errorMessage }));
     }
     if (sharedResultByProject.status !== SettingsStatus.Success || !sharedResultByProject.settingsMap) {
+      // SWB What to do about localization
       throw new Error(IModelApp.i18n.translate("mapLayers:CustomAttach.ErrorRetrieveSharedProject", { errorMessage: sharedResultByProject.errorMessage }));
     }
 
