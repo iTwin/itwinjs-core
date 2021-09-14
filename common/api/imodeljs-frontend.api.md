@@ -5874,6 +5874,11 @@ export abstract class MapTilingScheme {
 }
 
 // @public
+export interface MarginOptions {
+    marginPercent?: MarginPercent;
+}
+
+// @public
 export class MarginPercent {
     constructor(left: number, top: number, right: number, bottom: number);
     // (undocumented)
@@ -8643,7 +8648,7 @@ export class ScreenViewport extends Viewport {
     // @internal
     static setToParentSize(div: HTMLElement): void;
     // @internal (undocumented)
-    synchWithView(options?: ViewChangeOptions | boolean): void;
+    synchWithView(options?: ViewChangeOptions): void;
     readonly toolTipDiv: HTMLDivElement;
     // @internal (undocumented)
     protected validateRenderPlan(): void;
@@ -11206,10 +11211,9 @@ export interface ViewAnimationOptions {
 }
 
 // @public
-export interface ViewChangeOptions extends ViewAnimationOptions {
+export interface ViewChangeOptions extends OnViewExtentsError, ViewAnimationOptions {
     animateFrustumChange?: boolean;
     globalAlignment?: GlobalAlignmentOptions;
-    marginPercent?: MarginPercent;
     noSaveInUndo?: boolean;
 }
 
@@ -12379,7 +12383,7 @@ export abstract class Viewport implements IDisposable {
     get solarShadowSettings(): SolarShadowSettings | undefined;
     // @internal (undocumented)
     readonly subcategories: SubCategoriesCache.Queue;
-    synchWithView(_options?: ViewChangeOptions | boolean): void;
+    synchWithView(_options?: ViewChangeOptions): void;
     // @internal (undocumented)
     get target(): RenderTarget;
     get tiledGraphicsProviders(): Iterable<TiledGraphicsProvider>;
@@ -12693,8 +12697,8 @@ export abstract class ViewState extends ElementState {
     // @internal (undocumented)
     isSubCategoryVisible(id: Id64String): boolean;
     load(): Promise<void>;
-    lookAtViewAlignedVolume(volume: Range3d, aspect?: number, options?: ViewChangeOptions & OnViewExtentsError): void;
-    lookAtVolume(volume: LowAndHighXYZ | LowAndHighXY, aspect?: number, options?: ViewChangeOptions): void;
+    lookAtViewAlignedVolume(volume: Range3d, aspect?: number, options?: MarginOptions & OnViewExtentsError): void;
+    lookAtVolume(volume: LowAndHighXYZ | LowAndHighXY, aspect?: number, options?: MarginOptions & OnViewExtentsError): void;
     // @internal
     get maxGlobalScopeFactor(): number;
     // @beta
@@ -12730,7 +12734,7 @@ export abstract class ViewState extends ElementState {
     setRotationAboutPoint(rotation: Matrix3d, point?: Point3d): void;
     setStandardGlobalRotation(id: StandardViewId): void;
     setStandardRotation(id: StandardViewId): void;
-    setupFromFrustum(inFrustum: Frustum, opts?: ViewChangeOptions & OnViewExtentsError): ViewStatus;
+    setupFromFrustum(inFrustum: Frustum, opts?: OnViewExtentsError): ViewStatus;
     setViewClip(clip?: ClipVector): void;
     toJSON(): ViewDefinitionProps;
     toProps(): ViewStateProps;
@@ -12913,7 +12917,7 @@ export abstract class ViewState3d extends ViewState {
     // (undocumented)
     setRotation(rot: Matrix3d): void;
     // (undocumented)
-    setupFromFrustum(frustum: Frustum, opts?: ViewChangeOptions): ViewStatus;
+    setupFromFrustum(frustum: Frustum, opts?: OnViewExtentsError): ViewStatus;
     // (undocumented)
     supportsCamera(): boolean;
     // (undocumented)
