@@ -165,7 +165,7 @@ describe("ConfigurableUiManager", () => {
   });
 
   it("loadTasks", () => {
-    const taskPropsList: TaskPropsList = {
+    const taskPropsList: TaskPropsList = {  // eslint-disable-line deprecation/deprecation
       tasks: [
         {
           id: "Task1",
@@ -182,12 +182,12 @@ describe("ConfigurableUiManager", () => {
       ],
     };
 
-    ConfigurableUiManager.loadTasks(taskPropsList);
-    expect(TaskManager.findTask("Task1")).to.not.be.undefined;
+    ConfigurableUiManager.loadTasks(taskPropsList); // eslint-disable-line deprecation/deprecation
+    expect(TaskManager.findTask("Task1")).to.not.be.undefined;  // eslint-disable-line deprecation/deprecation
   });
 
   it("loadWorkflows", () => {
-    const workflowPropsList: WorkflowPropsList = {
+    const workflowPropsList: WorkflowPropsList = {  // eslint-disable-line deprecation/deprecation
       defaultWorkflowId: "ExampleWorkflow",
       workflows: [
         {
@@ -200,12 +200,12 @@ describe("ConfigurableUiManager", () => {
       ],
     };
 
-    ConfigurableUiManager.loadWorkflows(workflowPropsList);
-    expect(WorkflowManager.findWorkflow("ExampleWorkflow")).to.not.be.undefined;
+    ConfigurableUiManager.loadWorkflows(workflowPropsList); // eslint-disable-line deprecation/deprecation
+    expect(WorkflowManager.findWorkflow("ExampleWorkflow")).to.not.be.undefined;  // eslint-disable-line deprecation/deprecation
   });
 
   it("loadWorkflow", () => {
-    const workflowProps: WorkflowProps = {
+    const workflowProps: WorkflowProps = {  // eslint-disable-line deprecation/deprecation
       id: "OneWorkflow",
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:Test.my-label",
@@ -213,12 +213,12 @@ describe("ConfigurableUiManager", () => {
       tasks: ["Task1", "Task2"],
     };
 
-    ConfigurableUiManager.loadWorkflow(workflowProps);
-    const workflow = WorkflowManager.findWorkflow("OneWorkflow");
+    ConfigurableUiManager.loadWorkflow(workflowProps);  // eslint-disable-line deprecation/deprecation
+    const workflow = WorkflowManager.findWorkflow("OneWorkflow"); // eslint-disable-line deprecation/deprecation
     expect(workflow).to.not.be.undefined;
 
     if (workflow)
-      expect(WorkflowManager.removeWorkflow(workflow)).to.eq(true);
+      expect(WorkflowManager.removeWorkflow(workflow)).to.eq(true); // eslint-disable-line deprecation/deprecation
   });
 
   it("closeUi", () => {

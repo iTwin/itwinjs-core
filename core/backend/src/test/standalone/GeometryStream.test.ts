@@ -3,11 +3,27 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BentleyStatus, DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Angle, AngleSweep, Arc3d, Box, ClipMaskXYZRangePlanes, ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipShape, ClipVector, ConvexClipPlaneSet, CurveCollection, CurvePrimitive, Geometry, GeometryQueryCategory, IndexedPolyface, LineSegment3d, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, PolyfaceBuilder, Range3d, RuledSweep, SolidPrimitive, Sphere, StrokeOptions, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { AreaPattern, BackgroundFill, BRepEntity, BRepGeometryCreate, BRepGeometryFunction, BRepGeometryInfo, BRepGeometryOperation, Code, ColorByName, ColorDef, ElementGeometry, ElementGeometryDataEntry, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryOpcode, ElementGeometryRequest, ElementGeometryUpdate, FillDisplay, FontProps, FontType, GeometricElement3dProps, GeometricElementProps, GeometryClass, GeometryContainmentRequestProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamFlags, GeometryStreamIterator, GeometryStreamProps, Gradient, ImageGraphicCorners, ImageGraphicProps, IModel, LinePixels, LineStyle, MassPropertiesOperation, MassPropertiesRequestProps, PhysicalElementProps, Placement3d, Placement3dProps, TextString, TextStringProps, ThematicGradientMode, ThematicGradientSettings, ViewFlags } from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
-import { BackendRequestContext, ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions, GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, Platform, SnapshotDb } from "../../imodeljs-backend";
+import { BentleyStatus, DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
+import {
+  Angle, AngleSweep, Arc3d, Box, ClipMaskXYZRangePlanes, ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipShape, ClipVector, ConvexClipPlaneSet,
+  CurveCollection, CurvePrimitive, Geometry, GeometryQueryCategory, IndexedPolyface, LineSegment3d, LineString3d, Loop, Matrix3d,
+  Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, PolyfaceBuilder, Range3d, RuledSweep, SolidPrimitive, Sphere,
+  StrokeOptions, Transform, Vector3d, YawPitchRollAngles,
+} from "@bentley/geometry-core";
+import {
+  AreaPattern, BackgroundFill, BRepEntity, BRepGeometryCreate, BRepGeometryFunction, BRepGeometryInfo, BRepGeometryOperation, Code, ColorByName,
+  ColorDef, ElementGeometry, ElementGeometryDataEntry, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryOpcode, ElementGeometryRequest,
+  ElementGeometryUpdate, FillDisplay, FontProps, FontType, GeometricElement3dProps, GeometricElementProps, GeometryClass,
+  GeometryContainmentRequestProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamFlags, GeometryStreamIterator,
+  GeometryStreamProps, Gradient, ImageGraphicCorners, ImageGraphicProps, IModel, LinePixels, LineStyle, MassPropertiesOperation,
+  MassPropertiesRequestProps, PhysicalElementProps, Placement3d, Placement3dProps, TextString, TextStringProps, ThematicGradientMode,
+  ThematicGradientSettings, ViewFlags,
+} from "@bentley/imodeljs-common";
+import {
+  ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions, GeometricElement, GeometryPart, LineStyleDefinition,
+  PhysicalObject, Platform, SnapshotDb,
+} from "../../imodeljs-backend";
 import { IModelTestUtils, Timer } from "../IModelTestUtils";
 
 function assertTrue(expr: boolean): asserts expr {
@@ -2502,9 +2518,8 @@ describe("BRepGeometry", () => {
       candidates: [result.newId],
     };
 
-    const requestContext = new BackendRequestContext();
     // Expect exception creating sheet body from invalid loop (imprint error)...
-    await expect(imodel.getMassProperties(requestContext, requestProps)).to.be.rejectedWith(Error, "Solid kernel severe error: 942");
+    await expect(imodel.getMassProperties(requestProps)).to.be.rejectedWith(Error, "Solid kernel severe error: 942");
   });
 });
 
@@ -2669,8 +2684,7 @@ describe("Mass Properties", () => {
       candidates: [newId],
     };
 
-    const requestContext = new BackendRequestContext();
-    const result = await imodel.getMassProperties(requestContext, requestProps);
+    const result = await imodel.getMassProperties(requestProps);
     assert.isTrue(BentleyStatus.SUCCESS === result.status);
     assert.isTrue(1.0 === result.volume);
     assert.isTrue(6.0 === result.area);
@@ -2697,8 +2711,7 @@ describe("Mass Properties", () => {
       candidates: [newId],
     };
 
-    const requestContext = new BackendRequestContext();
-    const result = await imodel.getMassProperties(requestContext, requestProps);
+    const result = await imodel.getMassProperties(requestProps);
     assert.isTrue(BentleyStatus.SUCCESS === result.status);
     assert.isTrue(1.0 === result.area);
     assert.isTrue(4.0 === result.perimeter);
@@ -2746,8 +2759,7 @@ describe("Geometry Containment", () => {
       allowOverlaps: true,
     };
 
-    const requestContext = new BackendRequestContext();
-    let result = await imodel.getGeometryContainment(requestContext, requestProps);
+    let result = await imodel.getGeometryContainment(requestProps);
 
     assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
     assert.isTrue(result.candidatesContainment?.length === expectedContainment.length);
@@ -2757,7 +2769,7 @@ describe("Geometry Containment", () => {
     result.candidatesContainment!.forEach((val, index) => { assert.isTrue(val === expectedContainment[index]); });
 
     requestProps.allowOverlaps = false; // test inside mode...
-    result = await imodel.getGeometryContainment(requestContext, requestProps);
+    result = await imodel.getGeometryContainment(requestProps);
 
     assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
     assert.isTrue(result.candidatesContainment?.length === expectedContainment.length);
@@ -2793,8 +2805,7 @@ describe("Geometry Containment", () => {
       allowOverlaps: true,
     };
 
-    const requestContext = new BackendRequestContext();
-    let result = await imodel.getGeometryContainment(requestContext, requestProps);
+    let result = await imodel.getGeometryContainment(requestProps);
 
     assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
     assert.isTrue(result.candidatesContainment?.length === expectedContainment.length);
@@ -2804,7 +2815,7 @@ describe("Geometry Containment", () => {
     result.candidatesContainment!.forEach((val, index) => { assert.isTrue(val === expectedContainment[index]); });
 
     requestProps.allowOverlaps = false; // test inside mode...
-    result = await imodel.getGeometryContainment(requestContext, requestProps);
+    result = await imodel.getGeometryContainment(requestProps);
 
     assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
     assert.isTrue(result.candidatesContainment?.length === expectedContainment.length);
@@ -2854,8 +2865,7 @@ describe("Geometry Containment", () => {
       allowOverlaps: true,
     };
 
-    const requestContext = new BackendRequestContext();
-    let result = await imodel.getGeometryContainment(requestContext, requestProps);
+    let result = await imodel.getGeometryContainment(requestProps);
 
     assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
     assert.isTrue(result.candidatesContainment?.length === expectedContainment.length);
@@ -2865,7 +2875,7 @@ describe("Geometry Containment", () => {
     result.candidatesContainment!.forEach((val, index) => { assert.isTrue(val === expectedContainment[index]); });
 
     requestProps.allowOverlaps = false; // test inside mode...
-    result = await imodel.getGeometryContainment(requestContext, requestProps);
+    result = await imodel.getGeometryContainment(requestProps);
 
     assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
     assert.isTrue(result.candidatesContainment?.length === expectedContainment.length);
@@ -2899,8 +2909,7 @@ describe("Geometry Containment", () => {
       allowOverlaps: true,
     };
 
-    const requestContext = new BackendRequestContext();
-    let result = await imodel.getGeometryContainment(requestContext, requestProps);
+    let result = await imodel.getGeometryContainment(requestProps);
 
     assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
     assert.isTrue(result.candidatesContainment?.length === expectedContainmentDef.length);
@@ -2912,7 +2921,7 @@ describe("Geometry Containment", () => {
     const expectedContainmentSubCat: ClipPlaneContainment[] = [ClipPlaneContainment.StronglyOutside, ClipPlaneContainment.StronglyOutside, ClipPlaneContainment.StronglyOutside, ClipPlaneContainment.StronglyOutside];
 
     requestProps.offSubCategories = [IModel.getDefaultSubCategoryId(seedElement.category)];
-    result = await imodel.getGeometryContainment(requestContext, requestProps);
+    result = await imodel.getGeometryContainment(requestProps);
 
     assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
     assert.isTrue(result.candidatesContainment?.length === expectedContainmentSubCat.length);
@@ -2926,7 +2935,7 @@ describe("Geometry Containment", () => {
     const flags = new ViewFlags(); // constructions are off by default...
     requestProps.viewFlags = flags;
     requestProps.offSubCategories = undefined;
-    result = await imodel.getGeometryContainment(requestContext, requestProps);
+    result = await imodel.getGeometryContainment(requestProps);
 
     assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
     assert.isTrue(result.candidatesContainment?.length === expectedContainmentViewFlags.length);
@@ -2968,8 +2977,7 @@ describe("Geometry Containment", () => {
       allowOverlaps: true,
     };
 
-    const requestContext = new BackendRequestContext();
-    const result = await imodel.getGeometryContainment(requestContext, requestProps);
+    const result = await imodel.getGeometryContainment(requestProps);
 
     assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
     assert.isTrue(result.candidatesContainment?.length === expectedContainment.length);
@@ -3011,8 +3019,7 @@ describe("Geometry Containment", () => {
       allowOverlaps: true,
     };
 
-    const requestContext = new BackendRequestContext();
-    const result = await imodel.getGeometryContainment(requestContext, requestProps);
+    const result = await imodel.getGeometryContainment(requestProps);
 
     assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
     assert.isTrue(result.candidatesContainment?.length === expectedContainment.length);
@@ -3048,8 +3055,7 @@ describe("Geometry Containment", () => {
       allowOverlaps: true,
     };
 
-    const requestContext = new BackendRequestContext();
-    const result = await imodel.getGeometryContainment(requestContext, requestProps);
+    const result = await imodel.getGeometryContainment(requestProps);
 
     assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
     assert.isTrue(result.candidatesContainment?.length === expectedContainment.length);
@@ -3085,8 +3091,7 @@ describe("Geometry Containment", () => {
       allowOverlaps: true,
     };
 
-    const requestContext = new BackendRequestContext();
-    const result = await imodel.getGeometryContainment(requestContext, requestProps);
+    const result = await imodel.getGeometryContainment(requestProps);
 
     assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
     assert.isTrue(result.candidatesContainment?.length === expectedContainment.length);
