@@ -506,6 +506,7 @@ The @bentley/ui-* and @bentley/presentation-components packages are now dependen
 For migration purposes, React 16 is included in the peerDependencies for the packages. React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
 
 ### New Timeline Date Marker
+
 The [TimelineComponent]($ui-imodel-components) react component now accepts a property to mark a specific date in a date-based timeline. If the timeline has a defined start date and end date, a date between them can be marked in the timeline by specifying an instance of [TimelineDateMarkerProps]($ui-imodel-components) in the new markDate member of [TimelineComponentProps]($ui-imodel-components). If the date member is left undefined, today's date will be used. The default marker is a short vertical bar, but a ReactNode can be specified in the dateMarker prop to customize the marker's appearance.
 
 ### New Floating Widget Capabilities
