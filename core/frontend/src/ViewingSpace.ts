@@ -20,7 +20,7 @@ import { ViewRect } from "./ViewRect";
 import { ViewState } from "./ViewState";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const doPreviousDelta = false, preloadFrustumScale = 5;
+const doPreviousDelta = true, preloadFrustumScale = 5;
 /** Describes a [[Viewport]]'s viewing volume, plus its size on the screen. A new
  * instance of ViewingSpace is created every time the Viewport's frustum changes.
  * @see [[Viewport.viewingSpace]].

@@ -306,8 +306,8 @@ class SelectedViewFrustumDecoration {
 
     FrustumDecoration.drawFrustumBox(builder, worldFrustum, false, context.viewport); // show original frustum...
     FrustumDecoration.drawFrustumBox(builder, adjustedWorldFrustum, true, context.viewport); // show adjusted frustum...
-    if (this._options && this._options.showPreloadFrustum)
-      FrustumDecoration.drawPreloadFrustum(builder, context.viewport.viewingSpace.getPreloadFrustum());
+    // if (this._options && this._options.showPreloadFrustum)
+    FrustumDecoration.drawPreloadFrustum(builder, this._targetVp.viewingSpace.getPreloadFrustum());
 
     context.addDecorationFromBuilder(builder);
   }

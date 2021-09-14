@@ -247,7 +247,7 @@ export class RealityTile extends Tile {
 
       this.selectRealityChildren(context, args, traversalDetails);
       if (this.isReady && (traversalDetails.childrenLoading || 0 !== traversalDetails.queuedChildren.length)) {
-        const minimumVisibleFactor = .25;     // If the tile has not yet been displayed in this viewport -- display only if it is within 25% of visible. Avoid overly tiles popping into view unexpectedly (terrain)
+        const minimumVisibleFactor = .025;     // If the tile has not yet been displayed in this viewport -- display only if it is within 25% of visible. Avoid overly tiles popping into view unexpectedly (terrain)
 
         if (visibility > minimumVisibleFactor || this._everDisplayed)
           context.selectOrQueue(this, args, traversalDetails);

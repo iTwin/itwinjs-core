@@ -29,6 +29,9 @@ export class TraversalDetails {
     this.childrenSelected = false;
   }
 }
+// eslint-disable-next-line prefer-const
+let skipPrune = false;
+
 /** @internal */
 export class TraversalChildrenDetails {
   private _childDetails: TraversalDetails[] = [];
@@ -170,6 +173,9 @@ export class RealityTileTree extends TileTree {
   public createTile(props: TileParams): RealityTile { return new RealityTile(props, this); }
 
   public prune(): void {
+    if (skipPrune)
+      return;
+
     const olderThan = BeTimePoint.now().minus(this.expirationTime);
     this.rootTile.purgeContents(olderThan);
   }
@@ -390,16 +396,20 @@ export class RealityTileTree extends TileTree {
       this.logTiles("Preloaded: ", preloaded.values());
       this.logTiles("Missing: ", context.missing.values());
 
-      const imageryTiles: RealityTile[] = [];
-      for (const selectedTile of selected) {
-        if (selectedTile instanceof MapTile) {
-          const selectedImageryTiles = (selectedTile).imageryTiles;
-          if (selectedImageryTiles)
-            selectedImageryTiles.forEach((tile) => imageryTiles.push(tile));
+      const logImagery = ((tiles: RealityTile[], label: string) => {
+        const imageryTiles: RealityTile[] = [];
+        for (const selectedTile of tiles) {
+          if (selectedTile instanceof MapTile) {
+            const selectedImageryTiles = (selectedTile).imageryTiles;
+            if (selectedImageryTiles)
+              selectedImageryTiles.forEach((tile) => imageryTiles.push(tile));
+          }
         }
-      }
-      if (imageryTiles.length)
-        this.logTiles("Imagery:", imageryTiles.values());
+        if (imageryTiles.length)
+          this.logTiles(label, imageryTiles.values());
+      });
+      logImagery(selected, "Selected Imagery");
+      logImagery(preloaded, "Preloaded Imagery");
     }
 
     IModelApp.tileAdmin.addTilesForViewport(args.context.viewport, selected, args.readyTiles);

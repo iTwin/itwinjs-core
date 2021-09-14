@@ -64,6 +64,9 @@ import { FlashSettings } from "./FlashSettings";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
+// eslint-disable-next-line prefer-const
+let skipAnimate = true;
+
 /** Interface for drawing [[Decorations]] into, or on top of, a [[ScreenViewport]].
  * @public
  */
@@ -3075,7 +3078,7 @@ export class ScreenViewport extends Viewport {
       opts = { animationTime: ScreenViewport.animation.time.slow.milliseconds };
 
     // determined whether we can animate this ViewState change
-    const doAnimate = this.view && this.view.hasSameCoordinates(view) && false !== opts.animateFrustumChange;
+    const doAnimate = !skipAnimate &&  this.view && this.view.hasSameCoordinates(view) && false !== opts.animateFrustumChange;
     if (!doAnimate)
       this.clearViewUndo(); // if we can animate, don't throw out view undo.
 
