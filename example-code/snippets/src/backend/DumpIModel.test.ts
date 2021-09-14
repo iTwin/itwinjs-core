@@ -3,8 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, Id64String } from "@bentley/bentleyjs-core";
-import { ECSqlStatement, Element, IModelDb, Model, SnapshotDb } from "@bentley/imodeljs-backend";
-import { IModelJsFs as fs } from "@bentley/imodeljs-backend/cjs/IModelJsFs";
+import { ECSqlStatement, Element, IModelDb, IModelJsFs as fs, Model, SnapshotDb } from "@bentley/imodeljs-backend";
 import { assert } from "chai";
 import * as path from "path";
 import { IModelTestUtils } from "./IModelTestUtils";

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { executeBackendCallback } from "@bentley/certa/cjs/utils/CallbackUtils";
-import { ElectronApp } from "@bentley/electron-manager/cjs/ElectronFrontend";
+import { ElectronApp } from "@bentley/electron-manager/lib/cjs/ElectronFrontend";
 import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, RpcConfiguration, RpcDefaultConfiguration } from "@bentley/imodeljs-common";
 import { MobileRpcManager } from "@bentley/mobile-manager/cjs/MobileFrontend";
 import { BackendTestCallbacks } from "../common/SideChannels";

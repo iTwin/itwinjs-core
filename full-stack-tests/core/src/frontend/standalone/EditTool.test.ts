@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ProcessDetector } from "@bentley/bentleyjs-core";
-import { ElectronApp } from "@bentley/electron-manager/cjs/ElectronFrontend";
+import { ElectronApp } from "@bentley/electron-manager/lib/cjs/ElectronFrontend";
 import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import { IModelApp, PrimitiveTool, SnapshotConnection, Viewport } from "@bentley/imodeljs-frontend";
 import * as chai from "chai";

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
-import { MobileRpcManager } from "@bentley/mobile-manager/lib/MobileBackend";
+import { MobileRpcManager } from "@bentley/mobile-manager/lib/cjs/MobileBackend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { initializeBackend } from "./backend";
 

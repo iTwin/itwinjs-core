@@ -13,8 +13,8 @@
   },
   "scripts": {
     "compile": "npm run build",
-    "copy:cjs": "cpx \"./src/**/*.*css\" ./cjs && cpx \"./public/**/*\" ./cjs/public",
-    "copy:esm": "cpx \"./src/**/*.*css\" ./esm && cpx \"./public/**/*\" ./esm/public",
+    "copy:cjs": "cpx \"./src/**/*.*css\" ./lib/cjs && cpx \"./public/**/*\" ./lib/cjs/public",
+    "copy:esm": "cpx \"./src/**/*.*css\" ./lib/esm && cpx \"./public/**/*\" ./lib/esm/public",
     "pseudolocalize": "betools pseudolocalize --englishDir ./public/locales/en --out ./public/locales/en-PSEUDO",
     "build": "npm run pseudolocalize && npm run build:cjs && npm run build:esm",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs --declaration false --declarationMap false && npm run copy:cjs",
@@ -24,7 +24,7 @@
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-components/file.json --tsIndexFile=./ui-components.ts --onlyJson",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
     "extract-api": "betools extract-api --entry=ui-components",
-    "test": "mocha --config ../.mocharc.json \"./cjs/test/**/*.test.js\"",
+    "test": "mocha --config ../.mocharc.json \"./lib/cjs/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
   },
   "keywords": [

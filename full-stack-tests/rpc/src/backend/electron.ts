@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { registerBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
-import { ElectronHost } from "@bentley/electron-manager/cjs/ElectronBackend";
+import { ElectronHost } from "@bentley/electron-manager/lib/cjs/ElectronBackend";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { commonSetup } from "./CommonBackendSetup";
 

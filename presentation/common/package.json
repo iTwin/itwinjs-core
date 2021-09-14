@@ -26,8 +26,8 @@
     "build": "npm run ruleset-json-schema && npm run extract && npm run build:cjs && npm run build:esm",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs --declaration false --declarationMap false && npm run copy:cjs",
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm --declarationDir lib/types && npm run copy:esm",
-    "copy:cjs": "cpx \"./assets/**/*\" ./cjs/assets && cpx \"./assets/**/*\" ./cjs/public",
-    "copy:esm": "cpx \"./assets/**/*\" ./esm/assets && cpx \"./assets/**/*\" ./esm/public",
+    "copy:cjs": "cpx \"./assets/**/*\" ./lib/cjs/assets && cpx \"./assets/**/*\" ./lib/cjs/public",
+    "copy:esm": "cpx \"./assets/**/*\" ./lib/esm/assets && cpx \"./assets/**/*\" ./lib/esm/public",
     "build:watch": "npm run ruleset-json-schema && npm run copy:assets && tsc -w",
     "clean": "rimraf lib cjs esm types .rush/temp/package-deps*.json",
     "cover": "nyc npm test",
@@ -42,7 +42,7 @@
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "pseudolocalize:assets": "betools pseudolocalize --englishDir ./assets/locales/en --out ./assets/locales/en-PSEUDO",
     "pseudolocalize:public": "betools pseudolocalize --englishDir ./assets/locales/en --out ./public/locales/en-PSEUDO",
-    "test": "mocha --config ../.mocharc.json --file ./cjs/test/index.test.js \"./cjs/test/**/*.test.js\"",
+    "test": "mocha --config ../.mocharc.json --file ./lib/cjs/test/index.test.js \"./lib/cjs/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {

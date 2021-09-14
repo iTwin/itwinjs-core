@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ProcessDetector } from "@bentley/bentleyjs-core";
-import { ElectronHost } from "@bentley/electron-manager/cjs/ElectronBackend";
+import { ElectronHost } from "@bentley/electron-manager/lib/cjs/ElectronBackend";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
 import * as fs from "fs";

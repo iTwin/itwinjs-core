@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { UrlFileHandler } from "@bentley/backend-itwin-client";
 import { Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
-import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/cjs/ElectronBackend";
+import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/cjs/ElectronBackend";
 import { IModelBankClient } from "@bentley/imodelhub-client";
 import { IModelHost, IModelHostConfiguration, LocalhostIpcHost } from "@bentley/imodeljs-backend";
 import {
@@ -12,7 +12,7 @@ import {
   SnapshotIModelRpcInterface
 } from "@bentley/imodeljs-common";
 import { BasicManipulationCommand, EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
-import { AndroidHost, IOSHost, MobileHostOpts } from "@bentley/mobile-manager/lib/MobileBackend";
+import { AndroidHost, IOSHost, MobileHostOpts } from "@bentley/mobile-manager/lib/cjs/MobileBackend";
 import * as fs from "fs";
 import * as path from "path";
 import { DtaConfiguration } from "../common/DtaConfiguration";

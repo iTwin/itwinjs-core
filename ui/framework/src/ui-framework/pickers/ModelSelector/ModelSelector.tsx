@@ -100,7 +100,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   private _initModelState = async () => {
     const ruleset = await Presentation.presentation
       .rulesets()
-      .add(require("../../../../rulesets/Models.json")); // eslint-disable-line @typescript-eslint/no-var-requires
+      .add(require("../../../../../rulesets/Models.json")); // eslint-disable-line @typescript-eslint/no-var-requires
 
     this._modelRuleset = ruleset;
 
@@ -112,7 +112,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   private _initCategoryState = async () => {
     const ruleset = await Presentation.presentation
       .rulesets()
-      .add(require("../../../../rulesets/Categories.json")); // eslint-disable-line @typescript-eslint/no-var-requires
+      .add(require("../../../../../rulesets/Categories.json")); // eslint-disable-line @typescript-eslint/no-var-requires
     this._categoryRuleset = ruleset;
 
     await this._setViewType(ruleset);

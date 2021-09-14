@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext, Id64, Id64String, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
-import { ElectronApp } from "@bentley/electron-manager/cjs/ElectronFrontend";
+import { ElectronApp } from "@bentley/electron-manager/lib/cjs/ElectronFrontend";
 import { Angle, Point3d } from "@bentley/geometry-core";
 import { IModelJsFs, PhysicalModel, StandaloneDb } from "@bentley/imodeljs-backend";
 import {

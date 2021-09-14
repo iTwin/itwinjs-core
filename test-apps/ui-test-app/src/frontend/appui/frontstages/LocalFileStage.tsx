@@ -2,24 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import { Id64String } from "@bentley/bentleyjs-core";
+import { ElectronApp } from "@bentley/electron-manager/lib/cjs/ElectronFrontend";
 import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
-import { OpenDialogOptions } from "electron";
-
 import { FillCentered } from "@bentley/ui-core";
 import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageManager,
-  FrontstageProps, FrontstageProvider, ToolWidget, UiFramework, Widget, Zone,
+  FrontstageProps, FrontstageProvider, ToolWidget, UiFramework, Widget, Zone
 } from "@bentley/ui-framework";
+import { Button, Headline } from "@itwin/itwinui-react";
+import { OpenDialogOptions } from "electron";
+import * as React from "react";
 import { SampleAppIModelApp } from "../..";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { IModelViewPicker } from "../imodelopen/IModelViewPicker";
 import { LocalFileSupport } from "../LocalFileSupport";
-import { Button, Headline } from "@itwin/itwinui-react";
 
 class LocalFileOpenControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {

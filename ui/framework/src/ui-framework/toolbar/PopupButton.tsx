@@ -6,13 +6,12 @@
  * @module Item
  */
 
-import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/Panel.scss";
-import "./PopupButton.scss";
-import classnames from "classnames";
-import * as React from "react";
 import { ConditionalBooleanValue, ConditionalStringValue, SpecialKey, StringGetter } from "@bentley/ui-abstract";
 import { BadgeUtilities, CommonProps, Icon, SizeProps, withOnOutsideClick } from "@bentley/ui-core";
 import { ExpandableItem, Item } from "@bentley/ui-ninezone";
+import "@bentley/ui-ninezone/lib/cjs/ui-ninezone/toolbar/item/expandable/group/Panel.scss";
+import classnames from "classnames";
+import * as React from "react";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { BaseItemState } from "../shared/ItemDefBase";
@@ -21,6 +20,7 @@ import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDis
 import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
 import { ToolbarDragInteractionContext } from "./DragInteraction";
+import "./PopupButton.scss";
 
 /* eslint-disable deprecation/deprecation */
 

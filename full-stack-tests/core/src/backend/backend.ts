@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64String, Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
-import { ElectronHost } from "@bentley/electron-manager/cjs/ElectronBackend";
+import { ElectronHost } from "@bentley/electron-manager/lib/cjs/ElectronBackend";
 import { IModelJsExpressServer } from "@bentley/express-server";
 import {
   FileNameResolver, IModelDb, IModelHost, IModelHostConfiguration, IpcHandler, PhysicalModel, PhysicalPartition, SpatialCategory,

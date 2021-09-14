@@ -6,9 +6,7 @@
 
 import { UrlFileHandler } from "@bentley/backend-itwin-client";
 import { Logger } from "@bentley/bentleyjs-core";
-import { IModelBankClient, IModelBankFileSystemContextClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
-import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/cjs/imodelbank/IModelBankBasicAuthorizationClient";
-import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/cjs/imodelbank/IModelBankDummyAuthorizationClient";
+import { IModelBankClient, IModelBankBasicAuthorizationClient, IModelBankDummyAuthorizationClient, IModelBankFileSystemContextClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
 import { UserInfo } from "@bentley/itwin-client";
 import * as child_process from "child_process";
 import * as fs from "fs";

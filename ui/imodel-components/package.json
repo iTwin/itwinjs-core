@@ -13,8 +13,8 @@
   },
   "scripts": {
     "compile": "npm run build",
-    "copy:cjs": "cpx \"./src/**/*.*css\" ./cjs && cpx \"./public/**/*\" ./cjs/public",
-    "copy:esm": "cpx \"./src/**/*.*css\" ./esm && cpx \"./public/**/*\" ./esm/public",
+    "copy:cjs": "cpx \"./src/**/*.*css\" ./lib/cjs && cpx \"./public/**/*\" ./lib/cjs/public",
+    "copy:esm": "cpx \"./src/**/*.*css\" ./lib/esm && cpx \"./public/**/*\" ./lib/esm/public",
     "pseudolocalize": "betools pseudolocalize --englishDir ./public/locales/en --out ./public/locales/en-PSEUDO",
     "build": "npm run pseudolocalize && npm run build:cjs && npm run build:esm",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs --declaration false --declarationMap false && npm run copy:cjs",

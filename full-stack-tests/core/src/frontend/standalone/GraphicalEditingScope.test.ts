@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BeDuration, compareStrings, DbOpcode, Guid, Id64String, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
-import { ElectronApp } from "@bentley/electron-manager/cjs/ElectronFrontend";
+import { ElectronApp } from "@bentley/electron-manager/lib/cjs/ElectronFrontend";
 import { Point3d, Range3d, Transform } from "@bentley/geometry-core";
 import { BatchType, ChangedEntities, ElementGeometryChange, IModelError } from "@bentley/imodeljs-common";
 import {

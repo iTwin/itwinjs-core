@@ -26,8 +26,8 @@
     "build": "npm run build:cjs && npm run build:esm",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs --declaration false --declarationMap false && npm run copy:cjs",
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm --declarationDir lib/types && npm run copy:esm",
-    "copy:cjs": "cpx \"./assets/**/*\" ./cjs/assets",
-    "copy:esm": "cpx \"./assets/**/*\" ./esm/assets",
+    "copy:cjs": "cpx \"./assets/**/*\" ./lib/cjs/assets",
+    "copy:esm": "cpx \"./assets/**/*\" ./lib/esm/assets",
     "build:watch": "npm run build:assets && tsc -w",
     "clean": "rimraf lib cjs esm types .rush/temp/package-deps*.json",
     "cover": "nyc npm test",
@@ -37,7 +37,7 @@
     "extract": "betools extract --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
     "extract-api": "betools extract-api --entry=presentation-backend",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "mocha --config ../.mocharc.json --file ./cjs/test/index.test.js \"./cjs/test/**/*.test.js\"",
+    "test": "mocha --config ../.mocharc.json --file ./lib/cjs/test/index.test.js \"./lib/cjs/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {

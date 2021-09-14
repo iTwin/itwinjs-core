@@ -29,8 +29,8 @@
     "build": "npm run extract && npm run build:cjs && npm run build:esm",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs --declaration false --declarationMap false && npm run copy:cjs",
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm --declarationDir lib/types && npm run copy:esm",
-    "copy:cjs": "cpx \"../common/assets/**/*\" ./cjs/public && cpx \"./public/**/*\" ./cjs/public && cpx \"./src/**/*.{scss,json}\" ./cjs",
-    "copy:esm": "cpx \"../common/assets/**/*\" ./esm/public && cpx \"./public/**/*\" ./esm/public && cpx \"./src/**/*.{scss,json}\" ./esm",
+    "copy:cjs": "cpx \"../common/assets/**/*\" ./lib/cjs/public && cpx \"./public/**/*\" ./lib/cjs/public && cpx \"./src/**/*.{scss,json}\" ./lib/cjs",
+    "copy:esm": "cpx \"../common/assets/**/*\" ./lib/esm/public && cpx \"./public/**/*\" ./lib/esm/public && cpx \"./src/**/*.{scss,json}\" ./lib/esm",
     "clean": "rimraf lib cjs esm types .rush/temp/package-deps*.json",
     "cover": "nyc npm test",
     "docs": "npm run docs:reference && npm run extract && npm run docs:changelog",
@@ -39,7 +39,7 @@
     "extract": "betools extract --fileExt=ts,tsx --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
     "extract-api": "betools extract-api --entry=presentation-components",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
-    "test": "mocha --config ../.mocharc.json -r ignore-styles -r jsdom-global/register --file ./cjs/test/index.test.js \"./cjs/test/**/*.test.js\"",
+    "test": "mocha --config ../.mocharc.json -r ignore-styles -r jsdom-global/register --file ./lib/cjs/test/index.test.js \"./lib/cjs/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
   },
   "dependencies": {

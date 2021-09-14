@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { GuidString } from "@bentley/bentleyjs-core";
-import { ElectronApp } from "@bentley/electron-manager/cjs/ElectronFrontend";
+import { ElectronApp } from "@bentley/electron-manager/lib/cjs/ElectronFrontend";
 import { IModelVersion, SyncMode } from "@bentley/imodeljs-common";
 import { BriefcaseConnection, NativeApp } from "@bentley/imodeljs-frontend";
 import { ProgressInfo } from "@bentley/itwin-client";

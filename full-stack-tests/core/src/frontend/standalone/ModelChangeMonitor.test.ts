@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Guid, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
-import { ElectronApp } from "@bentley/electron-manager/cjs/ElectronFrontend";
+import { ElectronApp } from "@bentley/electron-manager/lib/cjs/ElectronFrontend";
 import { Transform } from "@bentley/geometry-core";
 import { BriefcaseConnection, GeometricModelState } from "@bentley/imodeljs-frontend";
 import { expect } from "chai";

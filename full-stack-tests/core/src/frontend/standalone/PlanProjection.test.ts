@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64, ProcessDetector } from "@bentley/bentleyjs-core";
-import { ElectronApp } from "@bentley/electron-manager/cjs/ElectronFrontend";
+import { ElectronApp } from "@bentley/electron-manager/lib/cjs/ElectronFrontend";
 import {
   BackgroundMapSettings, ColorByName, ColorDef, GlobeMode, PlanProjectionSettings, PlanProjectionSettingsProps
 } from "@bentley/imodeljs-common";

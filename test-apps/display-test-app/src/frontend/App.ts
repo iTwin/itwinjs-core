@@ -3,28 +3,30 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AsyncMethodsOf, ProcessDetector, PromiseReturnType } from "@bentley/bentleyjs-core";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { AsyncMethodsOf, ProcessDetector } from "@bentley/bentleyjs-core";
+import { ElectronApp } from "@bentley/electron-manager/lib/cjs/ElectronFrontend";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import {
-  IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface,
+  IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface
 } from "@bentley/imodeljs-common";
 import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import {
-  AccuDrawHintBuilder,   AccuDrawShortcuts, AccuSnap, ExternalServerExtensionLoader, IModelApp, IpcApp, LocalhostIpcApp, RenderSystem,
-  SelectionTool, SnapMode, TileAdmin, Tool, ToolAdmin,
+  AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, ExternalServerExtensionLoader, IModelApp, IpcApp, LocalhostIpcApp, RenderSystem,
+  SelectionTool, SnapMode, TileAdmin, Tool, ToolAdmin
 } from "@bentley/imodeljs-frontend";
-import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
+import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/cjs/MobileFrontend";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
+import { ApplyModelDisplayScaleTool } from "./DisplayScale";
 import { ApplyModelTransformTool } from "./DisplayTransform";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
 import { EditingScopeTool, PlaceLineStringTool } from "./EditingTools";
 import { FenceClassifySelectedTool } from "./Fence";
 import { RecordFpsTool } from "./FpsMonitor";
+import { FrameStatsTool } from "./FrameStatsTool";
 import { ChangeGridSettingsTool } from "./Grid";
 import { IncidentMarkerDemoTool } from "./IncidentMarkerDemo";
 import { MarkupSelectTestTool } from "./MarkupSelectTestTool";
@@ -32,17 +34,15 @@ import { Notifications } from "./Notifications";
 import { OutputShadersTool } from "./OutputShadersTool";
 import { PathDecorationTestTool } from "./PathDecorationTest";
 import { ToggleShadowMapTilesTool } from "./ShadowMapDecoration";
+import { signIn } from "./signIn";
 import {
   CloneViewportTool, CloseIModelTool, CloseWindowTool, CreateWindowTool, DockWindowTool, FocusWindowTool, MaximizeWindowTool, OpenIModelTool,
-  ReopenIModelTool, ResizeWindowTool, RestoreWindowTool, Surface,
+  ReopenIModelTool, ResizeWindowTool, RestoreWindowTool, Surface
 } from "./Surface";
+import { SyncViewportsTool } from "./SyncViewportsTool";
 import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";
 import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
-import { ApplyModelDisplayScaleTool } from "./DisplayScale";
-import { SyncViewportsTool } from "./SyncViewportsTool";
-import { FrameStatsTool } from "./FrameStatsTool";
-import { signIn } from "./signIn";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -120,7 +120,7 @@ class PullChangesTool extends Tool {
 
 export class DtaIpc {
   public static async callBackend<T extends AsyncMethodsOf<DtaIpcInterface>>(methodName: T, ...args: Parameters<DtaIpcInterface[T]>) {
-    return IpcApp.callIpcChannel(dtaChannel, methodName, ...args) as PromiseReturnType<DtaIpcInterface[T]>;
+    return IpcApp.callIpcChannel(dtaChannel, methodName, ...args);
   }
 }
 

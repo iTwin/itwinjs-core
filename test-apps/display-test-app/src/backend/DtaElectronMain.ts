@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core";
-import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/cjs/ElectronBackend";
+import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/cjs/ElectronBackend";
 import { IpcHandler } from "@bentley/imodeljs-backend";
 import * as path from "path";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";

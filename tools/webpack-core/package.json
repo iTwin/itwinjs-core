@@ -12,15 +12,15 @@
     "url": "http://www.bentley.com"
   },
   "main": "lib/cjs/plugins/index.js",
+  "typings": "lib/types/plugins/index",
   "scripts": {
     "compile": "npm run build",
-    "build": "npm run build:cjs && npm run build:esm",
-    "build:cjs": "tsc 1>&2 --outDir lib/cjs --declaration false --declarationMap false",
-    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm --declarationDir lib/types",
+    "build": "npm run build:cjs",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs --declarationDir lib/types",
     "clean": "rimraf lib cjs esm types .rush/temp/package-deps*.json",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "mocha \"./lib/test/**/*.test.js\"",
+    "test": "mocha \"./lib/cjs/test/**/*.test.js\"",
     "cover": "nyc npm test"
   },
   "dependencies": {

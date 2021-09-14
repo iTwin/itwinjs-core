@@ -3,19 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import "./index.css";
-import * as React from "react";
-import * as ReactDOM from "react-dom";
 import { Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { ElectronApp } from "@bentley/electron-manager/lib/cjs/ElectronFrontend";
 import { IModelApp, IModelAppOptions, WebViewerApp } from "@bentley/imodeljs-frontend";
 // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Imports
 import { Presentation } from "@bentley/presentation-frontend";
 // __PUBLISH_EXTRACT_END__
 import { UiComponents } from "@bentley/ui-components";
+import * as React from "react";
+import * as ReactDOM from "react-dom";
 import rpcs from "../common/Rpcs";
 import { MyAppFrontend } from "./api/MyAppFrontend";
 import App from "./components/app/App";
+import "./index.css";
 
 // initialize logging
 Logger.initializeToConsole();
