@@ -94,12 +94,13 @@ div.components-timeline-thumb.iui-slider-thumb {
   display: flex;
   align-items: center;
   justify-content: center;
-  transform: translateY(-50%);
+  transform: translateY(50%);
 }
 
 .date-marker-default {
   height: 12px;
   width: 3px;
   border-radius: 4px;
+  transform: translateY(1px);   
   background-color: $buic-foreground-primary;
 }

@@ -62,6 +62,17 @@ function getDateMarker(dateMarkerPropsIn: TimelineDateMarkerProps, startDate: Da
   const marker = dateMarkerPropsIn.dateMarker ? dateMarkerPropsIn.dateMarker : <span className="date-marker-default"></span>;
   return {datePercentage: percentage, dateMarker: marker};
 }
+
+function markDateInTimelineRange (dateMarkerProps?: TimelineDateMarkerProps, startDate?: Date, endDate?: Date): boolean {
+  // istanbul ignore else
+  if (dateMarkerProps && startDate && endDate) {
+    const inDate = dateMarkerProps.date ? dateMarkerProps.date : new Date();
+    // istanbul ignore else
+    if (inDate.getTime() >= startDate.getTime() && inDate.getTime() <= endDate.getTime())
+      return true;
+  }
+  return false;
+}
 /**
  * @internal
  */
@@ -207,7 +218,8 @@ export function Scrubber(props: ScrubberProps) {
   const tickLabel = React.useMemo(() => {
     const showTip = isPlaying || showRailTooltip || thumbHasFocus;
     const percent = (isPlaying || thumbHasFocus) ? currentDuration / totalDuration : pointerPercent;
-    const currentDateMarker = props.markDate && startDate && endDate ? getDateMarker(props.markDate, startDate, endDate) : undefined;
+    const markDateInRange = markDateInTimelineRange(props.markDate, startDate, endDate);
+    const currentDateMarker =  props.markDate && markDateInRange && startDate && endDate ? getDateMarker(props.markDate, startDate, endDate) : undefined;
     const tooltipText = generateToolTipText(!!showTime, percent, 0, totalDuration, startDate, endDate, timeZoneOffset);
     return (<RailMarkers showToolTip={showTip} percent={percent} tooltipText={tooltipText} markDate={currentDateMarker}/>);
   }, [isPlaying, showRailTooltip, currentDuration, totalDuration, pointerPercent, startDate, endDate, timeZoneOffset, showTime, thumbHasFocus, props.markDate]);
