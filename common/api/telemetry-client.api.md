@@ -13,9 +13,6 @@ export class ClientTelemetryEvent extends TelemetryEvent {
     readonly activityId?: GuidString;
     readonly clientApplicationId?: string;
     readonly clientApplicationVersion?: string;
-    readonly clientUserId?: string;
-    readonly clientUserOrgId?: string;
-    readonly clientUserOrgName?: string;
     // (undocumented)
     getProperties(): {
         [key: string]: any;

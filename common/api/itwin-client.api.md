@@ -14,45 +14,8 @@ import { HttpStatus } from '@bentley/bentleyjs-core';
 import { LogFunction } from '@bentley/bentleyjs-core';
 import { SessionProps } from '@bentley/bentleyjs-core';
 
-// @beta
-export class AccessToken {
-    constructor(tokenString?: string, startsAt?: Date, expiresAt?: Date, userInfo?: UserInfo);
-    static fromJson(jsonObj: AccessTokenProps): AccessToken;
-    // @internal
-    static fromTokenResponseJson(tokenResponse: any, userProfileResponse?: any): AccessToken;
-    static fromTokenString(tokenStr: string): AccessToken;
-    // @internal (undocumented)
-    getExpiresAt(): Date | undefined;
-    // @internal (undocumented)
-    getStartsAt(): Date | undefined;
-    // @internal (undocumented)
-    getUserInfo(): UserInfo | undefined;
-    initFromTokenString(tokenStr: string): void;
-    isExpired(buffer: number): boolean;
-    // (undocumented)
-    protected _prefix: string;
-    // (undocumented)
-    protected setPrefix(prefix: string): void;
-    // @internal (undocumented)
-    setUserInfo(userInfo: UserInfo): void;
-    // (undocumented)
-    toJSON(): AccessTokenProps;
-    // (undocumented)
-    protected _tokenString: string;
-    toTokenString(includePrefix?: IncludePrefix): string;
-    }
-
-// @beta
-export interface AccessTokenProps {
-    // (undocumented)
-    expiresAt?: string;
-    // (undocumented)
-    startsAt?: string;
-    // (undocumented)
-    tokenString: string;
-    // (undocumented)
-    userInfo?: UserInfoProps;
-}
+// @public (undocumented)
+export type AccessToken = string;
 
 // @beta
 export class AuthenticationError extends ResponseError {
@@ -60,16 +23,15 @@ export class AuthenticationError extends ResponseError {
 
 // @beta
 export interface AuthorizationClient {
-    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
-    readonly isAuthorized: boolean;
+    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken | undefined>;
 }
 
 // @public
 export class AuthorizedClientRequestContext extends ClientRequestContext {
     // @beta
-    constructor(accessToken: AccessToken, activityId?: GuidString, applicationId?: string, applicationVersion?: string, sessionId?: GuidString);
+    constructor(accessToken?: AccessToken, activityId?: GuidString, applicationId?: string, applicationVersion?: string, sessionId?: GuidString);
     // @beta
-    accessToken: AccessToken;
+    accessToken?: AccessToken;
     // @internal (undocumented)
     static fromJSON(json: AuthorizedClientRequestContextProps): AuthorizedClientRequestContext;
     // @internal (undocumented)
@@ -79,7 +41,7 @@ export class AuthorizedClientRequestContext extends ClientRequestContext {
 // @beta
 export interface AuthorizedClientRequestContextProps extends ClientRequestContextProps {
     // (undocumented)
-    accessToken: AccessTokenProps;
+    accessToken: AccessToken;
 }
 
 // @beta (undocumented)
@@ -91,7 +53,7 @@ export interface AuthorizedSession extends SessionProps {
 // @beta
 export interface AuthorizedSessionProps extends SessionProps {
     // (undocumented)
-    accessTokenProps: AccessTokenProps;
+    accessToken: AccessToken;
 }
 
 // @beta
@@ -206,14 +168,6 @@ export class ImsAuthorizationClient extends Client {
 }
 
 // @beta
-export enum IncludePrefix {
-    // (undocumented)
-    No = 1,
-    // (undocumented)
-    Yes = 0
-}
-
-// @beta
 export const isAuthorizedClientRequestContext: (requestContext: ClientRequestContext) => requestContext is AuthorizedClientRequestContext;
 
 // @beta
@@ -238,6 +192,9 @@ export interface ProgressInfo {
     // (undocumented)
     total?: number;
 }
+
+// @internal
+export function removeAccessTokenPrefix(accessToken: AccessToken | undefined): AccessToken | undefined;
 
 // @internal
 export function request(requestContext: ClientRequestContext, url: string, options: RequestOptions): Promise<Response>;
@@ -372,9 +329,6 @@ export class SasUrlExpired extends BentleyError {
 }
 
 // @internal
-export function TokenPrefix(prefix: string): (constructor: any) => void;
-
-// @internal
 export class UrlDiscoveryClient extends Client {
     constructor();
     // (undocumented)
@@ -387,80 +341,6 @@ export class UrlDiscoveryClient extends Client {
 // @internal
 export class UserCancelledError extends BentleyError {
     constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
-}
-
-// @beta
-export class UserInfo {
-    constructor(
-    id: string,
-    email?: {
-        id: string;
-        isVerified?: boolean | undefined;
-    } | undefined,
-    profile?: {
-        firstName: string;
-        lastName: string;
-        name?: string | undefined;
-        preferredUserName?: string | undefined;
-    } | undefined,
-    organization?: {
-        id: string;
-        name: string;
-    } | undefined,
-    featureTracking?: {
-        ultimateSite: string;
-        usageCountryIso: string;
-    } | undefined);
-    email?: {
-        id: string;
-        isVerified?: boolean | undefined;
-    } | undefined;
-    featureTracking?: {
-        ultimateSite: string;
-        usageCountryIso: string;
-    } | undefined;
-    static fromJson(jsonObj: UserInfoProps): UserInfo;
-    // @internal
-    static fromTokenResponseJson(jsonObj: any): UserInfo;
-    id: string;
-    organization?: {
-        id: string;
-        name: string;
-    } | undefined;
-    profile?: {
-        firstName: string;
-        lastName: string;
-        name?: string | undefined;
-        preferredUserName?: string | undefined;
-    } | undefined;
-}
-
-// @beta (undocumented)
-export interface UserInfoProps {
-    // (undocumented)
-    email?: {
-        id: string;
-        isVerified?: boolean;
-    };
-    // (undocumented)
-    featureTracking?: {
-        ultimateSite: string;
-        usageCountryIso: string;
-    };
-    // (undocumented)
-    id: string;
-    // (undocumented)
-    organization?: {
-        id: string;
-        name: string;
-    };
-    // (undocumented)
-    profile?: {
-        firstName: string;
-        lastName: string;
-        name?: string;
-        preferredUserName?: string;
-    };
 }
 
 // @beta

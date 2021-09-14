@@ -48,6 +48,8 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
     checkSessionStatus(requestContext: ClientRequestContext): Promise<boolean>;
     protected createUserManager(settings: UserManagerSettings): UserManager;
     dispose(): void;
+    // (undocumented)
+    protected _expiresAt?: Date;
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
     // (undocumented)
     protected getUserManager(requestContext: ClientRequestContext): Promise<UserManager>;
@@ -68,7 +70,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
     protected _onUserLoaded: (user: User) => void;
     protected _onUserSignedOut: () => void;
     // (undocumented)
-    readonly onUserStateChanged: BeEvent<(token?: AccessToken | undefined) => void>;
+    readonly onUserStateChanged: BeEvent<(token?: string | undefined) => void>;
     // (undocumented)
     protected _onUserStateChanged: (user: User | undefined) => void;
     protected _onUserUnloaded: () => void;

@@ -237,7 +237,7 @@ export class AnnotationElement2d extends GraphicalElement2d {
 
 // @public
 export class AuthorizedBackendRequestContext extends AuthorizedClientRequestContext {
-    constructor(accessToken: AccessToken, activityId?: string);
+    constructor(accessToken?: AccessToken, activityId?: string);
     static create(activityId?: string): Promise<AuthorizedBackendRequestContext>;
 }
 
@@ -2350,7 +2350,7 @@ export class IModelHost {
     static get compressCachedTiles(): boolean;
     // (undocumented)
     static configuration?: IModelHostConfiguration;
-    static getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+    static getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken | undefined>;
     // @internal (undocumented)
     static getAuthorizedContext(): Promise<AuthorizedClientRequestContext>;
     // @alpha
@@ -3002,7 +3002,7 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
 }
 
 // @internal (undocumented)
-export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClient {
+export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClient implements AuthorizationClient {
     protected constructor(config?: NativeAppAuthorizationConfiguration);
     // (undocumented)
     protected _accessToken?: AccessToken;
@@ -3011,13 +3011,11 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
     // (undocumented)
     expireSafety: number;
     // (undocumented)
-    getAccessToken(): Promise<AccessToken>;
+    getAccessToken(): Promise<AccessToken | undefined>;
     // (undocumented)
     getClientRequestContext(): ClientRequestContext;
     // (undocumented)
     initialize(config?: NativeAppAuthorizationConfiguration): Promise<void>;
-    // (undocumented)
-    get isAuthorized(): boolean;
     // (undocumented)
     issuerUrl?: string;
     // (undocumented)
@@ -3064,7 +3062,7 @@ export class NativeHost {
     static get isValid(): boolean;
     static notifyNativeFrontend<T extends keyof NativeAppNotifications>(methodName: T, ...args: Parameters<NativeAppNotifications[T]>): void;
     static readonly onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
-    static readonly onUserStateChanged: BeEvent<(token?: AccessToken | undefined) => void>;
+    static readonly onUserStateChanged: BeEvent<(token?: string | undefined) => void>;
     // @internal
     static overrideInternetConnectivity(_overridenBy: OverriddenBy, status: InternetConnectivityStatus): void;
     static get settingsStore(): NativeAppStorage;

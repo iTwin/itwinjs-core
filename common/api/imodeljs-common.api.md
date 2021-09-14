@@ -4,7 +4,7 @@
 
 ```ts
 
-import { AccessTokenProps } from '@bentley/itwin-client';
+import { AccessToken } from '@bentley/itwin-client';
 import { Angle } from '@bentley/geometry-core';
 import { AngleProps } from '@bentley/geometry-core';
 import { AnyGeometryQuery } from '@bentley/geometry-core';
@@ -5125,14 +5125,14 @@ export interface NativeAppFunctions {
     deleteBriefcaseFiles: (_fileName: string) => Promise<void>;
     downloadBriefcase: (_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean, _interval?: number) => Promise<LocalBriefcaseProps>;
     // (undocumented)
-    getAccessTokenProps: () => Promise<AccessTokenProps>;
+    getAccessToken: () => Promise<AccessToken | undefined>;
     getBriefcaseFileName: (_props: BriefcaseProps) => Promise<string>;
     getCachedBriefcases: (_iModelId?: GuidString) => Promise<LocalBriefcaseProps[]>;
     initializeAuth: (props: ClientRequestContextProps, config?: NativeAppAuthorizationConfiguration) => Promise<number>;
     overrideInternetConnectivity: (_overriddenBy: OverriddenBy, _status: InternetConnectivityStatus) => Promise<void>;
     requestCancelDownloadBriefcase: (_fileName: string) => Promise<boolean>;
     // (undocumented)
-    setAccessTokenProps: (token: AccessTokenProps) => Promise<void>;
+    setAccessToken: (token: AccessToken) => Promise<void>;
     signIn: () => Promise<void>;
     signOut: () => Promise<void>;
     storageGet: (_storageId: string, _key: string) => Promise<StorageValue | undefined>;
@@ -5150,7 +5150,7 @@ export interface NativeAppNotifications {
     // (undocumented)
     notifyInternetConnectivityChanged: (status: InternetConnectivityStatus) => void;
     // (undocumented)
-    notifyUserStateChanged: (accessToken?: AccessTokenProps) => void;
+    notifyUserStateChanged: (accessToken?: AccessToken) => void;
 }
 
 // @internal (undocumented)

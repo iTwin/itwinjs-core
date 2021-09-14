@@ -25,14 +25,10 @@ import { TransformCallback } from 'stream';
 // @beta
 export class AgentAuthorizationClient extends BackendAuthorizationClient implements AuthorizationClient {
     constructor(agentConfiguration: AgentAuthorizationClientConfiguration);
-    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
-    // @deprecated
-    getToken(requestContext: ClientRequestContext): Promise<AccessToken>;
+    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken | undefined>;
     get hasExpired(): boolean;
     get hasSignedIn(): boolean;
     get isAuthorized(): boolean;
-    // @deprecated
-    refreshToken(requestContext: ClientRequestContext, jwt: AccessToken): Promise<AccessToken>;
 }
 
 // @beta
@@ -169,7 +165,7 @@ export interface ConfigData {
 // @beta
 export class DelegationAuthorizationClient extends BackendAuthorizationClient {
     constructor(configuration: DelegationAuthorizationClientConfiguration);
-    getJwtFromJwt(requestContext: ClientRequestContext, accessToken: AccessToken): Promise<AccessToken>;
+    getJwtFromJwt(requestContext: ClientRequestContext, accessToken?: AccessToken): Promise<AccessToken | undefined>;
 }
 
 // @beta

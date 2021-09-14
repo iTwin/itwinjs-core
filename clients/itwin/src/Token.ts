@@ -23,4 +23,8 @@ class TokenPrefixToTypeContainer {
   public static tokenPrefixToConstructorDict: { [key: string]: any } = {};
 }
 
+/**
+ * A string that contains an access token.
+ * @beta
+ */
 export type AccessToken = string;

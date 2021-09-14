@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** Information on the authenticated user.
- * @beta
+ * @public
  */
 export class UserInfo {
   constructor(

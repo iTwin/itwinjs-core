@@ -6,13 +6,13 @@
 
 import { AccessToken } from '@bentley/itwin-client';
 import { Asset } from '@bentley/context-registry-client';
+import { AuthorizationClient } from '@bentley/itwin-client';
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { CancelRequest } from '@bentley/itwin-client';
 import { ChunkedQueryContext } from '@bentley/itwin-client';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ContextType } from '@bentley/context-registry-client';
 import { FileHandler } from '@bentley/itwin-client';
-import { FrontendAuthorizationClient } from '@bentley/frontend-authorization-client';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { GuidString } from '@bentley/bentleyjs-core';
 import { HttpRequestOptions } from '@bentley/itwin-client';
@@ -26,7 +26,6 @@ import { RequestOptions } from '@bentley/itwin-client';
 import { RequestQueryOptions } from '@bentley/itwin-client';
 import { Response } from '@bentley/itwin-client';
 import { ResponseError } from '@bentley/itwin-client';
-import { UserInfo } from '@bentley/itwin-client';
 import { WsgClient } from '@bentley/itwin-client';
 import { WsgError } from '@bentley/itwin-client';
 import { WsgInstance } from '@bentley/itwin-client';
@@ -484,7 +483,7 @@ export type EmptyIModelTemplate = "Empty";
 export class EventHandler extends EventBaseHandler {
     // @internal
     constructor(handler: IModelBaseHandler);
-    createListener<T extends IModelHubEvent>(requestContext: ClientRequestContext, authenticationCallback: () => Promise<AccessToken>, subscriptionId: string, iModelId: GuidString, listener: (event: T) => void): () => void;
+    createListener<T extends IModelHubEvent>(requestContext: ClientRequestContext, authenticationCallback: () => Promise<AccessToken | undefined>, subscriptionId: string, iModelId: GuidString, listener: (event: T) => void): () => void;
     getEvent(requestContext: ClientRequestContext, sasToken: string, baseAddress: string, subscriptionId: string, timeout?: number): Promise<IModelHubEvent | undefined>;
     getSASToken(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<EventSAS>;
     get subscriptions(): EventSubscriptionHandler;
@@ -543,7 +542,7 @@ export class GlobalCheckpointV2CreatedEvent extends IModelHubGlobalEvent {
 // @internal
 export class GlobalEventHandler extends EventBaseHandler {
     constructor(handler: IModelBaseHandler);
-    createListener(requestContext: AuthorizedClientRequestContext, authenticationCallback: () => Promise<AccessToken>, subscriptionInstanceId: string, listener: (event: IModelHubGlobalEvent) => void): () => void;
+    createListener(requestContext: AuthorizedClientRequestContext, authenticationCallback: () => Promise<AccessToken | undefined>, subscriptionInstanceId: string, listener: (event: IModelHubGlobalEvent) => void): () => void;
     getEvent(requestContext: ClientRequestContext, sasToken: string, baseAddress: string, subscriptionId: string, timeout?: number, getOperation?: GetEventOperationType): Promise<IModelHubGlobalEvent | undefined>;
     getSASToken(requestContext: AuthorizedClientRequestContext): Promise<GlobalEventSAS>;
     get subscriptions(): GlobalEventSubscriptionHandler;
@@ -740,7 +739,7 @@ export interface IModelCloudEnvironment {
     // (undocumented)
     readonly contextMgr: ContextManagerClient;
     // (undocumented)
-    getAuthorizationClient(userInfo: UserInfo | undefined, userCredentials: any): FrontendAuthorizationClient;
+    getAuthorizationClient(userCredentials: any): AuthorizationClient;
     // (undocumented)
     readonly imodelClient: IModelClient;
     // (undocumented)

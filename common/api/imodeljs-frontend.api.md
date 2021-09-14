@@ -15,6 +15,7 @@ import { AppearanceOverrideProps as AppearanceOverrideProps_2 } from '@bentley/i
 import { Arc3d } from '@bentley/geometry-core';
 import { AsyncFunction as AsyncFunction_2 } from '@bentley/bentleyjs-core';
 import { AsyncMethodsOf as AsyncMethodsOf_2 } from '@bentley/bentleyjs-core';
+import { AuthorizationClient } from '@bentley/itwin-client';
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { AuxChannel } from '@bentley/geometry-core';
 import { AuxCoordSystem2dProps } from '@bentley/imodeljs-common';
@@ -28,14 +29,12 @@ import { BaseQuantityDescription } from '@bentley/ui-abstract';
 import { BatchType } from '@bentley/imodeljs-common';
 import { BeDuration } from '@bentley/bentleyjs-core';
 import { BeEvent } from '@bentley/bentleyjs-core';
-import { BentleyCloudRpcParams } from '@bentley/imodeljs-common';
 import { BentleyStatus } from '@bentley/bentleyjs-core';
 import { BeTimePoint } from '@bentley/bentleyjs-core';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { BoundingSphere } from '@bentley/imodeljs-common';
 import { BriefcaseDownloader } from '@bentley/imodeljs-common';
 import { BriefcaseProps } from '@bentley/imodeljs-common';
-import { BrowserAuthorizationClientConfiguration } from '@bentley/frontend-authorization-client';
 import { ByteStream } from '@bentley/bentleyjs-core';
 import { Camera } from '@bentley/imodeljs-common';
 import { Capabilities } from '@bentley/webgl-compatibility';
@@ -102,7 +101,6 @@ import { FillFlags } from '@bentley/imodeljs-common';
 import { FontMap } from '@bentley/imodeljs-common';
 import { FormatProps } from '@bentley/imodeljs-quantity';
 import { FormatterSpec } from '@bentley/imodeljs-quantity';
-import { FrontendAuthorizationClient } from '@bentley/frontend-authorization-client';
 import { Frustum } from '@bentley/imodeljs-common';
 import { FrustumPlanes } from '@bentley/imodeljs-common';
 import * as Fuse from 'fuse.js';
@@ -1218,7 +1216,7 @@ export type AsyncMethodsOf<T> = AsyncMethodsOf_2<T>;
 
 // @public
 export class AuthorizedFrontendRequestContext extends AuthorizedClientRequestContext {
-    constructor(accessToken: AccessToken, activityId?: string);
+    constructor(accessToken?: AccessToken, activityId?: string);
     static create(activityId?: string): Promise<AuthorizedFrontendRequestContext>;
 }
 
@@ -4366,7 +4364,7 @@ export class IModelApp {
     // @beta
     static applicationLogoCard?: () => HTMLTableRowElement;
     static get applicationVersion(): string;
-    static authorizationClient?: FrontendAuthorizationClient;
+    static authorizationClient?: AuthorizationClient;
     // @internal (undocumented)
     static createRenderSys(opts?: RenderSystem.Options): RenderSystem;
     // @beta
@@ -4445,7 +4443,7 @@ export interface IModelAppOptions {
     accuSnap?: AccuSnap;
     applicationId?: string;
     applicationVersion?: string;
-    authorizationClient?: FrontendAuthorizationClient;
+    authorizationClient?: AuthorizationClient;
     // @beta
     extensionAdmin?: ExtensionAdmin;
     i18n?: I18N | I18NOptions;
@@ -4979,7 +4977,9 @@ export class LocalhostIpcApp {
 }
 
 // @internal (undocumented)
-export interface LocalHostIpcAppOpts extends WebViewerAppOpts {
+export interface LocalHostIpcAppOpts {
+    // (undocumented)
+    iModelApp?: IModelAppOptions;
     // (undocumented)
     localhostIpcApp?: {
         socketPort?: number;
@@ -6575,7 +6575,7 @@ export class NativeApp {
     }
 
 // @public
-export class NativeAppAuthorization {
+export class NativeAppAuthorization implements AuthorizationClient {
     constructor(config?: NativeAppAuthorizationConfiguration);
     // (undocumented)
     protected _expireSafety: number;
@@ -6586,7 +6586,7 @@ export class NativeAppAuthorization {
     // (undocumented)
     get isAuthorized(): boolean;
     // (undocumented)
-    readonly onUserStateChanged: BeEvent<(token?: AccessToken | undefined) => void>;
+    readonly onUserStateChanged: BeEvent<(token?: string | undefined) => void>;
     signIn(): Promise<void>;
     signOut(): Promise<void>;
 }
@@ -13068,26 +13068,6 @@ export class WebMercatorTilingScheme extends MapTilingScheme {
     latitudeToYFraction(latitude: number): number;
     // (undocumented)
     yFractionToLatitude(yFraction: number): number;
-}
-
-// @beta
-export class WebViewerApp {
-    // (undocumented)
-    static shutdown(): Promise<void>;
-    // (undocumented)
-    static startup(opts: WebViewerAppOpts): Promise<void>;
-}
-
-// @beta
-export interface WebViewerAppOpts {
-    // (undocumented)
-    iModelApp?: IModelAppOptions;
-    // (undocumented)
-    webViewerApp: {
-        rpcParams: BentleyCloudRpcParams;
-        routing?: RpcRoutingToken;
-        authConfig?: BrowserAuthorizationClientConfiguration;
-    };
 }
 
 // @internal
