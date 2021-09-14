@@ -43,6 +43,13 @@ export interface TimelineMenuItemProps {
   /** duration for the entire timeline to play */
   timelineDuration: number;
 }
+/** TimelineDateMarkerProps: Mark a date on the timeline with an indicator
+ * @public
+ */
+export interface TimelineDateMarkerProps {
+  date?: Date; // if not defined, today's date will be used
+  dateMarker?: React.ReactNode; // if undefined, a vertical bar will mark the date
+}
 /**
  *  [[TimelineComponentProps]] configure the timeline
  * @public
@@ -67,6 +74,7 @@ export interface TimelineComponentProps {
   appMenuItems?: TimelineMenuItemProps[]; // app-supplied speed entries in the Timeline Context Menu
   appMenuItemOption?: TimelineMenuItemOption; // how to include the supplied app menu items in the Timeline Context Menu
   timeZoneOffset?: number; // Display date and time offset by the number of minutes specified. When undefined - local timezone will be used
+  markDate?: TimelineDateMarkerProps; // Display a marker on the timeline rail to indicate current date - will only work if starDate and endDate are defined
 
 }
 /** @internal */
@@ -473,6 +481,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
             onChange={this._onTimelineChange}
             onUpdate={this._onTimelineChange}
             timeZoneOffset={this.props.timeZoneOffset}
+            markDate={this.props.markDate}
           />
           <div className="end-time-container">
             {hasDates && <span className="end-date">{toDateString(endDate!, timeZoneOffset)}</span>}

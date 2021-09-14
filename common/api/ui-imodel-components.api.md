@@ -845,10 +845,11 @@ export interface QuantityProps extends CommonProps {
 }
 
 // @internal (undocumented)
-export function RailToolTip({ showToolTip, percent, tooltipText }: {
+export function RailMarkers({ showToolTip, percent, tooltipText, markDate }: {
     showToolTip: boolean;
     percent: number;
     tooltipText: string;
+    markDate?: DateMarkerProps;
 }): JSX.Element;
 
 // @beta
@@ -873,6 +874,8 @@ export interface ScrubberProps extends CommonProps {
     inMiniMode: boolean;
     // (undocumented)
     isPlaying: boolean;
+    // (undocumented)
+    markDate?: TimelineDateMarkerProps;
     // (undocumented)
     onChange?: (values: ReadonlyArray<number>) => void;
     // (undocumented)
@@ -963,6 +966,8 @@ export interface TimelineComponentProps {
     // (undocumented)
     initialDuration?: number;
     // (undocumented)
+    markDate?: TimelineDateMarkerProps;
+    // (undocumented)
     minimized?: boolean;
     // (undocumented)
     onChange?: (duration: number) => void;
@@ -1008,6 +1013,14 @@ export interface TimelineDataProvider {
 export enum TimelineDateDisplay {
     ActualTime = 0,
     ProjectTime = 1
+}
+
+// @public
+export interface TimelineDateMarkerProps {
+    // (undocumented)
+    date?: Date;
+    // (undocumented)
+    dateMarker?: React.ReactNode;
 }
 
 // @public
