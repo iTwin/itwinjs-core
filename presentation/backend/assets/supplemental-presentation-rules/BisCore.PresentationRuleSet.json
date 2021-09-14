@@ -314,10 +314,6 @@
               "schemaName": "BisCore",
               "className": "ModelContainsElements"
             },
-            "targetClass": {
-              "schemaName": "BisCore",
-              "className": "Model"
-            },
             "direction": "Backward"
           },
           "properties": "_none_",
