@@ -52,7 +52,7 @@ export class HubUtility {
   }
 
   public static async queryIModelByName(requestContext: AuthorizedClientRequestContext, projectId: string, iModelName: string): Promise<GuidString | undefined> {
-    return IModelHost.hubAccess.queryIModelByName({ requestContext, iTwinId: projectId, iModelName });
+    return IModelHost.hubAccess.queryIModelByName({ user: requestContext, iTwinId: projectId, iModelName });
   }
 
   private static async queryIModelById(requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: GuidString): Promise<HubIModel | undefined> {
@@ -194,7 +194,7 @@ export class HubUtility {
     const iTwinId = await HubUtility.getITwinIdByName(requestContext, projectName);
     const iModelId = await HubUtility.queryIModelIdByName(requestContext, iTwinId, iModelName);
 
-    await IModelHost.hubAccess.deleteIModel({ user, iTwinId, iModelId });
+    await IModelHost.hubAccess.deleteIModel({ user: requestContext, iTwinId, iModelId });
   }
 
   /** Get the pathname of the briefcase in the supplied directory - assumes a standard layout of the supplied directory */

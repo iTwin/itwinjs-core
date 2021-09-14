@@ -159,7 +159,7 @@ describe.skip("Bridge", async () => {
   before(async () => {
     await IModelHost.startup();
     user = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
-    testITwinId = (await getITwinIdByName(user, "iModelJsIntegrationTest")).wsgId;
+    testITwinId = (await getITwinByName(user, "iModelJsIntegrationTest")).id;
     revision0 = path.join(KnownTestLocations.assetsDir, "empty.bim");
     iModelId = await createIModel(user, testITwinId, "BridgeTest", revision0);
     await IModelHost.shutdown();
