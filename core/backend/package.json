@@ -22,7 +22,7 @@
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "pretest": "cpx ./src/test/logging.config.json ./lib/test",
     "test": "betools test --offline=\"mock\" --grep=\"#integration|#WebGLPerformance\" --invert",
-    "azurite:setup": "mkdirp ./lib/test/azuriteStorage && azurite --silent --location ./lib/test/azuriteStorage",
+    "azurite:setup": "mkdirp ./lib/test/azuriteStorage && azurite --silent --loose --location ./lib/test/azuriteStorage",
     "test:integration": "run-s pretest test:integration:azurite",
     "test:integration:azurite": "run-p -r azurite:setup test:integration:core",
     "test:integration:core": "betools test --testDir=\"./lib/test/integration\"",
@@ -117,7 +117,7 @@
     "webpack": "4.42.0"
   },
   "dependencies": {
-    "@azure/storage-blob": "10.4.0",
+    "@azure/storage-blob": "^12.7.0",
     "@bentley/context-registry-client": "workspace:*",
     "@bentley/imodeljs-native": "3.0.7",
     "deep-assign": "^2.0.0",
