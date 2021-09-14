@@ -15,7 +15,7 @@ import { Matrix4d } from "../../geometry4d/Matrix4d";
 import { Checker } from "../Checker";
 // External test functions
 import { clipPrimitivesAreEqual } from "./ClipPrimitives.test";
-import { Angle, GeometryQuery, GrowableXYZArray, PolygonOps, Sample } from "../../geometry-core";
+import { Angle, GeometryQuery, GrowableXYZArray, LineString3d, Loop, PolygonOps, Sample } from "../../geometry-core";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 /** Enumerated type for point manipulation at the extremities of a ClipVector's ClipShape. */
@@ -361,29 +361,51 @@ describe("StringifiedClipVector", () => {
     expect(StringifiedClipVector.fromClipVector(cv)).to.equal(scv);
   });
 
-  it("OuterAndMask", () => {
+  it.only("OuterAndMask", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const outer = [[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]];
     const triangle = [[2, 2], [8, 2], [5, 6], [2, 2]];
     const innerNonConvex = [[2, 6], [5, 6], [5, 1], [4, 4], [2, 6]];
     const innerCircle = Sample.createArcStrokes(2, Point3d.create(5, 4), 2.0, Angle.createDegrees(12), Angle.createDegrees(360));
-    const innerU = [[2,1],[4,2],[4,5],[5,6],[5,2],[8,1],[9,8],[3,7],[2,1]];
+    const innerU = [[2, 1], [4, 2], [4, 5], [5, 6], [5, 2], [8, 1], [9, 8], [3, 7], [2, 1]];
+    const twoInlets = [[2, 1], [4, 2], [4, 5], [5, 6], [5, 2], [8, 1],
+        [10,8], [5,8],[5,9],[9,9],
+        [9, 12], [7, 11], [3, 12], [2, 1]];
+    const innerDart = [
+        [5, 0],
+        [3, -2],
+        [9, 0],
+        [3, 2],
+//        [5, 0],
+      ];
+      const innerDart1 = [
+        [7, 0],
+        [9, -2],
+        [5, 0],
+        [9, 2],
+//        [9, 0],
+      ];
+
     let x0 = 0;
     for (const isMask of [true, false]){
       const jsonA = [{ shape: { points: outer } }, { shape: { points: triangle, mask: isMask } }];
       const jsonB = [{ shape: { points: outer } }, { shape: { points: innerCircle, mask: isMask}}];
       const jsonC = [{ shape: { points: outer } }, { shape: { points: innerNonConvex, mask: isMask}}];
       const jsonD = [{ shape: { points: outer } }, { shape: { points: innerU, mask: isMask}}];
+      const jsonDart = [{ shape: { points: outer } }, { shape: { points: innerDart, mask: isMask}}];
+      const jsonDart1 = [{ shape: { points: outer } }, { shape: { points: innerDart1, mask: isMask}}];
+      const jsonTwoInlets = [{ shape: { points: outer } }, { shape: { points: twoInlets, mask: isMask}}];
+      const jsonTwoInletsReversed = [{ shape: { points: outer } }, { shape: { points: twoInlets.slice ().reverse(), mask: isMask}}];
       // const polygonToClip = Sample.createArcStrokes(3, Point3d.create(5, 5), 6.0, Angle.createDegrees(0), Angle.createDegrees(360));
       const polygonToClip = Sample.createRectangleXY(-10, -10, 30, 30);
       const y0 = 0;
-      for (const json of [jsonA, jsonC, jsonB, jsonD]) {
+      for (const json of [jsonTwoInlets, jsonTwoInletsReversed, jsonDart, jsonDart1, jsonDart, jsonA, jsonC, jsonB, jsonD, jsonDart]) {
         const primitive = ClipPrimitive.fromJSON(json[json.length - 1]);
         if (primitive) {
           exerciseClipPrimitive(ck, allGeometry, primitive, polygonToClip, isMask, x0, y0);
         }
-        x0 += 50.0;
+        x0 += 200.0;
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipVector", "OuterAndMask");
@@ -449,8 +471,9 @@ export function exerciseClipPrimitive(ck: Checker, allGeometry: GeometryQuery[],
       }
     const compositeClip: GrowableXYZArray[] = [];
     primitive.fetchClipPlanesRef()?.polygonClip(polygonToClip, compositeClip);
-    for (const c of compositeClip)
+    for (const c of compositeClip) {
       c.forceClosure();
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, compositeClip, x0, y0 + 2 * range2.yLength());
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, Loop.create (LineString3d.create (c)), x0, y0 + 2 * range2.yLength());
+    }
   }
 }

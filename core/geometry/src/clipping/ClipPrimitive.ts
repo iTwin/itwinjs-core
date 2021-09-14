@@ -22,6 +22,7 @@ import { ClipPlaneContainment } from "./ClipUtils";
 import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets, UnionOfConvexClipPlaneSetsProps } from "./UnionOfConvexClipPlaneSets";
 import { Point3dArray } from "../geometry3d/PointHelpers";
+import { AlternatingCCTreeBuilder, AlternatingCCTreeNode } from "./AlternatingConvexClipTree";
 
 /**
  * Bit mask type for referencing subsets of 6 planes of range box.
@@ -273,14 +274,27 @@ export class ClipPrimitive {
 
 /** Internal helper class holding XYZ components that serves as a representation of polygon edges defined by clip planes */
 class PolyEdge {
-  public origin: Point3d;
-  public next: Point3d;
-  public normal: Vector2d;
+  public pointA: Point3d;
+  public pointB: Point3d;
+  public normal: Vector3d;
 
-  public constructor(origin: Point3d, next: Point3d, normal: Vector2d, z: number) {
-    this.origin = Point3d.create(origin.x, origin.y, z);
-    this.next = Point3d.create(next.x, next.y, z);
+  public constructor(origin: Point3d, next: Point3d, normal: Vector3d, z: number) {
+    this.pointA = Point3d.create(origin.x, origin.y, z);
+    this.pointB = Point3d.create(next.x, next.y, z);
     this.normal = normal;
+  }
+  // Assume both normals are unit length.
+  // old logic: use difference of (previously computed) normals as perpendicular to bisector.
+  public static makeUnitPerpendicularToBisector(edgeA: PolyEdge, edgeB: PolyEdge, reverse: boolean): Vector3d | undefined{
+    let candidate = edgeB.normal.minus(edgeA.normal);
+    if (candidate.normalize(candidate) === undefined) {
+      candidate = Vector3d.createStartEnd(edgeA.pointA, edgeB.pointB);
+      if (candidate.normalize(candidate) === undefined)
+        return undefined;
+    }
+    if (reverse)
+      candidate.scale(-1.0, candidate);
+    return candidate;
   }
 }
 /**
@@ -528,6 +542,7 @@ export class ClipShape extends ClipPrimitive {
     set.addConvexSet(convexSet);
     return true;
   }
+
   /** Given a convex polygon defined as an array of points, populate the given UnionOfConvexClipPlaneSets with ConvexClipPlaneSets defining the bounded region. Returns true if successful. */
   private parseConvexPolygonPlanes(set: UnionOfConvexClipPlaneSets, polygon: Point3d[], direction: number, buildExteriorClipper: boolean, cameraFocalLength?: number): boolean {
     const samePointTolerance = 1.0e-8; // This could possibly be replaced with more widely used constants
@@ -536,11 +551,11 @@ export class ClipShape extends ClipPrimitive {
     const reverse = direction < 0;
     for (let i = 0; i < polygon.length - 1; i++) {
       const z = (cameraFocalLength === undefined) ? 0.0 : -cameraFocalLength;
-      const dir = Vector2d.createFrom((polygon[i + 1].minus(polygon[i])));
+      const dir = Vector3d.createStartEnd (polygon[i], polygon[i + 1]);
       const magnitude = dir.magnitude();
       dir.normalize(dir);
       if (magnitude > samePointTolerance) {
-        const normal = Vector2d.create(reverse ? dir.y : -dir.y, reverse ? -dir.x : dir.x);
+        const normal = Vector3d.create(reverse ? dir.y : -dir.y, reverse ? -dir.x : dir.x);
         edges.push(new PolyEdge(polygon[i], polygon[i + 1], normal, z));
       }
     }
@@ -554,15 +569,16 @@ export class ClipShape extends ClipPrimitive {
         const prevEdge = edges[i ? (i - 1) : last];
         const nextEdge = edges[(i === last) ? 0 : (i + 1)];
         const convexSet = ConvexClipPlaneSet.createEmpty();
-        const prevNormal = edge.normal.minus(prevEdge.normal);
-        const nextNormal = edge.normal.minus(nextEdge.normal);
-        prevNormal.normalize(prevNormal);
-        nextNormal.normalize(nextNormal);
+        const previousPerpendicular = PolyEdge.makeUnitPerpendicularToBisector(prevEdge, edge, !reverse);
+        const nextPerpendicular = PolyEdge.makeUnitPerpendicularToBisector(edge, nextEdge, reverse);
         // Create three-sided fans from each edge.   Note we could define the correct region
         // with only two planes for edge, but cannot then designate the "interior" status of the edges accurately.
-        convexSet.planes.push(ClipPlane.createNormalAndPoint(Vector3d.create(prevNormal.x, prevNormal.y), edge.origin, this._invisible, true)!);
-        convexSet.planes.push(ClipPlane.createNormalAndPoint(Vector3d.create(edge.normal.x, edge.normal.y), edge.origin, this._invisible, false)!);
-        convexSet.planes.push(ClipPlane.createNormalAndPoint(Vector3d.create(nextNormal.x, nextNormal.y), nextEdge.origin, this._invisible, true)!);
+
+        if (previousPerpendicular)
+          convexSet.planes.push(ClipPlane.createNormalAndPoint(previousPerpendicular, edge.pointA, this._invisible, true)!);
+        convexSet.planes.push(ClipPlane.createNormalAndPoint(edge.normal, edge.pointB, this._invisible, false)!);
+        if (nextPerpendicular)
+          convexSet.planes.push(ClipPlane.createNormalAndPoint(nextPerpendicular, nextEdge.pointA, this._invisible, true)!);
         convexSet.addZClipPlanes(this._invisible, this._zLow, this._zHigh);
         set.addConvexSet(convexSet);
       }
@@ -571,14 +587,14 @@ export class ClipShape extends ClipPrimitive {
       const convexSet = ConvexClipPlaneSet.createEmpty();
       if (cameraFocalLength === undefined) {
         for (const edge of edges)
-          convexSet.planes.push(ClipPlane.createNormalAndPoint(Vector3d.create(edge.normal.x, edge.normal.y), edge.origin)!);
+          convexSet.planes.push(ClipPlane.createNormalAndPoint(Vector3d.create(edge.normal.x, edge.normal.y), edge.pointA)!);
       } else {
         if (reverse)
           for (const edge of edges)
-            convexSet.planes.push(ClipPlane.createNormalAndDistance(Vector3d.createFrom(edge.origin).crossProduct(Vector3d.createFrom(edge.next)).normalize()!, 0.0)!);
+            convexSet.planes.push(ClipPlane.createNormalAndDistance(Vector3d.createFrom(edge.pointA).crossProduct(Vector3d.createFrom(edge.pointB)).normalize()!, 0.0)!);
         else
           for (const edge of edges)
-            convexSet.planes.push(ClipPlane.createNormalAndDistance(Vector3d.createFrom(edge.next).crossProduct(Vector3d.createFrom(edge.origin)).normalize()!, 0.0)!);
+            convexSet.planes.push(ClipPlane.createNormalAndDistance(Vector3d.createFrom(edge.pointB).crossProduct(Vector3d.createFrom(edge.pointA)).normalize()!, 0.0)!);
       }
       convexSet.addZClipPlanes(this._invisible, this._zLow, this._zHigh);
       set.addConvexSet(convexSet);
@@ -587,30 +603,7 @@ export class ClipShape extends ClipPrimitive {
   }
   /** Given a concave polygon defined as an array of points, populate the given UnionOfConvexClipPlaneSets with multiple ConvexClipPlaneSets defining the bounded region. Returns true if successful. */
   private parseConcavePolygonPlanes(set: UnionOfConvexClipPlaneSets, polygon: Point3d[], isMask: boolean, cameraFocalLength?: number): boolean {
-    const hullPoints: Point3d[] = [];
-    const insidePoints: Point3d[] = [];
-    const expandedHull: Point3d[] = [];
-    let triangulatedPolygon;
-    if (isMask){
-    Point3dArray.computeConvexHullXY(polygon, hullPoints, insidePoints, false);
-    if (hullPoints.length < 3)
-      return false;
-    // YIKES -- convex hull is pointers to originals !! Can't transform in place!!!
-    // Move the hull points out so there is a clean space to triangulate "between" the polygon and expanded hull.
-    const centroid = Point3dArray.centroid(hullPoints);
-    for (const p of hullPoints) {
-      expandedHull.push (centroid.interpolate(2.0, p));
-    }
-    expandedHull.push(expandedHull[0].clone());
-
-    triangulatedPolygon = Triangulator.createTriangulatedGraphFromLoops([expandedHull, polygon]);
-    } else {
-      triangulatedPolygon = Triangulator.createTriangulatedGraphFromSingleLoop(polygon);
-}
-    if (triangulatedPolygon === undefined)
-      return false;
-      Triangulator.flipTriangles(triangulatedPolygon);
-      triangulatedPolygon.announceFaceLoops((_graph: HalfEdgeGraph, edge: HalfEdge): boolean => {
+    const announceFace = (_graph: HalfEdgeGraph, edge: HalfEdge): boolean => {
       if (!edge.isMaskSet(HalfEdgeMask.EXTERIOR)) {
         const convexFacetPoints = edge.collectAroundFace((node: HalfEdge): any => {
           if (!node.isMaskSet(HalfEdgeMask.EXTERIOR))
@@ -622,10 +615,44 @@ export class ClipShape extends ClipPrimitive {
         this.parseConvexPolygonPlanes(set, convexFacetPoints, direction, false, cameraFocalLength);
       }
       return true;
-      });
-    if (isMask){
-      const direction1 = PolygonOps.testXYPolygonTurningDirections(expandedHull); // ###TODO: Can we expect a direction coming out of graph facet?
-      this.parseConvexPolygonPlanes(set, expandedHull, -direction1, true, cameraFocalLength);
+    };
+    if (isMask) {
+      /*
+      const hullPoints: Point3d[] = [];
+      const insidePoints: Point3d[] = [];
+      const expandedHull: Point3d[] = [];
+      Point3dArray.computeConvexHullXY(polygon, hullPoints, insidePoints, false);
+      if (hullPoints.length < 3)
+        return false;
+      // YIKES -- convex hull is pointers to originals !! Can't transform in place!!!
+      // Move the hull points out so there is a clean space to triangulate "between" the polygon and expanded hull.
+      const centroid = Point3dArray.centroid(hullPoints);
+      for (const p of hullPoints) {
+        expandedHull.push (centroid.interpolate(2.0, p));
+      }
+      expandedHull.push(expandedHull[0].clone());
+      */
+      const hullAndInlets = AlternatingCCTreeNode.createHullAndInletsForPolygon(polygon);
+      const allLoops = hullAndInlets.extractLoops();
+      if (allLoops.length === 0)
+        return false;
+      const hull = allLoops[0];
+      const direction1 = PolygonOps.testXYPolygonTurningDirections(hull); // ###TODO: Can we expect a direction coming out of graph facet?
+      this.parseConvexPolygonPlanes(set, hull, -direction1, true, cameraFocalLength);
+      for (let i = 1; i < allLoops.length; i++) {
+        const triangulatedPolygon = Triangulator.createTriangulatedGraphFromSingleLoop(allLoops[i]);
+        if (triangulatedPolygon) {
+          Triangulator.flipTriangles(triangulatedPolygon);
+          triangulatedPolygon.announceFaceLoops(announceFace);
+        }
+      }
+      return true;
+    } else {
+      const triangulatedPolygon = Triangulator.createTriangulatedGraphFromSingleLoop(polygon);
+      if (triangulatedPolygon === undefined)
+        return false;
+      Triangulator.flipTriangles(triangulatedPolygon);
+      triangulatedPolygon.announceFaceLoops(announceFace);
     }
     return true;
   }

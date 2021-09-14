@@ -9,6 +9,7 @@ import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Geometry } from "../../Geometry";
+import { PolyfaceQuery } from "../../geometry-core";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
@@ -795,4 +796,43 @@ describe("Triangulation", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it.only("DartInTriangle", () => {
+    // This simple dart-inside-triangle showed an error in a special case test in the earcut triangulator.
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let dx = 0;
+    let dy = 0;
+    const outer = [
+      Point3d.create (1,-4), Point3d.create (13,0), Point3d.create (1,4), Point3d.create (1,-4),
+    ];
+    const inner = [
+      Point3d.create (5,0), Point3d.create (3,-2), Point3d.create (9,0), Point3d.create (3,2),Point3d.create (5,0),
+    ];
+    const outerArea = PolygonOps.areaXY(outer);
+    const innerArea = PolygonOps.areaXY(inner);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, outer, dx, dy);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, inner, dx, dy);
+    dy += 10;
+    const graph1 = Triangulator.createTriangulatedGraphFromLoops([outer, inner]);
+      if (graph1) {
+        const polyface1 = PolyfaceBuilder.graphToPolyface(graph1);
+        ck.testCoordinate(Math.abs(outerArea) - Math.abs(innerArea), PolyfaceQuery.sumFacetAreas(polyface1), "area of dart in dart");
+        GeometryCoreTestIO.captureGeometry(allGeometry, polyface1, dx, dy);
+    }
+    dx += 20;
+    dy = 0;
+    inner.reverse();
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, outer, dx, dy);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, inner, dx, dy);
+    dy += 10;
+    const graph2 = Triangulator.createTriangulatedGraphFromLoops([outer, inner]);
+      if (graph2) {
+        const polyface2 = PolyfaceBuilder.graphToPolyface(graph2);
+        ck.testCoordinate(Math.abs(outerArea) - Math.abs(innerArea), PolyfaceQuery.sumFacetAreas(polyface2), "area of dart in dart");
+        GeometryCoreTestIO.captureGeometry(allGeometry, polyface2, dx, dy);
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "DartInTriangle");
+    expect(ck.getNumErrors()).equals(0);
+  });
 });
