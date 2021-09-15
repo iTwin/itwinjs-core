@@ -27,7 +27,7 @@ class AttachMapLayerBaseTool extends Tool {
       if (validation.status === MapLayerSourceStatus.Valid || validation.status === MapLayerSourceStatus.RequireAuth) {
 
         if (this._isBase) {
-          vp.displayStyle.changeBaseMapProps({ ...source, subLayers: validation.subLayers });
+          vp.displayStyle.changeBaseMapContentProps({ ...source, subLayers: validation.subLayers });
         } else {
           const layerSettings = source.toLayerSettings(validation.subLayers);
           if (layerSettings) {
@@ -421,7 +421,7 @@ export class MapBaseColorTool extends Tool {
     if (undefined === vp || !vp.view.isSpatialView())
       return false;
 
-    vp.displayStyle.changeBaseMapProps(color);
+    vp.displayStyle.changeBaseMapContentProps(color);
     vp.invalidateRenderPlan();
 
     return true;
@@ -485,7 +485,7 @@ export class MapBaseVisibilityTool extends Tool {
     if (undefined === vp || !vp.view.isSpatialView())
       return false;
 
-    vp.displayStyle.changeBaseMapProps({ visible });
+    vp.displayStyle.changeBaseMapContentProps({ visible });
     vp.invalidateRenderPlan();
 
     return true;

@@ -747,8 +747,8 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
       /// ////////////////////
       /// ////////////////////
       /// ////////////////////
-      this._mapDrapeTree = context.viewport.backgroundDrapeMap2;
-      context.addBackgroundDrapedModel2(this, undefined);
+      this._mapDrapeTree = context.viewport.backgroundDrapeMap;
+      context.addBackgroundDrapedModel(this, undefined);
     }
 
     super.addToScene(context);

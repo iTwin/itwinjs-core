@@ -609,7 +609,8 @@ describe("iModel", () => {
     const viewflags: ViewFlagProps = { noWhiteOnWhiteReversal: true, shadows: true, noTransp: true };
 
     const mapImagery: MapImageryProps = {
-      backgroundBase: ColorDef.red.tbgr,
+      //  TODO review display settings here
+      backgroundBase: {displaySettings: {}, content: ColorDef.red.tbgr},
       backgroundLayers: [{ transparency: 0.5 }],
     };
 

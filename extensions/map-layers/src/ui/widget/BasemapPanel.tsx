@@ -5,8 +5,8 @@
 // cSpell:ignore droppable Sublayer Basemap
 
 import * as React from "react";
-import { ColorByName, ColorDef, MapLayerProps, MapLayerSettings } from "@bentley/imodeljs-common";
-import { DisplayStyleState } from "@bentley/imodeljs-frontend";
+import { BaseLayerContentProps, ColorByName, ColorDef, MapLayerProps, MapLayerSettings } from "@bentley/imodeljs-common";
+import { DisplayStyleState, MapLayerImageryProvider } from "@bentley/imodeljs-frontend";
 import { ColorPickerDialog, ColorSwatch } from "@bentley/ui-imodel-components";
 import { OptionType, ThemedSelect, WebFontIcon } from "@bentley/ui-core";
 import { ActionMeta, ValueType } from "react-select/src/types";
@@ -20,10 +20,7 @@ function getBaseMapFromStyle(displayStyle: DisplayStyleState | undefined) {
   if (!displayStyle)
     return undefined;
 
-  if (displayStyle.settings.mapImagery.backgroundBase instanceof MapLayerSettings || displayStyle.settings.mapImagery.backgroundBase instanceof ColorDef)
-    return displayStyle.settings.mapImagery.backgroundBase.toJSON();
-
-  return undefined;
+  return displayStyle.settings.mapImagery.backgroundBase.content.toJSON();
 }
 
 interface BaseOption extends OptionType {
@@ -71,14 +68,14 @@ export function BasemapPanel() {
     ColorDef.create(ColorByName.darkBrown),
   ]);
 
-  const [selectedBaseMap, setSelectedBaseMap] = React.useState<MapLayerProps | number | undefined>(getBaseMapFromStyle(activeViewport?.displayStyle));
+  const [selectedBaseMap, setSelectedBaseMap] = React.useState<BaseLayerContentProps | undefined>(getBaseMapFromStyle(activeViewport?.displayStyle));
   const baseIsColor = React.useMemo(() => typeof selectedBaseMap === "number", [selectedBaseMap]);
   const baseIsMap = React.useMemo(() => !baseIsColor && (selectedBaseMap !== undefined), [baseIsColor, selectedBaseMap]);
   const bgColor = React.useMemo(() => baseIsColor ? selectedBaseMap as number : presetColors[0].toJSON(), [baseIsColor, selectedBaseMap, presetColors]);
   const [colorDialogTitle] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:ColorDialog.Title"));
   const selectedBaseMapValue = React.useMemo(() => {
     if (baseIsMap) {
-      const mapName = (selectedBaseMap! as MapLayerProps).name!;
+      const mapName = (selectedBaseMap as MapLayerProps).name!;
       const foundItem = baseMapOptions.find((value) => value.label === mapName);
       if (foundItem)
         return foundItem;
@@ -89,7 +86,7 @@ export function BasemapPanel() {
   const handleBackgroundColorDialogOk = React.useCallback((bgColorDef: ColorDef) => {
     ModalDialogManager.closeDialog();
     if (activeViewport) {
-      activeViewport.displayStyle.changeBaseMapProps(bgColorDef);
+      activeViewport.displayStyle.changeBaseMapContentProps(bgColorDef);
       activeViewport.invalidateRenderPlan();
       setSelectedBaseMap(bgColorDef.toJSON());
     }
@@ -110,12 +107,12 @@ export function BasemapPanel() {
       const baseMap = bases.find((map) => map.name === (value as BaseOption).label);
       if (baseMap) {
         const baseProps: MapLayerProps = baseMap.toJSON();
-        activeViewport.displayStyle.changeBaseMapProps(baseProps);
+        activeViewport.displayStyle.changeBaseMapContentProps(baseProps);
         activeViewport.invalidateRenderPlan();
         setSelectedBaseMap(baseProps);
       } else {
         const bgColorDef = ColorDef.fromJSON(bgColor);
-        activeViewport.displayStyle.changeBaseMapProps(bgColorDef);
+        activeViewport.displayStyle.changeBaseMapContentProps(bgColorDef);
         activeViewport.invalidateRenderPlan();
         setSelectedBaseMap(bgColorDef.toJSON());
       }
@@ -132,7 +129,7 @@ export function BasemapPanel() {
   const handleVisibilityChange = React.useCallback(() => {
     if (activeViewport) {
       const newState = !baseMapVisible;
-      activeViewport.displayStyle.changeBaseMapProps({ visible: newState });
+      activeViewport.displayStyle.changeBaseMapContentProps({ visible: newState });
       activeViewport.invalidateRenderPlan();
       setBaseMapVisible(newState);
     }

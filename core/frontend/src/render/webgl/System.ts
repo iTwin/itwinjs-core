@@ -16,7 +16,7 @@ import { SkyBox } from "../../DisplayStyleState";
 import { imageElementFromImageSource } from "../../ImageUtil";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import { MapTileTreeReference, MapTileTreeReference2, TileTreeReference } from "../../tile/internal";
+import { MapTileTreeReference, TileTreeReference } from "../../tile/internal";
 import { ViewRect } from "../../ViewRect";
 import { GraphicBranch, GraphicBranchOptions } from "../GraphicBranch";
 import { BatchOptions, GraphicBuilder, GraphicBuilderOptions } from "../GraphicBuilder";
@@ -34,7 +34,7 @@ import {
 } from "../RenderSystem";
 import { RenderTarget } from "../RenderTarget";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "../ScreenSpaceEffectBuilder";
-import { BackgroundMapDrape, BackgroundMapDrape2 } from "./BackgroundMapDrape";
+import { BackgroundMapDrape } from "./BackgroundMapDrape";
 import { CachedGeometry, SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { ClipVolume } from "./ClipVolume";
 import { Debug } from "./Diagnostics";
@@ -706,11 +706,9 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public override createClipVolume(clipVector: ClipVector): RenderClipVolume | undefined {
     return ClipVolume.create(clipVector);
   }
+
   public override createBackgroundMapDrape(drapedTree: TileTreeReference, mapTree: MapTileTreeReference) {
     return BackgroundMapDrape.create(drapedTree, mapTree);
-  }
-  public override createBackgroundMapDrape2(drapedTree: TileTreeReference, mapTree: MapTileTreeReference2) {
-    return BackgroundMapDrape2.create(drapedTree, mapTree);
   }
 
   protected constructor(canvas: HTMLCanvasElement, context: WebGLContext, capabilities: Capabilities, options: RenderSystem.Options) {

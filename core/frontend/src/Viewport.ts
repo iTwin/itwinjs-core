@@ -48,7 +48,7 @@ import { createRenderPlanFromViewport } from "./render/RenderPlan";
 import { RenderTarget } from "./render/RenderTarget";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
-import { DisclosedTileTreeSet, MapLayerImageryProvider, MapTiledGraphicsProvider, MapTiledGraphicsProvider2, MapTileTreeReference, MapTileTreeReference2, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference } from "./tile/internal";
+import { DisclosedTileTreeSet, MapLayerImageryProvider, MapTiledGraphicsProvider, MapTileTreeReference, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
 import { Animator, ViewAnimationOptions, ViewChangeOptions } from "./ViewAnimation";
@@ -421,8 +421,7 @@ export abstract class Viewport implements IDisposable {
   private _alwaysDrawnExclusive: boolean = false;
   private readonly _featureOverrideProviders: FeatureOverrideProvider[] = [];
   private readonly _tiledGraphicsProviders = new Set<TiledGraphicsProvider>();
-  // private _mapTiledGraphicsProvider?: MapTiledGraphicsProvider;
-  private _mapTiledGraphicsProvider?: MapTiledGraphicsProvider2;
+  private _mapTiledGraphicsProvider?: MapTiledGraphicsProvider;
   private _hilite = new Hilite.Settings();
   private _emphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
   private _flash = new FlashSettings();
@@ -738,16 +737,13 @@ export abstract class Viewport implements IDisposable {
   }
 
   /** @internal */
-  public get backgroundMap(): MapTileTreeReference | undefined { return undefined;}
-  public get backgroundMap2(): MapTileTreeReference2 | undefined { return this._mapTiledGraphicsProvider?.backgroundMap; }
+  public get backgroundMap(): MapTileTreeReference | undefined { return this._mapTiledGraphicsProvider?.backgroundMap; }
 
   /** @internal */
-  public get overlayMap(): MapTileTreeReference | undefined { return undefined; }
-  public get overlayMap2(): MapTileTreeReference2 | undefined { return this._mapTiledGraphicsProvider?.overlayMap; }
+  public get overlayMap(): MapTileTreeReference | undefined { return this._mapTiledGraphicsProvider?.overlayMap; }
 
   /** @internal */
-  public get backgroundDrapeMap(): MapTileTreeReference | undefined { return undefined;}
-  public get backgroundDrapeMap2(): MapTileTreeReference2 | undefined { return this._mapTiledGraphicsProvider?.backgroundDrapeMap; }
+  public get backgroundDrapeMap(): MapTileTreeReference | undefined { return this._mapTiledGraphicsProvider?.backgroundDrapeMap; }
 
   /** @internal */
   public getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined { return this._mapTiledGraphicsProvider?.getMapLayerImageryProvider(index, isOverlay); }
@@ -954,7 +950,7 @@ export abstract class Viewport implements IDisposable {
     this.registerDisplayStyleListeners(this.view.displayStyle);
     this.registerViewListeners();
     this.view.attachToViewport();
-    this._mapTiledGraphicsProvider = new MapTiledGraphicsProvider2(this);
+    this._mapTiledGraphicsProvider = new MapTiledGraphicsProvider(this);
   }
 
   private registerViewListeners(): void {
@@ -978,7 +974,7 @@ export abstract class Viewport implements IDisposable {
       this.invalidateRenderPlan();
 
       this.detachFromDisplayStyle();
-      this._mapTiledGraphicsProvider = new MapTiledGraphicsProvider2(this);
+      this._mapTiledGraphicsProvider = new MapTiledGraphicsProvider(this);
       this.registerDisplayStyleListeners(newStyle);
     }));
 

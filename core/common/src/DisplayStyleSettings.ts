@@ -24,7 +24,7 @@ import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
 import { PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
 import { SubCategoryOverride } from "./SubCategoryOverride";
 import { LightSettings, LightSettingsProps } from "./LightSettings";
-import { MapImageryProps, MapImageryProps2, MapImagerySettings, MapImagerySettings2 } from "./MapImagerySettings";
+import {  MapImageryProps, MapImagerySettings } from "./MapImagerySettings";
 import { PlanProjectionSettings, PlanProjectionSettingsProps } from "./PlanProjectionSettings";
 import { RenderSchedule } from "./RenderSchedule";
 import { SkyBoxProps } from "./SkyBox";
@@ -134,7 +134,6 @@ export interface DisplayStyleSettingsProps {
    * @alpha
    */
   mapImagery?: MapImageryProps;
-  mapImagery2?: MapImageryProps2;
 
   /** Overrides applied to the appearance of models in the view. */
   modelOvr?: DisplayStyleModelAppearanceProps[];
@@ -452,7 +451,6 @@ export class DisplayStyleSettings {
   private readonly _excludedElements: ExcludedElements;
   private _backgroundMap: BackgroundMapSettings;
   private _mapImagery: MapImagerySettings;
-  private _mapImagery2: MapImagerySettings2;
 
   private _analysisStyle?: AnalysisStyle;
   private _clipStyle: ClipStyle;
@@ -492,7 +490,6 @@ export class DisplayStyleSettings {
    * @alpha
    */
   public readonly onMapImageryChanged = new BeEvent<(newImagery: Readonly<MapImagerySettings>) => void>();
-  public readonly onMapImageryChanged2 = new BeEvent<(newImagery: Readonly<MapImagerySettings2>) => void>();
   /** Event raised just prior to assignment to the `scheduleScriptProps` property.
    * @deprecated Use onRenderTimelineChanged
    * @internal
@@ -551,8 +548,10 @@ export class DisplayStyleSettings {
     this._monochromeMode = MonochromeMode.Flat === this._json.monochromeMode ? MonochromeMode.Flat : MonochromeMode.Scaled;
 
     this._backgroundMap = BackgroundMapSettings.fromJSON(this._json.backgroundMap);
-    this._mapImagery = MapImagerySettings.fromJSON(this._json.mapImagery, this._json.backgroundMap);
-    this._mapImagery2 = MapImagerySettings2.fromJSON(this._json.mapImagery2);
+
+    // TODO
+    // Should we have a migration path here with the old JSON
+    this._mapImagery = MapImagerySettings.fromJSON(this._json.mapImagery);
 
     this._excludedElements = new ExcludedElements(this._json);
 
@@ -656,13 +655,6 @@ export class DisplayStyleSettings {
    * @alpha
    */
   public get mapImagery(): MapImagerySettings { return this._mapImagery; }
-  public get mapImagery2(): MapImagerySettings2 { return this._mapImagery2; }
-
-  public set mapImagery2(mapImagery: MapImagerySettings2) {
-    this.onMapImageryChanged2.raiseEvent(mapImagery);
-    this._mapImagery2 = mapImagery;
-    this._json.mapImagery = this._mapImagery.toJSON();
-  }
 
   public set mapImagery(mapImagery: MapImagerySettings) {
     this.onMapImageryChanged.raiseEvent(mapImagery);
@@ -675,7 +667,6 @@ export class DisplayStyleSettings {
    */
   public synchMapImagery() {
     this.onMapImageryChanged.raiseEvent(this._mapImagery);
-    this.onMapImageryChanged2.raiseEvent(this._mapImagery2);
     this._json.mapImagery = this._mapImagery.toJSON();
   }
 

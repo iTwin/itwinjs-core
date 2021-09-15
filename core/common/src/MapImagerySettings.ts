@@ -22,11 +22,6 @@ export type BaseLayerProps = MapLayerProps | ColorDefProps;
  * the settings are compatible.
  * @beta
  */
-export interface MapImageryProps {
-  backgroundBase?: BaseLayerProps;
-  backgroundLayers?: MapLayerProps[];
-  overlayLayers?: MapLayerProps[];
-}
 
 export interface BackgroundMapProviderDataProps {
   mapType?: BackgroundMapType;
@@ -156,35 +151,33 @@ export class BackgroundMapProvider {
 /** Normalized representation of base layer properties -- these can be represented by either a full map layer or a simple color.
  * @beta
  */
-export type BaseLayerSettings = MapLayerSettings | ColorDef;
+export type BaseLayerContent = MapLayerSettings | ColorDef | BackgroundMapProvider;
+export type BaseLayerContentProps = MapLayerProps | ColorDefProps | BackgroundMapProviderProps;
 
-export type BaseLayerSource = MapLayerSettings | ColorDef | BackgroundMapProvider;
-export type BaseLayerSourceProps = MapLayerProps | ColorDefProps | BackgroundMapProviderProps;
-
-export interface BaseLayerSettings2Props {
+export interface BaseLayerSettingsProps {
   displaySettings: BackgroundMapProps;
-  source: BaseLayerSourceProps;
+  content: BaseLayerContentProps;
 }
-export class BaseLayerSettings2 {
+export class BaseLayerSettings {
   private _displaySettings: BackgroundMapSettings;
-  private _source: BaseLayerSource;
+  private _content: BaseLayerContent;
 
-  private constructor(sourceProps?: BaseLayerSourceProps, displaySettingsProps?: BackgroundMapProps) {
+  private constructor(sourceProps?: BaseLayerContentProps, displaySettingsProps?: BackgroundMapProps) {
 
-    let source;
+    let content;
     if (typeof sourceProps === "number") {
-      source = ColorDef.create(sourceProps);
+      content = ColorDef.create(sourceProps);
     } else if (BackgroundMapProvider.isMatchingProps(sourceProps)) {
-      source = BackgroundMapProvider.fromJSON(sourceProps as BackgroundMapProviderProps);
+      content = BackgroundMapProvider.fromJSON(sourceProps as BackgroundMapProviderProps);
     } else {
-      source = MapLayerSettings.fromJSON(sourceProps as MapLayerProps|undefined);
+      content = MapLayerSettings.fromJSON(sourceProps as MapLayerProps|undefined);
     }
 
-    if (source) {
-      this._source = source;
+    if (content) {
+      this._content = content;
     } else {
       // Default to Bing aerial
-      this._source = BackgroundMapProvider.fromJSON({providerName: "Bing", providerData : {mapType: BackgroundMapType.Aerial}});
+      this._content = BackgroundMapProvider.fromJSON({providerName: "Bing", providerData : {mapType: BackgroundMapType.Aerial}});
     }
 
     this._displaySettings = BackgroundMapSettings.fromJSON(displaySettingsProps);
@@ -194,22 +187,22 @@ export class BaseLayerSettings2 {
   public get displaySettings(): BackgroundMapSettings { return this._displaySettings; }
   public set displaySettings(settings: BackgroundMapSettings) { this._displaySettings = settings; }
 
-  public get source(): BaseLayerSource { return this._source; }
-  public set source(source: BaseLayerSource) { this._source = source; }
+  public get content(): BaseLayerContent { return this._content; }
+  public set content(source: BaseLayerContent) { this._content = source; }
 
   /** Construct from JSON, performing validation and applying default values for undefined fields. */
-  public static fromJSON(baseLayerSettingsProps?: BaseLayerSettings2Props) {
+  public static fromJSON(baseLayerSettingsProps?: BaseLayerSettingsProps) {
     if (baseLayerSettingsProps) {
-      return new BaseLayerSettings2(baseLayerSettingsProps.source, baseLayerSettingsProps.displaySettings);
+      return new BaseLayerSettings(baseLayerSettingsProps.content, baseLayerSettingsProps.displaySettings);
     } else {
-      return new BaseLayerSettings2();
+      return new BaseLayerSettings();
     }
   }
 
-  public toJSON(): BaseLayerSettings2Props {
+  public toJSON(): BaseLayerSettingsProps {
     return {
       displaySettings: this._displaySettings.toJSON(),
-      source: this._source.toJSON(),
+      content: this._content.toJSON(),
     };
   }
 
@@ -222,74 +215,10 @@ export class BaseLayerSettings2 {
  * @beta
  */
 
-export interface MapImageryProps2 {
-  backgroundBase?: BaseLayerSettings2Props;
+export interface MapImageryProps {
+  backgroundBase?: BaseLayerSettingsProps;
   backgroundLayers?: MapLayerProps[];
   overlayLayers?: MapLayerProps[];
-}
-
-export class MapImagerySettings2 {
-  private _backgroundBase: BaseLayerSettings2;
-  private _backgroundLayers = new Array<MapLayerSettings>();
-  private _overlayLayers = new Array<MapLayerSettings>();
-
-  private constructor(baseLayer?: BaseLayerSettings2Props, backgroundLayerProps?: MapLayerProps[], overlayLayersProps?: MapLayerProps[]) {
-
-    this._backgroundBase = BaseLayerSettings2.fromJSON(baseLayer);
-
-    if (backgroundLayerProps) {
-      for (const layerProps of backgroundLayerProps) {
-        const layer = MapLayerSettings.fromJSON(layerProps);
-        if (layer)
-          this._backgroundLayers.push(layer);
-      }
-    }
-    if (overlayLayersProps) {
-      for (const overlayLayerProps of overlayLayersProps) {
-        const overlayLayer = MapLayerSettings.fromJSON(overlayLayerProps);
-        if (overlayLayer)
-          this._overlayLayers.push(overlayLayer);
-      }
-    }
-  }
-
-  /** The settings for the base layer.
-   *  @note If changing the base provider it is currently necessary to also update the background map settings.
-   */
-  public get backgroundBase(): BaseLayerSettings2 { return this._backgroundBase; }
-  public set backgroundBase(base: BaseLayerSettings2) { this._backgroundBase = base; }
-
-  public get backgroundLayers(): MapLayerSettings[] { return this._backgroundLayers; }
-  public get overlayLayers(): MapLayerSettings[] { return this._overlayLayers; }
-
-  /** Return base transparency as a number between 0 and 1.
-   * @internal
-   */
-  public get baseTransparency(): number {
-    this._backgroundBase.source;
-    if  (this._backgroundBase.source instanceof ColorDef) {
-      return (this._backgroundBase.source.getTransparency() / 255);
-    } else if (BackgroundMapProvider.isMatchingProps(this._backgroundBase.source )) {
-      // TODO: Review this, we don't have transparency on BackgroundMapProvider
-      return 0;
-    } else {
-      return  (this._backgroundBase.source as MapLayerSettings).transparency;
-    }
-
-  }
-
-  /** Construct from JSON, performing validation and applying default values for undefined fields. */
-  public static fromJSON(imageryJson?: MapImageryProps2) {
-    return new MapImagerySettings2(imageryJson?.backgroundBase, imageryJson?.backgroundLayers, imageryJson?.overlayLayers);
-  }
-
-  public toJSON(): MapImageryProps2 {
-    return {
-      backgroundBase: this._backgroundBase.toJSON(),
-      backgroundLayers: this._backgroundLayers.length > 0 ? this._backgroundLayers.map((layer) => layer.toJSON()) : undefined,
-      overlayLayers: this._overlayLayers.length > 0 ? this._overlayLayers.map((layer) => layer.toJSON()) : undefined,
-    };
-  }
 }
 
 export class MapImagerySettings {
@@ -297,12 +226,10 @@ export class MapImagerySettings {
   private _backgroundLayers = new Array<MapLayerSettings>();
   private _overlayLayers = new Array<MapLayerSettings>();
 
-  private constructor(backgroundBaseProps?: BaseLayerProps, backgroundLayerProps?: MapLayerProps[], overlayLayersProps?: MapLayerProps[], _mapProps?: BackgroundMapProps) {
-    const base = typeof backgroundBaseProps === "number" ? ColorDef.create(backgroundBaseProps) : MapLayerSettings.fromJSON(backgroundBaseProps);
+  private constructor(baseLayer?: BaseLayerSettingsProps, backgroundLayerProps?: MapLayerProps[], overlayLayersProps?: MapLayerProps[]) {
 
-    // If could not create a BaseLayerSettings from backgroundBaseProps, then defaults to Bing aerial
-    //      this._backgroundBase = base ? base : MapLayerSettings.fromMapSettings({BackgroundMapSettings.fromJSON(mapProps)});
-    this._backgroundBase = base ? base : MapLayerSettings.fromJSON({ name:"Bing maps", formatId:"BingMaps", url:"https://dev.virtualearth.net/REST/v1/Imagery/Metadata/AerialWithLabels?o=json&incl=ImageryProviders&key={bingKey}", transparentBackground: false, isBase: true })!;
+    this._backgroundBase = BaseLayerSettings.fromJSON(baseLayer);
+
     if (backgroundLayerProps) {
       for (const layerProps of backgroundLayerProps) {
         const layer = MapLayerSettings.fromJSON(layerProps);
@@ -332,13 +259,21 @@ export class MapImagerySettings {
    * @internal
    */
   public get baseTransparency(): number {
-    return (this._backgroundBase instanceof ColorDef) ? (this._backgroundBase.getTransparency() / 255) : this._backgroundBase.transparency;
+    this._backgroundBase.content;
+    if  (this._backgroundBase.content instanceof ColorDef) {
+      return (this._backgroundBase.content.getTransparency() / 255);
+    } else if (BackgroundMapProvider.isMatchingProps(this._backgroundBase.content )) {
+      // TODO: Review this, we don't have transparency on BackgroundMapProvider
+      return 0;
+    } else {
+      return  (this._backgroundBase.content as MapLayerSettings).transparency;
+    }
 
   }
 
   /** Construct from JSON, performing validation and applying default values for undefined fields. */
-  public static fromJSON(imageryJson?: MapImageryProps, mapProps?: BackgroundMapProps) {
-    return new MapImagerySettings(imageryJson?.backgroundBase, imageryJson?.backgroundLayers, imageryJson?.overlayLayers, mapProps);
+  public static fromJSON(imageryJson?: MapImageryProps) {
+    return new MapImagerySettings(imageryJson?.backgroundBase, imageryJson?.backgroundLayers, imageryJson?.overlayLayers);
   }
 
   public toJSON(): MapImageryProps {
