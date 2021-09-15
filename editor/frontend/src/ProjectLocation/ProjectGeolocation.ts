@@ -308,7 +308,8 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     if (!deco.updateEcefLocation(origin, this._origin, Angle.createRadians(this.north)))
       return;
 
-    void this.onReinitialize(); // Calls onRestartTool to exit...
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    this.onReinitialize(); // Calls onRestartTool to exit...
   }
 
   public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
@@ -589,7 +590,8 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
     if (!deco.updateEcefLocation(origin, this._origin))
       return;
 
-    void this.onReinitialize(); // Calls onRestartTool to exit...
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    this.onReinitialize(); // Calls onRestartTool to exit...
   }
 
   public override decorate(context: DecorateContext): void {

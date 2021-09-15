@@ -124,7 +124,7 @@ export class EditTextTool extends MarkupTool {
     // Tab, Escape, ctrl-enter, or shift-enter all end the editor
     editor.onkeydown = async (ev: KeyboardEvent) => {
       if (ev.key === "Tab" || ev.key === "Escape" || (ev.key === "Enter" && (ev.shiftKey || ev.ctrlKey)))
-        void this.exitTool();
+        this.exitTool(); // eslint-disable-line @typescript-eslint/no-floating-promises
       ev.stopPropagation();
 
     };

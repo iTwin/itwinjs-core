@@ -79,7 +79,7 @@ export class CoreTools {
       iconSpec: FitViewTool.iconSpec,
       label: FitViewTool.flyover,
       description: FitViewTool.description,
-      execute: async () =>  IModelApp.tools.run(FitViewTool.toolId, IModelApp.viewManager.selectedView, true),
+      execute: async () => IModelApp.tools.run(FitViewTool.toolId, IModelApp.viewManager.selectedView, true),
     });
   }
 
@@ -89,7 +89,7 @@ export class CoreTools {
       iconSpec: WindowAreaTool.iconSpec,
       label: WindowAreaTool.flyover,
       description: WindowAreaTool.description,
-      execute: async () =>  IModelApp.tools.run(WindowAreaTool.toolId, IModelApp.viewManager.selectedView),
+      execute: async () => IModelApp.tools.run(WindowAreaTool.toolId, IModelApp.viewManager.selectedView),
     });
   }
 
@@ -99,7 +99,7 @@ export class CoreTools {
       iconSpec: ZoomViewTool.iconSpec,
       label: ZoomViewTool.flyover,
       description: ZoomViewTool.description,
-      execute: async () =>  IModelApp.tools.run(ZoomViewTool.toolId, IModelApp.viewManager.selectedView),
+      execute: async () => IModelApp.tools.run(ZoomViewTool.toolId, IModelApp.viewManager.selectedView),
     });
   }
 
@@ -109,7 +109,7 @@ export class CoreTools {
       iconSpec: PanViewTool.iconSpec,
       label: PanViewTool.flyover,
       description: PanViewTool.description,
-      execute: async () =>  IModelApp.tools.run(PanViewTool.toolId, IModelApp.viewManager.selectedView),
+      execute: async () => IModelApp.tools.run(PanViewTool.toolId, IModelApp.viewManager.selectedView),
     });
   }
 
@@ -124,7 +124,7 @@ export class CoreTools {
       }, [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, SyncUiEventId.ViewStateChanged]),
       label: RotateViewTool.flyover,
       description: RotateViewTool.description,
-      execute: async () =>  IModelApp.tools.run(RotateViewTool.toolId, IModelApp.viewManager.selectedView),
+      execute: async () => IModelApp.tools.run(RotateViewTool.toolId, IModelApp.viewManager.selectedView),
     });
   }
 
@@ -138,7 +138,7 @@ export class CoreTools {
         const activeContentControl = ContentViewManager.getActiveContentControl();
         return !!activeContentControl?.viewport?.view.is2d();
       }, [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, SyncUiEventId.ViewStateChanged]),
-      execute: async () =>  IModelApp.tools.run(WalkViewTool.toolId, IModelApp.viewManager.selectedView),
+      execute: async () => IModelApp.tools.run(WalkViewTool.toolId, IModelApp.viewManager.selectedView),
     });
   }
 
@@ -167,7 +167,7 @@ export class CoreTools {
         const activeContentControl = ContentViewManager.getActiveContentControl();
         return !(activeContentControl?.viewport?.view.is3d() && activeContentControl?.viewport?.view.supportsCamera());
       }, [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, SyncUiEventId.ViewStateChanged]),
-      execute: async () =>  IModelApp.tools.run(ViewToggleCameraTool.toolId, IModelApp.viewManager.selectedView),
+      execute: async () => IModelApp.tools.run(ViewToggleCameraTool.toolId, IModelApp.viewManager.selectedView),
     });
   }
 
@@ -177,7 +177,7 @@ export class CoreTools {
       iconSpec: FlyViewTool.iconSpec,
       label: FlyViewTool.flyover,
       description: FlyViewTool.description,
-      execute: async () =>  IModelApp.tools.run(FlyViewTool.toolId, IModelApp.viewManager.selectedView),
+      execute: async () => IModelApp.tools.run(FlyViewTool.toolId, IModelApp.viewManager.selectedView),
     });
   }
 
@@ -215,7 +215,7 @@ export class CoreTools {
       iconSpec: ViewRedoTool.iconSpec,
       label: ViewRedoTool.flyover,
       description: ViewRedoTool.description,
-      execute: async () =>  IModelApp.tools.run(ViewRedoTool.toolId, IModelApp.viewManager.selectedView),
+      execute: async () => IModelApp.tools.run(ViewRedoTool.toolId, IModelApp.viewManager.selectedView),
       isDisabled: new ConditionalBooleanValue(() => {
         const activeContentControl = ContentViewManager.getActiveContentControl();
         if (activeContentControl && activeContentControl.viewport)
@@ -411,7 +411,7 @@ export class CoreTools {
         if (tool)
           tool.onRestartTool();
         else
-          void IModelApp.toolAdmin.startDefaultTool();
+          IModelApp.toolAdmin.startDefaultTool();// eslint-disable-line @typescript-eslint/no-floating-promises
       },
     });
   }

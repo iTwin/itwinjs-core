@@ -236,7 +236,7 @@ export class ViewManager implements Iterable<ScreenViewport> {
 
   /** @internal */
   public notifySelectedViewportChanged(previous: ScreenViewport | undefined, current: ScreenViewport | undefined) {
-    void IModelApp.toolAdmin.onSelectedViewportChanged(previous, current);
+    IModelApp.toolAdmin.onSelectedViewportChanged(previous, current);// eslint-disable-line @typescript-eslint/no-floating-promises
     this.onSelectedViewportChanged.emit({ previous, current });
   }
 
@@ -265,7 +265,7 @@ export class ViewManager implements Iterable<ScreenViewport> {
     newVp.setEventController(new EventController(newVp)); // this will direct events to the viewport
     this._viewports.push(newVp);
     this.updateRenderToScreen();
-    void this.setSelectedView(newVp);
+    this.setSelectedView(newVp);// eslint-disable-line @typescript-eslint/no-floating-promises
 
     // Start up the render loop if necessary.
     if (1 === this._viewports.length)
@@ -302,7 +302,7 @@ export class ViewManager implements Iterable<ScreenViewport> {
     this._viewports.splice(index, 1);
 
     if (this.selectedView === vp) // if removed viewport was selectedView, set it to undefined.
-      void this.setSelectedView(undefined);
+      this.setSelectedView(undefined);// eslint-disable-line @typescript-eslint/no-floating-promises
 
     vp.rendersToScreen = false;
     this.updateRenderToScreen();

@@ -38,7 +38,8 @@ export class ToolSettingsTracker {
       name: "Preserve World Up When Rotating",
       id: "ts_preserveWorldUp",
       isChecked: ToolSettings.preserveWorldUp,
-      handler: (_cb) => { ToolSettings.preserveWorldUp = !ToolSettings.preserveWorldUp; void IModelApp.toolAdmin.exitViewTool(); },
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      handler: (_cb) => { ToolSettings.preserveWorldUp = !ToolSettings.preserveWorldUp; IModelApp.toolAdmin.exitViewTool(); },
     });
     div.style.textAlign = "left";
 
@@ -56,7 +57,8 @@ export class ToolSettingsTracker {
       min: 0,
       step: 1,
       value: ScreenViewport.animation.time.normal.milliseconds,
-      handler: (value, _input) => { ScreenViewport.animation.time.normal = BeDuration.fromMilliseconds(value); void IModelApp.toolAdmin.exitViewTool(); },
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      handler: (value, _input) => { ScreenViewport.animation.time.normal = BeDuration.fromMilliseconds(value); IModelApp.toolAdmin.exitViewTool(); },
     });
     div.style.display = "block";
     div.style.textAlign = "left";
@@ -73,7 +75,8 @@ export class ToolSettingsTracker {
       min: 0,
       step: 0.01,
       value: ToolSettings.viewToolPickRadiusInches,
-      handler: (value, _input) => { ToolSettings.viewToolPickRadiusInches = value; void IModelApp.toolAdmin.exitViewTool(); },
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      handler: (value, _input) => { ToolSettings.viewToolPickRadiusInches = value; IModelApp.toolAdmin.exitViewTool(); },
       parseAsFloat: true,
     }, true);
     div.style.display = "block";
@@ -85,7 +88,8 @@ export class ToolSettingsTracker {
       name: "Walk Enforce Z Up",
       id: "ts_walkEnforceZUp",
       isChecked: ToolSettings.walkEnforceZUp,
-      handler: (_cb) => { ToolSettings.walkEnforceZUp = !ToolSettings.walkEnforceZUp; void IModelApp.toolAdmin.exitViewTool(); },
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      handler: (_cb) => { ToolSettings.walkEnforceZUp = !ToolSettings.walkEnforceZUp; IModelApp.toolAdmin.exitViewTool(); },
     });
     div.style.display = "block";
     div.style.textAlign = "left";
@@ -101,7 +105,8 @@ export class ToolSettingsTracker {
       min: 0,
       step: 0.1,
       value: ToolSettings.walkCameraAngle.degrees,
-      handler: (value, _input) => { ToolSettings.walkCameraAngle.setDegrees(value); void IModelApp.toolAdmin.exitViewTool(); },
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      handler: (value, _input) => { ToolSettings.walkCameraAngle.setDegrees(value); IModelApp.toolAdmin.exitViewTool(); },
       parseAsFloat: true,
     }, true);
     div.style.display = "block";
@@ -118,7 +123,8 @@ export class ToolSettingsTracker {
       min: 0,
       step: 0.1,
       value: ToolSettings.walkVelocity,
-      handler: (value, _input) => { ToolSettings.walkVelocity = value; void IModelApp.toolAdmin.exitViewTool(); },
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      handler: (value, _input) => { ToolSettings.walkVelocity = value; IModelApp.toolAdmin.exitViewTool(); },
       parseAsFloat: true,
     }, true);
     div.style.display = "block";
@@ -135,7 +141,8 @@ export class ToolSettingsTracker {
       min: 0,
       step: 0.025,
       value: ToolSettings.wheelZoomBumpDistance,
-      handler: (value, _input) => { ToolSettings.wheelZoomBumpDistance = value; void IModelApp.toolAdmin.exitViewTool(); },
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      handler: (value, _input) => { ToolSettings.wheelZoomBumpDistance = value; IModelApp.toolAdmin.exitViewTool(); },
       parseAsFloat: true,
     }, true);
     div.style.display = "block";

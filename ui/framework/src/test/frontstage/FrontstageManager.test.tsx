@@ -64,17 +64,17 @@ describe("FrontstageManager", () => {
   });
 
   it("setActiveModalFrontstage from backstage item", async () => {
-    const handleFrontstageCloseRequested = ({stageCloseFunc}: ModalFrontstageRequestedCloseEventArgs) =>{
+    const handleFrontstageCloseRequested = ({ stageCloseFunc }: ModalFrontstageRequestedCloseEventArgs) => {
       stageCloseFunc();
     };
 
     // since we are not really displaying modal stage add listener to mimic the close processing
     const removeListener = FrontstageManager.onCloseModalFrontstageRequestedEvent.addListener(handleFrontstageCloseRequested);
 
-    expect (FrontstageManager.activeModalFrontstage).to.be.undefined;
-    const backstageItem = SettingsModalFrontstage.getBackstageActionItem(100,10);
+    expect(FrontstageManager.activeModalFrontstage).to.be.undefined;
+    const backstageItem = SettingsModalFrontstage.getBackstageActionItem(100, 10);
     backstageItem.execute();
-    expect (FrontstageManager.activeModalFrontstage).to.not.be.undefined;
+    expect(FrontstageManager.activeModalFrontstage).to.not.be.undefined;
     FrontstageManager.closeModalFrontstage();
     await TestUtils.flushAsyncOperations();
 
@@ -178,7 +178,8 @@ describe("FrontstageManager", () => {
 
       FrontstageManager.isInitialized = false;
       FrontstageManager.initialize();
-      void IModelApp.viewManager.setSelectedView(viewportMock.object);
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      IModelApp.viewManager.setSelectedView(viewportMock.object);
     });
 
     it("CoreTools.selectElementCommand", () => {

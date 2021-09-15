@@ -403,7 +403,8 @@ export class Toggle3dManipulationsTool extends ViewportToggleTool {
 
     if (allow !== vp.view.allow3dManipulations()) {
       vp.view.setAllow3dManipulations(allow);
-      void IModelApp.toolAdmin.startDefaultTool();
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      IModelApp.toolAdmin.startDefaultTool();
     }
 
     return Promise.resolve();
