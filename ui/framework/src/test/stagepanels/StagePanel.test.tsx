@@ -146,7 +146,7 @@ describe("StagePanel", () => {
           <Frontstage
             id="Test1"
             defaultTool={CoreTools.selectElementCommand}
-            contentGroup="TestContentGroup1"
+            contentGroup={TestUtils.TestContentGroup1}
 
             topMostPanel={
               <StagePanel

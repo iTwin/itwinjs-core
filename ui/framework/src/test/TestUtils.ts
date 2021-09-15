@@ -14,7 +14,7 @@ import { ContentLayoutProps, PrimitiveValue, PropertyDescription, PropertyEditor
 import { UiSettings, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 
 import {
-  ActionsUnion, combineReducers, ConfigurableUiManager, ContentGroupProps, createAction, DeepReadonly, FrameworkReducer,
+  ActionsUnion, combineReducers, ConfigurableUiManager, ContentGroup, ContentGroupProps, createAction, DeepReadonly, FrameworkReducer,
   FrameworkState, SyncUiEventDispatcher, ToolSettingsManager, UiFramework,
 } from "../ui-framework";
 import { TestContentControl } from "./frontstage/FrontstageTestUtils";
@@ -95,7 +95,6 @@ export class TestUtils {
       else
         await UiFramework.initialize(this.store, TestUtils.i18n);
 
-      TestUtils.defineContentGroups();
       TestUtils.defineContentLayouts();
 
       TestUtils._uiFrameworkInitialized = true;
@@ -141,39 +140,45 @@ export class TestUtils {
 
   /** Define Content Groups referenced by Frontstages.
    */
-  private static defineContentGroups() {
+  public static TestContentGroup1 = new ContentGroup({
+    id: "TestContentGroup1",
+    layout: "FourQuadrants",
+    contents: [
+      {
+        id: "test:TestContentControl1",
+        classId: TestContentControl,
+        applicationData: { label: "Content 1a", bgColor: "black" },
+      },
+      {
+        id: "test:TestContentControl2",
+        classId: TestContentControl,
+        applicationData: { label: "Content 2a", bgColor: "black" },
+      },
+      {
+        id: "test:TestContentControl3",
+        classId: TestContentControl,
+        applicationData: { label: "Content 3a", bgColor: "black" },
+      },
+      {
+        id: "test:TestContentControl4",
+        classId: TestContentControl,
+        applicationData: { label: "Content 4a", bgColor: "black" },
+      },
+    ],
+  });
 
-    const testContentGroup1: ContentGroupProps = {
-      id: "TestContentGroup1",
-      layout: "FourQuadrants",
-      contents: [
-        {
-          id: "test:TestContentControl1",
-          classId: TestContentControl,
-          applicationData: { label: "Content 1a", bgColor: "black" },
-        },
-        {
-          id: "test:TestContentControl2",
-          classId: TestContentControl,
-          applicationData: { label: "Content 2a", bgColor: "black" },
-        },
-        {
-          id: "test:TestContentControl3",
-          classId: TestContentControl,
-          applicationData: { label: "Content 3a", bgColor: "black" },
-        },
-        {
-          id: "test:TestContentControl4",
-          classId: TestContentControl,
-          applicationData: { label: "Content 4a", bgColor: "black" },
-        },
-      ],
-    };
+  public static TestContentGroup2 = new ContentGroup({
+    id: "TestContentGroup2",
+    layout: "SingleContent",
+    contents: [
+      {
+        id: "test:TestContentControl2",
+        classId: TestContentControl,
+        applicationData: { label: "Content 1a", bgColor: "black" },
+      },
+    ],
+  });
 
-    const contentGroups: ContentGroupProps[] = [];
-    contentGroups.push(testContentGroup1);
-    ConfigurableUiManager.loadContentGroups(contentGroups);
-  }
 
   /** Waits until all async operations finish */
   public static async flushAsyncOperations() {

@@ -5,7 +5,7 @@
 import * as React from "react";
 import { PlaybackSettings, TimelineComponent, TimelinePausePlayAction, TimelinePausePlayArgs } from "@bentley/ui-imodel-components";
 import {
-  ActionItemButton, CommandItemDef, ContentLayoutManager, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, GroupButton,
+  ActionItemButton, CommandItemDef, ContentGroup, ContentLayoutManager, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, GroupButton,
   NavigationWidget, StagePanel, ToolButton, ToolWidget, useWidgetDirection, Widget, WidgetStateChangedEventArgs, Zone, ZoneLocation,
   ZoneState,
 } from "@bentley/ui-framework";
@@ -16,6 +16,7 @@ import { HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl 
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 import { NestedFrontstage1 } from "./NestedFrontstage1";
 import { UiAdmin, WidgetState } from "@bentley/ui-abstract";
+import { AppUi } from "../AppUi";
 
 /* eslint-disable react/jsx-key, deprecation/deprecation */
 
@@ -132,11 +133,12 @@ export class Frontstage1 extends FrontstageProvider {
   };
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
+    const contentGroup = new ContentGroup(AppUi.TestContentGroup1);
     return (
       <Frontstage id={this.id}
         version={1}
         defaultTool={CoreTools.selectElementCommand}
-        contentGroup="TestContentGroup1"
+        contentGroup={contentGroup}
         defaultContentId="TestContent1"
         isInFooterMode={true}
         topLeft={

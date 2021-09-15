@@ -74,7 +74,7 @@ describe("ToolUiProvider", () => {
           <Frontstage
             id={this.id}
             defaultTool={CoreTools.selectElementCommand}
-            contentGroup="TestContentGroup1"
+            contentGroup={TestUtils.TestContentGroup1}
             topCenter={
               <Zone
                 widgets={[

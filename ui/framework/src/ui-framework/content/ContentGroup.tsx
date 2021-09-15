@@ -241,32 +241,3 @@ export class ContentGroup {
     return viewports;
   }
 }
-
-// -----------------------------------------------------------------------------
-// ContentGroupManager class
-// -----------------------------------------------------------------------------
-
-/** ContentGroup Manager class.
- * @public
- */
-export class ContentGroupManager {
-  private static _groupsProps: Map<string, ContentGroupProps> = new Map<string, ContentGroupProps>();
-
-  /** @internal - called by ConfigurableUiManager (TODO find out why we can't call directly, why does ConfigurableUiManager need to be involved ) */
-  public static loadGroups(groupPropsList: ContentGroupProps[]) {
-    groupPropsList.forEach((groupProps) => {
-      if (!this._groupsProps.has(groupProps.id))
-        this._groupsProps.set(groupProps.id, groupProps);
-      else
-        Logger.logError(UiFramework.loggerCategory(this), `unable to load content group with duplicate id of '${groupProps.id}'`);
-    });
-  }
-
-  public static findGroup(groupId: string): ContentGroup | undefined {
-    const groupProps = this._groupsProps.get(groupId);
-    if (groupProps) {
-      return new ContentGroup(groupProps);
-    }
-    return undefined;
-  }
-}

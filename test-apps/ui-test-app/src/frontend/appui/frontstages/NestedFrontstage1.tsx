@@ -5,7 +5,7 @@
 import * as React from "react";
 import { WidgetState } from "@bentley/ui-abstract";
 import {
-  ActionItemButton, CommandItemDef, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, GroupButton, NavigationWidget,
+  ActionItemButton, CommandItemDef, ContentGroup, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, GroupButton, NavigationWidget,
   NestedFrontstage, ToolButton, ToolWidget, Widget, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
@@ -13,6 +13,7 @@ import { AppTools } from "../../tools/ToolSpecifications";
 import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
 import { HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { NestedFrontstage2 } from "./NestedFrontstage2";
+import { AppUi } from "../AppUi";
 
 /* eslint-disable react/jsx-key */
 
@@ -22,10 +23,12 @@ export class NestedFrontstage1 extends FrontstageProvider {
   }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
+    const contentGroup = new ContentGroup(AppUi.TestContentGroup1);
+
     return (
       <Frontstage id={this.id}
         defaultTool={CoreTools.rotateViewCommand}
-        contentGroup="TestContentGroup2"
+        contentGroup={contentGroup}
         isInFooterMode={false}
         contentManipulationTools={
           <Zone

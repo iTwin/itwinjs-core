@@ -28,7 +28,6 @@ import { WidgetProvidersChangedEventArgs, WidgetsChangedEventArgs } from "../wid
 import { isToolSettingsWidgetManagerProps, Zone, ZoneLocation, ZoneProps, ZoneRuntimeProps } from "../zones/Zone";
 import { ZoneDef } from "../zones/ZoneDef";
 import { FrontstageRuntimeProps, ZoneDefProvider } from "./FrontstageComposer";
-import { FrontstageDef } from "./FrontstageDef";
 import { FrontstageActivatedEventArgs, FrontstageManager } from "./FrontstageManager";
 
 /** Properties for a [[Frontstage]] component.
@@ -40,7 +39,7 @@ export interface FrontstageProps extends CommonProps {
   /** Tool that is started once the Frontstage is activated */
   defaultTool: ToolItemDef;
   /** The Content Group providing the Content Views */
-  contentGroup: string | ContentGroup | ContentGroupProvider;
+  contentGroup: ContentGroup | ContentGroupProvider;
   /** Id of the Content View to be activated initially */
   defaultContentId?: string;
   /** Indicated whether the StatusBar is in footer mode or widget mode. Defaults to true. */

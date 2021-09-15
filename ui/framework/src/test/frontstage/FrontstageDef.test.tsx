@@ -41,7 +41,7 @@ describe("FrontstageDef", () => {
         <Frontstage
           id={this.id}
           defaultTool={CoreTools.selectElementCommand}
-          contentGroup="def"
+          contentGroup={TestUtils.TestContentGroup1}
         />
       );
     }
@@ -66,7 +66,7 @@ describe("FrontstageDef", () => {
         <Frontstage
           id={this.id}
           defaultTool={CoreTools.selectElementCommand}
-          contentGroup="def"
+          contentGroup={TestUtils.TestContentGroup1}
         />
       );
     }
@@ -158,7 +158,7 @@ describe("FrontstageDef", () => {
           <Frontstage
             id={this.id}
             defaultTool={CoreTools.selectElementCommand}
-            contentGroup="TestContentGroup1"
+            contentGroup={TestUtils.TestContentGroup1}
             defaultContentId="defaultContentId"
             isInFooterMode={false}
             applicationData={{ key: "value" }}

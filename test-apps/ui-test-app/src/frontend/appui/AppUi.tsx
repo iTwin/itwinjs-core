@@ -62,7 +62,6 @@ export class AppUi {
 
   public static initialize() {
     // initialize content groups and layouts before any frontstages.
-    AppUi.defineContentGroups();
     AppUi.defineContentLayouts();
     AppUi.defineFrontstages();
     AppUi.defineKeyboardShortcuts();
@@ -110,60 +109,54 @@ export class AppUi {
 
   /** Define Content Groups referenced by Frontstages.
    */
-  private static defineContentGroups() {
-    const testContentGroup1: ContentGroupProps = {
-      id: "TestContentGroup1",
-      layout: StandardContentLayouts.fourQuadrants,
-      contents: [
-        {
-          id: "primaryIModelView",
-          classId: IModelViewportControl,
-          applicationData: { label: "Content 1a", bgColor: "black" },
-        },
-        {
-          id: "secondIModelView",
-          classId: IModelViewportControl,
-          applicationData: { label: "Content 2a", bgColor: "black" },
-        },
-        {
-          id: "tableView",
-          classId: "TableExampleContent",
-          applicationData: { label: "Content 3a", bgColor: "black" },
-        },
-        {
-          id: "custom-content",
-          classId: "TestContent",
-          applicationData: { label: "Content 4a", bgColor: "black" },
-        },
-      ],
-    };
+  public static TestContentGroup1: ContentGroupProps = {
+    id: "TestContentGroup1",
+    layout: StandardContentLayouts.fourQuadrants,
+    contents: [
+      {
+        id: "primaryIModelView",
+        classId: IModelViewportControl,
+        applicationData: { label: "Content 1a", bgColor: "black" },
+      },
+      {
+        id: "secondIModelView",
+        classId: IModelViewportControl,
+        applicationData: { label: "Content 2a", bgColor: "black" },
+      },
+      {
+        id: "tableView",
+        classId: "TableExampleContent",
+        applicationData: { label: "Content 3a", bgColor: "black" },
+      },
+      {
+        id: "custom-content",
+        classId: "TestContent",
+        applicationData: { label: "Content 4a", bgColor: "black" },
+      },
+    ],
+  };
 
-    const testContentGroup2: ContentGroupProps = {
-      id: "TestContentGroup2",
-      layout: "ui-test-app:ThreeStacked",
-      contents: [
-        {
-          id: "primaryIModelView",
-          classId: IModelViewportControl,
-          applicationData: { label: "Content 1b", bgColor: "black" },
-        },
-        {
-          id: "secondIModelView",
-          classId: IModelViewportControl,
-          applicationData: { label: "Content 2b", bgColor: "black" },
-        },
-        {
-          id: "tableView",
-          classId: "TableExampleContent",
-          applicationData: { label: "Content 3b", bgColor: "black" },
-        },
-      ],
-    };
-
-    const contentGroups: ContentGroupProps[] = [];
-    contentGroups.push(testContentGroup1, testContentGroup2);
-    ConfigurableUiManager.loadContentGroups(contentGroups);
-  }
+  public static TestContentGroup2: ContentGroupProps = {
+    id: "TestContentGroup2",
+    layout: "ui-test-app:ThreeStacked",
+    contents: [
+      {
+        id: "primaryIModelView",
+        classId: IModelViewportControl,
+        applicationData: { label: "Content 1b", bgColor: "black" },
+      },
+      {
+        id: "secondIModelView",
+        classId: IModelViewportControl,
+        applicationData: { label: "Content 2b", bgColor: "black" },
+      },
+      {
+        id: "tableView",
+        classId: "TableExampleContent",
+        applicationData: { label: "Content 3b", bgColor: "black" },
+      },
+    ],
+  };
 
   /** Define Content Layouts referenced by Frontstages.
    */

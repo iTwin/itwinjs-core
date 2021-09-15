@@ -8,7 +8,7 @@ import * as React from "react";
 import { MockRender } from "@bentley/imodeljs-frontend";
 import { ContentLayoutProps } from "@bentley/ui-abstract";
 import {
-  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroupManager, ContentGroupProps, ContentLayoutManager, CoreTools,
+  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroup, ContentGroupProps, ContentLayoutManager, CoreTools,
   Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider, MessageManager, ModalDialogManager, ModelessDialogManager, PopupManager,
   TaskManager, TaskPropsList, WidgetControl, WorkflowManager, WorkflowProps, WorkflowPropsList,
 } from "../../ui-framework";
@@ -54,7 +54,7 @@ describe("ConfigurableUiManager", () => {
           <Frontstage
             id={Frontstage1.stageId}
             defaultTool={CoreTools.selectElementCommand}
-            contentGroup="TestContentGroup1"
+            contentGroup={TestUtils.TestContentGroup1}
           />
         );
       }
@@ -108,8 +108,7 @@ describe("ConfigurableUiManager", () => {
         },
       ],
     };
-    ConfigurableUiManager.loadContentGroup(contentGroupProps);
-    const contentGroup = ContentGroupManager.findGroup("testContentGroup1");
+    const contentGroup = new ContentGroup(contentGroupProps);
     expect(contentGroup).to.not.be.undefined;
     // force controls to be creates
     const controls = contentGroup?.getContentControls();
@@ -117,24 +116,6 @@ describe("ConfigurableUiManager", () => {
     const control = contentGroup?.getContentControlById("test-content-control");
     expect(control).to.not.be.undefined;
     expect(control?.applicationData.label).eql("Content 1a");
-  });
-
-  it("loadContentGroups", () => {
-    const contentGroupProps: ContentGroupProps[] = [
-      {
-        id: "testContentGroup2",
-        layout: "testContentLayout1",
-        contents: [
-          {
-            id: "test.TestControl",
-            classId: "TestContentControl",
-            applicationData: { label: "Content 1a", bgColor: "black" },
-          },
-        ],
-      },
-    ];
-    ConfigurableUiManager.loadContentGroups(contentGroupProps);
-    expect(ContentGroupManager.findGroup("testContentGroup2")).to.not.be.undefined;
   });
 
   it("loadContentLayout", () => {

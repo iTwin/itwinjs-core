@@ -17,7 +17,7 @@ import {
   NineZoneManagerProps, NineZoneState, popoutWidgetToChildWindow, setFloatingWidgetContainerBounds,
 } from "@bentley/ui-ninezone";
 import { ContentControl } from "../content/ContentControl";
-import { ContentGroup, ContentGroupManager, ContentGroupProvider } from "../content/ContentGroup";
+import { ContentGroup, ContentGroupProvider } from "../content/ContentGroup";
 import { ContentLayoutDef } from "../content/ContentLayout";
 import { ContentLayoutManager } from "../content/ContentLayoutManager";
 import { ContentViewManager } from "../content/ContentViewManager";
@@ -481,9 +481,7 @@ export class FrontstageDef {
     if (props.defaultContentId !== undefined)
       this._defaultContentId = props.defaultContentId;
 
-    if (typeof props.contentGroup === "string") {
-      this._contentGroup = ContentGroupManager.findGroup(props.contentGroup);
-    } else if (props.contentGroup instanceof ContentGroupProvider) {
+    if (props.contentGroup instanceof ContentGroupProvider) {
       this._contentGroupProvider = props.contentGroup;
       this._contentGroup = await props.contentGroup.provideContentGroup(props);
     } else {

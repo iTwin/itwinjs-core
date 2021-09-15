@@ -38,15 +38,6 @@ describe("ContentGroup", () => {
     TestUtils.terminateUiFramework();
   });
 
-  //  it("ContentGroupManager.loadGroup should throw Error if ContentGroupProps does not have an id", () => {
-  //    const groupProps: ContentGroupProps = {
-  //      id: "myContentGroup",
-  //      layout: "SingleContent",
-  //      contents: [{ id: "myContent", classId: TestContentControl }],
-  //    };
-  //    expect(() => ContentGroupManager.loadGroup(groupProps)).to.throw(Error);
-  //  });
-
   it("ContentGroup.getContentControl should throw Error if content type is not Content or Viewport", () => {
     const contentProps: ContentProps = { id: "myContent", classId: "TestContentControl" };
     const groupProps: ContentGroupProps = {

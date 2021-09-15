@@ -36,12 +36,24 @@ The following is a sample of a very basic FrontstageProvider definition with zon
 
 ```tsx
 export class SampleFrontstage extends FrontstageProvider {
+    public static SampleContentGroup: ContentGroupProps = {
+    id: "SampleFrontstageGroup",
+    layout: StandardContentLayouts.singleView,
+    contents: [
+      {
+        id: "primaryIModelView",
+        classId: IModelViewportControl,
+      },
+    ],
+  };
+
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
+    const contentGroup = new ContentGroup(SampleFrontstage.SampleContentGroup);
     return (
       <Frontstage id="Test1"
         defaultTool={CoreTools.selectElementCommand}
-        contentGroup="TestContentGroup1"
+        contentGroup={contentGroup}
         isInFooterMode={true}
         applicationData={{ key: "value" }}
         topLeft={

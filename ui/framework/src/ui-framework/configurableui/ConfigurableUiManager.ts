@@ -8,7 +8,7 @@
 
 import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { ContentLayoutProps, UiError } from "@bentley/ui-abstract";
-import { ContentGroupManager, ContentGroupProps } from "../content/ContentGroup";
+import { ContentGroupProps } from "../content/ContentGroup";
 import { ContentLayoutManager } from "../content/ContentLayoutManager";
 import { FrontstageDef } from "../frontstage/FrontstageDef";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
@@ -167,20 +167,6 @@ export class ConfigurableUiManager {
    */
   public static addFrontstageProvider(frontstageProvider: FrontstageProvider): void {
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-  }
-
-  /** Loads one or more ContentGroups into the [[ContentGroupManager]].
-   * @param groupPropsList  the list of ContentGroups to load
-   */
-  public static loadContentGroups(groupPropsList: ContentGroupProps[]): void {
-    ContentGroupManager.loadGroups(groupPropsList);
-  }
-
-  /** Loads a [[ContentGroup]] into the [[ContentGroupManager]].
-   * @param groupProps  the properties of the ContentGroup to load
-   */
-  public static loadContentGroup(groupProps: ContentGroupProps): void {
-    ContentGroupManager.loadGroups([groupProps]);
   }
 
   /** Loads one or more ContentLayouts into the [[ContentLayoutManager]].

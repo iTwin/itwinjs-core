@@ -1217,8 +1217,6 @@ export class ConfigurableUiManager {
     static getWrapperElement(): HTMLElement;
     static initialize(): void;
     static isControlRegistered(classId: string): boolean;
-    static loadContentGroup(groupProps: ContentGroupProps): void;
-    static loadContentGroups(groupPropsList: ContentGroupProps[]): void;
     static loadContentLayout(layoutProps: ContentLayoutProps): void;
     static loadContentLayouts(layoutPropsList: ContentLayoutProps[]): void;
     static loadKeyboardShortcuts(shortcutList: KeyboardShortcutProps[]): void;
@@ -1320,14 +1318,6 @@ export class ContentGroup {
     propsId: string;
     refreshContentNodes(): void;
     toJSON(contentCallback?: ContentCallback): ContentGroupProps;
-}
-
-// @public
-export class ContentGroupManager {
-    // (undocumented)
-    static findGroup(groupId: string): ContentGroup | undefined;
-    // @internal
-    static loadGroups(groupPropsList: ContentGroupProps[]): void;
 }
 
 // @public
@@ -2843,7 +2833,7 @@ export interface FrontstageProps extends CommonProps {
     centerLeft?: React.ReactElement<ZoneProps>;
     // @deprecated
     centerRight?: React.ReactElement<ZoneProps>;
-    contentGroup: string | ContentGroup | ContentGroupProvider;
+    contentGroup: ContentGroup | ContentGroupProvider;
     // @beta
     contentManipulationTools?: React.ReactElement<ZoneProps>;
     defaultContentId?: string;
@@ -6932,7 +6922,7 @@ export interface UnitSystemSelectorProps {
 }
 
 // @internal (undocumented)
-export function useActiveFrontstageDef(): FrontstageDef | undefined;
+export function useActiveFrontstageDef(): import("./FrontstageDef").FrontstageDef | undefined;
 
 // @beta
 export const useActiveFrontstageId: () => string;
