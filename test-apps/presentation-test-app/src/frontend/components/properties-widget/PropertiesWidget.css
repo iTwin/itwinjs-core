@@ -6,7 +6,7 @@
 .PropertiesWidget {
   padding: 5px;
   display: grid;
-  grid-template-columns: 1fr 100px;
+  grid-template-columns: minmax(0, 1fr) 100px;
   grid-template-rows: 24px 36px auto;
 }
 
