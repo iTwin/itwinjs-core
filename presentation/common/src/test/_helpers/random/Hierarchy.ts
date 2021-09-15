@@ -18,6 +18,7 @@ import { createRandomHexColor, createRandomRgbColor, nullable } from "./Misc";
 export const createRandomBaseNodeKey = (): BaseNodeKey => {
   return {
     type: faker.random.word(),
+    version: 2,
     pathFromRoot: [faker.random.uuid(), faker.random.uuid()],
   };
 };
@@ -26,6 +27,7 @@ export const createRandomECInstancesNodeKey = (instanceKeys?: InstanceKey[]): EC
   instanceKeys = instanceKeys ?? [createRandomECInstanceKey(), createRandomECInstanceKey()];
   return {
     type: StandardNodeTypes.ECInstancesNode,
+    version: 2,
     pathFromRoot: [faker.random.uuid(), faker.random.uuid()],
     instanceKeys,
   };
@@ -34,6 +36,7 @@ export const createRandomECInstancesNodeKey = (instanceKeys?: InstanceKey[]): EC
 export const createRandomECInstancesNodeKeyJSON = (instanceKeys?: InstanceKeyJSON[]): ECInstancesNodeKeyJSON => {
   return {
     type: StandardNodeTypes.ECInstancesNode,
+    version: 2,
     pathFromRoot: [faker.random.uuid(), faker.random.uuid()],
     instanceKeys: instanceKeys ?? [createRandomECInstanceKeyJSON(), createRandomECInstanceKeyJSON()],
   };
@@ -41,6 +44,7 @@ export const createRandomECInstancesNodeKeyJSON = (instanceKeys?: InstanceKeyJSO
 
 export const createRandomECClassGroupingNodeKey = (groupedInstancesCount?: number): ECClassGroupingNodeKey => ({
   type: StandardNodeTypes.ECClassGroupingNode,
+  version: 2,
   pathFromRoot: [faker.random.uuid()],
   className: faker.random.word(),
   groupedInstancesCount: groupedInstancesCount || faker.random.number(),
@@ -48,6 +52,7 @@ export const createRandomECClassGroupingNodeKey = (groupedInstancesCount?: numbe
 
 export const createRandomECPropertyGroupingNodeKey = (groupedInstancesCount?: number): ECPropertyGroupingNodeKey => ({
   type: StandardNodeTypes.ECPropertyGroupingNode,
+  version: 2,
   pathFromRoot: [faker.random.uuid()],
   className: faker.random.word(),
   propertyName: faker.random.word(),
@@ -58,6 +63,7 @@ export const createRandomECPropertyGroupingNodeKey = (groupedInstancesCount?: nu
 
 export const createRandomLabelGroupingNodeKey = (groupedInstancesCount?: number): LabelGroupingNodeKey => ({
   type: StandardNodeTypes.DisplayLabelGroupingNode,
+  version: 2,
   pathFromRoot: [faker.random.uuid()],
   label: faker.random.words(),
   groupedInstancesCount: groupedInstancesCount || faker.random.number(),

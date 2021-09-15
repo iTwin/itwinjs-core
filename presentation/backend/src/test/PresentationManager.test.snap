@@ -112,6 +112,7 @@ Array [
         "p1",
       ],
       "type": "ECInstancesNode",
+      "version": 1,
     },
     "label": Object {
       "displayValue": "test2",
@@ -126,6 +127,7 @@ Array [
         "p3",
       ],
       "type": "type 2",
+      "version": 1,
     },
     "label": Object {
       "displayValue": "test3",
@@ -158,6 +160,7 @@ Array [
         "p3",
       ],
       "type": "type1",
+      "version": 1,
     },
     "label": Object {
       "displayValue": "test1",
@@ -189,6 +192,7 @@ Array [
         "p1",
       ],
       "type": "ECInstancesNode",
+      "version": 1,
     },
     "label": Object {
       "displayValue": "test2",
@@ -203,6 +207,7 @@ Array [
         "p3",
       ],
       "type": "some node",
+      "version": 1,
     },
     "label": Object {
       "displayValue": "test2",
@@ -1585,6 +1590,7 @@ Array [
           "0d2eb41d-4a3b-48a0-8400-92a3e6ad85ea",
         ],
         "type": "ECInstancesNode",
+        "version": 2,
       },
       "label": Object {
         "displayValue": "Electronics",
@@ -1636,6 +1642,7 @@ Array [
           "30662f47-039f-481e-8693-75ec166aa453",
         ],
         "type": "ECInstancesNode",
+        "version": 2,
       },
       "label": Object {
         "displayValue": "withdrawal",
@@ -1681,6 +1688,7 @@ Array [
           "a83130b4-7a88-4453-bfc6-58def17aa003",
         ],
         "type": "ECInstancesNode",
+        "version": 2,
       },
       "label": Object {
         "displayValue": "Ergonomic",
@@ -1727,6 +1735,7 @@ Array [
           "1c2ff0f1-6636-4b10-bded-2a66e751f893",
         ],
         "type": "ECInstancesNode",
+        "version": 2,
       },
       "label": Object {
         "displayValue": "connect",
@@ -1752,6 +1761,7 @@ Array [
         "p1",
       ],
       "type": "ECInstancesNode",
+      "version": 1,
     },
     "label": Object {
       "displayValue": "test2",
@@ -1766,6 +1776,7 @@ Array [
         "p3",
       ],
       "type": "type 2",
+      "version": 1,
     },
     "label": Object {
       "displayValue": "test3",
@@ -1790,6 +1801,7 @@ Array [
         "p1",
       ],
       "type": "ECInstancesNode",
+      "version": 1,
     },
     "label": Object {
       "displayValue": "test2",
@@ -1804,6 +1816,7 @@ Array [
         "p3",
       ],
       "type": "type 2",
+      "version": 1,
     },
     "label": Object {
       "displayValue": "test3",
@@ -1836,6 +1849,7 @@ Array [
         "p3",
       ],
       "type": "type1",
+      "version": 1,
     },
     "label": Object {
       "displayValue": "test1",
@@ -1867,6 +1881,7 @@ Array [
         "p1",
       ],
       "type": "ECInstancesNode",
+      "version": 1,
     },
     "label": Object {
       "displayValue": "test2",
@@ -1881,6 +1896,7 @@ Array [
         "p3",
       ],
       "type": "some node",
+      "version": 1,
     },
     "label": Object {
       "displayValue": "test2",

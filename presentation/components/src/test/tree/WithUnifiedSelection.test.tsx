@@ -210,6 +210,7 @@ describe("Tree withUnifiedSelection", () => {
       it("returns false when node key is not in selection and node is not ECInstance node", () => {
         const nodeKey: BaseNodeKey = {
           type: faker.random.word(),
+          version: 0,
           pathFromRoot: [],
         };
         const node = createRandomTreeNodeItem(nodeKey);
@@ -281,7 +282,7 @@ describe("Tree withUnifiedSelection", () => {
       it("replaces ECInstance keys in selection manager", () => {
         const keys = [
           createRandomECInstancesNodeKey(),
-          { type: faker.random.word(), pathFromRoot: [] },
+          { type: faker.random.word(), version: 0, pathFromRoot: [] },
         ];
         const nodes = keys.map((key) => createRandomTreeNodeItem(key));
 
@@ -349,7 +350,7 @@ describe("Tree withUnifiedSelection", () => {
       it("removes ECInstance keys from selection manager", () => {
         const keys = [
           createRandomECInstancesNodeKey(),
-          { type: faker.random.word(), pathFromRoot: [] },
+          { type: faker.random.word(), version: 0, pathFromRoot: [] },
         ];
         const nodes = keys.map((key) => createRandomTreeNodeItem(key));
 
