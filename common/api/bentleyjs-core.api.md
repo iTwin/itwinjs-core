@@ -1266,7 +1266,7 @@ export class ProcessDetector {
     static get isAndroidAppFrontend(): boolean;
     static get isAndroidBrowser(): boolean;
     static get isBrowserProcess(): boolean;
-    static get isChromeEdgeElectron(): boolean;
+    static get isChromium(): boolean;
     static get isElectronAppBackend(): boolean;
     static get isElectronAppFrontend(): boolean;
     static get isIOSAppBackend(): boolean;
