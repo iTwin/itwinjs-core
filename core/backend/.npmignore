@@ -1,12 +1,13 @@
 # start off ignoring everything, and then add back only the files we want
 *
-!cjs/**/*.d.ts
-!cjs/**/*.d.ts.map
-!cjs/**/*.js
-!cjs/**/*.js.map
-!cjs/assets/**
-assets/**
+!lib/cjs/**/*.d.ts
+!lib/cjs/**/*.d.ts.map
+!lib/cjs/**/*.js
+!lib/cjs/**/*.js.map
+!lib/cjs/assets/**
+
 test
 perftest
+
 !public/**
 !*.md
