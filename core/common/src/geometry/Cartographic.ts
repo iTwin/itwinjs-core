@@ -59,8 +59,8 @@ export class Cartographic {
   /** Returns a JSON representation of a Cartographic object. */
   public toJSON(): CartographicProps {
     return {
-      latitude: Angle.fromJSON({ radians: this.latitudeRadians }),
-      longitude: Angle.fromJSON({ radians: this.longitudeRadians }),
+      latitude: this.latitude.toJSON(),
+      longitude: this.longitude.toJSON(),
       height: this.height,
     };
   }
