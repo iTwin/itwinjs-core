@@ -575,7 +575,7 @@ export abstract class FileNameResolver {
   public resolveKey(fileKey: string): string {
     const resolvedFileName: string | undefined = this.tryResolveKey(fileKey);
     if (undefined === resolvedFileName) {
-      throw new IModelError(IModelStatus.NotFound, `${fileKey} not resolved`, Logger.logWarning, loggerCategory);
+      throw new IModelError(IModelStatus.NotFound, `${fileKey} not resolved`);
     }
     return resolvedFileName;
   }
@@ -592,7 +592,7 @@ export abstract class FileNameResolver {
   public resolveFileName(inFileName: string): string {
     const resolvedFileName: string | undefined = this.tryResolveFileName(inFileName);
     if (undefined === resolvedFileName) {
-      throw new IModelError(IModelStatus.NotFound, `${inFileName} not resolved`, Logger.logWarning, loggerCategory);
+      throw new IModelError(IModelStatus.NotFound, `${inFileName} not resolved`);
     }
     return resolvedFileName;
   }

@@ -413,7 +413,7 @@ export abstract class RpcRequest<TResponse = any> {
       const name = hasInfo ? error.name : "";
       const message = hasInfo ? error.message : "";
       const errorNumber = (hasInfo && error.hasOwnProperty("errorNumber")) ? error.errorNumber : BentleyStatus.ERROR;
-      return this.reject(new BackendError(errorNumber, name, message, Logger.logError, CommonLoggerCategory.RpcInterfaceFrontend, () => error));
+      return this.reject(new BackendError(errorNumber, name, message, () => error));
     } catch (err) {
       return this.reject(err);
     }

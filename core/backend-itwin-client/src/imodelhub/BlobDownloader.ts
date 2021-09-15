@@ -388,7 +388,7 @@ export class BlobDownloader {
       });
       await this.pipeline(downloadStream, fs.createWriteStream(targetFile, { flags: "r+", start: startByte }));
       this.markCompleted(session, blockId);
-    } catch (err) {
+    } catch (err: any) {
       session.bytesDownloaded -= localDataBytes;
       this.markFailed(session, blockId);
       session.lastError = err;
@@ -473,7 +473,7 @@ export class BlobDownloader {
   }
   private static checkDownloadCancelled(session: SessionData) {
     if (session.cancelled)
-      throw new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download", Logger.logWarning);
+      throw new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download");
   }
   private static async checkAnotherProcessIsDownloadingSameFile(session: SessionData): Promise<boolean> {
     // some other process is downloading

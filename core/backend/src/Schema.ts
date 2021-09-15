@@ -63,7 +63,7 @@ export class Schemas {
   public static registerSchema(schema: typeof Schema) {
     const key = schema.schemaName.toLowerCase();
     if (this.getRegisteredSchema(key))
-      throw new IModelError(IModelStatus.DuplicateName, `Schema "${schema.schemaName}" is already registered`, Logger.logWarning, BackendLoggerCategory.Schemas);
+      throw new IModelError(IModelStatus.DuplicateName, `Schema "${schema.schemaName}" is already registered`);
     this._registeredSchemas.set(key, schema);
   }
 

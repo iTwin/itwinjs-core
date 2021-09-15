@@ -403,13 +403,11 @@ export class BentleyError extends Error {
    * @param category The optional logger category to use when logging.
    * @param getMetaData Optional data to be passed to the logger.
    */
-  public constructor(errorNumber: number, message?: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction) {
+  public constructor(errorNumber: number, message?: string, getMetaData?: GetMetaDataFunction) {
     super(message);
     this.errorNumber = errorNumber;
     this._getMetaData = getMetaData;
     this.name = this._initName();
-    if (log)
-      Logger.logException(category || "BentleyError", this, log, this._getMetaData);  // TODO: Can we come up with a better default category?
   }
 
   /** Returns true if this BentleyError includes (optional) meta data. */

@@ -54,8 +54,8 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
     const client = await this.getClient(requestContext);
     try {
       tokenSet = await client.grant(grantParams);
-    } catch (error) {
-      throw new BentleyError(AuthStatus.Error, error.message || "Authorization error", Logger.logError, loggerCategory, () => ({ error: error.error, message: error.message }));
+    } catch (error: any) {
+      throw new BentleyError(AuthStatus.Error, error.message || "Authorization error", () => ({ error: error.error, message: error.message }));
     }
 
     const userProfile = tokenSet.access_token

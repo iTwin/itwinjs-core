@@ -37,7 +37,7 @@ export class FunctionalSchema extends Schema {
 
     const stat = iModelDb.nativeDb.importFunctionalSchema();
     if (DbResult.BE_SQLITE_OK !== stat) {
-      throw new IModelError(stat, "Error importing Functional schema", Logger.logError, loggerCategory);
+      throw new IModelError(stat, "Error importing Functional schema");
     }
     // FunctionalDomain (C++) does not create Category or other Elements on import
   }

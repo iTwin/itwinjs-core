@@ -118,7 +118,7 @@ export class AccessToken {
    */
   public initFromTokenString(tokenStr: string): void {
     if (!tokenStr.startsWith(this._prefix)) {
-      throw new BentleyError(AuthStatus.Error, "Invalid access token", Logger.logError, loggerCategory, () => ({ tokenStr }));
+      throw new BentleyError(AuthStatus.Error, "Invalid access token");
     }
     const jwt = tokenStr.substr(this._prefix.length + 1);
     this._tokenString = jwt;
@@ -143,7 +143,7 @@ export class AccessToken {
         return new TokenPrefixToTypeContainer.tokenPrefixToConstructorDict[key]();
       }
     }
-    throw new BentleyError(AuthStatus.Error, "Invalid access token", Logger.logError, loggerCategory, () => ({ tokenStr }));
+    throw new BentleyError(AuthStatus.Error, "Invalid access token");
   }
 
   /**
@@ -181,7 +181,7 @@ export class AccessToken {
    */
   public static fromTokenResponseJson(tokenResponse: any, userProfileResponse?: any): AccessToken {
     if (!tokenResponse || !tokenResponse.access_token)
-      throw new BentleyError(AuthStatus.Error, "Expected tokenResponse to contain access_token field", Logger.logError, loggerCategory, () => tokenResponse);
+      throw new BentleyError(AuthStatus.Error, "Expected tokenResponse to contain access_token field");
 
     const startsAt = new Date((tokenResponse.expires_at - tokenResponse.expires_in) * 1000);
     const expiresAt = new Date(tokenResponse.expires_at * 1000);

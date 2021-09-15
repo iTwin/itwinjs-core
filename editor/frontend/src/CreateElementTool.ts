@@ -169,13 +169,13 @@ export class DynamicGraphicsProvider {
 export abstract class CreateElementTool extends PrimitiveTool {
   public get targetCategory(): Id64String {
     if (IModelApp.toolAdmin.activeSettings.category === undefined)
-      throw new IModelError(IModelStatus.InvalidCategory, "", Logger.logError);
+      throw new IModelError(IModelStatus.InvalidCategory, "");
     return IModelApp.toolAdmin.activeSettings.category;
   }
 
   public override get targetModelId(): Id64String {
     if (IModelApp.toolAdmin.activeSettings.model === undefined)
-      throw new IModelError(IModelStatus.BadModel, "", Logger.logError);
+      throw new IModelError(IModelStatus.BadModel, "");
     return IModelApp.toolAdmin.activeSettings.model;
   }
 

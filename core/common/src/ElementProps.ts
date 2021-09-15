@@ -80,7 +80,7 @@ export class RelatedElement implements RelatedElementProps {
     if ((typeof json === "object") && ("id" in json)) {
       const r = RelatedElement.fromJSON(json);
       if (r === undefined)
-        throw new IModelError(IModelStatus.BadArg, "Problem parsing Id64 from json", Logger.logWarning, CommonLoggerCategory.ElementProps);
+        throw new IModelError(IModelStatus.BadArg, "Problem parsing Id64 from json");
       return r.id;
     }
     return Id64.fromJSON(json);

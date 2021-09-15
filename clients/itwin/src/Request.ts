@@ -154,7 +154,7 @@ export class ResponseError extends BentleyError {
   public status?: number;
   public description?: string;
   public constructor(errorNumber: number | HttpStatus, message?: string, getMetaData?: GetMetaDataFunction) {
-    super(errorNumber, message, undefined, undefined, getMetaData);
+    super(errorNumber, message, getMetaData);
   }
 
   /**

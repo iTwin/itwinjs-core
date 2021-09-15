@@ -242,9 +242,8 @@ export class RpcInvocation {
 
   private lookupOperationFunction(implementation: RpcInterface): (...args: any[]) => any {
     const func = (implementation as any)[this.operation.operationName];
-    if (!func || typeof (func) !== "function") {
-      throw new IModelError(BentleyStatus.ERROR, `RPC interface class "${implementation.constructor.name}" does not implement operation "${this.operation.operationName}".`, Logger.logError, CommonLoggerCategory.RpcInterfaceBackend);
-    }
+    if (!func || typeof (func) !== "function")
+      throw new IModelError(BentleyStatus.ERROR, `RPC interface class "${implementation.constructor.name}" does not implement operation "${this.operation.operationName}".`);
 
     return func;
   }

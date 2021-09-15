@@ -419,7 +419,7 @@ export class Relationships {
   /** Check classFullName to ensure it is a link table relationship class. */
   private checkRelationshipClass(classFullName: string) {
     if (!this._iModel.nativeDb.isLinkTableRelationship(classFullName.replace(".", ":"))) {
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Class '${classFullName}' must be a relationship class and it should be subclass of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement.`, Logger.logWarning, loggerCategory);
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Class '${classFullName}' must be a relationship class and it should be subclass of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement.`);
     }
   }
 
@@ -433,7 +433,7 @@ export class Relationships {
     this.checkRelationshipClass(props.classFullName);
     const val = this._iModel.nativeDb.insertLinkTableRelationship(props);
     if (val.error)
-      throw new IModelError(val.error.status, "Error inserting relationship instance", Logger.logWarning, loggerCategory);
+      throw new IModelError(val.error.status, "Error inserting relationship instance");
 
     props.id = Id64.fromJSON(val.result);
     return props.id;
@@ -447,7 +447,7 @@ export class Relationships {
     this.checkRelationshipClass(props.classFullName);
     const error = this._iModel.nativeDb.updateLinkTableRelationship(props);
     if (error !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(error, "Error updating relationship instance", Logger.logWarning, loggerCategory);
+      throw new IModelError(error, "Error updating relationship instance");
   }
 
   /** Delete an Relationship instance from this iModel.The relationship provided must be subclass of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement.
@@ -458,7 +458,7 @@ export class Relationships {
     this.checkRelationshipClass(props.classFullName);
     const error = this._iModel.nativeDb.deleteLinkTableRelationship(props);
     if (error !== DbResult.BE_SQLITE_DONE)
-      throw new IModelError(error, "", Logger.logWarning, loggerCategory);
+      throw new IModelError(error, "");
   }
 
   /** Get the props of a Relationship instance
@@ -470,7 +470,7 @@ export class Relationships {
   public getInstanceProps<T extends RelationshipProps>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T {
     const relationshipProps = this.tryGetInstanceProps<T>(relClassFullName, criteria);
     if (undefined === relationshipProps) {
-      throw new IModelError(IModelStatus.NotFound, "Relationship not found", Logger.logWarning, loggerCategory);
+      throw new IModelError(IModelStatus.NotFound, "Relationship not found");
     }
     return relationshipProps;
   }

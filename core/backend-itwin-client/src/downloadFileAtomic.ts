@@ -48,9 +48,9 @@ export async function downloadFileAtomic(downloadUrl: string, downloadToPathname
         bufferedStream,
         fileStream,
       );
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof got.CancelError)
-        throw new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download", Logger.logWarning);
+        throw new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download");
 
       if (error instanceof got.HTTPError)
         throw new DownloadFailed(error.response.statusCode, error.response.statusMessage ?? "Download failed");

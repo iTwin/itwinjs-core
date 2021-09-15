@@ -45,7 +45,7 @@ export class BasicAccessToken extends AccessToken {
    */
   public override initFromTokenString(tokenStr: string): void {
     if (!tokenStr.startsWith(this._prefix)) {
-      throw new BentleyError(AuthStatus.Error, "Invalid access token", Logger.logError, loggerCategory, () => ({ tokenStr }));
+      throw new BentleyError(AuthStatus.Error, "Invalid access token");
     }
     const userPass = tokenStr.substr(this._prefix.length + 1);
     this._tokenString = userPass;

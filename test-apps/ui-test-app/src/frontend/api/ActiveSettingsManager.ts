@@ -115,7 +115,7 @@ export class ActiveSettingsManager {
     else if (view instanceof SpatialViewState)
       models = Array.from(view.modelSelector.models);
     else {
-      throw new IModelError(IModelStatus.BadArg, "only 2d and spatial views are supported", Logger.logError, "simple-editor-app", () => view);
+      throw new IModelError(IModelStatus.BadArg, "only 2d and spatial views are supported");
     }
 
     if (models.length === 0) {

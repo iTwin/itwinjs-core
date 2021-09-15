@@ -273,7 +273,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
   public async getAccessToken(): Promise<AccessToken> {
     if (this._accessToken)
       return this._accessToken;
-    throw new BentleyError(AuthStatus.Error, "Not signed in.", Logger.logError, FrontendAuthorizationClientLoggerCategory.Authorization);
+    throw new BentleyError(AuthStatus.Error, "Not signed in.");
   }
 
   /**

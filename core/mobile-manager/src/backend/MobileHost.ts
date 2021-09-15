@@ -131,7 +131,7 @@ export class MobileHost {
       }
       const requestId = this.device.createDownloadTask(downloadUrl, false, downloadTo, (_downloadUrl: string, _downloadFileUrl: string, cancelled: boolean, err?: string) => {
         if (cancelled)
-          reject(new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download", Logger.logWarning));
+          reject(new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download"));
         else if (err)
           reject(new DownloadFailed(400, "Download failed"));
         else
