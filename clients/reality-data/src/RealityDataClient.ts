@@ -507,6 +507,7 @@ export class RealityDataClient extends WsgClient {
   /**
   // SWB
    * Gets all reality data that has a footprint defined that overlaps the given area and that are associated with the project. Reality Data returned must be accessible by user
+   // SWB What does context mean here?
    * as public, enterprise data, private or accessible through context RBAC rights attributed to user.
    * @param requestContext The client request context.
    * @param projectId id of associated iTwin project

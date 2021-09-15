@@ -2187,6 +2187,7 @@ export class BriefcaseDb extends IModelDb {
     super.abandonChanges();
   }
 
+  // SWB
   /** The Guid that identifies the *context* that owns this iModel. */
   // SWB
   public override get contextId(): GuidString { return super.contextId!; } // GuidString | undefined for the superclass, but required for BriefcaseDb

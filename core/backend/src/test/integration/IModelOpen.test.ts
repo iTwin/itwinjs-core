@@ -37,6 +37,7 @@ describe("IModelOpen (#integration)", () => {
     const badToken = new AccessToken("ThisIsABadToken");
     const badRequestContext = new AuthorizedBackendRequestContext(badToken);
 
+    // SWB What does context mean here?
     // Try the bad request context
     // SWB
     await expect(IModelTestUtils.downloadAndOpenCheckpoint({ requestContext: badRequestContext, contextId: testContextId, iModelId: testIModelId }))

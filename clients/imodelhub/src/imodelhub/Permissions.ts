@@ -54,6 +54,7 @@ export class PermissionHandler {
 
   /**
    * Get user permissions of an specified iModel.
+   // SWB What to do after renaming away from CONNECT contexts?
    * Use [[PermissionHandler.getContextPermissions]] to check CONNECT context level permissions.
    * @param requestContext The client request context.
    * @param imodelId Id of the specified iModel.

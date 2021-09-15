@@ -58,6 +58,7 @@ export interface IModelIdArg {
   requestContext?: AuthorizedClientRequestContext;
 }
 
+// SWB
 /** Argument for methods that must supply an IModel name and ContextId
  * @internal
  */

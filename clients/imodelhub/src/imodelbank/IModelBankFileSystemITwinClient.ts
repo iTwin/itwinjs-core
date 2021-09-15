@@ -71,6 +71,7 @@ export class IModelBankFileSystemITwinClient implements ITwinManagerClient {
     const props = await this.queryContextProps(requestContext, name); // SWB what does context mean here
     requestContext.enter();
 
+    // SWB
     // Get first context
     return props[0] as ITwin;
   }

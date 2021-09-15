@@ -95,6 +95,7 @@ export class HubMock {
     if (!this.isValid)
       return;
 
+    // SWB
     HubUtility.contextId = undefined;
     for (const hub of this.hubs)
       hub[1].cleanup();

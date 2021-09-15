@@ -46,7 +46,7 @@ export interface BlankConnectionProps {
   /** An offset to be applied to all spatial coordinates. */
   globalOrigin?: XYZProps;
   /** The optional Guid that identifies the *context* associated with the [[BlankConnection]]. */
-  // SWB
+  // SWB What does context mean here?
   contextId?: GuidString;
 }
 

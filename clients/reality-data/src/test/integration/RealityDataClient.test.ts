@@ -209,6 +209,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
 
     const relationships: RealityDataRelationship[] = await realityDataServiceClient.getRealityDataRelationships(requestContext, projectId, realityDataAdded1.id as string);
 
+    // SWB
     // Remove any relationship (can only be one to context at creation)
     for (const relationship of relationships) {
       await realityDataServiceClient.deleteRealityDataRelationship(requestContext, projectId, relationship.wsgId);
@@ -284,6 +285,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
 
     const relationships: RealityDataRelationship[] = await realityDataServiceClient.getRealityDataRelationships(requestContext, projectId, realityDataAdded1.id as string);
 
+    // SWB
     // Remove any relationship (can only be one to context at creation)
     for (const relationship of relationships) {
       await realityDataServiceClient.deleteRealityDataRelationship(requestContext, projectId, relationship.wsgId);
@@ -415,6 +417,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
 
     const relationships1: RealityDataRelationship[] = await realityDataServiceClient.getRealityDataRelationships(requestContext, projectId, realityDataId1);
 
+    // SWB
     // Remove any relationship (can only be one to context at creation)
     for (const relationship of relationships1) {
       await realityDataServiceClient.deleteRealityDataRelationship(requestContext, projectId, relationship.wsgId);
@@ -422,6 +425,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
 
     const relationships2: RealityDataRelationship[] = await realityDataServiceClient.getRealityDataRelationships(requestContext, projectId, realityDataAdded2.id as string);
 
+    // SWB
     // Remove any relationship (can only be one to context at creation)
     for (const relationship of relationships2) {
       await realityDataServiceClient.deleteRealityDataRelationship(requestContext, projectId, relationship.wsgId);
@@ -559,6 +563,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
 
     const relationships: RealityDataRelationship[] = await realityDataServiceClient.getRealityDataRelationships(requestContext, projectId, realityDataAdded1.id as string);
 
+    // SWB
     // Remove any relationship (can only be one to context at creation)
     for (const relationship of relationships) {
       await realityDataServiceClient.deleteRealityDataRelationship(requestContext, projectId, relationship.wsgId);

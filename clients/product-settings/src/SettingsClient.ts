@@ -96,6 +96,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
       urlTerminator = "/Setting";
 
     // CHANGE:
+    // SWB
     //  - If you supply a context, do not require a user
     //  - If no context, default to user
 
@@ -283,6 +284,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
         return new SettingsResult(SettingsStatus.UnknownError, `Unexpected Status ${JSON.stringify(response)}`);
     }
   }
+  // SWB
   // app specific, no context, no shared, no user
   // SWB
   public async saveUserSetting(requestContext: AuthorizedClientRequestContext, settings: any, settingNamespace: string, settingName: string, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult> {

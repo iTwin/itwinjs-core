@@ -68,6 +68,7 @@ export interface ChangeSummaryExtractOptions {
  * @beta
  */
 export interface CreateChangeSummaryArgs {
+  // SWB
   /** Id of the context that contains the iModel */
   // SWB
   contextId: GuidString;

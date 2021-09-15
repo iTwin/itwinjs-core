@@ -10,6 +10,7 @@ import { assert } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, ECJsonTypeMap, RequestOptions, RequestQueryOptions, WsgClient, WsgInstance } from "@bentley/itwin-client";
 import { ITwin, ITwinAccess, ITwinQueryArg } from "./ITwinAccessProps";
 
+// SWB
 /** The iTwin context such as Projects and Assets.
  * @beta
  */
@@ -89,6 +90,7 @@ abstract class HiddenContext extends Context {
   public timeZoneLocation?: string;
 }
 
+// SWB
 /** An iTwin context of type project. Represents time-constrained work done on an [[Asset]].
  * Deprecated
  * @beta
@@ -105,6 +107,7 @@ class Project extends HiddenContext {
   public isRbacEnabled?: boolean;
 }
 
+// SWB
 /** An iTwin context of type asset. Assets represent a large scale item that is owned and/or operated by organization, such as buildings, highways and so on.
  * Deprecated
  * @beta

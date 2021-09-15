@@ -38,6 +38,7 @@ export class TestUtility {
 
   // SWB
   private static contextId: GuidString | undefined = undefined;
+  // SWB
   /** Returns the ContextId if a Context with the name exists. Otherwise, returns undefined. */
   // SWB
   public static async getTestContextId(requestContext: AuthorizedClientRequestContext): Promise<GuidString> {
@@ -45,7 +46,7 @@ export class TestUtility {
     // SWB
     if (undefined !== TestUtility.contextId)
       return TestUtility.contextId;
-      // SWB
+    // SWB
     return TestUtility.queryContextIdByName(TestUtility.testContextName);
   }
 

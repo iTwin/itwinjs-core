@@ -279,6 +279,7 @@ export class CheckpointManager {
     return this.updateToRequestedVersion(request);
   }
 
+  // SWB
   /** checks a file's dbGuid & contextId for consistency, and updates the dbGuid when possible */
   public static validateCheckpointGuids(checkpoint: CheckpointProps, nativeDb: IModelJsNative.DgnDb) {
     // SWB

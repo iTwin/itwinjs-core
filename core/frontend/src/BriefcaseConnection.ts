@@ -158,6 +158,7 @@ export class BriefcaseConnection extends IModelConnection {
   /** @internal */
   public override isBriefcaseConnection(): this is BriefcaseConnection { return true; }
 
+  // SWB
   /** The Guid that identifies the *context* that owns this iModel. */
   // SWB
   public override get contextId(): GuidString { return super.contextId!; } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection

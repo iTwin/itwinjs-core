@@ -33,6 +33,7 @@ export class HubUtility {
 
   // SWB
   public static contextId: GuidString | undefined;
+  // SWB
   /** Returns the ContextId if a Context with the name exists. Otherwise, returns undefined. */
   // SWB
   public static async getTestContextId(requestContext: AuthorizedClientRequestContext): Promise<GuidString> {
@@ -370,7 +371,7 @@ export class HubUtility {
     if (iModelId) {
       if (!overwrite)
         return iModelId;
-        // SWB
+      // SWB
       await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: projectId, iModelId });
     }
 
@@ -594,6 +595,7 @@ export class HubUtility {
     return `${baseName} - ${Guid.createValue()}`;
   }
 
+  // SWB What does context mean here?
   /** Deletes and re-creates an iModel with the provided name in the Context.
    * @returns the iModelId of the newly created iModel.
   */
@@ -619,10 +621,10 @@ export class HubUtility {
   }
 }
 
-  // SWB What does project mean here? Should this class be renamed?
+// SWB What does project mean here? Should this class be renamed?
 /** An implementation of IModelProjectAbstraction backed by an iTwin project */
 
-  // SWB
+// SWB
 class TestIModelHubProject {
   public get isIModelHub(): boolean { return true; }
   public terminate(): void { }
@@ -648,7 +650,8 @@ class TestIModelHubProject {
         searchString: name,
         propertyName: ITwinSearchableProperty.Name,
         exactMatch: true,
-      }});
+      }
+    });
 
     if (iTwinList.length === 0)
       throw new Error(`ITwin ${name} was not found for the user.`);

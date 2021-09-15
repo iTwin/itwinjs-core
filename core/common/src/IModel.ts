@@ -486,6 +486,7 @@ export abstract class IModel implements IModelProps {
   /** @internal */
   // SWB
   protected _contextId?: GuidString;
+  // SWB
   /** The Guid that identifies the *context* that owns this iModel. */
   // SWB
   public get contextId(): GuidString | undefined { return this._contextId; }

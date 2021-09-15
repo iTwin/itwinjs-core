@@ -45,6 +45,7 @@ export class LargeThumbnail extends Thumbnail { }
  * @public
  */
 export interface TipThumbnail {
+  // SWB
   /** Id of the iModel's context ([[ITwin]]). */
   // SWB
   contextId: string;
@@ -88,6 +89,7 @@ export class ThumbnailHandler {
   }
 
   /** Get relative url for tip Thumbnail requests.
+   // SWB
    * @param contextId Id of the context ([[ITwin]]).
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param size Size of the thumbnail.
@@ -144,6 +146,7 @@ export class ThumbnailHandler {
 
   /** Download the latest iModel's thumbnail.
    * @param requestContext The client request context.
+   // SWB
    * @param contextId Id of the iTwin context.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param size Size of the thumbnail. Pass 'Small' for 400x250 PNG image, and 'Large' for a 800x500 PNG image.

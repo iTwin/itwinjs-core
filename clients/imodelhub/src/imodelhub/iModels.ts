@@ -32,6 +32,7 @@ export class HubIModel extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Description")
   public description?: string;
 
+  // SWB
   /** Name of the iModel. iModels must have unique names per context ([[ITwin]]). */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Name")
   public name?: string;
@@ -371,6 +372,7 @@ export class DefaultIModelCreateOptionsProvider {
 
 /**
  * Handler for managing [[HubIModel]] instances. Use [[IModelHubClient.IModels]] to get an instance of this handler.
+   // SWB
  * @note Use [[IModelHubClient.IModel]] for the preferred single iModel per context workflow.
  * @public
  */
@@ -386,6 +388,7 @@ export class IModelsHandler {
   /** Constructor for IModelsHandler. Should use @see IModelClient instead of directly constructing this.
    * @param handler Handler for WSG requests.
    * @param fileHandler Handler for file system.
+   // SWB
    * @note Use [[IModelHubClient.IModel]] for the preferred single iModel per context workflow.
    * @internal
    */
@@ -396,6 +399,7 @@ export class IModelsHandler {
   }
 
   /** Get relative url for iModel requests.
+   // SWB
    * @param contextId Id of the context.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    */
@@ -405,8 +409,10 @@ export class IModelsHandler {
     return `/Repositories/Context--${this._handler.formatContextIdForUrl(contextId)}/ContextScope/iModel/${iModelId || ""}`;
   }
 
+  // SWB
   /** Get iModels that belong to the specified context.
    * @param requestContext The client request context.
+   // SWB
    * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[ITwin]]).
    * @param query Optional query object to filter the queried iModels or select different data from them.
    * @returns [[HubIModel]] instances that match the query.
@@ -429,8 +435,10 @@ export class IModelsHandler {
     return imodels;
   }
 
+  // SWB
   /** Delete an iModel with specified id from a context. This method is not supported in iModelBank.
    * @param requestContext The client request context.
+   // SWB
    * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[ITwin]]).
    * @param iModelId Id of the iModel to be deleted. See [[HubIModel]].
    * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel with specified id does not exist.
@@ -461,6 +469,7 @@ export class IModelsHandler {
 
   /** Create an iModel instance
    * @param requestContext The client request context.
+   // SWB
    * @param contextId Id of the iTwin context.
    * @param iModelName Name of the iModel on the Hub.
    * @param description Description of the iModel on the Hub.
@@ -551,6 +560,7 @@ export class IModelsHandler {
 
   /** Wait until the iModel is initialized.
    * @param requestContext The client request context.
+   // SWB
    * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[ITwin]]).
    * @param imodel iModel instance that will be returned if initialization is successful.
    * @param timeOutInMilliseconds Maximum time to wait for the initialization.
@@ -621,6 +631,7 @@ export class IModelsHandler {
   /** Create an iModel from given seed file. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
    * This method does not work on browsers. If iModel creation fails before finishing file upload, partially created iModel is deleted. This method is not supported in iModelBank.
    * @param requestContext The client request context.
+   // SWB
    * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[ITwin]]).
    * @param name Name of the iModel on the Hub.
    * @param createOptions Optional arguments for iModel creation.
@@ -679,6 +690,7 @@ export class IModelsHandler {
 
   /** Update iModel's name and/or description
    * @param requestContext The client request context.
+   // SWB
    * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[ITwin]]).
    * @param imodel iModel to update. See [[HubIModel]].
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
@@ -736,6 +748,7 @@ export class IModelsHandler {
 
 /**
  * Handler for managing [[HubIModel]] instance. Use [[IModelHubClient.IModel]] to get an instance of this handler.
+   // SWB
  * @note Use [[IModelHubClient.IModels]] if multiple iModels per context are supported.
  * @beta
  */
@@ -745,6 +758,7 @@ export class IModelHandler {
   /**
    * Constructor for IModelHandler. Should use @see IModelClient instead of directly constructing this.
    * @param handler Handler for managing [[HubIModel]] instances.
+   // SWB
    * @note Use [[IModelHubClient.IModels]] if multiple iModels per context are supported.
    * @internal
    */
@@ -753,8 +767,10 @@ export class IModelHandler {
   }
 
   /**
+   // SWB
    * Get iModel that belong to the specified context.
    * @param requestContext The client request context.
+   // SWB
    * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[ITwin]]).
    * @returns [[HubIModel]] instances that match the query.
    * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
@@ -775,8 +791,10 @@ export class IModelHandler {
   }
 
   /**
+   // SWB
    * Delete an iModel from a context. This method is not supported in iModelBank.
    * @param requestContext The client request context.
+   // SWB
    * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[ITwin]]).
    * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have DeleteiModel permission.
@@ -791,6 +809,7 @@ export class IModelHandler {
   /**
    * Get the [[InitializationState]] for the specified iModel. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
    * @param requestContext The client request context.
+   // SWB
    * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[ITwin]]).
    * @returns State of the seed file initialization.
    * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
@@ -809,6 +828,7 @@ export class IModelHandler {
    *
    * This method does not work on browsers. If iModel creation fails before finishing file upload, partially created iModel is deleted. This method is not supported in iModelBank.
    * @param requestContext The client request context.
+   // SWB
    * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[ITwin]]).
    * @param name Name of the iModel on the Hub.
    * @param createOptions Optional arguments for iModel creation.
@@ -840,6 +860,7 @@ export class IModelHandler {
   /**
    * Update iModel's name and/or description
    * @param requestContext The client request context.
+   // SWB
    * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[ITwin]]).
    * @param imodel iModel to update. See [[HubIModel]].
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
@@ -856,6 +877,7 @@ export class IModelHandler {
   /**
    * Method to download the seed file for iModel. This will download the original seed file, that was uploaded when creating iModel. To download a file that was updated with ChangeSets on iModelHub, see [[BriefcaseHandler.download]].
    * @param requestContext The client request context.
+   // SWB
    * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[ITwin]]).
    * @param path Path where seed file should be downloaded, including filename.
    * @param progressCallback Callback for tracking progress.
