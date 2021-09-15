@@ -6,6 +6,7 @@ public;ArrayTypeDescription
 internal;AsyncTasksTracker
 public;BaseFieldJSON
 public;BaseNodeKey
+public;BaseNodeKeyJSON
 public;BaseTypeDescription
 public;BooleanRulesetVariable 
 public;BooleanRulesetVariableJSON 
@@ -101,9 +102,11 @@ public;DisplayValuesMapJSON
 public;DistinctValuesRequestOptions
 public;DistinctValuesRpcRequestOptions = PresentationRpcRequestOptions
 public;ECClassGroupingNodeKey 
+public;ECClassGroupingNodeKeyJSON 
 public;ECInstancesNodeKey 
 public;ECInstancesNodeKeyJSON 
 public;ECPropertyGroupingNodeKey 
+public;ECPropertyGroupingNodeKeyJSON 
 public;ECPropertyValueQuerySpecification 
 public;EditorDescription
 beta;ElementProperties
@@ -143,6 +146,7 @@ internal;getFieldByName: (fields: Field[], name: string | undefined, recurse?: b
 public;getInstancesCount: (keys: Readonly
 internal;getLocalesDirectory: (assetsDirectory: string) => string
 public;GroupingNodeKey 
+public;GroupingNodeKeyJSON 
 public;GroupingRule 
 public;GroupingSpecification = ClassGroup | PropertyGroup | SameLabelInstanceGroup
 public;GroupingSpecificationBase
@@ -205,6 +209,7 @@ internal;isCompositeDefinition(def: LabelDefinition): def is LabelDefinition &
 internal;reviver(key: string, value: any): any
 public;LabelDefinitionJSON
 public;LabelGroupingNodeKey 
+public;LabelGroupingNodeKeyJSON 
 public;LabelOverride 
 deprecated;LabelOverride 
 public;LabelRawValue = string | number | boolean | LabelCompositeValue
@@ -234,7 +239,7 @@ public;NodeInsertionInfoJSON
 public;NodeJSON
 public;NodeKey = BaseNodeKey | ECInstancesNodeKey | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey
 public;NodeKey
-public;NodeKeyJSON = BaseNodeKey | ECInstancesNodeKeyJSON | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey
+public;NodeKeyJSON = BaseNodeKeyJSON | ECInstancesNodeKeyJSON | ECClassGroupingNodeKeyJSON | ECPropertyGroupingNodeKeyJSON | LabelGroupingNodeKeyJSON
 public;NodeKeyPath = NodeKey[]
 public;NodePathElement
 public;NodePathElement

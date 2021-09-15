@@ -7,6 +7,7 @@ Object {
       "instanceKeys": Array [],
       "pathFromRoot": Array [],
       "type": "ECInstancesNode",
+      "version": 1,
     },
     "label": Object {
       "displayValue": "TestNode",
@@ -25,6 +26,7 @@ Object {
       "instanceKeys": Array [],
       "pathFromRoot": Array [],
       "type": "ECInstancesNode",
+      "version": 0,
     },
     "labelDefinition": Object {
       "displayValue": "TestNode",
@@ -45,6 +47,7 @@ Object {
           "instanceKeys": Array [],
           "pathFromRoot": Array [],
           "type": "ECInstancesNode",
+          "version": 1,
         },
         "label": Object {
           "displayValue": "TestNode",
@@ -64,6 +67,7 @@ Object {
         "instanceKeys": Array [],
         "pathFromRoot": Array [],
         "type": "ECInstancesNode",
+        "version": 1,
       },
       "type": "Update",
     },
@@ -72,8 +76,15 @@ Object {
         "instanceKeys": Array [],
         "pathFromRoot": Array [],
         "type": "ECInstancesNode",
+        "version": 1,
       },
       "position": 0,
+      "target": Object {
+        "instanceKeys": Array [],
+        "pathFromRoot": Array [],
+        "type": "ECInstancesNode",
+        "version": 1,
+      },
       "type": "Delete",
     },
   ],
@@ -93,6 +104,7 @@ Object {
           "instanceKeys": Array [],
           "pathFromRoot": Array [],
           "type": "ECInstancesNode",
+          "version": 0,
         },
         "labelDefinition": Object {
           "displayValue": "TestNode",
@@ -112,6 +124,7 @@ Object {
         "instanceKeys": Array [],
         "pathFromRoot": Array [],
         "type": "ECInstancesNode",
+        "version": 0,
       },
       "type": "Update",
     },
@@ -120,8 +133,15 @@ Object {
         "instanceKeys": Array [],
         "pathFromRoot": Array [],
         "type": "ECInstancesNode",
+        "version": 0,
       },
       "position": 0,
+      "target": Object {
+        "instanceKeys": Array [],
+        "pathFromRoot": Array [],
+        "type": "ECInstancesNode",
+        "version": 0,
+      },
       "type": "Delete",
     },
   ],
@@ -161,6 +181,7 @@ Object {
           "instanceKeys": Array [],
           "pathFromRoot": Array [],
           "type": "ECInstancesNode",
+          "version": 1,
         },
         "label": Object {
           "displayValue": "TestNode",
@@ -176,6 +197,7 @@ Object {
     "instanceKeys": Array [],
     "pathFromRoot": Array [],
     "type": "ECInstancesNode",
+    "version": 1,
   },
 }
 `;
@@ -189,6 +211,7 @@ Object {
           "instanceKeys": Array [],
           "pathFromRoot": Array [],
           "type": "ECInstancesNode",
+          "version": 0,
         },
         "labelDefinition": Object {
           "displayValue": "TestNode",
@@ -204,6 +227,7 @@ Object {
     "instanceKeys": Array [],
     "pathFromRoot": Array [],
     "type": "ECInstancesNode",
+    "version": 0,
   },
 }
 `;
@@ -214,8 +238,15 @@ Object {
     "instanceKeys": Array [],
     "pathFromRoot": Array [],
     "type": "ECInstancesNode",
+    "version": 1,
   },
   "position": 0,
+  "target": Object {
+    "instanceKeys": Array [],
+    "pathFromRoot": Array [],
+    "type": "ECInstancesNode",
+    "version": 1,
+  },
   "type": "Delete",
 }
 `;
@@ -224,6 +255,12 @@ exports[`PartialHierarchyModification fromJSON deserializes \`NodeDeletionInfo\`
 Object {
   "parent": undefined,
   "position": 0,
+  "target": Object {
+    "instanceKeys": Array [],
+    "pathFromRoot": Array [],
+    "type": "ECInstancesNode",
+    "version": 1,
+  },
   "type": "Delete",
 }
 `;
@@ -235,6 +272,7 @@ Object {
       "instanceKeys": Array [],
       "pathFromRoot": Array [],
       "type": "ECInstancesNode",
+      "version": 1,
     },
     "label": Object {
       "displayValue": "TestNode",
@@ -246,6 +284,7 @@ Object {
     "instanceKeys": Array [],
     "pathFromRoot": Array [],
     "type": "ECInstancesNode",
+    "version": 1,
   },
   "position": 123,
   "type": "Insert",
@@ -259,6 +298,7 @@ Object {
       "instanceKeys": Array [],
       "pathFromRoot": Array [],
       "type": "ECInstancesNode",
+      "version": 1,
     },
     "label": Object {
       "displayValue": "TestNode",
@@ -281,6 +321,7 @@ Object {
     "instanceKeys": Array [],
     "pathFromRoot": Array [],
     "type": "ECInstancesNode",
+    "version": 0,
   },
   "type": "Update",
 }
@@ -292,8 +333,15 @@ Object {
     "instanceKeys": Array [],
     "pathFromRoot": Array [],
     "type": "ECInstancesNode",
+    "version": 0,
   },
   "position": 123,
+  "target": Object {
+    "instanceKeys": Array [],
+    "pathFromRoot": Array [],
+    "type": "ECInstancesNode",
+    "version": 0,
+  },
   "type": "Delete",
 }
 `;
@@ -302,6 +350,12 @@ exports[`PartialHierarchyModification toJSON serializes \`NodeDeletionInfo\` wit
 Object {
   "parent": undefined,
   "position": 123,
+  "target": Object {
+    "instanceKeys": Array [],
+    "pathFromRoot": Array [],
+    "type": "ECInstancesNode",
+    "version": 0,
+  },
   "type": "Delete",
 }
 `;
@@ -313,6 +367,7 @@ Object {
       "instanceKeys": Array [],
       "pathFromRoot": Array [],
       "type": "ECInstancesNode",
+      "version": 0,
     },
     "labelDefinition": Object {
       "displayValue": "TestNode",
@@ -324,6 +379,7 @@ Object {
     "instanceKeys": Array [],
     "pathFromRoot": Array [],
     "type": "ECInstancesNode",
+    "version": 0,
   },
   "position": 123,
   "type": "Insert",
@@ -337,6 +393,7 @@ Object {
       "instanceKeys": Array [],
       "pathFromRoot": Array [],
       "type": "ECInstancesNode",
+      "version": 0,
     },
     "labelDefinition": Object {
       "displayValue": "TestNode",
@@ -359,6 +416,7 @@ Object {
     "instanceKeys": Array [],
     "pathFromRoot": Array [],
     "type": "ECInstancesNode",
+    "version": 0,
   },
   "type": "Update",
 }

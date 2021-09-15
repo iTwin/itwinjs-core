@@ -1051,6 +1051,8 @@ export class Logger {
     static removeMetaDataSource(callback: (md: any) => void): boolean;
     // @internal
     static setCurrentClientRequestContext(obj: any): void;
+    // @internal
+    static setIntercept(logIntercept?: LogIntercept): void;
     static setLevel(category: string, minLevel: LogLevel): void;
     static setLevelDefault(minLevel: LogLevel): void;
     static turnOffCategories(): void;
@@ -1073,6 +1075,9 @@ export interface LoggerLevelsConfig {
     // (undocumented)
     defaultLevel?: string;
 }
+
+// @internal
+export type LogIntercept = (level: LogLevel, category: string, message: string, metaData?: GetMetaDataFunction) => boolean;
 
 // @public
 export enum LogLevel {

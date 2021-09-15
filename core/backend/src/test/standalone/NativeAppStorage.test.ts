@@ -12,7 +12,7 @@ describe("NativeApp storage backend", () => {
     IModelJsFs.purgeDirSync(NativeHost.appSettingsCacheDir);
   });
 
-  it("Primitive Type", () => {
+  it("should persistence primitive type values", () => {
     const test1 = NativeAppStorage.open("backend_test_1");
     test1.removeAll();
     const dataset = [
@@ -60,7 +60,7 @@ describe("NativeApp storage backend", () => {
     assert.throw(() => { test3.close(); });
   });
 
-  it("Override and type check", () => {
+  it("should override and type check", () => {
     const test1 = NativeAppStorage.open("backend_test_2");
     test1.removeAll();
     test1.setData("key1", null);
@@ -107,7 +107,7 @@ describe("NativeApp storage backend", () => {
     test1.close(true);
   });
 
-  it("Storage open/close test", () => {
+  it("storage open/close", () => {
     const storages: NativeAppStorage[] = [];
     for (let i = 0; i < 20; i++) {
       storages.push(NativeAppStorage.open(`backend_test_3-${i}`));

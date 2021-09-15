@@ -6332,6 +6332,13 @@ export namespace MockRender {
         static systemFactory: SystemFactory;
     }
     // (undocumented)
+    export class AreaPattern implements RenderAreaPattern {
+        // (undocumented)
+        collectStatistics(): void;
+        // (undocumented)
+        dispose(): void;
+    }
+    // (undocumented)
     export class Batch extends Graphic {
         constructor(graphic: RenderGraphic, featureTable: PackedFeatureTable, range: ElementAlignedBox3d);
         // (undocumented)
@@ -6358,6 +6365,13 @@ export namespace MockRender {
     // (undocumented)
     export class Builder extends PrimitiveBuilder {
         constructor(system: System, options: GraphicBuilderOptions);
+    }
+    // (undocumented)
+    export class Geometry implements RenderGeometry {
+        // (undocumented)
+        collectStatistics(): void;
+        // (undocumented)
+        dispose(): void;
     }
     // (undocumented)
     export class Graphic extends RenderGraphic {
@@ -6395,6 +6409,8 @@ export namespace MockRender {
     export class System extends RenderSystem {
         constructor();
         // (undocumented)
+        createAreaPattern(): AreaPattern;
+        // (undocumented)
         createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d): Batch;
         // (undocumented)
         createGraphic(options: GraphicBuilderOptions): Builder;
@@ -6405,13 +6421,21 @@ export namespace MockRender {
         // (undocumented)
         createMesh(_params: MeshParams): Graphic;
         // (undocumented)
+        createMeshGeometry(): Geometry;
+        // (undocumented)
         createOffscreenTarget(rect: ViewRect): RenderTarget;
         // (undocumented)
         createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): Graphic;
         // (undocumented)
         createPointString(_params: PointStringParams): Graphic;
         // (undocumented)
+        createPointStringGeometry(): Geometry;
+        // (undocumented)
         createPolyline(_params: PolylineParams): Graphic;
+        // (undocumented)
+        createPolylineGeometry(): Geometry;
+        // (undocumented)
+        createRenderGraphic(): Graphic;
         // (undocumented)
         createTarget(canvas: HTMLCanvasElement): OnScreenTarget;
         // (undocumented)
@@ -6694,6 +6718,8 @@ export class NullRenderSystem extends RenderSystem {
     createGraphicList(): any;
     // (undocumented)
     createOffscreenTarget(): NullTarget;
+    // (undocumented)
+    createRenderGraphic(): undefined;
     // (undocumented)
     createTarget(): NullTarget;
     // (undocumented)
@@ -7024,6 +7050,28 @@ export interface ParticleCollectionBuilderParams {
 export interface ParticleProps extends XYAndZ {
     size?: XAndY | number;
     transparency?: number;
+}
+
+// @internal
+export interface PatternGraphicParams {
+    // (undocumented)
+    readonly featureId?: number;
+    // (undocumented)
+    readonly orgTransform: Transform;
+    // (undocumented)
+    readonly origin: Point2d;
+    readonly patternToModel: Transform;
+    readonly range: Range3d;
+    // (undocumented)
+    readonly scale: number;
+    // (undocumented)
+    readonly spacing: Point2d;
+    // (undocumented)
+    readonly symbolTranslation: Point3d;
+    // (undocumented)
+    readonly viewIndependentOrigin?: Point3d;
+    // (undocumented)
+    readonly xyOffsets: Float32Array;
 }
 
 // @beta
@@ -7852,6 +7900,9 @@ export interface RealityTileTreeParams extends TileTreeParams {
     readonly yAxisUp?: boolean;
 }
 
+// @internal
+export type RenderAreaPattern = IDisposable & RenderMemory.Consumer;
+
 // @public
 export abstract class RenderClipVolume {
     protected constructor(clipVector: ClipVector);
@@ -7884,6 +7935,9 @@ export enum RenderDiagnostics {
     None = 0,
     WebGL = 4
 }
+
+// @internal
+export type RenderGeometry = IDisposable & RenderMemory.Consumer;
 
 // @public
 export abstract class RenderGraphic implements IDisposable {
@@ -8170,6 +8224,8 @@ export abstract class RenderSystem implements IDisposable {
     collectStatistics(_stats: RenderMemory.Statistics): void;
     static contextLossHandler(): Promise<any>;
     // @internal (undocumented)
+    createAreaPattern(_params: PatternGraphicParams): RenderAreaPattern | undefined;
+    // @internal (undocumented)
     createBackgroundMapDrape(_drapedTree: TileTreeReference, _mapTree: MapTileTreeReference): RenderTextureDrape | undefined;
     // @internal
     abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions): RenderGraphic;
@@ -8185,10 +8241,12 @@ export abstract class RenderSystem implements IDisposable {
     abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
     createGraphicOwner(ownedGraphic: RenderGraphic): RenderGraphicOwner;
     // @internal (undocumented)
-    createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined;
+    createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined;
     createMaterial(_params: RenderMaterial.Params, _imodel: IModelConnection): RenderMaterial | undefined;
     // @internal (undocumented)
-    createMesh(_params: MeshParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined;
+    createMesh(params: MeshParams, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined;
+    // @internal (undocumented)
+    createMeshGeometry(_params: MeshParams, _viewIndependentOrigin?: Point3d): RenderGeometry | undefined;
     // @internal (undocumented)
     abstract createOffscreenTarget(rect: ViewRect): RenderTarget;
     // @internal (undocumented)
@@ -8196,15 +8254,21 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined;
     // @internal (undocumented)
-    createPointString(_params: PointStringParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined;
+    createPointString(params: PointStringParams, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined;
     // @internal (undocumented)
-    createPolyline(_params: PolylineParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined;
+    createPointStringGeometry(_params: PointStringParams, _viewIndependentOrigin?: Point3d): RenderGeometry | undefined;
+    // @internal (undocumented)
+    createPolyline(params: PolylineParams, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined;
+    // @internal (undocumented)
+    createPolylineGeometry(_params: PolylineParams, _viewIndependentOrigin?: Point3d): RenderGeometry | undefined;
     // @internal (undocumented)
     createRealityMesh(_realityMesh: RealityMeshPrimitive): RenderGraphic | undefined;
     // @internal (undocumented)
     createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform): RenderRealityMeshGeometry | undefined;
     // @internal (undocumented)
     createRealityMeshGraphic(_terrainGeometry: RenderRealityMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string | undefined, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined;
+    // @internal
+    abstract createRenderGraphic(_geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern, instancesOwnGeometry?: boolean): RenderGraphic | undefined;
     createScreenSpaceEffectBuilder(_params: ScreenSpaceEffectBuilderParams): ScreenSpaceEffectBuilder | undefined;
     createSkyBox(_params: SkyBox.CreateParams): RenderGraphic | undefined;
     // @internal (undocumented)
@@ -8218,7 +8282,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     createTile(tileTexture: RenderTexture, corners: Point3d[], featureIndex?: number): RenderGraphic | undefined;
     // @internal (undocumented)
-    createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined;
+    createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined;
     // @beta
     get debugControl(): RenderSystemDebugControl | undefined;
     // @internal (undocumented)
