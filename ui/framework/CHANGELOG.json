@@ -2,6 +2,18 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "2.19.12",
+      "tag": "@bentley/ui-framework_v2.19.12",
+      "date": "Wed, 15 Sep 2021 18:06:47 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix calc function that is causing an error in the latest dart-sass version"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.11",
       "tag": "@bentley/ui-framework_v2.19.11",
       "date": "Thu, 09 Sep 2021 21:04:58 GMT",
