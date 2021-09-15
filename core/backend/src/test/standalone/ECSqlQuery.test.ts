@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { DbResult, Id64 } from "@bentley/bentleyjs-core";
+import { IModelDb, IModelHost, SnapshotDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { IModelDb, SnapshotDb } from "../../IModelDb";
-import { IModelHost } from "../../IModelHost";
+import { SequentialLogMatcher } from "../SequentialLogMatcher";
 
 // cspell:ignore mirukuru ibim
 

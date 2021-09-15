@@ -912,10 +912,9 @@ export abstract class IModelDb extends IModel {
    */
   public static findByKey(key: string): IModelDb {
     const iModelDb = this.tryFindByKey(key);
-    if (undefined === iModelDb) {
-      Logger.logError(loggerCategory, "IModelDb not open or wrong type", () => ({ key }));
+    if (undefined === iModelDb)
       throw new IModelNotFoundResponse(); // a very specific status for the RpcManager
-    }
+
     return iModelDb;
   }
 

@@ -1139,7 +1139,7 @@ describe("iModel", () => {
   it("should exercise ECSqlStatement (backend only)", () => {
     // Reject an invalid statement
     try {
-      imodel2.prepareStatement("select no_such_property, codeValue from bis.element");
+      imodel2.prepareStatement("select no_such_property, codeValue from bis.element", false);
       assert.fail("prepare should have failed with an exception");
     } catch (err) {
       assert.isTrue(err.constructor.name === "IModelError");
@@ -1971,7 +1971,7 @@ describe("iModel", () => {
 
   function hasClassView(db: IModelDb, name: string): boolean {
     try {
-      return db.withSqliteStatement(`SELECT ECInstanceId FROM [${name}]`, (): boolean => true);
+      return db.withSqliteStatement(`SELECT ECInstanceId FROM [${name}]`, (): boolean => true, false);
     } catch (e) {
       return false;
     }
@@ -2008,10 +2008,10 @@ describe("iModel", () => {
 
   it("Snapshot iModel properties", () => {
     const snapshotRootSubjectName = "Snapshot";
-    const snapshotFile1: string = IModelTestUtils.prepareOutputFile("IModel", "Snapshot1.bim");
-    const snapshotFile2: string = IModelTestUtils.prepareOutputFile("IModel", "Snapshot2.bim");
-    const snapshotFile3: string = IModelTestUtils.prepareOutputFile("IModel", "Snapshot3.bim");
-    let snapshotDb1: SnapshotDb | StandaloneDb = SnapshotDb.createEmpty(snapshotFile1, { rootSubject: { name: snapshotRootSubjectName }, createClassViews: true });
+    const snapshotFile1 = IModelTestUtils.prepareOutputFile("IModel", "Snapshot1.bim");
+    const snapshotFile2 = IModelTestUtils.prepareOutputFile("IModel", "Snapshot2.bim");
+    const snapshotFile3 = IModelTestUtils.prepareOutputFile("IModel", "Snapshot3.bim");
+    let snapshotDb1 = SnapshotDb.createEmpty(snapshotFile1, { rootSubject: { name: snapshotRootSubjectName }, createClassViews: true });
     let snapshotDb2 = SnapshotDb.createFrom(snapshotDb1, snapshotFile2);
     let snapshotDb3 = SnapshotDb.createFrom(imodel1, snapshotFile3, { createClassViews: true });
     assert.isTrue(snapshotDb1.isSnapshotDb());
@@ -2276,7 +2276,7 @@ describe("iModel", () => {
   it("tryPrepareStatement", () => {
     const sql = `SELECT * FROM ${Element.classFullName} LIMIT 1`;
     const invalidSql = "SELECT * FROM InvalidSchemaName:InvalidClassName LIMIT 1";
-    assert.throws(() => imodel1.prepareStatement(invalidSql));
+    assert.throws(() => imodel1.prepareStatement(invalidSql, false));
     assert.isUndefined(imodel1.tryPrepareStatement(invalidSql));
     const statement: ECSqlStatement | undefined = imodel1.tryPrepareStatement(sql);
     assert.isDefined(statement);
