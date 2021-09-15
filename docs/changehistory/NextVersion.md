@@ -37,7 +37,7 @@ Each of these interfaces originally had only a member `changeSetId: string`, In 
 
 ## ViewState3d.lookAt Arguments Changed
 
-[ViewState3d.lookAt]($frontend) previously took 6 arguments. In addition the method `ViewState3d.lookAtUsingLensAngle` also established a perspective `ViewState3d` from a field-of-view lens angle with many of the same arguments. There is now a new implementation of `ViewState3d.lookAt` that accepts named parameters to set up either a perspective or orthographic view, using the interfaces [LookAtPerspectiveArgs]($frontend), [LookAtOrthoArgs]($frontend), or [LookAtUsingLensAngle]($frontend).
+[ViewState3d.lookAt]($frontend) previously took 6 arguments. Also, the method `ViewState3d.lookAtUsingLensAngle` established a perspective `ViewState3d` from a field-of-view lens angle with many of the same arguments. There is now a new implementation of `ViewState3d.lookAt` that accepts named parameters to set up either a perspective or orthographic view, using the interfaces [LookAtPerspectiveArgs]($frontend), [LookAtOrthoArgs]($frontend), or [LookAtUsingLensAngle]($frontend).
 
 This is a breaking change, so you may need to modify your code and replace the previous arguments with a single object with the appropriate names. For example,:
 
@@ -238,6 +238,22 @@ The signatures to several methods in [BriefcaseManager]($backend) and [Briefcase
 | `BriefcaseManager.downloadBriefcase`     | [RequestNewBriefcaseArg]($backend)                    |                                  |
 | `IModelDb.importSchemas`                 | `LocalFileName[]`                                     | `requestContext` removed         |
 
+## `Tool.run` and `Tool.parseAndRun` are now async
+
+In V2.0, the methods [Tool.run]($frontend) and [Tool.parseAndRun]($frontend) were synchronous. This was problematic in that it was impossible to invoke a tool and await its completion. Those two methods are now both `async` and return `Promise<boolean>`. This is obviously a breaking change. Any Tool subclasses that override those methods will need to become async, and any code that calls `Tool.run` or `Tool.parseAndRun` will need to appropriately handle the returned Promise (usually by awaiting it.)
+
+In the process of converting `Tool.run` and `Tool.parseAndRun` to async, several other `Tool` class methods also became async and will likewise need to be modified if they are called or overridden.
+
+These methods were previously synchronous and are now async:
+
+- [Tool.run]($frontend)
+- [Tool.parseAndRun]($frontend)
+- [InteractiveTool.onInstall]($frontend)
+- [InteractiveTool.onPostInstall]($frontend)
+- [InteractiveTool.exitTool]($frontend)
+- [InteractiveTool.onCleanup]($frontend)
+- [InteractiveTool.onSuspend]($frontend)
+- [InteractiveTool.onUnsuspend]($frontend)
 
 ## `NodeKey` in `@bentley/presentation-common`
 

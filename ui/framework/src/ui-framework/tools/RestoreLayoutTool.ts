@@ -24,7 +24,7 @@ export class RestoreFrontstageLayoutTool extends Tool {
   // istanbul ignore next
   public static override get maxArgs() { return 1; }
 
-  public override run(frontstageId?: string): boolean {
+  public override async run(frontstageId?: string): Promise<boolean> {
     let frontstageDef: FrontstageDef | undefined;
 
     if (frontstageId) {
@@ -40,7 +40,7 @@ export class RestoreFrontstageLayoutTool extends Tool {
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     return this.run(args[0]);
   }
 }
