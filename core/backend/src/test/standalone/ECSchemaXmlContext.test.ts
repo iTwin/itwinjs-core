@@ -7,6 +7,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { ECSchemaXmlContext, SchemaKey } from "../../ECSchemaXmlContext";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { SequentialLogMatcher } from "../SequentialLogMatcher";
 
 describe("ECSchemaXmlContext", () => {
 
@@ -21,6 +22,9 @@ describe("ECSchemaXmlContext", () => {
   });
 
   it("setSchemaLocater, should call schema locater callback for missing schema references", () => {
+    const slm = new SequentialLogMatcher();
+    slm.append().error().category("ECObjectsNative").message(/Unable to locate referenced schema/gm);
+    slm.append().error().category("ECObjectsNative").message(/Failed to read XML file/gm);
     const testDomainXmlPath = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
     const expectedBisCoreKey = {
       name: "BisCore",
@@ -37,9 +41,13 @@ describe("ECSchemaXmlContext", () => {
     expect(() => context.readSchemaFromXmlFile(testDomainXmlPath)).to.throw("ReferencedSchemaNotFound");
     expect(missingReferences).to.have.lengthOf(1);
     expect(missingReferences[0]).to.eql(expectedBisCoreKey);
+    expect(slm.finishAndDispose()).to.true;
   });
 
   it("setFirstSchemaLocater, should call schema locater callback for missing schema references", () => {
+    const slm = new SequentialLogMatcher();
+    slm.append().error().category("ECObjectsNative").message(/Unable to locate referenced schema/gm);
+    slm.append().error().category("ECObjectsNative").message(/Failed to read XML file/gm);
     const testDomainXmlPath = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
     const expectedBisCoreKey = {
       name: "BisCore",
@@ -56,5 +64,6 @@ describe("ECSchemaXmlContext", () => {
     expect(() => context.readSchemaFromXmlFile(testDomainXmlPath)).to.throw("ReferencedSchemaNotFound");
     expect(missingReferences).to.have.lengthOf(1);
     expect(missingReferences[0]).to.eql(expectedBisCoreKey);
+    expect(slm.finishAndDispose()).to.true;
   });
 });
