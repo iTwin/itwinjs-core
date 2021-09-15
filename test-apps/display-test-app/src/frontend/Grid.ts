@@ -13,7 +13,7 @@ export class ChangeGridSettingsTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 4; }
 
-  public override run(spacing?: number, ratio?: number, gridsPerRef?: number, orientation?: GridOrientationType): boolean {
+  public override async run(spacing?: number, ratio?: number, gridsPerRef?: number, orientation?: GridOrientationType): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp)
       return false;
@@ -40,7 +40,7 @@ export class ChangeGridSettingsTool extends Tool {
    *  - `gridsPerRef=number` Specify number of grid lines to display per reference line.
    *  - `orientation=0|1|2|3|4` Value for GridOrientationType.
    */
-  public override parseAndRun(...inputArgs: string[]): boolean {
+  public override async parseAndRun(...inputArgs: string[]): Promise<boolean> {
     let spacing;
     let ratio;
     let gridsPerRef;
@@ -80,7 +80,7 @@ export class ChangeGridSettingsTool extends Tool {
       }
     }
 
-    this.run(spacing, ratio, gridsPerRef, orientation);
+    await this.run(spacing, ratio, gridsPerRef, orientation);
     return true;
   }
 }

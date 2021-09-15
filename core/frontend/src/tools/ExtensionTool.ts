@@ -22,11 +22,7 @@ export class ExtensionTool extends Tool {
   public static override get maxArgs() { return undefined; }
   public static override get minArgs() { return 1; }
 
-  public override parseAndRun(...args: string[]): boolean {
-    return this.run(args);
-  }
-
-  public override run(args: any[]): boolean {
+  public override async run(args: any[]): Promise<boolean> {
     if (!ExtensionTool._isListenerAdded) {
       IModelApp.extensionAdmin.onExtensionLoaded.addListener(ExtensionTool.showLoadSuccess);
       ExtensionTool._isListenerAdded = true;

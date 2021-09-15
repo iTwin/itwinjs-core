@@ -16,8 +16,8 @@ export class Tool2 extends PrimitiveTool {
   public readonly points: Point3d[] = [];
 
   public override requireWriteableTarget(): boolean { return false; }
-  public override onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
-  public override onUnsuspend(): void { this.provideToolAssistance(); }
+  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public override async onUnsuspend() { this.provideToolAssistance(); }
 
   /** Establish current tool state and initialize drawing aides following onPostInstall, onDataButtonDown, onUndoPreviousStep, or other events that advance or back up the current tool state.
    * Enable snapping or auto-locate for AccuSnap.
@@ -79,13 +79,13 @@ export class Tool2 extends PrimitiveTool {
 
   public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
     /* Common reset behavior for primitive tools is calling onReinitialize to restart or exitTool to terminate. */
-    this.onReinitialize();
+    await this.onReinitialize();
     return EventHandled.No;
   }
 
-  public onRestartTool(): void {
+  public async onRestartTool() {
     const tool = new Tool2();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 }

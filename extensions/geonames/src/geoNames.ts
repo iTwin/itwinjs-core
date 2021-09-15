@@ -22,7 +22,7 @@ iModel.js Extensions are javascript fragments that can be loaded at runtime
 into an appropriately configured browser or Electron process.
 -------------------------------------------------------------------------*/
 
-/** Properties that define a geographic entty
+/** Properties that define a geographic entity
  * @beta
  */
 export interface GeoNameProps {
@@ -181,13 +181,10 @@ export class GeoNameMarkerManager {
 abstract class GeoNameTool extends Tool {
   public static override get maxArgs() { return 1; }
   public static override get minArgs() { return 0; }
-  public override parseAndRun(..._args: string[]): boolean {
-    return this.run();
-  }
 
   public abstract doRunWithViewport(vp: ScreenViewport): void;
 
-  public override run(viewport?: ScreenViewport): boolean {
+  public override async run(viewport?: ScreenViewport): Promise<boolean> {
     if (undefined === viewport)
       viewport = IModelApp.viewManager.selectedView;
 

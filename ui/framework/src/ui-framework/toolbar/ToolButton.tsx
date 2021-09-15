@@ -92,14 +92,14 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
     SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
   }
 
-  private _execute = () => {
+  private _execute = async () => {
     if (this.props.execute) {
       this.props.execute();
     } else {
       const thisTool: typeof Tool | undefined = IModelApp.tools.find(this.props.toolId);
       // istanbul ignore else
       if (thisTool)
-        (new thisTool()).run();
+        await (new thisTool()).run();
     }
   };
 

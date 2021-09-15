@@ -39,7 +39,7 @@ describe("TileLoadingIndicator", () => {
     sut.unmount();
   });
 
-  it("50% then 100% complete", () => {
+  it("50% then 100% complete", async () => {
     // numReadyTiles / (numReadyTiles + numRequestedTiles)
     let numRequestedTiles = 500;
     const numTilesReady = 500;
@@ -50,7 +50,7 @@ describe("TileLoadingIndicator", () => {
     // added because component registers interest in onRender events
     viewportMock.setup((x) => x.onRender).returns(() => onRenderEvent);
 
-    IModelApp.viewManager.setSelectedView(viewportMock.object);
+    await IModelApp.viewManager.setSelectedView(viewportMock.object);
     mount(<TileLoadingIndicator isInFooterMode={true} onOpenWidget={() => { }} openWidget={"TileLoadingIndicator"} />);
     // 50% complete
     onRenderEvent.raiseEvent(viewportMock.object);

@@ -575,7 +575,7 @@ export class QuantityFormatter implements UnitsProvider {
     // fire current event
     this.onActiveFormattingUnitSystemChanged.emit({ system: systemType });
     if (IModelApp.toolAdmin && restartActiveTool)
-      IModelApp.toolAdmin.startDefaultTool();
+      return IModelApp.toolAdmin.startDefaultTool();
   }
 
   /** True if tool quantity values should be displayed in imperial units; false for metric. Changing this flag triggers an asynchronous request to refresh the cached formats. */

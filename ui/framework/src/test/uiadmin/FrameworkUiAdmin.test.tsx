@@ -362,7 +362,7 @@ describe("FrameworkUiAdmin", () => {
   it("should ClearKeyinPaletteHistoryTool", async () => {
     const stub = sinon.stub(keyinExports, "clearKeyinPaletteHistory").returns();
     const tool = new ClearKeyinPaletteHistoryTool();
-    tool.parseAndRun();
+    await tool.parseAndRun();
     expect(stub).to.be.calledOnce;
   });
 

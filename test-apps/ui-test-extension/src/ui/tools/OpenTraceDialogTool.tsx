@@ -29,13 +29,9 @@ export class OpenTraceDialogTool extends Tool {
   // istanbul ignore next
   public static override get maxArgs() { return 0; }
 
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     ModalDialogManager.openDialog(<SampleModalDialog />);
     return true;
-  }
-
-  public override parseAndRun(): boolean {
-    return this.run();
   }
 
   public static override get flyover(): string {
@@ -67,7 +63,7 @@ export class OpenTraceDialogTool extends Tool {
     };
 
     return ToolbarItemUtilities.createActionButton(OpenTraceDialogTool.toolId, itemPriority, OpenTraceDialogTool.iconSpec, OpenTraceDialogTool.flyover,
-      () => { IModelApp.tools.run(OpenTraceDialogTool.toolId); },
+      async () => { await IModelApp.tools.run(OpenTraceDialogTool.toolId); },
       overrides);
   }
 }

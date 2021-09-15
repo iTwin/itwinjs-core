@@ -37,7 +37,7 @@ export class GenericTool extends PrimitiveTool {
 
   public async process(_elementId: string, _point?: Point3d) {
     // Exit the tool
-    this.exitTool();
+    return this.exitTool();
   }
 
   public override async onDataButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
@@ -63,7 +63,7 @@ export class GenericTool extends PrimitiveTool {
   }
 
   public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
-    this.onReinitialize();
+    await this.onReinitialize();
     return EventHandled.No;
   }
 
@@ -79,8 +79,8 @@ export class GenericTool extends PrimitiveTool {
     }
   }
 
-  public override onPostInstall(): void {
-    super.onPostInstall();
+  public override async onPostInstall() {
+    await super.onPostInstall();
 
     const iModelConnection = UiFramework.getIModelConnection();
     if (!iModelConnection)
@@ -89,7 +89,7 @@ export class GenericTool extends PrimitiveTool {
     if (iModelConnection.selectionSet.size === 1) {
       // Process and exit tool
       iModelConnection.selectionSet.elements.forEach((elementId: string, _val: string, _set: Set<string>) => { this.process(elementId); }); // eslint-disable-line @typescript-eslint/no-floating-promises
-      IModelApp.toolAdmin.startDefaultTool();
+      await IModelApp.toolAdmin.startDefaultTool();
     } else {
       // Empty all before starting tool
       iModelConnection.selectionSet.emptyAll();
@@ -109,18 +109,18 @@ export class GenericTool extends PrimitiveTool {
     }
   }
 
-  public onRestartTool(): void {
-    this.exitTool();
+  public async onRestartTool() {
+    return this.exitTool();
   }
 
-  public static startTool(): boolean {
+  public static async startTool(): Promise<boolean> {
     return (new GenericTool()).run();
   }
 
   public static getActionButtonDef(itemPriority: number, groupPriority?: number) {
     const overrides = undefined !== groupPriority ? { groupPriority } : {};
     return ToolbarItemUtilities.createActionButton(GenericTool.toolId, itemPriority, GenericTool.iconSpec, GenericTool.flyover,
-      () => { IModelApp.tools.run(GenericTool.toolId, IModelApp.viewManager.selectedView, true); },
+      async () => { await IModelApp.tools.run(GenericTool.toolId, IModelApp.viewManager.selectedView, true); },
       overrides);
   }
 }

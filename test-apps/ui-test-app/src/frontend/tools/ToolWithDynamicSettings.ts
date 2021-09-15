@@ -97,12 +97,12 @@ export class ToolWithDynamicSettings extends PrimitiveTool {
   // -------- end of ToolSettings ----------
 
   public override requireWriteableTarget(): boolean { return false; }
-  public override onPostInstall() {
-    super.onPostInstall();
+  public override async onPostInstall() {
+    await super.onPostInstall();
     this.setupAndPromptForNextAction();
     this.points = [];
   }
-  public override onUnsuspend(): void { this.provideToolAssistance(); }
+  public override async onUnsuspend() { this.provideToolAssistance(); }
 
   /** Establish current tool state and initialize drawing aides following onPostInstall, onDataButtonDown, onUndoPreviousStep, or other events that advance or back up the current tool state.
    * Enable snapping or auto-locate for AccuSnap.
@@ -138,14 +138,14 @@ export class ToolWithDynamicSettings extends PrimitiveTool {
 
   public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
     /* Common reset behavior for primitive tools is calling onReinitialize to restart or exitTool to terminate. */
-    this.onReinitialize();
+    await this.onReinitialize();
     return EventHandled.No;
   }
 
-  public onRestartTool(): void {
+  public async onRestartTool() {
     const tool = new ToolWithDynamicSettings();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 
   /** Used to supply DefaultToolSettingProvider with a list of properties to use to generate ToolSettings.  If undefined then no ToolSettings will be displayed */
@@ -160,7 +160,7 @@ export class ToolWithDynamicSettings extends PrimitiveTool {
   }
 
   /** Called from UI to update properties in tool */
-  public override applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean {
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
     if (updatedValue.propertyName === ToolWithDynamicSettings._statePropertyName) {
       const newStateValue = updatedValue.value.value as number;
       if (this.state !== newStateValue) {
@@ -181,7 +181,7 @@ export class ToolWithDynamicSettings extends PrimitiveTool {
       labelKey: "SampleApp:tools.ToolWithDynamicSettings.flyover",
       tooltipKey: "SampleApp:tools.ToolWithDynamicSettings.description",
       execute: async () => {
-        IModelApp.tools.run(ToolWithDynamicSettings.toolId);
+        return IModelApp.tools.run(ToolWithDynamicSettings.toolId);
       },
     });
   }

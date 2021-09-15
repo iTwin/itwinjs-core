@@ -40,7 +40,7 @@ export abstract class DisplayStyleTool extends Tool {
   // Return false if failed to parse.
   protected abstract parse(args: string[]): boolean;
 
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp && (!this.require3d || vp.view.is3d()) && this.execute(vp))
       vp.displayStyle = vp.view.displayStyle;
@@ -48,7 +48,7 @@ export abstract class DisplayStyleTool extends Tool {
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp && (!this.require3d || vp.view.is3d()) && this.parse(args))
       return this.run();
@@ -70,14 +70,14 @@ export class ChangeViewFlagsTool extends Tool {
   public static override get maxArgs() { return undefined; }
   public static override get minArgs() { return 1; }
 
-  public override run(vf: ViewFlags, vp?: Viewport): boolean {
+  public override async run(vf: ViewFlags, vp?: Viewport): Promise<boolean> {
     if (undefined !== vf && undefined !== vp)
       vp.viewFlags = vf;
 
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp || 0 === args.length)
       return true;
@@ -193,7 +193,7 @@ export class SaveRenderingStyleTool extends DisplayStyleTool {
   }
 }
 
-/** Given a "rendering style" as a partial DispalyStyle3dSettingsProperties JSON string, apply it to the selected viewport's display style.
+/** Given a "rendering style" as a partial DisplayStyle3dSettingsProperties JSON string, apply it to the selected viewport's display style.
  * @see [DisplayStyleSettings.applyOverrides]($common) for details.
  * @beta
  */

@@ -81,8 +81,8 @@ export class ViewAttributesStatusField extends React.Component<StatusFieldProps,
     }
   };
 
-  private _handleToggleCamera = () => {
-    IModelApp.tools.run("View.ToggleCamera", IModelApp.viewManager.selectedView);
+  private _handleToggleCamera = async () => {
+    await IModelApp.tools.run("View.ToggleCamera", IModelApp.viewManager.selectedView);
     this.updateState();
   };
 
