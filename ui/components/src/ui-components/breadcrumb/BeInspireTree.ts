@@ -12,15 +12,14 @@ import { isArrayLike } from "lodash";
 import { IDisposable, using } from "@bentley/bentleyjs-core";
 import { UiError } from "@bentley/ui-abstract";
 import { CheckBoxInfo, CheckBoxState, isPromiseLike } from "@bentley/ui-core";
-import { PageOptions } from "../../../common/PageOptions";
-import { UiComponents } from "../../../UiComponents";
+import { PageOptions } from "../common/PageOptions";
+import { UiComponents } from "../UiComponents";
 
-/* eslint-disable deprecation/deprecation */
+// istanbul ignore file
 
 /**
  * Enum containing all events that may be emitted by [[BeInspireTree]]
- * @public
- * @deprecated Use [ControlledTree]($ui-components) instead. Will be removed in iModel.js 3.0.
+ * @internal
  */
 export enum BeInspireTreeEvent {
   ChangesApplied = "changes.applied",
@@ -46,8 +45,7 @@ export enum BeInspireTreeEvent {
 }
 
 /** Be alias for Inspire.NodeConfig
- * @public
- * @deprecated Use [ControlledTree]($ui-components) instead. Will be removed in iModel.js 3.0.
+ * @internal
  */
 export interface BeInspireTreeNodeConfig {
   children?: BeInspireTreeNodeConfig[] | true;
@@ -57,8 +55,7 @@ export interface BeInspireTreeNodeConfig {
 }
 
 /** Be alias for Inspire.NodeConfig.ITree
- * @public
- * @deprecated Use [ControlledTree]($ui-components) instead. Will be removed in iModel.js 3.0.
+ * @internal
  */
 export interface BeInspireTreeNodeITree {
   icon?: string;
@@ -80,8 +77,7 @@ export interface BeInspireTreeNodeITree {
 }
 
 /** Data structure for [[BeInspireTreeNodeConfig]] with our injected props
- * @public
- * @deprecated Use [ControlledTree]($ui-components) instead. Will be removed in iModel.js 3.0.
+ * @internal
  */
 export interface BeInspireTreeNodePayloadConfig<TPayload> extends BeInspireTreeNodeConfig {
   /** Node's data. May be `undefined` if this is placeholder node. */
@@ -93,8 +89,7 @@ export interface BeInspireTreeNodePayloadConfig<TPayload> extends BeInspireTreeN
 }
 
 /** Type definition for all BeInspireTree nodes
- * @public
- * @deprecated Use [ControlledTree]($ui-components) instead. Will be removed in iModel.js 3.0.
+ * @internal
  */
 export interface BeInspireTreeNode<TPayload> extends Inspire.TreeNode, BeInspireTreeNodePayloadConfig<TPayload> {
   isDirty(): boolean;
@@ -105,8 +100,7 @@ export interface BeInspireTreeNode<TPayload> extends Inspire.TreeNode, BeInspire
 
 /**
  * Definition of a list of [[BeInspireTreeNode]] with some additional filtering methods
- * @public
- * @deprecated Use [ControlledTree]($ui-components) instead. Will be removed in iModel.js 3.0.
+ * @internal
  */
 export interface BeInspireTreeNodes<TPayload> extends Array<BeInspireTreeNode<TPayload>> {
   node(id: string): BeInspireTreeNode<TPayload> | undefined;
@@ -120,31 +114,26 @@ export interface BeInspireTreeNodes<TPayload> extends Array<BeInspireTreeNode<TP
 }
 
 /** Array of tree node data elements
- * @public
- * @deprecated Use [ControlledTree]($ui-components) instead. Will be removed in iModel.js 3.0.
+ * @internal
  */
 export type BeInspireTreeDataProviderRaw<TPayload> = TPayload[];
 /** A Promise for DataProviderRaw
- * @public
- * @deprecated Use [ControlledTree]($ui-components) instead. Will be removed in iModel.js 3.0.
+ * @internal
  */
 export type BeInspireTreeDataProviderPromise<TPayload> = Promise<BeInspireTreeDataProviderRaw<TPayload>>;
 /** Signature for BeInspireTree data provider
- * @public
- * @deprecated Use [ControlledTree]($ui-components) instead. Will be removed in iModel.js 3.0.
+ * @internal
  */
 export type BeInspireTreeDataProviderMethod<TPayload> = (parent?: TPayload) => BeInspireTreeDataProviderPromise<TPayload>;
 /** Signature for BeInspireTree data provider
- * @public
- * @deprecated Use [ControlledTree]($ui-components) instead. Will be removed in iModel.js 3.0.
+ * @internal
  */
 export interface BeInspireTreeDataProviderInterface<TPayload> {
   getNodesCount(parent?: TPayload): Promise<number>;
   getNodes(parent?: TPayload, page?: PageOptions): BeInspireTreeDataProviderPromise<TPayload>;
 }
 /** Type definition for all BeInspireTree data providers
- * @public
- * @deprecated Use [ControlledTree]($ui-components) instead. Will be removed in iModel.js 3.0.
+ * @internal
  */
 export type BeInspireTreeDataProvider<TPayload> =
   BeInspireTreeDataProviderRaw<TPayload>
@@ -153,8 +142,7 @@ export type BeInspireTreeDataProvider<TPayload> =
   | BeInspireTreeDataProviderInterface<TPayload>;
 
 /** Type definition for a BeInspireTree renderer
- * @public
- * @deprecated Use [ControlledTree]($ui-components) instead. Will be removed in iModel.js 3.0.
+ * @internal
  */
 export type BeInspireTreeRenderer<TPayload> = (rootNodes: Array<BeInspireTreeNode<TPayload>>) => void;
 
@@ -171,8 +159,7 @@ type BeInspireTreeData<TPayload> =
 /**
  * A context which keeps [[BeInspireTree]] events muted until
  * it gets disposed.
- * @public
- * @deprecated Use [ControlledTree]($ui-components) instead. Will be removed in iModel.js 3.0.
+ * @internal
  */
 export class EventsMuteContext implements IDisposable {
 
@@ -226,8 +213,7 @@ export class EventsMuteContext implements IDisposable {
 }
 
 /** Prototype for BeInspireTreeProps.mapPayloadToInspireNodeConfig
- * @public
- * @deprecated Use [ControlledTree]($ui-components) instead. Will be removed in iModel.js 3.0.
+ * @internal
  */
 export type MapPayloadToInspireNodeCallback<TPayload> = (payload: TPayload, remapper: MapPayloadToInspireNodeCallback<TPayload>) => BeInspireTreeNodeConfig;
 
@@ -238,8 +224,7 @@ interface DeferredLoadingHandler<TPayload> {
 
 /**
  * Configuration properties for [[BeInspireTree]]
- * @public
- * @deprecated Use [ControlledTree]($ui-components) instead. Will be removed in iModel.js 3.0.
+ * @internal
  */
 export interface BeInspireTreeProps<TNodePayload> {
   dataProvider: BeInspireTreeDataProvider<TNodePayload>;
@@ -250,8 +235,7 @@ export interface BeInspireTreeProps<TNodePayload> {
 
 /**
  * Bentley wrapper for 'inspire-tree'
- * @public
- * @deprecated Use [ControlledTree]($ui-components) instead. Will be removed in iModel.js 3.0.
+ * @internal
  */
 export class BeInspireTree<TNodePayload> {
 
@@ -448,7 +432,7 @@ export class BeInspireTree<TNodePayload> {
       this._tree.removeAllListeners(undefined);
       return;
     }
-    const events = Array.isArray(event) ? event : /* istanbul ignore next */ [event];
+    const events = Array.isArray(event) ? event : /* istanbul ignore next */[event];
     events.forEach((e) => this._tree.removeAllListeners(e));
   }
 

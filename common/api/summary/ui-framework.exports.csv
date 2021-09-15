@@ -197,18 +197,6 @@ internal;DialogManagerBase
 internal;DialogRendererBase 
 internal;DialogRendererProps
 internal;DockedStatusBarItem(props: StatusBarItemProps): JSX.Element
-beta;DragDropLayerChangedEvent 
-deprecated;DragDropLayerChangedEvent 
-beta;DragDropLayerChangedEventArgs
-deprecated;DragDropLayerChangedEventArgs
-beta;DragDropLayerManager
-deprecated;DragDropLayerManager
-beta;DragDropLayerRenderer: typeof DragDropLayerRendererComponent & DndComponentClass
-deprecated;DragDropLayerRenderer: typeof DragDropLayerRendererComponent & DndComponentClass
-beta;DragDropLayerRendererComponent 
-deprecated;DragDropLayerRendererComponent 
-beta;DragDropLayerRendererProps 
-deprecated;DragDropLayerRendererProps 
 beta;DrawingNavigationAidControl 
 public;ElementTooltip 
 public;ElementTooltipChangedEvent 
@@ -780,5 +768,3 @@ public;ZoneLocation
 public;ZoneProps 
 internal;ZoneRuntimeProps
 public;ZoneState
-internal;ZoneTargets 
-internal;ZoneTargetsProps 
