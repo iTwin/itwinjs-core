@@ -143,8 +143,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
   public add(geom: Geometry): void { this.accum.addGeometry(geom); }
 
   private resolveGradient(gradient: Gradient.Symb): RenderTexture | undefined {
-    // ###TODO Make iModel optional for getGradientTexture
-    return this.iModel ? this.system.getGradientTexture(gradient, this.iModel) : undefined;
+    return this.system.getGradientTexture(gradient, this.iModel);
   }
 }
 
