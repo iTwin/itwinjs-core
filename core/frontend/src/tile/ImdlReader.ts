@@ -44,7 +44,7 @@ export interface ImdlReaderResult extends IModelTileContent {
  * @param options Options customizing how [Feature]($common)s within the graphic can be resymbolized.
  * @public
  */
-export async function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions): Promise<RenderGraphic | undefined> {
+export async function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions | false): Promise<RenderGraphic | undefined> {
   const stream = new ByteStream(bytes.buffer);
   const reader = ImdlReader.create(stream, iModel, modelId, is3d, IModelApp.renderSystem, undefined, undefined, undefined, undefined, options);
   if (!reader)
@@ -60,12 +60,12 @@ export async function readElementGraphics(bytes: Uint8Array, iModel: IModelConne
 export class ImdlReader extends GltfReader {
   private readonly _sizeMultiplier?: number;
   private readonly _loadEdges: boolean;
-  private readonly _options: BatchOptions;
+  private readonly _options: BatchOptions | false;
 
   /** Attempt to initialize an ImdlReader to deserialize iModel tile data beginning at the stream's current position. */
   public static create(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem,
     type: BatchType = BatchType.Primary, loadEdges: boolean = true, isCanceled?: ShouldAbortReadGltf, sizeMultiplier?: number,
-    options?: BatchOptions): ImdlReader | undefined {
+    options?: BatchOptions | false): ImdlReader | undefined {
     const header = new ImdlHeader(stream);
     if (!header.isValid || !header.isReadableVersion)
       return undefined;
@@ -327,7 +327,7 @@ export class ImdlReader extends GltfReader {
   }
 
   private constructor(props: GltfReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem,
-    type: BatchType, loadEdges: boolean, isCanceled?: ShouldAbortReadGltf, sizeMultiplier?: number, options?: BatchOptions) {
+    type: BatchType, loadEdges: boolean, isCanceled?: ShouldAbortReadGltf, sizeMultiplier?: number, options?: BatchOptions | false) {
     super(props, iModel, modelId, is3d, system, type, isCanceled);
     this._sizeMultiplier = sizeMultiplier;
     this._loadEdges = loadEdges;
@@ -711,7 +711,7 @@ export class ImdlReader extends GltfReader {
         break;
     }
 
-    if (undefined !== tileGraphic)
+    if (undefined !== tileGraphic && false !== this._options)
       tileGraphic = this._system.createBatch(tileGraphic, featureTable, contentRange, this._options);
 
     return {

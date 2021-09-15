@@ -19,7 +19,7 @@ import { IModelConnection } from "../../IModelConnection";
 import { MapTileTreeReference, TileTreeReference } from "../../tile/internal";
 import { ViewRect } from "../../ViewRect";
 import { GraphicBranch, GraphicBranchOptions } from "../GraphicBranch";
-import { BatchOptions, GraphicBuilder, GraphicBuilderOptions } from "../GraphicBuilder";
+import { BatchOptions, CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../GraphicBuilder";
 import { InstancedGraphicParams } from "../InstancedGraphicParams";
 import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
 import { RealityMeshPrimitive } from "../primitives/mesh/RealityMeshPrimitive";
@@ -515,7 +515,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return new OffScreenTarget(rect);
   }
 
-  public createGraphic(options: GraphicBuilderOptions): GraphicBuilder {
+  public createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): GraphicBuilder {
     return new PrimitiveBuilder(this, options);
   }
 
