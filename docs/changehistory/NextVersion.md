@@ -319,19 +319,19 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @bentley/ui-components
 
-| Removed                                                     | Replacement                                                           |
-| ----------------------------------------------------------- | --------------------------------------------------------------------- |
-| `hasFlag`                                                   | `hasSelectionModeFlag` in @bentley/ui-components                      |
-| `StandardEditorNames`                                       | `StandardEditorNames` in @bentley/ui-abstract                         |
-| `StandardTypeConverterTypeNames`                            | `StandardTypeNames` in @bentley/ui-abstract                           |
-| `StandardTypeNames`                                         | `StandardTypeNames` in @bentley/ui-abstract                           |
-| `Timeline`                                                  | `TimelineComponent` in @bentley/ui-components                         |
-| `ControlledTreeProps.treeEvents`                            | `ControlledTreeProps.eventsHandler`                                   |
-| `ControlledTreeProps.visibleNodes`                          | `ControlledTreeProps.model`                                           |
-| `MutableTreeModel.computeVisibleNodes`                      | `computeVisibleNodes` in @bentley/ui-components                       |
-| `TreeModelSource.getVisibleNodes`                           | memoized result of `computeVisibleNodes`                              |
-| `useVisibleTreeNodes`                                       | `useTreeModel` and `computeVisibleNodes`                              |
-| `SignIn`                                                    | *eliminated*                                                          |
+| Removed                                                     | Replacement                                                                                                                   |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `hasFlag`                                                   | `hasSelectionModeFlag` in @bentley/ui-components                                                                              |
+| `StandardEditorNames`                                       | `StandardEditorNames` in @bentley/ui-abstract                                                                                 |
+| `StandardTypeConverterTypeNames`                            | `StandardTypeNames` in @bentley/ui-abstract                                                                                   |
+| `StandardTypeNames`                                         | `StandardTypeNames` in @bentley/ui-abstract                                                                                   |
+| `Timeline`                                                  | `TimelineComponent` in @bentley/ui-components                                                                                 |
+| `ControlledTreeProps.treeEvents`                            | `ControlledTreeProps.eventsHandler`                                                                                           |
+| `ControlledTreeProps.visibleNodes`                          | `ControlledTreeProps.model`                                                                                                   |
+| `MutableTreeModel.computeVisibleNodes`                      | `computeVisibleNodes` in @bentley/ui-components                                                                               |
+| `TreeModelSource.getVisibleNodes`                           | memoized result of `computeVisibleNodes`                                                                                      |
+| `useVisibleTreeNodes`                                       | `useTreeModel` and `computeVisibleNodes`                                                                                      |
+| `SignIn`                                                    | *eliminated*                                                                                                                  |
 | All drag & drop related APIs                                | Third party components. E.g. see this [example](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=drag-and-drop) |
 | `DEPRECATED_Tree`, `BeInspireTree` and related APIs         | `ControlledTree`                                                      |
 | `PropertyValueRendererContext.decoratedTextElement`         | `IPropertyValueRenderer` that can properly render a `PropertyRecord`  |
@@ -344,29 +344,29 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @bentley/ui-framework
 
-| Removed                                 | Replacement                                                                            |
-| --------------------------------------- | -------------------------------------------------------------------------------------- |
-| `COLOR_THEME_DEFAULT`                   | `SYSTEM_PREFERRED_COLOR_THEME` in @bentley/ui-framework is used as default color theme |
-| `FunctionKey`                           | `FunctionKey` in @bentley/ui-abstract                                                  |
-| `IModelAppUiSettings`                   | `UserSettingsStorage` in @bentley/ui-framework                                         |
-| `reactElement` in ContentControl        | `ContentControl.reactNode`                                                             |
-| `reactElement` in NavigationAidControl  | `NavigationAidControl.reactNode`                                                       |
-| `reactElement` in NavigationWidgetDef   | `NavigationWidgetDef.reactNode`                                                        |
-| `reactElement` in ToolWidgetDef         | `ToolWidgetDef.reactNode`                                                              |
-| `reactElement` in WidgetControl         | `WidgetControl.reactNode`                                                              |
-| `reactElement` in WidgetDef             | `WidgetDef.reactNode`                                                                  |
-| `ReactMessage`                          | `ReactMessage` in @bentley/ui-core                                                     |
-| `SpecialKey`                            | `SpecialKey` in @bentley/ui-abstract                                                   |
-| `WidgetState`                           | `WidgetState` in @bentley/ui-abstract                                                  |
-| `UserProfileBackstageItem`              | *eliminated*                                                                           |
-| `SignIn`                                | *eliminated*                                                                           |
-| `SignOutModalFrontstage`                | *eliminated*                                                                           |
-| `IModelConnectedCategoryTree`           | *eliminated*                                                                           |
-| `IModelConnectedModelsTree`             | *eliminated*                                                                           |
-| `IModelConnectedSpatialContainmentTree` | *eliminated*                                                                           |
-| `CategoryTreeWithSearchBox`             | *eliminated*                                                                           |
-| `VisibilityComponent`                   | `TreeWidgetComponent` in @bentley/tree-widget-react                                    |
-| `VisibilityWidget`                      | `TreeWidgetControl` in @bentley/tree-widget-react                                      |
+| Removed                                 | Replacement                                                                                                                   |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `COLOR_THEME_DEFAULT`                   | `SYSTEM_PREFERRED_COLOR_THEME` in @bentley/ui-framework is used as default color theme                                        |
+| `FunctionKey`                           | `FunctionKey` in @bentley/ui-abstract                                                                                         |
+| `IModelAppUiSettings`                   | `UserSettingsStorage` in @bentley/ui-framework                                                                                |
+| `reactElement` in ContentControl        | `ContentControl.reactNode`                                                                                                    |
+| `reactElement` in NavigationAidControl  | `NavigationAidControl.reactNode`                                                                                              |
+| `reactElement` in NavigationWidgetDef   | `NavigationWidgetDef.reactNode`                                                                                               |
+| `reactElement` in ToolWidgetDef         | `ToolWidgetDef.reactNode`                                                                                                     |
+| `reactElement` in WidgetControl         | `WidgetControl.reactNode`                                                                                                     |
+| `reactElement` in WidgetDef             | `WidgetDef.reactNode`                                                                                                         |
+| `ReactMessage`                          | `ReactMessage` in @bentley/ui-core                                                                                            |
+| `SpecialKey`                            | `SpecialKey` in @bentley/ui-abstract                                                                                          |
+| `WidgetState`                           | `WidgetState` in @bentley/ui-abstract                                                                                         |
+| `UserProfileBackstageItem`              | *eliminated*                                                                                                                  |
+| `SignIn`                                | *eliminated*                                                                                                                  |
+| `SignOutModalFrontstage`                | *eliminated*                                                                                                                  |
+| `IModelConnectedCategoryTree`           | *eliminated*                                                                                                                  |
+| `IModelConnectedModelsTree`             | *eliminated*                                                                                                                  |
+| `IModelConnectedSpatialContainmentTree` | *eliminated*                                                                                                                  |
+| `CategoryTreeWithSearchBox`             | *eliminated*                                                                                                                  |
+| `VisibilityComponent`                   | `TreeWidgetComponent` in @bentley/tree-widget-react                                                                           |
+| `VisibilityWidget`                      | `TreeWidgetControl` in @bentley/tree-widget-react                                                                             |
 | All drag & drop related APIs            | Third party components. E.g. see this [example](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=drag-and-drop) |
 
 ### @bentley/bentleyjs-core
