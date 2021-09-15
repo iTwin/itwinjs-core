@@ -214,7 +214,14 @@ export class BranchUniforms {
       if (undefined !== instancedGeom) {
         // For instanced geometry, the "model view" matrix is really a transform from center of instanced geometry range to view.
         // Shader will compute final model-view matrix based on this and the per-instance transform.
-        mv.multiplyTransformTransform(instancedGeom.getRtcModelTransform(modelMatrix), mv);
+        if (vio) {
+          const viewToWorldRot = viewMatrix.matrix.inverse(this._scratchViewToWorld)!;
+          const rotateAboutOrigin = Transform.createFixedPointAndMatrix(vio, viewToWorldRot, this._scratchTransform2);
+          const viModelMatrix = rotateAboutOrigin.multiplyTransformTransform(instancedGeom.getRtcModelTransform(modelMatrix), this._scratchVIModelMatrix);
+          mv.multiplyTransformTransform(viModelMatrix, mv);
+        } else {
+          mv.multiplyTransformTransform(instancedGeom.getRtcModelTransform(modelMatrix), mv);
+        }
       } else {
         if (undefined !== vio) {
           const viewToWorldRot = viewMatrix.matrix.inverse(this._scratchViewToWorld)!;
