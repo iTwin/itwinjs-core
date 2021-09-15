@@ -9,7 +9,6 @@
 import { assert } from "@bentley/bentleyjs-core";
 import { IndexedPolyface, Loop, Path, Point3d, Range3d, SolidPrimitive, Transform } from "@bentley/geometry-core";
 import { AnalysisStyleDisplacement } from "@bentley/imodeljs-common";
-import { IModelConnection } from "../../../IModelConnection";
 import { GraphicBranch } from "../../GraphicBranch";
 import { RenderGraphic } from "../../RenderGraphic";
 import { RenderSystem } from "../../RenderSystem";
