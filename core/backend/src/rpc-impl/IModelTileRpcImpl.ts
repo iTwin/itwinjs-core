@@ -198,10 +198,9 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
   }
 
   public async retrieveTileContent(tokenProps: IModelRpcProps, key: TileContentIdentifier): Promise<Uint8Array> {
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const requestContext = RpcInvocation.currentRequest as AuthorizedClientRequestContext;
     const db = await RpcBriefcaseUtility.findOrOpen(requestContext, tokenProps, SyncMode.FixedVersion);
-    requestContext.enter();
-    return db.tiles.getTileContent(requestContext, key.treeId, key.contentId);
+    return db.tiles.getTileContent(key.treeId, key.contentId);
   }
 
   public async getTileCacheContainerUrl(_tokenProps: IModelRpcProps, id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl> {

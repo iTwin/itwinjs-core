@@ -67,7 +67,7 @@ describe("TileCache open v1", () => {
 });
 
 describe("TileCache, open v2", async () => {
-  it.only("should place .Tiles in cacheDir", async () => {
+  it.only("should place .Tiles in tempFileBase for V2 checkpoints", async () => {
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim");
     const snapshot = IModelTestUtils.createSnapshotFromSeed(dbPath, IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
     const iModelId = snapshot.getGuid();
@@ -100,7 +100,7 @@ describe("TileCache, open v2", async () => {
     sinon.stub(BlobDaemon, "getDbFileName").callsFake(() => dbPath);
 
     process.env.BLOCKCACHE_DIR = "/foo/";
-    const user = new BackendRequestContext() as AuthorizedBackendRequestContext;
+    const user = await AuthorizedBackendRequestContext.create();
     const checkpointProps = { user, iTwinId, iModelId, changeset };
     const checkpoint = await SnapshotDb.openCheckpointV2(checkpointProps);
 

@@ -104,9 +104,9 @@ export class RpcBriefcaseUtility {
 
   public static async findOrOpen(user: AuthorizedClientRequestContext, iModel: IModelRpcProps, syncMode: SyncMode): Promise<IModelDb> {
     const iModelDb = IModelDb.tryFindByKey(iModel.key);
-    if (undefined === iModelDb) {
+    if (undefined === iModelDb)
       return this.open({ user, tokenProps: iModel, syncMode, timeout: 1000 });
-    }
+
     await iModelDb.reattachDaemon(user);
     return iModelDb;
   }

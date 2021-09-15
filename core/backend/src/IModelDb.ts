@@ -2185,7 +2185,6 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
     /** @internal */
     public async requestTileContent(treeId: string, tileId: string): Promise<IModelJsNative.TileContent> {
-
       return new Promise<IModelJsNative.TileContent>((resolve, reject) => {
         this.pollTileContent(resolve, reject, treeId, tileId);
       });
@@ -2193,7 +2192,6 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
     /** @internal */
     public async getTileContent(treeId: string, tileId: string): Promise<Uint8Array> {
-
       const ret = await new Promise<IModelJsNative.ErrorStatusOrResult<any, Uint8Array>>((resolve) => {
         this._iModel.nativeDb.getTileContent(treeId, tileId, resolve);
       });
