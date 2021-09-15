@@ -3843,7 +3843,6 @@ export abstract class GraphicBuilder {
     // (undocumented)
     protected readonly _computeChordTolerance: (args: ComputeChordToleranceArgs) => number;
     abstract finish(): RenderGraphic;
-    // (undocumented)
     readonly iModel?: IModelConnection;
     get isOverlay(): boolean;
     get isSceneGraphic(): boolean;
