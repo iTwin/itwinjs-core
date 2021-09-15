@@ -223,7 +223,7 @@ export abstract class IModelDb extends IModel {
   public readonly onChangesetApplied = new BeEvent<() => void>();
   /** @internal */
   public notifyChangesetApplied() {
-    this.changeset = this.nativeDb.getParentChangeset();
+    this.changeset = this.nativeDb.getCurrentChangeset();
     this.onChangesetApplied.raiseEvent();
   }
 
@@ -248,7 +248,7 @@ export abstract class IModelDb extends IModel {
 
   /** @internal */
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, changeset?: ChangesetIdWithIndex }) {
-    super({ ...args, iTwinId: args.nativeDb.queryProjectGuid(), iModelId: args.nativeDb.getDbGuid() });
+    super({ ...args, iTwinId: args.nativeDb.getITwinId(), iModelId: args.nativeDb.getIModelId() });
     this._nativeDb = args.nativeDb;
     this.nativeDb.setIModelDb(this);
     this.initializeIModelDb();
@@ -762,9 +762,6 @@ export abstract class IModelDb extends IModel {
     this._statementCache.clear();
     this._sqliteStatementCache.clear();
   }
-
-  /** Get the GUID of this iModel.  */
-  public getGuid(): GuidString { return this.nativeDb.getDbGuid(); }
 
   /** Update the project extents for this iModel.
    * <p><em>Example:</em>
@@ -2280,7 +2277,7 @@ export class BriefcaseDb extends IModelDb {
   }
 
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, openMode: OpenMode, briefcaseId: number }) {
-    super({ ...args, changeset: args.nativeDb.getParentChangeset() });
+    super({ ...args, changeset: args.nativeDb.getCurrentChangeset() });
     this._openMode = args.openMode;
     this.briefcaseId = args.briefcaseId;
 
@@ -2391,7 +2388,7 @@ export class SnapshotDb extends IModelDb {
   private _createClassViewsOnClose?: boolean;
 
   private constructor(nativeDb: IModelJsNative.DgnDb, key: string) {
-    super({ nativeDb, key, changeset: nativeDb.getParentChangeset() });
+    super({ nativeDb, key, changeset: nativeDb.getCurrentChangeset() });
     this._openMode = nativeDb.isReadonly() ? OpenMode.Readonly : OpenMode.ReadWrite;
   }
 
@@ -2620,7 +2617,7 @@ export class StandaloneDb extends BriefcaseDb {
     const nativeDb = this.openDgnDb(file, openMode);
 
     try {
-      const iTwinId = nativeDb.queryProjectGuid();
+      const iTwinId = nativeDb.getITwinId();
       if (iTwinId !== Guid.empty) // a "standalone" iModel means it is not associated with an iTwin
         throw new IModelError(IModelStatus.WrongIModel, `${filePath} is not a Standalone iModel. iTwinId=${iTwinId}`);
 

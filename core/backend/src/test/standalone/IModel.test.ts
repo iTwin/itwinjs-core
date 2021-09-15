@@ -1141,7 +1141,7 @@ describe("iModel", () => {
     try {
       imodel2.prepareStatement("select no_such_property, codeValue from bis.element", false);
       assert.fail("prepare should have failed with an exception");
-    } catch (err) {
+    } catch (err: any) {
       assert.isTrue(err.constructor.name === "IModelError");
       assert.notEqual(err.status, DbResult.BE_SQLITE_OK);
     }
@@ -1153,7 +1153,7 @@ describe("iModel", () => {
       try {
         stmt.bindStruct(1, { foo: 1 });
         assert.fail("bindStruct should have failed with an exception");
-      } catch (err2) {
+      } catch (err2: any) {
         assert.isTrue(err2.constructor.name === "IModelError");
         assert.notEqual(err2.status, DbResult.BE_SQLITE_OK);
       }
@@ -1593,7 +1593,7 @@ describe("iModel", () => {
     };
 
     const iModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IModel", "TestSnapshot.bim"), args);
-    assert.equal(iModel.getGuid(), args.guid);
+    assert.equal(iModel.iModelId, args.guid);
     assert.equal(iModel.rootSubject.name, args.rootSubject.name);
     assert.equal(iModel.rootSubject.description, args.rootSubject.description);
     assert.equal(iModel.projectExtents.low.x, args.projectExtents.low.x);
@@ -1856,7 +1856,7 @@ describe("iModel", () => {
     // Just create an empty snapshot, and we'll use that as our fake "checkpoint" (so it opens)
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
-    const iModelId = snapshot.getGuid();
+    const iModelId = snapshot.iModelId;
     const iTwinId = Guid.createValue();
     const changeset = IModelTestUtils.generateChangeSetId();
     snapshot.nativeDb.saveProjectGuid(Guid.normalize(iTwinId));
@@ -2037,9 +2037,9 @@ describe("iModel", () => {
     assert.isFalse(snapshotDb2.nativeDb.isEncrypted());
     assert.isFalse(snapshotDb3.nativeDb.isEncrypted());
     assert.isFalse(imodel1.nativeDb.isEncrypted());
-    const iModelGuid1: GuidString = snapshotDb1.getGuid();
-    const iModelGuid2: GuidString = snapshotDb2.getGuid();
-    const iModelGuid3: GuidString = snapshotDb3.getGuid();
+    const iModelGuid1: GuidString = snapshotDb1.iModelId;
+    const iModelGuid2: GuidString = snapshotDb2.iModelId;
+    const iModelGuid3: GuidString = snapshotDb3.iModelId;
     assert.notEqual(iModelGuid1, iModelGuid2, "Expect different iModel GUIDs for each snapshot");
     assert.notEqual(iModelGuid2, iModelGuid3, "Expect different iModel GUIDs for each snapshot");
     const rootSubjectName1 = snapshotDb1.elements.getRootSubject().code.value;
