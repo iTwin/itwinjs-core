@@ -48,7 +48,7 @@ describe("FavoritePropertiesManager", () => {
   beforeEach(async () => {
     manager = new FavoritePropertiesManager({ storage: storageMock.object });
     imodelMock.setup((x) => x.iModelId).returns(() => imodelId);
-    imodelMock.setup((x) => x.contextId).returns(() => projectId);
+    imodelMock.setup((x) => x.iTwinId).returns(() => projectId);
   });
 
   afterEach(() => {
@@ -72,7 +72,7 @@ describe("FavoritePropertiesManager", () => {
       const imodelId2 = "imodel-id-2";
       imodelMock.reset();
       imodelMock.setup((x) => x.iModelId).returns(() => imodelId2);
-      imodelMock.setup((x) => x.contextId).returns(() => projectId);
+      imodelMock.setup((x) => x.iTwinId).returns(() => projectId);
       await manager.initializeConnection(imodelMock.object);
 
       storageMock.verify(async (x) => x.loadProperties(undefined, undefined), moq.Times.once());

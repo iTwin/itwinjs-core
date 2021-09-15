@@ -7,6 +7,7 @@ import * as React from "react";
 import { Slider } from "@itwin/itwinui-react";
 import { CommonProps, useEventListener } from "@bentley/ui-core";
 import { toDateString, toTimeString } from "@bentley/ui-components";
+import { TimelineDateMarkerProps } from "./TimelineComponent";
 
 /**
  * @internal
@@ -49,20 +50,48 @@ function generateToolTipText(showTime: boolean, percent: number, min: number, ma
   return formatDuration(val);
 }
 
+function getPercentageFromDate(startDate: Date, endDate: Date, date?: Date){
+  const newDate = date? date : new Date();
+  const startTime = startDate.getTime();
+  const totalDuration = endDate.getTime() - startTime;
+  return (newDate.getTime() - startTime) / totalDuration;
+}
+
+function getDateMarker(dateMarkerPropsIn: TimelineDateMarkerProps, startDate: Date, endDate: Date): DateMarkerProps {
+  const percentage = getPercentageFromDate(startDate, endDate, dateMarkerPropsIn.date);
+  const marker = dateMarkerPropsIn.dateMarker ? dateMarkerPropsIn.dateMarker : <span className="date-marker-default"></span>;
+  return {datePercentage: percentage, dateMarker: marker};
+}
+
+function markDateInTimelineRange(dateMarkerProps?: TimelineDateMarkerProps, startDate?: Date, endDate?: Date): boolean {
+  // istanbul ignore else
+  if (dateMarkerProps && startDate && endDate) {
+    const inDate = dateMarkerProps.date ? dateMarkerProps.date : new Date();
+    // istanbul ignore else
+    if (inDate.getTime() >= startDate.getTime() && inDate.getTime() <= endDate.getTime())
+      return true;
+  }
+  return false;
+}
 /**
  * @internal
  */
-export function RailToolTip({ showToolTip, percent, tooltipText }: {
+export function RailMarkers({ showToolTip, percent, tooltipText, markDate }: {
   showToolTip: boolean;
   percent: number;
   tooltipText: string;
+  markDate?: DateMarkerProps;
 }) {
 
   return (
-    <div className="components-timeline-tooltip-container">
+    <div className="components-timeline-rail-marker-container">
       {showToolTip &&
         <div className="components-timeline-tooltip" style={{ left: `${Math.round(percent * 100)}% ` }}>
           <span className="tooltip-text">{tooltipText}</span>
+        </div>}
+      {markDate &&
+        <div className="components-timeline-date-marker" data-testid="test-date-marker" style={{ left: `${Math.round(markDate.datePercentage * 100)}% ` }}>
+          {markDate.dateMarker}
         </div>}
     </div>
   );
@@ -125,8 +154,16 @@ export interface ScrubberProps extends CommonProps {
   onChange?: (values: ReadonlyArray<number>) => void;
   onUpdate?: (values: ReadonlyArray<number>) => void;
   timeZoneOffset?: number;
+  markDate?: TimelineDateMarkerProps;
 }
 
+/** Properties for marking current date in RailMarkers
+ * @internal
+ */
+interface DateMarkerProps {
+  datePercentage: number;
+  dateMarker?: React.ReactNode;
+}
 /** Scrubber/Slider for timeline control
  * @internal
  */
@@ -181,9 +218,11 @@ export function Scrubber(props: ScrubberProps) {
   const tickLabel = React.useMemo(() => {
     const showTip = isPlaying || showRailTooltip || thumbHasFocus;
     const percent = (isPlaying || thumbHasFocus) ? currentDuration / totalDuration : pointerPercent;
+    const markDateInRange = markDateInTimelineRange(props.markDate, startDate, endDate);
+    const currentDateMarker =  props.markDate && markDateInRange && startDate && endDate ? getDateMarker(props.markDate, startDate, endDate) : undefined;
     const tooltipText = generateToolTipText(!!showTime, percent, 0, totalDuration, startDate, endDate, timeZoneOffset);
-    return (<RailToolTip showToolTip={showTip} percent={percent} tooltipText={tooltipText} />);
-  }, [isPlaying, showRailTooltip, currentDuration, totalDuration, pointerPercent, startDate, endDate, timeZoneOffset, showTime, thumbHasFocus]);
+    return (<RailMarkers showToolTip={showTip} percent={percent} tooltipText={tooltipText} markDate={currentDateMarker}/>);
+  }, [isPlaying, showRailTooltip, currentDuration, totalDuration, pointerPercent, startDate, endDate, timeZoneOffset, showTime, thumbHasFocus, props.markDate]);
 
   return (
     <Slider ref={sliderRef}

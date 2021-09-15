@@ -1936,7 +1936,7 @@ describe("iModel", () => {
     const checkpoint = await SnapshotDb.openCheckpointV2({ user, iTwinId, iModelId, changeset });
     const props = checkpoint.getRpcProps();
     assert.equal(props.iModelId, iModelId);
-    assert.equal(props.contextId, iTwinId);
+    assert.equal(props.iTwinId, iTwinId);
     assert.equal(props.changeset?.id, changeset.id);
     assert.equal(commandStub.callCount, 1);
     assert.equal(commandStub.firstCall.firstArg, "attach");
@@ -2038,7 +2038,7 @@ describe("iModel", () => {
     assert.equal(standaloneDb1.elements.getRootSubject().code.value, standaloneRootSubjectName);
     assert.isTrue(standaloneDb1.isOpen);
     assert.isTrue(Guid.isV4Guid(standaloneDb1.iModelId));
-    assert.equal(standaloneDb1.contextId, Guid.empty);
+    assert.equal(standaloneDb1.iTwinId, Guid.empty);
     assert.strictEqual("", standaloneDb1.changeset.id);
     assert.strictEqual(0, standaloneDb1.changeset.index);
     assert.equal(standaloneDb1.openMode, OpenMode.ReadWrite);

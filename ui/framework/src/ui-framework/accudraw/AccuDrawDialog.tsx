@@ -16,7 +16,7 @@ import { AccuDrawFieldContainer } from "./AccuDrawFieldContainer";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 
 /** Properties for [[AccuDrawDialog]]
- * @alpha */
+ * @beta */
 export interface AccuDrawDialogProps extends CommonProps {
   /** Indicates whether the dialog is open */
   opened: boolean;
@@ -29,7 +29,7 @@ export interface AccuDrawDialogProps extends CommonProps {
 }
 
 /** Dialog displays [[AccuDrawFieldContainer]] for AccuDraw Ui
- * @alpha */
+ * @beta */
 export function AccuDrawDialog(props: AccuDrawDialogProps) {
   const title = React.useRef(UiFramework.translate("accuDraw.dialogTitle"));
   const [opened, setOpened] = React.useState(props.opened);

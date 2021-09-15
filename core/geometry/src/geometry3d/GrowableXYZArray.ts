@@ -671,6 +671,26 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
         return false;
     return true;
   }
+  /**
+   * * If not already closed, push a copy of the first point.
+   * * If already closed within tolerance, force exact copy
+   * * otherwise leave unchanged.
+   */
+  public forceClosure(tolerance: number = Geometry.smallMetricDistance) {
+    const d = this.distanceIndexIndex(0, this.length - 1);
+    // leave the empty array alone.
+    // Note that singleton will generate 0 distance and do nothing.
+    if (d === undefined) {
+    } else if (d > tolerance)
+      this.pushXYZ(this._data[0], this._data[1], this._data[2]);
+    else if (d > 0) {
+      // overwrite last point with exact exact first point
+      const i0 = this._data.length - 3;
+      for (let i = 0; i < 3; i++)
+        this._data[i0 + i] = this._data[i];
+    }
+  }
+
   /** Compute a point at fractional coordinate between points i and j */
   public interpolate(i: number, fraction: number, j: number, result?: Point3d): Point3d | undefined {
     if (this.isIndexValid(i) && this.isIndexValid(j)) {
