@@ -95,7 +95,7 @@ export function computeChordToleranceFromRange(vp: Viewport, range: Range3d): nu
 // @alpha
 export class CreateArcTool extends CreateOrContinuePathTool {
     // (undocumented)
-    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
+    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean;
     // (undocumented)
     protected createConstructionCurve(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined;
     // (undocumented)
@@ -116,10 +116,10 @@ export class CreateArcTool extends CreateOrContinuePathTool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    onInstall(): Promise<boolean>;
+    onInstall(): boolean;
     // (undocumented)
-    onRestartTool(): Promise<void>;
-    parseAndRun(...inputArgs: string[]): Promise<boolean>;
+    onRestartTool(): void;
+    parseAndRun(...inputArgs: string[]): boolean;
     // (undocumented)
     protected provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void;
     // (undocumented)
@@ -157,7 +157,7 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
     // (undocumented)
     protected addConstructionGraphics(curve: CurvePrimitive, showCurve: boolean, context: DynamicsContext): void;
     // (undocumented)
-    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
+    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean;
     // (undocumented)
     protected createNewCurvePrimitive(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined;
     // (undocumented)
@@ -176,17 +176,17 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
     // (undocumented)
     protected get minOrder(): number;
     // (undocumented)
-    onInstall(): Promise<boolean>;
+    onInstall(): boolean;
     // (undocumented)
     onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    onRestartTool(): Promise<void>;
+    onRestartTool(): void;
     // (undocumented)
     get order(): number;
     set order(value: number);
     // (undocumented)
     get orderProperty(): DialogProperty<number>;
-    parseAndRun(...inputArgs: string[]): Promise<boolean>;
+    parseAndRun(...inputArgs: string[]): boolean;
     // (undocumented)
     protected provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void;
     // (undocumented)
@@ -204,7 +204,7 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
 // @alpha
 export class CreateCircleTool extends CreateOrContinuePathTool {
     // (undocumented)
-    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
+    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean;
     // (undocumented)
     protected get createCurvePhase(): CreateCurvePhase;
     // (undocumented)
@@ -223,16 +223,16 @@ export class CreateCircleTool extends CreateOrContinuePathTool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    onInstall(): Promise<boolean>;
+    onInstall(): boolean;
     // (undocumented)
-    onPostInstall(): Promise<void>;
+    onPostInstall(): void;
     // (undocumented)
-    onReinitialize(): Promise<void>;
+    onReinitialize(): void;
     // (undocumented)
     onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    onRestartTool(): Promise<void>;
-    parseAndRun(...inputArgs: string[]): Promise<boolean>;
+    onRestartTool(): void;
+    parseAndRun(...inputArgs: string[]): boolean;
     // (undocumented)
     protected provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void;
     // (undocumented)
@@ -270,10 +270,10 @@ export abstract class CreateElementTool extends PrimitiveTool {
     protected isComplete(_ev: BeButtonEvent): boolean;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
-    onPostInstall(): Promise<void>;
+    onPostInstall(): void;
     // (undocumented)
     onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
-    onUnsuspend(): Promise<void>;
+    onUnsuspend(): void;
     protected processDataButton(ev: BeButtonEvent): Promise<EventHandled>;
     protected provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void;
     protected setupAndPromptForNextAction(): void;
@@ -296,7 +296,7 @@ export class CreateEllipseTool extends CreateOrContinuePathTool {
     // (undocumented)
     protected isComplete(_ev: BeButtonEvent): boolean;
     // (undocumented)
-    onRestartTool(): Promise<void>;
+    onRestartTool(): void;
     // (undocumented)
     protected provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void;
     // (undocumented)
@@ -316,7 +316,7 @@ export class CreateLineStringTool extends CreateOrContinuePathTool {
     // (undocumented)
     onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    onRestartTool(): Promise<void>;
+    onRestartTool(): void;
     // (undocumented)
     protected provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void;
     // (undocumented)
@@ -412,7 +412,7 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
     // (undocumented)
     protected isValidForJoin(): Promise<boolean>;
     // (undocumented)
-    onCleanup(): Promise<void>;
+    onCleanup(): void;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
@@ -468,7 +468,7 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
 // @alpha
 export class CreateRectangleTool extends CreateOrContinuePathTool {
     // (undocumented)
-    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
+    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean;
     // (undocumented)
     protected cornerLocal?: Point3d;
     // (undocumented)
@@ -488,12 +488,12 @@ export class CreateRectangleTool extends CreateOrContinuePathTool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    onInstall(): Promise<boolean>;
+    onInstall(): boolean;
     // (undocumented)
-    onRestartTool(): Promise<void>;
+    onRestartTool(): void;
     // (undocumented)
     protected originLocal?: Point3d;
-    parseAndRun(...inputArgs: string[]): Promise<boolean>;
+    parseAndRun(...inputArgs: string[]): boolean;
     // (undocumented)
     protected provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void;
     // (undocumented)
@@ -529,7 +529,7 @@ export class DeleteElementsTool extends ElementSetTool {
     // (undocumented)
     static iconSpec: string;
     // (undocumented)
-    onRestartTool(): Promise<void>;
+    onRestartTool(): void;
     // (undocumented)
     processAgendaImmediate(): Promise<void>;
     // (undocumented)
@@ -588,7 +588,7 @@ export class MoveElementsTool extends TransformElementsTool {
     // (undocumented)
     static iconSpec: string;
     // (undocumented)
-    onRestartTool(): Promise<void>;
+    onRestartTool(): void;
     // (undocumented)
     protected provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void;
     // (undocumented)
@@ -667,7 +667,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     protected get maxExtentHeight(): number;
     protected get maxExtentLength(): number;
     // (undocumented)
-    protected modifyControls(hit: HitDetail, _ev: BeButtonEvent): Promise<boolean>;
+    protected modifyControls(hit: HitDetail, _ev: BeButtonEvent): boolean;
     // (undocumented)
     protected _monumentId?: string;
     // (undocumented)
@@ -706,7 +706,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     // (undocumented)
     testDecorationHit(id: string): boolean;
     // (undocumented)
-    static update(): Promise<void>;
+    static update(): void;
     // (undocumented)
     protected updateDecorationListener(_add: boolean): void;
     // (undocumented)
@@ -730,23 +730,23 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
     // (undocumented)
     isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean;
     // (undocumented)
-    onCleanup(): Promise<void>;
+    onCleanup(): void;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    onInstall(): Promise<boolean>;
+    onInstall(): boolean;
     // (undocumented)
     onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled>;
     // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
-    onPostInstall(): Promise<void>;
+    onPostInstall(): void;
     // (undocumented)
     onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    onRestartTool(): Promise<void>;
+    onRestartTool(): void;
     // (undocumented)
-    onUnsuspend(): Promise<void>;
+    onUnsuspend(): void;
     // (undocumented)
     protected _origin?: Point3d;
     // (undocumented)
@@ -756,7 +756,7 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
     // (undocumented)
     protected setupAndPromptForNextAction(): void;
     // (undocumented)
-    static startTool(): Promise<boolean>;
+    static startTool(): boolean;
     // (undocumented)
     static toolId: string;
     }
@@ -774,23 +774,23 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
     // (undocumented)
     protected _northDir?: Ray3d;
     // (undocumented)
-    onCleanup(): Promise<void>;
+    onCleanup(): void;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    onInstall(): Promise<boolean>;
+    onInstall(): boolean;
     // (undocumented)
     onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled>;
     // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
-    onPostInstall(): Promise<void>;
+    onPostInstall(): void;
     // (undocumented)
     onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    onRestartTool(): Promise<void>;
+    onRestartTool(): void;
     // (undocumented)
-    onUnsuspend(): Promise<void>;
+    onUnsuspend(): void;
     // (undocumented)
     protected _origin?: Point3d;
     // (undocumented)
@@ -800,7 +800,7 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
     // (undocumented)
     protected setupAndPromptForNextAction(): void;
     // (undocumented)
-    static startTool(): Promise<boolean>;
+    static startTool(): boolean;
     // (undocumented)
     static toolId: string;
     }
@@ -817,7 +817,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     get altitude(): number;
     set altitude(value: number);
     // (undocumented)
-    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
+    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean;
     // (undocumented)
     protected _cartographicFromArgs: boolean;
     // (undocumented)
@@ -846,24 +846,24 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     get north(): number;
     set north(value: number);
     // (undocumented)
-    onCleanup(): Promise<void>;
+    onCleanup(): void;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    onInstall(): Promise<boolean>;
+    onInstall(): boolean;
     // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
-    onPostInstall(): Promise<void>;
+    onPostInstall(): void;
     // (undocumented)
     onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    onRestartTool(): Promise<void>;
+    onRestartTool(): void;
     // (undocumented)
-    onUnsuspend(): Promise<void>;
+    onUnsuspend(): void;
     // (undocumented)
     protected _origin?: Point3d;
-    parseAndRun(...inputArgs: string[]): Promise<boolean>;
+    parseAndRun(...inputArgs: string[]): boolean;
     // (undocumented)
     protected provideToolAssistance(): void;
     // (undocumented)
@@ -873,7 +873,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     // (undocumented)
     protected setupAndPromptForNextAction(): void;
     // (undocumented)
-    static startTool(): Promise<boolean>;
+    static startTool(): boolean;
     // (undocumented)
     supplyToolSettingsProperties(): DialogItem[] | undefined;
     // (undocumented)
@@ -883,7 +883,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
 // @beta
 export class ProjectLocationCancelTool extends Tool {
     // (undocumented)
-    run(): Promise<boolean>;
+    run(): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -902,7 +902,7 @@ export enum ProjectLocationChanged {
 // @beta
 export class ProjectLocationHideTool extends Tool {
     // (undocumented)
-    run(): Promise<boolean>;
+    run(): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -914,7 +914,7 @@ export class ProjectLocationSaveTool extends Tool {
     // (undocumented)
     static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
     // (undocumented)
-    run(): Promise<boolean>;
+    run(): boolean;
     // (undocumented)
     protected saveChanges(deco: ProjectExtentsClipDecoration, extents?: Range3dProps, ecefLocation?: EcefLocationProps): Promise<void>;
     // (undocumented)
@@ -924,7 +924,7 @@ export class ProjectLocationSaveTool extends Tool {
 // @beta
 export class ProjectLocationShowTool extends Tool {
     // (undocumented)
-    run(): Promise<boolean>;
+    run(): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -932,7 +932,7 @@ export class ProjectLocationShowTool extends Tool {
 // @alpha
 export class RedoTool extends Tool {
     // (undocumented)
-    run(): Promise<boolean>;
+    run(): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -954,7 +954,7 @@ export class RotateElementsTool extends TransformElementsTool {
     // (undocumented)
     get angleProperty(): DialogProperty<number>;
     // (undocumented)
-    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
+    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean;
     // (undocumented)
     protected calculateTransform(ev: BeButtonEvent): Transform | undefined;
     // (undocumented)
@@ -972,10 +972,10 @@ export class RotateElementsTool extends TransformElementsTool {
     // (undocumented)
     onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void;
     // (undocumented)
-    onInstall(): Promise<boolean>;
+    onInstall(): boolean;
     // (undocumented)
-    onRestartTool(): Promise<void>;
-    parseAndRun(...inputArgs: string[]): Promise<boolean>;
+    onRestartTool(): void;
+    parseAndRun(...inputArgs: string[]): boolean;
     // (undocumented)
     protected provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void;
     // (undocumented)
@@ -1040,7 +1040,7 @@ export abstract class TransformElementsTool extends ElementSetTool {
     // (undocumented)
     protected onAgendaModified(): Promise<void>;
     // (undocumented)
-    onCleanup(): Promise<void>;
+    onCleanup(): void;
     // (undocumented)
     onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void;
     // (undocumented)
@@ -1099,7 +1099,7 @@ export class TransformGraphicsProvider {
 // @alpha
 export class UndoAllTool extends Tool {
     // (undocumented)
-    run(): Promise<boolean>;
+    run(): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1107,7 +1107,7 @@ export class UndoAllTool extends Tool {
 // @alpha
 export class UndoTool extends Tool {
     // (undocumented)
-    run(): Promise<boolean>;
+    run(): boolean;
     // (undocumented)
     static toolId: string;
 }
