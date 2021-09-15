@@ -1,10 +1,14 @@
 # Content
 
-The Presentation library provides a declarative way to create content for tables, property grid and other content components based on iModel data. There are 2 primary concepts for creating content: [rules](#rules) and [specifications](#specifications).
+The Presentation library provides a declarative way to create content for tables, property grid and other content components based on iModel data.
 
 ![Content rules' example](./media/content-rules-example.png)
 
-## Rules
+## Reference
+
+There are 2 primary concepts for creating content: [rules](#rules) and [specifications](#specifications).
+
+### Rules
 
 There are two types of content rules:
 
@@ -13,7 +17,7 @@ There are two types of content rules:
 
 Both rules have *picking attributes* to specify what [input](./Terminology.md#input-instance) the rule applies to.
 
-## Specifications
+### Specifications
 
 Content specifications define **result of the rule** if it does get used after evaluating it's [condition](./ContentRule.md#attribute-condition) and other *picking attributes*. There are 3 types of specifications:
 
@@ -21,7 +25,7 @@ Content specifications define **result of the rule** if it does get used after e
 - [Content instances of specific classes](./ContentInstancesOfSpecificClasses.md) specification returns properties of instances of classes given classes. The returned content doesn't depend on the [input](./Terminology.md#input-instance).
 - [Content related instances](./ContentRelatedInstances.md) specification returns properties of instances that are related to [input instances](./Terminology.md#input-instance) through given relationship(s).
 
-## Modifiers
+### Modifiers
 
 Content modifiers allow modifying content by hiding or showing properties, including additional ones, or specifying custom renderers and editors. Available modifiers:
 
