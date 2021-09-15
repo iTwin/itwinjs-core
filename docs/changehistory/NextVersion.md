@@ -330,45 +330,55 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @bentley/ui-components
 
-| Removed                                | Replacement                                      |
-| -------------------------------------- | ------------------------------------------------ |
-| `hasFlag`                              | `hasSelectionModeFlag` in @bentley/ui-components |
-| `StandardEditorNames`                  | `StandardEditorNames` in @bentley/ui-abstract    |
-| `StandardTypeConverterTypeNames`       | `StandardTypeNames` in @bentley/ui-abstract      |
-| `StandardTypeNames`                    | `StandardTypeNames` in @bentley/ui-abstract      |
-| `Timeline`                             | `TimelineComponent` in @bentley/ui-components    |
-| `ControlledTreeProps.treeEvents`       | `ControlledTreeProps.eventsHandler`              |
-| `ControlledTreeProps.visibleNodes`     | `ControlledTreeProps.model`                      |
-| `MutableTreeModel.computeVisibleNodes` | `computeVisibleNodes` in @bentley/ui-components  |
-| `TreeModelSource.getVisibleNodes`      | memoized result of `computeVisibleNodes`         |
-| `useVisibleTreeNodes`                  | `useTreeModel` and `computeVisibleNodes`         |
-| `SignIn`                               | *eliminated*                                     |
+| Removed                                                     | Replacement                                                                                                                   |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `hasFlag`                                                   | `hasSelectionModeFlag` in @bentley/ui-components                                                                              |
+| `StandardEditorNames`                                       | `StandardEditorNames` in @bentley/ui-abstract                                                                                 |
+| `StandardTypeConverterTypeNames`                            | `StandardTypeNames` in @bentley/ui-abstract                                                                                   |
+| `StandardTypeNames`                                         | `StandardTypeNames` in @bentley/ui-abstract                                                                                   |
+| `Timeline`                                                  | `TimelineComponent` in @bentley/ui-components                                                                                 |
+| `ControlledTreeProps.treeEvents`                            | `ControlledTreeProps.eventsHandler`                                                                                           |
+| `ControlledTreeProps.visibleNodes`                          | `ControlledTreeProps.model`                                                                                                   |
+| `MutableTreeModel.computeVisibleNodes`                      | `computeVisibleNodes` in @bentley/ui-components                                                                               |
+| `TreeModelSource.getVisibleNodes`                           | memoized result of `computeVisibleNodes`                                                                                      |
+| `useVisibleTreeNodes`                                       | `useTreeModel` and `computeVisibleNodes`                                                                                      |
+| `SignIn`                                                    | *eliminated*                                                                                                                  |
+| All drag & drop related APIs                                | Third party components. E.g. see this [example](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=drag-and-drop) |
+| `DEPRECATED_Tree`, `BeInspireTree` and related APIs         | `ControlledTree`                                                                                                              |
+| `PropertyValueRendererContext.decoratedTextElement`         | `IPropertyValueRenderer` that can properly render a `PropertyRecord`                                                          |
+| `CommonPropertyGridProps.onPropertyLinkClick`               | `PropertyRecord.links.onClick`                                                                                                |
+| `onPropertyLinkClick` prop in `usePropertyData`             | `PropertyRecord.links.onClick`                                                                                                |
+| `onPropertyLinkClick` prop in `usePropertyGridModelSource`  | `PropertyRecord.links.onClick`                                                                                                |
+| `FilteringInputProps.filteringInProgress`                   | `FilteringInputProps.status`                                                                                                  |
+| `hasLinks`                                                  | `!!PropertyRecord.links?.length`                                                                                              |
+| `PropertyListProps.onListWidthChanged`                      | Width is now passed to `PropertyList` through `PropertyListProps.width` prop                                                  |
 
 ### @bentley/ui-framework
 
-| Removed                                 | Replacement                                                                            |
-| --------------------------------------- | -------------------------------------------------------------------------------------- |
-| `COLOR_THEME_DEFAULT`                   | `SYSTEM_PREFERRED_COLOR_THEME` in @bentley/ui-framework is used as default color theme |
-| `FunctionKey`                           | `FunctionKey` in @bentley/ui-abstract                                                  |
-| `IModelAppUiSettings`                   | `UserSettingsStorage` in @bentley/ui-framework                                         |
-| `reactElement` in ContentControl        | `ContentControl.reactNode`                                                             |
-| `reactElement` in NavigationAidControl  | `NavigationAidControl.reactNode`                                                       |
-| `reactElement` in NavigationWidgetDef   | `NavigationWidgetDef.reactNode`                                                        |
-| `reactElement` in ToolWidgetDef         | `ToolWidgetDef.reactNode`                                                              |
-| `reactElement` in WidgetControl         | `WidgetControl.reactNode`                                                              |
-| `reactElement` in WidgetDef             | `WidgetDef.reactNode`                                                                  |
-| `ReactMessage`                          | `ReactMessage` in @bentley/ui-core                                                     |
-| `SpecialKey`                            | `SpecialKey` in @bentley/ui-abstract                                                   |
-| `WidgetState`                           | `WidgetState` in @bentley/ui-abstract                                                  |
-| `UserProfileBackstageItem`              | *eliminated*                                                                           |
-| `SignIn`                                | *eliminated*                                                                           |
-| `SignOutModalFrontstage`                | *eliminated*                                                                           |
-| `IModelConnectedCategoryTree`           | *eliminated*                                                                           |
-| `IModelConnectedModelsTree`             | *eliminated*                                                                           |
-| `IModelConnectedSpatialContainmentTree` | *eliminated*                                                                           |
-| `CategoryTreeWithSearchBox`             | *eliminated*                                                                           |
-| `VisibilityComponent`                   | `TreeWidgetComponent` in @bentley/tree-widget-react                                    |
-| `VisibilityWidget`                      | `TreeWidgetControl` in @bentley/tree-widget-react                                      |
+| Removed                                 | Replacement                                                                                                                   |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `COLOR_THEME_DEFAULT`                   | `SYSTEM_PREFERRED_COLOR_THEME` in @bentley/ui-framework is used as default color theme                                        |
+| `FunctionKey`                           | `FunctionKey` in @bentley/ui-abstract                                                                                         |
+| `IModelAppUiSettings`                   | `UserSettingsStorage` in @bentley/ui-framework                                                                                |
+| `reactElement` in ContentControl        | `ContentControl.reactNode`                                                                                                    |
+| `reactElement` in NavigationAidControl  | `NavigationAidControl.reactNode`                                                                                              |
+| `reactElement` in NavigationWidgetDef   | `NavigationWidgetDef.reactNode`                                                                                               |
+| `reactElement` in ToolWidgetDef         | `ToolWidgetDef.reactNode`                                                                                                     |
+| `reactElement` in WidgetControl         | `WidgetControl.reactNode`                                                                                                     |
+| `reactElement` in WidgetDef             | `WidgetDef.reactNode`                                                                                                         |
+| `ReactMessage`                          | `ReactMessage` in @bentley/ui-core                                                                                            |
+| `SpecialKey`                            | `SpecialKey` in @bentley/ui-abstract                                                                                          |
+| `WidgetState`                           | `WidgetState` in @bentley/ui-abstract                                                                                         |
+| `UserProfileBackstageItem`              | *eliminated*                                                                                                                  |
+| `SignIn`                                | *eliminated*                                                                                                                  |
+| `SignOutModalFrontstage`                | *eliminated*                                                                                                                  |
+| `IModelConnectedCategoryTree`           | *eliminated*                                                                                                                  |
+| `IModelConnectedModelsTree`             | *eliminated*                                                                                                                  |
+| `IModelConnectedSpatialContainmentTree` | *eliminated*                                                                                                                  |
+| `CategoryTreeWithSearchBox`             | *eliminated*                                                                                                                  |
+| `VisibilityComponent`                   | `TreeWidgetComponent` in @bentley/tree-widget-react                                                                           |
+| `VisibilityWidget`                      | `TreeWidgetControl` in @bentley/tree-widget-react                                                                             |
+| All drag & drop related APIs            | Third party components. E.g. see this [example](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=drag-and-drop) |
 
 ### @bentley/bentleyjs-core
 
@@ -505,6 +515,10 @@ The @bentley/ui-* and @bentley/presentation-components packages are now dependen
 
 For migration purposes, React 16 is included in the peerDependencies for the packages. React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
 
+### New Timeline Date Marker
+
+The [TimelineComponent]($ui-imodel-components) react component now accepts a property to mark a specific date in a date-based timeline. If the timeline has a defined start date and end date, a date between them can be marked in the timeline by specifying an instance of [TimelineDateMarkerProps]($ui-imodel-components) in the new markDate member of [TimelineComponentProps]($ui-imodel-components). If the date member is left undefined, today's date will be used. The default marker is a short vertical bar, but a ReactNode can be specified in the dateMarker prop to customize the marker's appearance.
+
 ### New Floating Widget Capabilities
 
 Widgets provided via UiItemsProviders may now set `defaultState: WidgetState.Floating` and `isFloatingStateSupported: true` to open
@@ -563,6 +577,26 @@ The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to 
   ```
 
   `width` and `height` props may be calculated dynamically using [ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver) API.
+
+### PropertyGrid - related API Changes
+
+`width` and `height` are now required props for `VirtualizedPropertyGrid` and `VirtualizedPropertyGridWithDataProvider`. Also, `width` is now a required property for `PropertyList`. Previously they were optional and forced us to use non-optimal approach when not provided. Now it's up to the consumer to tell the size of the component. Typical migration:
+
+**Before:**
+
+```tsx
+return <VirtualizedPropertyGrid {...props} />;
+```
+
+**After:**
+
+```tsx
+const width = 100;
+const height = 100;
+return <VirtualizedPropertyGrid width={width} height={height} {...props} />;
+```
+
+`width` and `height` props may be calculated dynamically using [ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver) API.
 
 ### Deprecated Components in Favor of iTwinUI-react Components
 
