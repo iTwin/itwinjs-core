@@ -1217,8 +1217,6 @@ export class ConfigurableUiManager {
     static getWrapperElement(): HTMLElement;
     static initialize(): void;
     static isControlRegistered(classId: string): boolean;
-    static loadContentLayout(layoutProps: ContentLayoutProps): void;
-    static loadContentLayouts(layoutPropsList: ContentLayoutProps[]): void;
     static loadKeyboardShortcuts(shortcutList: KeyboardShortcutProps[]): void;
     // @internal @deprecated
     static loadTasks(taskPropsList: TaskPropsList): void;
@@ -1295,7 +1293,7 @@ export interface ContentControlActivatedEventArgs {
 
 // @public
 export class ContentGroup {
-    constructor(groupProps: (() => ContentGroupProps) | ContentGroupProps);
+    constructor(contentGroupProps: ContentGroupProps);
     clearContentControls(): void;
     // (undocumented)
     contentPropsList: ContentProps[];
@@ -1324,7 +1322,7 @@ export class ContentGroup {
 export interface ContentGroupProps {
     contents: ContentProps[];
     id: string;
-    layout: string | ContentLayoutProps;
+    layout: ContentLayoutProps;
 }
 
 // @public
@@ -1395,9 +1393,6 @@ export class ContentLayoutManager {
         contentGroupId: string;
         layoutId: string;
     }): string;
-    static getLayoutPropsForGroup(contentGroupProps: ContentGroupProps | ContentGroup): ContentLayoutProps;
-    static loadLayout(layoutProps: ContentLayoutProps): void;
-    static loadLayouts(layoutPropsList: ContentLayoutProps[]): void;
     static refreshActiveLayout(): void;
     static setActiveContentGroup(contentGroup: ContentGroup): Promise<void>;
     static setActiveLayout(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): Promise<void>;
