@@ -8,7 +8,7 @@ import { useResizeDetector } from "react-resize-detector";
 import { BeEvent, Id64Array, Id64String } from "@bentley/bentleyjs-core";
 import { IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@bentley/imodeljs-frontend";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
-import { FilteringInput, SelectableContent, SelectionMode } from "@bentley/ui-components";
+import { FilteringInput, FilteringInputStatus, SelectableContent, SelectionMode } from "@bentley/ui-components";
 import { Icon, WebFontIcon } from "@bentley/ui-core";
 import {
   CategoryTree, ClassGroupingOption, CommandItemDef, ConfigurableCreateInfo, ModelsTree, ModelsTreeSelectionPredicate, toggleAllCategories,
@@ -181,7 +181,7 @@ function CategoriesTreeComponent(props: CategoriesTreeComponentProps) {
 
 interface ToolbarProps {
   searchOptions?: {
-    isFiltering: boolean;
+    filteringStatus: FilteringInputStatus;
     onFilterCancel: () => void;
     onFilterStart: (newFilter: string) => void;
     onResultSelectedChanged: (index: number) => void;
@@ -198,7 +198,7 @@ function Toolbar(props: ToolbarProps) {
       </div>
       {props.searchOptions && <div className="tree-toolbar-searchbox">
         <FilteringInput
-          filteringInProgress={props.searchOptions.isFiltering}
+          status={props.searchOptions.filteringStatus}
           onFilterCancel={props.searchOptions.onFilterCancel}
           onFilterClear={props.searchOptions.onFilterCancel}
           onFilterStart={props.searchOptions.onFilterStart}
@@ -238,10 +238,14 @@ const useTreeFilteringState = () => {
     setMatchedResultCount(matches);
   }, []);
 
-  const isFiltering = !!filterString && matchedResultCount === undefined;
+  const filteringStatus = !!filterString
+    ? (matchedResultCount === undefined)
+      ? FilteringInputStatus.FilteringInProgress
+      : FilteringInputStatus.FilteringFinished
+    : FilteringInputStatus.ReadyToFilter;
   return {
     searchOptions: {
-      isFiltering,
+      filteringStatus,
       onFilterCancel,
       onFilterStart,
       onResultSelectedChanged,

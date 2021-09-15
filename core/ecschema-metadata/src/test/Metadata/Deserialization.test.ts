@@ -5,7 +5,7 @@
 
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
-import { DOMParser } from "xmldom";
+import { DOMParser } from "@xmldom/xmldom";
 import { SchemaContext } from "../../Context";
 import { SchemaReadHelper } from "../../Deserialization/Helper";
 import { JsonParser } from "../../Deserialization/JsonParser";

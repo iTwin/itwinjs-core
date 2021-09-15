@@ -683,7 +683,7 @@ export class CloudStorageTileUploader {
     // (undocumented)
     get activeUploads(): Iterable<Promise<void>>;
     // (undocumented)
-    cacheTile(tokenProps: IModelRpcProps, treeId: string, contentId: string, content: Uint8Array, guid: string | undefined, metadata?: object): void;
+    cacheTile(tokenProps: IModelRpcProps, treeId: string, contentId: string, content: Uint8Array, guid: string | undefined, metadata?: object): Promise<void>;
     }
 
 // @beta (undocumented)
@@ -2313,6 +2313,8 @@ export namespace IModelDb {
     // @internal (undocumented)
     export class Tiles {
         constructor(_iModel: IModelDb);
+        // (undocumented)
+        getTileContent(requestContext: ClientRequestContext, treeId: string, tileId: string): Promise<Uint8Array>;
         // (undocumented)
         requestTileContent(requestContext: ClientRequestContext, treeId: string, tileId: string): Promise<IModelJsNative.TileContent>;
         // (undocumented)
