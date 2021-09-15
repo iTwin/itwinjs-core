@@ -10,14 +10,14 @@ import { IModelData } from "../../common/Settings";
 
 export class IModelSession {
 
-  public contextId: string;
+  public iTwinId: string;
   public iModelId: string;
   public changesetId?: string;
 
   private _iModel?: CheckpointConnection;
 
-  public constructor(iModelId: string, contextId: string, changesetId?: string) {
-    this.contextId = contextId;
+  public constructor(iModelId: string, iTwinId: string, changesetId?: string) {
+    this.iTwinId = iTwinId;
     this.iModelId = iModelId;
     this.changesetId = changesetId;
   }
@@ -60,7 +60,7 @@ export class IModelSession {
       const env = process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION;
       // eslint-disable-next-line no-console
       console.log(`Environment: ${env}`);
-      this._iModel = await CheckpointConnection.openRemote(this.contextId, this.iModelId);
+      this._iModel = await CheckpointConnection.openRemote(this.iTwinId, this.iModelId);
       expect(this._iModel).to.exist;
     } catch (e) {
       throw new Error(`Failed to open test iModel. Error: ${e.message}`);

@@ -397,10 +397,10 @@ export class BriefcaseDb extends IModelDb {
     });
     // (undocumented)
     readonly briefcaseId: BriefcaseId;
-    get contextId(): GuidString;
     // (undocumented)
     static findByKey(key: string): BriefcaseDb;
     get isBriefcase(): boolean;
+    get iTwinId(): GuidString;
     static readonly onOpen: BeEvent<(_args: OpenBriefcaseArgs) => void>;
     static readonly onOpened: BeEvent<(_iModelDb: BriefcaseDb, _args: OpenBriefcaseArgs) => void>;
     static open(args: OpenBriefcaseArgs): Promise<BriefcaseDb>;
@@ -683,7 +683,7 @@ export class CloudStorageTileUploader {
     // (undocumented)
     get activeUploads(): Iterable<Promise<void>>;
     // (undocumented)
-    cacheTile(tokenProps: IModelRpcProps, treeId: string, contentId: string, content: Uint8Array, guid: string | undefined, metadata?: object): void;
+    cacheTile(tokenProps: IModelRpcProps, treeId: string, contentId: string, content: Uint8Array, guid: string | undefined, metadata?: object): Promise<void>;
     }
 
 // @beta (undocumented)
@@ -2313,6 +2313,8 @@ export namespace IModelDb {
     // @internal (undocumented)
     export class Tiles {
         constructor(_iModel: IModelDb);
+        // (undocumented)
+        getTileContent(requestContext: ClientRequestContext, treeId: string, tileId: string): Promise<Uint8Array>;
         // (undocumented)
         requestTileContent(requestContext: ClientRequestContext, treeId: string, tileId: string): Promise<IModelJsNative.TileContent>;
         // (undocumented)

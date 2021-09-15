@@ -11,7 +11,7 @@ import { AccuDrawCommandItems } from "./AccuDrawCommandItems";
 import { FrameworkAccuDraw } from "./FrameworkAccuDraw";
 
 /** Default AccuDraw Keyboard Shortcuts
- * @alpha
+ * @beta
  */
 export class AccuDrawKeyboardShortcuts {
   /** Get default AccuDraw Keyboard Shortcuts list.

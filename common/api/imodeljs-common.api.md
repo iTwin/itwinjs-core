@@ -4138,9 +4138,6 @@ export abstract class IModel implements IModelProps {
     cartographicToSpatialFromEcef(cartographic: Cartographic, result?: Point3d): Point3d;
     // (undocumented)
     changeset: ChangesetIdWithIndex;
-    get contextId(): GuidString | undefined;
-    // @internal (undocumented)
-    protected _contextId?: GuidString;
     static readonly dictionaryId: Id64String;
     get ecefLocation(): EcefLocation | undefined;
     set ecefLocation(ecefLocation: EcefLocation | undefined);
@@ -4164,6 +4161,9 @@ export abstract class IModel implements IModelProps {
     // (undocumented)
     abstract get isOpen(): boolean;
     abstract get isSnapshot(): boolean;
+    get iTwinId(): GuidString | undefined;
+    // @internal (undocumented)
+    protected _iTwinId?: GuidString;
     get key(): string;
     get name(): string;
     set name(name: string);
@@ -4296,8 +4296,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
 // @public
 export interface IModelRpcOpenProps {
     readonly changeset?: ChangesetIdWithIndex;
-    readonly contextId?: GuidString;
     readonly iModelId?: GuidString;
+    readonly iTwinId?: GuidString;
 }
 
 // @public
@@ -4310,7 +4310,7 @@ export { IModelStatus }
 // @public (undocumented)
 export abstract class IModelTileRpcInterface extends RpcInterface {
     // @internal
-    generateTileContent(_rpcProps: IModelRpcProps, _treeId: string, _contentId: string, _guid: string | undefined): Promise<Uint8Array>;
+    generateTileContent(_rpcProps: IModelRpcProps, _treeId: string, _contentId: string, _guid: string | undefined): Promise<TileContentSource>;
     // (undocumented)
     static getClient(): IModelTileRpcInterface;
     // @beta (undocumented)
@@ -4325,10 +4325,10 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     queryVersionInfo(): Promise<TileVersionInfo>;
     // @internal
     requestElementGraphics(_rpcProps: IModelRpcProps, _request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
-    // @internal @deprecated (undocumented)
-    requestTileContent(iModelToken: IModelRpcProps, treeId: string, contentId: string, isCanceled?: () => boolean, guid?: string): Promise<Uint8Array>;
     // @internal (undocumented)
     requestTileTreeProps(_tokenProps: IModelRpcProps, _id: string): Promise<IModelTileTreeProps>;
+    // @internal
+    retrieveTileContent(_rpcProps: IModelRpcProps, _key: TileContentIdentifier): Promise<Uint8Array>;
 }
 
 // @internal
@@ -8158,6 +8158,14 @@ export interface TileContentMetadata {
     readonly isLeaf: boolean;
     // (undocumented)
     readonly sizeMultiplier?: number;
+}
+
+// @internal (undocumented)
+export enum TileContentSource {
+    // (undocumented)
+    Backend = 0,
+    // (undocumented)
+    ExternalCache = 1
 }
 
 // @internal

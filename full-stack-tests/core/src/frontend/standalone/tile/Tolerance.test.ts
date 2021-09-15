@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { ByteStream } from "@bentley/bentleyjs-core";
 import { Range3d, Range3dProps } from "@bentley/geometry-core";
 import {
-  BatchType, computeChildTileProps, computeTileChordTolerance, ContentIdProvider, defaultTileOptions, ImdlHeader, IModelTileRpcInterface, iModelTileTreeIdToString,
+  BatchType, computeChildTileProps, computeTileChordTolerance, ContentIdProvider, defaultTileOptions, ImdlHeader, iModelTileTreeIdToString,
   TileMetadata, TileProps, TileTreeMetadata,
 } from "@bentley/imodeljs-common";
 import {
@@ -59,8 +59,16 @@ describe("Tile tolerance", () => {
   }
 
   async function expectTolerance(contentId: string, expectedTolerance: number, epsilon = 0.000001): Promise<void> {
-    const content = await IModelTileRpcInterface.getClient().generateTileContent(imodel.getRpcProps(), treeId, contentId, undefined);
-    const stream = new ByteStream(content.buffer);
+    const tile = {
+      iModelTree: {
+        iModel: imodel,
+        geometryGuid: undefined,
+        contentIdQualifier: undefined,
+        id: treeId,
+      },
+      contentId,
+    } as IModelTile;
+    const stream = new ByteStream((await IModelApp.tileAdmin.generateTileContent(tile)).buffer);
     const header = new ImdlHeader(stream);
     expect(header.isValid).to.be.true;
     expect(header.isReadableVersion).to.be.true;

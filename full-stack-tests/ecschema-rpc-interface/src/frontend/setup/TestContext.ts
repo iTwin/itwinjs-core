@@ -19,7 +19,7 @@ export class TestContext {
   public adminUserAccessToken!: AccessToken;
 
   public iModelWithChangesets?: IModelSession;
-  public contextId?: string;
+  public iTwinId?: string;
 
   public settings: Settings;
 
@@ -71,7 +71,7 @@ export class TestContext {
 
     const requestContext = new AuthorizedFrontendRequestContext(this.adminUserAccessToken);
     this.iModelWithChangesets = await IModelSession.create(requestContext, iModelData);
-    this.contextId = this.iModelWithChangesets.contextId;
+    this.iTwinId = this.iModelWithChangesets.iTwinId;
 
     this.initializeRpcInterfaces({ title: this.settings.Backend.name, version: this.settings.Backend.version });
 
