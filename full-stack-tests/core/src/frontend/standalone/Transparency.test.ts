@@ -77,6 +77,8 @@ class TransparencyDecorator {
       wantNormals: false,
       generateEdges: false,
     });
+
+    builder.activateGraphicParams(gfParams);
     builder.addShape(pts);
 
     this._graphics.push(vp.target.renderSystem.createGraphicOwner(builder.finish()));
