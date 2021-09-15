@@ -108,6 +108,8 @@ export interface PickableGraphicOptions extends BatchOptions {
 }
 
 /** Options for creating a [[GraphicBuilder]] used by functions like [[DecorateContext.createGraphic]] and [[RenderSystem.createGraphic]].
+ * @see [[ViewportGraphicBuilderOptions]] to create a graphic builder for a [[Viewport]].
+ * @see [[CustomGraphicBuilderOptions]] to create a graphic builder unassociated with any [[Viewport]].
  * @public
  */
 export interface GraphicBuilderOptions {
@@ -139,7 +141,7 @@ export interface GraphicBuilderOptions {
   /** Controls whether edges are generated for surfaces.
    * Edges are only displayed if [ViewFlags.renderMode]($common) is not [RenderMode.SmoothShade]($common) or [ViewFlags.visibleEdges]($common) is `true`.
    * Since all decoration graphics except [[GraphicType.Scene]] are drawn in smooth shaded mode with no visible edges, by default edges are only produced for scene graphics, and
-   * only if [ViewFlags.edgesRequired]($common) is true for the [[viewport]].
+   * - if a [[Viewport]] is supplied with the options - only if [ViewFlags.edgesRequired]($common) is true for the viewport.
    * That default can be overridden by explicitly specifying `true` or `false`. This can be useful for non-scene decorations contained in a [[GraphicBranch]] that applies [ViewFlagOverrides]($common)
    * that change the edge display settings; or for scene decorations that might be cached for reuse after the viewport's edge settings are changed.
    * @note Edges will tend to z-fight with their surfaces unless the graphic is [[pickable]].
@@ -147,27 +149,50 @@ export interface GraphicBuilderOptions {
   generateEdges?: boolean;
 }
 
+/** Options for creating a [[GraphicBuilder]] to produce a [[RenderGraphic]] to be displayed in a specific [[Viewport]].
+ * The level of detail of the graphic will be computed from the position of its geometry within the viewport's [Frustum]($common).
+ * Default values for [[GraphicBuilderOptions.wantNormals]] and [[GraphicBuilderOptions.generateEdges]] will be determined by the viewport's [ViewFlags]($common).
+ * The [[GraphicBuilder.iModel]] will be set to the viewport's [[IModelConnection]].
+ * @public
+ */
 export interface ViewportGraphicBuilderOptions extends GraphicBuilderOptions {
-  iModel?: never;
-  computeChordTolerance?: never;
-  /** The viewport in which the resultant [[RenderGraphic]] is to be drawn, used for calculating the graphic's level of detail. */
+  /** The viewport in which the resultant [[RenderGraphic]] is to be drawn. */
   viewport: Viewport;
 
   /** If true, [[ViewState.getAspectRatioSkew]] will be taken into account when computing the level of detail for the produced graphics. */
   applyAspectRatioSkew?: boolean;
+
+  iModel?: never;
+  computeChordTolerance?: never;
 }
 
+/** Arguments used to compute the chord tolerance (level of detail) of the [[RenderGraphics]] produced by a [[GraphicBuilder]].
+ * Generally, the chord tolerance should be roughly equivalent to the size in meters of one pixel on screen where the graphic is to be displayed.
+ * For [[GraphicType.ViewOverlay]] and [[GraphicType.ViewBackground]], which already define their geometry in pixels, the chord tolerance should typically be 1.
+ * @see [[CustomGraphicBuilderOptions.computeChordTolerance]].
+ * @public
+ */
 export interface ComputeChordToleranceArgs {
+  /** The graphic builder being used to produce the graphics. */
   readonly graphic: GraphicBuilder;
+  /** A function that computes a range enclosing all of the geometry that was added to the builder. */
   readonly computeRange: () => Range3d;
 }
 
-/** @internal */
+/** Options for creating a [[GraphicBuilder]] to produce a [[RenderGraphic]] that is not associated with any particular [[Viewport]] and may not be associated with
+ * any particular [[IModelConnection]].
+ * This is primarily useful when the same graphic is to be saved and reused for display in multiple viewports and for which a chord tolerance can be computed
+ * independently of each viewport's [Frustum]($common).
+ * @public
+ */
 export interface CustomGraphicBuilderOptions extends GraphicBuilderOptions {
+  /** Optionally, the IModelConnection with which the graphic is associated. */
+  iModel?: IModelConnection;
+  /** A function that can compute the level of detail for the graphics produced by the builder. */
+  computeChordTolerance: (args: ComputeChordToleranceArgs) => number;
+
   applyAspectRatioSkew?: never;
   viewport?: never;
-  iModel?: IModelConnection;
-  computeChordTolerance: (args: ComputeChordToleranceArgs) => number;
 }
 
 /** Provides methods for constructing a [[RenderGraphic]] from geometric primitives.
