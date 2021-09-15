@@ -13,7 +13,9 @@ import {
   ActionButtonRendererProps, PropertyGridContextMenuArgs, useAsyncValue, VirtualizedPropertyGridWithDataProvider,
   VirtualizedPropertyGridWithDataProviderProps,
 } from "@bentley/ui-components";
-import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Icon, Orientation } from "@bentley/ui-core";
+import {
+  ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Icon, Orientation, ResizableContainerObserver,
+} from "@bentley/ui-core";
 import { ConfigurableCreateInfo, ConfigurableUiManager, FrameworkVersionSwitch, WidgetControl } from "@bentley/ui-framework";
 
 export class UnifiedSelectionPropertyGridWidgetControl extends WidgetControl {
@@ -35,6 +37,7 @@ export interface State {
   dataProvider: PresentationPropertyDataProvider;
   contextMenu?: PropertyGridContextMenuArgs;
   contextMenuItemInfos?: ContextMenuItemInfo[];
+  gridSize?: { width: number, height: number };
 }
 
 class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectionPropertyGridWidgetProps, State> {
@@ -146,24 +149,33 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
     );
   };
 
+  private _onPropertyGridResize = (width: number, height: number) => {
+    this.setState({ gridSize: { width, height } });
+  };
+
   public override render() {
     const actionButtonRenderers = [this._favoriteActionButtonRenderer];
     if (this.props.iModelConnection) {
-      const element = <>
+      const element = (this.state.gridSize?.width && this.state.gridSize.height) ? <>
         <UnifiedSelectionPropertyGrid
           dataProvider={this.state.dataProvider}
           orientation={Orientation.Horizontal}
+          width={this.state.gridSize.width}
+          height={this.state.gridSize.height}
           isPropertyHoverEnabled={true}
           onPropertyContextMenu={this._onPropertyContextMenu}
           actionButtonRenderers={actionButtonRenderers}
         />
         {this.renderContextMenu()}
-      </>;
+      </> : null;
       return (
-        <FrameworkVersionSwitch
-          v1={<div style={{ height: "100%" }}>{element}</div>}
-          v2={<div style={{ height: "100%", width: "100%", position: "absolute" }}>{element}</div>}
-        />
+        <>
+          <FrameworkVersionSwitch
+            v1={<div style={{ height: "100%" }}>{element}</div>}
+            v2={<div style={{ height: "100%", width: "100%", position: "absolute" }}>{element}</div>}
+          />
+          <ResizableContainerObserver onResize={this._onPropertyGridResize} />
+        </>
       );
     }
 

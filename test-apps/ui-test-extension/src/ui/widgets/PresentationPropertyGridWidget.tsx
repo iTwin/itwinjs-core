@@ -13,7 +13,7 @@ import {
   ActionButtonRendererProps, PropertyGridContextMenuArgs, useAsyncValue, VirtualizedPropertyGridWithDataProvider,
   VirtualizedPropertyGridWithDataProviderProps,
 } from "@bentley/ui-components";
-import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Icon, Orientation } from "@bentley/ui-core";
+import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Icon, Orientation, ResizableContainerObserver } from "@bentley/ui-core";
 import { ConfigurableCreateInfo, useActiveIModelConnection, useFrameworkVersion, WidgetControl } from "@bentley/ui-framework";
 import { ExtensionUiItemsProvider } from "../ExtensionUiItemsProvider";
 
@@ -171,13 +171,18 @@ export function PresentationPropertyGridWidget() {
     return null;
   }, [dataProvider, iModelConnection]);
 
+  const [gridSize, setGridSize] = React.useState<{width: number, height: number}>();
+  const onGridResize = React.useCallback((width, height) => setGridSize({ width, height }), []);
+
   return (
     <div data-component-id={componentId} style={style}>
-      {dataProvider &&
+      {dataProvider && gridSize?.width && gridSize.height &&
         <>
           <PresentationPropertyGrid
             dataProvider={dataProvider}
             orientation={Orientation.Horizontal}
+            width={gridSize.width}
+            height={gridSize.height}
             isPropertyHoverEnabled={true}
             onPropertyContextMenu={onPropertyContextMenu}
             actionButtonRenderers={[favoriteActionButtonRenderer]}
@@ -206,6 +211,7 @@ export function PresentationPropertyGridWidget() {
           }
         </>
       }
+      <ResizableContainerObserver onResize={onGridResize} />
     </div>
   );
 }

@@ -64,7 +64,7 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
 
   /* retrieve imodel thumbnail and version information on mount */
   public override async componentDidMount() {
-    const projectId = this.props.iModelConnection.contextId!;
+    const projectId = this.props.iModelConnection.iTwinId!;
     const iModelId = this.props.iModelConnection.iModelId!;
 
     await this.startRetrieveThumbnail(projectId, iModelId);
@@ -99,11 +99,11 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
   private async startRetrieveIModelInfo() {
     const hubClient: IModelClient = new IModelHubClient();
     const requestContext: AuthorizedFrontendRequestContext = await AuthorizedFrontendRequestContext.create();
-    const contextId = this.props.iModelConnection.contextId!;
+    const iTwinId = this.props.iModelConnection.iTwinId!;
     const iModelId = this.props.iModelConnection.iModelId!;
 
     /* get the iModel name */
-    const imodels = await hubClient.iModels.get(requestContext, contextId, new IModelQuery().byId(iModelId));
+    const imodels = await hubClient.iModels.get(requestContext, iTwinId, new IModelQuery().byId(iModelId));
 
     /* get the top named version */
     const _versions: Version[] = await hubClient.versions.get(requestContext, iModelId, new VersionQuery().top(1));
@@ -166,7 +166,7 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
   /* render the 3d Models tab */
   private _render3dModels = () => {
     return (<ModelsTab key={2} iModelConnection={this.props.iModelConnection}
-      showFlatList={true} onEnter={this._onEnter} showToast={false} />);
+      onEnter={this._onEnter} showToast={false} />);
   };
 
   private _renderWaiting() {

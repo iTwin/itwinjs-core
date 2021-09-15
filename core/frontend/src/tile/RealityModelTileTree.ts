@@ -124,7 +124,7 @@ const scratchRay = Ray3d.createXAxis();
 
 /** @internal */
 export class RealityTileRegion {
-  constructor(values: { minLongitude: number, minLatitude: number, minHeight: number, maxLongitude: number, maxLatitude: number, maxHeight: number}) {
+  constructor(values: { minLongitude: number, minLatitude: number, minHeight: number, maxLongitude: number, maxLatitude: number, maxHeight: number }) {
     this.minLongitude = values.minLongitude;
     this.minLatitude = values.minLatitude;
     this.minHeight = values.minHeight;
@@ -146,13 +146,13 @@ export class RealityTileRegion {
     const maxLongitude = region[2];
     const minLatitude = Cartographic.parametricLatitudeFromGeodeticLatitude(region[1]);
     const maxLatitude = Cartographic.parametricLatitudeFromGeodeticLatitude(region[3]);
-    return new RealityTileRegion({minLongitude, minLatitude, minHeight, maxLongitude, maxLatitude, maxHeight});
+    return new RealityTileRegion({ minLongitude, minLatitude, minHeight, maxLongitude, maxLatitude, maxHeight });
   }
 
   public static isGlobal(boundingVolume: any) {
     return Array.isArray(boundingVolume?.region) && (boundingVolume.region[2] - boundingVolume.region[0]) > Angle.piRadians && (boundingVolume.region[3] - boundingVolume.region[1]) > Angle.piOver2Radians;
   }
-  public getRange(): {range: Range3d, corners?: Point3d[] } {
+  public getRange(): { range: Range3d, corners?: Point3d[] } {
     const maxAngle = Math.max(Math.abs(this.maxLatitude - this.minLatitude), Math.abs(this.maxLongitude - this.minLongitude));
     let corners;
     let range: Range3d;
@@ -176,13 +176,13 @@ export class RealityTileRegion {
       range = minEllipsoid.patchRangeStartEndRadians(this.minLongitude, this.maxLongitude, this.minLatitude, this.maxLatitude);
       range.extendRange(maxEllipsoid.patchRangeStartEndRadians(this.minLongitude, this.maxLongitude, this.minLatitude, this.maxLatitude));
     }
-    return { range, corners};
+    return { range, corners };
   }
 }
 
 /** @internal */
 export class RealityModelTileUtils {
-  public static rangeFromBoundingVolume(boundingVolume: any): { range: Range3d, corners?: Point3d[], region?: RealityTileRegion  } | undefined {
+  public static rangeFromBoundingVolume(boundingVolume: any): { range: Range3d, corners?: Point3d[], region?: RealityTileRegion } | undefined {
     if (undefined === boundingVolume)
       return undefined;
 
@@ -640,7 +640,7 @@ export namespace RealityModelTileTree {
     if (!url)
       throw new IModelError(BentleyStatus.ERROR, "Unable to read reality data");
     const accessToken = await getAccessToken();
-    const tileClient = new RealityModelTileClient(url, accessToken, iModel.contextId);
+    const tileClient = new RealityModelTileClient(url, accessToken, iModel.iTwinId);
     const json = await tileClient.getRootDocument(url);
     let rootTransform = iModel.ecefLocation ? iModel.getMapEcefToDb(0) : Transform.createIdentity();
     const geoConverter = iModel.noGcsDefined ? undefined : iModel.geoServices.getConverter("WGS84");
@@ -840,10 +840,10 @@ export class RealityModelTileClient {
 
   // ###TODO we should be able to pass the projectId / tileId directly, instead of parsing the url
   // But if the present can also be used by non PW Context Share stored data then the url is required and token is not. Possibly two classes inheriting from common interface.
-  constructor(url: string, accessToken?: AccessToken, contextId?: string) {
+  constructor(url: string, accessToken?: AccessToken, iTwinId?: string) {
     this.rdsProps = this.parseUrl(url); // Note that returned is undefined if url does not refer to a PW Context Share reality data.
-    if (contextId && this.rdsProps)
-      this.rdsProps.projectId = contextId;
+    if (iTwinId && this.rdsProps)
+      this.rdsProps.projectId = iTwinId;
     this._token = accessToken;
   }
 

@@ -34,17 +34,17 @@ const rotationModeToKeyMap = new Map<RotationMode, string>([
 ]);
 
 /** Arguments for [[AccuDrawSetFieldFocusEvent]]
- * @alpha */
+ * @beta */
 export interface AccuDrawSetFieldFocusEventArgs {
   field: ItemField;
 }
 
 /** AccuDraw Set Field Focus event
- * @alpha */
+ * @beta */
 export class AccuDrawSetFieldFocusEvent extends BeUiEvent<AccuDrawSetFieldFocusEventArgs> { }
 
 /** Arguments for [[AccuDrawSetFieldValueToUiEvent]]
- * @alpha */
+ * @beta */
 export interface AccuDrawSetFieldValueToUiEventArgs {
   field: ItemField;
   value: number;
@@ -52,51 +52,51 @@ export interface AccuDrawSetFieldValueToUiEventArgs {
 }
 
 /** AccuDraw Set Field Value to Ui event
- * @alpha */
+ * @beta */
 export class AccuDrawSetFieldValueToUiEvent extends BeUiEvent<AccuDrawSetFieldValueToUiEventArgs> { }
 
 /** Arguments for [[AccuDrawSetFieldValueFromUiEvent]]
- * @alpha */
+ * @beta */
 export interface AccuDrawSetFieldValueFromUiEventArgs {
   field: ItemField;
   stringValue: string;
 }
 
 /** AccuDraw Set Field Value from Ui event
- * @alpha */
+ * @beta */
 export class AccuDrawSetFieldValueFromUiEvent extends BeUiEvent<AccuDrawSetFieldValueFromUiEventArgs> { }
 
 /** Arguments for [[AccuDrawSetFieldLockEvent]]
- * @alpha */
+ * @beta */
 export interface AccuDrawSetFieldLockEventArgs {
   field: ItemField;
   lock: boolean;
 }
 
 /** AccuDraw Set Field Lock event
- * @alpha */
+ * @beta */
 export class AccuDrawSetFieldLockEvent extends BeUiEvent<AccuDrawSetFieldLockEventArgs> { }
 
 /** Arguments for [[AccuDrawSetCompassModeEvent]]
- * @alpha */
+ * @beta */
 export interface AccuDrawSetCompassModeEventArgs {
   mode: CompassMode;
 }
 
 /** AccuDraw Set Compass Mode event
- * @alpha */
+ * @beta */
 export class AccuDrawSetCompassModeEvent extends BeUiEvent<AccuDrawSetCompassModeEventArgs> { }
 
 /** AccuDraw Grab Input Focus event
- * @alpha */
+ * @beta */
 export class AccuDrawGrabInputFocusEvent extends BeUiEvent<{}> { }
 
 /** AccuDraw Ui Settings Changed event
- * @alpha */
+ * @beta */
 export class AccuDrawUiSettingsChangedEvent extends BeUiEvent<{}> { }
 
 /** Implementation of AccuDraw that sends events for UI and status changes
- * @alpha
+ * @beta
  */
 export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider {
   private static _displayNotifications = false;

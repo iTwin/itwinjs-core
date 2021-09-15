@@ -184,7 +184,7 @@ describe("PropertyDataProvider", () => {
       projectId = "project-id";
       imodelId = "imodel-id";
       imodelMock.setup((x) => x.iModelId).returns(() => imodelId);
-      imodelMock.setup((x) => x.contextId).returns(() => projectId);
+      imodelMock.setup((x) => x.iTwinId).returns(() => projectId);
 
       favoritePropertiesManagerMock.setup((x) => x.has(moq.It.isAny(), imodelMock.object, moq.It.isAny())).returns(() => false);
     });

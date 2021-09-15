@@ -3,12 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { BeInspireTree, DelayLoadedTreeNodeItem, ITreeDataProvider, PageOptions, DEPRECATED_Tree as Tree, TreeNodeItem } from "../../ui-components";
+import { DelayLoadedTreeNodeItem, ITreeDataProvider, PageOptions, TreeNodeItem } from "../../ui-components";
 import { ResolvablePromise } from "../test-helpers/misc";
-
-/* eslint-disable deprecation/deprecation */
-
-/* eslint-disable deprecation/deprecation */
 
 /** @internal */
 export interface TestTreeHierarchyNode {
@@ -87,35 +83,4 @@ export class TestTreeDataProvider implements ITreeDataProvider {
 
     return this._findNode(parent.id).children || [];
   };
-}
-
-/** @internal */
-export async function initializeTree(hierarchy: Node[], pageSize = 1): Promise<BeInspireTree<TreeNodeItem>> {
-  const tree = new BeInspireTree<TreeNodeItem>({
-    dataProvider: new TestTreeDataProvider(createTestTreeHierarchy(hierarchy)),
-    mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem,
-    pageSize,
-  });
-  await tree.ready;
-
-  return tree;
-}
-
-/** @internal */
-export interface Node {
-  id: number;
-  children?: Node[];
-}
-
-function createTestTreeHierarchy(hierarchy: Node[]): TestTreeHierarchyNode[] {
-  const testTreeHierarchy: TestTreeHierarchyNode[] = [];
-  for (const node of hierarchy) {
-    if (!node.children) {
-      testTreeHierarchy.push({ id: node.id.toString() });
-    } else {
-      testTreeHierarchy.push({ id: node.id.toString(), autoExpand: true, children: createTestTreeHierarchy(node.children) });
-    }
-  }
-
-  return testTreeHierarchy;
 }

@@ -8,15 +8,15 @@
 
 import "./Table.scss";
 import "../columnfiltering/ColumnFiltering.scss";
-import classnamesDedupe from "classnames/dedupe";
 import classnames from "classnames";
+import classnamesDedupe from "classnames/dedupe";
 import { memoize } from "lodash";
 import * as React from "react";
 import { DisposableList, Guid, GuidString } from "@bentley/bentleyjs-core";
 import { PropertyValueFormat } from "@bentley/ui-abstract";
 import {
-  CommonProps, Dialog, ElementResizeObserver, isNavigationKey, ItemKeyboardNavigator, LocalSettingsStorage,
-  Orientation, SortDirection, Timer, UiSettings, UiSettingsStatus, UiSettingsStorage,
+  CommonProps, Dialog, ElementResizeObserver, isNavigationKey, ItemKeyboardNavigator, LocalSettingsStorage, Orientation, SortDirection, Timer,
+  UiSettings, UiSettingsStatus, UiSettingsStorage,
 } from "@bentley/ui-core";
 import {
   MultiSelectionHandler, OnItemsDeselectedCallback, OnItemsSelectedCallback, SelectionHandler, SingleSelectionHandler,
@@ -29,10 +29,10 @@ import { TableRowStyleProvider } from "../../properties/ItemStyle";
 import { PropertyDialogState, PropertyValueRendererManager } from "../../properties/ValueRendererManager";
 import { CompositeFilterDescriptorCollection, FilterCompositionLogicalOperator } from "../columnfiltering/ColumnFiltering";
 import { MultiSelectFilter } from "../columnfiltering/data-grid-addons/MultiSelectFilter";
-import { MultiValueFilter } from "../columnfiltering/multi-value-filter/MultiValueFilter";
 import { NumericFilter } from "../columnfiltering/data-grid-addons/NumericFilter";
 import { SingleSelectFilter } from "../columnfiltering/data-grid-addons/SingleSelectFilter";
 import { DataGridFilterParser, ReactDataGridFilter } from "../columnfiltering/DataGridFilterParser";
+import { MultiValueFilter } from "../columnfiltering/multi-value-filter/MultiValueFilter";
 import { TableFilterDescriptorCollection } from "../columnfiltering/TableFilterDescriptorCollection";
 import { CellItem, ColumnDescription, FilterRenderer, RowItem, TableDataProvider } from "../TableDataProvider";
 import { DragDropHeaderCell } from "./DragDropHeaderCell";
