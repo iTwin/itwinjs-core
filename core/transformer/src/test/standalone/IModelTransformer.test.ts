@@ -6,11 +6,12 @@ import { DbResult, Guid, Id64, Id64String, Logger, LogLevel, OpenMode } from "@b
 import { Point3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
   BackendRequestContext, CategorySelector, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element, ElementMultiAspect,
-  ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, ExtensiveTestScenario, ExternalSourceAspect, GenericPhysicalMaterial, IModelCloneContext, IModelDb,
-  IModelHost, IModelJsFs, IModelSchemaLoader, IModelTestUtils, InformationRecordModel, InformationRecordPartition, KnownTestLocations, LinkElement, Model, ModelSelector,
+  ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial, IModelCloneContext, IModelDb,
+  IModelHost, IModelJsFs, IModelSchemaLoader, InformationRecordModel, InformationRecordPartition, LinkElement, Model, ModelSelector,
   OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, Schema, SnapshotDb,
   SpatialCategory, StandaloneDb, Subject
 } from "@bentley/imodeljs-backend";
+import { ExtensiveTestScenario, IModelTestUtils, KnownTestLocations } from "@bentley/imodeljs-backend/lib/cjs/test";
 import {
   AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps, ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d
 } from "@bentley/imodeljs-common";

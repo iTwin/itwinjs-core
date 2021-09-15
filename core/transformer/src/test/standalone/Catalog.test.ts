@@ -8,10 +8,11 @@ import { Angle, Point2d, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@
 import {
   BackendRequestContext, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel,
   DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element, ElementOwnsChildElements, EntityClassType,
-  IModelDb, IModelJsFs, IModelTestUtils, KnownTestLocations, LinkElement, PhysicalElement, PhysicalElementIsOfType, PhysicalModel, PhysicalObject, PhysicalType,
+  IModelDb, IModelJsFs, LinkElement, PhysicalElement, PhysicalElementIsOfType, PhysicalModel, PhysicalObject, PhysicalType,
   RecipeDefinitionElement, RepositoryLink, SnapshotDb, SpatialCategory, TemplateRecipe2d, TemplateRecipe3d,
   TypeDefinitionElement
 } from "@bentley/imodeljs-backend";
+import { IModelTestUtils, KnownTestLocations } from "@bentley/imodeljs-backend/lib/cjs/tests";
 import {
   Code, CodeScopeSpec, DefinitionElementProps, GeometricElement2dProps, GeometryStreamProps, IModel, PhysicalElementProps, Placement2d, Placement3d,
   RepositoryLinkProps, SubCategoryAppearance

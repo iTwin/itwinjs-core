@@ -9,7 +9,6 @@
 import { PopupItem } from "@bentley/ui-components";
 import { CommonProps, Icon, SizeProps, withOnOutsideClick } from "@bentley/ui-core";
 import { containHorizontally, ExpandableItem, Group, GroupColumn, Item, Panel, withContainIn } from "@bentley/ui-ninezone";
-import "@bentley/ui-ninezone/lib/cjs/ui-ninezone/toolbar/item/expandable/group/tool/Tool.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { FrontstageManager } from "../frontstage/FrontstageManager";

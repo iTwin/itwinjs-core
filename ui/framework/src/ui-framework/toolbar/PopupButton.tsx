@@ -9,7 +9,6 @@
 import { ConditionalBooleanValue, ConditionalStringValue, SpecialKey, StringGetter } from "@bentley/ui-abstract";
 import { BadgeUtilities, CommonProps, Icon, SizeProps, withOnOutsideClick } from "@bentley/ui-core";
 import { ExpandableItem, Item } from "@bentley/ui-ninezone";
-import "@bentley/ui-ninezone/lib/cjs/ui-ninezone/toolbar/item/expandable/group/Panel.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { FrontstageManager } from "../frontstage/FrontstageManager";

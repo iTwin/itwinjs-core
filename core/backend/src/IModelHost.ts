@@ -6,19 +6,20 @@
  * @module IModelHost
  */
 
-import * as os from "os";
-import * as path from "path";
-import * as semver from "semver";
 import { HttpRequestHost } from "@bentley/backend-itwin-client";
 import {
-  assert, BeEvent, ClientRequestContext, Guid, GuidString, IModelStatus, Logger, LogLevel, ProcessDetector, SessionProps,
+  assert, BeEvent, ClientRequestContext, Guid, GuidString, IModelStatus, Logger, LogLevel, ProcessDetector, SessionProps
 } from "@bentley/bentleyjs-core";
 import { IModelClient } from "@bentley/imodelhub-client";
 import { BentleyStatus, IModelError, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext, UserInfo } from "@bentley/itwin-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
+import * as os from "os";
+import * as path from "path";
+import * as semver from "semver";
 import { AliCloudStorageService } from "./AliCloudStorageService";
+import { BackendHubAccess } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BackendRequestContext } from "./BackendRequestContext";
 import { BisCoreSchema } from "./BisCoreSchema";
@@ -27,7 +28,6 @@ import { AzureBlobStorage, CloudStorageService, CloudStorageServiceCredentials, 
 import { Config as ConcurrentQueryConfig } from "./ConcurrentQuery";
 import { FunctionalSchema } from "./domains/FunctionalSchema";
 import { GenericSchema } from "./domains/GenericSchema";
-import { BackendHubAccess } from "./BackendHubAccess";
 import { IModelHubBackend } from "./IModelHubBackend";
 import { IModelJsFs } from "./IModelJsFs";
 import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
@@ -250,7 +250,7 @@ export class IModelHost {
   }
 
   private static validateNativePlatformVersion(): void {
-    const requiredVersion = require("../package.json").dependencies["@bentley/imodeljs-native"]; // eslint-disable-line @typescript-eslint/no-var-requires
+    const requiredVersion = require("../../package.json").dependencies["@bentley/imodeljs-native"]; // eslint-disable-line @typescript-eslint/no-var-requires
     const thisVersion = this.platform.version;
     if (semver.satisfies(thisVersion, requiredVersion))
       return;
@@ -329,7 +329,7 @@ export class IModelHost {
     const requestContext = new BackendRequestContext();
     requestContext.enter();
 
-    this.backendVersion = require("../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
+    this.backendVersion = require("../../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
     initializeRpcBackend();
 
     if (this._platform === undefined) {
