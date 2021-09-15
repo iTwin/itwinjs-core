@@ -2,11 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+// SWB
 import "./ProjectTabs.scss";
 import classnames from "classnames";
 import * as React from "react";
 
 /**
+   // SWB
  * Properties for the [[ProjectTab]] component. A temporary tab component.  Do not reuse!
  * @internal
  */
@@ -23,6 +25,7 @@ export interface TabProps {
  * A temporary tab component.  Do not reuse!
  * @internal
  */
+// SWB
 export class ProjectTab extends React.Component<TabProps> {
   public static defaultProps: Partial<TabProps> = {
     label: "",
@@ -63,6 +66,7 @@ export class ProjectTab extends React.Component<TabProps> {
   }
 }
 
+// SWB
 /** Properties for the [[ProjectTabs]] component
  * @internal
  */
@@ -79,6 +83,7 @@ interface TabsState {
  * List of tabs.  Do not reuse!
  * @internal
  */
+// SWB
 export class ProjectTabs extends React.Component<TabsProps, TabsState> {
 
   constructor(props: TabsProps, context?: any) {

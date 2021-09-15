@@ -26,6 +26,7 @@ $pp-max-dropdown-width: 450px;
   user-select: none;
 }
 
+   // SWB
 /* project picker */
 .pp {
   outline: none;
@@ -53,6 +54,7 @@ $pp-max-dropdown-width: 450px;
   }
 }
 
+   // SWB
 /* current project + splitter container */
 .pp-content {
   flex: 1;
@@ -68,6 +70,7 @@ $pp-max-dropdown-width: 450px;
     color: $uicore-blue;
   }
 
+   // SWB
   /* current project number & name */
   > div {
     font-size: $iui-font-size-leading;
@@ -77,11 +80,13 @@ $pp-max-dropdown-width: 450px;
     flex: 1;
     overflow: hidden;
 
+   // SWB
     /* project number */
     .number {
       @extend .text-clip;
     }
 
+   // SWB
     /* project name font is smaller (and add some spacing between number and name) */
     .name {
       @extend .text-clip;
@@ -96,6 +101,7 @@ $pp-max-dropdown-width: 450px;
   transform: rotate(-180deg);
 }
 
+   // SWB
 /* highlight bar below the project picker */
 .pp-highlight {
   flex: initial;
@@ -113,6 +119,7 @@ $pp-max-dropdown-width: 450px;
   transition: transform .5s ease;
 }
 
+   // SWB
 /* dropdown (list of projects) */
 .pp-dropdown {
   color: #444;
@@ -132,6 +139,7 @@ $pp-max-dropdown-width: 450px;
     @include uicore-touch-scrolling;
     @include uicore-scrollbar();
 
+   // SWB
     /* line for each project */
     li {
       display: flex;
@@ -145,6 +153,7 @@ $pp-max-dropdown-width: 450px;
       border-bottom: 1px solid $separator-background;
       box-sizing: border-box;
 
+   // SWB
       /* project number & name */
       .pp-details{
         flex: 1;
@@ -180,6 +189,7 @@ $pp-max-dropdown-width: 450px;
   }
 }
 
+   // SWB
 /* no project MRU's */
 .pp-no-mru {
   display: block;
@@ -210,6 +220,7 @@ $pp-max-dropdown-width: 450px;
   }
 }
 
+   // SWB
 /* project icon */
 .pp-icon {
   font-size: 22px;

@@ -20,6 +20,7 @@ import { ChangeSetInfo, IModelInfo, IModelServices, IModelUserInfo, VersionInfo 
 // istanbul ignore next
 // SWB
 class IModelInfoImpl implements IModelInfo {
+  // SWB
   constructor(public name: string, public description: string, public wsgId: string, public createdDate: Date, public projectInfo: ITwin, public status: string = "", public thumbnail: string | undefined) {
   }
 }
@@ -55,6 +56,7 @@ export class DefaultIModelServices implements IModelServices {
     this._hubClient = new IModelHubClient();
   }
 
+  // SWB
   /** Get all iModels in a project */
   // SWB
   public async getIModels(projectInfo: ITwin, top: number, skip: number): Promise<IModelInfo[]> {

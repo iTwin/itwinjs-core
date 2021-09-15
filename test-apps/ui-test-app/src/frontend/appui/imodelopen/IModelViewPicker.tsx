@@ -110,6 +110,7 @@ export class IModelViewPicker extends React.Component<ViewsProps, ViewsState> {
 
   private async startRetrieveViews() {
     if (this.props.iModelInfo) {
+      // SWB
       const projectInfo = this.props.iModelInfo.projectInfo;
       const iModelWsgId = this.props.iModelInfo.wsgId;
 

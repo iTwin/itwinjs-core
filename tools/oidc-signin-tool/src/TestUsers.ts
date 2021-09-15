@@ -37,6 +37,7 @@ export class TestUsers {
     };
   }
 
+  // SWB What does project mean here?
   /** User with typical permissions of the project administrator - Co-Admin: Yes, Connect-Services-Admin: No */
   public static get manager(): TestUserCredentials {
     return {

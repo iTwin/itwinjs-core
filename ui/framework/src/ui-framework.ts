@@ -281,6 +281,7 @@ export * from "./ui-framework/zones/Zone";
 export * from "./ui-framework/zones/ZoneDef";
 
 /** @docs-package-description
+   // SWB What does project mean here?
  * The ui-framework package contains application fragments for Project, iModel and View selection,
  * and configuration of the application UI with the Backstage, Frontstages, Widgets, etc.
  * For more information, see [learning about ui-framework]($docs/learning/ui/framework/index.md).

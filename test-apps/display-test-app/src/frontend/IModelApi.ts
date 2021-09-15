@@ -8,6 +8,7 @@ import { AuthorizedFrontendRequestContext, CheckpointConnection, IModelHubFronte
 
 export class IModelApi {
 
+   // SWB
   /** Get all iModels in a project */
   // SWB
   public static async getIModelByName(requestContext: AuthorizedFrontendRequestContext, projectId: string, iModelName: string): Promise<HubIModel | undefined> {

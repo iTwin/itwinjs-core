@@ -24,20 +24,25 @@ const FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME = "FavoritePropertiesOrderInfo
  */
 export interface IFavoritePropertiesStorage {
   /** Load Favorite properties from user-specific settings.
+   // SWB
    * @param projectId Project Id, if the settings is specific to a project, otherwise undefined.
+   // SWB
    * @param imodelId iModel Id, if the setting is specific to an iModel, otherwise undefined. The projectId must be specified if iModelId is specified.
    */
   // SWB
   loadProperties(projectId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined>;
   /** Saves Favorite properties to user-specific settings.
    * @param properties Favorite properties to save.
+   // SWB
    * @param projectId Project Id, if the settings is specific to a project, otherwise undefined.
+   // SWB
    * @param iModelId iModel Id, if the setting is specific to an iModel, otherwise undefined. The projectId must be specified if iModelId is specified.
    */
   // SWB
   saveProperties(properties: Set<PropertyFullName>, projectId?: string, imodelId?: string): Promise<void>;
   /** Load array of FavoritePropertiesOrderInfo from user-specific settings.
    * Setting is specific to an iModel.
+   // SWB
    * @param projectId Project Id.
    * @param imodelId iModel Id.
    */
@@ -46,6 +51,7 @@ export interface IFavoritePropertiesStorage {
   /** Saves FavoritePropertiesOrderInfo array to user-specific settings.
    * Setting is specific to an iModel.
    * @param orderInfo Array of FavoritePropertiesOrderInfo to save.
+   // SWB
    * @param projectId Project Id.
    * @param imodelId iModel Id.
    */
@@ -128,7 +134,9 @@ export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropert
   private _connectivityInfo: IConnectivityInformationProvider;
   private _impl: IFavoritePropertiesStorage;
   private _unsubscribeFromConnectivityStatusChangedEvent: () => void;
+  // SWB
   private _propertiesOfflineCache = new DictionaryWithReservations<ProjectAndIModelIdsKey, Set<PropertyFullName>>(projectAndIModelIdsKeyComparer);
+  // SWB
   private _propertiesOrderOfflineCache = new DictionaryWithReservations<ProjectAndIModelIdsKey, FavoritePropertiesOrderInfo[]>(projectAndIModelIdsKeyComparer);
 
   public constructor(props: OfflineCachingFavoritePropertiesStorageProps) {
@@ -178,6 +186,7 @@ export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropert
 
   // SWB
   public async saveProperties(properties: Set<PropertyFullName>, projectId?: string, imodelId?: string) {
+    // SWB
     const key: ProjectAndIModelIdsKey = [projectId, imodelId];
     if (this._connectivityInfo.status === InternetConnectivityStatus.Offline) {
       this._propertiesOfflineCache.set(key, properties);
@@ -206,6 +215,7 @@ export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropert
 
   // SWB
   public async savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], projectId: string | undefined, imodelId: string) {
+    // SWB
     const key: ProjectAndIModelIdsKey = [projectId, imodelId];
     if (this._connectivityInfo.status === InternetConnectivityStatus.Offline) {
       this._propertiesOrderOfflineCache.set(key, orderInfos);
@@ -253,9 +263,11 @@ class DictionaryWithReservations<TKey, TValue> {
   }
 }
 
+   // SWB
 type ProjectAndIModelIdsKey = [string | undefined, string | undefined];
 
 // istanbul ignore next
+   // SWB
 function projectAndIModelIdsKeyComparer(lhs: ProjectAndIModelIdsKey, rhs: ProjectAndIModelIdsKey) {
   // SWB
   const projectIdCompare = compareStrings(lhs[0] ?? "", rhs[0] ?? "");

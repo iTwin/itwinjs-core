@@ -11,6 +11,7 @@ import { AppTools } from "../../tools/ToolSpecifications";
 import { BlockingPrompt } from "./BlockingPrompt";
 import { IModelList } from "./IModelList";
 import { NavigationItem, NavigationList } from "./Navigation";
+// SWB
 import { ProjectDropdown } from "./ProjectDropdown";
 import { ActivityMessageDetails, ActivityMessageEndReason, IModelApp } from "@bentley/imodeljs-frontend";
 import { BeDuration } from "@bentley/bentleyjs-core";
@@ -76,6 +77,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
     }
   }
 
+  // SWB
   // retrieves the IModels for a Project. Called when first mounted and when a new Project is selected.
   // SWB
   private async startRetrieveIModels(project: ITwin) {

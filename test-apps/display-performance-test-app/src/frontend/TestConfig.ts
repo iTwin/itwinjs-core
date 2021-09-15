@@ -115,9 +115,11 @@ export interface TestConfigProps {
    * Default: "*"
    */
   iModelName?: string;
+  // SWB
   /** The name of the iModelHub project from which to obtain iModels. Currently not supported.
    * Default: "iModel Testing"
    */
+  // SWB
   iModelHubProject?: string;
   /** The format in which to output the timing data. See DisplayPerfRpcImpl.saveCsv - only "original" is treated specially.
    * Default: "original".
@@ -170,6 +172,7 @@ export class TestConfig {
   public readonly outputName: string;
   public readonly outputPath: string;
   public iModelName: string;
+  // SWB
   public readonly iModelHubProject: string;
   public viewName: string;
   public readonly testType: TestType;
@@ -204,6 +207,7 @@ export class TestConfig {
     this.outputPath = prevConfig?.outputPath ?? (isWindows ? "D:\\output\\performanceData\\" : "/Users/");
     this.iModelLocation = prevConfig?.iModelLocation ?? "";
     this.iModelName = props.iModelName ?? prevConfig?.iModelName ?? "*";
+    // SWB
     this.iModelHubProject = props.iModelHubProject ?? prevConfig?.iModelHubProject ?? "iModel Testing";
     this.csvFormat = props.csvFormat ?? prevConfig?.csvFormat ?? "original";
     this.viewName = props.viewName ?? prevConfig?.viewName ?? "*";

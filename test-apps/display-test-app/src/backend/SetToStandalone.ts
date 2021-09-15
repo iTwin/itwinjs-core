@@ -26,8 +26,10 @@ function log(msg: string) {
 
 /**
  * This utility will change an existing iModel file to be a standalone iModel. It does so by
+   // SWB
  * clearing the ProjectGuid, and resetting the briefcaseId to 0.
  *
+   // SWB
  * This should only be done for testing, with the project owner's permission.
  *
  * To run:
@@ -50,6 +52,7 @@ function setToStandalone(iModelName: string) {
     nativeDb.openIModel(iModelName, OpenMode.ReadWrite);
     // SWB
     nativeDb.saveProjectGuid(Guid.empty); // empty projectId means "standalone"
+    // SWB
     nativeDb.saveChanges(); // save change to ProjectId
     nativeDb.deleteAllTxns(); // necessary before resetting briefcaseId
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned); // standalone iModels should always have BriefcaseId unassigned

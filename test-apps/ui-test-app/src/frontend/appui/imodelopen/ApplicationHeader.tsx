@@ -15,6 +15,7 @@ export interface ApplicationHeaderProps {
 }
 
 /**
+   // SWB
  * ApplicationHeader React component used as a header on the iModel and Project selectors.
  */
 export class ApplicationHeader extends React.Component<ApplicationHeaderProps> {

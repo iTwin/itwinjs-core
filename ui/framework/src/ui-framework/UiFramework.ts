@@ -84,6 +84,7 @@ export interface TrackingTime {
 }
 
 /**
+   // SWB What does project mean here?
  * Manages the Redux store, I18N service and iModel, Project and Login services for the ui-framework package.
  * @public
  */
