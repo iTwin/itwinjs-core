@@ -31,7 +31,6 @@ export * from "./ui-framework/backstage/FrontstageLaunch";
 export * from "./ui-framework/backstage/Separator";
 export * from "./ui-framework/backstage/useDefaultBackstageItems";
 export * from "./ui-framework/backstage/TaskLaunch";
-export * from "./ui-framework/backstage/UserProfile";
 export * from "./ui-framework/backstage/useUiItemsProviderBackstageItems";
 
 export * from "./ui-framework/clientservices/IModelServices";
@@ -66,9 +65,6 @@ export * from "./ui-framework/dialog/ModelessDialog";
 export * from "./ui-framework/dialog/ModelessDialogManager";
 export * from "./ui-framework/dialog/StandardMessageBox";
 export * from "./ui-framework/dialog/UiDataProvidedDialog";
-
-export * from "./ui-framework/dragdrop/DragDropLayerManager";
-export * from "./ui-framework/dragdrop/ZoneTargets";
 
 export * from "./ui-framework/feedback/ValidationTextbox";
 export * from "./ui-framework/feedback/ElementTooltip";
@@ -121,11 +117,7 @@ export * from "./ui-framework/navigationaids/SheetNavigationAid";
 export * from "./ui-framework/navigationaids/SheetsModalFrontstage";
 export * from "./ui-framework/navigationaids/StandardRotationNavigationAid";
 
-export * from "./ui-framework/oidc/SignIn";
-export * from "./ui-framework/oidc/SignOut";
-
 export * from "./ui-framework/pickers/ListPicker";
-export * from "./ui-framework/pickers/ModelSelector/ModelSelector";
 export * from "./ui-framework/pickers/ViewSelector";
 
 export * from "./ui-framework/childwindow/ChildWindowManager";
@@ -270,7 +262,6 @@ export * from "./ui-framework/widgets/WidgetHost";
 export * from "./ui-framework/widgets/WidgetManager";
 export * from "./ui-framework/widgets/WidgetProps";
 export * from "./ui-framework/widgets/WidgetStack";
-export * from "./ui-framework/widgets/VisibilityWidget";
 
 export * from "./ui-framework/workflow/Task";
 export * from "./ui-framework/workflow/Workflow";
@@ -286,9 +277,13 @@ export * from "./ui-framework/zones/Zone";
 export * from "./ui-framework/zones/ZoneDef";
 
 /** @docs-package-description
- * The ui-framework package contains application fragments for Login, Project, iModel and View selection,
- * and configuration of the application UI with the Backstage, Frontstages, Widgets, etc.
+ * The ui-framework package contains classes and components for specifying the application UI consisting of the
+ * Backstage, Frontstages, Content Views, Tool Bars, Status Bars, Widgets and Panels.
  * For more information, see [learning about ui-framework]($docs/learning/ui/framework/index.md).
+ */
+/**
+ * @docs-group-description AccuDraw
+ * Classes and components providing a UI for AccuDraw, an aide for entering coordinate data.
  */
 /**
  * @docs-group-description Admin
@@ -346,10 +341,6 @@ export * from "./ui-framework/zones/ZoneDef";
  * @docs-group-description Notification
  * Classes for working with a Notification or Message
  */
-/**
- * @docs-group-description OIDC
- * Classes for working with the OpenID Connect (OIDC) protocol
- */
 
 /**
  * @docs-group-description ChildWindow
@@ -380,8 +371,8 @@ export * from "./ui-framework/zones/ZoneDef";
  * Classes for informing UI components to sync/refresh their display
  */
 /**
- * @docs-group-description WorkflowTask
- * Classes for working a Workflow or Task
+ * @docs-group-description Timeline
+ * Classes for working with a TimelineComponent
  */
 /**
  * @docs-group-description Toolbar
@@ -415,8 +406,3 @@ export * from "./ui-framework/zones/ZoneDef";
  * @docs-group-description Zone
  * Classes for working with a Zone
  */
-/**
- * @docs-group-description Timeline
- * Classes for working with a TimelineComponent
- */
-

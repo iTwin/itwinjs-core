@@ -12,11 +12,8 @@ import * as React from "react";
 import { areEqual, ListChildComponentProps, ListOnItemsRenderedProps, VariableSizeList } from "react-window";
 import { concat } from "rxjs/internal/observable/concat";
 import { timer } from "rxjs/internal/observable/timer";
-import { ReplaySubject } from "rxjs/internal/ReplaySubject";
-import { Subscription } from "rxjs/internal/Subscription";
 import { assert } from "@bentley/bentleyjs-core";
 import { Tree as CoreTree, TreeNodePlaceholder } from "@bentley/ui-core";
-import { ConditionalAutoSizer } from "../../../common/ConditionalAutoSizer";
 import { createContextWithMandatoryProvider } from "../../../common/UseContextWithMandatoryProvider";
 import { HighlightableTreeProps, HighlightingEngine } from "../../HighlightingEngine";
 import { TreeActions } from "../TreeActions";
@@ -72,9 +69,10 @@ export interface TreeRendererProps {
   onNodeEditorClosed?: () => void;
 
   /** Width of the tree area. */
-  width?: number;
+  width: number;
+
   /** Height of the tree area. */
-  height?: number;
+  height: number;
 }
 
 /**
@@ -160,38 +158,24 @@ export const [
  * @beta
  */
 export class TreeRenderer extends React.Component<TreeRendererProps> implements TreeRendererAttributes {
-  private observableScrollToItem = new ReplaySubject<Parameters<TreeRendererAttributes["scrollToNode"]>>(1);
-  private refSubscription: Subscription | undefined = undefined;
+  private _ref = React.createRef<TreeRendererAttributes>();
 
   /** @inheritdoc */
   public scrollToNode(nodeId: string, alignment?: Alignment) {
-    this.observableScrollToItem.next([nodeId, alignment]);
+    // istanbul ignore else
+    if (this._ref.current)
+      this._ref.current.scrollToNode(nodeId, alignment);
   }
-
-  private setTreeRendererRef: React.Ref<TreeRendererAttributes> = (ref) => {
-    this.refSubscription?.unsubscribe();
-    this.refSubscription = undefined;
-    if (ref) {
-      this.refSubscription = this.observableScrollToItem.subscribe((args) => ref.scrollToNode(...args));
-    }
-  };
 
   public override render() {
     return (
-      <ConditionalAutoSizer width={this.props.width} height={this.props.height}>
-        {(size) => <TreeRendererInner ref={this.setTreeRendererRef} {...this.props} {...size} />}
-      </ConditionalAutoSizer>
+      <TreeRendererInner ref={this._ref} {...this.props} />
     );
   }
 }
 
-type TreeRendererInnerProps = TreeRendererProps & {
-  width: number;
-  height: number;
-};
-
 // eslint-disable-next-line react/display-name
-const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererInnerProps>((props, ref) => {
+const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererProps>((props, ref) => {
   const variableSizeListRef = React.useRef<VariableSizeList>(null);
   useTreeRendererAttributes(ref, variableSizeListRef, props.visibleNodes);
 
@@ -415,14 +399,18 @@ function useTreeRendererAttributes(
   variableSizeListRef: React.RefObject<VariableSizeList>,
   visibleNodes: VisibleTreeNodes,
 ) {
+  const visibleNodesRef = React.useRef(visibleNodes);
+  visibleNodesRef.current = visibleNodes;
   React.useImperativeHandle(
     ref,
     () => ({
       scrollToNode: (nodeId, alignment) => {
         assert(variableSizeListRef.current !== null);
-        variableSizeListRef.current.scrollToItem(visibleNodes.getIndexOfNode(nodeId), alignment);
+        variableSizeListRef.current.scrollToItem(visibleNodesRef.current.getIndexOfNode(nodeId), alignment);
       },
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
   );
 }
 

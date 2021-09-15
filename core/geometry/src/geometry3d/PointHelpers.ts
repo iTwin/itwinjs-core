@@ -14,6 +14,7 @@ import { MultiLineStringDataVariant } from "../topology/Triangulation";
 import { IndexedXYZCollection } from "./IndexedXYZCollection";
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
 import { Point2d } from "./Point2dVector2d";
+import { Point3dArrayCarrier } from "./Point3dArrayCarrier";
 import { Point3d, Vector3d, XYZ } from "./Point3dVector3d";
 import { PointStringDeepXYZArrayCollector, VariantPointDataStream } from "./PointStreaming";
 import { Range3d } from "./Range";
@@ -588,17 +589,21 @@ export class Point3dArray {
   }
 
   /** return simple average of all coordinates.   (000 if empty array) */
-  public static centroid(points: IndexedXYZCollection, result?: Point3d): Point3d {
-    result = Point3d.create(0, 0, 0, result);
-    const p = Point3d.create();
-    if (points.length > 0) {
-      for (let i = 0; i < points.length; i++) {
-        points.getPoint3dAtCheckedPointIndex(i, p);
-        result.x += p.x; result.y += p.y; result.z += p.z;
+  public static centroid(points: IndexedXYZCollection | Point3d[], result?: Point3d): Point3d {
+    if (points instanceof IndexedXYZCollection){
+      result = Point3d.create(0, 0, 0, result);
+      const p = Point3d.create();
+      if (points.length > 0) {
+        for (let i = 0; i < points.length; i++) {
+          points.getPoint3dAtCheckedPointIndex(i, p);
+          result.x += p.x; result.y += p.y; result.z += p.z;
+        }
+        result.scaleInPlace(1.0 / points.length);
       }
-      result.scaleInPlace(1.0 / points.length);
+      return result;
     }
-    return result;
+    const carrier = new Point3dArrayCarrier(points);
+    return this.centroid(carrier);
   }
 
   /** Return the index of the point most distant from spacePoint */

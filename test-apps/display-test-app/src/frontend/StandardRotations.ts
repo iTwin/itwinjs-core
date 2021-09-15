@@ -43,7 +43,7 @@ export class StandardRotations extends ToolBarDropDown {
 
       div.appendChild(createToolButton({
         iconUnicode: entries[i],
-        click: () => IModelApp.tools.run("View.Standard", IModelApp.viewManager.selectedView, i),
+        click: async () => IModelApp.tools.run("View.Standard", IModelApp.viewManager.selectedView, i),
       }));
     }
 

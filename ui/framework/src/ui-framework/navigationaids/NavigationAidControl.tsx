@@ -38,7 +38,7 @@ export class NavigationAidControl extends ConfigurableUiControl {
   public get reactNode(): React.ReactNode { return this._reactNode; }
   public set reactNode(r: React.ReactNode) { this._reactNode = r; }
 
-  /** Default size is "64px". Override to set a different size. */
+  /** Square size of navigation aid. Default size is "64px". Override to set a different size. */
   public getSize(): string | undefined { return undefined; }
 
   /** Get the type of this control. */

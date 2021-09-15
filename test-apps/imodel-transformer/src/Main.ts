@@ -116,28 +116,28 @@ void (async () => {
       Logger.setLevel(TransformerLoggerCategory.IModelTransformer, LogLevel.Trace);
     }
 
-    let requestContext: AuthorizedClientRequestContext | BackendRequestContext;
+    let user: AuthorizedClientRequestContext | BackendRequestContext;
     let contextRegistry: ContextRegistryClient | undefined;
     let sourceDb: IModelDb;
     let targetDb: IModelDb;
     const processChanges = args.sourceStartChangesetIndex || args.sourceStartChangesetId;
 
     if (args.sourceContextId || args.targetContextId) {
-      requestContext = await IModelHubUtils.getAuthorizedClientRequestContext();
+      user = await IModelHubUtils.getAuthorizedClientRequestContext();
       contextRegistry = new ContextRegistryClient();
     } else {
-      requestContext = new BackendRequestContext();
+      user = new BackendRequestContext();
     }
 
     if (args.sourceContextId) {
       // source is from iModelHub
-      assert(requestContext instanceof AuthorizedClientRequestContext);
+      assert(user instanceof AuthorizedClientRequestContext);
       assert(undefined !== contextRegistry);
       assert(undefined !== args.sourceIModelId);
       const sourceContextId = Guid.normalize(args.sourceContextId);
       const sourceIModelId = Guid.normalize(args.sourceIModelId);
       let sourceEndVersion = IModelVersion.latest();
-      const sourceContext = await contextRegistry.getProject(requestContext, {
+      const sourceContext = await contextRegistry.getProject(user, {
         $filter: `$id+eq+'${sourceContextId}'`,
       });
       assert(undefined !== sourceContext);
@@ -146,9 +146,9 @@ void (async () => {
       if (args.sourceStartChangesetIndex || args.sourceStartChangesetId) {
         assert(!(args.sourceStartChangesetIndex && args.sourceStartChangesetId), "Pick single way to specify starting changeset");
         if (args.sourceStartChangesetIndex) {
-          args.sourceStartChangesetId = await IModelHubUtils.queryChangesetId(requestContext, sourceIModelId, args.sourceStartChangesetIndex);
+          args.sourceStartChangesetId = await IModelHubUtils.queryChangesetId(user, sourceIModelId, args.sourceStartChangesetIndex);
         } else {
-          args.sourceStartChangesetIndex = await IModelHubUtils.queryChangesetIndex(requestContext, sourceIModelId, args.sourceStartChangesetId!);
+          args.sourceStartChangesetIndex = await IModelHubUtils.queryChangesetIndex(user, sourceIModelId, args.sourceStartChangesetId!);
         }
         Logger.logInfo(loggerCategory, `sourceStartChangesetIndex=${args.sourceStartChangesetIndex}`);
         Logger.logInfo(loggerCategory, `sourceStartChangesetId=${args.sourceStartChangesetId}`);
@@ -156,9 +156,9 @@ void (async () => {
       if (args.sourceEndChangesetIndex || args.sourceEndChangesetId) {
         assert(!(args.sourceEndChangesetIndex && args.sourceEndChangesetId), "Pick single way to specify ending changeset");
         if (args.sourceEndChangesetIndex) {
-          args.sourceEndChangesetId = await IModelHubUtils.queryChangesetId(requestContext, sourceIModelId, args.sourceEndChangesetIndex);
+          args.sourceEndChangesetId = await IModelHubUtils.queryChangesetId(user, sourceIModelId, args.sourceEndChangesetIndex);
         } else {
-          args.sourceEndChangesetIndex = await IModelHubUtils.queryChangesetIndex(requestContext, sourceIModelId, args.sourceEndChangesetId!);
+          args.sourceEndChangesetIndex = await IModelHubUtils.queryChangesetIndex(user, sourceIModelId, args.sourceEndChangesetId!);
         }
         sourceEndVersion = IModelVersion.asOfChangeSet(args.sourceEndChangesetId!);
         Logger.logInfo(loggerCategory, `sourceEndChangesetIndex=${args.sourceEndChangesetIndex}`);
@@ -166,19 +166,20 @@ void (async () => {
       }
 
       if (args.logChangesets) {
-        await IModelHubUtils.forEachChangeset(requestContext, sourceIModelId, (changeset: ChangesetProps) => {
+        await IModelHubUtils.forEachChangeset(user, sourceIModelId, (changeset: ChangesetProps) => {
           Logger.logInfo(loggerCategory, `sourceChangeset: index=${changeset.index}, id="${changeset.id}", description="${changeset.description}"}`);
         });
       }
 
       if (args.logNamedVersions) {
-        await IModelHubUtils.forEachNamedVersion(requestContext, sourceIModelId, (namedVersion: Version) => {
+        await IModelHubUtils.forEachNamedVersion(user, sourceIModelId, (namedVersion: Version) => {
           Logger.logInfo(loggerCategory, `sourceNamedVersion: id="${namedVersion.id}", changesetId="${namedVersion.changeSetId}", name="${namedVersion.name}"`);
         });
       }
 
-      sourceDb = await IModelHubUtils.downloadAndOpenBriefcase(requestContext, {
-        contextId: sourceContextId,
+      sourceDb = await IModelHubUtils.downloadAndOpenBriefcase({
+        user,
+        iTwinId: sourceContextId,
         iModelId: sourceIModelId,
         asOf: sourceEndVersion.toJSON(),
         briefcaseId: BriefcaseIdValue.Unassigned, // A "pull only" briefcase can be used since the sourceDb is opened read-only
@@ -200,20 +201,20 @@ void (async () => {
 
     if (args.targetContextId) {
       // target is from iModelHub
-      assert(requestContext instanceof AuthorizedClientRequestContext);
+      assert(user instanceof AuthorizedClientRequestContext);
       assert(undefined !== args.targetIModelId || undefined !== args.targetIModelName, "must be able to identify the iModel by either name or id");
       const targetContextId = Guid.normalize(args.targetContextId);
       let targetIModelId = args.targetIModelId ? Guid.normalize(args.targetIModelId) : undefined;
       if (undefined !== args.targetIModelName) {
         assert(undefined === targetIModelId, "should not specify targetIModelId if targetIModelName is specified");
-        targetIModelId = await IModelHubUtils.queryIModelId(requestContext, targetContextId, args.targetIModelName);
+        targetIModelId = await IModelHubUtils.queryIModelId(user, targetContextId, args.targetIModelName);
         if ((args.clean) && (undefined !== targetIModelId)) {
-          await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: targetContextId, iModelId: targetIModelId });
+          await IModelHost.hubAccess.deleteIModel({ user, iTwinId: targetContextId, iModelId: targetIModelId });
           targetIModelId = undefined;
         }
         if (undefined === targetIModelId) {
           // create target iModel if it doesn't yet exist or was just cleaned/deleted above
-          targetIModelId = await IModelHost.hubAccess.createIModel({ requestContext, contextId: targetContextId, iModelName: args.targetIModelName });
+          targetIModelId = await IModelHost.hubAccess.createNewIModel({ user, iTwinId: targetContextId, iModelName: args.targetIModelName });
         }
       }
       assert(undefined !== targetIModelId);
@@ -221,19 +222,20 @@ void (async () => {
       Logger.logInfo(loggerCategory, `targetIModelId=${targetIModelId}`);
 
       if (args.logChangesets) {
-        await IModelHubUtils.forEachChangeset(requestContext, targetIModelId, (changeset: ChangesetProps) => {
+        await IModelHubUtils.forEachChangeset(user, targetIModelId, (changeset: ChangesetProps) => {
           Logger.logInfo(loggerCategory, `targetChangeset:  index="${changeset.index}", id="${changeset.id}", description="${changeset.description}"`);
         });
       }
 
       if (args.logNamedVersions) {
-        await IModelHubUtils.forEachNamedVersion(requestContext, targetIModelId, (namedVersion: Version) => {
+        await IModelHubUtils.forEachNamedVersion(user, targetIModelId, (namedVersion: Version) => {
           Logger.logInfo(loggerCategory, `targetNamedVersion: id="${namedVersion.id}", changesetId="${namedVersion.changeSetId}", name="${namedVersion.name}"`);
         });
       }
 
-      targetDb = await IModelHubUtils.downloadAndOpenBriefcase(requestContext, {
-        contextId: targetContextId,
+      targetDb = await IModelHubUtils.downloadAndOpenBriefcase({
+        user,
+        iTwinId: targetContextId,
         iModelId: targetIModelId,
       });
     } else if (args.targetDestination) {
@@ -275,11 +277,11 @@ void (async () => {
     };
 
     if (processChanges) {
-      assert(requestContext instanceof AuthorizedClientRequestContext);
+      assert(user instanceof AuthorizedClientRequestContext);
       assert(undefined !== args.sourceStartChangesetId);
-      await Transformer.transformChanges(requestContext, sourceDb, targetDb, args.sourceStartChangesetId, transformerOptions);
+      await Transformer.transformChanges(user, sourceDb, targetDb, args.sourceStartChangesetId, transformerOptions);
     } else {
-      await Transformer.transformAll(requestContext, sourceDb, targetDb, transformerOptions);
+      await Transformer.transformAll(sourceDb, targetDb, transformerOptions);
     }
 
     if (args.exportViewDefinition) {

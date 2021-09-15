@@ -595,33 +595,39 @@ exports[`Descriptor fromJSON creates valid Descriptor from CompressedDescriptorJ
 Object {
   "categories": Array [
     Object {
-      "description": "Voluptas fuga cum vitae praesentium sunt numquam omnis molestiae.",
+      "description": "Test category description",
       "expand": false,
-      "label": "Facilitator Agent solution-oriented",
-      "name": "engineer",
+      "label": "Test Category",
+      "name": "test-category",
       "parent": undefined,
-      "priority": 62935,
+      "priority": 0,
     },
   ],
-  "connectionId": "d32fd189-d419-4acc-8164-c4be307f496f",
+  "connectionId": "",
   "contentFlags": 0,
-  "contentOptions": "car",
-  "displayType": "et eligendi non",
+  "contentOptions": 0,
+  "displayType": "",
   "fields": Array [
     Object {
-      "category": Object {
-        "description": "Voluptas fuga cum vitae praesentium sunt numquam omnis molestiae.",
-        "expand": false,
-        "label": "Facilitator Agent solution-oriented",
-        "name": "engineer",
-        "parent": undefined,
-        "priority": 62935,
-      },
+      "category": "test-category",
       "editor": undefined,
       "isReadonly": false,
-      "label": "Garden indigo Keyboard",
-      "name": "Future",
-      "priority": 40839,
+      "label": "Test Simple Field",
+      "name": "test-simple-field",
+      "priority": 0,
+      "renderer": undefined,
+      "type": Object {
+        "typeName": "string",
+        "valueFormat": "Primitive",
+      },
+    },
+    Object {
+      "category": "test-category",
+      "editor": undefined,
+      "isReadonly": false,
+      "label": "Test Properties Field",
+      "name": "test-properties-field",
+      "priority": 0,
       "properties": Array [
         Object {
           "property": Object {
@@ -630,52 +636,21 @@ Object {
               "label": "label1",
               "name": "name1",
             },
-            "name": "similique neque ut",
-            "type": "similique in laborum",
+            "name": "PropertyName",
+            "type": "TestPropertyType",
           },
-          "relatedClassPath": Array [
-            Object {
-              "isForwardRelationship": true,
-              "isPolymorphicRelationship": false,
-              "isPolymorphicTargetClass": false,
-              "relationshipInfo": Object {
-                "id": "0x4",
-                "label": "label4",
-                "name": "name4",
-              },
-              "sourceClassInfo": Object {
-                "id": "0x2",
-                "label": "label2",
-                "name": "name2",
-              },
-              "targetClassInfo": Object {
-                "id": "0x3",
-                "label": "label3",
-                "name": "name3",
-              },
-            },
-          ],
         },
       ],
-      "renderer": Object {
-        "name": "custom_renderer",
-      },
+      "renderer": undefined,
       "type": Object {
-        "typeName": "mediumint",
+        "typeName": "string",
         "valueFormat": "Primitive",
       },
     },
     Object {
       "actualPrimaryClassIds": Array [],
       "autoExpand": false,
-      "category": Object {
-        "description": "Voluptas fuga cum vitae praesentium sunt numquam omnis molestiae.",
-        "expand": false,
-        "label": "Facilitator Agent solution-oriented",
-        "name": "engineer",
-        "parent": undefined,
-        "priority": 62935,
-      },
+      "category": "test-category",
       "contentClassInfo": Object {
         "id": "0x2",
         "label": "label2",
@@ -683,28 +658,32 @@ Object {
       },
       "editor": undefined,
       "isReadonly": false,
-      "label": "Borders Small",
-      "name": "grow",
+      "label": "Test Nested Content Field",
+      "name": "test-nested-content-field",
       "nestedFields": Array [
         Object {
-          "category": Object {
-            "description": "Voluptas fuga cum vitae praesentium sunt numquam omnis molestiae.",
-            "expand": false,
-            "label": "Facilitator Agent solution-oriented",
-            "name": "engineer",
-            "parent": undefined,
-            "priority": 62935,
-          },
+          "category": "test-category",
           "editor": undefined,
-          "isReadonly": true,
-          "label": "dynamic",
-          "name": "Rubber",
-          "priority": 8302,
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
+          "isReadonly": false,
+          "label": "Test Nested Properties Field",
+          "name": "test-nested-properties-field",
+          "priority": 0,
+          "properties": Array [
+            Object {
+              "property": Object {
+                "classInfo": Object {
+                  "id": "0x2",
+                  "label": "label2",
+                  "name": "name2",
+                },
+                "name": "NestedPropertyName",
+                "type": "TestNestedPropertyType",
+              },
+            },
+          ],
+          "renderer": undefined,
           "type": Object {
-            "typeName": "geometry",
+            "typeName": "string",
             "valueFormat": "Primitive",
           },
         },
@@ -731,28 +710,26 @@ Object {
           },
         },
       ],
-      "priority": 33586,
+      "priority": 0,
       "relationshipMeaning": "RelatedInstance",
-      "renderer": Object {
-        "name": "custom_renderer",
-      },
+      "renderer": undefined,
       "type": Object {
         "members": Array [
           Object {
-            "label": "Analyst",
-            "name": "Agent",
+            "label": "String Type",
+            "name": "StringType",
             "type": Object {
-              "typeName": "varchar",
+              "typeName": "string",
               "valueFormat": "Primitive",
             },
           },
         ],
-        "typeName": "incubate",
+        "typeName": "StructType",
         "valueFormat": "Struct",
       },
     },
   ],
-  "inputKeysHash": "1f281abd-2ff5-4143-9fc9-190d5f0f03ad",
+  "inputKeysHash": "",
   "selectClasses": Array [
     Object {
       "isSelectPolymorphic": true,
@@ -778,7 +755,7 @@ Object {
           },
         },
       ],
-      "pathToPrimaryClass": Array [
+      "pathFromInputToSelectClass": Array [
         Object {
           "isForwardRelationship": true,
           "isPolymorphicRelationship": false,
@@ -800,27 +777,29 @@ Object {
           },
         },
       ],
-      "relatedInstanceClasses": Array [
-        Object {
-          "isForwardRelationship": true,
-          "isPolymorphicRelationship": false,
-          "isPolymorphicTargetClass": false,
-          "relationshipInfo": Object {
-            "id": "0x4",
-            "label": "label4",
-            "name": "name4",
+      "relatedInstancePaths": Array [
+        Array [
+          Object {
+            "isForwardRelationship": true,
+            "isPolymorphicRelationship": false,
+            "isPolymorphicTargetClass": false,
+            "relationshipInfo": Object {
+              "id": "0x4",
+              "label": "label4",
+              "name": "name4",
+            },
+            "sourceClassInfo": Object {
+              "id": "0x2",
+              "label": "label2",
+              "name": "name2",
+            },
+            "targetClassInfo": Object {
+              "id": "0x3",
+              "label": "label3",
+              "name": "name3",
+            },
           },
-          "sourceClassInfo": Object {
-            "id": "0x2",
-            "label": "label2",
-            "name": "name2",
-          },
-          "targetClassInfo": Object {
-            "id": "0x3",
-            "label": "label3",
-            "name": "name3",
-          },
-        },
+        ],
       ],
       "relatedPropertyPaths": Array [
         Array [
@@ -854,6 +833,191 @@ Object {
     },
   ],
   "sortingField": undefined,
+}
+`;
+
+exports[`Descriptor fromJSON creates valid Descriptor from valid JSON 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "description": "Test category description",
+      "expand": false,
+      "label": "Test Category",
+      "name": "test-category",
+      "priority": 0,
+    },
+  ],
+  "classesMap": Object {
+    "0x1": Object {
+      "label": "label1",
+      "name": "name1",
+    },
+    "0x2": Object {
+      "label": "label2",
+      "name": "name2",
+    },
+    "0x3": Object {
+      "label": "label3",
+      "name": "name3",
+    },
+    "0x4": Object {
+      "label": "label4",
+      "name": "name4",
+    },
+  },
+  "connectionId": "",
+  "contentFlags": 0,
+  "contentOptions": undefined,
+  "displayType": "",
+  "fields": Array [
+    Object {
+      "category": "test-category",
+      "editor": undefined,
+      "isReadonly": false,
+      "label": "Test Simple Field",
+      "name": "test-simple-field",
+      "priority": 0,
+      "renderer": undefined,
+      "type": Object {
+        "typeName": "string",
+        "valueFormat": "Primitive",
+      },
+    },
+    Object {
+      "category": "test-category",
+      "editor": undefined,
+      "isReadonly": false,
+      "label": "Test Properties Field",
+      "name": "test-properties-field",
+      "priority": 0,
+      "properties": Array [
+        Object {
+          "property": Object {
+            "classInfo": "0x1",
+            "name": "PropertyName",
+            "type": "TestPropertyType",
+          },
+        },
+      ],
+      "renderer": undefined,
+      "type": Object {
+        "typeName": "string",
+        "valueFormat": "Primitive",
+      },
+    },
+    Object {
+      "actualPrimaryClassIds": Array [],
+      "autoExpand": false,
+      "category": "test-category",
+      "contentClassInfo": "0x2",
+      "editor": undefined,
+      "isReadonly": false,
+      "label": "Test Nested Content Field",
+      "name": "test-nested-content-field",
+      "nestedFields": Array [
+        Object {
+          "category": "test-category",
+          "editor": undefined,
+          "isReadonly": false,
+          "label": "Test Nested Properties Field",
+          "name": "test-nested-properties-field",
+          "priority": 0,
+          "properties": Array [
+            Object {
+              "property": Object {
+                "classInfo": "0x2",
+                "name": "NestedPropertyName",
+                "type": "TestNestedPropertyType",
+              },
+            },
+          ],
+          "renderer": undefined,
+          "type": Object {
+            "typeName": "string",
+            "valueFormat": "Primitive",
+          },
+        },
+      ],
+      "pathToPrimaryClass": Array [
+        Object {
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": false,
+          "isPolymorphicTargetClass": false,
+          "relationshipInfo": "0x4",
+          "sourceClassInfo": "0x2",
+          "targetClassInfo": "0x3",
+        },
+      ],
+      "priority": 0,
+      "relationshipMeaning": "RelatedInstance",
+      "renderer": undefined,
+      "type": Object {
+        "members": Array [
+          Object {
+            "label": "String Type",
+            "name": "StringType",
+            "type": Object {
+              "typeName": "string",
+              "valueFormat": "Primitive",
+            },
+          },
+        ],
+        "typeName": "StructType",
+        "valueFormat": "Struct",
+      },
+    },
+  ],
+  "inputKeysHash": "",
+  "selectClasses": Array [
+    Object {
+      "isSelectPolymorphic": true,
+      "navigationPropertyClasses": Array [
+        Object {
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": false,
+          "isPolymorphicTargetClass": false,
+          "relationshipInfo": "0x4",
+          "sourceClassInfo": "0x2",
+          "targetClassInfo": "0x3",
+        },
+      ],
+      "pathFromInputToSelectClass": Array [
+        Object {
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": false,
+          "isPolymorphicTargetClass": false,
+          "relationshipInfo": "0x4",
+          "sourceClassInfo": "0x2",
+          "targetClassInfo": "0x3",
+        },
+      ],
+      "relatedInstancePaths": Array [
+        Array [
+          Object {
+            "isForwardRelationship": true,
+            "isPolymorphicRelationship": false,
+            "isPolymorphicTargetClass": false,
+            "relationshipInfo": "0x4",
+            "sourceClassInfo": "0x2",
+            "targetClassInfo": "0x3",
+          },
+        ],
+      ],
+      "relatedPropertyPaths": Array [
+        Array [
+          Object {
+            "isForwardRelationship": true,
+            "isPolymorphicRelationship": false,
+            "isPolymorphicTargetClass": false,
+            "relationshipInfo": "0x4",
+            "sourceClassInfo": "0x2",
+            "targetClassInfo": "0x3",
+          },
+        ],
+      ],
+      "selectClassInfo": "0x1",
+    },
+  ],
 }
 `;
 
@@ -2363,17 +2527,10 @@ Object {
   "connectionId": undefined,
   "contentFlags": 0,
   "contentOptions": undefined,
-  "displayType": "DisplayType",
+  "displayType": "",
   "fields": Array [
     Object {
-      "category": Object {
-        "description": "Test category description",
-        "expand": false,
-        "label": "Test Category",
-        "name": "test-category",
-        "parent": undefined,
-        "priority": 0,
-      },
+      "category": "test-category",
       "editor": undefined,
       "isReadonly": false,
       "label": "Simple Field",
@@ -2386,18 +2543,11 @@ Object {
       },
     },
     Object {
-      "category": Object {
-        "description": "Test category description",
-        "expand": false,
-        "label": "Test Category",
-        "name": "test-category",
-        "parent": undefined,
-        "priority": 0,
-      },
+      "category": "test-category",
       "editor": undefined,
       "isReadonly": false,
-      "label": "Simple Field",
-      "name": "SimpleField",
+      "label": "Properties Field",
+      "name": "PropertiesField",
       "priority": 0,
       "properties": Array [
         Object {
@@ -2406,16 +2556,6 @@ Object {
             "name": "PropertyName",
             "type": "string",
           },
-          "relatedClassPath": Array [
-            Object {
-              "isForwardRelationship": false,
-              "isPolymorphicRelationship": false,
-              "isPolymorphicTargetClass": false,
-              "relationshipInfo": "0x3",
-              "sourceClassInfo": "0x1",
-              "targetClassInfo": "0x2",
-            },
-          ],
         },
       ],
       "renderer": undefined,
@@ -2427,14 +2567,7 @@ Object {
     Object {
       "actualPrimaryClassIds": Array [],
       "autoExpand": false,
-      "category": Object {
-        "description": "Test category description",
-        "expand": false,
-        "label": "Test Category",
-        "name": "test-category",
-        "parent": undefined,
-        "priority": 0,
-      },
+      "category": "test-category",
       "contentClassInfo": "0x1",
       "editor": undefined,
       "isReadonly": false,
@@ -2442,14 +2575,7 @@ Object {
       "name": "NestedContentField",
       "nestedFields": Array [
         Object {
-          "category": Object {
-            "description": "Test category description",
-            "expand": false,
-            "label": "Test Category",
-            "name": "test-category",
-            "parent": undefined,
-            "priority": 0,
-          },
+          "category": "test-category",
           "editor": undefined,
           "isReadonly": false,
           "label": "Simple Field",
@@ -2506,6 +2632,141 @@ Object {
           "targetClassInfo": "0x2",
         },
       ],
+      "pathFromInputToSelectClass": Array [
+        Object {
+          "isForwardRelationship": false,
+          "isPolymorphicRelationship": false,
+          "isPolymorphicTargetClass": false,
+          "relationshipInfo": "0x3",
+          "sourceClassInfo": "0x1",
+          "targetClassInfo": "0x2",
+        },
+      ],
+      "relatedInstancePaths": Array [
+        Array [
+          Object {
+            "isForwardRelationship": false,
+            "isPolymorphicRelationship": false,
+            "isPolymorphicTargetClass": false,
+            "relationshipInfo": "0x3",
+            "sourceClassInfo": "0x1",
+            "targetClassInfo": "0x2",
+          },
+        ],
+      ],
+      "relatedPropertyPaths": Array [
+        Array [
+          Object {
+            "isForwardRelationship": false,
+            "isPolymorphicRelationship": false,
+            "isPolymorphicTargetClass": false,
+            "relationshipInfo": "0x3",
+            "sourceClassInfo": "0x1",
+            "targetClassInfo": "0x2",
+          },
+        ],
+      ],
+      "selectClassInfo": "0x1",
+    },
+  ],
+  "selectionInfo": Object {
+    "level": 1,
+    "providerName": "testProviderName",
+  },
+  "sortDirection": 0,
+  "sortingFieldName": "SimpleField",
+}
+`;
+
+exports[`Descriptor toJSON creates valid CompressedDescriptorJSON 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "description": "Test category description",
+      "expand": false,
+      "label": "Test Category",
+      "name": "test-category",
+      "priority": 0,
+    },
+  ],
+  "classesMap": Object {
+    "0x1": Object {
+      "label": "Source",
+      "name": "source:class",
+    },
+    "0x2": Object {
+      "label": "Target",
+      "name": "target:class",
+    },
+    "0x3": Object {
+      "label": "Relationship",
+      "name": "relationship:class",
+    },
+  },
+  "connectionId": "",
+  "contentFlags": 0,
+  "contentOptions": undefined,
+  "displayType": "",
+  "fields": Array [
+    Object {
+      "category": "test-category",
+      "editor": undefined,
+      "isReadonly": false,
+      "label": "Simple Field",
+      "name": "SimpleField",
+      "priority": 0,
+      "renderer": undefined,
+      "type": Object {
+        "typeName": "string",
+        "valueFormat": "Primitive",
+      },
+    },
+    Object {
+      "category": "test-category",
+      "editor": undefined,
+      "isReadonly": false,
+      "label": "Properties Field",
+      "name": "PropertiesField",
+      "priority": 0,
+      "properties": Array [
+        Object {
+          "property": Object {
+            "classInfo": "0x1",
+            "name": "PropertyName",
+            "type": "string",
+          },
+        },
+      ],
+      "renderer": undefined,
+      "type": Object {
+        "typeName": "string",
+        "valueFormat": "Primitive",
+      },
+    },
+    Object {
+      "actualPrimaryClassIds": Array [],
+      "autoExpand": false,
+      "category": "test-category",
+      "contentClassInfo": "0x1",
+      "editor": undefined,
+      "isReadonly": false,
+      "label": "Nested Content",
+      "name": "NestedContentField",
+      "nestedFields": Array [
+        Object {
+          "category": "test-category",
+          "editor": undefined,
+          "isReadonly": false,
+          "label": "Simple Field",
+          "name": "SimpleField",
+          "priority": 0,
+          "renderer": undefined,
+          "type": Object {
+            "typeName": "string",
+            "valueFormat": "Primitive",
+          },
+        },
+      ],
       "pathToPrimaryClass": Array [
         Object {
           "isForwardRelationship": false,
@@ -2516,7 +2777,31 @@ Object {
           "targetClassInfo": "0x2",
         },
       ],
-      "relatedInstanceClasses": Array [
+      "priority": 0,
+      "relationshipMeaning": "RelatedInstance",
+      "renderer": undefined,
+      "type": Object {
+        "members": Array [
+          Object {
+            "label": "Simple Field",
+            "name": "SimpleField",
+            "type": Object {
+              "typeName": "string",
+              "valueFormat": "Primitive",
+            },
+          },
+        ],
+        "typeName": "NestedContentFieldType",
+        "valueFormat": "Struct",
+      },
+    },
+  ],
+  "filterExpression": "testFilterExpression",
+  "inputKeysHash": undefined,
+  "selectClasses": Array [
+    Object {
+      "isSelectPolymorphic": false,
+      "navigationPropertyClasses": Array [
         Object {
           "isForwardRelationship": false,
           "isPolymorphicRelationship": false,
@@ -2525,6 +2810,28 @@ Object {
           "sourceClassInfo": "0x1",
           "targetClassInfo": "0x2",
         },
+      ],
+      "pathFromInputToSelectClass": Array [
+        Object {
+          "isForwardRelationship": false,
+          "isPolymorphicRelationship": false,
+          "isPolymorphicTargetClass": false,
+          "relationshipInfo": "0x3",
+          "sourceClassInfo": "0x1",
+          "targetClassInfo": "0x2",
+        },
+      ],
+      "relatedInstancePaths": Array [
+        Array [
+          Object {
+            "isForwardRelationship": false,
+            "isPolymorphicRelationship": false,
+            "isPolymorphicTargetClass": false,
+            "relationshipInfo": "0x3",
+            "sourceClassInfo": "0x1",
+            "targetClassInfo": "0x2",
+          },
+        ],
       ],
       "relatedPropertyPaths": Array [
         Array [

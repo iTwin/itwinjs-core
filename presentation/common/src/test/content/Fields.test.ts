@@ -2,82 +2,55 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* eslint-disable deprecation/deprecation */
 import { expect } from "chai";
-import * as faker from "faker";
-import {
-  Field, NestedContentField, PropertiesField, Property, PropertyValueFormat, RelationshipPath, StructTypeDescription,
-} from "../../presentation-common";
-import { CategoryDescription } from "../../presentation-common/content/Category";
-import { FieldDescriptor, FieldDescriptorType, PropertiesFieldJSON } from "../../presentation-common/content/Fields";
+import { Field, NestedContentField, PropertiesField } from "../../presentation-common";
+import { FieldDescriptor, FieldDescriptorType } from "../../presentation-common/content/Fields";
 import { RelationshipMeaning } from "../../presentation-common/rules/content/modifiers/RelatedPropertiesSpecification";
 import {
-  createRandomCategory, createRandomECClassInfo, createRandomECClassInfoJSON, createRandomNestedContentField, createRandomNestedFieldJSON,
-  createRandomPrimitiveField, createRandomPrimitiveFieldJSON, createRandomPrimitiveTypeDescription, createRandomPropertiesField,
-  createRandomRelationshipPath, createRandomRelationshipPathJSON,
-} from "../_helpers/random";
-
-const generateTestData = () => {
-  const testData: any = {};
-  testData.baseFieldJSON = createRandomPrimitiveFieldJSON();
-  testData.propertiesFieldJSON = {
-    ...testData.baseFieldJSON,
-    properties: [{
-      property: {
-        classInfo: createRandomECClassInfoJSON(),
-        name: faker.random.word(),
-        type: faker.database.type(),
-      },
-      relatedClassPath: createRandomRelationshipPathJSON(1),
-    }],
-  } as PropertiesFieldJSON;
-  testData.nestedContentFieldJSON = createRandomNestedFieldJSON();
-  return testData;
-};
+  createTestCategoryDescription, createTestNestedContentField, createTestPropertiesContentField, createTestSimpleContentField,
+} from "../_helpers/Content";
+import { createTestECClassInfo, createTestPropertyInfo, createTestRelatedClassInfo } from "../_helpers/EC";
 
 describe("Field", () => {
 
   describe("fromJSON", () => {
 
-    let testData!: any;
-    beforeEach(() => {
-      testData = generateTestData();
-    });
-
     it("creates valid Field from valid JSON", () => {
-      const item = Field.fromJSON(testData.baseFieldJSON);
-      expect(item).to.matchSnapshot();
-    });
-
-    it("creates valid Field from valid JSON with categories", () => {
-      const categories = [createRandomCategory()];
-      const item = Field.fromJSON({ ...testData.baseFieldJSON, category: categories[0].name }, categories);
-      expect(item).to.matchSnapshot();
+      const category = createTestCategoryDescription();
+      const json = createTestSimpleContentField({ category }).toJSON();
+      const field = Field.fromJSON({ ...json }, [category]);
+      expect(field).to.matchSnapshot();
     });
 
     it("creates valid PropertiesField from valid JSON", () => {
-      const item = Field.fromJSON(testData.propertiesFieldJSON);
-      expect(item).to.matchSnapshot();
+      const category = createTestCategoryDescription();
+      const json = createTestPropertiesContentField({
+        category,
+        properties: [{ property: createTestPropertyInfo() }],
+      }).toJSON();
+      const field = Field.fromJSON(json, [category]);
+      expect(field).to.matchSnapshot();
     });
 
     it("creates valid NestedContentField from valid JSON", () => {
-      const item = Field.fromJSON(testData.nestedContentFieldJSON);
-      expect(item).to.matchSnapshot();
-    });
-
-    it("creates valid Field from valid serialized JSON", () => {
-      const item = Field.fromJSON(JSON.stringify(testData.baseFieldJSON));
-      expect(item).to.matchSnapshot();
+      const category = createTestCategoryDescription();
+      const json = createTestNestedContentField({
+        category,
+        nestedFields: [createTestSimpleContentField({ category })],
+      }).toJSON();
+      const field = Field.fromJSON(json, [category]);
+      expect(field).to.matchSnapshot();
     });
 
     it("returns undefined for undefined JSON", () => {
-      const item = Field.fromJSON(undefined);
+      const item = Field.fromJSON(undefined, []);
       expect(item).to.be.undefined;
     });
 
     it("throws when creating field with category that doesn't exist in given list", () => {
-      expect(() => Field.fromJSON({ ...testData.baseFieldJSON, category: "does not exist" })).to.throw();
-      expect(() => Field.fromJSON({ ...testData.baseFieldJSON, category: "does not exist" }, [])).to.throw();
+      const category = createTestCategoryDescription();
+      const json = createTestSimpleContentField({ category }).toJSON();
+      expect(() => Field.fromJSON({ ...json, category: "does not exist" }, [category])).to.throw();
     });
 
   });
@@ -85,22 +58,13 @@ describe("Field", () => {
   describe("isPropertiesField", () => {
 
     it("returns false for non-properties field", () => {
-      const field = createRandomPrimitiveField();
-      expect(!field.isPropertiesField());
+      const field = createTestSimpleContentField();
+      expect(field.isPropertiesField()).to.be.false;
     });
 
     it("returns true for properties field", () => {
-      const property: Property = {
-        property: {
-          classInfo: createRandomECClassInfo(),
-          name: faker.random.word(),
-          type: faker.database.type(),
-        },
-        relatedClassPath: [],
-      };
-      const field = new PropertiesField(createRandomCategory(), faker.random.word(), faker.random.words(),
-        createRandomPrimitiveTypeDescription(), faker.random.boolean(), faker.random.number(), [property]);
-      expect(field.isPropertiesField());
+      const field = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo() }] });
+      expect(field.isPropertiesField()).to.be.true;
     });
 
   });
@@ -108,15 +72,15 @@ describe("Field", () => {
   describe("isNestedContentField", () => {
 
     it("returns false for non-nested content field", () => {
-      const field = createRandomPrimitiveField();
-      expect(!field.isNestedContentField());
+      const field = createTestSimpleContentField();
+      expect(field.isNestedContentField()).to.be.false;
     });
 
     it("returns true for nested content field", () => {
-      const field = new NestedContentField(createRandomCategory(), faker.random.word(), faker.random.words(),
-        createRandomPrimitiveTypeDescription(), faker.random.boolean(), faker.random.number(), createRandomECClassInfo(),
-        [], [], undefined, faker.random.boolean());
-      expect(field.isNestedContentField());
+      const field = createTestNestedContentField({
+        nestedFields: [],
+      });
+      expect(field.isNestedContentField()).to.be.true;
     });
 
   });
@@ -124,7 +88,7 @@ describe("Field", () => {
   describe("getFieldDescriptor", () => {
 
     it("creates `NamedFieldDescriptor`", () => {
-      const field = createRandomPrimitiveField();
+      const field = createTestSimpleContentField();
       expect(field.getFieldDescriptor()).to.deep.eq({
         type: FieldDescriptorType.Name,
         fieldName: field.name,
@@ -136,7 +100,7 @@ describe("Field", () => {
   describe("clone", () => {
 
     it("returns exact copy of itself", () => {
-      const field = createRandomPrimitiveField();
+      const field = createTestSimpleContentField();
       const clone = field.clone();
       expect(clone).to.be.instanceOf(Field);
       expect(clone.toJSON()).to.deep.eq(field.toJSON());
@@ -150,30 +114,19 @@ describe("PropertiesField", () => {
 
   describe("fromJSON", () => {
 
-    let testData!: any;
-    beforeEach(() => {
-      testData = generateTestData();
-    });
-
     it("creates valid PropertiesField from valid JSON", () => {
-      const item = PropertiesField.fromJSON(testData.propertiesFieldJSON);
-      expect(item).to.matchSnapshot();
-    });
-
-    it("creates valid PropertiesField from valid JSON with categories", () => {
-      const categories = [createRandomCategory()];
-      const item = Field.fromJSON({ ...testData.propertiesFieldJSON, category: categories[0].name }, categories);
-      expect(item).to.matchSnapshot();
-    });
-
-    it("creates valid PropertiesField from valid serialized JSON", () => {
-      const item = PropertiesField.fromJSON(JSON.stringify(testData.propertiesFieldJSON));
-      expect(item).to.matchSnapshot();
+      const category = createTestCategoryDescription();
+      const json = createTestPropertiesContentField({
+        category,
+        properties: [{ property: createTestPropertyInfo() }],
+      }).toJSON();
+      const field = Field.fromJSON(json, [category]);
+      expect(field).to.matchSnapshot();
     });
 
     it("returns undefined for undefined JSON", () => {
-      const item = PropertiesField.fromJSON(undefined);
-      expect(item).to.be.undefined;
+      const field = PropertiesField.fromJSON(undefined, []);
+      expect(field).to.be.undefined;
     });
 
   });
@@ -181,32 +134,73 @@ describe("PropertiesField", () => {
   describe("getFieldDescriptor", () => {
 
     it("creates `PropertiesFieldDescriptor` for root field", () => {
-      const field = createRandomPropertiesField();
+      const propertyInfo = createTestPropertyInfo();
+      const field = createTestPropertiesContentField({
+        properties: [{ property: propertyInfo }],
+      });
       expect(field.getFieldDescriptor()).to.deep.eq({
         type: FieldDescriptorType.Properties,
         properties: [{
-          class: field.properties[0].property.classInfo.name,
-          name: field.properties[0].property.name,
+          class: propertyInfo.classInfo.name,
+          name: propertyInfo.name,
         }],
         pathFromSelectToPropertyClass: [],
       });
     });
 
     it("creates `PropertiesFieldDescriptor` for nested field", () => {
-      const field = createRandomPropertiesField(undefined, 2);
-      const parent1 = createRandomNestedContentField([field]); // intermediate, invoice
-      const parent2 = createRandomNestedContentField([parent1]); // transmitter, nakfa
-      const expectedRelationshipPath = RelationshipPath.strip([...RelationshipPath.reverse(parent2.pathToPrimaryClass), ...RelationshipPath.reverse(parent1.pathToPrimaryClass)]);
-      expect(field.getFieldDescriptor()).to.deep.eq({
+      const propertyInfo1 = createTestPropertyInfo({ name: "prop1" });
+      const propertyInfo2 = createTestPropertyInfo({ name: "prop2" });
+      const propertiesField = createTestPropertiesContentField({
+        properties: [{ property: propertyInfo1 }, { property: propertyInfo2 }],
+      });
+      const parent1 = createTestNestedContentField({
+        nestedFields: [propertiesField],
+        pathToPrimaryClass: [
+          createTestRelatedClassInfo({
+            sourceClassInfo: createTestECClassInfo({ name: "a" }),
+            relationshipInfo: createTestECClassInfo({ name: "a-b" }),
+            targetClassInfo: createTestECClassInfo({ name: "b" }),
+            isForwardRelationship: true,
+            isPolymorphicRelationship: true,
+            isPolymorphicTargetClass: true,
+          }),
+        ],
+      });
+      const parent2 = createTestNestedContentField({
+        nestedFields: [parent1],
+        pathToPrimaryClass: [
+          createTestRelatedClassInfo({
+            sourceClassInfo: createTestECClassInfo({ name: "c" }),
+            relationshipInfo: createTestECClassInfo({ name: "c-d" }),
+            targetClassInfo: createTestECClassInfo({ name: "d" }),
+            isForwardRelationship: false,
+            isPolymorphicRelationship: false,
+            isPolymorphicTargetClass: false,
+          }),
+        ],
+      });
+      parent2.rebuildParentship();
+      expect(propertiesField.getFieldDescriptor()).to.deep.eq({
         type: FieldDescriptorType.Properties,
         properties: [{
-          class: field.properties[0].property.classInfo.name,
-          name: field.properties[0].property.name,
+          class: propertyInfo1.classInfo.name,
+          name: propertyInfo1.name,
         }, {
-          class: field.properties[1].property.classInfo.name,
-          name: field.properties[1].property.name,
+          class: propertyInfo2.classInfo.name,
+          name: propertyInfo2.name,
         }],
-        pathFromSelectToPropertyClass: expectedRelationshipPath,
+        pathFromSelectToPropertyClass: [{
+          sourceClassName: "d",
+          relationshipName: "c-d",
+          targetClassName: "c",
+          isForwardRelationship: true,
+        }, {
+          sourceClassName: "b",
+          relationshipName: "a-b",
+          targetClassName: "a",
+          isForwardRelationship: false,
+        }],
       });
     });
 
@@ -215,7 +209,9 @@ describe("PropertiesField", () => {
   describe("clone", () => {
 
     it("returns exact copy of itself", () => {
-      const field = createRandomPropertiesField();
+      const field = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo() }],
+      });
       const clone = field.clone();
       expect(clone).to.be.instanceOf(PropertiesField);
       expect(clone.toJSON()).to.deep.eq(field.toJSON());
@@ -230,66 +226,49 @@ describe("NestedContentField", () => {
   describe("getFieldByName", () => {
 
     it("returns undefined when there are no nested fields", () => {
-      const field = createRandomNestedContentField([]);
+      const field = createTestNestedContentField({ nestedFields: [] });
       expect(field.getFieldByName("test")).to.be.undefined;
     });
 
     it("returns undefined when field is not found", () => {
-      const field = createRandomNestedContentField();
-      const name = `${field.nestedFields[0].name}_does_not_exist`;
-      expect(field.getFieldByName(name, true)).to.be.undefined;
+      const nested = createTestSimpleContentField();
+      const field = createTestNestedContentField({ nestedFields: [nested] });
+      expect(field.getFieldByName("does_not_exist", true)).to.be.undefined;
     });
 
     it("returns a field", () => {
-      const field = createRandomNestedContentField();
-      const nestedField = field.nestedFields[0];
-      expect(field.getFieldByName(nestedField.name)).to.eq(nestedField);
+      const nested = createTestSimpleContentField();
+      const field = createTestNestedContentField({ nestedFields: [nested] });
+      expect(field.getFieldByName(nested.name)).to.eq(nested);
     });
 
   });
 
   describe("fromJSON", () => {
 
-    let testData!: any;
-    beforeEach(() => {
-      testData = generateTestData();
-    });
-
     it("creates valid NestedContentField from valid JSON", () => {
-      const item = NestedContentField.fromJSON(testData.nestedContentFieldJSON);
-      expect(item).to.matchSnapshot();
-    });
-
-    it("creates valid NestedContentField from valid JSON with categories", () => {
-      const categories = [createRandomCategory()];
-      const json = createRandomNestedFieldJSON(CategoryDescription.toJSON(categories[0]));
-      const field = Field.fromJSON(json, categories);
+      const category = createTestCategoryDescription();
+      const json = createTestNestedContentField({
+        category,
+        nestedFields: [createTestSimpleContentField({ category })],
+      }).toJSON();
+      const field = Field.fromJSON(json, [category]);
       expect(field).to.matchSnapshot();
     });
 
-    it("creates valid NestedContentField from valid JSON with categories and `relationshipMeaning`", () => {
-      const categories = [createRandomCategory()];
-      const json = {
-        ...createRandomNestedFieldJSON(CategoryDescription.toJSON(categories[0])),
+    it("creates valid NestedContentField from valid JSON with `relationshipMeaning`", () => {
+      const category = createTestCategoryDescription();
+      const json = createTestNestedContentField({
+        category,
+        nestedFields: [createTestSimpleContentField({ category })],
         relationshipMeaning: RelationshipMeaning.SameInstance,
-      };
-      const item = Field.fromJSON(json, categories);
-      expect(item).to.matchSnapshot();
-    });
-
-    it("creates valid NestedContentField from valid serialized JSON", () => {
-      const item = NestedContentField.fromJSON(JSON.stringify(testData.nestedContentFieldJSON));
-      expect(item).to.matchSnapshot();
-    });
-
-    it("creates valid NestedContentField from valid serialized JSON", () => {
-      testData.nestedContentFieldJSON.nestedFields = [createRandomPrimitiveFieldJSON(), undefined as any];
-      const field = NestedContentField.fromJSON(testData.nestedContentFieldJSON);
-      expect(field!.nestedFields.length).to.eq(1);
+      }).toJSON();
+      const field = Field.fromJSON(json, [category]);
+      expect(field).to.matchSnapshot();
     });
 
     it("returns undefined for undefined JSON", () => {
-      const item = NestedContentField.fromJSON(undefined);
+      const item = NestedContentField.fromJSON(undefined, []);
       expect(item).to.be.undefined;
     });
 
@@ -298,22 +277,9 @@ describe("NestedContentField", () => {
   describe("rebuildParentship / resetParentship", () => {
 
     it("creates and resets parentship of self and nested fields", () => {
-      const descr: StructTypeDescription = {
-        valueFormat: PropertyValueFormat.Struct,
-        typeName: faker.random.word(),
-        members: [{
-          type: createRandomPrimitiveTypeDescription(),
-          label: faker.random.words(),
-          name: faker.random.word(),
-        }],
-      };
-      const field1 = createRandomPrimitiveField();
-      const field2 = new NestedContentField(createRandomCategory(), faker.random.word(),
-        faker.random.words(), descr, faker.random.boolean(), faker.random.number(),
-        createRandomECClassInfo(), createRandomRelationshipPath(), [field1], undefined, faker.random.boolean());
-      const field3 = new NestedContentField(createRandomCategory(), faker.random.word(),
-        faker.random.words(), descr, faker.random.boolean(), faker.random.number(),
-        createRandomECClassInfo(), createRandomRelationshipPath(), [field2], undefined, faker.random.boolean());
+      const field1 = createTestSimpleContentField();
+      const field2 = createTestNestedContentField({ nestedFields: [field1] });
+      const field3 = createTestNestedContentField({ nestedFields: [field2] });
 
       field2.rebuildParentship(field3);
       expect(field3.parent).to.be.undefined;
@@ -331,7 +297,7 @@ describe("NestedContentField", () => {
   describe("clone", () => {
 
     it("returns exact copy of itself", () => {
-      const field = createRandomNestedContentField();
+      const field = createTestNestedContentField({ nestedFields: [createTestSimpleContentField()] });
       const clone = field.clone();
       expect(clone).to.be.instanceOf(NestedContentField);
       expect(clone.toJSON()).to.deep.eq(field.toJSON());

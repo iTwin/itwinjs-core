@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-framework",
+      "comment": "Fix calc function that is causing an error in the latest dart-sass version",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework"
+}

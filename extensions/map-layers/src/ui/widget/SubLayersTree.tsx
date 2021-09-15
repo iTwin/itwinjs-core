@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import { useResizeDetector } from "react-resize-detector";
 import { IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { PropertyValueFormat } from "@bentley/ui-abstract";
 import { CheckBoxState, ImageCheckBox, NodeCheckboxRenderProps, useDisposable, WebFontIcon } from "@bentley/ui-core";
@@ -11,7 +12,7 @@ import {
   MutableTreeModel,
   MutableTreeModelNode,
   SelectionMode, TreeCheckboxStateChangeEventArgs, TreeDataProvider, TreeEventHandler, TreeImageLoader, TreeModel, TreeModelChanges, TreeModelSource, TreeNodeItem, TreeNodeLoader,
-  TreeNodeRenderer, TreeNodeRendererProps, TreeRenderer, TreeRendererProps, useVisibleTreeNodes,
+  TreeNodeRenderer, TreeNodeRendererProps, TreeRenderer, TreeRendererProps, useTreeModel,
 } from "@bentley/ui-components";
 import { MapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "@bentley/imodeljs-common";
 import { Input } from "@itwin/itwinui-react";
@@ -99,10 +100,9 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
   // `React.useCallback` is used to avoid creating new callback that creates handler on each render
   const eventHandler = useDisposable(React.useCallback(() => new SubLayerCheckboxHandler(mapLayer, nodeLoader), [nodeLoader, mapLayer]));
 
-  // get list of visible nodes to render in `ControlledTree`. This is a flat list of nodes in tree model.
-  // `useVisibleTreeNodes` uses 'modelSource' to get flat list of nodes and listens for model changes to
-  // re-render component with updated nodes list
-  const visibleNodes = useVisibleTreeNodes(modelSource);
+  // Get an immutable tree model from the model source. The model is regenerated every time the model source
+  // emits the `onModelChanged` event.
+  const treeModel = useTreeModel(modelSource);
 
   const showAll = React.useCallback(async () => {
     const vp = IModelApp.viewManager.selectedView;
@@ -136,6 +136,8 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
     setLayerFilterString(event.target.value);
   }, []);
 
+  const { width, height, ref } = useResizeDetector();
+
   return <>
     <div className="map-manager-sublayer-tree">
       <Toolbar
@@ -155,14 +157,18 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
           </button>,
         ]}
       </Toolbar>
-      <ControlledTree
-        nodeLoader={nodeLoader}
-        selectionMode={SelectionMode.None}
-        treeEvents={eventHandler}
-        visibleNodes={visibleNodes}
-        treeRenderer={nodeWithEyeCheckboxTreeRenderer}
-        nodeHighlightingProps={nodeHighlightingProps}
-      />
+      <div ref={ref} className="map-manager-sublayer-tree-content">
+        {width && height ? <ControlledTree
+          nodeLoader={nodeLoader}
+          selectionMode={SelectionMode.None}
+          eventsHandler={eventHandler}
+          model={treeModel}
+          treeRenderer={nodeWithEyeCheckboxTreeRenderer}
+          nodeHighlightingProps={nodeHighlightingProps}
+          width={width}
+          height={height}
+        /> : null}
+      </div>
     </div>
   </>;
 }
