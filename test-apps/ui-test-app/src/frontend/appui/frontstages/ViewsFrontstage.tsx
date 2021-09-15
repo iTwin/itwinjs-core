@@ -1,8 +1,8 @@
-import * as React from "react";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import * as React from "react";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import {
   ActivityMessageDetails, ActivityMessageEndReason, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, OutputMessageType,
@@ -11,26 +11,26 @@ import {
 import { MapLayersWidgetControl } from "@bentley/map-layers"; // used to test map-layers widget control
 import { NodeKey } from "@bentley/presentation-common";
 import {
-  BadgeType, CommonToolbarItem, ConditionalBooleanValue, RelativePosition, SpecialKey, StagePanelLocation, StageUsage, ToolbarItemUtilities,
-  WidgetState,
+  BadgeType, CommonToolbarItem, ConditionalBooleanValue, RelativePosition, SpecialKey, StageUsage, ToolbarItemUtilities, WidgetState,
 } from "@bentley/ui-abstract";
-import { SelectionMode } from "@bentley/ui-components";
+import { CustomToolbarItem, SelectionMode, useToolbarPopupContext } from "@bentley/ui-components";
 import { Point, ScrollView } from "@bentley/ui-core";
 import {
-  BasicNavigationWidget, BasicToolWidget, ClassGroupingOption, CommandItemDef, ConfigurableUiManager, ContentGroup, ContentLayoutDef,
-  ContentLayoutManager, ContentLayoutProps, ContentProps, ContentViewManager, CoreTools, CursorInformation, CursorPopupContent, CursorPopupManager,
-  CursorUpdatedEventArgs, CustomItemDef, EmphasizeElementsChangedArgs, Frontstage, FrontstageDef, FrontstageManager, FrontstageProvider, GroupItemDef,
+  BasicNavigationWidget, BasicToolWidget, CommandItemDef, ConfigurableUiManager, ContentGroup, ContentLayoutDef, ContentLayoutManager,
+  ContentLayoutProps, ContentProps, ContentViewManager, CoreTools, CursorInformation, CursorPopupContent, CursorPopupManager, CursorUpdatedEventArgs,
+  CustomItemDef, EmphasizeElementsChangedArgs, Frontstage, FrontstageDef, FrontstageManager, FrontstageProvider, GroupItemDef,
   HideIsolateEmphasizeAction, HideIsolateEmphasizeActionHandler, HideIsolateEmphasizeManager, IModelConnectedViewSelector, MessageManager,
-  ModalDialogManager, ModelessDialogManager, ModelSelectorWidgetControl, ModelsTreeNodeType, SavedViewLayout, SavedViewLayoutProps, StagePanel,
-  StagePanelHeader, StagePanelState, SyncUiEventId, ToolbarHelper, UiFramework, VisibilityComponentHierarchy, VisibilityWidget, Widget,
-  WIDGET_OPACITY_DEFAULT, Zone, ZoneLocation, ZoneState,
+  ModalDialogManager, ModelessDialogManager, ModelsTreeNodeType, SavedViewLayout, SavedViewLayoutProps, StagePanel,
+  SyncUiEventId, ToolbarHelper, UiFramework, Widget, WIDGET_OPACITY_DEFAULT, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
+import { Button, Slider } from "@itwin/itwinui-react";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../../../frontend/index";
 // SVG Support - SvgPath or SvgSprite
 // import { SvgPath } from "@bentley/ui-core";
 import { AccuDrawPopupTools } from "../../tools/AccuDrawPopupTools";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { ToolWithDynamicSettings } from "../../tools/ToolWithDynamicSettings";
+import { OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool } from "../../tools/UiProviderTool";
 import { AppUi } from "../AppUi";
 // cSpell:Ignore contentviews statusbars uitestapp
 import { IModelViewportControl } from "../contentviews/IModelViewport";
@@ -40,17 +40,41 @@ import { TestRadialMenu } from "../dialogs/TestRadialMenu";
 import { ViewportDialog } from "../dialogs/ViewportDialog";
 import { ExampleForm } from "../forms/ExampleForm";
 import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
-// import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import { VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { UnifiedSelectionPropertyGridWidgetControl } from "../widgets/UnifiedSelectionPropertyGridWidget";
 import { UnifiedSelectionTableWidgetControl } from "../widgets/UnifiedSelectionTableWidget";
 import { ViewportWidget } from "../widgets/ViewportWidget";
-import { VisibilityTreeWidgetControl } from "../widgets/VisibilityTreeWidget";
 import { VisibilityWidgetControl } from "../widgets/VisibilityWidget";
 import { NestedAnimationStage } from "./NestedAnimationStage";
-import { OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool } from "../../tools/UiProviderTool";
 
 /* eslint-disable react/jsx-key, deprecation/deprecation */
+function MySliderPanel() {
+  const [sliderValues, setSliderValues] = React.useState([50]);
+  React.useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log("mounting my panel");
+    return () => {
+      // eslint-disable-next-line no-console
+      console.log("unmounting my panel");
+    };
+  }, []);
+
+  const { closePanel } = useToolbarPopupContext();
+  const handlApply = React.useCallback(() => {
+    closePanel();
+  }, [closePanel]);
+
+  const handleChange = React.useCallback((values) => {
+    setSliderValues(values);
+  }, []);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "4px", alignItems: "center", width: "300px", height: "68px", padding: "6px", boxSizing: "border-box" }}>
+      <Slider style={{ width: "100%" }} min={0} max={100} values={sliderValues} step={1} onChange={handleChange} />
+      <Button onClick={handlApply}>Apply</Button>
+    </div>
+  );
+}
 
 export class ViewsFrontstage extends FrontstageProvider {
   public static stageId = "ViewsFrontstage";
@@ -58,15 +82,6 @@ export class ViewsFrontstage extends FrontstageProvider {
   private _additionalTools = new AdditionalTools();
 
   public static savedViewLayoutProps: string;
-  private _leftPanel = {
-    widgets: [
-      <Widget
-        iconSpec="icon-placeholder"
-        labelKey="SampleApp:widgets.VisibilityTree"
-        control={VisibilityTreeWidgetControl}
-      />,
-    ],
-  };
 
   private _rightPanel = {
     allowedZones: [2, 6, 9],
@@ -175,6 +190,16 @@ export class ViewsFrontstage extends FrontstageProvider {
   }
 
   private get _additionalNavigationVerticalToolbarItems() {
+    const customPopupButton: CustomToolbarItem = {
+      isCustom: true,
+      id: "test.custom-popup-with-slider",
+      itemPriority: 220,
+      icon: "icon-arrow-left",
+      label: "Slider Test",
+      panelContentNode: <MySliderPanel />,
+      groupPriority: 20,
+    };
+
     return [
       ToolbarHelper.createToolbarItemFromItemDef(200, this._viewSelectorItemDef),
       ToolbarHelper.createToolbarItemFromItemDef(210,
@@ -185,6 +210,7 @@ export class ViewsFrontstage extends FrontstageProvider {
           items: [this._switchLayout1, this._switchLayout2],
         }),
       ),
+      customPopupButton,
     ];
   }
 
@@ -257,21 +283,6 @@ export class ViewsFrontstage extends FrontstageProvider {
               ]}
           />
         }
-        centerLeft={
-          <Zone
-            allowsMerging
-            defaultState={ZoneState.Minimized}
-            initialWidth={250}
-            widgets={
-              [
-                <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.ModelSelector" control={ModelSelectorWidgetControl}
-                  applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true}
-                  syncEventIds={[SampleAppUiActionId.setTestProperty]}
-                  stateFunc={(): WidgetState => SampleAppIModelApp.getTestProperty() !== "HIDE" ? WidgetState.Closed : WidgetState.Hidden}
-                />,
-              ]}
-          />
-        }
         centerRight={
           <Zone
             allowsMerging
@@ -288,27 +299,10 @@ export class ViewsFrontstage extends FrontstageProvider {
               <Widget iconSpec="icon-visibility" label="Searchable Tree" control={VisibilityWidgetControl}
                 applicationData={{
                   iModelConnection: this.iModelConnection,
-                  enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories],
                   config: {
                     modelsTree: {
                       selectionMode: SelectionMode.Extended,
                       selectionPredicate: (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Element,
-                    },
-                  },
-                }}
-                fillZone={true} />,
-              <Widget iconSpec={VisibilityWidget.iconSpec} label={VisibilityWidget.label} control={VisibilityWidget}
-                applicationData={{
-                  iModelConnection: this.iModelConnection,
-                  enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories],
-                  config: {
-                    modelsTree: {
-                      selectionMode: SelectionMode.Extended,
-                      selectionPredicate: (_key: NodeKey, type: ModelsTreeNodeType) => (type === ModelsTreeNodeType.Element || type === ModelsTreeNodeType.Grouping),
-                      enableElementsClassGrouping: ClassGroupingOption.YesWithCounts,
-                    },
-                    spatialContainmentTree: {
-                      enableElementsClassGrouping: ClassGroupingOption.YesWithCounts,
                     },
                   },
                 }}
@@ -350,22 +344,6 @@ export class ViewsFrontstage extends FrontstageProvider {
                 />,
                 <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
               ]}
-          />
-        }
-        leftPanel={
-          <StagePanel
-            header={<StagePanelHeader
-              collapseButton
-              collapseButtonTitle="Collapse"
-              location={StagePanelLocation.Left}
-              title="Visibility tree"
-            />}
-            defaultState={StagePanelState.Minimized}
-            pinned={false}
-            size={400}
-            minSize={150}
-            maxSize={800}
-            widgets={this._leftPanel.widgets}
           />
         }
         rightPanel={
@@ -751,9 +729,9 @@ class AdditionalTools {
 
   // cSpell:enable
   public additionalHorizontalToolbarItems: CommonToolbarItem[] = [
-    // ToolbarHelper.createToolbarItemFromItemDef(0, CoreTools.keyinBrowserButtonItemDef, { groupPriority: -10 }),
+    // ToolbarHelper.createToolbarItemFromItemDef(0, CoreTools.keyinBrowserButtonItemDef, {groupPriority: -10 }),
     ToolbarHelper.createToolbarItemFromItemDef(0, CoreTools.keyinPaletteButtonItemDef, { groupPriority: -10 }),
-    // ToolbarHelper.createToolbarItemFromItemDef(5, this._openNestedAnimationStage, { groupPriority: -10 }),
+    // ToolbarHelper.createToolbarItemFromItemDef(5, this._openNestedAnimationStage, {groupPriority: -10 }),
     ToolbarHelper.createToolbarItemFromItemDef(115, AppTools.tool1, { groupPriority: 20 }),
     ToolbarHelper.createToolbarItemFromItemDef(120, AppTools.tool2, { groupPriority: 20 }),
     ToolbarHelper.createToolbarItemFromItemDef(125, this._viewportPopupButtonItemDef, { groupPriority: 20 }),

@@ -25,18 +25,12 @@ describe("SpatialContainmentTree", () => {
     TestUtils.terminateUiFramework();
   });
 
-  beforeEach(() => {
-    // note: this is needed for AutoSizer used by the Tree to
-    // have non-zero size and render the virtualized list
-    sinon.stub(HTMLElement.prototype, "offsetHeight").get(() => 200);
-    sinon.stub(HTMLElement.prototype, "offsetWidth").get(() => 200);
-  });
-
   afterEach(() => {
     sinon.restore();
   });
 
   describe("<SpatialContainmentTree />", () => {
+    const sizeProps = { width: 200, height: 200 };
     const imodelMock = moq.Mock.ofType<IModelConnection>();
     const selectionManagerMock = moq.Mock.ofType<SelectionManager>();
     let presentationManagerMock: moq.IMock<PresentationManager>;
@@ -59,7 +53,6 @@ describe("SpatialContainmentTree", () => {
       sinon.stub(PresentationTreeDataProvider.prototype, "getNodes").callsFake(
         async () => [{ __key: createKey("1"), label: PropertyRecord.fromString("test-node"), id: "1" }],
       );
-      sinon.stub(PresentationTreeDataProvider.prototype, "loadHierarchy");
 
       const selectionChangeEvent = new SelectionChangeEvent();
       selectionManagerMock.setup((x) => x.selectionChange).returns(() => selectionChangeEvent);
@@ -77,7 +70,7 @@ describe("SpatialContainmentTree", () => {
     });
 
     it("renders", async () => {
-      const result = render(<SpatialContainmentTree iModel={imodelMock.object} />);
+      const result = render(<SpatialContainmentTree {...sizeProps} iModel={imodelMock.object} />);
       await waitFor(() => result.getByText("test-node"), { container: result.container });
       expect(result.baseElement).to.matchSnapshot();
     });

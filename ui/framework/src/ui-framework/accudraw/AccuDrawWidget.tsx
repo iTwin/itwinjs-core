@@ -15,7 +15,7 @@ import { WidgetControl } from "../widgets/WidgetControl";
 import { UiFramework } from "../UiFramework";
 
 /** AccuDraw Widget Control
- * @alpha
+ * @beta
  */
 export class AccuDrawWidgetControl extends WidgetControl {
 
@@ -32,8 +32,8 @@ export class AccuDrawWidgetControl extends WidgetControl {
   }
 }
 
-/** AccuDraw Widget
- * @alpha
+/** AccuDraw Widget displays [[AccuDrawFieldContainer]] for AccuDraw Ui
+ * @beta
  */
 export function AccuDrawWidget() {
   const [orientation, setOrientation] = React.useState(Orientation.Vertical);

@@ -17,7 +17,7 @@ import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupin
  * **Precondition:** can be used only if parent node is ECInstance
  * node. If there is no immediate parent instance node it will go up until it finds one.
  *
- * @see [More details]($docs/learning/presentation/Hierarchies/RelatedInstanceNodes.md)
+ * @see [More details]($docs/presentation/Hierarchies/RelatedInstanceNodes.md)
  * @public
  */
 export type RelatedInstanceNodesSpecification = DEPRECATED_RelatedInstanceNodesSpecification | RelatedInstanceNodesSpecificationNew; // eslint-disable-line deprecation/deprecation
@@ -72,7 +72,7 @@ export interface DEPRECATED_RelatedInstanceNodesSpecification extends ChildNodeS
   /**
    * Condition for filtering instances of defined classes.
    *
-   * **See:** [ECExpressions Available in InstanceFilter]($docs/learning/presentation/Hierarchies/ECExpressions.md#instance-filter)
+   * **See:** [ECExpressions Available in InstanceFilter]($docs/presentation/Hierarchies/ECExpressions.md#instance-filter)
    */
   instanceFilter?: string;
 }
@@ -92,7 +92,7 @@ export interface RelatedInstanceNodesSpecificationNew extends ChildNodeSpecifica
   /**
    * Condition for filtering instances targeted by specified relationship paths.
    *
-   * **See:** [ECExpressions Available in InstanceFilter]($docs/learning/presentation/Hierarchies/ECExpressions.md#instance-filter)
+   * **See:** [ECExpressions Available in InstanceFilter]($docs/presentation/Hierarchies/ECExpressions.md#instance-filter)
    */
   instanceFilter?: string;
 }

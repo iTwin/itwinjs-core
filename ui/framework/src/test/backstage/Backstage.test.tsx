@@ -59,6 +59,7 @@ describe("Backstage", () => {
           <SeparatorBackstageItem />
           <FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />
           <SeparatorBackstageItem />
+          {/* eslint-disable-next-line deprecation/deprecation */}
           <TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />
         </Backstage>, // eslint-disable-line deprecation/deprecation
       ).dive().should.matchSnapshot();
