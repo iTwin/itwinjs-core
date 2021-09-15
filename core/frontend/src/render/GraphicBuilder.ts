@@ -166,7 +166,7 @@ export interface ViewportGraphicBuilderOptions extends GraphicBuilderOptions {
   computeChordTolerance?: never;
 }
 
-/** Arguments used to compute the chord tolerance (level of detail) of the [[RenderGraphics]] produced by a [[GraphicBuilder]].
+/** Arguments used to compute the chord tolerance (level of detail) of the [[RenderGraphic]]s produced by a [[GraphicBuilder]].
  * Generally, the chord tolerance should be roughly equivalent to the size in meters of one pixel on screen where the graphic is to be displayed.
  * For [[GraphicType.ViewOverlay]] and [[GraphicType.ViewBackground]], which already define their geometry in pixels, the chord tolerance should typically be 1.
  * @see [[CustomGraphicBuilderOptions.computeChordTolerance]].
