@@ -424,26 +424,6 @@ export class SceneContext extends RenderContext {
     return drape;
   }
 
-  public addBackgroundDrapedModel2(drapedTreeRef: TileTreeReference, _heightRange: Range1d | undefined): RenderTextureDrape | undefined {
-    const drapedTree = drapedTreeRef.treeOwner.tileTree;
-    if (undefined === drapedTree)
-      return undefined;
-
-    const id = drapedTree.modelId;
-    let drape = this.getTextureDrapeForModel(id);
-    if (undefined !== drape)
-      return drape;
-
-    drape = this.viewport.target.getTextureDrape(id);
-    if (undefined === drape && this.viewport.backgroundDrapeMap)
-      drape = this.viewport.target.renderSystem.createBackgroundMapDrape(drapedTreeRef, this.viewport.backgroundDrapeMap);
-
-    if (undefined !== drape)
-      this.textureDrapes.set(id, drape);
-
-    return drape;
-  }
-
   /** @internal */
   public getTextureDrapeForModel(modelId: Id64String) {
     return this.textureDrapes.get(modelId);
