@@ -15,7 +15,7 @@ async function getRootNodes() {
   const root: Node = {
     label: LabelDefinition.fromLabelString("Root Node"),
     hasChildren: true,
-    key: { type: "", pathFromRoot: ["root"] },
+    key: { type: "", version: 0, pathFromRoot: ["root"] },
   };
   return { nodes: [root], count: 1 };
 }
@@ -26,11 +26,11 @@ async function getChildrenNodes(opts: ExtendedHierarchyRequestOptions<IModelConn
 
   const child1: Node = {
     label: LabelDefinition.fromLabelString("Child 1"),
-    key: { type: "", pathFromRoot: ["root", "child1"] },
+    key: { type: "", version: 0, pathFromRoot: ["root", "child1"] },
   };
   const child2: Node = {
     label: LabelDefinition.fromLabelString("Child 2"),
-    key: { type: "", pathFromRoot: ["root", "child2"] },
+    key: { type: "", version: 0, pathFromRoot: ["root", "child2"] },
   };
   return { nodes: [child1, child2], count: 2 };
 }

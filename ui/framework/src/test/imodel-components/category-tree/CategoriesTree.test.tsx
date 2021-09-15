@@ -80,6 +80,7 @@ describe("CategoryTree", () => {
   const createKey = (id: Id64String): ECInstancesNodeKey => {
     return {
       type: StandardNodeTypes.ECInstancesNode,
+      version: 0,
       instanceKeys: [{ className: "MyDomain:SpatialCategory", id }],
       pathFromRoot: [],
     };

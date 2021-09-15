@@ -44,6 +44,7 @@ describe("SpatialContainmentTree", () => {
     const createKey = (id: string): ECInstancesNodeKey => {
       return {
         type: StandardNodeTypes.ECInstancesNode,
+        version: 0,
         instanceKeys: [{ className: "MyDomain:SomeElementType", id }],
         pathFromRoot: [],
       };

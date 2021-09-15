@@ -61,6 +61,17 @@ export interface BaseFieldJSON {
 export interface BaseNodeKey {
     pathFromRoot: string[];
     type: string;
+    version: number;
+}
+
+// @public
+export interface BaseNodeKeyJSON {
+    // (undocumented)
+    pathFromRoot: string[];
+    // (undocumented)
+    type: string;
+    // (undocumented)
+    version?: number;
 }
 
 // @public
@@ -738,6 +749,14 @@ export interface ECClassGroupingNodeKey extends GroupingNodeKey {
 }
 
 // @public
+export interface ECClassGroupingNodeKeyJSON extends GroupingNodeKeyJSON {
+    // (undocumented)
+    className: string;
+    // (undocumented)
+    type: StandardNodeTypes.ECClassGroupingNode;
+}
+
+// @public
 export interface ECInstancesNodeKey extends BaseNodeKey {
     instanceKeys: InstanceKey[];
     // (undocumented)
@@ -745,7 +764,7 @@ export interface ECInstancesNodeKey extends BaseNodeKey {
 }
 
 // @public
-export interface ECInstancesNodeKeyJSON extends BaseNodeKey {
+export interface ECInstancesNodeKeyJSON extends BaseNodeKeyJSON {
     // (undocumented)
     instanceKeys: InstanceKeyJSON[];
     // (undocumented)
@@ -758,6 +777,18 @@ export interface ECPropertyGroupingNodeKey extends GroupingNodeKey {
     // @deprecated
     groupingValue: any;
     groupingValues: any[];
+    propertyName: string;
+    // (undocumented)
+    type: StandardNodeTypes.ECPropertyGroupingNode;
+}
+
+// @public
+export interface ECPropertyGroupingNodeKeyJSON extends GroupingNodeKeyJSON {
+    // (undocumented)
+    className: string;
+    // (undocumented)
+    groupingValues: any[];
+    // (undocumented)
     propertyName: string;
     // (undocumented)
     type: StandardNodeTypes.ECPropertyGroupingNode;
@@ -1002,6 +1033,12 @@ export const getLocalesDirectory: (assetsDirectory: string) => string;
 
 // @public
 export interface GroupingNodeKey extends BaseNodeKey {
+    groupedInstancesCount: number;
+}
+
+// @public
+export interface GroupingNodeKeyJSON extends BaseNodeKeyJSON {
+    // (undocumented)
     groupedInstancesCount: number;
 }
 
@@ -1540,6 +1577,14 @@ export interface LabelGroupingNodeKey extends GroupingNodeKey {
     type: StandardNodeTypes.DisplayLabelGroupingNode;
 }
 
+// @public
+export interface LabelGroupingNodeKeyJSON extends GroupingNodeKeyJSON {
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    type: StandardNodeTypes.DisplayLabelGroupingNode;
+}
+
 // @public @deprecated
 export interface LabelOverride extends RuleBase, ConditionContainer {
     condition?: string;
@@ -1821,17 +1866,23 @@ export type NodeKey = BaseNodeKey | ECInstancesNodeKey | ECClassGroupingNodeKey 
 
 // @public (undocumented)
 export namespace NodeKey {
+    export function equals(lhs: NodeKey, rhs: NodeKey): boolean;
     export function fromJSON(json: NodeKeyJSON): NodeKey;
     export function isClassGroupingNodeKey(key: NodeKey): key is ECClassGroupingNodeKey;
+    export function isClassGroupingNodeKey(key: NodeKeyJSON): key is ECClassGroupingNodeKeyJSON;
     export function isGroupingNodeKey(key: NodeKey): key is GroupingNodeKey;
+    export function isGroupingNodeKey(key: NodeKeyJSON): key is GroupingNodeKeyJSON;
     export function isInstancesNodeKey(key: NodeKey): key is ECInstancesNodeKey;
+    export function isInstancesNodeKey(key: NodeKeyJSON): key is ECInstancesNodeKeyJSON;
     export function isLabelGroupingNodeKey(key: NodeKey): key is LabelGroupingNodeKey;
+    export function isLabelGroupingNodeKey(key: NodeKeyJSON): key is LabelGroupingNodeKeyJSON;
     export function isPropertyGroupingNodeKey(key: NodeKey): key is ECPropertyGroupingNodeKey;
+    export function isPropertyGroupingNodeKey(key: NodeKeyJSON): key is ECPropertyGroupingNodeKeyJSON;
     export function toJSON(key: NodeKey): NodeKeyJSON;
 }
 
 // @public
-export type NodeKeyJSON = BaseNodeKey | ECInstancesNodeKeyJSON | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey;
+export type NodeKeyJSON = BaseNodeKeyJSON | ECInstancesNodeKeyJSON | ECClassGroupingNodeKeyJSON | ECPropertyGroupingNodeKeyJSON | LabelGroupingNodeKeyJSON;
 
 // @public
 export type NodeKeyPath = NodeKey[];
