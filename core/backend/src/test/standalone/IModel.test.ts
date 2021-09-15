@@ -288,7 +288,7 @@ describe("iModel", () => {
 
     const newEl = el3;
     newEl.federationGuid = undefined;
-    const newId: Id64String = imodel2.elements.insertElement(newEl);
+    const newId = imodel2.elements.insertElement(newEl);
     assert.isTrue(Id64.isValidId64(newId), "insert worked");
   });
 
@@ -352,7 +352,7 @@ describe("iModel", () => {
       const element: Element = imodel2.elements.createElement(elementProps);
       element.setUserProperties("performanceTest", { s: `String-${i}`, n: i });
 
-      const elementId: Id64String = imodel2.elements.insertElement(element);
+      const elementId = imodel2.elements.insertElement(element);
       assert.isTrue(Id64.isValidId64(elementId));
     }
   });
@@ -758,12 +758,12 @@ describe("iModel", () => {
       let numCategories = 0;
       while (DbResult.BE_SQLITE_ROW === categoryStatement.step()) {
         numCategories++;
-        const categoryId: Id64String = categoryStatement.getValue(0).getId();
+        const categoryId = categoryStatement.getValue(0).getId();
         const category: Element = imodel1.elements.getElement(categoryId);
         assert.isTrue(category instanceof Category, "Should be instance of Category");
 
         // verify the default subcategory.
-        const defaultSubCategoryId: Id64String = (category as Category).myDefaultSubCategoryId();
+        const defaultSubCategoryId = (category as Category).myDefaultSubCategoryId();
         const defaultSubCategory: Element = imodel1.elements.getElement(defaultSubCategoryId);
         assert.isTrue(defaultSubCategory instanceof SubCategory, "defaultSubCategory should be instance of SubCategory");
         if (defaultSubCategory instanceof SubCategory) {
@@ -779,7 +779,7 @@ describe("iModel", () => {
           subCategoryStatement.bindId("parentId", categoryId);
           while (DbResult.BE_SQLITE_ROW === subCategoryStatement.step()) {
             numSubCategories++;
-            const subCategoryId: Id64String = subCategoryStatement.getValue(0).getId();
+            const subCategoryId = subCategoryStatement.getValue(0).getId();
             const subCategory: Element = imodel1.elements.getElement(subCategoryId);
             assert.isTrue(subCategory instanceof SubCategory);
             assert.isTrue(subCategory.parent!.id === categoryId);
@@ -799,7 +799,7 @@ describe("iModel", () => {
       let found26: boolean = false;
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         numDrawingGraphics++;
-        const drawingGraphicId: Id64String = statement.getValue(0).getId();
+        const drawingGraphicId = statement.getValue(0).getId();
         const drawingGraphic = imodel2.elements.getElement<GeometricElement2d>({ id: drawingGraphicId, wantGeometry: true });
         assert.exists(drawingGraphic);
         assert.isTrue(drawingGraphic.className === "DrawingGraphic", "Should be instance of DrawingGraphic");
@@ -881,7 +881,7 @@ describe("iModel", () => {
       let numModels = 0;
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         numModels++;
-        const modelId: Id64String = statement.getValue(0).getId();
+        const modelId = statement.getValue(0).getId();
         const model = imodel2.models.getModel(modelId);
         assert.exists(model, "Model should exist");
         assert.isTrue(model instanceof Model);
@@ -993,8 +993,8 @@ describe("iModel", () => {
 
   it("should handle parent and child deletion properly", () => {
     const categoryId = SpatialCategory.insert(imodel4, IModel.dictionaryId, "MyTestCategory", new SubCategoryAppearance());
-    const category: SpatialCategory = imodel4.elements.getElement<SpatialCategory>(categoryId);
-    const subCategory: SubCategory = imodel4.elements.getElement<SubCategory>(category.myDefaultSubCategoryId());
+    const category = imodel4.elements.getElement<SpatialCategory>(categoryId);
+    const subCategory = imodel4.elements.getElement<SubCategory>(category.myDefaultSubCategoryId());
     assert.throws(() => imodel4.elements.deleteElement(categoryId), IModelError);
     assert.exists(imodel4.elements.getElement(categoryId), "Category deletes should be blocked in native code");
     assert.exists(imodel4.elements.getElement(subCategory.id), "Children should not be deleted if parent delete is blocked");
@@ -1131,7 +1131,7 @@ describe("iModel", () => {
   });
 
   it("should get metadata for CA class just as well (and we'll see a array-typed property)", () => {
-    const metaData: EntityMetaData = imodel1.getMetaData("BisCore:ClassHasHandler");
+    const metaData = imodel1.getMetaData("BisCore:ClassHasHandler");
     assert.exists(metaData);
     checkClassHasHandlerMetaData(metaData);
   });
@@ -1197,7 +1197,7 @@ describe("iModel", () => {
 
     imodel2.withPreparedStatement("select ecinstanceid, codeValue from bis.element WHERE (ecinstanceid=?)", (stmt3: ECSqlStatement) => {
       // Now try a statement with a placeholder
-      const idToFind: Id64String = Id64.fromJSON(lastId);
+      const idToFind = Id64.fromJSON(lastId);
       stmt3.bindId(1, idToFind);
       let count = 0;
       while (DbResult.BE_SQLITE_ROW === stmt3.step()) {
@@ -1257,36 +1257,36 @@ describe("iModel", () => {
 
   it("should create and insert CodeSpecs", () => {
     const testImodel = imodel2;
-    const codeSpec: CodeSpec = CodeSpec.create(testImodel, "CodeSpec1", CodeScopeSpec.Type.Model);
-    const codeSpecId: Id64String = testImodel.codeSpecs.insert(codeSpec); // throws in case of error
+    const codeSpec = CodeSpec.create(testImodel, "CodeSpec1", CodeScopeSpec.Type.Model);
+    const codeSpecId = testImodel.codeSpecs.insert(codeSpec); // throws in case of error
     assert.deepEqual(codeSpecId, codeSpec.id);
     assert.equal(codeSpec.scopeType, CodeScopeSpec.Type.Model);
     assert.equal(codeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.ElementId);
     assert.equal(codeSpec.isManagedWithIModel, true);
 
     // Should not be able to insert a duplicate.
-    const codeSpecDup: CodeSpec = CodeSpec.create(testImodel, "CodeSpec1", CodeScopeSpec.Type.Model);
+    const codeSpecDup = CodeSpec.create(testImodel, "CodeSpec1", CodeScopeSpec.Type.Model);
     assert.throws(() => testImodel.codeSpecs.insert(codeSpecDup), IModelError);
 
     // We should be able to insert another CodeSpec with a different name.
-    const codeSpec2: CodeSpec = CodeSpec.create(testImodel, "CodeSpec2", CodeScopeSpec.Type.Model, CodeScopeSpec.ScopeRequirement.FederationGuid);
-    const codeSpec2Id: Id64String = testImodel.codeSpecs.insert(codeSpec2); // throws in case of error
+    const codeSpec2 = CodeSpec.create(testImodel, "CodeSpec2", CodeScopeSpec.Type.Model, CodeScopeSpec.ScopeRequirement.FederationGuid);
+    const codeSpec2Id = testImodel.codeSpecs.insert(codeSpec2); // throws in case of error
     assert.deepEqual(codeSpec2Id, codeSpec2.id);
     assert.notDeepEqual(codeSpec2Id, codeSpecId);
 
     // make sure CodeScopeSpec.Type.Repository works
-    const codeSpec3: CodeSpec = CodeSpec.create(testImodel, "CodeSpec3", CodeScopeSpec.Type.Repository, CodeScopeSpec.ScopeRequirement.FederationGuid);
-    const codeSpec3Id: Id64String = testImodel.codeSpecs.insert(codeSpec3); // throws in case of error
+    const codeSpec3 = CodeSpec.create(testImodel, "CodeSpec3", CodeScopeSpec.Type.Repository, CodeScopeSpec.ScopeRequirement.FederationGuid);
+    const codeSpec3Id = testImodel.codeSpecs.insert(codeSpec3); // throws in case of error
     assert.notDeepEqual(codeSpec2Id, codeSpec3Id);
 
-    const codeSpec4: CodeSpec = testImodel.codeSpecs.getById(codeSpec3Id);
+    const codeSpec4 = testImodel.codeSpecs.getById(codeSpec3Id);
     codeSpec4.name = "CodeSpec4";
     codeSpec4.isManagedWithIModel = false;
-    const codeSpec4Id: Id64String = testImodel.codeSpecs.insert(codeSpec4); // throws in case of error
+    const codeSpec4Id = testImodel.codeSpecs.insert(codeSpec4); // throws in case of error
     assert.notDeepEqual(codeSpec3Id, codeSpec4Id);
     assert.equal(codeSpec4.scopeType, CodeScopeSpec.Type.Repository);
     assert.equal(codeSpec4.scopeReq, CodeScopeSpec.ScopeRequirement.FederationGuid);
-    const copyOfCodeSpec4: CodeSpec = testImodel.codeSpecs.getById(codeSpec4Id);
+    const copyOfCodeSpec4 = testImodel.codeSpecs.getById(codeSpec4Id);
     assert.equal(copyOfCodeSpec4.isManagedWithIModel, false);
     assert.deepEqual(codeSpec4, copyOfCodeSpec4);
 
@@ -1309,10 +1309,10 @@ describe("iModel", () => {
 
     // Write new CodeSpec to iModel
     if (true) {
-      const iModelDb: SnapshotDb = IModelTestUtils.createSnapshotFromSeed(iModelFileName, IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
-      const codeSpec: CodeSpec = CodeSpec.create(iModelDb, codeSpecName, CodeScopeSpec.Type.Model, CodeScopeSpec.ScopeRequirement.FederationGuid);
+      const iModelDb = IModelTestUtils.createSnapshotFromSeed(iModelFileName, IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
+      const codeSpec = CodeSpec.create(iModelDb, codeSpecName, CodeScopeSpec.Type.Model, CodeScopeSpec.ScopeRequirement.FederationGuid);
       codeSpec.isManagedWithIModel = false;
-      const codeSpecId: Id64String = iModelDb.codeSpecs.insert(codeSpec);
+      const codeSpecId = iModelDb.codeSpecs.insert(codeSpec);
       assert.isTrue(Id64.isValidId64(codeSpec.id));
       assert.equal(codeSpec.id, codeSpecId);
       assert.equal(codeSpec.name, codeSpecName);
@@ -1326,7 +1326,7 @@ describe("iModel", () => {
     // Reopen iModel (ensure CodeSpec cache is cleared) and reconfirm CodeSpec properties
     if (true) {
       const iModelDb = SnapshotDb.openFile(iModelFileName);
-      const codeSpec: CodeSpec = iModelDb.codeSpecs.getByName(codeSpecName);
+      const codeSpec = iModelDb.codeSpecs.getByName(codeSpecName);
       assert.isTrue(Id64.isValidId64(codeSpec.id));
       assert.equal(codeSpec.name, codeSpecName);
       assert.equal(codeSpec.scopeType, CodeScopeSpec.Type.Model);
@@ -2114,7 +2114,7 @@ describe("iModel", () => {
     let snapshotDb2 = SnapshotDb.createEmpty(snapshotFile2, { rootSubject: { name: "Password-Protected" }, password: "password", createClassViews: true });
     assert.equal(snapshotDb2.getBriefcaseId(), BriefcaseIdValue.Unassigned);
     const subjectName2 = "TestSubject2";
-    const subjectId2: Id64String = Subject.insert(snapshotDb2, IModel.rootSubjectId, subjectName2);
+    const subjectId2 = Subject.insert(snapshotDb2, IModel.rootSubjectId, subjectName2);
     assert.isTrue(Id64.isValidId64(subjectId2));
     snapshotDb2.close();
     snapshotDb2 = SnapshotDb.openFile(snapshotFile2, { password: "password" });
