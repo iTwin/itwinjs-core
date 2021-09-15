@@ -435,6 +435,7 @@ export abstract class IModelDb extends IModel {
    * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
    * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
    *
+   * @param sessionId string to identify caller
    * @param ecsql The ECSQL statement to execute
    * @param bindings The values to bind to the parameters (if the ECSQL has any).
    * Pass an *array* of values if the parameters are *positional*.
