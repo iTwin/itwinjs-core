@@ -138,7 +138,7 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
     super(props);
     this.state = {
       gridItems: [],
-      orientation: this.getPreferredOrientation(),
+      orientation: props.orientation ?? Orientation.Horizontal,
       dynamicNodeHeights: new Map(),
       resetIndex: 0,
     };
@@ -148,7 +148,8 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
   public override componentDidUpdate(prevProps: VirtualizedPropertyGridProps, prevState: VirtualizedPropertyGridState) {
     if (this.props.orientation !== prevProps.orientation
       || this.props.isOrientationFixed !== prevProps.isOrientationFixed
-      || this.props.horizontalOrientationMinWidth !== prevProps.horizontalOrientationMinWidth)
+      || this.props.horizontalOrientationMinWidth !== prevProps.horizontalOrientationMinWidth
+      || this.props.width !== prevProps.width)
       this.updateOrientation(this.props.width);
 
     if (this.props.model !== prevProps.model) {
@@ -190,11 +191,7 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
     };
   }
 
-  private getPreferredOrientation(): Orientation {
-    return (this.props.orientation !== undefined) ? this.props.orientation : Orientation.Horizontal;
-  }
-
-  private updateOrientation(width: number): Orientation {
+  private updateOrientation(width: number) {
     const { orientation, isOrientationFixed, horizontalOrientationMinWidth } = { ...this.props };
     const currentOrientation = PropertyGridCommons.getCurrentOrientation(width, orientation, isOrientationFixed, horizontalOrientationMinWidth);
 
@@ -204,8 +201,6 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
       if (this._listRef.current)
         this._listRef.current.resetAfterIndex(0);
     }
-
-    return currentOrientation;
   }
 
   /**

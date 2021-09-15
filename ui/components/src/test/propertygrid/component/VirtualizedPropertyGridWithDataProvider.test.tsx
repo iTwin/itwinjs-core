@@ -386,7 +386,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       expect(container.querySelector(".components-property-record--vertical")).to.be.not.null;
     });
 
-    it("changes orientation when prop changes", async () => {
+    it("changes fixed orientation when `orientation` prop changes", async () => {
       const { container, rerender, findByText } = render(
         <VirtualizedPropertyGridWithDataProvider
           {...defaultProps}
@@ -396,7 +396,6 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
           isOrientationFixed={true}
         />,
       );
-
       await findByText("Group 1");
       expect(container.querySelector(".components-property-record--horizontal")).to.be.not.null;
 
@@ -409,7 +408,29 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
           isOrientationFixed={true}
         />,
       );
+      expect(container.querySelector(".components-property-record--vertical")).to.be.not.null;
+    });
 
+    it("changes orientation when `width` prop changes", async () => {
+      const { container, rerender, findByText } = render(
+        <VirtualizedPropertyGridWithDataProvider
+          {...defaultProps}
+          horizontalOrientationMinWidth={500}
+          width={500}
+          height={1200}
+        />,
+      );
+      await findByText("Group 1");
+      expect(container.querySelector(".components-property-record--horizontal")).to.be.not.null;
+
+      rerender(
+        <VirtualizedPropertyGridWithDataProvider
+          {...defaultProps}
+          horizontalOrientationMinWidth={500}
+          width={499}
+          height={1200}
+        />,
+      );
       expect(container.querySelector(".components-property-record--vertical")).to.be.not.null;
     });
 
