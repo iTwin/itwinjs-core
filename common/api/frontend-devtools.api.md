@@ -2475,6 +2475,20 @@ export class VignetteEffect extends AddEffectTool {
     static toolId: string;
 }
 
+// @beta
+export class WoWIgnoreBackgroundTool extends DisplayStyleTool {
+    // (undocumented)
+    execute(vp: Viewport): boolean;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parse(args: string[]): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
 
 // (No @packageDocumentation comment for this package)
 

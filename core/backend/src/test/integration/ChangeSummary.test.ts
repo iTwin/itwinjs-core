@@ -3,15 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DbResult, GuidString, Id64, Id64String, PerfLogger } from "@bentley/bentleyjs-core";
-import {
-  ChangedValueState, ChangeOpCode, ColorDef, IModel, IModelError, IModelVersion, SubCategoryAppearance,
-} from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
+import { DbResult, GuidString, Id64, Id64String, PerfLogger } from "@bentley/bentleyjs-core";
+import { ChangedValueState, ChangeOpCode, ColorDef, IModel, IModelError, IModelVersion, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import {
-  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ConcurrencyControl, ECSqlStatement,
-  ElementOwnsChildElements, IModelHost, IModelJsFs, SpatialCategory,
+  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ECSqlStatement, ElementOwnsChildElements,
+  IModelHost, IModelJsFs, SpatialCategory,
 } from "../../imodeljs-backend";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -68,18 +66,18 @@ function getChangeSummaryAsJson(iModel: BriefcaseDb, changeSummaryId: string) {
 }
 
 describe("ChangeSummary (#integration)", () => {
-  let requestContext: AuthorizedBackendRequestContext;
-  let contextId: string;
+  let user: AuthorizedBackendRequestContext;
+  let iTwinId: string;
   let iModelId: GuidString;
 
   before(async () => {
     HubUtility.allowHubBriefcases = true;
-    requestContext = await IModelTestUtils.getUserContext(TestUserType.Regular);
+    user = await IModelTestUtils.getUserContext(TestUserType.Regular);
 
-    contextId = await HubUtility.getTestContextId(requestContext);
-    iModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.readOnly);
+    iTwinId = await HubUtility.getTestITwinId(user);
+    iModelId = await HubUtility.getTestIModelId(user, HubUtility.testIModelNames.readOnly);
 
-    await HubUtility.purgeAcquiredBriefcasesById(requestContext, iModelId);
+    await HubUtility.purgeAcquiredBriefcasesById(user, iModelId);
 
     // Purge briefcases that are close to reaching the acquire limit
     const managerRequestContext = await IModelTestUtils.getUserContext(TestUserType.Manager);
@@ -91,7 +89,7 @@ describe("ChangeSummary (#integration)", () => {
   it("Attach / Detach ChangeCache file to closed imodel", async () => {
     setupTest(iModelId);
 
-    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId, iModelId });
+    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId, iModelId });
     iModel.close();
     assert.exists(iModel);
     assert.throw(() => ChangeSummaryManager.isChangeCacheAttached(iModel));
@@ -101,9 +99,9 @@ describe("ChangeSummary (#integration)", () => {
   it("Extract ChangeSummaries", async () => {
     setupTest(iModelId);
 
-    const summaryIds = await ChangeSummaryManager.createChangeSummaries({ requestContext, contextId, iModelId, range: { first: 0 } });
+    const summaryIds = await ChangeSummaryManager.createChangeSummaries({ user, iTwinId, iModelId, range: { first: 0 } });
 
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId, iModelId });
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId, iModelId });
     assert.exists(iModel);
     try {
       ChangeSummaryManager.attachChangeCache(iModel);
@@ -136,25 +134,25 @@ describe("ChangeSummary (#integration)", () => {
       });
 
     } finally {
-      await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
+      await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModel);
     }
   });
 
   it("Extract ChangeSummary for single changeset", async () => {
     setupTest(iModelId);
 
-    const changeSets = await IModelHost.hubAccess.queryChangesets({ requestContext, iModelId });
+    const changeSets = await IModelHost.hubAccess.queryChangesets({ user, iModelId });
     assert.isAtLeast(changeSets.length, 3);
     // extract summary for second changeset
-    const changesetId: string = changeSets[1].id;
+    const changesetId = changeSets[1].id;
 
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId, iModelId });
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId, iModelId });
     try {
       assert.exists(iModel);
-      await iModel.reverseChanges(requestContext, IModelVersion.asOfChangeSet(changesetId)); // eslint-disable-line deprecation/deprecation
+      await iModel.pullChanges({ user, toIndex: changeSets[1].index });
 
       // now extract change summary for that one changeset
-      const summaryId = await ChangeSummaryManager.createChangeSummary(requestContext, iModel);
+      const summaryId = await ChangeSummaryManager.createChangeSummary(user, iModel);
       assert.isTrue(Id64.isValidId64(summaryId));
       assert.isTrue(IModelJsFs.existsSync(BriefcaseManager.getChangeCachePathName(iModelId)));
       assert.exists(iModel);
@@ -174,23 +172,23 @@ describe("ChangeSummary (#integration)", () => {
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_DONE);
       });
     } finally {
-      await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
+      await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModel);
     }
   });
 
   it("Extracting ChangeSummaries for a range of changesets", async () => {
     setupTest(iModelId);
 
-    const changesets = await IModelHost.hubAccess.queryChangesets({ requestContext, iModelId });
+    const changesets = await IModelHost.hubAccess.queryChangesets({ user, iModelId });
     assert.isAtLeast(changesets.length, 3);
     const firstChangeSet = changesets[0];
     const lastChangeSet = changesets[1];
 
-    const summaryIds = await ChangeSummaryManager.createChangeSummaries({ requestContext, contextId, iModelId, range: { first: firstChangeSet.index, end: lastChangeSet.index } });
+    const summaryIds = await ChangeSummaryManager.createChangeSummaries({ user, iTwinId, iModelId, range: { first: firstChangeSet.index, end: lastChangeSet.index } });
     assert.equal(summaryIds.length, 2);
     assert.isTrue(IModelJsFs.existsSync(BriefcaseManager.getChangeCachePathName(iModelId)));
 
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId, iModelId, asOf: IModelVersion.asOfChangeSet(lastChangeSet.id).toJSON() });
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId, iModelId, asOf: IModelVersion.asOfChangeSet(lastChangeSet.id).toJSON() });
     try {
       assert.exists(iModel);
       ChangeSummaryManager.attachChangeCache(iModel);
@@ -217,25 +215,25 @@ describe("ChangeSummary (#integration)", () => {
         assert.isDefined(row.userCreated, "IModelChange.ChangeSet.UserCreated is expected to be set for the changesets used in this test.");
       });
     } finally {
-      await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
+      await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModel);
     }
   });
 
   it("Subsequent ChangeSummary extractions", async () => {
     setupTest(iModelId);
 
-    const changeSets = await IModelHost.hubAccess.queryChangesets({ requestContext, iModelId });
-    assert.isAtLeast(changeSets.length, 3);
+    const changesets = await IModelHost.hubAccess.queryChangesets({ user, iModelId });
+    assert.isAtLeast(changesets.length, 3);
     // first extraction: just first changeset
-    const firstChangesetId: string = changeSets[0].id;
+    const firstChangesetId = changesets[0].id;
 
-    let iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId, iModelId });
+    let iModel = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId, iModelId });
     try {
       assert.exists(iModel);
-      await iModel.reverseChanges(requestContext, IModelVersion.asOfChangeSet(firstChangesetId));// eslint-disable-line deprecation/deprecation
+      await iModel.pullChanges({ user, toIndex: changesets[0].index });
 
       // now extract change summary for that one changeset
-      const summaryId = await ChangeSummaryManager.createChangeSummary(requestContext, iModel);
+      const summaryId = await ChangeSummaryManager.createChangeSummary(user, iModel);
       assert.isTrue(IModelJsFs.existsSync(BriefcaseManager.getChangeCachePathName(iModelId)));
 
       assert.exists(iModel);
@@ -256,13 +254,13 @@ describe("ChangeSummary (#integration)", () => {
       });
 
       // now do second extraction for last changeset
-      const lastChangesetId: string = changeSets[changeSets.length - 1].id;
-      await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
-      iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId, iModelId, asOf: IModelVersion.asOfChangeSet(lastChangesetId).toJSON() });
+      const lastChangesetId: string = changesets[changesets.length - 1].id;
+      await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModel);
+      iModel = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId, iModelId, asOf: IModelVersion.asOfChangeSet(lastChangesetId).toJSON() });
       // WIP not working yet until cache can be detached.
-      // await iModel.pullAndMergeChanges(accessToken, IModelVersion.asOfChangeSet(lastChangesetId));
+      // await iModel.pullChanges(accessToken, IModelVersion.asOfChangeSet(lastChangesetId));
 
-      await ChangeSummaryManager.createChangeSummary(requestContext, iModel);
+      await ChangeSummaryManager.createChangeSummary(user, iModel);
 
       // WIP
       ChangeSummaryManager.attachChangeCache(iModel);
@@ -291,11 +289,11 @@ describe("ChangeSummary (#integration)", () => {
     setupTest(testIModelId);
 
     let perfLogger = new PerfLogger("CreateChangeSummaries");
-    await ChangeSummaryManager.createChangeSummaries({ requestContext, contextId, iModelId, range: { first: 0 } });
+    await ChangeSummaryManager.createChangeSummaries({ user, iTwinId, iModelId, range: { first: 0 } });
     perfLogger.dispose();
 
     perfLogger = new PerfLogger("IModelDb.open");
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId, iModelId });
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId, iModelId });
     perfLogger.dispose();
     try {
       assert.exists(iModel);
@@ -364,35 +362,31 @@ describe("ChangeSummary (#integration)", () => {
         IModelJsFs.writeFileSync(filePath, JSON.stringify(content));
       }
     } finally {
-      await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
+      await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModel);
     }
   });
 
-  it.skip("Create ChangeSummary-s for changes to parent elements", async () => {
+  it.skip("Create ChangeSummaries for changes to parent elements", async () => {
     // Generate a unique name for the iModel (so that this test can be run simultaneously by multiple users+hosts simultaneously)
     const iModelName = HubUtility.generateUniqueName("ParentElementChangeTest");
 
     // Recreate iModel
     const managerRequestContext = await IModelTestUtils.getUserContext(TestUserType.Manager);
-    const testContextId = await HubUtility.getTestContextId(managerRequestContext);
-    const testIModelId = await HubUtility.recreateIModel(managerRequestContext, testContextId, iModelName);
+    const testITwinId = await HubUtility.getTestITwinId(managerRequestContext);
+    const testIModelId = await HubUtility.recreateIModel({ user: managerRequestContext, iTwinId: testITwinId, iModelName, noLocks: true });
 
     // Cleanup local cache
     setupTest(testIModelId);
 
     // Populate the iModel with 3 elements
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: managerRequestContext, contextId: testContextId, iModelId: testIModelId });
-    iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ user: managerRequestContext, iTwinId: testITwinId, iModelId: testIModelId });
     const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(iModel, IModelTestUtils.getUniqueModelCode(iModel, "TestPhysicalModel"), true);
-    await iModel.concurrencyControl.request(managerRequestContext);
     iModel.saveChanges("Added test model");
     const categoryId = SpatialCategory.insert(iModel, IModel.dictionaryId, "TestSpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
-    await iModel.concurrencyControl.request(managerRequestContext);
     iModel.saveChanges("Added test category");
     const elementId1: Id64String = iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, modelId, categoryId));
     const elementId2: Id64String = iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, modelId, categoryId));
     const elementId3: Id64String = iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, modelId, categoryId));
-    await iModel.concurrencyControl.request(managerRequestContext);
     iModel.saveChanges("Added test elements");
 
     // Setup the hierarchy as element3 -> element1
@@ -402,7 +396,7 @@ describe("ChangeSummary (#integration)", () => {
     iModel.saveChanges("Updated element1 as the parent of element3");
 
     // Push changes to the hub
-    await iModel.pushChanges(managerRequestContext, "Setup test model");
+    await iModel.pushChanges({ user: managerRequestContext, description: "Setup test model" });
 
     // Modify the hierarchy to element3 -> element2
     element3.parent = new ElementOwnsChildElements(elementId2);
@@ -410,11 +404,11 @@ describe("ChangeSummary (#integration)", () => {
     iModel.saveChanges("Updated element2 as the parent of element3");
 
     // Push changes to the hub
-    await iModel.pushChanges(managerRequestContext, "Updated parent element");
+    await iModel.pushChanges({ user: managerRequestContext, description: "Updated parent element" });
 
     // Validate that the second change summary captures the change to the parent correctly
     try {
-      const changeSummaryIds = await ChangeSummaryManager.extractChangeSummaries(requestContext, iModel); // eslint-disable-line deprecation/deprecation
+      const changeSummaryIds = await ChangeSummaryManager.extractChangeSummaries(user, iModel); // eslint-disable-line deprecation/deprecation
       assert.strictEqual(2, changeSummaryIds.length);
 
       ChangeSummaryManager.attachChangeCache(iModel);
@@ -444,10 +438,10 @@ describe("ChangeSummary (#integration)", () => {
       assert.strictEqual(relInstanceChange.after.sourceId, elementId2);
       assert.strictEqual(relInstanceChange.after.targetId, elementId3);
     } finally {
-      await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
+      await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModel);
     }
 
-    await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: testContextId, iModelId: testIModelId });
+    await IModelHost.hubAccess.deleteIModel({ user, iTwinId: testITwinId, iModelId: testIModelId });
   });
 
   it.skip("should be able to extract the last change summary right after applying a change set", async () => {
@@ -459,7 +453,7 @@ describe("ChangeSummary (#integration)", () => {
     await testUtility.createTestIModel();
 
     // User2 opens the iModel
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: userContext2, contextId: testUtility.projectId, iModelId: testUtility.iModelId });
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ user: userContext2, iTwinId: testUtility.projectId, iModelId: testUtility.iModelId });
 
     // Attach change cache
     ChangeSummaryManager.attachChangeCache(iModel);
@@ -469,7 +463,7 @@ describe("ChangeSummary (#integration)", () => {
     await testUtility.pushTestChangeSet();
 
     // User2 applies the change set and extracts the change summary
-    await iModel.pullAndMergeChanges(userContext2, IModelVersion.latest());
+    await iModel.pullChanges({ user: userContext2 });
 
     const changeSummariesIds = await ChangeSummaryManager.extractChangeSummaries(userContext2, iModel, { currentVersionOnly: true }); // eslint-disable-line deprecation/deprecation
     if (changeSummariesIds.length !== 1)
@@ -499,13 +493,13 @@ describe("ChangeSummary (#integration)", () => {
 
   it("Detaching and reattaching change cache", async () => {
     setupTest(iModelId);
-    const changeSets = await IModelHost.hubAccess.queryChangesets({ requestContext, iModelId });
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId, iModelId, asOf: IModelVersion.first().toJSON(), briefcaseId: 0 });
+    const changeSets = await IModelHost.hubAccess.queryChangesets({ user, iModelId });
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId, iModelId, asOf: IModelVersion.first().toJSON(), briefcaseId: 0 });
     try {
       for (const changeSet of changeSets) {
-        await iModel.pullAndMergeChanges(requestContext, IModelVersion.asOfChangeSet(changeSet.id));
+        await iModel.pullChanges({ user, toIndex: changeSet.index });
 
-        const changeSummaryId = await ChangeSummaryManager.createChangeSummary(requestContext, iModel);
+        const changeSummaryId = await ChangeSummaryManager.createChangeSummary(user, iModel);
 
         ChangeSummaryManager.attachChangeCache(iModel);
         assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
@@ -556,15 +550,15 @@ describe("ChangeSummary (#integration)", () => {
       }
 
     } finally {
-      await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
+      await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModel);
     }
   });
 
   it("Create change summaries for all change sets", async () => {
     setupTest(iModelId);
 
-    const summaryIds = await ChangeSummaryManager.createChangeSummaries({ requestContext, contextId, iModelId, range: { first: 0 } });
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId, iModelId });
+    const summaryIds = await ChangeSummaryManager.createChangeSummaries({ user, iTwinId, iModelId, range: { first: 0 } });
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId, iModelId });
 
     try {
       ChangeSummaryManager.attachChangeCache(iModel);
@@ -593,17 +587,17 @@ describe("ChangeSummary (#integration)", () => {
 
     } finally {
       ChangeSummaryManager.detachChangeCache(iModel);
-      await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
+      await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModel);
     }
   });
 
   it("Create change summaries for just the latest change set", async () => {
     setupTest(iModelId);
 
-    const first = (await IModelHost.hubAccess.getChangesetFromVersion({ requestContext, iModelId, version: IModelVersion.latest() })).index;
+    const first = (await IModelHost.hubAccess.getChangesetFromVersion({ user, iModelId, version: IModelVersion.latest() })).index;
 
-    const summaryIds = await ChangeSummaryManager.createChangeSummaries({ requestContext, contextId, iModelId, range: { first } });
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId, iModelId });
+    const summaryIds = await ChangeSummaryManager.createChangeSummaries({ user, iTwinId, iModelId, range: { first } });
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId, iModelId });
 
     try {
       ChangeSummaryManager.attachChangeCache(iModel);
@@ -631,7 +625,7 @@ describe("ChangeSummary (#integration)", () => {
 
     } finally {
       ChangeSummaryManager.detachChangeCache(iModel);
-      await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
+      await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModel);
     }
   });
 
@@ -639,9 +633,9 @@ describe("ChangeSummary (#integration)", () => {
     setupTest(iModelId);
     let errorThrown = false;
 
-    const first = (await IModelHost.hubAccess.getChangesetFromVersion({ requestContext, iModelId, version: IModelVersion.latest() })).index;
+    const first = (await IModelHost.hubAccess.getChangesetFromVersion({ user, iModelId, version: IModelVersion.latest() })).index;
     try {
-      await ChangeSummaryManager.createChangeSummaries({ requestContext, contextId, iModelId, range: { first, end: 0 } });
+      await ChangeSummaryManager.createChangeSummaries({ user, iTwinId, iModelId, range: { first, end: 0 } });
     } catch (err) {
       errorThrown = true;
       assert.isTrue(err instanceof IModelError);

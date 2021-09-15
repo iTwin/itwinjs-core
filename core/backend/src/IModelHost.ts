@@ -300,8 +300,8 @@ export class IModelHost {
   /** @internal */
   public static setHubAccess(hubAccess: BackendHubAccess) { this._hubAccess = hubAccess; }
 
-  /** Provides access to the IModelHub implementation for this IModelHost
-   * @internal
+  /** Provides access to the IModelHub for this IModelHost
+   * @beta
    */
   public static get hubAccess(): BackendHubAccess { return this._hubAccess; }
 
@@ -422,6 +422,7 @@ export class IModelHost {
 
   private static setupCacheDirs(configuration: IModelHostConfiguration) {
     this._cacheDir = configuration.cacheDir ? path.normalize(configuration.cacheDir) : NativeLibrary.defaultCacheDir;
+    IModelJsFs.recursiveMkDirSync(this._cacheDir); // make sure the directory for cacheDir exists.
     this._briefcaseCacheDir = path.join(this._cacheDir, "imodels");
   }
 

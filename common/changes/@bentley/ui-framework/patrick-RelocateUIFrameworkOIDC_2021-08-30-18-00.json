@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-framework",
+      "comment": "Removed OIDC signin/signout and UserProfileBackstageItem",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework"
+}

@@ -5,10 +5,10 @@
 
 import { assert, expect } from "chai";
 import { join } from "path";
-import { Guid } from "@bentley/bentleyjs-core";
+import { Guid, Mutable } from "@bentley/bentleyjs-core";
 import { ChangesetFileProps, ChangesetType } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { LockProps, LockScope } from "../../BackendHubAccess";
+import { LockProps, LockState } from "../../BackendHubAccess";
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { IModelHost } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
@@ -19,20 +19,20 @@ import { LockStatusExclusive, LockStatusShared } from "../LocalHub";
 
 describe("HubMock", () => {
   const tmpDir = join(KnownTestLocations.outputDir, "HubMockTest");
-  const contextId = Guid.createValue();
+  const iTwinId = Guid.createValue();
   const revision0 = IModelTestUtils.resolveAssetFile("test.bim");
-  let requestContext: AuthorizedClientRequestContext;
+  let user: AuthorizedClientRequestContext;
 
   before(async () => {
     HubMock.startup("HubMockTest");
-    requestContext = await IModelTestUtils.getUserContext(TestUserType.Regular);
+    user = await IModelTestUtils.getUserContext(TestUserType.Regular);
   });
   after(() => {
     HubMock.shutdown();
   });
 
   it("should be able to create HubMock", async () => {
-    const iModelId = await IModelHost.hubAccess.createIModel({ contextId, iModelName: "test imodel", revision0 });
+    const iModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "test imodel", revision0 });
     const localHub = HubMock.findLocalHub(iModelId);
     let checkpoints = localHub.getCheckpoints();
     assert.equal(checkpoints.length, 1);
@@ -159,76 +159,76 @@ describe("HubMock", () => {
     assert.deepEqual(orig2, downloaded2);
     assert.notDeepEqual(orig1, orig2);
 
-    const lock1: LockProps = {
-      scope: LockScope.Shared,
-      entityId: "0x12",
+    const lock1: Mutable<LockProps> = {
+      state: LockState.Shared,
+      id: "0x12",
     };
-    localHub.requestLock(lock1, { briefcaseId: 1, changeset: cs1 });
-    let lockStat = localHub.queryLockStatus(lock1.entityId);
-    assert.equal(lockStat.scope, LockScope.Shared);
+    localHub.acquireLock(lock1, { briefcaseId: 1, changeset: cs1 });
+    let lockStat = localHub.queryLockStatus(lock1.id);
+    assert.equal(lockStat.state, LockState.Shared);
     assert.equal((lockStat as LockStatusShared).sharedBy.size, 1);
     assert.isTrue((lockStat as LockStatusShared).sharedBy.has(1));
 
     assert.isUndefined(lockStat.lastCsIndex);
-    localHub.requestLock(lock1, { briefcaseId: 10, changeset: cs1 });
-    lockStat = localHub.queryLockStatus(lock1.entityId);
+    localHub.acquireLock(lock1, { briefcaseId: 10, changeset: cs1 });
+    lockStat = localHub.queryLockStatus(lock1.id);
     assert.equal((lockStat as LockStatusShared).sharedBy.size, 2);
     assert.isTrue((lockStat as LockStatusShared).sharedBy.has(1));
     assert.isTrue((lockStat as LockStatusShared).sharedBy.has(10));
 
-    expect(() => localHub.requestLock({ ...lock1, scope: LockScope.Exclusive }, { briefcaseId: 2, changeset: { id: "cs1" } })).to.throw("cannot obtain exclusive");
-    expect(() => localHub.releaseLock(lock1, { briefcaseId: 9, changeset: cs1 })).to.throw("shared lock not held");
+    expect(() => localHub.acquireLock({ ...lock1, state: LockState.Exclusive }, { briefcaseId: 2, changeset: { id: "cs1" } })).to.throw("cannot obtain exclusive");
+    expect(() => localHub.releaseLocks([lock1], { briefcaseId: 9, changeset: cs1 })).to.throw("shared lock not held");
 
-    localHub.releaseLock(lock1, { briefcaseId: 1, changeset: cs1 });
-    lockStat = localHub.queryLockStatus(lock1.entityId);
+    localHub.releaseLocks([lock1], { briefcaseId: 1, changeset: cs1 });
+    lockStat = localHub.queryLockStatus(lock1.id);
     assert.equal((lockStat as LockStatusShared).sharedBy.size, 1);
 
-    localHub.releaseLock(lock1, { briefcaseId: 10, changeset: cs1 });
-    lockStat = localHub.queryLockStatus(lock1.entityId);
-    assert.equal(lockStat.scope, LockScope.None);
+    localHub.releaseLocks([lock1], { briefcaseId: 10, changeset: cs1 });
+    lockStat = localHub.queryLockStatus(lock1.id);
+    assert.equal(lockStat.state, LockState.None);
 
-    lock1.scope = LockScope.Exclusive;
-    localHub.requestLock(lock1, { briefcaseId: 4, changeset: cs1 });
-    lockStat = localHub.queryLockStatus(lock1.entityId);
-    assert.equal(lockStat.scope, LockScope.Exclusive);
-    localHub.requestLock(lock1, { briefcaseId: 4, changeset: cs1 });
-    expect(() => localHub.requestLock(lock1, { briefcaseId: 5, changeset: cs1 })).to.throw("already owned");
-    expect(() => localHub.requestLock({ ...lock1, scope: LockScope.Shared }, { briefcaseId: 5, changeset: cs1 })).to.throw("already owned");
-    localHub.releaseLock(lock1, { briefcaseId: 4, changeset: cs2 });
-    lockStat = localHub.queryLockStatus(lock1.entityId);
-    assert.equal(lockStat.scope, LockScope.None);
+    lock1.state = LockState.Exclusive;
+    localHub.acquireLock(lock1, { briefcaseId: 4, changeset: cs1 });
+    lockStat = localHub.queryLockStatus(lock1.id);
+    assert.equal(lockStat.state, LockState.Exclusive);
+    localHub.acquireLock(lock1, { briefcaseId: 4, changeset: cs1 });
+    expect(() => localHub.acquireLock(lock1, { briefcaseId: 5, changeset: cs1 })).to.throw("lock is already held by another user");
+    expect(() => localHub.acquireLock({ ...lock1, state: LockState.Shared }, { briefcaseId: 5, changeset: cs1 })).to.throw("lock is already held by another user");
+    localHub.releaseLocks([lock1], { briefcaseId: 4, changeset: cs2 });
+    lockStat = localHub.queryLockStatus(lock1.id);
+    assert.equal(lockStat.state, LockState.None);
     assert.equal(lockStat.lastCsIndex, cs2.index);
 
-    expect(() => localHub.requestLock(lock1, { briefcaseId: 5, changeset: cs1 })).to.throw("Pull is required");
-    localHub.requestLock(lock1, { briefcaseId: 5, changeset: cs2 });
-    lockStat = localHub.queryLockStatus(lock1.entityId);
-    assert.equal(lockStat.scope, LockScope.Exclusive);
+    expect(() => localHub.acquireLock(lock1, { briefcaseId: 5, changeset: cs1 })).to.throw("pull is required");
+    localHub.acquireLock(lock1, { briefcaseId: 5, changeset: cs2 });
+    lockStat = localHub.queryLockStatus(lock1.id);
+    assert.equal(lockStat.state, LockState.Exclusive);
     assert.equal((lockStat as LockStatusExclusive).briefcaseId, 5);
     assert.equal(lockStat.lastCsIndex, cs2.index);
 
-    localHub.requestLock({ scope: LockScope.Exclusive, entityId: "0x22" }, { briefcaseId: 5, changeset: cs1 });
+    localHub.acquireLock({ state: LockState.Exclusive, id: "0x22" }, { briefcaseId: 5, changeset: cs1 });
     lockStat = localHub.queryLockStatus("0x22");
-    assert.equal(lockStat.scope, LockScope.Exclusive);
+    assert.equal(lockStat.state, LockState.Exclusive);
     assert.equal((lockStat as LockStatusExclusive).briefcaseId, 5);
     assert.isUndefined(lockStat.lastCsIndex);
 
-    localHub.requestLock({ scope: LockScope.Exclusive, entityId: "0x23" }, { briefcaseId: 6, changeset: cs1 });
-    localHub.requestLock({ scope: LockScope.Shared, entityId: "0x24" }, { briefcaseId: 6, changeset: cs1 });
-    localHub.requestLock({ scope: LockScope.Shared, entityId: "0x24" }, { briefcaseId: 5, changeset: cs1 });
+    localHub.acquireLock({ state: LockState.Exclusive, id: "0x23" }, { briefcaseId: 6, changeset: cs1 });
+    localHub.acquireLock({ state: LockState.Shared, id: "0x24" }, { briefcaseId: 6, changeset: cs1 });
+    localHub.acquireLock({ state: LockState.Shared, id: "0x24" }, { briefcaseId: 5, changeset: cs1 });
 
     const locks = localHub.queryAllLocks(5);
     assert.equal(locks.length, 3);
 
-    await IModelHost.hubAccess.deleteIModel({ contextId, iModelId });
+    await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId });
   });
 
   it("use HubMock with BriefcaseManager", async () => {
-    const iModelId = await IModelHost.hubAccess.createIModel({ contextId, iModelName: "test imodel", revision0 });
-    const briefcase = await BriefcaseManager.downloadBriefcase(requestContext, { contextId, iModelId });
+    const iModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "test imodel", revision0 });
+    const briefcase = await BriefcaseManager.downloadBriefcase({ user, iTwinId, iModelId });
     assert.equal(briefcase.briefcaseId, 2);
     assert.equal(briefcase.changeset.id, "");
     assert.equal(briefcase.iModelId, iModelId);
-    assert.equal(briefcase.contextId, contextId);
-    await IModelHost.hubAccess.deleteIModel({ contextId, iModelId });
+    assert.equal(briefcase.iTwinId, iTwinId);
+    await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId });
   });
 });

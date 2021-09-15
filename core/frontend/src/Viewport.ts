@@ -247,7 +247,7 @@ export abstract class Viewport implements IDisposable {
   /** Event invoked after [[renderFrame]] detects that the dimensions of the viewport's [[ViewRect]] have changed.
    */
   public readonly onResized = new BeEvent<(vp: Viewport) => void>();
-  /** Event dispatched immediately after [[flashedId]] changes, supplying the Ids of the previousl-y and/or currently-flashed objects.
+  /** Event dispatched immediately after [[flashedId]] changes, supplying the Ids of the previously and/or currently-flashed objects.
    * @note Attempting to assign to [[flashedId]] from within the event callback will produce an exception.
    */
   public readonly onFlashedIdChanged = new BeEvent<(vp: Viewport, args: OnFlashedIdChangedEventArgs) => void>();
@@ -1017,6 +1017,7 @@ export abstract class Viewport implements IDisposable {
     removals.push(settings.onMonochromeModeChanged.addListener(displayStyleChanged));
     removals.push(settings.onClipStyleChanged.addListener(styleAndOverridesChanged));
     removals.push(settings.onPlanarClipMaskChanged.addListener(displayStyleChanged));
+    removals.push(settings.onWhiteOnWhiteReversalChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onPlanarClipMaskChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onAppearanceOverridesChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onChanged.addListener(displayStyleChanged));
@@ -1648,7 +1649,7 @@ export abstract class Viewport implements IDisposable {
 
     let status;
     if (view.isCameraOn) {
-      status = view.lookAtUsingLensAngle(view.getEyePoint(), view.getTargetPoint(), view.getYVector(), lensAngle);
+      status = view.lookAt({ eyePoint: view.getEyePoint(), targetPoint: view.getTargetPoint(), upVector: view.getYVector(),  lensAngle });
     } else {
       // We need to figure out a new camera target. To do that, we need to know where the geometry is in the view.
       // We use the depth of the center of the view for that.
@@ -1666,11 +1667,11 @@ export abstract class Viewport implements IDisposable {
 
       this.npcToWorldArray(corners);
 
-      const eye = corners[2].interpolate(0.5, corners[3]); // middle of closest plane
-      const target = corners[0].interpolate(0.5, corners[1]); // middle of halfway plane
-      const backDist = eye.distance(target) * 2.0;
-      const frontDist = view.minimumFrontDistance();
-      status = view.lookAtUsingLensAngle(eye, target, view.getYVector(), lensAngle, frontDist, backDist);
+      const eyePoint = corners[2].interpolate(0.5, corners[3]); // middle of closest plane
+      const targetPoint = corners[0].interpolate(0.5, corners[1]); // middle of halfway plane
+      const backDistance = eyePoint.distance(targetPoint) * 2.0;
+      const frontDistance = view.minimumFrontDistance();
+      status = view.lookAt({ eyePoint, targetPoint, upVector: view.getYVector(),  lensAngle, frontDistance, backDistance });
     }
 
     if (ViewStatus.Success === status)
@@ -2894,7 +2895,7 @@ export class ScreenViewport extends Viewport {
   }
 
   /** @internal */
-  public picker = new ElementPicker(); // Picker used in pickDepthPoint below so it hangs around and can be querried later.
+  public picker = new ElementPicker(); // Picker used in pickDepthPoint below so it hangs around and can be queried later.
 
   /** Find a point on geometry visible in this Viewport, within a radius of supplied pick point.
    * If no geometry is selected, return the point projected to the most appropriate reference plane.
@@ -3041,6 +3042,9 @@ export class ScreenViewport extends Viewport {
   public override synchWithView(options?: ViewChangeOptions | boolean): void {
     options = (undefined === options) ? {} :
       (typeof options !== "boolean") ? options : { noSaveInUndo: !options }; // for backwards compatibility, was "saveInUndo"
+
+    if (this.view.is3d() && options?.globalAlignment)
+      this.view.alignToGlobe(options.globalAlignment.target, options.globalAlignment.transition);
 
     super.synchWithView(options);
 

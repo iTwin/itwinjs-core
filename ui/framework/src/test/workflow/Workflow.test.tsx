@@ -8,6 +8,8 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { ConfigurableUiManager, TaskPropsList, Workflow, WorkflowManager, WorkflowProps, WorkflowPropsList } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 
+/* eslint-disable deprecation/deprecation */
+
 describe("Workflow & WorkflowManager", () => {
 
   before(async () => {

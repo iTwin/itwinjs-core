@@ -8,22 +8,13 @@
 
 import { BeUiEvent } from "@bentley/bentleyjs-core";
 import {
-  Format, FormatProps, FormatterSpec, ParseError, ParserSpec, QuantityParseResult, UnitConversion, UnitProps, UnitsProvider,
+  Format, FormatProps, FormatterSpec, ParseError, ParserSpec, QuantityParseResult, UnitConversion, UnitProps, UnitsProvider, UnitSystemKey,
 } from "@bentley/imodeljs-quantity";
 import { IModelApp } from "../IModelApp";
-import { BasicUnitsProvider } from "./BasicUnitsProvider";
 import { IModelConnection } from "../IModelConnection";
+import { BasicUnitsProvider } from "./BasicUnitsProvider";
 
 // cSpell:ignore FORMATPROPS FORMATKEY ussurvey uscustomary USCUSTOM
-
-/** Used to uniquely identify a unit system. There should be an entry for each entry in `PresentationUnitSystem` @presentation-common package
- * "metric" -> PresentationUnitSystem.Metric
- * "imperial" -> PresentationUnitSystem.BritishImperial
- * "usCustomary" -> PresentationUnitSystem.UsCustomary
- * "usSurvey" -> PresentationUnitSystem.UsSurvey
- * @beta
- */
-export type UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey";
 
 /** Defines standard format types for tools that need to display measurements to user. Kept only to provide compatibility for existing API.
  * @beta

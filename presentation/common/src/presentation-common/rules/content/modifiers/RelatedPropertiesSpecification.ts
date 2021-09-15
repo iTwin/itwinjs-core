@@ -51,7 +51,7 @@ export enum RelatedPropertiesSpecialValues {
 /**
  * Sub-specification to include additional related instance properties
  *
- * @see [More details]($docs/learning/presentation/Content/RelatedPropertiesSpecification.md)
+ * @see [More details]($docs/presentation/Content/RelatedPropertiesSpecification.md)
  * @public
  */
 export type RelatedPropertiesSpecification = DEPRECATED_RelatedPropertiesSpecification | RelatedPropertiesSpecificationNew; // eslint-disable-line deprecation/deprecation
@@ -108,7 +108,7 @@ export interface DEPRECATED_RelatedPropertiesSpecification { // eslint-disable-l
 
   /**
    * Meaning of the relationship which tells how to categorize the related properties. Defaults to [[RelationshipMeaning.RelatedInstance]].
-   * @see [label]($docs/learning/presentation/Content/RelatedPropertiesSpecification.md#relationship-meaning-attribute)
+   * @see [label]($docs/presentation/Content/RelatedPropertiesSpecification.md#relationship-meaning-attribute)
    */
   relationshipMeaning?: RelationshipMeaning;
 
@@ -163,7 +163,7 @@ export interface RelatedPropertiesSpecificationNew {
 
   /**
    * Meaning of the relationship which tells how to categorize the related properties. Defaults to [[RelationshipMeaning.RelatedInstance]].
-   * @see [label]($docs/learning/presentation/Content/RelatedPropertiesSpecification.md#relationship-meaning-attribute)
+   * @see [label]($docs/presentation/Content/RelatedPropertiesSpecification.md#relationship-meaning-attribute)
    */
   relationshipMeaning?: RelationshipMeaning;
 

@@ -29,13 +29,13 @@ export enum HitBoxX {
   Right = 1,
   Left = -1,
 }
+
 /** @public */
 export enum CubeNavigationHitBoxY {
   None = 0,
   Back = 1,
   Front = -1,
 }
-
 /** @internal
  * @deprecated Use [[CubeNavigationHitBoxY]] */
 export enum HitBoxY {

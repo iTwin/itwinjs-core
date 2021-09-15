@@ -10,7 +10,6 @@ import { IModelHost } from "../../IModelHost";
 import { StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { BackendRequestContext } from "../../BackendRequestContext";
 
 describe("DgnDbWorker", () => {
   let imodel: StandaloneDb;
@@ -183,19 +182,20 @@ describe("DgnDbWorker", () => {
     blockers.forEach((w) => w.queue());
 
     const sessionId = "0x222";
-    const snap = imodel.requestSnap(new BackendRequestContext(), sessionId, {
+    const snap = imodel.requestSnap(sessionId, {
       testPoint: { x: 1, y: 2, z: 3 },
       closePoint: { x: 1, y: 2, z: 3 },
       id: "0x111",
       worldToView: Matrix4d.createIdentity().toJSON(),
     });
 
+    const toBeRejected = expect(snap).to.be.rejectedWith("aborted");
     imodel.cancelSnap(sessionId);
 
     // Clear the worker thread pool so the snap request (now canceled) can be processed.
     blockers.forEach((w) => w.setReady());
     await Promise.all(blockers.map(async (w) => w.promise));
 
-    await expect(snap).to.be.rejectedWith("aborted");
+    await toBeRejected;
   });
 });

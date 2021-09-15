@@ -19,6 +19,10 @@
     "docSiteId": 5,
     "displayName": "Change History"
   },
+  "presentation": {
+    "docSiteId": 6,
+    "displayName": "Presentation"
+  },
   "metadata": {
     "home": "learning",
     "logo": "assets/itwinjs-logo.svg",
@@ -30,7 +34,8 @@
       "learning",
       "bis",
       "reference",
-      "changehistory"
+      "changehistory",
+      "presentation"
     ],
     "headerTabs": {
       "Getting Started": "getting-started",

@@ -7,35 +7,23 @@
  */
 import * as path from "path";
 import * as Semver from "semver";
-import { ClientRequestContext, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import * as ECSchemaMetaData from "@bentley/ecschema-metadata";
 import { Point3d, Transform } from "@bentley/geometry-core";
+import {
+  ChannelRootAspect, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect,
+  ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
+  FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelDb, IModelJsFs, InformationPartitionElement, KnownLocations, Model,
+  RecipeDefinitionElement, Relationship, RelationshipProps, Schema, Subject, SynchronizationConfigLink,
+} from "@bentley/imodeljs-backend";
 import {
   Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, GeometricElement2dProps, GeometricElement3dProps, IModel,
   IModelError, ModelProps, Placement2d, Placement3d, PrimitiveTypeCode, PropertyMetaData,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-
-import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
-
-import {
-  ChannelRootAspect, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect,
-  ElementOwnsExternalSourceAspects, ElementRefersToElements,
-  ElementUniqueAspect, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment, FolderLink,
-  GeometricElement2d,
-  GeometricElement3d, IModelCloneContext,
-  IModelDb,
-  IModelJsFs,
-  InformationPartitionElement, KnownLocations,
-  Model,
-  RecipeDefinitionElement,
-  Relationship,
-  RelationshipProps,
-  Schema, Subject, SynchronizationConfigLink,
-} from "@bentley/imodeljs-backend";
-
 import { IModelExporter, IModelExportHandler } from "./IModelExporter";
 import { IModelImporter } from "./IModelImporter";
+import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 
 const loggerCategory: string = TransformerLoggerCategory.IModelTransformer;
 
@@ -773,13 +761,8 @@ export class IModelTransformer extends IModelExportHandler {
 
   /** Override of [IModelExportHandler.onExportSchema]($transformer) that serializes a schema to disk for [[processSchemas]] to import into
    * the target iModel when it is exported from the source iModel. */
-  protected override async onExportSchema(_schema: ECSchemaMetaData.Schema): Promise<void> {
-    // HACK: when the native serializer gets support for individual schema export, this will stop exporting all at once
-    // and instead export the asked for schema, which will prevent false errors because of trying to import already existing schemas
-    if (!this._hasNativelyExportedAllSchemas) {
-      this._hasNativelyExportedAllSchemas = true;
-      this.sourceDb.nativeDb.exportSchemas(this._schemaExportDir);
-    }
+  protected override async onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void> {
+    this.sourceDb.nativeDb.exportSchema(schema.name, this._schemaExportDir);
   }
 
   // pending PR https://github.com/typescript-eslint/typescript-eslint/pull/3601 fixes the rule @typescript-eslint/return-await
@@ -791,20 +774,17 @@ export class IModelTransformer extends IModelExportHandler {
    * @note For performance reasons, it is recommended that [IModelDb.saveChanges]($backend) be called after `processSchemas` is complete.
    * It is more efficient to process *data* changes after the schema changes have been saved.
    */
-  public async processSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void> {
+  public async processSchemas(): Promise<void> {
     try {
-      requestContext.enter();
       IModelJsFs.mkdirSync(this._schemaExportDir);
       await this.exporter.exportSchemas();
       this._hasNativelyExportedAllSchemas = false;
-      requestContext.enter();
       const exportedSchemaFiles = IModelJsFs.readdirSync(this._schemaExportDir);
       if (exportedSchemaFiles.length === 0)
         return;
       const schemaFullPaths = exportedSchemaFiles.map(this.makeAbsolute);
-      return await this.targetDb.importSchemas(requestContext, schemaFullPaths);
+      return await this.targetDb.importSchemas(schemaFullPaths);
     } finally {
-      requestContext.enter();
       IModelJsFs.removeSync(this._schemaExportDir);
     }
   }
@@ -886,13 +866,11 @@ export class IModelTransformer extends IModelExportHandler {
  * @note To form a range of versions to process, set `startChangesetId` for the start (inclusive) of the desired range and open the source iModel as of the end (inclusive) of the desired range.
  */
   public async processChanges(requestContext: AuthorizedClientRequestContext, startChangesetId?: string): Promise<void> {
-    requestContext.enter();
     Logger.logTrace(loggerCategory, "processChanges()");
     this.logSettings();
     this.validateScopeProvenance();
     this.initFromExternalSourceAspects();
     await this.exporter.exportChanges(requestContext, startChangesetId);
-    requestContext.enter();
     await this.processDeferredElements();
     this.importer.computeProjectExtents();
   }

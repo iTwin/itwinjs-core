@@ -1,14 +1,25 @@
 sep=;
 Release Tag;API Item
-alpha;AccuDrawCommandItems
-alpha;AccuDrawDialog(props: AccuDrawDialogProps): JSX.Element
-alpha;AccuDrawDialogProps 
-alpha;AccuDrawKeyboardShortcuts
+beta;AccuDrawCommandItems
+beta;AccuDrawDialog(props: AccuDrawDialogProps): JSX.Element
+beta;AccuDrawDialogProps 
+beta;AccuDrawGrabInputFocusEvent 
+beta;AccuDrawKeyboardShortcuts
 alpha;AccuDrawPopupManager
-alpha;AccuDrawUiSettings
-internal;AccuDrawUiSettingsChangedEvent 
-alpha;AccuDrawWidget(): JSX.Element
-alpha;AccuDrawWidgetControl 
+beta;AccuDrawSetCompassModeEvent 
+beta;AccuDrawSetCompassModeEventArgs
+beta;AccuDrawSetFieldFocusEvent 
+beta;AccuDrawSetFieldFocusEventArgs
+beta;AccuDrawSetFieldLockEvent 
+beta;AccuDrawSetFieldLockEventArgs
+beta;AccuDrawSetFieldValueFromUiEvent 
+beta;AccuDrawSetFieldValueFromUiEventArgs
+beta;AccuDrawSetFieldValueToUiEvent 
+beta;AccuDrawSetFieldValueToUiEventArgs
+beta;AccuDrawUiSettings
+beta;AccuDrawUiSettingsChangedEvent 
+beta;AccuDrawWidget(): JSX.Element
+beta;AccuDrawWidgetControl 
 public;Action
 internal;ActionButtonItem(props: ActionButtonProps): JSX.Element
 public;class ActionButtonItemDef 
@@ -211,7 +222,7 @@ beta;featureOverridesActiveStateFunc(state: Readonly
 alpha;FocusToolSettings 
 public;FooterModeField 
 public;FooterModeFieldProps 
-internal;FrameworkAccuDraw 
+beta;FrameworkAccuDraw 
 beta;FrameworkRootState
 internal;FrameworkStagePanel 
 internal;FrameworkStagePanelProps
@@ -282,15 +293,10 @@ alpha;HTMLElementPopup
 alpha;HTMLElementPopupProps 
 beta;IModelAppUiSettings 
 deprecated;IModelAppUiSettings 
-beta;IModelConnectedCategoryTree: import("react-redux").ConnectedComponent
-alpha;IModelConnectedModelsTree: import("react-redux").ConnectedComponent
 beta;IModelConnectedNavigationWidget: import("react-redux").ConnectedComponent
 deprecated;IModelConnectedNavigationWidget: import("react-redux").ConnectedComponent
-beta;IModelConnectedSpatialContainmentTree: import("react-redux").ConnectedComponent
 beta;IModelConnectedViewport: import("react-redux").ConnectedComponent
 beta;IModelConnectedViewSelector: import("react-redux").ConnectedComponent
-beta;IModelConnectedVisibilityComponent: import("react-redux").ConnectedComponent
-deprecated;IModelConnectedVisibilityComponent: import("react-redux").ConnectedComponent
 internal;IModelInfo
 internal;IModelScope
 internal;IModelServices
@@ -340,7 +346,6 @@ alpha;KeyinPalettePopup({ el, id, keyins, onCancel, onItemExecuted }: KeyinPalet
 alpha;KeyinPalettePopupProps
 public;LayoutFragmentProps
 public;LayoutHorizontalSplitProps 
-public;LayoutSplit
 public;LayoutSplitPropsBase
 public;LayoutVerticalSplitProps 
 beta;ListItem
@@ -383,9 +388,6 @@ public;ModelessDialogChangedEvent
 public;ModelessDialogManager
 public;ModelessDialogProps 
 public;ModelessDialogRenderer 
-internal;ModelSelectorWidget 
-deprecated;ModelSelectorWidget 
-internal;ModelSelectorWidgetControl 
 public;ModelsTree(props: ModelsTreeProps): JSX.Element
 beta;ModelsTreeNodeType
 public;ModelsTreeProps
@@ -506,9 +508,6 @@ alpha;SheetNavigationAidControl
 alpha;SheetNavigationProps 
 alpha;SheetsModalFrontstage 
 internal;showWidget: (base:
-public;SignIn 
-public;SignInProps 
-public;SignOutModalFrontstage 
 public;SnapModeField: import("react-redux").ConnectedComponent
 alpha;SolarTimelineDataProvider 
 public;SpatialContainmentTree(props: SpatialContainmentTreeProps): JSX.Element
@@ -574,14 +573,22 @@ public;SyncUiEventId
 public;SYSTEM_PREFERRED_COLOR_THEME = "SYSTEM_PREFERRED"
 internal;TabLocation
 public;TargetChangeHandler
-public;Task 
-public;TaskActivatedEvent 
-public;TaskActivatedEventArgs
-public;TaskLaunchBackstageItem 
-public;TaskLaunchBackstageItemProps 
-public;TaskManager
-public;TaskProps 
-public;TaskPropsList
+internal;Task 
+deprecated;Task 
+internal;TaskActivatedEvent 
+deprecated;TaskActivatedEvent 
+internal;TaskActivatedEventArgs
+deprecated;TaskActivatedEventArgs
+internal;TaskLaunchBackstageItem 
+deprecated;TaskLaunchBackstageItem 
+internal;TaskLaunchBackstageItemProps 
+deprecated;TaskLaunchBackstageItemProps 
+internal;TaskManager
+deprecated;TaskManager
+internal;TaskProps 
+deprecated;TaskProps 
+internal;TaskPropsList
+deprecated;TaskPropsList
 public;ThemeManager: import("react-redux").ConnectedComponent
 beta;TileLoadingIndicator 
 beta;ToastMessage(props: ToastMessageProps): JSX.Element
@@ -673,8 +680,6 @@ internal;useItemsManager(frontstageDef: FrontstageDef): void
 internal;useLabels(): NineZoneLabels
 internal;useNineZoneDispatch(frontstageDef: FrontstageDef): NineZoneDispatch
 internal;useNineZoneState(frontstageDef: FrontstageDef): NineZoneState | undefined
-public;UserProfileBackstageItem 
-public;UserProfileBackstageItemProps 
 beta;UserSettingsProvider
 public;UserSettingsStorage 
 internal;useSavedFrontstageState(frontstageDef: FrontstageDef): void
@@ -707,14 +712,6 @@ beta;ViewSelectorDefaultProps = Pick
 beta;ViewSelectorProps
 public;ViewUtilities
 alpha;VisibilityChangeListener = (nodeIds?: string[], visibilityStatus?: Map
-beta;VisibilityComponent 
-deprecated;VisibilityComponent 
-beta;VisibilityComponentConfig
-deprecated;VisibilityComponentConfig
-public;VisibilityComponentHierarchy
-deprecated;VisibilityComponentHierarchy
-beta;VisibilityComponentProps
-deprecated;VisibilityComponentProps
 alpha;VisibilityStatus
 alpha;VisibilityTreeEventHandler 
 alpha;VisibilityTreeEventHandlerParams 
@@ -723,8 +720,6 @@ alpha;visibilityTreeNodeCheckboxRenderer: (props: NodeCheckboxRenderProps) => JS
 alpha;VisibilityTreeNoFilteredData(props: VisibilityTreeNoFilteredDataProps): JSX.Element
 alpha;VisibilityTreeNoFilteredDataProps
 alpha;VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => boolean
-beta;VisibilityWidget 
-deprecated;VisibilityWidget 
 public;Widget 
 public;WIDGET_OPACITY_DEFAULT = 0.9
 internal;WidgetChangedEventArgs
@@ -766,12 +761,18 @@ public;WidgetType
 public;withMessageCenterFieldProps: 
 public;withSafeArea: 
 public;withStatusFieldProps: 
-public;Workflow 
-public;WorkflowActivatedEvent 
-public;WorkflowActivatedEventArgs
-public;WorkflowManager
-public;WorkflowProps 
-public;WorkflowPropsList
+internal;Workflow 
+deprecated;Workflow 
+internal;WorkflowActivatedEvent 
+deprecated;WorkflowActivatedEvent 
+internal;WorkflowActivatedEventArgs
+deprecated;WorkflowActivatedEventArgs
+internal;WorkflowManager
+deprecated;WorkflowManager
+internal;WorkflowProps 
+deprecated;WorkflowProps 
+internal;WorkflowPropsList
+deprecated;WorkflowPropsList
 public;Zone 
 public;ZoneDef 
 public;ZoneDefProvider

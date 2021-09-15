@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { UiFramework } from "../../UiFramework";
-import { UnitSystemKey } from "@bentley/imodeljs-frontend";
+import { UnitSystemKey } from "@bentley/imodeljs-quantity";
 import { Select, SelectOption } from "@itwin/itwinui-react";
 
 /** Props for [[UnitSystemSelector]]

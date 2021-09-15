@@ -22,10 +22,6 @@ export const createTestCategoryDescription = (props?: Partial<CategoryDescriptio
 export const createTestSelectClassInfo = (props?: Partial<SelectClassInfo>) => ({
   selectClassInfo: createTestECClassInfo(),
   isSelectPolymorphic: false,
-  pathToPrimaryClass: [],
-  relatedPropertyPaths: [],
-  navigationPropertyClasses: [],
-  relatedInstanceClasses: [],
   ...props,
 });
 
@@ -64,8 +60,8 @@ export function createTestPropertiesContentField(props: {
 }) {
   return new PropertiesField(
     props.category ?? createTestCategoryDescription(),
-    props.name ?? "SimpleField",
-    props.label ?? "Simple Field",
+    props.name ?? "PropertiesField",
+    props.label ?? "Properties Field",
     props.type ?? { valueFormat: PropertyValueFormat.Primitive, typeName: "string" },
     props.isReadonly ?? false,
     props.priority ?? 0,
@@ -120,7 +116,8 @@ export function createTestNestedContentField(props: {
 
 export function createTestContentDescriptor(props: Partial<DescriptorSource> & { fields: Field[] }) {
   return new Descriptor({
-    displayType: "DisplayType",
+    connectionId: "",
+    displayType: "",
     contentFlags: 0,
     selectClasses: [createTestSelectClassInfo()],
     categories: [createTestCategoryDescription()],
