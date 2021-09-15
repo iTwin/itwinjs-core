@@ -2498,7 +2498,7 @@ export abstract class IModelDb extends IModel {
     queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string, abbreviateBlobs?: boolean): Promise<QueryResponse>;
     querySchemaVersion(schemaName: string): string | undefined;
     // @alpha
-    queryTextureImage(requestContext: ClientRequestContext, props: TextureLoadProps): Promise<TextureData | undefined>;
+    queryTextureData(requestContext: ClientRequestContext, props: TextureLoadProps): Promise<TextureData | undefined>;
     // (undocumented)
     readFontJson(): string;
     // @internal (undocumented)
