@@ -26,7 +26,11 @@ describe("RealityServicesClient Normal (#integration)", () => {
 
   let requestContext: AuthorizedClientRequestContext;
 
-  before(async () => {
+  before(async function () {
+    // These tests are broken with the public IMS authority so skip them if they are the public authority
+    if (process.env.IMJS_ITWIN_PLATFORM_AUTHORITY === "https://ims.bentley.com")
+      this.skip();
+
     requestContext = await TestConfig.getAuthorizedClientRequestContext();
     Logger.logInfo(LOG_CATEGORY, `ActivityId: ${requestContext.activityId}`);
     projectId = (await TestConfig.queryProject(requestContext, TestConfig.projectName)).wsgId;

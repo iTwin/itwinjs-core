@@ -61,9 +61,9 @@ describe("AgentAuthorizationClient (#integration)", () => {
     const url: string = await client.getUrl(requestContext);
 
     const issuer: Issuer<Client> = await client.discoverEndpoints(requestContext);
-    chai.expect(issuer.token_endpoint).equals(`${url}connect/token`);
-    chai.expect(issuer.authorization_endpoint).equals(`${url}connect/authorize`);
-    chai.expect(issuer.introspection_endpoint).equals(`${url}connect/introspect`);
+    chai.expect(issuer.token_endpoint).equals(`${url}/connect/token`);
+    chai.expect(issuer.authorization_endpoint).equals(`${url}/connect/authorize`);
+    chai.expect(issuer.introspection_endpoint).equals(`${url}/connect/introspect`);
   });
 
   it("should get valid OIDC tokens for agent applications", async () => {
