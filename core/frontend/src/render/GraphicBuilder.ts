@@ -214,26 +214,34 @@ export abstract class GraphicBuilder {
    * @see [[GraphicBuilderOptions.placement]].
    */
   public readonly placement: Transform;
+
+  /** The iModel associated with this builder, if any. */
   public readonly iModel?: IModelConnection;
+
   /** The type of graphic to be produced by this builder.
    * @see [[GraphicBuilderOptions.type]].
    */
   public readonly type: GraphicType;
+
   /** If the graphic is to be pickable, specifies the pickable Id and other options. */
   public readonly pickable?: Readonly<PickableGraphicOptions>;
+
   /** If true, the order in which geometry is added to the builder is preserved.
    * @see [[GraphicBuilderOptions.preserveOrder]] for more details.
    */
   public readonly preserveOrder: boolean;
+
   /** Controls whether normals are generated for surfaces.
-   * @note Normals are required for proper edge display, so they are always produced if [[wantEdges]] is `true`.
+   * @note Normals are required for proper edge display, so by default they are always produced if [[wantEdges]] is `true`.
    * @see [[GraphicBuilderOptions.wantNormals]] for more details.
    */
   public readonly wantNormals: boolean;
+
   /** Controls whether edges are generated for surfaces.
    * @see [[GraphicBuilderOptions.generateEdges]] for more details.
    */
   public readonly wantEdges: boolean;
+
   /** @alpha */
   public readonly analysisStyle?: AnalysisStyle;
 
