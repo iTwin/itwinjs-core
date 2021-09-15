@@ -6,9 +6,8 @@
  * @module Schema
  */
 
-import { IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { IModelStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "@bentley/imodeljs-common";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ClassRegistry } from "./ClassRegistry";
 
 /** Base class for all schema classes - see [working with schemas and elements in TypeScript]($docs/learning/backend/SchemasAndElementsInTypeScript.md).

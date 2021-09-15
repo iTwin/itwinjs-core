@@ -6,16 +6,17 @@
  * @module iModelHub
  */
 
-import got from "got";
+import { HttpsAgent } from "agentkeepalive";
+import * as crypto from "crypto";
 import * as fs from "fs";
+import got from "got";
+import * as path from "path";
+import { checkSync, lockSync } from "proper-lockfile";
 import * as stream from "stream";
 import * as util from "util";
-import * as crypto from "crypto";
-import * as path from "path";
-import { HttpsAgent } from "agentkeepalive";
+import { AsyncMutex, BeEvent, BriefcaseStatus } from "@bentley/bentleyjs-core";
 import { CancelRequest, UserCancelledError } from "@bentley/itwin-client";
-import { checkSync, lockSync } from "proper-lockfile";
-import { AsyncMutex, BeEvent, BriefcaseStatus, Logger } from "@bentley/bentleyjs-core";
+
 /** Configure download task
  * @internal
  */

@@ -6,7 +6,7 @@
  * @module Utilities
  */
 
-import { BentleyError, BentleyStatus, GetMetaDataFunction, LogFunction, Logger } from "@bentley/bentleyjs-core";
+import { BentleyError, BentleyStatus, GetMetaDataFunction } from "@bentley/bentleyjs-core";
 
 /** iModel.js UI UiError class is a subclass of BentleyError. Errors are logged.
  * @public

@@ -3,14 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { IModelStatus } from "@bentley/bentleyjs-core";
 import { ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@bentley/ecschema-metadata";
 import { IModelError } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelDb } from "./IModelDb";
-
-const loggerCategory: string = BackendLoggerCategory.IModelSchemaLoader;
 
 /**
  * A utility class for retrieving EC Schema objects from an iModel. Loaded schemas are held in memory within

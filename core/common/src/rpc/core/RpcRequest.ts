@@ -6,8 +6,7 @@
  * @module RpcInterface
  */
 
-import { BeEvent, BentleyStatus, Guid, Logger, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
-import { CommonLoggerCategory } from "../../CommonLoggerCategory";
+import { BeEvent, BentleyStatus, Guid, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelRpcProps } from "../../IModel";
 import { BackendError, IModelError, NoContentError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";

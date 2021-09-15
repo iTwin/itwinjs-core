@@ -7,8 +7,7 @@
  */
 
 import { URL } from "url";
-import { BentleyStatus, Logger, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
-import { CommonLoggerCategory } from "../../CommonLoggerCategory";
+import { BentleyStatus, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
 import { RpcConfiguration } from "../core/RpcConfiguration";

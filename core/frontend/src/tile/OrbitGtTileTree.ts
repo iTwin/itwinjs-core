@@ -9,16 +9,18 @@
 import { BeTimePoint, compareStrings, compareStringsOrUndefined, Id64String } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
 import {
-  BatchType, Cartographic, ColorDef, Feature,
-  FeatureTable, Frustum, FrustumPlanes, GeoCoordStatus, OrbitGtBlobProps, PackedFeatureTable, QParams3d, Quantization,
-  ViewFlagOverrides,
+  BatchType, Cartographic, ColorDef, Feature, FeatureTable, Frustum, FrustumPlanes, GeoCoordStatus, OrbitGtBlobProps, PackedFeatureTable, QParams3d,
+  Quantization, ViewFlagOverrides,
 } from "@bentley/imodeljs-common";
+import { AccessToken } from "@bentley/itwin-client";
 import {
   ALong, CRSManager, Downloader, DownloaderXhr, OnlineEngine, OPCReader, OrbitGtAList, OrbitGtBlockIndex, OrbitGtBounds, OrbitGtCoordinate,
   OrbitGtDataManager, OrbitGtFrameData, OrbitGtIProjectToViewForSort, OrbitGtIViewRequest, OrbitGtLevel, OrbitGtTileIndex, OrbitGtTileLoadSorter,
   OrbitGtTransform, PageCachedFile, PointDataRaw, UrlFS,
 } from "@bentley/orbitgt-core";
+import { RealityDataClient } from "@bentley/reality-data-client";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
+import { AuthorizedFrontendRequestContext } from "../FrontendRequestContext";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -30,12 +32,9 @@ import { RenderSystem } from "../render/RenderSystem";
 import { ViewingSpace } from "../ViewingSpace";
 import { Viewport } from "../Viewport";
 import {
-  RealityModelTileClient, RealityModelTileTree, Tile, TileContent,
-  TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeOwner, TileTreeParams, TileTreeSupplier, TileUsageMarker,
+  RealityModelTileClient, RealityModelTileTree, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeOwner,
+  TileTreeParams, TileTreeSupplier, TileUsageMarker,
 } from "./internal";
-import { AccessToken } from "@bentley/itwin-client";
-import { AuthorizedFrontendRequestContext } from "../FrontendRequestContext";
-import { RealityDataClient } from "@bentley/reality-data-client";
 
 const scratchRange = Range3d.create();
 const scratchWorldFrustum = new Frustum();
@@ -347,12 +346,11 @@ export namespace OrbitGtTileTree {
   }
 
   async function getAccessTokenRDS(): Promise<AccessToken | undefined> {
-
     if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.hasSignedIn)
       return undefined; // Not signed in
 
     try {
-      return IModelApp.authorizationClient.getAccessToken();
+      return await IModelApp.authorizationClient.getAccessToken();
     } catch (_) {
       return undefined;
     }

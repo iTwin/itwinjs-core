@@ -6,15 +6,12 @@
  * @module ECSQL
  */
 
-import { DbResult, GuidString, Id64String, IDisposable, Logger, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
+import { DbResult, GuidString, Id64String, IDisposable, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
 import { LowAndHighXYZ, Range3d, XAndY, XYAndZ, XYZ } from "@bentley/geometry-core";
 import { ECJsNames, ECSqlValueType, IModelError, NavigationBindingValue, NavigationValue } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ECDb } from "./ECDb";
 import { IModelHost } from "./IModelHost";
-
-const loggerCategory: string = BackendLoggerCategory.ECDb;
 
 /** The result of an **ECSQL INSERT** statement as returned from [ECSqlStatement.stepForInsert]($backend).
  *

@@ -7,8 +7,8 @@
  */
 
 import {
-  AuthStatus, BentleyError, BentleyStatus, BriefcaseStatus, ChangeSetStatus, DbResult, GetMetaDataFunction, IModelStatus, LogFunction,
-  RepositoryStatus, RpcInterfaceStatus,
+  AuthStatus, BentleyError, BentleyStatus, BriefcaseStatus, ChangeSetStatus, DbResult, GetMetaDataFunction, IModelStatus, RepositoryStatus,
+  RpcInterfaceStatus,
 } from "@bentley/bentleyjs-core";
 
 export { BentleyStatus, BentleyError, IModelStatus, BriefcaseStatus, GetMetaDataFunction, LogFunction, DbResult, AuthStatus, RepositoryStatus, ChangeSetStatus, RpcInterfaceStatus } from "@bentley/bentleyjs-core";

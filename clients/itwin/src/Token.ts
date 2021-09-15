@@ -5,10 +5,8 @@
 /** @packageDocumentation
  * @module Authentication
  */
-import { AuthStatus, BentleyError, Logger } from "@bentley/bentleyjs-core";
-import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
+import { AuthStatus, BentleyError } from "@bentley/bentleyjs-core";
 import { UserInfo, UserInfoProps } from "./UserInfo";
-const loggerCategory = ITwinClientLoggerCategory.Authorization;
 
 /**
  * Option to specify if the prefix identifying the token is included when serializing the access token.

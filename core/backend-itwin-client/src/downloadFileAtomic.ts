@@ -5,12 +5,11 @@
 import got from "got";
 import { PassThrough, pipeline as pipeline_callback } from "stream";
 import { promisify } from "util";
-import { BriefcaseStatus, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
+import { BriefcaseStatus } from "@bentley/bentleyjs-core";
 import { CancelRequest, DownloadFailed, ProgressCallback, ResponseError, UserCancelledError } from "@bentley/itwin-client";
-
-import WriteStreamAtomic = require("fs-write-stream-atomic");
 import { BufferedStream } from "./imodelhub/AzureFileHandler";
 
+import WriteStreamAtomic = require("fs-write-stream-atomic");
 const pipeline = promisify(pipeline_callback);
 
 /** @internal */

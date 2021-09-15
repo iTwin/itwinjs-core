@@ -7,7 +7,6 @@
  */
 
 import { DbResult } from "./BeSQLite";
-import { LogFunction, Logger } from "./Logger";
 
 /** Standard status code.
  * This status code should be rarely used.

@@ -8,27 +8,23 @@
 
 import { GuidString, Id64String } from "@bentley/bentleyjs-core";
 import { Angle } from "@bentley/geometry-core";
-import {
-  CartographicRange, ContextRealityModel, ContextRealityModelProps, FeatureAppearance, OrbitGtBlobProps,
-} from "@bentley/imodeljs-common";
+import { CartographicRange, ContextRealityModel, ContextRealityModelProps, FeatureAppearance, OrbitGtBlobProps } from "@bentley/imodeljs-common";
 import { AccessToken } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
 import { DisplayStyleState } from "./DisplayStyleState";
 import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
-import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { SpatialModelState } from "./ModelState";
-import {
-  createOrbitGtTileTreeReference, createRealityTileTreeReference, RealityModelTileTree, TileTreeReference,
-} from "./tile/internal";
+import { PlanarClipMaskState } from "./PlanarClipMaskState";
+import { createOrbitGtTileTreeReference, createRealityTileTreeReference, RealityModelTileTree, TileTreeReference } from "./tile/internal";
 
 async function getAccessToken(): Promise<AccessToken | undefined> {
   if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.hasSignedIn)
     return undefined; // Not signed in
 
   try {
-    return IModelApp.authorizationClient.getAccessToken();
+    return await IModelApp.authorizationClient.getAccessToken();
   } catch (_) {
     return undefined;
   }

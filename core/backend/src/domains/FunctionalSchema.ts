@@ -7,16 +7,13 @@
  */
 
 import * as path from "path";
-import { DbResult, Logger } from "@bentley/bentleyjs-core";
+import { DbResult } from "@bentley/bentleyjs-core";
 import { IModelError } from "@bentley/imodeljs-common";
-import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { ClassRegistry } from "../ClassRegistry";
 import { IModelDb } from "../IModelDb";
 import { KnownLocations } from "../IModelHost";
 import { Schema, Schemas } from "../Schema";
 import * as elementsModule from "./FunctionalElements";
-
-const loggerCategory: string = BackendLoggerCategory.Functional;
 
 /** @public */
 export class FunctionalSchema extends Schema {
