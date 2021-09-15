@@ -12,7 +12,9 @@ the ruleset itself. The values of ruleset variables can be accessed using [ECExp
 The advantages of using ruleset variables over values hardcoded into the ruleset are:
 
 - When used for creating a hierarchy, changing a ruleset variable causes only affected parts of the hierarchy to be re-created. Changing a rule in a ruleset causes the whole hierarchy to be re-created.
+
 - It's much more convenient and effective to pass a large number of IDs through a ruleset variable than it is to hardcode them into a ruleset. Ruleset variables are sent to the backend separately from the ruleset and that allows us to compress them when needed.
+
 ## Using Variables in Rule Condition
 
 Using a ruleset variable in rule condition allows enabling and disabling specific rules based on something that can't be determined at the point of creating the ruleset, e.g. a user action.
@@ -66,6 +68,7 @@ Setting the ruleset value to specific IDs creates the hierarchy only for specifi
 ![Filtered Elements' Hierarchy](./media/ruleset-variables/filtered-elements-hierarchy.png)
 
 Clearing the ruleset value brings us back to the initial unfiltered view:
+
 ```ts
 [[include:RulesetVariables.InInstanceFilter.Unset]]
 ```
