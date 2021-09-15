@@ -307,6 +307,10 @@
       "allowedCategories": [ "common" ]
     },
     {
+      "name": "@xmldom/xmldom",
+      "allowedCategories": [ "backend", "common", "tools" ]
+    },
+    {
       "name": "agentkeepalive",
       "allowedCategories": [ "backend" ]
     },
@@ -1125,10 +1129,6 @@
     {
       "name": "xml-js",
       "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "xmldom",
-      "allowedCategories": [ "backend", "common", "tools" ]
     },
     {
       "name": "xmlhttprequest",
