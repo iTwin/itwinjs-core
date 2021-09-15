@@ -55,24 +55,14 @@ provide a `onPropertyLinkClick` callback function.
 
 ## Sample using Presentation Rules
 
-The following sample is from simple-viewer-app. It uses Presentation Rules and Unified Selection.
-
-### Defining the SimplePropertiesComponent component
-
-This React component utilizes the [PropertyGrid]($ui-components) component and
-[propertyGridWithUnifiedSelection]($presentation-components) HOC to
-create a HOC property grid component that supports unified selection.
+The following sample uses Presentation Rules and Unified Selection.
 
 ```tsx
 import * as React from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Orientation } from "@bentley/ui-core";
-import { PropertyGrid } from "@bentley/ui-components";
-import { PresentationPropertyDataProvider, propertyGridWithUnifiedSelection } from "@bentley/presentation-components";
-
-// create a HOC property grid component that supports unified selection
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const SimplePropertyGrid = propertyGridWithUnifiedSelection(PropertyGrid);
+import { Orientation, useDisposable } from "@bentley/ui-core";
+import { VirtualizedPropertyGridWithDataProvider } from "@bentley/ui-components";
+import { PresentationPropertyDataProvider, usePropertyDataProviderWithUnifiedSelection } from "@bentley/presentation-components";
 
 /** React properties for the property grid component */
 export interface Props {
@@ -83,30 +73,29 @@ export interface Props {
 }
 
 /** Property grid component for the viewer app */
-export default class SimplePropertiesComponent extends React.Component<Props> {
-  public render() {
-    const orientation = Orientation.Vertical;
-    return (
-      <SimplePropertyGrid
-        orientation={orientation}
-        dataProvider={new PresentationPropertyDataProvider(this.props.imodel, this.props.rulesetId)}
-      />
-    );
-  }
+export default function SimplePropertiesComponent(props: Props) {
+  const { imodel, rulesetId } = props;
+  const dataProvider = useDisposable(React.useCallback(
+    () => new PresentationPropertyDataProvider({ imodel, ruleset: rulesetId }),
+    [imodel, rulesetId],
+  ));
+  const { isOverLimit, numSelectedElements } = usePropertyDataProviderWithUnifiedSelection({ dataProvider });
+  if (numSelectedElements === 0)
+    return "Select at least one element";
+  if (isOverLimit)
+    return "Too many elements selected";
+  return (
+    <VirtualizedPropertyGridWithDataProvider
+      orientation={Orientation.Horizontal}
+      dataProvider={dataProvider}
+    />
+  );
 }
 
 ```
 
-### Using the SimplePropertiesComponent component
-
-```tsx
-const rulesetId = "Default";
-. . .
-<SimplePropertiesComponent imodel={this.props.imodel} rulesetId={rulesetId} />
-```
-
 ## API Reference
 
-- [PropertyGrid]($ui-components:PropertyGrid)
+- [VirtualizedPropertyGridWithDataProvider]($ui-components)
 - [Properties in @bentley/ui-components]($ui-components:Properties)
 - [Properties in @bentley/ui-abstract]($ui-abstract:Properties)

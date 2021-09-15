@@ -128,4 +128,5 @@ FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef).then(
 
 ## API Reference
 
+- [Frontstage]($ui-framework:Frontstage)
 - [Zone]($ui-framework:Zone)

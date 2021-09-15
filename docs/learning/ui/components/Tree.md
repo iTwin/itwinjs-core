@@ -20,8 +20,8 @@ The following React hooks work in conjunction with the ControlledTree component.
 
 - [usePagedTreeNodeLoader]($ui-components) - creates a paging nodes' loader using the supplied data provider and model source. The loader pulls nodes from the data provider and puts them into the model source.
 - [useTreeModelSource]($ui-components) - creates a [TreeModelSource]($ui-components)
+- [useTreeModel]($ui-components) - returns an immutable [TreeModel]($ui-components) from given [TreeModelSource]($ui-components) and subscribes to `onModelChanged` event to update the model when it changes.
 - [useTreeNodeLoader]($ui-components) - creates a nodes' loader using the supplied data provider and model source. The loader pulls nodes from the data provider and puts them into the model source.
-- [useVisibleTreeNodes]($ui-components) - returns a flat list of visible nodes from given [TreeModelSource]($ui-components) and subscribes to onModelChanged event to update the list when model changes
 - [usePresentationTreeNodeLoader]($presentation-components) -  creates a [PagedTreeNodeLoader]($$ui-components) with [PresentationTreeDataProvider]($presentation-components) using supplied imodel and ruleset
 - [useUnifiedSelectionTreeEventHandler]($presentation-components) - creates and disposes [UnifiedSelectionTreeEventHandler]($presentation-components)
 
@@ -71,15 +71,13 @@ and node highlighting props.
 ## Sample using Presentation Rules
 
 This React component utilizes the [ControlledTree]($ui-components) component and the
-[useVisibleTreeNodes]($ui-components),
-[usePresentationTreeNodeLoader]($presentation-components) and
-[useUnifiedSelectionTreeEventHandler]($presentation-components) hooks.
-This tree supports unified selection.
+[useTreeModel]($ui-components), [usePresentationTreeNodeLoader]($presentation-components) and
+[useUnifiedSelectionTreeEventHandler]($presentation-components) hooks. This tree supports unified selection.
 
 ```tsx
 import * as React from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { ControlledTree, useVisibleTreeNodes, SelectionMode } from "@bentley/ui-components";
+import { ControlledTree, useTreeModel, SelectionMode } from "@bentley/ui-components";
 import { usePresentationTreeNodeLoader, useUnifiedSelectionTreeEventHandler } from "@bentley/presentation-components";
 const RULESET_TREE = require("./Tree.ruleset.json"); // eslint-disable-line @typescript-eslint/no-var-requires
 
@@ -95,7 +93,7 @@ export default function SimpleTreeComponent(props: Props) {
   return (
     <ControlledTree
       nodeLoader={nodeLoader}
-      visibleNodes={useVisibleTreeNodes(nodeLoader.modelSource)}
+      model={useTreeModel(nodeLoader.modelSource)}
       treeEvents={useUnifiedSelectionTreeEventHandler({ nodeLoader })}
       selectionMode={SelectionMode.Extended}
     />

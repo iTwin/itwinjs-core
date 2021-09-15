@@ -15,6 +15,8 @@ import {
 } from "../../ui-framework";
 import TestUtils, { mount } from "../TestUtils";
 
+/* eslint-disable deprecation/deprecation */
+
 describe("Backstage", () => {
   const testEventId = "test-state-function-event";
 

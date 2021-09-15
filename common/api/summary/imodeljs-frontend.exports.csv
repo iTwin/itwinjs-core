@@ -93,7 +93,7 @@ beta;CheckboxFormatPropEditorSpec
 public;CheckpointConnection 
 public;ClipEventType
 public;Cluster
-internal;CompassMode
+alpha;CompassMode
 internal;ContextMode
 public;ContextRealityModelState 
 public;ContextRotationId
@@ -165,10 +165,10 @@ internal;eyeToCartographicOnGlobe(viewport: ScreenViewport, preserveHeight?: boo
 internal;eyeToCartographicOnGlobeFromGcs(viewport: ScreenViewport, preserveHeight?: boolean): Promise
 public;FeatureOverrideProvider
 public;FeatureSymbology
-internal;findAvailableRealityModels(contextId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise
-deprecated;findAvailableRealityModels(contextId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise
-internal;findAvailableUnattachedRealityModels(contextId: GuidString, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise
-deprecated;findAvailableUnattachedRealityModels(contextId: GuidString, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise
+internal;findAvailableRealityModels(iTwinId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise
+deprecated;findAvailableRealityModels(iTwinId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise
+internal;findAvailableUnattachedRealityModels(iTwinId: GuidString, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise
+deprecated;findAvailableUnattachedRealityModels(iTwinId: GuidString, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise
 public;FitViewTool 
 internal;Flags
 public;FlashMode
@@ -209,6 +209,7 @@ internal;getGcsConverterAvailable(iModel: IModelConnection): Promise
 public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined
 public;getImageSourceMimeType(format: ImageSourceFormat): string
 beta;getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey
+public;GlobalAlignmentOptions
 public;GlobalLocation
 public;GlobalLocationArea
 public;GlobeAnimator 
@@ -314,6 +315,10 @@ public;LocateResponse
 internal;LockedStates
 internal;loggerCategory = "imodeljs-frontend.Extension"
 public;LookAndMoveTool 
+beta;LookAtArgs
+beta;LookAtOrthoArgs 
+beta;LookAtPerspectiveArgs 
+beta;LookAtUsingLensAngle 
 public;LookViewTool 
 internal;LRUTileList
 internal;LRUTileListNode
@@ -606,7 +611,6 @@ public;UniformContext
 public;UniformParams
 public;UniformType
 beta;UnitFormattingSettingsProvider
-beta;UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey"
 internal;UpsampledMapTile 
 public;VaryingType
 public;ViewAnimationOptions

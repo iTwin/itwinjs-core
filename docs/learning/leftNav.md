@@ -5,7 +5,7 @@
 - [Common](./common/index.md)
 - [iTwin Service Clients](./clients/index.md)
 - [Geometry](./geometry/index.md)
-- [Presentation](./presentation/index.md)
+- [Presentation]($docs/presentation/index.md)
 - [UI](./ui/index.md)
 
 ---

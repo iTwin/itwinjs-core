@@ -15,7 +15,7 @@ import { TreeRenderer, TreeRendererProps } from "../../../../ui-components/tree/
 import { from } from "../../../../ui-components/tree/controlled/Observable";
 import { TreeActions } from "../../../../ui-components/tree/controlled/TreeActions";
 import {
-  MutableTreeModel, TreeModel, TreeModelNode, TreeModelNodePlaceholder, TreeModelRootNode, VisibleTreeNodes,
+  computeVisibleNodes, MutableTreeModel, TreeModel, TreeModelNode, TreeModelNodePlaceholder, TreeModelRootNode, VisibleTreeNodes,
 } from "../../../../ui-components/tree/controlled/TreeModel";
 import { ITreeNodeLoader } from "../../../../ui-components/tree/controlled/TreeNodeLoader";
 import { HighlightableTreeProps, HighlightingEngine } from "../../../../ui-components/tree/HighlightingEngine";
@@ -137,10 +137,10 @@ describe("TreeRenderer", () => {
         .returns(() => new Observable(() => { }))
         .verifiable(moq.Times.once());
 
-      const { rerender } = render(<TreeRenderer {...defaultProps} visibleNodes={treeModel.computeVisibleNodes()} />);
+      const { rerender } = render(<TreeRenderer {...defaultProps} visibleNodes={computeVisibleNodes(treeModel)} />);
       nodeLoaderMock.verifyAll();
 
-      rerender(<TreeRenderer {...defaultProps} visibleNodes={treeModel.computeVisibleNodes()} />);
+      rerender(<TreeRenderer {...defaultProps} visibleNodes={computeVisibleNodes(treeModel)} />);
       nodeLoaderMock.verifyAll();
     });
   });
