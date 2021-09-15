@@ -55,13 +55,22 @@ export function addOvrFlagConstants(builder: ShaderBuilder): void {
 }
 
 const computeLUTFeatureIndex = `g_featureAndMaterialIndex.xyz`;
-const computeInstanceFeatureIndex = `a_featureId`;
+const computeInstanceFeatureIndex = `g_isAreaPattern ? u_patternFeatureId : a_featureId`;
 function computeFeatureIndex(vertex: VertexShaderBuilder): string {
-  if (vertex.usesInstancedGeometry)
+  if (vertex.usesInstancedGeometry) {
+    vertex.addUniform("u_patternFeatureId", VariableType.Vec3, (prog) => {
+      prog.addGraphicUniform("u_patternFeatureId", (uniform, params) => {
+        const id = params.geometry.asInstanced?.patternFeatureId;
+        assert(undefined !== id);
+        if (id)
+          uniform.setUniform3fv(id);
+      });
+    });
+
     return `g_featureIndex = ${computeInstanceFeatureIndex};`;
-  else if (vertex.usesVertexTable)
-    return `g_featureIndex = ${computeLUTFeatureIndex};`;
-  else return "";
+  }
+
+  return vertex.usesVertexTable ? `g_featureIndex = ${computeLUTFeatureIndex};` : "";
 }
 function getFeatureIndex(vertex: VertexShaderBuilder): string {
   return `

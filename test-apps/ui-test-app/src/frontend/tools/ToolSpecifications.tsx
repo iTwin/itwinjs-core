@@ -141,8 +141,8 @@ export class AppTools {
       iconSpec: Tool1.iconSpec,
       label: () => Tool1.flyover,
       description: () => Tool1.description,
-      execute: () => {
-        IModelApp.tools.run(Tool1.toolId);
+      execute: async () => {
+        await IModelApp.tools.run(Tool1.toolId);
         AppItemsProvider.toggleStatusBarItem();
         AppItemsProvider.toggleBackstageItem();
       },
@@ -155,9 +155,7 @@ export class AppTools {
       iconSpec: Tool2.iconSpec,
       labelKey: "SampleApp:tools.Tool2.flyover",
       tooltipKey: "SampleApp:tools.Tool2.description",
-      execute: () => {
-        IModelApp.tools.run(Tool2.toolId);
-      },
+      execute: async () => IModelApp.tools.run(Tool2.toolId),
     });
   }
 
@@ -172,7 +170,7 @@ export class AppTools {
         // as the ImodelApp starts. =====
         // make sure formatting and parsing data are cached before the tool starts.
         // await IModelApp.quantityFormatter.loadFormatAndParsingMaps(IModelApp.quantityFormatter.useImperialFormats);
-        IModelApp.tools.run(ToolWithSettings.toolId);
+        return IModelApp.tools.run(ToolWithSettings.toolId);
       },
     });
   }
@@ -183,7 +181,7 @@ export class AppTools {
       iconSpec: "icon-camera-animation",
       label: () => AnalysisAnimationTool.flyover,
       description: () => AnalysisAnimationTool.description,
-      execute: () => { IModelApp.tools.run(AnalysisAnimationTool.toolId); },
+      execute: async () => { return IModelApp.tools.run(AnalysisAnimationTool.toolId); },
       isHidden: new ConditionalBooleanValue(() => {
         const activeContentControl = ContentViewManager.getActiveContentControl();
         if (activeContentControl && activeContentControl.viewport && (undefined !== activeContentControl.viewport.view.analysisStyle || undefined !== activeContentControl.viewport.view.scheduleScript))
@@ -225,7 +223,7 @@ export class AppTools {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.item3",
       applicationData: { key: "value" },
-      execute: () => { IModelApp.tools.run(SelectionTool.toolId); },
+      execute: async () =>IModelApp.tools.run(SelectionTool.toolId),
     });
   }
 
@@ -235,7 +233,7 @@ export class AppTools {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.item4",
       applicationData: { key: "value" },
-      execute: () => { IModelApp.tools.run(SelectionTool.toolId); },
+      execute: async () => IModelApp.tools.run(SelectionTool.toolId),
     });
   }
 
@@ -245,7 +243,7 @@ export class AppTools {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.item5",
       applicationData: { key: "value" },
-      execute: () => { IModelApp.tools.run(SelectionTool.toolId); },
+      execute: async () =>  IModelApp.tools.run(SelectionTool.toolId),
     });
   }
 
@@ -255,7 +253,7 @@ export class AppTools {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.item6",
       applicationData: { key: "value" },
-      execute: () => { IModelApp.tools.run(SelectionTool.toolId); },
+      execute: async () => IModelApp.tools.run(SelectionTool.toolId),
     });
   }
 
@@ -265,7 +263,7 @@ export class AppTools {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.item7",
       applicationData: { key: "value" },
-      execute: () => { IModelApp.tools.run(SelectionTool.toolId); },
+      execute: async () => IModelApp.tools.run(SelectionTool.toolId),
     });
   }
 
@@ -275,7 +273,7 @@ export class AppTools {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.item8",
       applicationData: { key: "value" },
-      execute: () => { IModelApp.tools.run(SelectionTool.toolId); },
+      execute: async () => IModelApp.tools.run(SelectionTool.toolId),
     });
   }
 

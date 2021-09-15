@@ -13,7 +13,7 @@ import { ToolItemProps } from "./ItemProps";
 
 /** An Item that starts the execution of a Tool.
  * @public
- */
+ */
 export class ToolItemDef extends ActionButtonItemDef {
   public toolId: string = "";
 
@@ -38,7 +38,7 @@ export class ToolItemDef extends ActionButtonItemDef {
       iconSpec: iconSpec ? iconSpec : (tool.iconSpec && tool.iconSpec.length > 0) ? tool.iconSpec : undefined,
       label: () => tool.flyover,
       description: () => tool.description,
-      execute: () => { IModelApp.tools.run(tool.toolId, args); },
+      execute: async () => IModelApp.tools.run(tool.toolId, args),
     });
   }
 }

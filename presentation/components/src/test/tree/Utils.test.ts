@@ -57,7 +57,7 @@ describe("Utils", () => {
     it("assigns item id and label from loaded node", () => {
       const node = createPartialTreeNodeItem(
         {
-          key: { type: "", pathFromRoot: [] },
+          key: { type: "", version: 0, pathFromRoot: [] },
           label: LabelDefinition.fromLabelString("test"),
         },
         undefined,

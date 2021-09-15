@@ -12,6 +12,7 @@ import { ProcessDetector } from "@bentley/bentleyjs-core";
 
 interface MobileAddon {
   notifyListening: (port: number) => void;
+  registerDeviceImpl: () => void;
 }
 
 let addon: MobileAddon | undefined;
@@ -137,6 +138,7 @@ export function setupMobileRpc() {
 
   if (ProcessDetector.isMobileAppBackend) {
     addon = (process as any)._linkedBinding("iModelJsMobile");
+    addon?.registerDeviceImpl();
   }
 
   let server: MobileRpcServer | null = new MobileRpcServer();

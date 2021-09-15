@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/geometry-core",
+      "comment": "Apply tolerance when determining if ClipShape polygon is closed.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core"
+}

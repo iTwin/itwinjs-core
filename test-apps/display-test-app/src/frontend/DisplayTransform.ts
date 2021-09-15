@@ -24,7 +24,7 @@ export class ApplyModelTransformTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 5; }
 
-  public override run(origin?: Point3d, ypr?: YawPitchRollAngles): boolean {
+  public override async run(origin?: Point3d, ypr?: YawPitchRollAngles): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (!vp)
       return false;
@@ -42,7 +42,7 @@ export class ApplyModelTransformTool extends Tool {
     return true;
   }
 
-  public override parseAndRun(...input: string[]): boolean {
+  public override async parseAndRun(...input: string[]): Promise<boolean> {
     const args = parseArgs(input);
     const origin = new Point3d(args.getInteger("x") ?? 0, args.getInteger("y") ?? 0, args.getInteger("z") ?? 0);
     const ypr = YawPitchRollAngles.createDegrees(0, args.getFloat("p") ?? 0, args.getFloat("r") ?? 0);
