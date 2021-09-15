@@ -1,6 +1,11 @@
 # Change Log - @bentley/presentation-components
 
-This log was last generated on Thu, 09 Sep 2021 21:04:58 GMT and should not be manually modified.
+This log was last generated on Wed, 15 Sep 2021 18:06:46 GMT and should not be manually modified.
+
+## 2.19.12
+Wed, 15 Sep 2021 18:06:46 GMT
+
+_Version update only_
 
 ## 2.19.11
 Thu, 09 Sep 2021 21:04:58 GMT
