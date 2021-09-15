@@ -2,7 +2,10 @@
 
 &nbsp;
 
-### [Setting up](./Setup/index.md)
+### Introduction
+
+- [Motivation](./Motivation/index.md)
+- [Setting up](./Setup/index.md)
 
 &nbsp;
 
