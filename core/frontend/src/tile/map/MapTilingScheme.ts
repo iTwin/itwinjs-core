@@ -127,7 +127,7 @@ export abstract class MapTilingScheme {
    * @param height height (optional)
    */
   public cartographicToTileXY(carto: Cartographic, level: number, result?: Point2d): Point2d {
-    const fraction = this.cartographicToFraction(carto.latitude, carto.longitude, MapTilingScheme._scratchPoint2d);
+    const fraction = this.cartographicToFraction(carto.latitudeRadians, carto.longitudeRadians, MapTilingScheme._scratchPoint2d);
     return Point2d.create(this.xFractionToTileX(fraction.x, level), this.yFractionToTileY(fraction.y, level), result);
 
   }
@@ -138,8 +138,8 @@ export abstract class MapTilingScheme {
    * @param height
    */
   public fractionToCartographic(xFraction: number, yFraction: number, result: Cartographic, height?: number): Cartographic {
-    result.longitude = this.xFractionToLongitude(xFraction);
-    result.latitude = this.yFractionToLatitude(yFraction);
+    result.longitude = Angle.fromJSON({radians: this.xFractionToLongitude(xFraction)});
+    result.latitude = Angle.fromJSON({radians: this.yFractionToLatitude(yFraction)});
     result.height = undefined === height ? 0.0 : height;
     return result;
   }
@@ -153,7 +153,7 @@ export abstract class MapTilingScheme {
   // gets the longitude and latitude into a point with coordinates between 0 and 1
   private ecefToPixelFraction(point: Point3d, applyTerrain: boolean): Point3d {
     const cartoGraphic = Cartographic.fromEcef(point)!;
-    return Point3d.create(this.longitudeToXFraction(cartoGraphic.longitude), this.latitudeToYFraction(cartoGraphic.latitude), applyTerrain ? cartoGraphic.height : 0);
+    return Point3d.create(this.longitudeToXFraction(cartoGraphic.longitudeRadians), this.latitudeToYFraction(cartoGraphic.latitudeRadians), applyTerrain ? cartoGraphic.height : 0);
   }
 
   public computeMercatorFractionToDb(ecefToDb: Transform, bimElevationOffset: number, iModel: IModelConnection, applyTerrain: boolean) {

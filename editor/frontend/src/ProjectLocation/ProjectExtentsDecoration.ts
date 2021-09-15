@@ -338,11 +338,11 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
       const latLongFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.LatLong);
       if (undefined !== latLongFormatterSpec && undefined !== coordFormatterSpec && this.iModel.isGeoLocated) {
         const cartographic = this.iModel.spatialToCartographicFromEcef(this._monumentPoint!);
-        const formattedLat = quantityFormatter.formatQuantity(Math.abs(cartographic.latitude), latLongFormatterSpec);
-        const formattedLong = quantityFormatter.formatQuantity(Math.abs(cartographic.longitude), latLongFormatterSpec);
+        const formattedLat = quantityFormatter.formatQuantity(Math.abs(cartographic.latitudeRadians), latLongFormatterSpec);
+        const formattedLong = quantityFormatter.formatQuantity(Math.abs(cartographic.longitudeRadians), latLongFormatterSpec);
         const formattedHeight = quantityFormatter.formatQuantity(cartographic.height, coordFormatterSpec);
-        const latDir = CoreTools.translate(cartographic.latitude < 0 ? "Measure.Labels.S" : "Measure.Labels.N");
-        const longDir = CoreTools.translate(cartographic.longitude < 0 ? "Measure.Labels.W" : "Measure.Labels.E");
+        const latDir = CoreTools.translate(cartographic.latitudeRadians < 0 ? "Measure.Labels.S" : "Measure.Labels.N");
+        const longDir = CoreTools.translate(cartographic.longitudeRadians < 0 ? "Measure.Labels.W" : "Measure.Labels.E");
         toolTipHtml += `${translateCoreMeasureBold("LatLong") + formattedLat + latDir}, ${formattedLong}${longDir}<br>`;
         toolTipHtml += `${translateCoreMeasureBold("Altitude") + formattedHeight}<br>`;
       }
@@ -454,7 +454,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
       return Ray3d.create(origin, Vector3d.unitY());
 
     const cartographic = this.iModel.spatialToCartographicFromEcef(origin);
-    cartographic.latitude += Angle.createDegrees(0.01).radians;
+    cartographic.latitude = Angle.fromJSON({radians: cartographic.latitudeRadians + Angle.createDegrees(0.01).radians});
     const pt2 = this.iModel.cartographicToSpatialFromEcef(cartographic);
     const northVec = Vector3d.createStartEnd(origin, pt2);
     northVec.z = 0.0;

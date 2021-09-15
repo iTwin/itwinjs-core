@@ -23,7 +23,7 @@ describe("Blank Connection", () => {
 
   before(async () => {
     await MockRender.App.startup();
-    const exton = Cartographic.fromJSON({isDegrees: true, longitude: -75.686694, latitude: 40.065757, height: 0});
+    const exton = Cartographic.fromJSON({longitude: {degrees: -75.686694}, latitude: {degrees: 40.065757}, height: 0});
     blankConnection = BlankConnection.create({
       name: "test",
       location: exton,

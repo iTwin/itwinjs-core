@@ -304,7 +304,7 @@ export class MapTileTree extends RealityTileTree {
             scratchCorner.clone(gridPoint);
         } else {
           this._mercatorTilingScheme.fractionToCartographic(gridPoint.x, gridPoint.y, MapTileTree._scratchCarto);
-          this.earthEllipsoid.radiansToPoint(MapTileTree._scratchCarto.longitude, Cartographic.parametricLatitudeFromGeodeticLatitude(MapTileTree._scratchCarto.latitude), gridPoint);
+          this.earthEllipsoid.radiansToPoint(MapTileTree._scratchCarto.longitudeRadians, Cartographic.parametricLatitudeFromGeodeticLatitude(MapTileTree._scratchCarto.latitudeRadians), gridPoint);
           const cartesianDistance = this.cartesianRange.distanceToPoint(scratchCorner);
           if (cartesianDistance < this.cartesianTransitionDistance)
             scratchCorner.interpolate(cartesianDistance / this.cartesianTransitionDistance, gridPoint, gridPoint);

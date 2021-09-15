@@ -1485,7 +1485,7 @@ export abstract class ViewState3d extends ViewState {
   }
 
   private finishLookAtGlobalLocation(targetPointCartographic: Cartographic, origEyePoint: Point3d, eyePoint: Point3d, targetPoint: Point3d, pitchAngleRadians: number): number {
-    targetPointCartographic.latitude += .001;
+    targetPointCartographic.latitude.setRadians(targetPointCartographic.latitudeRadians + .001);
     const northOfEyePoint = this.cartographicToRoot(targetPointCartographic)!;
     let upVector = northOfEyePoint.unitVectorTo(eyePoint)!;
     if (this.globeMode === GlobeMode.Plane)

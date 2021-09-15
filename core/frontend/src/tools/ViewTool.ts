@@ -3315,7 +3315,7 @@ export class ViewGlobeLocationTool extends ViewTool {
       const latitude = parseFloat(args[0]);
       const longitude = parseFloat(args[1]);
       if (!Number.isNaN(latitude) || !Number.isNaN(longitude)) {
-        const center = Cartographic.fromJSON({longitude: Angle.degreesToRadians(longitude), latitude: Angle.degreesToRadians(latitude)});
+        const center = Cartographic.fromJSON({longitude: {degrees: longitude}, latitude: {degrees: latitude}});
         this._globalLocation = { center };
       }
     }

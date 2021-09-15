@@ -84,7 +84,7 @@ export class GeoJsonImporter {
       const featureMin = Cartographic.createEmpty(), featureMax = Cartographic.createEmpty();
       if (!this.getFeatureRange(featureMin, featureMax))
         return;
-      const featureCenter = Cartographic.fromJSON({longitude: (featureMin.longitude + featureMax.longitude) / 2, latitude: (featureMin.latitude + featureMax.latitude) / 2});
+      const featureCenter = Cartographic.fromJSON({longitude: {radians: (featureMin.longitudeRadians + featureMax.longitudeRadians) / 2}, latitude: {radians: (featureMin.latitudeRadians + featureMax.latitudeRadians) / 2}});
 
       this.iModelDb.setEcefLocation(EcefLocation.createFromCartographicOrigin(featureCenter));
       this.convertFeatureCollection();
@@ -117,8 +117,8 @@ export class GeoJsonImporter {
   }
   /** Iterate through and accumulate the GeoJSON FeatureCollection range. */
   protected getFeatureRange(featureMin: Cartographic, featureMax: Cartographic) {
-    featureMin.longitude = featureMin.latitude = Angle.pi2Radians;
-    featureMax.longitude = featureMax.latitude = -Angle.pi2Radians;
+    featureMin.longitude = featureMin.latitude = Angle.fromJSON({radians: Angle.pi2Radians});
+    featureMax.longitude = featureMax.latitude = Angle.fromJSON({radians: -Angle.pi2Radians});
 
     for (const feature of this._geoJson.data.features) {
       if (feature.geometry) {
@@ -149,10 +149,10 @@ export class GeoJsonImporter {
   private extendRangeForCoordinate(featureMin: Cartographic, featureMax: Cartographic, point: GeoJson.Point) {
     const longitude = Angle.degreesToRadians(point[0]);
     const latitude = Angle.degreesToRadians(point[1]);
-    featureMin.longitude = Math.min(longitude, featureMin.longitude);
-    featureMin.latitude = Math.min(latitude, featureMin.latitude);
-    featureMax.longitude = Math.max(longitude, featureMax.longitude);
-    featureMax.latitude = Math.max(latitude, featureMax.latitude);
+    featureMin.longitude = Angle.fromJSON({radians: Math.min(longitude, featureMin.longitudeRadians)});
+    featureMin.latitude = Angle.fromJSON({radians: Math.min(latitude, featureMin.latitudeRadians)});
+    featureMax.longitude = Angle.fromJSON({radians: Math.max(longitude, featureMax.longitudeRadians)});
+    featureMax.latitude = Angle.fromJSON({radians: Math.max(latitude, featureMax.latitudeRadians)});
   }
   private extendRangeForCoordinates(featureMin: Cartographic, featureMax: Cartographic, lineString: GeoJson.LineString) {
     for (const point of lineString) {
@@ -225,8 +225,8 @@ export class GeoJsonImporter {
   }
 
   private pointFromCoordinate(coordinates: number[]) {
-    GeoJsonImporter._scratchCartographic.longitude = Angle.degreesToRadians(coordinates[0]);
-    GeoJsonImporter._scratchCartographic.latitude = Angle.degreesToRadians(coordinates[1]);
+    GeoJsonImporter._scratchCartographic.longitude = Angle.fromJSON({degrees: coordinates[0]});
+    GeoJsonImporter._scratchCartographic.latitude = Angle.fromJSON({degrees: coordinates[1]});
 
     const point = this.iModelDb.cartographicToSpatialFromEcef(GeoJsonImporter._scratchCartographic);
     /** the ecef Transform (particularly if it appending) may introduce some deviation from 0 x-y plane. */

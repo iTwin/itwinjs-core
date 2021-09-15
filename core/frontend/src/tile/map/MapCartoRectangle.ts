@@ -41,8 +41,8 @@ export class MapCartoRectangle extends Range2d {
   public get north() { return this.high.y; }
   public set north(y: number) { this.high.y = y; }
   public get latLongString() { return `Latitude: ${this.low.y * Angle.degreesPerRadian} - ${this.high.y * Angle.degreesPerRadian} Longitude: ${this.low.x * Angle.degreesPerRadian} - ${this.high.x * Angle.degreesPerRadian}`; }
-  public get globalLocationArea(): GlobalLocationArea { return { southwest: Cartographic.fromJSON({longitude: this.west, latitude: this.south}), northeast: Cartographic.fromJSON({longitude: this.east, latitude: this.north}) }; }
-  public get cartoCenter() { return Cartographic.fromJSON({longitude: (this.low.x + this.high.x) / 2, latitude: (this.low.y + this.high.y) / 2}); }
+  public get globalLocationArea(): GlobalLocationArea { return { southwest: Cartographic.fromJSON({longitude: {radians: this.west}, latitude: {radians: this.south}}), northeast: Cartographic.fromJSON({longitude: {radians: this.east}, latitude: {radians: this.north}}) }; }
+  public get cartoCenter() { return Cartographic.fromJSON({longitude: {radians: (this.low.x + this.high.x) / 2}, latitude: {radians: (this.low.y + this.high.y) / 2}}); }
   public get globalLocation(): GlobalLocation { return { center: this.cartoCenter, area: this.globalLocationArea }; }
 
   public init(west = 0, south = 0, east = 0, north = 0) {
@@ -51,11 +51,11 @@ export class MapCartoRectangle extends Range2d {
     this.east = east;
     this.north = north;
   }
-  public containsCartographic(carto: Cartographic) { return this.containsXY(carto.longitude, carto.latitude); }
+  public containsCartographic(carto: Cartographic) { return this.containsXY(carto.longitudeRadians, carto.latitudeRadians); }
   public getCenter(result?: Cartographic): Cartographic {
     return Cartographic.fromJSON({longitude: (this.west + this.east) / 2, latitude: (this.north + this.south) / 2, height: 0}, result);
   }
-  public fractionFromCartographic(carto: Cartographic): Point2d | undefined { return this.worldToLocal(Point2d.create(carto.longitude, carto.latitude, scratchPoint2d)); }
+  public fractionFromCartographic(carto: Cartographic): Point2d | undefined { return this.worldToLocal(Point2d.create(carto.longitudeRadians, carto.latitudeRadians, scratchPoint2d)); }
   public getTileFractionRange(tilingScheme: MapTilingScheme) {
     scratchMercatorFractionRange.low.x = tilingScheme.longitudeToXFraction(this.low.x);
     scratchMercatorFractionRange.high.x = tilingScheme.longitudeToXFraction(this.high.x);

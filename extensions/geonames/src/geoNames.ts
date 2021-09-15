@@ -59,7 +59,7 @@ class GeoNameMarker extends Marker {
       if (BeButton.Data === ev.button) {
         const evViewport = ev.viewport;
         (async () => {
-          await evViewport.animateFlyoverToGlobalLocation({ center: Cartographic.fromJSON({longitude: this.props.lng * Angle.radiansPerDegree, latitude: this.props.lat * Angle.radiansPerDegree}) });
+          await evViewport.animateFlyoverToGlobalLocation({ center: Cartographic.fromJSON({longitude: {radians: this.props.lng * Angle.radiansPerDegree}, latitude: {radians: this.props.lat * Angle.radiansPerDegree}}) });
         })().catch(() => { });
       } else if (BeButton.Reset === ev.button && undefined !== this.props.wikipedia && 0 !== this.props.wikipedia.length)
         window.open(`https://${this.props.wikipedia}`);
@@ -98,13 +98,13 @@ export class GeoNameMarkerManager {
     for (const corner of worldFrust.points) {
       const carto = view.rootToCartographic(corner);
       if (undefined !== carto)
-        longLatRange.extendXY(carto.longitude, carto.latitude);
+        longLatRange.extendXY(carto.longitudeRadians, carto.latitudeRadians);
     }
     this.doCitySearch(longLatRange, this._cityCount).then((cities) => {
       if (cities !== undefined) {
         for (const city of cities) {
-          GeoNameMarkerManager._scratchCarto.longitude = city.lng * Angle.radiansPerDegree;
-          GeoNameMarkerManager._scratchCarto.latitude = city.lat * Angle.radiansPerDegree;
+          GeoNameMarkerManager._scratchCarto.longitude = Angle.fromJSON({radians: city.lng * Angle.radiansPerDegree});
+          GeoNameMarkerManager._scratchCarto.latitude = Angle.fromJSON({radians: city.lat * Angle.radiansPerDegree});
           this._markerSet.markers.add(new GeoNameMarker(view.cartographicToRoot(GeoNameMarkerManager._scratchCarto, GeoNameMarkerManager._scratchPoint)!, city, this._cityMarkerImage));
         }
         this._markerSet.markDirty();

@@ -87,10 +87,10 @@ export class ApproximateTerrainHeights {
   }
 
   private _getTileXYLevel(rectangle: Range2d): { x: number, y: number, level: number } | undefined {
-    Cartographic.fromJSON({longitude: rectangle.low.x, latitude: rectangle.high.y, height: 0.0}, this._scratchCorners[0]);
-    Cartographic.fromJSON({longitude: rectangle.high.x, latitude: rectangle.high.y, height: 0.0}, this._scratchCorners[1]);
-    Cartographic.fromJSON({longitude: rectangle.low.x, latitude: rectangle.low.y, height: 0.0}, this._scratchCorners[2]);
-    Cartographic.fromJSON({longitude: rectangle.high.x, latitude: rectangle.low.y, height: 0.0}, this._scratchCorners[3]);
+    Cartographic.fromJSON({longitude: {radians: rectangle.low.x}, latitude: {radians: rectangle.high.y}, height: 0.0}, this._scratchCorners[0]);
+    Cartographic.fromJSON({longitude: {radians: rectangle.high.x}, latitude: {radians: rectangle.high.y}, height: 0.0}, this._scratchCorners[1]);
+    Cartographic.fromJSON({longitude: {radians: rectangle.low.x}, latitude: {radians: rectangle.low.y}, height: 0.0}, this._scratchCorners[2]);
+    Cartographic.fromJSON({longitude: {radians: rectangle.high.x}, latitude: {radians: rectangle.low.y}, height: 0.0}, this._scratchCorners[3]);
 
     // Determine which tile the bounding rectangle is in
     let lastLevelX = 0, lastLevelY = 0;

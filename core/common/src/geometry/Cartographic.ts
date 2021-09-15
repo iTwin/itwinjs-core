@@ -6,7 +6,7 @@
  * @module Geometry
  */
 
-import { Angle, Constant, Point3d, Range1d, Range2d, Range3d, Transform, Vector3d, XYAndZ, XYZ } from "@bentley/geometry-core";
+import { Angle, AngleProps, Constant, Point3d, Range1d, Range2d, Range3d, Transform, Vector3d, XYAndZ, XYZ } from "@bentley/geometry-core";
 import { assert } from "@bentley/bentleyjs-core";
 
 // portions adapted from Cesium.js Copyright 2011 - 2017 Cesium Contributors
@@ -16,12 +16,10 @@ import { assert } from "@bentley/bentleyjs-core";
  * @public
  * */
 export interface CartographicProps {
-  /** If true, latitude and longitude are specified in degrees; defaults to false. */
-  isDegrees?: boolean;
-  /** Latitude in radians or degrees. */
-  latitude: number;
-  /** Longitude in radians or degrees. */
-  longitude: number;
+  /** Angle which represents latitude. */
+  latitude: AngleProps;
+  /** Angle which represents longitude. */
+  longitude: AngleProps;
   /** Height in meters above the ellipsoid; defaults to zero. */
   height?: number;
 }
@@ -29,13 +27,13 @@ export interface CartographicProps {
 /** A position on the earth defined by longitude, latitude, and height above the [WGS84](https://en.wikipedia.org/wiki/World_Geodetic_System) ellipsoid.
  * @public
  */
-export class Cartographic implements CartographicProps {
+export class Cartographic {
   /**
-   * @param longitude longitude, in radians.
-   * @param latitude latitude, in radians.
+   * @param longitude longitude, as an Angle object.
+   * @param latitude latitude, as an Angle object.
    * @param height The height, in meters, above the ellipsoid.
    */
-  private constructor(public longitude: number = 0, public latitude: number = 0, public height: number = 0) { }
+  private constructor(public longitude: Angle, public latitude: Angle, public height: number = 0) { }
 
   /** Create an empty Cartographic object */
   public static createEmpty(): Cartographic {
@@ -47,23 +45,23 @@ export class Cartographic implements CartographicProps {
    * @see [[CartographicProps]]
    */
   public static fromJSON(props: CartographicProps, result?: Cartographic): Cartographic {
-    let longitude = 0;
-    let latitude = 0;
+    // let longitude = 0;
+    // let latitude = 0;
 
-    if (true === props.isDegrees) { // ensure stored in radians
-      longitude = Angle.degreesToRadians(props.longitude);
-      latitude = Angle.degreesToRadians(props.latitude);
-    } else { // already stored in radians
-      longitude = props.longitude;
-      latitude = props.latitude;
-    }
+    // if (true === props.isDegrees) { // ensure stored in radians
+    //   longitude = Angle.degreesToRadians(props.longitude);
+    //   latitude = Angle.degreesToRadians(props.latitude);
+    // } else { // already stored in radians
+    //   longitude = props.longitude;
+    //   latitude = props.latitude;
+    // }
     const height = props.height !== undefined ? props.height : 0;
 
     if (!result)
-      return new Cartographic(longitude, latitude, height);
+      return new Cartographic(Angle.fromJSON(props.longitude), Angle.fromJSON(props.latitude), height);
 
-    result.longitude = longitude;
-    result.latitude = latitude;
+    result.longitude = Angle.fromJSON(props.longitude);
+    result.latitude = Angle.fromJSON(props.latitude);
     result.height = height;
     return result;
   }
@@ -82,14 +80,24 @@ export class Cartographic implements CartographicProps {
     return Object.freeze(this);
   }
 
+  /** longitude, in radians */
+  public get longitudeRadians() {
+    return this.longitude.radians;
+  }
+
+  /** latitude, in radians */
+  public get latitudeRadians() {
+    return this.latitude.radians;
+  }
+
   /** longitude, in degrees */
   public get longitudeDegrees() {
-    return Angle.radiansToDegrees(this.longitude);
+    return this.longitude.degrees;
   }
 
   /** latitude, in degrees */
   public get latitudeDegrees() {
-    return Angle.radiansToDegrees(this.latitude);
+    return this.latitude.degrees;
   }
 
   private static _oneMinusF = 1 - (Constant.earthRadiusWGS84.equator - Constant.earthRadiusWGS84.polar) / Constant.earthRadiusWGS84.equator;
@@ -140,10 +148,10 @@ export class Cartographic implements CartographicProps {
     const height = Math.sign(h.dotProduct(cartesian)) * h.magnitude();
 
     if (!result)
-      return Cartographic.fromJSON({longitude, latitude, height});
+      return Cartographic.fromJSON({longitude: {radians: longitude}, latitude: {radians: latitude}, height});
 
-    result.longitude = longitude;
-    result.latitude = latitude;
+    result.longitude = Angle.fromJSON({radians: longitude});
+    result.latitude = Angle.fromJSON({radians: latitude});
     result.height = height;
     return result;
   }
@@ -163,28 +171,28 @@ export class Cartographic implements CartographicProps {
   /** Duplicates a Cartographic. */
   public clone(result?: Cartographic): Cartographic {
     if (!result)
-      return Cartographic.fromJSON({longitude: this.longitude, latitude: this.latitude, height: this.height});
+      return Cartographic.fromJSON({longitude: {radians: this.longitudeRadians}, latitude: {radians: this.latitudeRadians}, height: this.height});
 
-    result.longitude = this.longitude;
-    result.latitude = this.latitude;
+    result.longitude = Angle.fromJSON({radians: this.longitudeRadians});
+    result.latitude = Angle.fromJSON({radians: this.latitudeRadians});
     result.height = this.height;
     return result;
   }
 
   /** Return true if this Cartographic is the same as right */
-  public equals(right: CartographicProps): boolean {
+  public equals(right: Cartographic): boolean {
     return (this === right) ||
-      ((this.longitude === right.longitude) &&
-        (this.latitude === right.latitude) &&
+      ((this.longitudeRadians === right.longitudeRadians) &&
+        (this.latitudeRadians === right.latitudeRadians) &&
         (this.height === right.height));
   }
 
   /** Compares this Cartographic component-wise and returns true if they are within the provided epsilon, */
-  public equalsEpsilon(right: CartographicProps, epsilon: number): boolean {
+  public equalsEpsilon(right: Cartographic, epsilon: number): boolean {
     const rHeight = right.height !== undefined ? right.height : 0;
     return (this === right) ||
-      ((Math.abs(this.longitude - right.longitude) <= epsilon) &&
-        (Math.abs(this.latitude - right.latitude) <= epsilon) &&
+      ((Math.abs(this.longitudeRadians - right.longitudeRadians) <= epsilon) &&
+        (Math.abs(this.latitudeRadians - right.latitudeRadians) <= epsilon) &&
         (Math.abs(this.height - rHeight) <= epsilon));
   }
 
@@ -307,12 +315,12 @@ export class Cartographic implements CartographicProps {
 
   /** Return an ECEF point from a Cartographic point */
   public toEcef(result?: Point3d): Point3d {
-    const cosLatitude = Math.cos(this.latitude);
+    const cosLatitude = Math.cos(this.latitudeRadians);
     const scratchN = Cartographic._scratchN;
     const scratchK = Cartographic._scratchK;
-    scratchN.x = cosLatitude * Math.cos(this.longitude);
-    scratchN.y = cosLatitude * Math.sin(this.longitude);
-    scratchN.z = Math.sin(this.latitude);
+    scratchN.x = cosLatitude * Math.cos(this.longitudeRadians);
+    scratchN.y = cosLatitude * Math.sin(this.longitudeRadians);
+    scratchN.z = Math.sin(this.latitudeRadians);
     Cartographic.normalize(scratchN, scratchN);
 
     Cartographic.multiplyComponents(Cartographic._wgs84RadiiSquared, scratchN, scratchK);
@@ -353,8 +361,8 @@ export class CartographicRange {
         high = geoPt.clone();
         continue;
       }
-      low = Cartographic.fromJSON({latitude: Math.min(low.latitude, geoPt.latitude), longitude: Math.min(low.longitude, geoPt.longitude), height: low.height});
-      high = Cartographic.fromJSON({latitude: Math.max(high.latitude, geoPt.latitude), longitude: Math.max(high.longitude, geoPt.longitude), height: high.height});
+      low = Cartographic.fromJSON({latitude: Math.min(low.latitudeRadians, geoPt.latitudeRadians), longitude: Math.min(low.longitudeRadians, geoPt.longitudeRadians), height: low.height});
+      high = Cartographic.fromJSON({latitude: Math.max(high.latitudeRadians, geoPt.latitudeRadians), longitude: Math.max(high.longitudeRadians, geoPt.longitudeRadians), height: high.height});
     }
 
     if (!low || !high) {
@@ -363,7 +371,7 @@ export class CartographicRange {
     }
 
     const longitudeRanges = [];
-    this._minLongitude = Math.min(low.longitude, high.longitude), this._maxLongitude = Math.max(low.longitude, high.longitude);
+    this._minLongitude = Math.min(low.longitudeRadians, high.longitudeRadians), this._maxLongitude = Math.max(low.longitudeRadians, high.longitudeRadians);
     if (this._maxLongitude - this._minLongitude > Angle.piRadians) {
       longitudeRanges.push(Range1d.createXX(0.0, this._minLongitude));
       longitudeRanges.push(Range1d.createXX(this._maxLongitude, Angle.pi2Radians));
@@ -372,7 +380,7 @@ export class CartographicRange {
     }
 
     for (const longitudeRange of longitudeRanges) {
-      this._minLatitude = Math.min(low.latitude, high.latitude), this._maxLatitude = Math.max(low.latitude, high.latitude);
+      this._minLatitude = Math.min(low.latitudeRadians, high.latitudeRadians), this._maxLatitude = Math.max(low.latitudeRadians, high.latitudeRadians);
       if (this._maxLatitude - this._minLatitude > Angle.piOver2Radians) {
         this._ranges.push(Range2d.createXYXY(longitudeRange.low, 0.0, longitudeRange.high, this._minLatitude));
         this._ranges.push(Range2d.createXYXY(longitudeRange.low, this._maxLatitude, longitudeRange.high, Angle.piRadians));

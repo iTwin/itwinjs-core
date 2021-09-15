@@ -281,8 +281,8 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     if (!this._cartographicFromArgs) {
       if (this.iModel.isGeoLocated) {
         const cartographic = this.iModel.spatialToCartographicFromEcef(this._origin);
-        this.latitude = cartographic.latitude;
-        this.longitude = cartographic.longitude;
+        this.latitude = cartographic.latitudeRadians;
+        this.longitude = cartographic.longitudeRadians;
         this.altitude = cartographic.height;
         this.north = deco.getClockwiseAngleToNorth().radians;
       } else if (!this._haveToolSettings) {
@@ -304,7 +304,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     if (undefined === deco)
       return;
 
-    const origin = Cartographic.fromJSON({longitude: this.longitude, latitude: this.latitude, height: this.altitude});
+    const origin = Cartographic.fromJSON({longitude: {radians: this.longitude}, latitude: {radians: this.latitude}, height: this.altitude});
     if (!deco.updateEcefLocation(origin, this._origin, Angle.createRadians(this.north)))
       return;
 

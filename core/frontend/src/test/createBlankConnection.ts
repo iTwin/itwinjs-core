@@ -9,7 +9,7 @@ import { BlankConnection } from "../IModelConnection";
 
 /** Open a blank connection for tests. */
 export function createBlankConnection(name = "test-blank-connection",
-  location = Cartographic.fromJSON({isDegrees: true, longitude: -75.686694, latitude: 40.065757, height: 0}),
+  location = Cartographic.fromJSON({longitude: {degrees: -75.686694}, latitude: {degrees: 40.065757}, height: 0}),
   extents = new Range3d(-1000, -1000, -100, 1000, 1000, 100),
   iTwinId = Guid.createValue()): BlankConnection {
   return BlankConnection.create({ name, location, extents, iTwinId });

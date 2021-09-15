@@ -235,8 +235,8 @@ export class EcefLocation implements EcefLocationProps {
   public static createFromCartographicOrigin(origin: Cartographic, point?: Point3d, angle?: Angle) {
     const ecefOrigin = origin.toEcef();
     const deltaRadians = 10 / Constant.earthRadiusWGS84.polar;
-    const northCarto = Cartographic.fromJSON({longitude: origin.longitude, latitude: origin.latitude + deltaRadians, height: origin.height});
-    const eastCarto = Cartographic.fromJSON({longitude: origin.longitude + deltaRadians, latitude: origin.latitude, height: origin.height});
+    const northCarto = Cartographic.fromJSON({longitude: {radians: origin.longitudeRadians}, latitude: {radians: origin.latitudeRadians + deltaRadians}, height: origin.height});
+    const eastCarto = Cartographic.fromJSON({longitude: {radians: origin.longitudeRadians + deltaRadians}, latitude: {radians: origin.latitudeRadians}, height: origin.height});
     const ecefNorth = northCarto.toEcef();
     const ecefEast = eastCarto.toEcef();
     const xVector = Vector3d.createStartEnd(ecefOrigin, ecefEast).normalize();

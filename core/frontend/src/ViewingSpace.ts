@@ -119,7 +119,7 @@ export class ViewingSpace {
     for (let i = 0; i < 8; i++) {
       const corner = frustum.getCorner(i);
       const carto = this.view.iModel.spatialToCartographicFromEcef(corner);
-      cartoRange.extendXY(carto.longitude, carto.latitude);
+      cartoRange.extendXY(carto.longitudeRadians, carto.latitudeRadians);
     }
 
     return ApproximateTerrainHeights.instance.getMinimumMaximumHeights(cartoRange);

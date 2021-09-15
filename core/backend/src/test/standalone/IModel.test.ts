@@ -14,7 +14,7 @@ import {
 } from "@bentley/geometry-core";
 import { CheckpointV2 } from "@bentley/imodelhub-client";
 import {
-  AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
+  AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, Cartographic, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
   DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeographicCRS, GeometricElement3dProps,
   GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError, IModelStatus, MapImageryProps, ModelProps,
   PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance,
@@ -1151,7 +1151,7 @@ describe("iModel", () => {
     const carto = imodel5.spatialToCartographicFromEcef(center);
     assert.approximately(carto.longitudeDegrees, 132.70683882277805, .1); // this data is in Japan
     assert.approximately(carto.latitudeDegrees, 34.35462768786055, .1);
-    const c2 = { longitude: 2.3161712773709127, latitude: 0.5996013664499733, height: 10 };
+    const c2 = Cartographic.fromJSON({ longitude: {radians: 2.3161712773709127}, latitude: {radians: 0.5996013664499733}, height: 10 });
     assert.isTrue(carto.equalsEpsilon(c2, .001), "spatialToCartographic");
 
     imodel5.cartographicToSpatialFromEcef(carto, z2);

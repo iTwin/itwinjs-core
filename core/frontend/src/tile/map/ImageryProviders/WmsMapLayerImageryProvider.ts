@@ -126,7 +126,7 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
     if (layerString.length === 0)
       return;
     const rectangle = tree.getTileRectangle(quadId);
-    const fraction = rectangle.worldToLocal(Point2d.create(carto.longitude, carto.latitude, scratchPoint2d))!;
+    const fraction = rectangle.worldToLocal(Point2d.create(carto.longitudeRadians, carto.latitudeRadians, scratchPoint2d))!;
     const x = Math.floor(.5 + fraction.x * this.tileSize);
     const y = Math.floor(.5 + (1.0 - fraction.y) * this.tileSize);
     const coordinateString = (false && this._isVersion1_1) ? `&x=${x}&y=${y}` : `&i=${x}&j=${y}`;

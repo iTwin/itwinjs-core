@@ -136,7 +136,7 @@ export class BackgroundMapGeometry {
     let db;
     if (this.globeMode === GlobeMode.Plane) {
       const fraction = Point2d.create(0, 0);
-      this._mercatorTilingScheme.cartographicToFraction(cartographic.latitude, cartographic.longitude, fraction);
+      this._mercatorTilingScheme.cartographicToFraction(cartographic.latitudeRadians, cartographic.longitudeRadians, fraction);
       db = this._mercatorFractionToDb.multiplyXYZ(fraction.x, fraction.y, cartographic.height, result);
     } else {
       db = this._ecefToDb.multiplyPoint3d(cartographic.toEcef())!;
@@ -146,7 +146,7 @@ export class BackgroundMapGeometry {
   public cartographicToDb(cartographic: Cartographic, result?: Point3d): Point3d {
     if (this.globeMode === GlobeMode.Plane) {
       const fraction = Point2d.create(0, 0);
-      this._mercatorTilingScheme.cartographicToFraction(cartographic.latitude, cartographic.longitude, fraction);
+      this._mercatorTilingScheme.cartographicToFraction(cartographic.latitudeRadians, cartographic.longitudeRadians, fraction);
       return this._mercatorFractionToDb.multiplyXYZ(fraction.x, fraction.y, cartographic.height, result);
     } else {
       return this._ecefToDb.multiplyPoint3d(cartographic.toEcef())!;
@@ -406,9 +406,9 @@ export async function calculateEcefToDbTransformAtLocation(originIn: Point3d, iM
   const geoOrigin = Point3d.fromJSON(response.geoCoords[0].p);
   const geoNorth = Point3d.fromJSON(response.geoCoords[1].p);
   const geoEast = Point3d.fromJSON(response.geoCoords[2].p);
-  const ecefOrigin = Cartographic.fromJSON({isDegrees: true, longitude: geoOrigin.x, latitude: geoOrigin.y, height: geoOrigin.z}).toEcef()!;
-  const ecefNorth = Cartographic.fromJSON({isDegrees: true, longitude: geoNorth.x, latitude: geoNorth.y, height: geoNorth.z}).toEcef()!;
-  const ecefEast = Cartographic.fromJSON({isDegrees: true, longitude: geoEast.x, latitude: geoEast.y, height: geoEast.z}).toEcef()!;
+  const ecefOrigin = Cartographic.fromJSON({longitude: {degrees: geoOrigin.x}, latitude: {degrees: geoOrigin.y}, height: geoOrigin.z}).toEcef()!;
+  const ecefNorth = Cartographic.fromJSON({longitude: {degrees: geoNorth.x}, latitude: {degrees: geoNorth.y}, height: geoNorth.z}).toEcef()!;
+  const ecefEast = Cartographic.fromJSON({longitude: {degrees: geoEast.x}, latitude: {degrees: geoEast.y}, height: geoEast.z}).toEcef()!;
 
   const xVector = Vector3d.createStartEnd(ecefOrigin, ecefEast);
   const yVector = Vector3d.createStartEnd(ecefOrigin, ecefNorth);

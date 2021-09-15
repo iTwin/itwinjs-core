@@ -158,7 +158,7 @@ export class GlobeAnimator implements Animator {
     } else {
       // Calculate a flight arc from the ellipsoid of the Earth and the starting and ending cartographic coordinates.
       const earthEllipsoid = backgroundMapGeometry.getEarthEllipsoid();
-      this._ellipsoidArc = earthEllipsoid.radiansPairToGreatArc(this._startCartographic.longitude, this._startCartographic.latitude, this._endLocation.center.longitude, this._endLocation.center.latitude)!;
+      this._ellipsoidArc = earthEllipsoid.radiansPairToGreatArc(this._startCartographic.longitudeRadians, this._startCartographic.latitudeRadians, this._endLocation.center.longitudeRadians, this._endLocation.center.latitudeRadians)!;
       if (this._ellipsoidArc !== undefined)
         this._flightLength = this._ellipsoidArc.curveLength();
       // Set a longer flight duration in 3D mode

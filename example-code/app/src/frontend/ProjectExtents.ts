@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Angle } from "@bentley/geometry-core";
 import { Cartographic, Frustum } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 
@@ -38,11 +39,11 @@ export class ProjectExtentsExample {
         high = geoPt.clone();
         continue;
       }
-      low.latitude = Math.min(low.latitude, geoPt.latitude);
-      low.longitude = Math.min(low.longitude, geoPt.longitude);
+      low.latitude = Angle.fromJSON({radians: Math.min(low.latitudeRadians, geoPt.latitudeRadians)});
+      low.longitude = Angle.fromJSON({radians: Math.min(low.longitudeRadians, geoPt.longitudeRadians)});
       low.height = Math.min(low.height, geoPt.height);
-      high.latitude = Math.max(high.latitude, geoPt.latitude);
-      high.longitude = Math.max(high.longitude, geoPt.longitude);
+      high.latitude = Angle.fromJSON({radians: Math.max(high.latitudeRadians, geoPt.latitudeRadians)});
+      high.longitude = Angle.fromJSON({radians: Math.max(high.longitudeRadians, geoPt.longitudeRadians)});
       high.height = Math.max(high.height, geoPt.height);
     }
 

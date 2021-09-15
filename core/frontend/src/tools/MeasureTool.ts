@@ -740,11 +740,11 @@ export class MeasureLocationTool extends PrimitiveTool {
       if (undefined !== latLongFormatterSpec && undefined !== coordFormatterSpec) {
         try {
           const cartographic = await this.iModel.spatialToCartographic(point);
-          const formattedLat = IModelApp.quantityFormatter.formatQuantity(Math.abs(cartographic.latitude), latLongFormatterSpec);
-          const formattedLong = IModelApp.quantityFormatter.formatQuantity(Math.abs(cartographic.longitude), latLongFormatterSpec);
+          const formattedLat = IModelApp.quantityFormatter.formatQuantity(Math.abs(cartographic.latitudeRadians), latLongFormatterSpec);
+          const formattedLong = IModelApp.quantityFormatter.formatQuantity(Math.abs(cartographic.longitudeRadians), latLongFormatterSpec);
           const formattedHeight = IModelApp.quantityFormatter.formatQuantity(cartographic.height, coordFormatterSpec);
-          const latDir = CoreTools.translate(cartographic.latitude < 0 ? "Measure.Labels.S" : "Measure.Labels.N");
-          const longDir = CoreTools.translate(cartographic.longitude < 0 ? "Measure.Labels.W" : "Measure.Labels.E");
+          const latDir = CoreTools.translate(cartographic.latitudeRadians < 0 ? "Measure.Labels.S" : "Measure.Labels.N");
+          const longDir = CoreTools.translate(cartographic.longitudeRadians < 0 ? "Measure.Labels.W" : "Measure.Labels.E");
           toolTipHtml += `${translateBold("LatLong") + formattedLat + latDir}, ${formattedLong}${longDir}<br>`;
           toolTipHtml += `${translateBold("Altitude") + formattedHeight}<br>`;
         } catch { }

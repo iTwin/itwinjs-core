@@ -189,7 +189,7 @@ export class MapLayerSources {
       const cartoCenter = iModel.spatialToCartographicFromEcef(projectCenter);
       const globeRange = MapCartoRectangle.create();
       const nearDelta = Point2d.create(globeRange.xLength() / 100, globeRange.yLength() / 100);
-      sourceRange = MapCartoRectangle.create(cartoCenter.longitude - nearDelta.x, cartoCenter.latitude - nearDelta.y, cartoCenter.longitude + nearDelta.x, cartoCenter.latitude + nearDelta.y);
+      sourceRange = MapCartoRectangle.create(cartoCenter.longitudeRadians - nearDelta.x, cartoCenter.latitudeRadians - nearDelta.y, cartoCenter.longitudeRadians + nearDelta.x, cartoCenter.latitudeRadians + nearDelta.y);
     }
 
     const sources = new Array<MapLayerSource>();

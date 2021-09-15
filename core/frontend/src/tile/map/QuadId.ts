@@ -55,9 +55,9 @@ export class QuadId {
   public getLatLongRange(mapTilingScheme: MapTilingScheme): Range2d {
     const range = Range2d.createNull();
     mapTilingScheme.tileXYToCartographic(this.column, this.row, this.level, scratchCartographic1);
-    range.extendXY(scratchCartographic1.longitude * Angle.degreesPerRadian, scratchCartographic1.latitude * Angle.degreesPerRadian);
+    range.extendXY(scratchCartographic1.longitudeRadians * Angle.degreesPerRadian, scratchCartographic1.latitudeRadians * Angle.degreesPerRadian);
     mapTilingScheme.tileXYToCartographic(this.column + 1, this.row + 1, this.level, scratchCartographic2);
-    range.extendXY(scratchCartographic2.longitude * Angle.degreesPerRadian, scratchCartographic2.latitude * Angle.degreesPerRadian);
+    range.extendXY(scratchCartographic2.longitudeRadians * Angle.degreesPerRadian, scratchCartographic2.latitudeRadians * Angle.degreesPerRadian);
 
     return range;
   }
@@ -65,7 +65,7 @@ export class QuadId {
   public getAngleSweep(mapTilingScheme: MapTilingScheme): { longitude: AngleSweep, latitude: AngleSweep } {
     mapTilingScheme.tileXYToCartographic(this.column, this.row, this.level, scratchCartographic1);
     mapTilingScheme.tileXYToCartographic(this.column + 1, this.row + 1, this.level, scratchCartographic2);
-    return { longitude: AngleSweep.createStartEndRadians(scratchCartographic1.longitude, scratchCartographic2.longitude), latitude: AngleSweep.createStartEndRadians(Cartographic.parametricLatitudeFromGeodeticLatitude(scratchCartographic1.latitude), Cartographic.parametricLatitudeFromGeodeticLatitude(scratchCartographic2.latitude)) };
+    return { longitude: AngleSweep.createStartEndRadians(scratchCartographic1.longitudeRadians, scratchCartographic2.longitudeRadians), latitude: AngleSweep.createStartEndRadians(Cartographic.parametricLatitudeFromGeodeticLatitude(scratchCartographic1.latitudeRadians), Cartographic.parametricLatitudeFromGeodeticLatitude(scratchCartographic2.latitudeRadians)) };
   }
 
   public bordersSouthPole(mapTilingScheme: MapTilingScheme) {

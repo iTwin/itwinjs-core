@@ -50,8 +50,8 @@ class RealityModelTileUtils {
       const region = JsonUtils.asArray(json.root.boundingVolume.region);
       if (undefined === region)
         throw new TypeError("Unable to determine GeoLocation - no root Transform or Region on root.");
-      const ecefLow = (Cartographic.fromJSON({longitude: region[0], latitude: region[1], height: region[4]})).toEcef();
-      const ecefHigh = (Cartographic.fromJSON({longitude: region[2], latitude: region[3], height: region[5]})).toEcef();
+      const ecefLow = (Cartographic.fromJSON({longitude: {radians: region[0]}, latitude: {radians: region[1]}, height: region[4]})).toEcef();
+      const ecefHigh = (Cartographic.fromJSON({longitude: {radians: region[2]}, latitude: {radians: region[3]}, height: region[5]})).toEcef();
       return Range3d.create(ecefLow, ecefHigh);
     }
 

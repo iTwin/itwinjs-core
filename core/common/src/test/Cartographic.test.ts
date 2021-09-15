@@ -7,7 +7,7 @@ import { Cartographic } from "../geometry/Cartographic";
 
 describe("Cartographic", () => {
   it("should convert properly", () => {
-    const exton = Cartographic.fromJSON({isDegrees: true, longitude: 75, latitude: 40, height: 0});
+    const exton = Cartographic.fromJSON({longitude: {degrees: 75}, latitude: {degrees: 40}, height: 0});
     assert.equal(exton.toString(), "(1.3089969389957472, 0.6981317007977318, 0)", "exton toString");
     assert.isTrue(exton.equals(exton.clone()));
 
@@ -16,13 +16,13 @@ describe("Cartographic", () => {
     const exton2 = Cartographic.fromEcef(ecef1);
     assert.isTrue(exton.equalsEpsilon(exton2!, 0.01));
 
-    const paris = Cartographic.fromJSON({isDegrees: true, longitude: 2.3522, latitude: 48.8566, height: 67});
+    const paris = Cartographic.fromJSON({longitude: {degrees: 2.3522}, latitude: {degrees: 48.8566}, height: 67});
     const ecefParis = paris.toEcef();
     assert.isTrue(ecefParis.isAlmostEqual({ x: 4200958.840878805, y: 172561.58554401112, z: 4780131.797337915 }), "paris");
     const paris2 = Cartographic.fromEcef(ecefParis);
     assert.isTrue(paris.equalsEpsilon(paris2!, 0.01));
 
-    const newYork = Cartographic.fromJSON({isDegrees: true, longitude: 74.006, latitude: 49.7128, height: -100});
+    const newYork = Cartographic.fromJSON({longitude: {degrees: 74.006}, latitude: {degrees: 49.7128}, height: -100});
     const ecefNY = newYork.toEcef();
     assert.isTrue(ecefNY.isAlmostEqual({ x: 1138577.8226437706, y: 3972262.6507547107, z: 4842118.181650281 }), "new york");
     const ny2 = Cartographic.fromEcef(ecefNY);
