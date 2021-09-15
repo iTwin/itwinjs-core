@@ -45,7 +45,9 @@ export class ExternalIModel {
 
     const requestContext: AuthorizedFrontendRequestContext = await AuthorizedFrontendRequestContext.create();
 
+   // SWB
     const connectClient = new ITwinAccessClient();
+    // SWB
     const iTwinList: ITwin[] = await connectClient.getAll(requestContext, {
       search: {
         searchString: projectName,
