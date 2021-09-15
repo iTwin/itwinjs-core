@@ -63,11 +63,8 @@
     "@bentley/imodeljs-backend": "workspace:*",
     "@bentley/imodeljs-common": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-<<<<<<< HEAD
     "@bentley/rbac-client": "workspace:*",
-=======
     "@xmldom/xmldom": "^0.7.0",
->>>>>>> 249f4a9107 (xmldom updates: cve 2021-32796 (#2242))
     "chai-string": "^1.5.0",
     "chalk": "^3.0.0",
     "commander": "^2.14.1",

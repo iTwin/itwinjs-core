@@ -7,7 +7,7 @@
  */
 
 import { Base64 } from "js-base64";
-import { DOMParser } from "xmldom";
+import { DOMParser } from "@xmldom/xmldom";
 import * as xpath from "xpath";
 import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
 import { IncludePrefix } from "./Token";

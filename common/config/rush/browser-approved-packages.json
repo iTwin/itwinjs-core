@@ -307,8 +307,6 @@
       "allowedCategories": [ "common" ]
     },
     {
-<<<<<<< HEAD
-=======
       "name": "@wojtekmaj/enzyme-adapter-react-17",
       "allowedCategories": [ "extensions", "frontend" ]
     },
@@ -317,7 +315,6 @@
       "allowedCategories": [ "backend", "common", "tools" ]
     },
     {
->>>>>>> 249f4a9107 (xmldom updates: cve 2021-32796 (#2242))
       "name": "agentkeepalive",
       "allowedCategories": [ "backend" ]
     },
@@ -1136,10 +1133,6 @@
     {
       "name": "xml-js",
       "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "xmldom",
-      "allowedCategories": [ "backend", "common", "tools" ]
     },
     {
       "name": "xmlhttprequest",
