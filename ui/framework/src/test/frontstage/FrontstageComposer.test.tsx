@@ -12,11 +12,11 @@ import {
   getDefaultNineZoneStagePanelsManagerProps, getDefaultZonesManagerProps, NineZoneManagerProps, StagePanelsManager,
 } from "@bentley/ui-ninezone";
 import {
-  ContentGroup, CoreTools, FrontstageComposer, FrontstageDef, FrontstageManager, getNestedStagePanelKey, isCollapsedToPanelState,
+  FrontstageComposer, FrontstageManager, getNestedStagePanelKey, isCollapsedToPanelState,
   ModalFrontstageInfo, StagePanelDef, StagePanelState,
 } from "../../ui-framework";
 import TestUtils, { mount } from "../TestUtils";
-import { TestContentControl, TestFrontstage } from "./FrontstageTestUtils";
+import { TestFrontstage } from "./FrontstageTestUtils";
 
 class TestModalFrontstage implements ModalFrontstageInfo {
   public title: string = "Test Modal Frontstage";

@@ -14,6 +14,7 @@ import {
 import { TestFrontstage } from "../frontstage/FrontstageTestUtils";
 import TestUtils, { storageMock } from "../TestUtils";
 import { LocalSettingsStorage } from "@bentley/ui-core";
+import { StandardContentLayouts } from "@bentley/ui-abstract";
 
 describe("UiShowHideManager localStorage Wrapper", () => {
 
@@ -169,7 +170,7 @@ describe("UiShowHideManager localStorage Wrapper", () => {
 
       const myContentGroup: ContentGroup = new ContentGroup({
         id: "test-group",
-        layout: "SingleContent",
+        layout: StandardContentLayouts.singleView,
         contents: [{ id: "myContent", classId: TestContentControl }],
       });
 

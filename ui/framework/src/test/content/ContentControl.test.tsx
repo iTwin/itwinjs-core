@@ -2,11 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { StandardContentLayouts } from "@bentley/ui-abstract";
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import {
-  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroup, ContentLayoutDef, ContentViewManager, CoreTools, Frontstage,
+  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroup, ContentViewManager, CoreTools, Frontstage,
   FrontstageManager, FrontstageProps, FrontstageProvider,
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";
@@ -33,17 +34,12 @@ describe("ContentControl", () => {
   it("activated", async () => {
     const myContentGroup: ContentGroup = new ContentGroup({
       id: "myContentGroup",
-      layout: "SingleContent",
+      layout: StandardContentLayouts.singleView,
       contents: [
         { id: "main", classId: TestContentControl, applicationData: "data1" },
         { id: "secondary", classId: TestContentControl, applicationData: "data2" },
       ],
     });
-
-    // const myContentLayout: ContentLayoutDef = new ContentLayoutDef({
-    //   id: "SingleContent",
-    //   description: "UiFramework:tests.singleContent",
-    // });
 
     class Frontstage1 extends FrontstageProvider {
       public static stageId = "ContentFrontstage1";
@@ -94,18 +90,12 @@ describe("ContentControl", () => {
   it("deactivated", async () => {
     const contentGroup2: ContentGroup = new ContentGroup({
       id: "contentGroup2",
-      layout: "SingleContent",
+      layout: StandardContentLayouts.twoHorizontalSplit,
       contents: [
         { id: "main", classId: TestContentControl, applicationData: "data1" },
         { id: "secondary", classId: TestContentControl, applicationData: "data2" },
       ],
     });
-
-    // const contentLayout2: ContentLayoutDef = new ContentLayoutDef({
-    //   id: "TwoHalvesVertical",
-    //   description: "App:ContentLayoutDef.TwoHalvesVertical",
-    //   verticalSplit: { id: "TwoHalvesVertical.VerticalSplit", percentage: 0.50, left: 0, right: 1 },
-    // });
 
     class Frontstage2 extends FrontstageProvider {
       public static stageId = "ContentFrontstage2";

@@ -5,7 +5,7 @@
 import * as React from "react";
 import { PlaybackSettings, TimelineComponent, TimelinePausePlayAction, TimelinePausePlayArgs } from "@bentley/ui-imodel-components";
 import {
-  ActionItemButton, CommandItemDef, ContentGroup, ContentLayoutManager, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, GroupButton,
+  ActionItemButton, CommandItemDef, ContentGroup, ContentLayoutDef, ContentLayoutManager, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, GroupButton,
   NavigationWidget, StagePanel, ToolButton, ToolWidget, useWidgetDirection, Widget, WidgetStateChangedEventArgs, Zone, ZoneLocation,
   ZoneState,
 } from "@bentley/ui-framework";
@@ -15,7 +15,7 @@ import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
 import { HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 import { NestedFrontstage1 } from "./NestedFrontstage1";
-import { UiAdmin, WidgetState } from "@bentley/ui-abstract";
+import { StandardContentLayouts, UiAdmin, WidgetState } from "@bentley/ui-abstract";
 import { AppUi } from "../AppUi";
 
 /* eslint-disable react/jsx-key, deprecation/deprecation */
@@ -269,7 +269,7 @@ class FrontstageToolWidget extends React.Component {
     });
   }
 
-  /** Command that opens switches the content layout */
+  /** Command that opens switches the content layout - TODO Review */
   private get _switchLayout() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder",
@@ -277,7 +277,7 @@ class FrontstageToolWidget extends React.Component {
       execute: async () => {
         const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
         if (activeFrontstageDef) {
-          const contentLayout = ContentLayoutManager.findLayout("TwoHalvesHorizontal");
+          const contentLayout = new ContentLayoutDef(StandardContentLayouts.twoHorizontalSplit);
           if (contentLayout && activeFrontstageDef.contentGroup) {
             await ContentLayoutManager.setActiveLayout(contentLayout, activeFrontstageDef.contentGroup);
           }

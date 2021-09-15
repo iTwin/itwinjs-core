@@ -6,7 +6,7 @@
  * @module ContentView
  */
 
-import { ContentLayoutProps, StandardContentLayouts } from "@bentley/ui-abstract";
+import { ContentLayoutProps } from "@bentley/ui-abstract";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ContentGroup, ContentGroupProps } from "./ContentGroup";
 import { ContentLayoutDef } from "./ContentLayout";
@@ -15,49 +15,7 @@ import { ContentLayoutDef } from "./ContentLayout";
  * @public
  */
 export class ContentLayoutManager {
-  private static _layoutProps: Map<string, ContentLayoutProps> = new Map<string, ContentLayoutProps>();
   private static _layoutDefs: Map<string, ContentLayoutDef> = new Map<string, ContentLayoutDef>();
-
-  /** Loads one or more Content Layouts.
-   * @param layoutPropsList  the list of Content Layout properties to load
-   */
-  public static loadLayouts(layoutPropsList: ContentLayoutProps[]): void {
-    layoutPropsList.forEach((layoutProps) => {
-      ContentLayoutManager.loadLayout(layoutProps);
-    });
-  }
-
-  /** Loads a Content Layout.
-   * @param layoutProps  the properties of the Content Layout to load
-   */
-  public static loadLayout(layoutProps: ContentLayoutProps): void {
-    if (!ContentLayoutManager._layoutProps.has(layoutProps.id))
-      ContentLayoutManager._layoutProps.set(layoutProps.id, layoutProps);
-  }
-
-  /** Return a LayoutDef that is specific to a content group.
-   * @returns the [[ContentLayoutDef]] if found, or throws if the ContentLayoutProps can't be returned
-   */
-  public static getLayoutPropsForGroup(contentGroupProps: ContentGroupProps | ContentGroup): ContentLayoutProps {
-    if (typeof contentGroupProps.layout !== "string")
-      return contentGroupProps.layout;
-
-    const layoutId = contentGroupProps.layout;
-    if (ContentLayoutManager._layoutProps.has(layoutId)) {
-      return ContentLayoutManager._layoutProps.get(layoutId)!;
-    } else if (typeof contentGroupProps.layout !== "string") {
-      ContentLayoutManager.loadLayout(contentGroupProps.layout);
-      return contentGroupProps.layout;
-    } else if (StandardContentLayouts.availableLayouts) {
-      const contentLayoutProps = StandardContentLayouts.availableLayouts.find((props: ContentLayoutProps) => props.id === layoutId);
-      if (contentLayoutProps) {
-        const newContentLayoutProps = { ...contentLayoutProps };
-        ContentLayoutManager.loadLayout(newContentLayoutProps);
-        return newContentLayoutProps;
-      }
-    }
-    throw new Error(`Unable to located ContentLayoutProps with id ${layoutId}`);
-  }
 
   /** build a layout key that is unique for group layout combination */
   public static getLayoutKey(props: { contentGroupId: string, layoutId: string }): string {
@@ -68,29 +26,17 @@ export class ContentLayoutManager {
    * @returns the [[ContentLayoutDef]] if found, or undefined otherwise
    */
   public static getLayoutForGroup(contentGroupProps: ContentGroupProps | ContentGroup, overrideContentLayout?: ContentLayoutProps): ContentLayoutDef {
-    const layoutId = overrideContentLayout?.id ?? ((typeof contentGroupProps.layout !== "string") ? contentGroupProps.layout.id : contentGroupProps.layout);
+    const layoutId = overrideContentLayout?.id ?? contentGroupProps.layout.id;
     const layoutKey = this.getLayoutKey({ contentGroupId: contentGroupProps.id, layoutId });
 
-    if (overrideContentLayout)
-      ContentLayoutManager.loadLayout(overrideContentLayout);
-
-    if (ContentLayoutManager._layoutDefs.has(layoutKey)) {
+    if (!overrideContentLayout && ContentLayoutManager._layoutDefs.has(layoutKey)) {
       return ContentLayoutManager._layoutDefs.get(layoutKey)!;
-    } else if (typeof contentGroupProps.layout !== "string") {
-      const newContentLayoutProps = { ...contentGroupProps.layout };
-      const newLayoutDef = new ContentLayoutDef(newContentLayoutProps);
-      this.addLayout(layoutKey, newLayoutDef);
-      return newLayoutDef;
-    } else if (StandardContentLayouts.availableLayouts) {
-      const contentLayoutProps = StandardContentLayouts.availableLayouts.find((props: ContentLayoutProps) => props.id === layoutId);
-      if (contentLayoutProps) {
-        const newContentLayoutProps = { ...contentLayoutProps };
-        const newLayoutDef = new ContentLayoutDef(newContentLayoutProps);
-        this.addLayout(layoutKey, newLayoutDef);
-        return newLayoutDef;
-      }
     }
-    throw new Error(`Unable to located ContentLayout with id ${layoutId}`);
+
+    const newContentLayoutProps = { ...contentGroupProps.layout, ...overrideContentLayout };
+    const newLayoutDef = new ContentLayoutDef(newContentLayoutProps);
+    this.addLayout(layoutKey, newLayoutDef);
+    return newLayoutDef;
   }
 
   /** Finds a Content Layout with a given id.

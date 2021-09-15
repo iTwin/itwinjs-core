@@ -11,6 +11,7 @@ import {
   NavigationAidControl,
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";
+import { StandardContentLayouts } from "@bentley/ui-abstract";
 
 describe("ContentGroup", () => {
 
@@ -42,7 +43,7 @@ describe("ContentGroup", () => {
     const contentProps: ContentProps = { id: "myContent", classId: "TestContentControl" };
     const groupProps: ContentGroupProps = {
       id: "testGroup",
-      layout: "SingleContent",
+      layout: StandardContentLayouts.singleView,
       contents: [contentProps],
     };
     const contentGroup = new ContentGroup(groupProps);
@@ -59,7 +60,7 @@ describe("ContentGroup", () => {
     const contentProps: ContentProps = { id: "myContent", classId: "TestContentControl" };
     const groupProps: ContentGroupProps = {
       id: "testGroup",
-      layout: "SingleContent",
+      layout: StandardContentLayouts.singleView,
       contents: [contentProps],
     };
     const contentGroup = new ContentGroup(groupProps);
@@ -73,7 +74,7 @@ describe("ContentGroup", () => {
     const contentProps: ContentProps = { id: "myContent", classId: TestContentControl };
     const groupProps: ContentGroupProps = {
       id: "testGroup",
-      layout: "SingleContent",
+      layout: StandardContentLayouts.singleView,
       contents: [contentProps],
     };
     const contentGroup = new ContentGroup(groupProps);
@@ -88,7 +89,7 @@ describe("ContentGroup", () => {
     const contentProps: ContentProps = { id: "myContent", classId: TestContentControl };
     const groupProps: ContentGroupProps = {
       id: "testGroup",
-      layout: "SingleContent",
+      layout: StandardContentLayouts.singleView,
       contents: [contentProps],
     };
     const contentGroup = new ContentGroup(groupProps);
@@ -106,7 +107,7 @@ describe("ContentGroup", () => {
     const contentProps: ContentProps = { id: "myContent", classId };
     const groupProps: ContentGroupProps = {
       id: "testGroup",
-      layout: "SingleContent",
+      layout: StandardContentLayouts.singleView,
       contents: [contentProps],
     };
     const contentGroup = new ContentGroup(groupProps);
@@ -123,7 +124,7 @@ describe("ContentGroup", () => {
     const contentProps: ContentProps = { id: "myContent", classId: TestContentControl };
     const groupProps: ContentGroupProps = {
       id: "testGroup",
-      layout: "SingleContent",
+      layout: StandardContentLayouts.singleView,
       contents: [contentProps],
     };
     const contentGroup = new ContentGroup(groupProps);

@@ -14,6 +14,7 @@ import {
   ViewportContentControl, Widget, Zone,
 } from "../../ui-framework";
 import TestUtils, { mount, storageMock } from "../TestUtils";
+import { StandardContentLayouts } from "@bentley/ui-abstract";
 
 const mySessionStorage = storageMock();
 
@@ -75,7 +76,7 @@ describe("ViewportContentControl", () => {
       const myContentGroup: ContentGroup = new ContentGroup(
         {
           id: "test-group",
-          layout: "SingleContent",
+          layout: StandardContentLayouts.singleView,
           contents: [
             {
               id: "test",

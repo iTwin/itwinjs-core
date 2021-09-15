@@ -2,11 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { StandardContentLayouts } from "@bentley/ui-abstract";
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import {
-  ContentGroup, ContentLayoutDef, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, NestedFrontstage,
+  ContentGroup, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, NestedFrontstage,
   ToolWidget, Widget, Zone, ZoneState,
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";
@@ -19,17 +20,10 @@ class TestNestedFrontstage extends FrontstageProvider {
   }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
-    const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
-      {
-        id: "SingleContent",
-        description: "App:ContentLayoutDef.SingleContent",
-      },
-    );
-
     const myContentGroup: ContentGroup = new ContentGroup(
       {
         id: "test-group",
-        layout: "SingleContent",
+        layout: StandardContentLayouts.singleView,
         contents: [
           {
             id: "main",
@@ -106,44 +100,44 @@ describe("NestedFrontstage", () => {
     expect(FrontstageManager.nestedFrontstageCount).to.eq(0);
   });
 
-  // it("openNestedFrontstage & closeNestedFrontstage should open/close nested frontstages", async () => {
-  //   const frontstageProvider = new TestFrontstage();
-  //   FrontstageManager.addFrontstageProvider(frontstageProvider);
-  //   const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
-  //   await FrontstageManager.setActiveFrontstageDef(frontstageDef);
-  //
-  //   expect(FrontstageManager.activeFrontstageDef).to.eq(frontstageDef);
-  //   expect(FrontstageManager.nestedFrontstageCount).to.eq(0);
-  //
-  //   const frontstageDef1 = new TestFrontstageDef();
-  //   const spyActivated = sinon.spy(frontstageDef1, "_onActivated" as any);
-  //   const spyDeactivated = sinon.spy(frontstageDef1, "_onDeactivated" as any);
-  //
-  //   const nestedFrontstageProvider = new TestNestedFrontstage();
-  //   const nestedFrontstageDef = await FrontstageManager.getFrontstageDef(nestedFrontstageProvider.frontstage.props.id);
-  //   expect(frontstageDef === nestedFrontstageDef).to.be.true;
-  //
-  //   await FrontstageManager.openNestedFrontstage(nestedFrontstageDef);
-  //   expect(FrontstageManager.nestedFrontstageCount).to.eq(1);
-  //   expect(FrontstageManager.activeNestedFrontstage).to.eq(nestedFrontstageDef);
-  //   expect(spyActivated.calledOnce).to.be.true;
-  //
-  //   const nestedFrontstageProvider2 = new TestNestedFrontstage();
-  //   const nestedFrontstageDef2 = nestedFrontstageProvider2.initializeDef();
-  //   await FrontstageManager.openNestedFrontstage(nestedFrontstageDef2);
-  //   expect(FrontstageManager.nestedFrontstageCount).to.eq(2);
-  //   expect(FrontstageManager.activeNestedFrontstage).to.eq(nestedFrontstageDef2);
-  //   expect(spyDeactivated.calledOnce).to.be.true;
-  //
-  //   NestedFrontstage.backToPreviousFrontstageCommand.execute();
-  //   expect(FrontstageManager.nestedFrontstageCount).to.eq(1);
-  //   expect(spyActivated.calledTwice).to.be.true;
-  //
-  //   NestedFrontstage.backToPreviousFrontstageCommand.execute();
-  //   expect(FrontstageManager.nestedFrontstageCount).to.eq(0);
-  //   expect(spyDeactivated.calledTwice).to.be.true;
-  //
-  //   expect(FrontstageManager.activeFrontstageDef).to.eq(frontstageProvider.frontstageDef);
-  // });
+  it("openNestedFrontstage & closeNestedFrontstage should open/close nested frontstages", async () => {
+    const frontstageProvider = new TestFrontstage();
+    FrontstageManager.addFrontstageProvider(frontstageProvider);
+    const frontstageDef = await FrontstageDef.create(frontstageProvider);
+    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+
+    expect(FrontstageManager.activeFrontstageDef).to.eq(frontstageDef);
+    expect(FrontstageManager.nestedFrontstageCount).to.eq(0);
+
+    const frontstageDef1 = new TestFrontstageDef();
+    const spyActivated = sinon.spy(frontstageDef1, "_onActivated" as any);
+    const spyDeactivated = sinon.spy(frontstageDef1, "_onDeactivated" as any);
+
+    const nestedFrontstageProvider = new TestNestedFrontstage();
+    const nestedFrontstageDef = await FrontstageDef.create(nestedFrontstageProvider);
+    expect(frontstageDef === nestedFrontstageDef).to.be.true;
+
+    await FrontstageManager.openNestedFrontstage(nestedFrontstageDef);
+    expect(FrontstageManager.nestedFrontstageCount).to.eq(1);
+    expect(FrontstageManager.activeNestedFrontstage).to.eq(nestedFrontstageDef);
+    expect(spyActivated.calledOnce).to.be.true;
+
+    const nestedFrontstageProvider2 = new TestNestedFrontstage();
+    const nestedFrontstageDef2 = await FrontstageDef.create(nestedFrontstageProvider2);
+    await FrontstageManager.openNestedFrontstage(nestedFrontstageDef2);
+    expect(FrontstageManager.nestedFrontstageCount).to.eq(2);
+    expect(FrontstageManager.activeNestedFrontstage).to.eq(nestedFrontstageDef2);
+    expect(spyDeactivated.calledOnce).to.be.true;
+
+    NestedFrontstage.backToPreviousFrontstageCommand.execute();
+    expect(FrontstageManager.nestedFrontstageCount).to.eq(1);
+    expect(spyActivated.calledTwice).to.be.true;
+
+    NestedFrontstage.backToPreviousFrontstageCommand.execute();
+    expect(FrontstageManager.nestedFrontstageCount).to.eq(0);
+    expect(spyDeactivated.calledTwice).to.be.true;
+
+    expect(FrontstageManager.activeFrontstageDef).to.eq(frontstageDef);
+  });
 
 });

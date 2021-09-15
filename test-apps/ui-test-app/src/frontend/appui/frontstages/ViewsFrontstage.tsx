@@ -5,7 +5,7 @@
 import * as React from "react";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import {
-  ActivityMessageDetails, ActivityMessageEndReason, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, OutputMessageType,
+  ActivityMessageDetails, ActivityMessageEndReason, IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType,
   ScreenViewport, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { MapLayersWidgetControl } from "@bentley/map-layers"; // used to test map-layers widget control
@@ -78,7 +78,7 @@ function MySliderPanel() {
   );
 }
 
-export class ViewsFrontstageContentGroupProvider extends ContentGroupProvider {
+export class InitialIModelContentStageProvider extends ContentGroupProvider {
   public override prepareToSaveProps(contentGroupProps: ContentGroupProps) {
     const newContentsArray = contentGroupProps.contents.map((content: ContentProps) => {
       const newContent = { ...content };
@@ -182,7 +182,7 @@ export class ViewsFrontstageContentGroupProvider extends ContentGroupProvider {
 }
 
 export class ViewsFrontstage extends FrontstageProvider {
-  private _contentGroupProvider = new ViewsFrontstageContentGroupProvider();
+  private _contentGroupProvider = new InitialIModelContentStageProvider();
   public static stageId = "ViewsFrontstage";
   public get id(): string {
     return ViewsFrontstage.stageId;

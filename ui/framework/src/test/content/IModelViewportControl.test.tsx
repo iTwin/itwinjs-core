@@ -13,6 +13,7 @@ import {
   NavigationWidget, SupportsViewSelectorChange, Widget, Zone,
 } from "../../ui-framework";
 import TestUtils, { storageMock } from "../TestUtils";
+import { StandardContentLayouts } from "@bentley/ui-abstract";
 
 const mySessionStorage = storageMock();
 const propertyDescriptorToRestore = Object.getOwnPropertyDescriptor(window, "sessionStorage")!;
@@ -84,7 +85,7 @@ describe("IModelViewportControl", () => {
       const myContentGroup: ContentGroup = new ContentGroup(
         {
           id: "test",
-          layout: "SingleContent",
+          layout: StandardContentLayouts.singleView,
           contents: [
             {
               id: "main",

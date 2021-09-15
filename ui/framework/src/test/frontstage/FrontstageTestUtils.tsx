@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { WidgetState } from "@bentley/ui-abstract";
+import { StandardContentLayouts, WidgetState } from "@bentley/ui-abstract";
 import {
-  ConfigurableCreateInfo, ContentControl, ContentGroup, ContentLayoutDef, CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
+  ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
   MessageCenterField, StatusBarWidgetControl, StatusBarWidgetControlArgs, Widget, WidgetControl, Zone, ZoneLocation, ZoneState,
 } from "../../ui-framework";
 import { ToolItemDef } from "../../ui-framework/shared/ToolItemDef";
@@ -69,7 +69,7 @@ export class TestFrontstage extends FrontstageProvider {
     const myContentGroup: ContentGroup = new ContentGroup(
       {
         id: "test-group",
-        layout: "SingleContent",
+        layout: StandardContentLayouts.singleView,
         contents: [
           {
             id: "main",
@@ -160,7 +160,7 @@ export class TestFrontstage2 extends FrontstageProvider {
     const myContentGroup: ContentGroup = new ContentGroup(
       {
         id: "test-group",
-        layout: "SingleContent",
+        layout: StandardContentLayouts.singleView,
         contents: [
           {
             id: "main",
@@ -251,7 +251,7 @@ export class TestFrontstage3 extends FrontstageProvider {
     const myContentGroup: ContentGroup = new ContentGroup(
       {
         id: "test-group",
-        layout: "SingleContent",
+        layout: StandardContentLayouts.singleView,
         contents: [
           {
             id: "main", classId: TestContentControl,

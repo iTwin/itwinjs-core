@@ -62,7 +62,6 @@ export class AppUi {
 
   public static initialize() {
     // initialize content groups and layouts before any frontstages.
-    AppUi.defineContentLayouts();
     AppUi.defineFrontstages();
     AppUi.defineKeyboardShortcuts();
 
@@ -107,6 +106,20 @@ export class AppUi {
     }
   };
 
+  public static ThreeStackedVertical: ContentLayoutProps = {
+    id: "ui-test-app:ThreeStacked",
+    horizontalSplit: {
+      id: "ui-test-app:ThreeStacked-TopSplit",
+      percentage: 0.50,
+      minSizeTop: 100,
+      minSizeBottom: 200,
+      top: 0,
+      bottom: {
+        horizontalSplit: { id: "ui-test-app:ThreeStacked-BottomSplit", percentage: 0.50, top: 1, bottom: 2, minSizeTop: 100, minSizeBottom: 100 },
+      },
+    },
+  };
+
   /** Define Content Groups referenced by Frontstages.
    */
   public static TestContentGroup1: ContentGroupProps = {
@@ -138,7 +151,7 @@ export class AppUi {
 
   public static TestContentGroup2: ContentGroupProps = {
     id: "TestContentGroup2",
-    layout: "ui-test-app:ThreeStacked",
+    layout: AppUi.ThreeStackedVertical,
     contents: [
       {
         id: "primaryIModelView",
@@ -157,34 +170,6 @@ export class AppUi {
       },
     ],
   };
-
-  /** Define Content Layouts referenced by Frontstages.
-   */
-  private static defineContentLayouts() {
-    const contentLayouts: ContentLayoutProps[] = AppUi.getContentLayouts();
-    ConfigurableUiManager.loadContentLayouts(contentLayouts);
-  }
-
-  private static getContentLayouts(): ContentLayoutProps[] {
-    const threeStackedVertical: ContentLayoutProps = {
-      id: "ui-test-app:ThreeStacked",
-      horizontalSplit:
-      {
-        id: "ui-test-app:ThreeStacked-TopSplit",
-        percentage: 0.50,
-        minSizeTop: 100,
-        minSizeBottom: 200,
-        top: 0,
-        bottom: {
-          horizontalSplit: { id: "ui-test-app:ThreeStacked-BottomSplit", percentage: 0.50, top: 1, bottom: 2, minSizeTop: 100, minSizeBottom: 100 },
-        },
-      },
-    };
-
-    const contentLayouts: ContentLayoutProps[] = [];
-    contentLayouts.push(threeStackedVertical);
-    return contentLayouts;
-  }
 
   public static findLayoutFromContentCount(contentCount: number): ContentLayoutProps | undefined {
     if (contentCount < 0)

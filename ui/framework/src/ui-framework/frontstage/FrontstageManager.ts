@@ -27,7 +27,6 @@ import { FrontstageDef, FrontstageEventArgs, FrontstageNineZoneStateChangedEvent
 import { FrontstageProvider } from "./FrontstageProvider";
 import { TimeTracker } from "../configurableui/TimeTracker";
 import { ContentLayoutManager } from "../content/ContentLayoutManager";
-import { truncate } from "lodash";
 
 // -----------------------------------------------------------------------------
 // Frontstage Events

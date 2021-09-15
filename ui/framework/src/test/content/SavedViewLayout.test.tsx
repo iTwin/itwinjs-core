@@ -7,7 +7,7 @@ import {
   CategorySelectorProps, DisplayStyleProps, EcefLocation, ModelSelectorProps, SheetProps, SpatialViewDefinitionProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { DrawingViewState, EmphasizeElements, IModelConnection, MockRender, ScreenViewport, SheetViewState, SpatialViewState, SubCategoriesCache, ViewState } from "@bentley/imodeljs-frontend";
-import { ContentLayoutProps } from "@bentley/ui-abstract";
+import { StandardContentLayouts } from "@bentley/ui-abstract";
 import { expect } from "chai";
 import * as React from "react";
 import * as moq from "typemoq";
@@ -159,7 +159,7 @@ describe("SavedViewLayout", () => {
       const myContentGroup: ContentGroup = new ContentGroup(
         {
           id: "MyContentGroup",
-          layout: "SingleContent",
+          layout: StandardContentLayouts.singleView,
           contents: [
             {
               id: "TestViewport",
@@ -221,7 +221,7 @@ describe("SavedViewLayout", () => {
       // Parse SavedViewLayoutProps
       const savedViewLayoutProps: SavedViewLayoutProps = JSON.parse(serializedSavedViewLayoutProps);
       // Create ContentLayoutDef
-      const contentLayoutDef = new ContentLayoutDef(savedViewLayoutProps.contentLayoutProps ?? savedViewLayoutProps.contentGroupProps.layout as ContentLayoutProps);
+      const contentLayoutDef = new ContentLayoutDef(savedViewLayoutProps.contentLayoutProps ?? savedViewLayoutProps.contentGroupProps.layout);
       // Create ViewStates
       const viewStates = await SavedViewLayout.viewStatesFromProps(iModelConnection, savedViewLayoutProps);
 
@@ -281,7 +281,7 @@ describe("SavedViewLayout", () => {
       // Parse SavedViewLayoutProps
       const savedViewLayoutProps: SavedViewLayoutProps = JSON.parse(serializedSavedViewLayoutProps);
       // Create ContentLayoutDef
-      const contentLayoutDef = new ContentLayoutDef(savedViewLayoutProps.contentLayoutProps ?? savedViewLayoutProps.contentGroupProps.layout as ContentLayoutProps);
+      const contentLayoutDef = new ContentLayoutDef(savedViewLayoutProps.contentLayoutProps ?? savedViewLayoutProps.contentGroupProps.layout);
       // Create ViewStates
       const viewStates = await SavedViewLayout.viewStatesFromProps(iModelConnection, savedViewLayoutProps);
 
@@ -337,7 +337,7 @@ describe("SavedViewLayout", () => {
       // Parse SavedViewLayoutProps
       const savedViewLayoutProps: SavedViewLayoutProps = JSON.parse(serializedSavedViewLayoutProps);
       // Create ContentLayoutDef
-      const contentLayoutDef = new ContentLayoutDef(savedViewLayoutProps.contentLayoutProps ?? savedViewLayoutProps.contentGroupProps.layout as ContentLayoutProps);
+      const contentLayoutDef = new ContentLayoutDef(savedViewLayoutProps.contentLayoutProps ?? savedViewLayoutProps.contentGroupProps.layout);
       // Create ViewStates
       const viewStates = await SavedViewLayout.viewStatesFromProps(iModelConnection, savedViewLayoutProps);
 

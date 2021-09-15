@@ -14,7 +14,6 @@ import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableU
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { UiFramework } from "../UiFramework";
 import { ContentControl } from "./ContentControl";
-import { ContentLayoutManager } from "./ContentLayoutManager";
 import { FrontstageProps } from "../frontstage/Frontstage";
 
 /** Properties for content displayed in a content view
@@ -38,7 +37,7 @@ export interface ContentGroupProps {
   /** An optional id for the [[ContentGroup]] */
   id: string;
   /** Content Layout Id or complete set of [[ContentLayoutProps]]  */
-  layout: string | ContentLayoutProps;
+  layout: ContentLayoutProps;
   /** A collection of [[ContentProps]], one for each content view */
   contents: ContentProps[];
 }
@@ -86,9 +85,8 @@ export class ContentGroup {
     return this.groupId;
   }
 
-  constructor(groupProps: (() => ContentGroupProps) | ContentGroupProps) {
-    const contentGroupProps = typeof groupProps === "function" ? groupProps() : groupProps;
-    this.layout = ContentLayoutManager.getLayoutPropsForGroup(contentGroupProps);
+  constructor(contentGroupProps: ContentGroupProps) {
+    this.layout = { ...contentGroupProps.layout };
     this.propsId = contentGroupProps.id;
     // ensure we have a unique groupId for each instance of a content group - this will be used to generate a key in the React controls
     this.groupId = `[${contentGroupProps.id}-${ContentGroup._sId++}]`;

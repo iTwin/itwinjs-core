@@ -6,7 +6,7 @@ import * as React from "react";
 import {
   BaseItemState,
   CommandItemDef,
-  ContentGroup, ContentLayoutDef, ContentViewManager, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, GroupItemDef, ItemList, NavigationWidget,
+  ContentGroup, ContentViewManager, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, GroupItemDef, ItemList, NavigationWidget,
   SelectionContextToolDefinitions,
   SessionStateActionId,
   SyncUiEventId,

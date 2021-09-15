@@ -7,10 +7,10 @@ import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { BadgeType, WidgetState } from "@bentley/ui-abstract";
+import { BadgeType, StandardContentLayouts, WidgetState } from "@bentley/ui-abstract";
 import { HorizontalAnchor, Tab as NZ_Tab, Stacked as NZ_WidgetStack, ResizeHandle, TabMode, VerticalAnchor } from "@bentley/ui-ninezone";
 import {
-  ConfigurableCreateInfo, ConfigurableUiManager, ContentGroup, ContentLayoutDef, CoreTools, Frontstage, FrontstageComposer, FrontstageManager,
+  ConfigurableCreateInfo, ConfigurableUiManager, ContentGroup, CoreTools, Frontstage, FrontstageComposer, FrontstageManager,
   FrontstageProps, FrontstageProvider, Widget, WidgetControl, WidgetStack, WidgetStackProps, WidgetStackTab, WidgetStackTabGroup, WidgetStackTabGroupProps,
   WidgetStackTabs, Zone, ZoneState,
 } from "../../ui-framework";
@@ -72,7 +72,7 @@ describe("WidgetStack", () => {
     public get frontstage(): React.ReactElement<FrontstageProps> {
       const myContentGroup: ContentGroup = new ContentGroup({
         id: "test-group",
-        layout: "SingleContent",
+        layout: StandardContentLayouts.singleView,
         contents: [{ id: "main", classId: "TestContentControl2" }],
       });
 

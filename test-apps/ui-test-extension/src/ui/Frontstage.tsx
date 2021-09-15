@@ -6,7 +6,7 @@ import * as React from "react";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { CommonToolbarItem, StageUsage, StandardContentLayouts, WidgetState } from "@bentley/ui-abstract";
 import {
-  BasicNavigationWidget, BasicToolWidget, ContentGroup, ContentLayoutDef, CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
+  BasicNavigationWidget, BasicToolWidget, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
   IModelViewportControl, StagePanel, StagePanelState, UiFramework, Widget, Zone,
 } from "@bentley/ui-framework";
 import { ExtensionStatusBarWidgetControl } from "./statusbar/StatusBar";

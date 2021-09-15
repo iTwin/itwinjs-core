@@ -3,18 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelApp, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
-import { CommonToolbarItem, ConditionalBooleanValue, ContentLayoutProps, IconSpecUtilities, StageUsage, StandardContentLayouts, ToolbarItemUtilities, WidgetState } from "@bentley/ui-abstract";
+import { IModelApp } from "@bentley/imodeljs-frontend";
+import { CommonToolbarItem, ConditionalBooleanValue, IconSpecUtilities, StageUsage, ToolbarItemUtilities, WidgetState } from "@bentley/ui-abstract";
 import {
-  AccuDrawDialog, AccuDrawWidgetControl, BasicNavigationWidget, BasicToolWidget, CommandItemDef, ContentGroup, ContentLayoutDef, ContentProps,
+  AccuDrawDialog, AccuDrawWidgetControl, BasicNavigationWidget, BasicToolWidget, CommandItemDef,
   CoreTools, CustomItemDef, Frontstage, FrontstageProvider, IModelConnectedViewSelector, ModelessDialogManager,
   StagePanel, ToolbarHelper, Widget, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../../../../frontend/index";
 import { EditTools } from "../../../tools/editing/ToolSpecifications";
-import { AppUi } from "../../AppUi";
 // cSpell:Ignore contentviews statusbars
-import { IModelViewportControl } from "../../contentviews/IModelViewport";
 import { EditStatusBarWidgetControl } from "../../statusbars/editing/EditStatusBar";
 import { ActiveSettingsWidget } from "../../widgets/editing/ActiveSettingsWidget";
 import { ModelCreationWidget } from "../../widgets/editing/ModelCreationWidget";
@@ -23,10 +21,10 @@ import { Orientation } from "@bentley/ui-core";
 /* eslint-disable react/jsx-key, deprecation/deprecation */
 
 import sketchIconSvg from "../../icons/draw.svg?sprite";
-import { ViewsFrontstageContentGroupProvider } from "../ViewsFrontstage";
+import { InitialIModelContentStageProvider } from "../ViewsFrontstage";
 
 export class EditFrontstage extends FrontstageProvider {
-  private _contentGroupProvider = new ViewsFrontstageContentGroupProvider();
+  private _contentGroupProvider = new InitialIModelContentStageProvider();
   public static stageId = "EditFrontstage";
   public get id(): string {
     return EditFrontstage.stageId;

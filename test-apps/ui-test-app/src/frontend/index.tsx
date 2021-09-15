@@ -19,8 +19,7 @@ import { BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from
 import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import {
   AccuSnap, AuthorizedFrontendRequestContext, BriefcaseConnection, ExternalServerExtensionLoader, IModelApp, IModelConnection,
-  LocalUnitFormatProvider, NativeApp, NativeAppLogger, NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState,
-  WebViewerApp, WebViewerAppOpts,
+  LocalUnitFormatProvider, NativeApp, NativeAppLogger, NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, WebViewerApp, WebViewerAppOpts,
 } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { MarkupApp } from "@bentley/imodeljs-markup";
@@ -41,7 +40,6 @@ import {
 import { SafeAreaInsets } from "@bentley/ui-ninezone";
 import { getSupportedRpcs } from "../common/rpcs";
 import { loggerCategory, TestAppConfiguration } from "../common/TestAppConfiguration";
-import { ActiveSettingsManager } from "./api/ActiveSettingsManager";
 import { BearingQuantityType } from "./api/BearingQuantityType";
 import { ErrorHandling } from "./api/ErrorHandling";
 import { AppUi } from "./appui/AppUi";
@@ -492,7 +490,6 @@ export class SampleAppIModelApp {
       UiFramework.dispatchActionToStore(SampleAppUiActionId.setTestProperty, value, immediateSync);
     }
   }
-
 
   public static getInitialViewIds() {
     return SampleAppIModelApp.store.getState().sampleAppState.initialViewIds;

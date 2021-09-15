@@ -7,10 +7,7 @@
  */
 
 import { BeUiEvent } from "@bentley/bentleyjs-core";
-import { ContentLayoutProps, UiError } from "@bentley/ui-abstract";
-import { ContentGroupProps } from "../content/ContentGroup";
-import { ContentLayoutManager } from "../content/ContentLayoutManager";
-import { FrontstageDef } from "../frontstage/FrontstageDef";
+import { UiError } from "@bentley/ui-abstract";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { FrontstageProvider } from "../frontstage/FrontstageProvider";
 import { KeyboardShortcutManager, KeyboardShortcutProps } from "../keyboardshortcut/KeyboardShortcut";
@@ -167,20 +164,6 @@ export class ConfigurableUiManager {
    */
   public static addFrontstageProvider(frontstageProvider: FrontstageProvider): void {
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-  }
-
-  /** Loads one or more ContentLayouts into the [[ContentLayoutManager]].
-   * @param layoutPropsList  the list of ContentLayouts to load
-   */
-  public static loadContentLayouts(layoutPropsList: ContentLayoutProps[]): void {
-    ContentLayoutManager.loadLayouts(layoutPropsList);
-  }
-
-  /** Loads a [[ContentLayout]] into the [[ContentLayoutManager]].
-   * @param layoutProps  the properties of the ContentLayout to load
-   */
-  public static loadContentLayout(layoutProps: ContentLayoutProps): void {
-    ContentLayoutManager.loadLayout(layoutProps);
   }
 
   /** Loads one or more Tasks into the [[TaskManager]].

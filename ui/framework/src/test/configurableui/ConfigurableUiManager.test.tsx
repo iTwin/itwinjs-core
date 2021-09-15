@@ -6,9 +6,9 @@
 import { expect } from "chai";
 import * as React from "react";
 import { MockRender } from "@bentley/imodeljs-frontend";
-import { ContentLayoutProps } from "@bentley/ui-abstract";
+import { StandardContentLayouts } from "@bentley/ui-abstract";
 import {
-  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroup, ContentGroupProps, ContentLayoutManager, CoreTools,
+  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroup, ContentGroupProps, CoreTools,
   Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider, MessageManager, ModalDialogManager, ModelessDialogManager, PopupManager,
   TaskManager, TaskPropsList, WidgetControl, WorkflowManager, WorkflowProps, WorkflowPropsList,
 } from "../../ui-framework";
@@ -99,7 +99,7 @@ describe("ConfigurableUiManager", () => {
   it("loadContentGroup and read applicationData from control", () => {
     const contentGroupProps: ContentGroupProps = {
       id: "testContentGroup1",
-      layout: "testContentLayout1",
+      layout: StandardContentLayouts.singleView,
       contents: [
         {
           id: "test-content-control",
@@ -116,40 +116,6 @@ describe("ConfigurableUiManager", () => {
     const control = contentGroup?.getContentControlById("test-content-control");
     expect(control).to.not.be.undefined;
     expect(control?.applicationData.label).eql("Content 1a");
-  });
-
-  it("loadContentLayout", () => {
-    const contentLayoutProps: ContentLayoutProps = {
-      // Three Views, one on the left, two stacked on the right.
-      id: "testContentLayout1",
-      description: "SampleApp:ContentDef.ThreeRightStacked",
-      verticalSplit: {
-        id: "testContentLayout1Vertical",
-        percentage: 0.50,
-        left: 0,
-        right: { horizontalSplit: { id: "testContentLayout1Horizontal", percentage: 0.50, top: 1, bottom: 2 } },
-      },
-    };
-    ConfigurableUiManager.loadContentLayout(contentLayoutProps);
-    expect(ContentLayoutManager.findLayout("testContentLayout1")).to.not.be.undefined;
-  });
-
-  it("loadContentLayouts", () => {
-    const contentLayoutProps: ContentLayoutProps[] = [
-      {
-        // Three Views, one on the left, two stacked on the right.
-        id: "testContentLayout2",
-        description: "SampleApp:ContentDef.ThreeRightStacked",
-        verticalSplit: {
-          id: "testContentLayout2Vertical",
-          percentage: 0.50,
-          left: 0,
-          right: { horizontalSplit: { id: "testContentLayout2Horizontal", percentage: 0.50, top: 1, bottom: 2 } },
-        },
-      },
-    ];
-    ConfigurableUiManager.loadContentLayouts(contentLayoutProps);
-    expect(ContentLayoutManager.findLayout("testContentLayout2")).to.not.be.undefined;
   });
 
   it("loadTasks", () => {
