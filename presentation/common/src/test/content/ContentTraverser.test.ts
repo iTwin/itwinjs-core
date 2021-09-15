@@ -1095,6 +1095,174 @@ describe("ContentTraverser", () => {
 
   });
 
+  it("processes merged nested content under nested content item", () => {
+    const startArraySpy = sinon.spy(visitor, "startArray");
+    const finishArraySpy = sinon.spy(visitor, "finishArray");
+    const startStructSpy = sinon.spy(visitor, "startStruct");
+    const finishStructSpy = sinon.spy(visitor, "finishStruct");
+    const processMergedValueSpy = sinon.spy(visitor, "processMergedValue");
+    const category = createTestCategoryDescription();
+    const primitiveField = createTestSimpleContentField({ name: "primitive", category });
+    const mergedNestedField = createTestNestedContentField({ name: "mergedField", nestedFields: [primitiveField], category });
+    const parentField = createTestNestedContentField({ name: "parentField", nestedFields: [mergedNestedField], category });
+    const descriptor = createTestContentDescriptor({ fields: [parentField], categories: [category] });
+    const item = createTestContentItem({
+      values: {
+        [parentField.name]: [{
+          primaryKeys: [createTestECInstanceKey()],
+          values: {
+            [mergedNestedField.name]: undefined,
+          },
+          displayValues: {
+            [mergedNestedField.name]: "Merged",
+          },
+          mergedFieldNames: [mergedNestedField.name],
+        }],
+      },
+      displayValues: {
+        [parentField.name]: undefined,
+      },
+    });
+    traverseContentItem(visitor, descriptor, item);
+
+    expect(startArraySpy).to.be.calledOnce;
+    expect(startArraySpy.firstCall.firstArg).to.containSubset({
+      hierarchy: {
+        field: { name: parentField.name },
+      },
+      valueType: {
+        valueFormat: PropertyValueFormat.Array,
+        typeName: `${parentField.type.typeName}[]`,
+        memberType: {
+          valueFormat: PropertyValueFormat.Struct,
+          typeName: parentField.type.typeName,
+          members: [{
+            name: mergedNestedField.name,
+            label: mergedNestedField.label,
+          }],
+        },
+      },
+    });
+    expect(finishArraySpy).to.be.calledOnce;
+
+    expect(startStructSpy).to.be.calledOnce;
+    expect(startStructSpy.firstCall.firstArg).to.containSubset({
+      hierarchy: {
+        field: { name: parentField.name },
+        childFields: [{
+          field: { name: mergedNestedField.name },
+        }],
+      },
+      valueType: {
+        valueFormat: PropertyValueFormat.Struct,
+        typeName: mergedNestedField.type.typeName,
+        members: [{
+          name: mergedNestedField.name,
+          label: mergedNestedField.label,
+        }],
+      },
+    });
+    expect(finishStructSpy).to.be.calledOnce;
+
+    expect(processMergedValueSpy).to.be.calledOnce;
+    expect(processMergedValueSpy.firstCall.firstArg).to.containSubset({
+      mergedField: {
+        name: mergedNestedField.name,
+      },
+      requestedField: {
+        name: mergedNestedField.name,
+      },
+      namePrefix: parentField.name,
+    });
+
+  });
+
+  it("processes merged primitive value under nested content item", () => {
+    const startArraySpy = sinon.spy(visitor, "startArray");
+    const finishArraySpy = sinon.spy(visitor, "finishArray");
+    const startStructSpy = sinon.spy(visitor, "startStruct");
+    const finishStructSpy = sinon.spy(visitor, "finishStruct");
+    const processMergedValueSpy = sinon.spy(visitor, "processMergedValue");
+    const category = createTestCategoryDescription();
+    const primitiveField = createTestSimpleContentField({ name: "primitive", category });
+    const parentField = createTestNestedContentField({ name: "parentField", nestedFields: [primitiveField], category });
+    const descriptor = createTestContentDescriptor({ fields: [parentField], categories: [category] });
+    const item = createTestContentItem({
+      values: {
+        [parentField.name]: [{
+          primaryKeys: [createTestECInstanceKey()],
+          values: {
+            [primitiveField.name]: undefined,
+          },
+          displayValues: {
+            [primitiveField.name]: "Merged",
+          },
+          mergedFieldNames: [primitiveField.name],
+        }],
+      },
+      displayValues: {
+        [parentField.name]: undefined,
+      },
+    });
+    traverseContentItem(visitor, descriptor, item);
+
+    expect(startArraySpy).to.be.calledOnce;
+    expect(startArraySpy.firstCall.firstArg).to.containSubset({
+      hierarchy: {
+        field: { name: parentField.name },
+        childFields: [{
+          field: { name: primitiveField.name },
+        }],
+      },
+      valueType: {
+        valueFormat: PropertyValueFormat.Array,
+        typeName: `${parentField.type.typeName}[]`,
+        memberType: {
+          valueFormat: PropertyValueFormat.Struct,
+          typeName: parentField.type.typeName,
+          members: [{
+            name: primitiveField.name,
+            label: primitiveField.label,
+            type: primitiveField.type,
+          }],
+        },
+      },
+    });
+    expect(finishArraySpy).to.be.calledOnce;
+
+    expect(startStructSpy).to.be.calledOnce;
+    expect(startStructSpy.firstCall.firstArg).to.containSubset({
+      hierarchy: {
+        field: { name: parentField.name },
+        childFields: [{
+          field: { name: primitiveField.name },
+        }],
+      },
+      valueType: {
+        valueFormat: PropertyValueFormat.Struct,
+        typeName: parentField.type.typeName,
+        members: [{
+          name: primitiveField.name,
+          label: primitiveField.label,
+          type: primitiveField.type,
+        }],
+      },
+    });
+    expect(finishStructSpy).to.be.calledOnce;
+
+    expect(processMergedValueSpy).to.be.calledOnce;
+    expect(processMergedValueSpy.firstCall.firstArg).to.containSubset({
+      mergedField: {
+        name: primitiveField.name,
+      },
+      requestedField: {
+        name: primitiveField.name,
+      },
+      namePrefix: parentField.name,
+    });
+
+  });
+
 });
 
 describe("addFieldHierarchy", () => {

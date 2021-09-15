@@ -234,7 +234,7 @@ describe("TreeRenderer", () => {
     const { rerender } = render(<TreeRenderer {...defaultProps} />);
 
     // need to rerender because after first render VariableSizeList ref is not set
-    rerender(<TreeRenderer {...defaultProps} nodeHighlightingProps={highlightProps} nodeRenderer={nodeRenderer}/>);
+    rerender(<TreeRenderer {...defaultProps} nodeHighlightingProps={highlightProps} nodeRenderer={nodeRenderer} />);
     onLabelRendered!(node2);
 
     expect(verticalScrollSpy).to.be.calledWith(1);
@@ -342,6 +342,22 @@ describe("TreeRenderer", () => {
       }));
 
       expect(scrollToItemFake).to.have.been.calledOnceWithExactly(15, "smart");
+    });
+
+    it("does not repeat last call on each render", () => {
+      const treeModel = new MutableTreeModel();
+      treeModel.setNumChildren(undefined, 1);
+
+      const treeRendererRef: React.RefObject<TreeRenderer> = { current: null };
+      const { rerender } = render(
+        <TreeRenderer ref={treeRendererRef} {...defaultProps} visibleNodes={treeModel.computeVisibleNodes()} />,
+      );
+
+      treeRendererRef.current!.scrollToNode("a", "smart");
+      expect(scrollToItemFake).to.have.been.calledOnce;
+
+      rerender(<TreeRenderer ref={treeRendererRef} {...defaultProps} visibleNodes={treeModel.computeVisibleNodes()} />);
+      expect(scrollToItemFake).to.have.been.calledOnce;
     });
   });
 });

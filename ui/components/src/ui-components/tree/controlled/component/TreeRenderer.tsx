@@ -412,14 +412,18 @@ function useTreeRendererAttributes(
   variableSizeListRef: React.RefObject<VariableSizeList>,
   visibleNodes: VisibleTreeNodes,
 ) {
+  const visibleNodesRef = React.useRef(visibleNodes);
+  visibleNodesRef.current = visibleNodes;
   React.useImperativeHandle(
     ref,
     () => ({
       scrollToNode: (nodeId, alignment) => {
         assert(variableSizeListRef.current !== null);
-        variableSizeListRef.current.scrollToItem(visibleNodes.getIndexOfNode(nodeId), alignment);
+        variableSizeListRef.current.scrollToItem(visibleNodesRef.current.getIndexOfNode(nodeId), alignment);
       },
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
   );
 }
 
