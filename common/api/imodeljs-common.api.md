@@ -786,11 +786,11 @@ export interface Carto2DDegreesProps {
 }
 
 // @public
-export class Cartographic implements CartographicProps {
+export class Cartographic {
     clone(result?: Cartographic): Cartographic;
     static createEmpty(): Cartographic;
-    equals(right: CartographicProps): boolean;
-    equalsEpsilon(right: CartographicProps, epsilon: number): boolean;
+    equals(right: Cartographic): boolean;
+    equalsEpsilon(right: Cartographic, epsilon: number): boolean;
     freeze(): Readonly<this>;
     static fromEcef(cartesian: Point3d, result?: Cartographic): Cartographic | undefined;
     static fromJSON(props: CartographicProps, result?: Cartographic): Cartographic;
@@ -798,11 +798,13 @@ export class Cartographic implements CartographicProps {
     // (undocumented)
     height: number;
     // (undocumented)
-    latitude: number;
+    latitude: Angle;
     get latitudeDegrees(): number;
+    get latitudeRadians(): number;
     // (undocumented)
-    longitude: number;
+    longitude: Angle;
     get longitudeDegrees(): number;
+    get longitudeRadians(): number;
     static parametricLatitudeFromGeodeticLatitude(geodeticLatitude: number): number;
     static scalePointToGeodeticSurface(point: Point3d, result?: Point3d): Point3d | undefined;
     toEcef(result?: Point3d): Point3d;
@@ -813,9 +815,8 @@ export class Cartographic implements CartographicProps {
 // @public
 export interface CartographicProps {
     height?: number;
-    isDegrees?: boolean;
-    latitude: number;
-    longitude: number;
+    latitude: AngleProps;
+    longitude: AngleProps;
 }
 
 // @public

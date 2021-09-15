@@ -37,7 +37,7 @@ export class Cartographic {
 
   /** Create an empty Cartographic object */
   public static createEmpty(): Cartographic {
-    return Cartographic.fromJSON({longitude: 0, latitude: 0, height: 0});
+    return Cartographic.fromJSON({ longitude: 0, latitude: 0, height: 0 });
   }
 
   /** Creates a Cartographic object from a JSON representation.
@@ -45,16 +45,6 @@ export class Cartographic {
    * @see [[CartographicProps]]
    */
   public static fromJSON(props: CartographicProps, result?: Cartographic): Cartographic {
-    // let longitude = 0;
-    // let latitude = 0;
-
-    // if (true === props.isDegrees) { // ensure stored in radians
-    //   longitude = Angle.degreesToRadians(props.longitude);
-    //   latitude = Angle.degreesToRadians(props.latitude);
-    // } else { // already stored in radians
-    //   longitude = props.longitude;
-    //   latitude = props.latitude;
-    // }
     const height = props.height !== undefined ? props.height : 0;
 
     if (!result)
@@ -148,10 +138,10 @@ export class Cartographic {
     const height = Math.sign(h.dotProduct(cartesian)) * h.magnitude();
 
     if (!result)
-      return Cartographic.fromJSON({longitude: {radians: longitude}, latitude: {radians: latitude}, height});
+      return Cartographic.fromJSON({ longitude: { radians: longitude }, latitude: { radians: latitude }, height });
 
-    result.longitude = Angle.fromJSON({radians: longitude});
-    result.latitude = Angle.fromJSON({radians: latitude});
+    result.longitude = Angle.fromJSON({ radians: longitude });
+    result.latitude = Angle.fromJSON({ radians: latitude });
     result.height = height;
     return result;
   }
@@ -171,10 +161,10 @@ export class Cartographic {
   /** Duplicates a Cartographic. */
   public clone(result?: Cartographic): Cartographic {
     if (!result)
-      return Cartographic.fromJSON({longitude: {radians: this.longitudeRadians}, latitude: {radians: this.latitudeRadians}, height: this.height});
+      return Cartographic.fromJSON({ longitude: { radians: this.longitudeRadians }, latitude: { radians: this.latitudeRadians }, height: this.height });
 
-    result.longitude = Angle.fromJSON({radians: this.longitudeRadians});
-    result.latitude = Angle.fromJSON({radians: this.latitudeRadians});
+    result.longitude = Angle.fromJSON({ radians: this.longitudeRadians });
+    result.latitude = Angle.fromJSON({ radians: this.latitudeRadians });
     result.height = this.height;
     return result;
   }
@@ -361,8 +351,8 @@ export class CartographicRange {
         high = geoPt.clone();
         continue;
       }
-      low = Cartographic.fromJSON({latitude: Math.min(low.latitudeRadians, geoPt.latitudeRadians), longitude: Math.min(low.longitudeRadians, geoPt.longitudeRadians), height: low.height});
-      high = Cartographic.fromJSON({latitude: Math.max(high.latitudeRadians, geoPt.latitudeRadians), longitude: Math.max(high.longitudeRadians, geoPt.longitudeRadians), height: high.height});
+      low = Cartographic.fromJSON({ latitude: Math.min(low.latitudeRadians, geoPt.latitudeRadians), longitude: Math.min(low.longitudeRadians, geoPt.longitudeRadians), height: low.height });
+      high = Cartographic.fromJSON({ latitude: Math.max(high.latitudeRadians, geoPt.latitudeRadians), longitude: Math.max(high.longitudeRadians, geoPt.longitudeRadians), height: high.height });
     }
 
     if (!low || !high) {
