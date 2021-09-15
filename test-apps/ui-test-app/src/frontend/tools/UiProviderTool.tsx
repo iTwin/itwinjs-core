@@ -216,7 +216,7 @@ export class UiProviderTool extends Tool {
   public static testExtensionLoaded = "";
 
   public static override toolId = "TestUiProvider";
-  public override run(_args: any[]): boolean {
+  public override async run(_args: any[]): Promise<boolean> {
     // load state before ui provide so state is available when rendering on load occurs.
     if (!SampleExtensionStateManager.extensionStateManagerLoaded)
       SampleExtensionStateManager.initialize();
@@ -241,9 +241,8 @@ export class OpenComponentExamplesPopoutTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 0; }
 
-  public override run(): boolean {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this._run();
+  public override async run(): Promise<boolean> {
+    await this._run();
     return true;
   }
 
@@ -279,7 +278,7 @@ export class OpenComponentExamplesPopoutTool extends Tool {
       groupPriority,
     };
     return ToolbarItemUtilities.createActionButton(OpenComponentExamplesPopoutTool.toolId, itemPriority, OpenComponentExamplesPopoutTool.iconSpec, OpenComponentExamplesPopoutTool.flyover,
-      () => { IModelApp.tools.run(OpenComponentExamplesPopoutTool.toolId); }, overrides);
+      async () => {await IModelApp.tools.run(OpenComponentExamplesPopoutTool.toolId); }, overrides);
   }
 }
 export class OpenCustomPopoutTool extends Tool {
@@ -289,9 +288,8 @@ export class OpenCustomPopoutTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 0; }
 
-  public override run(): boolean {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this._run();
+  public override async run(): Promise<boolean> {
+    await this._run();
     return true;
   }
 
@@ -323,7 +321,7 @@ export class OpenCustomPopoutTool extends Tool {
       groupPriority,
     };
     return ToolbarItemUtilities.createActionButton(OpenCustomPopoutTool.toolId, itemPriority, OpenCustomPopoutTool.iconSpec, OpenCustomPopoutTool.flyover,
-      () => { IModelApp.tools.run(OpenCustomPopoutTool.toolId); }, overrides);
+      async () => { await IModelApp.tools.run(OpenCustomPopoutTool.toolId); }, overrides);
   }
 }
 
@@ -334,9 +332,8 @@ export class OpenViewPopoutTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 0; }
 
-  public override run(): boolean {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this._run();
+  public override async run(): Promise<boolean> {
+    await this._run();
     return true;
   }
 
@@ -368,6 +365,6 @@ export class OpenViewPopoutTool extends Tool {
       groupPriority,
     };
     return ToolbarItemUtilities.createActionButton(OpenViewPopoutTool.toolId, itemPriority, OpenViewPopoutTool.iconSpec, OpenViewPopoutTool.flyover,
-      () => { IModelApp.tools.run(OpenViewPopoutTool.toolId); }, overrides);
+      async () => { await IModelApp.tools.run(OpenViewPopoutTool.toolId); }, overrides);
   }
 }

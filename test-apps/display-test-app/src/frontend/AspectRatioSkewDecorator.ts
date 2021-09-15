@@ -78,7 +78,7 @@ export class ToggleAspectRatioSkewDecoratorTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 1; }
 
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     const iModel = IModelApp.viewManager.selectedView?.iModel;
     if (iModel)
       AspectRatioSkewDecorator.toggle(iModel, this._applyAspectRatioSkew);
@@ -86,7 +86,7 @@ export class ToggleAspectRatioSkewDecoratorTool extends Tool {
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const parsedArgs = parseArgs(args);
     this._applyAspectRatioSkew = parsedArgs.getBoolean("a") ?? true;
     return this.run();
