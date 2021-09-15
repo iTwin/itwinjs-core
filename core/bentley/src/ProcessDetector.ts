@@ -54,8 +54,8 @@ export class ProcessDetector {
   */
   public static get isMobileBrowser() { return this.isIOSBrowser || this.isAndroidBrowser; }
 
-  /** Is this process running in a Chrome or Edge browser or an Electron front end? */
-  public static get isChromeEdgeElectron() {
+  /** Is this process running in a Chromium based browser (Chrome / new Edge / Electron front end)? */
+  public static get isChromium() {
     return (this.isBrowserProcess && window.navigator.userAgent.indexOf("Chrome") > -1 && window.navigator.userAgent.indexOf("OP") === -1) || this.isElectronAppFrontend;
   }
 

@@ -607,10 +607,12 @@ export class ExternalTextureLoader { /* currently exported for tests only */
     try {
       if (!req.imodel.isClosed) {
         const maxTextureSize = System.instance.capabilities.maxTexSizeAllow;
-        const texData = await req.imodel.queryTextureImage({ name: req.name, maxTextureSize });
+        const texData = await req.imodel.queryTextureData({ name: req.name, maxTextureSize });
         if (undefined !== texData) {
           const cnvReq = { req, texData };
           this._convertRequests.push(cnvReq);
+          // _convertPending is used to prevent overlapping calls to _convertTexture (from overlapping calls to _activateRequest)
+          // it has been put on the list, so if it doesn't get converted here it will get converted by the loop that is converting the current one
           do {
             if (!this._convertPending)
               await this._convertTexture();
@@ -632,7 +634,7 @@ export class ExternalTextureLoader { /* currently exported for tests only */
     try {
       const cnvReq = this._convertRequests.shift();
       if (undefined !== cnvReq) {
-        const imageSource = new ImageSource(cnvReq.texData.bytes, cnvReq.req.format);
+        const imageSource = new ImageSource(cnvReq.texData.bytes, cnvReq.texData.format);
         if (System.instance.capabilities.supportsCreateImageBitmap) {
           const blob = new Blob([imageSource.data], { type: getImageSourceMimeType(imageSource.format) });
           const image = await createImageBitmap (blob, 0, 0, cnvReq.texData.width, cnvReq.texData.height);

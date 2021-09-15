@@ -442,10 +442,10 @@ export abstract class IModelConnection extends IModel {
    * @see [[Id64]]
    * @public
    */
-  public async queryTextureImage(textureLoadProps: TextureLoadProps): Promise<TextureData | undefined> {
+  public async queryTextureData(textureLoadProps: TextureLoadProps): Promise<TextureData | undefined> {
     if (this.isOpen) {
       const rpcClient = IModelReadRpcInterface.getClientForRouting(this.routingContext.token);
-      const img = rpcClient.queryTextureImage(this.getRpcProps(), textureLoadProps);
+      const img = rpcClient.queryTextureData(this.getRpcProps(), textureLoadProps);
       return img;
     }
     return undefined;

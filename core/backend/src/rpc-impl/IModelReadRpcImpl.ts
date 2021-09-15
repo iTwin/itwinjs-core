@@ -276,9 +276,9 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return iModelDb.getGeoCoordinatesFromIModelCoordinates(requestContext, props);
   }
 
-  public async queryTextureImage(tokenProps: IModelRpcProps, textureLoadProps: TextureLoadProps): Promise<TextureData | undefined> {
+  public async queryTextureData(tokenProps: IModelRpcProps, textureLoadProps: TextureLoadProps): Promise<TextureData | undefined> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     const db = await RpcBriefcaseUtility.findOrOpen(requestContext, tokenProps, SyncMode.FixedVersion);
-    return db.queryTextureImage(requestContext, textureLoadProps);
+    return db.queryTextureData(requestContext, textureLoadProps);
   }
 }

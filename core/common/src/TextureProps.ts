@@ -36,14 +36,16 @@ export interface TextureLoadProps {
   maxTextureSize?: number;
 }
 
-/** Properties returned with a texture.
+/** Information about [Texture]($backend) data returned by [[IModelReadRpcInterface.queryTextureData]].
  * @public
  */
 export interface TextureData {
-  /** returned texture width returned. If it was downsampled this will be that size. */
+  /** The width of the image, possibly reduced from the original width based on [[TextureLoadProps.maxTextureSize]]. */
   width: number;
-  /** returned texture width returned. If it was downsampled this will be that size. */
+  /** The height of the image, possibly reduced from the original height based on [[TextureLoadProps.maxTextureSize]]. */
   height: number;
+  /** The format of the returned data, Jpeg or Png. */
+  format: ImageSourceFormat;
   /** returned byte data */
   bytes: Uint8Array;
 }

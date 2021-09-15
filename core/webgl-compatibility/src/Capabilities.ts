@@ -230,7 +230,7 @@ export class Capabilities {
     this._isMobile = ProcessDetector.isMobileBrowser;
 
     this._maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
-    this._supportsCreateImageBitmap = typeof createImageBitmap === "function" && ProcessDetector.isChromeEdgeElectron && !ProcessDetector.isIOSBrowser;
+    this._supportsCreateImageBitmap = typeof createImageBitmap === "function" && ProcessDetector.isChromium && !ProcessDetector.isIOSBrowser;
     this._maxTexSizeAllow = Math.min (this._maxTextureSize, maxTexSizeAllowed);
     this._maxFragTextureUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
     this._maxVertTextureUnits = gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);

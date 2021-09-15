@@ -1081,10 +1081,10 @@ export abstract class IModelDb extends IModel {
    * @returns the TextureData or undefined if the texture image is not present.
    * @alpha
    */
-  public async queryTextureImage(requestContext: ClientRequestContext, props: TextureLoadProps): Promise<TextureData | undefined> {
+  public async queryTextureData(requestContext: ClientRequestContext, props: TextureLoadProps): Promise<TextureData | undefined> {
     requestContext.enter();
     return new Promise<TextureData | undefined>((resolve, reject) => {
-      this.nativeDb.queryTextureImage(props, (result) => {
+      this.nativeDb.queryTextureData(props, (result) => {
         if (result instanceof Error)
           reject(result);
         else
