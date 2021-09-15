@@ -70,9 +70,13 @@ class TransparencyDecorator {
     const gfParams = GraphicParams.fromSymbology(opts.color, opts.color, 1);
     gfParams.material = opts.material;
 
-    const builder = vp.target.renderSystem.createGraphicBuilder(Transform.createIdentity(), GraphicType.Scene, vp, opts.pickableId);
-    builder.wantNormals = builder.wantEdges = false;
-    builder.activateGraphicParams(gfParams);
+    const builder = vp.target.renderSystem.createGraphic({
+      type: GraphicType.Scene,
+      viewport: vp,
+      pickable: opts.pickableId ? { id: opts.pickableId } : undefined,
+      wantNormals: false,
+      generateEdges: false,
+    });
     builder.addShape(pts);
 
     this._graphics.push(vp.target.renderSystem.createGraphicOwner(builder.finish()));

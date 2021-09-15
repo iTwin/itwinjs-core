@@ -47,8 +47,7 @@ class AspectRatioSkewDecorator {
     if (!context.viewport.view.isSpatialView())
       return;
 
-    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
-    builder.applyAspectRatioSkew = this._applyAspectRatioSkew;
+    const builder = context.createGraphic({ type: GraphicType.WorldDecoration, applyAspectRatioSkew: this._applyAspectRatioSkew });
     builder.setSymbology(ColorDef.white, ColorDef.white, 3);
     builder.addPath(this._path);
     context.addDecorationFromBuilder(builder);
