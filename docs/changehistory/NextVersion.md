@@ -344,14 +344,14 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `useVisibleTreeNodes`                                       | `useTreeModel` and `computeVisibleNodes`                                                                                      |
 | `SignIn`                                                    | *eliminated*                                                                                                                  |
 | All drag & drop related APIs                                | Third party components. E.g. see this [example](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=drag-and-drop) |
-| `DEPRECATED_Tree`, `BeInspireTree` and related APIs         | `ControlledTree`                                                      |
-| `PropertyValueRendererContext.decoratedTextElement`         | `IPropertyValueRenderer` that can properly render a `PropertyRecord`  |
-| `CommonPropertyGridProps.onPropertyLinkClick`               | `PropertyRecord.links.onClick`                                        |
-| `onPropertyLinkClick` prop in `usePropertyData`             | `PropertyRecord.links.onClick`                                        |
-| `onPropertyLinkClick` prop in `usePropertyGridModelSource`  | `PropertyRecord.links.onClick`                                        |
-| `FilteringInputProps.filteringInProgress`                   | `FilteringInputProps.status`                                          |
-| `hasLinks`                                                  | `!!PropertyRecord.links?.length`                                      |
-| `PropertyListProps.onListWidthChanged`                      | Width is now passed to `PropertyList` through `PropertyListProps.width` prop |
+| `DEPRECATED_Tree`, `BeInspireTree` and related APIs         | `ControlledTree`                                                                                                              |
+| `PropertyValueRendererContext.decoratedTextElement`         | `IPropertyValueRenderer` that can properly render a `PropertyRecord`                                                          |
+| `CommonPropertyGridProps.onPropertyLinkClick`               | `PropertyRecord.links.onClick`                                                                                                |
+| `onPropertyLinkClick` prop in `usePropertyData`             | `PropertyRecord.links.onClick`                                                                                                |
+| `onPropertyLinkClick` prop in `usePropertyGridModelSource`  | `PropertyRecord.links.onClick`                                                                                                |
+| `FilteringInputProps.filteringInProgress`                   | `FilteringInputProps.status`                                                                                                  |
+| `hasLinks`                                                  | `!!PropertyRecord.links?.length`                                                                                              |
+| `PropertyListProps.onListWidthChanged`                      | Width is now passed to `PropertyList` through `PropertyListProps.width` prop                                                  |
 
 ### @bentley/ui-framework
 
