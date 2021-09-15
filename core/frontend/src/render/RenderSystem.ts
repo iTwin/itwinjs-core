@@ -20,7 +20,7 @@ import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
 import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
-import { BatchOptions, GraphicBuilder, GraphicBuilderOptions, GraphicType } from "./GraphicBuilder";
+import { BatchOptions, CustomGraphicBuilderOptions, GraphicBuilder, GraphicType, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
 import { InstancedGraphicParams, PatternGraphicParams } from "./InstancedGraphicParams";
 import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
 import { RealityMeshPrimitive } from "./primitives/mesh/RealityMeshPrimitive";
@@ -298,7 +298,7 @@ export abstract class RenderSystem implements IDisposable {
    * @param options Options describing how to create the builder.
    * @returns A builder that produces a [[RenderGraphic]].
    */
-  public abstract createGraphic(options: GraphicBuilderOptions): GraphicBuilder;
+  public abstract createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): GraphicBuilder;
 
   /** Obtain an object capable of producing a custom screen-space effect to be applied to the image rendered by a [[Viewport]].
    * @returns undefined if screen-space effects are not supported by this RenderSystem.
@@ -540,7 +540,7 @@ export abstract class RenderSystem implements IDisposable {
    * Otherwise, the newly-created texture will be cached on the IModelConnection such that a subsequent call to getGradientTexture with an equivalent gradient will
    * return the previously-created texture.
    */
-  public getGradientTexture(_symb: Gradient.Symb, _imodel: IModelConnection): RenderTexture | undefined { return undefined; }
+  public getGradientTexture(_symb: Gradient.Symb, _imodel?: IModelConnection): RenderTexture | undefined { return undefined; }
 
   /** Create a new texture from an [[ImageBuffer]]. */
   public createTextureFromImageBuffer(_image: ImageBuffer, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
