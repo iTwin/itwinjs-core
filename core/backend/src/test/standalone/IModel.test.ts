@@ -157,44 +157,6 @@ describe("iModel", () => {
     }
   });
 
-  it("should do logging from worker threads in correct context", async () => {
-
-    const contextForTest = new ClientRequestContext("contextForTest");
-    const contextForStepAsync = new ClientRequestContext("contextForStepAsync");
-
-    const testMessage = "message from test in main";
-
-    const expectedMsgsInOrder: any[] = [
-      { message: "ECSqlStepWorker: Start on main thread", ctx: contextForStepAsync },
-      { message: testMessage, ctx: contextForTest },
-      { message: "ECSqlStepWorker: In worker thread", ctx: contextForStepAsync },
-      { message: "ECSqlStepWorker: Back on main thread", ctx: contextForStepAsync },
-    ];
-
-    const msgs: any[] = [];
-    Logger.initialize((_category: string, message: string, _metaData?: GetMetaDataFunction) => {
-      msgs.push({ message });
-    });
-    Logger.setLevel("ECSqlStepWorkerTestCategory", LogLevel.Error);
-    const stmt = imodel1.prepareStatement("SELECT * from bis.Element");
-
-    const stepPromise = stmt.stepAsync();
-
-    Logger.logError("ECSqlStepWorkerTestCategory", testMessage);
-
-    const res = await stepPromise;      // now the statement completes.
-    assert.equal(res, DbResult.BE_SQLITE_ROW);
-
-    assert.equal(msgs.length, expectedMsgsInOrder.length);
-    for (let i = 0; i < msgs.length; ++i) {
-      assert.equal(msgs[i].message, expectedMsgsInOrder[i].message);
-      assert.strictEqual(msgs[i].ctx, expectedMsgsInOrder[i].ctx);
-    }
-
-    stmt.dispose();
-    Logger.initializeToConsole(); // reset back to console so future tests will log correctly
-  });
-
   it("should be able to get properties of an iIModel", () => {
     expect(imodel1.name).equals("TBD"); // That's the name of the root subject!
     const extents: AxisAlignedBox3d = imodel1.projectExtents;
@@ -1924,7 +1886,8 @@ describe("iModel", () => {
     const commandStub = sinon.stub(BlobDaemon, "command").callsFake(async () => daemonSuccessResult);
 
     process.env.BLOCKCACHE_DIR = "/foo/";
-    const checkpoint = await SnapshotDb.openCheckpointV2({ iTwinId, iModelId, changeset });
+    const user = new BackendRequestContext() as AuthorizedBackendRequestContext;
+    const checkpoint = await SnapshotDb.openCheckpointV2({ user, iTwinId, iModelId, changeset });
     const props = checkpoint.getRpcProps();
     assert.equal(props.iModelId, iModelId);
     assert.equal(props.iTwinId, iTwinId);
@@ -1932,7 +1895,6 @@ describe("iModel", () => {
     assert.equal(commandStub.callCount, 1);
     assert.equal(commandStub.firstCall.firstArg, "attach");
 
-    const user = new BackendRequestContext() as AuthorizedBackendRequestContext;
     await checkpoint.reattachDaemon(user);
     assert.equal(commandStub.callCount, 2);
     assert.equal(commandStub.secondCall.firstArg, "attach");
@@ -1999,7 +1961,7 @@ describe("iModel", () => {
 
   it("attempting to re-attach a non-checkpoint snapshot should be a no-op", async () => {
     process.env.BLOCKCACHE_DIR = "/foo/";
-    const user = await AuthorizedBackendRequestContext.create();
+    const user = new BackendRequestContext() as AuthorizedBackendRequestContext;
     const attachMock = sinon.stub(V2CheckpointManager, "attach").callsFake(async () => ({ filePath: "BAD", expiryTimestamp: Date.now() }));
     await imodel1.reattachDaemon(user);
     assert.isTrue(attachMock.notCalled);

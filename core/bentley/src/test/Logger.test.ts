@@ -483,15 +483,6 @@ describe("Logger", () => {
       (c, m, d) => outinfo = [c, m, d],
       (c, m, d) => outtrace = [c, m, d]);
 
-    const lctx1 = new ClientRequestContext("activity1");
-    const md = Logger.makeMetaData(() => { });
-    assert.include(md, {
-      ActivityId: lctx1.activityId,
-      ApplicationId: "",
-      ApplicationVersion: "",
-      SessionId: "00000000-0000-0000-0000-000000000000",
-    });
-
     const newMetaDataSource = (metaData: any) => {
       metaData.prop1 = "test1";
       metaData.prop2 = "test2";

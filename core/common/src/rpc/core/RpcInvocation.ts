@@ -135,7 +135,7 @@ export class RpcInvocation {
       // eslint-disable-next-line @typescript-eslint/return-await
       return await op.call(impl, ...parameters);
     } catch (error: any) {
-      Logger.logException("RPC Error", error, undefined, () => currentRequest);
+      Logger.logException("RPC Error", error, undefined, () => { return { activityId: currentRequest.activityId, sessionId: currentRequest.sessionId }; });
       return this.reject(error);
     }
   }

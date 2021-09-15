@@ -10,7 +10,7 @@ import { Guid, IModelHubStatus } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizedClientRequestContext, WsgError } from "@bentley/itwin-client";
 import { CheckpointManager, V1CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
 import { SnapshotDb } from "../../IModelDb";
-import { IModelHost } from "../../imodeljs-backend";
+import { BackendRequestContext, IModelHost } from "../../imodeljs-backend";
 import { IModelJsFs } from "../../IModelJsFs";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { IModelHubBackend } from "../../IModelHubBackend";
@@ -158,9 +158,10 @@ describe("Checkpoint Manager", () => {
       return changeset.id;
     });
 
+    const user = new BackendRequestContext() as AuthorizedClientRequestContext;
     const localFile = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint2.bim");
 
-    const request = { localFile, checkpoint: { iTwinId, iModelId, changeset } };
+    const request = { localFile, checkpoint: { user, iTwinId, iModelId, changeset } };
     await CheckpointManager.downloadCheckpoint(request);
     assert.isTrue(v1Spy.calledOnce);
   });

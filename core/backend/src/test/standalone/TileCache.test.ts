@@ -10,7 +10,7 @@ import { IModelTileRpcInterface, RpcManager, RpcRegistry } from "@bentley/imodel
 import { BlobDaemon } from "@bentley/imodeljs-native";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelHubBackend } from "../../IModelHubBackend";
-import { AuthorizedBackendRequestContext, IModelHost, IModelHostConfiguration } from "../../imodeljs-backend";
+import { AuthorizedBackendRequestContext, BackendRequestContext, IModelHost, IModelHostConfiguration } from "../../imodeljs-backend";
 import { IModelJsFs } from "../../IModelJsFs";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { getTileProps } from "../integration/TileUpload.test";
@@ -32,7 +32,7 @@ describe("TileCache open v1", () => {
     // Generate tile
     const tileProps = await getTileProps(iModel);
     assert.isDefined(tileProps);
-    await tileRpcInterface.generateTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid);
+    await tileRpcInterface.generateTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, undefined, tileProps!.guid); // eslint-disable-line deprecation/deprecation
 
     const tilesCache = `${iModel.pathName}.Tiles`;
     assert.isTrue(IModelJsFs.existsSync(tilesCache));
@@ -67,7 +67,7 @@ describe("TileCache open v1", () => {
 });
 
 describe("TileCache, open v2", async () => {
-  it("should place .Tiles in cacheDir", async () => {
+  it.only("should place .Tiles in cacheDir", async () => {
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim");
     const snapshot = IModelTestUtils.createSnapshotFromSeed(dbPath, IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
     const iModelId = snapshot.getGuid();
@@ -100,7 +100,7 @@ describe("TileCache, open v2", async () => {
     sinon.stub(BlobDaemon, "getDbFileName").callsFake(() => dbPath);
 
     process.env.BLOCKCACHE_DIR = "/foo/";
-    const user = await AuthorizedBackendRequestContext.create();
+    const user = new BackendRequestContext() as AuthorizedBackendRequestContext;
     const checkpointProps = { user, iTwinId, iModelId, changeset };
     const checkpoint = await SnapshotDb.openCheckpointV2(checkpointProps);
 

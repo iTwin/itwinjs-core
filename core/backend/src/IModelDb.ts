@@ -2192,8 +2192,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     }
 
     /** @internal */
-    public async getTileContent(requestContext: ClientRequestContext, treeId: string, tileId: string): Promise<Uint8Array> {
-      requestContext.enter();
+    public async getTileContent(treeId: string, tileId: string): Promise<Uint8Array> {
 
       const ret = await new Promise<IModelJsNative.ErrorStatusOrResult<any, Uint8Array>>((resolve) => {
         this._iModel.nativeDb.getTileContent(treeId, tileId, resolve);
