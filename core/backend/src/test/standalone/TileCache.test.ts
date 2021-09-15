@@ -6,7 +6,7 @@ import { assert } from "chai";
 import * as path from "path";
 import { DbResult, Guid } from "@bentley/bentleyjs-core";
 import { CheckpointV2 } from "@bentley/imodelhub-client";
-import { IModelTileRpcInterface, RpcManager, RpcRegistry } from "@bentley/imodeljs-common";
+import { IModelTileRpcInterface, RpcInvocation, RpcManager, RpcRegistry } from "@bentley/imodeljs-common";
 import { BlobDaemon } from "@bentley/imodeljs-native";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelHubBackend } from "../../IModelHubBackend";
@@ -67,7 +67,7 @@ describe("TileCache open v1", () => {
 });
 
 describe("TileCache, open v2", async () => {
-  it.only("should place .Tiles in tempFileBase for V2 checkpoints", async () => {
+  it("should place .Tiles in tempFileBase for V2 checkpoints", async () => {
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim");
     const snapshot = IModelTestUtils.createSnapshotFromSeed(dbPath, IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
     const iModelId = snapshot.getGuid();
@@ -100,13 +100,14 @@ describe("TileCache, open v2", async () => {
     sinon.stub(BlobDaemon, "getDbFileName").callsFake(() => dbPath);
 
     process.env.BLOCKCACHE_DIR = "/foo/";
-    const user = await AuthorizedBackendRequestContext.create();
+    const user = new BackendRequestContext() as AuthorizedBackendRequestContext;
     const checkpointProps = { user, iTwinId, iModelId, changeset };
     const checkpoint = await SnapshotDb.openCheckpointV2(checkpointProps);
 
     // Generate tile
     const tileProps = await getTileProps(checkpoint);
     assert.isDefined(tileProps);
+    RpcInvocation.currentRequest = user; // we're simulating an RPC call - set up the current invocation request that would normally come from PRC call
     await tileRpcInterface.generateTileContent(checkpoint.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid);
 
     // Make sure .Tiles exists in the cacheDir. This was enforced by opening it as a V2 Checkpoint which passes as part of its open params a tempFileBasename.
