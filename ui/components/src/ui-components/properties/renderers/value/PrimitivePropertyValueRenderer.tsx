@@ -7,13 +7,12 @@
  */
 
 import * as React from "react";
+import { LinkElementsInfo, PrimitiveValue, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { useAsyncValue } from "../../../common/UseAsyncValue";
 import { TypeConverterManager } from "../../../converters/TypeConverterManager";
+import { PropertyGridCommons } from "../../../propertygrid/component/PropertyGridCommons";
 import { LinksRenderer } from "../../LinkHandler";
 import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
-import { withContextStyle } from "./WithContextStyle";
-import { LinkElementsInfo, PrimitiveValue, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-import { PropertyGridCommons } from "../../../propertygrid/component/PropertyGridCommons";
 
 /** Default Primitive Property Renderer
  * @public
@@ -27,14 +26,6 @@ export class PrimitivePropertyValueRenderer implements IPropertyValueRenderer {
 
   /** Method that returns a JSX representation of PropertyRecord */
   public render(record: PropertyRecord, context?: PropertyValueRendererContext) {
-    if (context && context.decoratedTextElement) {
-      // This is a deprecated code branch that's only needed to support the BeInspireTree-driven
-      // tree - it's the only one using `decoratedTextElement` to pass an already rendered node.
-      // The right way to do this is to supply enough information (either through `record` or `context`)
-      // to render the node from here.
-      return withContextStyle(context.decoratedTextElement, context);
-    }
-
     return <PrimitivePropertyValueRendererImpl
       record={record}
       context={context}

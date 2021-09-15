@@ -28,42 +28,13 @@ interface FilteringInputState {
   searchStarted: boolean;
   /* Used for resetting the state of [[ResultSelector]] component */
   resultSelectorKey: number;
-  /**
-   *  Parameter used to remember `props.filteringInProgress`.
-   *  Used in getDerivedStateFromProps to compare previous `props.filteringInProgress`
-   *  with current `props.filteringInProgress`.
-   *  Used for supporting deprecated usage of [[FilteringInput]] component
-   */
-  prevFilteringInProgress?: boolean;
-}
-
-/** [[FilteringInput]] React Component properties
- * @public
- * @deprecated
- */
-export interface DEPRECATED_FilteringInputProps extends CommonProps {
-  /** Filtering should start */
-  onFilterStart: (searchText: string) => void;
-  /** Filtering is canceled while still in progress */
-  onFilterCancel: () => void;
-  /** Filtering is cleared after everything's loaded */
-  onFilterClear: () => void;
-  /**
-   * Tells the component if parent component is still handling the filtering.
-   * @deprecated use `status` to provide information about filtering status instead.
-   */
-  filteringInProgress: boolean;
-  /** [[ResultSelector]] React Component properties */
-  resultSelectorProps?: ResultSelectorProps;
-  /** Specify that the <input> element should automatically get focus */
-  autoFocus?: boolean;
 }
 
 /**
  * [[FilteringInput]] React Component properties
  * @public
  */
-export interface NEW_FilteringInputProps extends CommonProps {
+export interface FilteringInputProps extends CommonProps {
   /** Filtering should start */
   onFilterStart: (searchText: string) => void;
   /** Filtering is canceled while still in progress */
@@ -84,13 +55,6 @@ export interface NEW_FilteringInputProps extends CommonProps {
   /** Specify that the <input> element should automatically get focus */
   autoFocus?: boolean;
 }
-
-/**
- * Props type for [[FilteringInput]]
- * @public
- */
-// eslint-disable-next-line deprecation/deprecation
-export type FilteringInputProps = DEPRECATED_FilteringInputProps | NEW_FilteringInputProps;
 
 /**
  * Enumeration of possible component contexts
@@ -120,8 +84,6 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
       searchText: "",
       searchStarted: false,
       resultSelectorKey: 0,
-      // eslint-disable-next-line deprecation/deprecation
-      prevFilteringInProgress: FilteringInput.isDeprecatedProps(props) ? props.filteringInProgress : undefined,
     };
   }
 
@@ -176,49 +138,13 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
 
   /** @internal */
   public override componentDidUpdate(prevProps: FilteringInputProps) {
-    if (FilteringInput.isDeprecatedProps(prevProps) && FilteringInput.isDeprecatedProps(this.props)) {
-      // eslint-disable-next-line deprecation/deprecation
-      if (prevProps.filteringInProgress !== this.props.filteringInProgress) {
-        this.setState((_state, props) => (FilteringInput.isDeprecatedProps(props) ?
-          { prevFilteringInProgress: props.filteringInProgress } :  // eslint-disable-line deprecation/deprecation
-          /* istanbul ignore next */ { prevFilteringInProgress: undefined }));
-      }
-      return;
-    }
     if (this.props.resultSelectorProps !== prevProps.resultSelectorProps) {
       this.setState((state) => ({ resultSelectorKey: state.resultSelectorKey + 1 }));
     }
   }
 
-  public static getDerivedStateFromProps(nextProps: FilteringInputProps, prevState: FilteringInputState) {
-    // eslint-disable-next-line deprecation/deprecation
-    if (FilteringInput.isDeprecatedProps(nextProps) && !nextProps.filteringInProgress && prevState.prevFilteringInProgress) {
-      return { searchStarted: true };
-    }
-    return null;
-  }
-
-  // eslint-disable-next-line deprecation/deprecation
-  private static isDeprecatedProps(props: FilteringInputProps): props is DEPRECATED_FilteringInputProps {
-    // eslint-disable-next-line deprecation/deprecation
-    if ((props as DEPRECATED_FilteringInputProps).filteringInProgress !== undefined) {
-      return true;
-    }
-    return false;
-  }
-
-  private getStatus(props: FilteringInputProps) {
-    if (FilteringInput.isDeprecatedProps(props)) {
-      // eslint-disable-next-line deprecation/deprecation
-      return (props.filteringInProgress ? FilteringInputStatus.FilteringInProgress :
-        (this.state.searchStarted ? FilteringInputStatus.FilteringFinished : FilteringInputStatus.ReadyToFilter));
-    }
-    return props.status;
-  }
-
   public override render() {
-    const status = this.getStatus(this.props);
-
+    const status = this.props.status;
     return (
       // TODO: What is filtering-input-preload-images?
       <div className={classnames("components-filtering-input", "filtering-input-preload-images", this.props.className)}

@@ -19,7 +19,7 @@ import { MeshParams, PointStringParams, PolylineParams } from "./primitives/Vert
 import { GraphicList, RenderGraphic } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
 import { RenderPlan } from "./RenderPlan";
-import { RenderSystem } from "./RenderSystem";
+import { RenderAreaPattern, RenderGeometry, RenderSystem } from "./RenderSystem";
 import { RenderTarget } from "./RenderTarget";
 import { Scene } from "./Scene";
 
@@ -114,6 +114,18 @@ export namespace MockRender {
   }
 
   /** @internal */
+  export class Geometry implements RenderGeometry {
+    public dispose(): void { }
+    public collectStatistics(): void { }
+  }
+
+  /** @internal */
+  export class AreaPattern implements RenderAreaPattern {
+    public dispose(): void { }
+    public collectStatistics(): void { }
+  }
+
+  /** @internal */
   export class System extends RenderSystem {
     public get isValid() { return true; }
     public dispose(): void { }
@@ -138,6 +150,12 @@ export namespace MockRender {
     public override createPolyline(_params: PolylineParams) { return new Graphic(); }
     public override createPointString(_params: PointStringParams) { return new Graphic(); }
     public override createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection) { return new Graphic(); }
+    public override createRenderGraphic() { return new Graphic(); }
+
+    public override createMeshGeometry() { return new Geometry(); }
+    public override createPolylineGeometry() { return new Geometry(); }
+    public override createPointStringGeometry() { return new Geometry(); }
+    public override createAreaPattern() { return new AreaPattern(); }
   }
 
   /** @internal */

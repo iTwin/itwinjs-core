@@ -7,18 +7,13 @@
  */
 
 import { IImageLoader, LoadedImage } from "../common/IImageLoader";
-import { BeInspireTreeNodeITree } from "./deprecated/component/BeInspireTree";
 import { TreeNodeItem } from "./TreeDataProvider";
-
-/* eslint-disable deprecation/deprecation */
-
-/* eslint-disable deprecation/deprecation */
 
 /** Interface for a tree image loader
  * @public
  */
 export interface ITreeImageLoader extends IImageLoader {
-  load: (item: TreeNodeItem | BeInspireTreeNodeITree) => LoadedImage | undefined;
+  load: (item: TreeNodeItem) => LoadedImage | undefined;
 }
 
 /** Default image loader for the tree
@@ -26,7 +21,7 @@ export interface ITreeImageLoader extends IImageLoader {
  */
 export class TreeImageLoader implements ITreeImageLoader {
   /** Loads image data from either [[TreeNodeItem]] or [[BeInspireTreeNodeITree]] */
-  public load(item: TreeNodeItem | BeInspireTreeNodeITree): LoadedImage | undefined {
+  public load(item: TreeNodeItem): LoadedImage | undefined {
     if (!item.icon)
       return undefined;
 

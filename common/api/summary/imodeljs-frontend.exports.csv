@@ -410,6 +410,7 @@ public;ParticleCollectionBuilder
 public;ParticleCollectionBuilder
 public;ParticleCollectionBuilderParams
 public;ParticleProps 
+internal;PatternGraphicParams
 beta;PendingExtension
 internal;PerformanceMetrics
 public;PerModelCategoryVisibility
@@ -458,9 +459,11 @@ internal;RealityTileParams
 internal;RealityTileRegion
 internal;RealityTileTree 
 internal;RealityTileTreeParams 
+internal;RenderAreaPattern = IDisposable & RenderMemory.Consumer
 public;class RenderClipVolume
 public;RenderContext
 internal;RenderDiagnostics
+internal;RenderGeometry = IDisposable & RenderMemory.Consumer
 public;class RenderGraphic 
 public;class RenderGraphicOwner 
 internal;RenderMemory

@@ -61,16 +61,16 @@ export function SectionsStatusField(props: SectionsStatusFieldProps) {
   }, [activeViewport, props.hideWhenUnused, isPopupOpen]);
 
   // istanbul ignore next
-  const toggleManipulators = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const toggleManipulators = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (activeViewport) {
       setHasManipulatorsShown(e.target.checked);
-      ViewClipDecorationProvider.create().toggleDecoration(activeViewport);
+      await ViewClipDecorationProvider.create().toggleDecoration(activeViewport);
     }
   };
 
   // istanbul ignore next
-  const handleClear = () => {
-    IModelApp.tools.run(ViewClipClearTool.toolId, ViewClipDecorationProvider.create());
+  const handleClear = async () => {
+    await IModelApp.tools.run(ViewClipClearTool.toolId, ViewClipDecorationProvider.create());
     setPopupOpen(false);
   };
 

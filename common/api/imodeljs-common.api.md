@@ -1725,8 +1725,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1638400,
-    Major = 25,
+    Combined = 1703936,
+    Major = 26,
     Minor = 0
 }
 
@@ -5994,6 +5994,7 @@ export class QParams2d {
 // @public
 export class QParams3d {
     clone(out?: QParams3d): QParams3d;
+    computeRange(out?: Range3d): Range3d;
     copyFrom(src: QParams3d): void;
     static fromNormalizedRange(rangeScale?: number): QParams3d;
     static fromOriginAndScale(origin: Point3d, scale: Point3d, out?: QParams3d): QParams3d;

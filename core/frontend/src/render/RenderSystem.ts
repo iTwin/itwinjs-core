@@ -21,7 +21,7 @@ import { Viewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
 import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
 import { BatchOptions, CustomGraphicBuilderOptions, GraphicBuilder, GraphicType, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
-import { InstancedGraphicParams } from "./InstancedGraphicParams";
+import { InstancedGraphicParams, PatternGraphicParams } from "./InstancedGraphicParams";
 import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
 import { RealityMeshPrimitive } from "./primitives/mesh/RealityMeshPrimitive";
 import { TerrainMeshPrimitive } from "./primitives/mesh/TerrainMeshPrimitive";
@@ -137,16 +137,30 @@ export abstract class RenderRealityMeshGeometry implements IDisposable, RenderMe
   public abstract dispose(): void;
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
 }
+
 /** @internal */
 export class TerrainTexture {
-  public constructor(public readonly texture: RenderTexture, public featureId: number, public readonly scale: Vector2d, public readonly translate: Vector2d, public readonly targetRectangle: Range2d, public readonly layerIndex: number, public transparency: number, public readonly clipRectangle?: Range2d) {
-  }
+  public constructor(
+    public readonly texture: RenderTexture,
+    public featureId: number,
+    public readonly scale: Vector2d,
+    public readonly translate: Vector2d,
+    public readonly targetRectangle: Range2d,
+    public readonly layerIndex: number,
+    public transparency: number,
+    public readonly clipRectangle?: Range2d
+  ) { }
 }
 
 /** @internal */
 export class DebugShaderFile {
-  public constructor(public readonly filename: string, public readonly src: string, public isVS: boolean, public isGL: boolean, public isUsed: boolean) {
-  }
+  public constructor(
+    public readonly filename: string,
+    public readonly src: string,
+    public isVS: boolean,
+    public isGL: boolean,
+    public isUsed: boolean
+  ) { }
 }
 /** Transparency settings for planar grid display.
  * @alpha
@@ -177,6 +191,16 @@ export interface PlanarGridProps {
   /** Transparency settings.  If omitted then the [[PlanarGridTransparency]] defaults are used. */
   transparency?: PlanarGridTransparency;
 }
+
+/** An opaque representation of geometry allocated by a [[RenderSystem]] to be supplied to [[RenderSystem.createRenderGraphic]].
+ * @internal
+ */
+export type RenderGeometry = IDisposable & RenderMemory.Consumer;
+
+/** An opaque representation of instructions for repeatedly drawing a [[RenderGeometry]] to pattern a planar region, to be supplied to [[RenderSystem.createRenderGraphic]].
+ * @internal
+ */
+export type RenderAreaPattern = IDisposable & RenderMemory.Consumer;
 
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
  * An application rarely interacts directly with the RenderSystem; instead it interacts with types like [[Viewport]] which
@@ -284,13 +308,13 @@ export abstract class RenderSystem implements IDisposable {
   }
 
   /** @internal */
-  public createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {
+  public createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
     const params = MeshParams.create(args);
     return this.createMesh(params, instances);
   }
 
   /** @internal */
-  public createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {
+  public createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
     if (args.flags.isDisjoint) {
       const pointStringParams = PointStringParams.create(args);
       return undefined !== pointStringParams ? this.createPointString(pointStringParams, instances) : undefined;
@@ -301,9 +325,49 @@ export abstract class RenderSystem implements IDisposable {
   }
 
   /** @internal */
-  public createMesh(_params: MeshParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined { return undefined; }
+  public createMeshGeometry(_params: MeshParams, _viewIndependentOrigin?: Point3d): RenderGeometry | undefined { return undefined; }
   /** @internal */
-  public createPolyline(_params: PolylineParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined { return undefined; }
+  public createPolylineGeometry(_params: PolylineParams, _viewIndependentOrigin?: Point3d): RenderGeometry | undefined { return undefined; }
+  /** @internal */
+  public createPointStringGeometry(_params: PointStringParams, _viewIndependentOrigin?: Point3d): RenderGeometry | undefined { return undefined; }
+
+  /** @internal */
+  public createAreaPattern(_params: PatternGraphicParams): RenderAreaPattern | undefined { return undefined; }
+
+  /** Create a RenderGraphic from a RenderGeometry produced by this RenderSystem.
+   * @internal
+   */
+  public abstract createRenderGraphic(_geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern, instancesOwnGeometry?: boolean): RenderGraphic | undefined;
+
+  private createGraphicFromGeometry(
+    createGeometry: (viewIndependentOrigin?: Point3d) => RenderGeometry | undefined,
+    instancesOrOrigin?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
+    let viOrigin;
+    let instances;
+    if (instancesOrOrigin instanceof Point3d)
+      viOrigin = instancesOrOrigin;
+    else
+      instances = instancesOrOrigin;
+
+    const geom = createGeometry(viOrigin);
+    return geom ? this.createRenderGraphic(geom, instances, true) : undefined;
+  }
+
+  /** @internal */
+  public createMesh(params: MeshParams, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
+    return this.createGraphicFromGeometry((viOrigin) => this.createMeshGeometry(params, viOrigin), instances);
+  }
+
+  /** @internal */
+  public createPolyline(params: PolylineParams, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
+    return this.createGraphicFromGeometry((origin) => this.createPolylineGeometry(params, origin), instances);
+  }
+
+  /** @internal */
+  public createPointString(params: PointStringParams, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined {
+    return this.createGraphicFromGeometry((origin) => this.createPointStringGeometry(params, origin), instances);
+  }
+
   /** @internal */
   public createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform): RenderRealityMeshGeometry | undefined { return undefined; }
   /** @internal */
@@ -312,8 +376,6 @@ export abstract class RenderSystem implements IDisposable {
   public createRealityMesh(_realityMesh: RealityMeshPrimitive): RenderGraphic | undefined { return undefined; }
   /** @internal */
   public get maxRealityImageryLayers() { return 0; }
-  /** @internal */
-  public createPointString(_params: PointStringParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined { return undefined; }
   /** @internal */
   public createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
 

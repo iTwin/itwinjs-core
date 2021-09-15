@@ -8,23 +8,20 @@
 
 import "./Breadcrumb.scss";
 import classnames from "classnames";
-import * as _ from "lodash";
 import * as React from "react";
 import { using } from "@bentley/bentleyjs-core";
 import { MessageSeverity, PropertyRecord, SpecialKey } from "@bentley/ui-abstract";
-import {
-  CommonProps, ContextMenu, ContextMenuItem, DialogButtonType, MessageBox, SplitButton, withOnOutsideClick,
-} from "@bentley/ui-core";
-import { getPropertyRecordAsString } from "../common/getPropertyRecordAsString";
+import { CommonProps, ContextMenu, ContextMenuItem, DialogButtonType, MessageBox, SplitButton, withOnOutsideClick } from "@bentley/ui-core";
 import { PropertyValueRendererManager } from "../properties/ValueRendererManager";
-import {
-  BeInspireTree, BeInspireTreeEvent, BeInspireTreeNode, BeInspireTreeNodeConfig, BeInspireTreeNodes, MapPayloadToInspireNodeCallback, toNodes,
-} from "../tree/deprecated/component/BeInspireTree";
 import {
   DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, isTreeDataProviderInterface, TreeDataProvider, TreeNodeItem,
 } from "../tree/TreeDataProvider";
 import { UiComponents } from "../UiComponents";
+import {
+  BeInspireTree, BeInspireTreeEvent, BeInspireTreeNode, BeInspireTreeNodeConfig, BeInspireTreeNodes, MapPayloadToInspireNodeCallback, toNodes,
+} from "./BeInspireTree";
 import { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "./BreadcrumbPath";
+import { getPropertyRecordAsString } from "./BreadcrumbTreeUtils";
 
 /* eslint-disable deprecation/deprecation */
 // cspell:ignore itree autocompleting
