@@ -53,7 +53,7 @@ export class FenceClassifySelectedTool extends Tool {
     EmphasizeElements.getOrCreate(vp).defaultAppearance = EmphasizeElements.getOrCreate(vp).createDefaultAppearance();
   }
 
-  public override run(insideOnly?: true | undefined): boolean {
+  public override async run(insideOnly?: true | undefined): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp)
       return false;
@@ -70,13 +70,13 @@ export class FenceClassifySelectedTool extends Tool {
       return false;
 
     vp.iModel.selectionSet.emptyAll();
-    this.doClassify(vp, candidates, vp.view.getViewClip()!, insideOnly ? false : true); // eslint-disable-line @typescript-eslint/no-floating-promises
+    await this.doClassify(vp, candidates, vp.view.getViewClip()!, insideOnly ? false : true);
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const insideOnly = (undefined !== args[0] && "inside" === args[0].toLowerCase()) ? true : undefined;
-    this.run(insideOnly);
+    await this.run(insideOnly);
     return true;
   }
 }

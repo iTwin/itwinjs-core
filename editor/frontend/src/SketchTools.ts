@@ -130,7 +130,7 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
         return;
 
       return { props, path: data.path, params: data.params };
-    } catch (err) {
+    } catch (err: any) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
       return;
     }
@@ -676,7 +676,7 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
       else
         await CreateOrContinuePathTool.callCommand("updateGeometricElement", elemProps, data);
       await this.saveChanges();
-    } catch (err) {
+    } catch (err: any) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
     }
   }
@@ -723,16 +723,16 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
 
     this.accepted.pop();
     if (0 === this.accepted.length)
-      this.onReinitialize();
+      await this.onReinitialize();
     else
       this.setupAndPromptForNextAction();
 
     return true;
   }
 
-  public override onCleanup(): void {
+  public override async onCleanup() {
     this.clearGraphics();
-    super.onCleanup();
+    return super.onCleanup();
   }
 }
 
@@ -747,7 +747,7 @@ export class CreateLineStringTool extends CreateOrContinuePathTool {
     const nPts = this.accepted.length;
     const mainMsg = CoreTools.translate(0 === nPts ? "ElementSet.Prompts.StartPoint" : (1 === nPts ? "ElementSet.Prompts.EndPoint" : "ElementSet.Inputs.AdditionalPoint"));
     const leftMsg = CoreTools.translate("ElementSet.Inputs.AcceptPoint");
-    const rghtMsg = CoreTools.translate(nPts > 1 ? "ElementSet.Inputs.Complete" : "ElementSet.Inputs.Cancel");
+    const rightMsg = CoreTools.translate(nPts > 1 ? "ElementSet.Inputs.Complete" : "ElementSet.Inputs.Cancel");
 
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
@@ -756,8 +756,8 @@ export class CreateLineStringTool extends CreateOrContinuePathTool {
       touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, leftMsg, false, ToolAssistanceInputMethod.Touch));
     mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, leftMsg, false, ToolAssistanceInputMethod.Mouse));
 
-    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, rghtMsg, false, ToolAssistanceInputMethod.Touch));
-    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, rghtMsg, false, ToolAssistanceInputMethod.Mouse));
+    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, rightMsg, false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, rightMsg, false, ToolAssistanceInputMethod.Mouse));
 
     const sections: ToolAssistanceSection[] = [];
     sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
@@ -804,10 +804,10 @@ export class CreateLineStringTool extends CreateOrContinuePathTool {
     return super.onResetButtonUp(ev);
   }
 
-  public onRestartTool(): void {
+  public async onRestartTool() {
     const tool = new CreateLineStringTool();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 }
 
@@ -1205,11 +1205,11 @@ export class CreateArcTool extends CreateOrContinuePathTool {
     this.syncToolSettingsProperties([this.sweepProperty.syncItem]);
   }
 
-  public override applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean {
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
     if (this.methodProperty.name === updatedValue.propertyName) {
       this.methodProperty.value = updatedValue.value.value as number;
       IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.methodProperty.item);
-      this.onReinitialize();
+      await this.onReinitialize();
       return true;
     } else if (updatedValue.propertyName === this.useRadiusProperty.name) {
       this.useRadius = updatedValue.value.value as boolean;
@@ -1230,8 +1230,8 @@ export class CreateArcTool extends CreateOrContinuePathTool {
       IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.radiusProperty.item);
       // If radius is changed when creating arc by start/center after center has been defined, back up a step to defined a new center point...
       if (ArcMethod.StartCenter === this.method && this.useRadius && 2 === this.accepted.length)
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        this.onUndoPreviousStep();
+        await this.onUndoPreviousStep();
+
       return true;
     } else if (updatedValue.propertyName === this.sweepProperty.name) {
       if (!updatedValue.value.value) {
@@ -1261,14 +1261,14 @@ export class CreateArcTool extends CreateOrContinuePathTool {
     return toolSettings;
   }
 
-  public onRestartTool(): void {
+  public async onRestartTool(): Promise<void> {
     const tool = new CreateArcTool();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 
-  public override onInstall(): boolean {
-    if (!super.onInstall())
+  public override async onInstall(): Promise<boolean> {
+    if (!await super.onInstall())
       return false;
 
     // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o ui-framework...
@@ -1306,7 +1306,7 @@ export class CreateArcTool extends CreateOrContinuePathTool {
    *  - `radius=number` Arc radius for start/center or center/start, 0 to define by points.
    *  - `sweep=number` Arc sweep angle in degrees for start/center or center/start, 0 to define by points.
    */
-  public override parseAndRun(...inputArgs: string[]): boolean {
+  public override async parseAndRun(...inputArgs: string[]): Promise<boolean> {
     let arcMethod;
     let arcRadius;
     let arcSweep;
@@ -1505,7 +1505,7 @@ export class CreateCircleTool extends CreateOrContinuePathTool {
   public override async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
     if (CircleMethod.Center === this.method && this.useRadius) {
       // Exit instead of restarting to avoid having circle "stuck" on cursor...
-      this.exitTool();
+      await this.exitTool();
       return EventHandled.Yes;
     }
 
@@ -1534,18 +1534,18 @@ export class CreateCircleTool extends CreateOrContinuePathTool {
     this.syncToolSettingsProperties([this.radiusProperty.syncItem]);
   }
 
-  public override applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean {
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
     if (this.methodProperty.name === updatedValue.propertyName) {
       this.methodProperty.value = updatedValue.value.value as number;
       IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.methodProperty.item);
-      this.onReinitialize();
+      await this.onReinitialize();
       return true;
     } else if (updatedValue.propertyName === this.useRadiusProperty.name) {
       this.useRadius = updatedValue.value.value as boolean;
       IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.useRadiusProperty.item);
       this.syncRadiusState();
       if (CircleMethod.Center === this.method && this.useRadius && 0 === this.accepted.length)
-        this.onReinitialize();
+        await this.onReinitialize();
       return true;
     } else if (updatedValue.propertyName === this.radiusProperty.name) {
       if (!updatedValue.value.value) {
@@ -1571,13 +1571,13 @@ export class CreateCircleTool extends CreateOrContinuePathTool {
     return toolSettings;
   }
 
-  public onRestartTool(): void {
+  public async onRestartTool(): Promise<void> {
     const tool = new CreateCircleTool();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 
-  public override onReinitialize(): void {
+  public override async onReinitialize(): Promise<void> {
     if (CircleMethod.Center === this.method && this.useRadius) {
       // Don't install a new tool instance, we want to preserve current AccuDraw state...
       this.accepted.length = 0;
@@ -1585,11 +1585,11 @@ export class CreateCircleTool extends CreateOrContinuePathTool {
       this.beginDynamics();
       return;
     }
-    super.onReinitialize();
+    return super.onReinitialize();
   }
 
-  public override onPostInstall(): void {
-    super.onPostInstall();
+  public override async onPostInstall() {
+    await super.onPostInstall();
     if (CircleMethod.Center === this.method && this.useRadius) {
       // Start dynamics before 1st data point when placing by center w/locked radius value.
       // Require the user to explicitly enable AccuDraw so that the compass location can be adjusted for changes
@@ -1599,8 +1599,8 @@ export class CreateCircleTool extends CreateOrContinuePathTool {
     }
   }
 
-  public override onInstall(): boolean {
-    if (!super.onInstall())
+  public override async onInstall(): Promise<boolean> {
+    if (!await super.onInstall())
       return false;
 
     // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o ui-framework...
@@ -1626,7 +1626,7 @@ export class CreateCircleTool extends CreateOrContinuePathTool {
    *  - `method=0|1` How circle will be defined. 0 for center, 1 for edge.
    *  - `radius=number` Circle radius, 0 to define by points.
    */
-  public override parseAndRun(...inputArgs: string[]): boolean {
+  public override async parseAndRun(...inputArgs: string[]): Promise<boolean> {
     let circleMethod;
     let circleRadius;
 
@@ -1750,10 +1750,10 @@ export class CreateEllipseTool extends CreateOrContinuePathTool {
     return Arc3d.create(center, vector0, vector90);
   }
 
-  public onRestartTool(): void {
+  public async onRestartTool(): Promise<void> {
     const tool = new CreateEllipseTool();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 }
 
@@ -1867,7 +1867,7 @@ export class CreateRectangleTool extends CreateOrContinuePathTool {
     this.syncToolSettingsProperties([this.radiusProperty.syncItem]);
   }
 
-  public override applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean {
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
     if (updatedValue.propertyName === this.useRadiusProperty.name) {
       this.useRadius = updatedValue.value.value as boolean;
       IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.useRadiusProperty.item);
@@ -1895,14 +1895,14 @@ export class CreateRectangleTool extends CreateOrContinuePathTool {
     return toolSettings;
   }
 
-  public onRestartTool(): void {
+  public async onRestartTool(): Promise<void> {
     const tool = new CreateRectangleTool();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 
-  public override onInstall(): boolean {
-    if (!super.onInstall())
+  public override async onInstall(): Promise<boolean> {
+    if (!await super.onInstall())
       return false;
 
     // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o ui-framework...
@@ -1923,7 +1923,7 @@ export class CreateRectangleTool extends CreateOrContinuePathTool {
   /** The keyin takes the following arguments, all of which are optional:
    *  - `radius=number` Corner radius, 0 for sharp corners.
    */
-  public override parseAndRun(...inputArgs: string[]): boolean {
+  public override async parseAndRun(...inputArgs: string[]): Promise<boolean> {
     let cornerRadius;
 
     for (const arg of inputArgs) {
@@ -1968,7 +1968,7 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
     const nPts = this.accepted.length;
     const mainMsg = CoreTools.translate(0 === nPts ? "ElementSet.Prompts.StartPoint" : (1 === nPts ? "ElementSet.Prompts.EndPoint" : "ElementSet.Inputs.AdditionalPoint"));
     const leftMsg = CoreTools.translate("ElementSet.Inputs.AcceptPoint");
-    const rghtMsg = CoreTools.translate(nPts > 1 ? "ElementSet.Inputs.Complete" : "ElementSet.Inputs.Cancel");
+    const rightMsg = CoreTools.translate(nPts > 1 ? "ElementSet.Inputs.Complete" : "ElementSet.Inputs.Cancel");
 
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
@@ -1977,8 +1977,8 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
       touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, leftMsg, false, ToolAssistanceInputMethod.Touch));
     mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, leftMsg, false, ToolAssistanceInputMethod.Mouse));
 
-    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, rghtMsg, false, ToolAssistanceInputMethod.Touch));
-    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, rghtMsg, false, ToolAssistanceInputMethod.Mouse));
+    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, rightMsg, false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, rightMsg, false, ToolAssistanceInputMethod.Mouse));
 
     const sections: ToolAssistanceSection[] = [];
     sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
@@ -2095,11 +2095,11 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
     this.syncToolSettingsProperties([this.orderProperty.syncItem]);
   }
 
-  public override applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean {
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
     if (this.methodProperty.name === updatedValue.propertyName) {
       this.methodProperty.value = updatedValue.value.value as number;
       IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.methodProperty.item);
-      this.onReinitialize();
+      await this.onReinitialize();
       return true;
     } else if (updatedValue.propertyName === this.orderProperty.name) {
       if (!updatedValue.value.value) {
@@ -2120,14 +2120,14 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
     return toolSettings;
   }
 
-  public onRestartTool(): void {
+  public async onRestartTool(): Promise<void> {
     const tool = new CreateBCurveTool();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 
-  public override onInstall(): boolean {
-    if (!super.onInstall())
+  public override async onInstall(): Promise<boolean> {
+    if (!await super.onInstall())
       return false;
 
     // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o ui-framework...
@@ -2146,7 +2146,7 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
    *  - `method=0|1` How bcurve will be defined. 0 for control points, 1 for through points.
    *  - `order=number` bcurve order from 2 to 16.
    */
-  public override parseAndRun(...inputArgs: string[]): boolean {
+  public override async parseAndRun(...inputArgs: string[]): Promise<boolean> {
     let bcurveMethod;
     let bcurveOrder;
 

@@ -63,10 +63,6 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
-      "name": "@bentley/extension-client",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
       "name": "@bentley/extension-webpack-tools",
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
@@ -204,7 +200,7 @@
     },
     {
       "name": "@bentley/telemetry-client",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing" ]
+      "allowedCategories": [ "backend", "frontend", "integration-testing" ]
     },
     {
       "name": "@bentley/ui-abstract",
@@ -297,6 +293,10 @@
     {
       "name": "@wojtekmaj/enzyme-adapter-react-17",
       "allowedCategories": [ "extensions", "frontend" ]
+    },
+    {
+      "name": "@xmldom/xmldom",
+      "allowedCategories": [ "backend", "common", "tools" ]
     },
     {
       "name": "agentkeepalive",
@@ -457,10 +457,6 @@
     {
       "name": "enzyme",
       "allowedCategories": [ "extensions", "frontend" ]
-    },
-    {
-      "name": "enzyme-adapter-react-16",
-      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "enzyme-to-json",
@@ -831,6 +827,10 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
+      "name": "react-resize-detector",
+      "allowedCategories": [ "extensions", "internal" ]
+    },
+    {
       "name": "react-router-dom",
       "allowedCategories": [ "internal" ]
     },
@@ -856,10 +856,6 @@
     },
     {
       "name": "react-virtualized",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "react-virtualized-auto-sizer",
       "allowedCategories": [ "frontend" ]
     },
     {
@@ -1061,10 +1057,6 @@
     {
       "name": "xml-js",
       "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "xmldom",
-      "allowedCategories": [ "backend", "common", "tools" ]
     },
     {
       "name": "xmlhttprequest",

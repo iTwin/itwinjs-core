@@ -8,7 +8,8 @@
 
 import { assert, BeEvent, CompressedId64Set, Guid, GuidString, Id64String, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import {
-  ChangesetIndexAndId, IModelConnectionProps, IModelError, IModelVersionProps, OpenBriefcaseProps, StandaloneOpenOptions,
+  ChangesetIndex,
+  ChangesetIndexAndId, IModelConnectionProps, IModelError, OpenBriefcaseProps, StandaloneOpenOptions,
 } from "@bentley/imodeljs-common";
 import { BriefcaseTxns } from "./BriefcaseTxns";
 import { GraphicalEditingScope } from "./GraphicalEditingScope";
@@ -159,7 +160,7 @@ export class BriefcaseConnection extends IModelConnection {
   public override isBriefcaseConnection(): this is BriefcaseConnection { return true; }
 
   /** The Guid that identifies the *context* that owns this iModel. */
-  public override get contextId(): GuidString { return super.contextId!; } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
+  public override get iTwinId(): GuidString { return super.iTwinId!; } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
 
   /** The Guid that identifies this iModel. */
   public override get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
@@ -210,7 +211,7 @@ export class BriefcaseConnection extends IModelConnection {
   }
 
   private requireTimeline() {
-    if (this.contextId === Guid.empty)
+    if (this.iTwinId === Guid.empty)
       throw new IModelError(IModelStatus.WrongIModel, "iModel has no timeline");
   }
 
@@ -227,12 +228,12 @@ export class BriefcaseConnection extends IModelConnection {
   }
 
   /** Pull (and potentially merge if there are local changes) up to a specified changeset from iModelHub into this briefcase
-   * @param version The version to pull changes to. If `undefined`, pull all changes.
+   * @param toIndex The changeset index to pull changes to. If `undefined`, pull all changes.
    * @see [[BriefcaseTxns.onChangesPulled]] for the event dispatched after changes are pulled.
    */
-  public async pullAndMergeChanges(version?: IModelVersionProps): Promise<void> {
+  public async pullChanges(toIndex?: ChangesetIndex): Promise<void> {
     this.requireTimeline();
-    this.changeset = await IpcApp.callIpcHost("pullAndMergeChanges", this.key, version);
+    this.changeset = await IpcApp.callIpcHost("pullChanges", this.key, toIndex);
   }
 
   /** Create a changeset from local Txns and push to iModelHub. On success, clear Txn table.

@@ -7,9 +7,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
-import { PropertyRecord } from "@bentley/ui-abstract";
 import { useDebouncedAsyncValue } from "../../common/UseDebouncedAsyncValue";
-import { PropertyGridCommons } from "../component/PropertyGridCommons";
 import { IPropertyDataProvider } from "../PropertyDataProvider";
 import { MutableGridItemFactory } from "./flat-items/MutableGridItemFactory";
 import { PropertyGridEventHandler } from "./PropertyGridEventHandler";
@@ -18,11 +16,10 @@ import { IPropertyGridModelSource, PropertyGridModelSource } from "./PropertyGri
 
 /**
  * Custom hook that gets propertyData from data provider and subscribes to further data changes.
- * Returned property data has links.onClick replaced by passed onPropertyLinkClick or default implementation
  * @beta
  */
-export function usePropertyData(props: { dataProvider: IPropertyDataProvider, onPropertyLinkClick?: (property: PropertyRecord, text: string) => void }) {
-  const { dataProvider, onPropertyLinkClick } = { ...props };
+export function usePropertyData(props: { dataProvider: IPropertyDataProvider }) {
+  const { dataProvider } = props;
 
   const [forcedUpdate, triggerForcedUpdate] = useReducer(() => ({}), {});
   useEffect(() => {
@@ -33,27 +30,14 @@ export function usePropertyData(props: { dataProvider: IPropertyDataProvider, on
 
   // ForcedUpdate is added to dependency list to re-memo getData promise when onDataChanged emits an event.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const delayedReturn = useDebouncedAsyncValue(useCallback(async () => dataProvider.getData(), [dataProvider, forcedUpdate]));
-  const { value, inProgress } = delayedReturn;
-  return useMemo(() => {
-    if (value) {
-      for (const categoryName in value.records) {
-        // Support for deprecated onPropertyLinkClick
-        // istanbul ignore else
-        if (onPropertyLinkClick && value.records.hasOwnProperty(categoryName))
-          PropertyGridCommons.assignRecordClickHandlers(value.records[categoryName], onPropertyLinkClick);
-
-      }
-    }
-    return { value, inProgress };
-  }, [value, inProgress, onPropertyLinkClick]);
+  return useDebouncedAsyncValue(useCallback(async () => dataProvider.getData(), [dataProvider, forcedUpdate]));
 }
 
 /**
  * Custom hook that creates a PropertyGridModelSource and subscribes it to data updates from the data provider.
  * @beta
  */
-export function usePropertyGridModelSource(props: { dataProvider: IPropertyDataProvider, onPropertyLinkClick?: (property: PropertyRecord, text: string) => void }) {
+export function usePropertyGridModelSource(props: { dataProvider: IPropertyDataProvider }) {
   const { value: propertyData } = usePropertyData(props);
   const { dataProvider } = { ...props };
 

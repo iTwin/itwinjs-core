@@ -6,16 +6,15 @@ import { expect } from "chai";
 import * as faker from "faker";
 import { Content, ContentJSON } from "../../presentation-common/content/Content";
 import { Item } from "../../presentation-common/content/Item";
-import {
-  createRandomDescriptor, createRandomDescriptorJSON, createRandomECClassInfoJSON, createRandomECInstanceKeyJSON, createRandomLabelDefinitionJSON,
-} from "../_helpers/random";
+import { createTestContentDescriptor } from "../_helpers/Content";
+import { createRandomECClassInfoJSON, createRandomECInstanceKeyJSON, createRandomLabelDefinitionJSON } from "../_helpers/random";
 
 describe("Content", () => {
 
   describe("constructor", () => {
 
     it("creates a new instance", () => {
-      const descriptor = createRandomDescriptor();
+      const descriptor = createTestContentDescriptor({ fields: [] });
       const contentSet = new Array<Item>();
       const content = new Content(descriptor, contentSet);
       expect(content.descriptor).to.eq(descriptor);
@@ -29,7 +28,17 @@ describe("Content", () => {
     let testContentJSON!: ContentJSON;
     beforeEach(() => {
       testContentJSON = {
-        descriptor: createRandomDescriptorJSON(),
+        descriptor: {
+          connectionId: "",
+          contentFlags: 0,
+          contentOptions: 0,
+          displayType: "",
+          inputKeysHash: "",
+          selectClasses: [],
+          categories: [],
+          fields: [],
+          classesMap: {},
+        },
         contentSet: [{
           classInfo: createRandomECClassInfoJSON(),
           primaryKeys: [createRandomECInstanceKeyJSON()],

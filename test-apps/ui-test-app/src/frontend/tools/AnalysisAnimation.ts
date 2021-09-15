@@ -22,7 +22,7 @@ export class AnalysisAnimationTool extends PrimitiveTool {
 
   /** Allow tool to run on ready only iModels. */
   public override requireWriteableTarget(): boolean { return false; }
-  public override onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
 
   /** Show tool prompt. */
   public setupAndPromptForNextAction(): void {
@@ -38,21 +38,21 @@ export class AnalysisAnimationTool extends PrimitiveTool {
 
   /** Handle user pressing right mouse button. */
   public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
-    IModelApp.toolAdmin.startDefaultTool();
+    await IModelApp.toolAdmin.startDefaultTool();
     return EventHandled.No;
   }
 
   /** Process request to restart the tool. */
-  public onRestartTool(): void {
+  public async onRestartTool() {
     const tool = new AnalysisAnimationTool();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 
   /** Process selected viewport changes. */
-  public override onSelectedViewportChanged(_previous: Viewport | undefined, current: Viewport | undefined): void {
+  public override async onSelectedViewportChanged(_previous: Viewport | undefined, current: Viewport | undefined) {
     if (undefined === current || undefined === current.view.analysisStyle)
-      IModelApp.toolAdmin.startDefaultTool();
+      return IModelApp.toolAdmin.startDefaultTool();
   }
 }
 

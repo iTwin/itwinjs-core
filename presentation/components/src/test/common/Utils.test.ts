@@ -10,8 +10,10 @@ import * as moq from "typemoq";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { applyOptionalPrefix, LabelCompositeValue, LabelDefinition } from "@bentley/presentation-common";
 import {
-  createRandomDescriptor, createRandomLabelCompositeValue, createRandomLabelDefinition, createRandomNestedContentField, createRandomPropertiesField,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
+  createTestContentDescriptor, createTestNestedContentField, createTestPropertiesContentField, createTestSimpleContentField,
+} from "@bentley/presentation-common/lib/test/_helpers/Content";
+import { createTestPropertyInfo } from "@bentley/presentation-common/lib/test/_helpers/EC";
+import { createRandomLabelCompositeValue, createRandomLabelDefinition } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { Presentation } from "@bentley/presentation-frontend";
 import { Primitives, PrimitiveValue } from "@bentley/ui-abstract";
 import * as utils from "../../presentation-components/common/Utils";
@@ -49,30 +51,36 @@ describe("Utils", () => {
   describe("findField", () => {
 
     it("returns undefined for invalid name", () => {
-      const descriptor = createRandomDescriptor();
+      const descriptor = createTestContentDescriptor({ fields: [] });
       const result = utils.findField(descriptor, "doesn't exist");
       expect(result).to.be.undefined;
     });
 
     it("returns undefined for invalid name when there are nested fields", () => {
-      const nestedField = createRandomPropertiesField();
-      const nestingField = createRandomNestedContentField([nestedField]);
-      const descriptor = createRandomDescriptor(undefined, [nestingField]);
+      const nestedField = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo() }],
+      });
+      const nestingField = createTestNestedContentField({ nestedFields: [nestedField] });
+      const descriptor = createTestContentDescriptor({ fields: [nestingField] });
       const result = utils.findField(descriptor, applyOptionalPrefix(nestedField.name, "doesn't exist"));
       expect(result).to.be.undefined;
     });
 
     it("finds field in Descriptor.fields list", () => {
-      const descriptor = createRandomDescriptor();
+      const descriptor = createTestContentDescriptor({
+        fields: [createTestSimpleContentField()],
+      });
       const field = descriptor.fields[0];
       const result = utils.findField(descriptor, field.name);
       expect(result).to.eq(field);
     });
 
     it("finds nested field", () => {
-      const nestedField = createRandomPropertiesField();
-      const nestingField = createRandomNestedContentField([nestedField]);
-      const descriptor = createRandomDescriptor(undefined, [nestingField]);
+      const nestedField = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo() }],
+      });
+      const nestingField = createTestNestedContentField({ nestedFields: [nestedField] });
+      const descriptor = createTestContentDescriptor({ fields: [nestingField] });
       const result = utils.findField(descriptor, applyOptionalPrefix(nestedField.name, nestingField.name));
       expect(result!.name).to.eq(nestedField.name);
     });

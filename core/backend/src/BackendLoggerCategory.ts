@@ -20,11 +20,6 @@ export enum BackendLoggerCategory {
    */
   CodeSpecs = "imodeljs-backend.CodeSpecs",
 
-  /** The logger category used by the following classes:
-   * - [[ConcurrencyControl]]
-   */
-  ConcurrencyControl = "imodeljs-backend.ConcurrencyControl",
-
   /** The logger category used by the [[DevTools]] class and related classes.
    * @internal
    */

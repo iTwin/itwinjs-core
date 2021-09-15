@@ -170,7 +170,7 @@ function useResetHeightOnEdit(isEditing?: boolean, onHeightChanged?: (newHeight:
   const previousEditingStatusRef = React.useRef(isEditing);
   React.useEffect(() => {
     if (!previousEditingStatusRef.current && isEditing) {
-      onHeightChanged?.(28);
+      onHeightChanged?.(27);
     }
 
     previousEditingStatusRef.current = isEditing;

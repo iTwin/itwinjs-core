@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as moq from "typemoq";
 import { BeEvent, Guid } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { ExtendedHierarchyRequestOptions, LabelDefinition, Node, NodeKey, RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
+import { HierarchyRequestOptions, LabelDefinition, Node, NodeKey, RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
 import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@bentley/presentation-frontend";
 import { TreeNodeItem } from "@bentley/ui-components";
 import { HierarchyBuilder, NodeMappingFunc } from "../presentation-testing/HierarchyBuilder";
@@ -20,7 +20,7 @@ async function getRootNodes() {
   return { nodes: [root], count: 1 };
 }
 
-async function getChildrenNodes(opts: ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>) {
+async function getChildrenNodes(opts: HierarchyRequestOptions<IModelConnection, NodeKey>) {
   if (opts.parentKey?.pathFromRoot[0] !== "root" || opts?.parentKey.pathFromRoot.length !== 1)
     return { nodes: [], count: 0 };
 

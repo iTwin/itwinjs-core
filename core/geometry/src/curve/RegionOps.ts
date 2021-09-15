@@ -574,8 +574,18 @@ export class RegionOps {
     return SortablePolygon.sortAsAnyRegion(loopAndArea);
   }
   /**
-   * Find all areas bounded by the unstructured, possibly intersection curves.
+   * Find all areas bounded by the unstructured, possibly intersecting curves.
    * * In `curvesAndRegions`, Loop/ParityRegion/UnionRegion contribute curve primitives.
+   * * Each returned [[SignedLoops]] object describes faces in a single connected component.
+   * * Within the [[SignedLoops]]:
+   *    * positiveAreaLoops contains typical "interior" loops with positive area loop ordered counterclockwise
+   *    * negativeAreaLoops contains (probably just one) "exterior" loop which is ordered clockwise and
+   *    * slivers contains sliver areas such as appear between coincident curves.
+   *    * edges contains [[LoopCurveLoopCurve]] about each edge within the component. In each edge object
+   *        * loopA = a loop on one side of the edge
+   *        * curveA = a curve that appears as one of loopA.children.
+   *        * loopB = the loop on the other side
+   *        * curveB = a curve that appears as one of loopB.children
    * @param curvesAndRegions Any collection of curves.
    * @alpha
    */

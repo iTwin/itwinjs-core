@@ -72,7 +72,7 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
   public readonly onCommitted = new BeEvent<(hasPendingTxns: boolean, time: number) => void>();
 
   /** Event raised after a changeset has been applied to the briefcase.
-   * Changesets may be applied as a result of [[BriefcaseConnection.pullAndMergeChanges]], or by undo/redo operations.
+   * Changesets may be applied as a result of [[BriefcaseConnection.pullChanges]], or by undo/redo operations.
    */
   public readonly onChangesApplied = new BeEvent<() => void>();
 

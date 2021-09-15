@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
-import { LinkElementsInfo, PropertyRecord } from "@bentley/ui-abstract";
+import { LinkElementsInfo } from "@bentley/ui-abstract";
 import { UnderlinedButton } from "@bentley/ui-core";
 
 /** Render a single anchor tag */
@@ -76,12 +76,6 @@ function renderText(text: string, links: LinkElementsInfo, highlight?: (text: st
 function renderHighlighted(text: string, highlight: (text: string) => React.ReactNode) {
   return highlight(text);
 }
-
-/** Returns true if property record has an anchor tag
- * @public
- * @deprecated Should check if [[PropertyRecord]] has any links set instead.
- */
-export const hasLinks = (record: PropertyRecord) => !!record.links;
 
 /** Renders anchor tag by wrapping or splitting provided text
  * @public

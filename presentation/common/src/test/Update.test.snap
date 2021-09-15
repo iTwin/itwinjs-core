@@ -79,12 +79,6 @@ Object {
         "version": 1,
       },
       "position": 0,
-      "target": Object {
-        "instanceKeys": Array [],
-        "pathFromRoot": Array [],
-        "type": "ECInstancesNode",
-        "version": 1,
-      },
       "type": "Delete",
     },
   ],
@@ -136,12 +130,6 @@ Object {
         "version": 0,
       },
       "position": 0,
-      "target": Object {
-        "instanceKeys": Array [],
-        "pathFromRoot": Array [],
-        "type": "ECInstancesNode",
-        "version": 0,
-      },
       "type": "Delete",
     },
   ],
@@ -241,12 +229,6 @@ Object {
     "version": 1,
   },
   "position": 0,
-  "target": Object {
-    "instanceKeys": Array [],
-    "pathFromRoot": Array [],
-    "type": "ECInstancesNode",
-    "version": 1,
-  },
   "type": "Delete",
 }
 `;
@@ -255,12 +237,6 @@ exports[`PartialHierarchyModification fromJSON deserializes \`NodeDeletionInfo\`
 Object {
   "parent": undefined,
   "position": 0,
-  "target": Object {
-    "instanceKeys": Array [],
-    "pathFromRoot": Array [],
-    "type": "ECInstancesNode",
-    "version": 1,
-  },
   "type": "Delete",
 }
 `;
@@ -336,12 +312,6 @@ Object {
     "version": 0,
   },
   "position": 123,
-  "target": Object {
-    "instanceKeys": Array [],
-    "pathFromRoot": Array [],
-    "type": "ECInstancesNode",
-    "version": 0,
-  },
   "type": "Delete",
 }
 `;
@@ -350,12 +320,6 @@ exports[`PartialHierarchyModification toJSON serializes \`NodeDeletionInfo\` wit
 Object {
   "parent": undefined,
   "position": 123,
-  "target": Object {
-    "instanceKeys": Array [],
-    "pathFromRoot": Array [],
-    "type": "ECInstancesNode",
-    "version": 0,
-  },
   "type": "Delete",
 }
 `;
