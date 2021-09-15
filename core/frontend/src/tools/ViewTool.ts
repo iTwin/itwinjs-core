@@ -24,7 +24,7 @@ import { LengthDescription } from "../properties/LengthDescription";
 import { GraphicType } from "../render/GraphicBuilder";
 import { Pixel } from "../render/Pixel";
 import { StandardViewId } from "../StandardView";
-import { Animator, ViewChangeOptions } from "../ViewAnimation";
+import { Animator, OnViewExtentsError, ViewChangeOptions } from "../ViewAnimation";
 import { DecorateContext } from "../ViewContext";
 import {
   eyeToCartographicOnGlobeFromGcs, GlobalLocation, queryTerrainElevationOffset, rangeToCartographicArea, viewGlobalLocation,
@@ -3627,7 +3627,7 @@ export class WindowAreaTool extends ViewTool {
     const view = vp.view;
     vp.viewToWorldArray(corners);
 
-    const opts: ViewChangeOptions = {
+    const opts: OnViewExtentsError = {
       onExtentsError: (stat) => view.outputStatusMessage(stat),
     };
 
@@ -4183,7 +4183,7 @@ export class SetupCameraTool extends PrimitiveTool {
     const eyePoint = this.getAdjustedEyePoint();
     const targetPoint = this.getAdjustedTargetPoint();
     const lensAngle = ToolSettings.walkCameraAngle;
-    if (ViewStatus.Success !== view.lookAt({ eyePoint, targetPoint, upVector: Vector3d.unitZ(),  lensAngle }))
+    if (ViewStatus.Success !== view.lookAt({ eyePoint, targetPoint, upVector: Vector3d.unitZ(), lensAngle }))
       return;
 
     vp.synchWithView({ animateFrustumChange: true });
@@ -4475,7 +4475,7 @@ export class SetupWalkCameraTool extends PrimitiveTool {
     const eyePoint = this.getAdjustedEyePoint();
     const targetPoint = this.getAdjustedTargetPoint();
     const lensAngle = ToolSettings.walkCameraAngle;
-    if (ViewStatus.Success !== view.lookAt({ eyePoint, targetPoint, upVector: Vector3d.unitZ(),  lensAngle }))
+    if (ViewStatus.Success !== view.lookAt({ eyePoint, targetPoint, upVector: Vector3d.unitZ(), lensAngle }))
       return;
 
     vp.synchWithView({ animateFrustumChange: true });
