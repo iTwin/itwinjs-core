@@ -24,6 +24,7 @@ import { ClipUtilities, PolygonClipper } from "./ClipUtils";
 import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
+import { Point3dArray } from "../geometry3d/PointHelpers";
 
 /**
  * An AlternatingConvexClipTreeNode is a node in a tree structure in which
@@ -77,6 +78,30 @@ export class AlternatingCCTreeNode implements PolygonClipper {
     return result;
   }
 
+  /**
+   * Build the outer convex hull will inlets as first level children
+   */
+   public static createHullAndInletsForPolygon(points: Point3d[], result?: AlternatingCCTreeNode): AlternatingCCTreeNode {
+    result = result ? result : new AlternatingCCTreeNode();
+    result.empty();
+    const builder = AlternatingCCTreeBuilder.createPointsRef(points);
+    builder.buildHullAndInletsForPolygon(result);  // <-- Currently ALWAYS returns true
+    return result;
+  }
+  private extractLoopsGo(loops: Point3d[][]) {
+    loops.push(Point3dArray.clonePoint3dArray(this.points));
+    for (const c of this.children)
+      c.extractLoopsGo(loops);
+  }
+/**
+ * Return an array with all the loops in the tree.
+ * This looses the alternating structure of the tree, but the collection still matches well-formed polygons by parity rules.
+ */
+  public extractLoops(): Point3d[][]{
+    const loops: Point3d[][] = [];
+    this.extractLoopsGo(loops);
+    return loops;
+  }
   /** Resets this AlternatingConvexClipTreeNode to a newly-created state */
   public empty() {
     this.points.length = 0;
@@ -213,6 +238,8 @@ export class AlternatingCCTreeBuilder {
     result._points = points;
     if (PolygonOps.areaXY(points) < 0.0)
       result._points.reverse();
+    if (result._points[result._points.length - 1].isAlmostEqualMetric(result._points[0]))
+        result._points.pop();
     return result;
   }
 
@@ -298,7 +325,18 @@ export class AlternatingCCTreeBuilder {
     }
   }
 
-  private buildHullTreeGo(root: AlternatingCCTreeNode, isPositiveArea: boolean): boolean {
+  public collectHullPointsInArray(points: Point3d[], kStart: number, numK: number, _sign: number) {
+    points.length = 0;
+    if (numK > 2) {
+      let k = kStart;
+      for (let i = 0; i < numK; i++) {
+        points.push(this._points[k]);
+        k = this.indexAfter(k);
+      }
+    }
+  }
+
+  private buildHullTreeGo(root: AlternatingCCTreeNode, isPositiveArea: boolean, recurseToChildren: boolean = true): boolean {
     this.collectHullChain(root.startIdx, root.numPoints, isPositiveArea ? 1.0 : -1.0);
     root.points.length = 0;
     const stack = this._stack;
@@ -325,9 +363,14 @@ export class AlternatingCCTreeBuilder {
         }
       }
     }
+    if (recurseToChildren){
+      for (const child of root.children)
+        this.buildHullTreeGo(child, !isPositiveArea);
+    } else {
+      for (const child of root.children)
+        this.collectHullPointsInArray(child.points, child.startIdx, child.numPoints, isPositiveArea ? -1.0 : 1.0);
 
-    for (const child of root.children)
-      this.buildHullTreeGo(child, !isPositiveArea);
+    }
 
     return true;    // Are there failure modes? What happens with crossing data?..
   }
@@ -341,10 +384,24 @@ export class AlternatingCCTreeBuilder {
    * <li> Recursively move to children
    * </ul>
    */
-  public buildHullTree(root: AlternatingCCTreeNode): boolean {
+  public buildHullAndInletsForPolygon(root: AlternatingCCTreeNode): boolean {
+    AlternatingCCTreeNode.createWithIndices(this.indexOfMaxX, this.period + 1, root);
+    return this.buildHullTreeGo(root, true, false);
+  }
+  /**
+   * <ul>
+   * <li> Input a ClipTreeRoot that has start and count data
+   * <li> Build the hull for that data range
+   * <li> Store the hull points in the root
+   * <li> Add children with start and count data
+   * <li> Recursively move to children
+   * </ul>
+   */
+   public buildHullTree(root: AlternatingCCTreeNode): boolean {
     AlternatingCCTreeNode.createWithIndices(this.indexOfMaxX, this.period + 1, root);
     return this.buildHullTreeGo(root, true);
   }
+
 }
 
 export class AlternatingCCTreeNodeCurveClipper {

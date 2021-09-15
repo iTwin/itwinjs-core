@@ -160,7 +160,7 @@ export class BriefcaseConnection extends IModelConnection {
   public override isBriefcaseConnection(): this is BriefcaseConnection { return true; }
 
   /** The Guid that identifies the *context* that owns this iModel. */
-  public override get contextId(): GuidString { return super.contextId!; } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
+  public override get iTwinId(): GuidString { return super.iTwinId!; } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
 
   /** The Guid that identifies this iModel. */
   public override get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
@@ -211,7 +211,7 @@ export class BriefcaseConnection extends IModelConnection {
   }
 
   private requireTimeline() {
-    if (this.contextId === Guid.empty)
+    if (this.iTwinId === Guid.empty)
       throw new IModelError(IModelStatus.WrongIModel, "iModel has no timeline");
   }
 

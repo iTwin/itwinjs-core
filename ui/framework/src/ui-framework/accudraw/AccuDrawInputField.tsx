@@ -17,7 +17,7 @@ import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { AccuDrawSetFieldFocusEventArgs, AccuDrawSetFieldValueToUiEventArgs, FrameworkAccuDraw } from "./FrameworkAccuDraw";
 
 /** Properties for [[AccuDrawInputField]] component
- * @alpha
+ * @beta
  */
 export interface AccuDrawInputFieldProps extends CommonProps {
   /** Which AccuDraw field this represents */
@@ -177,6 +177,6 @@ const ForwardRefAccuDrawInput = React.forwardRef<HTMLInputElement, AccuDrawInput
 );
 
 /** Input field for AccuDraw Ui
- * @alpha
+ * @beta
  */
 export const AccuDrawInputField: (props: AccuDrawInputFieldProps) => JSX.Element | null = ForwardRefAccuDrawInput;

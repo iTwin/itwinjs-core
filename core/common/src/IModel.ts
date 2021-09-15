@@ -6,11 +6,10 @@
  * @module iModels
  */
 
+import { assert, BeEvent, GeoServiceStatus, GuidString, Id64, Id64String, IModelStatus, Mutable, OpenMode } from "@bentley/bentleyjs-core";
 import {
-  assert, BeEvent, GeoServiceStatus, GuidString, Id64, Id64String, IModelStatus, Logger, Mutable, OpenMode,
-} from "@bentley/bentleyjs-core";
-import {
-  Angle, AxisIndex, AxisOrder, Constant, Geometry, Matrix3d, Point3d, Range3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps, YawPitchRollAngles, YawPitchRollProps,
+  Angle, AxisIndex, AxisOrder, Constant, Geometry, Matrix3d, Point3d, Range3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps,
+  YawPitchRollAngles, YawPitchRollProps,
 } from "@bentley/geometry-core";
 import { ChangesetIdWithIndex } from "./ChangesetProps";
 import { Cartographic, LatLongAndHeight } from "./geometry/Cartographic";
@@ -23,8 +22,8 @@ import { ThumbnailProps } from "./Thumbnail";
  * @public
  */
 export interface IModelRpcOpenProps {
-  /** The context (Project, Asset, or other infrastructure) in which the iModel exists - must be defined for briefcases that are synchronized with iModelHub. */
-  readonly contextId?: GuidString;
+  /** The iTwin in which the iModel exists - must be defined for briefcases that are synchronized with iModelHub. */
+  readonly iTwinId?: GuidString;
   /** Guid of the iModel. */
   readonly iModelId?: GuidString;
 
@@ -473,9 +472,9 @@ export abstract class IModel implements IModelProps {
   public get key(): string { return this._fileKey; }
 
   /** @internal */
-  protected _contextId?: GuidString;
-  /** The Guid that identifies the *context* that owns this iModel. */
-  public get contextId(): GuidString | undefined { return this._contextId; }
+  protected _iTwinId?: GuidString;
+  /** The Guid that identifies the iTwin that owns this iModel. */
+  public get iTwinId(): GuidString | undefined { return this._iTwinId; }
 
   /** The Guid that identifies this iModel. */
   public get iModelId(): GuidString | undefined { return this._iModelId; }
@@ -490,11 +489,11 @@ export abstract class IModel implements IModelProps {
   /** Return a token for RPC operations. */
   public getRpcProps(): IModelRpcProps {
     if (!this.isOpen)
-      throw new IModelError(IModelStatus.BadRequest, "IModel is not open for rpc", Logger.logError);
+      throw new IModelError(IModelStatus.BadRequest, "IModel is not open for rpc");
 
     return {
       key: this._fileKey,
-      contextId: this.contextId,
+      iTwinId: this.iTwinId,
       iModelId: this.iModelId,
       changeset: this.changeset,
     };
@@ -506,7 +505,7 @@ export abstract class IModel implements IModelProps {
     this._fileKey = "";
     if (tokenProps) {
       this._fileKey = tokenProps.key;
-      this._contextId = tokenProps.contextId;
+      this._iTwinId = tokenProps.iTwinId;
       this._iModelId = tokenProps.iModelId;
       if (tokenProps.changeset)
         this.changeset = tokenProps.changeset;

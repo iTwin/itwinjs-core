@@ -299,6 +299,10 @@
       "allowedCategories": [ "extensions", "frontend" ]
     },
     {
+      "name": "@xmldom/xmldom",
+      "allowedCategories": [ "backend", "common", "tools" ]
+    },
+    {
       "name": "agentkeepalive",
       "allowedCategories": [ "backend" ]
     },
