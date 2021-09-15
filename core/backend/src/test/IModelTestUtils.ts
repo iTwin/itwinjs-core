@@ -216,7 +216,7 @@ export class IModelTestUtils {
 
     const openArgs: DownloadAndOpenArgs = {
       tokenProps: {
-        contextId: args.iTwinId,
+        iTwinId: args.iTwinId,
         iModelId: args.iModelId,
         changeset: (await IModelHost.hubAccess.getChangesetFromVersion({ user: args.user, version: IModelVersion.fromJSON(args.asOf), iModelId: args.iModelId })),
       },
@@ -259,7 +259,7 @@ export class IModelTestUtils {
     const changeset = await IModelHost.hubAccess.getChangesetFromVersion({ user: args.user, version: IModelVersion.fromJSON(args.asOf), iModelId: args.iModelId });
     const openArgs: DownloadAndOpenArgs = {
       tokenProps: {
-        contextId: args.iTwinId,
+        iTwinId: args.iTwinId,
         iModelId: args.iModelId,
         changeset,
       },

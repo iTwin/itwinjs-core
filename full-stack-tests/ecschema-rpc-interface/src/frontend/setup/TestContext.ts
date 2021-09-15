@@ -19,7 +19,7 @@ export class TestContext {
   public adminUserAccessToken!: AccessToken;
 
   public iModelWithChangesets?: IModelSession;
-  public contextId?: string;
+  public iTwinId?: string;
 
   public settings: Settings;
 
@@ -69,8 +69,8 @@ export class TestContext {
 
     const iModelData = this.settings.iModel;
 
-    this.contextId = iModelData.projectId;
-    this.iModelWithChangesets = new IModelSession(iModelData.id, this.contextId);
+    this.iTwinId = iModelData.projectId;
+    this.iModelWithChangesets = new IModelSession(iModelData.id, this.iTwinId);
 
     this.initializeRpcInterfaces({ title: this.settings.Backend.name, version: this.settings.Backend.version });
 

@@ -19,7 +19,7 @@ import { linePlaneIntersect } from "../LinePlaneIntersect";
 import { MessageBoxIconType, MessageBoxType } from "../NotificationManager";
 import { CanvasDecoration } from "../render/CanvasDecoration";
 import { IconSprites } from "../Sprites";
-import { ViewChangeOptions } from "../ViewAnimation";
+import { OnViewExtentsError, ViewChangeOptions } from "../ViewAnimation";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { ScreenViewport, Viewport } from "../Viewport";
 import { ViewStatus } from "../ViewStatus";
@@ -1810,7 +1810,7 @@ export class WheelEventProcessor {
     if (view.is3d() && view.iModel.ecefLocation)
       globalAlignment = { target, transition: zoomRatio > 1 };
 
-    const animationOptions: ViewChangeOptions = {
+    const animationOptions: ViewChangeOptions & OnViewExtentsError = {
       animateFrustumChange: true,
       cancelOnAbort: true,
       animationTime: ScreenViewport.animation.time.wheel.milliseconds,

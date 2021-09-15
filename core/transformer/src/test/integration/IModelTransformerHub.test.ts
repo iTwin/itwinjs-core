@@ -355,7 +355,7 @@ describe("IModelTransformerHub (#integration)", () => {
     IModelJsFs.removeSync(masterSeedFileName); // now that iModel is pushed, can delete local copy of the seed
     const masterDb = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId, iModelId: masterIModelId });
     assert.isTrue(masterDb.isBriefcaseDb());
-    assert.equal(masterDb.contextId, iTwinId);
+    assert.equal(masterDb.iTwinId, iTwinId);
     assert.equal(masterDb.iModelId, masterIModelId);
     assertPhysicalObjects(masterDb, state0);
     const changeSetMasterState0 = masterDb.changeset.id;
@@ -366,7 +366,7 @@ describe("IModelTransformerHub (#integration)", () => {
 
     const branchDb1 = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId, iModelId: branchIModelId1 });
     assert.isTrue(branchDb1.isBriefcaseDb());
-    assert.equal(branchDb1.contextId, iTwinId);
+    assert.equal(branchDb1.iTwinId, iTwinId);
     assertPhysicalObjects(branchDb1, state0);
     const changeSetBranch1First = branchDb1.changeset.id;
 
@@ -375,7 +375,7 @@ describe("IModelTransformerHub (#integration)", () => {
     const branchIModelId2 = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: branchIModelName2, description: `Branch2 of ${masterIModelName}`, revision0: masterDb.pathName, noLocks: true });
     const branchDb2 = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId, iModelId: branchIModelId2 });
     assert.isTrue(branchDb2.isBriefcaseDb());
-    assert.equal(branchDb2.contextId, iTwinId);
+    assert.equal(branchDb2.iTwinId, iTwinId);
     assertPhysicalObjects(branchDb2, state0);
     const changeSetBranch2First = branchDb2.changeset.id;
 
@@ -385,7 +385,7 @@ describe("IModelTransformerHub (#integration)", () => {
 
     const replayedDb = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId, iModelId: replayedIModelId });
     assert.isTrue(replayedDb.isBriefcaseDb());
-    assert.equal(replayedDb.contextId, iTwinId);
+    assert.equal(replayedDb.iTwinId, iTwinId);
 
     try {
       // record provenance in Branch1 and Branch2 iModels

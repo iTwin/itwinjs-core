@@ -74,7 +74,7 @@ describe("Checkpoints (#integration)", () => {
     });
     assert.equal(iModel.getGuid(), testIModelId);
     assert.equal(iModel.changeset.id, testChangeSet.id);
-    assert.equal(iModel.contextId, testITwinId);
+    assert.equal(iModel.iTwinId, testITwinId);
     assert.equal(iModel.rootSubject.name, "Stadium Dataset 1");
     let numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
     assert.equal(numModels, 32);

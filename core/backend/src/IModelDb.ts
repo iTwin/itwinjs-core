@@ -248,7 +248,7 @@ export abstract class IModelDb extends IModel {
 
   /** @internal */
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, changeset?: ChangesetIdWithIndex }) {
-    super({ ...args, contextId: args.nativeDb.queryProjectGuid(), iModelId: args.nativeDb.getDbGuid() });
+    super({ ...args, iTwinId: args.nativeDb.queryProjectGuid(), iModelId: args.nativeDb.getDbGuid() });
     this._nativeDb = args.nativeDb;
     this.nativeDb.setIModelDb(this);
     this.initializeIModelDb();
@@ -2190,6 +2190,21 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         this.pollTileContent(resolve, reject, treeId, tileId, requestContext);
       });
     }
+
+    /** @internal */
+    public async getTileContent(requestContext: ClientRequestContext, treeId: string, tileId: string): Promise<Uint8Array> {
+      requestContext.enter();
+
+      const ret = await new Promise<IModelJsNative.ErrorStatusOrResult<any, Uint8Array>>((resolve) => {
+        this._iModel.nativeDb.getTileContent(treeId, tileId, resolve);
+      });
+
+      if (undefined !== ret.error) {
+        throw new IModelError(ret.error.status, `TreeId=${treeId} TileId=${tileId}`);
+      }
+
+      return ret.result!;
+    }
   }
 }
 
@@ -2254,7 +2269,7 @@ export class BriefcaseDb extends IModelDb {
   }
 
   /** The Guid that identifies the *context* that owns this iModel. */
-  public override get contextId(): GuidString { return super.contextId!; } // GuidString | undefined for the superclass, but required for BriefcaseDb
+  public override get iTwinId(): GuidString { return super.iTwinId!; } // GuidString | undefined for the superclass, but required for BriefcaseDb
 
   /**
    * Determine whether this BriefcaseDb should use a lock server.
@@ -2478,7 +2493,7 @@ export class SnapshotDb extends IModelDb {
    */
   public static openCheckpointV1(fileName: LocalFileName, checkpoint: CheckpointProps) {
     const snapshot = this.openFile(fileName, { key: CheckpointManager.getKey(checkpoint) });
-    snapshot._contextId = checkpoint.iTwinId;
+    snapshot._iTwinId = checkpoint.iTwinId;
     return snapshot;
   }
 
@@ -2497,7 +2512,7 @@ export class SnapshotDb extends IModelDb {
     // NOTE: Currently the key contains a ':' which can not be part of a filename on windows, so it can not be used as the tempFileBase.
     const tempFileBase = join(IModelHost.cacheDir, `${checkpoint.iModelId}\$${checkpoint.changeset.id}`); // temp files for this checkpoint should go in the cacheDir.
     const snapshot = SnapshotDb.openFile(filePath, { lazyBlockCache: true, key, tempFileBase });
-    snapshot._contextId = checkpoint.iTwinId;
+    snapshot._iTwinId = checkpoint.iTwinId;
     try {
       CheckpointManager.validateCheckpointGuids(checkpoint, snapshot.nativeDb);
     } catch (err: any) {
@@ -2515,7 +2530,7 @@ export class SnapshotDb extends IModelDb {
    */
   public override async reattachDaemon(user?: AuthorizedClientRequestContext): Promise<void> {
     if (undefined !== this._reattachDueTimestamp && this._reattachDueTimestamp <= Date.now()) {
-      const { expiryTimestamp } = await V2CheckpointManager.attach({ user, iTwinId: this.contextId!, iModelId: this.iModelId, changeset: this.changeset });
+      const { expiryTimestamp } = await V2CheckpointManager.attach({ user, iTwinId: this.iTwinId!, iModelId: this.iModelId, changeset: this.changeset });
       this.setReattachDueTimestamp(expiryTimestamp);
     }
   }

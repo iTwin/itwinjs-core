@@ -70,3 +70,11 @@ export interface TileVersionInfo {
    */
   formatVersion: number;
 }
+
+/**
+ * @internal
+ */
+export enum TileContentSource {
+  Backend = 0,
+  ExternalCache = 1,
+}

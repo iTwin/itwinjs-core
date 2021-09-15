@@ -280,9 +280,13 @@ export * from "./ui-framework/zones/Zone";
 export * from "./ui-framework/zones/ZoneDef";
 
 /** @docs-package-description
- * The ui-framework package contains application fragments for Project, iModel and View selection,
- * and configuration of the application UI with the Backstage, Frontstages, Widgets, etc.
+ * The ui-framework package contains classes and components for specifying the application UI consisting of the
+ * Backstage, Frontstages, Content Views, Tool Bars, Status Bars, Widgets and Panels.
  * For more information, see [learning about ui-framework]($docs/learning/ui/framework/index.md).
+ */
+/**
+ * @docs-group-description AccuDraw
+ * Classes and components providing a UI for AccuDraw, an aide for entering coordinate data.
  */
 /**
  * @docs-group-description Admin
@@ -370,8 +374,8 @@ export * from "./ui-framework/zones/ZoneDef";
  * Classes for informing UI components to sync/refresh their display
  */
 /**
- * @docs-group-description WorkflowTask
- * Classes for working a Workflow or Task
+ * @docs-group-description Timeline
+ * Classes for working with a TimelineComponent
  */
 /**
  * @docs-group-description Toolbar
@@ -404,8 +408,4 @@ export * from "./ui-framework/zones/ZoneDef";
 /**
  * @docs-group-description Zone
  * Classes for working with a Zone
- */
-/**
- * @docs-group-description Timeline
- * Classes for working with a TimelineComponent
  */

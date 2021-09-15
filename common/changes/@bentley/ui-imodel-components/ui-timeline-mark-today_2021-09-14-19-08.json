@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-imodel-components",
+      "comment": "Add the ability for an app to mark a specific date on the rail of a TimelineComponent.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-imodel-components"
+}

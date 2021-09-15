@@ -1604,20 +1604,20 @@ export class BlankConnection extends IModelConnection {
     close(): Promise<void>;
     // @internal (undocumented)
     closeSync(): void;
-    get contextId(): GuidString | undefined;
-    set contextId(contextId: GuidString | undefined);
     static create(props: BlankConnectionProps): BlankConnection;
     get iModelId(): undefined;
     // (undocumented)
     isBlankConnection(): this is BlankConnection;
     get isClosed(): boolean;
+    get iTwinId(): GuidString | undefined;
+    set iTwinId(iTwinId: GuidString | undefined);
 }
 
 // @public
 export interface BlankConnectionProps {
-    contextId?: GuidString;
     extents: Range3dProps;
     globalOrigin?: XYZProps;
+    iTwinId?: GuidString;
     location: Cartographic | EcefLocationProps;
     name: string;
 }
@@ -1626,7 +1626,6 @@ export interface BlankConnectionProps {
 export class BriefcaseConnection extends IModelConnection {
     protected constructor(props: IModelConnectionProps, openMode: OpenMode);
     close(): Promise<void>;
-    get contextId(): GuidString;
     get editingScope(): GraphicalEditingScope | undefined;
     enterEditingScope(): Promise<GraphicalEditingScope>;
     hasPendingTxns(): Promise<boolean>;
@@ -1636,6 +1635,7 @@ export class BriefcaseConnection extends IModelConnection {
     get isClosed(): boolean;
     // (undocumented)
     protected _isClosed?: boolean;
+    get iTwinId(): GuidString;
     // @internal
     readonly onBufferedModelChanges: BeEvent<(changedModelIds: Set<string>) => void>;
     static openFile(briefcaseProps: OpenBriefcaseProps): Promise<BriefcaseConnection>;
@@ -1863,13 +1863,13 @@ export interface CheckboxFormatPropEditorSpec extends CustomFormatPropEditorSpec
 // @public
 export class CheckpointConnection extends IModelConnection {
     close(): Promise<void>;
-    get contextId(): GuidString;
     get iModelId(): GuidString;
     isCheckpointConnection(): this is CheckpointConnection;
     get isClosed(): boolean;
     // (undocumented)
     protected _isClosed?: boolean;
-    static openRemote(contextId: string, iModelId: string, version?: IModelVersion): Promise<CheckpointConnection>;
+    get iTwinId(): GuidString;
+    static openRemote(iTwinId: string, iModelId: string, version?: IModelVersion): Promise<CheckpointConnection>;
     }
 
 // @public
@@ -3053,10 +3053,10 @@ export namespace FeatureSymbology {
 }
 
 // @internal @deprecated (undocumented)
-export function findAvailableRealityModels(contextId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]>;
+export function findAvailableRealityModels(iTwinId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]>;
 
 // @internal @deprecated (undocumented)
-export function findAvailableUnattachedRealityModels(contextId: GuidString, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]>;
+export function findAvailableUnattachedRealityModels(iTwinId: GuidString, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]>;
 
 // @public
 export class FitViewTool extends ViewTool {
@@ -5085,7 +5085,7 @@ export interface LookAtArgs {
     readonly eyePoint: XYAndZ;
     readonly frontDistance?: number;
     readonly newExtents?: XAndY;
-    readonly opts?: ViewChangeOptions;
+    readonly opts?: OnViewExtentsError;
     readonly upVector: Vector3d;
 }
 
@@ -5871,6 +5871,11 @@ export abstract class MapTilingScheme {
     abstract yFractionToLatitude(yFraction: number): number;
     // (undocumented)
     yFractionToTileY(yFraction: number, level: number): number;
+}
+
+// @public
+export interface MarginOptions {
+    marginPercent?: MarginPercent;
 }
 
 // @public
@@ -6842,6 +6847,11 @@ export class OnScreenTarget extends Target {
     updateViewRect(): boolean;
     }
 
+// @public
+export interface OnViewExtentsError {
+    onExtentsError?: (status: ViewStatus) => ViewStatus;
+}
+
 // @beta
 export function openImageDataUrlInNewWindow(url: string, title?: string): void;
 
@@ -7457,8 +7467,8 @@ export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConn
 
 // @public
 export interface RealityDataQueryCriteria {
-    contextId: GuidString;
     filterIModel?: IModelConnection;
+    iTwinId: GuidString;
     range?: CartographicRange;
 }
 
@@ -7467,7 +7477,7 @@ export type RealityModelSource = ViewState | DisplayStyleState;
 
 // @internal
 export class RealityModelTileClient {
-    constructor(url: string, accessToken?: AccessToken, contextId?: string);
+    constructor(url: string, accessToken?: AccessToken, iTwinId?: string);
     // (undocumented)
     getBlobAccessData(): Promise<URL | undefined>;
     getRealityDataType(): Promise<string | undefined>;
@@ -8638,7 +8648,7 @@ export class ScreenViewport extends Viewport {
     // @internal
     static setToParentSize(div: HTMLElement): void;
     // @internal (undocumented)
-    synchWithView(options?: ViewChangeOptions | boolean): void;
+    synchWithView(options?: ViewChangeOptions): void;
     readonly toolTipDiv: HTMLDivElement;
     // @internal (undocumented)
     protected validateRenderPlan(): void;
@@ -11201,12 +11211,10 @@ export interface ViewAnimationOptions {
 }
 
 // @public
-export interface ViewChangeOptions extends ViewAnimationOptions {
+export interface ViewChangeOptions extends OnViewExtentsError, ViewAnimationOptions {
     animateFrustumChange?: boolean;
     globalAlignment?: GlobalAlignmentOptions;
-    marginPercent?: MarginPercent;
     noSaveInUndo?: boolean;
-    onExtentsError?: (status: ViewStatus) => ViewStatus;
 }
 
 // @public
@@ -12375,7 +12383,7 @@ export abstract class Viewport implements IDisposable {
     get solarShadowSettings(): SolarShadowSettings | undefined;
     // @internal (undocumented)
     readonly subcategories: SubCategoriesCache.Queue;
-    synchWithView(_options?: ViewChangeOptions | boolean): void;
+    synchWithView(_options?: ViewChangeOptions): void;
     // @internal (undocumented)
     get target(): RenderTarget;
     get tiledGraphicsProviders(): Iterable<TiledGraphicsProvider>;
@@ -12429,7 +12437,7 @@ export abstract class Viewport implements IDisposable {
     worldToView4dArray(worldPts: Point3d[], viewPts: Point4d[]): void;
     worldToViewArray(pts: Point3d[]): void;
     get worldToViewMap(): Map4d;
-    zoom(newCenter: Point3d | undefined, factor: number, options?: ViewChangeOptions): ViewStatus;
+    zoom(newCenter: Point3d | undefined, factor: number, options?: ViewChangeOptions & OnViewExtentsError): ViewStatus;
     zoomToElementProps(elementProps: ElementProps[], options?: ViewChangeOptions & ZoomToOptions): void;
     zoomToElements(ids: Id64Arg, options?: ViewChangeOptions & ZoomToOptions): Promise<void>;
     zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions & ZoomToOptions): void;
@@ -12586,7 +12594,7 @@ export abstract class ViewState extends ElementState {
     protected constructor(props: ViewDefinitionProps, iModel: IModelConnection, categoryOrClone: CategorySelectorState, displayStyle: DisplayStyleState);
     adjustAspectRatio(aspect: number): void;
     // @internal (undocumented)
-    adjustViewDelta(delta: Vector3d, origin: XYZ, rot: Matrix3d, aspect?: number, opts?: ViewChangeOptions): ViewStatus;
+    adjustViewDelta(delta: Vector3d, origin: XYZ, rot: Matrix3d, aspect?: number, opts?: OnViewExtentsError): ViewStatus;
     abstract allow3dManipulations(): boolean;
     get analysisStyle(): AnalysisStyle | undefined;
     // @internal (undocumented)
@@ -12689,8 +12697,8 @@ export abstract class ViewState extends ElementState {
     // @internal (undocumented)
     isSubCategoryVisible(id: Id64String): boolean;
     load(): Promise<void>;
-    lookAtViewAlignedVolume(volume: Range3d, aspect?: number, options?: ViewChangeOptions): void;
-    lookAtVolume(volume: LowAndHighXYZ | LowAndHighXY, aspect?: number, options?: ViewChangeOptions): void;
+    lookAtViewAlignedVolume(volume: Range3d, aspect?: number, options?: MarginOptions & OnViewExtentsError): void;
+    lookAtVolume(volume: LowAndHighXYZ | LowAndHighXY, aspect?: number, options?: MarginOptions & OnViewExtentsError): void;
     // @internal
     get maxGlobalScopeFactor(): number;
     // @beta
@@ -12726,7 +12734,7 @@ export abstract class ViewState extends ElementState {
     setRotationAboutPoint(rotation: Matrix3d, point?: Point3d): void;
     setStandardGlobalRotation(id: StandardViewId): void;
     setStandardRotation(id: StandardViewId): void;
-    setupFromFrustum(inFrustum: Frustum, opts?: ViewChangeOptions): ViewStatus;
+    setupFromFrustum(inFrustum: Frustum, opts?: OnViewExtentsError): ViewStatus;
     setViewClip(clip?: ClipVector): void;
     toJSON(): ViewDefinitionProps;
     toProps(): ViewStateProps;
@@ -12909,7 +12917,7 @@ export abstract class ViewState3d extends ViewState {
     // (undocumented)
     setRotation(rot: Matrix3d): void;
     // (undocumented)
-    setupFromFrustum(frustum: Frustum, opts?: ViewChangeOptions): ViewStatus;
+    setupFromFrustum(frustum: Frustum, opts?: OnViewExtentsError): ViewStatus;
     // (undocumented)
     supportsCamera(): boolean;
     // (undocumented)

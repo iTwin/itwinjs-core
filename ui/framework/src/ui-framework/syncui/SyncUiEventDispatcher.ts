@@ -59,11 +59,13 @@ export enum SyncUiEventId {
   NavigationAidActivated = "navigationaidactivated",
   /** An InteractiveTool has been activated via the ToolAdmin. */
   ToolActivated = "toolactivated",
-  /** A Task has been activated. */
+  /** A Task has been activated.
+   * @deprecated */
   TaskActivated = "taskactivated",
   /** The state of a Widget has changed. */
   WidgetStateChanged = "widgetstatechanged",
-  /** A Workflow has been activated. */
+  /** A Workflow has been activated.
+   * @deprecated */
   WorkflowActivated = "workflowactivated",
   /** The SelectionSet for the active IModelConnection has changed. */
   SelectionSetChanged = "selectionsetchanged",
@@ -263,12 +265,12 @@ export class SyncUiEventDispatcher {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.BackstageEvent);
     }));
 
-    this._unregisterListenerFuncs.push(WorkflowManager.onTaskActivatedEvent.addListener(() => {
-      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.TaskActivated);
+    this._unregisterListenerFuncs.push(WorkflowManager.onTaskActivatedEvent.addListener(() => { // eslint-disable-line deprecation/deprecation
+      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.TaskActivated); // eslint-disable-line deprecation/deprecation
     }));
 
-    this._unregisterListenerFuncs.push(WorkflowManager.onWorkflowActivatedEvent.addListener(() => {
-      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.WorkflowActivated);
+    this._unregisterListenerFuncs.push(WorkflowManager.onWorkflowActivatedEvent.addListener(() => { // eslint-disable-line deprecation/deprecation
+      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.WorkflowActivated); // eslint-disable-line deprecation/deprecation
     }));
 
     this._unregisterListenerFuncs.push(ContentViewManager.onActiveContentChangedEvent.addListener(() => {
