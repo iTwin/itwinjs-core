@@ -2,7 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { createNineZoneState, DragManager, DragManagerContext, TestNineZoneProvider, ToolSettingsStateContext } from "@bentley/ui-ninezone";
+import { Rectangle } from "@bentley/ui-core";
+import { createNineZoneState, DragManager, DragManagerContext, NineZoneProvider, ToolSettingsStateContext } from "@bentley/ui-ninezone";
 import { render } from "@testing-library/react";
 import { act, renderHook } from "@testing-library/react-hooks";
 import { shallow } from "enzyme";
@@ -95,11 +96,15 @@ describe("ToolSettingsContent", () => {
     });
     const { container } = render(
       <ToolSettingsStateContext.Provider value={{ type: "widget" }}>
-        <TestNineZoneProvider state={state}>
+        <NineZoneProvider
+          state={state}
+          dispatch={sinon.stub()}
+          measure={() => new Rectangle()}
+        >
           <div className="nz-floating-toolsettings">
             <ToolSettingsContent />
           </div>
-        </TestNineZoneProvider>
+        </NineZoneProvider>
       </ToolSettingsStateContext.Provider>,
     );
     container.firstChild!.should.matchSnapshot();
