@@ -11,7 +11,7 @@ import { IModelConnection } from "../IModelConnection";
 import { ViewRect } from "../ViewRect";
 import { Decorations } from "./Decorations";
 import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
-import { GraphicBuilderOptions } from "./GraphicBuilder";
+import { CustomGraphicBuilderOptions, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
 import { Pixel } from "./Pixel";
 import { PrimitiveBuilder } from "./primitives/geometry/GeometryListBuilder";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
@@ -72,7 +72,7 @@ export namespace MockRender {
 
   /** @internal */
   export class Builder extends PrimitiveBuilder {
-    public constructor(system: System, options: GraphicBuilderOptions) {
+    public constructor(system: System, options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions) {
       super(system, options);
     }
   }
@@ -138,7 +138,7 @@ export namespace MockRender {
     public createTarget(canvas: HTMLCanvasElement): OnScreenTarget { return new OnScreenTarget(this, canvas); }
     public createOffscreenTarget(rect: ViewRect): RenderTarget { return new OffScreenTarget(this, rect); }
 
-    public createGraphic(options: GraphicBuilderOptions) {
+    public createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions) {
       return new Builder(this, options);
     }
 

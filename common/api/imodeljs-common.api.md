@@ -786,16 +786,28 @@ export interface Carto2DDegreesProps {
 }
 
 // @public
-export class Cartographic implements LatLongAndHeight {
-    constructor(longitude?: number, latitude?: number, height?: number);
+export class Cartographic implements CartographicProps {
     clone(result?: Cartographic): Cartographic;
-    equals(right: LatLongAndHeight): boolean;
-    equalsEpsilon(right: LatLongAndHeight, epsilon: number): boolean;
+    static createZero(): Cartographic;
+    equals(right: CartographicProps): boolean;
+    equalsEpsilon(right: CartographicProps, epsilon: number): boolean;
     freeze(): Readonly<this>;
-    static fromAngles(longitude: Angle, latitude: Angle, height: number, result?: Cartographic): Cartographic;
-    static fromDegrees(longitude: number, latitude: number, height: number, result?: Cartographic): Cartographic;
+    static fromAngles(args: {
+        longitude: Angle;
+        latitude: Angle;
+        height?: number;
+    }, result?: Cartographic): Cartographic;
+    static fromDegrees(args: {
+        longitude: number;
+        latitude: number;
+        height?: number;
+    }, result?: Cartographic): Cartographic;
     static fromEcef(cartesian: Point3d, result?: Cartographic): Cartographic | undefined;
-    static fromRadians(longitude: number, latitude: number, height?: number, result?: Cartographic): Cartographic;
+    static fromRadians(args: {
+        longitude: number;
+        latitude: number;
+        height?: number;
+    }, result?: Cartographic): Cartographic;
     static geocentricLatitudeFromGeodeticLatitude(geodeticLatitude: number): number;
     // (undocumented)
     height: number;
@@ -808,10 +820,16 @@ export class Cartographic implements LatLongAndHeight {
     static parametricLatitudeFromGeodeticLatitude(geodeticLatitude: number): number;
     static scalePointToGeodeticSurface(point: Point3d, result?: Point3d): Point3d | undefined;
     toEcef(result?: Point3d): Point3d;
-    // (undocumented)
-    toJSON(): LatLongAndHeight;
+    toJSON(): CartographicProps;
     toString(): string;
     }
+
+// @public
+export interface CartographicProps {
+    height: number;
+    latitude: number;
+    longitude: number;
+}
 
 // @public
 export class CartographicRange {
@@ -2136,7 +2154,7 @@ export class EcefLocation implements EcefLocationProps {
 
 // @public
 export interface EcefLocationProps {
-    readonly cartographicOrigin?: LatLongAndHeight;
+    readonly cartographicOrigin?: CartographicProps;
     readonly orientation: YawPitchRollProps;
     readonly origin: XYZProps;
     readonly xVector?: XYZProps;
@@ -4593,20 +4611,6 @@ export const iTwinChannel: (channel: string) => string;
 export interface JsonGeometryStream {
     data: GeometryStreamProps;
     format: "json";
-}
-
-// @public (undocumented)
-export interface LatAndLong {
-    // (undocumented)
-    latitude: number;
-    // (undocumented)
-    longitude: number;
-}
-
-// @public (undocumented)
-export interface LatLongAndHeight extends LatAndLong {
-    // (undocumented)
-    height: number;
 }
 
 // @internal

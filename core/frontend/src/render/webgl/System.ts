@@ -19,7 +19,7 @@ import { IModelConnection } from "../../IModelConnection";
 import { MapTileTreeReference, TileTreeReference } from "../../tile/internal";
 import { ViewRect } from "../../ViewRect";
 import { GraphicBranch, GraphicBranchOptions } from "../GraphicBranch";
-import { BatchOptions, GraphicBuilder, GraphicBuilderOptions } from "../GraphicBuilder";
+import { BatchOptions, CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../GraphicBuilder";
 import { InstancedGraphicParams, PatternGraphicParams } from "../InstancedGraphicParams";
 import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
 import { RealityMeshPrimitive } from "../primitives/mesh/RealityMeshPrimitive";
@@ -143,6 +143,17 @@ class WebGL2Extensions extends WebGLExtensions {
   public invalidateFrameBuffer(attachments: number[]): void {
     this._context.invalidateFramebuffer(this._context.FRAMEBUFFER, attachments);
   }
+}
+
+function createTextureFromGradient(grad: Gradient.Symb): RenderTexture | undefined {
+  const image: ImageBuffer = grad.getImage(0x100, 0x100);
+
+  const textureHandle = TextureHandle.createForImageBuffer(image, RenderTexture.Type.Normal);
+  if (!textureHandle)
+    return undefined;
+
+  const params = new Texture.Params(undefined, Texture.Type.Normal, true); // gradient textures are unnamed, but owned by this IdMap.
+  return new Texture(params, textureHandle);
 }
 
 /** Id map holds key value pairs for both materials and textures, useful for caching such objects.
@@ -307,15 +318,10 @@ export class IdMap implements WebGLDisposable {
     if (existingGrad)
       return existingGrad;
 
-    const image: ImageBuffer = grad.getImage(0x100, 0x100);
+    const texture = createTextureFromGradient(grad);
+    if (texture)
+      this.addGradient(grad, texture);
 
-    const textureHandle = TextureHandle.createForImageBuffer(image, RenderTexture.Type.Normal);
-    if (!textureHandle)
-      return undefined;
-
-    const params = new Texture.Params(undefined, Texture.Type.Normal, true); // gradient textures are unnamed, but owned by this IdMap.
-    const texture = new Texture(params, textureHandle);
-    this.addGradient(grad, texture);
     return texture;
   }
 
@@ -510,7 +516,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return new OffScreenTarget(rect);
   }
 
-  public createGraphic(options: GraphicBuilderOptions): GraphicBuilder {
+  public createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): GraphicBuilder {
     return new PrimitiveBuilder(this, options);
   }
 
@@ -703,7 +709,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
   /** Attempt to create a texture using gradient symbology. */
-  public override getGradientTexture(symb: Gradient.Symb, imodel: IModelConnection): RenderTexture | undefined {
+  public override getGradientTexture(symb: Gradient.Symb, imodel?: IModelConnection): RenderTexture | undefined {
+    if (!imodel)
+      return createTextureFromGradient(symb);
+
     const idMap = this.getIdMap(imodel);
     const texture = idMap.getGradient(symb);
     return texture;
