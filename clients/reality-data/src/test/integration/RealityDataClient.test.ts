@@ -26,10 +26,10 @@ describe("RealityServicesClient Normal (#integration)", () => {
 
   let requestContext: AuthorizedClientRequestContext;
 
-  before(async function () {
-    // These tests are broken with the public IMS authority so skip them if they are the public authority
-    if (process.env.IMJS_ITWIN_PLATFORM_AUTHORITY === "https://ims.bentley.com")
-      this.skip();
+  before(async () => {
+    // // These tests are broken with the public IMS authority so skip them if they are using the public authority
+    // if (process.env.IMJS_ITWIN_PLATFORM_AUTHORITY === "https://ims.bentley.com")
+    //   this.skip();
 
     requestContext = await TestConfig.getAuthorizedClientRequestContext();
     Logger.logInfo(LOG_CATEGORY, `ActivityId: ${requestContext.activityId}`);
@@ -109,7 +109,11 @@ describe("RealityServicesClient Normal (#integration)", () => {
     chai.assert(url);
   });
 
-  it("should be able to retrieve the azure blob url (write access)", async () => {
+  it("should be able to retrieve the azure blob url (write access)", async function () {
+    // Skip this test if using the public IMS authority due to an issue with the reality-data:write scope
+    if (process.env.IMJS_ITWIN_PLATFORM_AUTHORITY === "https://ims.bentley.com")
+      this.skip();
+
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesId);
 
     const url: URL = await realityData.getBlobUrl(requestContext, true);
@@ -147,7 +151,11 @@ describe("RealityServicesClient Normal (#integration)", () => {
     chai.assert(modelDataString === "b3dm");
   });
 
-  it("should be able to create a reality data (without specific identifier) and delete it", async () => {
+  it("should be able to create a reality data (without specific identifier) and delete it", async function () {
+    // Skip this test if using the public IMS authority due to an issue with the reality-data:write scope
+    if (process.env.IMJS_ITWIN_PLATFORM_AUTHORITY === "https://ims.bentley.com")
+      this.skip();
+
     const realityData: RealityData = new RealityData();
     realityData.name = "Test reality data 1";
     realityData.dataSet = "Test Dataset for iModelJS";
@@ -217,7 +225,11 @@ describe("RealityServicesClient Normal (#integration)", () => {
     await realityDataServiceClient.deleteRealityData(requestContext, projectId, realityDataAdded1.id as string);
   });
 
-  it("should be able to create a reality data (with fixed specific identifier) and delete it", async () => {
+  it("should be able to create a reality data (with fixed specific identifier) and delete it", async function () {
+    // Skip this test if using the public IMS authority due to an issue with the reality-data:write scope
+    if (process.env.IMJS_ITWIN_PLATFORM_AUTHORITY === "https://ims.bentley.com")
+      this.skip();
+
     const realityData: RealityData = new RealityData();
 
     // Generate a temporary GUID. Data will be generated using this GUID.
@@ -292,7 +304,11 @@ describe("RealityServicesClient Normal (#integration)", () => {
     await realityDataServiceClient.deleteRealityData(requestContext, projectId, realityDataAdded1.id as string);
   });
 
-  it("should be able to duplicate a reality data and delete it", async () => {
+  it("should be able to duplicate a reality data and delete it", async function () {
+    // Skip this test if using the public IMS authority due to an issue with the reality-data:write scope
+    if (process.env.IMJS_ITWIN_PLATFORM_AUTHORITY === "https://ims.bentley.com")
+      this.skip();
+
     const realityData: RealityData = new RealityData();
 
     // Generate a temporary GUID. Data will be generated using this GUID.
@@ -431,7 +447,11 @@ describe("RealityServicesClient Normal (#integration)", () => {
     await realityDataServiceClient.deleteRealityData(requestContext, projectId, realityDataAdded2.id as string);
   });
 
-  it("should be able to create a reality data then modify it then delete it", async () => {
+  it("should be able to create a reality data then modify it then delete it", async function () {
+    // Skip this test if using the public IMS authority due to an issue with the reality-data:write scope
+    if (process.env.IMJS_ITWIN_PLATFORM_AUTHORITY === "https://ims.bentley.com")
+      this.skip();
+
     const realityData: RealityData = new RealityData();
 
     realityData.name = "Test reality data 1";
@@ -610,12 +630,16 @@ describe("RealityServicesClient Admin (#integration)", () => {
   const realityDataServiceClient: RealityDataClient = new RealityDataClient();
   let requestContext: AuthorizedClientRequestContext;
 
-  before(async () => {
+  before(async function ()  {
     requestContext = await TestConfig.getAuthorizedClientRequestContext(TestUsers.manager);
     Logger.logInfo(LOG_CATEGORY, `ActivityId: ${requestContext.activityId}`);
   });
 
-  it("should be able to create a reality data as an admin (without specific context and admin) and delete it", async () => {
+  it("should be able to create a reality data as an admin (without specific context and admin) and delete it", async function () {
+    // Skip this test if using the public IMS authority due to an issue with the reality-data:write scope
+    if (process.env.IMJS_ITWIN_PLATFORM_AUTHORITY === "https://ims.bentley.com")
+      this.skip();
+
     const realityData: RealityData = new RealityData();
 
     // Generate a temporary GUID. Data will be generated using this GUID.
