@@ -133,8 +133,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
 
   public async op16(token: IModelRpcProps, values: TokenValues): Promise<boolean> {
     return token.key === values.key &&
-    // SWB
-      token.contextId === values.contextId &&
+      token.iTwinId === values.iTwinId &&
       token.iModelId === values.iModelId &&
       token.changeset?.id === values.changeset?.id;
   }

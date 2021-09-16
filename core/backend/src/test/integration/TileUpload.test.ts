@@ -2,13 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
 import * as Azure from "@azure/storage-blob";
 import { GuidString } from "@bentley/bentleyjs-core";
 import {
-  BatchType, ContentIdProvider, defaultTileOptions, IModelTileRpcInterface, iModelTileTreeIdToString, RpcManager, RpcRegistry,
+  BatchType, CloudStorageTileCache, ContentIdProvider, defaultTileOptions, IModelRpcProps, IModelTileRpcInterface, iModelTileTreeIdToString, RpcManager, RpcRegistry, TileContentSource,
 } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import { assert } from "chai";
+import * as zlib from "zlib";
 import { IModelDb } from "../../IModelDb";
 import { AuthorizedBackendRequestContext, GeometricModel3d, IModelHost, IModelHostConfiguration } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -58,12 +59,12 @@ export async function getTileProps(iModel: IModelDb, requestContext: AuthorizedB
 }
 
 describe("TileUpload (#integration)", () => {
-  let requestContext: AuthorizedBackendRequestContext;
+  let user: AuthorizedBackendRequestContext;
   let testIModelId: GuidString;
   // SWB
   let testContextId: GuidString;
   let tileRpcInterface: IModelTileRpcInterface;
-  let serviceUrl: Azure.ServiceURL;
+  let blobService: Azure.BlobServiceClient;
 
   before(async () => {
     // Shutdown IModelHost to allow this test to use it.
@@ -86,23 +87,22 @@ describe("TileUpload (#integration)", () => {
     RpcManager.initializeInterface(IModelTileRpcInterface);
     tileRpcInterface = RpcRegistry.instance.getImplForInterface<IModelTileRpcInterface>(IModelTileRpcInterface);
 
-    requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-    testContextId = await HubUtility.getTestContextId(requestContext);
-    testIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.stadium);
+    user = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+    testContextId = await HubUtility.getTestITwinId(user);
+    testIModelId = await HubUtility.getTestIModelId(user, HubUtility.testIModelNames.stadium);
 
     // Get URL for cached tile
-    const credentials = new Azure.SharedKeyCredential(config.tileCacheCredentials.account, config.tileCacheCredentials.accessKey);
-    const pipeline = Azure.StorageURL.newPipeline(credentials);
-    serviceUrl = new Azure.ServiceURL(`http://127.0.0.1:10000/${credentials.accountName}`, pipeline);
+    const credentials = new Azure.StorageSharedKeyCredential(config.tileCacheCredentials.account, config.tileCacheCredentials.accessKey);
+    const pipeline = Azure.newPipeline(credentials);
+    blobService = new Azure.BlobServiceClient(`http://127.0.0.1:10000/${credentials.accountName}`, pipeline);
 
     // Point tileCacheService towards azurite URL
-    (IModelHost.tileCacheService as any)._service = serviceUrl;
+    (IModelHost.tileCacheService as any)._service = blobService;
 
     // Open and close the iModel to ensure it works and is closed
-    // SWB
-    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testContextId, iModelId: testIModelId });
+    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId: testContextId, iModelId: testIModelId });
     assert.isDefined(iModel);
-    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
+    await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModel);
   });
 
   after(async () => {
@@ -112,32 +112,38 @@ describe("TileUpload (#integration)", () => {
   });
 
   it("should upload tile to external cache with metadata", async () => {
-    // SWB
-    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testContextId, iModelId: testIModelId });
+    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId: testContextId, iModelId: testIModelId });
     assert.isDefined(iModel);
 
     // Generate tile
-    // eslint-disable-next-line deprecation/deprecation
-    const tileProps = await getTileProps(iModel, requestContext);
+    const tileProps = await getTileProps(iModel, user);
     assert.isDefined(tileProps);
-    const tile = await tileRpcInterface.requestTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, undefined, tileProps!.guid); // eslint-disable-line deprecation/deprecation
+    const tile = await tileRpcInterface.generateTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid);
 
-    // Uploads to the cloud storage tile cache happen asynchronously. Don't resolve until they have all finished.
-    await Promise.all(IModelHost.tileUploader.activeUploads);
+    assert.equal(tile, TileContentSource.ExternalCache);
 
     // Query tile from tile cache
-    const containerUrl = Azure.ContainerURL.fromServiceURL(serviceUrl, testIModelId);
-    const blobUrl = Azure.BlobURL.fromContainerURL(containerUrl, `tiles/${tileProps!.treeId}/${tileProps!.guid}/${tileProps!.contentId}`);
-    const blockBlobUrl = Azure.BlockBlobURL.fromBlobURL(blobUrl);
-    const blobProperties = await blockBlobUrl.getProperties(Azure.Aborter.none);
+    const blobName = CloudStorageTileCache.getCache().formResourceName({ ...tileProps!, tokenProps: {} as IModelRpcProps });
+    const containerUrl = blobService.getContainerClient(testIModelId);
+    const blob = containerUrl.getBlockBlobClient(blobName);
+    const blobProperties = await blob.getProperties();
+    const blobStream = (await blob.download()).readableStreamBody!;
+    const decompressor: NodeJS.ReadableStream = IModelHost.compressCachedTiles ? blobStream.pipe(zlib.createGunzip()) : blobStream;
+
+    let tileSize = 0;
+    decompressor.on("data", (chunk: Buffer | string) => { tileSize += chunk.length; });
+    await new Promise((resolve, reject) => {
+      decompressor.on("end", resolve).on("error", reject);
+    });
 
     // Verify metadata in blob properties
     assert.isDefined(blobProperties.metadata);
     assert.isDefined(blobProperties.metadata!.tilegenerationtime);
     assert.equal(blobProperties.metadata!.backendname, IModelHost.applicationId);
-    assert.equal(blobProperties.metadata!.tilesize, tile.byteLength.toString());
+    assert.equal(Number.parseInt(blobProperties.metadata!.tilesize, 10), tileSize);
 
-    await blockBlobUrl.delete(Azure.Aborter.none);
-    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
+    await blob.delete();
+    await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModel);
   });
 });
+

@@ -117,7 +117,7 @@ async function generateResultFiles(result: TileResult, configData: ConfigData, r
   await writeOverallStats(result, configData, resultFilePath);
 }
 
-async function generateIModelDbTiles(requestContext: AuthorizedClientRequestContext, config: ConfigData): Promise<TileResult | undefined> {
+async function generateIModelDbTiles(user: AuthorizedClientRequestContext, config: ConfigData): Promise<TileResult | undefined> {
   let peakMemUsage: number = 0;
   let peakCPUUsage: number = 0;
 
@@ -128,11 +128,11 @@ async function generateIModelDbTiles(requestContext: AuthorizedClientRequestCont
     iModelDb = StandaloneDb.openFile(config.localPath, OpenMode.Readonly);
   } else {
     // SWB
-    const iModelId = await HubUtility.queryIModelIdByName(requestContext, config.contextId, config.iModelName);
+    const iModelId = await HubUtility.queryIModelIdByName(user, config.contextId, config.iModelName);
     const version: IModelVersion = config.changesetId ? IModelVersion.asOfChangeSet(config.changesetId) : IModelVersion.latest();
 
     // SWB
-    iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: config.contextId, iModelId, asOf: version.toJSON() });
+    iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId: config.contextId, iModelId, asOf: version.toJSON() });
   }
   assert.exists(iModelDb.isOpen, `iModel "${config.iModelName}" not opened`);
 

@@ -29,8 +29,7 @@ const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 export class CheckpointConnection extends IModelConnection {
   // SWB
   /** The Guid that identifies the *context* that owns this iModel. */
-  // SWB
-  public override get contextId(): GuidString { return super.contextId!; } // GuidString | undefined for the superclass, but required for BriefcaseConnection
+  public override get iTwinId(): GuidString { return super.iTwinId!; } // GuidString | undefined for the superclass, but required for BriefcaseConnection
   /** The Guid that identifies this iModel. */
   public override get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for the superclass, but required for BriefcaseConnection
 
@@ -44,8 +43,7 @@ export class CheckpointConnection extends IModelConnection {
   /**
    * Open a readonly IModelConnection to an iModel over RPC.
    */
-  // SWB
-  public static async openRemote(contextId: string, iModelId: string, version: IModelVersion = IModelVersion.latest()): Promise<CheckpointConnection> {
+  public static async openRemote(iTwinId: string, iModelId: string, version: IModelVersion = IModelVersion.latest()): Promise<CheckpointConnection> {
     const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
 
     const requestContext = await AuthorizedFrontendRequestContext.create();
@@ -54,7 +52,7 @@ export class CheckpointConnection extends IModelConnection {
     const changeset = { id: await IModelApp.hubAccess.getChangesetIdFromVersion({ requestContext, iModelId, version }) };
     requestContext.enter();
 
-    const iModelRpcProps: IModelRpcOpenProps = { contextId, iModelId, changeset };
+    const iModelRpcProps: IModelRpcOpenProps = { iTwinId, iModelId, changeset };
     const openResponse = await this.callOpen(requestContext, iModelRpcProps, routingContext);
     requestContext.enter();
 

@@ -640,8 +640,7 @@ export namespace RealityModelTileTree {
     if (!url)
       throw new IModelError(BentleyStatus.ERROR, "Unable to read reality data");
     const accessToken = await getAccessToken();
-    // SWB
-    const tileClient = new RealityModelTileClient(url, accessToken, iModel.contextId);
+    const tileClient = new RealityModelTileClient(url, accessToken, iModel.iTwinId);
     const json = await tileClient.getRootDocument(url);
     let rootTransform = iModel.ecefLocation ? iModel.getMapEcefToDb(0) : Transform.createIdentity();
     const geoConverter = iModel.noGcsDefined ? undefined : iModel.geoServices.getConverter("WGS84");
@@ -843,12 +842,11 @@ export class RealityModelTileClient {
   // SWB
   // ###TODO we should be able to pass the projectId / tileId directly, instead of parsing the url
   // But if the present can also be used by non PW Context Share stored data then the url is required and token is not. Possibly two classes inheriting from common interface.
-  // SWB
-  constructor(url: string, accessToken?: AccessToken, contextId?: string) {
+  constructor(url: string, accessToken?: AccessToken, iTwinId?: string) {
     this.rdsProps = this.parseUrl(url); // Note that returned is undefined if url does not refer to a PW Context Share reality data.
-    if (contextId && this.rdsProps)
+    if (iTwinId && this.rdsProps)
       // SWB
-      this.rdsProps.projectId = contextId;
+      this.rdsProps.projectId = iTwinId;
     this._token = accessToken;
   }
 

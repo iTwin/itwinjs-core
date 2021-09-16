@@ -22,9 +22,8 @@ describe("ApplyChangesets (#integration)", () => {
   };
 
   // SWB
-  const testOpen = async (requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: string) => {
-    // SWB
-    const iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: projectId, iModelId });
+  const testOpen = async (user: AuthorizedClientRequestContext, projectId: string, iModelId: string) => {
+    const iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId: projectId, iModelId });
     assert.isDefined(iModelDb);
     iModelDb.close();
   };
@@ -39,7 +38,7 @@ describe("ApplyChangesets (#integration)", () => {
     const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
 
     // SWB
-    const projectId = await HubUtility.getTestContextId(requestContext);
+    const projectId = await HubUtility.getTestITwinId(requestContext);
     let iModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.readOnly);
     await testAllOperations(requestContext, projectId, iModelId);
 

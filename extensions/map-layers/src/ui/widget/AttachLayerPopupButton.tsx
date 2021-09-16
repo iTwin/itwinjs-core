@@ -53,8 +53,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
   }, []);
 
   const { loadingSources, sources, activeViewport, backgroundLayers, overlayLayers, mapTypesOptions } = useSourceMapContext();
-  // SWB
-  const contextId = activeViewport?.iModel?.contextId;
+  const iTwinId = activeViewport?.iModel?.iTwinId;
   const iModelId = activeViewport?.iModel?.iModelId;
 
   const styleContainsLayer = React.useCallback((name: string) => {
@@ -198,8 +197,8 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
   const handleYesConfirmation = React.useCallback(async (source: MapLayerSource) => {
 
     const layerName = source.name;
-    if (!!contextId && !!iModelId) {
-      if (await MapLayerSettingsService.deleteSharedSettings(source, contextId, iModelId)) {
+    if (!!iTwinId && !!iModelId) {
+      if (await MapLayerSettingsService.deleteSharedSettings(source, iTwinId, iModelId)) {
         const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.RemoveLayerDefSuccess", { layerName });
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
       } else {
@@ -209,7 +208,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
     }
 
     ModalDialogManager.closeDialog();
-  }, [contextId, iModelId]);
+  }, [iTwinId, iModelId]);
 
   /*
    Handle Remove layer button clicked
@@ -285,7 +284,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
 
                 { // Display the delete icon only when the mouse over a specific item
                   // otherwise list feels cluttered.
-                  (!!contextId && !!iModelId && layerNameUnderCursor && layerNameUnderCursor === source.name) &&
+                  (!!iTwinId && !!iModelId && layerNameUnderCursor && layerNameUnderCursor === source.name) &&
                   <>
                     <Button
                       className="map-source-list-entry-button"

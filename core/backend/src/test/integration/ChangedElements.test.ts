@@ -18,16 +18,14 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
 describe("ChangedElements (#integration)", () => {
-  let requestContext: AuthorizedBackendRequestContext;
-  // SWB
-  let testContextId: GuidString;
+  let user: AuthorizedBackendRequestContext;
+  let testITwinId: GuidString;
   let testIModelId: GuidString;
 
   before(async () => {
-    requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-    // SWB
-    testContextId = await HubUtility.getTestContextId(requestContext);
-    testIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.readOnly);
+    user = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+    testITwinId = await HubUtility.getTestITwinId(user);
+    testIModelId = await HubUtility.getTestIModelId(user, HubUtility.testIModelNames.readOnly);
 
   });
 
@@ -36,9 +34,8 @@ describe("ChangedElements (#integration)", () => {
     if (IModelJsFs.existsSync(cacheFilePath))
       IModelJsFs.removeSync(cacheFilePath);
 
-    // SWB
-    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testContextId, iModelId: testIModelId, asOf: IModelVersion.first().toJSON() });
-    const changeSets = await IModelHost.hubAccess.queryChangesets({ requestContext, iModelId: testIModelId });
+    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId: testITwinId, iModelId: testIModelId, asOf: IModelVersion.first().toJSON() });
+    const changeSets = await IModelHost.hubAccess.queryChangesets({ user, iModelId: testIModelId });
     assert.exists(iModel);
 
     const filePath = ChangedElementsManager.getChangedElementsPathName(iModel.iModelId);
@@ -64,7 +61,7 @@ describe("ChangedElements (#integration)", () => {
       wantParents: true,
       wantPropertyChecksums: true,
     };
-    const result = await cache.processChangesets(requestContext, iModel, options);
+    const result = await cache.processChangesets(user, iModel, options);
 
     assert.equal(result, DbResult.BE_SQLITE_OK);
     // Check that the changesets should have been processed now
@@ -172,9 +169,8 @@ describe("ChangedElements (#integration)", () => {
     if (IModelJsFs.existsSync(cacheFilePath))
       IModelJsFs.removeSync(cacheFilePath);
 
-    // SWB
-    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testContextId, iModelId: testIModelId, asOf: IModelVersion.first().toJSON() });
-    const changeSets = await IModelHost.hubAccess.queryChangesets({ requestContext, iModelId: testIModelId });
+    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId: testITwinId, iModelId: testIModelId, asOf: IModelVersion.first().toJSON() });
+    const changeSets = await IModelHost.hubAccess.queryChangesets({ user, iModelId: testIModelId });
     assert.exists(iModel);
 
     const filePath = ChangedElementsManager.getChangedElementsPathName(iModel.iModelId);
@@ -201,7 +197,7 @@ describe("ChangedElements (#integration)", () => {
     };
     // Get file path before processing and rolling since it requires closing the iModelDb
     const iModelFilepath = iModel.pathName;
-    const result = await cache.processChangesetsAndRoll(requestContext, iModel, options);
+    const result = await cache.processChangesetsAndRoll(user, iModel, options);
     const newIModel = SnapshotDb.openDgnDb({ path: iModelFilepath }, OpenMode.Readonly);
     // Ensure that the iModel got rolled as part of the processing operation
     assert.equal(newIModel.getParentChangeset().id, changesetId);

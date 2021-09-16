@@ -95,8 +95,7 @@ export class ContextRealityModelState extends ContextRealityModel {
 export interface RealityDataQueryCriteria {
   // SWB
   /** The Id of the iTwin context. */
-  // SWB
-  contextId: GuidString;
+  iTwinId: GuidString;
   /** If supplied, only reality data overlapping this range will be included. */
   range?: CartographicRange;
   /** If supplied, reality data already referenced by a [[GeometricModelState]] within this iModel will be excluded. */
@@ -106,17 +105,15 @@ export interface RealityDataQueryCriteria {
 /** @deprecated Use queryRealityData
  * @internal
  */
-// SWB
-export async function findAvailableRealityModels(contextId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]> {
-  return queryRealityData({ contextId, range: modelCartographicRange });
+export async function findAvailableRealityModels(iTwinId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]> {
+  return queryRealityData({ iTwinId, range: modelCartographicRange });
 }
 
 /** @deprecated Use queryRealityData
  * @internal
  */
-// SWB
-export async function findAvailableUnattachedRealityModels(contextId: GuidString, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]> {
-  return queryRealityData({ contextId, filterIModel: iModel, range: modelCartographicRange });
+export async function findAvailableUnattachedRealityModels(iTwinId: GuidString, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]> {
+  return queryRealityData({ iTwinId, filterIModel: iModel, range: modelCartographicRange });
 }
 
 // SWB
@@ -127,8 +124,7 @@ export async function findAvailableUnattachedRealityModels(contextId: GuidString
  * @public
  */
 export async function queryRealityData(criteria: RealityDataQueryCriteria): Promise<ContextRealityModelProps[]> {
-  // SWB
-  const contextId = criteria.contextId;
+  const iTwinId = criteria.iTwinId;
   const availableRealityModels: ContextRealityModelProps[] = [];
 
   const accessToken = await getAccessToken();
@@ -143,13 +139,12 @@ export async function queryRealityData(criteria: RealityDataQueryCriteria): Prom
   let realityData: RealityData[];
   if (criteria.range) {
     const iModelRange = criteria.range.getLongitudeLatitudeBoundingBox();
-    // SWB What does project mean here?
-    realityData = await client.getRealityDataInProjectOverlapping(requestContext, contextId, Angle.radiansToDegrees(iModelRange.low.x),
+    realityData = await client.getRealityDataInProjectOverlapping(requestContext, iTwinId, Angle.radiansToDegrees(iModelRange.low.x),
       Angle.radiansToDegrees(iModelRange.high.x),
       Angle.radiansToDegrees(iModelRange.low.y),
       Angle.radiansToDegrees(iModelRange.high.y));
   } else {
-    realityData = await client.getRealityDataInProject(requestContext, contextId);
+    realityData = await client.getRealityDataInProject(requestContext, iTwinId);
   }
 
   requestContext.enter();
@@ -184,7 +179,7 @@ export async function queryRealityData(criteria: RealityDataQueryCriteria): Prom
 
     // If the RealityData is valid then we add it to the list.
     if (currentRealityData.id && validRd === true) {
-      const url = await client.getRealityDataUrl(requestContext, contextId, currentRealityData.id);
+      const url = await client.getRealityDataUrl(requestContext, iTwinId, currentRealityData.id);
       let opcConfig: OrbitGtBlobProps | undefined;
 
       if (currentRealityData.type && (currentRealityData.type.toUpperCase() === "OPC") && currentRealityData.rootDocument !== undefined) {

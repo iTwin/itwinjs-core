@@ -1518,6 +1518,13 @@
       ]
     },
     {
+      "name": "react-resize-detector",
+      "allowedCategories": [
+        "extensions",
+        "internal"
+      ]
+    },
+    {
       "name": "react-router-dom",
       "allowedCategories": [
         "internal"
@@ -1545,7 +1552,9 @@
     },
     {
       "name": "react-table",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [
+        "internal"
+      ]
     },
     {
       "name": "react-test-renderer",
@@ -1563,7 +1572,9 @@
     {
       "name": "react-virtualized-auto-sizer",
       "allowedCategories": [
-        "frontend"
+        "extensions",
+        "frontend",
+        "internal"
       ]
     },
     {

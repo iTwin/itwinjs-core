@@ -18,8 +18,7 @@ import { IModelHubBackend } from "../../IModelHubBackend";
 describe("V1 Checkpoint Manager", () => {
   it("empty props", async () => {
     const props = {
-      // SWB
-      contextId: "",
+      iTwinId: "",
       iModelId: "",
       changeset: { id: "" },
       requestContext: new AuthorizedClientRequestContext(new AccessToken()),
@@ -29,8 +28,7 @@ describe("V1 Checkpoint Manager", () => {
 
   it("changeset only props", async () => {
     const props = {
-      // SWB
-      contextId: "",
+      iTwinId: "",
       iModelId: "",
       changeset: { id: "1234" },
       requestContext: new AuthorizedClientRequestContext(new AccessToken()),
@@ -41,8 +39,7 @@ describe("V1 Checkpoint Manager", () => {
   // SWB
   it("changeset+context props", async () => {
     const props = {
-      // SWB
-      contextId: "5678",
+      iTwinId: "5678",
       iModelId: "",
       changeset: { id: "1234" },
       requestContext: new AuthorizedClientRequestContext(new AccessToken()),
@@ -53,8 +50,7 @@ describe("V1 Checkpoint Manager", () => {
   // SWB
   it("changeset+context+imodel props", async () => {
     const props = {
-      // SWB
-      contextId: "5678",
+      iTwinId: "5678",
       iModelId: "910",
       changeset: { id: "1234" },
       requestContext: new AuthorizedClientRequestContext(new AccessToken()),
@@ -71,11 +67,9 @@ describe("V1 Checkpoint Manager", () => {
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
     const iModelId = Guid.createValue();  // This is wrong - it should be `snapshot.getGuid()`!
-    // SWB
-    const contextId = Guid.createValue();
+    const iTwinId = Guid.createValue();
     const changeset = IModelTestUtils.generateChangeSetId();
-    // SWB
-    snapshot.nativeDb.saveProjectGuid(Guid.normalize(contextId));
+    snapshot.nativeDb.saveProjectGuid(Guid.normalize(iTwinId));
     snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id);
     snapshot.saveChanges();
 
@@ -90,7 +84,7 @@ describe("V1 Checkpoint Manager", () => {
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
     const localFile = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint2.bim");
 
-    const request = { localFile, checkpoint: { requestContext: ctx, contextId, iModelId, changeset } };
+    const request = { localFile, checkpoint: { user: ctx, iTwinId, iModelId, changeset } };
     await CheckpointManager.downloadCheckpoint(request);
     const db = SnapshotDb.openCheckpointV1(localFile, request.checkpoint);
     assert.equal(iModelId, db.nativeDb.getDbGuid(), "expected the V1 Checkpoint download to fix the improperly set dbGuid.");
@@ -106,8 +100,7 @@ describe("Checkpoint Manager", () => {
 
   it("open missing local file should return undefined", async () => {
     const checkpoint = {
-      // SWB
-      contextId: "5678",
+      iTwinId: "5678",
       iModelId: "910",
       changeset: { id: "1234" },
       requestContext: new AuthorizedClientRequestContext(new AccessToken()),
@@ -122,8 +115,7 @@ describe("Checkpoint Manager", () => {
 
   it("open a bad bim file should return undefined", async () => {
     const checkpoint = {
-      // SWB
-      contextId: "5678",
+      iTwinId: "5678",
       iModelId: "910",
       changeset: { id: "1234" },
       requestContext: new AuthorizedClientRequestContext(new AccessToken()),  // Why is this on CheckpointProps rather than DownloadRequest
@@ -153,11 +145,9 @@ describe("Checkpoint Manager", () => {
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
     const iModelId = snapshot.getGuid();
-    // SWB
-    const contextId = Guid.createValue();
+    const iTwinId = Guid.createValue();
     const changeset = IModelTestUtils.generateChangeSetId();
-    // SWB
-    snapshot.nativeDb.saveProjectGuid(Guid.normalize(contextId));
+    snapshot.nativeDb.saveProjectGuid(Guid.normalize(iTwinId));
     snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id);
     snapshot.saveChanges();
     snapshot.close();
@@ -171,10 +161,10 @@ describe("Checkpoint Manager", () => {
       return changeset.id;
     });
 
-    const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const user = ClientRequestContext.current as AuthorizedClientRequestContext;
     const localFile = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint2.bim");
 
-    const request = { localFile, checkpoint: { requestContext: ctx, contextId, iModelId, changeset } };
+    const request = { localFile, checkpoint: { user, iTwinId, iModelId, changeset } };
     await CheckpointManager.downloadCheckpoint(request);
     assert.isTrue(v1Spy.calledOnce);
   });

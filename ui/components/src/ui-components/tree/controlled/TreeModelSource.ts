@@ -8,7 +8,7 @@
 
 import { Patch, produce } from "immer";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
-import { MutableTreeModel, TreeModel, VisibleTreeNodes } from "./TreeModel";
+import { MutableTreeModel, TreeModel } from "./TreeModel";
 
 /**
  * Data structure that describes changes which happened to the tree model
@@ -21,18 +21,16 @@ export interface TreeModelChanges {
 }
 
 /**
- * Controls tree model and visible tree nodes.
+ * Controls tree model.
  * It is used to modify model and inform when tree model changes.
  * @public
  */
 export class TreeModelSource {
-  private _visibleNodes?: VisibleTreeNodes;
 
   /** Event that is emitted every time tree model is changed. */
   public onModelChanged = new BeUiEvent<[TreeModel, TreeModelChanges]>();
 
   constructor(private _model: MutableTreeModel = new MutableTreeModel()) {
-    this.onModelChanged.addListener(() => this._visibleNodes = undefined);
   }
 
   /**
@@ -51,14 +49,6 @@ export class TreeModelSource {
 
   /** Returns tree model. */
   public getModel(): TreeModel { return this._model; }
-
-  /** Computes and returns flat list of visible tree nodes. */
-  public getVisibleNodes(): VisibleTreeNodes {
-    if (!this._visibleNodes) {
-      this._visibleNodes = this._model.computeVisibleNodes();
-    }
-    return this._visibleNodes;
-  }
 
   private collectModelChanges(modelPatches: Patch[]): TreeModelChanges {
     const addedNodeIds: string[] = [];

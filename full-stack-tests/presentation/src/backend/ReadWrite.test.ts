@@ -72,7 +72,7 @@ describe("ReadWrite", () => {
         rulesetOrId: ruleset,
       });
 
-      await imodel.importSchemaStrings(ClientRequestContext.current, [schema]);
+      await imodel.importSchemaStrings([schema]);
       imodel.saveChanges();
 
       const nodes = await nodesRequest;

@@ -45,9 +45,9 @@ export interface BlankConnectionProps {
   extents: Range3dProps;
   /** An offset to be applied to all spatial coordinates. */
   globalOrigin?: XYZProps;
+  // SWB
   /** The optional Guid that identifies the *context* associated with the [[BlankConnection]]. */
-  // SWB What does context mean here?
-  contextId?: GuidString;
+  iTwinId?: GuidString;
 }
 
 /** A connection to a [IModelDb]($backend) hosted on the backend.
@@ -610,13 +610,12 @@ export abstract class IModelConnection extends IModel {
 export class BlankConnection extends IModelConnection {
   public override isBlankConnection(): this is BlankConnection { return true; }
 
+  // SWB
   /** The Guid that identifies the *context* for this BlankConnection.
-   * @note This can also be set via the [[create]] method using [[BlankConnectionProps.contextId]].
+   * @note This can also be set via the [[create]] method using [[BlankConnectionProps.iTwinId]].
    */
-  // SWB
-  public override get contextId(): GuidString | undefined { return this._contextId; }
-  // SWB
-  public override set contextId(contextId: GuidString | undefined) { this._contextId = contextId; }
+  public override get iTwinId(): GuidString | undefined { return this._iTwinId; }
+  public override set iTwinId(iTwinId: GuidString | undefined) { this._iTwinId = iTwinId; }
   /** A BlankConnection does not have an associated iModel, so its `iModelId` is alway `undefined`. */
   public override get iModelId(): undefined { return undefined; } // GuidString | undefined for the superclass, but always undefined for BlankConnection
 
@@ -636,8 +635,7 @@ export class BlankConnection extends IModelConnection {
       globalOrigin: props.globalOrigin,
       ecefLocation: props.location instanceof Cartographic ? EcefLocation.createFromCartographicOrigin(props.location) : props.location,
       key: "",
-      // SWB
-      contextId: props.contextId,
+      iTwinId: props.iTwinId,
     });
   }
 

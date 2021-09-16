@@ -31,10 +31,9 @@ describe("TileCache open v1", () => {
     assert.isDefined(iModel);
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     // Generate tile
-    // eslint-disable-next-line deprecation/deprecation
     const tileProps = await getTileProps(iModel, requestContext);
     assert.isDefined(tileProps);
-    await tileRpcInterface.requestTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, undefined, tileProps!.guid); // eslint-disable-line deprecation/deprecation
+    await tileRpcInterface.generateTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid);
 
     const tilesCache = `${iModel.pathName}.Tiles`;
     assert.isTrue(IModelJsFs.existsSync(tilesCache));
@@ -67,16 +66,15 @@ describe("TileCache open v1", () => {
     await verifyTileCache(dbPath);
   });
 });
+
 describe("TileCache, open v2", async () => {
   it("should place .Tiles in cacheDir", async () => {
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim");
     const snapshot = IModelTestUtils.createSnapshotFromSeed(dbPath, IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
     const iModelId = snapshot.getGuid();
-    // SWB
-    const contextId = Guid.createValue();
+    const iTwinId = Guid.createValue();
     const changeset = IModelTestUtils.generateChangeSetId();
-    // SWB
-    snapshot.nativeDb.saveProjectGuid(Guid.normalize(contextId));
+    snapshot.nativeDb.saveProjectGuid(Guid.normalize(iTwinId));
     snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id); // even fake checkpoints need a changeSetId!
     snapshot.saveChanges();
     snapshot.close();
@@ -103,15 +101,14 @@ describe("TileCache, open v2", async () => {
     sinon.stub(BlobDaemon, "getDbFileName").callsFake(() => dbPath);
 
     process.env.BLOCKCACHE_DIR = "/foo/";
-    const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const checkpointProps = { requestContext: ctx, contextId, iModelId, changeset };
+    const user = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const checkpointProps = { user, iTwinId, iModelId, changeset };
     const checkpoint = await SnapshotDb.openCheckpointV2(checkpointProps);
 
     // Generate tile
-    // eslint-disable-next-line deprecation/deprecation
-    const tileProps = await getTileProps(checkpoint, ctx);
+    const tileProps = await getTileProps(checkpoint, user);
     assert.isDefined(tileProps);
-    await tileRpcInterface.requestTileContent(checkpoint.getRpcProps(), tileProps!.treeId, tileProps!.contentId, undefined, tileProps!.guid); // eslint-disable-line deprecation/deprecation
+    await tileRpcInterface.generateTileContent(checkpoint.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid);
 
     // Make sure .Tiles exists in the cacheDir. This was enforced by opening it as a V2 Checkpoint which passes as part of its open params a tempFileBasename.
     const tempFileBase = path.join(IModelHost.cacheDir, `${checkpointProps.iModelId}\$${checkpointProps.changeset.id}`);

@@ -88,7 +88,7 @@ export enum InitializationState {
   OutdatedFile = 4,
   /** Initialization failed due to file having [[Code]] values that are too long. */
   CodeTooLong = 5,
-  /** Initialization failed due to file being a [[Briefcase]]. Only standalone and master files are supported for iModel creation, see [BriefcaseId]($backend). */
+  /** Initialization failed due to file being a [[Briefcase]]. Only standalone and master files are supported for iModel creation, see [BriefcaseId]($common). */
   SeedFileIsBriefcase = 6,
 }
 

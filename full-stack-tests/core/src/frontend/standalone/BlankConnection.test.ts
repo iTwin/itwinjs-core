@@ -19,8 +19,7 @@ function createViewDiv() {
 describe("Blank Connection", () => {
   let blankConnection: BlankConnection;
   const viewDiv = createViewDiv();
-  // SWB
-  const contextId: GuidString = Guid.createValue();
+  const iTwinId: GuidString = Guid.createValue();
 
   before(async () => {
     await MockRender.App.startup();
@@ -29,8 +28,7 @@ describe("Blank Connection", () => {
       name: "test",
       location: exton,
       extents: new Range3d(-1000, -1000, -100, 1000, 1000, 100),
-      // SWB
-      contextId,
+      iTwinId,
     });
   });
   after(async () => {
@@ -42,8 +40,7 @@ describe("Blank Connection", () => {
     assert.isFalse(blankConnection.isOpen, "A BlankConnection is never considered open");
     assert.isTrue(blankConnection.isClosed, "A BlankConnection is always considered closed");
     assert.isUndefined(blankConnection.iModelId);
-    // SWB
-    assert.equal(contextId, blankConnection.contextId);
+    assert.equal(iTwinId, blankConnection.iTwinId);
     assert.throws(() => blankConnection.getRpcProps());
     const elementProps: ElementProps[] = await blankConnection.elements.getProps(IModel.rootSubjectId);
     assert.equal(0, elementProps.length);

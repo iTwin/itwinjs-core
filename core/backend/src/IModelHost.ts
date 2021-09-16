@@ -300,8 +300,8 @@ export class IModelHost {
   /** @internal */
   public static setHubAccess(hubAccess: BackendHubAccess) { this._hubAccess = hubAccess; }
 
-  /** Provides access to the IModelHub implementation for this IModelHost
-   * @internal
+  /** Provides access to the IModelHub for this IModelHost
+   * @beta
    */
   public static get hubAccess(): BackendHubAccess { return this._hubAccess; }
 

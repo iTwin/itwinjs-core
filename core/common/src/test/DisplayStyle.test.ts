@@ -17,11 +17,55 @@ import { ThematicDisplayMode } from "../ThematicDisplay";
 import { RenderMode, ViewFlags } from "../ViewFlags";
 import { PlanarClipMaskMode, PlanarClipMaskSettings } from "../PlanarClipMask";
 import { MapLayerSettings } from "../MapLayerSettings";
-
-/* eslint-disable deprecation/deprecation */
-//  - for DisplayStyleSettings.excludedElements.
+import { WhiteOnWhiteReversalProps, WhiteOnWhiteReversalSettings } from "../WhiteOnWhiteReversalSettings";
 
 describe("DisplayStyleSettings", () => {
+  describe("whiteOnWhiteReversal", () => {
+    it("round-trips through JSON", () => {
+      function test(props: WhiteOnWhiteReversalProps | undefined, newSettings: WhiteOnWhiteReversalSettings, expected?: WhiteOnWhiteReversalProps | "input"): void {
+        const styleProps = { styles: props ? { whiteOnWhiteReversal: props } : { } };
+        const style = new DisplayStyle3dSettings(styleProps);
+        style.whiteOnWhiteReversal = newSettings;
+        const result = style.toJSON();
+        expect(result.whiteOnWhiteReversal).to.deep.equal(expected === "input" ? props : expected);
+      }
+
+      const ignore = WhiteOnWhiteReversalSettings.fromJSON({ ignoreBackgroundColor: true });
+      const defaults = WhiteOnWhiteReversalSettings.fromJSON();
+
+      test(undefined, defaults, "input");
+      test({ ignoreBackgroundColor: false }, defaults, "input");
+      test(undefined, ignore, { ignoreBackgroundColor: true });
+      test({ ignoreBackgroundColor: true }, ignore, "input");
+      test({ ignoreBackgroundColor: true }, defaults, undefined);
+    });
+
+    it("raises event", () => {
+      const style = new DisplayStyle3dSettings({ styles: { } });
+      function test(expectEvent: boolean, newSettings: WhiteOnWhiteReversalSettings): void {
+        let eventRaised = false;
+        const remove = style.onWhiteOnWhiteReversalChanged.addListener((s) => {
+          expect(eventRaised).to.be.false;
+          eventRaised = true;
+          expect(s).to.equal(newSettings);
+        });
+
+        style.whiteOnWhiteReversal = newSettings;
+        remove();
+
+        expect(style.whiteOnWhiteReversal).to.equal(newSettings);
+        expect(eventRaised).to.equal(expectEvent);
+      }
+
+      test(false, style.whiteOnWhiteReversal);
+      test(false, WhiteOnWhiteReversalSettings.fromJSON());
+      test(true, WhiteOnWhiteReversalSettings.fromJSON({ ignoreBackgroundColor: true }));
+      test(false, style.whiteOnWhiteReversal);
+      test(false, WhiteOnWhiteReversalSettings.fromJSON({ ignoreBackgroundColor: true }));
+      test(true, WhiteOnWhiteReversalSettings.fromJSON({ ignoreBackgroundColor: false }));
+    });
+  });
+
   describe("plan projection settings", () => {
     interface SettingsMap { [modelId: string]: PlanProjectionSettingsProps }
 
@@ -116,11 +160,14 @@ describe("DisplayStyleSettings", () => {
         const settings = new DisplayStyleSettings({});
         func(settings);
 
+        // eslint-disable-next-line deprecation/deprecation
         expect(settings.toJSON().excludedElements).to.equal(expectedExcludedElements);
         expect(settings.compressedExcludedElementIds).to.equal(undefined === expectedExcludedElements ? "" : expectedExcludedElements);
 
         const excludedIds = Array.from(settings.excludedElementIds);
+        // eslint-disable-next-line deprecation/deprecation
         expect(settings.excludedElements.size).to.equal(excludedIds.length);
+        // eslint-disable-next-line deprecation/deprecation
         const set = OrderedId64Iterable.sortArray(Array.from(settings.excludedElements));
         expect(set).to.deep.equal(excludedIds);
       };
@@ -134,14 +181,21 @@ describe("DisplayStyleSettings", () => {
       test("+2", (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.dropExcludedElement("0x1"); });
       test(undefined, (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.dropExcludedElements(["0x2", "0x1"]); });
 
+      // eslint-disable-next-line deprecation/deprecation
       test("+3", (settings) => settings.excludedElements.add("0x3"));
+      // eslint-disable-next-line deprecation/deprecation
       test(undefined, (settings) => { settings.excludedElements.add("0x2"); settings.excludedElements.delete("0x2"); });
+      // eslint-disable-next-line deprecation/deprecation
       test("+2", (settings) => { settings.excludedElements.add("0x1"); settings.excludedElements.add("0x2"); settings.excludedElements.delete("0x1"); });
+      // eslint-disable-next-line deprecation/deprecation
       test("+1", (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.excludedElements.delete("0x2"); });
+      // eslint-disable-next-line deprecation/deprecation
       test("+2", (settings) => { settings.excludedElements.add("0x1"); settings.addExcludedElements(["0x2", "0x3"]); settings.dropExcludedElement("0x3"); settings.excludedElements.delete("0x1"); });
 
+      // eslint-disable-next-line deprecation/deprecation
       test(undefined, (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.excludedElements.clear(); });
 
+      // eslint-disable-next-line deprecation/deprecation
       test(undefined, (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.excludedElements.add("0x3"); settings.clearExcludedElements(); });
     });
   });
@@ -284,6 +338,7 @@ describe("DisplayStyleSettings overrides", () => {
     backgroundColor: ColorByName.aquamarine,
     monochromeColor: ColorByName.cyan,
     monochromeMode: MonochromeMode.Scaled,
+    whiteOnWhiteReversal: { ignoreBackgroundColor: false },
     environment: {
       sky: {
         display: true,
@@ -403,6 +458,7 @@ describe("DisplayStyleSettings overrides", () => {
       nonLocatable: true,
       emphasized: true,
     }],
+    // eslint-disable-next-line deprecation/deprecation
     excludedElements: CompressedId64Set.compressIds(["0x4", "0x8", "0x10"]),
     contextRealityModels: [{
       tilesetUrl: "google.com",
@@ -575,6 +631,7 @@ describe("DisplayStyleSettings overrides", () => {
       }],
     });
 
+    // eslint-disable-next-line deprecation/deprecation
     test({ viewflags, excludedElements: CompressedId64Set.compressIds(["0xbaadf00d", "0xdeadbeef"]) });
 
     test({
@@ -653,5 +710,7 @@ describe("DisplayStyleSettings overrides", () => {
         "0x8": { elevation: 2, transparency: 0.25, overlay: true, enforceDisplayPriority: true },
       },
     });
+
+    test({ viewflags, whiteOnWhiteReversal: { ignoreBackgroundColor: true } });
   });
 });

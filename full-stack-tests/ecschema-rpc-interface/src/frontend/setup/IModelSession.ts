@@ -7,15 +7,13 @@ import { CheckpointConnection } from "@bentley/imodeljs-frontend";
 
 export class IModelSession {
 
-  // SWB
-  public contextId: string;
+  public iTwinId: string;
   public iModelId: string;
 
   private _iModel?: CheckpointConnection;
 
-  // SWB
-  public constructor(iModelId: string, contextId: string) {
-    this.contextId = contextId;
+  public constructor(iModelId: string, iTwinId: string) {
+    this.iTwinId = iTwinId;
     this.iModelId = iModelId;
   }
 
@@ -28,7 +26,7 @@ export class IModelSession {
       const env = process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION;
       // eslint-disable-next-line no-console
       console.log(`Environment: ${env}`);
-      this._iModel = await CheckpointConnection.openRemote(this.contextId, this.iModelId);
+      this._iModel = await CheckpointConnection.openRemote(this.iTwinId, this.iModelId);
       expect(this._iModel).to.exist;
     } catch (e) {
       throw new Error(`Failed to open test iModel. Error: ${e.message}`);

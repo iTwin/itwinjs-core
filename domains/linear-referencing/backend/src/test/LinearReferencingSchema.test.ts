@@ -2,12 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { assert } from "chai";
 import * as path from "path";
 import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
 import {
-  BackendRequestContext, ClassRegistry, IModelDb, IModelHost, IModelJsFs, PhysicalModel, PhysicalPartition, Schema, Schemas, SnapshotDb,
-  SpatialCategory, SubjectOwnsPartitionElements,
+  ClassRegistry, IModelDb, IModelHost, IModelJsFs, PhysicalModel, PhysicalPartition, Schema, Schemas, SnapshotDb, SpatialCategory,
+  SubjectOwnsPartitionElements,
 } from "@bentley/imodeljs-backend";
 import {
   CategoryProps, Code, GeometricElement3dProps, IModel, InformationPartitionElementProps, PhysicalElementProps,
@@ -90,7 +91,7 @@ describe("LinearReferencing Domain", () => {
     });
 
     // Import the LinearReferencing schema
-    await iModelDb.importSchemas(new BackendRequestContext(), [LinearReferencingSchema.schemaFilePath, TestLinearReferencingSchema.schemaFilePath]);
+    await iModelDb.importSchemas([LinearReferencingSchema.schemaFilePath, TestLinearReferencingSchema.schemaFilePath]);
     iModelDb.saveChanges("Import TestLinearReferencing schema");
 
     // Insert a SpatialCategory

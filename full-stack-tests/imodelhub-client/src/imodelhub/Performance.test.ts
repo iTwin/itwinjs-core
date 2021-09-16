@@ -9,8 +9,7 @@ import * as utils from "./TestUtils";
 import { TestConfig } from "../TestConfig";
 
 describe.skip("iModelHub Performance tests", () => {
-  // SWB
-  let contextId: string;
+  let iTwinId: string;
   let imodelId: GuidString;
   let briefcase1: Briefcase;
   let briefcase2: Briefcase;
@@ -21,10 +20,9 @@ describe.skip("iModelHub Performance tests", () => {
     const accessToken: AccessToken = await utils.login();
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
-    // SWB
-    contextId = await utils.getProjectId(requestContext);
-    await utils.createIModel(requestContext, utils.sharedimodelName, contextId, true, recreate);
-    imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);
+    iTwinId = await utils.getProjectId(requestContext);
+    await utils.createIModel(requestContext, utils.sharedimodelName, iTwinId, true, recreate);
+    imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, iTwinId);
     imodelHubClient = utils.getDefaultClient();
     const briefcases = await utils.getBriefcases(requestContext, imodelId, 2);
     briefcase1 = briefcases[0];
@@ -37,7 +35,7 @@ describe.skip("iModelHub Performance tests", () => {
 
   after(async () => {
     if (TestConfig.enableIModelBank) {
-      await utils.deleteIModelByName(requestContext, contextId, utils.sharedimodelName);
+      await utils.deleteIModelByName(requestContext, iTwinId, utils.sharedimodelName);
     }
   });
 
