@@ -20,7 +20,7 @@ div.components-timeline-thumb.iui-slider-thumb {
   top: 4px;
 }
 
-.components-timeline-tooltip-container {
+.components-timeline-rail-marker-container {
   width: 100%;
   position: absolute;
   div.components-timeline-tooltip {
@@ -85,6 +85,22 @@ div.components-timeline-thumb.iui-slider-thumb {
   transform: translateY(-50%);
   height: 4px;
   z-index: 1;
-  background: $buic-foreground-primary;
   cursor: pointer;
+}
+
+.components-timeline-date-marker {
+  pointer-events: none;
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(50%);
+}
+
+.date-marker-default {
+  height: 12px;
+  width: 3px;
+  border-radius: 4px;
+  transform: translateY(1px);   
+  background-color: $buic-foreground-primary;
 }

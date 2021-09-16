@@ -6,13 +6,13 @@
  * @module PropertyGrid
  */
 
-import { CommonProps, Orientation } from "@bentley/ui-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { PropertyCategory } from "../PropertyDataProvider";
-import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
-import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
-import { ActionButtonRenderer } from "../../properties/renderers/ActionButtonRenderer";
+import { CommonProps, Orientation } from "@bentley/ui-core";
 import { matchLinks } from "../../common/Links";
+import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
+import { ActionButtonRenderer } from "../../properties/renderers/ActionButtonRenderer";
+import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
+import { PropertyCategory } from "../PropertyDataProvider";
 
 /** Arguments for the Property Editing event callback
  * @public
@@ -64,12 +64,6 @@ export interface CommonPropertyGridProps extends CommonProps {
   /** Callback for when properties are updated
    * @beta */
   onPropertyUpdated?: (args: PropertyUpdatedArgs, category: PropertyCategory) => Promise<boolean>;
-
-  /** Callback for when links in properties are being clicked
-   * @beta
-   * @deprecated Should override data provider and set it on [[PropertyRecord]] instead
-   */
-  onPropertyLinkClick?: (property: PropertyRecord, text: string) => void;
 
   /** Custom property value renderer manager */
   propertyValueRendererManager?: PropertyValueRendererManager;
@@ -142,13 +136,4 @@ export class PropertyGridCommons {
       return { start: linkInfo.index, end: linkInfo.lastIndex };
     });
   };
-
-  public static assignRecordClickHandlers(records: PropertyRecord[], onPropertyLinkClick: (property: PropertyRecord, text: string) => void) {
-    records.forEach((record: PropertyRecord) => {
-      if (record.links)
-        record.links.onClick = (text) => onPropertyLinkClick(record, text);
-
-      this.assignRecordClickHandlers(record.getChildrenRecords(), onPropertyLinkClick);
-    });
-  }
 }

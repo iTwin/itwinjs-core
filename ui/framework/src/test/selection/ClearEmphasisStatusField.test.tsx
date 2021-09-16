@@ -29,10 +29,10 @@ describe("ClearEmphasisStatusField", () => {
     HideIsolateEmphasizeManager.prototype.areFeatureOverridesActive = functionToRestore;
   });
 
-  it("ClearEmphasisStatusField renders visible", () => {
+  it("ClearEmphasisStatusField renders visible", async () => {
     HideIsolateEmphasizeManager.prototype.areFeatureOverridesActive = featureOverridesActive;
 
-    IModelApp.viewManager.setSelectedView(viewportMock.object);
+    await IModelApp.viewManager.setSelectedView(viewportMock.object);
     const component = render(<ClearEmphasisStatusField isInFooterMode={false} hideWhenUnused={true} onOpenWidget={(_widget: StatusBarFieldId) => { }} openWidget={"none"} />);
     expect(component).not.to.be.undefined;
     // Having trouble with useActiveViewport hook with viewport mocks
@@ -43,18 +43,18 @@ describe("ClearEmphasisStatusField", () => {
     expect(component.container.querySelector("div.uifw-indicator-fade-out")).not.to.be.null;
   });
 
-  it("ClearEmphasisStatusField renders invisible", () => {
+  it("ClearEmphasisStatusField renders invisible", async () => {
     HideIsolateEmphasizeManager.prototype.areFeatureOverridesActive = featureOverridesNotActive;
-    IModelApp.viewManager.setSelectedView(viewportMock.object);
+    await IModelApp.viewManager.setSelectedView(viewportMock.object);
 
     const component = render(<ClearEmphasisStatusField isInFooterMode={false} hideWhenUnused={true} onOpenWidget={(_widget: StatusBarFieldId) => { }} openWidget={"none"} />);
     expect(component).not.to.be.undefined;
     expect(component.container.querySelector("div.uifw-indicator-fade-out")).not.to.be.null;
   });
 
-  it("ClearEmphasisStatusField renders always", () => {
+  it("ClearEmphasisStatusField renders always", async () => {
     HideIsolateEmphasizeManager.prototype.areFeatureOverridesActive = featureOverridesNotActive;
-    IModelApp.viewManager.setSelectedView(viewportMock.object);
+    await IModelApp.viewManager.setSelectedView(viewportMock.object);
 
     const component = render(<ClearEmphasisStatusField isInFooterMode={false} hideWhenUnused={false} onOpenWidget={(_widget: StatusBarFieldId) => { }} openWidget={"none"} />);
     expect(component).not.to.be.undefined;

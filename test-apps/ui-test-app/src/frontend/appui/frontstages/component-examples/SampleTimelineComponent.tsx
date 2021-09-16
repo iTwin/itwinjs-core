@@ -2,8 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import "./SampleTimelineComponent.scss";
 import * as React from "react";
-import { TimelineComponent, TimelineMenuItemProps } from "@bentley/ui-imodel-components";
+import starSvg from "@bentley/icons-generic/icons/star.svg?sprite";
+import { TimelineComponent, TimelineDateMarkerProps, TimelineMenuItemProps } from "@bentley/ui-imodel-components";
+import { IconSpecUtilities } from "@bentley/ui-abstract";
+import { Icon } from "@bentley/ui-core";
 export function ItemsAppendedSampleTimeline() {
   const duration = 8 * 1000;
   const startDate = new Date(2014, 6, 6);
@@ -145,3 +149,48 @@ export function LocalizedTimeSampleTimeline() {
   );
 }
 
+export function CurrentDateMarkedSampleTimeline() {
+  const duration = 10 * 1000;
+  const startDate = new Date("January 1, 2021, 00:00:00 GMT -0000");
+  const endDate = new Date("December 31, 2021, 20:30:45 GMT -0000");
+  return (
+    <div style={{ width: "100%", height: "auto" }}>
+      <TimelineComponent
+        startDate={startDate}
+        endDate={endDate}
+        initialDuration={0}
+        totalDuration={duration}
+        minimized={true}
+        showDuration={false}
+        alwaysMinimized={true}
+        timeZoneOffset={0}
+        markDate={{}}
+        componentId={"sampleApp-currentDateMarkedSampleTimeline"} // qualify id with "<appName>-" to ensure uniqueness
+      />
+    </div>
+  );
+}
+
+export function CurrentDateMarkedCustomIconSampleTimeline() {
+  const duration = 10 * 1000;
+  const startDate = new Date("January 1, 2021");
+  const endDate = new Date("July 1, 2022");
+  const starMarker = <span className="date-marker-icon"><Icon iconSpec={IconSpecUtilities.createSvgIconSpec(starSvg)}/></span>;
+  const markToday: TimelineDateMarkerProps = {date: new Date(), dateMarker: starMarker};
+  return (
+    <div style={{ width: "100%", height: "auto" }}>
+      <TimelineComponent
+        startDate={startDate}
+        endDate={endDate}
+        initialDuration={0}
+        totalDuration={duration}
+        minimized={true}
+        showDuration={false}
+        alwaysMinimized={true}
+        timeZoneOffset={0}
+        markDate={markToday}
+        componentId={"sampleApp-currentDateMarkedCustomIconSampleTimeline"} // qualify id with "<appName>-" to ensure uniqueness
+      />
+    </div>
+  );
+}

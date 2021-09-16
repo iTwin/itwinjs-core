@@ -2283,6 +2283,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     fillLocalXYTriangleFrame(originIndex: number, targetAIndex: number, targetBIndex: number, result?: Transform): Transform | undefined;
     float64Data(): Float64Array;
     get float64Length(): number;
+    forceClosure(tolerance?: number): void;
     front(result?: Point3d): Point3d | undefined;
     getPoint2dAtCheckedPointIndex(pointIndex: number, result?: Point2d): Point2d | undefined;
     getPoint2dAtUncheckedPointIndex(pointIndex: number, result?: Point2d): Point2d;
@@ -3999,7 +4000,7 @@ export class Point3d extends XYZ {
 
 // @public
 export class Point3dArray {
-    static centroid(points: IndexedXYZCollection, result?: Point3d): Point3d;
+    static centroid(points: IndexedXYZCollection | Point3d[], result?: Point3d): Point3d;
     static cloneDeepJSONNumberArrays(data: MultiLineStringDataVariant): number[][];
     static cloneDeepXYZPoint3dArrays(data: MultiLineStringDataVariant): any[];
     static clonePoint2dArray(data: XYAndZ[]): Point2d[];

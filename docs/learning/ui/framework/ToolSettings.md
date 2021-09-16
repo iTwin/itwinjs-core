@@ -48,7 +48,7 @@ export class SampleToolWithSetting extends PrimitiveTool {
   }
 
   // Respond to user changes in the tool settings UI components
-  public applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean {
+  public async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
     if (updatedValue.propertyName === this.useLengthProperty.name) {
       this.useLength = updatedValue.value.value as boolean;
       IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.useLengthProperty.item);

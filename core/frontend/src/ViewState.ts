@@ -8,14 +8,14 @@
 
 import { assert, BeEvent, Id64, Id64Arg, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import {
-  Angle, AxisOrder, ClipVector, Constant, Geometry, LongitudeLatitudeNumber, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d,
-  PolyfaceBuilder, Range2d, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY, XYAndZ, XYZ, YawPitchRollAngles,
+  Angle, AxisOrder, ClipVector, Constant, Geometry, LongitudeLatitudeNumber, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d,
+  Plane3dByOriginAndUnitNormal, Point2d, Point3d, PolyfaceBuilder, Range2d, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY,
+  XYAndZ, XYZ, YawPitchRollAngles,
 } from "@bentley/geometry-core";
 import {
-  AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef,
-  FeatureAppearance, Frustum, GlobeMode, GraphicParams, GridOrientationType, ModelClipGroups, Npc, RenderMaterial, RenderSchedule,
-  SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails,
-  ViewDetails3d, ViewFlags, ViewStateProps,
+  AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef, FeatureAppearance, Frustum, GlobeMode, GraphicParams, GridOrientationType,
+  ModelClipGroups, Npc, RenderMaterial, RenderSchedule, SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps,
+  ViewDefinitionProps, ViewDetails, ViewDetails3d, ViewFlags, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemState } from "./AuxCoordSys";
 import { CategorySelectorState } from "./CategorySelectorState";
@@ -35,7 +35,7 @@ import { SheetViewState } from "./SheetViewState";
 import { SpatialViewState } from "./SpatialViewState";
 import { StandardView, StandardViewId } from "./StandardView";
 import { DisclosedTileTreeSet, TileTreeReference } from "./tile/internal";
-import { ViewChangeOptions } from "./ViewAnimation";
+import { MarginOptions, OnViewExtentsError } from "./ViewAnimation";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { areaToEyeHeight, areaToEyeHeightFromGcs, GlobalLocation } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
@@ -78,7 +78,7 @@ export interface LookAtArgs {
   /** The distance from the eyePoint to the back plane. If undefined, the existing back distance is used. */
   readonly backDistance?: number;
   /** Used for providing onExtentsError. */
-  readonly opts?: ViewChangeOptions;
+  readonly opts?: OnViewExtentsError;
 }
 
 /** Arguments to [[ViewState3d.lookAt]] to set up a perspective view
@@ -641,7 +641,7 @@ export abstract class ViewState extends ElementState {
    * @param opts for providing onExtentsError
    * @return Success if the frustum was successfully updated, or an appropriate error code.
    */
-  public setupFromFrustum(inFrustum: Frustum, opts?: ViewChangeOptions): ViewStatus {
+  public setupFromFrustum(inFrustum: Frustum, opts?: OnViewExtentsError): ViewStatus {
     const frustum = inFrustum.clone(); // make sure we don't modify input frustum
     frustum.fixPointOrder();
     const frustPts = frustum.points;
@@ -740,7 +740,7 @@ export abstract class ViewState extends ElementState {
   }
 
   /** @internal */
-  public adjustViewDelta(delta: Vector3d, origin: XYZ, rot: Matrix3d, aspect?: number, opts?: ViewChangeOptions): ViewStatus {
+  public adjustViewDelta(delta: Vector3d, origin: XYZ, rot: Matrix3d, aspect?: number, opts?: OnViewExtentsError): ViewStatus {
     const origDelta = delta.clone();
 
     let status = ViewStatus.Success;
@@ -936,7 +936,7 @@ export abstract class ViewState extends ElementState {
    * @param options for providing MarginPercent and onExtentsError
    * @note for 2d views, only the X and Y values of volume are used.
    */
-  public lookAtVolume(volume: LowAndHighXYZ | LowAndHighXY, aspect?: number, options?: ViewChangeOptions) {
+  public lookAtVolume(volume: LowAndHighXYZ | LowAndHighXY, aspect?: number, options?: MarginOptions & OnViewExtentsError) {
     const rangeBox = Frustum.fromRange(volume).points;
     this.getRotation().multiplyVectorArrayInPlace(rangeBox);
     return this.lookAtViewAlignedVolume(Range3d.createArray(rangeBox), aspect, options);
@@ -949,7 +949,7 @@ export abstract class ViewState extends ElementState {
    * @param options for providing MarginPercent and onExtentsError
    * @see lookAtVolume
    */
-  public lookAtViewAlignedVolume(volume: Range3d, aspect?: number, options?: ViewChangeOptions) {
+  public lookAtViewAlignedVolume(volume: Range3d, aspect?: number, options?: MarginOptions & OnViewExtentsError) {
     if (volume.isNull) // make sure volume is valid
       return;
 
@@ -1487,7 +1487,7 @@ export abstract class ViewState3d extends ViewState {
   private finishLookAtGlobalLocation(targetPointCartographic: Cartographic, origEyePoint: Point3d, eyePoint: Point3d, targetPoint: Point3d, pitchAngleRadians: number): number {
     targetPointCartographic.latitude += .001;
     const northOfEyePoint = this.cartographicToRoot(targetPointCartographic)!;
-    let upVector = northOfEyePoint.unitVectorTo(eyePoint)!;
+    let upVector = targetPoint.unitVectorTo(northOfEyePoint)!;
     if (this.globeMode === GlobeMode.Plane)
       upVector = Vector3d.create(Math.abs(upVector.x), Math.abs(upVector.y), Math.abs(upVector.z));
 
@@ -1533,7 +1533,7 @@ export abstract class ViewState3d extends ViewState {
     return backgroundMapGeometry ? backgroundMapGeometry.cartographicToDbFromGcs(cartographic, result) : undefined;
   }
 
-  public override setupFromFrustum(frustum: Frustum, opts?: ViewChangeOptions): ViewStatus {
+  public override setupFromFrustum(frustum: Frustum, opts?: OnViewExtentsError): ViewStatus {
     const stat = super.setupFromFrustum(frustum, opts);
     if (ViewStatus.Success !== stat)
       return stat;

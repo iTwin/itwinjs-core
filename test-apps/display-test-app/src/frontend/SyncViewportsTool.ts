@@ -16,7 +16,7 @@ export class SyncViewportsTool extends Tool {
   private static _removeListeners?: VoidFunction;
   private static _sync = new TwoWayViewportSync();
 
-  public override run(vp1?: Viewport, vp2?: Viewport): boolean {
+  public override async run(vp1?: Viewport, vp2?: Viewport): Promise<boolean> {
     const that = SyncViewportsTool;
     if (!vp1 && !vp2) {
       that.disconnect();
@@ -30,7 +30,7 @@ export class SyncViewportsTool extends Tool {
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     switch (args.length) {
       case 0:
         return this.run();
