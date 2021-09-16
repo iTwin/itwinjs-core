@@ -5,6 +5,7 @@
 ```ts
 
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
+import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { CodeSpec } from '@bentley/imodeljs-common';
 import * as ECSchemaMetaData from '@bentley/ecschema-metadata';
 import { Element } from '@bentley/imodeljs-backend';
@@ -38,7 +39,7 @@ export class IModelExporter {
     excludeElementsInCategory(categoryId: Id64String): void;
     excludeRelationshipClass(classFullName: string): void;
     exportAll(): Promise<void>;
-    exportChanges(user?: AuthorizedClientRequestContext, startChangesetId?: string): Promise<void>;
+    exportChanges(requestContext: AuthorizedClientRequestContext, startChangesetId?: string): Promise<void>;
     exportChildElements(elementId: Id64String): Promise<void>;
     exportCodeSpecById(codeSpecId: Id64String): Promise<void>;
     exportCodeSpecByName(codeSpecName: string): Promise<void>;
@@ -167,7 +168,7 @@ export class IModelTransformer extends IModelExportHandler {
     processModel(sourceModeledElementId: Id64String): Promise<void>;
     processModelContents(sourceModelId: Id64String, targetModelId: Id64String, elementClassFullName?: string): Promise<void>;
     processRelationships(baseRelClassFullName: string): Promise<void>;
-    processSchemas(): Promise<void>;
+    processSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void>;
     processSubject(sourceSubjectId: Id64String, targetSubjectId: Id64String): Promise<void>;
     get provenanceDb(): IModelDb;
     protected _schemaExportDir: string;
