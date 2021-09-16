@@ -54,7 +54,6 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
 
     const imsClient = new ImsAuthorizationClient();
     this._imsUrl = await imsClient.getUrl(new ClientRequestContext(""));
-    const oidcUrl = await imsClient.getUrl(new ClientRequestContext(""));
 
     // Due to issues with a timeout or failed request to the authorization service increasing the standard timeout and adding retries.
     // Docs for this option here, https://github.com/panva/node-openid-client/tree/master/docs#customizing-http-requests
@@ -63,7 +62,7 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
       retry: 3,
     });
 
-    this._issuer = await Issuer.discover(url.resolve(oidcUrl, "/.well-known/openid-configuration"));
+    this._issuer = await Issuer.discover(url.resolve(this._imsUrl, "/.well-known/openid-configuration"));
     this._client = new this._issuer.Client({ client_id: this._config.clientId, token_endpoint_auth_method: "none" }); // eslint-disable-line @typescript-eslint/naming-convention
   }
 
