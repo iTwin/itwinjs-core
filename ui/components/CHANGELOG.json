@@ -2,6 +2,18 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "2.19.12",
+      "tag": "@bentley/ui-components_v2.19.12",
+      "date": "Wed, 15 Sep 2021 18:06:47 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "`TreeRenderer`: Fix last call to `scrollToNode` being repeated on each render."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.11",
       "tag": "@bentley/ui-components_v2.19.11",
       "date": "Thu, 09 Sep 2021 21:04:58 GMT",

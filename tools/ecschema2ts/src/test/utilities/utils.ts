@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs-extra";
 import * as path from "path";
-import { DOMParser } from "xmldom";
+import { DOMParser } from "@xmldom/xmldom";
 import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
 import { SchemaXmlFileLocater } from "@bentley/ecschema-locaters";
 import { SchemaReadHelper } from "@bentley/ecschema-metadata/lib/Deserialization/Helper";

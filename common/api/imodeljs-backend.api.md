@@ -1065,8 +1065,8 @@ export class ECDb implements IDisposable {
     get nativeDb(): IModelJsNative.ECDb;
     openDb(pathName: string, openMode?: ECDbOpenMode): void;
     // @internal
-    prepareSqliteStatement(sql: string): SqliteStatement;
-    prepareStatement(ecsql: string): ECSqlStatement;
+    prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
+    prepareStatement(ecsql: string, logErrors?: boolean): ECSqlStatement;
     query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority, abbreviateBlobs?: boolean): AsyncIterableIterator<any>;
     queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
     // @internal
@@ -1075,10 +1075,10 @@ export class ECDb implements IDisposable {
     resetSqliteCache(size: number): void;
     restartQuery(token: string, ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
     saveChanges(changeSetName?: string): void;
-    withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T;
-    withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T): T;
-    withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T;
-    withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T): T;
+    withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
+    withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
+    withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
+    withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
 }
 
 // @public
@@ -1195,7 +1195,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     get isPrepared(): boolean;
     next(): IteratorResult<any>;
     // @internal
-    prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string): void;
+    prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string, logErrors?: boolean): void;
     reset(): void;
     // (undocumented)
     get sql(): string;
@@ -1204,7 +1204,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     stepAsync(): Promise<DbResult>;
     stepForInsert(): ECSqlInsertResult;
     // @internal
-    tryPrepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string): StatusCodeWithMessage<DbResult>;
+    tryPrepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string, logErrors?: boolean): StatusCodeWithMessage<DbResult>;
 }
 
 // @public
@@ -2208,8 +2208,8 @@ export abstract class IModelDb extends IModel {
     }, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: SnapshotOpenOptions): IModelJsNative.DgnDb;
     get pathName(): LocalFileName;
     // @internal
-    prepareSqliteStatement(sql: string): SqliteStatement;
-    prepareStatement(sql: string): ECSqlStatement;
+    prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
+    prepareStatement(sql: string, logErrors?: boolean): ECSqlStatement;
     query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority, abbreviateBlobs?: boolean): AsyncIterableIterator<any>;
     queryEntityIds(params: EntityQueryParams): Id64Set;
     queryFilePropertyBlob(prop: FilePropertyProps): Uint8Array | undefined;
@@ -2245,10 +2245,10 @@ export abstract class IModelDb extends IModel {
     static validateSchemas(filePath: LocalFileName, forReadWrite: boolean): SchemaState;
     // (undocumented)
     readonly views: IModelDb.Views;
-    withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T;
-    withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T): T;
-    withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T;
-    withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T): T;
+    withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
+    withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
+    withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
+    withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
 }
 
 // @public (undocumented)
@@ -2350,7 +2350,9 @@ export class IModelHost {
     static get compressCachedTiles(): boolean;
     // (undocumented)
     static configuration?: IModelHostConfiguration;
-    static getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken | undefined>;
+    // @internal (undocumented)
+    static flushLog(): void;
+    static getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
     // @internal (undocumented)
     static getAuthorizedContext(): Promise<AuthorizedClientRequestContext>;
     // @alpha
@@ -3700,7 +3702,7 @@ export class SQLiteDb implements IDisposable {
     get nativeDb(): IModelJsNative.SQLiteDb;
     openDb(pathName: string, openMode: OpenMode): void;
     // @internal
-    prepareSqliteStatement(sql: string): SqliteStatement;
+    prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
     saveChanges(): void;
     withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T;
     withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T;
@@ -3732,7 +3734,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     get isPrepared(): boolean;
     get isReadonly(): boolean;
     next(): IteratorResult<any>;
-    prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb | IModelJsNative.SQLiteDb): void;
+    prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb | IModelJsNative.SQLiteDb, logErrors?: boolean): void;
     reset(): void;
     // (undocumented)
     get sql(): string;

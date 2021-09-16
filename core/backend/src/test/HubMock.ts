@@ -168,10 +168,6 @@ export class HubMock {
   public static async acquireNewBriefcaseId(arg: IModelIdArg): Promise<number> {
     const user = arg.user ?? await AuthorizedBackendRequestContext.create();
     return this.findLocalHub(arg.iModelId).acquireNewBriefcaseId(user.accessToken ?? "");
-
-  }
-  /** Release a briefcaseId. After this call it is illegal to generate changesets for the released briefcaseId. */
-  public static async releaseBriefcase(arg: BriefcaseIdArg): Promise<void> {
     return this.findLocalHub(arg.iModelId).releaseBriefcaseId(arg.briefcaseId);
   }
 

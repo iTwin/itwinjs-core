@@ -19,8 +19,8 @@ import { IModelConnection } from "../../IModelConnection";
 import { MapTileTreeReference, TileTreeReference } from "../../tile/internal";
 import { ViewRect } from "../../ViewRect";
 import { GraphicBranch, GraphicBranchOptions } from "../GraphicBranch";
-import { BatchOptions, GraphicBuilder, GraphicBuilderOptions } from "../GraphicBuilder";
-import { InstancedGraphicParams } from "../InstancedGraphicParams";
+import { BatchOptions, CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../GraphicBuilder";
+import { InstancedGraphicParams, PatternGraphicParams } from "../InstancedGraphicParams";
 import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
 import { RealityMeshPrimitive } from "../primitives/mesh/RealityMeshPrimitive";
 import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
@@ -30,13 +30,14 @@ import { RenderClipVolume } from "../RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
 import {
-  DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderDiagnostics, RenderSystem, RenderSystemDebugControl, TerrainTexture,
+  DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderAreaPattern, RenderDiagnostics, RenderGeometry, RenderSystem, RenderSystemDebugControl, TerrainTexture,
 } from "../RenderSystem";
 import { RenderTarget } from "../RenderTarget";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "../ScreenSpaceEffectBuilder";
 import { BackgroundMapDrape } from "./BackgroundMapDrape";
-import { CachedGeometry, SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
+import { SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { ClipVolume } from "./ClipVolume";
+import { isInstancedGraphicParams, PatternBuffers } from "./InstancedGeometry";
 import { Debug } from "./Diagnostics";
 import { WebGLDisposable } from "./Disposable";
 import { DepthBuffer, FrameBufferStack } from "./FrameBuffer";
@@ -46,7 +47,7 @@ import { Batch, Branch, Graphic, GraphicOwner, GraphicsArray } from "./Graphic";
 import { Layer, LayerContainer } from "./Layer";
 import { LineCode } from "./LineCode";
 import { Material } from "./Material";
-import { MeshGraphic } from "./Mesh";
+import { MeshGraphic, MeshRenderGeometry } from "./Mesh";
 import { PointCloudGeometry } from "./PointCloud";
 import { PointStringGeometry } from "./PointString";
 import { PolylineGeometry } from "./Polyline";
@@ -142,6 +143,17 @@ class WebGL2Extensions extends WebGLExtensions {
   public invalidateFrameBuffer(attachments: number[]): void {
     this._context.invalidateFramebuffer(this._context.FRAMEBUFFER, attachments);
   }
+}
+
+function createTextureFromGradient(grad: Gradient.Symb): RenderTexture | undefined {
+  const image: ImageBuffer = grad.getImage(0x100, 0x100);
+
+  const textureHandle = TextureHandle.createForImageBuffer(image, RenderTexture.Type.Normal);
+  if (!textureHandle)
+    return undefined;
+
+  const params = new Texture.Params(undefined, Texture.Type.Normal, true); // gradient textures are unnamed, but owned by this IdMap.
+  return new Texture(params, textureHandle);
 }
 
 /** Id map holds key value pairs for both materials and textures, useful for caching such objects.
@@ -306,15 +318,10 @@ export class IdMap implements WebGLDisposable {
     if (existingGrad)
       return existingGrad;
 
-    const image: ImageBuffer = grad.getImage(0x100, 0x100);
+    const texture = createTextureFromGradient(grad);
+    if (texture)
+      this.addGradient(grad, texture);
 
-    const textureHandle = TextureHandle.createForImageBuffer(image, RenderTexture.Type.Normal);
-    if (!textureHandle)
-      return undefined;
-
-    const params = new Texture.Params(undefined, Texture.Type.Normal, true); // gradient textures are unnamed, but owned by this IdMap.
-    const texture = new Texture(params, textureHandle);
-    this.addGradient(grad, texture);
     return texture;
   }
 
@@ -336,12 +343,6 @@ const enum VertexAttribState {
   Enabled = 1 << 0,
   Instanced = 1 << 2,
   InstancedEnabled = Instanced | Enabled,
-}
-
-function createPrimitive(createGeom: (viOrigin: Point3d | undefined) => CachedGeometry | undefined, instancesOrVIOrigin: InstancedGraphicParams | Point3d | undefined): RenderGraphic | undefined {
-  const viOrigin = instancesOrVIOrigin instanceof Point3d ? instancesOrVIOrigin : undefined;
-  const instances = undefined === viOrigin ? instancesOrVIOrigin as InstancedGraphicParams : undefined;
-  return Primitive.create(() => createGeom(viOrigin), instances);
 }
 
 /** @internal */
@@ -515,12 +516,8 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return new OffScreenTarget(rect);
   }
 
-  public createGraphic(options: GraphicBuilderOptions): GraphicBuilder {
+  public createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): GraphicBuilder {
     return new PrimitiveBuilder(this, options);
-  }
-
-  public override createMesh(params: MeshParams, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {
-    return MeshGraphic.create(params, instances);
   }
 
   public override createPlanarGrid(frustum: Frustum, grid: PlanarGridProps): RenderGraphic | undefined {
@@ -536,19 +533,43 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
   public override createRealityMesh(realityMesh: RealityMeshPrimitive): RenderGraphic | undefined {
     const geom = RealityMeshGeometry.createFromRealityMesh(realityMesh);
-    return geom ? Primitive.create(() => geom) : undefined;
+    return geom ? Primitive.create(geom) : undefined;
   }
 
-  public override createPolyline(params: PolylineParams, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {
-    return createPrimitive((viOrigin) => PolylineGeometry.create(params, viOrigin), instances);
+  public override createMeshGeometry(params: MeshParams, viOrigin?: Point3d): MeshRenderGeometry | undefined {
+    return MeshRenderGeometry.create(params, viOrigin);
   }
 
-  public override createPointString(params: PointStringParams, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {
-    return createPrimitive((viOrigin) => PointStringGeometry.create(params, viOrigin), instances);
+  public override createPolylineGeometry(params: PolylineParams, viOrigin?: Point3d): PolylineGeometry | undefined {
+    return PolylineGeometry.create(params, viOrigin);
+  }
+
+  public override createPointStringGeometry(params: PointStringParams, viOrigin?: Point3d): PointStringGeometry | undefined {
+    return PointStringGeometry.create(params, viOrigin);
+  }
+
+  public override createAreaPattern(params: PatternGraphicParams): PatternBuffers | undefined {
+    // ###TODO? The "shared" flag on PatternBuffers is always true, because the buffers can be shared amongst any number of RenderGraphics
+    // Unless we can figure out how to track those references we'll have to rely on garbage collection to dispose of it, and
+    // we won't be able to accurately report GPU memory usage (we can either report none for patterns, or count each occurrence of each pattern).
+    return PatternBuffers.create(params, true);
+  }
+
+  public override createRenderGraphic(geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined {
+    if (!(geometry instanceof MeshRenderGeometry)) {
+      if (geometry instanceof PolylineGeometry || geometry instanceof PointStringGeometry)
+        return Primitive.create(geometry, instances);
+
+      assert(false, "Invalid RenderGeometry for System.createRenderGraphic");
+      return undefined;
+    }
+
+    assert(!instances || instances instanceof PatternBuffers || isInstancedGraphicParams(instances));
+    return MeshGraphic.create(geometry, instances);
   }
 
   public override createPointCloud(args: PointCloudArgs): RenderGraphic | undefined {
-    return Primitive.create(() => new PointCloudGeometry(args));
+    return Primitive.create(new PointCloudGeometry(args));
   }
 
   public createGraphicList(primitives: RenderGraphic[]): RenderGraphic {
@@ -576,12 +597,11 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
   public override createSkyBox(params: SkyBox.CreateParams): RenderGraphic | undefined {
-    if (undefined !== params.cube) {
-      return SkyCubePrimitive.create(() => SkyBoxQuadsGeometry.create(params.cube!));
-    } else {
-      assert(undefined !== params.sphere || undefined !== params.gradient);
-      return SkySpherePrimitive.create(() => SkySphereViewportQuadGeometry.createGeometry(params));
-    }
+    if (undefined !== params.cube)
+      return SkyCubePrimitive.create(SkyBoxQuadsGeometry.create(params.cube));
+
+    assert(undefined !== params.sphere || undefined !== params.gradient);
+    return SkySpherePrimitive.create(SkySphereViewportQuadGeometry.createGeometry(params));
   }
 
   public override createScreenSpaceEffectBuilder(params: ScreenSpaceEffectBuilderParams): ScreenSpaceEffectBuilder {
@@ -689,7 +709,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
   /** Attempt to create a texture using gradient symbology. */
-  public override getGradientTexture(symb: Gradient.Symb, imodel: IModelConnection): RenderTexture | undefined {
+  public override getGradientTexture(symb: Gradient.Symb, imodel?: IModelConnection): RenderTexture | undefined {
+    if (!imodel)
+      return createTextureFromGradient(symb);
+
     const idMap = this.getIdMap(imodel);
     const texture = idMap.getGradient(symb);
     return texture;

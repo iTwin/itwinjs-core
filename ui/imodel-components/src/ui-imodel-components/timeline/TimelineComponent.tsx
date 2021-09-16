@@ -43,42 +43,74 @@ export interface TimelineMenuItemProps {
   /** duration for the entire timeline to play */
   timelineDuration: number;
 }
+/** TimelineDateMarkerProps: Mark a date on the timeline with an indicator
+ * @public
+ */
+export interface TimelineDateMarkerProps {
+  /** Date to mark. If undefined, today's date will be used. */
+  date?: Date;
+  /** ReactNode to use as the marker on the timeline. If undefined, a short vertical bar will mark the date. */
+  dateMarker?: React.ReactNode;
+}
 /**
  *  [[TimelineComponentProps]] configure the timeline
  * @public
  */
 export interface TimelineComponentProps {
-  startDate?: Date; // start date
-  endDate?: Date;   // end date
-  totalDuration: number;  // total duration in milliseconds
-  initialDuration?: number;  // initial value for current duration in milliseconds
-  /* For future use. This prop will always be treated as true. */
-  minimized?: boolean;  // show in minimized mode
-  repeat?: boolean;  // repeat animation indefinitely
-  showDuration?: boolean; // show the duration instead of time
-  onChange?: (duration: number) => void; // callback with current value (as a fraction)
-  onPlayPause?: (playing: boolean) => void; // callback triggered when play/pause button is pressed
-  onJump?: (forward: boolean) => void; // callback triggered when backward/forward buttons are pressed
-  onSettingsChange?: (arg: PlaybackSettings) => void; // callback triggered when a setting is changed
-  /* For future use. This prop will always be treated as true */
-  alwaysMinimized?: boolean; // always display in miniMode with no expand menu
-  componentId?: string; // must be set to use TimelineComponentEvents
-  includeRepeat?: boolean; // include the repeat option on the Timeline Context Menu
-  appMenuItems?: TimelineMenuItemProps[]; // app-supplied speed entries in the Timeline Context Menu
-  appMenuItemOption?: TimelineMenuItemOption; // how to include the supplied app menu items in the Timeline Context Menu
-  timeZoneOffset?: number; // Display date and time offset by the number of minutes specified. When undefined - local timezone will be used
+  /** Start date: beginning of the date range of a date-based timeline. */
+  startDate?: Date;
+  /** End date: end of the date range of a date-based timeline. */
+  endDate?: Date;
+  /** Total duration: range of the timeline in milliseconds. */
+  totalDuration: number;
+  /** Initial value for the current duration (the location of the thumb) in milliseconds */
+  initialDuration?: number;
+  /** Show in minimized mode (For future use. This prop will always be treated as true.) */
+  minimized?: boolean;
+  /** When playing, repeat indefinitely */
+  repeat?: boolean;
+  /** Show duration instead of time */
+  showDuration?: boolean;
+  /** Callback with current duration value (as a fraction) */
+  onChange?: (duration: number) => void;
+  /** Callback triggered when play/pause button is pressed */
+  onPlayPause?: (playing: boolean) => void;
+  /** Callback triggered when backward/forward buttons are pressed */
+  onJump?: (forward: boolean) => void;
+  /** Callback triggered when a setting is changed */
+  onSettingsChange?: (arg: PlaybackSettings) => void;
+  /** Always display in miniMode with no expand menu (For future use. This prop will always be treated as true) */
+  alwaysMinimized?: boolean;
+  /** ComponentId -- must be set to use TimelineComponentEvents */
+  componentId?: string;
+  /** Include the repeat option on the Timeline Context Menu */
+  includeRepeat?: boolean;
+  /** App-supplied speed entries in the Timeline Context Menu */
+  appMenuItems?: TimelineMenuItemProps[];
+  /** How to include the supplied app menu items in the Timeline Context Menu (prefix, append, replace)*/
+  appMenuItemOption?: TimelineMenuItemOption;
+  /** Display date and time offset by the number of minutes specified. When undefined - local timezone will be used */
+  timeZoneOffset?: number;
+  /** Display a marker on the timeline rail to indicate current date - will only work if starDate and endDate are defined */
+  markDate?: TimelineDateMarkerProps;
 
 }
 /** @internal */
 interface TimelineComponentState {
-  isSettingsOpen: boolean; // settings popup is opened or closed
-  isPlaying: boolean; // timeline is currently playing or paused
-  /* For future use. This will always be true */
-  minimized?: boolean; // minimized mode
-  currentDuration: number; // current duration in milliseconds
-  totalDuration: number;  // total duration in milliseconds
-  repeat: boolean; // automatically restart when the timeline is finished playing
-  includeRepeat: boolean; // include the repeat option in the timeline context menu
+  /** Settings popup is opened or closed */
+  isSettingsOpen: boolean;
+  /**  True if timeline is currently playing, false if paused */
+  isPlaying: boolean;
+  /** Minimized mode (For future use. This will always be true) */
+  minimized?: boolean;
+  /** Current duration in milliseconds */
+  currentDuration: number;
+  /** Total duration in milliseconds */
+  totalDuration: number;
+  /** If true, automatically restart when the timeline is finished playing */
+  repeat: boolean;
+  /** If true, include the repeat option in the timeline context menu */
+  includeRepeat: boolean;
 }
 
 /**
@@ -473,6 +505,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
             onChange={this._onTimelineChange}
             onUpdate={this._onTimelineChange}
             timeZoneOffset={this.props.timeZoneOffset}
+            markDate={this.props.markDate}
           />
           <div className="end-time-container">
             {hasDates && <span className="end-date">{toDateString(endDate!, timeZoneOffset)}</span>}

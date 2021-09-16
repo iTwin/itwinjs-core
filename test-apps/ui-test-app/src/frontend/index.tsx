@@ -29,10 +29,9 @@ import { MapLayersUI } from "@bentley/map-layers";
 import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
 import { Presentation } from "@bentley/presentation-frontend";
 import { getClassName } from "@bentley/ui-abstract";
-import { BeDragDropContext } from "@bentley/ui-components";
 import { LocalSettingsStorage, UiSettings } from "@bentley/ui-core";
 import {
-  ActionsUnion, AppNotificationManager, AppUiSettings, ConfigurableUiContent, createAction, DeepReadonly, DragDropLayerRenderer, FrameworkAccuDraw,
+  ActionsUnion, AppNotificationManager, AppUiSettings, ConfigurableUiContent, createAction, DeepReadonly, FrameworkAccuDraw,
   FrameworkReducer, FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef,
   FrontstageManager, IModelInfo, ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME,
   ThemeManager, ToolbarDragInteractionContext, UiFramework, UiSettingsProvider, UserSettingsStorage,
@@ -378,7 +377,7 @@ export class SampleAppIModelApp {
         Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Frontstage & ScreenViewports are ready`);
         if (false && ProcessDetector.isElectronAppFrontend) { // used for testing pop-out support
           // delay 5 seconds to see if window opens - since web browser will block pop-out if we wait. Also web browser will not allow multiple pop-outs.
-          setTimeout(() => { IModelApp.tools.run(OpenCustomPopoutTool.toolId); /* IModelApp.tools.run(OpenWidgetPopoutTool.toolId); */ }, 5000);
+          setTimeout(() => { void IModelApp.tools.run(OpenCustomPopoutTool.toolId); /* IModelApp.tools.run(OpenWidgetPopoutTool.toolId); */ }, 5000);
         }
       });
     } else {
@@ -614,23 +613,18 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
     return (
       <Provider store={SampleAppIModelApp.store} >
         <ThemeManager>
-          {/* eslint-disable-next-line deprecation/deprecation */}
-          <BeDragDropContext>
-            <SafeAreaContext.Provider value={SafeAreaInsets.All}>
-              <AppDragInteraction>
-                <AppFrameworkVersion>
-                  {/** UiSettingsProvider is optional. By default LocalUiSettings is used to store UI settings. */}
-                  <UiSettingsProvider settingsStorage={this.state.uiSettingsStorage}>
-                    <ConfigurableUiContent
-                      appBackstage={<AppBackstageComposer />}
-                    />
-                  </UiSettingsProvider>
-                </AppFrameworkVersion>
-              </AppDragInteraction>
-            </SafeAreaContext.Provider>
-            {/* eslint-disable-next-line deprecation/deprecation */}
-            <DragDropLayerRenderer />
-          </BeDragDropContext>
+          <SafeAreaContext.Provider value={SafeAreaInsets.All}>
+            <AppDragInteraction>
+              <AppFrameworkVersion>
+                {/** UiSettingsProvider is optional. By default LocalUiSettings is used to store UI settings. */}
+                <UiSettingsProvider settingsStorage={this.state.uiSettingsStorage}>
+                  <ConfigurableUiContent
+                    appBackstage={<AppBackstageComposer />}
+                  />
+                </UiSettingsProvider>
+              </AppFrameworkVersion>
+            </AppDragInteraction>
+          </SafeAreaContext.Provider>
         </ThemeManager>
       </Provider >
     );

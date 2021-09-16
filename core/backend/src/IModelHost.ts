@@ -231,7 +231,10 @@ export class IModelHost {
   public static async getAuthorizedContext() {
     return new AuthorizedClientRequestContext(await this.getAccessToken(), undefined, this.applicationId, this.applicationVersion, this.sessionId);
   }
-
+  /** @internal */
+  public static flushLog() {
+    return this.platform.DgnDb.flushLog();
+  }
   /** @internal */
   public static loadNative(): void {
     const platform = Platform.load();

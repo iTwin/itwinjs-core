@@ -139,11 +139,11 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
     return [];
   }
 
-  private _onClick = () => {
-    this._execute();
+  private _onClick = async () => {
+    return this._execute();
   };
 
-  private _execute(): void {
+  private async _execute(): Promise<void> {
     let toolId: string | undefined;
     let args: string[] = [];
     let runStatus = false;
@@ -176,7 +176,7 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
         runStatus = false;
 
         try {
-          runStatus = args.length > 0 ? /* istanbul ignore next */ tool.parseAndRun(...args) : tool.run();
+          runStatus = args.length > 0 ? /* istanbul ignore next */ await tool.parseAndRun(...args) : await tool.run();
           !runStatus && this._outputMessage(UiFramework.translate("keyinbrowser.failedToRun"));
         } catch (e) {
           // istanbul ignore next
@@ -210,11 +210,10 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
       this.setState({ currentArgs: event.target.value });
   };
 
-  private _onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>): void => {
+  private _onKeyDown = async (event: React.KeyboardEvent<HTMLInputElement>): Promise<void> => {
     if (SpecialKey.Enter === event.key) {
       event.stopPropagation();
-      this._execute();
-      return;
+      return this._execute();
     }
 
     // istanbul ignore else
@@ -239,8 +238,8 @@ export class KeyinBrowser extends React.PureComponent<KeyinBrowserProps, KeyinBr
     const inputValue = (event.target as HTMLInputElement).value;
     // istanbul ignore else
     if (this._processInputValue(inputValue)) {
-      setTimeout(() => {
-        this._execute();
+      setTimeout(async () => {
+        await this._execute();
       });
     }
   };

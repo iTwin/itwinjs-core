@@ -64,17 +64,17 @@ describe("FrontstageManager", () => {
   });
 
   it("setActiveModalFrontstage from backstage item", async () => {
-    const handleFrontstageCloseRequested = ({stageCloseFunc}: ModalFrontstageRequestedCloseEventArgs) =>{
+    const handleFrontstageCloseRequested = ({ stageCloseFunc }: ModalFrontstageRequestedCloseEventArgs) => {
       stageCloseFunc();
     };
 
     // since we are not really displaying modal stage add listener to mimic the close processing
     const removeListener = FrontstageManager.onCloseModalFrontstageRequestedEvent.addListener(handleFrontstageCloseRequested);
 
-    expect (FrontstageManager.activeModalFrontstage).to.be.undefined;
-    const backstageItem = SettingsModalFrontstage.getBackstageActionItem(100,10);
+    expect(FrontstageManager.activeModalFrontstage).to.be.undefined;
+    const backstageItem = SettingsModalFrontstage.getBackstageActionItem(100, 10);
     backstageItem.execute();
-    expect (FrontstageManager.activeModalFrontstage).to.not.be.undefined;
+    expect(FrontstageManager.activeModalFrontstage).to.not.be.undefined;
     FrontstageManager.closeModalFrontstage();
     await TestUtils.flushAsyncOperations();
 
@@ -96,17 +96,17 @@ describe("FrontstageManager", () => {
       expect(frontstageDef.applicationData).to.not.be.undefined;
 
       const tool = new RestoreFrontstageLayoutTool();
-      tool.parseAndRun(frontstageDef.id);
+      await tool.parseAndRun(frontstageDef.id);
       spy.calledOnce.should.true;
       spy.resetHistory();
 
       // call without id to use active stage
-      tool.parseAndRun();
+      await tool.parseAndRun();
       spy.calledOnce.should.true;
       spy.resetHistory();
 
       // call without invalid id
-      tool.parseAndRun("bad-id");
+      await tool.parseAndRun("bad-id");
       spy.calledOnce.should.false;
     }
   });
@@ -178,6 +178,7 @@ describe("FrontstageManager", () => {
 
       FrontstageManager.isInitialized = false;
       FrontstageManager.initialize();
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       IModelApp.viewManager.setSelectedView(viewportMock.object);
     });
 

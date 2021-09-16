@@ -96,7 +96,7 @@ class TimePointComparison {
 export class TimePointComparisonTool extends Tool {
   public static override toolId = "ToggleTimePointComparison";
 
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (vp)
       TimePointComparison.toggle(vp);
