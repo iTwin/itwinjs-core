@@ -11,8 +11,8 @@ import {
   PlanarClipMaskState, RenderMemory, RenderPlanarClassifier, RenderTextureDrape, SceneContext, ScreenViewport, SnapshotConnection, TextureDrapeMap,
   TileTreeReference,
 } from "@bentley/imodeljs-frontend";
-import { MeshArgs } from "@bentley/imodeljs-frontend/lib/render-primitives";
-import { Batch, FrameBuffer, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@bentley/imodeljs-frontend/lib/webgl";
+import { MeshArgs } from "@bentley/imodeljs-frontend/lib/cjs/render-primitives";
+import { Batch, FrameBuffer, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@bentley/imodeljs-frontend/lib/cjs/webgl";
 import { testViewports } from "../../TestViewport";
 import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1";
 import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";

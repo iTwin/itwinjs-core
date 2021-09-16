@@ -10,9 +10,8 @@ import { IModelBankClient, IModelHubClientLoggerCategory } from "@bentley/imodel
 import { BackendLoggerCategory, BriefcaseDb, BriefcaseManager, ChangeSummaryManager, IModelHostConfiguration, IModelJsFs, IpcHandler, NativeHost, NativeLoggerCategory } from "@bentley/imodeljs-backend";
 import { IModelRpcProps, RpcConfiguration } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
-import { TestUtility } from "@bentley/oidc-signin-tool";
+import { TestUserCredentials, TestUtility } from "@bentley/oidc-signin-tool";
 import "@bentley/oidc-signin-tool/lib/cjs/certa/certaBackend";
-import { TestUserCredentials } from "@bentley/oidc-signin-tool/lib/cjs/TestUsers";
 import * as fs from "fs";
 import * as nock from "nock";
 import * as path from "path";

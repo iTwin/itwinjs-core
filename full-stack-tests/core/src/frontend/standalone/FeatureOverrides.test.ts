@@ -8,7 +8,7 @@ import { Feature, FeatureTable, GeometryClass, PackedFeatureTable } from "@bentl
 import {
   HiliteSet, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
 } from "@bentley/imodeljs-frontend";
-import { FeatureOverrides, Target } from "@bentley/imodeljs-frontend/lib/webgl";
+import { FeatureOverrides, Target } from "@bentley/imodeljs-frontend/lib/cjs/webgl";
 
 function waitUntilTimeHasPassed() {
   const ot = Date.now();

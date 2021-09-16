@@ -346,7 +346,7 @@ describe("Ruleset Variables", async () => {
       };
 
       let content = await Presentation.presentation.getContent({ imodel, rulesetOrId: ruleset, keys: new KeySet(), descriptor: {} });
-      expect(content.contentSet.length).to.eq(0);
+      expect(content!.contentSet.length).to.eq(0);
 
       // https://www.sqlite.org/limits.html#max_variable_number
       const maxNumberOfSupportedBindParams = 32766;
@@ -356,8 +356,8 @@ describe("Ruleset Variables", async () => {
 
       await Presentation.presentation.vars(ruleset.id).setId64s("ids", ids);
       content = await Presentation.presentation.getContent({ imodel, rulesetOrId: ruleset, keys: new KeySet(), descriptor: {} });
-      expect(content.contentSet.length).to.eq(1);
-      expect(content.contentSet[0].primaryKeys[0]).to.deep.eq({ className: "PCJ_TestSchema:TestClass", id: "0x61" });
+      expect(content!.contentSet.length).to.eq(1);
+      expect(content!.contentSet[0].primaryKeys[0]).to.deep.eq({ className: "PCJ_TestSchema:TestClass", id: "0x61" });
     });
 
   });

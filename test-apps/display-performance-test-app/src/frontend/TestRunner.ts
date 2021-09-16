@@ -14,7 +14,7 @@ import {
   DisplayStyle3dState, DisplayStyleState, EntityState, FeatureSymbology, GLTimerResult, GLTimerResultCallback, IModelApp, IModelConnection,
   PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, SnapshotConnection, Target, TileAdmin, ViewRect, ViewState,
 } from "@bentley/imodeljs-frontend";
-import { System } from "@bentley/imodeljs-frontend/lib/webgl";
+import { System } from "@bentley/imodeljs-frontend/lib/cjs/webgl";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import {

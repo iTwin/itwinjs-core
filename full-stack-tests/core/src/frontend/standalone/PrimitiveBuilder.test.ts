@@ -10,8 +10,8 @@ import {
 } from "@bentley/imodeljs-frontend";
 import {
   DisplayParams, Geometry, GeometryAccumulator, PrimitiveBuilder, StrokesPrimitiveList, StrokesPrimitivePointList, StrokesPrimitivePointLists,
-} from "@bentley/imodeljs-frontend/lib/render-primitives";
-import { Branch } from "@bentley/imodeljs-frontend/lib/webgl";
+} from "@bentley/imodeljs-frontend/lib/cjs/render-primitives";
+import { Branch } from "@bentley/imodeljs-frontend/lib/cjs/webgl";
 
 describe("PrimitiveBuilder", () => {
   let imodel: IModelConnection;

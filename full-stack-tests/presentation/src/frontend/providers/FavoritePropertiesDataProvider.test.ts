@@ -47,10 +47,10 @@ describe("FavoritePropertiesDataProvider", async () => {
 
       let record = getPropertyRecordByLabel(propertyData, "Country")!;
       let field = await propertyProvider.getFieldByPropertyRecord(record);
-      await Presentation.favoriteProperties.add(field);
+      await Presentation.favoriteProperties.add(field!);
       record = getPropertyRecordByLabel(propertyData, "Model")!;
       field = await propertyProvider.getFieldByPropertyRecord(record);
-      await Presentation.favoriteProperties.add(field);
+      await Presentation.favoriteProperties.add(field!);
 
       Presentation.selection.scopes.activeScope = "element";
       const tooltipData = await provider.getData(imodel, "0x38");

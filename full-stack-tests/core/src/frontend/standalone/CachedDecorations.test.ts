@@ -8,7 +8,7 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { ScreenTestViewport, testOnScreenViewport } from "../TestViewport";
 import { Point3d } from "@bentley/geometry-core";
-import { Graphic, GraphicOwner } from "@bentley/imodeljs-frontend/lib/webgl";
+import { Graphic, GraphicOwner } from "@bentley/imodeljs-frontend/lib/cjs/webgl";
 
 describe("Cached decorations", () => {
   let imodel: IModelConnection;

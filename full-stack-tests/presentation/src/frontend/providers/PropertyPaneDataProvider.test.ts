@@ -114,10 +114,10 @@ describe("PropertyDataProvider", async () => {
         const category = properties.categories.find((c) => c.name === "/selected-item/");
         expect(category).to.not.be.undefined;
 
-        const record = properties.records[category.name].find((r) => r.property.displayLabel === "Code");
+        const record = properties.records[category!.name].find((r) => r.property.displayLabel === "Code");
         expect(record).to.not.be.undefined;
 
-        const keys = await provider.getPropertyRecordInstanceKeys(record);
+        const keys = await provider.getPropertyRecordInstanceKeys(record!);
         expect(keys).to.deep.eq([{ className: "Generic:PhysicalObject", id: "0x75" }]);
       });
 
@@ -139,10 +139,10 @@ describe("PropertyDataProvider", async () => {
         const category = findNestedCategory(properties.categories, "workingUnitsProp");
         expect(category).to.not.be.undefined;
 
-        const record = properties.records[category.name].find((r) => r.property.displayLabel === "Distance");
+        const record = properties.records[category!.name].find((r) => r.property.displayLabel === "Distance");
         expect(record).to.not.be.undefined;
 
-        const keys = await provider.getPropertyRecordInstanceKeys(record);
+        const keys = await provider.getPropertyRecordInstanceKeys(record!);
         expect(keys).to.deep.eq([{ className: "DgnCustomItemTypes_MyProp:workingUnitsPropElementAspect", id: "0x24" }]);
       });
 
