@@ -15,13 +15,13 @@ import { Guid, GuidString } from "./Id";
  */
 export interface SessionProps {
   /** Used for logging and usage tracking to identify the application  */
-  applicationId: string;
+  readonly applicationId: string;
 
   /** Used for logging and usage tracking to identify the application version  */
-  applicationVersion: string;
+  readonly applicationVersion: string;
 
   /** Used for logging to identify a session  */
-  sessionId: GuidString;
+  readonly sessionId: GuidString;
 }
 
 /** The properties of ClientRequestContext.
@@ -61,6 +61,18 @@ export class ClientRequestContext {
     this.applicationVersion = applicationVersion;
     this.sessionId = sessionId;
     this._useContextForRpc = false;
+  }
+
+  /** Use this for logging for ClientRequestContext.
+   * It returns only sanitized members, intentionally removing all others to avoid logging secrets or violating user-privacy rules.
+   */
+  public sanitize() {
+    return {
+      activityId: this.activityId,
+      applicationId: this.applicationId,
+      applicationVersion: this.applicationVersion,
+      sessionId: this.sessionId,
+    };
   }
 
   /** Setup use of this context for the next RPC call

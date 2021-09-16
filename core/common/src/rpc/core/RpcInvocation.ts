@@ -135,7 +135,12 @@ export class RpcInvocation {
       // eslint-disable-next-line @typescript-eslint/return-await
       return await op.call(impl, ...parameters);
     } catch (error: any) {
-      Logger.logException("RPC Error", error, undefined, () => { return { activityId: currentRequest.activityId, sessionId: currentRequest.sessionId }; });
+      // the RPC request threw an unhandled exception. Log it including sanitized request context.
+      let msg = error.toString();
+      const errMeta = error.getMetaData?.();
+      if (errMeta)
+        msg += ` ${JSON.stringify(errMeta)}`;
+      Logger.logError("RPC.unhandled", msg, () => currentRequest.sanitize());
       return this.reject(error);
     }
   }

@@ -172,7 +172,7 @@ export class Logger {
   }
 
   /** Format the metadata for a log message.  */
-  private static formatMetaData(getMetaData?: GetMetaDataFunction): any {
+  private static formatMetaData(getMetaData?: GetMetaDataFunction): string {
     return getMetaData ? ` ${JSON.stringify(Logger.makeMetaData(getMetaData))}` : "";
   }
 
@@ -306,12 +306,9 @@ export class Logger {
    * @param log The logger output function to use - defaults to Logger.logError
    * @param metaData  Optional data for the message
    */
-  public static logException(category: string, err: Error, log: LogFunction = Logger.logError, metaData?: GetMetaDataFunction): void {
+  public static logException(category: string, err: any, log: LogFunction = Logger.logError, metaData?: GetMetaDataFunction): void {
     log(category, Logger.getExceptionMessage(err), () => {
-      const mdata = metaData ? metaData() : {};
-      if (!mdata.hasOwnProperty("ExceptionType"))
-        mdata.ExceptionType = err.constructor.name;
-      return mdata;
+      return { ...err.getMetaData?.(), ...metaData?.(), exceptionType: err.constructor.name };
     });
   }
 
