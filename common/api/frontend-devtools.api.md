@@ -53,7 +53,7 @@ export abstract class AddEffectTool extends Tool {
     protected abstract defineEffect(builder: ScreenSpaceEffectBuilder): void;
     protected abstract get effectName(): string;
     // (undocumented)
-    run(): Promise<boolean>;
+    run(): boolean;
     protected abstract get source(): ScreenSpaceEffectSource;
     protected abstract get textureCoordFromPosition(): boolean;
 }
@@ -65,9 +65,9 @@ export class AnimationIntervalTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(interval?: BeDuration): Promise<boolean>;
+    run(interval?: BeDuration): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -96,9 +96,9 @@ export class ApplyViewByIdTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(viewId?: string): Promise<boolean>;
+    run(viewId?: string): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -110,9 +110,9 @@ export class ApplyViewTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(view?: ViewState): Promise<boolean>;
+    run(view?: ViewState): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -131,9 +131,9 @@ export class AttachCesiumAssetTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(assetId: number, requestKey: string): Promise<boolean>;
+    run(assetId: number, requestKey: string): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -144,8 +144,8 @@ export class AttachMapLayerTool extends AttachMapLayerBaseTool {
     static get maxArgs(): number;
     // (undocumented)
     static get minArgs(): number;
-    parseAndRun(...args: string[]): Promise<boolean>;
-    run(name: string): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
+    run(name: string): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -163,8 +163,8 @@ export class AttachRealityModelTool extends Tool {
     static get maxArgs(): number;
     // (undocumented)
     static get minArgs(): number;
-    parseAndRun(...args: string[]): Promise<boolean>;
-    run(data: string): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
+    run(data: string): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -179,7 +179,7 @@ export class AttachTileURLMapLayerByUrlTool extends AttachMapLayerByURLBaseTool 
 // @beta
 export class AttachWmsMapLayerByUrlTool extends AttachMapLayerByURLBaseTool {
     constructor();
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -187,7 +187,7 @@ export class AttachWmsMapLayerByUrlTool extends AttachMapLayerByURLBaseTool {
 // @beta
 export class AttachWmtsMapLayerByUrlTool extends AttachMapLayerByURLBaseTool {
     constructor();
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -226,9 +226,9 @@ export class ChangeCameraTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...inArgs: string[]): Promise<boolean>;
+    parseAndRun(...inArgs: string[]): boolean;
     // (undocumented)
-    run(camera?: Camera): Promise<boolean>;
+    run(camera?: Camera): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -250,9 +250,9 @@ export class ChangeFlashSettingsTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...inputArgs: string[]): Promise<boolean>;
+    parseAndRun(...inputArgs: string[]): boolean;
     // (undocumented)
-    run(settings?: FlashSettings): Promise<boolean>;
+    run(settings?: FlashSettings): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -278,9 +278,9 @@ export abstract class ChangeHiliteTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...inputArgs: string[]): Promise<boolean>;
+    parseAndRun(...inputArgs: string[]): boolean;
     // (undocumented)
-    run(settings?: Hilite.Settings): Promise<boolean>;
+    run(settings?: Hilite.Settings): boolean;
 }
 
 // @beta
@@ -306,9 +306,9 @@ export class ChangeUnitsTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(useMetric?: boolean): Promise<boolean>;
+    run(useMetric?: boolean): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -320,9 +320,9 @@ export class ChangeViewFlagsTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(vf: ViewFlags, vp?: Viewport): Promise<boolean>;
+    run(vf: ViewFlags, vp?: Viewport): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -365,7 +365,7 @@ export class ClearEffectsTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    run(): Promise<boolean>;
+    run(): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -399,9 +399,9 @@ export class ClearModelAppearanceOverrides extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(name?: string): Promise<boolean>;
+    run(name?: string): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -413,9 +413,9 @@ export class ClearRealityModelAppearanceOverrides extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(index: number): Promise<boolean>;
+    run(index: number): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -426,7 +426,7 @@ export class ClipColorTool extends Tool {
     static get maxArgs(): number;
     // (undocumented)
     static get minArgs(): number;
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -608,8 +608,8 @@ export class DefaultTileSizeModifierTool extends Tool {
     static get maxArgs(): number;
     // (undocumented)
     static get minArgs(): number;
-    parseAndRun(...args: string[]): Promise<boolean>;
-    run(modifier?: number): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
+    run(modifier?: number): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -624,9 +624,9 @@ export class DetachMapLayersTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(..._args: string[]): Promise<boolean>;
+    parseAndRun(..._args: string[]): boolean;
     // (undocumented)
-    run(): Promise<boolean>;
+    run(): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -638,9 +638,9 @@ export class DetachRealityModelTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(index: number): Promise<boolean>;
+    run(index: number): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -676,11 +676,11 @@ export abstract class DisplayStyleTool extends Tool {
     // (undocumented)
     protected abstract parse(args: string[]): boolean;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
     protected get require3d(): boolean;
     // (undocumented)
-    run(): Promise<boolean>;
+    run(): boolean;
 }
 
 // @beta
@@ -732,7 +732,7 @@ export abstract class EmphasizeElementsTool extends Tool {
     // (undocumented)
     protected abstract execute(emph: EmphasizeElements, vp: ScreenViewport): void;
     // (undocumented)
-    run(_args: any[]): Promise<boolean>;
+    run(_args: any[]): boolean;
     // (undocumented)
     protected get _wantClear(): boolean;
     // (undocumented)
@@ -748,7 +748,7 @@ export class EmphasizeSelectedElementsTool extends EmphasizeElementsTool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
     static toolId: string;
     }
@@ -762,7 +762,7 @@ export class EmphasizeVisibleElementsTool extends EmphasizeElementsTool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...input: string[]): Promise<boolean>;
+    parseAndRun(...input: string[]): boolean;
     // (undocumented)
     static toolId: string;
     // (undocumented)
@@ -771,7 +771,7 @@ export class EmphasizeVisibleElementsTool extends EmphasizeElementsTool {
 
 // @beta
 export class ExplosionEffect extends Tool {
-    run(): Promise<boolean>;
+    run(): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -779,7 +779,7 @@ export class ExplosionEffect extends Tool {
 // @beta
 export class FadeOutTool extends ViewportToggleTool {
     // (undocumented)
-    protected toggle(vp: Viewport, enable?: boolean): Promise<void>;
+    protected toggle(vp: Viewport, enable?: boolean): void;
     // (undocumented)
     static toolId: string;
 }
@@ -791,9 +791,9 @@ export class FlipImageConfig extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...input: string[]): Promise<boolean>;
+    parseAndRun(...input: string[]): boolean;
     // (undocumented)
-    run(horizontal?: boolean, vertical?: boolean, color?: boolean): Promise<boolean>;
+    run(horizontal?: boolean, vertical?: boolean, color?: boolean): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -829,7 +829,7 @@ export class FpsTracker {
 // @beta
 export class FreezeSceneTool extends ViewportToggleTool {
     // (undocumented)
-    protected toggle(vp: Viewport, enable?: boolean): Promise<void>;
+    protected toggle(vp: Viewport, enable?: boolean): void;
     // (undocumented)
     static toolId: string;
 }
@@ -881,17 +881,17 @@ export class InspectElementTool extends PrimitiveTool {
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    onPostInstall(): Promise<void>;
+    onPostInstall(): void;
     // (undocumented)
-    onReinitialize(): Promise<void>;
+    onReinitialize(): void;
     // (undocumented)
     onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    onRestartTool(): Promise<void>;
+    onRestartTool(): void;
     // (undocumented)
-    onUnsuspend(): Promise<void>;
+    onUnsuspend(): void;
     // (undocumented)
-    parseAndRun(...inputArgs: string[]): Promise<boolean>;
+    parseAndRun(...inputArgs: string[]): boolean;
     // (undocumented)
     requireWriteableTarget(): boolean;
     // (undocumented)
@@ -967,9 +967,9 @@ export class LensDistortionConfig extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...input: string[]): Promise<boolean>;
+    parseAndRun(...input: string[]): boolean;
     // (undocumented)
-    run(strength?: number, ratio?: number): Promise<boolean>;
+    run(strength?: number, ratio?: number): boolean;
     // (undocumented)
     static strength: number;
     // (undocumented)
@@ -1008,8 +1008,8 @@ export class MapBaseColorTool extends Tool {
     static get maxArgs(): number;
     // (undocumented)
     static get minArgs(): number;
-    parseAndRun(...args: string[]): Promise<boolean>;
-    run(color: ColorDef): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
+    run(color: ColorDef): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1020,8 +1020,8 @@ export class MapBaseTransparencyTool extends Tool {
     static get maxArgs(): number;
     // (undocumented)
     static get minArgs(): number;
-    parseAndRun(...args: string[]): Promise<boolean>;
-    run(transparency: number): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
+    run(transparency: number): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1032,20 +1032,20 @@ export class MapBaseVisibilityTool extends Tool {
     static get maxArgs(): number;
     // (undocumented)
     static get minArgs(): number;
-    parseAndRun(...args: string[]): Promise<boolean>;
-    run(visible: boolean): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
+    run(visible: boolean): boolean;
     // (undocumented)
     static toolId: string;
 }
 
 // @beta
-export class MapLayerSubLayerVisibilityTool extends Tool {
+export class MapLayerSubLayerVisiblityTool extends Tool {
     // (undocumented)
     static get maxArgs(): number;
     // (undocumented)
     static get minArgs(): number;
-    parseAndRun(...args: string[]): Promise<boolean>;
-    run(layerIndex: number, visible: boolean): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
+    run(layerIndex: number, visible: boolean): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1056,8 +1056,8 @@ export class MapLayerTransparencyTool extends Tool {
     static get maxArgs(): number;
     // (undocumented)
     static get minArgs(): number;
-    parseAndRun(...args: string[]): Promise<boolean>;
-    run(layerIndex: number, transparency: number): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
+    run(layerIndex: number, transparency: number): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1068,8 +1068,8 @@ export class MapLayerVisibilityTool extends Tool {
     static get maxArgs(): number;
     // (undocumented)
     static get minArgs(): number;
-    parseAndRun(...args: string[]): Promise<boolean>;
-    run(layerIndex: number, enable?: boolean): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
+    run(layerIndex: number, enable?: boolean): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1080,8 +1080,8 @@ export class MapLayerZoomTool extends Tool {
     static get maxArgs(): number;
     // (undocumented)
     static get minArgs(): number;
-    parseAndRun(...args: string[]): Promise<boolean>;
-    run(layerIndex: number): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
+    run(layerIndex: number): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1236,7 +1236,7 @@ export class MaskRealityModelBySubCategoryTool extends PlanarMaskBaseTool {
 
 // @beta
 export class MeasureTileLoadTimeTool extends Tool {
-    run(_args: any[]): Promise<boolean>;
+    run(_args: any[]): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1366,21 +1366,21 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
     // (undocumented)
     protected elementRequired(): boolean;
     // (undocumented)
-    exitTool(): Promise<void>;
+    exitTool(): void;
     // (undocumented)
     filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus>;
     // (undocumented)
-    onCleanup(): Promise<void>;
+    onCleanup(): void;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    onPostInstall(): Promise<void>;
+    onPostInstall(): void;
     // (undocumented)
-    onRestartTool(): Promise<void>;
+    onRestartTool(): void;
     // (undocumented)
-    onUnsuspend(): Promise<void>;
+    onUnsuspend(): void;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
     requireWriteableTarget(): boolean;
     // (undocumented)
@@ -1475,8 +1475,8 @@ export class RealityTransitionTool extends Tool {
     static get maxArgs(): number;
     // (undocumented)
     static get minArgs(): number;
-    parseAndRun(...args: string[]): Promise<boolean>;
-    run(fadeMode?: FadeMode): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
+    run(fadeMode?: FadeMode): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1489,7 +1489,7 @@ export abstract class RenderSystemDebugControlTool extends Tool {
     // (undocumented)
     protected abstract execute(_control: RenderSystemDebugControl): void;
     // (undocumented)
-    run(_args: any[]): Promise<boolean>;
+    run(_args: any[]): boolean;
 }
 
 // @beta
@@ -1503,7 +1503,7 @@ export abstract class RenderTargetDebugControlToggleTool extends RenderTargetDeb
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
 }
 
 // @beta
@@ -1511,7 +1511,7 @@ export abstract class RenderTargetDebugControlTool extends Tool {
     // (undocumented)
     protected abstract execute(_control: RenderTargetDebugControl, _vp: ScreenViewport): void;
     // (undocumented)
-    run(_args: any[]): Promise<boolean>;
+    run(_args: any[]): boolean;
 }
 
 // @beta
@@ -1520,8 +1520,8 @@ export class ReorderMapLayers extends Tool {
     static get maxArgs(): number;
     // (undocumented)
     static get minArgs(): number;
-    parseAndRun(...args: string[]): Promise<boolean>;
-    run(from: number, to: number): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
+    run(from: number, to: number): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1529,7 +1529,7 @@ export class ReorderMapLayers extends Tool {
 // @beta
 export class ReportWebGLCompatibilityTool extends Tool {
     // (undocumented)
-    run(_args: any[]): Promise<boolean>;
+    run(_args: any[]): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1542,9 +1542,9 @@ export class SaturationConfig extends Tool {
     static get minArgs(): number;
     static multiplier: number;
     // (undocumented)
-    parseAndRun(...input: string[]): Promise<boolean>;
+    parseAndRun(...input: string[]): boolean;
     // (undocumented)
-    run(multiplier?: number): Promise<boolean>;
+    run(multiplier?: number): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1572,8 +1572,8 @@ export class SaveRealityModelTool extends Tool {
     static get maxArgs(): number;
     // (undocumented)
     static get minArgs(): number;
-    parseAndRun(...args: string[]): Promise<boolean>;
-    run(name: string | undefined): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
+    run(name: string | undefined): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1601,9 +1601,9 @@ export class SaveViewTool extends Tool {
     // (undocumented)
     parse(inputArgs: string[]): boolean;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(): Promise<boolean>;
+    run(): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1615,9 +1615,9 @@ export class SelectElementsByIdTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(ids?: Id64Arg): Promise<boolean>;
+    run(ids?: Id64Arg): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1633,7 +1633,7 @@ export class SetAASamplesTool extends RenderTargetDebugControlTool {
     static get maxArgs(): number;
     // (undocumented)
     static get minArgs(): number;
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1644,8 +1644,8 @@ export class SetAspectRatioSkewTool extends Tool {
     static get maxArgs(): number;
     // (undocumented)
     static get minArgs(): number;
-    parseAndRun(...args: string[]): Promise<boolean>;
-    run(skew?: number): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
+    run(skew?: number): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1657,9 +1657,9 @@ export class SetGpuMemoryLimitTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(limit?: GpuMemoryLimit): Promise<boolean>;
+    run(limit?: GpuMemoryLimit): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1677,7 +1677,7 @@ export class SetHigherPriorityRealityModelMasking extends PlanarMaskBaseTool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
     protected showPrompt(): void;
     // (undocumented)
@@ -1700,9 +1700,9 @@ export class SetMapHigherPriorityMasking extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(transparency?: number): Promise<boolean>;
+    run(transparency?: number): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1714,9 +1714,9 @@ export class SetModelColorTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(rgb: RgbColorProps, name: string): Promise<boolean>;
+    run(rgb: RgbColorProps, name: string): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1728,9 +1728,9 @@ export class SetModelEmphasizedTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(emphasized: true | undefined, name: string): Promise<boolean>;
+    run(emphasized: true | undefined, name: string): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1742,9 +1742,9 @@ export class SetModelIgnoresMaterialsTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(ignoresMaterial: true | undefined, name: string): Promise<boolean>;
+    run(ignoresMaterial: true | undefined, name: string): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1758,9 +1758,9 @@ export class SetModelLineCodeTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(lineCode: number, name: string): Promise<boolean>;
+    run(lineCode: number, name: string): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1772,9 +1772,9 @@ export class SetModelLineWeightTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(weight: number, name: string): Promise<boolean>;
+    run(weight: number, name: string): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1786,9 +1786,9 @@ export class SetModelLocateTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(locate: boolean, name: string): Promise<boolean>;
+    run(locate: boolean, name: string): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1800,9 +1800,9 @@ export class SetModelTransparencyTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(transparency: number, name: string): Promise<boolean>;
+    run(transparency: number, name: string): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1814,9 +1814,9 @@ export class SetRealityModelColorTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(rgb: RgbColorProps, index: number): Promise<boolean>;
+    run(rgb: RgbColorProps, index: number): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1828,9 +1828,9 @@ export class SetRealityModelEmphasizedTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(emphasized: true | undefined, index: number): Promise<boolean>;
+    run(emphasized: true | undefined, index: number): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1842,9 +1842,9 @@ export class SetRealityModelLocateTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(locate: boolean, index: number): Promise<boolean>;
+    run(locate: boolean, index: number): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1856,9 +1856,9 @@ export class SetRealityModelTransparencyTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(transparency: number, index: number): Promise<boolean>;
+    run(transparency: number, index: number): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1890,9 +1890,9 @@ export class ShowTileVolumesTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(boxes?: TileBoundingBoxes): Promise<boolean>;
+    run(boxes?: TileBoundingBoxes): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1943,9 +1943,9 @@ export class SnowDecorator implements Decorator {
 // @beta
 export class SnowEffect extends Tool {
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(enable?: boolean): Promise<boolean>;
+    run(enable?: boolean): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -1987,9 +1987,9 @@ export abstract class SourceAspectIdTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...keyinArgs: string[]): Promise<boolean>;
+    parseAndRun(...keyinArgs: string[]): boolean;
     // (undocumented)
-    run(idToQuery?: string, copyToClipboard?: boolean): Promise<boolean>;
+    run(idToQuery?: string, copyToClipboard?: boolean): boolean;
 }
 
 // @beta
@@ -2060,7 +2060,7 @@ export class TileStatisticsTracker {
 // @beta
 export class Toggle3dManipulationsTool extends ViewportToggleTool {
     // (undocumented)
-    protected toggle(vp: Viewport, allow?: boolean): Promise<void>;
+    protected toggle(vp: Viewport, allow?: boolean): void;
     // (undocumented)
     static toolId: string;
 }
@@ -2074,7 +2074,7 @@ export class ToggleDPIForLODTool extends RenderSystemDebugControlTool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -2090,7 +2090,7 @@ export class ToggleDrapeFrustumTool extends RenderTargetDebugControlToggleTool {
 // @beta
 export class ToggleDrawingGraphicsTool extends ViewportToggleTool {
     // (undocumented)
-    protected toggle(vp: Viewport, enable?: boolean): Promise<void>;
+    protected toggle(vp: Viewport, enable?: boolean): void;
     // (undocumented)
     static toolId: string;
 }
@@ -2102,9 +2102,9 @@ export class ToggleFrustumSnapshotTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(enable?: boolean, showPreloadFrustum?: boolean, showBackgroundIntersections?: boolean): Promise<boolean>;
+    run(enable?: boolean, showPreloadFrustum?: boolean, showBackgroundIntersecctions?: boolean): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -2116,9 +2116,9 @@ export class ToggleOSMBuildingDisplay extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(onOff?: boolean, transparency?: number): Promise<boolean>;
+    run(onOff?: boolean, transparency?: number): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -2132,7 +2132,7 @@ export class TogglePrimitiveVisibilityTool extends RenderTargetDebugControlTool 
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
     static toolId: string;
     }
@@ -2147,9 +2147,9 @@ export class ToggleProjectExtentsTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(enable?: boolean): Promise<boolean>;
+    run(enable?: boolean): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -2200,8 +2200,8 @@ export class ToggleSectionCutTool extends Tool {
     static get maxArgs(): number;
     // (undocumented)
     static get minArgs(): number;
-    parseAndRun(...args: string[]): Promise<boolean>;
-    run(produceCutGeometry?: boolean): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
+    run(produceCutGeometry?: boolean): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -2209,7 +2209,7 @@ export class ToggleSectionCutTool extends Tool {
 // @beta
 export class ToggleSectionDrawingSpatialViewTool extends ViewportToggleTool {
     // (undocumented)
-    protected toggle(vp: Viewport, enable?: boolean): Promise<void>;
+    protected toggle(vp: Viewport, enable?: boolean): void;
     // (undocumented)
     static toolId: string;
 }
@@ -2221,9 +2221,9 @@ export class ToggleSelectedViewFrustumTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(enable?: boolean): Promise<boolean>;
+    run(enable?: boolean): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -2235,9 +2235,9 @@ export class ToggleShadowFrustumTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(enable?: boolean): Promise<boolean>;
+    run(enable?: boolean): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -2260,8 +2260,8 @@ export class ToggleTerrainTool extends Tool {
     static get maxArgs(): number;
     // (undocumented)
     static get minArgs(): number;
-    parseAndRun(...args: string[]): Promise<boolean>;
-    run(enable?: boolean): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
+    run(enable?: boolean): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -2273,9 +2273,9 @@ export class ToggleTileRequestDecorationTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(enable?: boolean): Promise<boolean>;
+    run(enable?: boolean): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -2287,9 +2287,9 @@ export class ToggleTileTreeBoundsDecorationTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(enable?: boolean): Promise<boolean>;
+    run(enable?: boolean): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -2301,9 +2301,9 @@ export class ToggleToolTipsTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(enable?: boolean): Promise<boolean>;
+    run(enable?: boolean): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -2311,7 +2311,7 @@ export class ToggleToolTipsTool extends Tool {
 // @beta
 export class ToggleViewAttachmentBoundariesTool extends ViewportToggleTool {
     // (undocumented)
-    protected toggle(vp: Viewport, enable?: boolean): Promise<void>;
+    protected toggle(vp: Viewport, enable?: boolean): void;
     // (undocumented)
     static toolId: string;
 }
@@ -2319,7 +2319,7 @@ export class ToggleViewAttachmentBoundariesTool extends ViewportToggleTool {
 // @beta
 export class ToggleViewAttachmentClipShapesTool extends ViewportToggleTool {
     // (undocumented)
-    protected toggle(vp: Viewport, enable?: boolean): Promise<void>;
+    protected toggle(vp: Viewport, enable?: boolean): void;
     // (undocumented)
     static toolId: string;
 }
@@ -2327,7 +2327,7 @@ export class ToggleViewAttachmentClipShapesTool extends ViewportToggleTool {
 // @beta
 export class ToggleViewAttachmentsTool extends ViewportToggleTool {
     // (undocumented)
-    protected toggle(vp: Viewport, enable?: boolean): Promise<void>;
+    protected toggle(vp: Viewport, enable?: boolean): void;
     // (undocumented)
     static toolId: string;
 }
@@ -2370,7 +2370,9 @@ export class UnmaskMapTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    run(): Promise<boolean>;
+    parseAndRun(..._args: string[]): boolean;
+    // (undocumented)
+    run(): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -2407,8 +2409,8 @@ export class ViewportAddRealityModel extends Tool {
     static get maxArgs(): number;
     // (undocumented)
     static get minArgs(): number;
-    parseAndRun(...args: string[]): Promise<boolean>;
-    run(url: string): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
+    run(url: string): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -2419,8 +2421,8 @@ export class ViewportTileSizeModifierTool extends Tool {
     static get maxArgs(): number;
     // (undocumented)
     static get minArgs(): number;
-    parseAndRun(...args: string[]): Promise<boolean>;
-    run(modifier?: number): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
+    run(modifier?: number): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -2432,11 +2434,11 @@ export abstract class ViewportToggleTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): Promise<boolean>;
+    parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(enable?: boolean): Promise<boolean>;
+    run(enable?: boolean): boolean;
     // (undocumented)
-    protected abstract toggle(vp: Viewport, enable?: boolean): Promise<void>;
+    protected abstract toggle(vp: Viewport, enable?: boolean): void;
 }
 
 // @beta
@@ -2446,10 +2448,10 @@ export class VignetteConfig extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...input: string[]): Promise<boolean>;
+    parseAndRun(...input: string[]): boolean;
     static roundness: number;
     // (undocumented)
-    run(width?: number, height?: number, roundness?: number, smoothness?: number): Promise<boolean>;
+    run(width?: number, height?: number, roundness?: number, smoothness?: number): boolean;
     static readonly size: Float32Array;
     static smoothness: number;
     // (undocumented)
@@ -2469,20 +2471,6 @@ export class VignetteEffect extends AddEffectTool {
     };
     // (undocumented)
     protected get textureCoordFromPosition(): boolean;
-    // (undocumented)
-    static toolId: string;
-}
-
-// @beta
-export class WoWIgnoreBackgroundTool extends DisplayStyleTool {
-    // (undocumented)
-    execute(vp: Viewport): boolean;
-    // (undocumented)
-    static get maxArgs(): number;
-    // (undocumented)
-    static get minArgs(): number;
-    // (undocumented)
-    parse(args: string[]): boolean;
     // (undocumented)
     static toolId: string;
 }

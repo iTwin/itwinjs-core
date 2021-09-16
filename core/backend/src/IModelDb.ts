@@ -21,7 +21,7 @@ import {
   IModelProps, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps,
   ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus,
   SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, StandaloneOpenOptions,
-  TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
+  TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -1143,14 +1143,14 @@ export abstract class IModelDb extends IModel {
     });
   }
 
-  /** Retrieve a named texture image from this iModel, as a Uint8Array.
+  /** Retrieve a named texture image from this iModel, as a TextureData.
    * @param props the texture load properties which must include the name of the texture to load
-   * @returns the Uint8Array or undefined if the texture image is not present.
+   * @returns the TextureData or undefined if the texture image is not present.
    * @alpha
    */
-  public async getTextureImage(props: TextureLoadProps): Promise<Uint8Array | undefined> {
-    return new Promise<Uint8Array | undefined>((resolve, reject) => {
-      this.nativeDb.getTextureImage(props, (result) => {
+  public async queryTextureData(props: TextureLoadProps): Promise<TextureData | undefined> {
+    return new Promise<TextureData | undefined>((resolve, reject) => {
+      this.nativeDb.queryTextureData(props, (result) => {
         if (result instanceof Error)
           reject(result);
         else

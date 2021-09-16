@@ -101,11 +101,11 @@ export class EditTextTool extends MarkupTool {
     editor?: HTMLTextAreaElement;
     // (undocumented)
     static iconSpec: string;
-    onCleanup(): Promise<void>;
+    onCleanup(): void;
     // (undocumented)
     onDataButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    onInstall(): Promise<boolean>;
+    onInstall(): boolean;
     // (undocumented)
     onMouseStartDrag(_ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
@@ -455,11 +455,11 @@ export abstract class MarkupTool extends PrimitiveTool {
     // (undocumented)
     markup: Markup;
     // (undocumented)
-    onInstall(): Promise<boolean>;
+    onInstall(): boolean;
     // (undocumented)
-    onPostInstall(): Promise<void>;
+    onPostInstall(): void;
     // (undocumented)
-    onRestartTool(): Promise<void>;
+    onRestartTool(): void;
     // (undocumented)
     onTouchCancel(ev: BeTouchEvent): Promise<void>;
     // (undocumented)
@@ -469,7 +469,7 @@ export abstract class MarkupTool extends PrimitiveTool {
     // (undocumented)
     onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled>;
     // (undocumented)
-    onUnsuspend(): Promise<void>;
+    onUnsuspend(): void;
     // (undocumented)
     protected outputMarkupPrompt(msg: string): void;
     pickElement(pt: XAndY): Element | undefined;
@@ -500,7 +500,7 @@ export abstract class ModifyHandle {
     handles: Handles;
     abstract modify(ev: BeButtonEvent): void;
     // (undocumented)
-    onClick(_ev: BeButtonEvent): Promise<void>;
+    onClick(_ev: BeButtonEvent): void;
     // (undocumented)
     setMouseHandler(target: Element): void;
     abstract setPosition(): void;
@@ -514,7 +514,7 @@ export abstract class ModifyHandle {
 // @public
 export class PlaceTextTool extends RedlineTool {
     // (undocumented)
-    protected createMarkup(svg: G, ev: BeButtonEvent, isDynamics: boolean): Promise<void>;
+    protected createMarkup(svg: G, ev: BeButtonEvent, isDynamics: boolean): void;
     // (undocumented)
     static iconSpec: string;
     // (undocumented)
@@ -522,9 +522,11 @@ export class PlaceTextTool extends RedlineTool {
     // (undocumented)
     protected _nRequiredPoints: number;
     // (undocumented)
-    onPostInstall(): Promise<void>;
+    onPostInstall(): void;
     // (undocumented)
     onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onRestartTool(): void;
     // (undocumented)
     protected showPrompt(): void;
     // (undocumented)
@@ -580,17 +582,17 @@ export abstract class RedlineTool extends MarkupTool {
     // (undocumented)
     protected onAdded(el: Element): void;
     // (undocumented)
-    onCleanup(): Promise<void>;
+    onCleanup(): void;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
-    onReinitialize(): Promise<void>;
+    onReinitialize(): void;
     // (undocumented)
     onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    onRestartTool(): Promise<void>;
+    onRestartTool(): void;
     // (undocumented)
     onUndoPreviousStep(): Promise<boolean>;
     // (undocumented)
@@ -615,7 +617,7 @@ export class SelectTool extends MarkupTool {
     // (undocumented)
     static iconSpec: string;
     // (undocumented)
-    onCleanup(): Promise<void>;
+    onCleanup(): void;
     onDataButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
     onKeyTransition(wentDown: boolean, key: KeyboardEvent): Promise<EventHandled>;
     onModifierKeyTransition(_wentDown: boolean, modifier: BeModifierKeys, _event: KeyboardEvent): Promise<EventHandled>;
@@ -623,11 +625,11 @@ export class SelectTool extends MarkupTool {
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
     onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    onPostInstall(): Promise<void>;
+    onPostInstall(): void;
     // (undocumented)
     onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    onRestartTool(): Promise<void>;
+    onRestartTool(): void;
     // (undocumented)
     onTouchTap(ev: BeTouchEvent): Promise<EventHandled>;
     // (undocumented)
@@ -668,7 +670,7 @@ export class SymbolTool extends RedlineTool {
     // (undocumented)
     onDataButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    onInstall(): Promise<boolean>;
+    onInstall(): boolean;
     // (undocumented)
     onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
