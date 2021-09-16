@@ -1051,7 +1051,6 @@ export abstract class IModelDb extends IModel {
       return ClassRegistry.getClass(classFullName, this) as T;
     } catch (err: any) {
       if (!ClassRegistry.isNotFoundError(err)) {
-        Logger.logError(loggerCategory, err.toString());
         throw err;
       }
 
