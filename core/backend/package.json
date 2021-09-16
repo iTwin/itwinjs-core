@@ -3,7 +3,7 @@
   "version": "3.0.0-dev.49",
   "description": "iModel.js backend components",
   "main": "lib/cjs/imodeljs-backend.js",
-  "typings": "lib/types/imodeljs-backend",
+  "typings": "lib/cjs/imodeljs-backend",
   "license": "MIT",
   "engines": {
     "node": ">=10.17.0 <15.0"
@@ -11,7 +11,7 @@
   "scripts": {
     "compile": "npm run build",
     "build": "npm run build:cjs && npm run copy:assets && npm run copy:test-assets",
-    "build:cjs": "tsc 1>&2 --outDir lib/cjs --declarationDir lib/types",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "clean": "rimraf lib cjs esm types types .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-backend/file.json --tsIndexFile=./imodeljs-backend.ts --onlyJson",
     "copy:assets": "cpx \"./src/assets/**/*\" ./lib/cjs/assets",

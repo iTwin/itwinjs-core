@@ -17,7 +17,7 @@ import {
   Base64EncodedString,
   BisCodeSpec,
   CategorySelectorProps,
-  Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps, FontProps, GeometryStreamIterator, IModel, ModelProps, ModelSelectorProps, PhysicalElementProps, Placement3d, SkyBoxImageType, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps
+  Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps, FontProps, GeometricElement3dProps, GeometryStreamIterator, IModel, ModelProps, ModelSelectorProps, PhysicalElementProps, Placement3d, SkyBoxImageType, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { assert } from "chai";

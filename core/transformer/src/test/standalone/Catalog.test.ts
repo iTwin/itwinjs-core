@@ -12,7 +12,7 @@ import {
   RecipeDefinitionElement, RepositoryLink, SnapshotDb, SpatialCategory, TemplateRecipe2d, TemplateRecipe3d,
   TypeDefinitionElement
 } from "@bentley/imodeljs-backend";
-import { IModelTestUtils, KnownTestLocations } from "@bentley/imodeljs-backend/lib/cjs/tests";
+import { IModelTestUtils, KnownTestLocations } from "@bentley/imodeljs-backend/lib/cjs/test";
 import {
   Code, CodeScopeSpec, DefinitionElementProps, GeometricElement2dProps, GeometryStreamProps, IModel, PhysicalElementProps, Placement2d, Placement3d,
   RepositoryLinkProps, SubCategoryAppearance
