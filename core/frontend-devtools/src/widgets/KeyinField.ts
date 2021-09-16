@@ -180,7 +180,7 @@ export class KeyinField {
 
     let message: string | undefined;
     try {
-      switch (IModelApp.tools.parseAndRun(input)) {
+      switch (await IModelApp.tools.parseAndRun(input)) {
         case ParseAndRunResult.ToolNotFound:
           message = `Cannot find a key-in that matches: ${input}`;
           break;

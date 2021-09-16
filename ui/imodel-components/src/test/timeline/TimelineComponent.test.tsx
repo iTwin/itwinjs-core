@@ -906,6 +906,49 @@ describe("<TimelineComponent showDuration={true} />", () => {
     expect(startTimeLabel).not.to.be.null;
     expect(startTimeLabel.innerHTML).to.equal("7:00:00 PM");
   });
+  it("should mark today's date on the timeline", () => {
+    const duration = 10 * 1000;
+    const todayDate = new Date();
+    const startDate = new Date(todayDate.getTime() - 6*28*24*60*60);
+    const endDate = new Date(todayDate.getTime() + 6*28*24*60*60);
+    const marker = {};
 
+    const renderedComponent = render(
+      <TimelineComponent
+        startDate={startDate}
+        endDate={endDate}
+        minimized={true}
+        showDuration={false}
+        totalDuration={duration}
+        componentId={"sampleApp-MarkToday"}
+        markDate={marker}
+      />
+    );
+    expect(renderedComponent).not.to.be.undefined;
+    const dateMarker = renderedComponent.getByTestId("test-date-marker");
+    expect(dateMarker).not.to.be.null;
+
+  });
+  it("should mark a date on the timeline with a custom symbol", () => {
+    const duration = 10 * 1000;
+    const startDate = new Date("July 1, 2016, 00:00:00 GMT -0000");
+    const endDate = new Date("July 1, 2017, 20:30:45 GMT -0000");
+    const myDateMarker = <span data-testid="test-custom-date-marker">{"T"}</span>;
+    const marker = {date: new Date("December 15, 2016"), dateMarker: myDateMarker};
+
+    const renderedComponent = render(
+      <TimelineComponent
+        startDate={startDate}
+        endDate={endDate}
+        minimized={true}
+        showDuration={false}
+        totalDuration={duration}
+        componentId={"sampleApp-MarkTodayCustom"}
+        markDate={marker}
+      />
+    );
+    expect(renderedComponent).not.to.be.undefined;
+    const dateMarker = renderedComponent.getByTestId("test-custom-date-marker");
+    expect(dateMarker).not.to.be.null;
+  });
 });
-

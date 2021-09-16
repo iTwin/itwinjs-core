@@ -10,6 +10,7 @@ import { ECDb, ECEnumValue, ECSqlInsertResult, ECSqlStatement, ECSqlValue, Snaps
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
+import { SequentialLogMatcher } from "../SequentialLogMatcher";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -43,7 +44,7 @@ describe("ECSqlStatement", () => {
   const testRange = new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7);
   const blobVal = new Uint8Array(testRange.toFloat64Array().buffer);
 
-  it("Asynchronous step and stepForInsert Methods", async () => {
+  it("check asynchronous step and stepForInsert methods", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "asyncmethodtest.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECEntityClass typeName="Foo" modifier="Sealed">
@@ -62,7 +63,7 @@ describe("ECSqlStatement", () => {
       assert.equal(r.id, "0x1");
     });
   });
-  it("Primary Key Binding through array", async () => {
+  it("primary key binding through array", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "bindingTest.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECEntityClass typeName="Foo" modifier="Sealed">
@@ -97,7 +98,7 @@ describe("ECSqlStatement", () => {
 
     });
   });
-  it.skip("Null string accessor", async () => {
+  it("null string accessor", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "nullstring.ecdb"), async (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
       await ecdb.withPreparedStatement(`VALUES(NULL)`, async (stmt: ECSqlStatement) => {
@@ -107,7 +108,7 @@ describe("ECSqlStatement", () => {
       });
     });
   });
-  it("Paging Resultset", async () => {
+  it("should page results", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "pagingresultset.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECEntityClass typeName="Foo" modifier="Sealed">
@@ -147,7 +148,7 @@ describe("ECSqlStatement", () => {
     });
   });
 
-  it("Paging use cache statement queryRows()", async () => {
+  it("paging use cache statement queryRows()", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "pagingresultset.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECEntityClass typeName="Foo" modifier="Sealed">
@@ -178,7 +179,7 @@ describe("ECSqlStatement", () => {
       assert.equal(rowNo, 100); // expect all rows
     });
   });
-  it("Restart query", async () => {
+  it("should restart query", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "cancelquery.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECEntityClass typeName="Foo" modifier="Sealed">
@@ -229,7 +230,7 @@ describe("ECSqlStatement", () => {
       assert.isAtLeast(rowCount, 1);
     });
   });
-  it("Paging uses cache statement query()", async () => {
+  it("should use cache statement for query()", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "pagingresultset.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECEntityClass typeName="Foo" modifier="Sealed">
@@ -259,7 +260,7 @@ describe("ECSqlStatement", () => {
       }
     });
   });
-  it("Concurrent Query Binding", async () => {
+  it("concurrent query binding", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "pagingresultset.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECEntityClass typeName="Foo" modifier="Sealed">
@@ -280,15 +281,18 @@ describe("ECSqlStatement", () => {
       for await (const row of ecdb.query("SELECT count(*) as cnt FROM ts.Foo WHERE n in (?, ?, ?)", [1, 2, 3])) {
         assert.equal(row.cnt, 3);
       }
+      const slm = new SequentialLogMatcher();
+      slm.append().error().category("ECDb").message("No parameter index found for parameter name: d.");
       try {
         for await (const row of ecdb.query("SELECT count(*) as cnt FROM ts.Foo WHERE n in (:a, :b, :c)", { a: 1, b: 2, c: 3, d: 3 })) {
           assert.equal(row.cnt, 3);
         }
         assert.isFalse(true);
       } catch (e) { assert.isNotNull(e); }
+      assert.isTrue(slm.finishAndDispose());
     });
   });
-  it("HextoId-IdToHex", async () => {
+  it("check HextoId() and IdToHex() ecsql functions", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "pagingresultset.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECEntityClass typeName="Foo" modifier="Sealed">
@@ -309,7 +313,7 @@ describe("ECSqlStatement", () => {
       }
     });
   });
-  it("Bind BeGuid", async () => {
+  it("should bind BeGuid", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "pagingresultset.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECEntityClass typeName="Foo" modifier="Sealed">
@@ -396,7 +400,7 @@ describe("ECSqlStatement", () => {
       }
     });
   });
-  it("Bind Ids", async () => {
+  it("should bind Ids", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "bindids.ecdb"), async (ecdb: ECDb) => {
 
       assert.isTrue(ecdb.isOpen);
@@ -460,7 +464,27 @@ describe("ECSqlStatement", () => {
     });
   });
 
-  it("Bind numeric and date strings", async () => {
+  it("should bind numeric and date strings", async () => {
+    const slm = new SequentialLogMatcher();
+    slm.append().error().category("ECDb").message("Type mismatch: only BindDateTime or BindText can be called for a column of the DateTime type.");
+    slm.append().error().category("ECDb").message("Type mismatch: only BindDateTime or BindText can be called for a column of the DateTime type.");
+    slm.append().error().category("ECDb").message("Type mismatch: only BindDateTime or BindText can be called for a column of the DateTime type.");
+    slm.append().error().category("ECDb").message("Type mismatch: only BindDateTime or BindText can be called for a column of the DateTime type.");
+    slm.append().error().category("ECDb").message("Type mismatch: only BindDateTime or BindText can be called for a column of the DateTime type.");
+    slm.append().error().category("ECDb").message(/String must be a valid ISO 8601 date, time or timestamp/gm);
+    slm.append().error().category("ECDb").message(/String must be a valid ISO 8601 date, time or timestamp/gm);
+    slm.append().error().category("ECDb").message(/String must be a valid ISO 8601 date, time or timestamp/gm);
+    slm.append().error().category("ECDb").message(/String must be a valid ISO 8601 date, time or timestamp/gm);
+    slm.append().error().category("ECDb").message(/String must be a valid ISO 8601 date, time or timestamp/gm);
+    slm.append().error().category("ECDb").message(/String must be a valid ISO 8601 date, time or timestamp/gm);
+    slm.append().error().category("ECDb").message(/String must be a valid ISO 8601 date, time or timestamp/gm);
+    slm.append().error().category("ECDb").message(/String must be a valid ISO 8601 date, time or timestamp/gm);
+    slm.append().error().category("ECDb").message(/String must be a valid ISO 8601 date, time or timestamp/gm);
+    slm.append().error().category("ECDb").message(/String must be a valid ISO 8601 date, time or timestamp/gm);
+    slm.append().error().category("ECDb").message(/String must be a valid ISO 8601 date, time or timestamp/gm);
+    slm.append().error().category("ECDb").message(/String must be a valid ISO 8601 date, time or timestamp/gm);
+    slm.append().error().category("ECDb").message(/only BindDateTime or BindText can be called for a column of the DateTime type/gm);
+
     await using(ECDbTestHelper.createECDb(outDir, "bindnumericanddatestrings.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECEntityClass typeName="Foo" modifier="Sealed">
@@ -755,9 +779,10 @@ describe("ECSqlStatement", () => {
         stmt.clearBindings();
       });
     });
+    assert.isTrue(slm.finishAndDispose());
   });
 
-  it("Bind Numbers", async () => {
+  it("should bind numbers", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "bindnumbers.ecdb",
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
     <ECEntityClass typeName="Foo" modifier="Sealed">
@@ -1231,7 +1256,7 @@ describe("ECSqlStatement", () => {
     });
   });
 
-  it("Bind Primitives", async () => {
+  it("should bind primitives", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "bindprimitives.ecdb",
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
   <ECStructClass typeName="MyStruct" modifier="Sealed">
@@ -1406,7 +1431,7 @@ describe("ECSqlStatement", () => {
     });
   });
 
-  it("Bind Structs", async () => {
+  it("should bind structs", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "bindstructs.ecdb",
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
       <ECStructClass typeName="MyStruct" modifier="Sealed">
@@ -1500,7 +1525,7 @@ describe("ECSqlStatement", () => {
     });
   });
 
-  it("Bind Arrays", async () => {
+  it("should bind arrays", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "bindarrays.ecdb",
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
       <ECStructClass typeName="Location" modifier="Sealed">
@@ -1601,7 +1626,7 @@ describe("ECSqlStatement", () => {
     });
   });
 
-  it("Bind Navigation", async () => {
+  it("should bind navigation", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "bindnavigation.ecdb",
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
     <ECEntityClass typeName="Parent" modifier="Sealed">
@@ -1691,7 +1716,7 @@ describe("ECSqlStatement", () => {
     });
   });
 
-  it("BindRange3d for parameter in spatial SQL function", async () => {
+  it("should bind Range3d for parameter in spatial sql function", async () => {
     const iModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ECSqlStatement", "BindRange3d.bim"), { rootSubject: { name: "BindRange3d" } });
     try {
       iModel.withPreparedStatement("SELECT e.ECInstanceId FROM bis.Element e, bis.SpatialIndex rt WHERE rt.ECInstanceId MATCH DGN_spatial_overlap_aabb(?) AND e.ECInstanceId=rt.ECInstanceId",
@@ -1712,7 +1737,7 @@ describe("ECSqlStatement", () => {
     }
   });
 
-  it("BindRange3d", async () => {
+  it("should bind Range3d", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "bindrange3d.ecdb",
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
         <ECEntityClass typeName="Foo" modifier="Sealed">
@@ -1742,7 +1767,7 @@ describe("ECSqlStatement", () => {
     });
   });
 
-  it("Binds IdSets", async () => {
+  it("should bind IdSets", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "bindids.ecdb"), async (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
 
@@ -1803,7 +1828,7 @@ describe("ECSqlStatement", () => {
 
   /* This test doesn't do anything specific with the binder life time but just runs a few scenarios
      with and without statement cache to test that stuff works fine */
-  it("ECSqlBinder life time", async () => {
+  it("check ECSqlBinder life time", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "ecsqlbinderlifetime.ecdb",
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
     <ECStructClass typeName="Address" modifier="Sealed">
@@ -1886,7 +1911,7 @@ describe("ECSqlStatement", () => {
     });
   });
 
-  it("GetRow with Primitives", async () => {
+  it("getRow() with primitives values", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "getprimitives.ecdb",
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
       <ECEntityClass typeName="Foo" modifier="Sealed">
@@ -2054,7 +2079,7 @@ describe("ECSqlStatement", () => {
     });
   });
 
-  it("getRow with abbreviated Blobs", async () => {
+  it("getRow() with abbreviated blobs", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "getblobs.ecdb",
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
       <ECEntityClass typeName="Foo" modifier="Sealed">
@@ -2168,7 +2193,7 @@ describe("ECSqlStatement", () => {
     });
   });
 
-  it("GetRow with NavigationProperties and Relationships", async () => {
+  it("getRow() with navigation properties and relationships", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "getnavandrels.ecdb",
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
         <ECEntityClass typeName="Parent" modifier="Sealed">
@@ -2306,7 +2331,7 @@ describe("ECSqlStatement", () => {
     });
   });
 
-  it("getRow with Structs", async () => {
+  it("getRow() with structs", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "getstructs.ecdb",
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
       <ECStructClass typeName="MyStruct" modifier="Sealed">
@@ -2425,7 +2450,15 @@ describe("ECSqlStatement", () => {
     });
   });
 
-  it("HexStr SQL function", async () => {
+  it("check HexStr() sql function", async () => {
+    const slm = new SequentialLogMatcher();
+    slm.append().error().category("ECDb").message(/Step failed for ECSQL/gm);
+    slm.append().error().category("ECDb").message(/Step failed for ECSQL/gm);
+    slm.append().error().category("ECDb").message(/Step failed for ECSQL/gm);
+    slm.append().error().category("ECDb").message(/Failed to prepare function expression/gm);
+    slm.append().error().category("ECDb").message(/Failed to prepare function expression/gm);
+    slm.append().error().category("ECDb").message(/Step failed for ECSQL/gm);
+
     await using(ECDbTestHelper.createECDb(outDir, "hexstrfunction.ecdb",
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
        <ECEntityClass typeName="Foo" modifier="Sealed">
@@ -2514,9 +2547,10 @@ describe("ECSqlStatement", () => {
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ERROR);
       });
     });
+    assert.isTrue(slm.finishAndDispose());
   });
 
-  it("ECEnums", async () => {
+  it("check ec enums", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "ecenums.ecdb",
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECEnumeration typeName="Status" backingTypeName="int" isStrict="true">
@@ -2625,7 +2659,11 @@ describe("ECSqlStatement", () => {
     });
   });
 
-  it("ORed ECEnums", async () => {
+  it("check ORed ECEnums", async () => {
+    const slm = new SequentialLogMatcher();
+    slm.append().error().category("ECDb").message(/The value 9 cannot be broken down into a combination of ECEnumerators/gm);
+    slm.append().error().category("ECDb").message(/The value 'gov,de' cannot be broken down into a combination of ECEnumerators/gm);
+
     await using(ECDbTestHelper.createECDb(outDir, "oredecenums.ecdb",
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECEnumeration typeName="Color" backingTypeName="int" isStrict="true">
@@ -2773,9 +2811,10 @@ describe("ECSqlStatement", () => {
         assert.equal(row.caType, 160);
       }), 1);
     });
+    assert.isTrue(slm.finishAndDispose());
   });
 
-  it("should get NativeSql", async () => {
+  it("should get native sql", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "asyncmethodtest.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECEntityClass typeName="Foo" modifier="Sealed">

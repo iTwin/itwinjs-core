@@ -73,6 +73,7 @@ public;LogFunction = (category: string, message: string, metaData?: GetMetaDataF
 public;Logger
 public;LoggerCategoryAndLevel
 public;LoggerLevelsConfig
+internal;LogIntercept = (level: LogLevel, category: string, message: string, metaData?: GetMetaDataFunction) => boolean
 public;LogLevel
 public;lowerBound
 public;LRUCache

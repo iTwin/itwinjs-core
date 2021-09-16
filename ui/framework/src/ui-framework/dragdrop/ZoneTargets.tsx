@@ -13,7 +13,7 @@ import { TargetChangeHandler } from "../frontstage/FrontstageComposer";
 
 /** Properties for the [[ZoneTargets]] component.
  * @internal
- */
+ */
 export interface ZoneTargetsProps extends CommonProps {
   zoneId: WidgetZoneId;
   dropTarget: ZoneTargetType | undefined;
@@ -22,7 +22,7 @@ export interface ZoneTargetsProps extends CommonProps {
 
 /** Zone Targets React component.
  * @internal
- */
+ */
 export class ZoneTargets extends React.Component<ZoneTargetsProps> {
   public override render(): React.ReactNode {
     switch (this.props.dropTarget) {

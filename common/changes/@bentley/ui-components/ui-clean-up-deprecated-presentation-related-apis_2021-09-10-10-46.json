@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "Clean up deprecated Tree and Drag & Drop related APIs",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components"
+}
