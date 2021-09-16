@@ -3,6 +3,12 @@ publish: false
 ---
 # NextVersion
 
+## Dependency Updates
+
+The following dependencies of iTwin.js have been updated;
+
+- `openid-client` updated to from `^3.15.3` -> `^4.7.4`,
+
 ## Build tools changes
 
 Removed TSLint support from `@bentley/build-tools`. If you're still using it, please switch to ESLint.
@@ -12,8 +18,8 @@ Also removed legacy `.eslintrc.js` file from the same package. Instead, use `@be
 
 [Viewport.zoomToElements]($frontend) accepts any number of element Ids and fits the viewport to the union of their [Placement]($common)s. A handful of shortcomings of the previous implementation have been addressed:
 
-* Previously, the element Ids were passed to [IModelConnection.Elements.getProps]($frontend), which returned **all** of the element's properties (potentially many megabytes of data), only to extract the [PlacementProps]($common) for each element and discard the rest. Now, it uses the new [IModelConnection.Elements.getPlacements]($frontend) function to query only the placements.
-* Previously, if a mix of 2d and 3d elements were specified, the viewport would attempt to union their 2d and 3d placements, typically causing it to fit incorrectly because 2d elements reside in a different coordinate space than 3d elements. Now, the viewport ignores 2d elements if it is viewing a 3d view, and vice-versa.
+- Previously, the element Ids were passed to [IModelConnection.Elements.getProps]($frontend), which returned **all** of the element's properties (potentially many megabytes of data), only to extract the [PlacementProps]($common) for each element and discard the rest. Now, it uses the new [IModelConnection.Elements.getPlacements]($frontend) function to query only the placements.
+- Previously, if a mix of 2d and 3d elements were specified, the viewport would attempt to union their 2d and 3d placements, typically causing it to fit incorrectly because 2d elements reside in a different coordinate space than 3d elements. Now, the viewport ignores 2d elements if it is viewing a 3d view, and vice-versa.
 
 ## Continued transition to `ChangesetIndex`
 
@@ -21,9 +27,9 @@ Every Changeset has both an Id (a string hash of its content and parent changese
 
 In version 2.19, we introduced the type [ChangesetIdWithIndex]($common) to begin that migration. However, for 2.x compatibility we could not use it several places where it would have been helpful:
 
-* [IModelRpcOpenProps]($common)
-* [CheckpointProps]($backend)
-* [LocalBriefcaseProps]($common)
+- [IModelRpcOpenProps]($common)
+- [CheckpointProps]($backend)
+- [LocalBriefcaseProps]($common)
 
 Each of these interfaces originally had only a member `changeSetId: string`, In 2.19, for backwards compatibility, a new member `changeSetIndex?: number` was added. In V3 those two members are now replaced with a single member `changeset: ChangesetIdWithIndex`. Note that this is a breaking change, and you may have to adjust your code. To get the changeset Id, use `changeset.id`. To get the changeset Index, use `changeset.index` (may be undefined). In V4, this will become `changeset: ChangesetIndexAndId` and index will be required.
 
@@ -31,7 +37,7 @@ Each of these interfaces originally had only a member `changeSetId: string`, In 
 
 ## ViewState3d.lookAt Arguments Changed
 
-[ViewState3d.lookAt]($frontend) previously took 6 arguments. In addition the method `ViewState3d.lookAtUsingLensAngle` also established a perspective `ViewState3d` from a field-of-view lens angle with many of the same arguments. There is now a new implementation of `ViewState3d.lookAt` that accepts named parameters to set up either a perspective or orthographic view, using the interfaces [LookAtPerspectiveArgs]($frontend), [LookAtOrthoArgs]($frontend), or [LookAtUsingLensAngle]($frontend).
+[ViewState3d.lookAt]($frontend) previously took 6 arguments. Also, the method `ViewState3d.lookAtUsingLensAngle` established a perspective `ViewState3d` from a field-of-view lens angle with many of the same arguments. There is now a new implementation of `ViewState3d.lookAt` that accepts named parameters to set up either a perspective or orthographic view, using the interfaces [LookAtPerspectiveArgs]($frontend), [LookAtOrthoArgs]($frontend), or [LookAtUsingLensAngle]($frontend).
 
 This is a breaking change, so you may need to modify your code and replace the previous arguments with a single object with the appropriate names. For example,:
 
@@ -55,7 +61,14 @@ can become:
 
 ```ts
   viewState.lookAt( {eyePoint: eye, targetPoint: target , upVector: up, lensAngle: lens, frontDistance, backDistance} );
+
 ```
+
+### OnViewExtentsError and MarginOptions Separated from ViewChangeOptions
+
+The `opts` argument to [ViewState3d.lookAt]($frontend) was previously declared to be of type [ViewChangeOptions]($frontend). However, it only used the `onExtentsError` member to handle invalid view extents. That caused confusion because it led you to believe that [ViewState3d.lookAt]($frontend) performed a view change when it doesn't, it merely modifies the `ViewState3d`.
+
+There is now a separate interface [OnViewExtentsError]($frontend) that `ViewState3d.lookAt` accepts it as its `opts` argument. Likewise, [ViewState3d.lookAtVolume]($frontend) and [ViewState3d.lookAtViewAlignedVolume]($frontend) accept "[MarginOptions]($frontend) & [OnViewExtentsError]($frontend)" as their `opts` argument.
 
 ## ViewFlags
 
@@ -91,8 +104,8 @@ To rectify this, and to eliminate various other pitfalls associated with mutable
 
 Methods that mutate a ViewFlags object have been removed.
 
-* `clone` has been replaced with [ViewFlags.copy]($common), which returns a new object instead of modifying `this`.
-* `createFrom` has been removed. Because ViewFlags is immutable, it is never necessary to create an identical copy of one - just use the same object. Or, if for some reason you really want an identical copy, use the object spread operator.
+- `clone` has been replaced with [ViewFlags.copy]($common), which returns a new object instead of modifying `this`.
+- `createFrom` has been removed. Because ViewFlags is immutable, it is never necessary to create an identical copy of one - just use the same object. Or, if for some reason you really want an identical copy, use the object spread operator.
 
 If your code used to modify a single property, change it to use [ViewFlags.with]($common) or [ViewFlags.withRenderMode]($common):
 
@@ -225,6 +238,35 @@ The signatures to several methods in [BriefcaseManager]($backend) and [Briefcase
 | `BriefcaseManager.downloadBriefcase`     | [RequestNewBriefcaseArg]($backend)                    |                                  |
 | `IModelDb.importSchemas`                 | `LocalFileName[]`                                     | `requestContext` removed         |
 
+## `Tool.run` and `Tool.parseAndRun` are now async
+
+In V2.0, the methods [Tool.run]($frontend) and [Tool.parseAndRun]($frontend) were synchronous. This was problematic in that it was impossible to invoke a tool and await its completion. Those two methods are now both `async` and return `Promise<boolean>`. This is obviously a breaking change. Any Tool subclasses that override those methods will need to become async, and any code that calls `Tool.run` or `Tool.parseAndRun` will need to appropriately handle the returned Promise (usually by awaiting it.)
+
+In the process of converting `Tool.run` and `Tool.parseAndRun` to async, several other `Tool` class methods also became async and will likewise need to be modified if they are called or overridden.
+
+These methods were previously synchronous and are now async:
+
+- [Tool.run]($frontend)
+- [Tool.parseAndRun]($frontend)
+- [InteractiveTool.onInstall]($frontend)
+- [InteractiveTool.onPostInstall]($frontend)
+- [InteractiveTool.exitTool]($frontend)
+- [InteractiveTool.onCleanup]($frontend)
+- [InteractiveTool.onSuspend]($frontend)
+- [InteractiveTool.onUnsuspend]($frontend)
+
+## `NodeKey` in `@bentley/presentation-common`
+
+The [NodeKey]($presentation-common) object contains a `pathFromRoot` attribute which can be used to uniquely identify a node in a hierarchy. In addition, the attribute is stable - the value for the same node is the same even when being created by different backends, which allows it to be persisted and later be used to identify specific nodes.
+
+In `3.0` changes have been made that changed the way this attribute is calculated, which means the same node produced by pre-3.0 and 3.x versions of `imodeljs` will have keys with different `pathFromRoot` value. To help identify the version of `NodeKey` a new `version` attribute has been added, with `undefined` or `1` being assigned to keys produced by pre-3.0 and `2` being assigned to keys produced by `3.x` versions of imodeljs. In addition, a new [NodeKey.equals]($presentation-common) function has been added to help with the equality checking of node keys, taking their version into account.
+
+## Changes to GraphicBuilder
+
+It is no longer necessary to supply a [Viewport]($frontend) when creating a [GraphicBuilder]($frontend). Instead, you can supply to [RenderSystem.createGraphic]($frontend) a [CustomGraphicBuilderOptions]($frontend) containing a function that can compute the level of detail appropriate for the produced [RenderGraphic]($frontend).
+
+[GraphicBuilder]($frontend)'s properties are all now read-only - you can no longer change `placement`, `pickId`, `wantNormals`, or `wantEdges` after creating the builder. Previously, a caller could create a graphic builder, add some geometry, then modify any of these properties before adding more geometry, more often than not producing surprising results.
+
 ## Removal of previously deprecated APIs
 
 In this 3.0 major release, we have removed several APIs that were previously marked as deprecated in 2.x. Generally, the reason for the deprecation as well as the alternative suggestions can be found in the 2.x release notes. They are summarized here for quick reference.
@@ -267,6 +309,8 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `IModelVersion.getChangeSetFromNamedVersion` | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
 | `IModelVersion.getLatestChangeSetId`         | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
 | `IModelWriteRpcInterface`                    | Use IPC for writing to iModels                                 |
+| `LatAndLong`                                 | *eliminated*                                                   |
+| `LatLongAndHeight`                           | [CartographicProps]($common)                                   |
 | `ViewFlagOverrides` class                    | [ViewFlagOverrides]($common) type                              |
 | `ViewFlagProps.edgeMask`                     | *eliminated*                                                   |
 | `ViewFlagProps.hlMatColors`                  | *eliminated*                                                   |
@@ -317,45 +361,55 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @bentley/ui-components
 
-| Removed                                | Replacement                                      |
-| -------------------------------------- | ------------------------------------------------ |
-| `hasFlag`                              | `hasSelectionModeFlag` in @bentley/ui-components |
-| `StandardEditorNames`                  | `StandardEditorNames` in @bentley/ui-abstract    |
-| `StandardTypeConverterTypeNames`       | `StandardTypeNames` in @bentley/ui-abstract      |
-| `StandardTypeNames`                    | `StandardTypeNames` in @bentley/ui-abstract      |
-| `Timeline`                             | `TimelineComponent` in @bentley/ui-components    |
-| `ControlledTreeProps.treeEvents`       | `ControlledTreeProps.eventsHandler`              |
-| `ControlledTreeProps.visibleNodes`     | `ControlledTreeProps.model`                      |
-| `MutableTreeModel.computeVisibleNodes` | `computeVisibleNodes` in @bentley/ui-components  |
-| `TreeModelSource.getVisibleNodes`      | memoized result of `computeVisibleNodes`         |
-| `useVisibleTreeNodes`                  | `useTreeModel` and `computeVisibleNodes`         |
-| `SignIn`                               | *eliminated*                                     |
+| Removed                                                     | Replacement                                                                                                                   |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `hasFlag`                                                   | `hasSelectionModeFlag` in @bentley/ui-components                                                                              |
+| `StandardEditorNames`                                       | `StandardEditorNames` in @bentley/ui-abstract                                                                                 |
+| `StandardTypeConverterTypeNames`                            | `StandardTypeNames` in @bentley/ui-abstract                                                                                   |
+| `StandardTypeNames`                                         | `StandardTypeNames` in @bentley/ui-abstract                                                                                   |
+| `Timeline`                                                  | `TimelineComponent` in @bentley/ui-components                                                                                 |
+| `ControlledTreeProps.treeEvents`                            | `ControlledTreeProps.eventsHandler`                                                                                           |
+| `ControlledTreeProps.visibleNodes`                          | `ControlledTreeProps.model`                                                                                                   |
+| `MutableTreeModel.computeVisibleNodes`                      | `computeVisibleNodes` in @bentley/ui-components                                                                               |
+| `TreeModelSource.getVisibleNodes`                           | memoized result of `computeVisibleNodes`                                                                                      |
+| `useVisibleTreeNodes`                                       | `useTreeModel` and `computeVisibleNodes`                                                                                      |
+| `SignIn`                                                    | *eliminated*                                                                                                                  |
+| All drag & drop related APIs                                | Third party components. E.g. see this [example](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=drag-and-drop) |
+| `DEPRECATED_Tree`, `BeInspireTree` and related APIs         | `ControlledTree`                                                                                                              |
+| `PropertyValueRendererContext.decoratedTextElement`         | `IPropertyValueRenderer` that can properly render a `PropertyRecord`                                                          |
+| `CommonPropertyGridProps.onPropertyLinkClick`               | `PropertyRecord.links.onClick`                                                                                                |
+| `onPropertyLinkClick` prop in `usePropertyData`             | `PropertyRecord.links.onClick`                                                                                                |
+| `onPropertyLinkClick` prop in `usePropertyGridModelSource`  | `PropertyRecord.links.onClick`                                                                                                |
+| `FilteringInputProps.filteringInProgress`                   | `FilteringInputProps.status`                                                                                                  |
+| `hasLinks`                                                  | `!!PropertyRecord.links?.length`                                                                                              |
+| `PropertyListProps.onListWidthChanged`                      | Width is now passed to `PropertyList` through `PropertyListProps.width` prop                                                  |
 
 ### @bentley/ui-framework
 
-| Removed                                 | Replacement                                                                            |
-| --------------------------------------- | -------------------------------------------------------------------------------------- |
-| `COLOR_THEME_DEFAULT`                   | `SYSTEM_PREFERRED_COLOR_THEME` in @bentley/ui-framework is used as default color theme |
-| `FunctionKey`                           | `FunctionKey` in @bentley/ui-abstract                                                  |
-| `IModelAppUiSettings`                   | `UserSettingsStorage` in @bentley/ui-framework                                         |
-| `reactElement` in ContentControl        | `ContentControl.reactNode`                                                             |
-| `reactElement` in NavigationAidControl  | `NavigationAidControl.reactNode`                                                       |
-| `reactElement` in NavigationWidgetDef   | `NavigationWidgetDef.reactNode`                                                        |
-| `reactElement` in ToolWidgetDef         | `ToolWidgetDef.reactNode`                                                              |
-| `reactElement` in WidgetControl         | `WidgetControl.reactNode`                                                              |
-| `reactElement` in WidgetDef             | `WidgetDef.reactNode`                                                                  |
-| `ReactMessage`                          | `ReactMessage` in @bentley/ui-core                                                     |
-| `SpecialKey`                            | `SpecialKey` in @bentley/ui-abstract                                                   |
-| `WidgetState`                           | `WidgetState` in @bentley/ui-abstract                                                  |
-| `UserProfileBackstageItem`              | *eliminated*                                                                           |
-| `SignIn`                                | *eliminated*                                                                           |
-| `SignOutModalFrontstage`                | *eliminated*                                                                           |
-| `IModelConnectedCategoryTree`           | *eliminated*                                                                           |
-| `IModelConnectedModelsTree`             | *eliminated*                                                                           |
-| `IModelConnectedSpatialContainmentTree` | *eliminated*                                                                           |
-| `CategoryTreeWithSearchBox`             | *eliminated*                                                                           |
-| `VisibilityComponent`                   | `TreeWidgetComponent` in @bentley/tree-widget-react                                    |
-| `VisibilityWidget`                      | `TreeWidgetControl` in @bentley/tree-widget-react                                      |
+| Removed                                 | Replacement                                                                                                                   |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `COLOR_THEME_DEFAULT`                   | `SYSTEM_PREFERRED_COLOR_THEME` in @bentley/ui-framework is used as default color theme                                        |
+| `FunctionKey`                           | `FunctionKey` in @bentley/ui-abstract                                                                                         |
+| `IModelAppUiSettings`                   | `UserSettingsStorage` in @bentley/ui-framework                                                                                |
+| `reactElement` in ContentControl        | `ContentControl.reactNode`                                                                                                    |
+| `reactElement` in NavigationAidControl  | `NavigationAidControl.reactNode`                                                                                              |
+| `reactElement` in NavigationWidgetDef   | `NavigationWidgetDef.reactNode`                                                                                               |
+| `reactElement` in ToolWidgetDef         | `ToolWidgetDef.reactNode`                                                                                                     |
+| `reactElement` in WidgetControl         | `WidgetControl.reactNode`                                                                                                     |
+| `reactElement` in WidgetDef             | `WidgetDef.reactNode`                                                                                                         |
+| `ReactMessage`                          | `ReactMessage` in @bentley/ui-core                                                                                            |
+| `SpecialKey`                            | `SpecialKey` in @bentley/ui-abstract                                                                                          |
+| `WidgetState`                           | `WidgetState` in @bentley/ui-abstract                                                                                         |
+| `UserProfileBackstageItem`              | *eliminated*                                                                                                                  |
+| `SignIn`                                | *eliminated*                                                                                                                  |
+| `SignOutModalFrontstage`                | *eliminated*                                                                                                                  |
+| `IModelConnectedCategoryTree`           | *eliminated*                                                                                                                  |
+| `IModelConnectedModelsTree`             | *eliminated*                                                                                                                  |
+| `IModelConnectedSpatialContainmentTree` | *eliminated*                                                                                                                  |
+| `CategoryTreeWithSearchBox`             | *eliminated*                                                                                                                  |
+| `VisibilityComponent`                   | `TreeWidgetComponent` in @bentley/tree-widget-react                                                                           |
+| `VisibilityWidget`                      | `TreeWidgetControl` in @bentley/tree-widget-react                                                                             |
+| All drag & drop related APIs            | Third party components. E.g. see this [example](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=drag-and-drop) |
 
 ### @bentley/bentleyjs-core
 
@@ -492,6 +546,10 @@ The @bentley/ui-* and @bentley/presentation-components packages are now dependen
 
 For migration purposes, React 16 is included in the peerDependencies for the packages. React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
 
+### New Timeline Date Marker
+
+The [TimelineComponent]($ui-imodel-components) react component now accepts a property to mark a specific date in a date-based timeline. If the timeline has a defined start date and end date, a date between them can be marked in the timeline by specifying an instance of [TimelineDateMarkerProps]($ui-imodel-components) in the new markDate member of [TimelineComponentProps]($ui-imodel-components). If the date member is left undefined, today's date will be used. The default marker is a short vertical bar, but a ReactNode can be specified in the dateMarker prop to customize the marker's appearance.
+
 ### New Floating Widget Capabilities
 
 Widgets provided via UiItemsProviders may now set `defaultState: WidgetState.Floating` and `isFloatingStateSupported: true` to open
@@ -503,7 +561,7 @@ The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to 
 
 `ControlledTree` component has received the following breaking changes:
 
-* The component now takes `TreeModel` rather than `VisibleTreeNodes` as a prop to avoid requiring consumers to manage `VisibleTreeNodes` object. As a result, the `useVisibleTreeNodes` hook was replaced with `useTreeModel` hook. Typical migration:
+- The component now takes `TreeModel` rather than `VisibleTreeNodes` as a prop to avoid requiring consumers to manage `VisibleTreeNodes` object. As a result, the `useVisibleTreeNodes` hook was replaced with `useTreeModel` hook. Typical migration:
 
   **Before:**
 
@@ -519,7 +577,7 @@ The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to 
   return <ControlledTree model={treeModel} {...otherProps} />;
   ```
 
-* Name of the `treeEvents` prop was changed to `eventsHandler` to make it clearer. Typical migration:
+- Name of the `treeEvents` prop was changed to `eventsHandler` to make it clearer. Typical migration:
 
   **Before:**
 
@@ -533,7 +591,7 @@ The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to 
   return <ControlledTree eventsHandler={eventsHandler} {...otherProps} />;
   ```
 
-* `width` and `height` properties are now required. Previously they were optional and forced us to use non-optimal approach when not provided. Now it's up to the consumer to tell the size of the component. Typical migration:
+- `width` and `height` properties are now required. Previously they were optional and forced us to use non-optimal approach when not provided. Now it's up to the consumer to tell the size of the component. Typical migration:
 
   **Before:**
 
@@ -550,6 +608,26 @@ The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to 
   ```
 
   `width` and `height` props may be calculated dynamically using [ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver) API.
+
+### PropertyGrid - related API Changes
+
+`width` and `height` are now required props for `VirtualizedPropertyGrid` and `VirtualizedPropertyGridWithDataProvider`. Also, `width` is now a required property for `PropertyList`. Previously they were optional and forced us to use non-optimal approach when not provided. Now it's up to the consumer to tell the size of the component. Typical migration:
+
+**Before:**
+
+```tsx
+return <VirtualizedPropertyGrid {...props} />;
+```
+
+**After:**
+
+```tsx
+const width = 100;
+const height = 100;
+return <VirtualizedPropertyGrid width={width} height={height} {...props} />;
+```
+
+`width` and `height` props may be calculated dynamically using [ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver) API.
 
 ### Deprecated Components in Favor of iTwinUI-react Components
 
@@ -620,13 +698,13 @@ The items moved to ui-imodel-components are related to Color, Cube, LineWeight, 
 
 The following items were moved into the ui-imodel-components package. For a complete list, see [iTwin.js Documentation](https://www.itwinjs.org/reference/ui-imodel-components/all).
 
-* ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorPropertyEditor, ColorSwatch
-* Cube, CubeNavigationAid, CubeRotationChangeEventArgs
-* DrawingNavigationAid
-* QuantityInput, QuantityNumberInput
-* TimelineComponent, TimelineDataProvider, TimelineMenuItemProps
-* ViewportComponent, ViewportComponentEvents
-* LineWeightSwatch, WeightPickerButton, WeightPropertyEditor
+- ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorPropertyEditor, ColorSwatch
+- Cube, CubeNavigationAid, CubeRotationChangeEventArgs
+- DrawingNavigationAid
+- QuantityInput, QuantityNumberInput
+- TimelineComponent, TimelineDataProvider, TimelineMenuItemProps
+- ViewportComponent, ViewportComponentEvents
+- LineWeightSwatch, WeightPickerButton, WeightPropertyEditor
 
 ### Tasks and Workflows Deprecated
 
@@ -655,3 +733,7 @@ The property `InterpolationCurve3dOptions.isChordLenTangent` has been deprecated
 
 The iModel Transformer APIs, such as the classes [IModelExporter]($transformer), [IModelImporter]($transformer), and [IModelTransformer]($transformer)
 were removed from the `@bentley/imodeljs-backend` package and moved to a new package, `@bentley/imodeljs-transformer`.
+
+## @bentley/imodeljs-common
+
+The `fromRadians`, `fromDegrees`, and `fromAngles` methods of [Cartographic]($common) now expect to receive a single input argument - an object containing a longitude, latitude and optional height property. The public constructor for [Cartographic]($common) has also been removed. If you would like to create a [Cartographic]($common) object without specifying longitude and latiude, you can use the new `createZero` method. These changes will help callers avoid misordering longitude, latitude, and height when creating a [Cartographic]($common) object. Additionally, the `LatAndLong` and `LatLongAndHeight` interfaces have been removed and replaced with a single [CartographicProps]($common) interface.

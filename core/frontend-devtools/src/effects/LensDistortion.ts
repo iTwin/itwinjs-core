@@ -101,14 +101,14 @@ export class LensDistortionConfig extends Tool {
   public static strength = 0.5;
   public static cylindricalRatio = 0.5;
 
-  public override run(strength?: number, ratio?: number): boolean {
+  public override async run(strength?: number, ratio?: number): Promise<boolean> {
     LensDistortionConfig.strength = strength ?? 0.5;
     LensDistortionConfig.cylindricalRatio = ratio ?? 0.5;
     refreshViewportsForEffect("fdt lensdistortion");
     return true;
   }
 
-  public override parseAndRun(...input: string[]): boolean {
+  public override async parseAndRun(...input: string[]): Promise<boolean> {
     const args = parseArgs(input);
     return this.run(args.getFloat("s"), args.getFloat("r"));
   }

@@ -47,21 +47,21 @@ export class SectionsPanel extends ToolBarDropDown {
     div.style.textAlign = "center";
     createButton({
       value: "Define",
-      handler: () => { IModelApp.tools.run(this._toolName, ViewClipDecorationProvider.create()); setFocusToHome(); },
+      handler: async () => { await IModelApp.tools.run(this._toolName, ViewClipDecorationProvider.create()); setFocusToHome(); },
       parent: div,
       inline: true,
       tooltip: "Define clip",
     });
     createButton({
       value: "Edit",
-      handler: () => ViewClipDecorationProvider.create().toggleDecoration(this._vp),
+      handler: async () => ViewClipDecorationProvider.create().toggleDecoration(this._vp),
       parent: div,
       inline: true,
       tooltip: "Show clip edit handles",
     });
     createButton({
       value: "Clear",
-      handler: () => IModelApp.tools.run("ViewClip.Clear", ViewClipDecorationProvider.create()),
+      handler: async () => IModelApp.tools.run("ViewClip.Clear", ViewClipDecorationProvider.create()),
       parent: div,
       inline: true,
       tooltip: "Clear clips",

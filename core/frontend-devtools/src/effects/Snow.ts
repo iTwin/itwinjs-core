@@ -242,18 +242,18 @@ export class SnowDecorator implements Decorator {
 export class SnowEffect extends Tool {
   public static override toolId = "SnowEffect";
 
-  public override run(enable?: boolean): boolean {
+  public override async run(enable?: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (vp)
-      SnowDecorator.toggle(vp, enable); // eslint-disable-line @typescript-eslint/no-floating-promises
+      await SnowDecorator.toggle(vp, enable);
 
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const enable = parseToggle(args[0]);
     if (typeof enable !== "string")
-      this.run(enable);
+      await this.run(enable);
 
     return true;
   }

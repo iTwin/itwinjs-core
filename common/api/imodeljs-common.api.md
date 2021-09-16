@@ -786,16 +786,28 @@ export interface Carto2DDegreesProps {
 }
 
 // @public
-export class Cartographic implements LatLongAndHeight {
-    constructor(longitude?: number, latitude?: number, height?: number);
+export class Cartographic implements CartographicProps {
     clone(result?: Cartographic): Cartographic;
-    equals(right: LatLongAndHeight): boolean;
-    equalsEpsilon(right: LatLongAndHeight, epsilon: number): boolean;
+    static createZero(): Cartographic;
+    equals(right: CartographicProps): boolean;
+    equalsEpsilon(right: CartographicProps, epsilon: number): boolean;
     freeze(): Readonly<this>;
-    static fromAngles(longitude: Angle, latitude: Angle, height: number, result?: Cartographic): Cartographic;
-    static fromDegrees(longitude: number, latitude: number, height: number, result?: Cartographic): Cartographic;
+    static fromAngles(args: {
+        longitude: Angle;
+        latitude: Angle;
+        height?: number;
+    }, result?: Cartographic): Cartographic;
+    static fromDegrees(args: {
+        longitude: number;
+        latitude: number;
+        height?: number;
+    }, result?: Cartographic): Cartographic;
     static fromEcef(cartesian: Point3d, result?: Cartographic): Cartographic | undefined;
-    static fromRadians(longitude: number, latitude: number, height?: number, result?: Cartographic): Cartographic;
+    static fromRadians(args: {
+        longitude: number;
+        latitude: number;
+        height?: number;
+    }, result?: Cartographic): Cartographic;
     static geocentricLatitudeFromGeodeticLatitude(geodeticLatitude: number): number;
     // (undocumented)
     height: number;
@@ -808,10 +820,16 @@ export class Cartographic implements LatLongAndHeight {
     static parametricLatitudeFromGeodeticLatitude(geodeticLatitude: number): number;
     static scalePointToGeodeticSurface(point: Point3d, result?: Point3d): Point3d | undefined;
     toEcef(result?: Point3d): Point3d;
-    // (undocumented)
-    toJSON(): LatLongAndHeight;
+    toJSON(): CartographicProps;
     toString(): string;
     }
+
+// @public
+export interface CartographicProps {
+    height: number;
+    latitude: number;
+    longitude: number;
+}
 
 // @public
 export class CartographicRange {
@@ -1725,8 +1743,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1638400,
-    Major = 25,
+    Combined = 1703936,
+    Major = 26,
     Minor = 0
 }
 
@@ -2136,7 +2154,7 @@ export class EcefLocation implements EcefLocationProps {
 
 // @public
 export interface EcefLocationProps {
-    readonly cartographicOrigin?: LatLongAndHeight;
+    readonly cartographicOrigin?: CartographicProps;
     readonly orientation: YawPitchRollProps;
     readonly origin: XYZProps;
     readonly xVector?: XYZProps;
@@ -4310,7 +4328,7 @@ export { IModelStatus }
 // @public (undocumented)
 export abstract class IModelTileRpcInterface extends RpcInterface {
     // @internal
-    generateTileContent(_rpcProps: IModelRpcProps, _treeId: string, _contentId: string, _guid: string | undefined): Promise<Uint8Array>;
+    generateTileContent(_rpcProps: IModelRpcProps, _treeId: string, _contentId: string, _guid: string | undefined): Promise<TileContentSource>;
     // (undocumented)
     static getClient(): IModelTileRpcInterface;
     // @beta (undocumented)
@@ -4325,10 +4343,10 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     queryVersionInfo(): Promise<TileVersionInfo>;
     // @internal
     requestElementGraphics(_rpcProps: IModelRpcProps, _request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
-    // @internal @deprecated (undocumented)
-    requestTileContent(iModelToken: IModelRpcProps, treeId: string, contentId: string, isCanceled?: () => boolean, guid?: string): Promise<Uint8Array>;
     // @internal (undocumented)
     requestTileTreeProps(_tokenProps: IModelRpcProps, _id: string): Promise<IModelTileTreeProps>;
+    // @internal
+    retrieveTileContent(_rpcProps: IModelRpcProps, _key: TileContentIdentifier): Promise<Uint8Array>;
 }
 
 // @internal
@@ -4593,20 +4611,6 @@ export const iTwinChannel: (channel: string) => string;
 export interface JsonGeometryStream {
     data: GeometryStreamProps;
     format: "json";
-}
-
-// @public (undocumented)
-export interface LatAndLong {
-    // (undocumented)
-    latitude: number;
-    // (undocumented)
-    longitude: number;
-}
-
-// @public (undocumented)
-export interface LatLongAndHeight extends LatAndLong {
-    // (undocumented)
-    height: number;
 }
 
 // @internal
@@ -5994,6 +5998,7 @@ export class QParams2d {
 // @public
 export class QParams3d {
     clone(out?: QParams3d): QParams3d;
+    computeRange(out?: Range3d): Range3d;
     copyFrom(src: QParams3d): void;
     static fromNormalizedRange(rangeScale?: number): QParams3d;
     static fromOriginAndScale(origin: Point3d, scale: Point3d, out?: QParams3d): QParams3d;
@@ -8158,6 +8163,14 @@ export interface TileContentMetadata {
     readonly isLeaf: boolean;
     // (undocumented)
     readonly sizeMultiplier?: number;
+}
+
+// @internal (undocumented)
+export enum TileContentSource {
+    // (undocumented)
+    Backend = 0,
+    // (undocumented)
+    ExternalCache = 1
 }
 
 // @internal

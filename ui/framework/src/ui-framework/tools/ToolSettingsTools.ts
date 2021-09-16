@@ -15,7 +15,7 @@ import { ToolSettingsManager } from "../zones/toolsettings/ToolSettingsManager";
 export class FocusToolSettings extends Tool {
   public static override toolId = "FocusToolSettings";
 
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     return ToolSettingsManager.focusIntoToolSettings();
   }
 }
@@ -30,7 +30,7 @@ export class BumpToolSetting extends Tool {
   // istanbul ignore next
   public static override get maxArgs() { return 1; }
 
-  public override run(settingIndexStr?: string): boolean {
+  public override async run(settingIndexStr?: string): Promise<boolean> {
     let settingIndex: number | undefined;
     if (settingIndexStr) {
       settingIndex = parseInt(settingIndexStr, 10);
@@ -41,7 +41,7 @@ export class BumpToolSetting extends Tool {
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     return this.run(args[0]);
   }
 }
