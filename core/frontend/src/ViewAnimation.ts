@@ -54,18 +54,30 @@ export interface GlobalAlignmentOptions {
   transition?: boolean;
 }
 
+/** A method to be called if an error occurs while adjusting a ViewState's extents
+ * @public
+ */
+export interface OnViewExtentsError {
+  /** Function to be called when the extents are adjusted due to a limits error (view too larger or too small) */
+  onExtentsError?: (status: ViewStatus) => ViewStatus;
+}
+
+/** Options that control the margin around the edges of a volume for lookAt and Fit view operations
+ * @public
+ */
+export interface MarginOptions {
+  /** The percentage of the view to leave blank around the edges. */
+  marginPercent?: MarginPercent;
+}
+
 /** Options that control how operations that change a viewport behave.
  * @public
  */
-export interface ViewChangeOptions extends ViewAnimationOptions {
+export interface ViewChangeOptions extends OnViewExtentsError, ViewAnimationOptions {
   /** Whether to save the result of this change into the view undo stack. Default is to save in undo. */
   noSaveInUndo?: boolean;
   /** Whether the change should be animated or not. Default is to not animate frustum change. */
   animateFrustumChange?: boolean;
-  /** The percentage of the view to leave blank around the edges. */
-  marginPercent?: MarginPercent;
-  /** Function to be called when the extents are adjusted due to a limits error (view too larger or too small) */
-  onExtentsError?: (status: ViewStatus) => ViewStatus;
   /** If defined the controls how the view will be aligned with the globe */
   globalAlignment?: GlobalAlignmentOptions;
 }

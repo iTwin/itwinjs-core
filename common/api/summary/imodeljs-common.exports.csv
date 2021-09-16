@@ -66,6 +66,7 @@ public;CameraProps
 public;Carto2DDegrees 
 public;Carto2DDegreesProps
 public;Cartographic 
+public;CartographicProps
 public;CartographicRange
 public;CategoryProps 
 public;CategorySelectorProps 
@@ -351,8 +352,6 @@ public;isPowerOfTwo(num: number): boolean
 internal;isValidImageSourceFormat(format: ImageSourceFormat): boolean
 internal;iTwinChannel: (channel: string) => string
 public;JsonGeometryStream
-public;LatAndLong
-public;LatLongAndHeight 
 internal;LegacyAnalysisStyleProps
 internal;LightLocationProps 
 public;LightSettings
@@ -639,6 +638,7 @@ public;ThumbnailProps
 internal;TileContentDescription 
 beta;TileContentIdentifier
 internal;TileContentMetadata
+internal;TileContentSource
 internal;TileFormat
 internal;tileFormatFromNumber(formatNumber: number): TileFormat
 internal;class TileHeader

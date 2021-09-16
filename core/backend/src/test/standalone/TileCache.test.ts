@@ -31,10 +31,9 @@ describe("TileCache open v1", () => {
     assert.isDefined(iModel);
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     // Generate tile
-    // eslint-disable-next-line deprecation/deprecation
     const tileProps = await getTileProps(iModel, requestContext);
     assert.isDefined(tileProps);
-    await tileRpcInterface.requestTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, undefined, tileProps!.guid); // eslint-disable-line deprecation/deprecation
+    await tileRpcInterface.generateTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid);
 
     const tilesCache = `${iModel.pathName}.Tiles`;
     assert.isTrue(IModelJsFs.existsSync(tilesCache));
@@ -107,10 +106,9 @@ describe("TileCache, open v2", async () => {
     const checkpoint = await SnapshotDb.openCheckpointV2(checkpointProps);
 
     // Generate tile
-    // eslint-disable-next-line deprecation/deprecation
     const tileProps = await getTileProps(checkpoint, user);
     assert.isDefined(tileProps);
-    await tileRpcInterface.requestTileContent(checkpoint.getRpcProps(), tileProps!.treeId, tileProps!.contentId, undefined, tileProps!.guid); // eslint-disable-line deprecation/deprecation
+    await tileRpcInterface.generateTileContent(checkpoint.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid);
 
     // Make sure .Tiles exists in the cacheDir. This was enforced by opening it as a V2 Checkpoint which passes as part of its open params a tempFileBasename.
     const tempFileBase = path.join(IModelHost.cacheDir, `${checkpointProps.iModelId}\$${checkpointProps.changeset.id}`);

@@ -202,6 +202,7 @@ export class Sample {
       Point3d.create(x0, y0, z),
     ];
   }
+
   /** Access the last point in the array. push another shifted by dx,dy,dz.
    * * No push if all are 0.
    * * If array is empty, push a leading 000
@@ -1124,7 +1125,7 @@ export class Sample {
    * @param vectorY step in "Y" direction
    * @param numXVertices number of vertices in X direction
    * @param numYVertices number of vertices in y direction
-   * @param createParams true to create parameters, with paramter value `(i,j)` for point at (0 based) vertex in x,y directions
+   * @param createParams true to create parameters, with parameter value `(i,j)` for point at (0 based) vertex in x,y directions
    * @param createNormals true to create a (single) normal indexed from all facets
    * @param createColors true to create a single color on each quad.  (shared between its triangles)
    * @note edgeVisible is false only on the diagonals
