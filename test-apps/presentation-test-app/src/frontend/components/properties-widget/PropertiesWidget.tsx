@@ -3,25 +3,24 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import "./PropertiesWidget.css";
-import * as React from "react";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { Field } from "@bentley/presentation-common";
 import {
   DiagnosticsProps, FavoritePropertiesDataFilterer, IPresentationPropertyDataProvider, PresentationPropertyDataProvider,
-  usePropertyDataProviderWithUnifiedSelection,
+  usePropertyDataProviderWithUnifiedSelection
 } from "@bentley/presentation-components";
 import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import {
   ActionButtonRendererProps, CompositeFilterType, CompositePropertyDataFilterer, DisplayValuePropertyDataFilterer, FilteredPropertyData,
-  FilteringInput, FilteringInputStatus, FilteringPropertyDataProvider, LabelPropertyDataFilterer, PropertyCategory, PropertyCategoryLabelFilterer,
-  PropertyData, PropertyGridContextMenuArgs, useAsyncValue, useDebouncedAsyncValue, VirtualizedPropertyGridWithDataProvider,
+  FilteringInput, FilteringInputStatus, FilteringPropertyDataProvider, HighlightInfo, LabelPropertyDataFilterer, PropertyCategory, PropertyCategoryLabelFilterer,
+  PropertyData, PropertyGridContextMenuArgs, useAsyncValue, useDebouncedAsyncValue, VirtualizedPropertyGridWithDataProvider
 } from "@bentley/ui-components";
-import { HighlightInfo } from "@bentley/ui-components/lib/ui-components/common/HighlightingComponentProps";
 import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Orientation, useDisposable } from "@bentley/ui-core";
 import { ToggleSwitch } from "@itwin/itwinui-react";
+import * as React from "react";
 import { DiagnosticsSelector } from "../diagnostics-selector/DiagnosticsSelector";
+import "./PropertiesWidget.css";
 
 const FAVORITES_SCOPE = FavoritePropertiesScope.IModel;
 

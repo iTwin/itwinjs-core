@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ColorDef } from "@bentley/imodeljs-common";
-import { DisplayParams } from "@bentley/imodeljs-frontend/lib/cjs/render-primitives";
+import { DisplayParams } from "@bentley/imodeljs-frontend/lib/render-primitives";
 
 export class FakeDisplayParams extends DisplayParams {
   public constructor() {

@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ProcessDetector } from "@bentley/bentleyjs-core";
-import { ElectronApp } from "@bentley/electron-manager/lib/cjs/ElectronFrontend";
-import { EditTools } from "@bentley/imodeljs-editor-frontend";
-import { IModelApp, PrimitiveTool, SnapshotConnection, Viewport } from "@bentley/imodeljs-frontend";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
+import { ProcessDetector } from "@bentley/bentleyjs-core";
+import { EditTools } from "@bentley/imodeljs-editor-frontend";
+import { IModelApp, PrimitiveTool, SnapshotConnection, Viewport } from "@bentley/imodeljs-frontend";
 import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../../common/TestEditCommandIpc";
+import { ElectronApp } from "@bentley/electron-manager/lib/cjs/ElectronFrontend";
 
 const expect = chai.expect;
 const assert = chai.assert;

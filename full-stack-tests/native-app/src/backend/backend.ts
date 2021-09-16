@@ -11,8 +11,8 @@ import { BackendLoggerCategory, BriefcaseDb, BriefcaseManager, ChangeSummaryMana
 import { IModelRpcProps, RpcConfiguration } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
 import { TestUtility } from "@bentley/oidc-signin-tool";
-import "@bentley/oidc-signin-tool/cjs/certa/certaBackend";
-import { TestUserCredentials } from "@bentley/oidc-signin-tool/cjs/TestUsers";
+import "@bentley/oidc-signin-tool/lib/cjs/certa/certaBackend";
+import { TestUserCredentials } from "@bentley/oidc-signin-tool/lib/cjs/TestUsers";
 import * as fs from "fs";
 import * as nock from "nock";
 import * as path from "path";

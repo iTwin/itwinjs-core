@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert, expect } from "chai";
+import * as path from "path";
 import { Guid, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/cjs/ElectronFrontend";
 import { IModel, IModelError } from "@bentley/imodeljs-common";
 import { BriefcaseConnection } from "@bentley/imodeljs-frontend";
-import { assert, expect } from "chai";
-import * as path from "path";
 
 if (ProcessDetector.isElectronAppFrontend) { // BriefcaseConnection tests only run on electron
   describe("BriefcaseConnection.openStandalone", () => {
@@ -20,7 +20,7 @@ if (ProcessDetector.isElectronAppFrontend) { // BriefcaseConnection tests only r
     });
 
     it("openStandalone properties", async () => {
-      const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/cjs/test/assets/test.bim");
+      const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/test.bim");
       const connection = await BriefcaseConnection.openStandalone(filePath);
 
       assert.isTrue(connection.isOpen);

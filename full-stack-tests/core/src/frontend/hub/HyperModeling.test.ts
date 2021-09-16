@@ -11,7 +11,7 @@ import { SectionType } from "@bentley/imodeljs-common";
 import {
   CheckpointConnection, IModelApp, IModelConnection, ParseAndRunResult, SnapshotConnection
 } from "@bentley/imodeljs-frontend";
-import { TestUsers } from "@bentley/oidc-signin-tool/cjs/TestUsers";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 import { expect } from "chai";
 import { testOnScreenViewport } from "../TestViewport";
 import { TestUtility } from "./TestUtility";

@@ -5,8 +5,8 @@
 import { ClientRequestContext, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelAppOptions, NoRenderApp } from "@bentley/imodeljs-frontend";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
-import { TestUsers } from "@bentley/oidc-signin-tool/cjs/TestUsers";
-import { TestUtility } from "@bentley/oidc-signin-tool/cjs/TestUtility";
+import { TestUsers } from "@bentley/oidc-signin-tool/lib/cjs/TestUsers";
+import { TestUtility } from "@bentley/oidc-signin-tool/lib/cjs/TestUtility";
 import {
   HierarchyCacheMode, Presentation as PresentationBackend, PresentationBackendNativeLoggerCategory,
   PresentationProps as PresentationBackendProps

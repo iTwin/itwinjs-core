@@ -24,7 +24,7 @@ if (ProcessDetector.isElectronAppFrontend) {
     });
 
     beforeEach(async () => {
-      const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/cjs/test/assets/planprojection.bim");
+      const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/planprojection.bim");
       imodel = await BriefcaseConnection.openStandalone(filePath, OpenMode.ReadWrite);
     });
 
@@ -57,7 +57,7 @@ if (ProcessDetector.isElectronAppFrontend) {
         await getBufferedChanges(async () => imodel.saveChanges());
 
         await imodel.models.load(modelId);
-        model = imodel.models.getLoaded(modelId);
+        model = imodel.models.getLoaded(modelId) as GeometricModelState;
         expect(model).instanceof(GeometricModelState);
       });
 

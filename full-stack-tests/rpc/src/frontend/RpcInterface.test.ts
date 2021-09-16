@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BentleyError, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
-import { executeBackendCallback } from "@bentley/certa/cjs/utils/CallbackUtils";
+import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
 import {
   ChangesetIdWithIndex,
   IModelReadRpcInterface, IModelRpcProps, NoContentError, RpcConfiguration, RpcInterface, RpcInterfaceDefinition, RpcManager, RpcOperation, RpcOperationPolicy,

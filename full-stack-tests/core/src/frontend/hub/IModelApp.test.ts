@@ -36,7 +36,7 @@ describe("IModelApp (#integration)", () => {
     let authorizedRequestContext: AuthorizedClientRequestContext = await AuthorizedFrontendRequestContext.create();
     authorizedRequestContext.enter();
 
-    authorizedRequestContext = ClientRequestContext.current;
+    authorizedRequestContext = ClientRequestContext.current as AuthorizedFrontendRequestContext;
     let actualAccessTokenStr = authorizedRequestContext.accessToken.toTokenString();
     assert.equal(actualAccessTokenStr, expectedAccessTokenStr);
     assert.equal(authorizedRequestContext.applicationId, IModelApp.applicationId);

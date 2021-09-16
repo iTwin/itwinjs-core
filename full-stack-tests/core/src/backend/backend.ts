@@ -14,7 +14,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { BasicManipulationCommand, EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
 // Sets up certa to allow a method on the frontend to get an access token
-import "@bentley/oidc-signin-tool/cjs/certa/certaBackend";
+import "@bentley/oidc-signin-tool/lib/cjs/certa/certaBackend";
 import * as fs from "fs";
 import * as http from "http";
 import * as path from "path";
@@ -123,12 +123,12 @@ async function init() {
 
 /** A FileNameResolver for resolving test iModel files from core/backend */
 class BackendTestAssetResolver extends FileNameResolver {
-  /** Resolve a base file name to a full path file name in the core/backend/lib/test/assets/ directory. */
+  /** Resolve a base file name to a full path file name in the core/backend/lib/cjs/test/assets/ directory. */
   public override tryResolveFileName(inFileName: string): string {
     if (path.isAbsolute(inFileName)) {
       return inFileName;
     }
-    return path.join(__dirname, "../../../../core/backend/lib/test/assets/", inFileName);
+    return path.join(__dirname, "../../../../core/backend/lib/cjs/test/assets/", inFileName);
   }
   /** Resolve a key (for testing FileNameResolver) */
   public override tryResolveKey(fileKey: string): string | undefined {

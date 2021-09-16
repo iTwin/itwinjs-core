@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ImageSource, ImageSourceFormat, RenderTexture } from "@bentley/imodeljs-common";
 import { CheckpointConnection, imageElementFromImageSource, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { ExternalTextureLoader, ExternalTextureRequest, GL, Texture2DHandle } from "@bentley/imodeljs-frontend/cjs/webgl";
+import { ExternalTextureLoader, ExternalTextureRequest, GL, Texture2DHandle } from "@bentley/imodeljs-frontend/lib/webgl";
 import { TestUsers } from "@bentley/oidc-signin-tool";
 import { expect } from "chai";
 import { TestUtility } from "./TestUtility";
@@ -114,7 +114,7 @@ describe("external texture requests (#integration)", () => {
       // check that requested textures are downsampled to maxTexturesize when requested.
       let texBytes = await imodel.getTextureImage({ name, maxTextureSize });
       expect(texBytes).to.not.be.undefined;
-      let imageSource = new ImageSource(texBytes, ImageSourceFormat.Jpeg);
+      let imageSource = new ImageSource(texBytes!, ImageSourceFormat.Jpeg);
       let image = await imageElementFromImageSource(imageSource);
       expect(image.width).to.be.lessThanOrEqual(maxTextureSize);
       expect(image.height).to.be.lessThanOrEqual(maxTextureSize);
@@ -123,7 +123,7 @@ describe("external texture requests (#integration)", () => {
       // check that requests textures are not downsampled when not requested.
       texBytes = await imodel.getTextureImage({ name });
       expect(texBytes).to.not.be.undefined;
-      imageSource = new ImageSource(texBytes, ImageSourceFormat.Jpeg);
+      imageSource = new ImageSource(texBytes!, ImageSourceFormat.Jpeg);
       image = await imageElementFromImageSource(imageSource);
       expect(image.width).to.be.greaterThan(maxTextureSize);
       expect(image.height).to.be.greaterThan(maxTextureSize);

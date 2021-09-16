@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { CheckpointConnection, IModelApp, SheetViewState } from "@bentley/imodeljs-frontend";
-import { TestUsers } from "@bentley/oidc-signin-tool/cjs/TestUsers";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 import { expect } from "chai";
 import { testOnScreenViewport } from "../TestViewport";
 import { TestUtility } from "./TestUtility";

@@ -48,7 +48,7 @@ describe("MapLayerSettingsService (#integration)", () => {
     let sources = await MapLayerSettingsService.getSourcesFromSettingsService(contextId, iModelId);
     let foundSource = sources.some((value) => { return value.name === testName; }); // expect not to find it bc we haven't stored yet.
     chai.expect(foundSource).to.be.false;
-    const success = await MapLayerSettingsService.storeSourceInSettingsService(layer, false, contextId, iModelId);
+    const success = await MapLayerSettingsService.storeSourceInSettingsService(layer!, false, contextId, iModelId);
     chai.assert.isTrue(success);
 
     sources = await MapLayerSettingsService.getSourcesFromSettingsService(contextId, iModelId);
@@ -65,9 +65,9 @@ describe("MapLayerSettingsService (#integration)", () => {
       formatId: "test12345",
       transparentBackground: true,
     });
-    let success = await MapLayerSettingsService.storeSourceInSettingsService(layer, false, contextId, iModelId);
+    let success = await MapLayerSettingsService.storeSourceInSettingsService(layer!, false, contextId, iModelId);
     chai.assert.isTrue(success);
-    success = await MapLayerSettingsService.storeSourceInSettingsService(layer, true, contextId, iModelId);
+    success = await MapLayerSettingsService.storeSourceInSettingsService(layer!, true, contextId, iModelId);
     chai.assert.isFalse(success); // cant store model setting that collides with a project setting expect a false
     const settingsResult: SettingsResult = await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, testName, true, contextId);
     chai.expect(settingsResult.status).to.be.equal(SettingsStatus.Success);
@@ -80,9 +80,9 @@ describe("MapLayerSettingsService (#integration)", () => {
       formatId: "test12345",
       transparentBackground: true,
     });
-    let success = await MapLayerSettingsService.storeSourceInSettingsService(layer, true, contextId, iModelId);
+    let success = await MapLayerSettingsService.storeSourceInSettingsService(layer!, true, contextId, iModelId);
     chai.assert.isTrue(success);
-    success = await MapLayerSettingsService.storeSourceInSettingsService(layer, false, contextId, iModelId);
+    success = await MapLayerSettingsService.storeSourceInSettingsService(layer!, false, contextId, iModelId);
     chai.assert.isTrue(success);
     const settingsResult: SettingsResult = await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, testName, true, contextId);
     chai.expect(settingsResult.status).to.be.equal(SettingsStatus.Success);
@@ -95,13 +95,13 @@ describe("MapLayerSettingsService (#integration)", () => {
       formatId: "test12345",
       transparentBackground: true,
     });
-    let success = await MapLayerSettingsService.storeSourceInSettingsService(layer, true, contextId, iModelId);
+    let success = await MapLayerSettingsService.storeSourceInSettingsService(layer!, true, contextId, iModelId);
     chai.assert.isTrue(success);
-    success = await MapLayerSettingsService.deleteSharedSettings(layer, contextId, iModelId);
+    success = await MapLayerSettingsService.deleteSharedSettings(layer!, contextId, iModelId);
     chai.assert.isTrue(success);
-    success = await MapLayerSettingsService.storeSourceInSettingsService(layer, false, contextId, iModelId);
+    success = await MapLayerSettingsService.storeSourceInSettingsService(layer!, false, contextId, iModelId);
     chai.assert.isTrue(success);
-    success = await MapLayerSettingsService.deleteSharedSettings(layer, contextId, iModelId);
+    success = await MapLayerSettingsService.deleteSharedSettings(layer!, contextId, iModelId);
     chai.assert.isTrue(success);
   });
 });

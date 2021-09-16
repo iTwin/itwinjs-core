@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert } from "chai";
 import { ProcessDetector } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/cjs/ElectronFrontend";
 import { BentleyCloudRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
-import { assert } from "chai";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 
 RpcConfiguration.developmentMode = true;

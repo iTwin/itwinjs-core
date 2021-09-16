@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ProcessDetector } from "@bentley/bentleyjs-core";
-import { executeBackendCallback } from "@bentley/certa/cjs/utils/CallbackUtils";
+import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
 import { RpcProtocolEvent, RpcRequest } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import { BackendTestCallbacks } from "../common/SideChannels";

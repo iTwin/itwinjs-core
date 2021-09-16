@@ -6,7 +6,7 @@ import { BeDuration, GuidString, Logger } from "@bentley/bentleyjs-core";
 import { ChangeSet, ChangeSetQuery, IModelHubClient } from "@bentley/imodelhub-client";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedFrontendRequestContext, CheckpointConnection, IModelApp, IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
-import { TestUsers } from "@bentley/oidc-signin-tool/cjs/TestUsers";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { TestUtility } from "./TestUtility";

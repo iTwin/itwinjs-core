@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
-import { IModelHost, IModelHostConfiguration, KnownLocations, SnapshotDb, StandaloneDb } from "@bentley/imodeljs-backend";
-import { IModelJsFs, IModelJsFsStats } from "@bentley/imodeljs-backend/cjs/IModelJsFs";
+import { IModelHost, IModelHostConfiguration, IModelJsFs, IModelJsFsStats, KnownLocations, SnapshotDb, StandaloneDb } from "@bentley/imodeljs-backend";
 import { IModelReadRpcInterface, RpcManager } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
