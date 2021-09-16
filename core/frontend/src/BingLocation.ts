@@ -7,7 +7,6 @@
  */
 
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { Angle } from "@bentley/geometry-core";
 import { Cartographic } from "@bentley/imodeljs-common";
 import { request, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelApp } from "./IModelApp";
