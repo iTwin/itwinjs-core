@@ -44,7 +44,7 @@
     "@types/chai-as-promised": "^7",
     "@types/i18next-node-fs-backend": "^2.1.0",
     "@types/mocha": "^8.2.2",
-    "@types/node": "10.14.1",
+    "@types/node": "16.9.1",
     "@types/sinon": "^9.0.0",
     "@types/xmldom": "^0.1.30",
     "benchmark": "^2.1.4",
@@ -79,11 +79,23 @@
     "rules": {
       "radix": "warn",
       "@typescript-eslint/explicit-member-accessibility": "warn",
-      "@bentley/no-internal-barrel-imports": ["error", {"ignored-barrel-modules": ["./src/ECObjects.ts"]}]
+      "@bentley/no-internal-barrel-imports": [
+        "error",
+        {
+          "ignored-barrel-modules": [
+            "./src/ECObjects.ts"
+          ]
+        }
+      ]
     },
     "overrides": [
       {
-        "files": ["*.test.ts", "*.test.tsx", "**/test/**/*.ts", "**/test/**/*.tsx"],
+        "files": [
+          "*.test.ts",
+          "*.test.tsx",
+          "**/test/**/*.ts",
+          "**/test/**/*.tsx"
+        ],
         "rules": {
           "@bentley/no-internal-barrel-imports": "off"
         }

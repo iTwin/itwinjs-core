@@ -28,7 +28,7 @@
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@bentley/extension-webpack-tools": "workspace:*",
-    "@types/node": "10.14.1",
+    "@types/node": "16.9.1",
     "cpx": "^1.5.0",
     "eslint": "^7.11.0",
     "rimraf": "^3.0.2",

@@ -15,7 +15,7 @@ export class MobileEventLoop {
     ++this._activeTasks;
 
     if (this._idleCallback === null) {
-      this._idleCallback = setInterval(() => this._idleHandler());
+      // this._idleCallback = setInterval(() => this._idleHandler());
     }
   }
 

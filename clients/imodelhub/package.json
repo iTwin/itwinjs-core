@@ -49,7 +49,7 @@
     "@bentley/frontend-authorization-client": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@types/deep-assign": "^0.1.0",
-    "@types/node": "10.14.1",
+    "@types/node": "16.9.1",
     "eslint": "^7.11.0",
     "rimraf": "^3.0.2",
     "typescript": "~4.3.0"
