@@ -2444,7 +2444,7 @@ export class SnapshotDb extends IModelDb {
 
     // Replace iModelId if seedFile is a snapshot, preserve iModelId if seedFile is an iModelHub-managed briefcase
     if (!BriefcaseManager.isValidBriefcaseId(nativeDb.getBriefcaseId()))
-      nativeDb.setDbGuid(Guid.createValue());
+      nativeDb.setIModelId(Guid.createValue());
 
     nativeDb.deleteLocalValue(BriefcaseLocalValue.StandaloneEdit);
     nativeDb.saveChanges();
@@ -2586,7 +2586,7 @@ export class StandaloneDb extends BriefcaseDb {
     const nativeDb = new IModelHost.platform.DgnDb();
     nativeDb.createIModel(filePath, args);
     nativeDb.saveLocalValue(BriefcaseLocalValue.StandaloneEdit, args.allowEdit);
-    nativeDb.saveProjectGuid(Guid.empty);
+    nativeDb.setITwinId(Guid.empty);
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     nativeDb.saveChanges();
     return new StandaloneDb({ nativeDb, key: Guid.createValue(), briefcaseId: BriefcaseIdValue.Unassigned, openMode: OpenMode.ReadWrite });

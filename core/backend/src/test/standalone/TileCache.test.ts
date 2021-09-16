@@ -73,7 +73,7 @@ describe("TileCache, open v2", async () => {
     const iModelId = snapshot.iModelId;
     const iTwinId = Guid.createValue();
     const changeset = IModelTestUtils.generateChangeSetId();
-    snapshot.nativeDb.saveProjectGuid(Guid.normalize(iTwinId));
+    snapshot.nativeDb.setITwinId(iTwinId);
     snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id); // even fake checkpoints need a changeSetId!
     snapshot.saveChanges();
     snapshot.close();

@@ -98,7 +98,7 @@ export class IModelHubBackend {
 
     const nativeDb = IModelDb.openDgnDb({ path: revision0 }, OpenMode.ReadWrite);
     try {
-      nativeDb.saveProjectGuid(arg.iTwinId);
+      nativeDb.setITwinId(arg.iTwinId);
       // nativeDb.setDbGuid(this.iModelId); NEEDS_WORK - iModelHub should accept this value, not create it.
       nativeDb.saveChanges();
       nativeDb.deleteAllTxns(); // necessary before resetting briefcaseId

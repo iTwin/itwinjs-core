@@ -284,7 +284,7 @@ export class CheckpointManager {
         throw new IModelError(IModelStatus.ValidationFailed, "iModelId is not properly set up in the checkpoint");
 
       Logger.logWarning(loggerCategory, "iModelId is not properly set up in the checkpoint. Updated checkpoint to the correct iModelId.", () => ({ ...traceInfo, dbGuid: iModelId }));
-      nativeDb.setDbGuid(Guid.normalize(checkpoint.iModelId));
+      nativeDb.setIModelId(Guid.normalize(checkpoint.iModelId));
       // Required to reset the ChangeSetId because setDbGuid clears the value.
       nativeDb.saveLocalValue("ParentChangeSetId", dbChangeset.id);
       if (undefined !== dbChangeset.index)
