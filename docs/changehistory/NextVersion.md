@@ -261,6 +261,12 @@ The [NodeKey]($presentation-common) object contains a `pathFromRoot` attribute w
 
 In `3.0` changes have been made that changed the way this attribute is calculated, which means the same node produced by pre-3.0 and 3.x versions of `imodeljs` will have keys with different `pathFromRoot` value. To help identify the version of `NodeKey` a new `version` attribute has been added, with `undefined` or `1` being assigned to keys produced by pre-3.0 and `2` being assigned to keys produced by `3.x` versions of imodeljs. In addition, a new [NodeKey.equals]($presentation-common) function has been added to help with the equality checking of node keys, taking their version into account.
 
+## Changes to GraphicBuilder
+
+It is no longer necessary to supply a [Viewport]($frontend) when creating a [GraphicBuilder]($frontend). Instead, you can supply to [RenderSystem.createGraphic]($frontend) a [CustomGraphicBuilderOptions]($frontend) containing a function that can compute the level of detail appropriate for the produced [RenderGraphic]($frontend).
+
+[GraphicBuilder]($frontend)'s properties are all now read-only - you can no longer change `placement`, `pickId`, `wantNormals`, or `wantEdges` after creating the builder. Previously, a caller could create a graphic builder, add some geometry, then modify any of these properties before adding more geometry, more often than not producing surprising results.
+
 ## Removal of previously deprecated APIs
 
 In this 3.0 major release, we have removed several APIs that were previously marked as deprecated in 2.x. Generally, the reason for the deprecation as well as the alternative suggestions can be found in the 2.x release notes. They are summarized here for quick reference.
