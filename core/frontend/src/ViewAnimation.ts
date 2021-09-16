@@ -38,6 +38,8 @@ export interface ViewAnimationOptions {
   cancelOnAbort?: boolean;
   /** easing function for animation. Default is Easing.Cubic.Out */
   easingFunction?: EasingFunction;
+  /** Invoked when the animator is finished.  didComplete is true only if the animation finished without being interrupted or canceled. */
+  animationFinishedCallback?(didComplete: boolean): void;
 }
 
 /**  Options that control how a view is aligned with the globe.
