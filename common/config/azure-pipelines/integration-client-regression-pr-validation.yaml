@@ -7,8 +7,8 @@ trigger:
   - master
 
 variables:
-  - group: iModel.js non-secret internal config variables
-  - group: iModel.js Integration Internal Test Users
+  - group: iModel.js non-secret config variables
+  - group: iModel.js Integration Test Users
 
 jobs:
   - job: Node_14_x
