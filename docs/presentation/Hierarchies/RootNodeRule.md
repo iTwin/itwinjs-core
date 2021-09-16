@@ -4,7 +4,7 @@
 
 Root node rules are used to define nodes that are displayed at the root hierarchy level.
 
-The rules have two types of attributes - for defining *placement* and for defining *branch content*. The latter attributes only get used if the rule does get used after evaluating the former.
+The rules have two types of attributes: for defining *placement* and for defining *branch content*. *Placement* attributes can make the whole rule return no nodes (e.g. when [condition](#attribute-condition) evaluates to `false`). In that case *branch content* attributes have no effect.
 
 ## Attributes
 
@@ -92,7 +92,7 @@ Tells the library to assign produced nodes a flag, indicating that they should b
 
 ### Attribute: `specifications`
 
-A list of hierarchy specifications that define what content is going to be returned. This is the most important attribute which is responsible for what nodes are going to be returned. There are 4 types of specifications:
+A list of hierarchy specifications that define what nodes are going to be returned. There are 4 types of specifications:
 
 - [Instance nodes of specific classes](./InstanceNodesOfSpecificClasses.md) specification returns nodes for instances of given ECClass(-es) without attempting to join them to the parent node using some relationship or attribute. This is mostly useful when specifying root nodes.
 - [Related instance nodes](./RelatedInstanceNodes.md) specification returns nodes for instances that are related to the parent instance node through given ECRelationship. This is the most commonly used specification to create child nodes.

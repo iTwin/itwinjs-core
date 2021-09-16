@@ -6,7 +6,7 @@ The Presentation library provides a declarative way to create hierarchies based 
 
 ## Reference
 
-There are 2 primary concepts for creating hierarchies: [rules](#rules) and [specifications](#specifications).
+There are 2 primary concepts for creating hierarchies: [rules](#rules) and [specifications](#branch-content-attributes).
 
 ### Rules
 
@@ -17,7 +17,7 @@ Hierarchy presentation rule is a top level concept for defining hierarchies. The
 
 The only difference between those two rules is that we're looking for root node rules when creating root level nodes and for child node rules otherwise.
 
-Both kinds of rules have two types of attributes - for defining [placement](#placement-attributes) and for defining [branch content](#branch-content-attributes). The latter attributes only get used if the rule does get used after evaluating the former.
+Both kinds of rules have two types of attributes - for defining [placement](#placement-attributes) and for defining [branch content](#branch-content-attributes).
 
 #### Placement Attributes
 
@@ -25,7 +25,7 @@ Placement attributes define **if** the rule should be used and **where** the nod
 
 #### Branch Content Attributes
 
-Branch content attributes define **result of the rule** if it does get used after evaluating [placement attributes](#placement-attributes). The primary branch content attribute is `specifications`, which defines what content is going to be created. There are 4 types of specifications:
+Branch content attributes define what nodes are returned if the rule does get used after evaluating [placement attributes](#placement-attributes). The most important branch content attribute is `specifications`, which is an array of 4 possible types of specifications:
 
 - [Instance nodes of specific classes](./InstanceNodesOfSpecificClasses.md) specification returns nodes for instances of given ECClass(-es) without attempting to join them to the parent node using some relationship or attribute. This is mostly useful when specifying root nodes.
 - [Related instance nodes](./RelatedInstanceNodes.md) specification returns nodes for instances that are related to the parent instance node through given ECRelationship. This is the most commonly used specification to create child nodes.
