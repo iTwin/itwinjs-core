@@ -256,7 +256,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
       this._accessToken = undefined;
       return;
     }
-    this._accessToken = user.access_token;
+    this._accessToken = `Bearer ${user.access_token}`;
     this._expiresAt = new Date(user.expires_at * 1000);
   }
 

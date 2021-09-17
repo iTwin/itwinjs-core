@@ -68,7 +68,8 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
     if (this._tokenResponse === undefined || this._tokenResponse.refreshToken === undefined)
       throw new BentleyError(AuthStatus.Error, "Not signed In. First call signIn()", Logger.logError, loggerCategory);
 
-    return this.refreshAccessToken(this._tokenResponse.refreshToken);
+    const token = `Bearer ${this._tokenResponse.refreshToken}`;
+    return this.refreshAccessToken(token);
   }
 
   /** Loads the access token from the store, and refreshes it if necessary and possible

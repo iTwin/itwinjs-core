@@ -185,8 +185,7 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
     // eslint-disable-next-line no-console
     // console.log(`Finished OIDC signin for ${this._user.email} ...`);
 
-    const token = await this.tokenSetToAccessToken(tokenSet);
-    this._accessToken = token;
+    this._accessToken = `Bearer ${tokenSet.access_token}`;
     this._expiresAt = new Date(tokenSet.expires_at!);
     this.onUserStateChanged.raiseEvent(this._accessToken);
   }
@@ -194,10 +193,6 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
   public async signOut(): Promise<void> {
     this._accessToken = undefined;
     this.onUserStateChanged.raiseEvent(this._accessToken);
-  }
-
-  private async tokenSetToAccessToken(tokenSet: TokenSet): Promise<AccessToken | undefined> {
-    return tokenSet.access_token;
   }
 
   private createAuthParams(scope: string): [AuthorizationParameters, OpenIDCallbackChecks] {

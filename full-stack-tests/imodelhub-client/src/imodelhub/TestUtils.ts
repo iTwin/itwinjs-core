@@ -22,6 +22,7 @@ import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
 import { assetsPath } from "./TestConstants";
 import { createFileHandler } from "./FileHandler";
 import { HttpRequestHost } from "@bentley/backend-itwin-client";
+import { TestIModelHubOidcAuthorizationClient } from "../TestIModelHubOidcAuthorizationClient";
 
 const loggingCategory = "backend-itwin-client.TestUtils";
 
@@ -195,6 +196,7 @@ export async function login(userCredentials?: TestUserCredentials): Promise<Acce
   const authorizationClient = getCloudEnv().getAuthorizationClient(userCredentials);
   const requestContext = new ClientRequestContext();
 
+  await (authorizationClient as TestIModelHubOidcAuthorizationClient).signIn(requestContext);
   return authorizationClient.getAccessToken(requestContext);
 }
 
