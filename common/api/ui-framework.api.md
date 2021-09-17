@@ -2606,8 +2606,6 @@ export class FrontstageDef {
     // (undocumented)
     get defaultContentId(): string;
     // (undocumented)
-    get defaultLayout(): ContentLayoutDef | undefined;
-    // (undocumented)
     get defaultTool(): ToolItemDef | undefined;
     // @internal
     dockPopoutWidgetContainer(widgetContainerId: string): void;

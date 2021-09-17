@@ -9,7 +9,7 @@ import * as moq from "typemoq";
 import { MockRender, ScreenViewport, ViewState3d } from "@bentley/imodeljs-frontend";
 import { ViewportComponentEvents } from "@bentley/ui-imodel-components";
 import {
-  ConfigurableCreateInfo, ConfigurableUiControlType, ConfigurableUiManager, ContentGroup, ContentLayoutDef, ContentLayoutManager, ContentViewManager,
+  ConfigurableCreateInfo, ConfigurableUiControlType, ConfigurableUiManager, ContentGroup, ContentLayoutManager, ContentViewManager,
   CoreTools, Frontstage, FrontstageComposer, FrontstageManager, FrontstageProps, FrontstageProvider, NavigationWidget, SupportsViewSelectorChange,
   ViewportContentControl, Widget, Zone,
 } from "../../ui-framework";
@@ -64,13 +64,6 @@ describe("ViewportContentControl", () => {
       return Frontstage1.stageId;
     }
 
-    public contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
-      {
-        id: "SingleContent",
-        description: "App:ContentLayoutDef.SingleContent",
-      },
-    );
-
     public get frontstage(): React.ReactElement<FrontstageProps> {
 
       const myContentGroup: ContentGroup = new ContentGroup(
@@ -116,11 +109,11 @@ describe("ViewportContentControl", () => {
   it("Frontstage should support ViewportContentControl", async () => {
     const frontstageProvider = new Frontstage1();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    const frontstageDef = await FrontstageManager.getFrontstageDef(Frontstage1.stageId);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.id);
     await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
     if (frontstageDef) {
-      expect(ContentLayoutManager.activeLayout).to.eq(frontstageProvider.contentLayoutDef);
+      expect(ContentLayoutManager.activeLayout?.id).to.eq("uia:singleView");
 
       const contentControl = ContentViewManager.getActiveContentControl();
       expect(contentControl).to.not.be.undefined;
@@ -139,11 +132,11 @@ describe("ViewportContentControl", () => {
   it("ViewportContentControl should return proper navigation aid for class name", async () => {
     const frontstageProvider = new Frontstage1();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    const frontstageDef = await FrontstageManager.getFrontstageDef(Frontstage1.stageId);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.id);
     await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
     if (frontstageDef) {
-      expect(ContentLayoutManager.activeLayout).to.eq(frontstageProvider.contentLayoutDef);
+      expect(ContentLayoutManager.activeLayout?.id).to.eq("uia:singleView");
 
       const contentControl = ContentViewManager.getActiveContentControl();
       expect(contentControl).to.not.be.undefined;
@@ -177,7 +170,7 @@ describe("ViewportContentControl", () => {
     await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
     if (frontstageDef) {
-      expect(ContentLayoutManager.activeLayout).to.eq(frontstageProvider.contentLayoutDef);
+      expect(ContentLayoutManager.activeLayout?.id).to.eq("uia:singleView");
 
       const contentControl = ContentViewManager.getActiveContentControl();
       expect(contentControl).to.not.be.undefined;

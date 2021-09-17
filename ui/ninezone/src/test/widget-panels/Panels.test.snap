@@ -62,6 +62,8 @@ exports[`WidgetPanels should render widget content 1`] = `
             />
             <div
               class="nz-widget-tab nz-active nz-first nz-last"
+              data-item-id="t1"
+              data-item-type="widget-tab"
               role="tab"
               title=""
             >

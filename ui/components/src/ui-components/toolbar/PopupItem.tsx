@@ -93,7 +93,7 @@ export function PopupItem(props: PopupItemProps) {
       closePanel: () => processPanelOpenClose(false),
     }}>
       <button
-        data-item-id={props.itemId ?? props.title}
+        data-item-id={props.itemId}
         data-item-type="tool-button"
         ref={targetRef}
         disabled={props.isDisabled}  // this is needed to prevent focusing/keyboard access to disabled buttons

@@ -83,6 +83,7 @@ describe("Backstage", () => {
 
       const backstageItem = wrapper.find(NZ_BackstageItem);
       backstageItem.find(".nz-backstage-item").simulate("click");
+      await TestUtils.flushAsyncOperations();
       spyMethod.calledOnce.should.true;
     });
 

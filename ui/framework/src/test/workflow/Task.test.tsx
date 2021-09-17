@@ -79,13 +79,16 @@ describe("Task", () => {
     if (workflow) {
       const task = workflow.getTask("Task1");
       if (task) {
-        await WorkflowManager.setActiveWorkflowAndTask(workflow, task);
+        setImmediate(async () => {
+          await WorkflowManager.setActiveWorkflowAndTask(workflow, task);
+          await TestUtils.flushAsyncOperations();
+          expect(spyMethod.calledOnce).to.be.true;
+          expect(FrontstageManager.activeFrontstageId).to.eq("Test1");
+          remove();
+        });
       }
     }
 
-    expect(spyMethod.calledOnce).to.be.true;
-    expect(FrontstageManager.activeFrontstageId).to.eq("Test1");
-    remove();
   });
 
 });

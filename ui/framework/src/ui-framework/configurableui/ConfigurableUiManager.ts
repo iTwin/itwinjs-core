@@ -146,10 +146,11 @@ export class ConfigurableUiManager {
    * @param classId   the class id of the control to create
    * @param uniqueId  a unique id for the control
    * @param options   options passed to the constructor of the control
+   * @param controlId controlId which may not be unique across all control instances.
    * @returns  the created control
    */
-  public static createControl(classId: string, uniqueId: string, options?: any): ConfigurableUiElement | undefined {
-    const info = new ConfigurableCreateInfo(classId, uniqueId, uniqueId);
+  public static createControl(classId: string, uniqueId: string, options?: any, controlId?: string): ConfigurableUiElement | undefined {
+    const info = new ConfigurableCreateInfo(classId, uniqueId, controlId ?? uniqueId);
     const constructor = this._registeredControls.get(info.classId);
     if (!constructor) {
       throw new UiError(UiFramework.loggerCategory(this), `createControl: classId '${classId}' not registered`);

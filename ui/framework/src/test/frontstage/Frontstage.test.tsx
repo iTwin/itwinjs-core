@@ -115,10 +115,11 @@ describe("Frontstage", () => {
     const wrapper = mount<FrontstageComposer>(<FrontstageComposer />);
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
-    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+    await FrontstageManager.setActiveFrontstage(frontstageProvider.frontstage.props.id);
     wrapper.update();
 
+    // eslint-disable-next-line no-console
+    console.log(wrapper.debug());
     const contentRenderer = wrapper.find("WidgetContentRenderer").at(2);
     const widgetElement = contentRenderer.find(TestWidgetElement);
     const widget = FrontstageManager.findWidget("widget3");

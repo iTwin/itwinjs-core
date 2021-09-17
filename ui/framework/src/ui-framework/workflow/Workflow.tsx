@@ -10,6 +10,7 @@
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { UiEvent } from "@bentley/ui-core";
+import { async } from "rxjs";
 import { ItemDefBase } from "../shared/ItemDefBase";
 import { ItemProps } from "../shared/ItemProps";
 import { UiFramework } from "../UiFramework";
@@ -117,10 +118,12 @@ export class Workflow extends ItemDefBase {
   /** Sets a Task as active.
    * @param task  The Task to set as active
    */
-  public setActiveTask(task: Task) {
-    this.activeTaskId = task.taskId;
-    task.onActivated(); // eslint-disable-line @typescript-eslint/no-floating-promises
-    WorkflowManager.onTaskActivatedEvent.emit({ task, taskId: task.id, workflow: this, workflowId: this.id });
+  public async setActiveTask(task: Task) {
+    void (async () => {
+      this.activeTaskId = task.taskId;
+      await task.onActivated();
+      WorkflowManager.onTaskActivatedEvent.emit({ task, taskId: task.id, workflow: this, workflowId: this.id });
+    })();
   }
 
   /** Gets an array of sorted Tasks in the Workflow. */

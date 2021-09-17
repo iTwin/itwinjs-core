@@ -47,7 +47,7 @@ export const ToolbarButtonItem = React.memo<React.FC<ToolbarButtonItemProps>>(
 
     return (
       <button
-        data-item-id={props.itemId ?? props.title}
+        data-item-id={props.itemId}
         data-item-type="tool-button"
         disabled={props.isDisabled}  // this is needed to prevent focusing/keyboard access to disabled buttons
         onClick={props.onClick}

@@ -96,23 +96,23 @@ export class ContentGroup {
   /** Gets a [[ContentControl]] from the Content Group based on its [[ContentProps]]. */
   public getContentControl(contentProps: ContentProps, _index: number): ContentControl | undefined {
     // ensure we have a unique control Id for each instance of a content control - this will be used as a key for the React control - see `ContentControl.getKeyedReactNode`
-    const id = `${this.groupId}-${contentProps.id}`;
+    const id = `${contentProps.id}::${this.groupId}`;
     let contentControl: ContentControl | undefined;
 
-    if (!this._contentControls.get(id)) {
+    if (!this._contentControls.get(contentProps.id)) {
       let usedClassId: string = "";
 
       if (typeof contentProps.classId === "string") {
-        if (!this._contentControls.get(id) && ConfigurableUiManager.isControlRegistered(contentProps.classId)) {
+        if (!this._contentControls.get(contentProps.id) && ConfigurableUiManager.isControlRegistered(contentProps.classId)) {
           let appData: any = {};
           if (contentProps.appDataProvider) {
             appData = contentProps.appDataProvider(id, contentProps.applicationData);
           }
-          contentControl = ConfigurableUiManager.createControl(contentProps.classId, id, { ...contentProps.applicationData, ...appData }) as ContentControl;
+          contentControl = ConfigurableUiManager.createControl(contentProps.classId, id, { ...contentProps.applicationData, ...appData }, contentProps.id) as ContentControl;
           usedClassId = contentProps.classId;
         }
       } else {
-        const info = new ConfigurableCreateInfo(contentProps.classId.name, id, id);
+        const info = new ConfigurableCreateInfo(contentProps.classId.name, id, contentProps.id);
         contentControl = new contentProps.classId(info, contentProps.applicationData) as ContentControl;
         usedClassId = contentProps.classId.name;
       }
@@ -122,11 +122,11 @@ export class ContentGroup {
           throw new UiError(UiFramework.loggerCategory(this), `getContentControl error: '${usedClassId}' is NOT a ContentControl or ViewportContentControl`);
         }
         contentControl.initialize();
-        this._contentControls.set(id, contentControl);
+        this._contentControls.set(contentProps.id, contentControl);
       }
     }
 
-    return this._contentControls.get(id);
+    return this._contentControls.get(contentProps.id);
   }
 
   /** Gets a [[ContentControl]] from the Content Group with a given ID. */
@@ -156,8 +156,12 @@ export class ContentGroup {
     if (this._contentSetMap.size === 0)
       this.getContentNodes();
 
-    if (node && (node as React.ReactElement<any>).key)
-      return this._contentSetMap.get((node as React.ReactElement<any>).key as string);
+    if (node && (node as React.ReactElement<any>).key) {
+      const key = ((node as React.ReactElement<any>).key as string);
+      // key has format `${contentProps.id}::${this.groupId}` which is stored as unique id
+      const controlId = key.split("::", 1)[0];
+      return this._contentSetMap.get(controlId);
+    }
 
     Logger.logError(UiFramework.loggerCategory(this), `getControlFromElement: no control found for element`);
     return undefined;

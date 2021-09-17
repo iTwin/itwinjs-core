@@ -124,7 +124,7 @@ export class AppUi {
    */
   public static TestContentGroup1: ContentGroupProps = {
     id: "TestContentGroup1",
-    layout: StandardContentLayouts.fourQuadrants,
+    layout: StandardContentLayouts.threeViewsTwoOnLeft,
     contents: [
       {
         id: "primaryIModelView",
@@ -140,11 +140,6 @@ export class AppUi {
         id: "tableView",
         classId: "TableExampleContent",
         applicationData: { label: "Content 3a", bgColor: "black" },
-      },
-      {
-        id: "custom-content",
-        classId: "TestContent",
-        applicationData: { label: "Content 4a", bgColor: "black" },
       },
     ],
   };

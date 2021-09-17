@@ -6,7 +6,7 @@ import { Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@bentley/geometr
 import {
   CategorySelectorProps, DisplayStyleProps, EcefLocation, ModelSelectorProps, SheetProps, SpatialViewDefinitionProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
-import { DrawingViewState, EmphasizeElements, IModelConnection, MockRender, ScreenViewport, SheetViewState, SpatialViewState, SubCategoriesCache, ViewState } from "@bentley/imodeljs-frontend";
+import { DrawingViewState, EmphasizeElements, EntityState, IModelConnection, MockRender, ScreenViewport, SheetViewState, SpatialViewState, SubCategoriesCache, ViewState } from "@bentley/imodeljs-frontend";
 import { StandardContentLayouts } from "@bentley/ui-abstract";
 import { expect } from "chai";
 import * as React from "react";
@@ -195,6 +195,8 @@ describe("SavedViewLayout", () => {
 
   it("should create and parse Spatial saved view layout", async () => {
     const vs = SpatialViewState.createFromProps(viewStateProps1, imodelMock.object);
+    imodelMock.setup(async (x) => x.findClassFor(moq.It.isAny(), moq.It.isAny())).returns(async () => Promise.resolve<any>(SpatialViewState));
+
     if (vs)
       viewState = vs;
     else
@@ -218,6 +220,7 @@ describe("SavedViewLayout", () => {
 
     const iModelConnection = imodelMock.object;
     if (serializedSavedViewLayoutProps && iModelConnection) {
+
       // Parse SavedViewLayoutProps
       const savedViewLayoutProps: SavedViewLayoutProps = JSON.parse(serializedSavedViewLayoutProps);
       // Create ContentLayoutDef
@@ -225,7 +228,7 @@ describe("SavedViewLayout", () => {
       // Create ViewStates
       const viewStates = await SavedViewLayout.viewStatesFromProps(iModelConnection, savedViewLayoutProps);
 
-      expect(contentLayoutDef.description).to.eq("App:ContentLayoutDef.SingleContent");
+      expect(contentLayoutDef.description).to.eq("Single Content View");
       expect(viewStates.length).to.eq(1);
 
       const viewState0 = viewStates[0];
@@ -247,6 +250,8 @@ describe("SavedViewLayout", () => {
     viewportMock.setup((x) => x.alwaysDrawn).returns(() => undefined);
 
     const vs = DrawingViewState.createFromProps(viewStateProps2, imodelMock.object);
+    imodelMock.setup(async (x) => x.findClassFor(moq.It.isAny(), moq.It.isAny())).returns(async () => Promise.resolve<any>(DrawingViewState));
+
     if (vs)
       viewState = vs;
     else
@@ -285,7 +290,7 @@ describe("SavedViewLayout", () => {
       // Create ViewStates
       const viewStates = await SavedViewLayout.viewStatesFromProps(iModelConnection, savedViewLayoutProps);
 
-      expect(contentLayoutDef.description).to.eq("App:ContentLayoutDef.SingleContent");
+      expect(contentLayoutDef.description).to.eq("Single Content View");
       expect(viewStates.length).to.eq(1);
 
       const viewState0 = viewStates[0];
@@ -295,7 +300,7 @@ describe("SavedViewLayout", () => {
       }
 
       const contentGroup = new ContentGroup(savedViewLayoutProps.contentGroupProps);
-      expect(contentGroup.groupId).to.eq("MyContentGroup");
+      expect(contentGroup.propsId).to.eq("MyContentGroup");
 
       // activate the layout
       await ContentLayoutManager.setActiveLayout(contentLayoutDef, contentGroup);
@@ -307,6 +312,8 @@ describe("SavedViewLayout", () => {
 
   it("should create and parse Sheet saved view layout", async () => {
     const vs = SheetViewState.createFromProps(viewStateProps3, imodelMock.object);
+    imodelMock.setup(async (x) => x.findClassFor(moq.It.isAny(), moq.It.isAny())).returns(async () => Promise.resolve<any>(SheetViewState));
+
     if (vs)
       viewState = vs;
     else
@@ -341,7 +348,7 @@ describe("SavedViewLayout", () => {
       // Create ViewStates
       const viewStates = await SavedViewLayout.viewStatesFromProps(iModelConnection, savedViewLayoutProps);
 
-      expect(contentLayoutDef.description).to.eq("App:ContentLayoutDef.SingleContent");
+      expect(contentLayoutDef.description).to.eq("Single Content View");
       expect(viewStates.length).to.eq(1);
 
       const viewState0 = viewStates[0];

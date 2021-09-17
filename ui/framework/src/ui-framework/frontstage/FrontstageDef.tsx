@@ -75,7 +75,6 @@ export class FrontstageDef {
   private _rightPanel?: StagePanelDef;
   private _bottomPanel?: StagePanelDef;
   private _bottomMostPanel?: StagePanelDef;
-  private _defaultLayout?: ContentLayoutDef;
   private _contentLayoutDef?: ContentLayoutDef;
   private _contentGroup?: ContentGroup;
   private _frontstageProvider?: FrontstageProvider;
@@ -117,7 +116,6 @@ export class FrontstageDef {
    * @deprecated Only bottomPanel is supported in UI 2.0  */
   public get bottomMostPanel(): StagePanelDef | undefined { return this._bottomMostPanel; }
 
-  public get defaultLayout(): ContentLayoutDef | undefined { return this._defaultLayout; }
   public get contentLayoutDef(): ContentLayoutDef | undefined { return this._contentLayoutDef; }
   public get contentGroup(): ContentGroup | undefined { return this._contentGroup; }
   public get frontstageProvider(): FrontstageProvider | undefined { return this._frontstageProvider; }

@@ -73,13 +73,6 @@ describe("IModelViewportControl", () => {
       return Frontstage1.stageId;
     }
 
-    public contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
-      {
-        id: "SingleContent",
-        description: "App:ContentLayoutDef.SingleContent",
-      },
-    );
-
     public get frontstage(): React.ReactElement<FrontstageProps> {
 
       const myContentGroup: ContentGroup = new ContentGroup(
@@ -129,7 +122,7 @@ describe("IModelViewportControl", () => {
     await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
     if (frontstageDef) {
-      expect(ContentLayoutManager.activeLayout).to.eq(frontstageProvider.contentLayoutDef);
+      expect(ContentLayoutManager.activeLayout).to.exist;
 
       const contentControl = ContentViewManager.getActiveContentControl();
       expect(contentControl).to.not.be.undefined;

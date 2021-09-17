@@ -34,7 +34,7 @@ class TestModalFrontstage implements ModalFrontstageInfo {
   }
 }
 
-describe("FrontstageComposer", () => {
+describe.skip("FrontstageComposer", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
   });

@@ -89,7 +89,7 @@ export class FrontstageLaunchBackstageItem extends React.PureComponent<Frontstag
 
     const frontstageDef = await FrontstageManager.getFrontstageDef(this.props.frontstageId);
     if (frontstageDef)
-      FrontstageManager.setActiveFrontstageDef(frontstageDef); // eslint-disable-line @typescript-eslint/no-floating-promises
+      await FrontstageManager.setActiveFrontstageDef(frontstageDef);
     else
       Logger.logError(UiFramework.loggerCategory(this), `Frontstage with id '${this.props.frontstageId}' not found`);
   };
