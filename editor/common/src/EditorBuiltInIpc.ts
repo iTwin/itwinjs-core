@@ -53,9 +53,9 @@ export interface FlatBufferGeometryFilter {
 
 /** @alpha */
 export interface BasicManipulationCommandIpc extends EditCommandIpc {
-  deleteElements: (ids: CompressedId64Set) => Promise<IModelStatus>;
-  transformPlacement: (ids: CompressedId64Set, transform: TransformProps) => Promise<IModelStatus>;
-  rotatePlacement: (ids: CompressedId64Set, matrix: Matrix3dProps, aboutCenter: boolean) => Promise<IModelStatus>;
+  deleteElements(ids: CompressedId64Set): Promise<IModelStatus>;
+  transformPlacement(ids: CompressedId64Set, transform: TransformProps): Promise<IModelStatus>;
+  rotatePlacement(ids: CompressedId64Set, matrix: Matrix3dProps, aboutCenter: boolean): Promise<IModelStatus>;
 
   /** Create and insert a new geometric element.
    * @param props Properties for the new [GeometricElement]($backend)
@@ -95,14 +95,14 @@ export interface BasicManipulationCommandIpc extends EditCommandIpc {
    * @param extents New project extents.
    * @throws [[IModelError]] if unable to update the extents property.
    */
-  updateProjectExtents: (extents: Range3dProps) => Promise<void>;
+  updateProjectExtents(extents: Range3dProps): Promise<void>;
 
   /** Update the position of the iModel on the earth.
    * @param ecefLocation New ecef location properties.
    * @throws [[IModelError]] if unable to update the ecef location property.
    * @note Clears the geographic coordinate reference system of the iModel, should only be called if invalid.
    */
-  updateEcefLocation: (ecefLocation: EcefLocationProps) => Promise<void>;
+  updateEcefLocation(ecefLocation: EcefLocationProps): Promise<void>;
 }
 
 /** @alpha */
@@ -231,9 +231,9 @@ export interface OffsetFacesProps {
 
 /** @alpha */
 export interface SolidModelingCommandIpc extends EditCommandIpc {
-  clearElementGeometryCache: () => Promise<void>;
-  createElementGeometryCache: (id: Id64String, filter?: ElementGeometryCacheFilter) => Promise<boolean>;
-  getSubEntityGeometry: (id: Id64String, subEntity: SubEntityProps, opts: Omit<ElementGeometryResultOptions, "writeChanges" | "insertProps">) => Promise<SubEntityGeometryProps | undefined>;
-  getClosestFace: (id: Id64String, testPoint: XYZProps, preferredDirection?: XYZProps) => Promise<SubEntityLocationProps | undefined>;
-  offsetFaces: (id: Id64String, params: OffsetFacesProps, opts: ElementGeometryResultOptions) => Promise<ElementGeometryResultProps | undefined>;
+  clearElementGeometryCache(): Promise<void>;
+  createElementGeometryCache(id: Id64String, filter?: ElementGeometryCacheFilter): Promise<boolean>;
+  getSubEntityGeometry(id: Id64String, subEntity: SubEntityProps, opts: Omit<ElementGeometryResultOptions, "writeChanges" | "insertProps">): Promise<SubEntityGeometryProps | undefined>;
+  getClosestFace(id: Id64String, testPoint: XYZProps, preferredDirection?: XYZProps): Promise<SubEntityLocationProps | undefined>;
+  offsetFaces(id: Id64String, params: OffsetFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
 }
