@@ -92,11 +92,20 @@ export type ClipPrimitiveProps = ClipPrimitivePlanesProps | ClipPrimitiveShapePr
  *   * A UnionOfConvexClipPlaneSets designated "clipPlanes"
  *   * an "invisible" flag
  * * When constructed directly, objects of type ClipPrimitive (directly, not through a derived class) will have just planes
- * * Derived classes (e.g. ClipShape) carry additional data of a swept shape.
+ * * Derived classes (e.g. ClipShape) carry additional data such as a swept shape.
  * * ClipPrimitive can be constructed with no planes.
  *     * Derived class is responsible for filling the plane sets.
  *     * At discretion of derived classes, plane construction can be done at construction time or "on demand when" queries call `ensurePlaneSets ()`
- * * ClipPrimitive can be constructed with planes (and no derived class).
+ * * ClipPrimitive can be constructed directly with planes (and no derived class).
+ * * That the prevailing use is via a ClipShape derived class.
+ *    * The ClipShape has an "isMask" property
+ *       * isMask === false means the plane sets should cover the inside of its polygon
+ *       * isMask === true means the plane sets should cover the outside of its polygon.
+ *  * Note that the ClipShape's `isMask` property and the ClipPrimitive's `isInvisible` property are distinct controls.
+ *     * In normal usage, callers get "outside" clip behavior using ONLY the ClipShape isMask property.
+ *     * The ClipShape happens to pass the _invisible bit down to ClipPlane's that it creates.
+ *         * At that level, it controls whether the cut edges are produce on the plane
+ *         * This seems like an confused overloading of the meaning.
  * @public
  */
 export class ClipPrimitive {
