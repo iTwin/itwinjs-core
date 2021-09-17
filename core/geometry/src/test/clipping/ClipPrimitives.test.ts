@@ -437,10 +437,10 @@ describe("ClipPrimitive", () => {
   it("ClipShapePointTests", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const minZ = -5;
-    const maxZ = 5;
+    const minZ =  -5;
+    const maxZ =   5;
     // Test point location
-    const clipShape0 = ClipShape.createEmpty();
+    const clipShape0 = ClipShape.createEmpty(true);
     let x0 = 0;
     const y0 = 0;
     const circlePoints = Sample.createArcStrokes(0, Point3d.create(1, 2), 2.0, Angle.createDegrees(0), Angle.createDegrees(360));
@@ -451,36 +451,43 @@ describe("ClipPrimitive", () => {
     exerciseClipPrimitive(ck, allGeometry, clipShape0, rectanglePoints, true, x0, y0);
     const midpoint = Point3dArray.centroid(circlePoints);
     GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, midpoint, 0.25, x0, y0);
-    ck.testFalse(clipShape0.pointInside(midpoint, 0), "Midpoint of polygon is not inside due to mask.");
+    ck.testFalse(clipShape0.pointInside(midpoint), "Midpoint of polygon is not inside due to mask.");
     ck.testExactNumber(clipShape0.classifyPointContainment([midpoint], false), 3, "Midpoint is completely outside when ClipShape is a mask");
-    const clipShape1 = ClipShape.createShape(circlePoints, minZ, maxZ, undefined, false, false);
+    let clipShape1 = ClipShape.createShape(circlePoints, minZ, maxZ, undefined, false, false);
     exerciseClipPrimitive(ck, allGeometry, clipShape1!, rectanglePoints, false, x0 += 10, y0);
     GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, midpoint, 0.25, x0, y0);
 
     ck.testTrue(clipShape1!.pointInside(midpoint, 0), "Midpoint of polygon is inside.");
 
     // Test createFrom method
-    ClipShape.createFrom(clipShape0, clipShape1);
-    ck.testTrue(clipShapesAreEqual(clipShape0, clipShape1!), "createFrom() method should clone the ClipShape");
+    clipShape1 = ClipShape.createFrom(clipShape0, clipShape1);
+    ck.testTrue(clipShapesAreEqual(clipShape0, clipShape1), "createFrom() method should clone the ClipShape");
 
     // Test JSON parsing
-    const jsonValue = clipShape1!.toJSON();
+    const jsonValue = clipShape1.toJSON();
     ck.testTrue(jsonValue.shape !== undefined, "Shape prop created in toJSON");
     const shape = jsonValue.shape!;
-    ck.testTrue(shape.points !== undefined && shape.points.length === clipShape1!.polygon.length, "Points prop created in toJSON");
+    ck.testTrue(shape.points !== undefined && shape.points.length === clipShape1.polygon.length, "Points prop created in toJSON");
     ck.testTrue(shape.invisible !== undefined && shape.invisible === true, "Invisible prop created in toJSON");
     ck.testUndefined(shape.trans, "Transform is undefined prop in toJSON having not given one to original ClipShape");
     ck.testTrue(shape.mask !== undefined && shape.mask === true, "Mask prop created in toJSON");
-    ck.testTrue(shape.zlow !== undefined && shape.zlow === clipShape1!.zLow, "ZLow prop created in toJSON");
-    ck.testTrue(shape.zhigh !== undefined && shape.zhigh === clipShape1!.zHigh, "ZHigh prop is set in toJSON");
+    if (minZ === undefined)
+      ck.testTrue(shape.zlow === undefined);
+    else
+      ck.testTrue(shape.zlow !== undefined && shape.zlow === clipShape1.zLow, "ZLow prop created in toJSON");
+
+    if (maxZ === undefined)
+      ck.testTrue(shape.zhigh === undefined);
+    else
+      ck.testTrue(shape.zhigh !== undefined && shape.zhigh === clipShape1.zHigh, "ZHigh prop is set in toJSON");
 
     const clipShape1Copy = ClipShape.fromJSON(jsonValue) as ClipShape;
     ck.testTrue(clipShape1Copy !== undefined);
-    ck.testTrue(clipShapesAreEqual(clipShape1!, clipShape1Copy), "to and from JSON yields same ClipPrimitive");
+    ck.testTrue(clipShapesAreEqual(clipShape1, clipShape1Copy), "to and from JSON yields same ClipPrimitive");
 
     // Test clone method
     const clipShape2 = clipShape1Copy.clone();
-    ck.testTrue(clipShapesAreEqual(clipShape2, clipShape1!), "clone method produces a copy of ClipShape");
+    ck.testTrue(clipShapesAreEqual(clipShape2, clipShape1), "clone method produces a copy of ClipShape");
     const generalTransform = Transform.createFixedPointAndMatrix(Point3d.create(3, 2, 1), Matrix3d.createRotationAroundAxisIndex(0, Angle.createDegrees(24)));
 
     clipShape2.transformInPlace(generalTransform);

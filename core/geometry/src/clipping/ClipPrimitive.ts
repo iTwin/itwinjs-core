@@ -22,6 +22,7 @@ import { ClipPlaneContainment } from "./ClipUtils";
 import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets, UnionOfConvexClipPlaneSetsProps } from "./UnionOfConvexClipPlaneSets";
 import { AlternatingCCTreeNode } from "./AlternatingConvexClipTree";
+import { Point3dArray } from "../geometry3d/PointHelpers";
 
 /**
  * Bit mask type for referencing subsets of 6 planes of range box.
@@ -170,8 +171,9 @@ export class ClipPrimitive {
     let inside = true;
     if (this._clipPlanes)
       inside = this._clipPlanes.isPointOnOrInside(point, onTolerance);
+    // note -- the clip planes are structured to get the mask effects. no reversal necessary.
     if (this._invisible)
-      inside = !inside;
+     inside = !inside;
     return inside;
   }
 
@@ -498,17 +500,8 @@ export class ClipShape extends ClipPrimitive {
       this.parseLinearPlanes(set, this._polygon[0], this._polygon[1]);
       return true;
     }
-    let direction = PolygonOps.testXYPolygonTurningDirections(points);
-    if (this.isMask)
-      direction = -direction;
-    // const direction = 0;
-    if (0 !== direction) {
-      this.parseConvexPolygonPlanes(set, this._polygon, direction, this.isMask);
-      return true;
-    } else {
-      this.parseConcavePolygonPlanes(set, this._polygon, this.isMask);
-      return false;
-    }
+  this.parseConcavePolygonPlanes(set, this._polygon, this.isMask);
+  return true;
   }
   /** Given a start and end point, populate the given UnionOfConvexClipPlaneSets with ConvexClipPlaneSets defining the bounded region of linear planes. Returns true if successful. */
   private parseLinearPlanes(set: UnionOfConvexClipPlaneSets, start: Point3d, end: Point3d, cameraFocalLength?: number): boolean {
@@ -578,10 +571,9 @@ export class ClipShape extends ClipPrimitive {
         convexSet.planes.push(ClipPlane.createNormalAndPoint(edge.normal, edge.pointB, this._invisible, false)!);
         if (nextPerpendicular)
           convexSet.planes.push(ClipPlane.createNormalAndPoint(nextPerpendicular, nextEdge.pointA, this._invisible, true)!);
-        convexSet.addZClipPlanes(this._invisible, this._zLow, this._zHigh);
         set.addConvexSet(convexSet);
+        set.addOutsideZClipSets(this._invisible, this._zLow, this._zHigh);
       }
-      set.addOutsideZClipSets(this._invisible, this._zLow, this._zHigh);
     } else {
       const convexSet = ConvexClipPlaneSet.createEmpty();
       if (cameraFocalLength === undefined) {
@@ -631,7 +623,8 @@ export class ClipShape extends ClipPrimitive {
       }
       expandedHull.push(expandedHull[0].clone());
       */
-      const hullAndInlets = AlternatingCCTreeNode.createHullAndInletsForPolygon(polygon);
+      const polygonA = Point3dArray.clonePoint3dArray ( polygon);
+      const hullAndInlets = AlternatingCCTreeNode.createHullAndInletsForPolygon(polygonA);
       const allLoops = hullAndInlets.extractLoops();
       if (allLoops.length === 0)
         return false;
