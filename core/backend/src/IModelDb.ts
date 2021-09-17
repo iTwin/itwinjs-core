@@ -8,8 +8,8 @@
 
 import { join } from "path";
 import {
-  BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
-  IModelStatus, JsonUtils, Logger, OpenMode,
+  BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger,
+  OpenMode,
 } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import {
@@ -18,10 +18,10 @@ import {
   DomainOptions, EcefLocation, ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate, ElementGraphicsRequestProps, ElementLoadProps,
   ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontProps, GeoCoordinatesResponseProps,
   GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse,
-  IModelProps, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps,
-  ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus,
-  SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, StandaloneOpenOptions,
-  TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
+  IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps,
+  OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, SchemaState,
+  SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, StandaloneOpenOptions, TextureData,
+  TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -227,7 +227,6 @@ export abstract class IModelDb extends IModel {
     this.onChangesetApplied.raiseEvent();
   }
 
-  public readFontJson(): string { return JSON.stringify(this.nativeDb.readFontMap()); }
   public get fontMap(): FontMap { return this._fontMap ?? (this._fontMap = new FontMap(this.nativeDb.readFontMap())); }
   public embedFont(prop: FontProps): FontProps { this._fontMap = undefined; return this.nativeDb.embedFont(prop); }
 
@@ -297,7 +296,7 @@ export abstract class IModelDb extends IModel {
 
   /** @internal */
   protected initializeIModelDb() {
-    const props = JSON.parse(this.nativeDb.getIModelProps()) as IModelProps;
+    const props = this.nativeDb.getIModelProps();
     super.initialize(props.rootSubject.name, props);
     if (this._initialized)
       return;
@@ -1011,9 +1010,7 @@ export abstract class IModelDb extends IModel {
 
   /** @internal */
   public insertCodeSpec(codeSpec: CodeSpec): Id64String {
-    const { error, result } = this.nativeDb.insertCodeSpec(codeSpec.name, JSON.stringify(codeSpec.properties));
-    if (error) throw new IModelError(error.status, `inserting CodeSpec ${codeSpec}`);
-    return Id64.fromJSON(result);
+    return this.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.properties);
   }
 
   /** Prepare an ECSQL statement.
@@ -2045,9 +2042,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       } else if (viewDefinitionElement instanceof DrawingViewDefinition) {
         // Ensure view has known extents
         try {
-          const rangeVal = this._iModel.nativeDb.queryModelExtents(JSON.stringify({ id: viewDefinitionElement.baseModelId }));
-          if (rangeVal.result)
-            viewStateData.modelExtents = Range3d.fromJSON(JSON.parse(rangeVal.result).modelExtents);
+          const extentsJson = this._iModel.nativeDb.queryModelExtents({ id: viewDefinitionElement.baseModelId }).modelExtents;
+          viewStateData.modelExtents = Range3d.fromJSON(extentsJson);
         } catch (_) {
           //
         }

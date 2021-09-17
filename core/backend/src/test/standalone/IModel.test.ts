@@ -1056,7 +1056,7 @@ describe("iModel", () => {
     newExtents.high.x += 1087; newExtents.high.y += 19; newExtents.high.z += .001;
     imodel1.updateProjectExtents(newExtents);
 
-    const updatedProps = JSON.parse(imodel1.nativeDb.getIModelProps());
+    const updatedProps = imodel1.nativeDb.getIModelProps();
     assert.isTrue(updatedProps.hasOwnProperty("projectExtents"), "Returned property JSON object has project extents");
     const updatedExtents = Range3d.fromJSON(updatedProps.projectExtents);
     assert.isTrue(newExtents.isAlmostEqual(updatedExtents), "Project extents successfully updated in database");
@@ -1266,7 +1266,7 @@ describe("iModel", () => {
 
     // Should not be able to insert a duplicate.
     const codeSpecDup = CodeSpec.create(testImodel, "CodeSpec1", CodeScopeSpec.Type.Model);
-    assert.throws(() => testImodel.codeSpecs.insert(codeSpecDup), IModelError);
+    assert.throws(() => testImodel.codeSpecs.insert(codeSpecDup), "duplicate name");
 
     // We should be able to insert another CodeSpec with a different name.
     const codeSpec2 = CodeSpec.create(testImodel, "CodeSpec2", CodeScopeSpec.Type.Model, CodeScopeSpec.ScopeRequirement.FederationGuid);

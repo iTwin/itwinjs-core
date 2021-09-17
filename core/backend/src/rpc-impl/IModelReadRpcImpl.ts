@@ -9,9 +9,9 @@
 import { GuidString, Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import { Range3d, Range3dProps } from "@bentley/geometry-core";
 import {
-  Code, CodeProps, ElementLoadOptions, ElementLoadProps, ElementProps, EntityMetaData, EntityQueryParams, GeoCoordinatesResponseProps,
+  Code, CodeProps, ElementLoadOptions, ElementLoadProps, ElementProps, EntityMetaData, EntityQueryParams, FontMapProps, GeoCoordinatesResponseProps,
   GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps,
-  IModelCoordinatesResponseProps, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps, MassPropertiesRequestProps, MassPropertiesResponseProps,
+  IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps, MassPropertiesRequestProps, MassPropertiesResponseProps,
   ModelProps, NoContentError, QueryLimit, QueryPriority, QueryQuota, QueryResponse, RpcInterface, RpcInvocation, RpcManager, SnapRequestProps,
   SnapResponseProps, SyncMode, TextureData, TextureLoadProps, ViewStateLoadProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
@@ -49,20 +49,17 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     const iModelDb = await RpcBriefcaseUtility.findOrOpen(user, tokenProps, SyncMode.FixedVersion);
     const ranges: Range3dProps[] = [];
     for (const id of modelIds) {
-      const val = iModelDb.nativeDb.queryModelExtents(JSON.stringify({ id: id.toString() }));
-      if (val.error) {
-        if (val.error.status === IModelStatus.NoGeometry) { // if there was no geometry, just return null range
+      try {
+        ranges.push(iModelDb.nativeDb.queryModelExtents({ id }).modelExtents);
+      } catch (err: any) {
+        if ((err as IModelError).errorNumber === IModelStatus.NoGeometry) { // if there was no geometry, just return null range
           ranges.push(new Range3d());
           continue;
         }
 
         if (modelIds.size === 1)
-          throw val.error; // if they're asking for more than one model, don't throw on error.
+          throw err; // if they're asking for more than one model, don't throw on error.
         continue;
-      }
-      const range = JSON.parse(val.result!);
-      if (range.modelExtents) {
-        ranges.push(range.modelExtents);
       }
     }
     return ranges;
@@ -174,10 +171,10 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return iModelDb.views.getViewStateData(viewDefinitionId, options);
   }
 
-  public async readFontJson(tokenProps: IModelRpcProps): Promise<any> {
+  public async readFontJson(tokenProps: IModelRpcProps): Promise<FontMapProps> {
     const user = RpcInvocation.currentRequest as AuthorizedClientRequestContext;
     const iModelDb = await RpcBriefcaseUtility.findOrOpen(user, tokenProps, SyncMode.FixedVersion);
-    return iModelDb.readFontJson();
+    return iModelDb.nativeDb.readFontMap();
   }
 
   public async requestSnap(tokenProps: IModelRpcProps, sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {

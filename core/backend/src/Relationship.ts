@@ -424,38 +424,22 @@ export class Relationships {
    * @param props The properties of the new relationship.
    * @returns The Id of the newly inserted relationship.
    * @note The id property of the props object is set as a side effect of this function.
-   * @throws [[IModelError]] if unable to insert the relationship instance.
    */
   public insertInstance(props: RelationshipProps): Id64String {
     this.checkRelationshipClass(props.classFullName);
-    const val = this._iModel.nativeDb.insertLinkTableRelationship(props);
-    if (val.error)
-      throw new IModelError(val.error.status, "Error inserting relationship instance");
-
-    props.id = Id64.fromJSON(val.result);
-    return props.id;
+    return props.id = this._iModel.nativeDb.insertLinkTableRelationship(props);
   }
 
-  /** Update the properties of an existing relationship instance in the iModel.The relationship provided must be subclass of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement.
+  /** Update the properties of an existing relationship instance in the iModel.
    * @param props the properties of the relationship instance to update. Any properties that are not present will be left unchanged.
-   * @throws [[IModelError]] if unable to update the relationship instance.
    */
   public updateInstance(props: RelationshipProps): void {
-    this.checkRelationshipClass(props.classFullName);
-    const error = this._iModel.nativeDb.updateLinkTableRelationship(props);
-    if (error !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(error, "Error updating relationship instance");
+    this._iModel.nativeDb.updateLinkTableRelationship(props);
   }
 
-  /** Delete an Relationship instance from this iModel.The relationship provided must be subclass of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement.
-   * @param id The Id of the Relationship to be deleted
-   * @throws [[IModelError]]
-   */
+  /** Delete an Relationship instance from this iModel. */
   public deleteInstance(props: RelationshipProps): void {
-    this.checkRelationshipClass(props.classFullName);
-    const error = this._iModel.nativeDb.deleteLinkTableRelationship(props);
-    if (error !== DbResult.BE_SQLITE_DONE)
-      throw new IModelError(error, "");
+    this._iModel.nativeDb.deleteLinkTableRelationship(props);
   }
 
   /** Get the props of a Relationship instance

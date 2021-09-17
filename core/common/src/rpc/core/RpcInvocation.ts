@@ -129,18 +129,20 @@ export class RpcInvocation {
       (impl as any)[CURRENT_INVOCATION] = this;
       const op = this.lookupOperationFunction(impl);
 
-      RpcInvocation.currentRequest = currentRequest; // this is a "pseudo-magic-argument" to every RPC call
+      // This global is a "pseudo-magic-argument" to every RPC call. RpcImplementations must pass it as an argument to
+      // any asynchronous code that may need it, and not rely on the global variable remaining unchanged across async calls.
+      RpcInvocation.currentRequest = currentRequest;
 
-      // @typescript-eslint/return-await doesn't agree with awaiting values that *might* be a promise
-      // eslint-disable-next-line @typescript-eslint/return-await
       return await op.call(impl, ...parameters);
     } catch (error: any) {
-      // the RPC request threw an unhandled exception. Log it including sanitized request context.
       let msg = error.toString();
       const errMeta = error.getMetaData?.();
       if (errMeta)
-        msg += ` ${JSON.stringify(errMeta)}`;
-      Logger.logError("RPC.unhandled", msg, () => currentRequest.sanitize());
+        msg += ` [${JSON.stringify(errMeta)}]`;
+
+      // processing this RPC request threw an unhandled exception. Log it, including sanitized requestContext.
+      Logger.logError(CommonLoggerCategory.RpcInterfaceBackend, msg, () => currentRequest.sanitize());
+
       return this.reject(error);
     }
   }
@@ -245,7 +247,7 @@ export class RpcInvocation {
     return fulfillment;
   }
 
-  private lookupOperationFunction(implementation: RpcInterface): (...args: any[]) => any {
+  private lookupOperationFunction(implementation: RpcInterface): (...args: any[]) => Promise<any> {
     const func = (implementation as any)[this.operation.operationName];
     if (!func || typeof (func) !== "function")
       throw new IModelError(BentleyStatus.ERROR, `RPC interface class "${implementation.constructor.name}" does not implement operation "${this.operation.operationName}".`);

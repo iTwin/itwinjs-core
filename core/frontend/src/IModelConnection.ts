@@ -162,7 +162,7 @@ export abstract class IModelConnection extends IModel {
     if (undefined === this.fontMap) {
       this.fontMap = new FontMap();
       if (this.isOpen) {
-        const fontProps = JSON.parse(await IModelReadRpcInterface.getClientForRouting(this.routingContext.token).readFontJson(this.getRpcProps())) as FontMapProps;
+        const fontProps = await IModelReadRpcInterface.getClientForRouting(this.routingContext.token).readFontJson(this.getRpcProps());
         this.fontMap.addFonts(fontProps.fonts);
       }
     }
