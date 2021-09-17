@@ -617,6 +617,7 @@ internal;TestRpcManager
 public;TextString
 public;TextStringPrimitive
 public;TextStringProps
+public;TextureData
 public;TextureLoadProps
 public;TextureMapping
 public;TextureMapping
