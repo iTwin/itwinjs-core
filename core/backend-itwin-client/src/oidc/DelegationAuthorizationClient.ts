@@ -39,8 +39,8 @@ export class DelegationAuthorizationClient extends BackendAuthorizationClient {
 
     const client = await this.getClient(requestContext);
     const tokenSet: TokenSet = await client.grant(grantParams);
-
-    return tokenSet.access_token;
+    const accessTokenString = `Bearer ${tokenSet.access_token}`;
+    return accessTokenString;
   }
 
   /** Get a delegation JWT for a new scope from another JWT */

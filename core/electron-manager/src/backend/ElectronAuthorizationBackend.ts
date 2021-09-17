@@ -68,7 +68,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
     if (this._tokenResponse === undefined || this._tokenResponse.refreshToken === undefined)
       throw new BentleyError(AuthStatus.Error, "Not signed In. First call signIn()", Logger.logError, loggerCategory);
 
-    const token = `Bearer ${this._tokenResponse.refreshToken}`;
+    const token = `Bearer ${this._tokenResponse.refreshToken}`; // Is this right? should we append bearer to refresh token?
     return this.refreshAccessToken(token);
   }
 

@@ -190,14 +190,6 @@ export class Settings {
       password: process.env.USER_WITH_ACCESS_PASSWORD || "",
     });
 
-    // Get client configuration
-    if (process.env.CLIENT_WITH_ACCESS_ID === undefined)
-      throw new Error("Could not find CLIENT_WITH_ACCESS_ID");
-    if (process.env.CLIENT_WITH_ACCESS_SECRET === undefined)
-      throw new Error("Could not find CLIENT_WITH_ACCESS_SECRET");
-    if (process.env.CLIENT_WITH_ACCESS_SCOPES === undefined)
-      throw new Error("Could not find CLIENT_WITH_ACCESS_SCOPES");
-
     if (undefined !== process.env.CLIENT_WITH_ACCESS_ID && undefined !== process.env.CLIENT_WITH_ACCESS_SECRET && undefined !== process.env.CLIENT_WITH_ACCESS_SCOPES) {
       this.clientConfiguration = {
         clientId: process.env.CLIENT_WITH_ACCESS_ID,
