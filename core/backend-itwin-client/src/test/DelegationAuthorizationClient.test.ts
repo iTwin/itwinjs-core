@@ -59,11 +59,6 @@ describe("DelegationAuthorizationClient (#integration)", () => {
 
   it("should get valid OIDC delegation tokens", async () => {
 
-    if (process.env.IMJS_DELEGATION_TEST_CLIENT_ID === undefined)
-      throw new Error("Could not find IMJS_DELEGATION_TEST_CLIENT_ID");
-    if (process.env.IMJS_DELEGATION_TEST_CLIENT_SECRET === undefined)
-      throw new Error("Could not find IMJS_DELEGATION_TEST_CLIENT_SECRET");
-
     const delegationConfiguration: DelegationAuthorizationClientConfiguration = {
       clientId:process.env.IMJS_DELEGATION_TEST_CLIENT_ID ?? "",
       clientSecret: process.env.IMJS_DELEGATION_TEST_CLIENT_SECRET ?? "",
@@ -77,6 +72,11 @@ describe("DelegationAuthorizationClient (#integration)", () => {
     // The iTwin Platform currently does not allow a token delegation workflow.
     if (-1 === url.indexOf("imsoidc"))
       return;
+
+    if (process.env.IMJS_DELEGATION_TEST_CLIENT_ID === undefined)
+      throw new Error("Could not find IMJS_DELEGATION_TEST_CLIENT_ID");
+    if (process.env.IMJS_DELEGATION_TEST_CLIENT_SECRET === undefined)
+      throw new Error("Could not find IMJS_DELEGATION_TEST_CLIENT_SECRET");
 
     const delegationJwt = await delegationClient.getJwtFromJwt(requestContext, jwt);
     await validator.validateContextRegistryAccess(delegationJwt);
