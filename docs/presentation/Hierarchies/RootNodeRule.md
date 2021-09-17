@@ -28,7 +28,7 @@ Defines a condition which needs to be met in order for the rule to be used. The 
 
 The most commonly used symbols are:
 
-- `ParentNode` to define which parent node this rule is creating child nodes for.
+- `ParentNode` — refers to the parent node. This is often used to create child nodes under specific parents.
 
   ```ts
   [[include:Hierarchies.Condition.ParentNodeSymbol]]
@@ -36,7 +36,7 @@ The most commonly used symbols are:
 
   ![Example of using ParentNode symbol in rule condition](./media/hierarchy-with-parentnode-symbol-in-condition.png)
 
-- [Ruleset variables](../Advanced/RulesetVariables.md#using-variables-in-rule-condition) to  dynamically enable / disable the rule.
+- [Ruleset variables](../Advanced/RulesetVariables.md#using-variables-in-rule-condition) — values that can be set and changed at runtime to affect rule outcomes.
 
   ```ts
   [[include:Hierarchies.Condition.RulesetVariables.Ruleset]]
@@ -50,7 +50,7 @@ The most commonly used symbols are:
 
 ### Attribute: `requiredSchemas`
 
-A list of ECSchema requirements that need to met for the rule to be used. See more details [here](../Advanced/SchemaRequirements.md).
+A list of ECSchema requirements that need to be met for the rule to be used. See more details in [Defining ECSchema Requirements for Presentation Rules](../Advanced/SchemaRequirements.md).
 
 ```ts
 [[include:Hierarchies.RequiredSchemas.Ruleset]]
@@ -58,7 +58,7 @@ A list of ECSchema requirements that need to met for the rule to be used. See mo
 
 ### Attribute: `priority`
 
-Defines the order in which rules are handled - higher priority means the rule is handled first. If priorities are equal, the rules are handled in the order they're defined. The attribute may be especially useful when combined with [`onlyIfNotHandled` attribute](#attribute-onlyifnothandled).
+Defines the order in which rules are handled, higher number means the rule is handled first. If priorities are equal, the rules are handled in the order they're defined. The attribute may be especially useful when combined with [`onlyIfNotHandled` attribute](#attribute-onlyifnothandled).
 
 ```ts
 [[include:Hierarchies.Priority.Ruleset]]
@@ -68,7 +68,7 @@ Defines the order in which rules are handled - higher priority means the rule is
 
 ### Attribute: `onlyIfNotHandled`
 
-Tells the library that the rule should only be handled if no other rule of the same type was handled previously (based on rule priorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.
+Tells the library that the rule should only be handled if no other rule of the same `ruleType` was handled previously (based on rule priorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.
 
 ```ts
 [[include:Hierarchies.OnlyIfNotHandled.Ruleset]]
@@ -80,7 +80,7 @@ Tells the library that the rule should only be handled if no other rule of the s
 
 Stop processing rules that have lower priority. Used in cases when recursion suppression is needed.
 
-**Note:** If this flag is set, `specifications` and `subConditions` are not processed.
+> **Note:** If this flag is set, `specifications` and `subConditions` are not processed.
 
 ### Attribute: `autoExpand`
 
