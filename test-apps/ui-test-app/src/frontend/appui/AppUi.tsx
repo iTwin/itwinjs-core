@@ -10,7 +10,6 @@ import "./contentviews/TableExampleContent";
 import "./contentviews/TreeExampleContent";
 import "./contentviews/ScheduleAnimationViewport";
 import "./widgets/BreadcrumbDemoWidget";
-import "./widgets/TreeDemoWidget";
 import "./widgets/TableDemoWidget";
 import "./widgets/FeedbackWidget";
 import "./widgets/NavigationTreeWidget";

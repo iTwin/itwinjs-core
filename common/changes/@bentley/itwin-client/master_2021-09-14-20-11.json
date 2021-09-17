@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/itwin-client",
+      "comment": "remove unecessary dep on xmldom in itwin-client",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/itwin-client"
+}

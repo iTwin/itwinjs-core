@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-framework",
+      "comment": "Clean up deprecated Drag & Drop related APIs",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework"
+}

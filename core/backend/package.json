@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "3.0.0-dev.56",
+  "version": "3.0.0-dev.58",
   "description": "iModel.js backend components",
   "main": "lib/imodeljs-backend.js",
   "typings": "lib/imodeljs-backend",
@@ -22,7 +22,7 @@
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "pretest": "cpx ./src/test/logging.config.json ./lib/test",
     "test": "betools test --offline=\"mock\" --grep=\"#integration|#WebGLPerformance\" --invert",
-    "azurite:setup": "mkdirp ./lib/test/azuriteStorage && azurite --silent --location ./lib/test/azuriteStorage",
+    "azurite:setup": "mkdirp ./lib/test/azuriteStorage && azurite --silent --loose --location ./lib/test/azuriteStorage",
     "test:integration": "run-s pretest test:integration:azurite",
     "test:integration:azurite": "run-p -r azurite:setup test:integration:core",
     "test:integration:core": "betools test --testDir=\"./lib/test/integration\"",
@@ -55,14 +55,14 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/backend-itwin-client": "workspace:^3.0.0-dev.56",
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.56",
-    "@bentley/ecschema-metadata": "workspace:^3.0.0-dev.56",
-    "@bentley/geometry-core": "workspace:^3.0.0-dev.56",
-    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.56",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.56",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.56",
-    "@bentley/telemetry-client": "workspace:^3.0.0-dev.56"
+    "@bentley/backend-itwin-client": "workspace:^3.0.0-dev.58",
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.58",
+    "@bentley/ecschema-metadata": "workspace:^3.0.0-dev.58",
+    "@bentley/geometry-core": "workspace:^3.0.0-dev.58",
+    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.58",
+    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.58",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.58",
+    "@bentley/telemetry-client": "workspace:^3.0.0-dev.58"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -117,9 +117,9 @@
     "webpack": "4.42.0"
   },
   "dependencies": {
-    "@azure/storage-blob": "10.4.0",
+    "@azure/storage-blob": "^12.7.0",
     "@bentley/context-registry-client": "workspace:*",
-    "@bentley/imodeljs-native": "3.0.7",
+    "@bentley/imodeljs-native": "3.0.8",
     "deep-assign": "^2.0.0",
     "form-data": "^2.3.2",
     "fs-extra": "^8.1.0",

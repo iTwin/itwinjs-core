@@ -983,8 +983,8 @@ export class AccuSnap implements Decorator {
     const tool = IModelApp.toolAdmin.activeTool;
     if (undefined === tool)
       return true;
-    tool.onSuspend();
-    tool.onUnsuspend();
+    await tool.onSuspend();
+    await tool.onUnsuspend();
     return true;
   }
 

@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
-import { DragSourceArguments, DropEffects, DropStatus } from "../../../ui-components/dragdrop/DragDropDef";
+import { DragSourceArguments, DropEffects, DropStatus } from "../../../ui-components/table/component/dragdrop/DragDropDef";
 import { ColumnDragLayer } from "../../../ui-components/table/component/ColumnDragLayer";
 
 /* eslint-disable deprecation/deprecation */

@@ -98,17 +98,17 @@ describe("FrontstageManager", () => {
       expect(frontstageDef.applicationData).to.not.be.undefined;
 
       const tool = new RestoreFrontstageLayoutTool();
-      tool.parseAndRun(frontstageDef.id);
+      await tool.parseAndRun(frontstageDef.id);
       spy.calledOnce.should.true;
       spy.resetHistory();
 
       // call without id to use active stage
-      tool.parseAndRun();
+      await tool.parseAndRun();
       spy.calledOnce.should.true;
       spy.resetHistory();
 
       // call without invalid id
-      tool.parseAndRun("bad-id");
+      await tool.parseAndRun("bad-id");
       spy.calledOnce.should.false;
     }
   });
@@ -184,6 +184,7 @@ describe("FrontstageManager", () => {
 
       FrontstageManager.isInitialized = false;
       FrontstageManager.initialize();
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       IModelApp.viewManager.setSelectedView(viewportMock.object);
     });
 

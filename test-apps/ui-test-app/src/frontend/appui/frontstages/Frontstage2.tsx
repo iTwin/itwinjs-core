@@ -150,7 +150,7 @@ class FrontstageToolWidget extends React.Component {
         if (tool)
           tool.onRestartTool();
         else
-          IModelApp.toolAdmin.startDefaultTool();
+          void IModelApp.toolAdmin.startDefaultTool();
       },
     });
   }

@@ -10,9 +10,7 @@ export { UiComponents } from "./ui-components/UiComponents";
 export * from "./ui-components/breadcrumb/Breadcrumb";
 export * from "./ui-components/breadcrumb/BreadcrumbPath";
 export * from "./ui-components/breadcrumb/BreadcrumbTreeUtils";
-export * from "./ui-components/breadcrumb/hoc/withDragDrop";
-export * from "./ui-components/breadcrumb/breadcrumbdetails/BreadcrumbDetails";
-export * from "./ui-components/breadcrumb/breadcrumbdetails/hoc/withDragDrop";
+export * from "./ui-components/breadcrumb/BreadcrumbDetails";
 
 export * from "./ui-components/common/Links";
 export * from "./ui-components/common/PageOptions";
@@ -47,11 +45,6 @@ export * from "./ui-components/datepicker/DatePicker";
 export * from "./ui-components/datepicker/DatePickerPopupButton";
 export * from "./ui-components/datepicker/IntlFormatter";
 export * from "./ui-components/datepicker/TimeField";
-
-export * from "./ui-components/dragdrop/DragDropDef";
-export * from "./ui-components/dragdrop/withDragSource";
-export * from "./ui-components/dragdrop/withDropTarget";
-export * from "./ui-components/dragdrop/BeDragDropContext";
 
 export * from "./ui-components/editors/BooleanEditor";
 export * from "./ui-components/editors/CustomNumberEditor";
@@ -144,7 +137,6 @@ export * from "./ui-components/table/columnfiltering/TableFilterDescriptorCollec
 export * from "./ui-components/table/component/Table";
 export * from "./ui-components/table/component/TableCell";
 export * from "./ui-components/table/component/TableColumn";
-export * from "./ui-components/table/hocs/withDragDrop";
 
 export * from "./ui-components/toolbar/Toolbar";
 export * from "./ui-components/toolbar/ToolbarWithOverflow";
@@ -157,11 +149,6 @@ export * from "./ui-components/tree/TreeDataProvider";
 export * from "./ui-components/tree/SimpleTreeDataProvider";
 export * from "./ui-components/tree/HighlightingEngine";
 export * from "./ui-components/tree/ImageLoader";
-export * from "./ui-components/tree/deprecated/component/Tree";
-export * from "./ui-components/tree/deprecated/component/BeInspireTree";
-export * from "./ui-components/tree/deprecated/component/Node";
-export * from "./ui-components/tree/deprecated/CellEditingEngine";
-export * from "./ui-components/tree/deprecated/hocs/withDragDrop";
 export * from "./ui-components/tree/controlled/TreeActions";
 export * from "./ui-components/tree/controlled/TreeEventDispatcher";
 export * from "./ui-components/tree/controlled/TreeEventHandler";
