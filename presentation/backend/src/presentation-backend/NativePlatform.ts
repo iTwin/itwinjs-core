@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { ClientRequestContext, IDisposable } from "@bentley/bentleyjs-core";
+import { IDisposable } from "@bentley/bentleyjs-core";
 import { IModelDb, IModelHost, IModelJsNative } from "@bentley/imodeljs-backend";
 import { FormatProps } from "@bentley/imodeljs-quantity";
 import {
@@ -147,9 +147,7 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       this._nativeAddon.dispose();
     }
     public async forceLoadSchemas(db: any): Promise<NativePlatformResponse<void>> {
-      const requestContext = ClientRequestContext.current;
       return new Promise((resolve: (result: NativePlatformResponse<void>) => void, reject: () => void) => {
-        requestContext.enter();
         this._nativeAddon.forceLoadSchemas(db, (response: IModelJsNative.ECPresentationManagerResponse<void>) => {
           if (response.error)
             reject();
@@ -182,11 +180,9 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       return this.handleVoidResult(this._nativeAddon.clearRulesets());
     }
     public async handleRequest(db: any, options: string) {
-      const requestContext = ClientRequestContext.current;
       const requestGuid = this.handleResult(this._nativeAddon.queueRequest(db, options)).result;
       return new Promise((resolve: (result: NativePlatformResponse<any>) => void, reject) => {
         const interval = setInterval(() => {
-          requestContext.enter();
           const pollResult = this._nativeAddon.pollResponse(requestGuid);
           if (pollResult.error) {
             if (pollResult.error.status !== IModelJsNative.ECPresentationStatus.Pending) {

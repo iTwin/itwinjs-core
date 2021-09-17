@@ -8,8 +8,8 @@
 
 import { join } from "path";
 import {
-  BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
-  IModelStatus, JsonUtils, Logger, OpenMode,
+  BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger,
+  OpenMode,
 } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import {
@@ -18,10 +18,10 @@ import {
   DomainOptions, EcefLocation, ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate, ElementGraphicsRequestProps, ElementLoadProps,
   ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontProps, GeoCoordinatesResponseProps,
   GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse,
-  IModelProps, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps,
-  ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus,
-  SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, StandaloneOpenOptions,
-  TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
+  IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps,
+  OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, SchemaState,
+  SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, StandaloneOpenOptions, TextureData,
+  TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -223,11 +223,10 @@ export abstract class IModelDb extends IModel {
   public readonly onChangesetApplied = new BeEvent<() => void>();
   /** @internal */
   public notifyChangesetApplied() {
-    this.changeset = this.nativeDb.getParentChangeset();
+    this.changeset = this.nativeDb.getCurrentChangeset();
     this.onChangesetApplied.raiseEvent();
   }
 
-  public readFontJson(): string { return JSON.stringify(this.nativeDb.readFontMap()); }
   public get fontMap(): FontMap { return this._fontMap ?? (this._fontMap = new FontMap(this.nativeDb.readFontMap())); }
   public embedFont(prop: FontProps): FontProps { this._fontMap = undefined; return this.nativeDb.embedFont(prop); }
 
@@ -248,7 +247,7 @@ export abstract class IModelDb extends IModel {
 
   /** @internal */
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, changeset?: ChangesetIdWithIndex }) {
-    super({ ...args, iTwinId: args.nativeDb.queryProjectGuid(), iModelId: args.nativeDb.getDbGuid() });
+    super({ ...args, iTwinId: args.nativeDb.getITwinId(), iModelId: args.nativeDb.getIModelId() });
     this._nativeDb = args.nativeDb;
     this.nativeDb.setIModelDb(this);
     this.initializeIModelDb();
@@ -297,7 +296,7 @@ export abstract class IModelDb extends IModel {
 
   /** @internal */
   protected initializeIModelDb() {
-    const props = JSON.parse(this.nativeDb.getIModelProps()) as IModelProps;
+    const props = this.nativeDb.getIModelProps();
     super.initialize(props.rootSubject.name, props);
     if (this._initialized)
       return;
@@ -435,6 +434,7 @@ export abstract class IModelDb extends IModel {
    * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
    * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
    *
+   * @param sessionId string to identify caller
    * @param ecsql The ECSQL statement to execute
    * @param bindings The values to bind to the parameters (if the ECSQL has any).
    * Pass an *array* of values if the parameters are *positional*.
@@ -451,7 +451,7 @@ export abstract class IModelDb extends IModel {
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @internal
    */
-  public async queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string, abbreviateBlobs?: boolean): Promise<QueryResponse> {
+  public async queryRows(sessionId: string, ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string, abbreviateBlobs?: boolean): Promise<QueryResponse> {
     const stats = this._concurrentQueryStats;
     const config = IModelHost.configuration!.concurrentQuery;
     stats.lastActivityTime = Date.now();
@@ -514,7 +514,7 @@ export abstract class IModelDb extends IModel {
       } else {
         let sessionRestartToken = restartToken ? restartToken.trim() : "";
         if (sessionRestartToken !== "")
-          sessionRestartToken = `${ClientRequestContext.current.sessionId}:${sessionRestartToken}`;
+          sessionRestartToken = `${sessionId}:${sessionRestartToken}`;
 
         const postResult = this.nativeDb.postConcurrentQuery(ecsql, JSON.stringify(bindings, Base64EncodedString.replacer), limit!, quota!, priority!, sessionRestartToken, abbreviateBlobs);
         if (postResult.status !== IModelJsNative.ConcurrentQuery.PostStatus.Done)
@@ -573,9 +573,9 @@ export abstract class IModelDb extends IModel {
     let offset: number = 0;
     let rowsToGet = limitRows ? limitRows : -1;
     do {
-      result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, undefined, abbreviateBlobs);
+      result = await this.queryRows(IModelHost.sessionId, ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, undefined, abbreviateBlobs);
       while (result.status === QueryResponseStatus.Timeout) {
-        result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, undefined, abbreviateBlobs);
+        result = await this.queryRows(IModelHost.sessionId, ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, undefined, abbreviateBlobs);
       }
 
       if (result.status === QueryResponseStatus.Error) {
@@ -627,9 +627,9 @@ export abstract class IModelDb extends IModel {
     let offset: number = 0;
     let rowsToGet = limitRows ? limitRows : -1;
     do {
-      result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, token);
+      result = await this.queryRows(IModelHost.sessionId, ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, token);
       while (result.status === QueryResponseStatus.Timeout) {
-        result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, token);
+        result = await this.queryRows(IModelHost.sessionId, ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, token);
       }
       if (result.status === QueryResponseStatus.Cancelled) {
         throw new IModelError(DbResult.BE_SQLITE_INTERRUPT, `Query cancelled`);
@@ -761,9 +761,6 @@ export abstract class IModelDb extends IModel {
     this._statementCache.clear();
     this._sqliteStatementCache.clear();
   }
-
-  /** Get the GUID of this iModel.  */
-  public getGuid(): GuidString { return this.nativeDb.getDbGuid(); }
 
   /** Update the project extents for this iModel.
    * <p><em>Example:</em>
@@ -912,10 +909,9 @@ export abstract class IModelDb extends IModel {
    */
   public static findByKey(key: string): IModelDb {
     const iModelDb = this.tryFindByKey(key);
-    if (undefined === iModelDb) {
-      Logger.logError(loggerCategory, "IModelDb not open or wrong type", () => ({ key }));
+    if (undefined === iModelDb)
       throw new IModelNotFoundResponse(); // a very specific status for the RpcManager
-    }
+
     return iModelDb;
   }
 
@@ -1014,9 +1010,7 @@ export abstract class IModelDb extends IModel {
 
   /** @internal */
   public insertCodeSpec(codeSpec: CodeSpec): Id64String {
-    const { error, result } = this.nativeDb.insertCodeSpec(codeSpec.name, JSON.stringify(codeSpec.properties));
-    if (error) throw new IModelError(error.status, `inserting CodeSpec ${codeSpec}`);
-    return Id64.fromJSON(result);
+    return this.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.properties);
   }
 
   /** Prepare an ECSQL statement.
@@ -1054,7 +1048,6 @@ export abstract class IModelDb extends IModel {
       return ClassRegistry.getClass(classFullName, this) as T;
     } catch (err: any) {
       if (!ClassRegistry.isNotFoundError(err)) {
-        Logger.logError(loggerCategory, err.toString());
         throw err;
       }
 
@@ -1151,8 +1144,7 @@ export abstract class IModelDb extends IModel {
    * @returns the TextureData or undefined if the texture image is not present.
    * @alpha
    */
-  public async queryTextureData(requestContext: ClientRequestContext, props: TextureLoadProps): Promise<TextureData | undefined> {
-    requestContext.enter();
+  public async queryTextureData(props: TextureLoadProps): Promise<TextureData | undefined> {
     return new Promise<TextureData | undefined>((resolve, reject) => {
       this.nativeDb.queryTextureData(props, (result) => {
         if (result instanceof Error)
@@ -2050,9 +2042,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       } else if (viewDefinitionElement instanceof DrawingViewDefinition) {
         // Ensure view has known extents
         try {
-          const rangeVal = this._iModel.nativeDb.queryModelExtents(JSON.stringify({ id: viewDefinitionElement.baseModelId }));
-          if (rangeVal.result)
-            viewStateData.modelExtents = Range3d.fromJSON(JSON.parse(rangeVal.result).modelExtents);
+          const extentsJson = this._iModel.nativeDb.queryModelExtents({ id: viewDefinitionElement.baseModelId }).modelExtents;
+          viewStateData.modelExtents = Range3d.fromJSON(extentsJson);
         } catch (_) {
           //
         }
@@ -2136,11 +2127,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public constructor(private _iModel: IModelDb) { }
 
     /** @internal */
-    public async requestTileTreeProps(requestContext: ClientRequestContext, id: string): Promise<IModelTileTreeProps> {
-      requestContext.enter();
+    public async requestTileTreeProps(id: string): Promise<IModelTileTreeProps> {
 
       return new Promise<IModelTileTreeProps>((resolve, reject) => {
-        requestContext.enter();
         this._iModel.nativeDb.getTileTree(id, (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, any>) => {
           if (undefined !== ret.error)
             reject(new IModelError(ret.error.status, `TreeId=${id}`));
@@ -2150,8 +2139,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       });
     }
 
-    private pollTileContent(resolve: (arg0: IModelJsNative.TileContent) => void, reject: (err: Error) => void, treeId: string, tileId: string, requestContext: ClientRequestContext) {
-      requestContext.enter();
+    private pollTileContent(resolve: (arg0: IModelJsNative.TileContent) => void, reject: (err: Error) => void, treeId: string, tileId: string) {
 
       let ret;
       try {
@@ -2183,23 +2171,19 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         resolve(res);
       } else { // if the type is a number, it's the TileContentState enum
         // ###TODO: Decide appropriate timeout interval. May want to switch on state (new vs loading vs pending)
-        setTimeout(() => this.pollTileContent(resolve, reject, treeId, tileId, requestContext), 10);
+        setTimeout(() => this.pollTileContent(resolve, reject, treeId, tileId), 10);
       }
     }
 
     /** @internal */
-    public async requestTileContent(requestContext: ClientRequestContext, treeId: string, tileId: string): Promise<IModelJsNative.TileContent> {
-      requestContext.enter();
-
+    public async requestTileContent(treeId: string, tileId: string): Promise<IModelJsNative.TileContent> {
       return new Promise<IModelJsNative.TileContent>((resolve, reject) => {
-        this.pollTileContent(resolve, reject, treeId, tileId, requestContext);
+        this.pollTileContent(resolve, reject, treeId, tileId);
       });
     }
 
     /** @internal */
-    public async getTileContent(requestContext: ClientRequestContext, treeId: string, tileId: string): Promise<Uint8Array> {
-      requestContext.enter();
-
+    public async getTileContent(treeId: string, tileId: string): Promise<Uint8Array> {
       const ret = await new Promise<IModelJsNative.ErrorStatusOrResult<any, Uint8Array>>((resolve) => {
         this._iModel.nativeDb.getTileContent(treeId, tileId, resolve);
       });
@@ -2288,7 +2272,7 @@ export class BriefcaseDb extends IModelDb {
   }
 
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, openMode: OpenMode, briefcaseId: number }) {
-    super({ ...args, changeset: args.nativeDb.getParentChangeset() });
+    super({ ...args, changeset: args.nativeDb.getCurrentChangeset() });
     this._openMode = args.openMode;
     this.briefcaseId = args.briefcaseId;
 
@@ -2399,7 +2383,7 @@ export class SnapshotDb extends IModelDb {
   private _createClassViewsOnClose?: boolean;
 
   private constructor(nativeDb: IModelJsNative.DgnDb, key: string) {
-    super({ nativeDb, key, changeset: nativeDb.getParentChangeset() });
+    super({ nativeDb, key, changeset: nativeDb.getCurrentChangeset() });
     this._openMode = nativeDb.isReadonly() ? OpenMode.Readonly : OpenMode.ReadWrite;
   }
 
@@ -2455,7 +2439,7 @@ export class SnapshotDb extends IModelDb {
 
     // Replace iModelId if seedFile is a snapshot, preserve iModelId if seedFile is an iModelHub-managed briefcase
     if (!BriefcaseManager.isValidBriefcaseId(nativeDb.getBriefcaseId()))
-      nativeDb.setDbGuid(Guid.createValue());
+      nativeDb.setIModelId(Guid.createValue());
 
     nativeDb.deleteLocalValue(BriefcaseLocalValue.StandaloneEdit);
     nativeDb.saveChanges();
@@ -2597,7 +2581,7 @@ export class StandaloneDb extends BriefcaseDb {
     const nativeDb = new IModelHost.platform.DgnDb();
     nativeDb.createIModel(filePath, args);
     nativeDb.saveLocalValue(BriefcaseLocalValue.StandaloneEdit, args.allowEdit);
-    nativeDb.saveProjectGuid(Guid.empty);
+    nativeDb.setITwinId(Guid.empty);
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     nativeDb.saveChanges();
     return new StandaloneDb({ nativeDb, key: Guid.createValue(), briefcaseId: BriefcaseIdValue.Unassigned, openMode: OpenMode.ReadWrite });
@@ -2628,7 +2612,7 @@ export class StandaloneDb extends BriefcaseDb {
     const nativeDb = this.openDgnDb(file, openMode);
 
     try {
-      const iTwinId = nativeDb.queryProjectGuid();
+      const iTwinId = nativeDb.getITwinId();
       if (iTwinId !== Guid.empty) // a "standalone" iModel means it is not associated with an iTwin
         throw new IModelError(IModelStatus.WrongIModel, `${filePath} is not a Standalone iModel. iTwinId=${iTwinId}`);
 

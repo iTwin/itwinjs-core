@@ -22,7 +22,7 @@ interface TileContentRequestProps {
 }
 
 // Goes through models in imodel until it finds a root tile for a non empty model, returns tile content request props for that tile
-export async function getTileProps(iModel: IModelDb, requestContext: AuthorizedBackendRequestContext): Promise<TileContentRequestProps | undefined> {
+export async function getTileProps(iModel: IModelDb): Promise<TileContentRequestProps | undefined> {
   const queryParams = { from: GeometricModel3d.classFullName, limit: IModelDb.maxLimit };
   for (const modelId of iModel.queryEntityIds(queryParams)) {
     let model;
@@ -36,7 +36,7 @@ export async function getTileProps(iModel: IModelDb, requestContext: AuthorizedB
       continue;
 
     const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edgesRequired: false }, defaultTileOptions);
-    const treeProps = await iModel.tiles.requestTileTreeProps(requestContext, treeId);
+    const treeProps = await iModel.tiles.requestTileTreeProps(treeId);
     // Ignore empty tile trees.
     if (treeProps.rootTile.maximumSize === 0 && treeProps.rootTile.isLeaf === true)
       continue;
@@ -115,7 +115,7 @@ describe("TileUpload (#integration)", () => {
     assert.isDefined(iModel);
 
     // Generate tile
-    const tileProps = await getTileProps(iModel, user);
+    const tileProps = await getTileProps(iModel);
     assert.isDefined(tileProps);
     const tile = await tileRpcInterface.generateTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid);
 

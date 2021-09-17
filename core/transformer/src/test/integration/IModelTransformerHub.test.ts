@@ -347,7 +347,7 @@ describe("IModelTransformerHub (#integration)", () => {
     const masterSeedDb = SnapshotDb.createEmpty(masterSeedFileName, { rootSubject: { name: "Master" } });
     populateMaster(masterSeedDb, state0);
     assert.isTrue(IModelJsFs.existsSync(masterSeedFileName));
-    masterSeedDb.nativeDb.saveProjectGuid(iTwinId); // WIP: attempting a workaround for "ContextId was not properly setup in the checkpoint" issue
+    masterSeedDb.nativeDb.setITwinId(iTwinId); // WIP: attempting a workaround for "ContextId was not properly setup in the checkpoint" issue
     masterSeedDb.saveChanges();
     masterSeedDb.close();
     const masterIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: masterIModelName, description: "master", revision0: masterSeedFileName, noLocks: true });

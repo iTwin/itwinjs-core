@@ -25,6 +25,7 @@ import { RpcNotFoundResponse } from "./core/RpcControl";
 import { GeometryContainmentRequestProps, GeometryContainmentResponseProps } from "../GeometryContainment";
 import { RpcRoutingToken } from "./core/RpcRoutingToken";
 import { TextureData, TextureLoadProps } from "../TextureProps";
+import { FontMapProps } from "../Fonts";
 
 /** Response if the IModelDb was not found at the backend
  * (if the service has moved)
@@ -68,7 +69,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public async getClassHierarchy(_iModelToken: IModelRpcProps, _startClassName: string): Promise<string[]> { return this.forward(arguments); }
   public async getAllCodeSpecs(_iModelToken: IModelRpcProps): Promise<any[]> { return this.forward(arguments); }
   public async getViewStateData(_iModelToken: IModelRpcProps, _viewDefinitionId: string, _options?: ViewStateLoadProps): Promise<ViewStateProps> { return this.forward(arguments); }
-  public async readFontJson(_iModelToken: IModelRpcProps): Promise<any> { return this.forward(arguments); }
+  public async readFontJson(_iModelToken: IModelRpcProps): Promise<FontMapProps> { return this.forward(arguments); }
   public async getToolTipMessage(_iModelToken: IModelRpcProps, _elementId: string): Promise<string[]> { return this.forward(arguments); }
   public async getViewThumbnail(_iModelToken: IModelRpcProps, _viewId: string): Promise<Uint8Array> { return this.forward(arguments); }
   public async getDefaultViewId(_iModelToken: IModelRpcProps): Promise<Id64String> { return this.forward(arguments); }

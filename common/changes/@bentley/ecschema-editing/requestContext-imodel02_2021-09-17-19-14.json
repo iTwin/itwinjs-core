@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecschema-editing",
+      "comment": "remove ClientRequestContext.current",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ecschema-editing"
+}
