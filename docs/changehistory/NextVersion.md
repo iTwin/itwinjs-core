@@ -37,7 +37,7 @@ Each of these interfaces originally had only a member `changeSetId: string`, In 
 
 ## ViewState3d.lookAt Arguments Changed
 
-[ViewState3d.lookAt]($frontend) previously took 6 arguments. In addition the method `ViewState3d.lookAtUsingLensAngle` also established a perspective `ViewState3d` from a field-of-view lens angle with many of the same arguments. There is now a new implementation of `ViewState3d.lookAt` that accepts named parameters to set up either a perspective or orthographic view, using the interfaces [LookAtPerspectiveArgs]($frontend), [LookAtOrthoArgs]($frontend), or [LookAtUsingLensAngle]($frontend).
+[ViewState3d.lookAt]($frontend) previously took 6 arguments. Also, the method `ViewState3d.lookAtUsingLensAngle` established a perspective `ViewState3d` from a field-of-view lens angle with many of the same arguments. There is now a new implementation of `ViewState3d.lookAt` that accepts named parameters to set up either a perspective or orthographic view, using the interfaces [LookAtPerspectiveArgs]($frontend), [LookAtOrthoArgs]($frontend), or [LookAtUsingLensAngle]($frontend).
 
 This is a breaking change, so you may need to modify your code and replace the previous arguments with a single object with the appropriate names. For example,:
 
@@ -238,6 +238,35 @@ The signatures to several methods in [BriefcaseManager]($backend) and [Briefcase
 | `BriefcaseManager.downloadBriefcase`     | [RequestNewBriefcaseArg]($backend)                    |                                  |
 | `IModelDb.importSchemas`                 | `LocalFileName[]`                                     | `requestContext` removed         |
 
+## `Tool.run` and `Tool.parseAndRun` are now async
+
+In V2.0, the methods [Tool.run]($frontend) and [Tool.parseAndRun]($frontend) were synchronous. This was problematic in that it was impossible to invoke a tool and await its completion. Those two methods are now both `async` and return `Promise<boolean>`. This is obviously a breaking change. Any Tool subclasses that override those methods will need to become async, and any code that calls `Tool.run` or `Tool.parseAndRun` will need to appropriately handle the returned Promise (usually by awaiting it.)
+
+In the process of converting `Tool.run` and `Tool.parseAndRun` to async, several other `Tool` class methods also became async and will likewise need to be modified if they are called or overridden.
+
+These methods were previously synchronous and are now async:
+
+- [Tool.run]($frontend)
+- [Tool.parseAndRun]($frontend)
+- [InteractiveTool.onInstall]($frontend)
+- [InteractiveTool.onPostInstall]($frontend)
+- [InteractiveTool.exitTool]($frontend)
+- [InteractiveTool.onCleanup]($frontend)
+- [InteractiveTool.onSuspend]($frontend)
+- [InteractiveTool.onUnsuspend]($frontend)
+
+## `NodeKey` in `@bentley/presentation-common`
+
+The [NodeKey]($presentation-common) object contains a `pathFromRoot` attribute which can be used to uniquely identify a node in a hierarchy. In addition, the attribute is stable - the value for the same node is the same even when being created by different backends, which allows it to be persisted and later be used to identify specific nodes.
+
+In `3.0` changes have been made that changed the way this attribute is calculated, which means the same node produced by pre-3.0 and 3.x versions of `imodeljs` will have keys with different `pathFromRoot` value. To help identify the version of `NodeKey` a new `version` attribute has been added, with `undefined` or `1` being assigned to keys produced by pre-3.0 and `2` being assigned to keys produced by `3.x` versions of imodeljs. In addition, a new [NodeKey.equals]($presentation-common) function has been added to help with the equality checking of node keys, taking their version into account.
+
+## Changes to GraphicBuilder
+
+It is no longer necessary to supply a [Viewport]($frontend) when creating a [GraphicBuilder]($frontend). Instead, you can supply to [RenderSystem.createGraphic]($frontend) a [CustomGraphicBuilderOptions]($frontend) containing a function that can compute the level of detail appropriate for the produced [RenderGraphic]($frontend).
+
+[GraphicBuilder]($frontend)'s properties are all now read-only - you can no longer change `placement`, `pickId`, `wantNormals`, or `wantEdges` after creating the builder. Previously, a caller could create a graphic builder, add some geometry, then modify any of these properties before adding more geometry, more often than not producing surprising results.
+
 ## Removal of previously deprecated APIs
 
 In this 3.0 major release, we have removed several APIs that were previously marked as deprecated in 2.x. Generally, the reason for the deprecation as well as the alternative suggestions can be found in the 2.x release notes. They are summarized here for quick reference.
@@ -280,6 +309,8 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `IModelVersion.getChangeSetFromNamedVersion` | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
 | `IModelVersion.getLatestChangeSetId`         | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
 | `IModelWriteRpcInterface`                    | Use IPC for writing to iModels                                 |
+| `LatAndLong`                                 | *eliminated*                                                   |
+| `LatLongAndHeight`                           | [CartographicProps]($common)                                   |
 | `ViewFlagOverrides` class                    | [ViewFlagOverrides]($common) type                              |
 | `ViewFlagProps.edgeMask`                     | *eliminated*                                                   |
 | `ViewFlagProps.hlMatColors`                  | *eliminated*                                                   |
@@ -702,3 +733,7 @@ The property `InterpolationCurve3dOptions.isChordLenTangent` has been deprecated
 
 The iModel Transformer APIs, such as the classes [IModelExporter]($transformer), [IModelImporter]($transformer), and [IModelTransformer]($transformer)
 were removed from the `@bentley/imodeljs-backend` package and moved to a new package, `@bentley/imodeljs-transformer`.
+
+## @bentley/imodeljs-common
+
+The `fromRadians`, `fromDegrees`, and `fromAngles` methods of [Cartographic]($common) now expect to receive a single input argument - an object containing a longitude, latitude and optional height property. The public constructor for [Cartographic]($common) has also been removed. If you would like to create a [Cartographic]($common) object without specifying longitude and latiude, you can use the new `createZero` method. These changes will help callers avoid misordering longitude, latitude, and height when creating a [Cartographic]($common) object. Additionally, the `LatAndLong` and `LatLongAndHeight` interfaces have been removed and replaced with a single [CartographicProps]($common) interface.

@@ -27,7 +27,7 @@ export class ApplyModelDisplayScaleTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 3; }
 
-  public override run(scale: Point3d): boolean {
+  public override async run(scale: Point3d): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (!vp)
       return false;
@@ -73,7 +73,7 @@ export class ApplyModelDisplayScaleTool extends Tool {
     return true;
   }
 
-  public override parseAndRun(...input: string[]): boolean {
+  public override async parseAndRun(...input: string[]): Promise<boolean> {
     const args = parseArgs(input);
     const scale = new Point3d(args.getFloat("x") ?? 1.0, args.getFloat("y") ?? 1.0, args.getFloat("z") ?? 1.0);
     return this.run(scale);

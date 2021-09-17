@@ -1369,7 +1369,7 @@ export abstract class ViewState3d extends ViewState {
   public get isCameraOn(): boolean { return this._cameraOn; }
 
   private static _minGlobeEyeHeight = Constant.earthRadiusWGS84.equator / 4;  // View as globe if more than a quarter of earth radius from surface.
-  private static _scratchGlobeCarto = Cartographic.fromRadians(0, 0, 0);
+  private static _scratchGlobeCarto = Cartographic.createZero();
 
   public get isGlobalView() {
     if (undefined === this.iModel.ecefLocation)
@@ -1487,7 +1487,7 @@ export abstract class ViewState3d extends ViewState {
   private finishLookAtGlobalLocation(targetPointCartographic: Cartographic, origEyePoint: Point3d, eyePoint: Point3d, targetPoint: Point3d, pitchAngleRadians: number): number {
     targetPointCartographic.latitude += .001;
     const northOfEyePoint = this.cartographicToRoot(targetPointCartographic)!;
-    let upVector = northOfEyePoint.unitVectorTo(eyePoint)!;
+    let upVector = targetPoint.unitVectorTo(northOfEyePoint)!;
     if (this.globeMode === GlobeMode.Plane)
       upVector = Vector3d.create(Math.abs(upVector.x), Math.abs(upVector.y), Math.abs(upVector.z));
 

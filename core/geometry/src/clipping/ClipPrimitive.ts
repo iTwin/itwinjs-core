@@ -441,9 +441,11 @@ export class ClipShape extends ClipPrimitive {
     if (polygon.length < 3)
       return undefined;
     const pPoints = polygon.slice(0);
-    // Add closure point
-    if (!pPoints[0].isExactEqual(pPoints[pPoints.length - 1]))
-      pPoints.push(pPoints[0].clone ());
+    // Add closure point.
+    if (pPoints[0].isAlmostEqual(pPoints[pPoints.length - 1]))
+      pPoints[0].clone(pPoints[pPoints.length - 1]);
+    else
+      pPoints.push(pPoints[0].clone());
     if (result) {
       result._clipPlanes = undefined; // Start as undefined
       result._invisible = invisible;

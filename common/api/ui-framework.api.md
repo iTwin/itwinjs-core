@@ -790,9 +790,9 @@ export class BumpToolSetting extends Tool {
     // (undocumented)
     static get maxArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): boolean;
+    parseAndRun(...args: string[]): Promise<boolean>;
     // (undocumented)
-    run(settingIndexStr?: string): boolean;
+    run(settingIndexStr?: string): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }
@@ -2073,7 +2073,7 @@ export function featureOverridesActiveStateFunc(state: Readonly<BaseItemState>):
 // @alpha
 export class FocusToolSettings extends Tool {
     // (undocumented)
-    run(): boolean;
+    run(): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }
@@ -2212,7 +2212,7 @@ export interface FrameworkState {
 
 // @alpha
 export class FrameworkToolAdmin extends ToolAdmin {
-    processShortcutKey(e: KeyboardEvent, wentDown: boolean): boolean;
+    processShortcutKey(e: KeyboardEvent, wentDown: boolean): Promise<boolean>;
 }
 
 // @public
@@ -4477,9 +4477,9 @@ export class RestoreFrontstageLayoutTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): boolean;
+    parseAndRun(...args: string[]): Promise<boolean>;
     // (undocumented)
-    run(frontstageId?: string): boolean;
+    run(frontstageId?: string): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }

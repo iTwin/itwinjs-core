@@ -76,7 +76,6 @@ public;BlankConnectionProps
 public;BriefcaseConnection 
 public;class BriefcaseNotificationHandler 
 public;BriefcaseTxns 
-internal;BuilderOptions = GraphicBuilderOptions &
 internal;CachedDecoration =
 internal;CachedIModelCoordinatesResponseProps
 public;calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise
@@ -94,6 +93,7 @@ public;CheckpointConnection
 public;ClipEventType
 public;Cluster
 alpha;CompassMode
+public;ComputeChordToleranceArgs
 internal;ContextMode
 public;ContextRealityModelState 
 public;ContextRotationId
@@ -112,6 +112,7 @@ internal;createRenderPlanFromViewport(vp: Viewport): RenderPlan
 internal;CurrentInputState
 internal;CurrentState
 beta;CustomFormatPropEditorSpec
+public;CustomGraphicBuilderOptions 
 beta;CustomQuantityTypeDefinition 
 internal;DebugShaderFile
 public;DecorateContext 
@@ -409,6 +410,7 @@ public;ParticleCollectionBuilder
 public;ParticleCollectionBuilder
 public;ParticleCollectionBuilderParams
 public;ParticleProps 
+internal;PatternGraphicParams
 beta;PendingExtension
 internal;PerformanceMetrics
 public;PerModelCategoryVisibility
@@ -442,7 +444,7 @@ internal;queryVisibleFeatures(viewport: Viewport, options: QueryVisibleFeaturesO
 beta;QueryVisibleFeaturesCallback = (features: Iterable
 beta;QueryVisibleFeaturesOptions = QueryScreenFeaturesOptions | QueryTileFeaturesOptions
 internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined
-public;readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions): Promise
+public;readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions | false): Promise
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
 public;RealityDataQueryCriteria
 internal;RealityModelSource = ViewState | DisplayStyleState
@@ -457,9 +459,11 @@ internal;RealityTileParams
 internal;RealityTileRegion
 internal;RealityTileTree 
 internal;RealityTileTreeParams 
+internal;RenderAreaPattern = IDisposable & RenderMemory.Consumer
 public;class RenderClipVolume
 public;RenderContext
 internal;RenderDiagnostics
+internal;RenderGeometry = IDisposable & RenderMemory.Consumer
 public;class RenderGraphic 
 public;class RenderGraphicOwner 
 internal;RenderMemory
@@ -648,6 +652,7 @@ public;ViewManager
 public;class ViewManip 
 public;class Viewport 
 public;ViewportDecorator
+public;ViewportGraphicBuilderOptions 
 internal;ViewportIdSet 
 internal;ViewportIdSets 
 public;class ViewPose

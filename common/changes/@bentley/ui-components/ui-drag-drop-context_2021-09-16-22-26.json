@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/ui-components",
-      "comment": "",
+      "comment": "Export BeDragDropContext",
       "type": "none"
     }
   ],

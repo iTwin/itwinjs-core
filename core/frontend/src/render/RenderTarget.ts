@@ -18,7 +18,7 @@ import { CanvasDecoration } from "./CanvasDecoration";
 import { Decorations } from "./Decorations";
 import { FeatureSymbology } from "./FeatureSymbology";
 import { AnimationBranchStates } from "./GraphicBranch";
-import { GraphicBuilderOptions } from "./GraphicBuilder";
+import { CustomGraphicBuilderOptions, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
 import { Pixel } from "./Pixel";
 import { GraphicList } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
@@ -107,7 +107,7 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
   public createPlanarClassifier(_properties?: SpatialClassifier): RenderPlanarClassifier | undefined { return undefined; }
   public getTextureDrape(_id: Id64String): RenderTextureDrape | undefined { return undefined; }
 
-  public createGraphicBuilder(options: GraphicBuilderOptions) {
+  public createGraphicBuilder(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions) {
     return this.renderSystem.createGraphic(options);
   }
 
