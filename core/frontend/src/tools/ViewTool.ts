@@ -3342,12 +3342,6 @@ export class ViewGlobeLocationTool extends ViewTool {
     return true;
   }
 
-  /** @internal */
-  public override async onPostInstall() {
-    await super.onPostInstall();
-    await this._doLocationView();
-  }
-
   private async _doLocationView(): Promise<boolean> {
     const viewport = undefined === this.viewport ? IModelApp.viewManager.selectedView : this.viewport;
     if (viewport) {
