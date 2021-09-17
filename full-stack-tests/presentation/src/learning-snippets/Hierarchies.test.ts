@@ -26,8 +26,7 @@ describe("Learning Snippets", () => {
 
     it("uses `ParentNode` symbol in rule condition", async () => {
       // __PUBLISH_EXTRACT_START__ Hierarchies.Condition.ParentNodeSymbol
-      // The ruleset has one root node rule that returns an "A" node and one child node rule
-      // that returns "B" child node under "A".
+      // This ruleset defines a tree with node "A" at the top and node "B" as child of "A".
       const ruleset: Ruleset = {
         id: "example",
         rules: [{
