@@ -11772,6 +11772,8 @@ export class ViewGlobeLocationTool extends ViewTool {
     static get minArgs(): number;
     // (undocumented)
     oneShot: boolean;
+    // @internal (undocumented)
+    onPostInstall(): Promise<void>;
     parseAndRun(...args: string[]): Promise<boolean>;
     // (undocumented)
     static toolId: string;

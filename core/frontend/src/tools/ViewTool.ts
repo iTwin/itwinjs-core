@@ -3331,7 +3331,6 @@ export class ViewGlobeLocationTool extends ViewTool {
             if (elevationOffset !== undefined)
               this._globalLocation.center.height = elevationOffset;
           }
-          await this._doLocationView();
         }
       } catch (_) {
       }
@@ -3340,6 +3339,12 @@ export class ViewGlobeLocationTool extends ViewTool {
     if (this._globalLocation !== undefined)
       return this.run();
     return true;
+  }
+
+  /** @internal */
+  public override async onPostInstall() {
+    await super.onPostInstall();
+    await this._doLocationView();
   }
 
   private async _doLocationView(): Promise<boolean> {
