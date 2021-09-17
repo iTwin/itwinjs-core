@@ -34,7 +34,7 @@ class TestModalFrontstage implements ModalFrontstageInfo {
   }
 }
 
-describe.skip("FrontstageComposer", () => {
+describe("FrontstageComposer", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
   });
@@ -261,9 +261,11 @@ describe.skip("FrontstageComposer", () => {
     };
     const stub = sinon.stub(manager, "setZoneWidth").returns(zones);
     await FrontstageManager.setActiveFrontstageDef(frontstageDef);
-
-    expect(stub.calledOnceWithExactly(4, 200, sinon.match.any)).to.be.true;
-    expect(sut.state().nineZone.zones).to.eq(zones);
+    setImmediate(async () => {
+      await TestUtils.flushAsyncOperations();
+      expect(stub.calledOnceWithExactly(4, 200, sinon.match.any)).to.be.true;
+      expect(sut.state().nineZone.zones).to.eq(zones);
+    });
   });
 
   describe("isCollapsedToPanelState", () => {

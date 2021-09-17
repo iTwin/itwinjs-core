@@ -65,6 +65,16 @@ export class TestFrontstage extends FrontstageProvider {
     return TestFrontstage.stageId;
   }
 
+  public get defaultToolDef() {
+    return new ToolItemDef({
+      toolId: "dummy",
+      iconSpec: "dummy",
+      label: "dummy",
+      description: "dummy",
+      execute: async () => { },
+    });
+  }
+
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const myContentGroup: ContentGroup = new ContentGroup(
       {
@@ -83,7 +93,7 @@ export class TestFrontstage extends FrontstageProvider {
     return (
       <Frontstage
         id={this.id}
-        defaultTool={CoreTools.selectElementCommand}
+        defaultTool={this.defaultToolDef}
         contentGroup={myContentGroup}
         defaultContentId="defaultContentId"
         isInFooterMode={false}

@@ -188,10 +188,13 @@ describe("FrontstageManager", () => {
       IModelApp.viewManager.setSelectedView(viewportMock.object);
     });
 
-    it("CoreTools.selectElementCommand", () => {
+    it("CoreTools.selectElementCommand", async () => {
       const item = CoreTools.selectElementCommand;
       item.execute();
-      expect(FrontstageManager.activeToolId).to.eq(item.toolId);
+      setImmediate(async () => {
+        await TestUtils.flushAsyncOperations();
+        expect(FrontstageManager.activeToolId).to.eq(item.toolId);
+      });
     });
 
     it("trigger tool settings reload", () => {
