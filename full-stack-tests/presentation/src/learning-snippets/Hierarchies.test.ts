@@ -62,8 +62,8 @@ describe("Learning Snippets", () => {
 
     it("uses ruleset variables in rule condition", async () => {
       // __PUBLISH_EXTRACT_START__ Hierarchies.Condition.RulesetVariables.Ruleset
-      // The ruleset has two root node rules that return "A" and "B" nodes. Both rules can be enabled or
-      // disabled with a ruleset variable.
+      // This ruleset defines two rules that can be enabled or disabled by setting variable DISPLAY_A_NODES and
+      // DISPLAY_B_NODES values.
       const ruleset: Ruleset = {
         id: "example",
         rules: [{
