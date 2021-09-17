@@ -118,9 +118,22 @@ export class RpcInvocation {
     return this.protocol.configuration.controlChannel.handleUnknownOperation(this, error);
   }
 
+  /** When processing an RPC request that throws an unhandled exception, log it with sanitized requestContext.
+   * @internal
+   */
+  public static logRpcException(currentRequest: ClientRequestContext, error: any) {
+    let msg = error.toString();
+    const errMeta = error.getMetaData?.();
+    if (errMeta)
+      msg += ` [${JSON.stringify(errMeta)}]`;
+
+    Logger.logError(CommonLoggerCategory.RpcInterfaceBackend, msg, () => currentRequest.sanitize());
+  }
+
   private async resolve(): Promise<any> {
-    const currentRequest = await RpcConfiguration.requestContext.deserialize(this.request);
+    let currentRequest: ClientRequestContext | undefined;
     try {
+      currentRequest = await RpcConfiguration.requestContext.deserialize(this.request);
       this.protocol.events.raiseEvent(RpcProtocolEvent.RequestReceived, this);
 
       const parameters = RpcMarshaling.deserialize(this.protocol, this.request.parameters);
@@ -130,18 +143,13 @@ export class RpcInvocation {
       const op = this.lookupOperationFunction(impl);
 
       // This global is a "pseudo-magic-argument" to every RPC call. RpcImplementations must pass it as an argument to
-      // any asynchronous code that may need it, and not rely on the global variable remaining unchanged across async calls.
+      // any asynchronous code that may need it, and *not* rely on the global variable remaining unchanged across async calls.
       RpcInvocation.currentRequest = currentRequest;
 
       return await op.call(impl, ...parameters);
     } catch (error: any) {
-      let msg = error.toString();
-      const errMeta = error.getMetaData?.();
-      if (errMeta)
-        msg += ` [${JSON.stringify(errMeta)}]`;
-
-      // processing this RPC request threw an unhandled exception. Log it, including sanitized requestContext.
-      Logger.logError(CommonLoggerCategory.RpcInterfaceBackend, msg, () => currentRequest.sanitize());
+      if (currentRequest)
+        RpcInvocation.logRpcException(currentRequest, error);
 
       return this.reject(error);
     }
