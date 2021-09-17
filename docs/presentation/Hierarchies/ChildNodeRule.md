@@ -35,7 +35,7 @@ The most commonly used symbols are:
 
   ![Example of using ParentNode symbol in rule condition](./media/hierarchy-with-parentnode-symbol-in-condition.png)
 
-- [Ruleset variables](../Advanced/RulesetVariables.md#using-variables-in-rule-condition) to  dynamically enable / disable the rule.
+- [Ruleset variables](../Advanced/RulesetVariables.md#using-variables-in-rule-condition) — values that can be set and changed at runtime to affect rule outcomes.
 
   ```ts
   [[include:Hierarchies.Condition.RulesetVariables.Ruleset]]
