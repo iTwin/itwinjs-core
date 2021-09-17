@@ -26,8 +26,6 @@ export interface ContentProps {
   classId: string | ConfigurableUiControlConstructor;
   /** Optional application data passed down to the Content View */
   applicationData?: any;
-  /** Optional function to provide additional application data to pass to the Content View */
-  appDataProvider?: (id: string, applicationData?: any) => any;
 }
 
 /** Properties for a [[ContentGroup]]
@@ -104,11 +102,7 @@ export class ContentGroup {
 
       if (typeof contentProps.classId === "string") {
         if (!this._contentControls.get(contentProps.id) && ConfigurableUiManager.isControlRegistered(contentProps.classId)) {
-          let appData: any = {};
-          if (contentProps.appDataProvider) {
-            appData = contentProps.appDataProvider(id, contentProps.applicationData);
-          }
-          contentControl = ConfigurableUiManager.createControl(contentProps.classId, id, { ...contentProps.applicationData, ...appData }, contentProps.id) as ContentControl;
+          contentControl = ConfigurableUiManager.createControl(contentProps.classId, id, contentProps.applicationData, contentProps.id) as ContentControl;
           usedClassId = contentProps.classId;
         }
       } else {

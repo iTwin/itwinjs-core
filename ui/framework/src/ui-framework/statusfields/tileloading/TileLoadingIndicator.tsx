@@ -85,6 +85,7 @@ export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, 
     const vp = IModelApp.viewManager.selectedView;
 
     // if view exists bind update routine to onRender loop, otherwise do so once the onViewOpen event runs
+    // istanbul ignore else
     if (vp) {
       this._onViewOpen(vp);
     } else {
@@ -97,7 +98,7 @@ export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, 
     if (!IModelApp.viewManager)
       return;
 
-    // istanbul ignore else
+    // istanbul ignore next
     if (this._removeViewOpenListener)
       this._removeViewOpenListener();
 

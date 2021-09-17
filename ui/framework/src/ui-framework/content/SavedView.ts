@@ -31,6 +31,7 @@ export class SavedView {
     const className = savedViewProps.viewDefinitionProps.classFullName;
     const ctor = await iModelConnection.findClassFor<typeof EntityState>(className, undefined) as typeof ViewState | undefined;
 
+    // istanbul ignore next
     if (undefined === ctor)
       throw new IModelError(IModelStatus.WrongClass, "Invalid ViewState class", Logger.logError, UiFramework.loggerCategory(this), () => savedViewProps);
 

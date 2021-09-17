@@ -54,9 +54,7 @@ export class FrontstageUi2ContentGroupProvider extends ContentGroupProvider {
   }
 
   public async provideContentGroup(props: FrontstageProps): Promise<ContentGroup> {
-    const iModelConnection = UiFramework.getIModelConnection();
-
-    const savedViewLayoutProps = await getSavedViewLayoutProps(props.id, iModelConnection);
+    const savedViewLayoutProps = await getSavedViewLayoutProps(props.id, UiFramework.getIModelConnection());
     if (savedViewLayoutProps) {
       const viewState = savedViewLayoutProps.contentGroupProps.contents[0].applicationData?.viewState;
       if (viewState) {

@@ -1397,7 +1397,6 @@ export class ContentLayoutManager {
 
 // @public
 export interface ContentProps {
-    appDataProvider?: (id: string, applicationData?: any) => any;
     applicationData?: any;
     classId: string | ConfigurableUiControlConstructor;
     id: string;

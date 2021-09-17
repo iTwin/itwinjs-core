@@ -66,13 +66,15 @@ describe("Backstage", () => {
       expect(stateFuncRun).to.be.false;
       SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
       expect(stateFuncRun).to.be.true;
+      await TestUtils.flushAsyncOperations();
       wrapper.update();
 
       const backstageItem = wrapper.find(NZ_BackstageItem);
       backstageItem.find(".nz-backstage-item").simulate("click");
-
-      await TestUtils.flushAsyncOperations();
-      expect(spy.calledOnce).to.be.true;
+      setImmediate(async () => {
+        await TestUtils.flushAsyncOperations();
+        expect(spy.calledOnce).to.be.true;
+      });
     });
 
     it("FrontstageLaunchBackstageItem should log error when invalid frontstageId is provided", async () => {
@@ -83,8 +85,10 @@ describe("Backstage", () => {
 
       const backstageItem = wrapper.find(NZ_BackstageItem);
       backstageItem.find(".nz-backstage-item").simulate("click");
-      await TestUtils.flushAsyncOperations();
-      spyMethod.calledOnce.should.true;
+      setImmediate(async () => {
+        await TestUtils.flushAsyncOperations();
+        spyMethod.calledOnce.should.true;
+      });
     });
 
     it("FrontstageLaunchBackstageItem renders correctly when inactive", async () => {
