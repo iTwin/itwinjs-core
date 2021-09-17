@@ -9,7 +9,7 @@
 import * as React from "react";
 import { InstanceKey, KeySet } from "@bentley/presentation-common";
 import { Presentation, SelectionChangeEventArgs, SelectionHandler } from "@bentley/presentation-frontend";
-import { Table as BaseTable, RowItem, TableProps } from "@bentley/ui-components";
+import { RowItem, Table as BaseTable, TableProps } from "@bentley/ui-components";
 import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent";
 import { getDisplayName } from "../common/Utils";
 import { IPresentationTableDataProvider } from "./DataProvider";
@@ -39,7 +39,7 @@ export interface TableWithUnifiedSelectionProps {
    *
    * Defaults to `1`.
    *
-   * @see [Selection levels]($docs/presentation/Unified-Selection/Terminology#selection-level).
+   * @see [Selection levels]($docs/presentation/Unified-Selection/index#selection-levels).
    */
   selectionLevel?: number;
 
