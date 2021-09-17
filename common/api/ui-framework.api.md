@@ -1208,7 +1208,7 @@ export class ConfigurableUiManager {
     static addFrontstageProvider(frontstageProvider: FrontstageProvider): void;
     // @internal (undocumented)
     static closeUi(): void;
-    static createControl(classId: string, uniqueId: string, options?: any): ConfigurableUiElement | undefined;
+    static createControl(classId: string, uniqueId: string, options?: any, controlId?: string): ConfigurableUiElement | undefined;
     // @internal
     static getConstructorClassId(constructor: ConfigurableUiControlConstructor): string | undefined;
     static getWrapperElement(): HTMLElement;
@@ -7726,7 +7726,7 @@ export class Workflow extends ItemDefBase {
     set isActive(_: boolean);
     isDefault: boolean;
     get lastActiveTask(): Task | undefined;
-    setActiveTask(task: Task): void;
+    setActiveTask(task: Task): Promise<void>;
     workflowId: string;
 }
 

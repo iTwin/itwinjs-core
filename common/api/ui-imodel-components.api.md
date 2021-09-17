@@ -1134,6 +1134,8 @@ export class ViewportComponentEvents {
 
 // @public
 export interface ViewportProps extends CommonProps {
+    // @internal
+    controlId?: string;
     // @internal (undocumented)
     getViewOverlay?: (viewport: ScreenViewport) => React.ReactNode;
     imodel: IModelConnection;
@@ -1143,7 +1145,6 @@ export interface ViewportProps extends CommonProps {
     screenViewportOverride?: typeof ScreenViewport;
     // @internal
     tentativePointOverride?: TentativePoint;
-    uniqueId?: string;
     viewDefinitionId?: Id64String;
     // @internal
     viewManagerOverride?: ViewManager;
