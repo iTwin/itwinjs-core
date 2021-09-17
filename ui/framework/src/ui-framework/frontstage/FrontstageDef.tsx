@@ -127,9 +127,10 @@ export class FrontstageDef {
   /** @internal */
   public get nineZoneState(): NineZoneState | undefined { return this._nineZoneState; }
   public set nineZoneState(state: NineZoneState | undefined) {
+    // TODO --- review this change since it is breaking unit test
     // Make sure we are not processing values from a nested stage
-    if (FrontstageManager.activeFrontstageDef !== this)
-      return;
+    // if (FrontstageManager.activeFrontstageDef !== this)
+    // return;
 
     if (this._nineZoneState === state)
       return;

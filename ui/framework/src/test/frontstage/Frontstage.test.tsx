@@ -118,8 +118,6 @@ describe("Frontstage", () => {
     await FrontstageManager.setActiveFrontstage(frontstageProvider.frontstage.props.id);
     wrapper.update();
 
-    // eslint-disable-next-line no-console
-    console.log(wrapper.debug());
     const contentRenderer = wrapper.find("WidgetContentRenderer").at(2);
     const widgetElement = contentRenderer.find(TestWidgetElement);
     const widget = FrontstageManager.findWidget("widget3");
@@ -215,7 +213,7 @@ describe("Frontstage", () => {
     const wrapper = mount(<FrontstageComposer />);
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(TestFrontstage.stageId);
     await FrontstageManager.setActiveFrontstageDef(frontstageDef);
     wrapper.update();
 
@@ -240,12 +238,12 @@ describe("Frontstage", () => {
   it("WidgetManager should add dynamic WidgetDef to Frontstage on activation", async () => {
     const widgetId = "DynamicTest";
     const widgetDef = new WidgetDef({ id: widgetId });
-    UiFramework.widgetManager.addWidgetDef(widgetDef, "TestFrontstage", undefined, ZoneLocation.CenterLeft);
+    UiFramework.widgetManager.addWidgetDef(widgetDef, TestFrontstage.stageId, undefined, ZoneLocation.CenterLeft);
 
     const wrapper = mount(<FrontstageComposer />);
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(TestFrontstage.stageId);
     await FrontstageManager.setActiveFrontstageDef(frontstageDef);
     wrapper.update();
 
@@ -265,7 +263,7 @@ describe("Frontstage", () => {
 
     const widgetId = "DynamicTest";
     const widgetDef = new WidgetDef({ id: widgetId });
-    UiFramework.widgetManager.addWidgetDef(widgetDef, "TestFrontstage", undefined, ZoneLocation.CenterLeft);
+    UiFramework.widgetManager.addWidgetDef(widgetDef, TestFrontstage.stageId, undefined, ZoneLocation.CenterLeft);
 
     if (frontstageDef) {
       const foundWidgetDef = frontstageDef.findWidgetDef(widgetId);
@@ -286,7 +284,7 @@ describe("Frontstage", () => {
       id: "test",
       getWidgetDefs: (stageId: string, _stageUsage: string, location: ZoneLocation | StagePanelLocation,
         _section?: StagePanelSection | undefined, _frontstageAppData?: any): readonly WidgetDef[] | undefined => {
-        if (stageId === "TestFrontstage" && location === ZoneLocation.BottomRight) {
+        if (stageId === TestFrontstage.stageId && location === ZoneLocation.BottomRight) {
           const widgetDef = new WidgetDef({ id: widgetId });
           return [widgetDef];
         }

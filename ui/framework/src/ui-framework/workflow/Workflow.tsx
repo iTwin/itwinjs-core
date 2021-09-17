@@ -119,11 +119,9 @@ export class Workflow extends ItemDefBase {
    * @param task  The Task to set as active
    */
   public async setActiveTask(task: Task) {
-    void (async () => {
-      this.activeTaskId = task.taskId;
-      await task.onActivated();
-      WorkflowManager.onTaskActivatedEvent.emit({ task, taskId: task.id, workflow: this, workflowId: this.id });
-    })();
+    this.activeTaskId = task.taskId;
+    await task.onActivated();
+    WorkflowManager.onTaskActivatedEvent.emit({ task, taskId: task.id, workflow: this, workflowId: this.id });
   }
 
   /** Gets an array of sorted Tasks in the Workflow. */
@@ -143,7 +141,6 @@ export class Workflow extends ItemDefBase {
 
     return sortedTasks;
   }
-
 }
 
 /** Workflow Activated Event Args class.
