@@ -6,7 +6,7 @@
  * @module RPC
  */
 
-import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-core";
+import { Id64String, Logger } from "@bentley/bentleyjs-core";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import { IModelRpcProps } from "@bentley/imodeljs-common";
 import {
@@ -88,7 +88,6 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
 
   private async makeRequest<TRpcOptions extends { rulesetOrId?: Ruleset | string, clientId?: string, diagnostics?: DiagnosticsOptions, rulesetVariables?: RulesetVariableJSON[] }, TResult>(token: IModelRpcProps, requestId: string, requestOptions: TRpcOptions, request: ContentGetter<Promise<TResult>>): PresentationRpcResponse<TResult> {
     Logger.logInfo(PresentationBackendLoggerCategory.Rpc, `Received '${requestId}' request. Params: ${JSON.stringify(requestOptions)}`);
-    const requestContext = ClientRequestContext.current;
     let imodel: IModelDb;
     try {
       imodel = this.getIModel(token);
@@ -99,7 +98,6 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
     const { clientId, diagnostics: diagnosticsOptions, rulesetVariables, ...options } = requestOptions; // eslint-disable-line @typescript-eslint/no-unused-vars
     const managerRequestOptions: any = {
       ...options,
-      requestContext,
       imodel,
     };
 

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/frontend-authorization-client",
+      "comment": "remove ClientRequestContext.current",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/frontend-authorization-client"
+}

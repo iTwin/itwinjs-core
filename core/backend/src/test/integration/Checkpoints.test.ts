@@ -72,7 +72,7 @@ describe("Checkpoints (#integration)", () => {
       iModelId: testIModelId,
       changeset: testChangeSet,
     });
-    assert.equal(iModel.getGuid(), testIModelId);
+    assert.equal(iModel.iModelId, testIModelId);
     assert.equal(iModel.changeset.id, testChangeSet.id);
     assert.equal(iModel.iTwinId, testITwinId);
     assert.equal(iModel.rootSubject.name, "Stadium Dataset 1");

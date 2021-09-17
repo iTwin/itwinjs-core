@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-common",
+      "comment": "remove ClientRequestContext.current",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common"
+}

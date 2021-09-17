@@ -6,7 +6,7 @@
  * @module ECDb
  */
 
-import { ClientRequestContext, DbResult, IDisposable, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { DbResult, IDisposable, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import {
   Base64EncodedString, IModelError, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus,
 } from "@bentley/imodeljs-common";
@@ -389,7 +389,7 @@ export class ECDb implements IDisposable {
     return new Promise<QueryResponse>((resolve) => {
       let sessionRestartToken = restartToken ? restartToken.trim() : "";
       if (sessionRestartToken !== "")
-        sessionRestartToken = `${ClientRequestContext.current.sessionId}:${sessionRestartToken}`;
+        sessionRestartToken = `${IModelHost.sessionId}:${sessionRestartToken}`;
 
       const postResult = this.nativeDb.postConcurrentQuery(ecsql, JSON.stringify(bindings, Base64EncodedString.replacer), limit!, quota!, priority!, sessionRestartToken, abbreviateBlobs);
       if (postResult.status !== IModelJsNative.ConcurrentQuery.PostStatus.Done)

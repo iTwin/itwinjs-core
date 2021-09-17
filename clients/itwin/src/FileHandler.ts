@@ -6,7 +6,7 @@
  * @module iTwinServiceClients
  */
 import * as https from "https";
-import { BentleyError, GetMetaDataFunction, LogFunction } from "@bentley/bentleyjs-core";
+import { BentleyError, GetMetaDataFunction } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
 import { ProgressCallback } from "./Request";
 
@@ -22,8 +22,8 @@ export interface CancelRequest {
  * @internal
  */
 export class UserCancelledError extends BentleyError {
-  public constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction) {
-    super(errorNumber, message, log, category, getMetaData);
+  public constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction) {
+    super(errorNumber, message, getMetaData);
     this.name = "User cancelled operation";
   }
 }
@@ -32,8 +32,8 @@ export class UserCancelledError extends BentleyError {
  * @beta
  */
 export class SasUrlExpired extends BentleyError {
-  public constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction) {
-    super(errorNumber, message, log, category, getMetaData);
+  public constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction) {
+    super(errorNumber, message, getMetaData);
     this.name = "SaS url has expired";
   }
 }
@@ -42,8 +42,8 @@ export class SasUrlExpired extends BentleyError {
  * @internal
  */
 export class DownloadFailed extends BentleyError {
-  public constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction) {
-    super(errorNumber, message, log, category, getMetaData);
+  public constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction) {
+    super(errorNumber, message, getMetaData);
     this.name = "Fail to download file";
   }
 }
