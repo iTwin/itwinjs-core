@@ -228,7 +228,7 @@ export class AppTools {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.item3",
       applicationData: { key: "value" },
-      execute: async () =>IModelApp.tools.run(SelectionTool.toolId),
+      execute: async () => IModelApp.tools.run(SelectionTool.toolId),
     });
   }
 
@@ -248,7 +248,7 @@ export class AppTools {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.item5",
       applicationData: { key: "value" },
-      execute: async () =>  IModelApp.tools.run(SelectionTool.toolId),
+      execute: async () => IModelApp.tools.run(SelectionTool.toolId),
     });
   }
 
@@ -786,8 +786,8 @@ export class AppTools {
       iconSpec: SaveContentLayoutTool.iconSpec,
       label: SaveContentLayoutTool.flyover,
       tooltip: SaveContentLayoutTool.description,
-      execute: () => {
-        IModelApp.tools.run(SaveContentLayoutTool.toolId);
+      execute: async () => {
+        await IModelApp.tools.run(SaveContentLayoutTool.toolId);
       },
     });
   }
@@ -798,8 +798,8 @@ export class AppTools {
       iconSpec: RestoreSavedContentLayoutTool.iconSpec,
       label: RestoreSavedContentLayoutTool.flyover,
       tooltip: RestoreSavedContentLayoutTool.description,
-      execute: () => {
-        IModelApp.tools.run(RestoreSavedContentLayoutTool.toolId);
+      execute: async () => {
+        await IModelApp.tools.run(RestoreSavedContentLayoutTool.toolId);
       },
     });
   }

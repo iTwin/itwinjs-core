@@ -8,7 +8,7 @@ import * as moq from "typemoq";
 import { render } from "@testing-library/react";
 import { MockRender, ScreenViewport, ViewState3d } from "@bentley/imodeljs-frontend";
 import {
-  ConfigurableCreateInfo, ConfigurableUiControlType, ConfigurableUiManager, ContentGroup, ContentLayoutDef, ContentLayoutManager, ContentViewManager,
+  ConfigurableCreateInfo, ConfigurableUiControlType, ConfigurableUiManager, ContentGroup, ContentLayoutManager, ContentViewManager,
   CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider, IModelViewportControl, IModelViewportControlOptions,
   NavigationWidget, SupportsViewSelectorChange, Widget, Zone,
 } from "../../ui-framework";

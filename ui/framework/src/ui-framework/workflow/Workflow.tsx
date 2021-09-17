@@ -10,7 +10,6 @@
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { UiEvent } from "@bentley/ui-core";
-import { async } from "rxjs";
 import { ItemDefBase } from "../shared/ItemDefBase";
 import { ItemProps } from "../shared/ItemProps";
 import { UiFramework } from "../UiFramework";
@@ -247,7 +246,7 @@ export class WorkflowManager {
 
     // istanbul ignore else
     if (!task.isActive)
-      workflow.setActiveTask(task);
+      await workflow.setActiveTask(task);
   }
 
   /** Gets the active Workflow */

@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
 import {
   BackstageActionItem, BackstageComposerActionItem, BackstageComposerItem, BackstageComposerStageLauncher, BackstageItemType, BackstageManager,
-  BackstageStageLauncher, FrontstageDef, FrontstageManager, UiFramework,
+  BackstageStageLauncher, FrontstageManager, UiFramework,
 } from "../../ui-framework";
 import TestUtils, { mount } from "../TestUtils";
 import { BadgeType } from "@bentley/ui-abstract";
