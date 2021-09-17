@@ -47,14 +47,11 @@ export type GlobalEventType =
 export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
   /** Id of the iModel that caused this event. */
   public iModelId?: GuidString;
-  // SWB
+  // SWB What does project mean here? How is this different from iTwinId
   /** Id of the [[Project]] that this iModel belongs to. */
-  // SWB
   public projectId?: string;
-  // SWB
-  /** Id of the context ([[Project]] or [[Asset]]) that this iModel belongs to. */
-  // SWB
-  public contextId?: string;
+  /** Id of the iTwin that this iModel belongs to. */
+  public iTwinId?: string;
 
   /** Construct this global event from object instance.
    * @param obj Object instance.
@@ -65,8 +62,7 @@ export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
     this.iModelId = obj.iModelId;
     // SWB
     this.projectId = obj.ProjectId;
-    // SWB
-    this.contextId = obj.ContextId;
+    this.iTwinId = obj.iTwinId;
   }
 }
 

@@ -74,7 +74,7 @@ describe("iModelHub ThumbnailHandler (#unit)", () => {
     // // Delete and create a new iModel if we have not expected number of versions.
     // versions = (await imodelHubClient.versions.get(requestContext, imodelId));
     // if (versions.length !== 0 && versions.length !== 3) {
-  // SWB
+    // SWB
     //   await utils.createIModel(requestContext, imodelName, _projectId, true);
     //   imodelId = await getIModelId(requestContext, imodelName);
     //   versions = new Array<Version>();
@@ -154,7 +154,7 @@ describe("iModelHub ThumbnailHandler (#unit)", () => {
     it(`should download latest iModel's ${params.size}Thumbnail as a PNG file`, async () => {
       mockDownloadLatestThumbnail(projectId, imodelId, params.size);
       // SWB
-      const image: string = await imodelHubClient.thumbnails.download(requestContext, imodelId, { contextId: projectId, size: params.size });
+      const image: string = await imodelHubClient.thumbnails.download(requestContext, imodelId, { iTwinId: projectId, size: params.size });
       chai.assert(image);
       chai.expect(image.length).greaterThan(getThumbnailLength(params.size));
       chai.assert(image.startsWith(pngPrefixStr));

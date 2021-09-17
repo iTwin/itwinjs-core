@@ -100,7 +100,7 @@ export class DefaultIModelServices implements IModelServices {
   public async getThumbnail(iTwinId: string, iModelId: GuidString): Promise<string | undefined> {
     const requestContext = await AuthorizedFrontendRequestContext.create();
     try {
-      const pngImage = await this._hubClient.thumbnails.download(requestContext, iModelId, { contextId: iTwinId, size: "Small" });
+      const pngImage = await this._hubClient.thumbnails.download(requestContext, iModelId, { iTwinId, size: "Small" });
       return pngImage;
     } catch (err) {
       // No image available

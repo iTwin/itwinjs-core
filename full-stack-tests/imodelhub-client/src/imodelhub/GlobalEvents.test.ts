@@ -167,14 +167,14 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
     await utils.createIModel(requestContext, imodelName, projectId);
 
     // SWB How should this be handled?
-    const eventBody = `{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","ProjectId":"${projectId}","ContextId":"${projectId}","iModelId":"${Guid.createValue()}"}`;
+    const eventBody = `{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","ProjectId":"${projectId}","ITwinId":"${projectId}","iModelId":"${Guid.createValue()}"}`;
     mockGetGlobalEvent(globalEventSubscription.wsgId, JSON.parse(eventBody), "iModelCreatedEvent");
     const event = await imodelHubClient.globalEvents.getEvent(requestContext, globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId);
 
     chai.expect(event).to.be.instanceof(IModelCreatedEvent);
     chai.assert(!!event!.iModelId);
     // SWB
-    chai.expect(event!.contextId).to.be.eq(projectId);
+    chai.expect(event!.iTwinId).to.be.eq(projectId);
   });
 
   it("should update Global Event subscription", async () => {
@@ -357,13 +357,13 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
     await utils.createIModel(requestContext, imodelName, assetId);
 
     // SWB How should this be handled?
-    const eventBody = `{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","ProjectId":"${assetId}","ContextId":"${assetId}","iModelId":"${Guid.createValue()}"}`;
+    const eventBody = `{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","ProjectId":"${assetId}","ITwinId":"${assetId}","iModelId":"${Guid.createValue()}"}`;
     mockGetGlobalEvent(globalEventSubscription.wsgId, JSON.parse(eventBody), "iModelCreatedEvent");
     const event = await imodelHubClient.globalEvents.getEvent(requestContext, globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId);
 
     chai.expect(event).to.be.instanceof(IModelCreatedEvent);
     chai.assert(!!event!.iModelId);
     // SWB
-    chai.expect(event!.contextId).to.be.eq(assetId);
+    chai.expect(event!.iTwinId).to.be.eq(assetId);
   });
 });
