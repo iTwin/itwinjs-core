@@ -79,7 +79,7 @@ Tells the library that the rule should only be handled if no other rule of the s
 
 Stop processing rules that have lower priority. Used in cases when recursion suppression is needed.
 
-**Note:** If this flag is set, `specifications` and `subConditions` are not processed.
+> **Note:** If this flag is set, `specifications` and `subConditions` are not processed.
 
 ### Attribute: `specifications`
 
