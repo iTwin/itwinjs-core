@@ -27,7 +27,7 @@ Defines a condition which needs to be met in order for the rule to be used. The 
 
 The most commonly used symbols are:
 
-- `ParentNode` to define which parent node this rule is creating child nodes for.
+- `ParentNode` — refers to the parent node. This is often used to create child nodes under specific parents.
 
   ```ts
   [[include:Hierarchies.Condition.ParentNodeSymbol]]
