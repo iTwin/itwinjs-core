@@ -216,7 +216,9 @@ export class SampleAppIModelApp {
         activeLocale: IModelApp.i18n.languageList()[0],
       },
       favorites: {
-        storage: createFavoritePropertiesStorage(DefaultFavoritePropertiesStorageTypes.UserSettingsServiceStorage),
+        storage: createFavoritePropertiesStorage(SampleAppIModelApp.testAppConfiguration?.useLocalSettings
+          ? DefaultFavoritePropertiesStorageTypes.BrowserLocalStorage
+          : DefaultFavoritePropertiesStorageTypes.UserSettingsServiceStorage),
       },
     });
     Presentation.selection.scopes.activeScope = "top-assembly";
