@@ -215,5 +215,11 @@ function pseudolocalizeCommand(options) {
 function exec(cmd) {
   console.log("Running command:");
   console.log(cmd.join(" "));
-  return child_process.execSync(cmd.join(" "), { encoding: "utf8", stdio: 'inherit' });
+  try {
+    return child_process.execSync(cmd.join(" "), { encoding: "utf8", stdio: 'inherit' });
+  } catch (error) {
+    if (error.status)
+      process.exit(error.status);
+    throw error;
+  }
 }
