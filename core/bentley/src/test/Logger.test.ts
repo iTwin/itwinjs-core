@@ -89,7 +89,7 @@ describe("Logger", () => {
       metaData.prop3 = "test3";
     };
     assert.isTrue(Logger.registerMetaDataSource(newMetaDataSource)); // Try to register source before initializing logger
-    const mdnew = Logger.makeMetaData(() => { });
+    const mdnew = Logger.makeMetaData(() => { return {}; });
     assert.include(mdnew, { prop1: "test1", prop2: "test2", prop3: "test3" });
   });
 

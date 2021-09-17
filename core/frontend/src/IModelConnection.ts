@@ -11,11 +11,12 @@ import {
 } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@bentley/geometry-core";
 import {
-  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbResult, EcefLocation, EcefLocationProps, ElementLoadOptions, ElementProps, EntityQueryParams, FontMap, FontMapProps,
-  GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError,
-  IModelReadRpcInterface, IModelStatus, mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps,
-  ModelProps, ModelQueryParams, Placement, Placement2d, Placement3d, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, SnapRequestProps,
-  SnapResponseProps, SnapshotIModelRpcInterface, TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps,
+  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbResult, EcefLocation, EcefLocationProps, ElementLoadOptions, ElementProps, EntityQueryParams,
+  FontMap, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel,
+  IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelStatus, mapToGeoServiceStatus, MassPropertiesRequestProps,
+  MassPropertiesResponseProps, ModelProps, ModelQueryParams, Placement, Placement2d, Placement3d, QueryLimit, QueryPriority, QueryQuota,
+  QueryResponse, QueryResponseStatus, RpcManager, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, TextureData, TextureLoadProps,
+  ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps,
 } from "@bentley/imodeljs-common";
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { CheckpointConnection } from "./CheckpointConnection";
@@ -1104,7 +1105,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
     /** Load a [[ViewState]] object from the specified [[ViewDefinition]] id. */
     public async load(viewDefinitionId: Id64String): Promise<ViewState> {
       if (!Id64.isValidId64(viewDefinitionId))
-        throw new IModelError(IModelStatus.InvalidId, "Invalid view definition Id for IModelConnection.Views.load", () => viewDefinitionId);
+        throw new IModelError(IModelStatus.InvalidId, `Invalid view definition Id ${viewDefinitionId}`);
 
       const options: ViewStateLoadProps = {
         displayStyle: {

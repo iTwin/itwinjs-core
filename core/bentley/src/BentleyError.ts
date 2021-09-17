@@ -385,24 +385,24 @@ export interface StatusCodeWithMessage<ErrorCodeType> {
  * Declared as a function so that the expense of creating the meta-data is only paid when it is needed.
  * @public
  */
-export type GetMetaDataFunction = () => any;
+export type GetMetaDataFunction = () => object;
 
-/** The error type thrown by this module. `BentleyError` subclasses `Error` to add an `errorNumber` member. See [[IModelStatus]] for `errorNumber` values.
- * @public
- */
+export type AllStatusValues =
+  IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RpcInterfaceStatus |
+  ExtensionStatus | GeoServiceStatus | HttpStatus | RepositoryStatus | WSStatus;
+
+/** Base exception class for iTwin.js exceptions.
+   * @public
+   */
 export class BentleyError extends Error {
   private readonly _getMetaData: GetMetaDataFunction | undefined;
-  public errorNumber: number;
 
-  /** Construct a new BentleyError
-   * @param errorNumber The required error number originating from one of the standard status enums.
-   * See [[IModelStatus]], [[DbResult]], [[BentleyStatus]], [[BriefcaseStatus]], [[RepositoryStatus]], [[ChangeSetStatus]], [[HttpStatus]], [[WSStatus]], [[IModelHubStatus]]
-   * @param message The optional error message (should not be localized).
-   * @param log The optional LogFunction that should be used to log this BentleyError.
-   * @param category The optional logger category to use when logging.
-   * @param getMetaData Optional data to be passed to the logger.
+  /**
+   * @param errorNumber The a number that identifies of the problem.
+   * @param message  message that describes the problem (should not be localized).
+   * @param getMetaData a function to be stored on the exception object that provides metaData about the problem.
    */
-  public constructor(errorNumber: number, message?: string, getMetaData?: GetMetaDataFunction) {
+  public constructor(public errorNumber: AllStatusValues | number, message?: string, getMetaData?: GetMetaDataFunction) {
     super(message);
     this.errorNumber = errorNumber;
     this._getMetaData = getMetaData;
@@ -413,7 +413,7 @@ export class BentleyError extends Error {
   public get hasMetaData(): boolean { return this._getMetaData !== undefined; }
 
   /** Return the meta data associated with this BentleyError. */
-  public getMetaData(): any {
+  public getMetaData(): object | undefined {
     return this.hasMetaData ? this._getMetaData!() : undefined;
   }
 
