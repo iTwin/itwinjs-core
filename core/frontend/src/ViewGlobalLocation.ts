@@ -161,7 +161,7 @@ export function viewGlobalLocation(viewport: ScreenViewport, doAnimate: boolean,
   const view3d = viewport.view;
 
   const transitionDistance = view3d.lookAtGlobalLocation(eyeHeight, pitchAngleRadians, location);
-  viewport.synchWithView(true);
+  viewport.synchWithView();
 
   if (doAnimate)
     viewport.animateToCurrent(before, { animationTime: metersToRange(transitionDistance) });

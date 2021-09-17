@@ -91,7 +91,7 @@ beta;QuantityInput({ initialValue, quantityType, readonly, className, style, onQ
 beta;QuantityNumberInput: (props: QuantityNumberInputProps) => JSX.Element | null
 beta;QuantityNumberInputProps 
 beta;QuantityProps 
-internal;RailToolTip({ showToolTip, percent, tooltipText }:
+internal;RailMarkers({ showToolTip, percent, tooltipText, markDate }:
 beta;SaturationPicker({ onSaturationChange, hsv, className, style }: SaturationPickerProps): JSX.Element
 beta;SaturationPickerProps 
 internal;Scrubber(props: ScrubberProps): JSX.Element
@@ -106,6 +106,7 @@ public;TimelineComponent
 public;TimelineComponentProps
 public;TimelineDataProvider
 public;TimelineDateDisplay
+public;TimelineDateMarkerProps
 public;TimelineMenuItemOption = "replace" | "append" | "prefix"
 public;TimelineMenuItemProps
 public;TimelinePausePlayAction

@@ -6,9 +6,8 @@
  * @module Favorite
  */
 
-import "./FavoritePropertyList.scss";
 import * as React from "react";
-import { Orientation } from "@bentley/ui-core";
+import { Orientation, ResizableContainerObserver } from "@bentley/ui-core";
 import { PropertyValueRendererManager } from "../properties/ValueRendererManager";
 import { PropertyList } from "../propertygrid/component/PropertyList";
 import { PropertyData } from "../propertygrid/PropertyDataProvider";
@@ -25,23 +24,25 @@ export interface FavoritePropertyListProps {
 /** Favorite Property List React component
  * @alpha
  */
-export class FavoritePropertyList extends React.PureComponent<FavoritePropertyListProps> {
-  /** @internal */
-  public override render() {
-    if (this.props.propertyData.records.Favorite !== undefined) {
-      const propertyValueRendererManager = this.props.propertyValueRendererManager ?? PropertyValueRendererManager.defaultManager;
-      const orientation = this.props.orientation ?? Orientation.Horizontal;
-      return (
-        <div className="components-favorite-property-list">
+export function FavoritePropertyList(props: FavoritePropertyListProps) {
+  const [listWidth, setListWidth] = React.useState<number | undefined>();
+  const onListResize = React.useCallback(setListWidth, [setListWidth]);
+  if (props.propertyData.records.Favorite !== undefined) {
+    const propertyValueRendererManager = props.propertyValueRendererManager ?? PropertyValueRendererManager.defaultManager;
+    const orientation = props.orientation ?? Orientation.Horizontal;
+    return (
+      <div className="components-favorite-property-list">
+        <ResizableContainerObserver onResize={onListResize} />
+        {listWidth ?
           <PropertyList
             orientation={orientation}
-            properties={this.props.propertyData.records.Favorite}
+            width={listWidth}
+            properties={props.propertyData.records.Favorite}
             columnRatio={1 / 3}
             propertyValueRendererManager={propertyValueRendererManager}
-          />
-        </div>
-      );
-    }
-    return null;
+          /> : null}
+      </div>
+    );
   }
+  return null;
 }

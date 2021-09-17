@@ -48,10 +48,7 @@ import { DialogRow } from '@bentley/ui-abstract';
 import { Direction } from '@bentley/ui-ninezone';
 import { DisabledResizeHandles } from '@bentley/ui-ninezone';
 import { DisplayStyle3dState } from '@bentley/imodeljs-frontend';
-import { DndComponentClass } from 'react-dnd';
 import { DraggedWidgetManagerProps } from '@bentley/ui-ninezone';
-import { DragLayerProps } from '@bentley/ui-components';
-import { DragSourceArguments } from '@bentley/ui-components';
 import { ECClassGroupingNodeKey } from '@bentley/presentation-common';
 import { EmphasizeElementsProps } from '@bentley/imodeljs-common';
 import { FunctionKey } from '@bentley/ui-abstract';
@@ -797,9 +794,9 @@ export class BumpToolSetting extends Tool {
     // (undocumented)
     static get maxArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): boolean;
+    parseAndRun(...args: string[]): Promise<boolean>;
     // (undocumented)
-    run(settingIndexStr?: string): boolean;
+    run(settingIndexStr?: string): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }
@@ -1924,71 +1921,6 @@ export interface DialogRendererProps {
 // @internal
 export function DockedStatusBarItem(props: StatusBarItemProps): JSX.Element;
 
-// @beta @deprecated
-export class DragDropLayerChangedEvent extends UiEvent<DragDropLayerChangedEventArgs> {
-}
-
-// @beta @deprecated
-export interface DragDropLayerChangedEventArgs {
-    type: string | undefined;
-}
-
-// @beta @deprecated
-export class DragDropLayerManager {
-    static getActiveLayer(): React.ComponentType<DragLayerProps<any>> | undefined;
-    static getType(): string | undefined;
-    // (undocumented)
-    static get onDragDropLayerChangedEvent(): DragDropLayerChangedEvent;
-    static registerTypeLayer(type: string, layer: React.ComponentType<DragLayerProps>): void;
-    static setType(type: string | undefined): void;
-}
-
-// @beta @deprecated
-export const DragDropLayerRenderer: typeof DragDropLayerRendererComponent & DndComponentClass<typeof React.Component, {}>;
-
-// @beta @deprecated
-export class DragDropLayerRendererComponent extends React.Component<DragDropLayerRendererProps> {
-    constructor(props: DragDropLayerRendererProps);
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    render(): React.ReactNode;
-}
-
-// @beta @deprecated
-export interface DragDropLayerRendererProps extends CommonProps {
-    // (undocumented)
-    args?: DragSourceArguments;
-    // @internal (undocumented)
-    clientOffset?: {
-        x: number;
-        y: number;
-    };
-    // (undocumented)
-    dragging?: boolean;
-    // @internal (undocumented)
-    initialClientOffset?: {
-        x: number;
-        y: number;
-    };
-    // @internal (undocumented)
-    initialSourceClientOffset?: {
-        x: number;
-        y: number;
-    };
-    // (undocumented)
-    item?: any;
-    // (undocumented)
-    itemType?: string;
-    // @internal (undocumented)
-    sourceClientOffset?: {
-        x: number;
-        y: number;
-    };
-}
-
 // @beta
 export class DrawingNavigationAidControl extends NavigationAidControl {
     constructor(info: ConfigurableCreateInfo, options: any);
@@ -2221,7 +2153,7 @@ export function featureOverridesActiveStateFunc(state: Readonly<BaseItemState>):
 // @alpha
 export class FocusToolSettings extends Tool {
     // (undocumented)
-    run(): boolean;
+    run(): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }
@@ -2360,7 +2292,7 @@ export interface FrameworkState {
 
 // @alpha
 export class FrameworkToolAdmin extends ToolAdmin {
-    processShortcutKey(e: KeyboardEvent, wentDown: boolean): boolean;
+    processShortcutKey(e: KeyboardEvent, wentDown: boolean): Promise<boolean>;
 }
 
 // @public
@@ -4593,9 +4525,9 @@ export class RestoreFrontstageLayoutTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): boolean;
+    parseAndRun(...args: string[]): Promise<boolean>;
     // (undocumented)
-    run(frontstageId?: string): boolean;
+    run(frontstageId?: string): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }
@@ -7970,22 +7902,6 @@ export enum ZoneState {
     Open = 2,
     // (undocumented)
     Popup = 3
-}
-
-// @internal
-export class ZoneTargets extends React.Component<ZoneTargetsProps> {
-    // (undocumented)
-    render(): React.ReactNode;
-}
-
-// @internal
-export interface ZoneTargetsProps extends CommonProps {
-    // (undocumented)
-    dropTarget: ZoneTargetType | undefined;
-    // (undocumented)
-    targetChangeHandler: TargetChangeHandler;
-    // (undocumented)
-    zoneId: WidgetZoneId;
 }
 
 

@@ -19,7 +19,7 @@ describe("GraphicPrimitive", () => {
 
     public constructor() {
       super({
-        viewport: {} as any,
+        computeChordTolerance: () => 1,
         type: GraphicType.Scene,
       });
     }
