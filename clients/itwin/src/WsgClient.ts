@@ -169,7 +169,7 @@ export class WsgError extends ResponseError {
    * Logs this error
    */
   public override log(): void {
-    Logger.logError(loggerCategory, this.logMessage(), this.getMetaData());
+    Logger.logError(loggerCategory, this.logMessage(), () => this.getMetaData());
   }
 }
 

@@ -385,15 +385,17 @@ export interface StatusCodeWithMessage<ErrorCodeType> {
  * Declared as a function so that the expense of creating the meta-data is only paid when it is needed.
  * @public
  */
-export type GetMetaDataFunction = () => object;
+export type GetMetaDataFunction = () => object | undefined;
 
+/** all values with known status meanings
+ * @public */
 export type AllStatusValues =
   IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RpcInterfaceStatus |
   ExtensionStatus | GeoServiceStatus | HttpStatus | RepositoryStatus | WSStatus;
 
 /** Base exception class for iTwin.js exceptions.
-   * @public
-   */
+ * @public
+ */
 export class BentleyError extends Error {
   private readonly _getMetaData: GetMetaDataFunction | undefined;
 
@@ -420,7 +422,6 @@ export class BentleyError extends Error {
   /** This function returns the name of each error status. Override this method to handle more error status codes. */
   protected _initName(): string {
     switch (this.errorNumber) {
-      // IModelStatus cases
       case IModelStatus.AlreadyLoaded: return "Already Loaded";
       case IModelStatus.AlreadyOpen: return "Already Open";
       case IModelStatus.BadArg: return "Bad Arg";
@@ -485,8 +486,6 @@ export class BentleyError extends Error {
       case IModelStatus.WrongElement: return "Wrong Element";
       case IModelStatus.WrongHandler: return "Wrong Handler";
       case IModelStatus.WrongModel: return "Wrong Model";
-
-      // DbResult cases
       case DbResult.BE_SQLITE_ERROR: return "BE_SQLITE_ERROR";
       case DbResult.BE_SQLITE_INTERNAL: return "BE_SQLITE_INTERNAL";
       case DbResult.BE_SQLITE_PERM: return "BE_SQLITE_PERM";
@@ -576,11 +575,7 @@ export class BentleyError extends Error {
       case DbResult.BE_SQLITE_CONSTRAINT_TRIGGER: return "Trigger Constraint Error";
       case DbResult.BE_SQLITE_CONSTRAINT_UNIQUE: return "Unique Constraint Error";
       case DbResult.BE_SQLITE_CONSTRAINT_VTAB: return "VTable Constraint Error";
-
-      // BentleyStatus cases
       case BentleyStatus.ERROR: return "Error";
-
-      // BriefcaseStatus
       case BriefcaseStatus.CannotAcquire: return "CannotAcquire";
       case BriefcaseStatus.CannotDownload: return "CannotDownload";
       case BriefcaseStatus.CannotCopy: return "CannotCopy";
@@ -588,11 +583,7 @@ export class BentleyError extends Error {
       case BriefcaseStatus.VersionNotFound: return "VersionNotFound";
       case BriefcaseStatus.DownloadCancelled: return "DownloadCancelled";
       case BriefcaseStatus.ContainsDeletedChangeSets: return "ContainsDeletedChangeSets";
-
-      // RpcInterface
       case RpcInterfaceStatus.IncompatibleVersion: return "RpcInterfaceStatus.IncompatibleVersion";
-
-      // ChangeSetStatus
       case ChangeSetStatus.ApplyError: return "Error applying a change set";
       case ChangeSetStatus.ChangeTrackingNotEnabled: return "Change tracking has not been enabled. The ChangeSet API mandates this";
       case ChangeSetStatus.CorruptedChangeStream: return "Contents of the change stream are corrupted and does not match the ChangeSet";
@@ -618,8 +609,6 @@ export class BentleyError extends Error {
       case ChangeSetStatus.CannotMergeIntoReadonly: return "Cannot merge changes into a Readonly DgnDb";
       case ChangeSetStatus.CannotMergeIntoMaster: return "Cannot merge changes into a Master DgnDb";
       case ChangeSetStatus.CannotMergeIntoReversed: return "Cannot merge changes into a DgnDb that has reversed change sets";
-
-      // RepositoryStatus
       case RepositoryStatus.ServerUnavailable: return "ServerUnavailable";
       case RepositoryStatus.LockAlreadyHeld: return "LockAlreadyHeld";
       case RepositoryStatus.SyncError: return "SyncError";
@@ -635,14 +624,10 @@ export class BentleyError extends Error {
       case RepositoryStatus.LockNotHeld: return "LockNotHeld";
       case RepositoryStatus.RepositoryIsLocked: return "RepositoryIsLocked";
       case RepositoryStatus.ChannelConstraintViolation: return "ChannelConstraintViolation";
-
-      // HTTP Status
       case HttpStatus.Info: return "HTTP Info";
       case HttpStatus.Redirection: return "HTTP Redirection";
       case HttpStatus.ClientError: return "HTTP Client error";
       case HttpStatus.ServerError: return "HTTP Server error";
-
-      // WSStatus
       case WSStatus.Unknown: return "Unknown error";
       case WSStatus.ClassNotFound: return "Class not found";
       case WSStatus.FileNotFound: return "File not found";
@@ -657,8 +642,6 @@ export class BentleyError extends Error {
       case WSStatus.SchemaNotFound: return "Schema not found";
       case WSStatus.SslRequired: return "SSL required";
       case WSStatus.TooManyBadLoginAttempts: return "Too many bad login attempts";
-
-      // IModelHubStatus
       case IModelHubStatus.Unknown: return "Unknown error";
       case IModelHubStatus.MissingRequiredProperties: return "Missing required properties";
       case IModelHubStatus.InvalidPropertiesValues: return "Invalid properties values";
@@ -707,27 +690,19 @@ export class BentleyError extends Error {
       case IModelHubStatus.FailedToGetProductSettings: return "Failed to get product settings";
       case IModelHubStatus.DatabaseOperationFailed: return "Database operation has failed";
       case IModelHubStatus.ContextDoesNotExist: return "Context does not exist";
-
-      // errors that are returned for incorrect iModelHub request.
       case IModelHubStatus.UndefinedArgumentError: return "Undefined argument";
       case IModelHubStatus.InvalidArgumentError: return "Invalid argument";
       case IModelHubStatus.MissingDownloadUrlError: return "Missing download url";
       case IModelHubStatus.NotSupportedInBrowser: return "Not supported in browser";
       case IModelHubStatus.FileHandlerNotSet: return "File handler is not set";
       case IModelHubStatus.FileNotFound: return "File not found";
-
-      // errors returned from authorization
       case AuthStatus.Error: return "Authorization error";
-
-      // errors returned by iModel.js Extension client
       case ExtensionStatus.UnknownError: return "Unknown error from backend";
       case ExtensionStatus.BadExtension: return "Bad file extension";
       case ExtensionStatus.BadRequest: return "Bad request";
       case ExtensionStatus.ExtensionAlreadyExists: return "Extension with the given name and version already exists";
       case ExtensionStatus.ExtensionNotFound: return "Extension not found";
       case ExtensionStatus.UploadError: return "Failed to upload file";
-
-      // GeoServiceStatus
       case GeoServiceStatus.NoGeoLocation: return "No GeoLocation";
       case GeoServiceStatus.OutOfUsefulRange: return "Out of useful range";
       case GeoServiceStatus.OutOfMathematicalDomain: return "Out of mathematical domain";
@@ -735,8 +710,6 @@ export class BentleyError extends Error {
       case GeoServiceStatus.VerticalDatumConvertError: return "Vertical datum convert error";
       case GeoServiceStatus.CSMapError: return "CSMap error";
       case GeoServiceStatus.Pending: return "Pending";
-
-      // Unexpected cases
       case IModelStatus.Success:
       case DbResult.BE_SQLITE_OK:
       case DbResult.BE_SQLITE_ROW:
