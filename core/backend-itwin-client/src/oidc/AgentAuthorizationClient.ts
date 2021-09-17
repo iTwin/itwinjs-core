@@ -58,7 +58,7 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
       throw new BentleyError(AuthStatus.Error, error.message || "Authorization error", Logger.logError, loggerCategory, () => ({ error: error.error, message: error.message }));
     }
 
-    this._accessToken = tokenSet.access_token;
+    this._accessToken = `Bearer ${tokenSet.access_token}`;
     if (tokenSet.expires_at)
       this._expiresAt = new Date(tokenSet.expires_at * 1000);
     return this._accessToken;

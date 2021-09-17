@@ -12,7 +12,6 @@ export const getTokenCallbackName = "getToken";
 export type SerializedAccessToken = [string, any];
 
 export async function getAccessTokenFromBackend(user: TestUserCredentials, oidcConfig?: TestBrowserAuthorizationClientConfiguration): Promise<AccessToken> {
-  const accessTokens = await executeBackendCallback(getTokenCallbackName, user, oidcConfig); // TODO: Check if this eventually changes to getting just a token string
-  const serializedToken: SerializedAccessToken = JSON.parse(accessTokens);
-  return serializedToken[0];
+  const accessToken = await executeBackendCallback(getTokenCallbackName, user, oidcConfig);
+  return accessToken;
 }

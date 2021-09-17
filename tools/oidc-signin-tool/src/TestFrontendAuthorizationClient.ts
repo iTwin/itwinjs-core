@@ -16,6 +16,8 @@ export class TestFrontendAuthorizationClient implements FrontendAuthorizationCli
 
   constructor(private _accessToken?: AccessToken) {
     this._activeToken = this._accessToken;
+    if (!this._activeToken?.toLowerCase().includes("bearer"))
+      this._activeToken = `Bearer ${this._accessToken}`;
     this.onUserStateChanged.raiseEvent(this._activeToken);
   }
 

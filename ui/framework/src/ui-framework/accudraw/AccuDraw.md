@@ -97,7 +97,7 @@ An AccuDraw class or subclass instance is setup in the IModelApp instance using 
 ```ts
 import { FrameworkAccuDraw } from "@bentley/ui-framework";
 . . .
-  const opts: WebViewerAppOpts & NativeAppOpts = {
+  const opts: NativeAppOpts = {
     iModelApp: {
       . . .
       accuDraw: new FrameworkAccuDraw(),
