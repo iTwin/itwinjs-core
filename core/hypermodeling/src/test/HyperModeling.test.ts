@@ -8,11 +8,12 @@ import { IModelApp, ParseAndRunResult } from "@bentley/imodeljs-frontend";
 import { HyperModeling } from "../HyperModeling";
 import { HyperModelingConfig, SectionGraphicsConfig, SectionMarkerConfig } from "../HyperModelingConfig";
 import { SectionMarkerHandler } from "../SectionMarkerHandler";
+import { I18N } from "@bentley/imodeljs-i18n";
 
 // NB: Most of the package functionality requires an IModelConnection => a backend, so is tested in core-full-stack-tests.
 describe("Package initialization", () => {
   before(async () => {
-    await IModelApp.startup();
+    await IModelApp.startup({localizationClient: new I18N()});
   });
 
   after(async () => {

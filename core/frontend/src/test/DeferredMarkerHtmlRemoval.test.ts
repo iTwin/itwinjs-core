@@ -9,10 +9,11 @@ import { DecorateContext } from "../ViewContext";
 import { IModelApp } from "../IModelApp";
 import { openBlankViewport } from "./openBlankViewport";
 import { Marker } from "../Marker";
+import { I18N } from "@bentley/imodeljs-i18n";
 
 describe("ScreenViewport", () => {
   beforeEach(async () => {
-    await IModelApp.startup();
+    await IModelApp.startup({localizationClient: new I18N()});
   });
   afterEach(async () => {
     if (IModelApp.initialized) await IModelApp.shutdown();

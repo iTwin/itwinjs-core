@@ -20,6 +20,7 @@ import { SourceMapContext } from "../ui/widget/MapLayerManager";
 import { NumberInput, Toggle } from "@bentley/ui-core";
 import { SpecialKey } from "@bentley/ui-abstract";
 import { Select } from "@itwin/itwinui-react";
+import { I18N } from "@bentley/imodeljs-i18n";
 
 describe("MapManagerSettings", () => {
   const viewportMock = moq.Mock.ofType<ScreenViewport>();
@@ -66,7 +67,7 @@ describe("MapManagerSettings", () => {
 
   before(async () => {
     await TestUtils.initialize();
-    await MockRender.App.startup({});
+    await MockRender.App.startup({localizationClient: new I18N()});
   });
 
   after(async () => {

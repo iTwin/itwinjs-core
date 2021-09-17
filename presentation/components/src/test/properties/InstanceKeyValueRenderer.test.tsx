@@ -12,6 +12,7 @@ import { TypeConverter, TypeConverterManager } from "@bentley/ui-components";
 import { act, cleanup, render } from "@testing-library/react";
 import { InstanceKeyValueRenderer } from "../../presentation-components/properties/InstanceKeyValueRenderer";
 import { UnifiedSelectionContextProvider } from "../../presentation-components/unified-selection/UnifiedSelectionContext";
+import { I18N } from "@bentley/imodeljs-i18n";
 
 describe("InstanceKeyValueRenderer", () => {
   const renderer = new InstanceKeyValueRenderer();
@@ -25,7 +26,7 @@ describe("InstanceKeyValueRenderer", () => {
   }
 
   before(async () => {
-    await NoRenderApp.startup();
+    await NoRenderApp.startup({localizationClient: new I18N()});
     await Presentation.initialize();
   });
 

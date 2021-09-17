@@ -24,14 +24,14 @@ export class UiComponents {
    * Registers the LocalizationProvider service namespace for UiComponents. Also initializes UiCore.
    * @param localizationProvider The internationalization service created by the application.
    */
-  public static async initialize(i18n: LocalizationProvider): Promise<void> {
+  public static async initialize(localizationProvider: LocalizationProvider): Promise<void> {
     if (UiComponents._initialized) {
       Logger.logInfo(UiComponents.loggerCategory(UiComponents), `UiComponents.initialize already called`);
       return;
     }
 
     enablePatches();
-    UiComponents._localizationProvider = i18n;
+    UiComponents._localizationProvider = localizationProvider;
     await UiComponents._localizationProvider.registerNamespace(UiComponents.localizationNamespace)?.readFinished;
 
     await UiCore.initialize(UiComponents._localizationProvider);

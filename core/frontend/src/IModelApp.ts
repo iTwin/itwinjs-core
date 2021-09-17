@@ -731,6 +731,6 @@ export class IModelApp {
         key = { scope: "Errors", val: "Status", status: status.toString() };
     }
 
-    return this.localizationProvider.getLocalizedString(`${key.scope}.${key.val}`);
+    return this.localizationProvider.getLocalizedString(`${key.scope}.${key.val}`, key);
   }
 }

@@ -33,7 +33,7 @@ class TestImmediate extends Tool {
 
 // spell-checker: disable
 class TestCommandApp extends MockRender.App {
-  public static testNamespace: LocalizationNamespace | undefined;
+  public static testNamespace?: LocalizationNamespace;
 
   public static override async startup(): Promise<void> {
     await IModelApp.startup({ localizationClient: new I18N("iModelJs", this.supplyI18NOptions()) });
@@ -237,13 +237,11 @@ function registerTestClass(id: string, keyin: string, ns: LocalizationNamespace)
 
 function createTestTools(): void {
   const testCommandEntries: any = JSON.parse(testCommandsString);
-  const ns: LocalizationNamespace | undefined = TestCommandApp.testNamespace;
-  if (ns !== undefined) {
-    for (const thisEntry of testCommandEntries) {
-      // create a tool id by concatenating the words of the keyin.
-      const toolId: string = thisEntry.commandString.replace(/ /g, ".");
-      registerTestClass(toolId, thisEntry.commandString, ns);
-    }
+  const ns: LocalizationNamespace = TestCommandApp.testNamespace!;
+  for (const thisEntry of testCommandEntries) {
+    // create a tool id by concatenating the words of the keyin.
+    const toolId: string = thisEntry.commandString.replace(/ /g, ".");
+    registerTestClass(toolId, thisEntry.commandString, ns);
   }
 }
 

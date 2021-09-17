@@ -8,7 +8,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { I18N } from "@bentley/imodeljs-i18n";
+import { I18N, LocalizationProvider } from "@bentley/imodeljs-i18n";
 import { PresentationError } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { Presentation, SelectionManager } from "../presentation-frontend";
@@ -33,7 +33,7 @@ describe("Presentation", () => {
 
   beforeEach(async () => {
     await shutdownIModelApp();
-    await NoRenderApp.startup();
+    await NoRenderApp.startup({localizationClient: new I18N()});
     Presentation.terminate();
   });
 
@@ -65,11 +65,11 @@ describe("Presentation", () => {
       expect(constructorSpy).to.be.calledWith(props);
     });
 
-    it("initializes PresentationManager.i18n with IModelApp.i18", async () => {
-      const i18nMock = mockI18N();
-      (IModelApp as any)._i18n = i18nMock.object;
+    it("initializes PresentationManager.localizationProvider with IModelApp.localizationProvider", async () => {
+      const localizationProvider = new LocalizationProvider(mockI18N().object);
+      (IModelApp as any)._localizationProvider = localizationProvider;
       await Presentation.initialize({ activeLocale: "test" });
-      expect(Presentation.localizationProvider).to.equal(i18nMock.object);
+      expect(Presentation.localizationProvider).to.equal(localizationProvider);
     });
 
     it("initializes PresentationManager with Presentation.i18 locale if no props provided", async () => {
