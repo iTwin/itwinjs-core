@@ -162,12 +162,16 @@ export class HubMock {
 
   public static async getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]> {
     const user = arg.user ?? await AuthorizedBackendRequestContext.create();
-    return this.findLocalHub(arg.iModelId).getBriefcaseIds(user.accessToken ?? "");// TODO: Definitely want some default besides empty string. Find best way to get userId here and in acquireNewBriefcaseid
+    return this.findLocalHub(arg.iModelId).getBriefcaseIds(user.accessToken ?? "");
   }
 
   public static async acquireNewBriefcaseId(arg: IModelIdArg): Promise<number> {
     const user = arg.user ?? await AuthorizedBackendRequestContext.create();
     return this.findLocalHub(arg.iModelId).acquireNewBriefcaseId(user.accessToken ?? "");
+  }
+
+  /** Release a briefcaseId. After this call it is illegal to generate changesets for the released briefcaseId. */
+  public static async releaseBriefcase(arg: BriefcaseIdArg): Promise<void> {
     return this.findLocalHub(arg.iModelId).releaseBriefcaseId(arg.briefcaseId);
   }
 
