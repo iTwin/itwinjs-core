@@ -57,7 +57,7 @@ A list of ECSchema requirements that need to be met for the rule to be used. See
 
 ### Attribute: `priority`
 
-Defines the order in which rules are handled - higher priority means the rule is handled first. If priorities are equal, the rules are handled in the order they're defined. The attribute may be especially useful when combined with [`onlyIfNotHandled` attribute](#attribute-onlyifnothandled).
+Defines the order in which rules are handled, higher number means the rule is handled first. If priorities are equal, the rules are handled in the order they're defined. The attribute may be especially useful when combined with [`onlyIfNotHandled` attribute](#attribute-onlyifnothandled).
 
 ```ts
 [[include:Hierarchies.Priority.Ruleset]]
