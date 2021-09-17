@@ -64,8 +64,8 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /common/**/extension-webpack-tools/               @calebmshafer @wgoehrig
 /common/**/frontend-devtools.*                    @imodeljs/display @Ellord207
 /common/**/frontend-devtools/                     @imodeljs/display @Ellord207
-/common/**/geometry-core.*                        @bbastings @EarlinLutz @mgooding @RBBentley
-/common/**/geometry-core/                         @bbastings @EarlinLutz @mgooding @RBBentley
+/common/**/geometry-core.*                        @bbastings @EarlinLutz @mgooding @RBBentley @dassaf4
+/common/**/geometry-core/                         @bbastings @EarlinLutz @mgooding @RBBentley @dassaf4
 /common/**/hypermodeling-frontend.*               @imodeljs/display @bbastings
 /common/**/hypermodeling-frontend/                @imodeljs/display @bbastings
 /common/**/imodeljs-backend.*                     @imodeljs/admins
@@ -119,7 +119,7 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /core/frontend/src/oidc         @calebmshafer @ramanujam-raman
 /core/frontend/src/extension    @calebmshafer @wgoehrig
 /core/frontend-devtools         @imodeljs/display @Ellord207
-/core/geometry                  @bbastings @EarlinLutz @mgooding @RBBentley
+/core/geometry                  @bbastings @EarlinLutz @mgooding @RBBentley @dassaf4
 /core/hypermodeling             @bbastings @imodeljs/display
 /core/i18n                      @wgoehrig @calebmshafer
 /core/markup                    @kabentley @pmconne @bbastings
@@ -159,7 +159,7 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /test-apps/display-test-app                 @bbastings @kabentley @imodeljs/display
 /test-apps/export-gltf                      @mgooding @MichaelBelousov
 /test-apps/export-obj                       @mgooding @MichaelBelousov
-/test-apps/imjs-importer                    @EarlinLutz
+/test-apps/imjs-importer                    @EarlinLutz @dassaf4
 /test-apps/imodel-from-geojson              @mgooding @pmconne
 /test-apps/imodel-from-orbitgt              @imodeljs/display
 /test-apps/imodel-from-reality-model        @imodeljs/display
