@@ -11275,6 +11275,7 @@ export enum VaryingType {
 
 // @public
 export interface ViewAnimationOptions {
+    animationFinishedCallback?(didComplete: boolean): void;
     animationTime?: number;
     cancelOnAbort?: boolean;
     easingFunction?: EasingFunction;

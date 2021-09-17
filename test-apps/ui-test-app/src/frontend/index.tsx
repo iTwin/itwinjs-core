@@ -37,6 +37,7 @@ import {
   ThemeManager, ToolbarDragInteractionContext, UiFramework, UiSettingsProvider, UserSettingsStorage,
 } from "@bentley/ui-framework";
 import { SafeAreaInsets } from "@bentley/ui-ninezone";
+import { BeDragDropContext } from "@bentley/ui-components";
 import { getSupportedRpcs } from "../common/rpcs";
 import { loggerCategory, TestAppConfiguration } from "../common/TestAppConfiguration";
 import { BearingQuantityType } from "./api/BearingQuantityType";
@@ -612,18 +613,21 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
     return (
       <Provider store={SampleAppIModelApp.store} >
         <ThemeManager>
-          <SafeAreaContext.Provider value={SafeAreaInsets.All}>
-            <AppDragInteraction>
-              <AppFrameworkVersion>
-                {/** UiSettingsProvider is optional. By default LocalUiSettings is used to store UI settings. */}
-                <UiSettingsProvider settingsStorage={this.state.uiSettingsStorage}>
-                  <ConfigurableUiContent
-                    appBackstage={<AppBackstageComposer />}
-                  />
-                </UiSettingsProvider>
-              </AppFrameworkVersion>
-            </AppDragInteraction>
-          </SafeAreaContext.Provider>
+          {/* eslint-disable-next-line deprecation/deprecation */}
+          <BeDragDropContext>
+            <SafeAreaContext.Provider value={SafeAreaInsets.All}>
+              <AppDragInteraction>
+                <AppFrameworkVersion>
+                  {/** UiSettingsProvider is optional. By default LocalUiSettings is used to store UI settings. */}
+                  <UiSettingsProvider settingsStorage={this.state.uiSettingsStorage}>
+                    <ConfigurableUiContent
+                      appBackstage={<AppBackstageComposer />}
+                    />
+                  </UiSettingsProvider>
+                </AppFrameworkVersion>
+              </AppDragInteraction>
+            </SafeAreaContext.Provider>
+          </BeDragDropContext>
         </ThemeManager>
       </Provider >
     );
