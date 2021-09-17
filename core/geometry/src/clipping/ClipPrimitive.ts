@@ -502,7 +502,9 @@ export class ClipShape extends ClipPrimitive {
       this.parseLinearPlanes(set, this._polygon[0], this._polygon[1]);
       return true;
     }
-  this.parseConcavePolygonPlanes(set, this._polygon, this.isMask);
+  // REMARK:  Pass all polygons to non-convex case.  It will funnel
+  // to concave case as appropriate.
+  this.parsePolygonPlanes(set, this._polygon, this.isMask);
   return true;
   }
   /** Given a start and end point, populate the given UnionOfConvexClipPlaneSets with ConvexClipPlaneSets defining the bounded region of linear planes. Returns true if successful. */
@@ -594,8 +596,8 @@ export class ClipShape extends ClipPrimitive {
     }
     return true;
   }
-  /** Given a concave polygon defined as an array of points, populate the given UnionOfConvexClipPlaneSets with multiple ConvexClipPlaneSets defining the bounded region. Returns true if successful. */
-  private parseConcavePolygonPlanes(set: UnionOfConvexClipPlaneSets, polygon: Point3d[], isMask: boolean, cameraFocalLength?: number): boolean {
+  /** Given a (possibly non-convex) polygon defined as an array of points, populate the given UnionOfConvexClipPlaneSets with multiple ConvexClipPlaneSets defining the bounded region. Returns true if successful. */
+  private parsePolygonPlanes(set: UnionOfConvexClipPlaneSets, polygon: Point3d[], isMask: boolean, cameraFocalLength?: number): boolean {
     const announceFace = (_graph: HalfEdgeGraph, edge: HalfEdge): boolean => {
       if (!edge.isMaskSet(HalfEdgeMask.EXTERIOR)) {
         const convexFacetPoints = edge.collectAroundFace((node: HalfEdge): any => {
@@ -610,21 +612,6 @@ export class ClipShape extends ClipPrimitive {
       return true;
     };
     if (isMask) {
-      /*
-      const hullPoints: Point3d[] = [];
-      const insidePoints: Point3d[] = [];
-      const expandedHull: Point3d[] = [];
-      Point3dArray.computeConvexHullXY(polygon, hullPoints, insidePoints, false);
-      if (hullPoints.length < 3)
-        return false;
-      // YIKES -- convex hull is pointers to originals !! Can't transform in place!!!
-      // Move the hull points out so there is a clean space to triangulate "between" the polygon and expanded hull.
-      const centroid = Point3dArray.centroid(hullPoints);
-      for (const p of hullPoints) {
-        expandedHull.push (centroid.interpolate(2.0, p));
-      }
-      expandedHull.push(expandedHull[0].clone());
-      */
       const polygonA = Point3dArray.clonePoint3dArray ( polygon);
       const hullAndInlets = AlternatingCCTreeNode.createHullAndInletsForPolygon(polygonA);
       const allLoops = hullAndInlets.extractLoops();
