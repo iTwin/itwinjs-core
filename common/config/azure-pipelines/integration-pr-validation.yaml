@@ -19,8 +19,8 @@ pr:
       - release/*
 
 variables:
-  - group: iTwinJs non-secret config variables
-  - group: iTwinJs Integration Test Users
+  - group: iTwin.js non-secret config variables
+  - group: iTwin.js Integration Test Users
 
 jobs:
   - job: Node_14_x
