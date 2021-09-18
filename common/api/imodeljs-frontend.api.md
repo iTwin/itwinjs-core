@@ -1719,11 +1719,6 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
 }
 
 // @internal (undocumented)
-export type BuilderOptions = GraphicBuilderOptions & {
-    placement: Transform;
-};
-
-// @internal (undocumented)
 export type CachedDecoration = {
     type: "graphic";
     graphicType: GraphicType;
@@ -1901,6 +1896,12 @@ export enum CompassMode {
     Polar = 0,
     // (undocumented)
     Rectangular = 1
+}
+
+// @public
+export interface ComputeChordToleranceArgs {
+    readonly computeRange: () => Range3d;
+    readonly graphic: GraphicBuilder;
 }
 
 // @internal (undocumented)
@@ -2110,6 +2111,16 @@ export interface CustomFormatPropEditorSpec {
     label: string;
 }
 
+// @public
+export interface CustomGraphicBuilderOptions extends GraphicBuilderOptions {
+    // (undocumented)
+    applyAspectRatioSkew?: never;
+    computeChordTolerance: (args: ComputeChordToleranceArgs) => number;
+    iModel?: IModelConnection;
+    // (undocumented)
+    viewport?: never;
+}
+
 // @beta
 export interface CustomQuantityTypeDefinition extends QuantityTypeDefinition {
     isCompatibleFormatProps: (formatProps: FormatProps) => boolean;
@@ -2142,7 +2153,7 @@ export class DecorateContext extends RenderContext {
     // @internal (undocumented)
     addFromDecorator(decorator: ViewportDecorator): void;
     addHtmlDecoration(decoration: HTMLElement): void;
-    createGraphic(options: Omit<GraphicBuilderOptions, "viewport">): GraphicBuilder;
+    createGraphic(options: Omit<ViewportGraphicBuilderOptions, "viewport">): GraphicBuilder;
     createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder;
     // @internal (undocumented)
     drawStandardGrid(gridOrigin: Point3d, rMatrix: Matrix3d, spacing: XAndY, gridsPerRef: number, _isoGrid?: boolean, _fixedRepetitions?: Point2d): void;
@@ -2547,7 +2558,7 @@ export class DynamicsContext extends RenderContext {
     addGraphic(graphic: RenderGraphic): void;
     // @internal (undocumented)
     changeDynamics(): void;
-    createGraphic(options: Omit<GraphicBuilderOptions, "viewport">): GraphicBuilder;
+    createGraphic(options: Omit<ViewportGraphicBuilderOptions, "viewport">): GraphicBuilder;
     }
 
 // @public
@@ -3808,7 +3819,7 @@ export interface GraphicBranchOptions {
 // @public
 export abstract class GraphicBuilder {
     // @internal
-    protected constructor(options: GraphicBuilderOptions);
+    protected constructor(options: ViewportGraphicBuilderOptions | CustomGraphicBuilderOptions);
     abstract activateGraphicParams(graphicParams: GraphicParams): void;
     abstract addArc(arc: Arc3d, isEllipse: boolean, filled: boolean): void;
     abstract addArc2d(ellipse: Arc3d, isEllipse: boolean, filled: boolean, zDepth: number): void;
@@ -3827,42 +3838,37 @@ export abstract class GraphicBuilder {
     abstract addShape(points: Point3d[]): void;
     abstract addShape2d(points: Point2d[], zDepth: number): void;
     abstract addSolidPrimitive(solidPrimitive: SolidPrimitive): void;
-    get applyAspectRatioSkew(): boolean;
-    set applyAspectRatioSkew(apply: boolean);
+    // @alpha (undocumented)
+    readonly analysisStyle?: AnalysisStyle;
+    // (undocumented)
+    protected readonly _computeChordTolerance: (args: ComputeChordToleranceArgs) => number;
     abstract finish(): RenderGraphic;
-    get iModel(): IModelConnection;
+    readonly iModel?: IModelConnection;
     get isOverlay(): boolean;
     get isSceneGraphic(): boolean;
     get isViewBackground(): boolean;
     get isViewCoordinates(): boolean;
     get isWorldCoordinates(): boolean;
-    // @internal (undocumented)
-    protected readonly _options: BuilderOptions;
+    // (undocumented)
+    protected readonly _options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions;
+    readonly pickable?: Readonly<PickableGraphicOptions>;
     get pickId(): Id64String | undefined;
-    set pickId(id: Id64String | undefined);
-    get placement(): Transform;
-    set placement(transform: Transform);
-    get preserveOrder(): boolean;
-    set preserveOrder(preserve: boolean);
+    readonly placement: Transform;
+    readonly preserveOrder: boolean;
     setBlankingFill(fillColor: ColorDef): void;
     setSymbology(lineColor: ColorDef, fillColor: ColorDef, lineWidth: number, linePixels?: LinePixels): void;
-    get type(): GraphicType;
-    get viewport(): Viewport;
-    get wantEdges(): boolean;
-    set wantEdges(want: boolean);
-    get wantNormals(): boolean;
-    set wantNormals(want: boolean);
+    readonly type: GraphicType;
+    readonly wantEdges: boolean;
+    readonly wantNormals: boolean;
 }
 
 // @public
 export interface GraphicBuilderOptions {
-    applyAspectRatioSkew?: boolean;
     generateEdges?: boolean;
     pickable?: PickableGraphicOptions;
     placement?: Transform;
     preserveOrder?: boolean;
     type: GraphicType;
-    viewport: Viewport;
     wantNormals?: boolean;
 }
 
@@ -4335,7 +4341,7 @@ export interface ImageryTileContent extends TileContent {
 export class ImdlReader extends GltfReader {
     // (undocumented)
     protected colorDefFromMaterialJson(json: any): ColorDef | undefined;
-    static create(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, type?: BatchType, loadEdges?: boolean, isCanceled?: ShouldAbortReadGltf, sizeMultiplier?: number, options?: BatchOptions): ImdlReader | undefined;
+    static create(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, type?: BatchType, loadEdges?: boolean, isCanceled?: ShouldAbortReadGltf, sizeMultiplier?: number, options?: BatchOptions | false): ImdlReader | undefined;
     // (undocumented)
     protected createDisplayParams(json: any): DisplayParams | undefined;
     // (undocumented)
@@ -6332,6 +6338,13 @@ export namespace MockRender {
         static systemFactory: SystemFactory;
     }
     // (undocumented)
+    export class AreaPattern implements RenderAreaPattern {
+        // (undocumented)
+        collectStatistics(): void;
+        // (undocumented)
+        dispose(): void;
+    }
+    // (undocumented)
     export class Batch extends Graphic {
         constructor(graphic: RenderGraphic, featureTable: PackedFeatureTable, range: ElementAlignedBox3d);
         // (undocumented)
@@ -6357,7 +6370,14 @@ export namespace MockRender {
     }
     // (undocumented)
     export class Builder extends PrimitiveBuilder {
-        constructor(system: System, options: GraphicBuilderOptions);
+        constructor(system: System, options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions);
+    }
+    // (undocumented)
+    export class Geometry implements RenderGeometry {
+        // (undocumented)
+        collectStatistics(): void;
+        // (undocumented)
+        dispose(): void;
     }
     // (undocumented)
     export class Graphic extends RenderGraphic {
@@ -6395,9 +6415,11 @@ export namespace MockRender {
     export class System extends RenderSystem {
         constructor();
         // (undocumented)
+        createAreaPattern(): AreaPattern;
+        // (undocumented)
         createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d): Batch;
         // (undocumented)
-        createGraphic(options: GraphicBuilderOptions): Builder;
+        createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): Builder;
         // (undocumented)
         createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): Branch;
         // (undocumented)
@@ -6405,13 +6427,21 @@ export namespace MockRender {
         // (undocumented)
         createMesh(_params: MeshParams): Graphic;
         // (undocumented)
+        createMeshGeometry(): Geometry;
+        // (undocumented)
         createOffscreenTarget(rect: ViewRect): RenderTarget;
         // (undocumented)
         createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): Graphic;
         // (undocumented)
         createPointString(_params: PointStringParams): Graphic;
         // (undocumented)
+        createPointStringGeometry(): Geometry;
+        // (undocumented)
         createPolyline(_params: PolylineParams): Graphic;
+        // (undocumented)
+        createPolylineGeometry(): Geometry;
+        // (undocumented)
+        createRenderGraphic(): Graphic;
         // (undocumented)
         createTarget(canvas: HTMLCanvasElement): OnScreenTarget;
         // (undocumented)
@@ -6694,6 +6724,8 @@ export class NullRenderSystem extends RenderSystem {
     createGraphicList(): any;
     // (undocumented)
     createOffscreenTarget(): NullTarget;
+    // (undocumented)
+    createRenderGraphic(): undefined;
     // (undocumented)
     createTarget(): NullTarget;
     // (undocumented)
@@ -7024,6 +7056,28 @@ export interface ParticleCollectionBuilderParams {
 export interface ParticleProps extends XYAndZ {
     size?: XAndY | number;
     transparency?: number;
+}
+
+// @internal
+export interface PatternGraphicParams {
+    // (undocumented)
+    readonly featureId?: number;
+    // (undocumented)
+    readonly orgTransform: Transform;
+    // (undocumented)
+    readonly origin: Point2d;
+    readonly patternToModel: Transform;
+    readonly range: Range3d;
+    // (undocumented)
+    readonly scale: number;
+    // (undocumented)
+    readonly spacing: Point2d;
+    // (undocumented)
+    readonly symbolTranslation: Point3d;
+    // (undocumented)
+    readonly viewIndependentOrigin?: Point3d;
+    // (undocumented)
+    readonly xyOffsets: Float32Array;
 }
 
 // @beta
@@ -7460,7 +7514,7 @@ export type QueryVisibleFeaturesOptions = QueryScreenFeaturesOptions | QueryTile
 export function rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined;
 
 // @public
-export function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions): Promise<RenderGraphic | undefined>;
+export function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions | false): Promise<RenderGraphic | undefined>;
 
 // @internal
 export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined;
@@ -7852,6 +7906,9 @@ export interface RealityTileTreeParams extends TileTreeParams {
     readonly yAxisUp?: boolean;
 }
 
+// @internal
+export type RenderAreaPattern = IDisposable & RenderMemory.Consumer;
+
 // @public
 export abstract class RenderClipVolume {
     protected constructor(clipVector: ClipVector);
@@ -7866,7 +7923,7 @@ export class RenderContext {
     createBranch(branch: GraphicBranch, location: Transform): RenderGraphic;
     createGraphicBranch(branch: GraphicBranch, location: Transform, opts?: GraphicBranchOptions): RenderGraphic;
     // @internal (undocumented)
-    protected _createGraphicBuilder(options: Omit<GraphicBuilderOptions, "viewport">): GraphicBuilder;
+    protected _createGraphicBuilder(options: Omit<ViewportGraphicBuilderOptions, "viewport">): GraphicBuilder;
     createSceneGraphicBuilder(transform?: Transform): GraphicBuilder;
     readonly frustum: Frustum;
     readonly frustumPlanes: FrustumPlanes;
@@ -7884,6 +7941,9 @@ export enum RenderDiagnostics {
     None = 0,
     WebGL = 4
 }
+
+// @internal
+export type RenderGeometry = IDisposable & RenderMemory.Consumer;
 
 // @public
 export abstract class RenderGraphic implements IDisposable {
@@ -8170,12 +8230,14 @@ export abstract class RenderSystem implements IDisposable {
     collectStatistics(_stats: RenderMemory.Statistics): void;
     static contextLossHandler(): Promise<any>;
     // @internal (undocumented)
+    createAreaPattern(_params: PatternGraphicParams): RenderAreaPattern | undefined;
+    // @internal (undocumented)
     createBackgroundMapDrape(_drapedTree: TileTreeReference, _mapTree: MapTileTreeReference): RenderTextureDrape | undefined;
     // @internal
     abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions): RenderGraphic;
     createBranch(branch: GraphicBranch, transform: Transform): RenderGraphic;
     createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined;
-    abstract createGraphic(options: GraphicBuilderOptions): GraphicBuilder;
+    abstract createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): GraphicBuilder;
     abstract createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic;
     createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
     // @internal
@@ -8185,10 +8247,12 @@ export abstract class RenderSystem implements IDisposable {
     abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
     createGraphicOwner(ownedGraphic: RenderGraphic): RenderGraphicOwner;
     // @internal (undocumented)
-    createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined;
+    createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined;
     createMaterial(_params: RenderMaterial.Params, _imodel: IModelConnection): RenderMaterial | undefined;
     // @internal (undocumented)
-    createMesh(_params: MeshParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined;
+    createMesh(params: MeshParams, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined;
+    // @internal (undocumented)
+    createMeshGeometry(_params: MeshParams, _viewIndependentOrigin?: Point3d): RenderGeometry | undefined;
     // @internal (undocumented)
     abstract createOffscreenTarget(rect: ViewRect): RenderTarget;
     // @internal (undocumented)
@@ -8196,15 +8260,21 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined;
     // @internal (undocumented)
-    createPointString(_params: PointStringParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined;
+    createPointString(params: PointStringParams, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined;
     // @internal (undocumented)
-    createPolyline(_params: PolylineParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined;
+    createPointStringGeometry(_params: PointStringParams, _viewIndependentOrigin?: Point3d): RenderGeometry | undefined;
+    // @internal (undocumented)
+    createPolyline(params: PolylineParams, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined;
+    // @internal (undocumented)
+    createPolylineGeometry(_params: PolylineParams, _viewIndependentOrigin?: Point3d): RenderGeometry | undefined;
     // @internal (undocumented)
     createRealityMesh(_realityMesh: RealityMeshPrimitive): RenderGraphic | undefined;
     // @internal (undocumented)
     createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform): RenderRealityMeshGeometry | undefined;
     // @internal (undocumented)
     createRealityMeshGraphic(_terrainGeometry: RenderRealityMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string | undefined, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined;
+    // @internal
+    abstract createRenderGraphic(_geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern, instancesOwnGeometry?: boolean): RenderGraphic | undefined;
     createScreenSpaceEffectBuilder(_params: ScreenSpaceEffectBuilderParams): ScreenSpaceEffectBuilder | undefined;
     createSkyBox(_params: SkyBox.CreateParams): RenderGraphic | undefined;
     // @internal (undocumented)
@@ -8218,7 +8288,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     createTile(tileTexture: RenderTexture, corners: Point3d[], featureIndex?: number): RenderGraphic | undefined;
     // @internal (undocumented)
-    createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined;
+    createTriMesh(args: MeshArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined;
     // @beta
     get debugControl(): RenderSystemDebugControl | undefined;
     // @internal (undocumented)
@@ -8231,7 +8301,7 @@ export abstract class RenderSystem implements IDisposable {
     enableDiagnostics(_enable: RenderDiagnostics): void;
     findMaterial(_key: string, _imodel: IModelConnection): RenderMaterial | undefined;
     findTexture(_key: string, _imodel: IModelConnection): RenderTexture | undefined;
-    getGradientTexture(_symb: Gradient.Symb, _imodel: IModelConnection): RenderTexture | undefined;
+    getGradientTexture(_symb: Gradient.Symb, _imodel?: IModelConnection): RenderTexture | undefined;
     // @internal (undocumented)
     get isMobile(): boolean;
     // @internal (undocumented)
@@ -8325,7 +8395,7 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     // (undocumented)
     collectStatistics(_stats: RenderMemory.Statistics): void;
     // (undocumented)
-    createGraphicBuilder(options: GraphicBuilderOptions): import("./GraphicBuilder").GraphicBuilder;
+    createGraphicBuilder(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): import("./GraphicBuilder").GraphicBuilder;
     // (undocumented)
     createPlanarClassifier(_properties?: SpatialClassifier): RenderPlanarClassifier | undefined;
     // (undocumented)
@@ -11205,6 +11275,7 @@ export enum VaryingType {
 
 // @public
 export interface ViewAnimationOptions {
+    animationFinishedCallback?(didComplete: boolean): void;
     animationTime?: number;
     cancelOnAbort?: boolean;
     easingFunction?: EasingFunction;
@@ -12449,6 +12520,16 @@ export abstract class Viewport implements IDisposable {
 export interface ViewportDecorator {
     decorate(context: DecorateContext): void;
     readonly useCachedDecorations?: true;
+}
+
+// @public
+export interface ViewportGraphicBuilderOptions extends GraphicBuilderOptions {
+    applyAspectRatioSkew?: boolean;
+    // (undocumented)
+    computeChordTolerance?: never;
+    // (undocumented)
+    iModel?: never;
+    viewport: Viewport;
 }
 
 // @internal

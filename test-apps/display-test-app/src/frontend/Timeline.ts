@@ -48,7 +48,7 @@ class SolarTimelineProvider {
       const projectCenter = Point3d.createAdd2Scaled(projectExtents.low, .5, projectExtents.high, .5);
       cartoCenter = vp.iModel.spatialToCartographicFromEcef(projectCenter);
     } else {
-      cartoCenter = Cartographic.fromDegrees(-75.17035, 39.954927, 0.0);
+      cartoCenter = Cartographic.fromDegrees({longitude: -75.17035, latitude: 39.954927, height: 0.0});
     }
 
     const today = new Date(Date.now());

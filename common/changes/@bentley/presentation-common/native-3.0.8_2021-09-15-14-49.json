@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/presentation-common",
-      "comment": "Fixed processing of merged content values under nested content field.",
+      "comment": "Added 'BaseNodeKey.version' property and 'NodeKey.equals' function to compare keys taking their versions into account.",
       "type": "none"
     }
   ],

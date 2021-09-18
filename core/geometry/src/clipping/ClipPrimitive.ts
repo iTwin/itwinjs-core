@@ -22,6 +22,7 @@ import { ClipPlaneContainment } from "./ClipUtils";
 import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets, UnionOfConvexClipPlaneSetsProps } from "./UnionOfConvexClipPlaneSets";
 import { AlternatingCCTreeNode } from "./AlternatingConvexClipTree";
+import { Point3dArray } from "../geometry3d/PointHelpers";
 
 /**
  * Bit mask type for referencing subsets of 6 planes of range box.
@@ -91,11 +92,20 @@ export type ClipPrimitiveProps = ClipPrimitivePlanesProps | ClipPrimitiveShapePr
  *   * A UnionOfConvexClipPlaneSets designated "clipPlanes"
  *   * an "invisible" flag
  * * When constructed directly, objects of type ClipPrimitive (directly, not through a derived class) will have just planes
- * * Derived classes (e.g. ClipShape) carry additional data of a swept shape.
+ * * Derived classes (e.g. ClipShape) carry additional data such as a swept shape.
  * * ClipPrimitive can be constructed with no planes.
  *     * Derived class is responsible for filling the plane sets.
  *     * At discretion of derived classes, plane construction can be done at construction time or "on demand when" queries call `ensurePlaneSets ()`
- * * ClipPrimitive can be constructed with planes (and no derived class).
+ * * ClipPrimitive can be constructed directly with planes (and no derived class).
+ * * That the prevailing use is via a ClipShape derived class.
+ *    * The ClipShape has an "isMask" property
+ *       * isMask === false means the plane sets should cover the inside of its polygon
+ *       * isMask === true means the plane sets should cover the outside of its polygon.
+ *  * Note that the ClipShape's `isMask` property and the ClipPrimitive's `isInvisible` property are distinct controls.
+ *     * In normal usage, callers get "outside" clip behavior using ONLY the ClipShape isMask property.
+ *     * The ClipShape happens to pass the _invisible bit down to ClipPlane's that it creates.
+ *         * At that level, it controls whether the cut edges are produce on the plane
+ *         * This seems like an confused overloading of the meaning.
  * @public
  */
 export class ClipPrimitive {
@@ -170,8 +180,9 @@ export class ClipPrimitive {
     let inside = true;
     if (this._clipPlanes)
       inside = this._clipPlanes.isPointOnOrInside(point, onTolerance);
+    // note -- the clip planes are structured to get the mask effects. no reversal necessary.
     if (this._invisible)
-      inside = !inside;
+     inside = !inside;
     return inside;
   }
 
@@ -439,9 +450,11 @@ export class ClipShape extends ClipPrimitive {
     if (polygon.length < 3)
       return undefined;
     const pPoints = polygon.slice(0);
-    // Add closure point
-    if (!pPoints[0].isExactEqual(pPoints[pPoints.length - 1]))
-      pPoints.push(pPoints[0].clone ());
+    // Add closure point.
+    if (pPoints[0].isAlmostEqual(pPoints[pPoints.length - 1]))
+      pPoints[0].clone(pPoints[pPoints.length - 1]);
+    else
+      pPoints.push(pPoints[0].clone());
     if (result) {
       result._clipPlanes = undefined; // Start as undefined
       result._invisible = invisible;
@@ -498,17 +511,19 @@ export class ClipShape extends ClipPrimitive {
       this.parseLinearPlanes(set, this._polygon[0], this._polygon[1]);
       return true;
     }
-    let direction = PolygonOps.testXYPolygonTurningDirections(points);
-    if (this.isMask)
-      direction = -direction;
-    // const direction = 0;
-    if (0 !== direction) {
-      this.parseConvexPolygonPlanes(set, this._polygon, direction, this.isMask);
-      return true;
-    } else {
-      this.parseConcavePolygonPlanes(set, this._polygon, this.isMask);
-      return false;
+
+    if (!this.isMask){
+      const direction = PolygonOps.testXYPolygonTurningDirections(this.polygon);
+      if (direction !== 0){
+        this.parseConvexPolygonPlanes(set, this._polygon, direction, false);
+        return true;
+      }
     }
+
+  // REMARK:  Pass all polygons to non-convex case.  It will funnel
+  // to concave case as appropriate.
+  this.parsePolygonPlanes(set, this._polygon, this.isMask);
+  return true;
   }
   /** Given a start and end point, populate the given UnionOfConvexClipPlaneSets with ConvexClipPlaneSets defining the bounded region of linear planes. Returns true if successful. */
   private parseLinearPlanes(set: UnionOfConvexClipPlaneSets, start: Point3d, end: Point3d, cameraFocalLength?: number): boolean {
@@ -578,10 +593,9 @@ export class ClipShape extends ClipPrimitive {
         convexSet.planes.push(ClipPlane.createNormalAndPoint(edge.normal, edge.pointB, this._invisible, false)!);
         if (nextPerpendicular)
           convexSet.planes.push(ClipPlane.createNormalAndPoint(nextPerpendicular, nextEdge.pointA, this._invisible, true)!);
-        convexSet.addZClipPlanes(this._invisible, this._zLow, this._zHigh);
         set.addConvexSet(convexSet);
+        set.addOutsideZClipSets(this._invisible, this._zLow, this._zHigh);
       }
-      set.addOutsideZClipSets(this._invisible, this._zLow, this._zHigh);
     } else {
       const convexSet = ConvexClipPlaneSet.createEmpty();
       if (cameraFocalLength === undefined) {
@@ -600,8 +614,8 @@ export class ClipShape extends ClipPrimitive {
     }
     return true;
   }
-  /** Given a concave polygon defined as an array of points, populate the given UnionOfConvexClipPlaneSets with multiple ConvexClipPlaneSets defining the bounded region. Returns true if successful. */
-  private parseConcavePolygonPlanes(set: UnionOfConvexClipPlaneSets, polygon: Point3d[], isMask: boolean, cameraFocalLength?: number): boolean {
+  /** Given a (possibly non-convex) polygon defined as an array of points, populate the given UnionOfConvexClipPlaneSets with multiple ConvexClipPlaneSets defining the bounded region. Returns true if successful. */
+  private parsePolygonPlanes(set: UnionOfConvexClipPlaneSets, polygon: Point3d[], isMask: boolean, cameraFocalLength?: number): boolean {
     const announceFace = (_graph: HalfEdgeGraph, edge: HalfEdge): boolean => {
       if (!edge.isMaskSet(HalfEdgeMask.EXTERIOR)) {
         const convexFacetPoints = edge.collectAroundFace((node: HalfEdge): any => {
@@ -616,22 +630,8 @@ export class ClipShape extends ClipPrimitive {
       return true;
     };
     if (isMask) {
-      /*
-      const hullPoints: Point3d[] = [];
-      const insidePoints: Point3d[] = [];
-      const expandedHull: Point3d[] = [];
-      Point3dArray.computeConvexHullXY(polygon, hullPoints, insidePoints, false);
-      if (hullPoints.length < 3)
-        return false;
-      // YIKES -- convex hull is pointers to originals !! Can't transform in place!!!
-      // Move the hull points out so there is a clean space to triangulate "between" the polygon and expanded hull.
-      const centroid = Point3dArray.centroid(hullPoints);
-      for (const p of hullPoints) {
-        expandedHull.push (centroid.interpolate(2.0, p));
-      }
-      expandedHull.push(expandedHull[0].clone());
-      */
-      const hullAndInlets = AlternatingCCTreeNode.createHullAndInletsForPolygon(polygon);
+      const polygonA = Point3dArray.clonePoint3dArray ( polygon);
+      const hullAndInlets = AlternatingCCTreeNode.createHullAndInletsForPolygon(polygonA);
       const allLoops = hullAndInlets.extractLoops();
       if (allLoops.length === 0)
         return false;

@@ -2425,7 +2425,7 @@ export class Sample {
    * @param addClosure true to add a closure stroke
    * @returns
    */
-  public static createArcStrokes(edgesPerQuadrant: number, center: Point3d, r0: number, theta0: Angle, theta1: Angle, addClosure: boolean = true): Point3d[] {
+  public static createArcStrokes(edgesPerQuadrant: number, center: Point3d, r0: number, theta0: Angle, theta1: Angle, addClosure: boolean = true, z: number = 0): Point3d[] {
     const point0: Point3d[] = [];
     if (edgesPerQuadrant < 1)
       edgesPerQuadrant = 1;
@@ -2434,7 +2434,7 @@ export class Sample {
       edgeCount = 1;
     for (let i = 0; i <= edgeCount; i++) {
       const theta = Angle.createInterpolate(theta0, i / edgeCount, theta1);
-      point0.push(center.plusXYZ(r0 * theta.cos(), r0 * theta.sin(), 0));
+      point0.push(center.plusXYZ(r0 * theta.cos(), r0 * theta.sin(), z));
     }
     if (addClosure)
       point0.push(point0[0].clone());
