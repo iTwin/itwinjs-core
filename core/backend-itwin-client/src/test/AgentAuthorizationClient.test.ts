@@ -58,7 +58,7 @@ describe("AgentAuthorizationClient (#integration)", () => {
 
   it("should discover token end points correctly", async () => {
     const client = new AgentAuthorizationClient(agentConfiguration);
-    const url: string = await client.getUrl(requestContext);
+    const url: string = await client.getUrl();
 
     const issuer: Issuer<Client> = await client.discoverEndpoints(requestContext);
     chai.expect(issuer.token_endpoint).equals(`${url}/connect/token`);

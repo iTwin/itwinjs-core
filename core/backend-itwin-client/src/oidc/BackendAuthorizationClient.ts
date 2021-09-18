@@ -56,7 +56,7 @@ export abstract class BackendAuthorizationClient extends ImsAuthorizationClient 
     if (this._issuer)
       return this._issuer;
 
-    const url = await this.getUrl(requestContext);
+    const url = await this.getUrl();
     this._issuer = await Issuer.discover(url);
     return this._issuer;
   }

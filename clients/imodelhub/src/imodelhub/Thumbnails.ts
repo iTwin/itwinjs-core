@@ -152,7 +152,7 @@ export class ThumbnailHandler {
     ArgumentCheck.validGuid("contextId", contextId);
     ArgumentCheck.validGuid("iModelId", iModelId);
 
-    const url: string = await this._handler.getUrl(requestContext) + this.getRelativeContextUrl(contextId, iModelId, size);
+    const url: string = await this._handler.getUrl() + this.getRelativeContextUrl(contextId, iModelId, size);
     const pngImage = await this.downloadThumbnail(requestContext, url);
     requestContext.enter();
 
@@ -207,7 +207,7 @@ export class ThumbnailHandler {
 
     Logger.logInfo(loggerCategory, `Downloading ${size}Thumbnail ${thumbnailId} for iModel`, () => ({ iModelId }));
 
-    const url: string = `${await this._handler.getUrl(requestContext) + this.getRelativeUrl(iModelId, size, thumbnailId)}/$file`;
+    const url: string = `${await this._handler.getUrl() + this.getRelativeUrl(iModelId, size, thumbnailId)}/$file`;
     const pngImage = await this.downloadThumbnail(requestContext, url);
     requestContext.enter();
     Logger.logTrace(loggerCategory, `Downloaded ${size}Thumbnail ${thumbnailId} for iModel`, () => ({ iModelId }));
