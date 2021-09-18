@@ -12,10 +12,6 @@ class TestApiClient extends Client {
     super();
     this.baseUrl = "https://api.bentley.com/test-api";
   }
-
-  protected getUrlSearchKey(): string {
-    return "Test_API";
-  }
 }
 
 describe("Client", () => {
@@ -26,15 +22,13 @@ describe("Client", () => {
   });
 
   it("should not apply prefix without config entry", async () => {
-    const requestContext = new ClientRequestContext();
-    const url = await client.getUrl(requestContext);
+    const url = await client.getUrl();
     expect(url).to.equal("https://api.bentley.com/test-api");
   });
 
   it("should apply prefix with config entry", async () => {
     process.env.IMJS_URL_PREFIX = "test-";
-    const requestContext = new ClientRequestContext();
-    const url = await client.getUrl(requestContext);
+    const url = await client.getUrl();
     expect(url).to.equal("https://test-api.bentley.com/test-api");
     delete process.env.IMJS_URL_PREFIX;
   });

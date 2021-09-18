@@ -382,7 +382,6 @@ export class DataLocation extends WsgInstance {
  * @internal
  */
 export class RealityDataClient extends WsgClient {
-  public static readonly searchKey: string = "RealityDataServices";
 
   /**
    * Creates an instance of RealityDataServicesClient.
@@ -390,14 +389,6 @@ export class RealityDataClient extends WsgClient {
   public constructor() {
     super("v1");
     this.baseUrl = "https://api.bentley.com/contextshare";
-  }
-
-  /**
-   * Gets name/key to query the service URLs from the URL Discovery Service ("Buddi")
-   * @returns Search key for the URL.
-   */
-  protected getUrlSearchKey(): string {
-    return RealityDataClient.searchKey;
   }
 
   /**
@@ -411,7 +402,7 @@ export class RealityDataClient extends WsgClient {
    */
   public async getRealityDataUrl(requestContext: ClientRequestContext, projectId: string | undefined, tilesId: string): Promise<string> {
     requestContext.enter();
-    const serverUrl: string = await this.getUrl(requestContext);
+    const serverUrl: string = await this.getUrl();
     requestContext.enter();
 
     if (!projectId || projectId === "")

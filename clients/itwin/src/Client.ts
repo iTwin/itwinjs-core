@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module iTwinServiceClients
  */
-import { ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@bentley/bentleyjs-core";
 import * as deepAssign from "deep-assign";
 import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
 import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
@@ -51,7 +51,6 @@ export abstract class Client {
 
   /**
    * Sets the default base URL to use with this client.
-   * If not set, BUDDI is used to resolve the URL using key returned by [[getUrlSearchKey]].
    */
   protected baseUrl?: string;
 
@@ -72,60 +71,26 @@ export abstract class Client {
   }
 
   /**
-   * Implemented by clients to specify the name/key to query the service URLs from
-   * the URL Discovery Service ("Buddi")
-   * @returns Search key for the URL.
-   */
-  protected abstract getUrlSearchKey(): string; // same as the URL Discovery Service ("Buddi") name
-
-  /**
    * Gets the URL of the service. Attempts to discover and cache the URL from the URL Discovery Service. If not
    * found uses the default URL provided by client implementations. Note that for consistency
    * sake, the URL is stripped of any trailing "/"
    * @returns URL for the service
    */
-  public async getUrl(requestContext: ClientRequestContext): Promise<string> {
+  public async getUrl(): Promise<string> {
     if (this._url)
       return this._url;
 
-    if (this.baseUrl) {
-      let prefix = process.env.IMJS_URL_PREFIX;
-
-      // Need to ensure the usage of the previous IMJS_BUDDI_RESOLVE_URL_USING_REGION to not break any
-      // existing users relying on the behavior.
-      // This needs to be removed...
-      if (undefined === prefix) {
-        const region = process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION;
-        switch (region) {
-          case "102":
-            prefix = "qa-";
-            break;
-          case "103":
-            prefix = "dev-";
-            break;
-        }
-      }
-
-      if (prefix) {
-        const baseUrl = new URL(this.baseUrl);
-        baseUrl.hostname = prefix + baseUrl.hostname;
-        this._url = baseUrl.href;
-      } else {
-        this._url = this.baseUrl;
-      }
-
-      // Strip trailing '/'
-      this._url = this._url.replace(/\/$/, "");
-      return this._url;
+    if (!this.baseUrl) {
+      throw new Error("need base url");
     }
 
-    const urlDiscoveryClient: UrlDiscoveryClient = new UrlDiscoveryClient();
-    const searchKey: string = this.getUrlSearchKey();
-    try {
-      const url = await urlDiscoveryClient.discoverUrl(requestContext, searchKey, undefined);
-      this._url = url;
-    } catch (error) {
-      throw new Error(`Failed to discover URL for service identified by "${searchKey}"`);
+    let prefix = process.env.IMJS_URL_PREFIX;
+    if (prefix) {
+      const baseUrl = new URL(this.baseUrl);
+      baseUrl.hostname = prefix + baseUrl.hostname;
+      this._url = baseUrl.href;
+    } else {
+      this._url = this.baseUrl;
     }
 
     return this._url;
@@ -134,7 +99,7 @@ export abstract class Client {
   /** used by clients to send delete requests */
   protected async delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, httpRequestOptions?: HttpRequestOptions): Promise<void> {
     requestContext.enter();
-    const url: string = await this.getUrl(requestContext) + relativeUrlPath;
+    const url: string = await this.getUrl() + relativeUrlPath;
     Logger.logInfo(loggerCategory, "Sending DELETE request", () => ({ url }));
     const options: RequestOptions = {
       method: "DELETE",
@@ -182,64 +147,4 @@ export abstract class Client {
  * @beta
  */
 export class AuthenticationError extends ResponseError {
-}
-
-/**
- * Client API to discover URLs from the URL Discovery service (a.k.a. Buddi service)
- * @internal
- */
-export class UrlDiscoveryClient extends Client {
-  public static readonly configResolveUrlUsingRegion = "IMJS_BUDDI_RESOLVE_URL_USING_REGION";
-  /**
-   * Creates an instance of UrlDiscoveryClient.
-   */
-  public constructor() {
-    super();
-  }
-
-  /**
-   * Gets name/key to query the service URLs from the URL Discovery Service ("Buddi")
-   * @returns Search key for the URL.
-   */
-  protected getUrlSearchKey(): string {
-    return "";
-  }
-
-  /**
-   * Gets the URL for the discovery service
-   * @returns URL of the discovery service.
-   */
-  public override async getUrl(): Promise<string> {
-    return "https://buddi.bentley.com/WebService";
-  }
-
-  /**
-   * Discovers a URL given the search key.
-   * @param searchKey Search key registered for the service.
-   * @param regionId Override region to use for URL discovery.
-   * @returns Registered URL for the service.
-   */
-  public async discoverUrl(requestContext: ClientRequestContext, searchKey: string, regionId: number | undefined): Promise<string> {
-    requestContext.enter();
-
-    const urlBase: string = await this.getUrl();
-    const url: string = `${urlBase}/GetUrl/`;
-    const resolvedRegion = typeof regionId !== "undefined" ? regionId : process.env[UrlDiscoveryClient.configResolveUrlUsingRegion] ? Number(process.env[UrlDiscoveryClient.configResolveUrlUsingRegion]) : 0;
-    const options: RequestOptions = {
-      method: "GET",
-      qs: {
-        url: searchKey,
-        region: resolvedRegion,
-      },
-    };
-
-    await this.setupOptionDefaults(options);
-    requestContext.enter();
-
-    const response: Response = await request(requestContext, url, options);
-    requestContext.enter();
-
-    const discoveredUrl: string = response.body.result.url.replace(/\/$/, ""); // strip trailing "/" for consistency
-    return discoveredUrl;
-  }
 }

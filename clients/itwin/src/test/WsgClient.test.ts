@@ -16,10 +16,6 @@ export class TestWsgClient extends WsgClient {
     super(apiVersion);
   }
 
-  protected getUrlSearchKey(): string {
-    return "";
-  }
-
   public override async getUrl(): Promise<string> {
     return Promise.resolve(mockServerUrl);
   }
@@ -50,14 +46,10 @@ export class TestWsgClient extends WsgClient {
 }
 
 class TestUrlWsgClient extends WsgClient {
-
   public constructor(apiVersion: string) {
     super(apiVersion);
     this.baseUrl = "https://api.bentley.com/testservice";
   }
-
-  protected getUrlSearchKey() { return ""; }
-
 }
 
 @ECJsonTypeMap.classToJson("wsg", "TestClass", { classKeyPropertyName: "className" })
@@ -197,8 +189,8 @@ describe("WsgClient", async () => {
       const wsgClient = new TestUrlWsgClient("2.5");
 
       // Act
-      const url1 = await wsgClient.getUrl({} as any);
-      const url2 = await wsgClient.getUrl({} as any);
+      const url1 = await wsgClient.getUrl();
+      const url2 = await wsgClient.getUrl();
 
       // Assert
       expect(url1).to.be.equal("https://api.bentley.com/testservice/2.5");
@@ -211,8 +203,8 @@ describe("WsgClient", async () => {
 
       // Act
       const [url1, url2] = await Promise.all([
-        wsgClient.getUrl({} as any),
-        wsgClient.getUrl({} as any),
+        wsgClient.getUrl(),
+        wsgClient.getUrl(),
       ]);
 
       // Assert

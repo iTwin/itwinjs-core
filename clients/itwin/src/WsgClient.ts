@@ -6,7 +6,7 @@
  * @module iTwinServiceClients
  */
 import * as deepAssign from "deep-assign";
-import { ClientRequestContext, GetMetaDataFunction, HttpStatus, Logger, WSStatus } from "@bentley/bentleyjs-core";
+import { GetMetaDataFunction, HttpStatus, Logger, WSStatus } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
 import { AuthenticationError, Client, DefaultRequestOptionsProvider } from "./Client";
 import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
@@ -244,12 +244,12 @@ export abstract class WsgClient extends Client {
    * @param excludeApiVersion Pass true to optionally exclude the API version from the URL.
    * @returns URL for the service
    */
-  public override async getUrl(requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string> {
-    return this._getUrlHelper(requestContext, excludeApiVersion);
+  public override async getUrl(excludeApiVersion?: boolean): Promise<string> {
+    return this._getUrlHelper(excludeApiVersion);
   }
 
-  private _getUrlHelper = once(async (requestContext: ClientRequestContext, excludeApiVersion?: boolean) => {
-    const url = await super.getUrl(requestContext);
+  private _getUrlHelper = once(async (excludeApiVersion?: boolean) => {
+    const url = await super.getUrl();
     this._url = url;
     if (!excludeApiVersion) {
       this._url = `${this._url}/${this.apiVersion}`;
@@ -260,7 +260,7 @@ export abstract class WsgClient extends Client {
   /** used by clients to delete strongly typed instances through the standard WSG REST API */
   protected async deleteInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<void> {
     requestContext.enter();
-    const url: string = await this.getUrl(requestContext) + relativeUrlPath;
+    const url: string = await this.getUrl() + relativeUrlPath;
     requestContext.enter();
     const untypedInstance: any = instance ? ECJsonTypeMap.toJson<T>("wsg", instance) : undefined;
     const options: RequestOptions = {
@@ -289,7 +289,7 @@ export abstract class WsgClient extends Client {
    * @returns The posted instance that's returned back from the server.
    */
   protected async postInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T> {
-    const url: string = await this.getUrl(requestContext) + relativeUrlPath;
+    const url: string = await this.getUrl() + relativeUrlPath;
     requestContext.enter();
     Logger.logInfo(loggerCategory, "Sending POST request", () => ({ url }));
     const untypedInstance: any = ECJsonTypeMap.toJson<T>("wsg", instance);
@@ -335,7 +335,7 @@ export abstract class WsgClient extends Client {
    */
   protected async postInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]> {
     requestContext.enter();
-    const url: string = await this.getUrl(requestContext) + relativeUrlPath;
+    const url: string = await this.getUrl() + relativeUrlPath;
     requestContext.enter();
     Logger.logInfo(loggerCategory, "Sending POST request", () => ({ url }));
     const untypedInstances: any[] = instances.map((value: T) => ECJsonTypeMap.toJson<T>("wsg", value));
@@ -388,7 +388,7 @@ export abstract class WsgClient extends Client {
    */
   protected async getInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]> {
     requestContext.enter();
-    const url: string = await this.getUrl(requestContext) + relativeUrlPath;
+    const url: string = await this.getUrl() + relativeUrlPath;
     requestContext.enter();
     Logger.logInfo(loggerCategory, "Sending GET request", () => ({ url }));
 
@@ -493,7 +493,7 @@ export abstract class WsgClient extends Client {
    */
   protected async postQuery<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]> {
     requestContext.enter();
-    const url: string = `${await this.getUrl(requestContext)}${relativeUrlPath}$query`;
+    const url: string = `${await this.getUrl()}${relativeUrlPath}$query`;
     requestContext.enter();
     Logger.logInfo(loggerCategory, "Sending POST request", () => ({ url }));
 

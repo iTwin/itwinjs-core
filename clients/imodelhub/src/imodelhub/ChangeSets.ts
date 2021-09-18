@@ -490,7 +490,7 @@ export class ChangeSetHandler {
 
     query.selectDownloadUrl();
 
-    const url: string = await this._handler.getUrl(requestContext) + this.getRelativeUrl(iModelId, query.getId());
+    const url: string = await this._handler.getUrl() + this.getRelativeUrl(iModelId, query.getId());
     requestContext.enter();
 
     const queryOptions = query.getQueryOptions();

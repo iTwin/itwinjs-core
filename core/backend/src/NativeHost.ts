@@ -32,6 +32,8 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
   protected constructor(config?: NativeAppAuthorizationConfiguration) {
     super();
     this.config = config;
+    if (config?.issuerUrl)
+      this.baseUrl = config?.issuerUrl;
   }
 
   public get isAuthorized(): boolean {
@@ -59,7 +61,7 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
       throw new IModelError(AuthStatus.Error, "Must specify a valid configuration when initializing authorization");
     if (this.config.expiryBuffer)
       this.expireSafety = this.config.expiryBuffer;
-    this.issuerUrl = this.config.issuerUrl ?? await this.getUrl(this.getClientRequestContext());
+    this.issuerUrl = this.config.issuerUrl ?? await this.getUrl();
   }
 }
 

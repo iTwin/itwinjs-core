@@ -75,9 +75,6 @@ export class IModelBaseHandler extends WsgClient {
   private _customRequestOptions: CustomRequestOptions = new CustomRequestOptions();
   private _httpRequestOptionsTransformers: HttpRequestOptionsTransformer[] = [];
 
-  /** @internal */
-  protected getUrlSearchKey(): string { assert(false, "Bentley cloud-specific method should be factored out of WsgClient base class"); return ""; }
-
   /**
    * Create an instance of IModelBaseHandler.
    * @internal
@@ -157,8 +154,8 @@ export class IModelBaseHandler extends WsgClient {
    * @returns URL for the service
    * @internal
    */
-  public override async getUrl(requestContext: ClientRequestContext): Promise<string> {
-    return super.getUrl(requestContext);
+  public override async getUrl(): Promise<string> {
+    return super.getUrl();
   }
 
   /**

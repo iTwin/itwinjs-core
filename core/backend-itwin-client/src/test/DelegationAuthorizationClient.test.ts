@@ -60,14 +60,14 @@ describe("DelegationAuthorizationClient (#integration)", () => {
   it("should get valid OIDC delegation tokens", async () => {
 
     const delegationConfiguration: DelegationAuthorizationClientConfiguration = {
-      clientId:process.env.IMJS_DELEGATION_TEST_CLIENT_ID ?? "",
+      clientId: process.env.IMJS_DELEGATION_TEST_CLIENT_ID ?? "",
       clientSecret: process.env.IMJS_DELEGATION_TEST_CLIENT_SECRET ?? "",
       scope: "imodelhub",
     };
 
     const delegationClient = new DelegationAuthorizationClient(delegationConfiguration);
 
-    const url = await delegationClient.getUrl(new ClientRequestContext());
+    const url = await delegationClient.getUrl();
     // Skip this test if the issuing authority is not imsoidc.
     // The iTwin Platform currently does not allow a token delegation workflow.
     if (-1 === url.indexOf("imsoidc"))
