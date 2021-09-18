@@ -511,6 +511,15 @@ export class ClipShape extends ClipPrimitive {
       this.parseLinearPlanes(set, this._polygon[0], this._polygon[1]);
       return true;
     }
+
+    if (!this.isMask){
+      const direction = PolygonOps.testXYPolygonTurningDirections(this.polygon);
+      if (direction !== 0){
+        this.parseConvexPolygonPlanes(set, this._polygon, direction, false);
+        return true;
+      }
+    }
+
   // REMARK:  Pass all polygons to non-convex case.  It will funnel
   // to concave case as appropriate.
   this.parsePolygonPlanes(set, this._polygon, this.isMask);
