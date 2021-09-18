@@ -64,7 +64,7 @@ export interface NativePlatformDefinition extends IDisposable {
   setupRulesetDirectories(directories: string[]): NativePlatformResponse<void>;
   setupSupplementalRulesetDirectories(directories: string[]): NativePlatformResponse<void>;
 
-  forceLoadSchemas(db: any): Promise<NativePlatformResponse<void>>;
+  forceLoadSchemas(db: any): Promise<void>;
 
   getRulesets(rulesetId: string): NativePlatformResponse<string>;
   addRuleset(serializedRulesetJson: string): NativePlatformResponse<string>;
@@ -146,15 +146,8 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
     public dispose() {
       this._nativeAddon.dispose();
     }
-    public async forceLoadSchemas(db: any): Promise<NativePlatformResponse<void>> {
-      return new Promise((resolve: (result: NativePlatformResponse<void>) => void, reject: () => void) => {
-        this._nativeAddon.forceLoadSchemas(db, (response: IModelJsNative.ECPresentationManagerResponse<void>) => {
-          if (response.error)
-            reject();
-          else
-            resolve(this.createSuccessResponse(response));
-        });
-      });
+    public async forceLoadSchemas(db: any): Promise<void> {
+      return this._nativeAddon.forceLoadSchemas(db);
     }
     public setupRulesetDirectories(directories: string[]) {
       return this.handleVoidResult(this._nativeAddon.setupRulesetDirectories(directories));

@@ -28,20 +28,14 @@ describe("DgnDbWorker", () => {
   });
 
   class Worker {
-    public readonly promise: Promise<void>;
+    public promise: Promise<void> | undefined;
     private readonly _worker: IModelJsNative.TestWorker;
 
     public constructor() {
-      let worker: unknown;
-      this.promise = new Promise<void>((resolve) => {
-        worker = new IModelHost.platform.TestWorker(imodel.nativeDb, () => resolve());
-      });
-
-      expect(worker).instanceof(IModelHost.platform.TestWorker);
-      this._worker = worker as IModelJsNative.TestWorker;
+      this._worker = new IModelHost.platform.TestWorker(imodel.nativeDb);
     }
 
-    public queue() { this._worker.queue(); }
+    public queue() { this.promise = this._worker.queue(); }
     public cancel() { this._worker.cancel(); }
     public setReady() { this._worker.setReady(); }
     public setThrow() { this._worker.setThrow(); }

@@ -1145,14 +1145,7 @@ export abstract class IModelDb extends IModel {
    * @alpha
    */
   public async queryTextureData(props: TextureLoadProps): Promise<TextureData | undefined> {
-    return new Promise<TextureData | undefined>((resolve, reject) => {
-      this.nativeDb.queryTextureData(props, (result) => {
-        if (result instanceof Error)
-          reject(result);
-        else
-          resolve(result);
-      });
-    });
+    return this.nativeDb.queryTextureData(props);
   }
 
   /** Query a "file property" from this iModel, as a string.
@@ -1210,19 +1203,7 @@ export abstract class IModelDb extends IModel {
     } else
       request.cancelSnap();
 
-    return new Promise<SnapResponseProps>((resolve, reject) => {
-      if (!this.isOpen) {
-        reject(new Error("not open"));
-      } else {
-        request!.doSnap(this.nativeDb, JsonUtils.toObject(props), (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, SnapResponseProps>) => {
-          this._snaps.delete(sessionId);
-          if (ret.error !== undefined)
-            reject(new Error(ret.error.message));
-          else
-            resolve(ret.result!); // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
-        });
-      }
-    });
+    return request.doSnap(this.nativeDb, JsonUtils.toObject(props));
   }
 
   /** Cancel a previously requested snap. */
@@ -1236,34 +1217,12 @@ export abstract class IModelDb extends IModel {
 
   /** Get the clip containment status for the supplied elements. */
   public async getGeometryContainment(props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps> {
-    return new Promise<GeometryContainmentResponseProps>((resolve, reject) => {
-      if (!this.isOpen) {
-        reject(new Error("not open"));
-      } else {
-        this.nativeDb.getGeometryContainment(JSON.stringify(props), (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, GeometryContainmentResponseProps>) => {
-          if (ret.error !== undefined)
-            reject(new Error(ret.error.message));
-          else
-            resolve(ret.result!);
-        });
-      }
-    });
+    return this.nativeDb.getGeometryContainment(props);
   }
 
   /** Get the mass properties for the supplied elements. */
   public async getMassProperties(props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> {
-    return new Promise<MassPropertiesResponseProps>((resolve, reject) => {
-      if (!this.isOpen) {
-        reject(new Error("not open"));
-      } else {
-        this.nativeDb.getMassProperties(JSON.stringify(props), (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, MassPropertiesResponseProps>) => {
-          if (ret.error !== undefined)
-            reject(new Error(ret.error.message));
-          else
-            resolve(ret.result!);
-        });
-      }
-    });
+    return this.nativeDb.getMassProperties(props);
   }
 
   /** Get the IModel coordinate corresponding to each GeoCoordinate point in the input */

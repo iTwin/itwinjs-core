@@ -7,10 +7,20 @@
  */
 
 import { BentleyStatus, CompressedId64Set, DbResult, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
-import { Matrix3d, Matrix3dProps, Point3d, PointString3d, Range3d, Range3dProps, Transform, TransformProps, XYZProps, YawPitchRollAngles } from "@bentley/geometry-core";
-import { BackendRequestContext, GeometricElement, IModelDb, IModelJsNative } from "@bentley/imodeljs-backend";
-import { BRepEntity, ColorDefProps, DynamicGraphicsRequest3dProps, EcefLocation, EcefLocationProps, ElementGeometry, ElementGeometryDataEntry, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryRequest, ElementGeometryUpdate, FilePropertyProps, GeometricElementProps, GeometryPartProps, GeometryStreamBuilder, IModelError, Placement3dProps } from "@bentley/imodeljs-common";
-import { BasicManipulationCommandIpc, editorBuiltInCmdIds, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps, FlatBufferGeometricElementData, FlatBufferGeometryFilter, FlatBufferGeometryPartData, OffsetFacesProps, SolidModelingCommandIpc, SubEntityAppearanceProps, SubEntityGeometryProps, SubEntityLocationProps, SubEntityProps } from "@bentley/imodeljs-editor-common";
+import {
+  Matrix3d, Matrix3dProps, Point3d, PointString3d, Range3d, Range3dProps, Transform, TransformProps, XYZProps, YawPitchRollAngles,
+} from "@bentley/geometry-core";
+import { GeometricElement, IModelDb } from "@bentley/imodeljs-backend";
+import {
+  BRepEntity, ColorDefProps, DynamicGraphicsRequest3dProps, EcefLocation, EcefLocationProps, ElementGeometry, ElementGeometryDataEntry,
+  ElementGeometryFunction, ElementGeometryInfo, ElementGeometryRequest, ElementGeometryUpdate, FilePropertyProps, GeometricElementProps,
+  GeometryPartProps, GeometryStreamBuilder, IModelError, Placement3dProps,
+} from "@bentley/imodeljs-common";
+import {
+  BasicManipulationCommandIpc, editorBuiltInCmdIds, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps,
+  FlatBufferGeometricElementData, FlatBufferGeometryFilter, FlatBufferGeometryPartData, OffsetFacesProps, SolidModelingCommandIpc,
+  SubEntityAppearanceProps, SubEntityGeometryProps, SubEntityLocationProps, SubEntityProps,
+} from "@bentley/imodeljs-editor-common";
 import { EditCommand } from "./EditCommand";
 
 /** @alpha */
@@ -313,20 +323,7 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
   public static override commandId = editorBuiltInCmdIds.cmdSolidModeling;
 
   private async updateElementGeometryCache(props: ElementGeometryCacheRequestProps): Promise<ElementGeometryCacheResponseProps> {
-    const requestContext = new BackendRequestContext();
-    requestContext.enter();
-    return new Promise<ElementGeometryCacheResponseProps>((resolve, reject) => {
-      if (!this.iModel.isOpen) {
-        reject(new Error("not open"));
-      } else {
-        this.iModel.nativeDb.updateElementGeometryCache(JSON.stringify(props), (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, ElementGeometryCacheResponseProps>) => {
-          if (ret.error !== undefined)
-            reject(new Error(ret.error.message));
-          else
-            resolve(ret.result!);
-        });
-      }
-    });
+    return this.iModel.nativeDb.updateElementGeometryCache(props);
   }
 
   public async createElementGeometryCache(id: Id64String, filter?: ElementGeometryCacheFilter): Promise<boolean> {
@@ -387,7 +384,7 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
       resultProps.geometry = geometryProps.geometry;
 
     if (opts.wantRange)
-      resultProps.range = (geometryProps?.range ? ElementGeometry.toElementAlignedBox3d(geometryProps?.range): undefined);
+      resultProps.range = (geometryProps?.range ? ElementGeometry.toElementAlignedBox3d(geometryProps?.range) : undefined);
 
     if (opts.wantAppearance) {
       const appearance: SubEntityAppearanceProps = { category: geometryProps.category };
@@ -412,9 +409,9 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
       modelId: this.iModel.iModelId,
       toleranceLog10,
       type: "3d",
-      placement : { origin: Point3d.createZero(), angles: YawPitchRollAngles.createDegrees(0, 0, 0) },
+      placement: { origin: Point3d.createZero(), angles: YawPitchRollAngles.createDegrees(0, 0, 0) },
       categoryId: geometryProps.category,
-      geometry: { format: "flatbuffer", data: [ geometryProps.geometry ] },
+      geometry: { format: "flatbuffer", data: [geometryProps.geometry] },
     };
 
     resultProps.graphic = await this.iModel.generateElementGraphics(requestProps);
