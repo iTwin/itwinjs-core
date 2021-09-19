@@ -1203,10 +1203,11 @@ export abstract class IModelDb extends IModel {
     } else
       request.cancelSnap();
 
-    // eslint-disable-next-line @typescript-eslint/await-thenable
-    const snap = await request.doSnap(this.nativeDb, JsonUtils.toObject(props));
-    this._snaps.delete(sessionId);
-    return snap;
+    try {
+      return await request.doSnap(this.nativeDb, JsonUtils.toObject(props));
+    } finally {
+      this._snaps.delete(sessionId);
+    }
   }
 
   /** Cancel a previously requested snap. */
