@@ -64,6 +64,7 @@ export * from "./SubCategoriesCache";
 export * from "./TentativePoint";
 export * from "./Tiles";
 export * from "./TwoWayViewportSync";
+export * from "./UserPreferences";
 export * from "./ViewAnimation";
 export * from "./ViewContext";
 export * from "./ViewGlobalLocation";

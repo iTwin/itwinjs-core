@@ -36,7 +36,6 @@
     "@bentley/presentation-frontend": "workspace:*",
     "@bentley/presentation-components": "workspace:*",
     "@bentley/presentation-testing": "workspace:*",
-    "@bentley/product-settings-client": "workspace:*",
     "@bentley/ui-core": "workspace:*",
     "@bentley/ui-components": "workspace:*",
     "@bentley/ui-abstract": "workspace:*",

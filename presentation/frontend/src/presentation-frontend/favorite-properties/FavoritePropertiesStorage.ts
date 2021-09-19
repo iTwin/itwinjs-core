@@ -62,20 +62,28 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
   }
 
   public async loadProperties(projectId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined> {
-    if (!this.isSignedIn) {
+    if (!this.isSignedIn || IModelApp.userPreferences) {
       throw new PresentationError(PresentationStatus.Error, "Current user is not authorized to use the settings service");
     }
 
     const requestContext = await AuthorizedFrontendRequestContext.create();
-    let settingResult = await IModelApp.settings.getUserSetting(requestContext, IMODELJS_PRESENTATION_SETTING_NAMESPACE, FAVORITE_PROPERTIES_SETTING_NAME, true, projectId, imodelId);
-    let setting = settingResult.setting;
+    let setting = await IModelApp.userPreferences.get({
+      token: () => requestContext.accessToken,
+      iTwinId: projectId,
+      iModelId: imodelId,
+      key: `${IMODELJS_PRESENTATION_SETTING_NAMESPACE}.${FAVORITE_PROPERTIES_SETTING_NAME}`,
+    });
 
     if (setting !== undefined)
       return new Set<PropertyFullName>(setting);
 
     // try to check the old namespace
-    settingResult = await IModelApp.settings.getUserSetting(requestContext, DEPRECATED_PROPERTIES_SETTING_NAMESPACE, FAVORITE_PROPERTIES_SETTING_NAME, true, projectId, imodelId);
-    setting = settingResult.setting;
+    setting = await IModelApp.userPreferences.get({
+      token: () => requestContext.accessToken,
+      iTwinId: projectId,
+      iModelId: imodelId,
+      key: `${DEPRECATED_PROPERTIES_SETTING_NAMESPACE}.${FAVORITE_PROPERTIES_SETTING_NAME}`,
+    });
 
     if (setting !== undefined && setting.hasOwnProperty("nestedContentInfos") && setting.hasOwnProperty("propertyInfos") && setting.hasOwnProperty("baseFieldInfos"))
       return new Set<PropertyFullName>([...setting.nestedContentInfos, ...setting.propertyInfos, ...setting.baseFieldInfos]);
@@ -84,20 +92,32 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
   }
 
   public async saveProperties(properties: Set<PropertyFullName>, projectId?: string, imodelId?: string): Promise<void> {
-    if (!this.isSignedIn) {
+    if (!this.isSignedIn || IModelApp.userPreferences) {
       throw new PresentationError(PresentationStatus.Error, "Current user is not authorized to use the settings service");
     }
     const requestContext = await AuthorizedFrontendRequestContext.create();
-    await IModelApp.settings.saveUserSetting(requestContext, Array.from(properties), IMODELJS_PRESENTATION_SETTING_NAMESPACE, FAVORITE_PROPERTIES_SETTING_NAME, true, projectId, imodelId);
+
+    await IModelApp.userPreferences.save({
+      token: () => requestContext.accessToken,
+      iTwinId: projectId,
+      iModelId: imodelId,
+      key: `${DEPRECATED_PROPERTIES_SETTING_NAMESPACE}.${FAVORITE_PROPERTIES_SETTING_NAME}`,
+      content: Array.from(properties),
+    });
   }
 
   public async loadPropertiesOrder(projectId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined> {
-    if (!this.isSignedIn) {
+    if (!this.isSignedIn || IModelApp.userPreferences) {
       throw new PresentationError(PresentationStatus.Error, "Current user is not authorized to use the settings service");
     }
     const requestContext = await AuthorizedFrontendRequestContext.create();
-    const settingResult = await IModelApp.settings.getUserSetting(requestContext, IMODELJS_PRESENTATION_SETTING_NAMESPACE, FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME, true, projectId, imodelId);
-    return settingResult.setting as FavoritePropertiesOrderInfo[];
+    const setting = await IModelApp.userPreferences.get({
+      token: () => requestContext.accessToken,
+      iTwinId: projectId,
+      iModelId: imodelId,
+      key: `${IMODELJS_PRESENTATION_SETTING_NAMESPACE}.${FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME}`,
+    });
+    return setting as FavoritePropertiesOrderInfo[];
   }
 
   public async savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], projectId: string | undefined, imodelId: string) {
@@ -105,7 +125,13 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
       throw new PresentationError(PresentationStatus.Error, "Current user is not authorized to use the settings service");
     }
     const requestContext = await AuthorizedFrontendRequestContext.create();
-    await IModelApp.settings.saveUserSetting(requestContext, orderInfos, IMODELJS_PRESENTATION_SETTING_NAMESPACE, FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME, true, projectId, imodelId);
+    await IModelApp.userPreferences.save({
+      token: () => requestContext.accessToken,
+      iTwinId: projectId,
+      iModelId: imodelId,
+      key: `${IMODELJS_PRESENTATION_SETTING_NAMESPACE}.${FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME}`,
+      content: orderInfos,
+    });
   }
 }
 

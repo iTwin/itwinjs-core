@@ -198,7 +198,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
 
     const layerName = source.name;
     if (!!iTwinId && !!iModelId) {
-      if (await MapLayerSettingsService.deleteSharedSettings(source, iTwinId, iModelId)) {
+      if (await MapLayerSettingsService.deleteShared(source, iTwinId, iModelId)) {
         const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.RemoveLayerDefSuccess", { layerName });
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
       } else {

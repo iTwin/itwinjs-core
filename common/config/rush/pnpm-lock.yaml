@@ -163,52 +163,6 @@ importers:
       typescript: 4.3.5
       webpack: 4.42.0
 
-  ../../clients/product-settings:
-    specifiers:
-      '@bentley/bentleyjs-core': workspace:*
-      '@bentley/build-tools': workspace:*
-      '@bentley/certa': workspace:*
-      '@bentley/context-registry-client': workspace:*
-      '@bentley/eslint-plugin': workspace:*
-      '@bentley/imodelhub-client': workspace:*
-      '@bentley/itwin-client': workspace:*
-      '@bentley/oidc-signin-tool': workspace:*
-      '@types/chai': ^4.1.4
-      '@types/mocha': ^8.2.2
-      '@types/node': 10.14.1
-      chai: ^4.1.2
-      dotenv: ^10.0.0
-      dotenv-expand: ^5.1.0
-      eslint: ^7.11.0
-      internal-tools: workspace:*
-      mocha: ^8.3.2
-      rimraf: ^3.0.2
-      source-map-loader: ^1.0.0
-      typescript: ~4.3.0
-      webpack: 4.42.0
-    devDependencies:
-      '@bentley/bentleyjs-core': link:../../core/bentley
-      '@bentley/build-tools': link:../../tools/build
-      '@bentley/certa': link:../../tools/certa
-      '@bentley/context-registry-client': link:../context-registry
-      '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/imodelhub-client': link:../imodelhub
-      '@bentley/itwin-client': link:../itwin
-      '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
-      '@types/chai': 4.2.21
-      '@types/mocha': 8.2.3
-      '@types/node': 10.14.1
-      chai: 4.3.4
-      dotenv: 10.0.0
-      dotenv-expand: 5.1.0
-      eslint: 7.32.0
-      internal-tools: link:../../tools/internal
-      mocha: 8.4.0
-      rimraf: 3.0.2
-      source-map-loader: 1.1.3_webpack@4.42.0
-      typescript: 4.3.5
-      webpack: 4.42.0
-
   ../../clients/reality-data:
     specifiers:
       '@bentley/bentleyjs-core': workspace:*
@@ -906,7 +860,6 @@ importers:
       '@bentley/imodeljs-quantity': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/orbitgt-core': workspace:*
-      '@bentley/product-settings-client': workspace:*
       '@bentley/reality-data-client': workspace:*
       '@bentley/telemetry-client': workspace:*
       '@bentley/ui-abstract': workspace:*
@@ -953,7 +906,6 @@ importers:
       '@bentley/imodeljs-quantity': link:../quantity
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/orbitgt-core': link:../orbitgt
-      '@bentley/product-settings-client': link:../../clients/product-settings
       '@bentley/telemetry-client': link:../../clients/telemetry
       '@bentley/ui-abstract': link:../../ui/abstract
       '@bentley/webgl-compatibility': link:../webgl-compatibility
@@ -2015,7 +1967,6 @@ importers:
       '@bentley/imodeljs-markup': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
-      '@bentley/product-settings-client': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
@@ -2069,7 +2020,6 @@ importers:
       '@bentley/extension-webpack-tools': link:../../tools/extension-webpack
       '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
-      '@bentley/product-settings-client': link:../../clients/product-settings
       '@types/chai': 4.2.21
       '@types/chai-as-promised': 7.1.4
       '@types/fs-extra': 4.0.12
@@ -2340,7 +2290,6 @@ importers:
       '@bentley/presentation-components': workspace:*
       '@bentley/presentation-frontend': workspace:*
       '@bentley/presentation-testing': workspace:*
-      '@bentley/product-settings-client': workspace:*
       '@bentley/ui-abstract': workspace:*
       '@bentley/ui-components': workspace:*
       '@bentley/ui-core': workspace:*
@@ -2401,7 +2350,6 @@ importers:
       '@bentley/presentation-components': link:../../presentation/components
       '@bentley/presentation-frontend': link:../../presentation/frontend
       '@bentley/presentation-testing': link:../../presentation/testing
-      '@bentley/product-settings-client': link:../../clients/product-settings
       '@bentley/ui-abstract': link:../../ui/abstract
       '@bentley/ui-components': link:../../ui/components
       '@bentley/ui-core': link:../../ui/core
@@ -2883,7 +2831,6 @@ importers:
       '@bentley/imodeljs-quantity': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/presentation-common': workspace:*
-      '@bentley/product-settings-client': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.0
@@ -2921,7 +2868,6 @@ importers:
       '@bentley/imodeljs-quantity': link:../../core/quantity
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/presentation-common': link:../common
-      '@bentley/product-settings-client': link:../../clients/product-settings
       '@types/chai': 4.2.21
       '@types/chai-as-promised': 7.1.4
       '@types/chai-jest-snapshot': 1.3.6
@@ -4657,7 +4603,6 @@ importers:
       '@bentley/presentation-components': workspace:*
       '@bentley/presentation-frontend': workspace:*
       '@bentley/presentation-testing': workspace:*
-      '@bentley/product-settings-client': workspace:*
       '@bentley/react-scripts': 4.0.3
       '@bentley/telemetry-client': workspace:*
       '@bentley/ui-abstract': workspace:*
@@ -4753,7 +4698,6 @@ importers:
       '@bentley/presentation-common': link:../../presentation/common
       '@bentley/presentation-frontend': link:../../presentation/frontend
       '@bentley/presentation-testing': link:../../presentation/testing
-      '@bentley/product-settings-client': link:../../clients/product-settings
       '@bentley/react-scripts': 4.0.3_428b90cc0d849ebb6ccbdf38609f3b43
       '@bentley/telemetry-client': link:../../clients/telemetry
       '@bentley/ui-abstract': link:../abstract

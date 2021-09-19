@@ -81,5 +81,5 @@ export * from "./ClassifierTileTree";
 export * from "./OrbitGtTileTree";
 export * from "./map/ImageryTileTree";
 export * from "./map/MapLayerSources";
-export * from "./map/MapLayerSettingsService";
+export * from "./map/MapLayerSettings";
 export * from "./map/MapTiledGraphicsProvider";

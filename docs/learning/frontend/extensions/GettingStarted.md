@@ -33,7 +33,6 @@ Next, add the required dependencies for an Extension,
   "@bentley/imodeljs-i18n": "^2.0.0",
   "@bentley/imodeljs-frontend": "^2.0.0",
   "@bentley/imodeljs-quantity": "^2.0.0",
-  "@bentley/product-settings-client": "^2.0.0",
   "@bentley/orbitgt-core": "^2.0.0",
   "@bentley/ui-abstract": "^2.0.0",
   "@bentley/webgl-compatibility": "^2.0.0"

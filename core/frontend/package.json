@@ -45,7 +45,6 @@
     "@bentley/imodeljs-quantity": "workspace:^3.0.0-dev.61",
     "@bentley/itwin-client": "workspace:^3.0.0-dev.61",
     "@bentley/orbitgt-core": "workspace:^3.0.0-dev.61",
-    "@bentley/product-settings-client": "workspace:^3.0.0-dev.61",
     "@bentley/telemetry-client": "workspace:^3.0.0-dev.61",
     "@bentley/ui-abstract": "workspace:^3.0.0-dev.61",
     "@bentley/webgl-compatibility": "workspace:^3.0.0-dev.61"
@@ -67,7 +66,6 @@
     "@bentley/imodeljs-quantity": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@bentley/orbitgt-core": "workspace:*",
-    "@bentley/product-settings-client": "workspace:*",
     "@bentley/telemetry-client": "workspace:*",
     "@bentley/ui-abstract": "workspace:*",
     "@bentley/webgl-compatibility": "workspace:*",

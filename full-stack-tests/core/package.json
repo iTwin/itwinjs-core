@@ -52,7 +52,6 @@
     "@bentley/context-registry-client": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
     "@bentley/oidc-signin-tool": "workspace:*",
-    "@bentley/product-settings-client": "workspace:*",
     "@bentley/extension-webpack-tools": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",

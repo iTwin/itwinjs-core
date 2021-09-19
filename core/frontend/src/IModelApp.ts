@@ -15,7 +15,6 @@ import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-cli
 import { IModelClient } from "@bentley/imodelhub-client";
 import { IModelStatus, RpcConfiguration, RpcInterfaceDefinition, RpcRequest } from "@bentley/imodeljs-common";
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
-import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
 import { UiAdmin } from "@bentley/ui-abstract";
 import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@bentley/webgl-compatibility";
@@ -50,6 +49,7 @@ import * as selectTool from "./tools/SelectTool";
 import { ToolRegistry } from "./tools/Tool";
 import { ToolAdmin } from "./tools/ToolAdmin";
 import * as viewTool from "./tools/ViewTool";
+import { UserPreferencesAccess } from "./UserPreferences";
 import { ViewManager } from "./ViewManager";
 import * as viewState from "./ViewState";
 
@@ -84,7 +84,7 @@ export interface IModelAppOptions {
   /** If present, supplies the version of this application. Must be set for usage logging. */
   applicationVersion?: string;
   /** If present, supplies the [[SettingsAdmin]] for this session. */
-  settings?: SettingsAdmin;
+  userPreferences?: UserPreferencesAccess;
   /** If present, supplies the [[ViewManager]] for this session. */
   viewManager?: ViewManager;
   /** If present, supplies Map Layer Options for this session such as Azure Access Keys
@@ -180,7 +180,7 @@ export class IModelApp {
   private static _extensionAdmin: ExtensionAdmin;
   private static _quantityFormatter: QuantityFormatter;
   private static _renderSystem?: RenderSystem;
-  private static _settings: SettingsAdmin;
+  private static _userPreferences: UserPreferencesAccess;
   private static _tentativePoint: TentativePoint;
   private static _tileAdmin: TileAdmin;
   private static _toolAdmin: ToolAdmin;
@@ -235,7 +235,7 @@ export class IModelApp {
   /** The [[I18N]] for this session. */
   public static get i18n(): I18N { return this._i18n; }
   /** The [[SettingsAdmin]] for this session. */
-  public static get settings(): SettingsAdmin { return this._settings; }
+  public static get userPreferences(): UserPreferencesAccess { return this._userPreferences; }
   /** The Id of this application. Applications must set this to the Global Product Registry ID (GPRID) for usage logging. */
   public static get applicationId(): string { return this._applicationId; }
   /** The version of this application. Must be set for usage logging. */
@@ -388,7 +388,8 @@ export class IModelApp {
 
     this._renderSystem = (opts.renderSys instanceof RenderSystem) ? opts.renderSys : this.createRenderSys(opts.renderSys);
 
-    this._settings = (opts.settings !== undefined) ? opts.settings : new ConnectSettingsClient(this.applicationId);
+    if (opts.userPreferences)
+      this._userPreferences = opts.userPreferences;
     this._viewManager = (opts.viewManager !== undefined) ? opts.viewManager : new ViewManager();
     this._tileAdmin = await TileAdmin.create(opts.tileAdmin);
     this._notifications = (opts.notifications !== undefined) ? opts.notifications : new NotificationManager();

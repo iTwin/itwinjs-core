@@ -73,7 +73,6 @@
       "presentation-common": "presentation-common",
       "presentation-components": "presentation-components",
       "presentation-frontend": "presentation-frontend",
-      "product-settings-client": "product-settings-client",
       "quantity": "imodeljs-quantity",
       "reality-data-client": "reality-data-client",
       "ui-abstract": "ui-abstract",
