@@ -1,6 +1,7 @@
 sep=;
 Release Tag;API Item
 beta;AbandonedError 
+public;AllStatusValues = IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RpcInterfaceStatus | ExtensionStatus | GeoServiceStatus | HttpStatus | RepositoryStatus | WSStatus
 public;areEqualPossiblyUndefined
 public;asInstanceOf
 public;assert(condition: boolean, msg?: string): asserts condition
@@ -50,7 +51,7 @@ public;Entry
 public;EntryContainer
 beta;ExtensionStatus
 public;GeoServiceStatus
-public;GetMetaDataFunction = () => any
+public;GetMetaDataFunction = () => object | undefined
 public;Guid
 public;GuidString = string
 beta;HttpStatus

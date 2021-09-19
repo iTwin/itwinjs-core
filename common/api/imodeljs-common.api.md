@@ -6840,6 +6840,8 @@ export class RpcInvocation {
     static currentRequest: ClientRequestContext;
     get elapsed(): number;
     readonly fulfillment: Promise<RpcRequestFulfillment>;
+    // @internal
+    static logRpcException(currentRequest: ClientRequestContext, error: any): void;
     readonly operation: RpcOperation;
     readonly protocol: RpcProtocol;
     readonly request: SerializedRpcRequest;

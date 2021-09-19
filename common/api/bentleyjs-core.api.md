@@ -9,6 +9,9 @@ export class AbandonedError extends Error {
 }
 
 // @public
+export type AllStatusValues = IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RpcInterfaceStatus | ExtensionStatus | GeoServiceStatus | HttpStatus | RepositoryStatus | WSStatus;
+
+// @public
 export function areEqualPossiblyUndefined<T, U>(t: T | undefined, u: U | undefined, areEqual: (t: T, u: U) => boolean): boolean;
 
 // @public
@@ -83,10 +86,10 @@ export class BeEventList<T extends Listener> {
 
 // @public
 export class BentleyError extends Error {
-    constructor(errorNumber: number, message?: string, getMetaData?: GetMetaDataFunction);
+    constructor(errorNumber: AllStatusValues | number, message?: string, getMetaData?: GetMetaDataFunction);
     // (undocumented)
-    errorNumber: number;
-    getMetaData(): any;
+    errorNumber: AllStatusValues | number;
+    getMetaData(): object | undefined;
     get hasMetaData(): boolean;
     protected _initName(): string;
 }
@@ -583,7 +586,7 @@ export enum GeoServiceStatus {
 }
 
 // @public
-export type GetMetaDataFunction = () => any;
+export type GetMetaDataFunction = () => object | undefined;
 
 // @public
 export namespace Guid {
