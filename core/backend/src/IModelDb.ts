@@ -1217,12 +1217,12 @@ export abstract class IModelDb extends IModel {
 
   /** Get the clip containment status for the supplied elements. */
   public async getGeometryContainment(props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps> {
-    return this.nativeDb.getGeometryContainment(props);
+    return this.nativeDb.getGeometryContainment(JsonUtils.toObject(props));
   }
 
   /** Get the mass properties for the supplied elements. */
   public async getMassProperties(props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> {
-    return this.nativeDb.getMassProperties(props);
+    return this.nativeDb.getMassProperties(JsonUtils.toObject(props));
   }
 
   /** Get the IModel coordinate corresponding to each GeoCoordinate point in the input */

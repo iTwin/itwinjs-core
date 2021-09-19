@@ -6,7 +6,7 @@
  * @module Editing
  */
 
-import { BentleyStatus, CompressedId64Set, DbResult, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
+import { BentleyStatus, CompressedId64Set, DbResult, Id64String, IModelStatus, JsonUtils } from "@bentley/bentleyjs-core";
 import {
   Matrix3d, Matrix3dProps, Point3d, PointString3d, Range3d, Range3dProps, Transform, TransformProps, XYZProps, YawPitchRollAngles,
 } from "@bentley/geometry-core";
