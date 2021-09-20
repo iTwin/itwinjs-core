@@ -37,6 +37,7 @@ describe("Favorite properties", () => {
 
   beforeEach(async () => {
     propertiesDataProvider = new PresentationPropertyDataProvider({ imodel, ruleset: DEFAULT_PROPERTY_GRID_RULESET });
+    propertiesDataProvider.isNestedPropertyCategoryGroupingEnabled = false;
     await Presentation.favoriteProperties.initializeConnection(imodel);
   });
 
@@ -299,6 +300,7 @@ describe("Favorite properties", () => {
       Presentation.terminate();
       await Presentation.initialize();
       propertiesDataProvider = new PresentationPropertyDataProvider({ imodel, ruleset: DEFAULT_PROPERTY_GRID_RULESET });
+      propertiesDataProvider.isNestedPropertyCategoryGroupingEnabled = false;
       propertiesDataProvider.keys = new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]);
 
       // verify the property is still in favorites group
