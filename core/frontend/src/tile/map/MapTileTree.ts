@@ -630,12 +630,12 @@ export class MapTileTreeReference extends TileTreeReference {
   }
 
   public get treeOwner(): TileTreeOwner {
-    const planarClipMaskAppliesTransparency = false;
-    // if (undefined !== this._planarClipMask) {
-    //   const trans = this._planarClipMask.settings.transparency;
-    //   if (trans !== undefined && trans > 0)
-    //     planarClipMaskAppliesTransparency = true;
-    // }
+    let planarClipMaskAppliesTransparency = false;
+    if (undefined !== this._planarClipMask) {
+      const trans = this._planarClipMask.settings.transparency;
+      if (trans !== undefined && trans > 0)
+        planarClipMaskAppliesTransparency = true;
+    }
 
     const id: MapTreeId = {
       viewportId: this._viewportId,
