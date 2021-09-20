@@ -61,8 +61,7 @@ export async function getTileProps(iModel: IModelDb, requestContext: AuthorizedB
 describe("TileUpload (#integration)", () => {
   let user: AuthorizedBackendRequestContext;
   let testIModelId: GuidString;
-  // SWB
-  let testContextId: GuidString;
+  let testITwinId: GuidString;
   let tileRpcInterface: IModelTileRpcInterface;
   let blobService: Azure.BlobServiceClient;
 
@@ -88,7 +87,7 @@ describe("TileUpload (#integration)", () => {
     tileRpcInterface = RpcRegistry.instance.getImplForInterface<IModelTileRpcInterface>(IModelTileRpcInterface);
 
     user = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-    testContextId = await HubUtility.getTestITwinId(user);
+    testITwinId = await HubUtility.getTestITwinId(user);
     testIModelId = await HubUtility.getTestIModelId(user, HubUtility.testIModelNames.stadium);
 
     // Get URL for cached tile
@@ -100,7 +99,7 @@ describe("TileUpload (#integration)", () => {
     (IModelHost.tileCacheService as any)._service = blobService;
 
     // Open and close the iModel to ensure it works and is closed
-    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId: testContextId, iModelId: testIModelId });
+    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId: testITwinId, iModelId: testIModelId });
     assert.isDefined(iModel);
     await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModel);
   });
@@ -112,7 +111,7 @@ describe("TileUpload (#integration)", () => {
   });
 
   it("should upload tile to external cache with metadata", async () => {
-    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId: testContextId, iModelId: testIModelId });
+    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId: testITwinId, iModelId: testIModelId });
     assert.isDefined(iModel);
 
     // Generate tile

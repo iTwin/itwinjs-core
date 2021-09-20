@@ -43,7 +43,6 @@ export class ECSchemaRpcImpl extends ECSchemaRpcInterface {
   }
 
   /**
-   // SWB What does context mean here?
    * Returns an array of SchemaKeyProps that exists in the current iModel context. The client can call
    * SchemaKey.fromJson() to parse the props to a SchemaKey.
    * @param tokenProps        The iModelToken props that hold the information which iModel is used.
@@ -69,7 +68,6 @@ export class ECSchemaRpcImpl extends ECSchemaRpcInterface {
   }
 
   /**
-   // SWB What does context mean here?
    * Gets the schema JSON for the current iModel context and returns the schema as a SchemaProps which
    * the client can call Schema.fromJson() to return a Schema.
    * @param tokenProps        The iModelToken props that hold the information which iModel is used.

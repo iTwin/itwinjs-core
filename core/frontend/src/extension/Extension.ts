@@ -14,8 +14,7 @@ import { IModelApp } from "../IModelApp";
  * @beta
  */
 export interface ExtensionProps {
-  // SWB
-  contextId: string;
+  iTwinId: string;
   extensionName: string;
   version: string;
   files: FileInfo[];

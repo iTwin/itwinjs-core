@@ -27,8 +27,7 @@ const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
  * @public
  */
 export class CheckpointConnection extends IModelConnection {
-  // SWB
-  /** The Guid that identifies the *context* that owns this iModel. */
+  /** The Guid that identifies the iTwin that owns this iModel. */
   public override get iTwinId(): GuidString { return super.iTwinId!; } // GuidString | undefined for the superclass, but required for BriefcaseConnection
   /** The Guid that identifies this iModel. */
   public override get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for the superclass, but required for BriefcaseConnection

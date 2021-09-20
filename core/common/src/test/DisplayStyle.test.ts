@@ -416,8 +416,7 @@ describe("DisplayStyleSettings overrides", () => {
     },
   };
 
-  // SWB What does project mean here?
-  const projectProps: DisplayStyle3dSettingsProps = {
+  const iTwinProps: DisplayStyle3dSettingsProps = {
     timePoint: 12345,
     contextRealityModels: [{
       tilesetUrl: "google.com",
@@ -498,7 +497,7 @@ describe("DisplayStyleSettings overrides", () => {
   };
 
   it("creates selective overrides", () => {
-    const settings = new DisplayStyle3dSettings({ styles: { ...baseProps, ...mapProps, ...projectProps, ...iModelProps } });
+    const settings = new DisplayStyle3dSettings({ styles: { ...baseProps, ...mapProps, ...iTwinProps, ...iModelProps } });
 
     const roundTrip = (options: DisplayStyleOverridesOptions, expected: DisplayStyle3dSettingsProps) => {
       const output = settings.toOverrides(options);
@@ -521,15 +520,14 @@ describe("DisplayStyleSettings overrides", () => {
     roundTrip({ includeDrawingAids: true }, { ...baseProps, viewflags: vfNoMap });
     roundTrip({ includeBackgroundMap: true, includeDrawingAids: true }, { ...baseProps, ...mapProps, viewflags });
 
-    // SWB What does project mean here?
-    roundTrip({ includeProjectSpecific: true }, { ...baseProps, ...projectProps, viewflags: vfNoMapNoDec });
-    roundTrip({ includeIModelSpecific: true }, { ...baseProps, ...projectProps, ...iModelProps, viewflags: vfNoMapNoDec });
-    roundTrip({ includeIModelSpecific: true, includeDrawingAids: true, includeBackgroundMap: true }, { ...baseProps, ...mapProps, ...projectProps, ...iModelProps, viewflags });
+    roundTrip({ includeITwinSpecific: true }, { ...baseProps, ...iTwinProps, viewflags: vfNoMapNoDec });
+    roundTrip({ includeIModelSpecific: true }, { ...baseProps, ...iTwinProps, ...iModelProps, viewflags: vfNoMapNoDec });
+    roundTrip({ includeIModelSpecific: true, includeDrawingAids: true, includeBackgroundMap: true }, { ...baseProps, ...mapProps, ...iTwinProps, ...iModelProps, viewflags });
   });
 
   it("overrides selected settings", () => {
     const test = (overrides: DisplayStyle3dSettingsProps) => {
-      const settings = new DisplayStyle3dSettings({ styles: { ...baseProps, ...mapProps, ...projectProps, ...iModelProps } });
+      const settings = new DisplayStyle3dSettings({ styles: { ...baseProps, ...mapProps, ...iTwinProps, ...iModelProps } });
       const originalSettings = { ...settings.toJSON() };
       settings.applyOverrides(overrides);
       const output = settings.toJSON();

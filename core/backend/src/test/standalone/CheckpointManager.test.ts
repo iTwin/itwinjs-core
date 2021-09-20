@@ -36,8 +36,7 @@ describe("V1 Checkpoint Manager", () => {
     assert.equal(V1CheckpointManager.getFileName(props), path.join(IModelHost.cacheDir, "imodels", "checkpoints", "1234.bim"));
   });
 
-  // SWB
-  it("changeset+context props", async () => {
+  it("changeset+itwin props", async () => {
     const props = {
       iTwinId: "5678",
       iModelId: "",
@@ -47,8 +46,7 @@ describe("V1 Checkpoint Manager", () => {
     assert.equal(V1CheckpointManager.getFileName(props), path.join(IModelHost.cacheDir, "imodels", "checkpoints", "1234.bim"));
   });
 
-  // SWB
-  it("changeset+context+imodel props", async () => {
+  it("changeset+itwin+imodel props", async () => {
     const props = {
       iTwinId: "5678",
       iModelId: "910",

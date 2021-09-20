@@ -479,6 +479,7 @@ describe("ImodelChangesetPerformance big datasets", () => {
     const reporter = new Reporter();
     const batchSize: number = 50;
     for (const ds of configData.bigDatasets) {
+      // SWB Requires config change
       const iTwinId: GuidString = ds.projId;
       const imodelId: string = ds.modelId;
 
@@ -489,6 +490,7 @@ describe("ImodelChangesetPerformance big datasets", () => {
       const endNum: number = ds.csEnd ? ds.csEnd : changeSets.length;
       const modelInfo = {
         iTwinId,
+        // SWB Requires config change
         iTwinName: ds.projName,
         modelId: imodelId,
         modelName: ds.modelName,

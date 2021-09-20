@@ -14,8 +14,7 @@ chai.should();
 export class HubAccessTestValidator {
   private static _singletonInstance: HubAccessTestValidator;
 
-  // SWB
-  private constructor(private _testProjectName: string, private _testProjectId: string, private _testIModelName: string, private _testIModelId: string) {
+  private constructor(private _testITwinName: string, private _testITwinId: string, private _testIModelName: string, private _testIModelId: string) {
   }
 
   public static async getInstance(): Promise<HubAccessTestValidator> {
@@ -25,27 +24,24 @@ export class HubAccessTestValidator {
     const accessToken: AccessToken = await TestUtility.getAccessToken(TestUsers.regular);
     const requestContext = new AuthorizedClientRequestContext(accessToken);
 
-    // SWB
-    const testProjectName = "iModelJsIntegrationTest";
+    const testITwinName = "iModelJsIntegrationTest";
     const testIModelName = "ReadOnlyTest";
-    // SWB
-    const testProjectId: string = await TestConfig.getITwinIdByName(requestContext, testProjectName);
-    const testIModelId: string = await TestConfig.queryIModelId(requestContext, testIModelName, testProjectId);
+    const testITwinId: string = await TestConfig.getITwinIdByName(requestContext, testITwinName);
+    const testIModelId: string = await TestConfig.queryIModelId(requestContext, testIModelName, testITwinId);
 
-    HubAccessTestValidator._singletonInstance = new HubAccessTestValidator(testProjectName, testProjectId, testIModelName, testIModelId);
+    HubAccessTestValidator._singletonInstance = new HubAccessTestValidator(testITwinName, testITwinId, testIModelName, testIModelId);
     return HubAccessTestValidator._singletonInstance;
   }
 
   public async validateITwinClientAccess(accessToken: AccessToken) {
     const requestContext = new AuthorizedClientRequestContext(accessToken);
-    // SWB
-    const projectId = await TestConfig.getITwinIdByName(requestContext, this._testProjectName);
-    chai.expect(projectId).to.be.equal(this._testProjectId);
+    const iTwinId = await TestConfig.getITwinIdByName(requestContext, this._testITwinName);
+    chai.expect(iTwinId).to.be.equal(this._testITwinId);
   }
 
   public async validateIModelHubAccess(accessToken: AccessToken) {
     const requestContext = new AuthorizedClientRequestContext(accessToken);
-    const iModelId = await TestConfig.queryIModelId(requestContext, this._testIModelName, this._testProjectId);
+    const iModelId = await TestConfig.queryIModelId(requestContext, this._testIModelName, this._testITwinId);
     chai.expect(iModelId).to.be.equal(this._testIModelId);
   }
 }

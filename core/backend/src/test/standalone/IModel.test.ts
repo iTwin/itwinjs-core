@@ -203,7 +203,6 @@ describe("iModel", () => {
 
   it("should be able to get properties of an iIModel", () => {
     expect(imodel1.name).equals("TBD"); // That's the name of the root subject!
-    // SWB
     const extents: AxisAlignedBox3d = imodel1.projectExtents;
     assert(!extents.isNull);
 
@@ -506,9 +505,7 @@ describe("iModel", () => {
     /* eslint-enable @typescript-eslint/naming-convention */
 
     /** Create a simple flat mesh with 4 points (2x2) */
-    // SWB
     const width = imodel5.projectExtents.xLength() * 0.2;
-    // SWB
     const height = imodel5.projectExtents.yLength() * 0.2;
     let shape: GeometryQuery;
     const doPolyface = true;
@@ -551,7 +548,6 @@ describe("iModel", () => {
 
     const props: PhysicalElementProps = {
       classFullName: "Generic:PhysicalObject",
-      // SWB
       placement: { origin: imodel5.projectExtents.center, angles: new YawPitchRollAngles() },
       model: modelId,
       code: Code.createEmpty(),
@@ -1641,7 +1637,7 @@ describe("iModel", () => {
   it("should be able to create a snapshot IModel", async () => {
     const args = {
       // SWB What does project mean here?
-      rootSubject: { name: "TestSubject", description: "test project" },
+      rootSubject: { name: "TestSubject", description: "test iTwin" },
       client: "ABC Engineering",
       globalOrigin: { x: 10, y: 10 },
       // SWB What does project mean here?
@@ -1708,7 +1704,7 @@ describe("iModel", () => {
   it("should be able to create a snapshot IModel and set geolocation by GCS", async () => {
     const args = {
       // SWB What does project mean here?
-      rootSubject: { name: "TestSubject", description: "test project" },
+      rootSubject: { name: "TestSubject", description: "test iTwin" },
       client: "ABC Engineering",
       globalOrigin: { x: 10, y: 10 },
       // SWB What does project mean here?
@@ -1803,7 +1799,7 @@ describe("iModel", () => {
   it("should be able to create a snapshot IModel and set geolocation by ECEF", async () => {
     const args = {
       // SWB What does project mean here?
-      rootSubject: { name: "TestSubject", description: "test project" },
+      rootSubject: { name: "TestSubject", description: "test iTwin" },
       client: "ABC Engineering",
       globalOrigin: { x: 10, y: 10 },
       // SWB What does project mean here?
@@ -1838,7 +1834,7 @@ describe("iModel", () => {
   it("presence of a GCS imposes the ecef value", async () => {
     const args = {
       // SWB What does project mean here?
-      rootSubject: { name: "TestSubject", description: "test project" },
+      rootSubject: { name: "TestSubject", description: "test iTwin" },
       client: "ABC Engineering",
       globalOrigin: { x: 10, y: 10 },
       // SWB What does project mean here?

@@ -87,14 +87,12 @@ export class ContextRealityModelState extends ContextRealityModel {
   }
 }
 
-// SWB
-/** Criteria used to query for reality data associated with an iTwin context.
+/** Criteria used to query for reality data associated with an iTwin.
  * @see [[queryRealityData]].
  * @public
  */
 export interface RealityDataQueryCriteria {
-  // SWB
-  /** The Id of the iTwin context. */
+  /** The Id of the iTwin. */
   iTwinId: GuidString;
   /** If supplied, only reality data overlapping this range will be included. */
   range?: CartographicRange;
@@ -116,11 +114,9 @@ export async function findAvailableUnattachedRealityModels(iTwinId: GuidString, 
   return queryRealityData({ iTwinId, filterIModel: iModel, range: modelCartographicRange });
 }
 
-// SWB
-/** Query for reality data associated with an iTwin context.
+/** Query for reality data associated with an iTwin.
  * @param criteria Criteria by which to query.
-   // SWB
- * @returns Properties of reality data associated with the context, filtered according to the criteria.
+ * @returns Properties of reality data associated with the iTwin, filtered according to the criteria.
  * @public
  */
 export async function queryRealityData(criteria: RealityDataQueryCriteria): Promise<ContextRealityModelProps[]> {

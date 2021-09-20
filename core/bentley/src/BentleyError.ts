@@ -302,24 +302,21 @@ export enum IModelHubStatus {
   EventTypeDoesNotExist = IMODELHUBERROR_BASE + 32,
   EventSubscriptionDoesNotExist = IMODELHUBERROR_BASE + 33,
   EventSubscriptionAlreadyExists = IMODELHUBERROR_BASE + 34,
-  // SWB
-  ProjectIdIsNotSpecified = IMODELHUBERROR_BASE + 35,
-  // SWB
-  FailedToGetProjectPermissions = IMODELHUBERROR_BASE + 36,
-  // SWB
-  FailedToGetProjectMembers = IMODELHUBERROR_BASE + 37,
+  ITwinIdIsNotSpecified = IMODELHUBERROR_BASE + 35,
+  FailedToGetITwinPermissions = IMODELHUBERROR_BASE + 36,
+  FailedToGetITwinMembers = IMODELHUBERROR_BASE + 37,
   ChangeSetAlreadyHasVersion = IMODELHUBERROR_BASE + 38,
   VersionAlreadyExists = IMODELHUBERROR_BASE + 39,
   JobSchedulingFailed = IMODELHUBERROR_BASE + 40,
   ConflictsAggregate = IMODELHUBERROR_BASE + 41,
-  // SWB
-  FailedToGetProjectById = IMODELHUBERROR_BASE + 42,
+  FailedToGetITwinById = IMODELHUBERROR_BASE + 42,
 
   DatabaseOperationFailed = IMODELHUBERROR_BASE + 43,
   SeedFileInitializationFailed = IMODELHUBERROR_BASE + 44,
 
   FailedToGetAssetPermissions = IMODELHUBERROR_BASE + 45,
   FailedToGetAssetMembers = IMODELHUBERROR_BASE + 46,
+  // SWB What does context mean here?
   ContextDoesNotExist = IMODELHUBERROR_BASE + 47,
   FailedToGetProductSettings = IMODELHUBERROR_BASE + 48,
 
@@ -703,22 +700,19 @@ export class BentleyError extends Error {
       case IModelHubStatus.EventTypeDoesNotExist: return "Event type does not exist";
       case IModelHubStatus.EventSubscriptionDoesNotExist: return "Event subscription does not exist";
       case IModelHubStatus.EventSubscriptionAlreadyExists: return "Event subscription already exists";
-      // SWB
-      case IModelHubStatus.ProjectIdIsNotSpecified: return "Project Id is not specified";
-      // SWB
-      case IModelHubStatus.FailedToGetProjectPermissions: return "Failed to get project permissions";
-      // SWB
-      case IModelHubStatus.FailedToGetProjectMembers: return "Failed to get project members";
+      case IModelHubStatus.ITwinIdIsNotSpecified: return "ITwin Id is not specified";
+      case IModelHubStatus.FailedToGetITwinPermissions: return "Failed to get iTwin permissions";
+      case IModelHubStatus.FailedToGetITwinMembers: return "Failed to get iTwin members";
       case IModelHubStatus.FailedToGetAssetPermissions: return "Failed to get asset permissions";
       case IModelHubStatus.FailedToGetAssetMembers: return "Failed to get asset members";
       case IModelHubStatus.ChangeSetAlreadyHasVersion: return "ChangeSet already has version";
       case IModelHubStatus.VersionAlreadyExists: return "Version already exists";
       case IModelHubStatus.JobSchedulingFailed: return "Failed to schedule a background job";
       case IModelHubStatus.ConflictsAggregate: return "Codes or locks are owned by another briefcase";
-      // SWB
-      case IModelHubStatus.FailedToGetProjectById: return "Failed to query project by its id";
+      case IModelHubStatus.FailedToGetITwinById: return "Failed to query iTwin by its id";
       case IModelHubStatus.FailedToGetProductSettings: return "Failed to get product settings";
       case IModelHubStatus.DatabaseOperationFailed: return "Database operation has failed";
+      // SWB What does context mean here?
       case IModelHubStatus.ContextDoesNotExist: return "Context does not exist";
 
       // errors that are returned for incorrect iModelHub request.

@@ -22,8 +22,7 @@ export class HubUtility {
   public static logCategory = "HubUtility";
   public static allowHubBriefcases = false;
 
-  // SWB
-  public static testContextName = "iModelJsIntegrationTest";
+  public static testITwinName = "iModelJsIntegrationTest";
   public static testIModelNames = {
     noVersions: "NoVersionsTest",
     stadium: "Stadium Dataset 1",
@@ -37,7 +36,7 @@ export class HubUtility {
 
     if (undefined !== HubUtility.iTwinId)
       return HubUtility.iTwinId;
-    return HubUtility.getITwinIdByName(requestContext, HubUtility.testContextName);
+    return HubUtility.getITwinIdByName(requestContext, HubUtility.testITwinName);
   }
 
   private static imodelCache = new Map<string, GuidString>();
@@ -46,21 +45,18 @@ export class HubUtility {
     if (HubUtility.imodelCache.has(name))
       return HubUtility.imodelCache.get(name)!;
 
-    // SWB
-    const projectId = await HubUtility.getTestITwinId(requestContext);
-    const imodelId = await HubUtility.queryIModelIdByName(requestContext, projectId, name);
+    const iTwinId = await HubUtility.getTestITwinId(requestContext);
+    const imodelId = await HubUtility.queryIModelIdByName(requestContext, iTwinId, name);
     HubUtility.imodelCache.set(name, imodelId);
     return imodelId;
   }
 
-  // SWB
-  public static async queryIModelByName(requestContext: AuthorizedClientRequestContext, projectId: string, iModelName: string): Promise<GuidString | undefined> {
-    return IModelHost.hubAccess.queryIModelByName({ user: requestContext, iTwinId: projectId, iModelName });
+  public static async queryIModelByName(requestContext: AuthorizedClientRequestContext, iTwinId: string, iModelName: string): Promise<GuidString | undefined> {
+    return IModelHost.hubAccess.queryIModelByName({ user: requestContext, iTwinId, iModelName });
   }
 
-  // SWB
-  private static async queryIModelById(requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: GuidString): Promise<HubIModel | undefined> {
-    const iModels = await getIModelProjectAbstraction().queryIModels(requestContext, projectId, new IModelQuery().byId(iModelId));
+  private static async queryIModelById(requestContext: AuthorizedClientRequestContext, iTwinId: string, iModelId: GuidString): Promise<HubIModel | undefined> {
+    const iModels = await getIModelProjectAbstraction().queryIModels(requestContext, iTwinId, new IModelQuery().byId(iModelId));
     if (iModels.length === 0)
       return undefined;
     return iModels[0];
@@ -86,22 +82,19 @@ export class HubUtility {
   /**
    * Queries the iModel id by its name
    * @param requestContext The client request context
-  // SWB
-   * @param projectId Id of the project
+     * @param iTwinId Id of the parent iTwin
    * @param iModelName Name of the iModel
    * @throws If the iModel is not found, or if there is more than one iModel with the supplied name
    */
-  // SWB
-  public static async queryIModelIdByName(requestContext: AuthorizedClientRequestContext, projectId: GuidString, iModelName: string): Promise<GuidString> {
-    const iModelId = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
+  public static async queryIModelIdByName(requestContext: AuthorizedClientRequestContext, iTwinId: GuidString, iModelName: string): Promise<GuidString> {
+    const iModelId = await HubUtility.queryIModelByName(requestContext, iTwinId, iModelName);
     if (!iModelId)
       throw new Error(`IModel ${iModelName} not found`);
     return iModelId;
   }
 
   /** Download all change sets of the specified iModel */
-  // SWB
-  private static async downloadChangesets(requestContext: AuthorizedClientRequestContext, changeSetsPath: string, _projectId: GuidString, iModelId: GuidString): Promise<ChangeSet[]> {
+  private static async downloadChangesets(requestContext: AuthorizedClientRequestContext, changeSetsPath: string, _iTwinId: GuidString, iModelId: GuidString): Promise<ChangeSet[]> {
     // Determine the range of changesets that remain to be downloaded
     const changeSets = await IModelHubBackend.iModelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery()); // oldest to newest
     if (changeSets.length === 0)
@@ -128,8 +121,7 @@ export class HubUtility {
   }
 
   /** Download all named versions of the specified iModel */
-  // SWB
-  private static async downloadNamedVersions(requestContext: AuthorizedClientRequestContext, _projectId: string, iModelId: GuidString): Promise<Version[]> {
+  private static async downloadNamedVersions(requestContext: AuthorizedClientRequestContext, _iTwinId: string, iModelId: GuidString): Promise<Version[]> {
     const query = new VersionQuery();
     query.orderBy("createdDate");
 
@@ -144,8 +136,7 @@ export class HubUtility {
   /** Download an IModel's seed files and change sets from the Hub.
    *  A standard hierarchy of folders is created below the supplied downloadDir
    */
-  // SWB
-  public static async downloadIModelById(requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: GuidString, downloadDir: string, reDownload: boolean): Promise<void> {
+  public static async downloadIModelById(requestContext: AuthorizedClientRequestContext, iTwinId: string, iModelId: GuidString, downloadDir: string, reDownload: boolean): Promise<void> {
     // Recreate the download folder if necessary
     if (reDownload) {
       if (IModelJsFs.existsSync(downloadDir))
@@ -153,7 +144,7 @@ export class HubUtility {
       IModelJsFs.recursiveMkDirSync(downloadDir);
     }
 
-    const iModel = await HubUtility.queryIModelById(requestContext, projectId, iModelId);
+    const iModel = await HubUtility.queryIModelById(requestContext, iTwinId, iModelId);
     if (!iModel)
       throw new Error(`IModel with id ${iModelId} not found`);
 
@@ -172,16 +163,14 @@ export class HubUtility {
 
     // Download the change sets
     const changeSetDir = path.join(downloadDir, "changeSets//");
-    // SWB
-    const changeSets = await HubUtility.downloadChangesets(requestContext, changeSetDir, projectId, iModelId);
+    const changeSets = await HubUtility.downloadChangesets(requestContext, changeSetDir, iTwinId, iModelId);
 
     const changeSetsJsonStr = JSON.stringify(changeSets, undefined, 4);
     const changeSetsJsonPathname = path.join(downloadDir, "changeSets.json");
     IModelJsFs.writeFileSync(changeSetsJsonPathname, changeSetsJsonStr);
 
     // Download the version information
-    // SWB
-    const namedVersions = await HubUtility.downloadNamedVersions(requestContext, projectId, iModelId);
+    const namedVersions = await HubUtility.downloadNamedVersions(requestContext, iTwinId, iModelId);
     const namedVersionsJsonStr = JSON.stringify(namedVersions, undefined, 4);
     const namedVersionsJsonPathname = path.join(downloadDir, "namedVersions.json");
     IModelJsFs.writeFileSync(namedVersionsJsonPathname, namedVersionsJsonStr);
@@ -190,24 +179,19 @@ export class HubUtility {
   /** Download an IModel's seed files and change sets from the Hub.
    *  A standard hierarchy of folders is created below the supplied downloadDir
    */
-  // SWB
-  public static async downloadIModelByName(requestContext: AuthorizedClientRequestContext, projectName: string, iModelName: string, downloadDir: string, reDownload: boolean): Promise<void> {
-    // SWB
-    const projectId = await HubUtility.getITwinIdByName(requestContext, projectName);
+  public static async downloadIModelByName(requestContext: AuthorizedClientRequestContext, iTwinName: string, iModelName: string, downloadDir: string, reDownload: boolean): Promise<void> {
+    const projectId = await HubUtility.getITwinIdByName(requestContext, iTwinName);
 
-    // SWB
     const iModelId = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
     if (!iModelId)
       throw new Error(`IModel ${iModelName} not found`);
 
-    // SWB
     await HubUtility.downloadIModelById(requestContext, projectId, iModelId, downloadDir, reDownload);
   }
 
   /** Delete an IModel from the hub */
-  // SWB
-  public static async deleteIModel(requestContext: AuthorizedClientRequestContext, projectName: string, iModelName: string): Promise<void> {
-    const iTwinId = await HubUtility.getITwinIdByName(requestContext, projectName);
+  public static async deleteIModel(requestContext: AuthorizedClientRequestContext, iTwinName: string, iModelName: string): Promise<void> {
+    const iTwinId = await HubUtility.getITwinIdByName(requestContext, iTwinName);
     const iModelId = await HubUtility.queryIModelIdByName(requestContext, iTwinId, iModelName);
 
     await IModelHost.hubAccess.deleteIModel({ user: requestContext, iTwinId, iModelId });
@@ -336,10 +320,9 @@ export class HubUtility {
    * merging the change sets, reversing them, and finally reinstating them. The method also logs the necessary performance
    * metrics with these operations.
    */
-  // SWB
-  public static async validateAllChangeSetOperations(requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: GuidString, iModelDir: string) {
+  public static async validateAllChangeSetOperations(requestContext: AuthorizedClientRequestContext, iTwinId: string, iModelId: GuidString, iModelDir: string) {
     Logger.logInfo(HubUtility.logCategory, "Downloading seed file and all available change sets");
-    await HubUtility.downloadIModelById(requestContext, projectId, iModelId, iModelDir, true /* =reDownload */);
+    await HubUtility.downloadIModelById(requestContext, iTwinId, iModelId, iModelDir, true /* =reDownload */);
 
     this.validateAllChangeSetOperationsOnDisk(iModelDir);
   }
@@ -374,9 +357,8 @@ export class HubUtility {
   /** Upload an IModel's seed files and change sets to the hub
    * It's assumed that the uploadDir contains a standard hierarchy of seed files and change sets.
    */
-  // SWB
-  public static async pushIModelAndChangeSets(requestContext: AuthorizedClientRequestContext, projectName: string, uploadDir: string, iModelName?: string, overwrite?: boolean): Promise<GuidString> {
-    const iTwinId = await HubUtility.getITwinIdByName(requestContext, projectName);
+  public static async pushIModelAndChangeSets(requestContext: AuthorizedClientRequestContext, iTwinName: string, uploadDir: string, iModelName?: string, overwrite?: boolean): Promise<GuidString> {
+    const iTwinId = await HubUtility.getITwinIdByName(requestContext, iTwinName);
     const seedPathname = HubUtility.getSeedPathname(uploadDir);
     const iModelId = await HubUtility.pushIModel(requestContext, iTwinId, seedPathname, iModelName, overwrite);
 
@@ -471,15 +453,13 @@ export class HubUtility {
   /**
    * Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded
    */
-  // SWB
-  public static async purgeAcquiredBriefcases(requestContext: AuthorizedClientRequestContext, projectName: string, iModelName: string, acquireThreshold: number = 16): Promise<void> {
+  public static async purgeAcquiredBriefcases(requestContext: AuthorizedClientRequestContext, iTwinName: string, iModelName: string, acquireThreshold: number = 16): Promise<void> {
     assert.isTrue(this.allowHubBriefcases || HubMock.isValid, "Must use HubMock for tests that modify iModels");
-    // SWB
-    const projectId = await HubUtility.getITwinIdByName(requestContext, projectName);
-    const iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
+    const iTwinId = await HubUtility.getITwinIdByName(requestContext, iTwinName);
+    const iModelId = await HubUtility.queryIModelIdByName(requestContext, iTwinId, iModelName);
 
     return this.purgeAcquiredBriefcasesById(requestContext, iModelId, () => {
-      Logger.logInfo(HubUtility.logCategory, `Reached limit of maximum number of briefcases for ${projectName}:${iModelName}. Purging all briefcases.`);
+      Logger.logInfo(HubUtility.logCategory, `Reached limit of maximum number of briefcases for ${iTwinName}:${iModelName}. Purging all briefcases.`);
     }, acquireThreshold);
   }
 
@@ -609,10 +589,9 @@ export class HubUtility {
   }
 }
 
-// SWB What does project mean here? Should this class be renamed?
-/** An implementation of IModelProjectAbstraction backed by an iTwin project */
+// SWB Should this class be renamed?
+/** An implementation of IModelProjectAbstraction backed by an iTwin */
 
-// SWB
 class TestIModelHubProject {
   public get isIModelHub(): boolean { return true; }
   public terminate(): void { }
@@ -623,14 +602,12 @@ class TestIModelHubProject {
 
   private static _iTwinAccessClient?: ITwinAccessClient;
 
-  // SWB
   private static get iTwinClient(): ITwinAccessClient {
     if (this._iTwinAccessClient === undefined)
       this._iTwinAccessClient = new ITwinAccessClient();
     return this._iTwinAccessClient;
   }
 
-  // SWB
   public async getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
     const client = TestIModelHubProject.iTwinClient;
     const iTwinList: ITwin[] = await client.getAll(requestContext, {
@@ -649,17 +626,14 @@ class TestIModelHubProject {
     return iTwinList[0];
   }
 
-  // SWB
-  public async queryIModels(requestContext: AuthorizedClientRequestContext, projectId: string, query: IModelQuery | undefined): Promise<HubIModel[]> {
+  public async queryIModels(requestContext: AuthorizedClientRequestContext, iTwinId: string, query: IModelQuery | undefined): Promise<HubIModel[]> {
     const client = this.iModelHubClient;
-    // SWB
-    return client.iModels.get(requestContext, projectId, query);
+    return client.iModels.get(requestContext, iTwinId, query);
   }
 }
 
-// SWB
 let projectAbstraction: TestIModelHubProject;
-// SWB What does project mean here?
+// SWB Should this be renamed along with the class?
 export function getIModelProjectAbstraction(): TestIModelHubProject {
   if (projectAbstraction !== undefined)
     return projectAbstraction;

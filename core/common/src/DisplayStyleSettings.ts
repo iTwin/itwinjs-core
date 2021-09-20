@@ -192,17 +192,15 @@ export interface DisplayStyle3dProps extends DisplayStyleProps {
 }
 
 /** Controls which settings are serialized by [[DisplayStyleSettings.toOverrides]]. A display style includes some settings that are specific to a given iModel - for example,
-// SWB What does project mean here?
- * the subcategory overrides are indexed by subcategory Ids and model appearance overrides are indexed by model ids. Other settings are specific to a given project, like the set of displayed context reality models. Such settings can be useful
- * when creating display style overrides intended for use with a specific iModel or project, but should be omitted when creating general-purpose display style overrides intended
- * for use with any iModel or project. This is the default behavior if no more specific options are provided.
+ * the subcategory overrides are indexed by subcategory Ids and model appearance overrides are indexed by model ids. Other settings are specific to a given iTwin, like the set of displayed context reality models. Such settings can be useful
+ * when creating display style overrides intended for use with a specific iModel or iTwin, but should be omitted when creating general-purpose display style overrides intended
+ * for use with any iModel or iTwin. This is the default behavior if no more specific options are provided.
  * @public
  */
 export interface DisplayStyleOverridesOptions {
   /** Serialize all settings. Applying the resultant [[DisplayStyleSettingsProps]] will produce a [[DisplayStyleSettings]] identical to the original settings. */
   includeAll?: true;
-  // SWB What does project mean here?
-  /** Serialize iModel-specific settings. These settings are only meaningful within the context of a specific iModel. Setting this to `true` implies all project-specific settings will be serialized too.
+  /** Serialize iModel-specific settings. These settings are only meaningful within the context of a specific iModel. Setting this to `true` implies all iTwin-specific settings will be serialized too.
    * The following are iModel-specific settings:
    *  * Subcategory overrides.
    *  * Model Appearance overrides.
@@ -216,14 +214,14 @@ export interface DisplayStyleOverridesOptions {
    */
   includeIModelSpecific?: true;
   // SWB What does project mean here?
-  /** Serialize project-specific settings. These settings are only meaningful within the context of a specific project. These settings are always included if `includeIModelSpecific` is `true`.
-   * The following are project-specific settings:
+  /** Serialize iTwin-specific settings. These settings are only meaningful within the context of a specific iTwin. These settings are always included if `includeIModelSpecific` is `true`.
+   * The following are iTwin-specific settings:
 // SWB What does context mean here?
    *  * Context reality models. If iModel-specific settings are *not* serialized, the classifiers will be omitted.
    *  * Time point.
    */
   // SWB What does project mean here?
-  includeProjectSpecific?: true;
+  includeITwinSpecific?: true;
   /** Serialize settings related to drawing aid decorations (the ACS triad and the grid). */
   includeDrawingAids?: true;
   /** Serialize the background map settings. */
@@ -931,7 +929,7 @@ export class DisplayStyleSettings {
     }
 
     // SWB What does project mean here?
-    if (options?.includeProjectSpecific || options?.includeIModelSpecific) {
+    if (options?.includeITwinSpecific || options?.includeIModelSpecific) {
       props.timePoint = this.timePoint;
       if (this._json.contextRealityModels) {
         props.contextRealityModels = this._json.contextRealityModels;

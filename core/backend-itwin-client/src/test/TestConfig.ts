@@ -30,7 +30,6 @@ loadEnv(path.join(__dirname, "..", "..", ".env"));
  */
 export class TestConfig {
   /** Query for the specified iTwin */
-  // SWB
   public static async getITwinIdByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<string> {
     const iTwinAccessClient = new ITwinAccessClient();
     const iTwinList: ITwin[] = await iTwinAccessClient.getAll(requestContext, {
@@ -53,14 +52,12 @@ export class TestConfig {
   }
 
   /** Query for the specified iModel */
-  // SWB
-  public static async queryIModelId(requestContext: AuthorizedClientRequestContext, iModelName: string, projectId: GuidString): Promise<string> {
+  public static async queryIModelId(requestContext: AuthorizedClientRequestContext, iModelName: string, iTwinId: GuidString): Promise<string> {
     const imodelHubClient: IModelClient = new IModelHubClient();
-    const iModel: HubIModel = (await imodelHubClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName)))[0];
+    const iModel: HubIModel = (await imodelHubClient.iModels.get(requestContext, iTwinId, new IModelQuery().byName(iModelName)))[0];
     if (!iModel || !iModel.wsgId || iModel.name !== iModelName) {
       const userInfo = requestContext.accessToken.getUserInfo();
-      // SWB
-      throw new Error(`iModel ${iModelName} not found for project ${projectId} for user ${!userInfo ? "n/a" : userInfo.email}.`);
+      throw new Error(`iModel ${iModelName} not found for iTwin ${iTwinId} for user ${!userInfo ? "n/a" : userInfo.email}.`);
     }
 
     return iModel.wsgId;

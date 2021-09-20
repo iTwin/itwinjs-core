@@ -54,14 +54,14 @@ export class WebAppRpcLogging {
   }
 
   private static findPathIds(path: string) {
-    // SWB
-    let contextId = "";
+    let iTwinId = "";
     let iModelId = "";
 
     const tokens = path.split("/");
     for (let i = 0; i !== tokens.length; ++i) {
+      // SWB How is this regex being used, what else needs to be renamed to match it?
       if ((/^context$/i).test(tokens[i])) {
-        contextId = tokens[i + 1] || "";
+        iTwinId = tokens[i + 1] || "";
       }
 
       if ((/^imodel$/i).test(tokens[i])) {
@@ -69,7 +69,7 @@ export class WebAppRpcLogging {
       }
     }
 
-    return { contextId, iModelId };
+    return { iTwinId, iModelId };
   }
 
   private static buildOperationDescriptor(operation: RpcOperation | SerializedRpcOperation): string {
