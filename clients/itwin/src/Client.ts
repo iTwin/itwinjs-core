@@ -92,6 +92,8 @@ export abstract class Client {
       this._url = this.baseUrl;
     }
 
+    // Strip trailing '/'
+    this._url = this._url.replace(/\/$/, "");
     return this._url;
   }
 

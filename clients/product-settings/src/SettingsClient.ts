@@ -28,9 +28,6 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     this.baseUrl = "https://api.bentley.com/productsettings";
   }
 
-  /** @internal */
-  protected getUrlSearchKey(): string { assert(false, "Bentley cloud-specific method should be factored out of WsgClient base class"); return ""; }
-
   protected override async setupOptionDefaults(options: RequestOptions): Promise<void> {
     await super.setupOptionDefaults(options);
   }

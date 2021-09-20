@@ -709,13 +709,6 @@ async function main() {
         responseType: "code",
       },
     },
-    nativeApp: {
-      authConfig: {
-        clientId: "imodeljs-electron-test",
-        redirectUri: ProcessDetector.isMobileAppFrontend ? "imodeljs://app/signin-callback" : "http://localhost:3000/signin-callback",
-        scope: baseOidcScopes.concat(["offline_access"]).join(" "),
-      },
-    },
   };
 
   // Start the app.
