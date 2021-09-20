@@ -202,10 +202,10 @@ export class ExplosionEffect extends Tool {
   public static override toolId = "ExplosionEffect";
 
   /** This method runs the tool, applying an explosion particle effect. */
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (vp)
-      ParticleSystem.addDecorator(vp.iModel); // eslint-disable-line @typescript-eslint/no-floating-promises
+      await ParticleSystem.addDecorator(vp.iModel);
 
     return true;
   }

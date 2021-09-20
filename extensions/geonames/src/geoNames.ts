@@ -22,7 +22,7 @@ iModel.js Extensions are javascript fragments that can be loaded at runtime
 into an appropriately configured browser or Electron process.
 -------------------------------------------------------------------------*/
 
-/** Properties that define a geographic entty
+/** Properties that define a geographic entity
  * @beta
  */
 export interface GeoNameProps {
@@ -59,7 +59,7 @@ class GeoNameMarker extends Marker {
       if (BeButton.Data === ev.button) {
         const evViewport = ev.viewport;
         (async () => {
-          await evViewport.animateFlyoverToGlobalLocation({ center: new Cartographic(this.props.lng * Angle.radiansPerDegree, this.props.lat * Angle.radiansPerDegree) });
+          await evViewport.animateFlyoverToGlobalLocation({ center: Cartographic.fromRadians({longitude: this.props.lng * Angle.radiansPerDegree, latitude: this.props.lat * Angle.radiansPerDegree}) });
         })().catch(() => { });
       } else if (BeButton.Reset === ev.button && undefined !== this.props.wikipedia && 0 !== this.props.wikipedia.length)
         window.open(`https://${this.props.wikipedia}`);
@@ -77,7 +77,7 @@ export class GeoNameMarkerManager {
   private _markerSet: GeoNameMarkerSet;
   public static decorator?: GeoNameMarkerManager; // static variable so we can tell if the manager is active.
   protected _requestContext = new ClientRequestContext("");
-  private static _scratchCarto = new Cartographic(0, 0, 0);
+  private static _scratchCarto = Cartographic.createZero();
   private static _scratchPoint = Point3d.createZero();
 
   public constructor(vp: ScreenViewport, private _cityMarkerImage: HTMLImageElement, private _cityCount = 50) { this._markerSet = new GeoNameMarkerSet(vp); }
@@ -181,13 +181,10 @@ export class GeoNameMarkerManager {
 abstract class GeoNameTool extends Tool {
   public static override get maxArgs() { return 1; }
   public static override get minArgs() { return 0; }
-  public override parseAndRun(..._args: string[]): boolean {
-    return this.run();
-  }
 
   public abstract doRunWithViewport(vp: ScreenViewport): void;
 
-  public override run(viewport?: ScreenViewport): boolean {
+  public override async run(viewport?: ScreenViewport): Promise<boolean> {
     if (undefined === viewport)
       viewport = IModelApp.viewManager.selectedView;
 

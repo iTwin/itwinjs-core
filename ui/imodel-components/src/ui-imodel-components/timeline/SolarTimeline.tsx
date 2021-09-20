@@ -24,7 +24,7 @@ import { ColorSwatch } from "../color/Swatch";
 import { SolarDataProvider } from "./interfaces";
 import { PlayButton } from "./PlayerButton";
 import { SpeedTimeline } from "./SpeedTimeline";
-import { CustomThumb, getPercentageOfRectangle, RailToolTip, useFocusedThumb } from "./Scrubber";
+import { CustomThumb, getPercentageOfRectangle, RailMarkers, useFocusedThumb } from "./Scrubber";
 import { UiIModelComponents } from "../UiIModelComponents";
 
 // cSpell:ignore millisec solarsettings showticks shadowcolor solartimeline datepicker millisecs
@@ -98,7 +98,7 @@ function Timeline(props: TimelineProps) {
     const totalDuration = sunSetOffsetMs - sunRiseOffsetMs;
     const percent = (isPlaying || thumbHasFocus) ? (currentTimeOffsetMs - sunRiseOffsetMs) / totalDuration : pointerPercent;
     const tooltipText = formatTime((isPlaying || thumbHasFocus) ? (dayStartMs + currentTimeOffsetMs) : (dayStartMs + (sunRiseOffsetMs + (pointerPercent * totalDuration))));
-    return (<RailToolTip showToolTip={showTip} percent={percent} tooltipText={tooltipText} />);
+    return (<RailMarkers showToolTip={showTip} percent={percent} tooltipText={tooltipText} />);
   }, [isPlaying, showRailTooltip, thumbHasFocus, sunSetOffsetMs, sunRiseOffsetMs, currentTimeOffsetMs, pointerPercent, formatTime, dayStartMs]);
 
   const className = classnames("solar-slider", props.className, formatTick && "showticks");

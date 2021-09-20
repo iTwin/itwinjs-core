@@ -179,7 +179,7 @@ describe("<KeyinPalettePanel>", () => {
 
     class TestImmediate extends Tool {
       public static override toolId = "Test.Immediate";
-      public override run(): boolean {
+      public override async run(): Promise<boolean> {
         return true;
       }
     }

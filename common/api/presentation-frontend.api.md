@@ -55,6 +55,25 @@ import { UpdateHierarchyStateParams } from '@bentley/presentation-common';
 import { VariableValue } from '@bentley/presentation-common';
 
 // @internal (undocumented)
+export class BrowserLocalFavoritePropertiesStorage implements IFavoritePropertiesStorage {
+    constructor(props?: {
+        localStorage?: Storage;
+    });
+    // (undocumented)
+    createFavoritesSettingItemKey(projectId?: string, imodelId?: string): string;
+    // (undocumented)
+    createOrderSettingItemKey(projectId?: string, imodelId?: string): string;
+    // (undocumented)
+    loadProperties(projectId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined>;
+    // (undocumented)
+    loadPropertiesOrder(projectId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
+    // (undocumented)
+    saveProperties(properties: Set<PropertyFullName>, projectId?: string, imodelId?: string): Promise<void>;
+    // (undocumented)
+    savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], projectId: string | undefined, imodelId: string): Promise<void>;
+}
+
+// @internal (undocumented)
 export const buildPagedResponse: <TItem>(requestedPage: PageOptions | undefined, getter: (page: Required<PageOptions>, requestIndex: number) => Promise<PagedResponse<TItem>>) => Promise<PagedResponse<TItem>>;
 
 // @alpha (undocumented)
@@ -63,8 +82,18 @@ export function consoleDiagnosticsHandler(scopeLogs: DiagnosticsScopeLogs[]): vo
 // @alpha (undocumented)
 export function createCombinedDiagnosticsHandler(handlers: DiagnosticsHandler[]): (scopeLogs: DiagnosticsScopeLogs[]) => void;
 
+// @public
+export function createFavoritePropertiesStorage(type: DefaultFavoritePropertiesStorageTypes): IFavoritePropertiesStorage;
+
 // @internal (undocumented)
 export const createFieldOrderInfos: (field: Field) => FavoritePropertiesOrderInfo[];
+
+// @public
+export enum DefaultFavoritePropertiesStorageTypes {
+    BrowserLocalStorage = 1,
+    Noop = 0,
+    UserSettingsServiceStorage = 2
+}
 
 // @public
 export class FavoritePropertiesManager implements IDisposable {
@@ -190,10 +219,24 @@ export interface NodeIdentifier {
 }
 
 // @internal (undocumented)
+export class NoopFavoritePropertiesStorage implements IFavoritePropertiesStorage {
+    // (undocumented)
+    loadProperties(_projectId?: string, _imodelId?: string): Promise<Set<PropertyFullName> | undefined>;
+    // (undocumented)
+    loadPropertiesOrder(_projectId: string | undefined, _imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
+    // (undocumented)
+    saveProperties(_properties: Set<PropertyFullName>, _projectId?: string, _imodelId?: string): Promise<void>;
+    // (undocumented)
+    savePropertiesOrder(_orderInfos: FavoritePropertiesOrderInfo[], _projectId: string | undefined, _imodelId: string): Promise<void>;
+}
+
+// @internal (undocumented)
 export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropertiesStorage, IDisposable {
     constructor(props: OfflineCachingFavoritePropertiesStorageProps);
     // (undocumented)
     dispose(): void;
+    // (undocumented)
+    get impl(): IFavoritePropertiesStorage;
     // (undocumented)
     loadProperties(projectId?: string, imodelId?: string): Promise<Set<string> | undefined>;
     // (undocumented)
@@ -202,28 +245,25 @@ export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropert
     saveProperties(properties: Set<PropertyFullName>, projectId?: string, imodelId?: string): Promise<void>;
     // (undocumented)
     savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], projectId: string | undefined, imodelId: string): Promise<void>;
-    }
+}
 
 // @internal (undocumented)
 export interface OfflineCachingFavoritePropertiesStorageProps {
     // (undocumented)
-    connectivityInfo: IConnectivityInformationProvider;
+    connectivityInfo?: IConnectivityInformationProvider;
     // (undocumented)
     impl: IFavoritePropertiesStorage;
 }
 
 // @public
 export class Presentation {
-    static get connectivity(): IConnectivityInformationProvider;
     static get favoriteProperties(): FavoritePropertiesManager;
     static get i18n(): I18N;
-    static initialize(props?: PresentationManagerProps): Promise<void>;
+    static initialize(props?: PresentationProps): Promise<void>;
     static get presentation(): PresentationManager;
     // @internal
     static registerInitializationHandler(handler: () => Promise<() => void>): void;
     static get selection(): SelectionManager;
-    // @internal (undocumented)
-    static setConnectivityInformationProvider(value: IConnectivityInformationProvider): void;
     // @internal (undocumented)
     static setFavoritePropertiesManager(value: FavoritePropertiesManager): void;
     // @internal (undocumented)
@@ -297,6 +337,13 @@ export interface PresentationManagerProps {
     rpcRequestsHandler?: RpcRequestsHandler;
     // @internal (undocumented)
     stateTracker?: StateTracker;
+}
+
+// @public
+export interface PresentationProps {
+    favorites?: FavoritePropertiesManagerProps;
+    presentation?: PresentationManagerProps;
+    selection?: SelectionManagerProps;
 }
 
 // @public

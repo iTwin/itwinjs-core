@@ -59,8 +59,6 @@ export interface PropertyValueRendererContext {
   onPopupHide?: () => void;
   /** Callback to request for Dialog to be opened. */
   onDialogOpen?: (dialogState: PropertyDialogState) => void;
-  /** Text with custom style applied to it */
-  decoratedTextElement?: React.ReactNode;
   /** Callback to highlight text */
   textHighlighter?: (text: string) => React.ReactNode;
   /** Default value to show if value rendering is asynchronous */

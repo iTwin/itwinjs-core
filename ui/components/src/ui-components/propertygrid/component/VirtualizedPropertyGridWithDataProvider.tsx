@@ -26,8 +26,8 @@ export interface VirtualizedPropertyGridWithDataProviderProps extends CommonProp
     filteredTypes?: FilteredType[];
   };
   propertyCategoryRendererManager?: PropertyCategoryRendererManager;
-  width?: number;
-  height?: number;
+  width: number;
+  height: number;
 }
 
 /**
@@ -36,8 +36,7 @@ export interface VirtualizedPropertyGridWithDataProviderProps extends CommonProp
  * @beta
  */
 export function VirtualizedPropertyGridWithDataProvider(props: VirtualizedPropertyGridWithDataProviderProps) {
-  // eslint-disable-next-line deprecation/deprecation
-  const modelSource = usePropertyGridModelSource({ dataProvider: props.dataProvider, onPropertyLinkClick: props.onPropertyLinkClick });
+  const modelSource = usePropertyGridModelSource({ dataProvider: props.dataProvider });
   const model = usePropertyGridModel({ modelSource });
   const eventHandler = usePropertyGridEventHandler({ modelSource });
 

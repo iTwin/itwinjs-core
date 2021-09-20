@@ -17,7 +17,7 @@ import { UiFramework } from "../UiFramework";
 export class FrameworkToolAdmin extends ToolAdmin {
 
   /** Process shortcut key events */
-  public override processShortcutKey(e: KeyboardEvent, wentDown: boolean): boolean {
+  public override async processShortcutKey(e: KeyboardEvent, wentDown: boolean): Promise<boolean> {
     let handled = false;
 
     if (wentDown && !UiFramework.isContextMenuOpen) {

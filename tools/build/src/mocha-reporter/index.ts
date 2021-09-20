@@ -15,10 +15,10 @@ const Spec = require("mocha/lib/reporters/spec");
 const MochaJUnitReporter = require("mocha-junit-reporter");
 
 function withStdErr(callback: () => void) {
-  const originalConsoleLog = console.log;
-  console.log = console.error;
+  const originalConsoleLog = Base.consoleLog;
+  Base.consoleLog = console.error;
   callback();
-  console.log = originalConsoleLog;
+  Base.consoleLog = originalConsoleLog;
 }
 
 declare const mocha: any;
