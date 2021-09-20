@@ -1,6 +1,6 @@
 # Named Versions
 
-Every [ChangeSet]($imodelhub-client) pushed to iModelHub creates a new Version of iModel. To distinguish a specific ChangeSet in iModel's timeline, that represents an important milestone or significant event for that iModel, its Version can be given a unique human-readable name, creating a Named [Version]($imodelhub-client). It will allow Version to be easier to recognize and access. Named Versions can be queried separately from ChangeSets and they get [Thumbnail]($imodelhub-client)s rendered.
+Every `Changeset` pushed to iModelHub creates a new Version of the iModel. To distinguish a specific ChangeSet in an iModel's timeline, that represents an important milestone or significant event for that iModel, its Version can be given a unique human-readable name, creating a Named Version ([IModelVersion.name]($imodeljs-common)). It enables the Version to be easier to recognize and access.
 
 ## Creating Named Versions
 
@@ -19,7 +19,3 @@ After creating Named Version, its possible to query them by calling [VersionHand
 ``` ts
 [[include:VersionHandler.get.example-code]]
 ```
-
-## detachChangeCache() deprecated
-
-The only way to detach change cache is to close the connection. The api will be remove in future.
