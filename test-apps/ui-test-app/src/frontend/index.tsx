@@ -673,10 +673,6 @@ async function main() {
 
   ToolAdmin.exceptionHandler = async (err: any) => Promise.resolve(ErrorHandling.onUnexpectedError(err));
 
-  // Logger.setLevel("ui-framework.Toolbar", LogLevel.Info);  // used to show minimal output calculating toolbar overflow
-  // Logger.setLevel("ui-framework.Toolbar", LogLevel.Trace);  // used to show detailed output calculating toolbar overflow
-  // Logger.setLevel("ui-framework.DefaultToolSettings", LogLevel.Trace);  // used to show detailed output calculating default toolsettings
-
   // retrieve, set, and output the global configuration variable
   SampleAppIModelApp.testAppConfiguration = {};
   const envVar = "IMJS_TESTAPP_SNAPSHOT_FILEPATH";
@@ -688,7 +684,7 @@ async function main() {
 
   let rpcParams: BentleyCloudRpcParams;
   if (process.env.IMJS_GP_BACKEND) {
-    rpcParams = { info: { title: "general-purpose-imodeljs-backend", version: "v2.0" }, uriPrefix: "https://api.bentley.com" };
+    rpcParams = { info: { title: "general-purpose-imodeljs-backend", version: "v2.0" }, uriPrefix: `https://${undefined === process.env.IMJS_URL_PREFIX ? "" : process.env.IMJS_URL_PREFIX}api.bentley.com` };
   } else {
     rpcParams = { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
   }
