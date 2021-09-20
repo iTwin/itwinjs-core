@@ -37,7 +37,6 @@ export interface ClientRequestContextProps extends SessionProps {
  * purposes including usage tracking and logging. Services that require authorization are
  * passed an instance of the subclass:
  * [AuthorizedClientRequestContext]($itwin-client)
- * @see [ClientRequestContext rules]($docs/learning/backend/managingclientrequestcontext.md).
  * @see [AuthorizedClientRequestContext]($itwin-client)
  * @public
  */
@@ -64,6 +63,7 @@ export class ClientRequestContext {
   }
 
   /** Use this for logging for ClientRequestContext.
+   * It returns only sanitized members, intentionally removing all others to avoid logging secrets or violating user-privacy rules.
    */
   public sanitize() {
     return {
