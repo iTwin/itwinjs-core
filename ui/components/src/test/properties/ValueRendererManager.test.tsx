@@ -140,5 +140,19 @@ describe("PropertyValueRendererManager", () => {
 
       expect(valueMount.text()).to.be.equal(UiComponents.translate("property.varies"));
     });
+
+    it("renders merged properties before looking for custom renderer in property typename", () => {
+      const property = TestUtils.createPrimitiveStringProperty("Label", "Test prop");
+      property.property.typename = "stub";
+      property.isMerged = true;
+
+      const rendererManager = new PropertyValueRendererManager();
+      rendererManager.registerRenderer("stub", fakeRenderer);
+
+      const value = rendererManager.render(property);
+      const valueMount = mount(<div>{value}</div>);
+      expect(valueMount.text()).to.be.equal(UiComponents.translate("property.varies"));
+      expect(fakeRenderer.render).to.not.be.called;
+    });
   });
 });
