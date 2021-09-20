@@ -161,7 +161,7 @@ export class IModelTestUtils {
      */
   public static async getUserContext(user: TestUserType): Promise<AuthorizedClientRequestContext> {
     if (HubMock.isValid) {
-      return new AuthorizedClientRequestContext("bogusTokenString");
+      return new AuthorizedClientRequestContext(TestUserType[user]);
     }
 
     let credentials: TestUserCredentials;
