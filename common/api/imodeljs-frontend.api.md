@@ -7492,7 +7492,8 @@ export type RealityModelSource = ViewState | DisplayStyleState;
 
 // @internal
 export class RealityModelTileClient {
-    constructor(url: string, accessToken?: AccessToken, contextId?: string);
+    constructor(url: string, contextId?: string);
+
     // (undocumented)
     getBlobAccessData(): Promise<URL | undefined>;
     getRealityDataType(): Promise<string | undefined>;

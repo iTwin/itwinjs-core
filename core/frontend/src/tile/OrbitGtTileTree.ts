@@ -405,12 +405,12 @@ export namespace OrbitGtTileTree {
     return true;
   }
 
-  async function updateOrbitGtBlobPropsFromRdsUrl(rdsUrl: string | undefined, props: OrbitGtBlobProps, accessToken: AccessToken, containerId: string | undefined): Promise<boolean> {
+  async function updateOrbitGtBlobPropsFromRdsUrl(rdsUrl: string | undefined, props: OrbitGtBlobProps, containerId: string | undefined): Promise<boolean> {
 
     if(!rdsUrl || !containerId)
       return false;
 
-    const tileClient = new RealityModelTileClient(rdsUrl, accessToken, containerId);
+    const tileClient = new RealityModelTileClient(rdsUrl, containerId);
 
     const blobUrl = await tileClient.getBlobAccessData();
     if (!blobUrl)
@@ -450,7 +450,7 @@ export namespace OrbitGtTileTree {
       return true;
 
     // Otherwise, refresh using RDS URL
-    return updateOrbitGtBlobPropsFromRdsUrl(props.rdsUrl, props, accessToken, iModel.contextId);
+    return updateOrbitGtBlobPropsFromRdsUrl(props.rdsUrl, props, iModel.contextId);
   }
 
   export async function createOrbitGtTileTree(props: OrbitGtBlobProps, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined> {
