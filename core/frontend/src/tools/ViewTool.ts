@@ -3331,7 +3331,6 @@ export class ViewGlobeLocationTool extends ViewTool {
             if (elevationOffset !== undefined)
               this._globalLocation.center.height = elevationOffset;
           }
-          await this._doLocationView();
         }
       } catch (_) {
       }

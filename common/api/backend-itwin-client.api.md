@@ -62,9 +62,10 @@ export abstract class BackendAuthorizationClient extends ImsAuthorizationClient 
 
 // @beta
 export interface BackendAuthorizationClientConfiguration {
-    clientId: string;
-    clientSecret: string;
-    scope: string;
+    readonly authority?: string;
+    readonly clientId: string;
+    readonly clientSecret: string;
+    readonly scope: string;
 }
 
 // @public

@@ -46,11 +46,13 @@ describe("AgentAuthorizationClient (#integration)", () => {
       throw new Error("Could not find IMJS_AGENT_TEST_CLIENT_ID");
     if (process.env.IMJS_AGENT_TEST_CLIENT_SECRET === undefined)
       throw new Error("Could not find IMJS_AGENT_TEST_CLIENT_SECRET");
+    if (process.env.IMJS_AGENT_TEST_CLIENT_SCOPES === undefined)
+      throw new Error("Could not find IMJS_AGENT_TEST_CLIENT_SCOPES");
 
     agentConfiguration = {
       clientId: process.env.IMJS_AGENT_TEST_CLIENT_ID ?? "",
       clientSecret: process.env.IMJS_AGENT_TEST_CLIENT_SECRET ?? "",
-      scope: "imodelhub rbac-user:external-client reality-data:read urlps-third-party context-registry-service:read-only imodeljs-backend-2686",
+      scope: process.env.IMJS_AGENT_TEST_CLIENT_SCOPES ?? "",
     };
 
   });
