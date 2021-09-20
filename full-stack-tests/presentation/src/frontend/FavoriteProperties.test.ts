@@ -55,8 +55,7 @@ describe("Favorite properties", () => {
       // note: Presentation is initialized without client services, so favorite properties are stored locally - clearing
       // them doesn't affect what's stored in user settings service
       await Presentation.favoriteProperties.clear(imodel, FavoritePropertiesScope.Global);
-      // SWB
-      await Presentation.favoriteProperties.clear(imodel, FavoritePropertiesScope.Project);
+      await Presentation.favoriteProperties.clear(imodel, FavoritePropertiesScope.ITwin);
       await Presentation.favoriteProperties.clear(imodel, FavoritePropertiesScope.IModel);
     });
 
@@ -153,7 +152,7 @@ describe("Favorite properties", () => {
       // them doesn't affect what's stored in user settings service
       await Presentation.favoriteProperties.clear(imodel, FavoritePropertiesScope.Global);
       // SWB
-      await Presentation.favoriteProperties.clear(imodel, FavoritePropertiesScope.Project);
+      await Presentation.favoriteProperties.clear(imodel, FavoritePropertiesScope.ITwin);
       await Presentation.favoriteProperties.clear(imodel, FavoritePropertiesScope.IModel);
     });
 

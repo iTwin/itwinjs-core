@@ -62,7 +62,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
   public override async componentDidMount(): Promise<void> {
     if (this.props.initialIModels && this.props.initialIModels.length > 0) {
       // SWB
-      const currentProject = this.props.initialIModels[0].projectInfo;
+      const currentProject = this.props.initialIModels[0].iTwinInfo;
       currentProject.id = "";
 
       this.setState({
@@ -71,7 +71,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
         isLoadingiModels: false,
         isLoadingiModel: false,
         // SWB
-        currentProject: this.props.initialIModels[0].projectInfo, // eslint-disable-line @bentley/react-set-state-usage
+        currentProject: this.props.initialIModels[0].iTwinInfo, // eslint-disable-line @bentley/react-set-state-usage
         iModels: this.props.initialIModels,  // eslint-disable-line @bentley/react-set-state-usage
       });
     }
