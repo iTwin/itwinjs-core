@@ -280,8 +280,7 @@ export abstract class TransformElementsTool extends ElementSetTool {
   }
 
   public override async onCleanup() {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.clearAgendaGraphics();
+    await this.clearAgendaGraphics();
     return super.onCleanup();
   }
 }

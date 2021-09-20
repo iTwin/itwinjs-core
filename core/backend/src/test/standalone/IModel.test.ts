@@ -4,41 +4,38 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
+import { Base64 } from "js-base64";
 import * as path from "path";
 import * as semver from "semver";
-import {
-  ClientRequestContext, DbResult, GetMetaDataFunction, Guid, GuidString, Id64, Id64String, Logger, LogLevel, OpenMode, using,
-} from "@bentley/bentleyjs-core";
+import { DbResult, Guid, GuidString, Id64, Id64String, OpenMode, using } from "@bentley/bentleyjs-core";
 import {
   GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles,
 } from "@bentley/geometry-core";
 import { CheckpointV2 } from "@bentley/imodelhub-client";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
-  DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeographicCRS, GeometricElement3dProps,
-  GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError, IModelStatus, MapImageryProps, ModelProps,
-  PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance,
-  TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
+  DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeographicCRS,
+  GeometricElement3dProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError, IModelStatus,
+  MapImageryProps, ModelProps, PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState,
+  SpatialViewDefinitionProps, SubCategoryAppearance, TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { BlobDaemon } from "@bentley/imodeljs-native";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { V2CheckpointManager } from "../../CheckpointManager";
 import { BriefcaseDb } from "../../IModelDb";
+import { IModelHubBackend } from "../../IModelHubBackend";
 import {
-  BackendRequestContext, BisCoreSchema, Category, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions,
-  DefinitionModel, DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic,
-  ECSqlStatement, Element, ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d,
-  GeometricModel, GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation,
-  LinkPartition, Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory,
-  SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
+  AuthorizedBackendRequestContext, BackendRequestContext, BisCoreSchema, Category, ClassRegistry, DefinitionContainer, DefinitionGroup,
+  DefinitionGroupGroupsDefinitions, DefinitionModel, DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions,
+  DocumentPartition, DrawingGraphic, ECSqlStatement, Element, ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity,
+  GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement,
+  InformationRecordElement, LightLocation, LinkPartition, Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition,
+  RenderMaterialElement, SnapshotDb, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture,
+  ViewDefinition,
 } from "../../imodeljs-backend";
 import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 import sinon = require("sinon");
-import { IModelHubBackend } from "../../IModelHubBackend";
-import { V2CheckpointManager } from "../../CheckpointManager";
-import { Base64 } from "js-base64";
-
 // spell-checker: disable
 
 async function getIModelError<T>(promise: Promise<T>): Promise<IModelError | undefined> {
@@ -159,48 +156,6 @@ describe("iModel", () => {
     }
   });
 
-  it("should do logging from worker threads in correct context", async () => {
-
-    const contextForTest = new ClientRequestContext("contextForTest");
-    const contextForStepAsync = new ClientRequestContext("contextForStepAsync");
-
-    const testMessage = "message from test in main";
-
-    const expectedMsgsInOrder: any[] = [
-      { message: "ECSqlStepWorker: Start on main thread", ctx: contextForStepAsync },
-      { message: testMessage, ctx: contextForTest },
-      { message: "ECSqlStepWorker: In worker thread", ctx: contextForStepAsync },
-      { message: "ECSqlStepWorker: Back on main thread", ctx: contextForStepAsync },
-    ];
-
-    const msgs: any[] = [];
-    Logger.initialize((_category: string, message: string, _metaData?: GetMetaDataFunction) => {
-      msgs.push({ message, ctx: ClientRequestContext.current });
-    });
-    Logger.setLevel("ECSqlStepWorkerTestCategory", LogLevel.Error);
-    const stmt = imodel1.prepareStatement("SELECT * from bis.Element");
-
-    contextForStepAsync.enter();        // the statement should run entirely in contextForStepAsync
-    const stepPromise = stmt.stepAsync();
-
-    contextForTest.enter();             // while the statement runs, the test switches to a new context
-    Logger.logError("ECSqlStepWorkerTestCategory", testMessage);
-
-    const res = await stepPromise;      // now the statement completes.
-    assert.equal(res, DbResult.BE_SQLITE_ROW);
-
-    assert.strictEqual(ClientRequestContext.current, contextForTest);
-
-    assert.equal(msgs.length, expectedMsgsInOrder.length);
-    for (let i = 0; i < msgs.length; ++i) {
-      assert.equal(msgs[i].message, expectedMsgsInOrder[i].message);
-      assert.strictEqual(msgs[i].ctx, expectedMsgsInOrder[i].ctx);
-    }
-
-    stmt.dispose();
-    Logger.initializeToConsole(); // reset back to console so future tests will log correctly
-  });
-
   it("should be able to get properties of an iIModel", () => {
     expect(imodel1.name).equals("TBD"); // That's the name of the root subject!
     const extents: AxisAlignedBox3d = imodel1.projectExtents;
@@ -255,7 +210,7 @@ describe("iModel", () => {
     try {
       imodel1.elements.getElement(badCode); // throws Error
       assert.fail(); // this line should be skipped
-    } catch (error) {
+    } catch (error: any) {
       assert.instanceOf(error, Error);
       assert.instanceOf(error, IModelError);
       assert.equal(error.errorNumber, IModelStatus.NotFound);
@@ -333,7 +288,7 @@ describe("iModel", () => {
 
     const newEl = el3;
     newEl.federationGuid = undefined;
-    const newId: Id64String = imodel2.elements.insertElement(newEl);
+    const newId = imodel2.elements.insertElement(newEl);
     assert.isTrue(Id64.isValidId64(newId), "insert worked");
   });
 
@@ -397,7 +352,7 @@ describe("iModel", () => {
       const element: Element = imodel2.elements.createElement(elementProps);
       element.setUserProperties("performanceTest", { s: `String-${i}`, n: i });
 
-      const elementId: Id64String = imodel2.elements.insertElement(element);
+      const elementId = imodel2.elements.insertElement(element);
       assert.isTrue(Id64.isValidId64(elementId));
     }
   });
@@ -668,7 +623,7 @@ describe("iModel", () => {
     try {
       imodel1.models.getSubModel(rootSubject.id); // throws error
       assert.fail(); // this line should be skipped
-    } catch (error) {
+    } catch (error: any) {
       assert.isTrue(error instanceof Error);
       assert.isTrue(error instanceof IModelError);
       assert.equal(error.errorNumber, IModelStatus.NotFound);
@@ -740,8 +695,7 @@ describe("iModel", () => {
 
   it("should find a tile tree for a geometric model", async () => {
     // Note: this is an empty model.
-    const requestContext2 = new BackendRequestContext();
-    const tree = await imodel1.tiles.requestTileTreeProps(requestContext2, "0x1c");
+    const tree = await imodel1.tiles.requestTileTreeProps("0x1c");
     expect(tree).not.to.be.undefined;
 
     expect(tree.id).to.equal("0x1c");
@@ -767,24 +721,23 @@ describe("iModel", () => {
   });
 
   it("should throw on invalid tile requests", async () => {
-    const requestContext2 = new ClientRequestContext("invalidTileRequests");
     await using(new DisableNativeAssertions(), async (_r) => {
-      let error = await getIModelError(imodel1.tiles.requestTileTreeProps(requestContext2, "0x12345"));
+      let error = await getIModelError(imodel1.tiles.requestTileTreeProps("0x12345"));
       expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileTreeProps(requestContext2, "NotAValidId"));
+      error = await getIModelError(imodel1.tiles.requestTileTreeProps("NotAValidId"));
       expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileContent(requestContext2, "0x1c", "0/0/0/0"));
+      error = await getIModelError(imodel1.tiles.requestTileContent("0x1c", "0/0/0/0"));
       expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileContent(requestContext2, "0x12345", "0/0/0/0/1"));
+      error = await getIModelError(imodel1.tiles.requestTileContent("0x12345", "0/0/0/0/1"));
       expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileContent(requestContext2, "0x1c", "V/W/X/Y/Z"));
+      error = await getIModelError(imodel1.tiles.requestTileContent("0x1c", "V/W/X/Y/Z"));
       expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileContent(requestContext2, "0x1c", "NotAValidId"));
+      error = await getIModelError(imodel1.tiles.requestTileContent("0x1c", "NotAValidId"));
       expectIModelError(IModelStatus.InvalidId, error);
     });
   });
@@ -805,12 +758,12 @@ describe("iModel", () => {
       let numCategories = 0;
       while (DbResult.BE_SQLITE_ROW === categoryStatement.step()) {
         numCategories++;
-        const categoryId: Id64String = categoryStatement.getValue(0).getId();
+        const categoryId = categoryStatement.getValue(0).getId();
         const category: Element = imodel1.elements.getElement(categoryId);
         assert.isTrue(category instanceof Category, "Should be instance of Category");
 
         // verify the default subcategory.
-        const defaultSubCategoryId: Id64String = (category as Category).myDefaultSubCategoryId();
+        const defaultSubCategoryId = (category as Category).myDefaultSubCategoryId();
         const defaultSubCategory: Element = imodel1.elements.getElement(defaultSubCategoryId);
         assert.isTrue(defaultSubCategory instanceof SubCategory, "defaultSubCategory should be instance of SubCategory");
         if (defaultSubCategory instanceof SubCategory) {
@@ -826,7 +779,7 @@ describe("iModel", () => {
           subCategoryStatement.bindId("parentId", categoryId);
           while (DbResult.BE_SQLITE_ROW === subCategoryStatement.step()) {
             numSubCategories++;
-            const subCategoryId: Id64String = subCategoryStatement.getValue(0).getId();
+            const subCategoryId = subCategoryStatement.getValue(0).getId();
             const subCategory: Element = imodel1.elements.getElement(subCategoryId);
             assert.isTrue(subCategory instanceof SubCategory);
             assert.isTrue(subCategory.parent!.id === categoryId);
@@ -846,7 +799,7 @@ describe("iModel", () => {
       let found26: boolean = false;
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         numDrawingGraphics++;
-        const drawingGraphicId: Id64String = statement.getValue(0).getId();
+        const drawingGraphicId = statement.getValue(0).getId();
         const drawingGraphic = imodel2.elements.getElement<GeometricElement2d>({ id: drawingGraphicId, wantGeometry: true });
         assert.exists(drawingGraphic);
         assert.isTrue(drawingGraphic.className === "DrawingGraphic", "Should be instance of DrawingGraphic");
@@ -928,7 +881,7 @@ describe("iModel", () => {
       let numModels = 0;
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         numModels++;
-        const modelId: Id64String = statement.getValue(0).getId();
+        const modelId = statement.getValue(0).getId();
         const model = imodel2.models.getModel(modelId);
         assert.exists(model, "Model should exist");
         assert.isTrue(model instanceof Model);
@@ -1040,8 +993,8 @@ describe("iModel", () => {
 
   it("should handle parent and child deletion properly", () => {
     const categoryId = SpatialCategory.insert(imodel4, IModel.dictionaryId, "MyTestCategory", new SubCategoryAppearance());
-    const category: SpatialCategory = imodel4.elements.getElement<SpatialCategory>(categoryId);
-    const subCategory: SubCategory = imodel4.elements.getElement<SubCategory>(category.myDefaultSubCategoryId());
+    const category = imodel4.elements.getElement<SpatialCategory>(categoryId);
+    const subCategory = imodel4.elements.getElement<SubCategory>(category.myDefaultSubCategoryId());
     assert.throws(() => imodel4.elements.deleteElement(categoryId), IModelError);
     assert.exists(imodel4.elements.getElement(categoryId), "Category deletes should be blocked in native code");
     assert.exists(imodel4.elements.getElement(subCategory.id), "Children should not be deleted if parent delete is blocked");
@@ -1103,7 +1056,7 @@ describe("iModel", () => {
     newExtents.high.x += 1087; newExtents.high.y += 19; newExtents.high.z += .001;
     imodel1.updateProjectExtents(newExtents);
 
-    const updatedProps = JSON.parse(imodel1.nativeDb.getIModelProps());
+    const updatedProps = imodel1.nativeDb.getIModelProps();
     assert.isTrue(updatedProps.hasOwnProperty("projectExtents"), "Returned property JSON object has project extents");
     const updatedExtents = Range3d.fromJSON(updatedProps.projectExtents);
     assert.isTrue(newExtents.isAlmostEqual(updatedExtents), "Project extents successfully updated in database");
@@ -1178,7 +1131,7 @@ describe("iModel", () => {
   });
 
   it("should get metadata for CA class just as well (and we'll see a array-typed property)", () => {
-    const metaData: EntityMetaData = imodel1.getMetaData("BisCore:ClassHasHandler");
+    const metaData = imodel1.getMetaData("BisCore:ClassHasHandler");
     assert.exists(metaData);
     checkClassHasHandlerMetaData(metaData);
   });
@@ -1186,9 +1139,9 @@ describe("iModel", () => {
   it("should exercise ECSqlStatement (backend only)", () => {
     // Reject an invalid statement
     try {
-      imodel2.prepareStatement("select no_such_property, codeValue from bis.element");
+      imodel2.prepareStatement("select no_such_property, codeValue from bis.element", false);
       assert.fail("prepare should have failed with an exception");
-    } catch (err) {
+    } catch (err: any) {
       assert.isTrue(err.constructor.name === "IModelError");
       assert.notEqual(err.status, DbResult.BE_SQLITE_OK);
     }
@@ -1200,7 +1153,7 @@ describe("iModel", () => {
       try {
         stmt.bindStruct(1, { foo: 1 });
         assert.fail("bindStruct should have failed with an exception");
-      } catch (err2) {
+      } catch (err2: any) {
         assert.isTrue(err2.constructor.name === "IModelError");
         assert.notEqual(err2.status, DbResult.BE_SQLITE_OK);
       }
@@ -1244,7 +1197,7 @@ describe("iModel", () => {
 
     imodel2.withPreparedStatement("select ecinstanceid, codeValue from bis.element WHERE (ecinstanceid=?)", (stmt3: ECSqlStatement) => {
       // Now try a statement with a placeholder
-      const idToFind: Id64String = Id64.fromJSON(lastId);
+      const idToFind = Id64.fromJSON(lastId);
       stmt3.bindId(1, idToFind);
       let count = 0;
       while (DbResult.BE_SQLITE_ROW === stmt3.step()) {
@@ -1304,36 +1257,36 @@ describe("iModel", () => {
 
   it("should create and insert CodeSpecs", () => {
     const testImodel = imodel2;
-    const codeSpec: CodeSpec = CodeSpec.create(testImodel, "CodeSpec1", CodeScopeSpec.Type.Model);
-    const codeSpecId: Id64String = testImodel.codeSpecs.insert(codeSpec); // throws in case of error
+    const codeSpec = CodeSpec.create(testImodel, "CodeSpec1", CodeScopeSpec.Type.Model);
+    const codeSpecId = testImodel.codeSpecs.insert(codeSpec); // throws in case of error
     assert.deepEqual(codeSpecId, codeSpec.id);
     assert.equal(codeSpec.scopeType, CodeScopeSpec.Type.Model);
     assert.equal(codeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.ElementId);
     assert.equal(codeSpec.isManagedWithIModel, true);
 
     // Should not be able to insert a duplicate.
-    const codeSpecDup: CodeSpec = CodeSpec.create(testImodel, "CodeSpec1", CodeScopeSpec.Type.Model);
-    assert.throws(() => testImodel.codeSpecs.insert(codeSpecDup), IModelError);
+    const codeSpecDup = CodeSpec.create(testImodel, "CodeSpec1", CodeScopeSpec.Type.Model);
+    assert.throws(() => testImodel.codeSpecs.insert(codeSpecDup), "duplicate name");
 
     // We should be able to insert another CodeSpec with a different name.
-    const codeSpec2: CodeSpec = CodeSpec.create(testImodel, "CodeSpec2", CodeScopeSpec.Type.Model, CodeScopeSpec.ScopeRequirement.FederationGuid);
-    const codeSpec2Id: Id64String = testImodel.codeSpecs.insert(codeSpec2); // throws in case of error
+    const codeSpec2 = CodeSpec.create(testImodel, "CodeSpec2", CodeScopeSpec.Type.Model, CodeScopeSpec.ScopeRequirement.FederationGuid);
+    const codeSpec2Id = testImodel.codeSpecs.insert(codeSpec2); // throws in case of error
     assert.deepEqual(codeSpec2Id, codeSpec2.id);
     assert.notDeepEqual(codeSpec2Id, codeSpecId);
 
     // make sure CodeScopeSpec.Type.Repository works
-    const codeSpec3: CodeSpec = CodeSpec.create(testImodel, "CodeSpec3", CodeScopeSpec.Type.Repository, CodeScopeSpec.ScopeRequirement.FederationGuid);
-    const codeSpec3Id: Id64String = testImodel.codeSpecs.insert(codeSpec3); // throws in case of error
+    const codeSpec3 = CodeSpec.create(testImodel, "CodeSpec3", CodeScopeSpec.Type.Repository, CodeScopeSpec.ScopeRequirement.FederationGuid);
+    const codeSpec3Id = testImodel.codeSpecs.insert(codeSpec3); // throws in case of error
     assert.notDeepEqual(codeSpec2Id, codeSpec3Id);
 
-    const codeSpec4: CodeSpec = testImodel.codeSpecs.getById(codeSpec3Id);
+    const codeSpec4 = testImodel.codeSpecs.getById(codeSpec3Id);
     codeSpec4.name = "CodeSpec4";
     codeSpec4.isManagedWithIModel = false;
-    const codeSpec4Id: Id64String = testImodel.codeSpecs.insert(codeSpec4); // throws in case of error
+    const codeSpec4Id = testImodel.codeSpecs.insert(codeSpec4); // throws in case of error
     assert.notDeepEqual(codeSpec3Id, codeSpec4Id);
     assert.equal(codeSpec4.scopeType, CodeScopeSpec.Type.Repository);
     assert.equal(codeSpec4.scopeReq, CodeScopeSpec.ScopeRequirement.FederationGuid);
-    const copyOfCodeSpec4: CodeSpec = testImodel.codeSpecs.getById(codeSpec4Id);
+    const copyOfCodeSpec4 = testImodel.codeSpecs.getById(codeSpec4Id);
     assert.equal(copyOfCodeSpec4.isManagedWithIModel, false);
     assert.deepEqual(codeSpec4, copyOfCodeSpec4);
 
@@ -1356,10 +1309,10 @@ describe("iModel", () => {
 
     // Write new CodeSpec to iModel
     if (true) {
-      const iModelDb: SnapshotDb = IModelTestUtils.createSnapshotFromSeed(iModelFileName, IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
-      const codeSpec: CodeSpec = CodeSpec.create(iModelDb, codeSpecName, CodeScopeSpec.Type.Model, CodeScopeSpec.ScopeRequirement.FederationGuid);
+      const iModelDb = IModelTestUtils.createSnapshotFromSeed(iModelFileName, IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
+      const codeSpec = CodeSpec.create(iModelDb, codeSpecName, CodeScopeSpec.Type.Model, CodeScopeSpec.ScopeRequirement.FederationGuid);
       codeSpec.isManagedWithIModel = false;
-      const codeSpecId: Id64String = iModelDb.codeSpecs.insert(codeSpec);
+      const codeSpecId = iModelDb.codeSpecs.insert(codeSpec);
       assert.isTrue(Id64.isValidId64(codeSpec.id));
       assert.equal(codeSpec.id, codeSpecId);
       assert.equal(codeSpec.name, codeSpecName);
@@ -1373,7 +1326,7 @@ describe("iModel", () => {
     // Reopen iModel (ensure CodeSpec cache is cleared) and reconfirm CodeSpec properties
     if (true) {
       const iModelDb = SnapshotDb.openFile(iModelFileName);
-      const codeSpec: CodeSpec = iModelDb.codeSpecs.getByName(codeSpecName);
+      const codeSpec = iModelDb.codeSpecs.getByName(codeSpecName);
       assert.isTrue(Id64.isValidId64(codeSpec.id));
       assert.equal(codeSpec.name, codeSpecName);
       assert.equal(codeSpec.scopeType, CodeScopeSpec.Type.Model);
@@ -1640,7 +1593,7 @@ describe("iModel", () => {
     };
 
     const iModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IModel", "TestSnapshot.bim"), args);
-    assert.equal(iModel.getGuid(), args.guid);
+    assert.equal(iModel.iModelId, args.guid);
     assert.equal(iModel.rootSubject.name, args.rootSubject.name);
     assert.equal(iModel.rootSubject.description, args.rootSubject.description);
     assert.equal(iModel.projectExtents.low.x, args.projectExtents.low.x);
@@ -1900,10 +1853,10 @@ describe("iModel", () => {
     // Just create an empty snapshot, and we'll use that as our fake "checkpoint" (so it opens)
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
-    const iModelId = snapshot.getGuid();
+    const iModelId = snapshot.iModelId;
     const iTwinId = Guid.createValue();
     const changeset = IModelTestUtils.generateChangeSetId();
-    snapshot.nativeDb.saveProjectGuid(Guid.normalize(iTwinId));
+    snapshot.nativeDb.setITwinId(iTwinId);
     snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id); // even fake checkpoints need a changeSetId!
     snapshot.saveChanges();
     snapshot.close();
@@ -1929,7 +1882,7 @@ describe("iModel", () => {
     const commandStub = sinon.stub(BlobDaemon, "command").callsFake(async () => daemonSuccessResult);
 
     process.env.BLOCKCACHE_DIR = "/foo/";
-    const user = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const user = new BackendRequestContext() as AuthorizedBackendRequestContext;
     const checkpoint = await SnapshotDb.openCheckpointV2({ user, iTwinId, iModelId, changeset });
     const props = checkpoint.getRpcProps();
     assert.equal(props.iModelId, iModelId);
@@ -1955,7 +1908,7 @@ describe("iModel", () => {
     const iModelId = Guid.createValue();  // This is wrong - it should be `snapshot.getGuid()`!
     const iTwinId = Guid.createValue();
     const changeset = IModelTestUtils.generateChangeSetId();
-    snapshot.nativeDb.saveProjectGuid(Guid.normalize(iTwinId));
+    snapshot.nativeDb.setITwinId(iTwinId);
     snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id);
     snapshot.saveChanges();
     snapshot.close();
@@ -1979,7 +1932,7 @@ describe("iModel", () => {
     const daemonSuccessResult = { result: DbResult.BE_SQLITE_OK, errMsg: "" };
     sinon.stub(BlobDaemon, "command").callsFake(async () => daemonSuccessResult);
 
-    const user = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const user = new BackendRequestContext() as AuthorizedBackendRequestContext;
 
     process.env.BLOCKCACHE_DIR = ""; // try without setting daemon dir
     let error = await getIModelError(SnapshotDb.openCheckpointV2({ user, iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
@@ -1996,7 +1949,7 @@ describe("iModel", () => {
     const hubMock = sinon.stub(checkpointsV2Handler, "get").callsFake(async () => []);
     sinon.stub(IModelHubBackend.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
 
-    const user = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const user = new BackendRequestContext() as AuthorizedBackendRequestContext;
     let error = await getIModelError(SnapshotDb.openCheckpointV2({ user, iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.NotFound, error);
 
@@ -2007,15 +1960,15 @@ describe("iModel", () => {
 
   it("attempting to re-attach a non-checkpoint snapshot should be a no-op", async () => {
     process.env.BLOCKCACHE_DIR = "/foo/";
-    const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const user = new BackendRequestContext() as AuthorizedBackendRequestContext;
     const attachMock = sinon.stub(V2CheckpointManager, "attach").callsFake(async () => ({ filePath: "BAD", expiryTimestamp: Date.now() }));
-    await imodel1.reattachDaemon(ctx);
+    await imodel1.reattachDaemon(user);
     assert.isTrue(attachMock.notCalled);
   });
 
   function hasClassView(db: IModelDb, name: string): boolean {
     try {
-      return db.withSqliteStatement(`SELECT ECInstanceId FROM [${name}]`, (): boolean => true);
+      return db.withSqliteStatement(`SELECT ECInstanceId FROM [${name}]`, (): boolean => true, false);
     } catch (e) {
       return false;
     }
@@ -2052,10 +2005,10 @@ describe("iModel", () => {
 
   it("Snapshot iModel properties", () => {
     const snapshotRootSubjectName = "Snapshot";
-    const snapshotFile1: string = IModelTestUtils.prepareOutputFile("IModel", "Snapshot1.bim");
-    const snapshotFile2: string = IModelTestUtils.prepareOutputFile("IModel", "Snapshot2.bim");
-    const snapshotFile3: string = IModelTestUtils.prepareOutputFile("IModel", "Snapshot3.bim");
-    let snapshotDb1: SnapshotDb | StandaloneDb = SnapshotDb.createEmpty(snapshotFile1, { rootSubject: { name: snapshotRootSubjectName }, createClassViews: true });
+    const snapshotFile1 = IModelTestUtils.prepareOutputFile("IModel", "Snapshot1.bim");
+    const snapshotFile2 = IModelTestUtils.prepareOutputFile("IModel", "Snapshot2.bim");
+    const snapshotFile3 = IModelTestUtils.prepareOutputFile("IModel", "Snapshot3.bim");
+    let snapshotDb1 = SnapshotDb.createEmpty(snapshotFile1, { rootSubject: { name: snapshotRootSubjectName }, createClassViews: true });
     let snapshotDb2 = SnapshotDb.createFrom(snapshotDb1, snapshotFile2);
     let snapshotDb3 = SnapshotDb.createFrom(imodel1, snapshotFile3, { createClassViews: true });
     assert.isTrue(snapshotDb1.isSnapshotDb());
@@ -2081,9 +2034,9 @@ describe("iModel", () => {
     assert.isFalse(snapshotDb2.nativeDb.isEncrypted());
     assert.isFalse(snapshotDb3.nativeDb.isEncrypted());
     assert.isFalse(imodel1.nativeDb.isEncrypted());
-    const iModelGuid1: GuidString = snapshotDb1.getGuid();
-    const iModelGuid2: GuidString = snapshotDb2.getGuid();
-    const iModelGuid3: GuidString = snapshotDb3.getGuid();
+    const iModelGuid1: GuidString = snapshotDb1.iModelId;
+    const iModelGuid2: GuidString = snapshotDb2.iModelId;
+    const iModelGuid3: GuidString = snapshotDb3.iModelId;
     assert.notEqual(iModelGuid1, iModelGuid2, "Expect different iModel GUIDs for each snapshot");
     assert.notEqual(iModelGuid2, iModelGuid3, "Expect different iModel GUIDs for each snapshot");
     const rootSubjectName1 = snapshotDb1.elements.getRootSubject().code.value;
@@ -2158,7 +2111,7 @@ describe("iModel", () => {
     let snapshotDb2 = SnapshotDb.createEmpty(snapshotFile2, { rootSubject: { name: "Password-Protected" }, password: "password", createClassViews: true });
     assert.equal(snapshotDb2.getBriefcaseId(), BriefcaseIdValue.Unassigned);
     const subjectName2 = "TestSubject2";
-    const subjectId2: Id64String = Subject.insert(snapshotDb2, IModel.rootSubjectId, subjectName2);
+    const subjectId2 = Subject.insert(snapshotDb2, IModel.rootSubjectId, subjectName2);
     assert.isTrue(Id64.isValidId64(subjectId2));
     snapshotDb2.close();
     snapshotDb2 = SnapshotDb.openFile(snapshotFile2, { password: "password" });
@@ -2320,7 +2273,7 @@ describe("iModel", () => {
   it("tryPrepareStatement", () => {
     const sql = `SELECT * FROM ${Element.classFullName} LIMIT 1`;
     const invalidSql = "SELECT * FROM InvalidSchemaName:InvalidClassName LIMIT 1";
-    assert.throws(() => imodel1.prepareStatement(invalidSql));
+    assert.throws(() => imodel1.prepareStatement(invalidSql, false));
     assert.isUndefined(imodel1.tryPrepareStatement(invalidSql));
     const statement: ECSqlStatement | undefined = imodel1.tryPrepareStatement(sql);
     assert.isDefined(statement);

@@ -6,10 +6,7 @@
 /** @packageDocumentation
  * @module Authentication
  */
-import { AuthStatus, BentleyError, Logger } from "@bentley/bentleyjs-core";
-import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
-
-const loggerCategory = ITwinClientLoggerCategory.Authorization;
+import { AuthStatus, BentleyError } from "@bentley/bentleyjs-core";
 
 /** @beta */
 export interface UserInfoProps {
@@ -48,7 +45,7 @@ export class UserInfo {
    */
   public static fromJson(jsonObj: UserInfoProps): UserInfo {
     if (!jsonObj)
-      throw new BentleyError(AuthStatus.Error, "Expected valid json to be passed to UserInfo.fromTokenResponseJson", Logger.logError, loggerCategory, () => jsonObj);
+      throw new BentleyError(AuthStatus.Error, "Expected valid json to be passed to UserInfo.fromTokenResponseJson");
     return new UserInfo(jsonObj.id, jsonObj.email, jsonObj.profile, jsonObj.organization, jsonObj.featureTracking);
   }
 
@@ -62,7 +59,7 @@ export class UserInfo {
    */
   public static fromTokenResponseJson(jsonObj: any): UserInfo {
     if (!jsonObj)
-      throw new BentleyError(AuthStatus.Error, "Expected valid json to be passed to UserInfo.fromTokenResponseJson", Logger.logError, loggerCategory, () => jsonObj);
+      throw new BentleyError(AuthStatus.Error, "Expected valid json to be passed to UserInfo.fromTokenResponseJson");
     const id: string = jsonObj.sub;
     const email: any = jsonObj.email ? { id: jsonObj.email, isVerified: jsonObj.email_verified } : undefined;
     const profile: any = jsonObj.given_name ? { name: jsonObj.name, preferredUserName: jsonObj.preferred_username, firstName: jsonObj.given_name, lastName: jsonObj.family_name } : undefined;
