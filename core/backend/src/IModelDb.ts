@@ -16,12 +16,13 @@ import {
   AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex,
   ChangesetIndexAndId, Code, CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps,
   DomainOptions, EcefLocation, ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate, ElementGraphicsRequestProps, ElementLoadProps,
-  ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontProps, GeoCoordinatesResponseProps,
-  GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse,
-  IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps,
-  OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, SchemaState,
-  SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, StandaloneOpenOptions, TextureData,
-  TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
+  ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontProps, GeoCoordinatesRequestProps,
+  GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
+  IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps,
+  MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryLimit,
+  QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions,
+  SpatialViewDefinitionProps, StandaloneOpenOptions, TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps,
+  ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -1145,14 +1146,7 @@ export abstract class IModelDb extends IModel {
    * @alpha
    */
   public async queryTextureData(props: TextureLoadProps): Promise<TextureData | undefined> {
-    return new Promise<TextureData | undefined>((resolve, reject) => {
-      this.nativeDb.queryTextureData(props, (result) => {
-        if (result instanceof Error)
-          reject(result);
-        else
-          resolve(result);
-      });
-    });
+    return this.nativeDb.queryTextureData(props);
   }
 
   /** Query a "file property" from this iModel, as a string.
@@ -1210,19 +1204,11 @@ export abstract class IModelDb extends IModel {
     } else
       request.cancelSnap();
 
-    return new Promise<SnapResponseProps>((resolve, reject) => {
-      if (!this.isOpen) {
-        reject(new Error("not open"));
-      } else {
-        request!.doSnap(this.nativeDb, JsonUtils.toObject(props), (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, SnapResponseProps>) => {
-          this._snaps.delete(sessionId);
-          if (ret.error !== undefined)
-            reject(new Error(ret.error.message));
-          else
-            resolve(ret.result!); // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
-        });
-      }
-    });
+    try {
+      return await request.doSnap(this.nativeDb, JsonUtils.toObject(props));
+    } finally {
+      this._snaps.delete(sessionId);
+    }
   }
 
   /** Cancel a previously requested snap. */
@@ -1236,46 +1222,22 @@ export abstract class IModelDb extends IModel {
 
   /** Get the clip containment status for the supplied elements. */
   public async getGeometryContainment(props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps> {
-    return new Promise<GeometryContainmentResponseProps>((resolve, reject) => {
-      if (!this.isOpen) {
-        reject(new Error("not open"));
-      } else {
-        this.nativeDb.getGeometryContainment(JSON.stringify(props), (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, GeometryContainmentResponseProps>) => {
-          if (ret.error !== undefined)
-            reject(new Error(ret.error.message));
-          else
-            resolve(ret.result!);
-        });
-      }
-    });
+    return this.nativeDb.getGeometryContainment(JsonUtils.toObject(props));
   }
 
   /** Get the mass properties for the supplied elements. */
   public async getMassProperties(props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> {
-    return new Promise<MassPropertiesResponseProps>((resolve, reject) => {
-      if (!this.isOpen) {
-        reject(new Error("not open"));
-      } else {
-        this.nativeDb.getMassProperties(JSON.stringify(props), (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, MassPropertiesResponseProps>) => {
-          if (ret.error !== undefined)
-            reject(new Error(ret.error.message));
-          else
-            resolve(ret.result!);
-        });
-      }
-    });
+    return this.nativeDb.getMassProperties(JsonUtils.toObject(props));
   }
 
   /** Get the IModel coordinate corresponding to each GeoCoordinate point in the input */
-  public async getIModelCoordinatesFromGeoCoordinates(props: string): Promise<IModelCoordinatesResponseProps> {
-    const resultString = this.nativeDb.getIModelCoordinatesFromGeoCoordinates(props);
-    return JSON.parse(resultString) as IModelCoordinatesResponseProps;
+  public async getIModelCoordinatesFromGeoCoordinates(props: IModelCoordinatesRequestProps): Promise<IModelCoordinatesResponseProps> {
+    return this.nativeDb.getIModelCoordinatesFromGeoCoordinates(props);
   }
 
   /** Get the GeoCoordinate (longitude, latitude, elevation) corresponding to each IModel Coordinate point in the input */
-  public async getGeoCoordinatesFromIModelCoordinates(props: string): Promise<GeoCoordinatesResponseProps> {
-    const resultString = this.nativeDb.getGeoCoordinatesFromIModelCoordinates(props);
-    return JSON.parse(resultString) as GeoCoordinatesResponseProps;
+  public async getGeoCoordinatesFromIModelCoordinates(props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps> {
+    return this.nativeDb.getGeoCoordinatesFromIModelCoordinates(props);
   }
 
   /** Export meshes suitable for graphics APIs from arbitrary geometry in elements in this IModelDb.
