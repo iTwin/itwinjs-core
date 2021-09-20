@@ -6,9 +6,7 @@ import { expect } from "chai";
 import { Id64String, using } from "@bentley/bentleyjs-core";
 import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { InstanceKey, KeySet } from "@bentley/presentation-common";
-import {
-  DataProvidersFactory, IPresentationPropertyDataProvider, IPresentationTableDataProvider, PresentationPropertyDataProvider,
-} from "@bentley/presentation-components";
+import { DataProvidersFactory, IPresentationTableDataProvider, PresentationPropertyDataProvider } from "@bentley/presentation-components";
 import { DEFAULT_PROPERTY_GRID_RULESET } from "@bentley/presentation-components/lib/presentation-components/propertygrid/DataProvider";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { PropertyData, RowItem } from "@bentley/ui-components";
@@ -30,11 +28,12 @@ describe("Find Similar", () => {
     await terminate();
   });
 
-  let propertiesDataProvider: IPresentationPropertyDataProvider;
+  let propertiesDataProvider: PresentationPropertyDataProvider;
   let factory: DataProvidersFactory;
 
   beforeEach(async () => {
     propertiesDataProvider = new PresentationPropertyDataProvider({ imodel, ruleset: DEFAULT_PROPERTY_GRID_RULESET });
+    propertiesDataProvider.isNestedPropertyCategoryGroupingEnabled = false;
     factory = new DataProvidersFactory();
   });
 
