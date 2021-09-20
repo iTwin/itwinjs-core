@@ -29,9 +29,7 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
   }
 
   private async queryContextProps(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<IModelFileSystemContextProps[]> {
-    requestContext.enter();
     const url: string = `${this.baseUri}/sv1.0/Repositories/Global--main/GlobalScope/Context`;
-    requestContext.enter();
     Logger.logInfo(loggerCategory, `Sending GET request to ${url}`);
 
     const queryOptions = {      // use the same ODATA-style queries that Connect and iModelHub use
@@ -47,7 +45,6 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
     };
 
     const res: Response = await request(requestContext, url, options);
-    requestContext.enter();
     if (!res.body || !res.body.instances) {
       throw new Error(`Query to URL ${url} executed successfully, but did NOT return anything.`);
     }
@@ -73,7 +70,6 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
   }
 
   public async createContext(requestContext: AuthorizedClientRequestContext, name: string): Promise<void> {
-    requestContext.enter();
     const url: string = `${this.baseUri}/sv1.0/Repositories/Global--main/GlobalScope/Context`;
 
     Logger.logInfo(loggerCategory, `Sending POST request to ${url}`);
@@ -90,9 +86,7 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
   }
 
   public async deleteContext(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<void> {
-    requestContext.enter();
     const url: string = `${this.baseUri}/sv1.0/Repositories/Global--main/GlobalScope/Context/${contextId}`;
-    requestContext.enter();
     Logger.logInfo(loggerCategory, `Sending DELETE request to ${url}`);
 
     const options: RequestOptions = {

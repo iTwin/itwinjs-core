@@ -1459,7 +1459,7 @@ describe("Frontstage local storage wrapper", () => {
         };
         restoreNineZoneState(frontstageDef, savedState);
         spy.calledOnce.should.true;
-        spy.firstCall.args[2]!().should.matchSnapshot();
+        (spy.firstCall.args[2]!() as any).should.matchSnapshot();
       });
 
       it("should remove tab from widgetState if widgetDef is not found", () => {

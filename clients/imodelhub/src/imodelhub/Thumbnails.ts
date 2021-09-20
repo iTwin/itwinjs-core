@@ -118,7 +118,6 @@ export class ThumbnailHandler {
    * @return String for the PNG image that includes the base64 encoded array of the image bytes
    */
   private async downloadThumbnail(requestContext: AuthorizedClientRequestContext, url: string): Promise<string> {
-    requestContext.enter();
     const options: RequestOptions = {
       method: "GET",
       headers: { authorization: requestContext.accessToken.toTokenString() },
@@ -127,7 +126,6 @@ export class ThumbnailHandler {
     };
 
     const response = await request(requestContext, url, options);
-    requestContext.enter();
 
     const byteArray = new Uint8Array(response.body);
     if (!byteArray || byteArray.length === 0) {
@@ -146,7 +144,6 @@ export class ThumbnailHandler {
    * @return String for the PNG image that includes the base64 encoded array of the image bytes.
    */
   private async downloadTipThumbnail(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: GuidString, size: ThumbnailSize): Promise<string> {
-    requestContext.enter();
     Logger.logInfo(loggerCategory, `Downloading tip ${size}Thumbnail`, () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("contextId", contextId);
@@ -154,7 +151,6 @@ export class ThumbnailHandler {
 
     const url: string = await this._handler.getUrl(requestContext) + this.getRelativeContextUrl(contextId, iModelId, size);
     const pngImage = await this.downloadThumbnail(requestContext, url);
-    requestContext.enter();
 
     Logger.logTrace(loggerCategory, `Downloaded tip ${size}Thumbnail`, () => ({ iModelId }));
     return pngImage;
@@ -169,7 +165,6 @@ export class ThumbnailHandler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, size: ThumbnailSize, query: ThumbnailQuery = new ThumbnailQuery()): Promise<Thumbnail[]> {
-    requestContext.enter();
     Logger.logInfo(loggerCategory, "Querying iModel thumbnails", () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
@@ -194,7 +189,6 @@ export class ThumbnailHandler {
    * @throws [[ResponseError]] if a network issue occurs.
    */
   public async download(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, thumbnail: Thumbnail | TipThumbnail): Promise<string> {
-    requestContext.enter();
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
 
@@ -209,7 +203,6 @@ export class ThumbnailHandler {
 
     const url: string = `${await this._handler.getUrl(requestContext) + this.getRelativeUrl(iModelId, size, thumbnailId)}/$file`;
     const pngImage = await this.downloadThumbnail(requestContext, url);
-    requestContext.enter();
     Logger.logTrace(loggerCategory, `Downloaded ${size}Thumbnail ${thumbnailId} for iModel`, () => ({ iModelId }));
     return pngImage;
   }

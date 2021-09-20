@@ -230,7 +230,7 @@ export class HubUtility {
       let csResult = ChangeSetStatus.Success;
       try {
         nativeDb.applyChangeset(changeSet, applyOption);
-      } catch (err) {
+      } catch (err: any) {
         csResult = err.errorNumber;
       }
       const endTime = new Date().getTime();
@@ -259,7 +259,7 @@ export class HubUtility {
 
     const nativeDb = new IModelHost.platform.DgnDb();
     nativeDb.openIModel(briefcasePathname, OpenMode.ReadWrite);
-    const lastAppliedChangeset = nativeDb.getParentChangeset();
+    const lastAppliedChangeset = nativeDb.getCurrentChangeset();
 
     const changeSets = HubUtility.readChangeSets(iModelDir);
     const lastMergedChangeSet = changeSets.find((value) => value.id === lastAppliedChangeset.id);
@@ -519,7 +519,7 @@ export class HubUtility {
       try {
         nativeDb.applyChangeset(changeSet, applyOption);
         Logger.logInfo(HubUtility.logCategory, "Successfully applied ChangeSet", () => ({ ...changeSet, status }));
-      } catch (err) {
+      } catch (err: any) {
         Logger.logError(HubUtility.logCategory, `Error applying ChangeSet ${err.errorNumber}`, () => ({ ...changeSet }));
         perfLogger.dispose();
         return err.errorNumber;

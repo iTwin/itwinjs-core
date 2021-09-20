@@ -37,8 +37,7 @@ export class TestUtility {
 
   private static iTwinId: GuidString | undefined = undefined;
   /** Returns the ContextId if a Context with the name exists. Otherwise, returns undefined. */
-  public static async getTestContextId(requestContext: AuthorizedClientRequestContext): Promise<GuidString> {
-    requestContext.enter();
+  public static async getTestContextId(): Promise<GuidString> {
     if (undefined !== TestUtility.iTwinId)
       return TestUtility.iTwinId;
     return TestUtility.queryContextIdByName(TestUtility.testContextName);

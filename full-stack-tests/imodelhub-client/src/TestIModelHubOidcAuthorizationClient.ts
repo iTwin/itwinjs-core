@@ -14,13 +14,11 @@ export class TestIModelHubOidcAuthorizationClient implements FrontendAuthorizati
   public constructor(_userInfo: UserInfo | undefined, private _userCredentials: any) {
   }
 
-  public async signIn(_requestContext?: ClientRequestContext): Promise<void> {
-    _requestContext?.enter();
+  public async signIn(): Promise<void> {
     this._token = await TestUtility.getAccessToken(this._userCredentials);
   }
 
-  public async signOut(_requestContext?: ClientRequestContext): Promise<void> {
-    _requestContext?.enter();
+  public async signOut(): Promise<void> {
     this._token = undefined;
     this.onUserStateChanged.raiseEvent(this._token);
   }
