@@ -30,7 +30,7 @@ describe("IModelApp (#integration)", () => {
     IModelApp.authorizationClient = undefined;
   });
 
-  it.only("should setup access token and application id values for the backend", async () => {
+  it("should setup access token and application id values for the backend", async () => {
     const expectedAccessTokenStr = (await IModelApp.authorizationClient!.getAccessToken()).toTokenString();
 
     const authorizedRequestContext = await AuthorizedFrontendRequestContext.create();
