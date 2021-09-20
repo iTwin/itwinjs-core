@@ -59,10 +59,12 @@ function getGroupPriority(potentialId: any, defaultValue: number) {
   if (undefined === potentialId)
     return defaultValue;
 
+  // istanbul ignore else
   if (typeof potentialId === "number") {
     return potentialId;
   }
 
+  // istanbul ignore next
   return defaultValue;
 }
 
@@ -97,42 +99,42 @@ export class StandardContentToolsProvider implements UiItemsProvider {
       const clearSelectionGroupPriority = getGroupPriority(stageAppData?.defaultContentTools?.horizontal?.clearSelectionGroupPriority, 10);
       const overridesGroupPriority = getGroupPriority(stageAppData?.defaultContentTools?.horizontal?.overridesGroupPriority, 20);
 
-      if (!this.defaultContextTools || !this.defaultContextTools?.horizontal || this.defaultContextTools?.horizontal?.clearSelection)
+      if (!this.defaultContextTools || !this.defaultContextTools.horizontal || this.defaultContextTools.horizontal.clearSelection)
         items.push(ToolbarHelper.createToolbarItemFromItemDef(10, CoreTools.clearSelectionItemDef, { groupPriority: clearSelectionGroupPriority }));
 
-      if (!this.defaultContextTools || !this.defaultContextTools?.horizontal || this.defaultContextTools?.horizontal?.clearDisplayOverrides)
+      if (!this.defaultContextTools || !this.defaultContextTools.horizontal || this.defaultContextTools.horizontal.clearDisplayOverrides)
         items.push(ToolbarHelper.createToolbarItemFromItemDef(20, SelectionContextToolDefinitions.clearHideIsolateEmphasizeElementsItemDef, { groupPriority: overridesGroupPriority }));
 
-      if (!this.defaultContextTools || !this.defaultContextTools?.horizontal || this.defaultContextTools?.horizontal?.hide) {
+      if (!this.defaultContextTools || !this.defaultContextTools.horizontal || this.defaultContextTools.horizontal.hide) {
         if (this.defaultContextTools?.horizontal?.hide === "group")
           items.push(ToolbarHelper.createToolbarItemFromItemDef(30, SelectionContextToolDefinitions.hideSectionToolGroup, { groupPriority: overridesGroupPriority }));
         else
           items.push(ToolbarHelper.createToolbarItemFromItemDef(30, SelectionContextToolDefinitions.hideElementsItemDef, { groupPriority: overridesGroupPriority }));
       }
 
-      if (!this.defaultContextTools || !this.defaultContextTools?.horizontal || this.defaultContextTools?.horizontal?.isolate) {
+      if (!this.defaultContextTools || !this.defaultContextTools.horizontal || this.defaultContextTools.horizontal.isolate) {
         if (this.defaultContextTools?.horizontal?.isolate === "group")
           items.push(ToolbarHelper.createToolbarItemFromItemDef(40, SelectionContextToolDefinitions.isolateSelectionToolGroup, { groupPriority: overridesGroupPriority }));
         else
           items.push(ToolbarHelper.createToolbarItemFromItemDef(40, SelectionContextToolDefinitions.isolateElementsItemDef, { groupPriority: overridesGroupPriority }));
       }
 
-      if (!this.defaultContextTools || !this.defaultContextTools?.horizontal || this.defaultContextTools?.horizontal?.emphasize) {
+      if (!this.defaultContextTools || !this.defaultContextTools.horizontal || this.defaultContextTools.horizontal.emphasize) {
         items.push(ToolbarHelper.createToolbarItemFromItemDef(50, SelectionContextToolDefinitions.emphasizeElementsItemDef, { groupPriority: overridesGroupPriority }));
       }
 
-    } else if (provideToStage && toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Vertical) {
+    } else /* istanbul ignore else */ if (provideToStage && toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Vertical) {
       const selectElementGroupPriority = getGroupPriority(stageAppData?.defaultContentTools?.vertical?.selectElementGroupPriority, 10);
       const measureGroupPriority = getGroupPriority(stageAppData?.defaultContentTools?.vertical?.measureGroupPriority, 10);
       const selectionGroupPriority = getGroupPriority(stageAppData?.defaultContentTools?.vertical?.selectionGroupPriority, 10);
 
-      if (!this.defaultContextTools || !this.defaultContextTools?.vertical || this.defaultContextTools?.vertical?.selectElement)
+      if (!this.defaultContextTools || !this.defaultContextTools.vertical || this.defaultContextTools.vertical.selectElement)
         items.push(ToolbarHelper.createToolbarItemFromItemDef(10, CoreTools.selectElementCommand, { groupPriority: selectElementGroupPriority }));
 
-      if (!this.defaultContextTools || !this.defaultContextTools?.vertical || this.defaultContextTools?.vertical?.measureGroup)
+      if (!this.defaultContextTools || !this.defaultContextTools.vertical || this.defaultContextTools.vertical.measureGroup)
         items.push(ToolbarHelper.createToolbarItemFromItemDef(20, CoreTools.measureToolGroup, { groupPriority: measureGroupPriority }));
 
-      if (!this.defaultContextTools || !this.defaultContextTools?.vertical || this.defaultContextTools?.vertical?.sectionGroup)
+      if (!this.defaultContextTools || !this.defaultContextTools.vertical || this.defaultContextTools.vertical.sectionGroup)
         items.push(ToolbarHelper.createToolbarItemFromItemDef(30, CoreTools.sectionToolGroup, { groupPriority: selectionGroupPriority }));
     }
     return items;
@@ -142,15 +144,17 @@ export class StandardContentToolsProvider implements UiItemsProvider {
     const statusBarItems: CommonStatusBarItem[] = [];
     let provideToStage = false;
 
+    // istanbul ignore else
     if (this.isSupportedStage) {
       provideToStage = this.isSupportedStage(stageId, stageUsage, stageAppData);
     } else {
       provideToStage = (stageUsage === StageUsage.General);
     }
 
+    // istanbul ignore else
     if (provideToStage) {
       // if the sectionGroup tools are to be shown then we want the status field added to allow clearing or manipulation the section
-      if (!this.defaultContextTools || !this.defaultContextTools?.vertical || this.defaultContextTools?.vertical?.sectionGroup) {
+      if (this.defaultContextTools?.vertical?.sectionGroup) {
         const Sections = withStatusFieldProps(SectionsStatusField);
         statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.Sections", StatusBarSection.Center, 20, <Sections hideWhenUnused />));
       }

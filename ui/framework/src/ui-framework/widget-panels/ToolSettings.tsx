@@ -161,8 +161,11 @@ export function ToolSettingsWidgetContent() {
     }
   }, [node]);
 
+  // istanbul ignore next
+  const providerId = FrontstageManager.activeToolSettingsProvider?.uniqueId ?? "none";
+
   return (
-    <div data-toolsettings-provider={FrontstageManager.activeToolSettingsProvider?.uniqueId ?? "none"} className="uifw-floating-toolsettings-container" ref={floatingToolSettingsContainerRef} >
+    <div data-toolsettings-provider={providerId} className="uifw-floating-toolsettings-container" ref={floatingToolSettingsContainerRef} >
       <ScrollableWidgetContent>
         {node}
       </ScrollableWidgetContent>

@@ -226,6 +226,7 @@ export class WidgetManager {
     // Consult the registered WidgetProviders
     this._providers.forEach((p, index) => {
       const wds = p.getWidgetDefs(stageId, stageUsage, location, definedSection, frontstageApplicationData);
+      // istanbul ignore else
       if (wds) {
         const stableWds = wds.map((wd) => {
           const stableId = getWidgetProviderStableWidgetId(p.id, stageUsage, location, definedSection, index);

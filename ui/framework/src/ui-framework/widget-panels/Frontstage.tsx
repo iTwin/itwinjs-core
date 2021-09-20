@@ -631,11 +631,11 @@ export function initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneS
       frontstageDef.bottomRight?.zoneState,
     ], [frontstageDef.rightPanel?.panelState]);
     stateDraft.panels.top.collapsed = isPanelCollapsed([], [
-      // ignore topMostPanel if topPanel is defined
+      // istanbul ignore next - ignore topMostPanel if topPanel is defined
       frontstageDef.topPanel ? frontstageDef.topPanel?.panelState : frontstageDef.topMostPanel?.panelState,// eslint-disable-line deprecation/deprecation
     ]);
     stateDraft.panels.bottom.collapsed = isPanelCollapsed([], [
-      // ignore bottomMostPanel if bottomPanel is defined
+      // istanbul ignore next - ignore bottomMostPanel if bottomPanel is defined
       frontstageDef.bottomPanel ? frontstageDef.bottomPanel?.panelState : frontstageDef.bottomMostPanel?.panelState, // eslint-disable-line deprecation/deprecation
     ]);
 

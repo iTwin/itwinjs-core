@@ -62,41 +62,42 @@ export class StandardStatusbarItemsProvider implements UiItemsProvider {
       provideToStage = (stageUsage === StageUsage.General);
     }
 
+    /* istanbul ignore else */
     if (provideToStage) {
-      if (!this._defaultItems || this._defaultItems?.messageCenter) {
+      if (!this._defaultItems || this._defaultItems.messageCenter) {
         const MessageCenter = withMessageCenterFieldProps(MessageCenterField);
         statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.MessageCenter", StatusBarSection.Left, 10, <MessageCenter />));
       }
-      if (!this._defaultItems || this._defaultItems?.toolAssistance) {
-        if (this._defaultItems?.preToolAssistanceSeparator)
+      if (!this._defaultItems || this._defaultItems.toolAssistance) {
+        if (!this._defaultItems || this._defaultItems.preToolAssistanceSeparator)
           statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.PreToolAssistance", StatusBarSection.Left, 15, <FooterSeparator />));
 
         const ToolAssistance = withStatusFieldProps(ToolAssistanceField);
         statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.ToolAssistance", StatusBarSection.Left, 20, <ToolAssistance />));
 
-        if (this._defaultItems?.postToolAssistanceSeparator)
+        if (!this._defaultItems || this._defaultItems.postToolAssistanceSeparator)
           statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.PostToolAssistance", StatusBarSection.Left, 25, <FooterSeparator />));
       }
-      if (!this._defaultItems || this._defaultItems?.activityCenter) {
+      if (!this._defaultItems || this._defaultItems.activityCenter) {
         const ActivityCenter = withStatusFieldProps(ActivityCenterField);
         statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.ActivityCenter", StatusBarSection.Left, 30, <ActivityCenter />));
       }
-      if (!this._defaultItems || this._defaultItems?.accuSnapModePicker) {
+      if (!this._defaultItems || this._defaultItems.accuSnapModePicker) {
         const SnapMode = withMessageCenterFieldProps(SnapModeField);
         statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.SnapMode", StatusBarSection.Center, 10, <SnapMode />));
       }
 
-      if (!this._defaultItems || this._defaultItems?.tileLoadIndicator) {
+      if (!this._defaultItems || this._defaultItems.tileLoadIndicator) {
         const TileLoadIndicator = withStatusFieldProps(TileLoadingIndicator);
         statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.TileLoadIndicator", StatusBarSection.Right, 10, <TileLoadIndicator />));
       }
 
-      if (!this._defaultItems || this._defaultItems?.selectionScope) {
+      if (!this._defaultItems || this._defaultItems.selectionScope) {
         const SelectionScope = withStatusFieldProps(SelectionScopeField);
         statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.SelectionScope", StatusBarSection.Right, 20, <SelectionScope />));
       }
 
-      if (!this._defaultItems || this._defaultItems?.selectionInfo) {
+      if (!this._defaultItems || this._defaultItems.selectionInfo) {
         const SelectionInfo = withStatusFieldProps(SelectionInfoField);
         statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.SelectionInfo", StatusBarSection.Right, 30, <SelectionInfo />));
       }
