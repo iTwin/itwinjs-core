@@ -64,7 +64,6 @@ export class ClientRequestContext {
   }
 
   /** Use this for logging for ClientRequestContext.
-   * It returns only sanitized members, intentionally removing all others to avoid logging secrets or violating user-privacy rules.
    */
   public sanitize() {
     return {
