@@ -5,11 +5,12 @@
 ```ts
 
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
+import { Client } from '@bentley/itwin-client';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
+import { RequestOptions } from '@bentley/itwin-client';
 import { RequestQueryOptions } from '@bentley/itwin-client';
+import { RequestTimeoutOptions } from '@bentley/itwin-client';
 import { URL } from 'url';
-import { WsgClient } from '@bentley/itwin-client';
-import { WsgInstance } from '@bentley/itwin-client';
 
 // @internal
 export class DataLocation extends WsgInstance {
@@ -141,9 +142,6 @@ export class RealityDataClient extends WsgClient {
     getRealityDataRelationships(requestContext: AuthorizedClientRequestContext, projectId: string, realityDataId: string): Promise<RealityDataRelationship[]>;
     getRealityDatas(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, queryOptions: RealityDataRequestQueryOptions): Promise<RealityData[]>;
     getRealityDataUrl(requestContext: ClientRequestContext, projectId: string | undefined, tilesId: string): Promise<string>;
-    protected getUrlSearchKey(): string;
-    // (undocumented)
-    static readonly searchKey: string;
     updateRealityData(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, realityData: RealityData): Promise<RealityData>;
 }
 

@@ -8,14 +8,14 @@ import { AccessToken } from '@bentley/itwin-client';
 import { Asset } from '@bentley/context-registry-client';
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { CancelRequest } from '@bentley/itwin-client';
-import { ChunkedQueryContext } from '@bentley/itwin-client';
+import { Client } from '@bentley/itwin-client';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ContextType } from '@bentley/context-registry-client';
+import { DefaultRequestOptionsProvider } from '@bentley/itwin-client';
 import { FileHandler } from '@bentley/itwin-client';
 import { FrontendAuthorizationClient } from '@bentley/frontend-authorization-client';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { GuidString } from '@bentley/bentleyjs-core';
-import { HttpRequestOptions } from '@bentley/itwin-client';
 import { HttpStatus } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IModelHubStatus } from '@bentley/bentleyjs-core';
@@ -24,14 +24,10 @@ import { ProgressCallback } from '@bentley/itwin-client';
 import { Project } from '@bentley/context-registry-client';
 import { RequestOptions } from '@bentley/itwin-client';
 import { RequestQueryOptions } from '@bentley/itwin-client';
+import { RequestTimeoutOptions } from '@bentley/itwin-client';
 import { Response } from '@bentley/itwin-client';
 import { ResponseError } from '@bentley/itwin-client';
 import { UserInfo } from '@bentley/itwin-client';
-import { WsgClient } from '@bentley/itwin-client';
-import { WsgError } from '@bentley/itwin-client';
-import { WsgInstance } from '@bentley/itwin-client';
-import { WsgQuery } from '@bentley/itwin-client';
-import { WsgRequestOptions } from '@bentley/itwin-client';
 
 // @beta
 export function addApplicationVersion(version: string): HttpRequestOptionsTransformer;
@@ -79,6 +75,10 @@ export class ArgumentCheck {
     static validChangeSetId(argumentName: string, argument?: string, allowEmpty?: boolean): void;
     // (undocumented)
     static validGuid(argumentName: string, argument?: string): void;
+}
+
+// @internal
+export class AuthenticationError extends ResponseError {
 }
 
 // @internal
@@ -231,6 +231,9 @@ export class ChangeSetQuery extends StringIdQuery {
     selectDownloadUrl(): this;
 }
 
+// @internal (undocumented)
+export type ChangeState = "new" | "modified" | "deleted" | "existing";
+
 // @public
 export enum ChangesType {
     Definition = 2,
@@ -343,6 +346,23 @@ export enum CheckpointV2State {
 }
 
 // @internal
+export class ChunkedQueryContext {
+    static create(queryOptions: RequestQueryOptions): ChunkedQueryContext | undefined;
+    handleIteration(queryOptions: RequestQueryOptions): void;
+    get instancesLeft(): number | undefined;
+    get isQueryFinished(): boolean;
+    get skipToken(): string;
+    set skipToken(value: string);
+    }
+
+// @internal (undocumented)
+export interface ClassKeyMapInfo {
+    classKeyPropertyName?: string;
+    classPropertyName?: string;
+    schemaPropertyName?: string;
+}
+
+// @internal
 export interface CloneIModelTemplate {
     changeSetId?: string;
     imodelId: string;
@@ -444,6 +464,9 @@ export class ConflictingLocksError extends IModelHubError {
 // @internal
 export function constructorFromEventType(type: IModelHubEventType): EventConstructor;
 
+// @internal (undocumented)
+export type ConstructorType = new () => any;
+
 // @internal
 export interface ContextManagerClient {
     // (undocumented)
@@ -475,6 +498,27 @@ export class DefaultLockUpdateOptionsProvider {
     assignOptions(options: LockUpdateOptions): Promise<void>;
     // (undocumented)
     protected _defaultOptions: LockUpdateOptions;
+}
+
+// @internal
+export class DefaultWsgRequestOptionsProvider extends DefaultRequestOptionsProvider {
+    constructor();
+}
+
+// @internal
+export abstract class ECInstance {
+    // (undocumented)
+    [index: string]: any;
+    // (undocumented)
+    ecId: string;
+}
+
+// @internal
+export class ECJsonTypeMap {
+    static classToJson(applicationKey: string, classKey: string, classKeyMapInfo: ClassKeyMapInfo): (typedConstructor: ConstructorType) => void;
+    static fromJson<T extends ECInstance>(typedConstructor: new () => T, applicationKey: string, ecJsonInstance: any): T | undefined;
+    static propertyToJson(applicationKey: string, propertyAccessString: string): (object: any, propertyKey: string) => void;
+    static toJson<T extends ECInstance>(applicationKey: string, typedInstance: T): any | undefined;
 }
 
 // @internal
@@ -596,6 +640,14 @@ export type GlobalEventType =
 export class HardiModelDeleteEvent extends IModelHubGlobalEvent {
 }
 
+// @internal
+export interface HttpRequestOptions {
+    // (undocumented)
+    headers?: any;
+    // (undocumented)
+    timeout?: RequestTimeoutOptions;
+}
+
 // @beta
 export type HttpRequestOptionsTransformer = (options: HttpRequestOptions) => void;
 
@@ -634,7 +686,7 @@ export class IModelBankClient extends IModelClient {
     // (undocumented)
     get baseUrl(): string;
     // (undocumented)
-    getUrl(rqctx: AuthorizedClientRequestContext): Promise<string>;
+    getUrl(): Promise<string>;
 }
 
 // @internal (undocumented)
@@ -658,9 +710,7 @@ export class IModelBankHandler extends IModelBaseHandler {
     // (undocumented)
     baseUrl?: string;
     // (undocumented)
-    getUrl(_requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string>;
-    // (undocumented)
-    protected getUrlSearchKey(): string;
+    getUrl(excludeApiVersion?: boolean): Promise<string>;
 }
 
 // @public
@@ -684,9 +734,7 @@ export class IModelBaseHandler extends WsgClient {
     getInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
     getInstancesChunk<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, url: string, chunkedQueryContext: ChunkedQueryContext | undefined, typedConstructor: new () => T, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
     // @internal
-    getUrl(requestContext: ClientRequestContext): Promise<string>;
-    // @internal (undocumented)
-    protected getUrlSearchKey(): string;
+    getUrl(): Promise<string>;
     postInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T>;
     postInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
     postQuery<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
@@ -1228,6 +1276,77 @@ export class VersionQuery extends InstanceIdQuery {
     selectApplicationData(): this;
     // @internal @deprecated
     selectThumbnailId(...sizes: ThumbnailSize[]): this;
+}
+
+// @internal
+export abstract class WsgClient extends Client {
+    protected constructor(apiVersion: string);
+    // (undocumented)
+    apiVersion: string;
+    protected applyUserConfiguredHttpRequestOptions(requestOptions: RequestOptions, userDefinedRequestOptions?: HttpRequestOptions): void;
+    protected delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, httpRequestOptions?: HttpRequestOptions): Promise<void>;
+    protected deleteInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<void>;
+    protected getInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
+    protected getInstancesChunk<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, url: string, chunkedQueryContext: ChunkedQueryContext | undefined, typedConstructor: new () => T, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
+    getUrl(excludeApiVersion?: boolean): Promise<string>;
+    protected postInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T>;
+    protected postInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
+    protected postQuery<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
+    protected setupOptionDefaults(options: RequestOptions): Promise<void>;
+    // (undocumented)
+    protected _url?: string;
+}
+
+// @internal
+export enum WsgClientLoggerCategory {
+    Client = "wsg-client.Client",
+    ECJson = "wsg-client.ECJson"
+}
+
+// @internal
+export class WsgError extends ResponseError {
+    constructor(errorNumber: number | HttpStatus, message?: string, getMetaData?: GetMetaDataFunction);
+    static getErrorStatus(errorId: number, httpStatusType: number): number;
+    static getWSStatusId(error: string): number;
+    log(): void;
+    static parse(response: any, log?: boolean): ResponseError;
+    static shouldRetry(error: any, response: any): boolean;
+}
+
+// @internal
+export abstract class WsgInstance extends ECInstance {
+    // (undocumented)
+    changeState?: ChangeState;
+    // (undocumented)
+    eTag?: string;
+    // (undocumented)
+    wsgId: string;
+}
+
+// @internal
+export class WsgQuery {
+    protected addFilter(filter: string, operator?: "and" | "or"): void;
+    protected addSelect(select: string): this;
+    filter(filter: string): this;
+    getQueryOptions(): RequestQueryOptions;
+    orderBy(orderBy: string): this;
+    pageSize(n: number): this;
+    // (undocumented)
+    protected _query: RequestQueryOptions;
+    resetQueryOptions(): void;
+    select(select: string): this;
+    skip(n: number): this;
+    top(n: number): this;
+}
+
+// @internal
+export interface WsgRequestOptions {
+    // (undocumented)
+    CustomOptions?: any;
+    // (undocumented)
+    RefreshInstances?: boolean;
+    // (undocumented)
+    ResponseContent?: "FullInstance" | "Empty" | "InstanceId";
 }
 
 

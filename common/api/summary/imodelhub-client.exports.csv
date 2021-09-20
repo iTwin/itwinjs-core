@@ -10,6 +10,7 @@ public;AggregateResponseError
 internal;AllCodesDeletedEvent 
 internal;AllLocksDeletedEvent 
 internal;ArgumentCheck
+internal;AuthenticationError 
 internal;Briefcase 
 internal;BriefcaseAccessMode
 internal;BriefcaseDeletedEvent 
@@ -22,6 +23,7 @@ public;ChangeSetHandler
 public;ChangeSetPostPushEvent 
 public;ChangeSetPrePushEvent 
 public;ChangeSetQuery 
+internal;ChangeState = "new" | "modified" | "deleted" | "existing"
 public;ChangesType
 internal;Checkpoint 
 internal;CheckpointCreatedEvent 
@@ -33,6 +35,8 @@ internal;CheckpointV2ErrorId
 internal;CheckpointV2Handler
 internal;CheckpointV2Query 
 internal;CheckpointV2State
+internal;ChunkedQueryContext
+internal;ClassKeyMapInfo
 internal;CloneIModelTemplate
 internal;CodeBase 
 internal;CodeEvent 
@@ -46,10 +50,14 @@ internal;CodeUpdateOptions
 internal;ConflictingCodesError 
 internal;ConflictingLocksError 
 internal;constructorFromEventType(type: IModelHubEventType): EventConstructor
+internal;ConstructorType = new () => any
 internal;ContextManagerClient
 internal;DefaultCodeUpdateOptionsProvider
 internal;DefaultIModelCreateOptionsProvider
 internal;DefaultLockUpdateOptionsProvider
+internal;DefaultWsgRequestOptionsProvider 
+internal;class ECInstance
+internal;ECJsonTypeMap
 internal;EmptyIModelTemplate = "Empty"
 public;EventHandler 
 public;EventSAS 
@@ -65,6 +73,7 @@ internal;GlobalEventSAS
 internal;GlobalEventSubscription 
 internal;GlobalEventSubscriptionHandler
 internal;HardiModelDeleteEvent 
+internal;HttpRequestOptions
 beta;HttpRequestOptionsTransformer = (options: HttpRequestOptions) => void
 internal;HubCode 
 public;HubIModel 
@@ -126,3 +135,9 @@ public;Version
 public;VersionEvent 
 public;VersionHandler
 public;VersionQuery 
+internal;class WsgClient 
+internal;WsgClientLoggerCategory
+internal;WsgError 
+internal;class WsgInstance 
+internal;WsgQuery
+internal;WsgRequestOptions

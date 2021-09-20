@@ -237,7 +237,7 @@ export class IntrospectionClient {
     // (undocumented)
     protected readonly _clientSecret: string;
     // (undocumented)
-    protected getIssuerUrl(requestContext: AuthorizedClientRequestContext): Promise<string>;
+    protected getIssuerUrl(): Promise<string>;
     // (undocumented)
     introspect(requestContext: AuthorizedClientRequestContext): Promise<IntrospectionResponse>;
     // (undocumented)

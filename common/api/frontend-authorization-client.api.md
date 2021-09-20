@@ -50,8 +50,8 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
     dispose(): void;
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
     // (undocumented)
-    protected getUserManager(requestContext: ClientRequestContext): Promise<UserManager>;
-    protected getUserManagerSettings(requestContext: ClientRequestContext, basicSettings: BrowserAuthorizationClientConfiguration, advancedSettings?: UserManagerSettings): Promise<UserManagerSettings>;
+    protected getUserManager(): Promise<UserManager>;
+    protected getUserManagerSettings(basicSettings: BrowserAuthorizationClientConfiguration, advancedSettings?: UserManagerSettings): Promise<UserManagerSettings>;
     // (undocumented)
     get hasExpired(): boolean;
     // (undocumented)
