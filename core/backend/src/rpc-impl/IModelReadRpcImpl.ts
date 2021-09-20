@@ -9,11 +9,12 @@
 import { GuidString, Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import { Range3d, Range3dProps } from "@bentley/geometry-core";
 import {
-  Code, CodeProps, ElementLoadOptions, ElementLoadProps, ElementProps, EntityMetaData, EntityQueryParams, FontMapProps, GeoCoordinatesResponseProps,
-  GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps,
-  IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps, MassPropertiesRequestProps, MassPropertiesResponseProps,
-  ModelProps, NoContentError, QueryLimit, QueryPriority, QueryQuota, QueryResponse, RpcInterface, RpcInvocation, RpcManager, SnapRequestProps,
-  SnapResponseProps, SyncMode, TextureData, TextureLoadProps, ViewStateLoadProps, ViewStateProps,
+  Code, CodeProps, ElementLoadOptions, ElementLoadProps, ElementProps, EntityMetaData, EntityQueryParams, FontMapProps, GeoCoordinatesRequestProps,
+  GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat,
+  IModel, IModelConnectionProps, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface,
+  IModelRpcOpenProps, IModelRpcProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, NoContentError, QueryLimit, QueryPriority,
+  QueryQuota, QueryResponse, RpcInterface, RpcInvocation, RpcManager, SnapRequestProps, SnapResponseProps, SyncMode, TextureData, TextureLoadProps,
+  ViewStateLoadProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { SpatialCategory } from "../Category";
@@ -240,13 +241,13 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return SpatialCategory.queryCategoryIdByName(iModelDb, dictionary.id, categoryName);
   }
 
-  public async getIModelCoordinatesFromGeoCoordinates(tokenProps: IModelRpcProps, props: string): Promise<IModelCoordinatesResponseProps> {
+  public async getIModelCoordinatesFromGeoCoordinates(tokenProps: IModelRpcProps, props: IModelCoordinatesRequestProps): Promise<IModelCoordinatesResponseProps> {
     const user = RpcInvocation.currentRequest as AuthorizedClientRequestContext;
     const iModelDb = await RpcBriefcaseUtility.findOrOpen(user, tokenProps, SyncMode.FixedVersion);
     return iModelDb.getIModelCoordinatesFromGeoCoordinates(props);
   }
 
-  public async getGeoCoordinatesFromIModelCoordinates(tokenProps: IModelRpcProps, props: string): Promise<GeoCoordinatesResponseProps> {
+  public async getGeoCoordinatesFromIModelCoordinates(tokenProps: IModelRpcProps, props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps> {
     const user = RpcInvocation.currentRequest as AuthorizedClientRequestContext;
     const iModelDb = await RpcBriefcaseUtility.findOrOpen(user, tokenProps, SyncMode.FixedVersion);
     return iModelDb.getGeoCoordinatesFromIModelCoordinates(props);
