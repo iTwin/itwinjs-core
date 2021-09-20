@@ -183,13 +183,11 @@ export class CheckpointV2Handler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: CheckpointV2Query = new CheckpointV2Query()): Promise<CheckpointV2[]> {
-    requestContext.enter();
     Logger.logInfo(loggerCategory, "Querying CheckpointsV2 for iModel", () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
 
     const checkpoints = await this._handler.getInstances<CheckpointV2>(requestContext, CheckpointV2, this.getRelativeUrl(iModelId), query.getQueryOptions());
-    requestContext.enter();
 
     Logger.logTrace(loggerCategory, "Queried CheckpointsV2 for iModel", () => ({ iModelId, count: checkpoints.length }));
     return checkpoints;
@@ -205,7 +203,6 @@ export class CheckpointV2Handler {
    * @internal
    */
   public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, checkpoint: CheckpointV2): Promise<CheckpointV2> {
-    requestContext.enter();
     Logger.logInfo(loggerCategory, "Creating CheckpointV2 for iModel", () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
@@ -213,7 +210,6 @@ export class CheckpointV2Handler {
     ArgumentCheck.validChangeSetId("checkpoint.changeSetId", checkpoint.changeSetId, false);
 
     checkpoint = await this._handler.postInstance<CheckpointV2>(requestContext, CheckpointV2, this.getRelativeUrl(iModelId), checkpoint);
-    requestContext.enter();
     Logger.logTrace(loggerCategory, "Created CheckpointV2 for iModel", () => ({ iModelId, checkpoint }));
     return checkpoint;
   }
@@ -228,7 +224,6 @@ export class CheckpointV2Handler {
    * @internal
    */
   public async update(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, checkpoint: CheckpointV2): Promise<CheckpointV2> {
-    requestContext.enter();
     Logger.logInfo(loggerCategory, "Updating CheckpointV2 for iModel", () => ({ iModelId, checkpoint }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
@@ -237,7 +232,6 @@ export class CheckpointV2Handler {
     ArgumentCheck.definedNumber("checkpoint.wsgId", checkpointId);
 
     const updatedCheckpoint = await this._handler.postInstance<CheckpointV2>(requestContext, CheckpointV2, this.getRelativeUrl(iModelId, checkpointId), checkpoint);
-    requestContext.enter();
     Logger.logTrace(loggerCategory, "Updated CheckpointV2 for iModel", () => ({ iModelId, updatedCheckpoint }));
     return updatedCheckpoint;
   }

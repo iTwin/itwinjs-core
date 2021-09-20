@@ -60,7 +60,6 @@ export class PermissionHandler {
    * @param imodelId Id of the specified iModel.
    */
   public async getiModelPermissions(requestContext: AuthorizedClientRequestContext, imodelId: GuidString): Promise<IModelPermissions> {
-    requestContext.enter();
     Logger.logInfo(loggerCategory, "Querying permissions for iModel", () => ({ iModelId: imodelId }));
 
     const permissions: IModelPermissions[] = await this._handler.getInstances<IModelPermissions>(requestContext, IModelPermissions, `/Repositories/iModel--${imodelId}/iModelScope/Permission`);

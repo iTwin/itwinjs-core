@@ -6,11 +6,11 @@
 import { assert } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
-import { ClientRequestContext, Guid, IModelHubStatus } from "@bentley/bentleyjs-core";
+import { Guid, IModelHubStatus } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizedClientRequestContext, ResponseError } from "@bentley/itwin-client";
 import { CheckpointManager, V1CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
 import { SnapshotDb } from "../../IModelDb";
-import { IModelHost } from "../../imodeljs-backend";
+import { BackendRequestContext, IModelHost } from "../../imodeljs-backend";
 import { IModelJsFs } from "../../IModelJsFs";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { IModelHubBackend } from "../../IModelHubBackend";
@@ -67,11 +67,11 @@ describe("V1 Checkpoint Manager", () => {
     const iModelId = Guid.createValue();  // This is wrong - it should be `snapshot.getGuid()`!
     const iTwinId = Guid.createValue();
     const changeset = IModelTestUtils.generateChangeSetId();
-    snapshot.nativeDb.saveProjectGuid(Guid.normalize(iTwinId));
+    snapshot.nativeDb.setITwinId(iTwinId);
     snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id);
     snapshot.saveChanges();
 
-    assert.notEqual(iModelId, snapshot.nativeDb.getDbGuid()); // Ensure the Snapshot dbGuid and iModelId are different
+    assert.notEqual(iModelId, snapshot.nativeDb.getIModelId()); // Ensure the Snapshot dbGuid and iModelId are different
     snapshot.close();
 
     sinon.stub(V2CheckpointManager, "downloadCheckpoint").callsFake(async (arg) => {
@@ -79,13 +79,12 @@ describe("V1 Checkpoint Manager", () => {
       return changeset.id;
     });
 
-    const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
     const localFile = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint2.bim");
 
-    const request = { localFile, checkpoint: { user: ctx, iTwinId, iModelId, changeset } };
+    const request = { localFile, checkpoint: { iTwinId, iModelId, changeset } };
     await CheckpointManager.downloadCheckpoint(request);
     const db = SnapshotDb.openCheckpointV1(localFile, request.checkpoint);
-    assert.equal(iModelId, db.nativeDb.getDbGuid(), "expected the V1 Checkpoint download to fix the improperly set dbGuid.");
+    assert.equal(iModelId, db.nativeDb.getIModelId(), "expected the V1 Checkpoint download to fix the improperly set dbGuid.");
     db.close();
   });
 });
@@ -142,10 +141,10 @@ describe("Checkpoint Manager", () => {
   it("downloadCheckpoint should fall back to use v1 checkpoints if v2 checkpoints are not enabled", async () => {
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
-    const iModelId = snapshot.getGuid();
+    const iModelId = snapshot.iModelId;
     const iTwinId = Guid.createValue();
     const changeset = IModelTestUtils.generateChangeSetId();
-    snapshot.nativeDb.saveProjectGuid(Guid.normalize(iTwinId));
+    snapshot.nativeDb.setITwinId(iTwinId);
     snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id);
     snapshot.saveChanges();
     snapshot.close();
@@ -159,7 +158,7 @@ describe("Checkpoint Manager", () => {
       return changeset.id;
     });
 
-    const user = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const user = new BackendRequestContext() as AuthorizedClientRequestContext;
     const localFile = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint2.bim");
 
     const request = { localFile, checkpoint: { user, iTwinId, iModelId, changeset } };

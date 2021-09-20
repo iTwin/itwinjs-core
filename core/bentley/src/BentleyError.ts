@@ -7,7 +7,6 @@
  */
 
 import { DbResult } from "./BeSQLite";
-import { LogFunction, Logger } from "./Logger";
 
 /** Standard status code.
  * This status code should be rarely used.
@@ -363,44 +362,37 @@ export interface StatusCodeWithMessage<ErrorCodeType> {
  * Declared as a function so that the expense of creating the meta-data is only paid when it is needed.
  * @public
  */
-export type GetMetaDataFunction = () => any;
+export type GetMetaDataFunction = () => object | undefined;
 
-/** The error type thrown by this module. `BentleyError` subclasses `Error` to add an `errorNumber` member. See [[IModelStatus]] for `errorNumber` values.
+/** Base exception class for iTwin.js exceptions.
  * @public
  */
 export class BentleyError extends Error {
   private readonly _getMetaData: GetMetaDataFunction | undefined;
-  public errorNumber: number;
 
-  /** Construct a new BentleyError
-   * @param errorNumber The required error number originating from one of the standard status enums.
-   * See [[IModelStatus]], [[DbResult]], [[BentleyStatus]], [[BriefcaseStatus]], [[RepositoryStatus]], [[ChangeSetStatus]], [[HttpStatus]], [[WSStatus]], [[IModelHubStatus]]
-   * @param message The optional error message (should not be localized).
-   * @param log The optional LogFunction that should be used to log this BentleyError.
-   * @param category The optional logger category to use when logging.
-   * @param getMetaData Optional data to be passed to the logger.
+  /**
+   * @param errorNumber The a number that identifies of the problem.
+   * @param message  message that describes the problem (should not be localized).
+   * @param getMetaData a function to be stored on the exception object that provides metaData about the problem.
    */
-  public constructor(errorNumber: number, message?: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction) {
+  public constructor(public errorNumber: number, message?: string, getMetaData?: GetMetaDataFunction) {
     super(message);
     this.errorNumber = errorNumber;
     this._getMetaData = getMetaData;
     this.name = this._initName();
-    if (log)
-      Logger.logException(category || "BentleyError", this, log, this._getMetaData);  // TODO: Can we come up with a better default category?
   }
 
   /** Returns true if this BentleyError includes (optional) meta data. */
   public get hasMetaData(): boolean { return this._getMetaData !== undefined; }
 
   /** Return the meta data associated with this BentleyError. */
-  public getMetaData(): any {
+  public getMetaData(): object | undefined {
     return this.hasMetaData ? this._getMetaData!() : undefined;
   }
 
   /** This function returns the name of each error status. Override this method to handle more error status codes. */
   protected _initName(): string {
     switch (this.errorNumber) {
-      // IModelStatus cases
       case IModelStatus.AlreadyLoaded: return "Already Loaded";
       case IModelStatus.AlreadyOpen: return "Already Open";
       case IModelStatus.BadArg: return "Bad Arg";
@@ -465,8 +457,6 @@ export class BentleyError extends Error {
       case IModelStatus.WrongElement: return "Wrong Element";
       case IModelStatus.WrongHandler: return "Wrong Handler";
       case IModelStatus.WrongModel: return "Wrong Model";
-
-      // DbResult cases
       case DbResult.BE_SQLITE_ERROR: return "BE_SQLITE_ERROR";
       case DbResult.BE_SQLITE_INTERNAL: return "BE_SQLITE_INTERNAL";
       case DbResult.BE_SQLITE_PERM: return "BE_SQLITE_PERM";
@@ -556,11 +546,7 @@ export class BentleyError extends Error {
       case DbResult.BE_SQLITE_CONSTRAINT_TRIGGER: return "Trigger Constraint Error";
       case DbResult.BE_SQLITE_CONSTRAINT_UNIQUE: return "Unique Constraint Error";
       case DbResult.BE_SQLITE_CONSTRAINT_VTAB: return "VTable Constraint Error";
-
-      // BentleyStatus cases
       case BentleyStatus.ERROR: return "Error";
-
-      // BriefcaseStatus
       case BriefcaseStatus.CannotAcquire: return "CannotAcquire";
       case BriefcaseStatus.CannotDownload: return "CannotDownload";
       case BriefcaseStatus.CannotCopy: return "CannotCopy";
@@ -568,11 +554,7 @@ export class BentleyError extends Error {
       case BriefcaseStatus.VersionNotFound: return "VersionNotFound";
       case BriefcaseStatus.DownloadCancelled: return "DownloadCancelled";
       case BriefcaseStatus.ContainsDeletedChangeSets: return "ContainsDeletedChangeSets";
-
-      // RpcInterface
       case RpcInterfaceStatus.IncompatibleVersion: return "RpcInterfaceStatus.IncompatibleVersion";
-
-      // ChangeSetStatus
       case ChangeSetStatus.ApplyError: return "Error applying a change set";
       case ChangeSetStatus.ChangeTrackingNotEnabled: return "Change tracking has not been enabled. The ChangeSet API mandates this";
       case ChangeSetStatus.CorruptedChangeStream: return "Contents of the change stream are corrupted and does not match the ChangeSet";
@@ -598,8 +580,6 @@ export class BentleyError extends Error {
       case ChangeSetStatus.CannotMergeIntoReadonly: return "Cannot merge changes into a Readonly DgnDb";
       case ChangeSetStatus.CannotMergeIntoMaster: return "Cannot merge changes into a Master DgnDb";
       case ChangeSetStatus.CannotMergeIntoReversed: return "Cannot merge changes into a DgnDb that has reversed change sets";
-
-      // RepositoryStatus
       case RepositoryStatus.ServerUnavailable: return "ServerUnavailable";
       case RepositoryStatus.LockAlreadyHeld: return "LockAlreadyHeld";
       case RepositoryStatus.SyncError: return "SyncError";
@@ -615,14 +595,10 @@ export class BentleyError extends Error {
       case RepositoryStatus.LockNotHeld: return "LockNotHeld";
       case RepositoryStatus.RepositoryIsLocked: return "RepositoryIsLocked";
       case RepositoryStatus.ChannelConstraintViolation: return "ChannelConstraintViolation";
-
-      // HTTP Status
       case HttpStatus.Info: return "HTTP Info";
       case HttpStatus.Redirection: return "HTTP Redirection";
       case HttpStatus.ClientError: return "HTTP Client error";
       case HttpStatus.ServerError: return "HTTP Server error";
-
-      // IModelHubStatus
       case IModelHubStatus.Unknown: return "Unknown error";
       case IModelHubStatus.MissingRequiredProperties: return "Missing required properties";
       case IModelHubStatus.InvalidPropertiesValues: return "Invalid properties values";
@@ -671,27 +647,19 @@ export class BentleyError extends Error {
       case IModelHubStatus.FailedToGetProductSettings: return "Failed to get product settings";
       case IModelHubStatus.DatabaseOperationFailed: return "Database operation has failed";
       case IModelHubStatus.ContextDoesNotExist: return "Context does not exist";
-
-      // errors that are returned for incorrect iModelHub request.
       case IModelHubStatus.UndefinedArgumentError: return "Undefined argument";
       case IModelHubStatus.InvalidArgumentError: return "Invalid argument";
       case IModelHubStatus.MissingDownloadUrlError: return "Missing download url";
       case IModelHubStatus.NotSupportedInBrowser: return "Not supported in browser";
       case IModelHubStatus.FileHandlerNotSet: return "File handler is not set";
       case IModelHubStatus.FileNotFound: return "File not found";
-
-      // errors returned from authorization
       case AuthStatus.Error: return "Authorization error";
-
-      // errors returned by iModel.js Extension client
       case ExtensionStatus.UnknownError: return "Unknown error from backend";
       case ExtensionStatus.BadExtension: return "Bad file extension";
       case ExtensionStatus.BadRequest: return "Bad request";
       case ExtensionStatus.ExtensionAlreadyExists: return "Extension with the given name and version already exists";
       case ExtensionStatus.ExtensionNotFound: return "Extension not found";
       case ExtensionStatus.UploadError: return "Failed to upload file";
-
-      // GeoServiceStatus
       case GeoServiceStatus.NoGeoLocation: return "No GeoLocation";
       case GeoServiceStatus.OutOfUsefulRange: return "Out of useful range";
       case GeoServiceStatus.OutOfMathematicalDomain: return "Out of mathematical domain";
@@ -699,8 +667,6 @@ export class BentleyError extends Error {
       case GeoServiceStatus.VerticalDatumConvertError: return "Vertical datum convert error";
       case GeoServiceStatus.CSMapError: return "CSMap error";
       case GeoServiceStatus.Pending: return "Pending";
-
-      // Unexpected cases
       case IModelStatus.Success:
       case DbResult.BE_SQLITE_OK:
       case DbResult.BE_SQLITE_ROW:

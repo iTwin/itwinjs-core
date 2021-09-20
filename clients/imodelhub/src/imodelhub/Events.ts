@@ -380,7 +380,6 @@ export class EventSubscriptionHandler {
    */
   public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, events: EventType[]): Promise<EventSubscription>; // eslint-disable-line @typescript-eslint/unified-signatures, deprecation/deprecation
   public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, events: IModelHubEventType[] | EventType[]) { // eslint-disable-line deprecation/deprecation
-    requestContext.enter();
     Logger.logInfo(loggerCategory, "Creating event subscription on iModel", () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
@@ -390,7 +389,6 @@ export class EventSubscriptionHandler {
     subscription.eventTypes = events as IModelHubEventType[];
 
     subscription = await this._handler.postInstance<EventSubscription>(requestContext, EventSubscription, this.getRelativeUrl(iModelId), subscription);
-    requestContext.enter();
     Logger.logTrace(loggerCategory, "Created event subscription on iModel", () => ({ iModelId }));
     return subscription;
   }
@@ -404,7 +402,6 @@ export class EventSubscriptionHandler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async update(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, subscription: EventSubscription): Promise<EventSubscription> {
-    requestContext.enter();
     Logger.logInfo(loggerCategory, "Updating event subscription on iModel", () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
@@ -412,7 +409,6 @@ export class EventSubscriptionHandler {
     ArgumentCheck.validGuid("subscription.wsgId", subscription.wsgId);
 
     const updatedSubscription = await this._handler.postInstance<EventSubscription>(requestContext, EventSubscription, this.getRelativeUrl(iModelId, subscription.wsgId), subscription);
-    requestContext.enter();
 
     Logger.logTrace(loggerCategory, "Updated event subscription on iModel", () => ({ iModelId }));
     return updatedSubscription;
@@ -427,14 +423,12 @@ export class EventSubscriptionHandler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async delete(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, eventSubscriptionId: string): Promise<void> {
-    requestContext.enter();
     Logger.logInfo(loggerCategory, `Deleting event subscription ${eventSubscriptionId} from iModel`, () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
     ArgumentCheck.validGuid("eventSubscriptionId", eventSubscriptionId);
 
     await this._handler.delete(requestContext, this.getRelativeUrl(iModelId, eventSubscriptionId));
-    requestContext.enter();
     Logger.logTrace(loggerCategory, `Deleted event subscription ${eventSubscriptionId} from iModel`, () => ({ iModelId }));
   }
 }
@@ -482,7 +476,6 @@ export class EventHandler extends EventBaseHandler {
     ArgumentCheck.validGuid("iModelId", iModelId);
 
     const eventSAS = await this._handler.postInstance<EventSAS>(requestContext, EventSAS, this.getEventSASRelativeUrl(iModelId), new EventSAS());
-    requestContext.enter();
     Logger.logTrace(loggerCategory, "Got event SAS token from iModel", () => ({ iModelId }));
     return eventSAS;
   }
@@ -513,7 +506,6 @@ export class EventHandler extends EventBaseHandler {
    * @throws [ResponseError]($itwin-client) if request has failed.
    */
   public async getEvent(requestContext: ClientRequestContext, sasToken: string, baseAddress: string, subscriptionId: string, timeout?: number): Promise<IModelHubEvent | undefined> {
-    requestContext.enter();
     Logger.logInfo(loggerCategory, "Getting event from subscription", () => ({ subscriptionId }));
     ArgumentCheck.defined("sasToken", sasToken);
     ArgumentCheck.defined("baseAddress", baseAddress);
@@ -522,7 +514,6 @@ export class EventHandler extends EventBaseHandler {
     const options = await this.getEventRequestOptions(GetEventOperationToRequestType.GetDestructive, sasToken, timeout);
 
     const result = await request(requestContext, this.getEventUrl(baseAddress, subscriptionId, timeout), options);
-    requestContext.enter();
     if (result.status === 204) {
       Logger.logTrace(loggerCategory, "No events found on subscription", () => ({ subscriptionId }));
       return undefined;
@@ -543,7 +534,6 @@ export class EventHandler extends EventBaseHandler {
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if one of the arguments is undefined or has an invalid value.
    */
   public createListener<T extends IModelHubEvent>(requestContext: ClientRequestContext, authenticationCallback: () => Promise<AccessToken>, subscriptionId: string, iModelId: GuidString, listener: (event: T) => void): () => void {
-    requestContext.enter();
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.defined("authenticationCallback", authenticationCallback);
     ArgumentCheck.validGuid("subscriptionId", subscriptionId);

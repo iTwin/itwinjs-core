@@ -187,7 +187,6 @@ export class UserStatisticsHandler {
    */
   public async get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString,
     query: UserStatisticsQuery = new UserStatisticsQuery()): Promise<UserStatistics[]> {
-    requestContext.enter();
     Logger.logInfo(loggerCategory, "Querying user statistics for iModel", () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
@@ -205,7 +204,6 @@ export class UserStatisticsHandler {
       userStatistics = await this._handler.getInstances<UserStatistics>(requestContext, UserStatistics,
         this.getRelativeUrl(iModelId, query.getId()), query.getQueryOptions());
     }
-    requestContext.enter();
     Logger.logTrace(loggerCategory, `Queried ${userStatistics.length} user statistics for iModel`, () => ({ iModelId }));
     return userStatistics;
   }
@@ -299,7 +297,6 @@ export class UserInfoHandler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: UserInfoQuery = new UserInfoQuery()): Promise<HubUserInfo[]> {
-    requestContext.enter();
     Logger.logInfo(loggerCategory, "Querying users for iModel", () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
@@ -310,7 +307,6 @@ export class UserInfoHandler {
     } else {
       users = await this._handler.getInstances<HubUserInfo>(requestContext, HubUserInfo, this.getRelativeUrl(iModelId, query.getId()), query.getQueryOptions());
     }
-    requestContext.enter();
     Logger.logTrace(loggerCategory, "Queried users for iModel", () => ({ iModelId }));
     return users;
   }

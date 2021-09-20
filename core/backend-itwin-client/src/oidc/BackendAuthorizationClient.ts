@@ -51,8 +51,6 @@ export abstract class BackendAuthorizationClient extends ImsAuthorizationClient 
 
   private _issuer?: Issuer<OpenIdClient>;
   private async getIssuer(requestContext: ClientRequestContext): Promise<Issuer<OpenIdClient>> {
-    requestContext.enter();
-
     if (this._issuer)
       return this._issuer;
 
@@ -65,13 +63,11 @@ export abstract class BackendAuthorizationClient extends ImsAuthorizationClient 
    * Discover the endpoints of the service
    */
   public async discoverEndpoints(requestContext: ClientRequestContext): Promise<Issuer<OpenIdClient>> {
-    requestContext.enter();
     return this.getIssuer(requestContext);
   }
 
   private _client?: OpenIdClient;
   protected async getClient(requestContext: ClientRequestContext): Promise<OpenIdClient> {
-    requestContext.enter();
 
     if (this._client)
       return this._client;

@@ -99,7 +99,6 @@ export abstract class Client {
 
   /** used by clients to send delete requests */
   protected async delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string): Promise<void> {
-    requestContext.enter();
     const url: string = await this.getUrl() + relativeUrlPath;
     Logger.logInfo(loggerCategory, "Sending DELETE request", () => ({ url }));
     const options: RequestOptions = {
@@ -108,7 +107,6 @@ export abstract class Client {
     };
     await this.setupOptionDefaults(options);
     await request(requestContext, url, options);
-    requestContext.enter();
     Logger.logTrace(loggerCategory, "Successful DELETE request", () => ({ url }));
   }
 }

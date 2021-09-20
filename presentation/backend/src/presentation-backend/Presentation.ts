@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { ClientRequestContext, DisposeFunc, Logger } from "@bentley/bentleyjs-core";
+import { DisposeFunc, Logger } from "@bentley/bentleyjs-core";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { RpcManager } from "@bentley/imodeljs-common";
 import { PresentationError, PresentationRpcInterface, PresentationStatus } from "@bentley/presentation-common";
@@ -63,7 +63,6 @@ export interface PresentationPropsNew extends PresentationManagerProps {
 export type PresentationProps = PresentationPropsDeprecated | PresentationPropsNew; // eslint-disable-line deprecation/deprecation
 
 interface ClientStoreItem {
-  context: ClientRequestContext;
   manager: PresentationManager;
 }
 
@@ -164,11 +163,10 @@ export class Presentation {
       manager = Presentation._initProps.clientManagerFactory(clientId, Presentation._initProps);
     else
       manager = new PresentationManager(Presentation._initProps);
-    return { manager, context: ClientRequestContext.current };
+    return { manager };
   }
 
   private static disposeClientManager(storeItem: ClientStoreItem) {
-    storeItem.context.enter();
     storeItem.manager.dispose();
   }
 

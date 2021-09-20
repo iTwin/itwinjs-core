@@ -11,11 +11,12 @@ import {
 } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@bentley/geometry-core";
 import {
-  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbResult, EcefLocation, EcefLocationProps, ElementLoadOptions, ElementProps, EntityQueryParams, FontMap, FontMapProps,
-  GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError,
-  IModelReadRpcInterface, IModelStatus, mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps,
-  ModelProps, ModelQueryParams, Placement, Placement2d, Placement3d, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, SnapRequestProps,
-  SnapResponseProps, SnapshotIModelRpcInterface, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps,
+  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbResult, EcefLocation, EcefLocationProps, ElementLoadOptions, ElementProps, EntityQueryParams,
+  FontMap, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel,
+  IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelStatus, mapToGeoServiceStatus, MassPropertiesRequestProps,
+  MassPropertiesResponseProps, ModelProps, ModelQueryParams, Placement, Placement2d, Placement3d, QueryLimit, QueryPriority, QueryQuota,
+  QueryResponse, QueryResponseStatus, RpcManager, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, TextureData, TextureLoadProps,
+  ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps,
 } from "@bentley/imodeljs-common";
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { CheckpointConnection } from "./CheckpointConnection";
@@ -162,7 +163,7 @@ export abstract class IModelConnection extends IModel {
     if (undefined === this.fontMap) {
       this.fontMap = new FontMap();
       if (this.isOpen) {
-        const fontProps = JSON.parse(await IModelReadRpcInterface.getClientForRouting(this.routingContext.token).readFontJson(this.getRpcProps())) as FontMapProps;
+        const fontProps = await IModelReadRpcInterface.getClientForRouting(this.routingContext.token).readFontJson(this.getRpcProps());
         this.fontMap.addFonts(fontProps.fonts);
       }
     }
@@ -442,10 +443,10 @@ export abstract class IModelConnection extends IModel {
    * @see [[Id64]]
    * @public
    */
-  public async getTextureImage(textureLoadProps: TextureLoadProps): Promise<Uint8Array | undefined> {
+  public async queryTextureData(textureLoadProps: TextureLoadProps): Promise<TextureData | undefined> {
     if (this.isOpen) {
       const rpcClient = IModelReadRpcInterface.getClientForRouting(this.routingContext.token);
-      const img = rpcClient.getTextureImage(this.getRpcProps(), textureLoadProps);
+      const img = rpcClient.queryTextureData(this.getRpcProps(), textureLoadProps);
       return img;
     }
     return undefined;
@@ -1023,12 +1024,12 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
      */
     public async getById(codeSpecId: Id64String): Promise<CodeSpec> {
       if (!Id64.isValid(codeSpecId))
-        throw new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", Logger.logWarning, loggerCategory, () => ({ codeSpecId }));
+        throw new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", () => ({ codeSpecId }));
 
       await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
       const found: CodeSpec | undefined = this._loaded!.find((codeSpec: CodeSpec) => codeSpec.id === codeSpecId);
       if (!found)
-        throw new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning, loggerCategory);
+        throw new IModelError(IModelStatus.NotFound, "CodeSpec not found");
 
       return found;
     }
@@ -1042,7 +1043,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
       const found: CodeSpec | undefined = this._loaded!.find((codeSpec: CodeSpec) => codeSpec.name === name);
       if (!found)
-        throw new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning, loggerCategory);
+        throw new IModelError(IModelStatus.NotFound, "CodeSpec not found");
 
       return found;
     }
@@ -1104,7 +1105,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
     /** Load a [[ViewState]] object from the specified [[ViewDefinition]] id. */
     public async load(viewDefinitionId: Id64String): Promise<ViewState> {
       if (!Id64.isValidId64(viewDefinitionId))
-        throw new IModelError(IModelStatus.InvalidId, "Invalid view definition Id for IModelConnection.Views.load", Logger.logError, loggerCategory, () => { return { viewDefinitionId }; });
+        throw new IModelError(IModelStatus.InvalidId, `Invalid view definition Id ${viewDefinitionId}`);
 
       const options: ViewStateLoadProps = {
         displayStyle: {
@@ -1118,7 +1119,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       const ctor = await this._iModel.findClassFor<typeof EntityState>(className, undefined) as typeof ViewState | undefined;
 
       if (undefined === ctor)
-        throw new IModelError(IModelStatus.WrongClass, "Invalid ViewState class", Logger.logError, loggerCategory, () => viewProps);
+        throw new IModelError(IModelStatus.WrongClass, "Invalid ViewState class", () => viewProps);
 
       const viewState = ctor.createFromProps(viewProps, this._iModel)!;
       await viewState.load(); // loads models for ModelSelector
