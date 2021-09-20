@@ -37,6 +37,7 @@ describe("Favorite properties", () => {
 
   beforeEach(async () => {
     propertiesDataProvider = new PresentationPropertyDataProvider({ imodel, ruleset: DEFAULT_PROPERTY_GRID_RULESET });
+    propertiesDataProvider.isNestedPropertyCategoryGroupingEnabled = false;
     await Presentation.favoriteProperties.initializeConnection(imodel);
   });
 
