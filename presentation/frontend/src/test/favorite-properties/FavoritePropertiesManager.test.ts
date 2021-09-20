@@ -61,7 +61,7 @@ describe("FavoritePropertiesManager", () => {
 
   describe("initializeConnection", () => {
 
-   // SWB
+    // SWB
     it("loads project and iModel scopes", async () => {
       await manager.initializeConnection(imodelMock.object);
       storageMock.verify(async (x) => x.loadProperties(undefined, undefined), moq.Times.once());
@@ -69,7 +69,7 @@ describe("FavoritePropertiesManager", () => {
       storageMock.verify(async (x) => x.loadProperties(projectId, undefined), moq.Times.once());
     });
 
-   // SWB
+    // SWB
     it("loads iModel scope when project scope is already loaded", async () => {
       await manager.initializeConnection(imodelMock.object);
 
@@ -222,7 +222,7 @@ describe("FavoritePropertiesManager", () => {
       expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.IModel)).to.be.true;
     });
 
-   // SWB
+    // SWB
     it("checks project scope for favorite properties", async () => {
       await manager.initializeConnection(imodelMock.object);
       // SWB
@@ -252,7 +252,7 @@ describe("FavoritePropertiesManager", () => {
     it("adds to project scope", async () => {
       await manager.initializeConnection(imodelMock.object);
 
-   // SWB
+      // SWB
       await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.Project);
       // SWB
       expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.Project)).to.be.true;
@@ -323,13 +323,13 @@ describe("FavoritePropertiesManager", () => {
       expect(s).to.be.calledOnce;
     });
 
-   // SWB
+    // SWB
     it("removes from project scope", async () => {
       await manager.initializeConnection(imodelMock.object);
       // SWB
       await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.Project);
 
-   // SWB
+      // SWB
       await manager.remove(propertyField1, imodelMock.object, FavoritePropertiesScope.Project);
       // SWB
       expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.Project)).to.be.false;
@@ -364,7 +364,7 @@ describe("FavoritePropertiesManager", () => {
       await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.Project);
       await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.IModel);
 
-   // SWB
+      // SWB
       await manager.remove(propertyField1, imodelMock.object, FavoritePropertiesScope.Project);
       expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.Global)).to.be.false;
       // SWB
@@ -401,11 +401,11 @@ describe("FavoritePropertiesManager", () => {
       expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.Global)).to.be.false;
     });
 
-   // SWB
+    // SWB
     it("clears project", async () => {
       await manager.initializeConnection(imodelMock.object);
 
-   // SWB
+      // SWB
       await manager.add(nestedContentField, imodelMock.object, FavoritePropertiesScope.Project);
       await manager.add(primitiveField, imodelMock.object, FavoritePropertiesScope.Project);
       await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.Project);
@@ -447,7 +447,7 @@ describe("FavoritePropertiesManager", () => {
       const globalFieldInfos = new Set<PropertyFullName>(getFieldsInfos(globalFields));
       storageMock.setup(async (x) => x.loadProperties()).returns(async () => globalFieldInfos);
 
-   // SWB
+      // SWB
       const projectFields = [projectA];
       const projectFieldInfos = new Set<PropertyFullName>(getFieldsInfos(projectFields));
       storageMock.setup(async (x) => x.loadProperties(moq.It.isAny())).returns(async () => projectFieldInfos);

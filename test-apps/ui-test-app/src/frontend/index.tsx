@@ -440,7 +440,7 @@ export class SampleAppIModelApp {
   public static async showSignedIn() {
     SampleAppIModelApp.iModelParams = SampleAppIModelApp._usingParams();
 
-   // SWB
+    // SWB
     if (process.env.IMJS_UITESTAPP_IMODEL_NAME && process.env.IMJS_UITESTAPP_IMODEL_PROJECT_NAME) {
       const viewId: string | undefined = process.env.IMJS_UITESTAPP_IMODEL_VIEWID;
 
@@ -462,7 +462,7 @@ export class SampleAppIModelApp {
       else if (iTwinList.length > 1)
         throw new Error(`Multiple iTwins named ${projectName} were found for the user.`);
 
-   // SWB
+      // SWB
       const project: ITwin = iTwinList[0];
 
       const iModel = (await (new IModelHubClient()).iModels.get(requestContext, project.id, new IModelQuery().byName(iModelName)))[0];

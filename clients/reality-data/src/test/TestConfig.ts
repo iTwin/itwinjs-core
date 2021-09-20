@@ -14,9 +14,7 @@ function isOfflineSet(): boolean {
 /** Basic configuration used by all tests
  */
 export class TestConfig {
-  // SWB
-  /** Name of iTwins (Projects or Assets) used by most tests */
-  // SWB
+  /** Name of iTwins used by most tests */
   public static readonly iTwinName: string = "iModelJsIntegrationTest";
   public static readonly enableMocks: boolean = isOfflineSet();
 
@@ -26,7 +24,6 @@ export class TestConfig {
     return new AuthorizedClientRequestContext((accessToken as any) as AccessToken);
   }
 
-  // SWB
   public static async getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
     const iTwinAccessClient = new ITwinAccessClient();
     const iTwinList: ITwin[] = await iTwinAccessClient.getAll(requestContext, {
@@ -34,7 +31,7 @@ export class TestConfig {
         searchString: name,
         propertyName: ITwinSearchableProperty.Name,
         exactMatch: true,
-      }
+      },
     });
 
     if (iTwinList.length === 0)

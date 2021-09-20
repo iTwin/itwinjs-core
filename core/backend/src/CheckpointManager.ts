@@ -27,8 +27,7 @@ const loggerCategory = BackendLoggerCategory.IModelDb;
 export interface CheckpointProps extends UserArg {
   readonly expectV2?: boolean;
 
-  // SWB
-  /** Context (Project or Asset) that the iModel belongs to */
+  /** iTwin that the iModel belongs to */
   readonly iTwinId: GuidString;
 
   /** Id of the iModel */
@@ -292,8 +291,8 @@ export class CheckpointManager {
         nativeDb.saveLocalValue("parentChangeSet", JSON.stringify(dbChangeset));
     }
 
-    // SWB
-    const dbContextGuid = Guid.normalize(nativeDb.queryProjectGuid());
+    // SWB What does context mean here?
+    const dbContextGuid = Guid.normalize(nativeDb.queryITwinGuid());
     if (dbContextGuid !== Guid.normalize(checkpoint.iTwinId))
       throw new IModelError(IModelStatus.ValidationFailed, "iTwinId was not properly set up in the checkpoint");
   }

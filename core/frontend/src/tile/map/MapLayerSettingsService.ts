@@ -76,7 +76,7 @@ export class MapLayerSettingsService {
     result = await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, oldSource.name, true, projectId, iModelId);
     requestContext.enter();
 
-  // SWB
+    // SWB
     // Make a second attempt at project level
     if (result.status === SettingsStatus.SettingNotFound) {
       result = await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, oldSource.name, true, projectId, undefined);
@@ -112,7 +112,7 @@ export class MapLayerSettingsService {
     result = await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, source.name, true, projectId, iModelId);
     requestContext.enter();
 
-  // SWB
+    // SWB
     // Make a second attempt at project level
     if (result.status === SettingsStatus.SettingNotFound) {
       result = await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, source.name, true, projectId, undefined);

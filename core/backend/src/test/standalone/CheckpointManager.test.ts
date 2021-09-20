@@ -69,7 +69,7 @@ describe("V1 Checkpoint Manager", () => {
     const iModelId = Guid.createValue();  // This is wrong - it should be `snapshot.getGuid()`!
     const iTwinId = Guid.createValue();
     const changeset = IModelTestUtils.generateChangeSetId();
-    snapshot.nativeDb.saveProjectGuid(Guid.normalize(iTwinId));
+    snapshot.nativeDb.saveITwinGuid(Guid.normalize(iTwinId));
     snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id);
     snapshot.saveChanges();
 
@@ -147,7 +147,7 @@ describe("Checkpoint Manager", () => {
     const iModelId = snapshot.getGuid();
     const iTwinId = Guid.createValue();
     const changeset = IModelTestUtils.generateChangeSetId();
-    snapshot.nativeDb.saveProjectGuid(Guid.normalize(iTwinId));
+    snapshot.nativeDb.saveITwinGuid(Guid.normalize(iTwinId));
     snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id);
     snapshot.saveChanges();
     snapshot.close();

@@ -263,11 +263,11 @@ class DictionaryWithReservations<TKey, TValue> {
   }
 }
 
-   // SWB
+// SWB
 type ProjectAndIModelIdsKey = [string | undefined, string | undefined];
 
 // istanbul ignore next
-   // SWB
+// SWB
 function projectAndIModelIdsKeyComparer(lhs: ProjectAndIModelIdsKey, rhs: ProjectAndIModelIdsKey) {
   // SWB
   const projectIdCompare = compareStrings(lhs[0] ?? "", rhs[0] ?? "");

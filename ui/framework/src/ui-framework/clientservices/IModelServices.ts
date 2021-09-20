@@ -73,7 +73,7 @@ export interface IModelUserInfo {
  */
 export interface IModelServices {
 
-   // SWB
+  // SWB
   /** Get the iModels in a project. */
   // SWB
   getIModels(projectInfo: ITwin, top: number, skip: number): Promise<IModelInfo[]>;
