@@ -52,6 +52,7 @@ export class AuthorizedClientRequestContext extends ClientRequestContext {
   /** @internal */
   public override toJSON(): AuthorizedClientRequestContextProps {
     const obj = super.toJSON() as AuthorizedClientRequestContextProps;
+    obj.accessToken = this.accessToken!;
     return obj;
   }
   /** @internal */
