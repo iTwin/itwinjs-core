@@ -100,7 +100,7 @@ export enum IModelStatus {
 }
 
 /** Error status from various briefcase operations
- * @public
+ * @beta Should these be internal?
  */
 export enum BriefcaseStatus {
   BRIEFCASE_STATUS_BASE = 0x20000,
@@ -116,7 +116,7 @@ export enum BriefcaseStatus {
 }
 
 /** RpcInterface status codes
- * @public
+ * @beta Should these be internal?
  */
 export enum RpcInterfaceStatus {
   Success = 0,
@@ -184,7 +184,7 @@ export enum ChangeSetStatus { // Note: Values must be kept in sync with ChangeSe
 }
 
 /** Return codes for methods which perform repository management operations
- * @public
+ * @beta Should these be internal?
  */
 export enum RepositoryStatus {
   Success = 0,
@@ -221,7 +221,7 @@ export enum RepositoryStatus {
 }
 
 /** Status from returned HTTP status code
- * @public
+ * @beta Should these be internal?
  */
 export enum HttpStatus {
   /** 2xx Success */
@@ -237,7 +237,7 @@ export enum HttpStatus {
 }
 
 /** Server returned WSG errors
- * @public
+ * @beta Right name? Right package?
  */
 export enum WSStatus {
   Success = 0,
@@ -342,7 +342,7 @@ export enum AuthStatus {
 }
 
 /** iModel.js Extensions
- * @public
+ * @beta
  */
 export enum ExtensionStatus {
   Success = 0,

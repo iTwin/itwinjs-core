@@ -4270,13 +4270,13 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     getElementProps(_iModelToken: IModelRpcProps, _elementIds: Id64String[]): Promise<ElementProps[]>;
     // (undocumented)
-    getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelRpcProps, _props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps>;
+    getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelRpcProps, _props: string): Promise<GeoCoordinatesResponseProps>;
     // (undocumented)
     getGeometryContainment(_iModelToken: IModelRpcProps, _props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     // (undocumented)
     getGeometrySummary(_iModelToken: IModelRpcProps, _props: GeometrySummaryRequestProps): Promise<string>;
     // (undocumented)
-    getIModelCoordinatesFromGeoCoordinates(_iModelToken: IModelRpcProps, _props: IModelCoordinatesRequestProps): Promise<IModelCoordinatesResponseProps>;
+    getIModelCoordinatesFromGeoCoordinates(_iModelToken: IModelRpcProps, _props: string): Promise<IModelCoordinatesResponseProps>;
     // (undocumented)
     getMassProperties(_iModelToken: IModelRpcProps, _props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     // (undocumented)
