@@ -9,62 +9,7 @@ import { Guid, GuidString } from "@bentley/bentleyjs-core";
 import { MapLayerSettingsService } from "../../../tile/map/MapLayerSettings";
 import { MapLayerSource } from "../../../tile/map/MapLayerSources";
 import { IModelApp } from "../../../IModelApp";
-import { ITwinIdArg, PreferenceArg, PreferenceKeyArg, TokenArg } from "../../../UserPreferences";
-
-let iModelPrefs: Map<string, any> | undefined = undefined;
-let iTwinPrefs: Map<string, any> | undefined = undefined;
-export function setup() {
-  if (undefined === iModelPrefs || undefined === iTwinPrefs) {
-    iModelPrefs = new Map<string, any>();
-    iTwinPrefs = new Map<string, any>();
-  }
-
-  const userPreferencesHandler = IModelApp.userPreferences;
-
-  sinon.stub(IModelApp, "userPreferences").get(() => userPreferencesHandler)
-
-  sinon.stub(userPreferencesHandler, "get").callsFake(async (arg: PreferenceKeyArg & ITwinIdArg & TokenArg) => {
-    if (undefined === iModelPrefs || undefined === iTwinPrefs)
-      throw new Error("The user preferences mock is not properly setup - please run the `setup` method.");
-
-    let returnVal = undefined;
-    if (arg.iModelId)
-      returnVal = iModelPrefs.get(arg.key);
-
-    if (undefined !== returnVal)
-      return returnVal;
-
-    if (arg.iTwinId)
-      returnVal = iModelPrefs.get(arg.key);
-
-    return returnVal;
-  });
-
-  sinon.stub(userPreferencesHandler, "delete").callsFake(async (arg: PreferenceKeyArg & ITwinIdArg & TokenArg) => {
-    if (undefined === iModelPrefs || undefined === iTwinPrefs)
-      throw new Error("The user preferences mock is not properly setup - please run the `setup` method.");
-
-    if (arg.iModelId)
-      iModelPrefs.delete(arg.key);
-    if (arg.iTwinId)
-      iTwinPrefs.delete(arg.key);
-  });
-
-  sinon.stub(userPreferencesHandler, "save").callsFake(async (arg: PreferenceArg & ITwinIdArg & TokenArg) => {
-    if (undefined === iModelPrefs || undefined === iTwinPrefs)
-      throw new Error("The user preferences mock is not properly setup - please run the `setup` method.");
-
-    if (arg.iModelId)
-      iModelPrefs.set(arg.key, arg.content);
-    if (arg.iTwinId)
-      iTwinPrefs.set(arg.key, arg.content);
-  });
-}
-
-export function restore() {
-  iModelPrefs = undefined;
-  iTwinPrefs = undefined;
-}
+import { setup, restore } from "./UserPreferencesMock.test";
 
 chai.should();
 describe.only("MapLayerSettingsService", () => {
