@@ -1166,28 +1166,16 @@ export abstract class IModelDb extends IModel {
   /** Save a "file property" to this iModel
    * @param prop the FilePropertyProps that describes the new property
    * @param value either a string or a blob to save as the file property
-   * @returns 0 if successful, status otherwise
    */
-  public saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): DbResult {
-    try {
-      this.nativeDb.saveFileProperty(prop, strValue, blobVal);
-      return DbResult.BE_SQLITE_OK;
-    } catch (err: any) {
-      return err.errorNumber;
-    }
+  public saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void {
+    this.nativeDb.saveFileProperty(prop, strValue, blobVal);
   }
 
   /** delete a "file property" from this iModel
    * @param prop the FilePropertyProps that describes the property
-   * @returns 0 if successful, status otherwise
    */
-  public deleteFileProperty(prop: FilePropertyProps): DbResult {
-    try {
-      this.nativeDb.saveFileProperty(prop, undefined, undefined);
-      return DbResult.BE_SQLITE_OK;
-    } catch (err: any) {
-      return err.errorNumber;
-    }
+  public deleteFileProperty(prop: FilePropertyProps): void {
+    this.nativeDb.saveFileProperty(prop, undefined, undefined);
   }
 
   /** Query for the next available major id for a "file property" from this iModel.

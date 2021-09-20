@@ -113,6 +113,9 @@ export abstract class Client {
       } else {
         this._url = this.baseUrl;
       }
+
+      // Strip trailing '/'
+      this._url = this._url.replace(/\/$/, "");
       return this._url;
     }
 

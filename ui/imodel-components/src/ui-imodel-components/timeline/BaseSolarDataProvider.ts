@@ -77,7 +77,7 @@ export class BaseSolarDataProvider implements SolarDataProvider {
       this.viewId = viewport.view.id;
 
     // project location
-    this._cartographicCenter = Cartographic.fromDegrees(this.longitude, this.latitude, 0.0);
+    this._cartographicCenter = Cartographic.fromDegrees({longitude: this.longitude, latitude: this.latitude, height: 0.0});
     this._projectTimeZoneOffset = this.getZone(this._cartographicCenter);
 
     this.initializeData(this._projectTimeZoneOffset);
@@ -134,7 +134,7 @@ export class BaseSolarDataProvider implements SolarDataProvider {
       const projectCenter = Point3d.createAdd2Scaled(projectExtents.low, .5, projectExtents.high, .5);
       return iModel.spatialToCartographicFromEcef(projectCenter);
     }
-    return Cartographic.fromDegrees(this.longitude, this.latitude, 0.0);
+    return Cartographic.fromDegrees({longitude: this.longitude, latitude: this.latitude, height: 0.0});
   }
 
   public set viewport(viewport: ScreenViewport | undefined) {

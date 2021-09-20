@@ -1611,16 +1611,14 @@ describe("iModel", () => {
 
     const myPropsStr: FilePropertyProps = { name: "MyProp", namespace: "test1", id: 1, subId: 1 };
     const myStrVal = "this is a test";
-    let stat = iModel.saveFileProperty(myPropsStr, myStrVal);
-    assert.equal(stat, 0, "saveFileProperty as string");
+    iModel.saveFileProperty(myPropsStr, myStrVal);
     const readFromDb = iModel.queryFilePropertyString(myPropsStr);
     assert.equal(readFromDb, myStrVal, "query string after save");
 
     const myPropsBlob: FilePropertyProps = { name: "MyBlob", namespace: "test1", id: 10 };
     const testRange = new Uint8Array(500);
     testRange.fill(11);
-    stat = iModel.saveFileProperty(myPropsBlob, undefined, testRange);
-    assert.equal(stat, 0, "saveFileProperty as blob");
+    iModel.saveFileProperty(myPropsBlob, undefined, testRange);
     const blobFromDb = iModel.queryFilePropertyBlob(myPropsBlob);
     assert.deepEqual(blobFromDb, testRange, "query blob after save");
 
@@ -1629,8 +1627,7 @@ describe("iModel", () => {
 
     next = iModel.queryNextAvailableFileProperty(myPropsStr);
     assert.equal(2, next, "queryNextAvailableFileProperty str");
-    assert.equal(0, iModel.deleteFileProperty(myPropsStr), "do deleteFileProperty");
-    assert.equal(stat, 0, "deleteFileProperty");
+    iModel.deleteFileProperty(myPropsStr);
     assert.isUndefined(iModel.queryFilePropertyString(myPropsStr), "property was deleted");
     next = iModel.queryNextAvailableFileProperty(myPropsStr);
     assert.equal(0, next, "queryNextAvailableFileProperty, should return 0 when none present");

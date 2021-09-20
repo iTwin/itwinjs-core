@@ -14,6 +14,8 @@ beta;AsyncErrorMessage
 beta;AsyncValueProcessingResult
 public;class BasePointTypeConverter 
 beta;BasicPropertyEditor 
+beta;BeDragDropContext(props:
+deprecated;BeDragDropContext(props:
 beta;BooleanEditor 
 beta;BooleanPropertyEditor 
 public;BooleanTypeConverter 
