@@ -70,6 +70,8 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /common/**/hypermodeling-frontend/                @imodeljs/display @bbastings
 /common/**/imodeljs-backend.*                     @imodeljs/admins
 /common/**/imodeljs-backend/                      @imodeljs/admins
+/common/**/imodeljs-transformer.*                 @MichaelBelousov @ColinKerr
+/common/**/imodeljs-transformer/                  @MichaelBelousov @ColinKerr
 /common/**/imodeljs-common.*                      @imodeljs/admins @imodeljs/display
 /common/**/imodeljs-common/                       @imodeljs/admins @imodeljs/display
 /common/**/imodeljs-editor-*.*                    @bbastings @kabentley @pmconne
@@ -106,6 +108,7 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /common/config/azure-pipelines  @calebmshafer @wgoehrig @ColinKerr
 
 /core/backend                   @imodeljs/admins
+/core/transformer               @MichaelBelousov @ColinKerr
 /core/backend-itwin-client      @calebmshafer @ramanujam-raman
 /core/bentley                   @imodeljs/admins
 /core/common                    @imodeljs/admins @imodeljs/display
