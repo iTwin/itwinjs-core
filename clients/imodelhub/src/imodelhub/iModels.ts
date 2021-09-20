@@ -87,7 +87,7 @@ export enum InitializationState {
   OutdatedFile = 4,
   /** Initialization failed due to file having [[Code]] values that are too long. */
   CodeTooLong = 5,
-  /** Initialization failed due to file being a [[Briefcase]]. Only standalone and master files are supported for iModel creation, see [BriefcaseId]($backend). */
+  /** Initialization failed due to file being a [[Briefcase]]. Only standalone and master files are supported for iModel creation, see [BriefcaseId]($common). */
   SeedFileIsBriefcase = 6,
 }
 
@@ -789,7 +789,7 @@ export class IModelHandler {
   }
 
   /**
-   * Create an iModel from given seed file. In most cases [BriefcaseManager.create]($backend) should be used instead. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
+   * Create an iModel from given seed file. In most cases [BackendHubAccess.createNewIModel]($backend) should be used instead. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
    *
    * This method does not work on browsers. If iModel creation fails before finishing file upload, partially created iModel is deleted. This method is not supported in iModelBank.
    * @param requestContext The client request context.

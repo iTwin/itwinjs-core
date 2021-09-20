@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as faker from "faker";
@@ -164,8 +163,7 @@ describe("TreeDataProvider", () => {
       const override = sinon.mock().resolves(0);
       provider = new PresentationTreeDataProvider({ imodel: imodelMock.object, ruleset: rulesetId, dataSourceOverrides: { getNodesCount: override } });
       await provider.getNodesCount(undefined);
-      // eslint-disable-next-line deprecation/deprecation
-      presentationManagerMock.verify(async (x) => x.getNodesCount(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+      presentationManagerMock.verify(async (x) => x.getNodesCount(moq.It.isAny()), moq.Times.never());
       expect(override).to.be.calledOnce;
     });
 
@@ -274,7 +272,7 @@ describe("TreeDataProvider", () => {
     it("returns presentation manager result", async () => {
       const filter = faker.random.word();
       presentationManagerMock
-        .setup(async (x) => x.getFilteredNodePaths({ imodel: imodelMock.object, rulesetOrId: rulesetId }, filter))
+        .setup(async (x) => x.getFilteredNodePaths({ imodel: imodelMock.object, rulesetOrId: rulesetId, filterText: filter }))
         .returns(async () => [createRandomNodePathElement(), createRandomNodePathElement()])
         .verifiable();
       const actualResult = await provider.getFilteredNodePaths(filter);
@@ -286,7 +284,7 @@ describe("TreeDataProvider", () => {
       const override = sinon.mock().resolves([]);
       provider = new PresentationTreeDataProvider({ imodel: imodelMock.object, ruleset: rulesetId, dataSourceOverrides: { getFilteredNodePaths: override } });
       await provider.getFilteredNodePaths("test");
-      presentationManagerMock.verify(async (x) => x.getFilteredNodePaths(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+      presentationManagerMock.verify(async (x) => x.getFilteredNodePaths(moq.It.isAny()), moq.Times.never());
       expect(override).to.be.calledOnce;
     });
 

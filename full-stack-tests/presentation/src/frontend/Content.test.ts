@@ -15,8 +15,6 @@ import { findFieldByLabel } from "../Utils";
 
 import sinon = require("sinon");
 
-/* eslint-disable deprecation/deprecation */
-
 describe("Content", () => {
 
   let imodel: IModelConnection;
@@ -99,43 +97,6 @@ describe("Content", () => {
 
   describe("Distinct Values", () => {
 
-    it("[deprecated] gets distinct content values", async () => {
-      const ruleset: Ruleset = {
-        id: "getRelatedDistinctValues",
-        rules: [{
-          ruleType: RuleTypes.Content,
-          specifications: [{
-            specType: ContentSpecificationTypes.ContentRelatedInstances,
-            relatedClasses: {
-              schemaName: "BisCore",
-              classNames: [
-                "SubCategory",
-                "LinkPartition",
-                "DefinitionPartition",
-                "PhysicalPartition",
-              ],
-            },
-          }],
-        }, {
-          ruleType: RuleTypes.LabelOverride,
-          condition: `ThisNode.IsInstanceNode ANDALSO this.IsOfClass("Model", "BisCore")`,
-          label: `this.GetRelatedDisplayLabel("BisCore:ModelModelsElement", "Forward", "BisCore:Element")`,
-        }],
-      };
-      const key1: InstanceKey = { id: Id64.fromString("0x1"), className: "BisCore:Subject" };
-      const key2: InstanceKey = { id: Id64.fromString("0x17"), className: "BisCore:SpatialCategory" };
-      const keys = new KeySet([key1, key2]);
-      const descriptor = await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset }, "Grid", keys, undefined);
-      expect(descriptor).to.not.be.undefined;
-      const field = descriptor!.getFieldByName("pc_bis_Element_Model");
-      expect(field).to.not.be.undefined;
-      const distinctValues = await Presentation.presentation.getDistinctValues({ imodel, rulesetOrId: ruleset }, descriptor!, keys, field!.name);
-      expect(distinctValues).to.be.deep.equal([
-        "Definition Model For DgnV8Bridge:D:\\Temp\\Properties_60InstancesWithUrl2.dgn, Default",
-        "DgnV8Bridge",
-      ]);
-    });
-
     async function validatePagedDistinctValuesResponse(ruleset: Ruleset, keys: KeySet, descriptor: Descriptor, fieldDescriptor: FieldDescriptor, expectedResult: DisplayValueGroup[]) {
       // first request all pages and confirm the result is valid
       const allDistinctValues = await Presentation.presentation.getPagedDistinctValues({ imodel, rulesetOrId: ruleset, keys, descriptor, fieldDescriptor });
@@ -165,7 +126,7 @@ describe("Content", () => {
         }],
       };
       const keys = KeySet.fromJSON({ instanceKeys: [["PCJ_TestSchema:TestClass", ["0x61", "0x70", "0x6a", "0x3c", "0x71"]]], nodeKeys: [] });
-      const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset }, "", keys, undefined))!;
+      const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset, keys, displayType: "" }))!;
 
       let field = findFieldByLabel(descriptor.fields, "User Label")!;
       await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
@@ -229,7 +190,7 @@ describe("Content", () => {
         }],
       };
       const keys = KeySet.fromJSON({ instanceKeys: [["PCJ_TestSchema:TestClass", ["0x61", "0x70", "0x6a", "0x3c", "0x71"]]], nodeKeys: [] });
-      const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset }, "", keys, undefined))!;
+      const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset, keys, displayType: "" }))!;
       const field = findFieldByLabel(descriptor.fields, "Model Label")!;
       await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
         displayValue: "Properties_60InstancesWithUrl2",
@@ -246,7 +207,7 @@ describe("Content", () => {
         }],
       };
       const keys = KeySet.fromJSON({ instanceKeys: [["PCJ_TestSchema:TestClass", ["0x61", "0x70", "0x6a", "0x3c", "0x71"]]], nodeKeys: [] });
-      const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset }, "", keys, undefined))!;
+      const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset, keys, displayType: "" }))!;
       const field = findFieldByLabel(descriptor.fields, "Ñámê")!;
       await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
         displayValue: "Properties_60InstancesWithUrl2.dgn",
@@ -269,7 +230,7 @@ describe("Content", () => {
         className: "Generic:PhysicalObject",
         id: Id64.invalid,
       }]);
-      const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset }, "", consolidatedKeys, undefined))!;
+      const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset, keys: consolidatedKeys, displayType: "" }))!;
       const field = findFieldByLabel(descriptor.fields, "User Label")!;
 
       await validatePagedDistinctValuesResponse(ruleset, consolidatedKeys, descriptor, field.getFieldDescriptor(), [{
@@ -483,7 +444,6 @@ describe("Content", () => {
             label: "TestClass",
           },
           isSelectPolymorphic: true,
-          pathToPrimaryClass: [],
           relatedPropertyPaths: [
             [
               {
@@ -674,7 +634,6 @@ describe("Content", () => {
               isForwardRelationship: true,
             },
           ],
-          relatedInstanceClasses: [],
         },
       ];
 
@@ -729,7 +688,7 @@ describe("Content", () => {
       const key1: InstanceKey = { id: Id64.fromString("0x1"), className: "BisCore:Subject" };
       const key2: InstanceKey = { id: Id64.fromString("0x17"), className: "BisCore:SpatialCategory" };
       const keys = new KeySet([key1, key2]);
-      await expect(Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset }, "Grid", keys, undefined))
+      await expect(Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset, keys, displayType: "Grid" }))
         .to.be.eventually.rejectedWith(PresentationError).and.have.property("errorNumber", PresentationStatus.BackendTimeout);
     });
 

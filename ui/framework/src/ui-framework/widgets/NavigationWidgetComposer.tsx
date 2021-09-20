@@ -37,9 +37,9 @@ function createNavigationAidControl(activeContentControl: ContentControl | undef
  * @public
  */
 export interface NavigationAidHostProps {
-  // defaults to "64px"
+  /** Navigation Aid Host minimum width. Defaults to "64px". */
   minWidth?: string;
-  // defaults to "64px"
+  /** Navigation Aid Host minimum height. Defaults to "64px". */
   minHeight?: string;
 }
 

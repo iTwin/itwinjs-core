@@ -1,6 +1,23 @@
 # Change Log - @bentley/ecschema-metadata
 
-This log was last generated on Wed, 25 Aug 2021 15:36:01 GMT and should not be manually modified.
+This log was last generated on Wed, 15 Sep 2021 18:06:46 GMT and should not be manually modified.
+
+## 2.19.12
+Wed, 15 Sep 2021 18:06:46 GMT
+
+### Updates
+
+- Bump xmldom@^0.6.0 -> @xmldom/xmldom@^0.7.0, and remove @types/xmldom, as typedefs are now delivered with their core pkg. This should resolve cve-2021-32796
+
+## 2.19.11
+Thu, 09 Sep 2021 21:04:57 GMT
+
+_Version update only_
+
+## 2.19.10
+Wed, 08 Sep 2021 14:36:01 GMT
+
+_Version update only_
 
 ## 2.19.9
 Wed, 25 Aug 2021 15:36:01 GMT

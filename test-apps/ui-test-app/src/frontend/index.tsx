@@ -30,10 +30,9 @@ import { MapLayersUI } from "@bentley/map-layers";
 import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
 import { Presentation } from "@bentley/presentation-frontend";
 import { getClassName } from "@bentley/ui-abstract";
-import { BeDragDropContext } from "@bentley/ui-components";
 import { LocalSettingsStorage, UiSettings } from "@bentley/ui-core";
 import {
-  ActionsUnion, AppNotificationManager, AppUiSettings, ConfigurableUiContent, createAction, DeepReadonly, DragDropLayerRenderer, FrameworkAccuDraw,
+  ActionsUnion, AppNotificationManager, AppUiSettings, ConfigurableUiContent, createAction, DeepReadonly, FrameworkAccuDraw,
   FrameworkReducer, FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef,
   FrontstageManager, IModelInfo, ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME,
   ThemeManager, ToolbarDragInteractionContext, UiFramework, UiSettingsProvider, UserSettingsStorage,
@@ -381,7 +380,7 @@ export class SampleAppIModelApp {
         Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Frontstage & ScreenViewports are ready`);
         if (false && ProcessDetector.isElectronAppFrontend) { // used for testing pop-out support
           // delay 5 seconds to see if window opens - since web browser will block pop-out if we wait. Also web browser will not allow multiple pop-outs.
-          setTimeout(() => { IModelApp.tools.run(OpenCustomPopoutTool.toolId); /* IModelApp.tools.run(OpenWidgetPopoutTool.toolId); */ }, 5000);
+          setTimeout(() => { void IModelApp.tools.run(OpenCustomPopoutTool.toolId); /* IModelApp.tools.run(OpenWidgetPopoutTool.toolId); */ }, 5000);
         }
       });
     } else {
@@ -393,7 +392,7 @@ export class SampleAppIModelApp {
     await LocalFileOpenFrontstage.open();
   }
 
-  public static async showIModelIndex(contextId: string, iModelId: string) {
+  public static async showIModelIndex(iTwinId: string, iModelId: string) {
     const currentConnection = UiFramework.getIModelConnection();
     if (!currentConnection || (currentConnection.iModelId !== iModelId)) {
       // Close the current iModelConnection
@@ -401,18 +400,18 @@ export class SampleAppIModelApp {
 
       // open the imodel
       Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
-        `showIModelIndex: projectId=${contextId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
+        `showIModelIndex: projectId=${iTwinId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
 
       let iModelConnection: IModelConnection | undefined;
       if (ProcessDetector.isMobileAppFrontend) {
-        const req = await NativeApp.requestDownloadBriefcase(contextId, iModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(), async (progress: ProgressInfo) => {
+        const req = await NativeApp.requestDownloadBriefcase(iTwinId, iModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(), async (progress: ProgressInfo) => {
           // eslint-disable-next-line no-console
           console.log(`Progress (${progress.loaded}/${progress.total}) -> ${progress.percent}%`);
         });
         await req.downloadPromise;
         iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
       } else {
-        iModelConnection = await UiFramework.iModelServices.openIModel(contextId, iModelId);
+        iModelConnection = await UiFramework.iModelServices.openIModel(iTwinId, iModelId);
       }
 
       SampleAppIModelApp.setIsIModelLocal(false, true);
@@ -617,23 +616,18 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
     return (
       <Provider store={SampleAppIModelApp.store} >
         <ThemeManager>
-          {/* eslint-disable-next-line deprecation/deprecation */}
-          <BeDragDropContext>
-            <SafeAreaContext.Provider value={SafeAreaInsets.All}>
-              <AppDragInteraction>
-                <AppFrameworkVersion>
-                  {/** UiSettingsProvider is optional. By default LocalUiSettings is used to store UI settings. */}
-                  <UiSettingsProvider settingsStorage={this.state.uiSettingsStorage}>
-                    <ConfigurableUiContent
-                      appBackstage={<AppBackstageComposer />}
-                    />
-                  </UiSettingsProvider>
-                </AppFrameworkVersion>
-              </AppDragInteraction>
-            </SafeAreaContext.Provider>
-            {/* eslint-disable-next-line deprecation/deprecation */}
-            <DragDropLayerRenderer />
-          </BeDragDropContext>
+          <SafeAreaContext.Provider value={SafeAreaInsets.All}>
+            <AppDragInteraction>
+              <AppFrameworkVersion>
+                {/** UiSettingsProvider is optional. By default LocalUiSettings is used to store UI settings. */}
+                <UiSettingsProvider settingsStorage={this.state.uiSettingsStorage}>
+                  <ConfigurableUiContent
+                    appBackstage={<AppBackstageComposer />}
+                  />
+                </UiSettingsProvider>
+              </AppFrameworkVersion>
+            </AppDragInteraction>
+          </SafeAreaContext.Provider>
         </ThemeManager>
       </Provider >
     );

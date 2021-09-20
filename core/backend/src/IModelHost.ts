@@ -231,7 +231,10 @@ export class IModelHost {
   public static async getAuthorizedContext() {
     return new AuthorizedClientRequestContext(await this.getAccessToken(), undefined, this.applicationId, this.applicationVersion, this.sessionId);
   }
-
+  /** @internal */
+  public static flushLog() {
+    return this.platform.DgnDb.flushLog();
+  }
   /** @internal */
   public static loadNative(): void {
     const platform = Platform.load();
@@ -300,8 +303,8 @@ export class IModelHost {
   /** @internal */
   public static setHubAccess(hubAccess: BackendHubAccess) { this._hubAccess = hubAccess; }
 
-  /** Provides access to the IModelHub implementation for this IModelHost
-   * @internal
+  /** Provides access to the IModelHub for this IModelHost
+   * @beta
    */
   public static get hubAccess(): BackendHubAccess { return this._hubAccess; }
 

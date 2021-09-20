@@ -4,7 +4,6 @@
 
 ```ts
 
-import * as _ from 'lodash';
 import { AbstractMenuItemProps } from '@bentley/ui-abstract';
 import { AbstractStatusBarCustomItem } from '@bentley/ui-abstract';
 import { AbstractToolbarProps } from '@bentley/ui-abstract';
@@ -39,7 +38,6 @@ import { ConditionalStringValue } from '@bentley/ui-abstract';
 import * as CSS from 'csstype';
 import { CustomButtonDefinition } from '@bentley/ui-abstract';
 import { CustomToolbarItem } from '@bentley/ui-components';
-import { DelayLoadedTreeNodeItem } from '@bentley/ui-components';
 import { DialogItem } from '@bentley/ui-abstract';
 import { DialogLayoutDataProvider } from '@bentley/ui-abstract';
 import { DialogPropertySyncItem } from '@bentley/ui-abstract';
@@ -49,10 +47,7 @@ import { DialogRow } from '@bentley/ui-abstract';
 import { Direction } from '@bentley/ui-ninezone';
 import { DisabledResizeHandles } from '@bentley/ui-ninezone';
 import { DisplayStyle3dState } from '@bentley/imodeljs-frontend';
-import { DndComponentClass } from 'react-dnd';
 import { DraggedWidgetManagerProps } from '@bentley/ui-ninezone';
-import { DragLayerProps } from '@bentley/ui-components';
-import { DragSourceArguments } from '@bentley/ui-components';
 import { ECClassGroupingNodeKey } from '@bentley/presentation-common';
 import { EmphasizeElementsProps } from '@bentley/imodeljs-common';
 import { FunctionKey } from '@bentley/ui-abstract';
@@ -88,7 +83,6 @@ import { NineZoneState } from '@bentley/ui-ninezone';
 import { NoChildrenProps } from '@bentley/ui-core';
 import { NodeCheckboxRenderProps } from '@bentley/ui-core';
 import { NodeKey } from '@bentley/presentation-common';
-import { NodePathElement } from '@bentley/presentation-common';
 import { NotificationManager } from '@bentley/imodeljs-frontend';
 import { NotifyMessageDetails } from '@bentley/imodeljs-frontend';
 import { Omit } from '@bentley/ui-core';
@@ -100,7 +94,6 @@ import { Orientation } from '@bentley/ui-core';
 import { OutputMessageAlert } from '@bentley/imodeljs-frontend';
 import { OutputMessagePriority } from '@bentley/imodeljs-frontend';
 import { OutputMessageType } from '@bentley/imodeljs-frontend';
-import { PageOptions } from '@bentley/ui-components';
 import { PanelSide } from '@bentley/ui-ninezone';
 import { PlaybackSettings } from '@bentley/ui-imodel-components';
 import { Point } from '@bentley/ui-core';
@@ -114,7 +107,6 @@ import * as PropTypes from 'prop-types';
 import { QuantityTypeArg } from '@bentley/imodeljs-frontend';
 import * as React from 'react';
 import { RectangleProps } from '@bentley/ui-core';
-import { RegisteredRuleset } from '@bentley/presentation-common';
 import { RelativePosition } from '@bentley/ui-abstract';
 import { ResizeHandle } from '@bentley/ui-ninezone';
 import { Ruleset } from '@bentley/presentation-common';
@@ -153,7 +145,6 @@ import { ToolbarUsage } from '@bentley/ui-abstract';
 import { ToolSettingsWidgetManagerProps } from '@bentley/ui-ninezone';
 import { ToolTipOptions } from '@bentley/imodeljs-frontend';
 import { TreeCheckboxStateChangeEventArgs } from '@bentley/ui-components';
-import { TreeDataChangesListener } from '@bentley/ui-components';
 import { TreeNodeItem } from '@bentley/ui-components';
 import { TreeNodeRendererProps } from '@bentley/ui-components';
 import { TreeRendererProps } from '@bentley/ui-components';
@@ -188,7 +179,7 @@ import { ZonesManagerProps } from '@bentley/ui-ninezone';
 import { ZonesManagerWidgetsProps } from '@bentley/ui-ninezone';
 import { ZoneTargetType } from '@bentley/ui-ninezone';
 
-// @alpha
+// @beta
 export class AccuDrawCommandItems {
     // (undocumented)
     static get bumpToolSetting(): ToolItemDef;
@@ -228,10 +219,10 @@ export class AccuDrawCommandItems {
     static get setOrigin(): ToolItemDef;
 }
 
-// @alpha
+// @beta
 export function AccuDrawDialog(props: AccuDrawDialogProps): JSX.Element;
 
-// @alpha
+// @beta
 export interface AccuDrawDialogProps extends CommonProps {
     dialogId: string;
     onClose?: () => void;
@@ -239,11 +230,11 @@ export interface AccuDrawDialogProps extends CommonProps {
     orientation?: Orientation;
 }
 
-// @alpha
+// @beta
 export class AccuDrawGrabInputFocusEvent extends BeUiEvent<{}> {
 }
 
-// @alpha
+// @beta
 export class AccuDrawKeyboardShortcuts {
     static getDefaultShortcuts(): KeyboardShortcutProps[];
 }
@@ -266,31 +257,31 @@ export class AccuDrawPopupManager {
     static showMenuButton(id: string, el: HTMLElement, pt: XAndY, menuItemsProps: AbstractMenuItemProps[]): boolean;
 }
 
-// @alpha
+// @beta
 export class AccuDrawSetCompassModeEvent extends BeUiEvent<AccuDrawSetCompassModeEventArgs> {
 }
 
-// @alpha
+// @beta
 export interface AccuDrawSetCompassModeEventArgs {
     // (undocumented)
     mode: CompassMode;
 }
 
-// @alpha
+// @beta
 export class AccuDrawSetFieldFocusEvent extends BeUiEvent<AccuDrawSetFieldFocusEventArgs> {
 }
 
-// @alpha
+// @beta
 export interface AccuDrawSetFieldFocusEventArgs {
     // (undocumented)
     field: ItemField;
 }
 
-// @alpha
+// @beta
 export class AccuDrawSetFieldLockEvent extends BeUiEvent<AccuDrawSetFieldLockEventArgs> {
 }
 
-// @alpha
+// @beta
 export interface AccuDrawSetFieldLockEventArgs {
     // (undocumented)
     field: ItemField;
@@ -298,11 +289,11 @@ export interface AccuDrawSetFieldLockEventArgs {
     lock: boolean;
 }
 
-// @alpha
+// @beta
 export class AccuDrawSetFieldValueFromUiEvent extends BeUiEvent<AccuDrawSetFieldValueFromUiEventArgs> {
 }
 
-// @alpha
+// @beta
 export interface AccuDrawSetFieldValueFromUiEventArgs {
     // (undocumented)
     field: ItemField;
@@ -310,11 +301,11 @@ export interface AccuDrawSetFieldValueFromUiEventArgs {
     stringValue: string;
 }
 
-// @alpha
+// @beta
 export class AccuDrawSetFieldValueToUiEvent extends BeUiEvent<AccuDrawSetFieldValueToUiEventArgs> {
 }
 
-// @alpha
+// @beta
 export interface AccuDrawSetFieldValueToUiEventArgs {
     // (undocumented)
     field: ItemField;
@@ -324,7 +315,7 @@ export interface AccuDrawSetFieldValueToUiEventArgs {
     value: number;
 }
 
-// @alpha
+// @beta
 export interface AccuDrawUiSettings {
     angleBackgroundColor?: ColorDef | string;
     angleForegroundColor?: ColorDef | string;
@@ -353,14 +344,14 @@ export interface AccuDrawUiSettings {
     zStyle?: React_2.CSSProperties;
 }
 
-// @alpha
+// @beta
 export class AccuDrawUiSettingsChangedEvent extends BeUiEvent<{}> {
 }
 
-// @alpha
+// @beta
 export function AccuDrawWidget(): JSX.Element;
 
-// @alpha
+// @beta
 export class AccuDrawWidgetControl extends WidgetControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     // (undocumented)
@@ -799,9 +790,9 @@ export class BumpToolSetting extends Tool {
     // (undocumented)
     static get maxArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): boolean;
+    parseAndRun(...args: string[]): Promise<boolean>;
     // (undocumented)
-    run(settingIndexStr?: string): boolean;
+    run(settingIndexStr?: string): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }
@@ -955,13 +946,14 @@ export interface CategoryTreeProps {
     allViewports?: boolean;
     // @internal
     categoryVisibilityHandler?: CategoryVisibilityHandler;
-    enablePreloading?: boolean;
     // @alpha
     filterInfo?: VisibilityTreeFilterInfo;
+    height: number;
     iModel: IModelConnection;
     onFilterApplied?: (filteredDataProvider: IPresentationTreeDataProvider, matchesCount: number) => void;
     // @internal
     viewManager?: ViewManager;
+    width: number;
 }
 
 // @internal
@@ -1224,8 +1216,11 @@ export class ConfigurableUiManager {
     static loadContentLayout(layoutProps: ContentLayoutProps): void;
     static loadContentLayouts(layoutPropsList: ContentLayoutProps[]): void;
     static loadKeyboardShortcuts(shortcutList: KeyboardShortcutProps[]): void;
+    // @internal @deprecated
     static loadTasks(taskPropsList: TaskPropsList): void;
+    // @internal @deprecated
     static loadWorkflow(workflowProps: WorkflowProps): void;
+    // @internal @deprecated
     static loadWorkflows(workflowPropsList: WorkflowPropsList): void;
     // @internal (undocumented)
     static readonly onUiActivityEvent: UiActivityEvent;
@@ -1846,71 +1841,6 @@ export interface DialogRendererProps {
 // @internal
 export function DockedStatusBarItem(props: StatusBarItemProps): JSX.Element;
 
-// @beta @deprecated
-export class DragDropLayerChangedEvent extends UiEvent<DragDropLayerChangedEventArgs> {
-}
-
-// @beta @deprecated
-export interface DragDropLayerChangedEventArgs {
-    type: string | undefined;
-}
-
-// @beta @deprecated
-export class DragDropLayerManager {
-    static getActiveLayer(): React.ComponentType<DragLayerProps<any>> | undefined;
-    static getType(): string | undefined;
-    // (undocumented)
-    static get onDragDropLayerChangedEvent(): DragDropLayerChangedEvent;
-    static registerTypeLayer(type: string, layer: React.ComponentType<DragLayerProps>): void;
-    static setType(type: string | undefined): void;
-}
-
-// @beta @deprecated
-export const DragDropLayerRenderer: typeof DragDropLayerRendererComponent & DndComponentClass<typeof React.Component, {}>;
-
-// @beta @deprecated
-export class DragDropLayerRendererComponent extends React.Component<DragDropLayerRendererProps> {
-    constructor(props: DragDropLayerRendererProps);
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    render(): React.ReactNode;
-}
-
-// @beta @deprecated
-export interface DragDropLayerRendererProps extends CommonProps {
-    // (undocumented)
-    args?: DragSourceArguments;
-    // @internal (undocumented)
-    clientOffset?: {
-        x: number;
-        y: number;
-    };
-    // (undocumented)
-    dragging?: boolean;
-    // @internal (undocumented)
-    initialClientOffset?: {
-        x: number;
-        y: number;
-    };
-    // @internal (undocumented)
-    initialSourceClientOffset?: {
-        x: number;
-        y: number;
-    };
-    // (undocumented)
-    item?: any;
-    // (undocumented)
-    itemType?: string;
-    // @internal (undocumented)
-    sourceClientOffset?: {
-        x: number;
-        y: number;
-    };
-}
-
 // @beta
 export class DrawingNavigationAidControl extends NavigationAidControl {
     constructor(info: ConfigurableCreateInfo, options: any);
@@ -2143,7 +2073,7 @@ export function featureOverridesActiveStateFunc(state: Readonly<BaseItemState>):
 // @alpha
 export class FocusToolSettings extends Tool {
     // (undocumented)
-    run(): boolean;
+    run(): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }
@@ -2159,7 +2089,7 @@ export interface FooterModeFieldProps extends StatusFieldProps {
     children?: React.ReactNode;
 }
 
-// @alpha
+// @beta
 export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider {
     constructor();
     static get displayNotifications(): boolean;
@@ -2282,7 +2212,7 @@ export interface FrameworkState {
 
 // @alpha
 export class FrameworkToolAdmin extends ToolAdmin {
-    processShortcutKey(e: KeyboardEvent, wentDown: boolean): boolean;
+    processShortcutKey(e: KeyboardEvent, wentDown: boolean): Promise<boolean>;
 }
 
 // @public
@@ -3078,26 +3008,14 @@ export interface HTMLElementPopupProps extends PopupPropsBase {
 export class IModelAppUiSettings extends UserSettingsStorage {
 }
 
-// @beta
-export const IModelConnectedCategoryTree: import("react-redux").ConnectedComponent<typeof CategoryTree, any>;
-
-// @alpha
-export const IModelConnectedModelsTree: import("react-redux").ConnectedComponent<typeof ModelsTree, any>;
-
 // @beta @deprecated
 export const IModelConnectedNavigationWidget: import("react-redux").ConnectedComponent<typeof DefaultNavigationWidget, any>;
-
-// @beta
-export const IModelConnectedSpatialContainmentTree: import("react-redux").ConnectedComponent<typeof SpatialContainmentTree, any>;
 
 // @beta
 export const IModelConnectedViewport: import("react-redux").ConnectedComponent<React.ComponentType<import("@bentley/ui-imodel-components").ViewportProps & import("@bentley/presentation-components").ViewWithUnifiedSelectionProps>, any>;
 
 // @beta
 export const IModelConnectedViewSelector: import("react-redux").ConnectedComponent<typeof ViewSelector, any>;
-
-// @beta @deprecated
-export const IModelConnectedVisibilityComponent: import("react-redux").ConnectedComponent<typeof VisibilityComponent, any>;
 
 // @internal
 export interface IModelInfo {
@@ -3135,7 +3053,7 @@ export interface IModelServices {
     getUser(iModelId: string, userId: string): Promise<IModelUserInfo[]>;
     getUsers(iModelId: string): Promise<IModelUserInfo[]>;
     getVersions(iModelId: string): Promise<VersionInfo[]>;
-    openIModel(contextId: string, iModelId: string, changeSetId?: string): Promise<IModelConnection>;
+    openIModel(iTwinId: string, iModelId: string, changeSetId?: string): Promise<IModelConnection>;
 }
 
 // @internal
@@ -3568,14 +3486,6 @@ export interface LayoutHorizontalSplitProps extends LayoutSplitPropsBase {
 }
 
 // @public
-export interface LayoutSplit {
-    // (undocumented)
-    createContentContainer(contentNodes: React.ReactNode[], resizable: boolean): React.ReactNode;
-    // (undocumented)
-    isLocked: boolean;
-}
-
-// @public
 export interface LayoutSplitPropsBase {
     id?: string;
     lock?: boolean;
@@ -3979,22 +3889,6 @@ export class ModelessDialogRenderer extends React.PureComponent<CommonProps> {
     render(): React.ReactNode;
 }
 
-// @internal @deprecated
-export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProps, ModelSelectorWidgetState> {
-    constructor(props: ModelSelectorWidgetProps);
-    // (undocumented)
-    componentDidMount(): Promise<void>;
-    // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    render(): JSX.Element;
-    }
-
-// @internal
-export class ModelSelectorWidgetControl extends WidgetControl {
-    constructor(info: ConfigurableCreateInfo, options: any);
-}
-
 // @public
 export function ModelsTree(props: ModelsTreeProps): JSX.Element;
 
@@ -4027,6 +3921,7 @@ export interface ModelsTreeProps {
     filteredElementIds?: Id64Array;
     // @alpha
     filterInfo?: VisibilityTreeFilterInfo;
+    height: number;
     iModel: IModelConnection;
     // @alpha
     modelsVisibilityHandler?: ModelsVisibilityHandler;
@@ -4035,6 +3930,7 @@ export interface ModelsTreeProps {
     selectionMode?: SelectionMode;
     // @alpha
     selectionPredicate?: ModelsTreeSelectionPredicate;
+    width: number;
 }
 
 // @beta
@@ -4135,9 +4031,7 @@ export function NavigationAidHost(props: NavigationAidHostProps): JSX.Element;
 
 // @public
 export interface NavigationAidHostProps {
-    // (undocumented)
     minHeight?: string;
-    // (undocumented)
     minWidth?: string;
 }
 
@@ -4583,9 +4477,9 @@ export class RestoreFrontstageLayoutTool extends Tool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parseAndRun(...args: string[]): boolean;
+    parseAndRun(...args: string[]): Promise<boolean>;
     // (undocumented)
-    run(frontstageId?: string): boolean;
+    run(frontstageId?: string): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }
@@ -5547,9 +5441,10 @@ export function SpatialContainmentTree(props: SpatialContainmentTreeProps): JSX.
 export interface SpatialContainmentTreeProps {
     // @beta
     enableElementsClassGrouping?: ClassGroupingOption;
-    enablePreloading?: boolean;
+    height: number;
     // (undocumented)
     iModel: IModelConnection;
+    width: number;
 }
 
 // @internal (undocumented)
@@ -6022,11 +5917,13 @@ export enum SyncUiEventId {
     SettingsProvidersChanged = "settingsproviderschanged",
     // (undocumented)
     ShowHideManagerSettingChange = "show-hide-setting-change",
+    // @deprecated
     TaskActivated = "taskactivated",
     ToolActivated = "toolactivated",
     UiSettingsChanged = "uisettingschanged",
     ViewStateChanged = "viewstatechanged",
     WidgetStateChanged = "widgetstatechanged",
+    // @deprecated
     WorkflowActivated = "workflowactivated"
 }
 
@@ -6051,7 +5948,7 @@ export interface TargetChangeHandler {
     handleTargetChanged(zoneId: WidgetZoneId, type: ZoneTargetType, isTargeted: boolean): void;
 }
 
-// @public
+// @internal @deprecated
 export class Task extends ItemDefBase {
     constructor(taskProps: TaskProps);
     // (undocumented)
@@ -6067,11 +5964,11 @@ export class Task extends ItemDefBase {
     taskId: string;
 }
 
-// @public
+// @internal @deprecated
 export class TaskActivatedEvent extends UiEvent<TaskActivatedEventArgs> {
 }
 
-// @public
+// @internal @deprecated
 export interface TaskActivatedEventArgs {
     // (undocumented)
     task?: Task;
@@ -6083,7 +5980,7 @@ export interface TaskActivatedEventArgs {
     workflowId: string;
 }
 
-// @public
+// @internal @deprecated
 export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBackstageItemProps, BackstageItemState> {
     constructor(props: TaskLaunchBackstageItemProps);
     // (undocumented)
@@ -6098,17 +5995,17 @@ export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBacks
     get id(): string;
     // (undocumented)
     render(): React.ReactNode;
-    // @internal (undocumented)
+    // (undocumented)
     readonly state: Readonly<BackstageItemState>;
     }
 
-// @public
+// @internal @deprecated
 export interface TaskLaunchBackstageItemProps extends BackstageItemProps {
     taskId: string;
     workflowId: string;
 }
 
-// @public
+// @internal @deprecated
 export class TaskManager {
     // (undocumented)
     static addTask(taskId: string, task: Task): void;
@@ -6122,7 +6019,7 @@ export class TaskManager {
     static loadTasks(taskListDef: TaskPropsList): void;
     }
 
-// @public
+// @internal @deprecated
 export interface TaskProps extends ItemProps {
     // (undocumented)
     id: string;
@@ -6130,7 +6027,7 @@ export interface TaskProps extends ItemProps {
     primaryStageId: string;
 }
 
-// @public
+// @internal @deprecated
 export interface TaskPropsList {
     // (undocumented)
     tasks: TaskProps[];
@@ -6664,7 +6561,7 @@ export class UiFramework {
     // @internal (undocumented)
     static get packageName(): string;
     // @internal
-    static postTelemetry(eventName: string, eventId?: GuidString, contextId?: GuidString, iModeId?: GuidString, changeSetId?: string, time?: TrackingTime, additionalProperties?: {
+    static postTelemetry(eventName: string, eventId?: GuidString, iTwinId?: GuidString, iModeId?: GuidString, changeSetId?: string, time?: TrackingTime, additionalProperties?: {
         [key: string]: any;
     }): Promise<void>;
     // @internal (undocumented)
@@ -7091,50 +6988,6 @@ export class ViewUtilities {
 // @alpha
 export type VisibilityChangeListener = (nodeIds?: string[], visibilityStatus?: Map<string, VisibilityStatus>) => void;
 
-// @beta @deprecated
-export class VisibilityComponent extends React.Component<VisibilityComponentProps, VisibilityTreeState> {
-    constructor(props: any);
-    // (undocumented)
-    componentDidMount(): Promise<void>;
-    componentWillUnmount(): void;
-    // (undocumented)
-    render(): JSX.Element;
-    }
-
-// @beta @deprecated
-export interface VisibilityComponentConfig {
-    // (undocumented)
-    modelsTree?: {
-        selectionMode?: SelectionMode;
-        selectionPredicate?: ModelsTreeSelectionPredicate;
-        enableElementsClassGrouping?: ClassGroupingOption;
-        enableHierarchyAutoUpdate?: boolean;
-    };
-    // (undocumented)
-    spatialContainmentTree?: {
-        enableElementsClassGrouping?: ClassGroupingOption;
-    };
-}
-
-// @public @deprecated
-export enum VisibilityComponentHierarchy {
-    // (undocumented)
-    Categories = "categories",
-    // (undocumented)
-    Models = "models",
-    // (undocumented)
-    SpatialContainment = "spatial-containment"
-}
-
-// @beta @deprecated
-export interface VisibilityComponentProps {
-    activeTreeRef?: React.Ref<HTMLDivElement>;
-    activeViewport?: Viewport;
-    config?: VisibilityComponentConfig;
-    enableHierarchiesPreloading?: VisibilityComponentHierarchy[];
-    iModelConnection: IModelConnection;
-}
-
 // @alpha
 export interface VisibilityStatus {
     // (undocumented)
@@ -7190,19 +7043,6 @@ export interface VisibilityTreeNoFilteredDataProps {
 
 // @alpha
 export type VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => boolean;
-
-// @beta @deprecated
-export class VisibilityWidget extends WidgetControl {
-    constructor(info: ConfigurableCreateInfo, options: any);
-    // (undocumented)
-    static get iconSpec(): string;
-    // (undocumented)
-    static get label(): string;
-    // (undocumented)
-    restoreTransientState(): boolean;
-    // (undocumented)
-    saveTransientState(): void;
-}
 
 // @public
 export class Widget extends React.Component<WidgetProps> {
@@ -7727,7 +7567,7 @@ export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: R
 // @public
 export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: React.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget">>) => JSX.Element;
 
-// @public
+// @internal @deprecated
 export class Workflow extends ItemDefBase {
     constructor(workflowDef: WorkflowProps);
     get activeTask(): Task | undefined;
@@ -7744,11 +7584,11 @@ export class Workflow extends ItemDefBase {
     workflowId: string;
 }
 
-// @public
+// @internal @deprecated
 export class WorkflowActivatedEvent extends UiEvent<WorkflowActivatedEventArgs> {
 }
 
-// @public
+// @internal @deprecated
 export interface WorkflowActivatedEventArgs {
     // (undocumented)
     workflow?: Workflow;
@@ -7756,7 +7596,7 @@ export interface WorkflowActivatedEventArgs {
     workflowId?: string;
 }
 
-// @public
+// @internal @deprecated
 export class WorkflowManager {
     static get activeTask(): Task | undefined;
     static get activeTaskId(): string;
@@ -7777,7 +7617,7 @@ export class WorkflowManager {
     static setDefaultWorkflowId(id: string): void;
     }
 
-// @public
+// @internal @deprecated
 export interface WorkflowProps extends ItemProps {
     // (undocumented)
     defaultTaskId: string;
@@ -7789,7 +7629,7 @@ export interface WorkflowProps extends ItemProps {
     tasks: string[];
 }
 
-// @public
+// @internal @deprecated
 export interface WorkflowPropsList {
     // (undocumented)
     defaultWorkflowId: string;
@@ -7916,22 +7756,6 @@ export enum ZoneState {
     Open = 2,
     // (undocumented)
     Popup = 3
-}
-
-// @internal
-export class ZoneTargets extends React.Component<ZoneTargetsProps> {
-    // (undocumented)
-    render(): React.ReactNode;
-}
-
-// @internal
-export interface ZoneTargetsProps extends CommonProps {
-    // (undocumented)
-    dropTarget: ZoneTargetType | undefined;
-    // (undocumented)
-    targetChangeHandler: TargetChangeHandler;
-    // (undocumented)
-    zoneId: WidgetZoneId;
 }
 
 

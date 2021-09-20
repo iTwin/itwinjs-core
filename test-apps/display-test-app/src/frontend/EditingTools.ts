@@ -25,9 +25,8 @@ export class EditingScopeTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 0; }
 
-  public override run(): boolean {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this._run();
+  public override async run(): Promise<boolean> {
+    await this._run();
     return true;
   }
 
@@ -89,7 +88,7 @@ export class PlaceLineStringTool extends CreateElementTool {
     const nPts = this._points.length;
     const mainMsg = 0 === nPts ? "ElementSet.Prompts.StartPoint" : (1 === nPts ? "ElementSet.Prompts.EndPoint" : "ElementSet.Inputs.AdditionalPoint");
     const leftMsg = "ElementSet.Inputs.AcceptPoint";
-    const rghtMsg = nPts > 1 ? "ElementSet.Inputs.Complete" : "ElementSet.Inputs.Cancel";
+    const rightMsg = nPts > 1 ? "ElementSet.Inputs.Complete" : "ElementSet.Inputs.Cancel";
 
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
@@ -98,8 +97,8 @@ export class PlaceLineStringTool extends CreateElementTool {
       touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, CoreTools.translate(leftMsg), false, ToolAssistanceInputMethod.Touch));
     mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, CoreTools.translate(leftMsg), false, ToolAssistanceInputMethod.Mouse));
 
-    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, CoreTools.translate(rghtMsg), false, ToolAssistanceInputMethod.Touch));
-    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, CoreTools.translate(rghtMsg), false, ToolAssistanceInputMethod.Mouse));
+    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, CoreTools.translate(rightMsg), false, ToolAssistanceInputMethod.Touch));
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, CoreTools.translate(rightMsg), false, ToolAssistanceInputMethod.Mouse));
 
     const sections: ToolAssistanceSection[] = [];
     sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
@@ -223,7 +222,7 @@ export class PlaceLineStringTool extends CreateElementTool {
         await PlaceLineStringTool.callCommand("insertGeometricElement", elemProps, { entryArray: builder.entries });
         await this.saveChanges();
       }
-    } catch (err) {
+    } catch (err: any) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
     }
   }
@@ -233,7 +232,7 @@ export class PlaceLineStringTool extends CreateElementTool {
     if (this._points.length >= 2)
       await this.createElement();
 
-    this.onReinitialize();
+    await this.onReinitialize();
     return EventHandled.No;
   }
 
@@ -243,16 +242,16 @@ export class PlaceLineStringTool extends CreateElementTool {
 
     this._points.pop();
     if (0 === this._points.length)
-      this.onReinitialize();
+      await this.onReinitialize();
     else
       this.setupAndPromptForNextAction();
 
     return true;
   }
 
-  public onRestartTool(): void {
+  public async onRestartTool() {
     const tool = new PlaceLineStringTool();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 }

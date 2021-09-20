@@ -46,7 +46,7 @@ export interface BlankConnectionProps {
   /** An offset to be applied to all spatial coordinates. */
   globalOrigin?: XYZProps;
   /** The optional Guid that identifies the *context* associated with the [[BlankConnection]]. */
-  contextId?: GuidString;
+  iTwinId?: GuidString;
 }
 
 /** A connection to a [IModelDb]($backend) hosted on the backend.
@@ -476,7 +476,7 @@ export abstract class IModelConnection extends IModel {
     }
 
     const longLatHeight = Point3d.fromJSON(coordResponse.geoCoords[0].p); // x is longitude in degrees, y is latitude in degrees, z is height in meters...
-    return Cartographic.fromDegrees(longLatHeight.x, longLatHeight.y, longLatHeight.z, result);
+    return Cartographic.fromDegrees({longitude: longLatHeight.x, latitude: longLatHeight.y, height: longLatHeight.z}, result);
   }
 
   /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection or [[IModel.ecefLocation]].
@@ -610,10 +610,10 @@ export class BlankConnection extends IModelConnection {
   public override isBlankConnection(): this is BlankConnection { return true; }
 
   /** The Guid that identifies the *context* for this BlankConnection.
-   * @note This can also be set via the [[create]] method using [[BlankConnectionProps.contextId]].
+   * @note This can also be set via the [[create]] method using [[BlankConnectionProps.iTwinId]].
    */
-  public override get contextId(): GuidString | undefined { return this._contextId; }
-  public override set contextId(contextId: GuidString | undefined) { this._contextId = contextId; }
+  public override get iTwinId(): GuidString | undefined { return this._iTwinId; }
+  public override set iTwinId(iTwinId: GuidString | undefined) { this._iTwinId = iTwinId; }
   /** A BlankConnection does not have an associated iModel, so its `iModelId` is alway `undefined`. */
   public override get iModelId(): undefined { return undefined; } // GuidString | undefined for the superclass, but always undefined for BlankConnection
 
@@ -633,7 +633,7 @@ export class BlankConnection extends IModelConnection {
       globalOrigin: props.globalOrigin,
       ecefLocation: props.location instanceof Cartographic ? EcefLocation.createFromCartographicOrigin(props.location) : props.location,
       key: "",
-      contextId: props.contextId,
+      iTwinId: props.iTwinId,
     });
   }
 

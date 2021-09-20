@@ -6,7 +6,6 @@
  * @module Breadcrumb
  */
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-import { getPropertyRecordAsString } from "../common/getPropertyRecordAsString";
 import { CellItem, ColumnDescription, RowItem, TableDataChangeEvent, TableDataProvider } from "../table/TableDataProvider";
 import { DelayLoadedTreeNodeItem, hasChildren, ImmediatelyLoadedTreeNodeItem, TreeDataProvider, TreeNodeItem } from "../tree/TreeDataProvider";
 import { UiComponents } from "../UiComponents";
@@ -16,6 +15,7 @@ import { UiComponents } from "../UiComponents";
 /**
  * Utility class for tree searching and manipulation in the Breadcrumb component.
  * @beta
+ * @deprecated
  */
 export class BreadcrumbTreeUtils {
 
@@ -139,4 +139,12 @@ export class BreadcrumbTreeUtils {
 /** @internal */
 export interface DataRowItem extends RowItem {
   _node?: TreeNodeItem;
+}
+
+/** @internal */
+// istanbul ignore next
+export function getPropertyRecordAsString(label: PropertyRecord) {
+  if (label.value.valueFormat === PropertyValueFormat.Primitive)
+    return label.value.displayValue ?? "";
+  return "";
 }

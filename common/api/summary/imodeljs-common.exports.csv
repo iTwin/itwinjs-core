@@ -53,6 +53,7 @@ public;BRepPrimitive
 alpha;BRepRoundProps
 alpha;BRepThickenProps
 public;BriefcaseDownloader
+public;BriefcaseId = number
 public;BriefcaseIdValue
 public;BriefcaseProps
 public;calculateSolarAngles(date: Date, location: Cartographic):
@@ -65,6 +66,7 @@ public;CameraProps
 public;Carto2DDegrees 
 public;Carto2DDegreesProps
 public;Cartographic 
+public;CartographicProps
 public;CartographicRange
 public;CategoryProps 
 public;CategorySelectorProps 
@@ -350,8 +352,6 @@ public;isPowerOfTwo(num: number): boolean
 internal;isValidImageSourceFormat(format: ImageSourceFormat): boolean
 internal;iTwinChannel: (channel: string) => string
 public;JsonGeometryStream
-public;LatAndLong
-public;LatLongAndHeight 
 internal;LegacyAnalysisStyleProps
 internal;LightLocationProps 
 public;LightSettings
@@ -638,6 +638,7 @@ public;ThumbnailProps
 internal;TileContentDescription 
 beta;TileContentIdentifier
 internal;TileContentMetadata
+internal;TileContentSource
 internal;TileFormat
 internal;tileFormatFromNumber(formatNumber: number): TileFormat
 internal;class TileHeader
@@ -686,6 +687,8 @@ public;ViewStateProps
 internal;WEB_RPC_CONSTANTS:
 public;class WebAppRpcProtocol 
 public;WebAppRpcRequest 
+public;WhiteOnWhiteReversalProps
+public;WhiteOnWhiteReversalSettings
 internal;class WipRpcInterface 
 public;XyzRotation 
 public;XyzRotationProps

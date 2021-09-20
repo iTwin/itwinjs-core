@@ -1,6 +1,23 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Wed, 25 Aug 2021 15:36:01 GMT and should not be manually modified.
+This log was last generated on Wed, 15 Sep 2021 18:06:47 GMT and should not be manually modified.
+
+## 2.19.12
+Wed, 15 Sep 2021 18:06:47 GMT
+
+### Updates
+
+- Fix calc function that is causing an error in the latest dart-sass version
+
+## 2.19.11
+Thu, 09 Sep 2021 21:04:58 GMT
+
+_Version update only_
+
+## 2.19.10
+Wed, 08 Sep 2021 14:36:01 GMT
+
+_Version update only_
 
 ## 2.19.9
 Wed, 25 Aug 2021 15:36:01 GMT

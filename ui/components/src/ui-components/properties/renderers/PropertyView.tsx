@@ -11,8 +11,8 @@ import * as React from "react";
 import { PropertyValueFormat } from "@bentley/ui-abstract";
 import { ElementSeparator, Orientation } from "@bentley/ui-core";
 import { ActionButtonList } from "./ActionButtonList";
-import { SharedRendererProps } from "./PropertyRenderer";
 import { PropertyGridColumnStyleProvider } from "./PropertyGridColumns";
+import { SharedRendererProps } from "./PropertyRenderer";
 
 /** Properties of [[PropertyView]] React component
  * @public
@@ -83,7 +83,6 @@ export class PropertyView extends React.Component<PropertyViewProps, PropertyVie
   /** @internal */
   public override render() {
     const ratio = this.props.columnRatio ? this.props.columnRatio : 0.25;
-    // eslint-disable-next-line deprecation/deprecation
     const needElementSeparator = this.props.orientation === Orientation.Horizontal && !!this.props.onColumnRatioChanged;
     const needActionButtons = !!this.props.actionButtonRenderers;
     const columnsStyleProvider = new PropertyGridColumnStyleProvider(this.props.columnInfo);
@@ -102,7 +101,6 @@ export class PropertyView extends React.Component<PropertyViewProps, PropertyVie
         {needElementSeparator
           ? <ElementSeparator
             movableArea={this.props.width}
-            // eslint-disable-next-line deprecation/deprecation
             onRatioChanged={this.props.onColumnRatioChanged}
             ratio={ratio}
             orientation={this.props.orientation}

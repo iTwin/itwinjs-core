@@ -661,11 +661,14 @@ export interface BRepThickenProps {
 
 // @public
 export interface BriefcaseDownloader {
-    briefcaseId: number;
-    downloadPromise: Promise<void>;
-    fileName: string;
-    requestCancel: () => Promise<boolean>;
+    readonly briefcaseId: BriefcaseId;
+    readonly downloadPromise: Promise<void>;
+    readonly fileName: LocalFileName;
+    readonly requestCancel: () => Promise<boolean>;
 }
+
+// @public
+export type BriefcaseId = number;
 
 // @public
 export enum BriefcaseIdValue {
@@ -682,8 +685,8 @@ export enum BriefcaseIdValue {
 
 // @public
 export interface BriefcaseProps {
-    briefcaseId: number;
-    iModelId: GuidString;
+    readonly briefcaseId: BriefcaseId;
+    readonly iModelId: GuidString;
 }
 
 export { BriefcaseStatus }
@@ -783,16 +786,28 @@ export interface Carto2DDegreesProps {
 }
 
 // @public
-export class Cartographic implements LatLongAndHeight {
-    constructor(longitude?: number, latitude?: number, height?: number);
+export class Cartographic implements CartographicProps {
     clone(result?: Cartographic): Cartographic;
-    equals(right: LatLongAndHeight): boolean;
-    equalsEpsilon(right: LatLongAndHeight, epsilon: number): boolean;
+    static createZero(): Cartographic;
+    equals(right: CartographicProps): boolean;
+    equalsEpsilon(right: CartographicProps, epsilon: number): boolean;
     freeze(): Readonly<this>;
-    static fromAngles(longitude: Angle, latitude: Angle, height: number, result?: Cartographic): Cartographic;
-    static fromDegrees(longitude: number, latitude: number, height: number, result?: Cartographic): Cartographic;
+    static fromAngles(args: {
+        longitude: Angle;
+        latitude: Angle;
+        height?: number;
+    }, result?: Cartographic): Cartographic;
+    static fromDegrees(args: {
+        longitude: number;
+        latitude: number;
+        height?: number;
+    }, result?: Cartographic): Cartographic;
     static fromEcef(cartesian: Point3d, result?: Cartographic): Cartographic | undefined;
-    static fromRadians(longitude: number, latitude: number, height?: number, result?: Cartographic): Cartographic;
+    static fromRadians(args: {
+        longitude: number;
+        latitude: number;
+        height?: number;
+    }, result?: Cartographic): Cartographic;
     static geocentricLatitudeFromGeodeticLatitude(geodeticLatitude: number): number;
     // (undocumented)
     height: number;
@@ -805,10 +820,16 @@ export class Cartographic implements LatLongAndHeight {
     static parametricLatitudeFromGeodeticLatitude(geodeticLatitude: number): number;
     static scalePointToGeodeticSurface(point: Point3d, result?: Point3d): Point3d | undefined;
     toEcef(result?: Point3d): Point3d;
-    // (undocumented)
-    toJSON(): LatLongAndHeight;
+    toJSON(): CartographicProps;
     toString(): string;
     }
+
+// @public
+export interface CartographicProps {
+    height: number;
+    latitude: number;
+    longitude: number;
+}
 
 // @public
 export class CartographicRange {
@@ -1698,20 +1719,20 @@ export type CreateEmptyStandaloneIModelProps = CreateIModelProps & CreateStandal
 
 // @public
 export interface CreateIModelProps extends IModelProps {
-    client?: string;
-    guid?: GuidString;
+    readonly client?: string;
+    readonly guid?: GuidString;
     // @alpha
-    thumbnail?: ThumbnailProps;
+    readonly thumbnail?: ThumbnailProps;
 }
 
 // @public
 export interface CreateSnapshotIModelProps extends IModelEncryptionProps {
-    createClassViews?: boolean;
+    readonly createClassViews?: boolean;
 }
 
 // @internal
 export interface CreateStandaloneIModelProps extends IModelEncryptionProps {
-    allowEdit?: string;
+    readonly allowEdit?: string;
 }
 
 // @internal (undocumented)
@@ -1722,8 +1743,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1638400,
-    Major = 25,
+    Combined = 1703936,
+    Major = 26,
     Minor = 0
 }
 
@@ -1969,6 +1990,7 @@ export class DisplayStyleSettings {
     readonly onThematicChanged: BeEvent<(newThematic: ThematicDisplay) => void>;
     readonly onTimePointChanged: BeEvent<(newTimePoint: number | undefined) => void>;
     readonly onViewFlagsChanged: BeEvent<(newFlags: Readonly<ViewFlags>) => void>;
+    readonly onWhiteOnWhiteReversalChanged: BeEvent<(newSettings: WhiteOnWhiteReversalSettings) => void>;
     overrideModelAppearance(modelId: Id64String, ovr: FeatureAppearance): void;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     get planarClipMasks(): Map<Id64String, PlanarClipMaskSettings>;
@@ -1987,6 +2009,8 @@ export class DisplayStyleSettings {
     toOverrides(options?: DisplayStyleOverridesOptions): DisplayStyleSettingsProps;
     get viewFlags(): ViewFlags;
     set viewFlags(flags: ViewFlags);
+    get whiteOnWhiteReversal(): WhiteOnWhiteReversalSettings;
+    set whiteOnWhiteReversal(settings: WhiteOnWhiteReversalSettings);
     }
 
 // @public
@@ -2016,6 +2040,7 @@ export interface DisplayStyleSettingsProps {
     timePoint?: number;
     // (undocumented)
     viewflags?: ViewFlagProps;
+    whiteOnWhiteReversal?: WhiteOnWhiteReversalProps;
 }
 
 // @public
@@ -2129,11 +2154,11 @@ export class EcefLocation implements EcefLocationProps {
 
 // @public
 export interface EcefLocationProps {
-    cartographicOrigin?: LatLongAndHeight;
-    orientation: YawPitchRollProps;
-    origin: XYZProps;
-    xVector?: XYZProps;
-    yVector?: XYZProps;
+    readonly cartographicOrigin?: CartographicProps;
+    readonly orientation: YawPitchRollProps;
+    readonly origin: XYZProps;
+    readonly xVector?: XYZProps;
+    readonly yVector?: XYZProps;
 }
 
 // @public
@@ -2823,9 +2848,9 @@ export interface FilePropertyProps {
     // (undocumented)
     id?: number | string;
     // (undocumented)
-    name: string;
+    readonly name: string;
     // (undocumented)
-    namespace: string;
+    readonly namespace: string;
     // (undocumented)
     subId?: number | string;
 }
@@ -4131,9 +4156,6 @@ export abstract class IModel implements IModelProps {
     cartographicToSpatialFromEcef(cartographic: Cartographic, result?: Point3d): Point3d;
     // (undocumented)
     changeset: ChangesetIdWithIndex;
-    get contextId(): GuidString | undefined;
-    // @internal (undocumented)
-    protected _contextId?: GuidString;
     static readonly dictionaryId: Id64String;
     get ecefLocation(): EcefLocation | undefined;
     set ecefLocation(ecefLocation: EcefLocation | undefined);
@@ -4157,6 +4179,9 @@ export abstract class IModel implements IModelProps {
     // (undocumented)
     abstract get isOpen(): boolean;
     abstract get isSnapshot(): boolean;
+    get iTwinId(): GuidString | undefined;
+    // @internal (undocumented)
+    protected _iTwinId?: GuidString;
     get key(): string;
     get name(): string;
     set name(name: string);
@@ -4204,7 +4229,7 @@ export interface IModelCoordinatesResponseProps {
 
 // @public
 export interface IModelEncryptionProps {
-    password?: string;
+    readonly password?: string;
 }
 
 // @public
@@ -4220,12 +4245,12 @@ export class IModelNotFoundResponse extends RpcNotFoundResponse {
 
 // @public
 export interface IModelProps {
-    ecefLocation?: EcefLocationProps;
-    geographicCoordinateSystem?: GeographicCRSProps;
-    globalOrigin?: XYZProps;
-    name?: string;
-    projectExtents?: Range3dProps;
-    rootSubject: RootSubjectProps;
+    readonly ecefLocation?: EcefLocationProps;
+    readonly geographicCoordinateSystem?: GeographicCRSProps;
+    readonly globalOrigin?: XYZProps;
+    readonly name?: string;
+    readonly projectExtents?: Range3dProps;
+    readonly rootSubject: RootSubjectProps;
 }
 
 // @internal
@@ -4289,8 +4314,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
 // @public
 export interface IModelRpcOpenProps {
     readonly changeset?: ChangesetIdWithIndex;
-    readonly contextId?: GuidString;
     readonly iModelId?: GuidString;
+    readonly iTwinId?: GuidString;
 }
 
 // @public
@@ -4303,7 +4328,7 @@ export { IModelStatus }
 // @public (undocumented)
 export abstract class IModelTileRpcInterface extends RpcInterface {
     // @internal
-    generateTileContent(_rpcProps: IModelRpcProps, _treeId: string, _contentId: string, _guid: string | undefined): Promise<Uint8Array>;
+    generateTileContent(_rpcProps: IModelRpcProps, _treeId: string, _contentId: string, _guid: string | undefined): Promise<TileContentSource>;
     // (undocumented)
     static getClient(): IModelTileRpcInterface;
     // @beta (undocumented)
@@ -4318,10 +4343,10 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     queryVersionInfo(): Promise<TileVersionInfo>;
     // @internal
     requestElementGraphics(_rpcProps: IModelRpcProps, _request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
-    // @internal @deprecated (undocumented)
-    requestTileContent(iModelToken: IModelRpcProps, treeId: string, contentId: string, isCanceled?: () => boolean, guid?: string): Promise<Uint8Array>;
     // @internal (undocumented)
     requestTileTreeProps(_tokenProps: IModelRpcProps, _id: string): Promise<IModelTileTreeProps>;
+    // @internal
+    retrieveTileContent(_rpcProps: IModelRpcProps, _key: TileContentIdentifier): Promise<Uint8Array>;
 }
 
 // @internal
@@ -4439,7 +4464,7 @@ export interface IpcAppFunctions {
     log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
     openBriefcase: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
     openStandalone: (_filePath: string, _openMode: OpenMode, _opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
-    pullAndMergeChanges: (key: string, version?: IModelVersionProps) => Promise<ChangesetIndexAndId>;
+    pullChanges: (key: string, toIndex?: ChangesetIndex) => Promise<ChangesetIndexAndId>;
     pushChanges: (key: string, description: string) => Promise<ChangesetIndexAndId>;
     queryConcurrency: (pool: "io" | "cpu") => Promise<number>;
     // (undocumented)
@@ -4588,20 +4613,6 @@ export interface JsonGeometryStream {
     format: "json";
 }
 
-// @public (undocumented)
-export interface LatAndLong {
-    // (undocumented)
-    latitude: number;
-    // (undocumented)
-    longitude: number;
-}
-
-// @public (undocumented)
-export interface LatLongAndHeight extends LatAndLong {
-    // (undocumented)
-    height: number;
-}
-
 // @internal
 export interface LegacyAnalysisStyleProps {
     // (undocumented)
@@ -4746,12 +4757,12 @@ export type LocalAlignedBox3d = Range3d;
 
 // @public
 export interface LocalBriefcaseProps {
-    briefcaseId: number;
-    changeset: ChangesetIdWithIndex;
-    contextId: GuidString;
-    fileName: string;
-    fileSize: number;
-    iModelId: GuidString;
+    readonly briefcaseId: BriefcaseId;
+    readonly changeset: ChangesetIdWithIndex;
+    readonly fileName: LocalFileName;
+    readonly fileSize: number;
+    readonly iModelId: GuidString;
+    readonly iTwinId: GuidString;
 }
 
 // @public (undocumented)
@@ -5399,19 +5410,19 @@ export interface OpenAPISchema {
 
 // @public
 export interface OpenBriefcaseOptions {
-    openAsReadOnly?: boolean;
+    readonly openAsReadOnly?: boolean;
 }
 
 // @public
 export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey {
-    fileName: string;
-    readonly?: boolean;
+    readonly fileName: LocalFileName;
+    readonly readonly?: boolean;
 }
 
 // @public
 export interface OpenDbKey {
     // (undocumented)
-    key?: string;
+    readonly key?: string;
 }
 
 // @internal (undocumented)
@@ -5987,6 +5998,7 @@ export class QParams2d {
 // @public
 export class QParams3d {
     clone(out?: QParams3d): QParams3d;
+    computeRange(out?: Range3d): Range3d;
     copyFrom(src: QParams3d): void;
     static fromNormalizedRange(rangeScale?: number): QParams3d;
     static fromOriginAndScale(origin: Point3d, scale: Point3d, out?: QParams3d): QParams3d;
@@ -6591,10 +6603,10 @@ export { RepositoryStatus }
 // @public
 export interface RequestNewBriefcaseProps {
     asOf?: IModelVersionProps;
-    briefcaseId?: number;
-    contextId: GuidString;
-    fileName?: string;
-    iModelId: GuidString;
+    briefcaseId?: BriefcaseId;
+    readonly fileName?: LocalFileName;
+    readonly iModelId: GuidString;
+    readonly iTwinId: GuidString;
 }
 
 // @public (undocumented)
@@ -6668,8 +6680,8 @@ export type RgbFactorProps = number[];
 
 // @public
 export interface RootSubjectProps {
-    description?: string;
-    name: string;
+    readonly description?: string;
+    readonly name: string;
 }
 
 // @public
@@ -7547,11 +7559,11 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface {
 // @public
 export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
     // @internal (undocumented)
-    autoUploadBlocks?: boolean;
+    readonly autoUploadBlocks?: boolean;
     // @internal (undocumented)
-    lazyBlockCache?: boolean;
+    readonly lazyBlockCache?: boolean;
     // @internal
-    tempFileBase?: string;
+    readonly tempFileBase?: string;
 }
 
 // @public
@@ -8153,6 +8165,14 @@ export interface TileContentMetadata {
     readonly sizeMultiplier?: number;
 }
 
+// @internal (undocumented)
+export enum TileContentSource {
+    // (undocumented)
+    Backend = 0,
+    // (undocumented)
+    ExternalCache = 1
+}
+
 // @internal
 export enum TileFormat {
     // (undocumented)
@@ -8466,8 +8486,8 @@ export type UpdateCallback = (obj: any, t: number) => void;
 
 // @beta
 export interface UpgradeOptions {
-    domain?: DomainOptions;
-    profile?: ProfileOptions;
+    readonly domain?: DomainOptions;
+    readonly profile?: ProfileOptions;
 }
 
 // @public
@@ -8777,6 +8797,19 @@ export class WebAppRpcRequest extends RpcRequest {
     protected setHeader(name: string, value: string): void;
     protected supplyFetch(): typeof fetch;
     protected supplyRequest(): typeof Request;
+}
+
+// @public
+export interface WhiteOnWhiteReversalProps {
+    ignoreBackgroundColor?: boolean;
+}
+
+// @public
+export class WhiteOnWhiteReversalSettings {
+    equals(other: WhiteOnWhiteReversalSettings): boolean;
+    static fromJSON(props?: WhiteOnWhiteReversalProps): WhiteOnWhiteReversalSettings;
+    readonly ignoreBackgroundColor: boolean;
+    toJSON(): WhiteOnWhiteReversalProps | undefined;
 }
 
 // @internal

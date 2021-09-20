@@ -109,7 +109,7 @@ export class TraversalSelectionContext {
 
 const scratchFrustum = new Frustum();
 const scratchFrustumPlanes = new FrustumPlanes();
-const scratchCarto = new Cartographic();
+const scratchCarto = Cartographic.createZero();
 const scratchPoint = Point3d.createZero(), scratchOrigin = Point3d.createZero();
 const scratchRange = Range3d.createNull();
 const scratchX = Vector3d.createZero(), scratchY = Vector3d.createZero(), scratchZ = Vector3d.createZero();

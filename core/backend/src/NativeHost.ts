@@ -96,7 +96,7 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
     NativeHost.overrideInternetConnectivity(by, status);
   }
   public async acquireNewBriefcaseId(iModelId: GuidString): Promise<number> {
-    return BriefcaseManager.acquireNewBriefcaseId(await IModelHost.getAuthorizedContext(), iModelId);
+    return BriefcaseManager.acquireNewBriefcaseId({ iModelId });
   }
   public async getBriefcaseFileName(props: BriefcaseProps): Promise<string> {
     return BriefcaseManager.getFileName(props);
@@ -120,7 +120,7 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
       };
     }
 
-    const downloadPromise = BriefcaseManager.downloadBriefcase(await IModelHost.getAuthorizedContext(), args);
+    const downloadPromise = BriefcaseManager.downloadBriefcase(args);
     const checkAbort = () => {
       const job = Downloads.isInProgress(args.fileName!);
       return (job && (job.request as any).abort === 1) ? 1 : 0;
