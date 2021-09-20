@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "'PropertyValueRendererManager': use merged MergedPropertyValueRenderer before looking for typename specific renderer if property is merged.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components"
+}
