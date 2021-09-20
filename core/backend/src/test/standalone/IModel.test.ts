@@ -1925,7 +1925,7 @@ describe("iModel", () => {
     const iModelId = snapshot.getGuid();
     const iTwinId = Guid.createValue();
     const changeset = IModelTestUtils.generateChangeSetId();
-    snapshot.nativeDb.saveITwinGuid(Guid.normalize(iTwinId));
+    snapshot.nativeDb.saveProjectGuid(Guid.normalize(iTwinId));
     snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id); // even fake checkpoints need a changeSetId!
     snapshot.saveChanges();
     snapshot.close();
@@ -1977,7 +1977,7 @@ describe("iModel", () => {
     const iModelId = Guid.createValue();  // This is wrong - it should be `snapshot.getGuid()`!
     const iTwinId = Guid.createValue();
     const changeset = IModelTestUtils.generateChangeSetId();
-    snapshot.nativeDb.saveITwinGuid(Guid.normalize(iTwinId));
+    snapshot.nativeDb.saveProjectGuid(Guid.normalize(iTwinId));
     snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id);
     snapshot.saveChanges();
     snapshot.close();

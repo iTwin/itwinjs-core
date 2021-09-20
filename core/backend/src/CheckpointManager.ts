@@ -292,7 +292,7 @@ export class CheckpointManager {
     }
 
     // SWB What does context mean here?
-    const dbContextGuid = Guid.normalize(nativeDb.queryITwinGuid());
+    const dbContextGuid = Guid.normalize(nativeDb.queryProjectGuid());
     if (dbContextGuid !== Guid.normalize(checkpoint.iTwinId))
       throw new IModelError(IModelStatus.ValidationFailed, "iTwinId was not properly set up in the checkpoint");
   }

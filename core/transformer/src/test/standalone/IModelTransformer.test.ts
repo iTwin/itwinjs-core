@@ -1134,7 +1134,7 @@ describe("IModelTransformer", () => {
   function setToStandalone(iModelName: string) {
     const nativeDb = new IModelHost.platform.DgnDb();
     nativeDb.openIModel(iModelName, OpenMode.ReadWrite);
-    nativeDb.saveITwinGuid(Guid.empty); // empty iTwinId means "standalone"
+    nativeDb.saveProjectGuid(Guid.empty); // empty iTwinId means "standalone"
     // SWB
     nativeDb.saveChanges(); // save change to ProjectId
     nativeDb.deleteAllTxns(); // necessary before resetting briefcaseId

@@ -252,7 +252,7 @@ export abstract class IModelDb extends IModel {
 
   /** @internal */
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, changeset?: ChangesetIdWithIndex }) {
-    super({ ...args, iTwinId: args.nativeDb.queryITwinGuid(), iModelId: args.nativeDb.getDbGuid() });
+    super({ ...args, iTwinId: args.nativeDb.queryProjectGuid(), iModelId: args.nativeDb.getDbGuid() });
     this._nativeDb = args.nativeDb;
     this.nativeDb.setIModelDb(this);
     this.initializeIModelDb();
@@ -2601,7 +2601,7 @@ export class StandaloneDb extends BriefcaseDb {
     const nativeDb = new IModelHost.platform.DgnDb();
     nativeDb.createIModel(filePath, args);
     nativeDb.saveLocalValue(BriefcaseLocalValue.StandaloneEdit, args.allowEdit);
-    nativeDb.saveITwinGuid(Guid.empty);
+    nativeDb.saveProjectGuid(Guid.empty);
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     nativeDb.saveChanges();
     return new StandaloneDb({ nativeDb, key: Guid.createValue(), briefcaseId: BriefcaseIdValue.Unassigned, openMode: OpenMode.ReadWrite });
@@ -2632,7 +2632,7 @@ export class StandaloneDb extends BriefcaseDb {
     const nativeDb = this.openDgnDb(file, openMode);
 
     try {
-      const iTwinId = nativeDb.queryITwinGuid();
+      const iTwinId = nativeDb.queryProjectGuid();
       if (iTwinId !== Guid.empty) // a "standalone" iModel means it is not associated with an iTwin
         throw new IModelError(IModelStatus.WrongIModel, `${filePath} is not a Standalone iModel. iTwinId=${iTwinId}`);
 
