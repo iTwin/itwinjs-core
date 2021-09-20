@@ -33,13 +33,11 @@ export class KnownTestLocations {
 }
 
 export class IModelTestUtils {
-  // SWB
-  private static _connectClient: ITwinAccessClient | undefined;
-  // SWB
-  public static get connectClient(): ITwinAccessClient {
-    if (!IModelTestUtils._connectClient)
-      IModelTestUtils._connectClient = new ITwinAccessClient();
-    return IModelTestUtils._connectClient;
+  private static _iTwinAccessClient: ITwinAccessClient | undefined;
+  public static get iTwinAccessClient(): ITwinAccessClient {
+    if (!IModelTestUtils._iTwinAccessClient)
+      IModelTestUtils._iTwinAccessClient = new ITwinAccessClient();
+    return IModelTestUtils._iTwinAccessClient;
   }
 
   private static getStat(name: string) {
