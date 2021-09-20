@@ -655,23 +655,25 @@ The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to 
 
 ### PropertyGrid - related API Changes
 
-`width` and `height` are now required props for `VirtualizedPropertyGrid` and `VirtualizedPropertyGridWithDataProvider`. Also, `width` is now a required property for `PropertyList`. Previously they were optional and forced us to use non-optimal approach when not provided. Now it's up to the consumer to tell the size of the component. Typical migration:
+- `width` and `height` are now required props for `VirtualizedPropertyGrid` and `VirtualizedPropertyGridWithDataProvider`. Also, `width` is now a required property for `PropertyList`. Previously they were optional and forced us to use non-optimal approach when not provided. Now it's up to the consumer to tell the size of the component. Typical migration:
 
-**Before:**
+  **Before:**
 
-```tsx
-return <VirtualizedPropertyGrid {...props} />;
-```
+  ```tsx
+  return <VirtualizedPropertyGrid {...props} />;
+  ```
 
-**After:**
+  **After:**
 
-```tsx
-const width = 100;
-const height = 100;
-return <VirtualizedPropertyGrid width={width} height={height} {...props} />;
-```
+  ```tsx
+  const width = 100;
+  const height = 100;
+  return <VirtualizedPropertyGrid width={width} height={height} {...props} />;
+  ```
 
-`width` and `height` props may be calculated dynamically using [ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver) API.
+  `width` and `height` props may be calculated dynamically using [ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver) API.
+
+- Default value of `PresentationPropertyDataProvider.isNestedPropertyCategoryGroupingEnabled` was changed from `false` to `true`.
 
 ### Deprecated Components in Favor of iTwinUI-react Components
 

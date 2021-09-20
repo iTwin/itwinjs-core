@@ -42,6 +42,7 @@ describe("FavoritePropertiesDataProvider", async () => {
     it("returns favorite properties", async () => {
       // make a couple of properties favorited
       const propertyProvider = new PresentationPropertyDataProvider({ imodel, ruleset: DEFAULT_PROPERTY_GRID_RULESET });
+      propertyProvider.isNestedPropertyCategoryGroupingEnabled = false;
       propertyProvider.keys = new KeySet([{ className: "PCJ_TestSchema:TestClass", id: "0x38" }]);
       const propertyData = await propertyProvider.getData();
 

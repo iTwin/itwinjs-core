@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { AccessToken, UrlDiscoveryClient } from "@bentley/itwin-client";
+import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
 import { AuthorizationParameters, Client, custom, generators, Issuer, OpenIDCallbackChecks, TokenSet } from "openid-client";
 import * as os from "os";
 import * as puppeteer from "puppeteer";
@@ -52,10 +52,8 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
     if (undefined === this._deploymentRegion)
       this._deploymentRegion = process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION !== undefined ? Number(process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION) : 0; // Defaults to PROD (for 3rd party users)
 
-    const urlDiscoveryClient: UrlDiscoveryClient = new UrlDiscoveryClient();
-    this._imsUrl = await urlDiscoveryClient.discoverUrl(new ClientRequestContext(""), "IMSProfile.RP", this._deploymentRegion);
-
-    const oidcUrl = await urlDiscoveryClient.discoverUrl(new ClientRequestContext(""), "IMSOpenID", this._deploymentRegion);
+    const imsClient = new ImsAuthorizationClient();
+    this._imsUrl = await imsClient.getUrl(new ClientRequestContext(""));
 
     // Due to issues with a timeout or failed request to the authorization service increasing the standard timeout and adding retries.
     // Docs for this option here, https://github.com/panva/node-openid-client/tree/master/docs#customizing-http-requests
@@ -64,7 +62,7 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
       retry: 3,
     });
 
-    this._issuer = await Issuer.discover(url.resolve(oidcUrl, "/.well-known/openid-configuration"));
+    this._issuer = await Issuer.discover(url.resolve(this._imsUrl, "/.well-known/openid-configuration"));
     this._client = new this._issuer.Client({ client_id: this._config.clientId, token_endpoint_auth_method: "none" }); // eslint-disable-line @typescript-eslint/naming-convention
   }
 

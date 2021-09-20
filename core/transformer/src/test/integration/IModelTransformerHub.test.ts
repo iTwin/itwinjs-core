@@ -381,7 +381,7 @@ describe("IModelTransformerHub (#integration)", () => {
 
     // create empty iModel meant to contain replayed master history
     const replayedIModelName = "Replayed";
-    const replayedIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: replayedIModelName, description: "blank", revision0: masterSeedFileName, noLocks: true });
+    const replayedIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: replayedIModelName, description: "blank", noLocks: true });
 
     const replayedDb = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId, iModelId: replayedIModelId });
     assert.isTrue(replayedDb.isBriefcaseDb());
