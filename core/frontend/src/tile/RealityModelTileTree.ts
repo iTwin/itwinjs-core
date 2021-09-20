@@ -625,12 +625,7 @@ export namespace RealityModelTileTree {
   async function getTileTreeProps(url: string, tilesetToDbJson: any, iModel: IModelConnection): Promise<RealityModelTileTreeProps> {
     if (!url)
       throw new IModelError(BentleyStatus.ERROR, "Unable to read reality data");
-<<<<<<< HEAD
-    const accessToken = await getAccessToken();
-    const tileClient = new RealityModelTileClient(url, accessToken, iModel.contextId);
-=======
-    const tileClient = new RealityModelTileClient(url, iModel.iTwinId);
->>>>>>> ae82376f12 (Fix OIDC access token that didn't get renew in RealityModelTileClient. (#2283))
+    const tileClient = new RealityModelTileClient(url, iModel.contextId);
     const json = await tileClient.getRootDocument(url);
     let rootTransform = iModel.ecefLocation ? iModel.getMapEcefToDb(0) : Transform.createIdentity();
     const geoConverter = iModel.noGcsDefined ? undefined : iModel.geoServices.getConverter("WGS84");
@@ -829,17 +824,10 @@ export class RealityModelTileClient {
 
   // ###TODO we should be able to pass the projectId / tileId directly, instead of parsing the url
   // But if the present can also be used by non PW Context Share stored data then the url is required and token is not. Possibly two classes inheriting from common interface.
-<<<<<<< HEAD
-  constructor(url: string, accessToken?: AccessToken, contextId?: string) {
+  constructor(url: string, contextId?: string) {
     this.rdsProps = this.parseUrl(url); // Note that returned is undefined if url does not refer to a PW Context Share reality data.
     if (contextId && this.rdsProps)
       this.rdsProps.projectId = contextId;
-    this._token = accessToken;
-=======
-  constructor(url: string, iTwinId?: string) {
-    this.rdsProps = this.parseUrl(url); // Note that returned is undefined if url does not refer to a PW Context Share reality data.
-    if (iTwinId && this.rdsProps)
-      this.rdsProps.projectId = iTwinId;
   }
 
   private async getAccessToken(): Promise<AccessToken | undefined> {
@@ -852,7 +840,6 @@ export class RealityModelTileClient {
       return undefined;
     }
     return accessToken;
->>>>>>> ae82376f12 (Fix OIDC access token that didn't get renew in RealityModelTileClient. (#2283))
   }
 
   private async initializeRDSRealityData(requestContext: AuthorizedFrontendRequestContext): Promise<void> {

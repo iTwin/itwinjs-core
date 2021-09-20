@@ -450,11 +450,7 @@ export namespace OrbitGtTileTree {
       return true;
 
     // Otherwise, refresh using RDS URL
-<<<<<<< HEAD
-    return updateOrbitGtBlobPropsFromRdsUrl(props.rdsUrl, props, accessToken, iModel.contextId);
-=======
-    return updateOrbitGtBlobPropsFromRdsUrl(props.rdsUrl, props, iModel.iTwinId);
->>>>>>> ae82376f12 (Fix OIDC access token that didn't get renew in RealityModelTileClient. (#2283))
+    return updateOrbitGtBlobPropsFromRdsUrl(props.rdsUrl, props, iModel.contextId);
   }
 
   export async function createOrbitGtTileTree(props: OrbitGtBlobProps, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined> {

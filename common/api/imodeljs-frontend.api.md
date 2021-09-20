@@ -7492,11 +7492,8 @@ export type RealityModelSource = ViewState | DisplayStyleState;
 
 // @internal
 export class RealityModelTileClient {
-<<<<<<< HEAD
-    constructor(url: string, accessToken?: AccessToken, contextId?: string);
-=======
-    constructor(url: string, iTwinId?: string);
->>>>>>> ae82376f12 (Fix OIDC access token that didn't get renew in RealityModelTileClient. (#2283))
+    constructor(url: string, contextId?: string);
+
     // (undocumented)
     getBlobAccessData(): Promise<URL | undefined>;
     getRealityDataType(): Promise<string | undefined>;
