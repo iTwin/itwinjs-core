@@ -17,7 +17,7 @@ import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { LockStatusExclusive, LockStatusShared } from "../LocalHub";
 
-describe("HubMock", () => {
+describe.only("HubMock", () => {
   const tmpDir = join(KnownTestLocations.outputDir, "HubMockTest");
   const iTwinId = Guid.createValue();
   const revision0 = IModelTestUtils.resolveAssetFile("test.bim");
@@ -44,32 +44,32 @@ describe("HubMock", () => {
     const statRev0 = IModelJsFs.lstatSync(revision0);
     assert.equal(stat1?.size, statRev0?.size);
 
-    assert.equal(2, localHub.acquireNewBriefcaseId("user1"));
-    assert.equal(3, localHub.acquireNewBriefcaseId("user2"));
-    assert.equal(4, localHub.acquireNewBriefcaseId("user3"));
+    assert.equal(2, localHub.acquireNewBriefcaseId("user1", "user1 briefcase 1"));
+    assert.equal(3, localHub.acquireNewBriefcaseId("user2", "user2 briefcase 1"));
+    assert.equal(4, localHub.acquireNewBriefcaseId("user3", "user3 briefcase 1"));
 
     let briefcases = localHub.getBriefcases();
     assert.equal(briefcases.length, 3);
-    assert.deepEqual(briefcases[0], { id: 2, user: "user1" });
-    assert.deepEqual(briefcases[1], { id: 3, user: "user2" });
-    assert.deepEqual(briefcases[2], { id: 4, user: "user3" });
+    assert.deepEqual(briefcases[0], { id: 2, user: "user1", alias: "user1 briefcase 1" });
+    assert.deepEqual(briefcases[1], { id: 3, user: "user2", alias: "user2 briefcase 1" });
+    assert.deepEqual(briefcases[2], { id: 4, user: "user3", alias: "user3 briefcase 1" });
 
     localHub.releaseBriefcaseId(2);
     briefcases = localHub.getBriefcases();
     assert.equal(briefcases.length, 2);
-    assert.deepEqual(briefcases[0], { id: 3, user: "user2" });
-    assert.deepEqual(briefcases[1], { id: 4, user: "user3" });
+    assert.deepEqual(briefcases[0], { id: 3, user: "user2", alias: "user2 briefcase 1" });
+    assert.deepEqual(briefcases[1], { id: 4, user: "user3", alias: "user3 briefcase 1" });
 
     localHub.releaseBriefcaseId(4);
     briefcases = localHub.getBriefcases();
     assert.equal(briefcases.length, 1);
-    assert.deepEqual(briefcases[0], { id: 3, user: "user2" });
+    assert.deepEqual(briefcases[0], { id: 3, user: "user2", alias: "user2 briefcase 1" });
 
     assert.equal(5, localHub.acquireNewBriefcaseId("user4"));
     briefcases = localHub.getBriefcases();
     assert.equal(briefcases.length, 2);
-    assert.deepEqual(briefcases[0], { id: 3, user: "user2" });
-    assert.deepEqual(briefcases[1], { id: 5, user: "user4" });
+    assert.deepEqual(briefcases[0], { id: 3, user: "user2", alias: "user2 briefcase 1" });
+    assert.deepEqual(briefcases[1], { id: 5, user: "user4", alias: "user4 (5)" });
 
     const cs1: ChangesetFileProps = {
       id: "changeset0", description: "first changeset", changesType: ChangesetType.Regular, parentId: "", briefcaseId: 100, pushDate: "", index: 0,
@@ -163,38 +163,40 @@ describe("HubMock", () => {
       state: LockState.Shared,
       id: "0x12",
     };
-    localHub.acquireLock(lock1, { briefcaseId: 1, changeset: cs1 });
+    assert.equal(6, localHub.acquireNewBriefcaseId("user5", "alias for 5"));
+
+    localHub.acquireLock(lock1, { briefcaseId: 3, changeset: cs1 });
     let lockStat = localHub.queryLockStatus(lock1.id);
     assert.equal(lockStat.state, LockState.Shared);
     assert.equal((lockStat as LockStatusShared).sharedBy.size, 1);
-    assert.isTrue((lockStat as LockStatusShared).sharedBy.has(1));
+    assert.isTrue((lockStat as LockStatusShared).sharedBy.has(3));
 
     assert.isUndefined(lockStat.lastCsIndex);
-    localHub.acquireLock(lock1, { briefcaseId: 10, changeset: cs1 });
+    localHub.acquireLock(lock1, { briefcaseId: 5, changeset: cs1 });
     lockStat = localHub.queryLockStatus(lock1.id);
     assert.equal((lockStat as LockStatusShared).sharedBy.size, 2);
-    assert.isTrue((lockStat as LockStatusShared).sharedBy.has(1));
-    assert.isTrue((lockStat as LockStatusShared).sharedBy.has(10));
+    assert.isTrue((lockStat as LockStatusShared).sharedBy.has(3));
+    assert.isTrue((lockStat as LockStatusShared).sharedBy.has(5));
 
-    expect(() => localHub.acquireLock({ ...lock1, state: LockState.Exclusive }, { briefcaseId: 2, changeset: { id: "cs1" } })).to.throw("cannot obtain exclusive");
+    expect(() => localHub.acquireLock({ ...lock1, state: LockState.Exclusive }, { briefcaseId: 6, changeset: { id: "cs1" } })).to.throw("shared lock is held").include({ briefcaseId: 3, briefcaseAlias: "user2 briefcase 1" });
     expect(() => localHub.releaseLocks([lock1], { briefcaseId: 9, changeset: cs1 })).to.throw("shared lock not held");
 
-    localHub.releaseLocks([lock1], { briefcaseId: 1, changeset: cs1 });
+    localHub.releaseLocks([lock1], { briefcaseId: 3, changeset: cs1 });
     lockStat = localHub.queryLockStatus(lock1.id);
     assert.equal((lockStat as LockStatusShared).sharedBy.size, 1);
 
-    localHub.releaseLocks([lock1], { briefcaseId: 10, changeset: cs1 });
+    localHub.releaseLocks([lock1], { briefcaseId: 5, changeset: cs1 });
     lockStat = localHub.queryLockStatus(lock1.id);
     assert.equal(lockStat.state, LockState.None);
 
     lock1.state = LockState.Exclusive;
-    localHub.acquireLock(lock1, { briefcaseId: 4, changeset: cs1 });
+    localHub.acquireLock(lock1, { briefcaseId: 6, changeset: cs1 });
     lockStat = localHub.queryLockStatus(lock1.id);
     assert.equal(lockStat.state, LockState.Exclusive);
-    localHub.acquireLock(lock1, { briefcaseId: 4, changeset: cs1 });
-    expect(() => localHub.acquireLock(lock1, { briefcaseId: 5, changeset: cs1 })).to.throw("lock is already held by another user");
-    expect(() => localHub.acquireLock({ ...lock1, state: LockState.Shared }, { briefcaseId: 5, changeset: cs1 })).to.throw("lock is already held by another user");
-    localHub.releaseLocks([lock1], { briefcaseId: 4, changeset: cs2 });
+    localHub.acquireLock(lock1, { briefcaseId: 6, changeset: cs1 });
+    expect(() => localHub.acquireLock(lock1, { briefcaseId: 5, changeset: cs1 })).to.throw("exclusive lock is already held").include({ briefcaseId: 6, briefcaseAlias: "alias for 5" });
+    expect(() => localHub.acquireLock({ ...lock1, state: LockState.Shared }, { briefcaseId: 5, changeset: cs1 })).to.throw("exclusive lock is already held").include({ briefcaseId: 6, briefcaseAlias: "alias for 5" });
+    localHub.releaseLocks([lock1], { briefcaseId: 6, changeset: cs2 });
     lockStat = localHub.queryLockStatus(lock1.id);
     assert.equal(lockStat.state, LockState.None);
     assert.equal(lockStat.lastCsIndex, cs2.index);
