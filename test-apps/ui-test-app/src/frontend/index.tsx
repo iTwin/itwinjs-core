@@ -28,7 +28,7 @@ import { AccessToken, ProgressInfo, UrlDiscoveryClient } from "@bentley/itwin-cl
 // To test map-layer extension comment out the following and ensure ui-test-app\build\imjs_extensions contains map-layers, if not see Readme.md in map-layers package.
 import { MapLayersUI } from "@bentley/map-layers";
 import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
-import { Presentation } from "@bentley/presentation-frontend";
+import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@bentley/presentation-frontend";
 import { getClassName } from "@bentley/ui-abstract";
 import { LocalSettingsStorage, UiSettings } from "@bentley/ui-core";
 import {
@@ -212,7 +212,14 @@ export class SampleAppIModelApp {
 
     // initialize Presentation
     await Presentation.initialize({
-      activeLocale: IModelApp.i18n.languageList()[0],
+      presentation: {
+        activeLocale: IModelApp.i18n.languageList()[0],
+      },
+      favorites: {
+        storage: createFavoritePropertiesStorage(SampleAppIModelApp.testAppConfiguration?.useLocalSettings
+          ? DefaultFavoritePropertiesStorageTypes.BrowserLocalStorage
+          : DefaultFavoritePropertiesStorageTypes.UserSettingsServiceStorage),
+      },
     });
     Presentation.selection.scopes.activeScope = "top-assembly";
 
