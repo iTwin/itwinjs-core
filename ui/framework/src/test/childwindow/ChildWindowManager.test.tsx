@@ -105,7 +105,9 @@ describe("ChildWindowManager", () => {
   it("no styles to styles", () => {
     const childDoc = new DOMParser().parseFromString(childHtml, "text/html");
     copyStyles(childDoc);
-    expect(document.styleSheets.length).to.eql(childDoc.styleSheets.length);
+    const childStyleSheetCount = childDoc.head.querySelectorAll("style").length;
+    const documentStyleSheetCount = document.head.querySelectorAll("style").length;
+    expect(documentStyleSheetCount).to.eql(childStyleSheetCount);
   });
 
   it("will copy styles", () => {

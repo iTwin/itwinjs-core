@@ -15,9 +15,8 @@ import {
   IFilteredPresentationTreeDataProvider, IPresentationTreeDataProvider, usePresentationTreeNodeLoader,
 } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";
-import { ControlledTree, SelectionMode, TreeNodeItem, useVisibleTreeNodes } from "@bentley/ui-components";
+import { ControlledTree, SelectionMode, TreeNodeItem, useTreeModel } from "@bentley/ui-components";
 import { useDisposable, useOptionalDisposable } from "@bentley/ui-core";
-import { connectIModelConnection } from "../../../ui-framework/redux/connectIModel";
 import { UiFramework } from "../../../ui-framework/UiFramework";
 import { ClassGroupingOption, VisibilityTreeFilterInfo } from "../Common";
 import { VisibilityTreeEventHandler } from "../VisibilityTreeEventHandler";
@@ -41,6 +40,10 @@ export interface ModelsTreeProps {
    * An IModel to pull data from
    */
   iModel: IModelConnection;
+  /** Width of the component */
+  width: number;
+  /** Height of the component */
+  height: number;
   /**
    * Selection mode in the tree
    */
@@ -92,11 +95,6 @@ export interface ModelsTreeProps {
    * @alpha
    */
   modelsVisibilityHandler?: ModelsVisibilityHandler;
-  /**
-   * Custom data provider to use for testing
-   * @internal
-   */
-  dataProvider?: IPresentationTreeDataProvider;
 }
 
 /**
@@ -128,7 +126,7 @@ export function ModelsTree(props: ModelsTreeProps) {
     selectionPredicate: nodeSelectionPredicate,
   }), [filteredNodeLoader, visibilityHandler, nodeSelectionPredicate]));
 
-  const visibleNodes = useVisibleTreeNodes(filteredNodeLoader.modelSource);
+  const treeModel = useTreeModel(filteredNodeLoader.modelSource);
   const treeRenderer = useVisibilityTreeRenderer(true, false);
 
   const overlay = isFiltering ? <div className="filteredTreeOverlay" /> : undefined;
@@ -145,25 +143,20 @@ export function ModelsTree(props: ModelsTreeProps) {
     <div className="ui-fw-models-tree" ref={props.rootElementRef}>
       <ControlledTree
         nodeLoader={filteredNodeLoader}
-        visibleNodes={visibleNodes}
+        model={treeModel}
         selectionMode={props.selectionMode || SelectionMode.None}
-        treeEvents={eventHandler}
+        eventsHandler={eventHandler}
         treeRenderer={treeRenderer}
         nodeHighlightingProps={nodeHighlightingProps}
         noDataRenderer={filterApplied ? noFilteredDataRenderer : undefined}
         onItemsRendered={onItemsRendered}
+        width={props.width}
+        height={props.height}
       />
       {overlay}
     </div>
   );
 }
-
-/**
- * ModelsTree that is connected to the IModelConnection property in the Redux store. The
- * application must set up the Redux store and include the FrameworkReducer.
- * @alpha
- */
-export const IModelConnectedModelsTree = connectIModelConnection(null, null)(ModelsTree); // eslint-disable-line @typescript-eslint/naming-convention
 
 function useModelsTreeNodeLoader(props: ModelsTreeProps) {
   // note: this is a temporary workaround for auto-update not working on ruleset variable changes - instead
@@ -181,7 +174,6 @@ function useModelsTreeNodeLoader(props: ModelsTreeProps) {
 
   const { nodeLoader, onItemsRendered } = usePresentationTreeNodeLoader({
     imodel: props.iModel,
-    dataProvider: props.dataProvider,
     ruleset: rulesets.general,
     appendChildrenCountForGroupingNodes: (props.enableElementsClassGrouping === ClassGroupingOption.YesWithCounts),
     pagingSize: PAGING_SIZE,
@@ -189,7 +181,6 @@ function useModelsTreeNodeLoader(props: ModelsTreeProps) {
   });
   const { nodeLoader: searchNodeLoader, onItemsRendered: onSearchItemsRendered } = usePresentationTreeNodeLoader({
     imodel: props.iModel,
-    dataProvider: props.dataProvider,
     ruleset: rulesets.search,
     pagingSize: PAGING_SIZE,
     enableHierarchyAutoUpdate: props.enableHierarchyAutoUpdate,

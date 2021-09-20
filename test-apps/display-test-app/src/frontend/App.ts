@@ -3,17 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ProcessDetector } from "@bentley/bentleyjs-core";
+import { AsyncMethodsOf, ProcessDetector, PromiseReturnType } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import {
-  IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, SnapshotIModelRpcInterface,
+  IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface,
 } from "@bentley/imodeljs-common";
 import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import {
-  AccuDrawHintBuilder,
-  AccuDrawShortcuts, AccuSnap, AsyncMethodsOf, ExternalServerExtensionLoader, IModelApp, IpcApp, LocalhostIpcApp, PromiseReturnType, RenderSystem,
+  AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, ExternalServerExtensionLoader, IModelApp, IpcApp, LocalhostIpcApp, RenderSystem,
   SelectionTool, SnapMode, TileAdmin, Tool, ToolAdmin,
 } from "@bentley/imodeljs-frontend";
 import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
@@ -43,6 +42,7 @@ import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } 
 import { ApplyModelDisplayScaleTool } from "./DisplayScale";
 import { SyncViewportsTool } from "./SyncViewportsTool";
 import { FrameStatsTool } from "./FrameStatsTool";
+import { signIn } from "./signIn";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -58,7 +58,7 @@ class DisplayTestAppAccuSnap extends AccuSnap {
 
 class DisplayTestAppToolAdmin extends ToolAdmin {
   /** Process shortcut key events */
-  public override processShortcutKey(keyEvent: KeyboardEvent, wentDown: boolean): boolean {
+  public override async processShortcutKey(keyEvent: KeyboardEvent, wentDown: boolean): Promise<boolean> {
     if (wentDown && AccuDrawHintBuilder.isEnabled)
       return AccuDrawShortcuts.processShortcutKey(keyEvent);
     return false;
@@ -75,6 +75,49 @@ class SVTSelectionTool extends SelectionTool {
   }
 }
 
+class SignInTool extends Tool {
+  public static override toolId = "SignIn";
+  public override async run(): Promise<boolean> {
+    await signIn();
+    return true;
+  }
+}
+
+class PushChangesTool extends Tool {
+  public static override toolId = "PushChanges";
+  public static override get maxArgs() { return 1; }
+  public static override get minArgs() { return 1; }
+
+  public override async run(description?: string): Promise<boolean> {
+    if (!description || "string" !== typeof description)
+      return false;
+
+    const imodel = IModelApp.viewManager.selectedView?.iModel;
+    if (!imodel || !imodel.isBriefcaseConnection())
+      return false;
+
+    await imodel.pushChanges(description);
+    return true;
+  }
+
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
+    return this.run(args[0]);
+  }
+}
+
+class PullChangesTool extends Tool {
+  public static override toolId = "PullChanges";
+
+  public override async run(): Promise<boolean> {
+    const imodel = IModelApp.viewManager.selectedView?.iModel;
+    if (!imodel || !imodel.isBriefcaseConnection())
+      return false;
+
+    await imodel.pullChanges();
+    return true;
+  }
+}
+
 export class DtaIpc {
   public static async callBackend<T extends AsyncMethodsOf<DtaIpcInterface>>(methodName: T, ...args: Parameters<DtaIpcInterface[T]>) {
     return IpcApp.callIpcChannel(dtaChannel, methodName, ...args) as PromiseReturnType<DtaIpcInterface[T]>;
@@ -85,7 +128,7 @@ class RefreshTilesTool extends Tool {
   public static override toolId = "RefreshTiles";
   public static override get maxArgs() { return undefined; }
 
-  public override run(changedModelIds?: string[]): boolean {
+  public override async run(changedModelIds?: string[]): Promise<boolean> {
     if (undefined !== changedModelIds && 0 === changedModelIds.length)
       changedModelIds = undefined;
 
@@ -93,7 +136,7 @@ class RefreshTilesTool extends Tool {
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     return this.run(args);
   }
 }
@@ -103,7 +146,7 @@ class PurgeTileTreesTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return undefined; }
 
-  public override run(modelIds?: string[]): boolean {
+  public override async run(modelIds?: string[]): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp)
       return true;
@@ -111,14 +154,13 @@ class PurgeTileTreesTool extends Tool {
     if (undefined !== modelIds && 0 === modelIds.length)
       modelIds = undefined;
 
-    vp.iModel.tiles.purgeTileTrees(modelIds).then(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
-      IModelApp.viewManager.refreshForModifiedModels(modelIds);
-    });
+    await vp.iModel.tiles.purgeTileTrees(modelIds);
+    IModelApp.viewManager.refreshForModifiedModels(modelIds);
 
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     return this.run(args);
   }
 }
@@ -126,12 +168,11 @@ class PurgeTileTreesTool extends Tool {
 class ShutDownTool extends Tool {
   public static override toolId = "ShutDown";
 
-  public override run(_args: any[]): boolean {
+  public override async run(_args: any[]): Promise<boolean> {
     DisplayTestApp.surface.closeAllViewers();
-    if (ElectronApp.isValid)
-      ElectronApp.shutdown();// eslint-disable-line @typescript-eslint/no-floating-promises
-    else
-      IModelApp.shutdown(); // eslint-disable-line @typescript-eslint/no-floating-promises
+    const app = ElectronApp.isValid ? ElectronApp : IModelApp;
+    await app.shutdown();
+
     debugger; // eslint-disable-line no-debugger
     return true;
   }
@@ -160,7 +201,6 @@ export class DisplayTestApp {
           DtaRpcInterface,
           IModelReadRpcInterface,
           IModelTileRpcInterface,
-          IModelWriteRpcInterface, // eslint-disable-line deprecation/deprecation
           SnapshotIModelRpcInterface,
         ],
       },
@@ -221,6 +261,8 @@ export class DisplayTestApp {
       OpenIModelTool,
       OutputShadersTool,
       PlaceLineStringTool,
+      PullChangesTool,
+      PushChangesTool,
       PurgeTileTreesTool,
       RecordFpsTool,
       RefreshTilesTool,
@@ -229,6 +271,7 @@ export class DisplayTestApp {
       RestoreWindowTool,
       SaveImageTool,
       ShutDownTool,
+      SignInTool,
       SVTSelectionTool,
       SyncViewportsTool,
       ToggleAspectRatioSkewDecoratorTool,

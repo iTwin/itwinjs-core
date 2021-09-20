@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Point3d, Transform } from "@bentley/geometry-core";
+import { Point3d } from "@bentley/geometry-core";
 import {
   ColorDef, FeatureAppearance, GraphicParams, ImageBuffer, ImageBufferFormat, RenderMaterial, RenderMode, RenderTexture, TextureMapping,
 } from "@bentley/imodeljs-common";
@@ -70,8 +70,14 @@ class TransparencyDecorator {
     const gfParams = GraphicParams.fromSymbology(opts.color, opts.color, 1);
     gfParams.material = opts.material;
 
-    const builder = vp.target.renderSystem.createGraphicBuilder(Transform.createIdentity(), GraphicType.Scene, vp, opts.pickableId);
-    builder.wantNormals = builder.wantEdges = false;
+    const builder = vp.target.renderSystem.createGraphic({
+      type: GraphicType.Scene,
+      viewport: vp,
+      pickable: opts.pickableId ? { id: opts.pickableId } : undefined,
+      wantNormals: false,
+      generateEdges: false,
+    });
+
     builder.activateGraphicParams(gfParams);
     builder.addShape(pts);
 
@@ -111,11 +117,10 @@ describe("Transparency", async () => {
       expect(viewport.displayStyle.backgroundColor.equals(ColorDef.black)).to.be.true;
 
       viewport.changeViewedModels([]);
-      viewport.viewFlags.lighting = false;
+      viewport.viewFlags = viewport.viewFlags.with("lighting", false);
       viewport.isFadeOutActive = true;
 
       setup(viewport);
-      viewport.viewFlags = viewport.viewFlags.clone();
       viewport.addFeatureOverrideProvider(decorator);
 
       viewport.renderFrame();

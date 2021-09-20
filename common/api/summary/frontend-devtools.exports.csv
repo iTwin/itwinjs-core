@@ -75,7 +75,6 @@ beta;class EmphasizeElementsTool
 beta;EmphasizeSelectedElementsTool 
 beta;EmphasizeVisibleElementsTool 
 beta;ExplosionEffect 
-beta;ExtensionServiceTool 
 beta;FadeOutTool 
 beta;FlipImageConfig 
 beta;FlipImageEffect 
@@ -99,7 +98,7 @@ beta;LoseWebGLContextTool
 beta;MapBaseColorTool 
 beta;MapBaseTransparencyTool 
 beta;MapBaseVisibilityTool 
-beta;MapLayerSubLayerVisiblityTool 
+beta;MapLayerSubLayerVisibilityTool 
 beta;MapLayerTransparencyTool 
 beta;MapLayerVisibilityTool 
 beta;MapLayerZoomTool 
@@ -206,6 +205,7 @@ beta;ToggleSkyboxTool
 beta;ToggleTerrainTool 
 beta;ToggleTileRequestDecorationTool 
 beta;ToggleTileTreeBoundsDecorationTool 
+beta;ToggleToolTipsTool 
 beta;ToggleViewAttachmentBoundariesTool 
 beta;ToggleViewAttachmentClipShapesTool 
 beta;ToggleViewAttachmentsTool 
@@ -219,3 +219,6 @@ beta;UnsharpenEffect
 beta;ViewportAddRealityModel 
 beta;ViewportTileSizeModifierTool 
 beta;class ViewportToggleTool 
+beta;VignetteConfig 
+beta;VignetteEffect 
+beta;WoWIgnoreBackgroundTool 

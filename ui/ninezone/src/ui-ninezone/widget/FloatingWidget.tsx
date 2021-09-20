@@ -9,11 +9,12 @@
 import "./FloatingWidget.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, Point, PointProps, Rectangle, useRefs } from "@bentley/ui-core";
+import { PointProps } from "@bentley/ui-abstract";
+import { CommonProps, Point, Rectangle, useRefs } from "@bentley/ui-core";
 import { assert } from "@bentley/bentleyjs-core";
 import { useDragResizeHandle, UseDragResizeHandleArgs, useIsDraggedItem } from "../base/DragManager";
 import { NineZoneDispatchContext } from "../base/NineZone";
-import { FloatingWidgetState, WidgetState } from "../base/NineZoneState";
+import { FloatingWidgetState, toolSettingsTabId, WidgetState } from "../base/NineZoneState";
 import { WidgetContentContainer } from "./ContentContainer";
 import { WidgetTabBar } from "./TabBar";
 import { Widget, WidgetProvider, WidgetStateContext } from "./Widget";
@@ -34,18 +35,22 @@ export interface FloatingWidgetProps {
 
 /** @internal */
 export const FloatingWidget = React.memo<FloatingWidgetProps>(function FloatingWidget(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
-  const { id, bounds } = props.floatingWidget;
-  const { minimized } = props.widget;
+  const { id, bounds, userSized } = props.floatingWidget;
+  const { minimized, tabs } = props.widget;
+  const isSingleTab = 1 === tabs.length;
+
   const style = React.useMemo(() => {
     const boundsRect = Rectangle.create(bounds);
     const { height, width } = boundsRect.getSize();
     const position = boundsRect.topLeft();
     return {
       ...CssProperties.transformFromPosition(position),
-      height: minimized ? undefined : height,
-      width,
+      height: minimized || (isSingleTab && !userSized) ? undefined : height,
+      width: (isSingleTab && !userSized) ? undefined : width,
+      maxHeight: (isSingleTab && !userSized) ? "60%" : undefined,
+      maxWidth: (isSingleTab && !userSized) ? "60%" : undefined,
     };
-  }, [bounds, minimized]);
+  }, [bounds, isSingleTab, minimized, userSized]);
   const className = React.useMemo(() => classnames(
     minimized && "nz-minimized",
   ), [minimized]);
@@ -83,27 +88,36 @@ const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetC
     type: "widget" as const,
   }), [floatingWidgetId]);
   const dragged = useIsDraggedItem(item);
+  const isToolSettingsTab = widget.tabs[0] === toolSettingsTabId;
   const className = classnames(
     "nz-widget-floatingWidget",
     dragged && "nz-dragged",
     props.className,
+    isToolSettingsTab && "nz-floating-toolsettings",
   );
+
+  // never allow resizing of tool settings - always auto-fit them
+  const isResizable = (undefined === widget.isFloatingStateWindowResizable || widget.isFloatingStateWindowResizable) && !isToolSettingsTab;
+
   return (
     <Widget
       className={className}
+      widgetId={floatingWidgetId}
       style={props.style}
     >
       <WidgetTabBar separator={!widget.minimized} />
       <WidgetContentContainer />
-      <FloatingWidgetHandle handle="left" />
-      <FloatingWidgetHandle handle="top" />
-      <FloatingWidgetHandle handle="right" />
-      <FloatingWidgetHandle handle="bottom" />
-      <FloatingWidgetHandle handle="topLeft" />
-      <FloatingWidgetHandle handle="topRight" />
-      <FloatingWidgetHandle handle="bottomLeft" />
-      <FloatingWidgetHandle handle="bottomRight" />
-    </Widget>
+      {isResizable && <>
+        <FloatingWidgetHandle handle="left" />
+        <FloatingWidgetHandle handle="top" />
+        <FloatingWidgetHandle handle="right" />
+        <FloatingWidgetHandle handle="bottom" />
+        <FloatingWidgetHandle handle="topLeft" />
+        <FloatingWidgetHandle handle="topRight" />
+        <FloatingWidgetHandle handle="bottomLeft" />
+        <FloatingWidgetHandle handle="bottomRight" />
+      </>}
+    </Widget >
   );
 });
 

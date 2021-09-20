@@ -18,9 +18,9 @@ import { IModelHubBackend } from "../../IModelHubBackend";
 describe("V1 Checkpoint Manager", () => {
   it("empty props", async () => {
     const props = {
-      contextId: "",
+      iTwinId: "",
       iModelId: "",
-      changeSetId: "",
+      changeset: { id: "" },
       requestContext: new AuthorizedClientRequestContext(new AccessToken()),
     };
     assert.equal(V1CheckpointManager.getFileName(props), path.join(IModelHost.cacheDir, "imodels", "checkpoints", "first.bim"));
@@ -28,9 +28,9 @@ describe("V1 Checkpoint Manager", () => {
 
   it("changeset only props", async () => {
     const props = {
-      contextId: "",
+      iTwinId: "",
       iModelId: "",
-      changeSetId: "1234",
+      changeset: { id: "1234" },
       requestContext: new AuthorizedClientRequestContext(new AccessToken()),
     };
     assert.equal(V1CheckpointManager.getFileName(props), path.join(IModelHost.cacheDir, "imodels", "checkpoints", "1234.bim"));
@@ -38,9 +38,9 @@ describe("V1 Checkpoint Manager", () => {
 
   it("changeset+context props", async () => {
     const props = {
-      contextId: "5678",
+      iTwinId: "5678",
       iModelId: "",
-      changeSetId: "1234",
+      changeset: { id: "1234" },
       requestContext: new AuthorizedClientRequestContext(new AccessToken()),
     };
     assert.equal(V1CheckpointManager.getFileName(props), path.join(IModelHost.cacheDir, "imodels", "checkpoints", "1234.bim"));
@@ -48,9 +48,9 @@ describe("V1 Checkpoint Manager", () => {
 
   it("changeset+context+imodel props", async () => {
     const props = {
-      contextId: "5678",
+      iTwinId: "5678",
       iModelId: "910",
-      changeSetId: "1234",
+      changeset: { id: "1234" },
       requestContext: new AuthorizedClientRequestContext(new AccessToken()),
     };
     assert.equal(V1CheckpointManager.getFileName(props), path.join(IModelHost.cacheDir, "imodels", "910", "checkpoints", "1234.bim"));
@@ -65,10 +65,10 @@ describe("V1 Checkpoint Manager", () => {
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
     const iModelId = Guid.createValue();  // This is wrong - it should be `snapshot.getGuid()`!
-    const contextId = Guid.createValue();
-    const changeSetId = IModelTestUtils.generateChangeSetId();
-    snapshot.nativeDb.saveProjectGuid(Guid.normalize(contextId));
-    snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeSetId);
+    const iTwinId = Guid.createValue();
+    const changeset = IModelTestUtils.generateChangeSetId();
+    snapshot.nativeDb.saveProjectGuid(Guid.normalize(iTwinId));
+    snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id);
     snapshot.saveChanges();
 
     assert.notEqual(iModelId, snapshot.nativeDb.getDbGuid()); // Ensure the Snapshot dbGuid and iModelId are different
@@ -76,13 +76,13 @@ describe("V1 Checkpoint Manager", () => {
 
     sinon.stub(V2CheckpointManager, "downloadCheckpoint").callsFake(async (arg) => {
       IModelJsFs.copySync(dbPath, arg.localFile);
-      return changeSetId;
+      return changeset.id;
     });
 
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
     const localFile = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint2.bim");
 
-    const request = { localFile, checkpoint: { requestContext: ctx, contextId, iModelId, changeSetId } };
+    const request = { localFile, checkpoint: { user: ctx, iTwinId, iModelId, changeset } };
     await CheckpointManager.downloadCheckpoint(request);
     const db = SnapshotDb.openCheckpointV1(localFile, request.checkpoint);
     assert.equal(iModelId, db.nativeDb.getDbGuid(), "expected the V1 Checkpoint download to fix the improperly set dbGuid.");
@@ -98,9 +98,9 @@ describe("Checkpoint Manager", () => {
 
   it("open missing local file should return undefined", async () => {
     const checkpoint = {
-      contextId: "5678",
+      iTwinId: "5678",
       iModelId: "910",
-      changeSetId: "1234",
+      changeset: { id: "1234" },
       requestContext: new AuthorizedClientRequestContext(new AccessToken()),
     };
     const request = {
@@ -113,9 +113,9 @@ describe("Checkpoint Manager", () => {
 
   it("open a bad bim file should return undefined", async () => {
     const checkpoint = {
-      contextId: "5678",
+      iTwinId: "5678",
       iModelId: "910",
-      changeSetId: "1234",
+      changeset: { id: "1234" },
       requestContext: new AuthorizedClientRequestContext(new AccessToken()),  // Why is this on CheckpointProps rather than DownloadRequest
     };
 
@@ -143,10 +143,10 @@ describe("Checkpoint Manager", () => {
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
     const iModelId = snapshot.getGuid();
-    const contextId = Guid.createValue();
-    const changeSetId = IModelTestUtils.generateChangeSetId();
-    snapshot.nativeDb.saveProjectGuid(Guid.normalize(contextId));
-    snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeSetId);
+    const iTwinId = Guid.createValue();
+    const changeset = IModelTestUtils.generateChangeSetId();
+    snapshot.nativeDb.saveProjectGuid(Guid.normalize(iTwinId));
+    snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id);
     snapshot.saveChanges();
     snapshot.close();
 
@@ -156,13 +156,13 @@ describe("Checkpoint Manager", () => {
 
     const v1Spy = sinon.stub(V1CheckpointManager, "downloadCheckpoint").callsFake(async (arg) => {
       IModelJsFs.copySync(dbPath, arg.localFile);
-      return changeSetId;
+      return changeset.id;
     });
 
-    const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const user = ClientRequestContext.current as AuthorizedClientRequestContext;
     const localFile = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint2.bim");
 
-    const request = { localFile, checkpoint: { requestContext: ctx, contextId, iModelId, changeSetId } };
+    const request = { localFile, checkpoint: { user, iTwinId, iModelId, changeset } };
     await CheckpointManager.downloadCheckpoint(request);
     assert.isTrue(v1Spy.calledOnce);
   });

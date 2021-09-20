@@ -8,7 +8,6 @@ import { AccessTokenProps } from '@bentley/itwin-client';
 import { Angle } from '@bentley/geometry-core';
 import { AngleProps } from '@bentley/geometry-core';
 import { AnyGeometryQuery } from '@bentley/geometry-core';
-import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { AuthStatus } from '@bentley/bentleyjs-core';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { BentleyError } from '@bentley/bentleyjs-core';
@@ -36,13 +35,11 @@ import { Id64Array } from '@bentley/bentleyjs-core';
 import { Id64Set } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
-import { IModelClient } from '@bentley/imodelhub-client';
 import { IModelJson } from '@bentley/geometry-core';
 import { IModelStatus } from '@bentley/bentleyjs-core';
 import { IndexedPolyfaceVisitor } from '@bentley/geometry-core';
 import { IndexedValue } from '@bentley/bentleyjs-core';
 import { IndexMap } from '@bentley/bentleyjs-core';
-import { LockLevel } from '@bentley/imodelhub-client';
 import { LogFunction } from '@bentley/bentleyjs-core';
 import { LogLevel } from '@bentley/bentleyjs-core';
 import { LowAndHighXY } from '@bentley/geometry-core';
@@ -50,6 +47,8 @@ import { LowAndHighXYZ } from '@bentley/geometry-core';
 import { Map4d } from '@bentley/geometry-core';
 import { Matrix3d } from '@bentley/geometry-core';
 import { Matrix4dProps } from '@bentley/geometry-core';
+import { Mutable } from '@bentley/bentleyjs-core';
+import { NonFunctionPropertiesOf } from '@bentley/bentleyjs-core';
 import { OpenMode } from '@bentley/bentleyjs-core';
 import { OrderedId64Iterable } from '@bentley/bentleyjs-core';
 import { Plane3dByOriginAndUnitNormal } from '@bentley/geometry-core';
@@ -662,11 +661,14 @@ export interface BRepThickenProps {
 
 // @public
 export interface BriefcaseDownloader {
-    briefcaseId: number;
-    downloadPromise: Promise<void>;
-    fileName: string;
-    requestCancel: () => Promise<boolean>;
+    readonly briefcaseId: BriefcaseId;
+    readonly downloadPromise: Promise<void>;
+    readonly fileName: LocalFileName;
+    readonly requestCancel: () => Promise<boolean>;
 }
+
+// @public
+export type BriefcaseId = number;
 
 // @public
 export enum BriefcaseIdValue {
@@ -683,8 +685,8 @@ export enum BriefcaseIdValue {
 
 // @public
 export interface BriefcaseProps {
-    briefcaseId: number;
-    iModelId: GuidString;
+    readonly briefcaseId: BriefcaseId;
+    readonly iModelId: GuidString;
 }
 
 export { BriefcaseStatus }
@@ -903,9 +905,9 @@ export type ChangesetId = string;
 // @public
 export interface ChangesetIdWithIndex {
     // (undocumented)
-    id: ChangesetId;
+    readonly id: ChangesetId;
     // (undocumented)
-    index?: ChangesetIndex;
+    readonly index?: ChangesetIndex;
 }
 
 // @public
@@ -914,18 +916,18 @@ export type ChangesetIndex = number;
 // @public
 export interface ChangesetIndexAndId {
     // (undocumented)
-    id: ChangesetId;
+    readonly id: ChangesetId;
     // (undocumented)
-    index: ChangesetIndex;
+    readonly index: ChangesetIndex;
 }
 
 // @public
 export type ChangesetIndexOrId = ChangesetIndexAndId | {
-    index: ChangesetIndex;
-    id?: never;
+    readonly index: ChangesetIndex;
+    readonly id?: never;
 } | {
-    id: ChangesetId;
-    index?: never;
+    readonly id: ChangesetId;
+    readonly index?: never;
 };
 
 // @beta
@@ -1101,8 +1103,6 @@ export class Code implements CodeProps {
     equals(other: Code): boolean;
     // (undocumented)
     static fromJSON(json?: any): Code;
-    // @deprecated (undocumented)
-    getValue(): string;
     static isEmpty(c: CodeProps): boolean;
     static isValid(c: CodeProps): boolean;
     scope: string;
@@ -1142,8 +1142,6 @@ export namespace CodeScopeSpec {
 
 // @public
 export class CodeSpec {
-    // @internal @deprecated
-    constructor(iModel: IModel, id: Id64String, name: string, scopeType?: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement, properties?: any);
     static create(iModel: IModel, name: string, scopeType: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement): CodeSpec;
     // @internal
     static createFromJson(iModel: IModel, id: Id64String, name: string, properties: any): CodeSpec;
@@ -1160,9 +1158,6 @@ export class CodeSpec {
     set scopeReq(req: CodeScopeSpec.ScopeRequirement);
     get scopeType(): CodeScopeSpec.Type;
     set scopeType(scopeType: CodeScopeSpec.Type);
-    // @deprecated
-    get specScopeType(): CodeScopeSpec.Type;
-    set specScopeType(scopeType: CodeScopeSpec.Type);
 }
 
 // @public
@@ -1706,20 +1701,20 @@ export type CreateEmptyStandaloneIModelProps = CreateIModelProps & CreateStandal
 
 // @public
 export interface CreateIModelProps extends IModelProps {
-    client?: string;
-    guid?: GuidString;
+    readonly client?: string;
+    readonly guid?: GuidString;
     // @alpha
-    thumbnail?: ThumbnailProps;
+    readonly thumbnail?: ThumbnailProps;
 }
 
 // @public
 export interface CreateSnapshotIModelProps extends IModelEncryptionProps {
-    createClassViews?: boolean;
+    readonly createClassViews?: boolean;
 }
 
 // @internal
 export interface CreateStandaloneIModelProps extends IModelEncryptionProps {
-    allowEdit?: string;
+    readonly allowEdit?: string;
 }
 
 // @internal (undocumented)
@@ -1730,8 +1725,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1638400,
-    Major = 25,
+    Combined = 1703936,
+    Major = 26,
     Minor = 0
 }
 
@@ -1760,7 +1755,7 @@ export class CutStyle {
 export interface CutStyleProps {
     appearance?: FeatureAppearanceProps;
     hiddenLine?: HiddenLine.SettingsProps;
-    viewflags?: ViewFlagOverridesProps;
+    viewflags?: ViewFlagOverrides;
 }
 
 // @public
@@ -1977,6 +1972,7 @@ export class DisplayStyleSettings {
     readonly onThematicChanged: BeEvent<(newThematic: ThematicDisplay) => void>;
     readonly onTimePointChanged: BeEvent<(newTimePoint: number | undefined) => void>;
     readonly onViewFlagsChanged: BeEvent<(newFlags: Readonly<ViewFlags>) => void>;
+    readonly onWhiteOnWhiteReversalChanged: BeEvent<(newSettings: WhiteOnWhiteReversalSettings) => void>;
     overrideModelAppearance(modelId: Id64String, ovr: FeatureAppearance): void;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     get planarClipMasks(): Map<Id64String, PlanarClipMaskSettings>;
@@ -1995,6 +1991,8 @@ export class DisplayStyleSettings {
     toOverrides(options?: DisplayStyleOverridesOptions): DisplayStyleSettingsProps;
     get viewFlags(): ViewFlags;
     set viewFlags(flags: ViewFlags);
+    get whiteOnWhiteReversal(): WhiteOnWhiteReversalSettings;
+    set whiteOnWhiteReversal(settings: WhiteOnWhiteReversalSettings);
     }
 
 // @public
@@ -2024,6 +2022,7 @@ export interface DisplayStyleSettingsProps {
     timePoint?: number;
     // (undocumented)
     viewflags?: ViewFlagProps;
+    whiteOnWhiteReversal?: WhiteOnWhiteReversalProps;
 }
 
 // @public
@@ -2137,11 +2136,11 @@ export class EcefLocation implements EcefLocationProps {
 
 // @public
 export interface EcefLocationProps {
-    cartographicOrigin?: LatLongAndHeight;
-    orientation: YawPitchRollProps;
-    origin: XYZProps;
-    xVector?: XYZProps;
-    yVector?: XYZProps;
+    readonly cartographicOrigin?: LatLongAndHeight;
+    readonly orientation: YawPitchRollProps;
+    readonly origin: XYZProps;
+    readonly xVector?: XYZProps;
+    readonly yVector?: XYZProps;
 }
 
 // @public
@@ -2831,9 +2830,9 @@ export interface FilePropertyProps {
     // (undocumented)
     id?: number | string;
     // (undocumented)
-    name: string;
+    readonly name: string;
     // (undocumented)
-    namespace: string;
+    readonly namespace: string;
     // (undocumented)
     subId?: number | string;
 }
@@ -4135,15 +4134,10 @@ export class ImdlHeader extends TileHeader {
 // @public
 export abstract class IModel implements IModelProps {
     // @internal
-    protected constructor(tokenProps: IModelRpcProps | undefined, openMode: OpenMode);
+    protected constructor(tokenProps?: IModelRpcProps);
     cartographicToSpatialFromEcef(cartographic: Cartographic, result?: Point3d): Point3d;
     // (undocumented)
     changeset: ChangesetIdWithIndex;
-    // @deprecated
-    get changeSetId(): string;
-    get contextId(): GuidString | undefined;
-    // @internal (undocumented)
-    protected _contextId?: GuidString;
     static readonly dictionaryId: Id64String;
     get ecefLocation(): EcefLocation | undefined;
     set ecefLocation(ecefLocation: EcefLocation | undefined);
@@ -4167,6 +4161,9 @@ export abstract class IModel implements IModelProps {
     // (undocumented)
     abstract get isOpen(): boolean;
     abstract get isSnapshot(): boolean;
+    get iTwinId(): GuidString | undefined;
+    // @internal (undocumented)
+    protected _iTwinId?: GuidString;
     get key(): string;
     get name(): string;
     set name(name: string);
@@ -4176,7 +4173,9 @@ export abstract class IModel implements IModelProps {
     readonly onNameChanged: BeEvent<(previousName: string) => void>;
     readonly onProjectExtentsChanged: BeEvent<(previousExtents: AxisAlignedBox3d) => void>;
     readonly onRootSubjectChanged: BeEvent<(previousSubject: RootSubjectProps) => void>;
-    readonly openMode: OpenMode;
+    get openMode(): OpenMode;
+    // (undocumented)
+    protected _openMode: OpenMode;
     get projectExtents(): AxisAlignedBox3d;
     set projectExtents(extents: AxisAlignedBox3d);
     static readonly repositoryModelId: Id64String;
@@ -4212,7 +4211,7 @@ export interface IModelCoordinatesResponseProps {
 
 // @public
 export interface IModelEncryptionProps {
-    password?: string;
+    readonly password?: string;
 }
 
 // @public
@@ -4228,12 +4227,12 @@ export class IModelNotFoundResponse extends RpcNotFoundResponse {
 
 // @public
 export interface IModelProps {
-    ecefLocation?: EcefLocationProps;
-    geographicCoordinateSystem?: GeographicCRSProps;
-    globalOrigin?: XYZProps;
-    name?: string;
-    projectExtents?: Range3dProps;
-    rootSubject: RootSubjectProps;
+    readonly ecefLocation?: EcefLocationProps;
+    readonly geographicCoordinateSystem?: GeographicCRSProps;
+    readonly globalOrigin?: XYZProps;
+    readonly name?: string;
+    readonly projectExtents?: Range3dProps;
+    readonly rootSubject: RootSubjectProps;
 }
 
 // @internal
@@ -4296,11 +4295,9 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
 
 // @public
 export interface IModelRpcOpenProps {
-    changeSetId?: ChangesetId;
-    changesetIndex?: ChangesetIndex;
-    readonly contextId?: GuidString;
+    readonly changeset?: ChangesetIdWithIndex;
     readonly iModelId?: GuidString;
-    openMode?: OpenMode;
+    readonly iTwinId?: GuidString;
 }
 
 // @public
@@ -4313,7 +4310,7 @@ export { IModelStatus }
 // @public (undocumented)
 export abstract class IModelTileRpcInterface extends RpcInterface {
     // @internal
-    generateTileContent(_rpcProps: IModelRpcProps, _treeId: string, _contentId: string, _guid: string | undefined): Promise<Uint8Array>;
+    generateTileContent(_rpcProps: IModelRpcProps, _treeId: string, _contentId: string, _guid: string | undefined): Promise<TileContentSource>;
     // (undocumented)
     static getClient(): IModelTileRpcInterface;
     // @beta (undocumented)
@@ -4328,10 +4325,10 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     queryVersionInfo(): Promise<TileVersionInfo>;
     // @internal
     requestElementGraphics(_rpcProps: IModelRpcProps, _request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
-    // @internal @deprecated (undocumented)
-    requestTileContent(iModelToken: IModelRpcProps, treeId: string, contentId: string, isCanceled?: () => boolean, guid?: string): Promise<Uint8Array>;
     // @internal (undocumented)
     requestTileTreeProps(_tokenProps: IModelRpcProps, _id: string): Promise<IModelTileTreeProps>;
+    // @internal
+    retrieveTileContent(_rpcProps: IModelRpcProps, _key: TileContentIdentifier): Promise<Uint8Array>;
 }
 
 // @internal
@@ -4351,17 +4348,9 @@ export interface IModelTileTreeProps extends TileTreeProps {
 // @public
 export class IModelVersion {
     static asOfChangeSet(changeSetId: string): IModelVersion;
-    // @deprecated
-    evaluateChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, imodelClient: IModelClient): Promise<ChangesetId>;
     static first(): IModelVersion;
     static fromJSON(json: IModelVersionProps): IModelVersion;
-    // @deprecated
-    static fromJson(jsonObj: any): IModelVersion;
     getAsOfChangeSet(): ChangesetId | undefined;
-    // @internal @deprecated
-    static getChangeSetFromNamedVersion(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: GuidString, versionName: string): Promise<ChangesetId>;
-    // @internal @deprecated
-    static getLatestChangeSetId(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: GuidString): Promise<ChangesetId>;
     getName(): string | undefined;
     get isFirst(): boolean;
     get isLatest(): boolean;
@@ -4393,52 +4382,6 @@ export type IModelVersionProps = {
     latest?: never;
     afterChangeSetId?: never;
 };
-
-// @internal @deprecated
-export abstract class IModelWriteRpcInterface extends RpcInterface {
-    // @deprecated (undocumented)
-    createAndInsertPhysicalModel(_tokenProps: IModelRpcProps, _newModelCode: CodeProps, _privateModel: boolean): Promise<Id64String>;
-    // @deprecated (undocumented)
-    createAndInsertSpatialCategory(_tokenProps: IModelRpcProps, _scopeModelId: Id64String, _categoryName: string, _appearance: SubCategoryAppearance.Props): Promise<Id64String>;
-    // @deprecated (undocumented)
-    deleteElements(_tokenProps: IModelRpcProps, _ids: Id64Array): Promise<void>;
-    // (undocumented)
-    doConcurrencyControlRequest(_tokenProps: IModelRpcProps): Promise<void>;
-    static getClient(): IModelWriteRpcInterface;
-    static getClientForRouting(token: RpcRoutingToken): IModelWriteRpcInterface;
-    // @deprecated (undocumented)
-    getModelsAffectedByWrites(_tokenProps: IModelRpcProps): Promise<Id64String[]>;
-    // @deprecated (undocumented)
-    getParentChangeset(_iModelToken: IModelRpcProps): Promise<ChangesetId>;
-    // (undocumented)
-    hasPendingTxns(_iModelToken: IModelRpcProps): Promise<boolean>;
-    // (undocumented)
-    hasUnsavedChanges(_iModelToken: IModelRpcProps): Promise<boolean>;
-    static readonly interfaceName = "IModelWriteRpcInterface";
-    static interfaceVersion: string;
-    // (undocumented)
-    lockModel(_tokenProps: IModelRpcProps, _modelId: Id64String, _level: LockLevel): Promise<void>;
-    // @deprecated (undocumented)
-    openForWrite(_iModelToken: IModelRpcOpenProps): Promise<IModelConnectionProps>;
-    // (undocumented)
-    pullAndMergeChanges(_tokenProps: IModelRpcProps): Promise<IModelConnectionProps>;
-    // @deprecated (undocumented)
-    pullMergePush(_tokenProps: IModelRpcProps, _comment: string, _doPush: boolean): Promise<GuidString>;
-    // (undocumented)
-    pushChanges(_tokenProps: IModelRpcProps, _description: string): Promise<IModelConnectionProps>;
-    // (undocumented)
-    requestResources(_tokenProps: IModelRpcProps, _elementIds: Id64Array, _modelIds: Id64Array, _opcode: DbOpcode): Promise<void>;
-    // (undocumented)
-    saveChanges(_iModelToken: IModelRpcProps, _description?: string): Promise<void>;
-    // (undocumented)
-    saveThumbnail(_iModelToken: IModelRpcProps, _val: Uint8Array): Promise<void>;
-    // (undocumented)
-    synchConcurrencyControlResourcesCache(_tokenProps: IModelRpcProps): Promise<void>;
-    // @deprecated (undocumented)
-    undoRedo(_rpc: IModelRpcProps, _undo: boolean): Promise<IModelStatus>;
-    // (undocumented)
-    updateProjectExtents(_iModelToken: IModelRpcProps, _newExtents: AxisAlignedBox3dProps): Promise<void>;
-}
 
 // @public
 export interface InformationPartitionElementProps extends ElementProps {
@@ -4503,7 +4446,7 @@ export interface IpcAppFunctions {
     log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
     openBriefcase: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
     openStandalone: (_filePath: string, _openMode: OpenMode, _opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
-    pullAndMergeChanges: (key: string, version?: IModelVersionProps) => Promise<ChangesetIndexAndId>;
+    pullChanges: (key: string, toIndex?: ChangesetIndex) => Promise<ChangesetIndexAndId>;
     pushChanges: (key: string, description: string) => Promise<ChangesetIndexAndId>;
     queryConcurrency: (pool: "io" | "cpu") => Promise<number>;
     // (undocumented)
@@ -4810,14 +4753,12 @@ export type LocalAlignedBox3d = Range3d;
 
 // @public
 export interface LocalBriefcaseProps {
-    briefcaseId: number;
-    changeSetId: ChangesetId;
-    // (undocumented)
-    changesetIndex?: ChangesetIndex;
-    contextId: GuidString;
-    fileName: string;
-    fileSize: number;
-    iModelId: GuidString;
+    readonly briefcaseId: BriefcaseId;
+    readonly changeset: ChangesetIdWithIndex;
+    readonly fileName: LocalFileName;
+    readonly fileSize: number;
+    readonly iModelId: GuidString;
+    readonly iTwinId: GuidString;
 }
 
 // @public (undocumented)
@@ -5187,7 +5128,6 @@ export interface NativeAppFunctions {
     getAccessTokenProps: () => Promise<AccessTokenProps>;
     getBriefcaseFileName: (_props: BriefcaseProps) => Promise<string>;
     getCachedBriefcases: (_iModelId?: GuidString) => Promise<LocalBriefcaseProps[]>;
-    getConfig: () => Promise<any>;
     initializeAuth: (props: ClientRequestContextProps, config?: NativeAppAuthorizationConfiguration) => Promise<number>;
     overrideInternetConnectivity: (_overriddenBy: OverriddenBy, _status: InternetConnectivityStatus) => Promise<void>;
     requestCancelDownloadBriefcase: (_fileName: string) => Promise<boolean>;
@@ -5466,19 +5406,19 @@ export interface OpenAPISchema {
 
 // @public
 export interface OpenBriefcaseOptions {
-    openAsReadOnly?: boolean;
+    readonly openAsReadOnly?: boolean;
 }
 
 // @public
 export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey {
-    fileName: string;
-    readonly?: boolean;
+    readonly fileName: LocalFileName;
+    readonly readonly?: boolean;
 }
 
 // @public
 export interface OpenDbKey {
     // (undocumented)
-    key?: string;
+    readonly key?: string;
 }
 
 // @internal (undocumented)
@@ -6054,6 +5994,7 @@ export class QParams2d {
 // @public
 export class QParams3d {
     clone(out?: QParams3d): QParams3d;
+    computeRange(out?: Range3d): Range3d;
     copyFrom(src: QParams3d): void;
     static fromNormalizedRange(rangeScale?: number): QParams3d;
     static fromOriginAndScale(origin: Point3d, scale: Point3d, out?: QParams3d): QParams3d;
@@ -6658,10 +6599,10 @@ export { RepositoryStatus }
 // @public
 export interface RequestNewBriefcaseProps {
     asOf?: IModelVersionProps;
-    briefcaseId?: number;
-    contextId: GuidString;
-    fileName?: string;
-    iModelId: GuidString;
+    briefcaseId?: BriefcaseId;
+    readonly fileName?: LocalFileName;
+    readonly iModelId: GuidString;
+    readonly iTwinId: GuidString;
 }
 
 // @public (undocumented)
@@ -6735,8 +6676,8 @@ export type RgbFactorProps = number[];
 
 // @public
 export interface RootSubjectProps {
-    description?: string;
-    name: string;
+    readonly description?: string;
+    readonly name: string;
 }
 
 // @public
@@ -7614,9 +7555,11 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface {
 // @public
 export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
     // @internal (undocumented)
-    autoUploadBlocks?: boolean;
+    readonly autoUploadBlocks?: boolean;
     // @internal (undocumented)
-    lazyBlockCache?: boolean;
+    readonly lazyBlockCache?: boolean;
+    // @internal
+    readonly tempFileBase?: string;
 }
 
 // @public
@@ -8218,6 +8161,14 @@ export interface TileContentMetadata {
     readonly sizeMultiplier?: number;
 }
 
+// @internal (undocumented)
+export enum TileContentSource {
+    // (undocumented)
+    Backend = 0,
+    // (undocumented)
+    ExternalCache = 1
+}
+
 // @internal
 export enum TileFormat {
     // (undocumented)
@@ -8282,6 +8233,8 @@ export interface TileOptions {
     readonly ignoreAreaPatterns: boolean;
     // (undocumented)
     readonly maximumMajorTileFormatVersion: number;
+    // (undocumented)
+    readonly optimizeBRepProcessing: boolean;
     // (undocumented)
     readonly useProjectExtents: boolean;
 }
@@ -8366,6 +8319,8 @@ export enum TreeFlags {
     EnforceDisplayPriority = 2,
     // (undocumented)
     None = 0,
+    // (undocumented)
+    OptimizeBRepProcessing = 4,
     // (undocumented)
     UseProjectExtents = 1
 }
@@ -8527,8 +8482,8 @@ export type UpdateCallback = (obj: any, t: number) => void;
 
 // @beta
 export interface UpgradeOptions {
-    domain?: DomainOptions;
-    profile?: ProfileOptions;
+    readonly domain?: DomainOptions;
+    readonly profile?: ProfileOptions;
 }
 
 // @public
@@ -8672,175 +8627,7 @@ export interface ViewDetailsProps {
 }
 
 // @public
-export class ViewFlagOverrides {
-    constructor(flags?: ViewFlags);
-    anyOverridden(): boolean;
-    apply(base: ViewFlags): ViewFlags;
-    clear(): void;
-    // (undocumented)
-    clearClipVolume(): void;
-    clearPresent(flag: ViewFlagPresence): void;
-    // @internal
-    get clipVolumeOverride(): boolean | undefined;
-    clone(out?: ViewFlagOverrides): ViewFlagOverrides;
-    copyFrom(other: ViewFlagOverrides): void;
-    edgesRequired(viewFlags: ViewFlags): boolean;
-    // (undocumented)
-    static fromJSON(props?: ViewFlagOverridesProps): ViewFlagOverrides;
-    isPresent(flag: ViewFlagPresence): boolean;
-    overrideAll(flags?: ViewFlags): void;
-    // (undocumented)
-    setApplyLighting(val: boolean): void;
-    // (undocumented)
-    setEdgeMask(val: number): void;
-    // (undocumented)
-    setForceSurfaceDiscard(val: boolean): void;
-    // (undocumented)
-    setIgnoreGeometryMap(val: boolean): void;
-    // (undocumented)
-    setMonochrome(val: boolean): void;
-    setPresent(flag: ViewFlagPresence): void;
-    // (undocumented)
-    setRenderMode(val: RenderMode): void;
-    // (undocumented)
-    setShowBackgroundMap(val: boolean): void;
-    // (undocumented)
-    setShowClipVolume(val: boolean): void;
-    // (undocumented)
-    setShowConstructions(val: boolean): void;
-    // (undocumented)
-    setShowDimensions(val: boolean): void;
-    // (undocumented)
-    setShowFill(val: boolean): void;
-    // (undocumented)
-    setShowHiddenEdges(val: boolean): void;
-    // (undocumented)
-    setShowMaterials(val: boolean): void;
-    // (undocumented)
-    setShowPatterns(val: boolean): void;
-    // (undocumented)
-    setShowShadows(val: boolean): void;
-    // (undocumented)
-    setShowStyles(val: boolean): void;
-    // (undocumented)
-    setShowTextures(val: boolean): void;
-    // (undocumented)
-    setShowTransparency(val: boolean): void;
-    // (undocumented)
-    setShowVisibleEdges(val: boolean): void;
-    // (undocumented)
-    setShowWeights(val: boolean): void;
-    // (undocumented)
-    setThematicDisplay(val: boolean): void;
-    // (undocumented)
-    setUseHlineMaterialColors(val: boolean): void;
-    // (undocumented)
-    setWhiteOnWhiteReversal(val: boolean): void;
-    // (undocumented)
-    toJSON(): ViewFlagOverridesProps;
-    }
-
-// @public
-export interface ViewFlagOverridesProps {
-    // (undocumented)
-    backgroundMap?: boolean;
-    // (undocumented)
-    clipVolume?: boolean;
-    // (undocumented)
-    constructions?: boolean;
-    // (undocumented)
-    dimensions?: boolean;
-    // (undocumented)
-    edgeMask?: number;
-    // (undocumented)
-    fill?: boolean;
-    // (undocumented)
-    forceSurfaceDiscard?: boolean;
-    // (undocumented)
-    hiddenEdges?: boolean;
-    // (undocumented)
-    hLineMaterialColors?: boolean;
-    // (undocumented)
-    lighting?: boolean;
-    // (undocumented)
-    materials?: boolean;
-    // (undocumented)
-    monochrome?: boolean;
-    // (undocumented)
-    noGeometryMap?: boolean;
-    // (undocumented)
-    patterns?: boolean;
-    // (undocumented)
-    renderMode?: RenderMode;
-    // (undocumented)
-    shadows?: boolean;
-    // (undocumented)
-    styles?: boolean;
-    // (undocumented)
-    textures?: boolean;
-    // (undocumented)
-    thematicDisplay?: boolean;
-    // (undocumented)
-    transparency?: boolean;
-    // (undocumented)
-    visibleEdges?: boolean;
-    // (undocumented)
-    weights?: boolean;
-    // (undocumented)
-    whiteOnWhiteReversal?: boolean;
-}
-
-// @public
-export enum ViewFlagPresence {
-    // (undocumented)
-    BackgroundMap = 20,
-    // (undocumented)
-    ClipVolume = 14,
-    // (undocumented)
-    Constructions = 15,
-    // (undocumented)
-    Dimensions = 1,
-    // (undocumented)
-    EdgeMask = 19,
-    // (undocumented)
-    Fill = 7,
-    // (undocumented)
-    ForceSurfaceDiscard = 21,
-    // (undocumented)
-    GeometryMap = 17,
-    // (undocumented)
-    HiddenEdges = 11,
-    // (undocumented)
-    HlineMaterialColors = 18,
-    // (undocumented)
-    Lighting = 12,
-    // (undocumented)
-    Materials = 9,
-    // (undocumented)
-    Monochrome = 16,
-    // (undocumented)
-    Patterns = 2,
-    // (undocumented)
-    RenderMode = 0,
-    // (undocumented)
-    Shadows = 13,
-    // (undocumented)
-    Styles = 4,
-    // (undocumented)
-    Textures = 8,
-    // (undocumented)
-    ThematicDisplay = 23,
-    // (undocumented)
-    Transparency = 5,
-    // (undocumented)
-    Unused = 6,
-    // (undocumented)
-    VisibleEdges = 10,
-    // (undocumented)
-    Weights = 3,
-    // (undocumented)
-    WhiteOnWhiteReversal = 22
-}
+export type ViewFlagOverrides = Partial<ViewFlagsProperties>;
 
 // @public
 export interface ViewFlagProps {
@@ -8848,12 +8635,9 @@ export interface ViewFlagProps {
     ambientOcclusion?: boolean;
     backgroundMap?: boolean;
     clipVol?: boolean;
-    // @internal
-    edgeMask?: number;
     forceSurfaceDiscard?: boolean;
     grid?: boolean;
     hidEdges?: boolean;
-    hlMatColors?: boolean;
     monochrome?: boolean;
     noCameraLights?: boolean;
     noConstruct?: boolean;
@@ -8868,7 +8652,7 @@ export interface ViewFlagProps {
     noTransp?: boolean;
     noWeight?: boolean;
     noWhiteOnWhiteReversal?: boolean;
-    renderMode?: number;
+    renderMode?: RenderMode;
     shadows?: boolean;
     thematicDisplay?: boolean;
     visEdges?: boolean;
@@ -8876,54 +8660,50 @@ export interface ViewFlagProps {
 
 // @public
 export class ViewFlags {
-    acsTriad: boolean;
-    ambientOcclusion: boolean;
-    backgroundMap: boolean;
-    cameraLights: boolean;
-    clipVolume: boolean;
-    // (undocumented)
-    clone(out?: ViewFlags): ViewFlags;
-    constructions: boolean;
-    // (undocumented)
-    static createFrom(other?: ViewFlags, out?: ViewFlags): ViewFlags;
-    dimensions: boolean;
-    // @internal
-    edgeMask: number;
+    constructor(flags?: Partial<ViewFlagsProperties>);
+    readonly acsTriad: boolean;
+    readonly ambientOcclusion: boolean;
+    readonly backgroundMap: boolean;
+    readonly clipVolume: boolean;
+    readonly constructions: boolean;
+    copy(changedFlags: Partial<ViewFlagsProperties>): ViewFlags;
+    static create(flags?: Partial<ViewFlagsProperties>): ViewFlags;
+    static readonly defaults: ViewFlags;
+    readonly dimensions: boolean;
     edgesRequired(): boolean;
-    // (undocumented)
-    equals(other: ViewFlags): boolean;
-    fill: boolean;
-    forceSurfaceDiscard: boolean;
-    // (undocumented)
+    equals(other: Readonly<ViewFlagsProperties>): boolean;
+    readonly fill: boolean;
+    readonly forceSurfaceDiscard: boolean;
     static fromJSON(json?: ViewFlagProps): ViewFlags;
-    grid: boolean;
-    hiddenEdges: boolean;
+    readonly grid: boolean;
+    readonly hiddenEdges: boolean;
     // @internal (undocumented)
     hiddenEdgesVisible(): boolean;
-    hLineMaterialColors: boolean;
-    get lighting(): boolean;
-    set lighting(enable: boolean);
-    materials: boolean;
-    monochrome: boolean;
+    readonly lighting: boolean;
+    readonly materials: boolean;
+    readonly monochrome: boolean;
     // @internal
-    noGeometryMap: boolean;
-    patterns: boolean;
-    renderMode: RenderMode;
-    shadows: boolean;
-    solarLight: boolean;
-    sourceLights: boolean;
-    styles: boolean;
-    textures: boolean;
-    thematicDisplay: boolean;
+    normalize(): ViewFlags;
+    override(overrides: Partial<ViewFlagsProperties>): ViewFlags;
+    readonly patterns: boolean;
+    readonly renderMode: RenderMode;
+    readonly shadows: boolean;
+    readonly styles: boolean;
+    readonly textures: boolean;
+    readonly thematicDisplay: boolean;
     // @internal
     toFullyDefinedJSON(): Required<ViewFlagProps>;
-    // (undocumented)
     toJSON(): ViewFlagProps;
-    transparency: boolean;
-    visibleEdges: boolean;
-    weights: boolean;
-    whiteOnWhiteReversal: boolean;
+    readonly transparency: boolean;
+    readonly visibleEdges: boolean;
+    readonly weights: boolean;
+    readonly whiteOnWhiteReversal: boolean;
+    with(flag: keyof Omit<ViewFlagsProperties, "renderMode">, value: boolean): ViewFlags;
+    withRenderMode(renderMode: RenderMode): ViewFlags;
 }
+
+// @public
+export type ViewFlagsProperties = Mutable<NonFunctionPropertiesOf<ViewFlags>>;
 
 // @public
 export interface ViewQueryParams extends EntityQueryParams {
@@ -9013,6 +8793,19 @@ export class WebAppRpcRequest extends RpcRequest {
     protected setHeader(name: string, value: string): void;
     protected supplyFetch(): typeof fetch;
     protected supplyRequest(): typeof Request;
+}
+
+// @public
+export interface WhiteOnWhiteReversalProps {
+    ignoreBackgroundColor?: boolean;
+}
+
+// @public
+export class WhiteOnWhiteReversalSettings {
+    equals(other: WhiteOnWhiteReversalSettings): boolean;
+    static fromJSON(props?: WhiteOnWhiteReversalProps): WhiteOnWhiteReversalSettings;
+    readonly ignoreBackgroundColor: boolean;
+    toJSON(): WhiteOnWhiteReversalProps | undefined;
 }
 
 // @internal

@@ -7,7 +7,6 @@
  */
 
 import * as React from "react";
-import { ViewFlags } from "@bentley/imodeljs-common";
 // cSpell:ignore configurableui keyinbrowser
 import {
   FitViewTool, FlyViewTool, IModelApp, MeasureDistanceTool, MeasureLocationTool, PanViewTool, RotateViewTool, SelectionTool, ViewClipByElementTool,
@@ -80,7 +79,7 @@ export class CoreTools {
       iconSpec: FitViewTool.iconSpec,
       label: FitViewTool.flyover,
       description: FitViewTool.description,
-      execute: () => { IModelApp.tools.run(FitViewTool.toolId, IModelApp.viewManager.selectedView, true); },
+      execute: async () => IModelApp.tools.run(FitViewTool.toolId, IModelApp.viewManager.selectedView, true),
     });
   }
 
@@ -90,7 +89,7 @@ export class CoreTools {
       iconSpec: WindowAreaTool.iconSpec,
       label: WindowAreaTool.flyover,
       description: WindowAreaTool.description,
-      execute: () => { IModelApp.tools.run(WindowAreaTool.toolId, IModelApp.viewManager.selectedView); },
+      execute: async () => IModelApp.tools.run(WindowAreaTool.toolId, IModelApp.viewManager.selectedView),
     });
   }
 
@@ -100,7 +99,7 @@ export class CoreTools {
       iconSpec: ZoomViewTool.iconSpec,
       label: ZoomViewTool.flyover,
       description: ZoomViewTool.description,
-      execute: () => { IModelApp.tools.run(ZoomViewTool.toolId, IModelApp.viewManager.selectedView); },
+      execute: async () => IModelApp.tools.run(ZoomViewTool.toolId, IModelApp.viewManager.selectedView),
     });
   }
 
@@ -110,7 +109,7 @@ export class CoreTools {
       iconSpec: PanViewTool.iconSpec,
       label: PanViewTool.flyover,
       description: PanViewTool.description,
-      execute: () => { IModelApp.tools.run(PanViewTool.toolId, IModelApp.viewManager.selectedView); },
+      execute: async () => IModelApp.tools.run(PanViewTool.toolId, IModelApp.viewManager.selectedView),
     });
   }
 
@@ -125,7 +124,7 @@ export class CoreTools {
       }, [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, SyncUiEventId.ViewStateChanged]),
       label: RotateViewTool.flyover,
       description: RotateViewTool.description,
-      execute: () => { IModelApp.tools.run(RotateViewTool.toolId, IModelApp.viewManager.selectedView); },
+      execute: async () => IModelApp.tools.run(RotateViewTool.toolId, IModelApp.viewManager.selectedView),
     });
   }
 
@@ -139,7 +138,7 @@ export class CoreTools {
         const activeContentControl = ContentViewManager.getActiveContentControl();
         return !!activeContentControl?.viewport?.view.is2d();
       }, [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, SyncUiEventId.ViewStateChanged]),
-      execute: () => { IModelApp.tools.run(WalkViewTool.toolId, IModelApp.viewManager.selectedView); },
+      execute: async () => IModelApp.tools.run(WalkViewTool.toolId, IModelApp.viewManager.selectedView),
     });
   }
 
@@ -149,9 +148,7 @@ export class CoreTools {
       iconSpec: SelectionTool.iconSpec,
       label: SelectionTool.flyover,
       description: SelectionTool.description,
-      execute: () => {
-        IModelApp.tools.run(SelectionTool.toolId);
-      },
+      execute: async () => IModelApp.tools.run(SelectionTool.toolId),
     });
   }
 
@@ -170,7 +167,7 @@ export class CoreTools {
         const activeContentControl = ContentViewManager.getActiveContentControl();
         return !(activeContentControl?.viewport?.view.is3d() && activeContentControl?.viewport?.view.supportsCamera());
       }, [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, SyncUiEventId.ViewStateChanged]),
-      execute: () => { IModelApp.tools.run(ViewToggleCameraTool.toolId, IModelApp.viewManager.selectedView); },
+      execute: async () => IModelApp.tools.run(ViewToggleCameraTool.toolId, IModelApp.viewManager.selectedView),
     });
   }
 
@@ -180,7 +177,7 @@ export class CoreTools {
       iconSpec: FlyViewTool.iconSpec,
       label: FlyViewTool.flyover,
       description: FlyViewTool.description,
-      execute: () => { IModelApp.tools.run(FlyViewTool.toolId, IModelApp.viewManager.selectedView); },
+      execute: async () => IModelApp.tools.run(FlyViewTool.toolId, IModelApp.viewManager.selectedView),
     });
   }
 
@@ -198,9 +195,9 @@ export class CoreTools {
       iconSpec: ViewUndoTool.iconSpec,
       label: ViewUndoTool.flyover,
       description: ViewUndoTool.description,
-      execute: () => {
-        IModelApp.tools.run(ViewUndoTool.toolId, IModelApp.viewManager.selectedView);
-      },
+      execute: async () =>
+        IModelApp.tools.run(ViewUndoTool.toolId, IModelApp.viewManager.selectedView)
+      ,
       stateSyncIds: [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, SyncUiEventId.ViewStateChanged],
       stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
         const returnState: BaseItemState = { ...currentState };
@@ -218,7 +215,7 @@ export class CoreTools {
       iconSpec: ViewRedoTool.iconSpec,
       label: ViewRedoTool.flyover,
       description: ViewRedoTool.description,
-      execute: () => { IModelApp.tools.run(ViewRedoTool.toolId, IModelApp.viewManager.selectedView); },
+      execute: async () => IModelApp.tools.run(ViewRedoTool.toolId, IModelApp.viewManager.selectedView),
       isDisabled: new ConditionalBooleanValue(() => {
         const activeContentControl = ContentViewManager.getActiveContentControl();
         if (activeContentControl && activeContentControl.viewport)
@@ -242,9 +239,7 @@ export class CoreTools {
       return;
 
     // Turn on clip volume flag for section tools
-    const viewFlags: ViewFlags = vp.view.viewFlags.clone();
-    viewFlags.clipVolume = true;
-    vp.viewFlags = viewFlags;
+    vp.viewFlags = vp.viewFlags.with("clipVolume", true);
   }
 
   // note current ViewClipByPlaneTool is not automatically registered so the app must call ViewClipByPlaneTool.register();
@@ -254,9 +249,9 @@ export class CoreTools {
       iconSpec: ViewClipByPlaneTool.iconSpec,
       label: ViewClipByPlaneTool.flyover,
       description: ViewClipByPlaneTool.description,
-      execute: () => {
+      execute: async () => {
         this.turnOnClipVolume();
-        IModelApp.tools.run(ViewClipByPlaneTool.toolId, ViewClipDecorationProvider.create());
+        return IModelApp.tools.run(ViewClipByPlaneTool.toolId, ViewClipDecorationProvider.create());
       },
     });
   }
@@ -268,9 +263,9 @@ export class CoreTools {
       iconSpec: ViewClipByElementTool.iconSpec,
       label: ViewClipByElementTool.flyover,
       description: ViewClipByElementTool.description,
-      execute: () => {
+      execute: async () => {
         this.turnOnClipVolume();
-        IModelApp.tools.run(ViewClipByElementTool.toolId, ViewClipDecorationProvider.create());
+        return IModelApp.tools.run(ViewClipByElementTool.toolId, ViewClipDecorationProvider.create());
       },
     });
   }
@@ -282,9 +277,9 @@ export class CoreTools {
       iconSpec: ViewClipByRangeTool.iconSpec,
       label: ViewClipByRangeTool.flyover,
       description: ViewClipByRangeTool.description,
-      execute: () => {
+      execute: async () => {
         this.turnOnClipVolume();
-        IModelApp.tools.run(ViewClipByRangeTool.toolId, ViewClipDecorationProvider.create());
+        return IModelApp.tools.run(ViewClipByRangeTool.toolId, ViewClipDecorationProvider.create());
       },
     });
   }
@@ -296,9 +291,9 @@ export class CoreTools {
       iconSpec: ViewClipByShapeTool.iconSpec,
       label: ViewClipByShapeTool.flyover,
       description: ViewClipByShapeTool.description,
-      execute: () => {
+      execute: async () => {
         this.turnOnClipVolume();
-        IModelApp.tools.run(ViewClipByShapeTool.toolId, ViewClipDecorationProvider.create());
+        return IModelApp.tools.run(ViewClipByShapeTool.toolId, ViewClipDecorationProvider.create());
       },
     });
   }
@@ -367,8 +362,8 @@ export class CoreTools {
       iconSpec: MeasureDistanceTool.iconSpec,
       label: MeasureDistanceTool.flyover,
       description: MeasureDistanceTool.description,
-      execute: () => {
-        IModelApp.tools.run(MeasureDistanceTool.toolId);
+      execute: async () => {
+        return IModelApp.tools.run(MeasureDistanceTool.toolId);
       },
     });
   }
@@ -380,8 +375,8 @@ export class CoreTools {
       iconSpec: MeasureLocationTool.iconSpec,
       label: MeasureLocationTool.flyover,
       description: MeasureLocationTool.description,
-      execute: () => {
-        IModelApp.tools.run(MeasureLocationTool.toolId);
+      execute: async () => {
+        return IModelApp.tools.run(MeasureLocationTool.toolId);
       },
     });
   }
@@ -416,7 +411,7 @@ export class CoreTools {
         if (tool)
           tool.onRestartTool();
         else
-          IModelApp.toolAdmin.startDefaultTool();
+          IModelApp.toolAdmin.startDefaultTool();// eslint-disable-line @typescript-eslint/no-floating-promises
       },
     });
   }
@@ -427,8 +422,8 @@ export class CoreTools {
       iconSpec: RestoreFrontstageLayoutTool.iconSpec,
       label: RestoreFrontstageLayoutTool.flyover,
       description: RestoreFrontstageLayoutTool.description,
-      execute: () => {
-        IModelApp.tools.run(RestoreFrontstageLayoutTool.toolId);
+      execute: async () => {
+        return IModelApp.tools.run(RestoreFrontstageLayoutTool.toolId);
       },
     });
   }

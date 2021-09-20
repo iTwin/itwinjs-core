@@ -26,8 +26,10 @@ exports[`NavigationWidget localStorage Wrapper NavigationWidget NavigationWidget
     NavigationWidgetDef {
       "_canPopout": undefined,
       "_classId": undefined,
+      "_defaultFloatingPosition": undefined,
       "_defaultState": 4,
       "_fillZone": false,
+      "_floatingContainerId": undefined,
       "_handleSyncUiEvent": [Function],
       "_id": "navigationWidget",
       "_isFloatingStateSupported": false,

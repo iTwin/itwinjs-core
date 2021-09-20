@@ -3,37 +3,34 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
-import * as os from "os";
 import * as path from "path";
-import { BackendApplicationInsightsClient } from "@bentley/backend-application-insights-client";
-import { Config, Logger, ProcessDetector } from "@bentley/bentleyjs-core";
-import { IModelHost } from "@bentley/imodeljs-backend";
+import { Logger, ProcessDetector } from "@bentley/bentleyjs-core";
 import { Presentation } from "@bentley/presentation-backend";
-import { initializeLogging, initializeWeb } from "./web/BackendServer";
+import { initializeLogging } from "./logging";
+import { initializeWeb } from "./web/BackendServer";
 import { initializeElectron } from "./electron/ElectronMain";
+import { loggerCategory } from "../common/TestAppConfiguration";
+import { AndroidHost, IOSHost } from "@bentley/mobile-manager/lib/MobileBackend";
+import { getSupportedRpcs } from "../common/rpcs";
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   try {
-    // Load .env file first so it's added to `Config.App` below when it parses the environment variables.
+    // Load .env file first
     if (fs.existsSync(path.join(process.cwd(), ".env"))) {
       require("dotenv-expand")( // eslint-disable-line @typescript-eslint/no-var-requires
         require("dotenv").config(), // eslint-disable-line @typescript-eslint/no-var-requires
       );
     }
 
-    if (!ProcessDetector.isElectronAppBackend) {
-      initializeLogging();
-    }
-
-    const iModelJsApplicationInsightsKey = Config.App.getString("imjs_telemetry_application_insights_instrumentation_key", "");
-    if (iModelJsApplicationInsightsKey) {
-      const applicationInsightsClient = new BackendApplicationInsightsClient({ applicationInsightsKey: iModelJsApplicationInsightsKey, backendMachineName: os.hostname(), backendApplicationId: IModelHost.applicationId, backendApplicationVersion: IModelHost.applicationVersion });
-      IModelHost.telemetry.addClient(applicationInsightsClient);
-    }
+    initializeLogging();
 
     // invoke platform-specific initialization
     if (ProcessDetector.isElectronAppBackend) {
       await initializeElectron();
+    } else if (ProcessDetector.isIOSAppBackend) {
+      await IOSHost.startup({ mobileHost: { rpcInterfaces: getSupportedRpcs() } });
+    } else if (ProcessDetector.isAndroidAppBackend) {
+      await AndroidHost.startup({ mobileHost: { rpcInterfaces: getSupportedRpcs() } });
     } else {
       await initializeWeb();
     }
@@ -47,7 +44,7 @@ import { initializeElectron } from "./electron/ElectronMain";
       updatesPollInterval: 100,
     });
   } catch (error) {
-    Logger.logError("ui-test-app", error);
+    Logger.logError(loggerCategory, error);
     process.exitCode = 1;
   }
 })();

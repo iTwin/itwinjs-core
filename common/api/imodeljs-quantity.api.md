@@ -509,6 +509,9 @@ export interface UnitsProvider {
     getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
 }
 
+// @beta
+export type UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey";
+
 
 // (No @packageDocumentation comment for this package)
 

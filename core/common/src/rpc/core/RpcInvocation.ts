@@ -145,7 +145,7 @@ export class RpcInvocation {
 
     for (let i = 0; i !== parameters.length; ++i) {
       const parameter = parameters[i];
-      const isToken = typeof (parameter) === "object" && parameter !== null && parameter.hasOwnProperty("iModelId") && parameter.hasOwnProperty("contextId");
+      const isToken = typeof (parameter) === "object" && parameter !== null && parameter.hasOwnProperty("iModelId") && parameter.hasOwnProperty("iTwinId");
       if (isToken && this.protocol.checkToken && !this.operation.policy.allowTokenMismatch) {
         const inflated = this.protocol.inflateToken(parameter, this.request);
         parameters[i] = inflated;
@@ -163,10 +163,9 @@ export class RpcInvocation {
 
   private static compareTokens(a: IModelRpcProps, b: IModelRpcProps): boolean {
     return a.key === b.key &&
-      a.contextId === b.contextId &&
+      a.iTwinId === b.iTwinId &&
       a.iModelId === b.iModelId &&
-      (undefined === a.changeSetId || (a.changeSetId === b.changeSetId)) &&
-      a.openMode === b.openMode;
+      (undefined === a.changeset || (a.changeset.id === b.changeset?.id));
   }
 
   private async reject(error: any): Promise<any> {

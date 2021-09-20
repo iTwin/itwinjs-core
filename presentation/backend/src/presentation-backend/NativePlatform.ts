@@ -8,10 +8,11 @@
 
 import { ClientRequestContext, IDisposable } from "@bentley/bentleyjs-core";
 import { IModelDb, IModelHost, IModelJsNative } from "@bentley/imodeljs-backend";
+import { FormatProps } from "@bentley/imodeljs-quantity";
 import {
   DiagnosticsScopeLogs, PresentationError, PresentationStatus, UpdateInfoJSON, VariableValue, VariableValueJSON, VariableValueTypes,
 } from "@bentley/presentation-common";
-import { HierarchyCacheMode, PresentationManagerMode, UnitSystemFormat } from "./PresentationManager";
+import { HierarchyCacheMode, PresentationManagerMode } from "./PresentationManager";
 
 /** @internal */
 export enum NativePlatformRequestTypes {
@@ -21,7 +22,7 @@ export enum NativePlatformRequestTypes {
   GetChildrenCount = "GetChildrenCount",
   GetNodePaths = "GetNodePaths",
   GetFilteredNodePaths = "GetFilteredNodePaths",
-  LoadHierarchy = "LoadHierarchy",
+  GetContentSources = "GetContentSources",
   GetContentDescriptor = "GetContentDescriptor",
   GetContentSetSize = "GetContentSetSize",
   GetContent = "GetContent",
@@ -29,6 +30,25 @@ export enum NativePlatformRequestTypes {
   GetPagedDistinctValues = "GetPagedDistinctValues",
   GetDisplayLabel = "GetDisplayLabel",
   CompareHierarchies = "CompareHierarchies",
+}
+
+/**
+ * Enumeration of unit systems supported by native presentation manager.
+ * @internal
+ */
+export enum NativePresentationUnitSystem {
+  Metric = "metric",
+  BritishImperial = "british-imperial",
+  UsCustomary = "us-customary",
+  UsSurvey = "us-survey",
+}
+
+/** @internal */
+export interface NativePresentationDefaultUnitFormats {
+  [phenomenon: string]: {
+    unitSystems: NativePresentationUnitSystem[];
+    format: FormatProps;
+  };
 }
 
 /** @internal */
@@ -70,7 +90,7 @@ export interface DefaultNativePlatformProps {
   isChangeTrackingEnabled: boolean;
   cacheConfig?: IModelJsNative.ECPresentationHierarchyCacheConfig;
   contentCacheSize?: number;
-  defaultFormats?: { [phenomenon: string]: UnitSystemFormat };
+  defaultFormats?: NativePresentationDefaultUnitFormats;
   useMmap?: boolean | number;
 }
 
@@ -93,7 +113,7 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
         default: return PresentationStatus.Error;
       }
     }
-    private getSerializedDefaultFormatsMap(defaultMap: { [phenomenon: string]: UnitSystemFormat }) {
+    private getSerializedDefaultFormatsMap(defaultMap: NativePresentationDefaultUnitFormats) {
       const res: {
         [phenomenon: string]: {
           unitSystems: string[];

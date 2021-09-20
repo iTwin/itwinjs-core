@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
-import { Icon, Slider } from "@bentley/ui-core";
+import { Icon } from "@bentley/ui-core";
 import { ConfigurableCreateInfo, ConfigurableUiManager, ToolSettingsEntry, ToolSettingsGrid, ToolUiProvider } from "@bentley/ui-framework";
-import { Input } from "@itwin/itwinui-react";
+import { Input, Slider } from "@itwin/itwinui-react";
 
 function showSliderValues(values: ReadonlyArray<number>) {
   const msg = `Slider values: ${values}`;
@@ -19,9 +19,14 @@ function FancySlider() {
   }, []);
   const handleFormatTip = React.useCallback((value: number) => Math.round(value).toString(), []);
   return (
-    <Slider style={{ minWidth: "160px" }} min={0} max={100} values={[30, 70]} step={5} mode={2}
-      showTicks getTickCount={() => 10}
-      showTooltip tooltipBelow formatTooltip={handleFormatTip}
+    <Slider style={{ minWidth: "160px", marginTop: "22px" }} min={0} max={100} values={[30, 70]} step={5}
+      tickLabels={["", "", "", "", "", "", "", "", "", ""]}
+      tooltipProps={(_, val) => {
+        return {
+          placement: "bottom",
+          content: handleFormatTip(val),
+        };
+      }}
       onChange={handleSliderChange} />
   );
 }
@@ -31,8 +36,13 @@ function BasicSlider() {
     showSliderValues(values);
   }, []);
   return (
-    <Slider style={{ minWidth: "160px" }} min={0} max={100} values={[50]} step={1} showMinMax={true} maxImage={<Icon iconSpec="icon-placeholder" />}
-      showTooltip tooltipBelow onChange={handleSliderChange} />
+    <Slider style={{ minWidth: "160px" }} min={0} max={100} values={[50]} step={1} maxLabel={<Icon iconSpec="icon-placeholder" />}
+      tooltipProps={() => {
+        return {
+          placement: "bottom",
+        };
+      }}
+      onChange={handleSliderChange} />
   );
 }
 

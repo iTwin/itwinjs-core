@@ -27,13 +27,9 @@ steps:
 
       node ./common/scripts/install-run-rush build -v --to context-registry-client
 
-      node ./common/scripts/install-run-rush build -v --to extension-client
-
       node ./common/scripts/install-run-rush build -v --to product-settings-client
 
       node ./common/scripts/install-run-rush build -v --to reality-data-client
-
-      node ./common/scripts/install-run-rush build -v --to usage-logging-client
 
       node ./common/scripts/install-run-rush build -v --to imodeljs-backend
 
@@ -54,18 +50,8 @@ steps:
     condition: succeededOrFailed()
 
   - script: "npm run test:integration"
-    workingDirectory: clients/extension
-    displayName: "Run Extension Client Tests"
-    condition: succeededOrFailed()
-
-  - script: "npm run test:integration"
     workingDirectory: clients/reality-data
     displayName: "Run Reality Data Client Tests"
-    condition: succeededOrFailed()
-
-  - script: "npm run test:integration"
-    workingDirectory: "clients/usage-logging"
-    displayName: "Run Usage Logging Tests"
     condition: succeededOrFailed()
 
   - script: "npm run test:integration"
@@ -112,14 +98,6 @@ steps:
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2
-    displayName: "Publish Extension Clients Test Results"
-    inputs:
-      testResultsFiles: "clients/extension/lib/test/junit_results.xml"
-      testRunTitle: "Client - Extension Tests - ${{ parameters.Node_Version }}"
-    continueOnError: true
-    condition: succeededOrFailed()
-
-  - task: PublishTestResults@2
     displayName: "Publish Product Settings Clients Test Results"
     inputs:
       testResultsFiles: "clients/product-settings/lib/test/junit_results.xml"
@@ -132,14 +110,6 @@ steps:
     inputs:
       testResultsFiles: "clients/reality-data/lib/test/junit_results.xml"
       testRunTitle: "Client - Reality Data Tests - ${{ parameters.Node_Version }}"
-    continueOnError: true
-    condition: succeededOrFailed()
-
-  - task: PublishTestResults@2
-    displayName: "Publish Usage Logging Clients Test Results"
-    inputs:
-      testResultsFiles: "clients/usage-logging/lib/test/junit_results.xml"
-      testRunTitle: "Client - Usage Logging Tests - ${{ parameters.Node_Version }}"
     continueOnError: true
     condition: succeededOrFailed()
 

@@ -9,10 +9,10 @@
 import {
   assert, BentleyStatus, compareNumbers, compareStrings, compareStringsOrUndefined, CompressedId64Set, Guid, Id64String,
 } from "@bentley/bentleyjs-core";
-import { Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@bentley/geometry-core";
+import { Angle, Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@bentley/geometry-core";
 import {
   Cartographic, GeoCoordStatus, IModelError, PlanarClipMaskPriority, PlanarClipMaskSettings,
-  SpatialClassifiers, ViewFlagOverrides, ViewFlagPresence,
+  SpatialClassifiers, ViewFlagOverrides,
 } from "@bentley/imodeljs-common";
 import { AccessToken, request, RequestOptions } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
@@ -123,8 +123,66 @@ const earthEllipsoid = Ellipsoid.createCenterMatrixRadii(zeroPoint, undefined, C
 const scratchRay = Ray3d.createXAxis();
 
 /** @internal */
+export class RealityTileRegion {
+  constructor(values: { minLongitude: number, minLatitude: number, minHeight: number, maxLongitude: number, maxLatitude: number, maxHeight: number }) {
+    this.minLongitude = values.minLongitude;
+    this.minLatitude = values.minLatitude;
+    this.minHeight = values.minHeight;
+    this.maxLongitude = values.maxLongitude;
+    this.maxLatitude = values.maxLatitude;
+    this.maxHeight = values.maxHeight;
+  }
+  public minLongitude: number;
+  public minLatitude: number;
+  public minHeight: number;
+  public maxLongitude: number;
+  public maxLatitude: number;
+  public maxHeight: number;
+
+  public static create(region: number[]): RealityTileRegion {
+    const minHeight = region[4];
+    const maxHeight = region[5];
+    const minLongitude = region[0];
+    const maxLongitude = region[2];
+    const minLatitude = Cartographic.parametricLatitudeFromGeodeticLatitude(region[1]);
+    const maxLatitude = Cartographic.parametricLatitudeFromGeodeticLatitude(region[3]);
+    return new RealityTileRegion({ minLongitude, minLatitude, minHeight, maxLongitude, maxLatitude, maxHeight });
+  }
+
+  public static isGlobal(boundingVolume: any) {
+    return Array.isArray(boundingVolume?.region) && (boundingVolume.region[2] - boundingVolume.region[0]) > Angle.piRadians && (boundingVolume.region[3] - boundingVolume.region[1]) > Angle.piOver2Radians;
+  }
+  public getRange(): { range: Range3d, corners?: Point3d[] } {
+    const maxAngle = Math.max(Math.abs(this.maxLatitude - this.minLatitude), Math.abs(this.maxLongitude - this.minLongitude));
+    let corners;
+    let range: Range3d;
+    if (maxAngle < Math.PI / 8) {
+      corners = new Array<Point3d>(8);
+      const chordTolerance = (1 - Math.cos(maxAngle / 2)) * Constant.earthRadiusWGS84.polar;
+      const addEllipsoidCorner = ((long: number, lat: number, index: number) => {
+        const ray = earthEllipsoid.radiansToUnitNormalRay(long, lat, scratchRay)!;
+        corners[index] = ray.fractionToPoint(this.minHeight - chordTolerance);
+        corners[index + 4] = ray.fractionToPoint(this.maxHeight + chordTolerance);
+      });
+      addEllipsoidCorner(this.minLongitude, this.minLatitude, 0);
+      addEllipsoidCorner(this.minLongitude, this.maxLatitude, 1);
+      addEllipsoidCorner(this.maxLongitude, this.minLatitude, 2);
+      addEllipsoidCorner(this.maxLongitude, this.maxLatitude, 3);
+      range = Range3d.createArray(corners);
+    } else {
+      const minEq = Constant.earthRadiusWGS84.equator + this.minHeight, maxEq = Constant.earthRadiusWGS84.equator + this.maxHeight;
+      const minEllipsoid = Ellipsoid.createCenterMatrixRadii(zeroPoint, undefined, minEq, minEq, Constant.earthRadiusWGS84.polar + this.minHeight);
+      const maxEllipsoid = Ellipsoid.createCenterMatrixRadii(zeroPoint, undefined, maxEq, maxEq, Constant.earthRadiusWGS84.polar + this.maxHeight);
+      range = minEllipsoid.patchRangeStartEndRadians(this.minLongitude, this.maxLongitude, this.minLatitude, this.maxLatitude);
+      range.extendRange(maxEllipsoid.patchRangeStartEndRadians(this.minLongitude, this.maxLongitude, this.minLatitude, this.maxLatitude));
+    }
+    return { range, corners };
+  }
+}
+
+/** @internal */
 export class RealityModelTileUtils {
-  public static rangeFromBoundingVolume(boundingVolume: any): { range: Range3d, corners?: Point3d[] } | undefined {
+  public static rangeFromBoundingVolume(boundingVolume: any): { range: Range3d, corners?: Point3d[], region?: RealityTileRegion } | undefined {
     if (undefined === boundingVolume)
       return undefined;
 
@@ -151,34 +209,9 @@ export class RealityModelTileUtils {
       const radius = sphere[3];
       range = Range3d.createXYZXYZ(center.x - radius, center.y - radius, center.z - radius, center.x + radius, center.y + radius, center.z + radius);
     } else if (Array.isArray(boundingVolume.region)) {
-      const minHeight = boundingVolume.region[4];
-      const maxHeight = boundingVolume.region[5];
-      const minLongitude = boundingVolume.region[0];
-      const maxLongitude = boundingVolume.region[2];
-      const minLatitude = Cartographic.parametricLatitudeFromGeodeticLatitude(boundingVolume.region[1]);
-      const maxLatitude = Cartographic.parametricLatitudeFromGeodeticLatitude(boundingVolume.region[3]);
-      const maxAngle = Math.max(Math.abs(maxLatitude - minLatitude), Math.abs(maxLongitude - minLongitude));
-
-      if (maxAngle < Math.PI / 8) {
-        corners = new Array<Point3d>(8);
-        const chordTolerance = (1 - Math.cos(maxAngle / 2)) * Constant.earthRadiusWGS84.polar;
-        const addEllipsoidCorner = ((long: number, lat: number, index: number) => {
-          const ray = earthEllipsoid.radiansToUnitNormalRay(long, lat, scratchRay)!;
-          corners![index] = ray.fractionToPoint(minHeight - chordTolerance);
-          corners![index + 4] = ray.fractionToPoint(maxHeight + chordTolerance);
-        });
-        addEllipsoidCorner(minLongitude, minLatitude, 0);
-        addEllipsoidCorner(minLongitude, maxLatitude, 1);
-        addEllipsoidCorner(maxLongitude, minLatitude, 2);
-        addEllipsoidCorner(maxLongitude, maxLatitude, 3);
-        range = Range3d.createArray(corners);
-      } else {
-        const minEq = Constant.earthRadiusWGS84.equator + minHeight, maxEq = Constant.earthRadiusWGS84.equator + maxHeight;
-        const minEllipsoid = Ellipsoid.createCenterMatrixRadii(zeroPoint, undefined, minEq, minEq, Constant.earthRadiusWGS84.polar + minHeight);
-        const maxEllipsoid = Ellipsoid.createCenterMatrixRadii(zeroPoint, undefined, maxEq, maxEq, Constant.earthRadiusWGS84.polar + maxHeight);
-        range = minEllipsoid.patchRangeStartEndRadians(minLongitude, maxLongitude, minLatitude, maxLatitude);
-        range.extendRange(maxEllipsoid.patchRangeStartEndRadians(minLongitude, maxLongitude, minLatitude, maxLatitude));
-      }
+      const region = RealityTileRegion.create(boundingVolume.region);
+      const regionRange = region.getRange();
+      return { range: regionRange.range, corners: regionRange.corners, region };
     }
     return range ? { range, corners } : undefined;
 
@@ -255,16 +288,16 @@ class RealityModelTileProps implements RealityTileParams {
   public readonly parent?: RealityTile;
   public readonly noContentButTerminateOnSelection?: boolean;
   public readonly rangeCorners?: Point3d[];
-  public readonly boundedByRegion;
+  public readonly region?: RealityTileRegion;
 
   constructor(json: any, parent: RealityTile | undefined, thisId: string, transformToRoot?: Transform, additiveRefinement?: boolean) {
     this.contentId = thisId;
     this.parent = parent;
     const boundingVolume = RealityModelTileUtils.rangeFromBoundingVolume(json.boundingVolume);
-    this.boundedByRegion = json.boundingVolume.region !== undefined;
     if (boundingVolume) {
       this.range = boundingVolume.range;
       this.rangeCorners = boundingVolume.corners;
+      this.region = boundingVolume?.region;
     } else {
       this.range = Range3d.createNull();
       assert(false, "Unbounded tile");
@@ -351,9 +384,14 @@ class RealityModelTileLoader extends RealityTileLoader {
     super();
     this.tree = tree;
     this._batchedIdMap = batchedIdMap;
-    this._viewFlagOverrides = createDefaultViewFlagOverrides({ lighting: true });
-    this._viewFlagOverrides.clearPresent(ViewFlagPresence.VisibleEdges);      // Display these if they are present (Cesium outline extension)
-    this._viewFlagOverrides.clearPresent(ViewFlagPresence.HiddenEdges);
+    let clipVolume;
+    if (RealityTileRegion.isGlobal(tree.tilesetJson.boundingVolume))
+      clipVolume = false;
+    this._viewFlagOverrides = createDefaultViewFlagOverrides({ lighting: true, clipVolume });
+
+    // Display edges if they are present (Cesium outline extension) and enabled for view.
+    this._viewFlagOverrides.visibleEdges = undefined;
+    this._viewFlagOverrides.hiddenEdges = undefined;
   }
 
   public get doDrapeBackgroundMap(): boolean { return this.tree.doDrapeBackgroundMap; }
@@ -602,7 +640,7 @@ export namespace RealityModelTileTree {
     if (!url)
       throw new IModelError(BentleyStatus.ERROR, "Unable to read reality data");
     const accessToken = await getAccessToken();
-    const tileClient = new RealityModelTileClient(url, accessToken, iModel.contextId);
+    const tileClient = new RealityModelTileClient(url, accessToken, iModel.iTwinId);
     const json = await tileClient.getRootDocument(url);
     let rootTransform = iModel.ecefLocation ? iModel.getMapEcefToDb(0) : Transform.createIdentity();
     const geoConverter = iModel.noGcsDefined ? undefined : iModel.geoServices.getConverter("WGS84");
@@ -691,7 +729,7 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
       const elevationBias = context.viewport.view.displayStyle.backgroundMapElevationBias;
 
       if (undefined !== elevationBias)
-        drawArgs.location.origin.z += elevationBias;
+        drawArgs.location.origin.z -= elevationBias;
     }
 
     return drawArgs;
@@ -802,10 +840,10 @@ export class RealityModelTileClient {
 
   // ###TODO we should be able to pass the projectId / tileId directly, instead of parsing the url
   // But if the present can also be used by non PW Context Share stored data then the url is required and token is not. Possibly two classes inheriting from common interface.
-  constructor(url: string, accessToken?: AccessToken, contextId?: string) {
+  constructor(url: string, accessToken?: AccessToken, iTwinId?: string) {
     this.rdsProps = this.parseUrl(url); // Note that returned is undefined if url does not refer to a PW Context Share reality data.
-    if (contextId && this.rdsProps)
-      this.rdsProps.projectId = contextId;
+    if (iTwinId && this.rdsProps)
+      this.rdsProps.projectId = iTwinId;
     this._token = accessToken;
   }
 

@@ -7,11 +7,11 @@
  */
 
 import {
-  assert, BeDuration, BeEvent, BeTimePoint, Id64Array, ProcessDetector,
+  assert, BeDuration, BeEvent, BentleyStatus, BeTimePoint, Id64Array, IModelStatus, ProcessDetector,
 } from "@bentley/bentleyjs-core";
 import {
-  CloudStorageTileCache, defaultTileOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelTileRpcInterface,
-  IModelTileTreeProps, RpcOperation, RpcResponseCacheControl, ServerTimeoutError, TileVersionInfo,
+  BackendError, CloudStorageTileCache, defaultTileOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelError, IModelTileRpcInterface,
+  IModelTileTreeProps, RpcOperation, RpcResponseCacheControl, ServerTimeoutError, TileContentSource, TileVersionInfo,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IpcApp } from "../IpcApp";
@@ -131,6 +131,8 @@ export class TileAdmin {
   /** @internal */
   public readonly useProjectExtents: boolean;
   /** @internal */
+  public readonly optimizeBRepProcessing: boolean;
+  /** @internal */
   public readonly maximumLevelsToSkip: number;
   /** @internal */
   public readonly mobileRealityTileMinToleranceRatio: number;
@@ -214,6 +216,7 @@ export class TileAdmin {
     this.alwaysSubdivideIncompleteTiles = options.alwaysSubdivideIncompleteTiles ?? defaultTileOptions.alwaysSubdivideIncompleteTiles;
     this.maximumMajorTileFormatVersion = options.maximumMajorTileFormatVersion ?? defaultTileOptions.maximumMajorTileFormatVersion;
     this.useProjectExtents = options.useProjectExtents ?? defaultTileOptions.useProjectExtents;
+    this.optimizeBRepProcessing = options.optimizeBRepProcessing ?? defaultTileOptions.optimizeBRepProcessing;
     this.mobileRealityTileMinToleranceRatio = Math.max(options.mobileRealityTileMinToleranceRatio ?? 3.0, 1.0);
 
     const gpuMemoryLimits = options.gpuMemoryLimits;
@@ -585,14 +588,28 @@ export class TileAdmin {
   public async generateTileContent(tile: IModelTile): Promise<Uint8Array> {
     this.initializeRpc();
     const props = this.getTileRequestProps(tile);
-    return IModelTileRpcInterface.getClient().generateTileContent(props.tokenProps, props.treeId, props.contentId, props.guid);
+    const retrieveMethod = await IModelTileRpcInterface.getClient().generateTileContent(props.tokenProps, props.treeId, props.contentId, props.guid);
+    if (tile.request?.isCanceled) {
+      // the content is no longer needed, return an empty array.
+      return new Uint8Array();
+    }
+
+    if (retrieveMethod === TileContentSource.ExternalCache) {
+      const tileContent = await this.requestCachedTileContent(tile);
+      if (tileContent === undefined)
+        throw new IModelError(IModelStatus.NoContent, "Failed to fetch generated tile from external cache");
+      return tileContent;
+    } else if (retrieveMethod === TileContentSource.Backend) {
+      return IModelTileRpcInterface.getClient().retrieveTileContent(props.tokenProps, this.getTileRequestProps(tile));
+    }
+    throw new BackendError(BentleyStatus.ERROR, "", "Invalid response from RPC backend");
   }
 
   /** @internal */
   private getTileRequestProps(tile: IModelTile) {
     const tree = tile.iModelTree;
     const tokenProps = tree.iModel.getRpcProps();
-    let guid = tree.geometryGuid || tokenProps.changeSetId || "first";
+    let guid = tree.geometryGuid || tokenProps.changeset?.id || "first";
     if (tree.contentIdQualifier)
       guid = `${guid}_${tree.contentIdQualifier}`;
 
@@ -819,7 +836,7 @@ export class TileAdmin {
     const retryInterval = this._retryInterval;
     RpcOperation.lookup(IModelTileRpcInterface, "requestTileTreeProps").policy.retryInterval = () => retryInterval;
 
-    const policy = RpcOperation.lookup(IModelTileRpcInterface, "requestTileContent").policy;
+    const policy = RpcOperation.lookup(IModelTileRpcInterface, "generateTileContent").policy;
     policy.retryInterval = () => retryInterval;
     policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable;
 
@@ -943,6 +960,12 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      * @internal
      */
     useProjectExtents?: boolean;
+
+    /** When producing facets from BRep entities, use an optimized pipeline to improve performance.
+     * Default value: true
+     * @internal
+     */
+    optimizeBRepProcessing?: boolean;
 
     /** The minimum number of seconds to keep a Tile in memory after it has become unused.
      * Each tile has an expiration timer. Each time tiles are selected for drawing in a view, if we decide to draw a tile we reset its expiration timer.

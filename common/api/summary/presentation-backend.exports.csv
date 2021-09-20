@@ -1,14 +1,11 @@
 sep=;
 Release Tag;API Item
 beta;DiskHierarchyCacheConfig 
-beta;DuplicateRulesetHandlingStrategy
-deprecated;DuplicateRulesetHandlingStrategy
 internal;getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined
 beta;HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig
 beta;HierarchyCacheConfigBase
 beta;HierarchyCacheMode
 beta;HybridCacheConfig 
-internal;isEnum
 beta;MemoryHierarchyCacheConfig 
 internal;normalizeVersion(version?: string): string
 public;Presentation
@@ -28,5 +25,5 @@ public;RulesetManager
 internal;RulesetManagerImpl 
 public;RulesetVariablesManager
 internal;RulesetVariablesManagerImpl 
-alpha;UnitSystemFormat
+public;UnitSystemFormat
 public;WithClientRequestContext

@@ -15,7 +15,8 @@ import { ModelessDialog } from "../dialog/ModelessDialog";
 import { AccuDrawFieldContainer } from "./AccuDrawFieldContainer";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 
-/** @alpha */
+/** Properties for [[AccuDrawDialog]]
+ * @beta */
 export interface AccuDrawDialogProps extends CommonProps {
   /** Indicates whether the dialog is open */
   opened: boolean;
@@ -27,7 +28,8 @@ export interface AccuDrawDialogProps extends CommonProps {
   onClose?: () => void;
 }
 
-/** @alpha */
+/** Dialog displays [[AccuDrawFieldContainer]] for AccuDraw Ui
+ * @beta */
 export function AccuDrawDialog(props: AccuDrawDialogProps) {
   const title = React.useRef(UiFramework.translate("accuDraw.dialogTitle"));
   const [opened, setOpened] = React.useState(props.opened);

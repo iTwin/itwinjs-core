@@ -36,9 +36,8 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return RpcBriefcaseUtility.openWithTimeout(requestContext, tokenProps, SyncMode.FixedVersion);
   }
 
-  public async close(tokenProps: IModelRpcProps): Promise<boolean> {
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    return RpcBriefcaseUtility.close(requestContext, tokenProps);
+  public async close(_tokenProps: IModelRpcProps): Promise<boolean> {
+    return true;
   }
 
   public async queryRows(tokenProps: IModelRpcProps, ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string, abbreviateBlobs?: boolean): Promise<QueryResponse> {
@@ -199,7 +198,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     const iModelDb: IModelDb = await RpcBriefcaseUtility.findOrOpen(requestContext, tokenProps, SyncMode.FixedVersion);
     requestContext.enter();
-    return iModelDb.requestSnap(requestContext, sessionId, props);
+    return iModelDb.requestSnap(sessionId, props);
   }
 
   public async cancelSnap(tokenProps: IModelRpcProps, sessionId: string): Promise<void> {
@@ -213,14 +212,14 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     const iModelDb: IModelDb = await RpcBriefcaseUtility.findOrOpen(requestContext, tokenProps, SyncMode.FixedVersion);
     requestContext.enter();
-    return iModelDb.getGeometryContainment(requestContext, props);
+    return iModelDb.getGeometryContainment(props);
   }
 
   public async getMassProperties(tokenProps: IModelRpcProps, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     const iModelDb: IModelDb = await RpcBriefcaseUtility.findOrOpen(requestContext, tokenProps, SyncMode.FixedVersion);
     requestContext.enter();
-    return iModelDb.getMassProperties(requestContext, props);
+    return iModelDb.getMassProperties(props);
   }
 
   public async getToolTipMessage(tokenProps: IModelRpcProps, id: string): Promise<string[]> {
@@ -268,13 +267,13 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   public async getIModelCoordinatesFromGeoCoordinates(tokenProps: IModelRpcProps, props: string): Promise<IModelCoordinatesResponseProps> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     const iModelDb = await RpcBriefcaseUtility.findOrOpen(requestContext, tokenProps, SyncMode.FixedVersion);
-    return iModelDb.getIModelCoordinatesFromGeoCoordinates(requestContext, props);
+    return iModelDb.getIModelCoordinatesFromGeoCoordinates(props);
   }
 
   public async getGeoCoordinatesFromIModelCoordinates(tokenProps: IModelRpcProps, props: string): Promise<GeoCoordinatesResponseProps> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     const iModelDb = await RpcBriefcaseUtility.findOrOpen(requestContext, tokenProps, SyncMode.FixedVersion);
-    return iModelDb.getGeoCoordinatesFromIModelCoordinates(requestContext, props);
+    return iModelDb.getGeoCoordinatesFromIModelCoordinates(props);
   }
 
   public async getTextureImage(tokenProps: IModelRpcProps, textureLoadProps: TextureLoadProps): Promise<Uint8Array | undefined> {

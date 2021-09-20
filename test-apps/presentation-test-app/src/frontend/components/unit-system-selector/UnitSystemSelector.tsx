@@ -4,33 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { PresentationUnitSystem } from "@bentley/presentation-common";
+import { UnitSystemKey } from "@bentley/imodeljs-quantity";
 import { Select } from "@bentley/ui-core";
 
 export interface UnitSystemSelectorProps {
-  selectedUnitSystem: PresentationUnitSystem | undefined;
-  onUnitSystemSelected: (unitSystem: PresentationUnitSystem | undefined) => void;
+  selectedUnitSystem: UnitSystemKey | undefined;
+  onUnitSystemSelected: (unitSystem: UnitSystemKey | undefined) => void;
 }
 
 export function UnitSystemSelector(props: UnitSystemSelectorProps) {
   const { selectedUnitSystem, onUnitSystemSelected: onUnitSystemSelectedProp } = props;
   const onUnitSystemSelected = React.useCallback((evt: React.ChangeEvent<HTMLSelectElement>) => {
-    switch (evt.target.value) {
-      case PresentationUnitSystem.BritishImperial:
-        onUnitSystemSelectedProp(PresentationUnitSystem.BritishImperial);
-        break;
-      case PresentationUnitSystem.Metric:
-        onUnitSystemSelectedProp(PresentationUnitSystem.Metric);
-        break;
-      case PresentationUnitSystem.UsCustomary:
-        onUnitSystemSelectedProp(PresentationUnitSystem.UsCustomary);
-        break;
-      case PresentationUnitSystem.UsSurvey:
-        onUnitSystemSelectedProp(PresentationUnitSystem.UsSurvey);
-        break;
-      default:
-        onUnitSystemSelectedProp(undefined);
-    }
+    onUnitSystemSelectedProp(evt.target.value ? (evt.target.value as UnitSystemKey) : undefined);
   }, [onUnitSystemSelectedProp]);
 
   return (
@@ -50,15 +35,15 @@ const availableUnitSystems = [{
   value: undefined,
   label: "",
 }, {
-  value: PresentationUnitSystem.Metric,
+  value: "metric",
   label: "Metric",
 }, {
-  value: PresentationUnitSystem.BritishImperial,
+  value: "imperial",
   label: "British Imperial",
 }, {
-  value: PresentationUnitSystem.UsCustomary,
+  value: "usCustomary",
   label: "US Customary",
 }, {
-  value: PresentationUnitSystem.UsSurvey,
+  value: "usSurvey",
   label: "US Survey",
 }];

@@ -10,7 +10,7 @@ import { PropertyRecord } from "@bentley/ui-abstract";
 import { PropertyCategory, PropertyData } from "../../ui-components/propertygrid/PropertyDataProvider";
 import { FavoritePropertyList } from "../../ui-components/favorite/FavoritePropertyList";
 import TestUtils from "../TestUtils";
-import { Orientation } from "@bentley/ui-core";
+import { Orientation, ResizableContainerObserver } from "@bentley/ui-core";
 import { PropertyValueRendererManager } from "../../ui-components/properties/ValueRendererManager";
 
 describe("FavoritePropertyList", () => {
@@ -44,6 +44,8 @@ describe("FavoritePropertyList", () => {
 
     it("renders correctly with label as string", async () => {
       const wrapper = mount(<FavoritePropertyList propertyData={data} />);
+      const resizeDetector = wrapper.find(ResizableContainerObserver);
+      resizeDetector.prop("onResize")!(250, 400);
 
       await TestUtils.flushAsyncOperations();
       wrapper.update();
@@ -62,6 +64,8 @@ describe("FavoritePropertyList", () => {
       const wrapper = mount(
         <FavoritePropertyList propertyData={data} orientation={Orientation.Vertical} propertyValueRendererManager={propertyValueRendererManager} />
       );
+      const resizeDetector = wrapper.find(ResizableContainerObserver);
+      resizeDetector.prop("onResize")!(250, 400);
 
       await TestUtils.flushAsyncOperations();
       wrapper.update();
@@ -78,11 +82,7 @@ describe("FavoritePropertyList", () => {
     it("renders null if no Favorites", async () => {
       delete data.records.Favorite;
       const wrapper = mount(<FavoritePropertyList propertyData={data} />);
-
-      await TestUtils.flushAsyncOperations();
-      wrapper.update();
-
-      expect(wrapper.find(".components-favorite-property-list").first().exists()).to.be.false;
+      expect(wrapper.isEmptyRender()).to.be.true;
     });
 
   });

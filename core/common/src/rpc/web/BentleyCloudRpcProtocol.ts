@@ -7,7 +7,7 @@
  */
 
 import { URL } from "url";
-import { BentleyStatus, Logger, OpenMode, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
+import { BentleyStatus, Logger, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
@@ -20,7 +20,6 @@ import { WebAppRpcProtocol } from "./WebAppRpcProtocol";
 
 enum AppMode {
   MilestoneReview = "1",
-  WorkGroupEdit = "2",
 }
 
 /** An http protocol for Bentley cloud RPC interface deployments.
@@ -78,7 +77,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
     const operationId = `${operation.interfaceDefinition.interfaceName}-${operation.interfaceVersion}-${operation.operationName}`;
 
     let appMode: string = "";
-    let contextId: string = "";
+    let iTwinId: string = "";
     let iModelId: string = "";
     let routeChangeSetId: string | undefined;
     /* Note: The changeSetId field is omitted in the route in the case of ReadWrite connections since the connection is generally expected to be at the
@@ -89,7 +88,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
 
     if (request === undefined) {
       appMode = "{modeId}";
-      contextId = "{contextId}";
+      iTwinId = "{iTwinId}";
       iModelId = "{iModelId}";
       routeChangeSetId = "{changeSetId}";
     } else {
@@ -103,19 +102,14 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
         }
       }
 
-      contextId = encodeURIComponent(token.contextId || "");
+      iTwinId = encodeURIComponent(token.iTwinId || "");
       iModelId = encodeURIComponent(token.iModelId!);
 
-      if (token.openMode === OpenMode.Readonly) {
-        // Use "0" if changeSetId omitted or empty string.
-        routeChangeSetId = token.changeSetId || "0";
-        appMode = AppMode.MilestoneReview;
-      } else {
-        appMode = AppMode.WorkGroupEdit;
-      }
+      routeChangeSetId = token.changeset?.id || "0";
+      appMode = AppMode.MilestoneReview;
     }
 
-    return `${prefix}/${appTitle}/${appVersion}/mode/${appMode}/context/${contextId}/imodel/${iModelId}${!!routeChangeSetId ? `/changeset/${routeChangeSetId}` : ""}/${operationId}`;
+    return `${prefix}/${appTitle}/${appVersion}/mode/${appMode}/context/${iTwinId}/imodel/${iModelId}${!!routeChangeSetId ? `/changeset/${routeChangeSetId}` : ""}/${operationId}`;
   }
 
   /**
@@ -126,30 +120,28 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
     const urlPathComponents = request.path.split("/");
 
     const iModelKey = tokenFromBody.key;
-    let openMode = tokenFromBody.openMode;
     let iModelId = tokenFromBody.iModelId;
-    let contextId = tokenFromBody.contextId;
-    let changeSetId = tokenFromBody.changeSetId;
+    let iTwinId = tokenFromBody.iTwinId;
+    const changeset = { id: tokenFromBody.changeset?.id ?? "0", index: tokenFromBody.changeset?.index };
 
     for (let i = 0; i <= urlPathComponents.length; ++i) {
       const key = urlPathComponents[i];
       const value = urlPathComponents[i + 1];
       if (key === "mode") {
-        openMode = (value === AppMode.WorkGroupEdit) ? OpenMode.ReadWrite : OpenMode.Readonly;
         ++i;
       } else if (key === "context") {
-        contextId = value;
+        iTwinId = value;
         ++i;
       } else if (key === "imodel") {
         iModelId = value;
         ++i;
       } else if (key === "changeset") {
-        changeSetId = (value === "0") ? "" : value;
+        changeset.id = (value === "0") ? "" : value;
         ++i;
       }
     }
 
-    return { key: iModelKey, contextId, iModelId, changeSetId, openMode };
+    return { key: iModelKey, iTwinId, iModelId, changeset };
   }
 
   /** Returns the OpenAPI-compatible URI path parameters for an RPC operation.
@@ -158,7 +150,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
   public supplyPathParametersForOperation(_operation: RpcOperation): OpenAPIParameter[] {
     return [
       { name: "modeId", in: "path", required: true, schema: { type: "string" } },
-      { name: "contextId", in: "path", required: true, schema: { type: "string" } },
+      { name: "iTwinId", in: "path", required: true, schema: { type: "string" } },
       { name: "iModelId", in: "path", required: true, schema: { type: "string" } },
       { name: "changeSetId", in: "path", required: false, schema: { type: "string" } },
     ];

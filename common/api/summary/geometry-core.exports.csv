@@ -50,6 +50,8 @@ public;class BSpline2dNd
 public;BSplineCurve3d 
 public;class BSplineCurve3dBase 
 public;BSplineCurve3dH 
+public;BSplineCurveOps
+public;BSplineCurveOps
 public;BSplineSurface3d 
 public;BSplineSurface3dH 
 public;BSplineSurface3dQuery
@@ -162,6 +164,7 @@ public;LineString3d
 public;LineStringDataVariant = IndexedXYZCollection | XYAndZ[] | XAndY[] | number[][]
 public;LongitudeLatitudeNumber 
 public;Loop 
+public;LoopCurveLoopCurve
 public;LowAndHighXY = Readonly
 public;LowAndHighXYZ = Readonly
 public;Map4d 

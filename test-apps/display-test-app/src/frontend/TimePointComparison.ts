@@ -83,7 +83,7 @@ class TimePointComparison {
 
       vp.addTiledGraphicsProvider(new TimePointComparison(createClip(normal, point), timePoint));
       vp.view.setViewClip(createClip(normal.negate(), point));
-      vp.viewFlags.clipVolume = true;
+      vp.viewFlags = vp.viewFlags.with("clipVolume", true);
     } else {
       vp.dropTiledGraphicsProvider(provider);
       vp.view.setViewClip(undefined);
@@ -96,7 +96,7 @@ class TimePointComparison {
 export class TimePointComparisonTool extends Tool {
   public static override toolId = "ToggleTimePointComparison";
 
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (vp)
       TimePointComparison.toggle(vp);

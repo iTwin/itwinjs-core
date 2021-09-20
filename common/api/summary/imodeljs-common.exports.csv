@@ -53,6 +53,7 @@ public;BRepPrimitive
 alpha;BRepRoundProps
 alpha;BRepThickenProps
 public;BriefcaseDownloader
+public;BriefcaseId = number
 public;BriefcaseIdValue
 public;BriefcaseProps
 public;calculateSolarAngles(date: Date, location: Cartographic):
@@ -323,8 +324,6 @@ internal;iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTileTreeId,
 internal;IModelTileTreeProps 
 public;IModelVersion
 public;IModelVersionProps =
-internal;class IModelWriteRpcInterface 
-deprecated;class IModelWriteRpcInterface 
 public;InformationPartitionElementProps 
 internal;initializeRpcRequest: () => void
 internal;INSTANCE: unique symbol
@@ -640,6 +639,7 @@ public;ThumbnailProps
 internal;TileContentDescription 
 beta;TileContentIdentifier
 internal;TileContentMetadata
+internal;TileContentSource
 internal;TileFormat
 internal;tileFormatFromNumber(formatNumber: number): TileFormat
 internal;class TileHeader
@@ -678,17 +678,18 @@ public;ViewDetails
 public;ViewDetails3d 
 public;ViewDetails3dProps 
 public;ViewDetailsProps
-public;ViewFlagOverrides
-public;ViewFlagOverridesProps
-public;ViewFlagPresence
+public;ViewFlagOverrides = Partial
 public;ViewFlagProps
 public;ViewFlags
+public;ViewFlagsProperties = Mutable
 public;ViewQueryParams 
 public;ViewStateLoadProps
 public;ViewStateProps
 internal;WEB_RPC_CONSTANTS:
 public;class WebAppRpcProtocol 
 public;WebAppRpcRequest 
+public;WhiteOnWhiteReversalProps
+public;WhiteOnWhiteReversalSettings
 internal;class WipRpcInterface 
 public;XyzRotation 
 public;XyzRotationProps

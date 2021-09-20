@@ -15,9 +15,13 @@ import {
 import { Format, FormatProps, FormatterSpec, FormatTraits, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
 import { DateFormatter, IconSpecUtilities, ParseResults, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, RelativePosition, TimeDisplay } from "@bentley/ui-abstract";
 import {
-  adjustDateToTimezone, ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch, ColumnDescription, DatePickerPopupButton, DatePickerPopupButtonProps,
-  IntlFormatter, LineWeightSwatch, ParsedInput, QuantityInput, QuantityNumberInput, Table, TableDataChangeEvent, TableDataProvider, WeightPickerButton,
+  adjustDateToTimezone, ColumnDescription, DatePickerPopupButton, DatePickerPopupButtonProps,
+  IntlFormatter, ParsedInput, Table, TableDataChangeEvent, TableDataProvider,
 } from "@bentley/ui-components";
+import {
+  ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch, LineWeightSwatch,
+  QuantityInput, QuantityNumberInput, WeightPickerButton,
+} from "@bentley/ui-imodel-components";
 import {
   AutoSuggest,
   AutoSuggestData,
@@ -39,7 +43,7 @@ import { FormatPopupButton } from "./FormatPopupButton";
 import { AccudrawSettingsPageComponent } from "../Settings";
 import { ExpandableBlock } from "@itwin/itwinui-react";
 import { TableExampleContent } from "../../contentviews/TableExampleContent";
-import { ItemsAppendedSampleTimeline, ItemsPrefixedSampleTimeline, ItemsReplacedSampleTimeline, LocalizedTimeSampleTimeline, NoLocalizedTimeSampleTimeline, NoRepeatSampleTimeline } from "./SampleTimelineComponent";
+import { CurrentDateMarkedCustomIconSampleTimeline, CurrentDateMarkedSampleTimeline, ItemsAppendedSampleTimeline, ItemsPrefixedSampleTimeline, ItemsReplacedSampleTimeline, LocalizedTimeSampleTimeline, NoLocalizedTimeSampleTimeline, NoRepeatSampleTimeline } from "./SampleTimelineComponent";
 
 function MySettingsPage() {
   const tabs: SettingsTabEntry[] = [
@@ -779,8 +783,8 @@ export class ComponentExamplesProvider {
         createComponentExample("Icon Input", "Icon Input component", <IconInput placeholder="Icon Input" icon={<Icon iconSpec="icon-placeholder" />} containerClassName="uicore-full-width" />),
         createComponentExample("Labeled Input", "Labeled Input component", <LabeledInput label="Labeled Input" placeholder="Labeled Input" className="uicore-full-width" />),
         createComponentExample("Labeled Input", "Labeled Input Icon", <LabeledInput label="Labeled Input with icon" placeholder="Labeled Input with Icon" status={InputStatus.Success} />),
-        createComponentExample("Labeled Input Warning", "Labeled Input Warning", <LabeledInput label="Labeled Input Warning" placeholder="Labeled Input Warning" status={InputStatus.Warning} />),
-        createComponentExample("Labeled Input Error", "Labeled Input Error", <LabeledInput label="Labeled Input Error" placeholder="Labeled Input Error" status={InputStatus.Error} />),
+        createComponentExample("Labeled Input Warning", "Labeled Input Warning", <LabeledInput label="Labeled Input Warning" placeholder="Labeled Input Warning" status={InputStatus.Warning} message="Warning message text" />),
+        createComponentExample("Labeled Input Error", "Labeled Input Error", <LabeledInput label="Labeled Input Error" placeholder="Labeled Input Error" status={InputStatus.Error} message="Error message text" />),
         createComponentExample("Labeled Textarea", "Labeled Textarea component", <LabeledTextarea label="Labeled Textarea" placeholder="Labeled Textarea" className="uicore-full-width" />),
 
         createComponentExample("Image Checkbox", "ImageCheckbox with WebFonts", <SampleImageCheckBox imageOn="icon-more-circular" imageOff="icon-more-vertical-circular" />),
@@ -1080,7 +1084,7 @@ export class ComponentExamplesProvider {
 
   private static get sliderSamples(): ComponentExampleCategory {
     return {
-      title: "Slider",
+      title: "Deprecated Slider",
       examples: [
         createComponentExample("Slider", "Basic Slider",
           <Slider min={0} max={100} values={[50]} step={1} showTooltip />),
@@ -1310,6 +1314,8 @@ export class ComponentExamplesProvider {
       createComponentExample("TimelineComponent", "With no repeat option", <NoRepeatSampleTimeline />),
       createComponentExample("TimelineComponent", "With timezone offset of 0", <NoLocalizedTimeSampleTimeline />),
       createComponentExample("TimelineComponent", "With no timezone offset specified", <LocalizedTimeSampleTimeline />),
+      createComponentExample("TimelineComponent", "With with today's date marked by the default marker", <CurrentDateMarkedSampleTimeline />),
+      createComponentExample("TimelineComponent", "With with today's date marked by a star", <CurrentDateMarkedCustomIconSampleTimeline />),
     );
     return {
       title: "Timelines",

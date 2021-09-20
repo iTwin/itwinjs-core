@@ -107,7 +107,6 @@ export * from "./ViewProps";
 export * from "./rpc/DevToolsRpcInterface";
 export * from "./rpc/IModelReadRpcInterface";
 export * from "./rpc/IModelTileRpcInterface";
-export * from "./rpc/IModelWriteRpcInterface";
 export * from "./ModelGeometryChanges";
 export * from "./rpc/SnapshotIModelRpcInterface";
 export * from "./rpc/TestRpcManager";
@@ -140,6 +139,7 @@ export * from "./tile/IModelTileIO";
 export * from "./tile/PntsTileIO";
 export * from "./tile/TileIO";
 export * from "./tile/TileMetadata";
+export * from "./WhiteOnWhiteReversalSettings";
 
 /** @docs-package-description
  * The imodeljs-common package contains classes for working with iModels that can be used in both [frontend]($docs/learning/frontend/index.md) and [backend]($docs/learning/backend/index.md).

@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { DrawingNavigationAid } from "@bentley/ui-components";
+import { DrawingNavigationAid } from "@bentley/ui-imodel-components";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { NavigationAidControl } from "./NavigationAidControl";
 

@@ -20,16 +20,17 @@ import { ChangeCameraTool, ChangeEmphasisSettingsTool, ChangeFlashSettingsTool, 
 import { AnimationIntervalTool } from "./tools/AnimationIntervalTool";
 import { ChangeUnitsTool } from "./tools/ChangeUnitsTool";
 import { ClipColorTool, TestClipStyleTool, ToggleSectionCutTool } from "./tools/ClipTools";
-import { ApplyRenderingStyleTool, ChangeViewFlagsTool, OverrideSubCategoryTool, SaveRenderingStyleTool, ToggleSkyboxTool } from "./tools/DisplayStyleTools";
+import {
+  ApplyRenderingStyleTool, ChangeViewFlagsTool, OverrideSubCategoryTool, SaveRenderingStyleTool, ToggleSkyboxTool, WoWIgnoreBackgroundTool,
+} from "./tools/DisplayStyleTools";
 import {
   ClearEmphasizedElementsTool, ClearIsolatedElementsTool, EmphasizeSelectedElementsTool, EmphasizeVisibleElementsTool, IsolateSelectedElementsTool,
 } from "./tools/EmphasizeElementsTool";
-import { ExtensionServiceTool } from "./tools/ExtensionServiceTool";
 import { ToggleFrustumSnapshotTool, ToggleSelectedViewFrustumTool, ToggleShadowFrustumTool } from "./tools/FrustumDecoration";
 import { InspectElementTool } from "./tools/InspectElementTool";
 import {
   AttachArcGISMapLayerByUrlTool, AttachMapLayerTool, AttachMapOverlayTool, AttachTileURLMapLayerByUrlTool, AttachWmsMapLayerByUrlTool,
-  AttachWmtsMapLayerByUrlTool, DetachMapLayersTool, MapBaseColorTool, MapBaseTransparencyTool, MapBaseVisibilityTool, MapLayerSubLayerVisiblityTool,
+  AttachWmtsMapLayerByUrlTool, DetachMapLayersTool, MapBaseColorTool, MapBaseTransparencyTool, MapBaseVisibilityTool, MapLayerSubLayerVisibilityTool,
   MapLayerTransparencyTool, MapLayerVisibilityTool, MapLayerZoomTool, ReorderMapLayers, SetMapBaseTool, ToggleTerrainTool,
 } from "./tools/MapLayerTool";
 import { MeasureTileLoadTimeTool } from "./tools/MeasureTileLoadTime";
@@ -111,7 +112,6 @@ export class FrontendDevTools {
       EmphasizeSelectedElementsTool,
       EmphasizeVisibleElementsTool,
       ExplosionEffect,
-      ExtensionServiceTool,
       FadeOutTool,
       FlipImageConfig,
       FlipImageEffect,
@@ -124,7 +124,7 @@ export class FrontendDevTools {
       LoseWebGLContextTool,
       MapLayerTransparencyTool,
       MapLayerVisibilityTool,
-      MapLayerSubLayerVisiblityTool,
+      MapLayerSubLayerVisibilityTool,
       MapLayerZoomTool,
       MapBaseColorTool,
       MapBaseTransparencyTool,
@@ -211,6 +211,7 @@ export class FrontendDevTools {
       MaskBackgroundMapByElementTool,
       MaskBackgroundMapByExcludedElementTool,
       UnmaskMapTool,
+      WoWIgnoreBackgroundTool,
     ];
 
     for (const tool of tools)

@@ -7,7 +7,7 @@
  */
 
 import { join } from "path";
-import { AuthStatus, BeEvent, ClientRequestContext, Config, GuidString, SessionProps } from "@bentley/bentleyjs-core";
+import { AuthStatus, BeEvent, ClientRequestContext, GuidString, SessionProps } from "@bentley/bentleyjs-core";
 import {
   BriefcaseProps, IModelError, InternetConnectivityStatus, LocalBriefcaseProps, NativeAppAuthorizationConfiguration, nativeAppChannel, NativeAppFunctions,
   NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, StorageValue,
@@ -95,11 +95,8 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   public async overrideInternetConnectivity(by: OverriddenBy, status: InternetConnectivityStatus): Promise<void> {
     NativeHost.overrideInternetConnectivity(by, status);
   }
-  public async getConfig(): Promise<any> {
-    return Config.App.getContainer();
-  }
   public async acquireNewBriefcaseId(iModelId: GuidString): Promise<number> {
-    return BriefcaseManager.acquireNewBriefcaseId(await IModelHost.getAuthorizedContext(), iModelId);
+    return BriefcaseManager.acquireNewBriefcaseId({ iModelId });
   }
   public async getBriefcaseFileName(props: BriefcaseProps): Promise<string> {
     return BriefcaseManager.getFileName(props);
@@ -123,7 +120,7 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
       };
     }
 
-    const downloadPromise = BriefcaseManager.downloadBriefcase(await IModelHost.getAuthorizedContext(), args);
+    const downloadPromise = BriefcaseManager.downloadBriefcase(args);
     const checkAbort = () => {
       const job = Downloads.isInProgress(args.fileName!);
       return (job && (job.request as any).abort === 1) ? 1 : 0;

@@ -7,11 +7,11 @@
  */
 
 import * as React from "react";
-import { CommonProps, PointProps, RectangleProps } from "@bentley/ui-core";
+import { PointProps } from "@bentley/ui-abstract";
+import { CommonProps, RectangleProps } from "@bentley/ui-core";
 import {
   ResizeHandle, TitleBarButton, ToolSettings, ToolSettingsTab, WidgetZoneId, Zone, ZoneManagerProps, ZoneTargetType,
 } from "@bentley/ui-ninezone";
-import { ZoneTargets } from "../../dragdrop/ZoneTargets";
 import { TargetChangeHandler, WidgetChangeHandler } from "../../frontstage/FrontstageComposer";
 import { FrontstageManager } from "../../frontstage/FrontstageManager";
 import { SafeAreaContext } from "../../safearea/SafeAreaContext";
@@ -21,6 +21,7 @@ import { getFloatingZoneBounds, getFloatingZoneStyle } from "../FrameworkZone";
 import { Outline } from "../Outline";
 import { ToolSettingsManager } from "./ToolSettingsManager";
 import { onEscapeSetFocusToHome } from "../../hooks/useEscapeSetFocusToHome";
+import { ZoneTargets } from "../../dragdrop/ZoneTargets";
 
 // cSpell:ignore safearea
 

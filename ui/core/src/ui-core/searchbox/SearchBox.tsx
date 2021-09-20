@@ -68,7 +68,7 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
     );
     const buttonTitle = UiCore.translate(emptyString ? "general.search" : "general.clear");
     return (
-      <div className={searchClassName} style={this.props.style}>
+      <div className={searchClassName} style={this.props.style} data-testid="core-searchbox-instance">
         <input
           defaultValue={this.props.initialValue}
           ref={(el) => { this._inputElement = el; }}

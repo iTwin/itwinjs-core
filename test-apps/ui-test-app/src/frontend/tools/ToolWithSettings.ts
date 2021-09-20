@@ -298,12 +298,12 @@ export class ToolWithSettings extends PrimitiveTool {
   // -------- end of ToolSettings ----------
 
   public override requireWriteableTarget(): boolean { return false; }
-  public override onPostInstall() {
-    super.onPostInstall();
+  public override async onPostInstall() {
+    await super.onPostInstall();
     this.setupAndPromptForNextAction();
     this.points = [];
   }
-  public override onUnsuspend(): void { this.provideToolAssistance(); }
+  public override async onUnsuspend() { this.provideToolAssistance(); }
 
   /** Establish current tool state and initialize drawing aides following onPostInstall, onDataButtonDown, onUndoPreviousStep, or other events that advance or back up the current tool state.
    * Enable snapping or auto-locate for AccuSnap.
@@ -379,7 +379,7 @@ export class ToolWithSettings extends PrimitiveTool {
     IModelApp.uiAdmin.closeToolSettingsPopup();
 
     /* Common reset behavior for primitive tools is calling onReinitialize to restart or exitTool to terminate. */
-    this.onReinitialize();
+    await this.onReinitialize();
     return EventHandled.No;
   }
 
@@ -436,10 +436,10 @@ export class ToolWithSettings extends PrimitiveTool {
     this.syncCoordinateValue(formattedString, this.formatStation(distance), distance);
   }
 
-  public onRestartTool(): void {
+  public async onRestartTool() {
     const tool = new ToolWithSettings();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 
   /** Used to supply DefaultToolSettingProvider with a list of properties to use to generate ToolSettings.  If undefined then no ToolSettings will be displayed */
@@ -485,7 +485,7 @@ export class ToolWithSettings extends PrimitiveTool {
   }
 
   /** Used to send changes from UI back to Tool */
-  public override applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean {
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
     if (updatedValue.propertyName === this.lockProperty.name) {
       this.lockProperty.value = updatedValue.value.value as boolean;
       this.showInfoFromUi(updatedValue);

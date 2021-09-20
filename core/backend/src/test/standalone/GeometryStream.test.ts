@@ -3,11 +3,27 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BentleyStatus, DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Angle, AngleSweep, Arc3d, Box, ClipMaskXYZRangePlanes, ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipShape, ClipVector, ConvexClipPlaneSet, CurveCollection, CurvePrimitive, Geometry, GeometryQueryCategory, IndexedPolyface, LineSegment3d, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, PolyfaceBuilder, Range3d, SolidPrimitive, Sphere, StrokeOptions, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { AreaPattern, BackgroundFill, BRepEntity, BRepGeometryCreate, BRepGeometryFunction, BRepGeometryInfo, BRepGeometryOperation, Code, ColorByName, ColorDef, ElementGeometry, ElementGeometryDataEntry, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryOpcode, ElementGeometryRequest, ElementGeometryUpdate, FillDisplay, FontProps, FontType, GeometricElement3dProps, GeometricElementProps, GeometryClass, GeometryContainmentRequestProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamFlags, GeometryStreamIterator, GeometryStreamProps, Gradient, ImageGraphicCorners, ImageGraphicProps, IModel, LinePixels, LineStyle, MassPropertiesOperation, MassPropertiesRequestProps, PhysicalElementProps, Placement3d, Placement3dProps, TextString, TextStringProps, ThematicGradientMode, ThematicGradientSettings, ViewFlags } from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
-import { BackendRequestContext, ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions, GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, Platform, SnapshotDb } from "../../imodeljs-backend";
+import { BentleyStatus, DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
+import {
+  Angle, AngleSweep, Arc3d, Box, ClipMaskXYZRangePlanes, ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipShape, ClipVector, ConvexClipPlaneSet,
+  CurveCollection, CurvePrimitive, Geometry, GeometryQueryCategory, IndexedPolyface, LineSegment3d, LineString3d, Loop, Matrix3d,
+  Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, PolyfaceBuilder, Range3d, RuledSweep, SolidPrimitive, Sphere,
+  StrokeOptions, Transform, Vector3d, YawPitchRollAngles,
+} from "@bentley/geometry-core";
+import {
+  AreaPattern, BackgroundFill, BRepEntity, BRepGeometryCreate, BRepGeometryFunction, BRepGeometryInfo, BRepGeometryOperation, Code, ColorByName,
+  ColorDef, ElementGeometry, ElementGeometryDataEntry, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryOpcode, ElementGeometryRequest,
+  ElementGeometryUpdate, FillDisplay, FontProps, FontType, GeometricElement3dProps, GeometricElementProps, GeometryClass,
+  GeometryContainmentRequestProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamFlags, GeometryStreamIterator,
+  GeometryStreamProps, Gradient, ImageGraphicCorners, ImageGraphicProps, IModel, LinePixels, LineStyle, MassPropertiesOperation,
+  MassPropertiesRequestProps, PhysicalElementProps, Placement3d, Placement3dProps, TextString, TextStringProps, ThematicGradientMode,
+  ThematicGradientSettings, ViewFlags,
+} from "@bentley/imodeljs-common";
+import {
+  ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions, GeometricElement, GeometryPart, LineStyleDefinition,
+  PhysicalObject, Platform, SnapshotDb,
+} from "../../imodeljs-backend";
 import { IModelTestUtils, Timer } from "../IModelTestUtils";
 
 function assertTrue(expr: boolean): asserts expr {
@@ -293,7 +309,7 @@ function doElementGeometryUpdate(imodel: SnapshotDb, elementId: Id64String, entr
   return status;
 }
 
-function createGeometricElemFromSeed(imodel: SnapshotDb, seedId: Id64String, entryArray: ElementGeometryDataEntry[], placement?: Placement3dProps, isWorld: boolean = false): DbResult {
+function createGeometricElemFromSeed(imodel: SnapshotDb, seedId: Id64String, entryArray: ElementGeometryDataEntry[], placement?: Placement3dProps, isWorld: boolean = false): { status: DbResult, newId: Id64String } {
   const seedElement = imodel.elements.getElement<GeometricElement>(seedId);
   assert.exists(seedElement);
 
@@ -304,7 +320,7 @@ function createGeometricElemFromSeed(imodel: SnapshotDb, seedId: Id64String, ent
   const status = imodel.elementGeometryUpdate({ elementId: newId, entryArray, isWorld });
   if (DbResult.BE_SQLITE_OK === status)
     imodel.saveChanges();
-  return status;
+  return { status, newId };
 }
 
 describe("GeometryStream", () => {
@@ -2071,7 +2087,8 @@ describe("BRepGeometry", () => {
       assert.isDefined(brepData);
       const placement = YawPitchRollAngles.tryFromTransform(Transform.fromJSON(brepData!.transform));
       assert.isDefined(placement.angles);
-      assert.isTrue(DbResult.BE_SQLITE_OK === createGeometricElemFromSeed(imodel, "0x1d", [entry], { origin: placement.origin, angles: placement.angles! }, true));
+      const result = createGeometricElemFromSeed(imodel, "0x1d", [entry], { origin: placement.origin, angles: placement.angles! }, true);
+      assert.isTrue(DbResult.BE_SQLITE_OK === result.status);
     });
   });
 
@@ -2082,7 +2099,6 @@ describe("BRepGeometry", () => {
 
     const onResult: BRepGeometryFunction = (info: BRepGeometryInfo): void => {
       assert.isTrue(undefined !== info.entryArray && 1 === info.entryArray.length && ElementGeometryOpcode.BRep === info.entryArray[0].opcode);
-      // assert.isTrue(DbResult.BE_SQLITE_OK === createGeometricElemFromSeed(imodel, "0x1d", info.entryArray));
     };
 
     const createProps: BRepGeometryCreate = {
@@ -2144,7 +2160,6 @@ describe("BRepGeometry", () => {
 
     const onResult: BRepGeometryFunction = (info: BRepGeometryInfo): void => {
       assert.isTrue(undefined !== info.entryArray && 1 === info.entryArray.length && ElementGeometryOpcode.BRep === info.entryArray[0].opcode);
-      // assert.isTrue(DbResult.BE_SQLITE_OK === createGeometricElemFromSeed(imodel, "0x1d", info.entryArray));
     };
 
     const createProps: BRepGeometryCreate = {
@@ -2164,7 +2179,6 @@ describe("BRepGeometry", () => {
 
     const onResult: BRepGeometryFunction = (info: BRepGeometryInfo): void => {
       assert.isTrue(undefined !== info.entryArray && 1 === info.entryArray.length && ElementGeometryOpcode.BRep === info.entryArray[0].opcode);
-      // assert.isTrue(DbResult.BE_SQLITE_OK === createGeometricElemFromSeed(imodel, "0x1d", info.entryArray));
     };
 
     // Test creating cut through solid in forward direction (default)
@@ -2215,7 +2229,6 @@ describe("BRepGeometry", () => {
 
     const onResult: BRepGeometryFunction = (info: BRepGeometryInfo): void => {
       assert.isTrue(undefined !== info.entryArray && 1 === info.entryArray.length && ElementGeometryOpcode.BRep === info.entryArray[0].opcode);
-      // assert.isTrue(DbResult.BE_SQLITE_OK === createGeometricElemFromSeed(imodel, "0x1d", info.entryArray));
     };
 
     // Test creating a pocket in a solid
@@ -2262,7 +2275,6 @@ describe("BRepGeometry", () => {
 
     const onResult: BRepGeometryFunction = (info: BRepGeometryInfo): void => {
       assert.isTrue(undefined !== info.entryArray && 1 === info.entryArray.length && ElementGeometryOpcode.BRep === info.entryArray[0].opcode);
-      // assert.isTrue(DbResult.BE_SQLITE_OK === createGeometricElemFromSeed(imodel, "0x1d", info.entryArray));
     };
 
     const createProps: BRepGeometryCreate = {
@@ -2298,7 +2310,6 @@ describe("BRepGeometry", () => {
 
     const onResult: BRepGeometryFunction = (info: BRepGeometryInfo): void => {
       assert.isTrue(undefined !== info.entryArray && 1 === info.entryArray.length && ElementGeometryOpcode.BRep === info.entryArray[0].opcode);
-      // assert.isTrue(DbResult.BE_SQLITE_OK === createGeometricElemFromSeed(imodel, "0x1d", info.entryArray));
     };
 
     const createProps: BRepGeometryCreate = {
@@ -2320,7 +2331,6 @@ describe("BRepGeometry", () => {
 
     const onResult: BRepGeometryFunction = (info: BRepGeometryInfo): void => {
       assert.isTrue(undefined !== info.entryArray && 1 === info.entryArray.length && ElementGeometryOpcode.BRep === info.entryArray[0].opcode);
-      // assert.isTrue(DbResult.BE_SQLITE_OK === createGeometricElemFromSeed(imodel, "0x1d", info.entryArray));
     };
 
     const createProps: BRepGeometryCreate = {
@@ -2342,7 +2352,6 @@ describe("BRepGeometry", () => {
 
     const onResult: BRepGeometryFunction = (info: BRepGeometryInfo): void => {
       assert.isTrue(undefined !== info.entryArray && 1 === info.entryArray.length && ElementGeometryOpcode.BRep === info.entryArray[0].opcode);
-      // assert.isTrue(DbResult.BE_SQLITE_OK === createGeometricElemFromSeed(imodel, "0x1d", info.entryArray));
     };
 
     const createProps: BRepGeometryCreate = {
@@ -2365,7 +2374,6 @@ describe("BRepGeometry", () => {
 
     const onResult: BRepGeometryFunction = (info: BRepGeometryInfo): void => {
       assert.isTrue(undefined !== info.entryArray && 1 === info.entryArray.length && ElementGeometryOpcode.BRep === info.entryArray[0].opcode);
-      // assert.isTrue(DbResult.BE_SQLITE_OK === createGeometricElemFromSeed(imodel, "0x1d", info.entryArray));
     };
 
     const createProps: BRepGeometryCreate = {
@@ -2390,7 +2398,6 @@ describe("BRepGeometry", () => {
 
     const onResult: BRepGeometryFunction = (info: BRepGeometryInfo): void => {
       assert.isTrue(undefined !== info.entryArray && 1 === info.entryArray.length && ElementGeometryOpcode.BRep === info.entryArray[0].opcode);
-      // assert.isTrue(DbResult.BE_SQLITE_OK === createGeometricElemFromSeed(imodel, "0x1d", info.entryArray));
     };
 
     const createProps: BRepGeometryCreate = {
@@ -2411,7 +2418,6 @@ describe("BRepGeometry", () => {
 
     const onResult: BRepGeometryFunction = (info: BRepGeometryInfo): void => {
       assert.isTrue(undefined !== info.entryArray && 1 === info.entryArray.length && ElementGeometryOpcode.BRep === info.entryArray[0].opcode);
-      // assert.isTrue(DbResult.BE_SQLITE_OK === createGeometricElemFromSeed(imodel, "0x1d", info.entryArray));
     };
 
     const createProps: BRepGeometryCreate = {
@@ -2475,6 +2481,45 @@ describe("BRepGeometry", () => {
     } catch (error) {
       assert(false, error.message);
     }
+  });
+
+  it("catch solid kernel severe error - main thread", async () => {
+    const builder = new ElementGeometry.Builder();
+    builder.appendGeometryQuery(Loop.createPolygon([Point3d.create(0, 0, 0), Point3d.create(0, 1, 0), Point3d.create(-1.1, 1, 0), Point3d.create(-1, 1.1, 0)]));
+
+    // Test main thread using createBRepGeometry...
+    const onResult: BRepGeometryFunction = (_info: BRepGeometryInfo): void => { };
+
+    const createProps: BRepGeometryCreate = {
+      operation: BRepGeometryOperation.Offset,
+      entryArray: builder.entries,
+      onResult,
+      parameters: { distance: 0.25 },
+    };
+
+    // Expect exception creating sheet body from invalid loop (imprint error)...
+    expect(() => imodel.createBRepGeometry(createProps)).to.throw(Error, "Solid kernel severe error: 942");
+  });
+
+  it("catch solid kernel severe error - worker thread", async () => {
+    const builder = new ElementGeometry.Builder();
+    const loop0 = Loop.createPolygon([Point3d.create(0, 0, 0), Point3d.create(0, 1, 0), Point3d.create(-1.1, 1, 0), Point3d.create(-1, 1.1, 0)]);
+    const loop1 = Loop.create(Arc3d.createXY(Point3d.create(0, 0, 1), 0.2));
+    const solid = RuledSweep.create([loop0, loop1], true);
+    assert.isDefined(solid);
+    builder.appendGeometryQuery(solid!);
+
+    // Test worker thread using getMassProperties...
+    const result = createGeometricElemFromSeed(imodel, "0x1d", builder.entries);
+    assert.isTrue(DbResult.BE_SQLITE_OK === result.status);
+
+    const requestProps: MassPropertiesRequestProps = {
+      operation: MassPropertiesOperation.AccumulateVolumes,
+      candidates: [result.newId],
+    };
+
+    // Expect exception creating sheet body from invalid loop (imprint error)...
+    await expect(imodel.getMassProperties(requestProps)).to.be.rejectedWith(Error, "Solid kernel severe error: 942");
   });
 });
 
@@ -2639,8 +2684,7 @@ describe("Mass Properties", () => {
       candidates: [newId],
     };
 
-    const requestContext = new BackendRequestContext();
-    const result = await imodel.getMassProperties(requestContext, requestProps);
+    const result = await imodel.getMassProperties(requestProps);
     assert.isTrue(BentleyStatus.SUCCESS === result.status);
     assert.isTrue(1.0 === result.volume);
     assert.isTrue(6.0 === result.area);
@@ -2667,8 +2711,7 @@ describe("Mass Properties", () => {
       candidates: [newId],
     };
 
-    const requestContext = new BackendRequestContext();
-    const result = await imodel.getMassProperties(requestContext, requestProps);
+    const result = await imodel.getMassProperties(requestProps);
     assert.isTrue(BentleyStatus.SUCCESS === result.status);
     assert.isTrue(1.0 === result.area);
     assert.isTrue(4.0 === result.perimeter);
@@ -2716,8 +2759,7 @@ describe("Geometry Containment", () => {
       allowOverlaps: true,
     };
 
-    const requestContext = new BackendRequestContext();
-    let result = await imodel.getGeometryContainment(requestContext, requestProps);
+    let result = await imodel.getGeometryContainment(requestProps);
 
     assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
     assert.isTrue(result.candidatesContainment?.length === expectedContainment.length);
@@ -2727,7 +2769,7 @@ describe("Geometry Containment", () => {
     result.candidatesContainment!.forEach((val, index) => { assert.isTrue(val === expectedContainment[index]); });
 
     requestProps.allowOverlaps = false; // test inside mode...
-    result = await imodel.getGeometryContainment(requestContext, requestProps);
+    result = await imodel.getGeometryContainment(requestProps);
 
     assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
     assert.isTrue(result.candidatesContainment?.length === expectedContainment.length);
@@ -2763,8 +2805,7 @@ describe("Geometry Containment", () => {
       allowOverlaps: true,
     };
 
-    const requestContext = new BackendRequestContext();
-    let result = await imodel.getGeometryContainment(requestContext, requestProps);
+    let result = await imodel.getGeometryContainment(requestProps);
 
     assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
     assert.isTrue(result.candidatesContainment?.length === expectedContainment.length);
@@ -2774,7 +2815,7 @@ describe("Geometry Containment", () => {
     result.candidatesContainment!.forEach((val, index) => { assert.isTrue(val === expectedContainment[index]); });
 
     requestProps.allowOverlaps = false; // test inside mode...
-    result = await imodel.getGeometryContainment(requestContext, requestProps);
+    result = await imodel.getGeometryContainment(requestProps);
 
     assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
     assert.isTrue(result.candidatesContainment?.length === expectedContainment.length);
@@ -2824,8 +2865,7 @@ describe("Geometry Containment", () => {
       allowOverlaps: true,
     };
 
-    const requestContext = new BackendRequestContext();
-    let result = await imodel.getGeometryContainment(requestContext, requestProps);
+    let result = await imodel.getGeometryContainment(requestProps);
 
     assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
     assert.isTrue(result.candidatesContainment?.length === expectedContainment.length);
@@ -2835,7 +2875,7 @@ describe("Geometry Containment", () => {
     result.candidatesContainment!.forEach((val, index) => { assert.isTrue(val === expectedContainment[index]); });
 
     requestProps.allowOverlaps = false; // test inside mode...
-    result = await imodel.getGeometryContainment(requestContext, requestProps);
+    result = await imodel.getGeometryContainment(requestProps);
 
     assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
     assert.isTrue(result.candidatesContainment?.length === expectedContainment.length);
@@ -2869,8 +2909,7 @@ describe("Geometry Containment", () => {
       allowOverlaps: true,
     };
 
-    const requestContext = new BackendRequestContext();
-    let result = await imodel.getGeometryContainment(requestContext, requestProps);
+    let result = await imodel.getGeometryContainment(requestProps);
 
     assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
     assert.isTrue(result.candidatesContainment?.length === expectedContainmentDef.length);
@@ -2882,7 +2921,7 @@ describe("Geometry Containment", () => {
     const expectedContainmentSubCat: ClipPlaneContainment[] = [ClipPlaneContainment.StronglyOutside, ClipPlaneContainment.StronglyOutside, ClipPlaneContainment.StronglyOutside, ClipPlaneContainment.StronglyOutside];
 
     requestProps.offSubCategories = [IModel.getDefaultSubCategoryId(seedElement.category)];
-    result = await imodel.getGeometryContainment(requestContext, requestProps);
+    result = await imodel.getGeometryContainment(requestProps);
 
     assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
     assert.isTrue(result.candidatesContainment?.length === expectedContainmentSubCat.length);
@@ -2896,7 +2935,7 @@ describe("Geometry Containment", () => {
     const flags = new ViewFlags(); // constructions are off by default...
     requestProps.viewFlags = flags;
     requestProps.offSubCategories = undefined;
-    result = await imodel.getGeometryContainment(requestContext, requestProps);
+    result = await imodel.getGeometryContainment(requestProps);
 
     assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
     assert.isTrue(result.candidatesContainment?.length === expectedContainmentViewFlags.length);
@@ -2938,8 +2977,7 @@ describe("Geometry Containment", () => {
       allowOverlaps: true,
     };
 
-    const requestContext = new BackendRequestContext();
-    const result = await imodel.getGeometryContainment(requestContext, requestProps);
+    const result = await imodel.getGeometryContainment(requestProps);
 
     assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
     assert.isTrue(result.candidatesContainment?.length === expectedContainment.length);
@@ -2981,8 +3019,7 @@ describe("Geometry Containment", () => {
       allowOverlaps: true,
     };
 
-    const requestContext = new BackendRequestContext();
-    const result = await imodel.getGeometryContainment(requestContext, requestProps);
+    const result = await imodel.getGeometryContainment(requestProps);
 
     assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
     assert.isTrue(result.candidatesContainment?.length === expectedContainment.length);
@@ -3018,8 +3055,7 @@ describe("Geometry Containment", () => {
       allowOverlaps: true,
     };
 
-    const requestContext = new BackendRequestContext();
-    const result = await imodel.getGeometryContainment(requestContext, requestProps);
+    const result = await imodel.getGeometryContainment(requestProps);
 
     assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
     assert.isTrue(result.candidatesContainment?.length === expectedContainment.length);
@@ -3055,8 +3091,7 @@ describe("Geometry Containment", () => {
       allowOverlaps: true,
     };
 
-    const requestContext = new BackendRequestContext();
-    const result = await imodel.getGeometryContainment(requestContext, requestProps);
+    const result = await imodel.getGeometryContainment(requestProps);
 
     assert.isTrue(BentleyStatus.SUCCESS === result.status && undefined !== result.candidatesContainment);
     assert.isTrue(result.candidatesContainment?.length === expectedContainment.length);

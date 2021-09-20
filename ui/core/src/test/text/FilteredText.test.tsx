@@ -5,7 +5,7 @@
 
 import * as React from "react";
 import { expect } from "chai";
-import { cleanup, render } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { FilteredText } from "../../ui-core";
 
 const value = "That he's mad, tis true, tis true tis pity, And pity tis, tis true";
@@ -18,7 +18,6 @@ const matches = [
 ];
 
 describe("<FilteredText />", () => {
-  afterEach(cleanup);
 
   it("should render", async () => {
     const wrapper = render(<FilteredText value={"Hello World!"} />);

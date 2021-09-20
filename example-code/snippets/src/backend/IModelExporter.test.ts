@@ -5,7 +5,8 @@
 // __PUBLISH_EXTRACT_START__ IModelExporter_CodeExporter.code
 
 import { Code, CodeSpec } from "@bentley/imodeljs-common";
-import { Element, IModelJsFs as fs, IModelDb, IModelExporter, IModelExportHandler, SnapshotDb } from "@bentley/imodeljs-backend";
+import { Element, IModelJsFs as fs, IModelDb, SnapshotDb } from "@bentley/imodeljs-backend";
+import { IModelExporter, IModelExportHandler  } from "@bentley/imodeljs-transformer";
 
 /** CodeExporter creates a CSV output file containing all Codes from the specified iModel. */
 class CodeExporter extends IModelExportHandler {

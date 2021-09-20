@@ -51,7 +51,7 @@ import { SubCategoriesCache } from "./SubCategoriesCache";
 import { DisclosedTileTreeSet, MapLayerImageryProvider, MapTiledGraphicsProvider, MapTileTreeReference, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
-import { Animator, ViewAnimationOptions, ViewChangeOptions } from "./ViewAnimation";
+import { Animator, OnViewExtentsError, ViewAnimationOptions, ViewChangeOptions } from "./ViewAnimation";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { GlobalLocation } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
@@ -247,7 +247,7 @@ export abstract class Viewport implements IDisposable {
   /** Event invoked after [[renderFrame]] detects that the dimensions of the viewport's [[ViewRect]] have changed.
    */
   public readonly onResized = new BeEvent<(vp: Viewport) => void>();
-  /** Event dispatched immediately after [[flashedId]] changes, supplying the Ids of the previousl-y and/or currently-flashed objects.
+  /** Event dispatched immediately after [[flashedId]] changes, supplying the Ids of the previously and/or currently-flashed objects.
    * @note Attempting to assign to [[flashedId]] from within the event callback will produce an exception.
    */
   public readonly onFlashedIdChanged = new BeEvent<(vp: Viewport, args: OnFlashedIdChangedEventArgs) => void>();
@@ -527,7 +527,6 @@ export abstract class Viewport implements IDisposable {
   public get isGridOn(): boolean { return this.viewFlags.grid; }
 
   /** Flags controlling aspects of how the contents of this viewport are rendered.
-   * @note Don't modify this object directly - clone it and modify the clone, then pass the clone to the setter.
    * @see [DisplayStyleSettings.viewFlags]($common).
    */
   public get viewFlags(): ViewFlags { return this.view.viewFlags; }
@@ -1018,13 +1017,14 @@ export abstract class Viewport implements IDisposable {
     removals.push(settings.onMonochromeModeChanged.addListener(displayStyleChanged));
     removals.push(settings.onClipStyleChanged.addListener(styleAndOverridesChanged));
     removals.push(settings.onPlanarClipMaskChanged.addListener(displayStyleChanged));
+    removals.push(settings.onWhiteOnWhiteReversalChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onPlanarClipMaskChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onAppearanceOverridesChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onChanged.addListener(displayStyleChanged));
 
     removals.push(style.onOSMBuildingDisplayChanged.addListener(() => {
       displayStyleChanged();
-      this.synchWithView(false); // May change frustum depth.
+      this.synchWithView({ noSaveInUndo: true }); // May change frustum depth.
     }));
 
     const analysisChanged = () => {
@@ -1649,7 +1649,7 @@ export abstract class Viewport implements IDisposable {
 
     let status;
     if (view.isCameraOn) {
-      status = view.lookAtUsingLensAngle(view.getEyePoint(), view.getTargetPoint(), view.getYVector(), lensAngle);
+      status = view.lookAt({ eyePoint: view.getEyePoint(), targetPoint: view.getTargetPoint(), upVector: view.getYVector(), lensAngle });
     } else {
       // We need to figure out a new camera target. To do that, we need to know where the geometry is in the view.
       // We use the depth of the center of the view for that.
@@ -1667,11 +1667,11 @@ export abstract class Viewport implements IDisposable {
 
       this.npcToWorldArray(corners);
 
-      const eye = corners[2].interpolate(0.5, corners[3]); // middle of closest plane
-      const target = corners[0].interpolate(0.5, corners[1]); // middle of halfway plane
-      const backDist = eye.distance(target) * 2.0;
-      const frontDist = view.minimumFrontDistance();
-      status = view.lookAtUsingLensAngle(eye, target, view.getYVector(), lensAngle, frontDist, backDist);
+      const eyePoint = corners[2].interpolate(0.5, corners[3]); // middle of closest plane
+      const targetPoint = corners[0].interpolate(0.5, corners[1]); // middle of halfway plane
+      const backDistance = eyePoint.distance(targetPoint) * 2.0;
+      const frontDistance = view.minimumFrontDistance();
+      status = view.lookAt({ eyePoint, targetPoint, upVector: view.getYVector(), lensAngle, frontDistance, backDistance });
     }
 
     if (ViewStatus.Success === status)
@@ -1719,9 +1719,8 @@ export abstract class Viewport implements IDisposable {
 
   /** Call [[setupFromView]] on this Viewport and then apply optional behavior.
    * @param options _options for behavior of view change. If undefined, all options have their default values (see [[ViewChangeOptions]] for details.)
-   * @note In previous versions, the argument was a boolean `saveInUndo`. For backwards compatibility, if `_options` is a boolean, it is interpreted as "{ noSaveInUndo: !_options }"
    */
-  public synchWithView(_options?: ViewChangeOptions | boolean): void { this.setupFromView(); }
+  public synchWithView(_options?: ViewChangeOptions): void { this.setupFromView(); }
 
   /** Convert an array of points from CoordSystem.View to CoordSystem.Npc */
   public viewToNpcArray(pts: Point3d[]): void { this._viewingSpace.viewToNpcArray(pts); }
@@ -1834,7 +1833,7 @@ export abstract class Viewport implements IDisposable {
    * @param factor the zoom factor.
    * @param options options for behavior of view change
    */
-  public zoom(newCenter: Point3d | undefined, factor: number, options?: ViewChangeOptions): ViewStatus {
+  public zoom(newCenter: Point3d | undefined, factor: number, options?: ViewChangeOptions & OnViewExtentsError): ViewStatus {
     const view = this.view;
     if (undefined === view)
       return ViewStatus.InvalidViewport;
@@ -1916,7 +1915,7 @@ export abstract class Viewport implements IDisposable {
     for (const placement of placements)
       viewRange.extendArray(placement.getWorldCorners(frust).points, viewTransform);
 
-    const ignoreError: ViewChangeOptions = {
+    const ignoreError: ViewChangeOptions & OnViewExtentsError = {
       ...options,
       onExtentsError: () => ViewStatus.Success,
     };
@@ -1949,7 +1948,8 @@ export abstract class Viewport implements IDisposable {
    * @param options options that control how the view change works and whether to change view rotation.
    */
   public async zoomToElements(ids: Id64Arg, options?: ViewChangeOptions & ZoomToOptions): Promise<void> {
-    this.zoomToPlacements(await this.iModel.elements.getPlacements(ids), options);
+    const placements = await this.iModel.elements.getPlacements(ids, { type: this.view.is3d() ? "3d" : "2d" });
+    this.zoomToPlacements(placements, options);
   }
 
   /** Zoom the view to a volume of space in world coordinates.
@@ -2687,8 +2687,7 @@ export class ScreenViewport extends Viewport {
   /** The canvas to display the view contents. */
   public readonly canvas: HTMLCanvasElement;
   /** The HTMLDivElement used for HTML decorations. May be referenced from the DOM by class "overlay-decorators".
-   * @deprecated from public access, use DecorateContext.addHtmlDecoration
-   * it will be un-deprecated for internal usage only in a future release
+   * @internal
    */
   public readonly decorationDiv: HTMLDivElement;
   /** The HTMLDivElement used for toolTips. May be referenced from the DOM by class "overlay-tooltip". */
@@ -2895,7 +2894,7 @@ export class ScreenViewport extends Viewport {
   }
 
   /** @internal */
-  public picker = new ElementPicker(); // Picker used in pickDepthPoint below so it hangs around and can be querried later.
+  public picker = new ElementPicker(); // Picker used in pickDepthPoint below so it hangs around and can be queried later.
 
   /** Find a point on geometry visible in this Viewport, within a radius of supplied pick point.
    * If no geometry is selected, return the point projected to the most appropriate reference plane.
@@ -3039,9 +3038,11 @@ export class ScreenViewport extends Viewport {
   }
 
   /** @internal */
-  public override synchWithView(options?: ViewChangeOptions | boolean): void {
-    options = (undefined === options) ? {} :
-      (typeof options !== "boolean") ? options : { noSaveInUndo: !options }; // for backwards compatibility, was "saveInUndo"
+  public override synchWithView(options?: ViewChangeOptions): void {
+    options = options ?? {};
+
+    if (this.view.is3d() && options?.globalAlignment)
+      this.view.alignToGlobe(options.globalAlignment.target, options.globalAlignment.transition);
 
     super.synchWithView(options);
 
@@ -3067,8 +3068,7 @@ export class ScreenViewport extends Viewport {
 
     this.setAnimator(undefined); // make sure we clear any active animators before we change views.
 
-    if (opts === undefined)
-      opts = { animationTime: ScreenViewport.animation.time.slow.milliseconds };
+    opts = opts ?? { animationTime: ScreenViewport.animation.time.slow.milliseconds };
 
     // determined whether we can animate this ViewState change
     const doAnimate = this.view && this.view.hasSameCoordinates(view) && false !== opts.animateFrustumChange;
