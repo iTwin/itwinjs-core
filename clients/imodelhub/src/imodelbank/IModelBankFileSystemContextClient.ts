@@ -5,11 +5,11 @@
 /** @packageDocumentation
  * @module iModelBankClient
  */
-import { IModelHubStatus, Logger, WSStatus } from "@bentley/bentleyjs-core";
+import { IModelHubStatus, Logger } from "@bentley/bentleyjs-core";
 import { Asset, Project } from "@bentley/context-registry-client";
 import { AuthorizedClientRequestContext, request, RequestOptions, Response } from "@bentley/itwin-client";
 import { WsgInstance } from "../wsg/ECJsonTypeMap";
-import { WsgError } from "../wsg/WsgClient";
+import { WsgError, WSStatus } from "../wsg/WsgClient";
 import { ContextManagerClient } from "../IModelCloudEnvironment";
 import { IModelHubClientError } from "../imodelhub/Errors";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";

@@ -141,3 +141,4 @@ internal;WsgError
 internal;class WsgInstance 
 internal;WsgQuery
 internal;WsgRequestOptions
+internal;WSStatus

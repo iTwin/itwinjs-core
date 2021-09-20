@@ -1349,6 +1349,44 @@ export interface WsgRequestOptions {
     ResponseContent?: "FullInstance" | "Empty" | "InstanceId";
 }
 
+// @internal
+export enum WSStatus {
+    // (undocumented)
+    ClassNotFound = 98311,
+    // (undocumented)
+    FileNotFound = 98314,
+    // (undocumented)
+    InstanceNotFound = 98313,
+    // (undocumented)
+    LoginFailed = 98306,
+    // (undocumented)
+    LoginRequired = 98319,
+    // (undocumented)
+    NoClientLicense = 98317,
+    // (undocumented)
+    NoServerLicense = 98316,
+    // (undocumented)
+    NotEnoughRights = 98308,
+    // (undocumented)
+    NotSupported = 98315,
+    // (undocumented)
+    PropertyNotFound = 98312,
+    // (undocumented)
+    RepositoryNotFound = 98309,
+    // (undocumented)
+    SchemaNotFound = 98310,
+    // (undocumented)
+    SslRequired = 98307,
+    // (undocumented)
+    Success = 0,
+    // (undocumented)
+    TooManyBadLoginAttempts = 98318,
+    // (undocumented)
+    Unknown = 98305,
+    // (undocumented)
+    WSERROR_BASE = 98304
+}
+
 
 // (No @packageDocumentation comment for this package)
 

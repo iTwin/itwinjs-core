@@ -5,7 +5,7 @@
 
 import * as deepAssign from "deep-assign";
 import { once } from "lodash";
-import { GetMetaDataFunction, HttpStatus, Logger, WSStatus } from "@bentley/bentleyjs-core";
+import { GetMetaDataFunction, HttpStatus, Logger } from "@bentley/bentleyjs-core";
 import {
   AuthorizedClientRequestContext, Client, DefaultRequestOptionsProvider, request, RequestGlobalOptions, RequestOptions, RequestQueryOptions,
   RequestTimeoutOptions, Response, ResponseError,
@@ -21,6 +21,29 @@ const loggerCategory: string = WsgClientLoggerCategory.Client;
  * @internal
  */
 export class AuthenticationError extends ResponseError {
+}
+
+/** Server returned WSG errors
+ * @internal
+ */
+export enum WSStatus {
+  Success = 0,
+  WSERROR_BASE = 0x18000,
+  Unknown = WSERROR_BASE + 1,
+  LoginFailed = WSERROR_BASE + 2,
+  SslRequired = WSERROR_BASE + 3,
+  NotEnoughRights = WSERROR_BASE + 4,
+  RepositoryNotFound = WSERROR_BASE + 5,
+  SchemaNotFound = WSERROR_BASE + 6,
+  ClassNotFound = WSERROR_BASE + 7,
+  PropertyNotFound = WSERROR_BASE + 8,
+  InstanceNotFound = WSERROR_BASE + 9,
+  FileNotFound = WSERROR_BASE + 10,
+  NotSupported = WSERROR_BASE + 11,
+  NoServerLicense = WSERROR_BASE + 12,
+  NoClientLicense = WSERROR_BASE + 13,
+  TooManyBadLoginAttempts = WSERROR_BASE + 14,
+  LoginRequired = WSERROR_BASE + 15,
 }
 
 /** Error that was returned by a WSG based service.

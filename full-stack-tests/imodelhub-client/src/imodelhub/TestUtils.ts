@@ -7,12 +7,12 @@ import * as fs from "fs";
 import { Base64 } from "js-base64";
 import * as path from "path";
 import { HttpRequestHost } from "@bentley/backend-itwin-client";
-import { ClientRequestContext, Guid, GuidString, Id64, Id64String, Logger, WSStatus } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Guid, GuidString, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { Asset, Project } from "@bentley/context-registry-client";
 import {
   Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, CodeState, ECJsonTypeMap, HubCode, IModelBankClient, IModelBankFileSystemContextClient,
   IModelCloudEnvironment, IModelHubClient, IModelQuery, LargeThumbnail, Lock, LockLevel, LockType, MultiCode, MultiLock, SmallThumbnail, Thumbnail,
-  Version, VersionQuery, WsgError,
+  Version, VersionQuery, WsgError, WSStatus,
 } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext, ProgressInfo, UserInfo } from "@bentley/itwin-client";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool";
