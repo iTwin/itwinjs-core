@@ -36,7 +36,7 @@ export async function initializeElectron() {
         clientId: "imodeljs-electron-test",
         redirectUri: "http://localhost:3000/signin-callback",
         scope: baseOidcScopes.concat(["offline_access"]).join(" "),
-      }
+      },
     },
     nativeHost: {
       applicationName: "ui-test-app",
