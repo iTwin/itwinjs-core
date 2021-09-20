@@ -54,7 +54,6 @@ export class FrontstageDef {
   private _id: string = "";
   private _defaultTool?: ToolItemDef;
   private _defaultContentId: string = "";
-  private _contentGroupId: string = "";
   private _isInFooterMode: boolean = true;
   private _isStageClosing = false;
   private _isApplicationClosing = false;
@@ -81,10 +80,8 @@ export class FrontstageDef {
   private _nineZone?: NineZoneManagerProps;
   private _timeTracker: TimeTracker = new TimeTracker();
   private _nineZoneState?: NineZoneState;
-  private _contentGroupProvider?: ContentGroupProvider;
 
   public get id(): string { return this._id; }
-  public get contentGroupProvider(): ContentGroupProvider | undefined { return this._contentGroupProvider; }
   public get defaultTool(): ToolItemDef | undefined { return this._defaultTool; }
   public get defaultContentId(): string { return this._defaultContentId; }
   public get isInFooterMode(): boolean { return this._isInFooterMode; }
@@ -121,7 +118,7 @@ export class FrontstageDef {
   public get frontstageProvider(): FrontstageProvider | undefined { return this._frontstageProvider; }
 
   /** @internal */
-  public get nineZone(): NineZoneManagerProps | undefined { return this._nineZone; }
+  public get nineZone(): NineZoneManagerProps | undefined { return this._nineZone; } // istanbul ignore next
   public set nineZone(props: NineZoneManagerProps | undefined) { this._nineZone = props; }
 
   /** @internal */
@@ -147,6 +144,7 @@ export class FrontstageDef {
     const def = new FrontstageDef();
     def._frontstageProvider = provider;
 
+    // istanbul ignore else
     if (provider.frontstage.props)
       await def.initializeFromProps(provider.frontstage.props);
 
@@ -160,13 +158,11 @@ export class FrontstageDef {
   public onActivated(): void {
     this.updateWidgetDefs();
 
+    // istanbul ignore next
     if (!this._contentGroup)
       throw new UiError(UiFramework.loggerCategory(this), `onActivated: Content Group not defined`);
 
     this._contentLayoutDef = ContentLayoutManager.getLayoutForGroup(this._contentGroup);
-    if (!this._contentLayoutDef)
-      throw new UiError(UiFramework.loggerCategory(this), `onActivated: Content Layout '${this._contentGroup?.layout}' not registered`);
-
     FrontstageManager.onContentLayoutActivatedEvent.emit({ contentLayout: this._contentLayoutDef, contentGroup: this._contentGroup });
 
     this._timeTracker.startTiming();
@@ -186,6 +182,7 @@ export class FrontstageDef {
       control.onFrontstageDeactivated();
     }
 
+    // istanbul ignore else
     if (this.contentGroup)
       this.contentGroup.onFrontstageDeactivated();
 
@@ -458,10 +455,12 @@ export class FrontstageDef {
 
   /** Gets the list of [[ContentControl]]s */
   public get contentControls(): ContentControl[] {
+    // istanbul ignore else
     if (this.contentGroup) {
       return this.contentGroup.getContentControls();
+    } else {
+      return [];
     }
-    return [];
   }
 
   /** Initializes a FrontstageDef from FrontstageProps
@@ -476,7 +475,6 @@ export class FrontstageDef {
       this._defaultContentId = props.defaultContentId;
 
     if (props.contentGroup instanceof ContentGroupProvider) {
-      this._contentGroupProvider = props.contentGroup;
       this._contentGroup = await props.contentGroup.provideContentGroup(props);
     } else {
       this._contentGroup = props.contentGroup;

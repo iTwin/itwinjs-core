@@ -2530,8 +2530,6 @@ export class FrontstageDef {
     // (undocumented)
     get contentGroup(): ContentGroup | undefined;
     // (undocumented)
-    get contentGroupProvider(): ContentGroupProvider | undefined;
-    // (undocumented)
     get contentLayoutDef(): ContentLayoutDef | undefined;
     static create(provider: FrontstageProvider): Promise<FrontstageDef>;
     // (undocumented)
@@ -5740,7 +5738,7 @@ export interface StandardFrontstageProps {
     rightPanelProps?: WidgetPanelProps;
     topPanelProps?: WidgetPanelProps;
     // (undocumented)
-    usage?: StageUsage | string;
+    usage: StageUsage | string;
     // (undocumented)
     version?: number;
 }

@@ -199,9 +199,11 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
   };
 
   private updateWidgetDefs() {
+    // istanbul ignore else
     if (!this.props.runtimeProps)
       return;
 
+    // istanbul ignore next
     const frontstageDef = this.props.runtimeProps.frontstageDef;
     frontstageDef.updateWidgetDefs();
     FrontstageManager.onWidgetDefsUpdatedEvent.emit();

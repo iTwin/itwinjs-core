@@ -404,10 +404,12 @@ export class FrontstageManager {
     if (frontstageDef)
       return frontstageDef;
 
+    // istanbul ignore else
     if (id) {
       const frontstageProvider = FrontstageManager.findFrontstageProvider(id);
       if (frontstageProvider) {
         frontstageDef = await FrontstageDef.create(frontstageProvider);
+        // istanbul ignore else
         if (frontstageDef)
           FrontstageManager._frontstageDefs.set(id, frontstageDef);
         return frontstageDef;

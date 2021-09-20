@@ -90,11 +90,6 @@ class FrontstageToolWidget extends React.Component {
   }
 }
 
-class TestFrontstageDef extends FrontstageDef {
-  protected override _onActivated(): void { }
-  protected override _onDeactivated(): void { }
-}
-
 describe("NestedFrontstage", async () => {
 
   before(async () => {
@@ -116,42 +111,38 @@ describe("NestedFrontstage", async () => {
     FrontstageManager.addFrontstageProvider(frontstageProvider);
     const frontstageDef = await FrontstageDef.create(frontstageProvider);
     await FrontstageManager.setActiveFrontstageDef(frontstageDef);
-    setImmediate(async () => {
-      await TestUtils.flushAsyncOperations();
+    await TestUtils.flushAsyncOperations();
 
-      expect(FrontstageManager.activeFrontstageDef).to.eq(frontstageDef);
-      expect(FrontstageManager.nestedFrontstageCount).to.eq(0);
+    expect(FrontstageManager.activeFrontstageDef).to.eq(frontstageDef);
+    expect(FrontstageManager.nestedFrontstageCount).to.eq(0);
 
-      const frontstageDef1 = new TestFrontstageDef();
-      const spyActivated = sinon.spy(frontstageDef1, "_onActivated" as any);
-      const spyDeactivated = sinon.spy(frontstageDef1, "_onDeactivated" as any);
+    const nestedFrontstageProvider = new TestNestedFrontstage();
+    const nestedFrontstageDef = await FrontstageDef.create(nestedFrontstageProvider);
+    const spyActivated = sinon.spy(nestedFrontstageDef, "_onActivated" as any);
+    const spyDeactivated = sinon.spy(nestedFrontstageDef, "_onDeactivated" as any);
 
-      const nestedFrontstageProvider = new TestNestedFrontstage();
-      const nestedFrontstageDef = await FrontstageDef.create(nestedFrontstageProvider);
-      expect(frontstageDef === nestedFrontstageDef).to.be.true;
+    await FrontstageManager.openNestedFrontstage(nestedFrontstageDef);
+    expect(FrontstageManager.nestedFrontstageCount).to.eq(1);
+    expect(FrontstageManager.activeNestedFrontstage).to.eq(nestedFrontstageDef);
+    expect(spyActivated.calledOnce).to.be.true;
 
-      await FrontstageManager.openNestedFrontstage(nestedFrontstageDef);
-      expect(FrontstageManager.nestedFrontstageCount).to.eq(1);
-      expect(FrontstageManager.activeNestedFrontstage).to.eq(nestedFrontstageDef);
-      expect(spyActivated.calledOnce).to.be.true;
+    const nestedFrontstageProvider2 = new TestNestedFrontstage();
+    const nestedFrontstageDef2 = await FrontstageDef.create(nestedFrontstageProvider2);
+    await FrontstageManager.openNestedFrontstage(nestedFrontstageDef2);
+    expect(FrontstageManager.nestedFrontstageCount).to.eq(2);
+    expect(FrontstageManager.activeNestedFrontstage).to.eq(nestedFrontstageDef2);
+    expect(spyDeactivated.calledOnce).to.be.true;
 
-      const nestedFrontstageProvider2 = new TestNestedFrontstage();
-      const nestedFrontstageDef2 = await FrontstageDef.create(nestedFrontstageProvider2);
-      await FrontstageManager.openNestedFrontstage(nestedFrontstageDef2);
-      expect(FrontstageManager.nestedFrontstageCount).to.eq(2);
-      expect(FrontstageManager.activeNestedFrontstage).to.eq(nestedFrontstageDef2);
-      expect(spyDeactivated.calledOnce).to.be.true;
+    NestedFrontstage.backToPreviousFrontstageCommand.execute();
+    await TestUtils.flushAsyncOperations();
 
-      NestedFrontstage.backToPreviousFrontstageCommand.execute();
-      expect(FrontstageManager.nestedFrontstageCount).to.eq(1);
-      expect(spyActivated.calledTwice).to.be.true;
+    expect(FrontstageManager.nestedFrontstageCount).to.eq(1);
 
-      NestedFrontstage.backToPreviousFrontstageCommand.execute();
-      expect(FrontstageManager.nestedFrontstageCount).to.eq(0);
-      expect(spyDeactivated.calledTwice).to.be.true;
+    NestedFrontstage.backToPreviousFrontstageCommand.execute();
+    await TestUtils.flushAsyncOperations();
 
-      expect(FrontstageManager.activeFrontstageDef).to.eq(frontstageDef);
-    });
+    expect(FrontstageManager.nestedFrontstageCount).to.eq(0);
+    expect(FrontstageManager.activeFrontstageDef).to.eq(frontstageDef);
   });
 
 });

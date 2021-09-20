@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import {
-  CommonToolbarItem, StageUsage, ToolbarItemsChangedArgs, ToolbarItemsManager, ToolbarOrientation, ToolbarUsage, UiItemsArbiter, UiItemsManager,
+  CommonToolbarItem, ToolbarItemsChangedArgs, ToolbarItemsManager, ToolbarOrientation, ToolbarUsage, UiItemsArbiter, UiItemsManager,
 } from "@bentley/ui-abstract";
 import { useActiveStageId } from "../hooks/useActiveStageId";
 import { useAvailableUiItemsProviders } from "../hooks/useAvailableUiItemsProviders";
@@ -34,14 +34,17 @@ export const useUiItemsProviderToolbarItems = (manager: ToolbarItemsManager, too
     // istanbul ignore else
     if (providersRef.current !== uiProviders || currentStageRef.current !== stageId) {
       const frontstageDef = FrontstageManager.activeFrontstageDef;
-      // istanbul ignore next
-      const usage = frontstageDef?.usage ? frontstageDef.usage : StageUsage.General;
-      currentStageRef.current = stageId;
-      providersRef.current = uiProviders;
-      const toolbarItems = UiItemsManager.getToolbarButtonItems(stageId, usage, toolbarUsage, toolbarOrientation, frontstageDef?.applicationData);
-      const updatedToolbarItems = UiItemsArbiter.updateToolbarButtonItems(toolbarItems);
-      manager.loadItems(updatedToolbarItems);
-      setItems(manager.items);
+      // istanbul ignore else
+      if (frontstageDef) {
+        const usage = frontstageDef.usage;
+        const applicationData = frontstageDef.applicationData;
+        currentStageRef.current = stageId;
+        providersRef.current = uiProviders;
+        const toolbarItems = UiItemsManager.getToolbarButtonItems(stageId, usage, toolbarUsage, toolbarOrientation, applicationData);
+        const updatedToolbarItems = UiItemsArbiter.updateToolbarButtonItems(toolbarItems);
+        manager.loadItems(updatedToolbarItems);
+        setItems(manager.items);
+      }
     }
     return () => {
       manager.onItemsChanged.removeListener(handleChanged);

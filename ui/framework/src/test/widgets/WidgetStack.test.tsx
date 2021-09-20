@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { render } from "@testing-library/react";
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
@@ -15,6 +16,7 @@ import {
   WidgetStackTabs, Zone, ZoneState,
 } from "../../ui-framework";
 import TestUtils, { mount } from "../TestUtils";
+import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
 
 const defaultWidgetTabs = {
   [1]: [],
@@ -29,14 +31,17 @@ const defaultWidgetTabs = {
 
 describe("WidgetStack", () => {
   before(async () => {
+    await NoRenderApp.startup();
     await TestUtils.initializeUiFramework();
+    FrontstageManager.clearFrontstageDefs();
 
     const frontstageProvider = new Frontstage1();
     ConfigurableUiManager.addFrontstageProvider(frontstageProvider);
   });
 
-  after(() => {
+  after(async () => {
     TestUtils.terminateUiFramework();
+    await IModelApp.shutdown();
   });
 
   class TestWidget1 extends WidgetControl {
@@ -120,17 +125,18 @@ describe("WidgetStack", () => {
 
   it("should produce a WidgetStack with 2 widgets", async () => {
     await FrontstageManager.setActiveFrontstageDef(undefined);
-    const wrapper = mount(<FrontstageComposer />);
+    const wrapper = render(<FrontstageComposer />);
 
     const frontstageDef = await FrontstageManager.getFrontstageDef(Frontstage1.stageId);
     expect(frontstageDef).to.not.be.undefined;
     await FrontstageManager.setActiveFrontstageDef(frontstageDef);
-    wrapper.update();
+    await TestUtils.flushAsyncOperations();
+    // wrapper.debug();
 
-    const stackedWidget = wrapper.find("div.nz-widget-stacked");
+    const stackedWidget = wrapper.container.querySelectorAll("div.nz-widget-stacked");
     expect(stackedWidget.length).to.eq(1);
 
-    const tabs = wrapper.find("div.nz-draggable");
+    const tabs = wrapper.container.querySelectorAll("div.nz-draggable");
     expect(tabs.length).to.eq(2);
   });
 

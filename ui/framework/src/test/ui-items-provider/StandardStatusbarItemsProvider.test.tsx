@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import {
-  StageUsage, ToolbarOrientation, ToolbarUsage, UiItemsManager,
+  StageUsage, UiItemsManager,
 } from "@bentley/ui-abstract";
 import TestUtils from "../TestUtils";
 import { MockRender } from "@bentley/imodeljs-frontend";

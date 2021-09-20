@@ -497,7 +497,6 @@ exports[`Frontstage local storage wrapper WidgetPanelsFrontstage should render 1
 <ActiveFrontstageDefProvider
   frontstageDef={
     FrontstageDef {
-      "_contentGroupId": "",
       "_defaultContentId": "",
       "_id": "",
       "_isApplicationClosing": false,
@@ -525,7 +524,6 @@ exports[`Frontstage local storage wrapper WidgetPanelsFrontstage should render m
 <ActiveFrontstageDefProvider
   frontstageDef={
     FrontstageDef {
-      "_contentGroupId": "",
       "_defaultContentId": "",
       "_id": "",
       "_isApplicationClosing": false,
