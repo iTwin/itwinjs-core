@@ -29,8 +29,8 @@ export interface StandardFrontstageProps {
   id: string;
   /* version id that is used to store state of stage */
   version?: number;
-  // Usage of stage, if not specified StageUsage.General is used
-  usage?: StageUsage | string;
+  // Usage of stage. To allow generic UiItemProvides to populate this stage set to `StageUsage.General`.
+  usage: StageUsage | string;
   /** Definition of available content groups or a function that provides them */
   contentGroupProps: ContentGroupProps | ContentGroupProvider;
   /** Specify button to use to open backstage. Leave undefined for no backstage button.
@@ -84,7 +84,7 @@ export class StandardFrontstageProvider extends FrontstageProvider {
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={contentGroup}
         isInFooterMode={true}
-        usage={this.props.usage ?? StageUsage.General}
+        usage={this.props.usage}
         applicationData={this.props.applicationData}
 
         contentManipulationTools={

@@ -202,9 +202,11 @@ class BaseSplit {
   constructor(props: LayoutSplitPropsBase) {
     this.defaultPercentage = props.percentage;
 
+    // istanbul ignore else
     if (props.id)
       this.stateId = props.id;
 
+    // istanbul ignore else
     if (props.lock)
       this.isLocked = props.lock;
   }

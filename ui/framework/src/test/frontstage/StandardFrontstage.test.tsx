@@ -209,4 +209,35 @@ describe("ContentGroupProvider", () => {
     });
   });
 
+  it("openStandardFrontstage with corner items", async () => {
+    const testGroupProps: ContentGroupProps = {
+      id: "main-content-group",
+      layout: StandardContentLayouts.singleView,
+      contents: [
+        {
+          id: "primaryContent",
+          classId: "test_class",
+          applicationData: {
+            isInitialContentTestData: true,
+          },
+        },
+      ],
+    };
+
+    const testStageProps: StandardFrontstageProps = {
+      id: "test",
+      contentGroupProps: testGroupProps,
+      hideStatusBar: true,
+      usage: StageUsage.Private,
+    };
+
+    const standardFrontstageProvider = new StandardFrontstageProvider(testStageProps);
+    FrontstageManager.addFrontstageProvider(standardFrontstageProvider);
+    await FrontstageManager.setActiveFrontstage(standardFrontstageProvider.id);
+    setImmediate(async () => {
+      await TestUtils.flushAsyncOperations();
+      expect(FrontstageManager.activeFrontstageId).to.eq(standardFrontstageProvider.id);
+    });
+  });
+
 });

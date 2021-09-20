@@ -349,7 +349,7 @@ export class WidgetDef {
       }
     }
 
-    // To avoid breaking API changes, if a WidgetControl is not specified for a status bar use Default one.
+    // istanbul ignore next - To avoid breaking API changes, if a WidgetControl is not specified for a status bar use Default one.
     if (!this._widgetControl && this.isStatusBar) {
       const info = new ConfigurableCreateInfo("StatusBarWidgetComposerControl", StatusBarWidgetComposerControl.controlId, StatusBarWidgetComposerControl.controlId);
       this._widgetControl = new StatusBarWidgetComposerControl(info, undefined);
@@ -421,6 +421,7 @@ export class WidgetDef {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.widgetControl && UiFramework.postTelemetry(`Widget ${this.widgetControl.classId} state set to ${widgetStateNameMap.get(this._state)}`, "35402486-9839-441E-A5C7-46D546142D11");
     this.widgetControl && this.widgetControl.onWidgetStateChanged();
+    // istanbul ignore next
     this._onWidgetStateChanged && this._onWidgetStateChanged();
   }
 
