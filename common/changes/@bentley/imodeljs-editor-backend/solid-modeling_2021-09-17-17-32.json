@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-editor-backend",
+      "comment": "New solid modeling ipc interface",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-editor-backend"
+}

@@ -9,7 +9,6 @@
 import { BeEvent } from "./BeEvent";
 import { BentleyError, GetMetaDataFunction, IModelStatus } from "./BentleyError";
 import { BentleyLoggerCategory } from "./BentleyLoggerCategory";
-import { addClientRequestContext, ClientRequestContext } from "./ClientRequestContext";
 import { IDisposable } from "./Disposable";
 
 /** Defines the *signature* for a log function.
@@ -78,7 +77,6 @@ export class Logger {
     Logger.turnOffLevelDefault();
     Logger.turnOffCategories();
     Logger.clearMetaDataSources();
-    Logger.registerMetaDataSource(addClientRequestContext);
   }
 
   /**
@@ -157,23 +155,6 @@ export class Logger {
     this._makeMetaDataEvent.raiseEvent(metaData);
   }
 
-  /** @internal used by addon */
-  public static getCurrentClientRequestContext(): ClientRequestContext {
-    return ClientRequestContext.current;
-  }
-
-  /** @internal used by addon */
-  public static setCurrentClientRequestContext(obj: any) {
-    if (obj === undefined) {
-      if (ClientRequestContext.current.activityId !== "")
-        new ClientRequestContext("").enter();
-    } else {
-      if (!(obj instanceof ClientRequestContext))
-        throw new TypeError(`${JSON.stringify(obj)} -- this is not an instance of ClientRequestContext`);
-      obj.enter();
-    }
-  }
-
   public static set logExceptionCallstacks(b: boolean) {
     Logger._logExceptionCallstacks = b;
   }
@@ -191,7 +172,7 @@ export class Logger {
   }
 
   /** Format the metadata for a log message.  */
-  private static formatMetaData(getMetaData?: GetMetaDataFunction): any {
+  private static formatMetaData(getMetaData?: GetMetaDataFunction): string {
     return getMetaData ? ` ${JSON.stringify(Logger.makeMetaData(getMetaData))}` : "";
   }
 
@@ -325,12 +306,9 @@ export class Logger {
    * @param log The logger output function to use - defaults to Logger.logError
    * @param metaData  Optional data for the message
    */
-  public static logException(category: string, err: Error, log: LogFunction = Logger.logError, metaData?: GetMetaDataFunction): void {
+  public static logException(category: string, err: any, log: LogFunction = Logger.logError, metaData?: GetMetaDataFunction): void {
     log(category, Logger.getExceptionMessage(err), () => {
-      const mdata = metaData ? metaData() : {};
-      if (!mdata.hasOwnProperty("ExceptionType"))
-        mdata.ExceptionType = err.constructor.name;
-      return mdata;
+      return { ...err.getMetaData?.(), ...metaData?.(), exceptionType: err.constructor.name };
     });
   }
 

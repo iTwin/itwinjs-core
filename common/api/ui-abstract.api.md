@@ -10,7 +10,6 @@ import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { Id64String } from '@bentley/bentleyjs-core';
-import { LogFunction } from '@bentley/bentleyjs-core';
 
 // @public
 export interface AbstractActionItemProps extends CommonItemProps, CommandHandler {
@@ -112,107 +111,6 @@ export enum AbstractZoneLocation {
     CenterLeft = 4,
     // (undocumented)
     CenterRight = 6
-}
-
-// @alpha
-export enum AccuDrawField {
-    // (undocumented)
-    Angle = 1,
-    // (undocumented)
-    Distance = 0,
-    // (undocumented)
-    X = 2,
-    // (undocumented)
-    Y = 3,
-    // (undocumented)
-    Z = 4
-}
-
-// @alpha (undocumented)
-export class AccuDrawGrabInputFocusEvent extends BeUiEvent<{}> {
-}
-
-// @alpha
-export enum AccuDrawMode {
-    // (undocumented)
-    Polar = 0,
-    // (undocumented)
-    Rectangular = 1
-}
-
-// @alpha (undocumented)
-export class AccuDrawSetFieldFocusEvent extends BeUiEvent<AccuDrawSetFieldFocusEventArgs> {
-}
-
-// @alpha (undocumented)
-export interface AccuDrawSetFieldFocusEventArgs {
-    // (undocumented)
-    field: AccuDrawField;
-}
-
-// @alpha (undocumented)
-export class AccuDrawSetFieldLockEvent extends BeUiEvent<AccuDrawSetFieldLockEventArgs> {
-}
-
-// @alpha (undocumented)
-export interface AccuDrawSetFieldLockEventArgs {
-    // (undocumented)
-    field: AccuDrawField;
-    // (undocumented)
-    lock: boolean;
-}
-
-// @alpha (undocumented)
-export class AccuDrawSetFieldValueFromUiEvent extends BeUiEvent<AccuDrawSetFieldValueFromUiEventArgs> {
-}
-
-// @alpha (undocumented)
-export interface AccuDrawSetFieldValueFromUiEventArgs {
-    // (undocumented)
-    field: AccuDrawField;
-    // (undocumented)
-    stringValue: string;
-}
-
-// @alpha (undocumented)
-export class AccuDrawSetFieldValueToUiEvent extends BeUiEvent<AccuDrawSetFieldValueToUiEventArgs> {
-}
-
-// @alpha (undocumented)
-export interface AccuDrawSetFieldValueToUiEventArgs {
-    // (undocumented)
-    field: AccuDrawField;
-    // (undocumented)
-    formattedValue: string;
-    // (undocumented)
-    value: number;
-}
-
-// @alpha (undocumented)
-export class AccuDrawSetModeEvent extends BeUiEvent<AccuDrawSetModeEventArgs> {
-}
-
-// @alpha (undocumented)
-export interface AccuDrawSetModeEventArgs {
-    // (undocumented)
-    mode: AccuDrawMode;
-}
-
-// @alpha (undocumented)
-export class AccuDrawUiAdmin {
-    grabInputFocus(): void;
-    get hasInputFocus(): boolean;
-    static readonly onAccuDrawGrabInputFocusEvent: AccuDrawGrabInputFocusEvent;
-    static readonly onAccuDrawSetFieldFocusEvent: AccuDrawSetFieldFocusEvent;
-    static readonly onAccuDrawSetFieldLockEvent: AccuDrawSetFieldLockEvent;
-    static readonly onAccuDrawSetFieldValueFromUiEvent: AccuDrawSetFieldValueFromUiEvent;
-    static readonly onAccuDrawSetFieldValueToUiEvent: AccuDrawSetFieldValueToUiEvent;
-    static readonly onAccuDrawSetModeEvent: AccuDrawSetModeEvent;
-    setFieldFocus(field: AccuDrawField): void;
-    setFieldLock(field: AccuDrawField, lock: boolean): void;
-    setFieldValueFromUi(field: AccuDrawField, stringValue: string): void;
-    setFieldValueToUi(field: AccuDrawField, value: number, formattedValue: string): void;
-    setMode(mode: AccuDrawMode): void;
 }
 
 // @public
@@ -2034,9 +1932,6 @@ export class UiAbstract {
 
 // @public
 export class UiAdmin {
-    // @alpha
-    get accuDrawUi(): AccuDrawUiAdmin;
-    set accuDrawUi(v: AccuDrawUiAdmin);
     closeDialog(_dialogId: string): boolean;
     closeToolSettingsPopup(): boolean;
     createXAndY(x: number, y: number): PointProps;
@@ -2088,7 +1983,9 @@ export abstract class UiDataProvider {
 
 // @public
 export class UiError extends BentleyError {
-    constructor(category: string, message: string, errorNumber?: number, log?: LogFunction, getMetaData?: GetMetaDataFunction | undefined);
+    constructor(category: string, message: string, errorNumber?: number, getMetaData?: GetMetaDataFunction);
+    // (undocumented)
+    category: string;
 }
 
 // @public

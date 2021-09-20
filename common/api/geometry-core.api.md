@@ -2283,6 +2283,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     fillLocalXYTriangleFrame(originIndex: number, targetAIndex: number, targetBIndex: number, result?: Transform): Transform | undefined;
     float64Data(): Float64Array;
     get float64Length(): number;
+    forceClosure(tolerance?: number): void;
     front(result?: Point3d): Point3d | undefined;
     getPoint2dAtCheckedPointIndex(pointIndex: number, result?: Point2d): Point2d | undefined;
     getPoint2dAtUncheckedPointIndex(pointIndex: number, result?: Point2d): Point2d;
@@ -3252,6 +3253,17 @@ export class Loop extends CurveChain {
 }
 
 // @public
+export class LoopCurveLoopCurve {
+    constructor(loopA: Loop | undefined, curveA: CurvePrimitive | undefined, loopB: Loop | undefined, curveB: CurvePrimitive | undefined);
+    curveA?: CurvePrimitive;
+    curveB?: CurvePrimitive;
+    loopA?: Loop;
+    loopB?: Loop;
+    setA(loop: Loop, curve: CurvePrimitive): void;
+    setB(loop: Loop, curve: CurvePrimitive): void;
+}
+
+// @public
 export type LowAndHighXY = Readonly<WritableLowAndHighXY>;
 
 // @public
@@ -3988,7 +4000,7 @@ export class Point3d extends XYZ {
 
 // @public
 export class Point3dArray {
-    static centroid(points: IndexedXYZCollection, result?: Point3d): Point3d;
+    static centroid(points: IndexedXYZCollection | Point3d[], result?: Point3d): Point3d;
     static cloneDeepJSONNumberArrays(data: MultiLineStringDataVariant): number[][];
     static cloneDeepXYZPoint3dArrays(data: MultiLineStringDataVariant): any[];
     static clonePoint2dArray(data: XYAndZ[]): Point2d[];
@@ -4367,6 +4379,7 @@ export class PolyfaceQuery {
     static buildAverageNormals(polyface: IndexedPolyface, toleranceAngle?: Angle): void;
     static buildPerFaceNormals(polyface: IndexedPolyface): void;
     static cloneByFacetDuplication(source: Polyface, includeSingletons: boolean, clusterSelector: DuplicateFacetClusterSelector): Polyface;
+    static cloneFiltered(source: Polyface | PolyfaceVisitor, filter: (visitor: PolyfaceVisitor) => boolean): Polyface;
     static clonePartitions(polyface: Polyface | PolyfaceVisitor, partitions: number[][]): Polyface[];
     static cloneWithColinearEdgeFixup(polyface: Polyface): Polyface;
     static cloneWithTVertexFixup(polyface: Polyface): IndexedPolyface;
@@ -4717,6 +4730,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     low: Point3d;
     maxAbs(): number;
     maxLength(): number;
+    rectangleXY(zFraction?: number, upwardNormal?: boolean, addClosure?: boolean): Point3d[] | undefined;
     scaleAboutCenterInPlace(scaleFactor: number): void;
     setFrom(other: Range3d): void;
     setFromJSON(json?: Range3dProps): void;
@@ -5127,6 +5141,7 @@ export class Segment1d {
 
 // @public
 export interface SignedLoops {
+    edges?: LoopCurveLoopCurve[];
     negativeAreaLoops: Loop[];
     positiveAreaLoops: Loop[];
     slivers: Loop[];

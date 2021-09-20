@@ -6,7 +6,7 @@
  * @module Utilities
  */
 
-import { BentleyError, BentleyStatus, GetMetaDataFunction, LogFunction, Logger } from "@bentley/bentleyjs-core";
+import { BentleyError, BentleyStatus, GetMetaDataFunction } from "@bentley/bentleyjs-core";
 
 /** iModel.js UI UiError class is a subclass of BentleyError. Errors are logged.
  * @public
@@ -14,7 +14,7 @@ import { BentleyError, BentleyStatus, GetMetaDataFunction, LogFunction, Logger }
 export class UiError extends BentleyError {
 
   /** Constructs UiError using BentleyError. */
-  public constructor(category: string, message: string, errorNumber: number = BentleyStatus.ERROR, log: LogFunction = Logger.logError, getMetaData?: GetMetaDataFunction | undefined) {
-    super(errorNumber, message, log, category, getMetaData);
+  public constructor(public category: string, message: string, errorNumber: number = BentleyStatus.ERROR, getMetaData?: GetMetaDataFunction) {
+    super(errorNumber, message, getMetaData);
   }
 }
