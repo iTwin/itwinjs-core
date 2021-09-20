@@ -387,12 +387,6 @@ export interface StatusCodeWithMessage<ErrorCodeType> {
  */
 export type GetMetaDataFunction = () => object | undefined;
 
-/** all values with known status meanings
- * @public */
-export type AllStatusValues =
-  IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RpcInterfaceStatus |
-  ExtensionStatus | GeoServiceStatus | HttpStatus | RepositoryStatus | WSStatus;
-
 /** Base exception class for iTwin.js exceptions.
  * @public
  */
@@ -404,7 +398,7 @@ export class BentleyError extends Error {
    * @param message  message that describes the problem (should not be localized).
    * @param getMetaData a function to be stored on the exception object that provides metaData about the problem.
    */
-  public constructor(public errorNumber: AllStatusValues | number, message?: string, getMetaData?: GetMetaDataFunction) {
+  public constructor(public errorNumber: number, message?: string, getMetaData?: GetMetaDataFunction) {
     super(message);
     this.errorNumber = errorNumber;
     this._getMetaData = getMetaData;
