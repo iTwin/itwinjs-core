@@ -8,7 +8,10 @@
 
 import * as deepAssign from "deep-assign";
 import { GuidString, Id64String, IModelHubStatus, Logger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ECJsonTypeMap, ResponseError, WsgInstance, WsgQuery, WsgRequestOptions } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, ResponseError } from "@bentley/itwin-client";
+import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
+import { WsgQuery } from "../wsg/WsgQuery";
+import { WsgRequestOptions } from "../wsg/WsgClient";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { IModelBaseHandler } from "./BaseHandler";
 import { AggregateResponseError, ArgumentCheck, IModelHubClientError, IModelHubError } from "./Errors";

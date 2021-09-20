@@ -7,7 +7,9 @@
  */
 
 import { GuidString, Logger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ECJsonTypeMap, WsgInstance, WsgQuery } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
+import { WsgQuery } from "../wsg/WsgQuery";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";

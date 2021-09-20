@@ -5,11 +5,10 @@
 /** @packageDocumentation
  * @module iModelHubClient
  */
-import { assert, ClientRequestContext } from "@bentley/bentleyjs-core";
-import {
-  AuthorizedClientRequestContext, ChunkedQueryContext, DefaultWsgRequestOptionsProvider, FileHandler, HttpRequestOptions, RequestGlobalOptions, RequestOptions,
-  RequestQueryOptions, WsgClient, WsgInstance, WsgRequestOptions,
-} from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, FileHandler, RequestGlobalOptions, RequestOptions, RequestQueryOptions } from "@bentley/itwin-client";
+import { ChunkedQueryContext } from "../wsg/ChunkedQueryContext";
+import { WsgInstance } from "../wsg/ECJsonTypeMap";
+import { DefaultWsgRequestOptionsProvider, HttpRequestOptions, WsgClient, WsgRequestOptions } from "../wsg/WsgClient";
 import { CustomRequestOptions } from "./CustomRequestOptions";
 import { IModelHubError } from "./Errors";
 
@@ -166,7 +165,7 @@ export class IModelBaseHandler extends WsgClient {
    * @returns Promise resolves after successfully deleting REST resource at the specified path.
    */
   public override async delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, httpRequestOptions?: HttpRequestOptions): Promise<void> {
-    return super.delete(requestContext, relativeUrlPath, this.setupHttpOptions(httpRequestOptions));
+    return super.delete(requestContext, relativeUrlPath, httpRequestOptions);
   }
 
   /**

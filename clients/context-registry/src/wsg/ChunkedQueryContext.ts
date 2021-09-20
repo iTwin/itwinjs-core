@@ -2,14 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @packageDocumentation
- * @module iTwinServiceClients
- */
-import { RequestQueryOptions } from "./Request";
+
+import { RequestQueryOptions } from "@bentley/itwin-client";
 
 /**
  * Context for holding chunked query data.
- * @beta
+ * @internal
  */
 export class ChunkedQueryContext {
   private _instancesLeft?: number;

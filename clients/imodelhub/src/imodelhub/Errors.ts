@@ -8,7 +8,8 @@
 
 import * as deepAssign from "deep-assign";
 import { GetMetaDataFunction, Guid, HttpStatus, IModelHubStatus, LogFunction, Logger, WSStatus } from "@bentley/bentleyjs-core";
-import { ResponseError, WsgError } from "@bentley/itwin-client";
+import { ResponseError } from "@bentley/itwin-client";
+import { WsgError } from "../wsg/WsgClient";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 
 const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;

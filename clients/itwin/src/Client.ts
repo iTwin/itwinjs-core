@@ -9,8 +9,7 @@ import { Logger } from "@bentley/bentleyjs-core";
 import * as deepAssign from "deep-assign";
 import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
 import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
-import { request, RequestGlobalOptions, RequestOptions, RequestTimeoutOptions, Response, ResponseError } from "./Request";
-import { HttpRequestOptions } from "./WsgClient";
+import { request, RequestOptions } from "./Request";
 
 const loggerCategory: string = ITwinClientLoggerCategory.Clients;
 
@@ -97,7 +96,7 @@ export abstract class Client {
   }
 
   /** used by clients to send delete requests */
-  protected async delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, httpRequestOptions?: HttpRequestOptions): Promise<void> {
+  protected async delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string): Promise<void> {
     requestContext.enter();
     const url: string = await this.getUrl() + relativeUrlPath;
     Logger.logInfo(loggerCategory, "Sending DELETE request", () => ({ url }));
@@ -105,46 +104,9 @@ export abstract class Client {
       method: "DELETE",
       headers: { authorization: requestContext.accessToken.toTokenString() },
     };
-    this.applyUserConfiguredHttpRequestOptions(options, httpRequestOptions);
     await this.setupOptionDefaults(options);
     await request(requestContext, url, options);
     requestContext.enter();
     Logger.logTrace(loggerCategory, "Successful DELETE request", () => ({ url }));
   }
-
-  /** Configures request options based on user defined values in HttpRequestOptions */
-  protected applyUserConfiguredHttpRequestOptions(requestOptions: RequestOptions, userDefinedRequestOptions?: HttpRequestOptions): void {
-    if (!userDefinedRequestOptions)
-      return;
-
-    if (userDefinedRequestOptions.headers) {
-      requestOptions.headers = { ...requestOptions.headers, ...userDefinedRequestOptions.headers };
-    }
-
-    if (userDefinedRequestOptions.timeout) {
-      this.applyUserConfiguredTimeout(requestOptions, userDefinedRequestOptions.timeout);
-    }
-  }
-
-  /** Sets the request timeout based on user defined values */
-  private applyUserConfiguredTimeout(requestOptions: RequestOptions, userDefinedTimeout: RequestTimeoutOptions): void {
-    requestOptions.timeout = { ...requestOptions.timeout };
-
-    if (userDefinedTimeout.response)
-      requestOptions.timeout.response = userDefinedTimeout.response;
-
-    if (userDefinedTimeout.deadline)
-      requestOptions.timeout.deadline = userDefinedTimeout.deadline;
-    else if (userDefinedTimeout.response) {
-      const defaultNetworkOverheadBuffer = (RequestGlobalOptions.timeout.deadline as number) - (RequestGlobalOptions.timeout.response as number);
-      requestOptions.timeout.deadline = userDefinedTimeout.response + defaultNetworkOverheadBuffer;
-    }
-  }
-}
-
-/**
- * Error for issues with authentication.
- * @beta
- */
-export class AuthenticationError extends ResponseError {
 }

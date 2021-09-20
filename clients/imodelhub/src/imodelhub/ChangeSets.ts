@@ -7,7 +7,9 @@
  */
 
 import { GuidString, Logger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ChunkedQueryContext, DownloadFailed, ECJsonTypeMap, FileHandler, ProgressCallback, ProgressInfo, RequestQueryOptions, SasUrlExpired, WsgInstance } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, DownloadFailed, FileHandler, ProgressCallback, ProgressInfo, RequestQueryOptions, SasUrlExpired } from "@bentley/itwin-client";
+import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
+import { ChunkedQueryContext } from "../wsg/ChunkedQueryContext";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck, IModelHubClientError } from "./Errors";

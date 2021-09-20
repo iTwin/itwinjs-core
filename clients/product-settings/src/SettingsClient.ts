@@ -6,7 +6,7 @@
 /** @packageDocumentation
  * @module Settings
  */
-import { assert, BentleyError, BentleyStatus, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { assert, BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, Client, request, RequestOptions, Response } from "@bentley/itwin-client";
 import { SettingsAdmin, SettingsMapResult, SettingsResult, SettingsStatus } from "./SettingsAdmin";
 
@@ -19,9 +19,7 @@ import { SettingsAdmin, SettingsMapResult, SettingsResult, SettingsStatus } from
  * @internal
  */
 export class ConnectSettingsClient extends Client implements SettingsAdmin {
-  public static readonly searchKey: string = "ProductSettingsService.RP";
   public static readonly apiVersion: string = "v1.0";
-  protected override _url?: string;
 
   /** Creates an instance of ConnectSettingsClient.
    */
@@ -35,25 +33,6 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
 
   protected override async setupOptionDefaults(options: RequestOptions): Promise<void> {
     await super.setupOptionDefaults(options);
-  }
-
-  /** Gets the URL of the service.
-   * Attempts to discover and cache the URL from the URL Discovery Service. If not
-   * found uses the default URL provided by client implementations. Note that for consistency
-   * sake, the URL is stripped of any trailing "/"
-   * @param excludeApiVersion Pass true to optionally exclude the API version from the URL.
-   * @returns URL for the service
-   */
-  public override async getUrl(requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string> {
-    if (this._url)
-      return this._url;
-
-    const url = await super.getUrl(requestContext);
-    this._url = url;
-    if (!excludeApiVersion)
-      this._url = `${this._url}/${ConnectSettingsClient.apiVersion}`;
-
-    return this._url;
   }
 
   // gets the portion of the Url that encapsulates the type of setting requested.
@@ -149,7 +128,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
   // Private function that can retrieve either user specific settings or non-user-specific settings
   private async saveAnySetting(requestContext: AuthorizedClientRequestContext, userSpecific: boolean, settings: any, settingNamespace: string, settingName: string, applicationSpecific: boolean, shared: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult> {
     requestContext.enter();
-    const baseUrl: string = await this.getUrl(requestContext);
+    const baseUrl: string = await this.getUrl();
     requestContext.enter();
     const accessTokenString: string | undefined = requestContext.accessToken.toTokenString();
 
@@ -178,7 +157,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
 
   // Retrieves previously saved user settings
   private async getAnySetting(requestContext: AuthorizedClientRequestContext, userSpecific: boolean, settingNamespace: string, settingName: string, applicationSpecific: boolean, shared: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult> {
-    const baseUrl: string = await this.getUrl(requestContext);
+    const baseUrl: string = await this.getUrl();
     const accessTokenString: string | undefined = requestContext.accessToken.toTokenString();
 
     const options: RequestOptions = {
@@ -205,7 +184,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
 
   // Retrieves all saved settings with the same namespace.
   private async getAnySettingsByNamespace(requestContext: AuthorizedClientRequestContext, userSpecific: boolean, settingNamespace: string, applicationSpecific: boolean, shared: boolean, projectId?: string, iModelId?: string): Promise<SettingsMapResult> {
-    const baseUrl: string = await this.getUrl(requestContext);
+    const baseUrl: string = await this.getUrl();
     const accessTokenString: string | undefined = requestContext.accessToken.toTokenString();
 
     const options: RequestOptions = {
@@ -250,7 +229,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
   }
 
   private async deleteAnySetting(requestContext: AuthorizedClientRequestContext, userSpecific: boolean, settingNamespace: string, settingName: string, applicationSpecific: boolean, shared: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult> {
-    const baseUrl: string = await this.getUrl(requestContext);
+    const baseUrl: string = await this.getUrl();
     const accessTokenString: string | undefined = requestContext.accessToken.toTokenString();
 
     const options: RequestOptions = {

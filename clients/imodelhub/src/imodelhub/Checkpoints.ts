@@ -8,10 +8,10 @@
 
 import * as urllib from "url";
 import { GuidString, Logger, PerfLogger } from "@bentley/bentleyjs-core";
-import {
-  AuthorizedClientRequestContext, CancelRequest, ECJsonTypeMap, FileHandler, ProgressCallback, WsgInstance, WsgQuery,
-} from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, CancelRequest, FileHandler, ProgressCallback } from "@bentley/itwin-client";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
+import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
+import { WsgQuery } from "../wsg/WsgQuery";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck, IModelHubClientError } from "./Errors";
 import { addSelectFileAccessKey } from "./HubQuery";

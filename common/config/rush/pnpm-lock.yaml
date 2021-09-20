@@ -15,6 +15,7 @@ importers:
       '@bentley/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
       '@types/deep-assign': ^0.1.0
+      '@types/lodash': ^4.14.0
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       chai: ^4.1.2
@@ -23,6 +24,7 @@ importers:
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       internal-tools: workspace:*
+      lodash: ^4.17.10
       mocha: ^8.3.2
       rimraf: ^3.0.2
       source-map-loader: ^1.0.0
@@ -30,6 +32,7 @@ importers:
       webpack: 4.42.0
     dependencies:
       deep-assign: 2.0.0
+      lodash: 4.17.21
     devDependencies:
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/build-tools': link:../../tools/build
@@ -39,6 +42,7 @@ importers:
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/chai': 4.2.21
       '@types/deep-assign': 0.1.1
+      '@types/lodash': 4.14.172
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       chai: 4.3.4
@@ -84,16 +88,19 @@ importers:
       '@bentley/frontend-authorization-client': workspace:*
       '@bentley/itwin-client': workspace:*
       '@types/deep-assign': ^0.1.0
+      '@types/lodash': ^4.14.0
       '@types/node': 10.14.1
       deep-assign: ^2.0.0
       eslint: ^7.11.0
       js-base64: ^3.6.1
+      lodash: ^4.17.10
       rimraf: ^3.0.2
       typescript: ~4.3.0
     dependencies:
       '@bentley/context-registry-client': link:../context-registry
       deep-assign: 2.0.0
       js-base64: 3.7.1
+      lodash: 4.17.21
     devDependencies:
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/build-tools': link:../../tools/build
@@ -101,6 +108,7 @@ importers:
       '@bentley/frontend-authorization-client': link:../frontend-authorization
       '@bentley/itwin-client': link:../itwin
       '@types/deep-assign': 0.1.1
+      '@types/lodash': 4.14.172
       '@types/node': 10.14.1
       eslint: 7.32.0
       rimraf: 3.0.2
@@ -221,16 +229,20 @@ importers:
       '@bentley/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
+      '@types/deep-assign': ^0.1.0
       '@types/jsonpath': ^0.2.0
+      '@types/lodash': ^4.14.0
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       chai: ^4.1.2
       chai-as-promised: ^7
+      deep-assign: ^2.0.0
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       internal-tools: workspace:*
       jsonpath: ^1.1.1
+      lodash: ^4.17.10
       mocha: ^8.3.2
       rimraf: ^3.0.2
       source-map-loader: ^1.0.0
@@ -238,6 +250,8 @@ importers:
       webpack: 4.42.0
     dependencies:
       '@bentley/bentleyjs-core': link:../../core/bentley
+      deep-assign: 2.0.0
+      lodash: 4.17.21
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/certa': link:../../tools/certa
@@ -248,7 +262,9 @@ importers:
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/chai': 4.2.21
       '@types/chai-as-promised': 7.1.4
+      '@types/deep-assign': 0.1.1
       '@types/jsonpath': 0.2.0
+      '@types/lodash': 4.14.172
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       chai: 4.3.4

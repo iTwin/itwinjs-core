@@ -2,23 +2,29 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @packageDocumentation
- * @module iTwinServiceClients
- */
-import * as deepAssign from "deep-assign";
-import { GetMetaDataFunction, HttpStatus, Logger, WSStatus } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
-import { AuthenticationError, Client, DefaultRequestOptionsProvider } from "./Client";
-import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
-import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
-import { request, RequestOptions, RequestQueryOptions, RequestTimeoutOptions, Response, ResponseError } from "./Request";
-import { ChunkedQueryContext } from "./ChunkedQueryContext";
-import { once } from "lodash";
 
-const loggerCategory: string = ITwinClientLoggerCategory.Clients;
+import * as deepAssign from "deep-assign";
+import { once } from "lodash";
+import { GetMetaDataFunction, HttpStatus, Logger, WSStatus } from "@bentley/bentleyjs-core";
+import {
+  AuthorizedClientRequestContext, Client, DefaultRequestOptionsProvider, request, RequestGlobalOptions, RequestOptions, RequestQueryOptions,
+  RequestTimeoutOptions, Response, ResponseError,
+} from "@bentley/itwin-client";
+import { ChunkedQueryContext } from "./ChunkedQueryContext";
+import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
+import { WsgClientLoggerCategory } from "./WsgLoggerCategory";
+
+const loggerCategory: string = WsgClientLoggerCategory.Client;
+
+/**
+ * Error for issues with authentication.
+ * @internal
+ */
+export class AuthenticationError extends ResponseError {
+}
 
 /** Error that was returned by a WSG based service.
- * @beta
+ * @internal
  */
 export class WsgError extends ResponseError {
   public constructor(errorNumber: number | HttpStatus, message?: string, getMetaData?: GetMetaDataFunction) {
@@ -190,7 +196,7 @@ export class DefaultWsgRequestOptionsProvider extends DefaultRequestOptionsProvi
 
 /**
  * Options for WSG requests sent to the service
- * @beta
+ * @internal
  */
 export interface WsgRequestOptions {
   ResponseContent?: "FullInstance" | "Empty" | "InstanceId"; // eslint-disable-line @typescript-eslint/naming-convention
@@ -200,7 +206,7 @@ export interface WsgRequestOptions {
 
 /**
  * Additional options used for requests
- * @beta
+ * @internal
  */
 export interface HttpRequestOptions {
   headers?: any;
@@ -209,7 +215,7 @@ export interface HttpRequestOptions {
 
 /**
  * Base class for Client implementations of services that are based on WSG
- * @beta
+ * @internal
  */
 export abstract class WsgClient extends Client {
   private static _defaultWsgRequestOptionsProvider: DefaultWsgRequestOptionsProvider;
@@ -523,5 +529,34 @@ export abstract class WsgClient extends Client {
 
     Logger.logTrace(loggerCategory, "Successful POST request", () => ({ url }));
     return typedInstances;
+  }
+
+  /** Configures request options based on user defined values in HttpRequestOptions */
+  protected applyUserConfiguredHttpRequestOptions(requestOptions: RequestOptions, userDefinedRequestOptions?: HttpRequestOptions): void {
+    if (!userDefinedRequestOptions)
+      return;
+
+    if (userDefinedRequestOptions.headers) {
+      requestOptions.headers = { ...requestOptions.headers, ...userDefinedRequestOptions.headers };
+    }
+
+    if (userDefinedRequestOptions.timeout) {
+      this.applyUserConfiguredTimeout(requestOptions, userDefinedRequestOptions.timeout);
+    }
+  }
+
+  /** Sets the request timeout based on user defined values */
+  private applyUserConfiguredTimeout(requestOptions: RequestOptions, userDefinedTimeout: RequestTimeoutOptions): void {
+    requestOptions.timeout = { ...requestOptions.timeout };
+
+    if (userDefinedTimeout.response)
+      requestOptions.timeout.response = userDefinedTimeout.response;
+
+    if (userDefinedTimeout.deadline)
+      requestOptions.timeout.deadline = userDefinedTimeout.deadline;
+    else if (userDefinedTimeout.response) {
+      const defaultNetworkOverheadBuffer = (RequestGlobalOptions.timeout.deadline as number) - (RequestGlobalOptions.timeout.response as number);
+      requestOptions.timeout.deadline = userDefinedTimeout.response + defaultNetworkOverheadBuffer;
+    }
   }
 }

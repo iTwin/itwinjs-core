@@ -6,11 +6,12 @@
 /** @packageDocumentation
  * @module RealityData
  */
-import { ClientRequestContext, Guid } from "@bentley/bentleyjs-core";
-import {
-  AuthorizedClientRequestContext, ECJsonTypeMap, getArrayBuffer, getJson, RequestQueryOptions, WsgClient, WsgInstance,
-} from "@bentley/itwin-client";
+
 import { URL } from "url";
+import { ClientRequestContext, Guid } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext, getArrayBuffer, getJson, RequestQueryOptions } from "@bentley/itwin-client";
+import { ECJsonTypeMap, WsgInstance } from "./wsg/ECJsonTypeMap";
+import { WsgClient } from "./wsg/WsgClient";
 
 /** Currenlty supported  ProjectWise ContextShare reality data types
  * @internal
