@@ -206,13 +206,6 @@ export class IModelExporter {
     this._excludedElementIds.add(elementId);
   }
 
-  /** Add a rule to exclude all Elements in a specified Category.
-   * @deprecated Use [[excludeElementsInCategory]] instead.
-  */
-  public excludeElementCategory(categoryId: Id64String): void {
-    this.excludeElementsInCategory(categoryId);
-  }
-
   /** Add a rule to exclude all Elements in a specified Category. */
   public excludeElementsInCategory(categoryId: Id64String): void {
     this._excludedElementCategoryIds.add(categoryId);
@@ -594,23 +587,6 @@ export class IModelExporter {
         await this.exportElement(childElementId);
       }
     }
-  }
-
-  /** Export RepositoryLinks in the RepositoryModel.
-   * @deprecated The entire RepositoryModel contents are now exported, so RepositoryLinks do no need to be handled separately.
-   */
-  public async exportRepositoryLinks(): Promise<void> {
-    if (!this.visitElements) {
-      Logger.logTrace(loggerCategory, `visitElements=false, skipping exportRepositoryLinks()`);
-      return;
-    }
-    const sql = `SELECT ECInstanceId FROM ${RepositoryLink.classFullName} WHERE Parent.Id IS NULL AND Model.Id=:modelId ORDER BY ECInstanceId`;
-    await this.sourceDb.withPreparedStatement(sql, async (statement: ECSqlStatement): Promise<void> => {
-      statement.bindId("modelId", IModel.repositoryModelId);
-      while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        await this.exportElement(statement.getValue(0).getId());
-      }
-    });
   }
 
   /** Returns `true` if the specified ElementAspect should be exported or `false` if if should be excluded. */

@@ -742,7 +742,6 @@ describe("IModelTransformer", () => {
     await exporter.iModelExporter.exportAll();
     await exporter.iModelExporter.exportElement(IModel.rootSubjectId);
     await exporter.iModelExporter.exportChildElements(IModel.rootSubjectId);
-    await exporter.iModelExporter.exportRepositoryLinks(); // eslint-disable-line deprecation/deprecation
     await exporter.iModelExporter.exportModelContents(IModel.repositoryModelId);
     await exporter.iModelExporter.exportRelationships(ElementRefersToElements.classFullName);
     // make sure the exporter actually visited something
