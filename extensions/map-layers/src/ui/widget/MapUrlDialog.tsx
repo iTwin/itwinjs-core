@@ -76,8 +76,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   const [nameInputPlaceHolder] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.NameInputPlaceHolder"));
   const [urlLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.URL"));
   const [urlInputPlaceHolder] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.UrlInputPlaceHolder"));
-  // SWB
-  const [projectSettingsLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.StoreOnProjectSettings"));
+  const [iTwinSettingsLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.StoreOnITwinSettings"));
   const [modelSettingsLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.StoreOnModelSettings"));
   const [missingCredentialsLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.MissingCredentials"));
   const [invalidCredentialsLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.InvalidCredentials"));
@@ -95,7 +94,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   const [userNameLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:AuthenticationInputs.Username"));
   const [userNameRequiredLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:AuthenticationInputs.UsernameRequired"));
   // SWB What should be done about this change?
-  const [settingsStorage, setSettingsStorageRadio] = React.useState("Project");
+  const [settingsStorage, setSettingsStorageRadio] = React.useState("iTwin");
 
   const [mapType, setMapType] = React.useState(getFormatFromProps() ?? MAP_TYPES.arcGis);
 
@@ -411,9 +410,9 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
             {isSettingsStorageAvailable && <div title={settingsStorageDisabled ? noSaveSettingsWarning : ""}>
               <Radio disabled={settingsStorageDisabled}
                 // SWB What should be done about this change?
-                name="settingsStorage" value="Project"
+                name="settingsStorage" value="iTwin"
                 // SWB What should be done about this change?
-                label={projectSettingsLabel} checked={settingsStorage === "Project"}
+                label={iTwinSettingsLabel} checked={settingsStorage === "iTwin"}
                 onChange={onRadioChange} />
               <Radio disabled={settingsStorageDisabled}
                 name="settingsStorage" value="Model"

@@ -10,8 +10,7 @@ import { assert } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, ECJsonTypeMap, RequestOptions, RequestQueryOptions, WsgClient, WsgInstance } from "@bentley/itwin-client";
 import { ITwin, ITwinAccess, ITwinQueryArg } from "./ITwinAccessProps";
 
-// SWB
-/** The iTwin context such as Projects and Assets.
+/** The iTwin object, for general properties covering Projects, Assets, and custom contexts
  * @beta
  */
 @ECJsonTypeMap.classToJson("wsg", "CONNECTEDContext.Context", { schemaPropertyName: "schemaName", classPropertyName: "className" })
@@ -90,8 +89,7 @@ abstract class HiddenContext extends Context {
   public timeZoneLocation?: string;
 }
 
-// SWB
-/** An iTwin context of type project. Represents time-constrained work done on an [[Asset]].
+/** A deprecated implementation of a Project type iTwin. Represents time-constrained work done on an [[Asset]].
  * Deprecated
  * @beta
  */
@@ -107,8 +105,7 @@ class Project extends HiddenContext {
   public isRbacEnabled?: boolean;
 }
 
-// SWB
-/** An iTwin context of type asset. Assets represent a large scale item that is owned and/or operated by organization, such as buildings, highways and so on.
+/** A deprecated implementation of an Asset type iTwin. Assets represent a large scale item that is owned and/or operated by organization, such as buildings, highways and so on.
  * Deprecated
  * @beta
  */
@@ -150,8 +147,7 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
     return this.getByQuery(requestContext, queryOptions);
   }
 
-  // SWB
-  /** Gets all iTwins (projects or assets) using the given query options
+  /** Gets all iTwins using the given query options
    * @param requestContext The client request context
    * @param queryOptions Use the mapped EC property names in the query strings and not the TypeScript property names.
    * @returns Array of iTwins meeting the query's requirements

@@ -282,6 +282,7 @@ describe("ImodelChangesetPerformance", () => {
     if (!fs.existsSync(KnownTestLocations.outputDir))
       fs.mkdirSync(KnownTestLocations.outputDir);
     const configData = require(path.join(__dirname, "CSPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-var-requires
+    // SWB Requires config change
     iTwinId = configData.basicTest.projectId;
     imodelId = configData.basicTest.imodelId;
     imodelPushId = configData.basicTest.imodelPushId;
@@ -328,6 +329,7 @@ describe("ImodelChangesetPerformance", () => {
 
 describe("ImodelChangesetPerformance big datasets", () => {
   let iModelRootDir: string;
+  // SWB TODO: Update config to match renaming
   const configData = require(path.join(__dirname, "CSPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-var-requires
   const csvPath = path.join(KnownTestLocations.outputDir, "ApplyCSLocalPerf.csv");
 
@@ -486,10 +488,8 @@ describe("ImodelChangesetPerformance big datasets", () => {
       const startNum: number = ds.csStart ? ds.csStart : 0;
       const endNum: number = ds.csEnd ? ds.csEnd : changeSets.length;
       const modelInfo = {
-        // SWB
-        projId: iTwinId,
-        // SWB
-        projName: ds.projName,
+        iTwinId,
+        iTwinName: ds.projName,
         modelId: imodelId,
         modelName: ds.modelName,
       };
@@ -592,7 +592,7 @@ describe("ImodelChangesetPerformance own data", () => {
   const iModelNameBase: string = `CS_Lg3d_PElSub3_${dbSize}_`;
   const opSizes: number[] = configData.ownDataTest.opSizes;
   const baseNames: string[] = configData.ownDataTest.baseNames;
-  // SWB
+  // SWB Requires config change
   const iTwinId: string = configData.ownDataTest.projectId;
   const schemaDetail = configData.ownDataTest.schema;
   const schemaName: string = schemaDetail.name;

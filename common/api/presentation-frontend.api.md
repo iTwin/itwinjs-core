@@ -136,7 +136,7 @@ export enum FavoritePropertiesScope {
     // (undocumented)
     IModel = 2,
     // (undocumented)
-    Project = 1
+    ITwin = 1
 }
 
 // @internal (undocumented)
@@ -172,22 +172,22 @@ export interface HiliteSetProviderProps {
 
 // @public
 export interface IFavoritePropertiesStorage {
-    loadProperties(projectId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined>;
-    loadPropertiesOrder(projectId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
-    saveProperties(properties: Set<PropertyFullName>, projectId?: string, imodelId?: string): Promise<void>;
-    savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], projectId: string | undefined, imodelId: string): Promise<void>;
+    loadProperties(iTwinId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined>;
+    loadPropertiesOrder(iTwinId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
+    saveProperties(properties: Set<PropertyFullName>, iTwinId?: string, imodelId?: string): Promise<void>;
+    savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], iTwinId: string | undefined, imodelId: string): Promise<void>;
 }
 
 // @internal (undocumented)
 export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesStorage {
     // (undocumented)
-    loadProperties(projectId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined>;
+    loadProperties(iTwinId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined>;
     // (undocumented)
-    loadPropertiesOrder(projectId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
+    loadPropertiesOrder(iTwinId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
     // (undocumented)
-    saveProperties(properties: Set<PropertyFullName>, projectId?: string, imodelId?: string): Promise<void>;
+    saveProperties(properties: Set<PropertyFullName>, iTwinId?: string, imodelId?: string): Promise<void>;
     // (undocumented)
-    savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], projectId: string | undefined, imodelId: string): Promise<void>;
+    savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], iTwinId: string | undefined, imodelId: string): Promise<void>;
 }
 
 // @alpha
@@ -240,9 +240,9 @@ export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropert
     // (undocumented)
     loadProperties(projectId?: string, imodelId?: string): Promise<Set<string> | undefined>;
     // (undocumented)
-    loadPropertiesOrder(projectId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
+    loadPropertiesOrder(iTwinId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
     // (undocumented)
-    saveProperties(properties: Set<PropertyFullName>, projectId?: string, imodelId?: string): Promise<void>;
+    saveProperties(properties: Set<PropertyFullName>, iTwinId?: string, imodelId?: string): Promise<void>;
     // (undocumented)
     savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], projectId: string | undefined, imodelId: string): Promise<void>;
 }

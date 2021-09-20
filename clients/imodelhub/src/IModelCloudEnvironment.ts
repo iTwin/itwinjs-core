@@ -10,12 +10,10 @@ import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-cli
 import { AuthorizedClientRequestContext, UserInfo } from "@bentley/itwin-client";
 import { IModelClient } from "./IModelClient";
 
-// SWB
-/** How to discover "contexts". A context corresponds to an iTwin "project" or "asset".
+/** How to discover iTwins
  * @internal
  */
 export interface ITwinManagerClient {
-  // SWB
   getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin>;
 }
 
@@ -24,7 +22,6 @@ export interface ITwinManagerClient {
  */
 export interface IModelCloudEnvironment {
   readonly isIModelHub: boolean;
-  // SWB
   readonly iTwinMgr: ITwinManagerClient;
   readonly imodelClient: IModelClient;
   getAuthorizationClient(userInfo: UserInfo | undefined, userCredentials: any): FrontendAuthorizationClient;

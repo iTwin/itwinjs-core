@@ -8,8 +8,9 @@
  */
 import { IModelClient } from "./IModelClient";
 
+// SWB What does context mean here?
 export abstract class IModelAccessContext {
   public abstract get client(): IModelClient | undefined;
-  // SWB
+  // SWB What does context mean here?
   public abstract toIModelTokenContextId(): string;
 }

@@ -46,8 +46,7 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
   // retrieves the IModels for a Project. Called when first mounted and when a new Project is selected.
   private async startRetrieveThumbnail(thisIModel: IModelInfo) {
     this.setState({ waitingForThumbnail: true });
-    // SWB
-    thisIModel.thumbnail = await UiFramework.iModelServices.getThumbnail(thisIModel.projectInfo.id, thisIModel.wsgId);
+    thisIModel.thumbnail = await UiFramework.iModelServices.getThumbnail(thisIModel.iTwinInfo.id, thisIModel.wsgId);
     this.setState({ waitingForThumbnail: false });
   }
 

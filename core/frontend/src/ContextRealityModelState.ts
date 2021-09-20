@@ -139,12 +139,12 @@ export async function queryRealityData(criteria: RealityDataQueryCriteria): Prom
   let realityData: RealityData[];
   if (criteria.range) {
     const iModelRange = criteria.range.getLongitudeLatitudeBoundingBox();
-    realityData = await client.getRealityDataInProjectOverlapping(requestContext, iTwinId, Angle.radiansToDegrees(iModelRange.low.x),
+    realityData = await client.getRealityDataInITwinOverlapping(requestContext, iTwinId, Angle.radiansToDegrees(iModelRange.low.x),
       Angle.radiansToDegrees(iModelRange.high.x),
       Angle.radiansToDegrees(iModelRange.low.y),
       Angle.radiansToDegrees(iModelRange.high.y));
   } else {
-    realityData = await client.getRealityDataInProject(requestContext, iTwinId);
+    realityData = await client.getRealityDataInITwin(requestContext, iTwinId);
   }
 
   requestContext.enter();

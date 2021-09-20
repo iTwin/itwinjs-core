@@ -25,14 +25,12 @@ describe("FavoritePropertiesManager", () => {
   let nestedContentField: NestedContentField;
   const storageMock = moq.Mock.ofType<IFavoritePropertiesStorage>();
 
-  // SWB
-  let projectId: string;
+  let itwinId: string;
   let imodelId: string;
   const imodelMock = moq.Mock.ofType<IModelConnection>();
 
   before(() => {
-    // SWB
-    projectId = "project-id";
+    itwinId = "itwin-id";
     imodelId = "imodel-id";
     propertyField1 = createTestPropertiesContentField({
       properties: [{ property: createTestPropertyInfo({ classInfo: createTestECClassInfo({ name: "Schema:ClassName1" }) }) }],
@@ -50,7 +48,7 @@ describe("FavoritePropertiesManager", () => {
   beforeEach(async () => {
     manager = new FavoritePropertiesManager({ storage: storageMock.object });
     imodelMock.setup((x) => x.iModelId).returns(() => imodelId);
-    imodelMock.setup((x) => x.iTwinId).returns(() => projectId);
+    imodelMock.setup((x) => x.iTwinId).returns(() => itwinId);
   });
 
   afterEach(() => {
@@ -61,27 +59,25 @@ describe("FavoritePropertiesManager", () => {
 
   describe("initializeConnection", () => {
 
-   // SWB
-    it("loads project and iModel scopes", async () => {
+    it("loads iTwin and iModel scopes", async () => {
       await manager.initializeConnection(imodelMock.object);
       storageMock.verify(async (x) => x.loadProperties(undefined, undefined), moq.Times.once());
-      storageMock.verify(async (x) => x.loadProperties(projectId, imodelId), moq.Times.once());
-      storageMock.verify(async (x) => x.loadProperties(projectId, undefined), moq.Times.once());
+      storageMock.verify(async (x) => x.loadProperties(itwinId, imodelId), moq.Times.once());
+      storageMock.verify(async (x) => x.loadProperties(itwinId, undefined), moq.Times.once());
     });
 
-   // SWB
-    it("loads iModel scope when project scope is already loaded", async () => {
+    it("loads iModel scope when iTwin scope is already loaded", async () => {
       await manager.initializeConnection(imodelMock.object);
 
       const imodelId2 = "imodel-id-2";
       imodelMock.reset();
       imodelMock.setup((x) => x.iModelId).returns(() => imodelId2);
-      imodelMock.setup((x) => x.iTwinId).returns(() => projectId);
+      imodelMock.setup((x) => x.iTwinId).returns(() => itwinId);
       await manager.initializeConnection(imodelMock.object);
 
       storageMock.verify(async (x) => x.loadProperties(undefined, undefined), moq.Times.once());
-      storageMock.verify(async (x) => x.loadProperties(projectId, imodelId2), moq.Times.once());
-      storageMock.verify(async (x) => x.loadProperties(projectId, undefined), moq.Times.once());
+      storageMock.verify(async (x) => x.loadProperties(itwinId, imodelId2), moq.Times.once());
+      storageMock.verify(async (x) => x.loadProperties(itwinId, undefined), moq.Times.once());
     });
 
     it("does not load iModel scope when iModel scope is already loaded", async () => {
@@ -89,31 +85,29 @@ describe("FavoritePropertiesManager", () => {
       await manager.initializeConnection(imodelMock.object);
 
       storageMock.verify(async (x) => x.loadProperties(undefined, undefined), moq.Times.once());
-      storageMock.verify(async (x) => x.loadProperties(projectId, imodelId), moq.Times.once());
-      storageMock.verify(async (x) => x.loadProperties(projectId, undefined), moq.Times.once());
+      storageMock.verify(async (x) => x.loadProperties(itwinId, imodelId), moq.Times.once());
+      storageMock.verify(async (x) => x.loadProperties(itwinId, undefined), moq.Times.once());
     });
 
     it("removes non-favorited property order information", async () => {
       const globalField = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "global" }) }] });
-      // SWB
-      const projectField = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "project" }) }] });
+      const iTwinField = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "itwin" }) }] });
 
       const globalFieldInfos = new Set<PropertyFullName>(getFieldsInfos([globalField]));
       storageMock.setup(async (x) => x.loadProperties()).returns(async () => globalFieldInfos);
 
-      // SWB
-      const projectFieldInfos = new Set<PropertyFullName>(getFieldsInfos([projectField]));
-      storageMock.setup(async (x) => x.loadProperties(moq.It.isAny())).returns(async () => projectFieldInfos);
+      const iTwinFieldInfos = new Set<PropertyFullName>(getFieldsInfos([iTwinField]));
+      storageMock.setup(async (x) => x.loadProperties(moq.It.isAny())).returns(async () => iTwinFieldInfos);
 
       const nonFavoritedField = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "non-favorite" }) }] });
-      const allFields = [globalField, projectField, nonFavoritedField];
+      const allFields = [globalField, iTwinField, nonFavoritedField];
       const orderInfos = getFieldsOrderInfos(allFields);
       storageMock.setup(async (x) => x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())).returns(async () => orderInfos);
 
       await manager.initializeConnection(imodelMock.object);
 
       expect(globalFieldInfos.size).to.eq(1);
-      expect(projectFieldInfos.size).to.eq(1);
+      expect(iTwinFieldInfos.size).to.eq(1);
       expect(orderInfos.length).to.eq(2);
     });
 
@@ -141,8 +135,7 @@ describe("FavoritePropertiesManager", () => {
   describe("has", () => {
 
     it("throws if not initialized", () => {
-      // SWB
-      expect(() => manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.IModel)).to.throw(`Favorite properties are not initialized for iModel: '${imodelId}', in project: '${projectId}'. Call initializeConnection() with an IModelConnection to initialize.`);
+      expect(() => manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.IModel)).to.throw(`Favorite properties are not initialized for iModel: '${imodelId}', in iTwin: '${itwinId}'. Call initializeConnection() with an IModelConnection to initialize.`);
     });
 
     it("returns false for not favorite property field", async () => {
@@ -222,13 +215,10 @@ describe("FavoritePropertiesManager", () => {
       expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.IModel)).to.be.true;
     });
 
-   // SWB
-    it("checks project scope for favorite properties", async () => {
+    it("checks iTwin scope for favorite properties", async () => {
       await manager.initializeConnection(imodelMock.object);
-      // SWB
-      await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.Project);
-      // SWB
-      expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.Project)).to.be.true;
+      await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.ITwin);
+      expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.ITwin)).to.be.true;
     });
 
   });
@@ -236,8 +226,7 @@ describe("FavoritePropertiesManager", () => {
   describe("add", () => {
 
     it("throws if not initialized", async () => {
-      // SWB
-      await expect(manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.Global)).to.be.rejectedWith(`Favorite properties are not initialized for iModel: '${imodelId}', in project: '${projectId}'. Call initializeConnection() with an IModelConnection to initialize.`);
+      await expect(manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.Global)).to.be.rejectedWith(`Favorite properties are not initialized for iModel: '${imodelId}', in iTwin: '${itwinId}'. Call initializeConnection() with an IModelConnection to initialize.`);
     });
 
     it("raises onFavoritesChanged event", async () => {
@@ -248,14 +237,11 @@ describe("FavoritePropertiesManager", () => {
       expect(s).to.be.calledOnce;
     });
 
-    // SWB
-    it("adds to project scope", async () => {
+    it("adds to iTwin scope", async () => {
       await manager.initializeConnection(imodelMock.object);
 
-   // SWB
-      await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.Project);
-      // SWB
-      expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.Project)).to.be.true;
+      await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.ITwin);
+      expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.ITwin)).to.be.true;
     });
 
     it("adds to iModel scope", async () => {
@@ -286,8 +272,7 @@ describe("FavoritePropertiesManager", () => {
   describe("remove", () => {
 
     it("throws if not initialized", async () => {
-      // SWB
-      await expect(manager.remove(propertyField1, imodelMock.object, FavoritePropertiesScope.Global)).to.be.rejectedWith(`Favorite properties are not initialized for iModel: '${imodelId}', in project: '${projectId}'. Call initializeConnection() with an IModelConnection to initialize.`);
+      await expect(manager.remove(propertyField1, imodelMock.object, FavoritePropertiesScope.Global)).to.be.rejectedWith(`Favorite properties are not initialized for iModel: '${imodelId}', in iTwin: '${itwinId}'. Call initializeConnection() with an IModelConnection to initialize.`);
     });
 
     it("removes single property field", async () => {
@@ -323,16 +308,12 @@ describe("FavoritePropertiesManager", () => {
       expect(s).to.be.calledOnce;
     });
 
-   // SWB
-    it("removes from project scope", async () => {
+    it("removes from iTwin scope", async () => {
       await manager.initializeConnection(imodelMock.object);
-      // SWB
-      await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.Project);
+      await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.ITwin);
 
-   // SWB
-      await manager.remove(propertyField1, imodelMock.object, FavoritePropertiesScope.Project);
-      // SWB
-      expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.Project)).to.be.false;
+      await manager.remove(propertyField1, imodelMock.object, FavoritePropertiesScope.ITwin);
+      expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.ITwin)).to.be.false;
     });
 
     it("removes from iModel scope", async () => {
@@ -346,29 +327,24 @@ describe("FavoritePropertiesManager", () => {
     it("removes from all scopes", async () => {
       await manager.initializeConnection(imodelMock.object);
       await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.Global);
-      // SWB
-      await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.Project);
+      await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.ITwin);
       await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.IModel);
 
       await manager.remove(propertyField1, imodelMock.object, FavoritePropertiesScope.IModel);
       expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.Global)).to.be.false;
-      // SWB
-      expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.Project)).to.be.false;
+      expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.ITwin)).to.be.false;
       expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.IModel)).to.be.false;
     });
 
-    it("removes only from global and project scopes", async () => {
+    it("removes only from global and iTwin scopes", async () => {
       await manager.initializeConnection(imodelMock.object);
       await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.Global);
-      // SWB
-      await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.Project);
+      await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.ITwin);
       await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.IModel);
 
-   // SWB
-      await manager.remove(propertyField1, imodelMock.object, FavoritePropertiesScope.Project);
+      await manager.remove(propertyField1, imodelMock.object, FavoritePropertiesScope.ITwin);
       expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.Global)).to.be.false;
-      // SWB
-      expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.Project)).to.be.false;
+      expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.ITwin)).to.be.false;
       expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.IModel)).to.be.true;
     });
 
@@ -385,8 +361,7 @@ describe("FavoritePropertiesManager", () => {
   describe("clear", () => {
 
     it("throws if not initialized", async () => {
-      // SWB
-      await expect(manager.clear(imodelMock.object, FavoritePropertiesScope.IModel)).to.be.rejectedWith(`Favorite properties are not initialized for iModel: '${imodelId}', in project: '${projectId}'. Call initializeConnection() with an IModelConnection to initialize.`);
+      await expect(manager.clear(imodelMock.object, FavoritePropertiesScope.IModel)).to.be.rejectedWith(`Favorite properties are not initialized for iModel: '${imodelId}', in iTwin: '${itwinId}'. Call initializeConnection() with an IModelConnection to initialize.`);
     });
 
     it("clears global", async () => {
@@ -401,19 +376,17 @@ describe("FavoritePropertiesManager", () => {
       expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.Global)).to.be.false;
     });
 
-   // SWB
-    it("clears project", async () => {
+    it("clears iTwin", async () => {
       await manager.initializeConnection(imodelMock.object);
 
-   // SWB
-      await manager.add(nestedContentField, imodelMock.object, FavoritePropertiesScope.Project);
-      await manager.add(primitiveField, imodelMock.object, FavoritePropertiesScope.Project);
-      await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.Project);
+      await manager.add(nestedContentField, imodelMock.object, FavoritePropertiesScope.ITwin);
+      await manager.add(primitiveField, imodelMock.object, FavoritePropertiesScope.ITwin);
+      await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.ITwin);
 
-      await manager.clear(imodelMock.object, FavoritePropertiesScope.Project);
-      expect(manager.has(nestedContentField, imodelMock.object, FavoritePropertiesScope.Project)).to.be.false;
-      expect(manager.has(primitiveField, imodelMock.object, FavoritePropertiesScope.Project)).to.be.false;
-      expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.Project)).to.be.false;
+      await manager.clear(imodelMock.object, FavoritePropertiesScope.ITwin);
+      expect(manager.has(nestedContentField, imodelMock.object, FavoritePropertiesScope.ITwin)).to.be.false;
+      expect(manager.has(primitiveField, imodelMock.object, FavoritePropertiesScope.ITwin)).to.be.false;
+      expect(manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.ITwin)).to.be.false;
     });
 
     it("clears iModel", async () => {
@@ -440,20 +413,18 @@ describe("FavoritePropertiesManager", () => {
     it("removes property order information", async () => {
       const globalA = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "global-a" }) }] });
       const globalB = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "global-b" }) }] });
-      // SWB
-      const projectA = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "project-a" }) }] });
+      const iTwinA = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "iTwin-a" }) }] });
 
       const globalFields = [globalA, globalB];
       const globalFieldInfos = new Set<PropertyFullName>(getFieldsInfos(globalFields));
       storageMock.setup(async (x) => x.loadProperties()).returns(async () => globalFieldInfos);
 
-   // SWB
-      const projectFields = [projectA];
-      const projectFieldInfos = new Set<PropertyFullName>(getFieldsInfos(projectFields));
-      storageMock.setup(async (x) => x.loadProperties(moq.It.isAny())).returns(async () => projectFieldInfos);
+      const iTwinFields = [iTwinA];
+      const iTwinFieldInfos = new Set<PropertyFullName>(getFieldsInfos(iTwinFields));
+      storageMock.setup(async (x) => x.loadProperties(moq.It.isAny())).returns(async () => iTwinFieldInfos);
 
       const nonFavoritedField = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "non-favorite" }) }] });
-      const allFields = [globalA, globalB, projectA, nonFavoritedField];
+      const allFields = [globalA, globalB, iTwinA, nonFavoritedField];
       const orderInfos = getFieldsOrderInfos(allFields);
       storageMock.setup(async (x) => x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())).returns(async () => orderInfos);
 
@@ -461,7 +432,7 @@ describe("FavoritePropertiesManager", () => {
       await manager.clear(imodelMock.object, FavoritePropertiesScope.Global);
 
       expect(globalFieldInfos.size).to.eq(0);
-      expect(projectFieldInfos.size).to.eq(1);
+      expect(iTwinFieldInfos.size).to.eq(1);
       expect(orderInfos.length).to.eq(1);
     });
 

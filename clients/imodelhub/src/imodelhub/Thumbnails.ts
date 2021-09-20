@@ -45,10 +45,8 @@ export class LargeThumbnail extends Thumbnail { }
  * @public
  */
 export interface TipThumbnail {
-  // SWB
-  /** Id of the iModel's context ([[ITwin]]). */
-  // SWB
-  contextId: string;
+  /** Id of the iModel's parent iTwin ([[ITwin]]). */
+  iTwinId: string;
   /** Size of the [[Thumbnail]]. */
   size: ThumbnailSize;
 }
@@ -89,15 +87,13 @@ export class ThumbnailHandler {
   }
 
   /** Get relative url for tip Thumbnail requests.
-   // SWB
-   * @param contextId Id of the context ([[ITwin]]).
+   * @param iTwinId Id of the iModel's parent iTwin ([[ITwin]]).
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param size Size of the thumbnail.
    */
-  // SWB
-  private getRelativeContextUrl(contextId: string, iModelId: GuidString, size: ThumbnailSize) {
-    // SWB
-    return `/Repositories/Context--${this._handler.formatContextIdForUrl(contextId)}/ContextScope/${size}Thumbnail/${iModelId.toString()}/$file`;
+  // SWB What does context mean here?
+  private getRelativeContextUrl(iTwinId: string, iModelId: GuidString, size: ThumbnailSize) {
+    return `/Repositories/Context--${this._handler.formatITwinIdForUrl(iTwinId)}/ContextScope/${size}Thumbnail/${iModelId.toString()}/$file`;
   }
 
   /** Get relative url for Thumbnail requests.
@@ -113,13 +109,11 @@ export class ThumbnailHandler {
    * @param thumbnail SmallThumbnail, LargeThumbnail or TipThumbnail.
    */
   private isTipThumbnail(thumbnail: Thumbnail | TipThumbnail): thumbnail is TipThumbnail {
-    // SWB
-    return (thumbnail as TipThumbnail).contextId !== undefined;
+    return (thumbnail as TipThumbnail).iTwinId !== undefined;
   }
 
   /** Download the thumbnail.
    * @param requestContext The client request context.
-   *
    * @param url Url to download thumbnail.
    * @return String for the PNG image that includes the base64 encoded array of the image bytes
    */
@@ -146,22 +140,19 @@ export class ThumbnailHandler {
 
   /** Download the latest iModel's thumbnail.
    * @param requestContext The client request context.
-   // SWB
-   * @param contextId Id of the iTwin context.
+   * @param iTwinId Id of the iModel's parent iTwin.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param size Size of the thumbnail. Pass 'Small' for 400x250 PNG image, and 'Large' for a 800x500 PNG image.
    * @return String for the PNG image that includes the base64 encoded array of the image bytes.
    */
-  // SWB
-  private async downloadTipThumbnail(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: GuidString, size: ThumbnailSize): Promise<string> {
+  private async downloadTipThumbnail(requestContext: AuthorizedClientRequestContext, iTwinId: string, iModelId: GuidString, size: ThumbnailSize): Promise<string> {
     requestContext.enter();
     Logger.logInfo(loggerCategory, `Downloading tip ${size}Thumbnail`, () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
-    // SWB
-    ArgumentCheck.validGuid("contextId", contextId);
+    ArgumentCheck.validGuid("iTwinId", iTwinId);
     ArgumentCheck.validGuid("iModelId", iModelId);
 
-    const url: string = await this._handler.getUrl(requestContext) + this.getRelativeContextUrl(contextId, iModelId, size);
+    const url: string = await this._handler.getUrl(requestContext) + this.getRelativeContextUrl(iTwinId, iModelId, size);
     const pngImage = await this.downloadThumbnail(requestContext, url);
     requestContext.enter();
 
@@ -208,8 +199,7 @@ export class ThumbnailHandler {
     ArgumentCheck.validGuid("iModelId", iModelId);
 
     if (this.isTipThumbnail(thumbnail)) {
-      // SWB
-      return this.downloadTipThumbnail(requestContext, thumbnail.contextId, iModelId, thumbnail.size);
+      return this.downloadTipThumbnail(requestContext, thumbnail.iTwinId, iModelId, thumbnail.size);
     }
 
     const size: ThumbnailSize = thumbnail instanceof SmallThumbnail ? "Small" : "Large";
