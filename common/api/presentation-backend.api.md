@@ -145,31 +145,31 @@ export class PresentationManager {
     constructor(props?: PresentationManagerProps);
     activeLocale: string | undefined;
     activeUnitSystem: UnitSystemKey | undefined;
-    compareHierarchies(requestOptions: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>>): Promise<HierarchyCompareInfo>;
-    computeSelection(requestOptions: WithClientRequestContext<SelectionScopeRequestOptions<IModelDb> & {
+    compareHierarchies(requestOptions: HierarchyCompareOptions<IModelDb, NodeKey>): Promise<HierarchyCompareInfo>;
+    computeSelection(requestOptions: SelectionScopeRequestOptions<IModelDb> & {
         ids: Id64String[];
         scopeId: string;
-    }>): Promise<KeySet>;
+    }): Promise<KeySet>;
     dispose(): void;
-    getContent(requestOptions: WithClientRequestContext<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>>): Promise<Content | undefined>;
-    getContentDescriptor(requestOptions: WithClientRequestContext<ContentDescriptorRequestOptions<IModelDb, KeySet>>): Promise<Descriptor | undefined>;
-    getContentSetSize(requestOptions: WithClientRequestContext<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>): Promise<number>;
+    getContent(requestOptions: Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>): Promise<Content | undefined>;
+    getContentDescriptor(requestOptions: ContentDescriptorRequestOptions<IModelDb, KeySet>): Promise<Descriptor | undefined>;
+    getContentSetSize(requestOptions: ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>): Promise<number>;
     // @beta (undocumented)
-    getContentSources(requestOptions: WithClientRequestContext<ContentSourcesRequestOptions<IModelDb>>): Promise<SelectClassInfo[]>;
-    getDisplayLabelDefinition(requestOptions: WithClientRequestContext<DisplayLabelRequestOptions<IModelDb, InstanceKey>>): Promise<LabelDefinition>;
-    getDisplayLabelDefinitions(requestOptions: WithClientRequestContext<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>): Promise<LabelDefinition[]>;
+    getContentSources(requestOptions: ContentSourcesRequestOptions<IModelDb>): Promise<SelectClassInfo[]>;
+    getDisplayLabelDefinition(requestOptions: DisplayLabelRequestOptions<IModelDb, InstanceKey>): Promise<LabelDefinition>;
+    getDisplayLabelDefinitions(requestOptions: Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>): Promise<LabelDefinition[]>;
     // @beta
-    getElementProperties(requestOptions: WithClientRequestContext<ElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined>;
-    getFilteredNodePaths(requestOptions: WithClientRequestContext<FilterByTextHierarchyRequestOptions<IModelDb>>): Promise<NodePathElement[]>;
+    getElementProperties(requestOptions: ElementPropertiesRequestOptions<IModelDb>): Promise<ElementProperties | undefined>;
+    getFilteredNodePaths(requestOptions: FilterByTextHierarchyRequestOptions<IModelDb>): Promise<NodePathElement[]>;
     // @internal (undocumented)
     getNativePlatform: () => NativePlatformDefinition;
-    getNodePaths(requestOptions: WithClientRequestContext<FilterByInstancePathsHierarchyRequestOptions<IModelDb>>): Promise<NodePathElement[]>;
-    getNodes(requestOptions: WithClientRequestContext<Paged<HierarchyRequestOptions<IModelDb, NodeKey>>>): Promise<Node[]>;
-    getNodesCount(requestOptions: WithClientRequestContext<HierarchyRequestOptions<IModelDb, NodeKey>>): Promise<number>;
-    getPagedDistinctValues(requestOptions: WithClientRequestContext<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>): Promise<PagedResponse<DisplayValueGroup>>;
+    getNodePaths(requestOptions: FilterByInstancePathsHierarchyRequestOptions<IModelDb>): Promise<NodePathElement[]>;
+    getNodes(requestOptions: Paged<HierarchyRequestOptions<IModelDb, NodeKey>>): Promise<Node[]>;
+    getNodesCount(requestOptions: HierarchyRequestOptions<IModelDb, NodeKey>): Promise<number>;
+    getPagedDistinctValues(requestOptions: DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>): Promise<PagedResponse<DisplayValueGroup>>;
     // @internal (undocumented)
     getRulesetId(rulesetOrId: Ruleset | string): string;
-    getSelectionScopes(_requestOptions: WithClientRequestContext<SelectionScopeRequestOptions<IModelDb>>): Promise<SelectionScope[]>;
+    getSelectionScopes(_requestOptions: SelectionScopeRequestOptions<IModelDb>): Promise<SelectionScope[]>;
     get props(): PresentationManagerProps;
     rulesets(): RulesetManager;
     vars(rulesetId: string): RulesetVariablesManager;

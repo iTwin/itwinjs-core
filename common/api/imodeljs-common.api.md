@@ -376,7 +376,7 @@ export class B3dmHeader extends TileHeader {
 
 // @public (undocumented)
 export class BackendError extends IModelError {
-    constructor(errorNumber: number, name: string, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
+    constructor(errorNumber: number, name: string, message: string, getMetaData?: GetMetaDataFunction);
 }
 
 // @public
@@ -977,7 +977,7 @@ export enum ChangesetType {
 
 // @alpha
 export class ChannelConstraintError extends IModelError {
-    constructor(message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
+    constructor(message: string, getMetaData?: GetMetaDataFunction);
 }
 
 // @public
@@ -4234,7 +4234,7 @@ export interface IModelEncryptionProps {
 
 // @public
 export class IModelError extends BentleyError {
-    constructor(errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RepositoryStatus | ChangeSetStatus | RpcInterfaceStatus | AuthStatus, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
+    constructor(errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RepositoryStatus | ChangeSetStatus | RpcInterfaceStatus | AuthStatus, message: string, getMetaData?: GetMetaDataFunction);
 }
 
 // @public
@@ -4282,8 +4282,6 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     getModelProps(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<ModelProps[]>;
     // (undocumented)
-    getTextureImage(_iModelToken: IModelRpcProps, _textureLoadProps: TextureLoadProps): Promise<Uint8Array | undefined>;
-    // (undocumented)
     getToolTipMessage(_iModelToken: IModelRpcProps, _elementId: string): Promise<string[]>;
     // (undocumented)
     getViewStateData(_iModelToken: IModelRpcProps, _viewDefinitionId: string, _options?: ViewStateLoadProps): Promise<ViewStateProps>;
@@ -4306,7 +4304,9 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     queryRows(_iModelToken: IModelRpcProps, _ecsql: string, _bindings?: any[] | object, _limit?: QueryLimit, _quota?: QueryQuota, _priority?: QueryPriority, _restartToken?: string, _abbreviateBlobs?: boolean): Promise<QueryResponse>;
     // (undocumented)
-    readFontJson(_iModelToken: IModelRpcProps): Promise<any>;
+    queryTextureData(_iModelToken: IModelRpcProps, _textureLoadProps: TextureLoadProps): Promise<TextureData | undefined>;
+    // (undocumented)
+    readFontJson(_iModelToken: IModelRpcProps): Promise<FontMapProps>;
     // (undocumented)
     requestSnap(_iModelToken: IModelRpcProps, _sessionId: string, _props: SnapRequestProps): Promise<SnapResponseProps>;
 }
@@ -6840,8 +6840,12 @@ export { RpcInterfaceStatus }
 export class RpcInvocation {
     constructor(protocol: RpcProtocol, request: SerializedRpcRequest);
     static current(rpcImpl: RpcInterface): RpcInvocation;
+    // (undocumented)
+    static currentRequest: ClientRequestContext;
     get elapsed(): number;
     readonly fulfillment: Promise<RpcRequestFulfillment>;
+    // @internal
+    static logRpcException(currentRequest: ClientRequestContext, error: any): void;
     readonly operation: RpcOperation;
     readonly protocol: RpcProtocol;
     readonly request: SerializedRpcRequest;
@@ -7398,12 +7402,12 @@ export interface SerializedRpcRequest extends SerializedClientRequestContext {
 
 // @public (undocumented)
 export class ServerError extends IModelError {
-    constructor(errorNumber: number, message: string, log?: LogFunction);
+    constructor(errorNumber: number, message: string);
 }
 
 // @public (undocumented)
 export class ServerTimeoutError extends ServerError {
-    constructor(message: string, log?: LogFunction);
+    constructor(message: string);
 }
 
 // @beta
@@ -7903,6 +7907,14 @@ export interface TextStringProps {
     underline?: boolean;
     // (undocumented)
     widthFactor?: number;
+}
+
+// @public
+export interface TextureData {
+    bytes: Uint8Array;
+    format: ImageSourceFormat;
+    height: number;
+    width: number;
 }
 
 // @public

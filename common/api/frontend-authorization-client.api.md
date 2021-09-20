@@ -48,7 +48,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
     checkSessionStatus(requestContext: ClientRequestContext): Promise<boolean>;
     protected createUserManager(settings: UserManagerSettings): UserManager;
     dispose(): void;
-    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+    getAccessToken(): Promise<AccessToken>;
     // (undocumented)
     protected getUserManager(requestContext: ClientRequestContext): Promise<UserManager>;
     protected getUserManagerSettings(requestContext: ClientRequestContext, basicSettings: BrowserAuthorizationClientConfiguration, advancedSettings?: UserManagerSettings): Promise<UserManagerSettings>;

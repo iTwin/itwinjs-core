@@ -6,17 +6,11 @@
  * @module Entities
  */
 
-import {
-  GuidString,
-  Id64,
-  Id64String,
-  Logger,
-} from "@bentley/bentleyjs-core";
+import { GuidString, Id64, Id64String } from "@bentley/bentleyjs-core";
 import {
   AngleProps, ClipVectorProps, LowAndHighXY, LowAndHighXYZ, TransformProps, XYProps, XYZProps, YawPitchRollProps,
 } from "@bentley/geometry-core";
 import { CodeProps } from "./Code";
-import { CommonLoggerCategory } from "./CommonLoggerCategory";
 import { EntityProps } from "./EntityProps";
 import { GeometryStreamProps } from "./geometry/GeometryStream";
 import { IModelError, IModelStatus } from "./IModelError";
@@ -80,7 +74,7 @@ export class RelatedElement implements RelatedElementProps {
     if ((typeof json === "object") && ("id" in json)) {
       const r = RelatedElement.fromJSON(json);
       if (r === undefined)
-        throw new IModelError(IModelStatus.BadArg, "Problem parsing Id64 from json", Logger.logWarning, CommonLoggerCategory.ElementProps);
+        throw new IModelError(IModelStatus.BadArg, "Problem parsing Id64 from json");
       return r.id;
     }
     return Id64.fromJSON(json);
