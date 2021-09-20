@@ -20,7 +20,6 @@ import {
 } from "@bentley/orbitgt-core";
 import { RealityDataClient } from "@bentley/reality-data-client";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
-import { AuthorizedFrontendRequestContext } from "../FrontendRequestContext";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
