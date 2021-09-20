@@ -21,7 +21,6 @@ describe("IModelOpen (#integration)", () => {
   before(async () => {
     user = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
     testITwinId = await HubUtility.getTestITwinId(user);
-    user.enter();
 
     testIModelId = await HubUtility.getTestIModelId(user, HubUtility.testIModelNames.stadium);
   });

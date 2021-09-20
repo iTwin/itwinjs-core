@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { AccessToken } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend } from "@bentley/oidc-signin-tool/lib/frontend";
@@ -21,14 +21,12 @@ export class IModelHubUserMgr implements FrontendAuthorizationClient {
     return !(token === this._token && this._expiresAt !== undefined && this._expiresAt > new Date());
   }
 
-  public async signIn(_requestContext?: ClientRequestContext): Promise<void> {
-    _requestContext?.enter();
+  public async signIn(): Promise<void> {
     this._token = await getAccessTokenFromBackend(this._userCredentials);
     this.onUserStateChanged.raiseEvent(this._token);
   }
 
-  public async signOut(_requestContext?: ClientRequestContext): Promise<void> {
-    _requestContext?.enter();
+  public async signOut(): Promise<void> {
     this._token = undefined;
     this.onUserStateChanged.raiseEvent(this._token);
   }
@@ -44,10 +42,9 @@ export class IModelHubUserMgr implements FrontendAuthorizationClient {
     return !!this._token;
   }
 
-  public async getAccessToken(_requestContext?: ClientRequestContext): Promise<AccessToken> {
-    if (!this._token) {
+  public async getAccessToken(): Promise<AccessToken> {
+    if (!this._token)
       throw new Error("User is not signed in.");
-    }
     return this._token;
   }
 }

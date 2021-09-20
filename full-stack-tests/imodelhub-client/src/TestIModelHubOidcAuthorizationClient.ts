@@ -20,13 +20,11 @@ export class TestIModelHubOidcAuthorizationClient implements FrontendAuthorizati
     return !(token === this._token && this._expiresAt !== undefined && this._expiresAt > new Date());
   }
 
-  public async signIn(_requestContext?: ClientRequestContext): Promise<void> {
-    _requestContext?.enter();
+  public async signIn(): Promise<void> {
     this._token = await TestUtility.getAccessToken(this._userCredentials);
   }
 
-  public async signOut(_requestContext?: ClientRequestContext): Promise<void> {
-    _requestContext?.enter();
+  public async signOut(): Promise<void> {
     this._token = undefined;
     this.onUserStateChanged.raiseEvent(this._token);
   }

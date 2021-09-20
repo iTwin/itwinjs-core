@@ -16,14 +16,6 @@ export function removeAccessTokenPrefix(accessToken: AccessToken | undefined): A
 }
 
 /**
- * Class solely to hold the dictionary of mappings from token prefix (string) to the token's constructor
- * @internal
- */
-class TokenPrefixToTypeContainer {
-  public static tokenPrefixToConstructorDict: { [key: string]: any } = {};
-}
-
-/**
  * A string that contains an access token.
  * @beta
  */

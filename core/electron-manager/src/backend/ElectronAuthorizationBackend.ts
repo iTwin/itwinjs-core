@@ -66,7 +66,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
 
   public async refreshToken(): Promise<AccessToken> {
     if (this._tokenResponse === undefined || this._tokenResponse.refreshToken === undefined)
-      throw new BentleyError(AuthStatus.Error, "Not signed In. First call signIn()", Logger.logError, loggerCategory);
+      throw new BentleyError(AuthStatus.Error, "Not signed In. First call signIn()");
 
     const token = `Bearer ${this._tokenResponse.refreshToken}`; // Is this right? should we append bearer to refresh token?
     return this.refreshAccessToken(token);
@@ -115,7 +115,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
    */
   public async signIn(): Promise<void> {
     if (!this._configuration)
-      throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory);
+      throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()");
     assert(this.config !== undefined);
 
     // Attempt to load the access token from store
@@ -256,7 +256,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
   /** Swap the authorization code for a refresh token and access token */
   private async swapAuthorizationCodeForTokens(authCode: string, codeVerifier: string): Promise<TokenResponse> {
     if (!this._configuration)
-      throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory);
+      throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()");
     assert(this.config !== undefined);
 
     const nativeConfig = this.config;
@@ -277,7 +277,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
 
   private async makeRefreshAccessTokenRequest(refreshToken: string): Promise<TokenResponse> {
     if (!this._configuration)
-      throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()", Logger.logError, loggerCategory);
+      throw new BentleyError(AuthStatus.Error, "Not initialized. First call initialize()");
     assert(this.config !== undefined);
 
     const tokenRequestJson: TokenRequestJson = {
@@ -295,7 +295,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
 
   private async makeRevokeTokenRequest(): Promise<void> {
     if (!this._tokenResponse)
-      throw new BentleyError(AuthStatus.Error, "Missing refresh token. First call signIn() and ensure it's successful", Logger.logError, loggerCategory);
+      throw new BentleyError(AuthStatus.Error, "Missing refresh token. First call signIn() and ensure it's successful");
     assert(this.config !== undefined);
 
     const refreshToken = this._tokenResponse.refreshToken!;

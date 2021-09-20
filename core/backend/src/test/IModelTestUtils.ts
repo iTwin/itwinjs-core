@@ -191,7 +191,6 @@ export class IModelTestUtils {
 
   /** Opens the specific iModel as a Briefcase through the same workflow the IModelReadRpc.openForRead method will use. Replicates the way a frontend would open the iModel. */
   public static async openBriefcaseUsingRpc(args: RequestNewBriefcaseProps & { user: AuthorizedClientRequestContext, deleteFirst?: boolean }): Promise<BriefcaseDb> {
-    args.user.enter();
     if (undefined === args.asOf)
       args.asOf = IModelVersion.latest().toJSON();
 
@@ -248,7 +247,6 @@ export class IModelTestUtils {
       syncMode: SyncMode.FixedVersion,
       forceDownload: args.deleteFirst,
     };
-    args.user.enter();
 
     while (true) {
       try {
@@ -260,13 +258,12 @@ export class IModelTestUtils {
     }
   }
 
-  public static async closeAndDeleteBriefcaseDb(requestContext: AuthorizedClientRequestContext, briefcaseDb: IModelDb) {
+  public static async closeAndDeleteBriefcaseDb(user: AuthorizedClientRequestContext, briefcaseDb: IModelDb) {
     const fileName = briefcaseDb.pathName;
     const iModelId = briefcaseDb.iModelId;
     briefcaseDb.close();
 
-    await BriefcaseManager.deleteBriefcaseFiles(fileName, requestContext);
-    requestContext.enter();
+    await BriefcaseManager.deleteBriefcaseFiles(fileName, user);
 
     // try to clean up empty briefcase directories, and empty iModel directories.
     if (0 === BriefcaseManager.getCachedBriefcases(iModelId).length) {

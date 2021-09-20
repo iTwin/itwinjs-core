@@ -133,7 +133,6 @@ export abstract class Client {
 
   /** used by clients to send delete requests */
   protected async delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, httpRequestOptions?: HttpRequestOptions): Promise<void> {
-    requestContext.enter();
     const url: string = await this.getUrl(requestContext) + relativeUrlPath;
     Logger.logInfo(loggerCategory, "Sending DELETE request", () => ({ url }));
     const options: RequestOptions = {
@@ -143,7 +142,6 @@ export abstract class Client {
     this.applyUserConfiguredHttpRequestOptions(options, httpRequestOptions);
     await this.setupOptionDefaults(options);
     await request(requestContext, url, options);
-    requestContext.enter();
     Logger.logTrace(loggerCategory, "Successful DELETE request", () => ({ url }));
   }
 
@@ -220,8 +218,6 @@ export class UrlDiscoveryClient extends Client {
    * @returns Registered URL for the service.
    */
   public async discoverUrl(requestContext: ClientRequestContext, searchKey: string, regionId: number | undefined): Promise<string> {
-    requestContext.enter();
-
     const urlBase: string = await this.getUrl();
     const url: string = `${urlBase}/GetUrl/`;
     const resolvedRegion = typeof regionId !== "undefined" ? regionId : process.env[UrlDiscoveryClient.configResolveUrlUsingRegion] ? Number(process.env[UrlDiscoveryClient.configResolveUrlUsingRegion]) : 0;
@@ -234,11 +230,7 @@ export class UrlDiscoveryClient extends Client {
     };
 
     await this.setupOptionDefaults(options);
-    requestContext.enter();
-
     const response: Response = await request(requestContext, url, options);
-    requestContext.enter();
-
     const discoveredUrl: string = response.body.result.url.replace(/\/$/, ""); // strip trailing "/" for consistency
     return discoveredUrl;
   }

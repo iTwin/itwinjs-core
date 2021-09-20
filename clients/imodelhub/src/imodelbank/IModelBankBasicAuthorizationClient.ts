@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { AccessToken } from "@bentley/itwin-client";
 
@@ -21,14 +21,12 @@ export class IModelBankBasicAuthorizationClient implements FrontendAuthorization
   public constructor(private _userCredentials: any) {
   }
 
-  public async signIn(_requestContext?: ClientRequestContext): Promise<void> {
-    _requestContext?.enter();
+  public async signIn(): Promise<void> {
     this._token = tokenFromUserCredentials(this._userCredentials);
     this.onUserStateChanged.raiseEvent(this._token);
   }
 
-  public async signOut(_requestContext?: ClientRequestContext): Promise<void> {
-    _requestContext?.enter();
+  public async signOut(): Promise<void> {
     this._token = undefined;
     this.onUserStateChanged.raiseEvent(this._token);
   }
@@ -44,7 +42,7 @@ export class IModelBankBasicAuthorizationClient implements FrontendAuthorization
     return !!this._token;
   }
 
-  public async getAccessToken(_requestContext?: ClientRequestContext): Promise<AccessToken> {
+  public async getAccessToken(): Promise<AccessToken> {
     if (!this._token) {
       throw new Error("User is not signed in.");
     }

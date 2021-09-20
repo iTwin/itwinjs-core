@@ -2,8 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { assert } from "chai";
-import { ClientRequestContext, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
+import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import { BisCoreSchema, BriefcaseDb, ClassRegistry, Element, ElementAspect, PhysicalModel, StandaloneDb } from "@bentley/imodeljs-backend";
 import { CodeScopeSpec, CodeSpec, IModel } from "@bentley/imodeljs-common";
@@ -23,71 +24,6 @@ describe("Example Code", () => {
 
   after(() => {
     iModel.close();
-  });
-
-  // __PUBLISH_EXTRACT_START__ ClientRequestContext.asyncCallback
-  //                                  Rule: A Promise-returning function takes an ClientRequestContext as an argument
-  async function asyncFunctionCallsAsync(requestContext: ClientRequestContext): Promise<void> {
-    requestContext.enter();        // Rule: A Promise-returning function enters the ClientRequestContext on the first line.
-
-    await new Promise<void>((resolve) => {
-      setTimeout(() => {
-        requestContext.enter(); // Rule: Enter the client request context of the enclosing JavaScript scope in the callback.
-        Logger.logTrace("cat", "callback invoked");
-        resolve();
-      }, 1);
-    });
-  }
-  // __PUBLISH_EXTRACT_END__
-
-  // __PUBLISH_EXTRACT_START__ ClientRequestContext.asyncCallback2
-  function synchronousFunctionCallsAsync() {
-    // This is an example of the rare case where a synchronous function invokes an async function and
-    // the async callback emits logging messages. In this case, because the caller is synchronous, it must
-    // access the current ClientRequestContext and assign it to a local variable.
-    const requestContext = ClientRequestContext.current;        // Must hold a local reference for callback to use.
-    setTimeout(() => {
-      requestContext.enter(); // Rule: Enter the client request context of the enclosing JavaScript scope in the callback.
-      Logger.logTrace("cat", "callback invoked");
-    }, 1);
-  }
-  // __PUBLISH_EXTRACT_END__
-
-  async function someAsync(_context: ClientRequestContext): Promise<void> { }
-  // Rule: A Promise-returning function enters the ClientRequestContext on the first line.
-  // __PUBLISH_EXTRACT_START__ ClientRequestContext.asyncMethod
-
-  //                                Rule: A Promise-returning function takes an ClientRequestContext as an argument
-  async function asyncMethodExample(requestContext: ClientRequestContext): Promise<void> {
-    requestContext.enter();
-
-    try {
-      await someAsync(requestContext); // Rule: Pass the ClientRequestContext to Promise-returning methods
-      requestContext.enter();        // Rule: Enter the ClientRequestContext on the line after an await
-      Logger.logTrace("cat", "promise resolved");
-    } catch (_err) {
-      requestContext.enter();        // Rule: Enter the ClientRequestContext in an async rejection
-      Logger.logTrace("cat", "promise rejected");
-    }
-
-    // The same rules, using .then.catch instead of await + try/catch.
-    someAsync(requestContext)          // Rule: Pass the ClientRequestContext to Promise-returning methods
-      .then(() => {
-        requestContext.enter();    // Rule: Enter the ClientRequestContext on the line of .then callback
-        Logger.logTrace("cat", "promise resolved");
-      })
-      .catch((_err) => {
-        requestContext.enter();    // Rule: Enter the ClientRequestContext in .catch callback
-        Logger.logTrace("cat", "promise rejected");
-      });
-
-  }
-  // __PUBLISH_EXTRACT_END__
-
-  it("should handle ClientRequestContext in async callbacks", async () => {
-    await asyncFunctionCallsAsync(new ClientRequestContext("abc"));
-    await synchronousFunctionCallsAsync(); // eslint-disable-line @typescript-eslint/await-thenable
-    await asyncMethodExample(new ClientRequestContext("abc"));
   });
 
   it("should update the imodel project extents", async () => {

@@ -157,8 +157,6 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    * Otherwise, the browser's window will be redirected away from the current page, effectively ending execution here.
    */
   public async signInRedirect(requestContext: ClientRequestContext, successRedirectUrl?: string, args?: BrowserAuthorizationClientRequestOptions): Promise<void> {
-    requestContext.enter();
-
     const user = await this.nonInteractiveSignIn(requestContext, args);
     if (user) {
       return;
@@ -178,8 +176,6 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    * @param requestContext
    */
   public async signInPopup(requestContext: ClientRequestContext, args?: BrowserAuthorizationClientRequestOptions): Promise<void> {
-    requestContext.enter();
-
     let user = await this.nonInteractiveSignIn(requestContext, args);
     if (user) {
       return;
@@ -196,8 +192,6 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    * @throws [[BentleyError]] If the silent sign in fails
    */
   public async signInSilent(requestContext: ClientRequestContext): Promise<void> {
-    requestContext.enter();
-
     const user = await this.nonInteractiveSignIn(requestContext);
     if (user === undefined || user.expired)
       throw new BentleyError(AuthStatus.Error, "Silent sign-in failed");
@@ -238,10 +232,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    */
   protected async loadUser(requestContext: ClientRequestContext): Promise<User | undefined> {
     const userManager = await this.getUserManager(requestContext);
-    requestContext.enter();
-
     const user = await userManager.getUser();
-    requestContext.enter();
 
     if (user && !user.expired) {
       this._onUserLoaded(user); // Call only because getUser() doesn't call any events
@@ -270,15 +261,11 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
 
   public async signOutRedirect(requestContext: ClientRequestContext): Promise<void> {
     const userManager = await this.getUserManager(requestContext);
-    requestContext.enter();
-
     await userManager.signoutRedirect();
   }
 
   public async signOutPopup(requestContext: ClientRequestContext): Promise<void> {
     const userManager = await this.getUserManager(requestContext);
-    requestContext.enter();
-
     await userManager.signoutPopup();
   }
 
@@ -287,12 +274,10 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    * The token is refreshed as necessary.
    * @throws [BentleyError]($bentley) If signIn() was not called, or there was an authorization error.
    */
-  public async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken> {
+  public async getAccessToken(): Promise<AccessToken> {
     if (this._accessToken)
       return this._accessToken;
-    if (requestContext)
-      requestContext.enter();
-    throw new BentleyError(AuthStatus.Error, "Not signed in.", Logger.logError, FrontendAuthorizationClientLoggerCategory.Authorization);
+    throw new BentleyError(AuthStatus.Error, "Not signed in.");
   }
 
   /**
@@ -303,8 +288,6 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    * @param ignoreCheckInterval Bypass the default behavior to wait until a certain time has passed since the last check was performed
    */
   public async checkSessionStatus(requestContext: ClientRequestContext): Promise<boolean> {
-    requestContext.enter();
-
     const userManager = await this.getUserManager(requestContext);
     try {
       await userManager.querySessionStatus();
@@ -320,7 +303,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
     this.initAccessToken(user);
     try {
       this.onUserStateChanged.raiseEvent(this._accessToken);
-    } catch (err) {
+    } catch (err: any) {
       Logger.logError(FrontendAuthorizationClientLoggerCategory.Authorization, "Error thrown when handing OidcBrowserClient.onUserStateChanged event", () => ({ message: err.message }));
     }
   };
