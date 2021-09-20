@@ -198,7 +198,7 @@ export class WsgError extends ResponseError {
    * Logs this error
    */
   public override log(): void {
-    Logger.logError(loggerCategory, this.logMessage(), this.getMetaData());
+    Logger.logError(loggerCategory, this.logMessage(), () => this.getMetaData());
   }
 }
 
@@ -288,9 +288,7 @@ export abstract class WsgClient extends Client {
 
   /** used by clients to delete strongly typed instances through the standard WSG REST API */
   protected async deleteInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<void> {
-    requestContext.enter();
     const url: string = await this.getUrl() + relativeUrlPath;
-    requestContext.enter();
     const untypedInstance: any = instance ? ECJsonTypeMap.toJson<T>("wsg", instance) : undefined;
     const options: RequestOptions = {
       method: "DELETE",
@@ -319,7 +317,6 @@ export abstract class WsgClient extends Client {
    */
   protected async postInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T> {
     const url: string = await this.getUrl() + relativeUrlPath;
-    requestContext.enter();
     Logger.logInfo(loggerCategory, "Sending POST request", () => ({ url }));
     const untypedInstance: any = ECJsonTypeMap.toJson<T>("wsg", instance);
 
@@ -335,9 +332,7 @@ export abstract class WsgClient extends Client {
     }
     this.applyUserConfiguredHttpRequestOptions(options, httpRequestOptions);
     await this.setupOptionDefaults(options);
-    requestContext.enter();
     const res: Response = await request(requestContext, url, options);
-    requestContext.enter();
     if (!res.body || !res.body.changedInstance || !res.body.changedInstance.instanceAfterChange) {
       throw new Error(`POST to URL ${url} executed successfully, but did not return the expected result.`);
     }
@@ -363,9 +358,7 @@ export abstract class WsgClient extends Client {
    * @returns The posted instances that's returned back from the server.
    */
   protected async postInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]> {
-    requestContext.enter();
     const url: string = await this.getUrl() + relativeUrlPath;
-    requestContext.enter();
     Logger.logInfo(loggerCategory, "Sending POST request", () => ({ url }));
     const untypedInstances: any[] = instances.map((value: T) => ECJsonTypeMap.toJson<T>("wsg", value));
 
@@ -381,10 +374,8 @@ export abstract class WsgClient extends Client {
     }
     this.applyUserConfiguredHttpRequestOptions(options, httpRequestOptions);
     await this.setupOptionDefaults(options);
-    requestContext.enter();
 
     const res: Response = await request(requestContext, url, options);
-    requestContext.enter();
     if (!res.body || !res.body.changedInstances) {
       throw new Error(`POST to URL ${url} executed successfully, but did not return the expected result.`);
     }
@@ -416,16 +407,13 @@ export abstract class WsgClient extends Client {
    * @returns Array of strongly typed instances.
    */
   protected async getInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]> {
-    requestContext.enter();
     const url: string = await this.getUrl() + relativeUrlPath;
-    requestContext.enter();
     Logger.logInfo(loggerCategory, "Sending GET request", () => ({ url }));
 
     const chunkedQueryContext = queryOptions ? ChunkedQueryContext.create(queryOptions) : undefined;
     const typedInstances: T[] = new Array<T>();
     do {
       const chunk = await this.getInstancesChunk(requestContext, url, chunkedQueryContext, typedConstructor, queryOptions, httpRequestOptions);
-      requestContext.enter();
       typedInstances.push(...chunk);
     } while (chunkedQueryContext && !chunkedQueryContext.isQueryFinished);
 
@@ -444,7 +432,6 @@ export abstract class WsgClient extends Client {
    * @returns Array of strongly typed instances.
    */
   protected async getInstancesChunk<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, url: string, chunkedQueryContext: ChunkedQueryContext | undefined, typedConstructor: new () => T, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]> {
-    requestContext.enter();
     const resultInstances: T[] = new Array<T>();
 
     if (chunkedQueryContext)
@@ -461,15 +448,12 @@ export abstract class WsgClient extends Client {
     };
 
     this.applyUserConfiguredHttpRequestOptions(options, httpRequestOptions);
-
     if (chunkedQueryContext && chunkedQueryContext.skipToken && chunkedQueryContext.skipToken.length > 0)
       options.headers.skiptoken = chunkedQueryContext.skipToken;
 
     await this.setupOptionDefaults(options);
-    requestContext.enter();
 
     const res: Response = await request(requestContext, url, options);
-    requestContext.enter();
     if (!res.body || !res.body.hasOwnProperty("instances")) {
       throw new Error(`Query to URL ${url} executed successfully, but did NOT return any instances.`);
     }
@@ -489,7 +473,6 @@ export abstract class WsgClient extends Client {
 
   /** used by clients to send delete requests */
   protected override async delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, httpRequestOptions?: HttpRequestOptions): Promise<void> {
-    requestContext.enter();
     const url: string = await this.getUrl() + relativeUrlPath;
     Logger.logInfo(loggerCategory, "Sending DELETE request", () => ({ url }));
     const options: RequestOptions = {
@@ -499,7 +482,6 @@ export abstract class WsgClient extends Client {
     this.applyUserConfiguredHttpRequestOptions(options, httpRequestOptions);
     await this.setupOptionDefaults(options);
     await request(requestContext, url, options);
-    requestContext.enter();
     Logger.logTrace(loggerCategory, "Successful DELETE request", () => ({ url }));
   }
 
@@ -537,9 +519,7 @@ export abstract class WsgClient extends Client {
    * @returns Array of strongly typed instances.
    */
   protected async postQuery<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]> {
-    requestContext.enter();
     const url: string = `${await this.getUrl()}${relativeUrlPath}$query`;
-    requestContext.enter();
     Logger.logInfo(loggerCategory, "Sending POST request", () => ({ url }));
 
     const options: RequestOptions = {
@@ -550,10 +530,8 @@ export abstract class WsgClient extends Client {
 
     this.applyUserConfiguredHttpRequestOptions(options, httpRequestOptions);
     await this.setupOptionDefaults(options);
-    requestContext.enter();
 
     const res: Response = await request(requestContext, url, options);
-    requestContext.enter();
     if (!res.body || !res.body.hasOwnProperty("instances")) {
       throw new Error(`Query to URL ${url} executed successfully, but did NOT return any instances.`);
     }

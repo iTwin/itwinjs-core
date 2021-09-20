@@ -388,7 +388,7 @@ export class RealityDataClient extends WsgClient {
    * @param tilesId realityDataInstance id, called tilesId when returned from tile generator job
    * @returns string containing the URL to reality data for indicated tile.
    */
-  public async getRealityDataUrl(requestContext: ClientRequestContext, projectId: string | undefined, tilesId: string): Promise<string> {
+  public async getRealityDataUrl(projectId: string | undefined, tilesId: string): Promise<string> {
     const serverUrl: string = await this.getUrl();
 
     if (!projectId || projectId === "")

@@ -6,7 +6,7 @@
  * @module IModelApp
  */
 
-import { ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@bentley/bentleyjs-core";
 import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcRoutingToken } from "@bentley/imodeljs-common";
 import { loggerCategory } from "./extension/Extension";
@@ -64,7 +64,7 @@ export class WebViewerApp {
 
       if (!opts.webViewerApp.authConfig.noSilentSignInOnAppStartup) {
         try {
-          await auth.signInSilent(new ClientRequestContext());
+          await auth.signInSilent();
         } catch (err) {
           Logger.logWarning(loggerCategory, "Failed to silently sign in", () => ({ message: err.toString() }));
         }

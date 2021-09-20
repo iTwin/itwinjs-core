@@ -172,8 +172,8 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    * Attempts a sign-in via popup with the authorization provider
    * @param requestContext
    */
-  public async signInPopup(requestContext: ClientRequestContext, args?: BrowserAuthorizationClientRequestOptions): Promise<void> {
-    let user = await this.nonInteractiveSignIn(requestContext, args);
+  public async signInPopup(args?: BrowserAuthorizationClientRequestOptions): Promise<void> {
+    let user = await this.nonInteractiveSignIn(args);
     if (user) {
       return;
     }
