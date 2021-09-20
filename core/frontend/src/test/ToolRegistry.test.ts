@@ -17,14 +17,14 @@ let lastCommand: string;
 /** class to test immediate tool */
 class TestImmediate extends Tool {
   public static override toolId = "Test.Immediate";
-  public override run(v1: number, v2: number): boolean {
+  public override async run(v1: number, v2: number): Promise<boolean> {
     testVal1 = v1;
     testVal2 = v2;
     return true;
   }
   public static override get minArgs() { return 2; }
   public static override get maxArgs() { return 2; }
-  public override parseAndRun(v1: string, v2: string): boolean {
+  public override async parseAndRun(v1: string, v2: string): Promise<boolean> {
     if (arguments.length !== 2)
       return false;
     return this.run(parseInt(v1, 10), parseInt(v2, 10));
@@ -73,15 +73,15 @@ describe("ToolRegistry", () => {
     assert.equal(command, TestImmediate, "Found TestImmediate");
     assert.equal(command.minArgs, 2);
     assert.equal(command.maxArgs, 2);
-    let cmdReturn = new command().run(4, 22);
+    let cmdReturn = await new command().run(4, 22);
     assert.isTrue(cmdReturn);
     assert.equal(testVal1, 4, "TestImmediate tool set values");
     assert.equal(testVal2, 22);
-    cmdReturn = new TestImmediate().parseAndRun("5", "33");
+    cmdReturn = await new TestImmediate().parseAndRun("5", "33");
     assert.isTrue(cmdReturn);
     assert.equal(testVal1, 5, "From parseAndRun");
     assert.equal(testVal2, 33);
-    cmdReturn = new command().parseAndRun("125");
+    cmdReturn = await new command().parseAndRun("125");
     assert.isFalse(cmdReturn);
   });
 
@@ -150,10 +150,8 @@ describe("ToolRegistry", () => {
   it("Should find the MicroStation inputmanager training command", async () => {
     const command = IModelApp.tools.findExactMatch("inputmanager training");
     assert.isDefined(command, "Found inputmanager training command");
-    if (command) {
-      assert.isTrue(IModelApp.tools.run(command.toolId));
-      assert.equal(lastCommand, "inputmanager training");
-    }
+    assert.isTrue(await IModelApp.tools.run(command!.toolId));
+    assert.equal(lastCommand, "inputmanager training");
   });
 
   it("Should find some partial matches for 'plac'", async () => {
@@ -231,7 +229,7 @@ function showSearchResultsUsingIndexApi(title: string, searchResults?: FuzzySear
 function registerTestClass(id: string, keyin: string, ns: I18NNamespace) {
   (class extends Tool {
     public static override toolId = id;
-    public override run(): boolean { lastCommand = keyin; return true; }
+    public override async run(): Promise<boolean> { lastCommand = keyin; return true; }
     public static override get keyin(): string { return keyin; }
 
   }).register(ns);

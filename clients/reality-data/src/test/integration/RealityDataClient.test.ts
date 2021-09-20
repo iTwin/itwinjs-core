@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { Guid, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Guid, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Angle, Range2d } from "@bentley/geometry-core";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, ImsAuthorizationClient } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import { RealityData, RealityDataClient, RealityDataRelationship } from "../../RealityDataClient";
 import { TestConfig } from "../TestConfig";
@@ -19,6 +19,8 @@ Logger.setLevel(LOG_CATEGORY, LogLevel.Info);
 
 describe("RealityServicesClient Normal (#integration)", () => {
   const realityDataServiceClient: RealityDataClient = new RealityDataClient();
+  const imsClient: ImsAuthorizationClient = new ImsAuthorizationClient();
+
   // SWB
   let projectId: GuidString;
 
@@ -109,7 +111,13 @@ describe("RealityServicesClient Normal (#integration)", () => {
     chai.assert(url);
   });
 
-  it("should be able to retrieve the azure blob url (write access)", async () => {
+  it("should be able to retrieve the azure blob url (write access)", async function () {
+    // Skip this test if the issuing authority is not imsoidc.
+    // The iTwin Platform currently does not support the reality-data:write scope.
+    const imsUrl = await imsClient.getUrl(new ClientRequestContext(""));
+    if (-1 === imsUrl.indexOf("imsoidc"))
+      this.skip();
+
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesId);
 
     const url: URL = await realityData.getBlobUrl(requestContext, true);
@@ -147,7 +155,13 @@ describe("RealityServicesClient Normal (#integration)", () => {
     chai.assert(modelDataString === "b3dm");
   });
 
-  it("should be able to create a reality data (without specific identifier) and delete it", async () => {
+  it("should be able to create a reality data (without specific identifier) and delete it", async function () {
+    // Skip this test if the issuing authority is not imsoidc.
+    // The iTwin Platform currently does not support the reality-data:write scope.
+    const imsUrl = await imsClient.getUrl(new ClientRequestContext(""));
+    if (-1 === imsUrl.indexOf("imsoidc"))
+      this.skip();
+
     const realityData: RealityData = new RealityData();
     realityData.name = "Test reality data 1";
     realityData.dataSet = "Test Dataset for iModelJS";
@@ -218,7 +232,13 @@ describe("RealityServicesClient Normal (#integration)", () => {
     await realityDataServiceClient.deleteRealityData(requestContext, projectId, realityDataAdded1.id as string);
   });
 
-  it("should be able to create a reality data (with fixed specific identifier) and delete it", async () => {
+  it("should be able to create a reality data (with fixed specific identifier) and delete it", async function () {
+    // Skip this test if the issuing authority is not imsoidc.
+    // The iTwin Platform currently does not support the reality-data:write scope.
+    const imsUrl = await imsClient.getUrl(new ClientRequestContext(""));
+    if (-1 === imsUrl.indexOf("imsoidc"))
+      this.skip();
+
     const realityData: RealityData = new RealityData();
 
     // Generate a temporary GUID. Data will be generated using this GUID.
@@ -294,7 +314,13 @@ describe("RealityServicesClient Normal (#integration)", () => {
     await realityDataServiceClient.deleteRealityData(requestContext, projectId, realityDataAdded1.id as string);
   });
 
-  it("should be able to duplicate a reality data and delete it", async () => {
+  it("should be able to duplicate a reality data and delete it", async function () {
+    // Skip this test if the issuing authority is not imsoidc.
+    // The iTwin Platform currently does not support the reality-data:write scope.
+    const imsUrl = await imsClient.getUrl(new ClientRequestContext(""));
+    if (-1 === imsUrl.indexOf("imsoidc"))
+      this.skip();
+
     const realityData: RealityData = new RealityData();
 
     // Generate a temporary GUID. Data will be generated using this GUID.
@@ -435,7 +461,13 @@ describe("RealityServicesClient Normal (#integration)", () => {
     await realityDataServiceClient.deleteRealityData(requestContext, projectId, realityDataAdded2.id as string);
   });
 
-  it("should be able to create a reality data then modify it then delete it", async () => {
+  it("should be able to create a reality data then modify it then delete it", async function () {
+    // Skip this test if the issuing authority is not imsoidc.
+    // The iTwin Platform currently does not support the reality-data:write scope.
+    const imsUrl = await imsClient.getUrl(new ClientRequestContext(""));
+    if (-1 === imsUrl.indexOf("imsoidc"))
+      this.skip();
+
     const realityData: RealityData = new RealityData();
 
     realityData.name = "Test reality data 1";
@@ -613,6 +645,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
 
 describe("RealityServicesClient Admin (#integration)", () => {
   const realityDataServiceClient: RealityDataClient = new RealityDataClient();
+  const imsClient: ImsAuthorizationClient = new ImsAuthorizationClient();
   let requestContext: AuthorizedClientRequestContext;
 
   before(async () => {
@@ -620,7 +653,13 @@ describe("RealityServicesClient Admin (#integration)", () => {
     Logger.logInfo(LOG_CATEGORY, `ActivityId: ${requestContext.activityId}`);
   });
 
-  it("should be able to create a reality data as an admin (without specific context and admin) and delete it", async () => {
+  it("should be able to create a reality data as an admin (without specific context and admin) and delete it", async function () {
+    // Skip this test if the issuing authority is not imsoidc.
+    // The iTwin Platform currently does not support the reality-data:write scope.
+    const imsUrl = await imsClient.getUrl(new ClientRequestContext(""));
+    if (-1 === imsUrl.indexOf("imsoidc"))
+      this.skip();
+
     const realityData: RealityData = new RealityData();
 
     // Generate a temporary GUID. Data will be generated using this GUID.

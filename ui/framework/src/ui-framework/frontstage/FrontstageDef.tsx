@@ -284,7 +284,7 @@ export class FrontstageDef {
     if (contentControl) {
       ContentViewManager.setActiveContent(contentControl.reactNode, true);
       if (contentControl.viewport)
-        IModelApp.viewManager.setSelectedView(contentControl.viewport);
+        IModelApp.viewManager.setSelectedView(contentControl.viewport); // eslint-disable-line @typescript-eslint/no-floating-promises
       activated = true;
     }
 

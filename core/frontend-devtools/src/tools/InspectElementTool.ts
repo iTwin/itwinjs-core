@@ -62,16 +62,16 @@ export class InspectElementTool extends PrimitiveTool {
 
   public override requireWriteableTarget(): boolean { return false; }
 
-  public override onUnsuspend(): void {
+  public override async onUnsuspend() {
     this.showPrompt();
   }
 
-  public override onPostInstall(): void {
-    super.onPostInstall();
+  public override async onPostInstall() {
+    await super.onPostInstall();
 
     if (undefined !== this._elementIds)
-      this.process(this._elementIds).then(() => {
-        this.onReinitialize();
+      this.process(this._elementIds).then(async () => {
+        await this.onReinitialize();
       }).catch((err) => {
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
       });
@@ -94,7 +94,7 @@ export class InspectElementTool extends PrimitiveTool {
         else
           await this.process(ids);
 
-        this.onReinitialize();
+        await this.onReinitialize();
         return EventHandled.Yes;
       }
     }
@@ -109,22 +109,22 @@ export class InspectElementTool extends PrimitiveTool {
   }
 
   public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
-    this.onReinitialize();
+    await this.onReinitialize();
     return EventHandled.No;
   }
 
-  public override onReinitialize(): void {
+  public override async onReinitialize() {
     if (this._useSelection || undefined !== this._elementIds) {
-      this.exitTool();
+      await this.exitTool();
     } else {
-      this.onRestartTool();
+      await this.onRestartTool();
     }
   }
 
-  public onRestartTool(): void {
+  public async onRestartTool() {
     const tool = new InspectElementTool();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 
   public override async filterHit(hit: HitDetail, _out: LocateResponse): Promise<LocateFilterStatus> {
@@ -166,14 +166,14 @@ export class InspectElementTool extends PrimitiveTool {
 
         await IModelApp.notifications.openMessageBox(MessageBoxType.Ok, div, MessageBoxIconType.Information);
       }
-    } catch (err) {
+    } catch (err: any) {
       messageDetails = new NotifyMessageDetails(OutputMessagePriority.Error, "Error occurred while generating summary", err.toString());
     }
 
     IModelApp.notifications.outputMessage(messageDetails);
   }
 
-  public override parseAndRun(...inputArgs: string[]): boolean {
+  public override async parseAndRun(...inputArgs: string[]): Promise<boolean> {
     const args = parseArgs(inputArgs);
     const ids = args.get("i");
     if (undefined !== ids)

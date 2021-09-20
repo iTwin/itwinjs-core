@@ -131,12 +131,6 @@
       ]
     },
     {
-      "name": "@bentley/extension-client",
-      "allowedCategories": [
-        "frontend"
-      ]
-    },
-    {
       "name": "@bentley/extension-webpack-tools",
       "allowedCategories": [
         "extensions",
@@ -422,7 +416,6 @@
       "name": "@bentley/telemetry-client",
       "allowedCategories": [
         "backend",
-        "common",
         "frontend",
         "integration-testing"
       ]
@@ -587,6 +580,14 @@
       "allowedCategories": [
         "extensions",
         "frontend"
+      ]
+    },
+    {
+      "name": "@xmldom/xmldom",
+      "allowedCategories": [
+        "backend",
+        "common",
+        "tools"
       ]
     },
     {
@@ -882,12 +883,6 @@
       "name": "enzyme",
       "allowedCategories": [
         "extensions",
-        "frontend"
-      ]
-    },
-    {
-      "name": "enzyme-adapter-react-16",
-      "allowedCategories": [
         "frontend"
       ]
     },
@@ -1570,14 +1565,6 @@
       ]
     },
     {
-      "name": "react-virtualized-auto-sizer",
-      "allowedCategories": [
-        "extensions",
-        "frontend",
-        "internal"
-      ]
-    },
-    {
       "name": "react-window",
       "allowedCategories": [
         "frontend"
@@ -1927,14 +1914,6 @@
       "name": "xml-js",
       "allowedCategories": [
         "frontend"
-      ]
-    },
-    {
-      "name": "xmldom",
-      "allowedCategories": [
-        "backend",
-        "common",
-        "tools"
       ]
     },
     {

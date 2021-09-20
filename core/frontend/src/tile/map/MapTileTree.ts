@@ -290,7 +290,7 @@ export class MapTileTree extends RealityTileTree {
     await this._gcsConverter!.getIModelCoordinatesFromGeoCoordinates(requestProps);
   }
 
-  private static _scratchCarto = new Cartographic();
+  private static _scratchCarto = Cartographic.createZero();
 
   // Get the corners for planar children -- This generally will resolve immediately, but may require an asynchronous request for reprojecting the corners.
   public getPlanarChildCorners(tile: MapTile, columnCount: number, rowCount: number, resolve: (childCorners: Point3d[][]) => void) {

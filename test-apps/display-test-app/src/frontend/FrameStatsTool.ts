@@ -11,7 +11,7 @@ export class FrameStatsTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 0; }
 
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     for (const vp of IModelApp.viewManager) {
       if (vp.onFrameStats.numberOfListeners > 0)
         vp.onFrameStats.clear();
@@ -23,7 +23,7 @@ export class FrameStatsTool extends Tool {
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     switch (args.length) {
       case 0:
         return this.run();

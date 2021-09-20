@@ -11,6 +11,7 @@ import {
 
 const testNode: Node = {
   key: {
+    version: 0,
     instanceKeys: [],
     pathFromRoot: [],
     type: StandardNodeTypes.ECInstancesNode,

@@ -1279,7 +1279,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
         cartoCenter = Cartographic.fromEcef(location.ecefLocation.origin);
 
       if (!cartoCenter)
-        cartoCenter = Cartographic.fromDegrees(-75.17035, 39.954927, 0.0);
+        cartoCenter = Cartographic.fromDegrees({ longitude: -75.17035, latitude: 39.954927, height: 0.0 });
     } else {
       cartoCenter = location;
     }
