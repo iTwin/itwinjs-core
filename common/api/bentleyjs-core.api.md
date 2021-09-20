@@ -9,9 +9,6 @@ export class AbandonedError extends Error {
 }
 
 // @public
-export type AllStatusValues = IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RpcInterfaceStatus | ExtensionStatus | GeoServiceStatus | HttpStatus | RepositoryStatus | WSStatus;
-
-// @public
 export function areEqualPossiblyUndefined<T, U>(t: T | undefined, u: U | undefined, areEqual: (t: T, u: U) => boolean): boolean;
 
 // @public
@@ -86,9 +83,9 @@ export class BeEventList<T extends Listener> {
 
 // @public
 export class BentleyError extends Error {
-    constructor(errorNumber: AllStatusValues | number, message?: string, getMetaData?: GetMetaDataFunction);
+    constructor(errorNumber: number, message?: string, getMetaData?: GetMetaDataFunction);
     // (undocumented)
-    errorNumber: AllStatusValues | number;
+    errorNumber: number;
     getMetaData(): object | undefined;
     get hasMetaData(): boolean;
     protected _initName(): string;
