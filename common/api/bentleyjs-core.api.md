@@ -126,7 +126,7 @@ export class BeUiEvent<TEventArgs> extends BeEvent<(args: TEventArgs) => void> {
     emit(args: TEventArgs): void;
 }
 
-// @beta
+// @public
 export enum BriefcaseStatus {
     // (undocumented)
     BRIEFCASE_STATUS_BASE = 131072,
@@ -541,7 +541,7 @@ export interface EntryContainer<K, V> {
     readonly size: number;
 }
 
-// @beta
+// @public
 export enum ExtensionStatus {
     // (undocumented)
     BadExtension = 143364,
@@ -600,7 +600,7 @@ export namespace Guid {
 // @public
 export type GuidString = string;
 
-// @beta
+// @public
 export enum HttpStatus {
     ClientError = 94211,
     Info = 94209,
@@ -1323,7 +1323,7 @@ export class ReadonlySortedArray<T> implements Iterable<T> {
     protected _remove(value: T): number;
 }
 
-// @beta
+// @public
 export enum RepositoryStatus {
     CannotCreateChangeSet = 86023,
     ChangeSetRequired = 86025,
@@ -1344,7 +1344,7 @@ export enum RepositoryStatus {
     SyncError = 86019
 }
 
-// @beta
+// @public
 export enum RpcInterfaceStatus {
     IncompatibleVersion = 135168,
     // (undocumented)
@@ -1429,7 +1429,7 @@ export function utf8ToString(utf8: Uint8Array): string | undefined;
 // @internal
 export function utf8ToStringPolyfill(utf8: Uint8Array): string | undefined;
 
-// @beta
+// @public
 export enum WSStatus {
     // (undocumented)
     ClassNotFound = 98311,

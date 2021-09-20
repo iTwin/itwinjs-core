@@ -19,7 +19,7 @@ public;BentleyLoggerCategory
 public;BentleyStatus
 public;BeTimePoint
 public;BeUiEvent
-beta;BriefcaseStatus
+public;BriefcaseStatus
 public;ByteStream
 public;ChangeSetApplyOption
 beta;ChangeSetStatus
@@ -49,12 +49,12 @@ public;DisposeFunc = () => void
 public;DuplicatePolicy
 public;Entry
 public;EntryContainer
-beta;ExtensionStatus
+public;ExtensionStatus
 public;GeoServiceStatus
 public;GetMetaDataFunction = () => object | undefined
 public;Guid
 public;GuidString = string
-beta;HttpStatus
+public;HttpStatus
 public;Id64
 public;Id64Arg = Id64String | Id64Set | Id64Array
 public;Id64Array = Id64String[]
@@ -98,8 +98,8 @@ public;ProcessDetector
 public;PromiseReturnType
 public;ReadonlyOrderedSet
 public;ReadonlySortedArray
-beta;RepositoryStatus
-beta;RpcInterfaceStatus
+public;RepositoryStatus
+public;RpcInterfaceStatus
 public;SerializedClientRequestContext
 public;SessionProps
 public;shallowClone
@@ -110,4 +110,4 @@ public;TransientIdSequence
 public;using
 public;utf8ToString(utf8: Uint8Array): string | undefined
 internal;utf8ToStringPolyfill(utf8: Uint8Array): string | undefined
-beta;WSStatus
+public;WSStatus
