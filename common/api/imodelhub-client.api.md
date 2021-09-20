@@ -662,7 +662,7 @@ export class IModelBaseHandler extends WsgClient {
     // (undocumented)
     protected _fileHandler: FileHandler | undefined;
     // @internal (undocumented)
-    formatContextIdForUrl(contextId: string): string;
+    formatITwinIdForUrl(iTwinId: string): string;
     // @internal
     getAgent(): any;
     // @internal
@@ -774,14 +774,14 @@ export class IModelHandler {
     // @internal
     constructor(handler: IModelsHandler);
     // @internal
-    create(requestContext: AuthorizedClientRequestContext, contextId: string, name: string, createOptions?: IModelCreateOptions): Promise<HubIModel>;
-    delete(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<void>;
+    create(requestContext: AuthorizedClientRequestContext, iTwinId: string, name: string, createOptions?: IModelCreateOptions): Promise<HubIModel>;
+    delete(requestContext: AuthorizedClientRequestContext, iTwinId: string): Promise<void>;
     // @internal
-    download(requestContext: AuthorizedClientRequestContext, contextId: string, path: string, progressCallback?: ProgressCallback): Promise<void>;
-    get(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<HubIModel>;
+    download(requestContext: AuthorizedClientRequestContext, iTwinId: string, path: string, progressCallback?: ProgressCallback): Promise<void>;
+    get(requestContext: AuthorizedClientRequestContext, iTwinId: string): Promise<HubIModel>;
     // @internal
-    getInitializationState(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<InitializationState>;
-    update(requestContext: AuthorizedClientRequestContext, contextId: string, imodel: HubIModel): Promise<HubIModel>;
+    getInitializationState(requestContext: AuthorizedClientRequestContext, iTwinId: string): Promise<InitializationState>;
+    update(requestContext: AuthorizedClientRequestContext, iTwinId: string, imodel: HubIModel): Promise<HubIModel>;
 }
 
 // @public
@@ -866,9 +866,9 @@ export enum IModelHubEventType {
 
 // @internal
 export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
-    contextId?: string;
     fromJson(obj: any): void;
     iModelId?: GuidString;
+    iTwinId?: string;
     projectId?: string;
 }
 
@@ -893,14 +893,14 @@ export class IModelsHandler {
     // @internal
     constructor(handler: IModelBaseHandler, fileHandler?: FileHandler);
     // @internal
-    create(requestContext: AuthorizedClientRequestContext, contextId: string, name: string, createOptions?: IModelCreateOptions): Promise<HubIModel>;
-    delete(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: GuidString): Promise<void>;
+    create(requestContext: AuthorizedClientRequestContext, iTwinId: string, name: string, createOptions?: IModelCreateOptions): Promise<HubIModel>;
+    delete(requestContext: AuthorizedClientRequestContext, iTwinId: string, iModelId: GuidString): Promise<void>;
     // @internal
     download(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, path: string, progressCallback?: ProgressCallback): Promise<void>;
-    get(requestContext: AuthorizedClientRequestContext, contextId: string, query?: IModelQuery): Promise<HubIModel[]>;
+    get(requestContext: AuthorizedClientRequestContext, iTwinId: string, query?: IModelQuery): Promise<HubIModel[]>;
     // @internal
     getInitializationState(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<InitializationState>;
-    update(requestContext: AuthorizedClientRequestContext, contextId: string, imodel: HubIModel): Promise<HubIModel>;
+    update(requestContext: AuthorizedClientRequestContext, iTwinId: string, imodel: HubIModel): Promise<HubIModel>;
     }
 
 // @public
@@ -1120,7 +1120,7 @@ export type ThumbnailSize = "Small" | "Large";
 
 // @public
 export interface TipThumbnail {
-    contextId: string;
+    iTwinId: string;
     size: ThumbnailSize;
 }
 

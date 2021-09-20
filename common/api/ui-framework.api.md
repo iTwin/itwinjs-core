@@ -3093,9 +3093,9 @@ export interface IModelInfo {
     // (undocumented)
     description: string;
     // (undocumented)
-    name: string;
+    iTwinInfo: ITwin;
     // (undocumented)
-    projectInfo: ITwin;
+    name: string;
     // (undocumented)
     status: string;
     // (undocumented)
@@ -3117,8 +3117,8 @@ export enum IModelScope {
 // @internal
 export interface IModelServices {
     getChangeSets(iModelId: string): Promise<ChangeSetInfo[]>;
-    getIModels(projectInfo: ITwin, top: number, skip: number): Promise<IModelInfo[]>;
-    getThumbnail(projectId: string, iModelId: string): Promise<string | undefined>;
+    getIModels(iTwinInfo: ITwin, top: number, skip: number): Promise<IModelInfo[]>;
+    getThumbnail(iTwinId: string, iModelId: string): Promise<string | undefined>;
     getUser(iModelId: string, userId: string): Promise<IModelUserInfo[]>;
     getUsers(iModelId: string): Promise<IModelUserInfo[]>;
     getVersions(iModelId: string): Promise<VersionInfo[]>;
