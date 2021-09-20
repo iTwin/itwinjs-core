@@ -261,11 +261,59 @@ The [NodeKey]($presentation-common) object contains a `pathFromRoot` attribute w
 
 In `3.0` changes have been made that changed the way this attribute is calculated, which means the same node produced by pre-3.0 and 3.x versions of `imodeljs` will have keys with different `pathFromRoot` value. To help identify the version of `NodeKey` a new `version` attribute has been added, with `undefined` or `1` being assigned to keys produced by pre-3.0 and `2` being assigned to keys produced by `3.x` versions of imodeljs. In addition, a new [NodeKey.equals]($presentation-common) function has been added to help with the equality checking of node keys, taking their version into account.
 
+## Changes to `Presentation` initialization in `@bentley/presentation-frontend`
+
+- [Presentation.initialize]($presentation-frontend) used to take [PresentationManagerProps]($presentation-frontend) as an argument. Now it takes [PresentationProps]($presentation-frontend) which allows supplying props not only to [PresentationManager]($presentation-frontend), but also [SelectionManager]($presentation-frontend) and [FavoritePropertiesManager]($presentation-frontend). Typical migration:
+
+  **Before:**
+
+  ```ts
+  await Presentation.initialize({
+    // ...props for presentation manager
+    activeLocale: "en-us",
+  });
+  ```
+
+  **After:**
+
+  ```ts
+  await Presentation.initialize({
+    presentation: {
+      // ...props for presentation manager
+      activeLocale: "en-us",
+    },
+  });
+  ```
+
+- The frontend used to by default initialize with an [IFavoritePropertiesStorage]($presentation-frontend) implementation that uses Bentley's user settings service which may not be accessible by third party applications. The behavior was changed to use to a no-op storage by default with ability to choose an implementation that uses the settings service. Typical migration:
+
+  **Before:**
+
+  ```ts
+  // no way to override favorite properties storage, so the implementation using settings service is used
+  await Presentation.initialize();
+  ```
+
+  **After:**
+
+  ```ts
+  await Presentation.initialize({
+    favorites: {
+      // by default the no-op storage is used, but we can choose another option (or provide our own implementation)
+      storage: createFavoritePropertiesStorage(DefaultFavoritePropertiesStorageTypes.UserSettingsServiceStorage),
+    },
+  });
+  ```
+
 ## Changes to GraphicBuilder
 
 It is no longer necessary to supply a [Viewport]($frontend) when creating a [GraphicBuilder]($frontend). Instead, you can supply to [RenderSystem.createGraphic]($frontend) a [CustomGraphicBuilderOptions]($frontend) containing a function that can compute the level of detail appropriate for the produced [RenderGraphic]($frontend).
 
 [GraphicBuilder]($frontend)'s properties are all now read-only - you can no longer change `placement`, `pickId`, `wantNormals`, or `wantEdges` after creating the builder. Previously, a caller could create a graphic builder, add some geometry, then modify any of these properties before adding more geometry, more often than not producing surprising results.
+
+## Changed return types
+
+The backend methods [IModelDb.saveFileProperty]($backend) and [IModelDb.deleteFileProperty]($backend) used to return a [DbResult]($bentley). They now are `void`, and throw an exception if an error occurred. The error value can be retrieved in the `errorNumber` member of the exception object, if desired.
 
 ## Removal of previously deprecated APIs
 
@@ -367,28 +415,28 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @bentley/ui-components
 
-| Removed                                                     | Replacement                                                                                                                   |
-| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `hasFlag`                                                   | `hasSelectionModeFlag` in @bentley/ui-components                                                                              |
-| `StandardEditorNames`                                       | `StandardEditorNames` in @bentley/ui-abstract                                                                                 |
-| `StandardTypeConverterTypeNames`                            | `StandardTypeNames` in @bentley/ui-abstract                                                                                   |
-| `StandardTypeNames`                                         | `StandardTypeNames` in @bentley/ui-abstract                                                                                   |
-| `Timeline`                                                  | `TimelineComponent` in @bentley/ui-components                                                                                 |
-| `ControlledTreeProps.treeEvents`                            | `ControlledTreeProps.eventsHandler`                                                                                           |
-| `ControlledTreeProps.visibleNodes`                          | `ControlledTreeProps.model`                                                                                                   |
-| `MutableTreeModel.computeVisibleNodes`                      | `computeVisibleNodes` in @bentley/ui-components                                                                               |
-| `TreeModelSource.getVisibleNodes`                           | memoized result of `computeVisibleNodes`                                                                                      |
-| `useVisibleTreeNodes`                                       | `useTreeModel` and `computeVisibleNodes`                                                                                      |
-| `SignIn`                                                    | *eliminated*                                                                                                                  |
-| All drag & drop related APIs                                | Third party components. E.g. see this [example](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=drag-and-drop) |
-| `DEPRECATED_Tree`, `BeInspireTree` and related APIs         | `ControlledTree`                                                                                                              |
-| `PropertyValueRendererContext.decoratedTextElement`         | `IPropertyValueRenderer` that can properly render a `PropertyRecord`                                                          |
-| `CommonPropertyGridProps.onPropertyLinkClick`               | `PropertyRecord.links.onClick`                                                                                                |
-| `onPropertyLinkClick` prop in `usePropertyData`             | `PropertyRecord.links.onClick`                                                                                                |
-| `onPropertyLinkClick` prop in `usePropertyGridModelSource`  | `PropertyRecord.links.onClick`                                                                                                |
-| `FilteringInputProps.filteringInProgress`                   | `FilteringInputProps.status`                                                                                                  |
-| `hasLinks`                                                  | `!!PropertyRecord.links?.length`                                                                                              |
-| `PropertyListProps.onListWidthChanged`                      | Width is now passed to `PropertyList` through `PropertyListProps.width` prop                                                  |
+| Removed                                                    | Replacement                                                                                                                   |
+| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `hasFlag`                                                  | `hasSelectionModeFlag` in @bentley/ui-components                                                                              |
+| `StandardEditorNames`                                      | `StandardEditorNames` in @bentley/ui-abstract                                                                                 |
+| `StandardTypeConverterTypeNames`                           | `StandardTypeNames` in @bentley/ui-abstract                                                                                   |
+| `StandardTypeNames`                                        | `StandardTypeNames` in @bentley/ui-abstract                                                                                   |
+| `Timeline`                                                 | `TimelineComponent` in @bentley/ui-components                                                                                 |
+| `ControlledTreeProps.treeEvents`                           | `ControlledTreeProps.eventsHandler`                                                                                           |
+| `ControlledTreeProps.visibleNodes`                         | `ControlledTreeProps.model`                                                                                                   |
+| `MutableTreeModel.computeVisibleNodes`                     | `computeVisibleNodes` in @bentley/ui-components                                                                               |
+| `TreeModelSource.getVisibleNodes`                          | memoized result of `computeVisibleNodes`                                                                                      |
+| `useVisibleTreeNodes`                                      | `useTreeModel` and `computeVisibleNodes`                                                                                      |
+| `SignIn`                                                   | *eliminated*                                                                                                                  |
+| All drag & drop related APIs                               | Third party components. E.g. see this [example](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=drag-and-drop) |
+| `DEPRECATED_Tree`, `BeInspireTree` and related APIs        | `ControlledTree`                                                                                                              |
+| `PropertyValueRendererContext.decoratedTextElement`        | `IPropertyValueRenderer` that can properly render a `PropertyRecord`                                                          |
+| `CommonPropertyGridProps.onPropertyLinkClick`              | `PropertyRecord.links.onClick`                                                                                                |
+| `onPropertyLinkClick` prop in `usePropertyData`            | `PropertyRecord.links.onClick`                                                                                                |
+| `onPropertyLinkClick` prop in `usePropertyGridModelSource` | `PropertyRecord.links.onClick`                                                                                                |
+| `FilteringInputProps.filteringInProgress`                  | `FilteringInputProps.status`                                                                                                  |
+| `hasLinks`                                                 | `!!PropertyRecord.links?.length`                                                                                              |
+| `PropertyListProps.onListWidthChanged`                     | Width is now passed to `PropertyList` through `PropertyListProps.width` prop                                                  |
 
 ### @bentley/ui-framework
 
@@ -618,23 +666,25 @@ The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to 
 
 ### PropertyGrid - related API Changes
 
-`width` and `height` are now required props for `VirtualizedPropertyGrid` and `VirtualizedPropertyGridWithDataProvider`. Also, `width` is now a required property for `PropertyList`. Previously they were optional and forced us to use non-optimal approach when not provided. Now it's up to the consumer to tell the size of the component. Typical migration:
+- `width` and `height` are now required props for `VirtualizedPropertyGrid` and `VirtualizedPropertyGridWithDataProvider`. Also, `width` is now a required property for `PropertyList`. Previously they were optional and forced us to use non-optimal approach when not provided. Now it's up to the consumer to tell the size of the component. Typical migration:
 
-**Before:**
+  **Before:**
 
-```tsx
-return <VirtualizedPropertyGrid {...props} />;
-```
+  ```tsx
+  return <VirtualizedPropertyGrid {...props} />;
+  ```
 
-**After:**
+  **After:**
 
-```tsx
-const width = 100;
-const height = 100;
-return <VirtualizedPropertyGrid width={width} height={height} {...props} />;
-```
+  ```tsx
+  const width = 100;
+  const height = 100;
+  return <VirtualizedPropertyGrid width={width} height={height} {...props} />;
+  ```
 
-`width` and `height` props may be calculated dynamically using [ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver) API.
+  `width` and `height` props may be calculated dynamically using [ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver) API.
+
+- Default value of `PresentationPropertyDataProvider.isNestedPropertyCategoryGroupingEnabled` was changed from `false` to `true`.
 
 ### Deprecated Components in Favor of iTwinUI-react Components
 
