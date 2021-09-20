@@ -6,7 +6,7 @@
  * @module ContextRegistry
  */
 import * as deepAssign from "deep-assign";
-import { AuthorizedClientRequestContext, RequestOptions, RequestQueryOptions, } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, RequestOptions, RequestQueryOptions } from "@bentley/itwin-client";
 import { ECJsonTypeMap, WsgInstance } from "./wsg/ECJsonTypeMap";
 import { WsgClient } from "./wsg/WsgClient";
 

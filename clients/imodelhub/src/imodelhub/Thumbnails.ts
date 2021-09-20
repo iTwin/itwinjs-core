@@ -23,7 +23,7 @@ const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
 export type ThumbnailSize = "Small" | "Large";
 
 /** Base class for Thumbnails.
- * @public
+ * @internal
  */
 export abstract class Thumbnail extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "instanceId")
@@ -31,13 +31,13 @@ export abstract class Thumbnail extends WsgInstance {
 }
 
 /** Small [[Thumbnail]] class. Small Thumbnail is a 400x250 PNG image.
- * @public
+ * @internal
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.SmallThumbnail", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class SmallThumbnail extends Thumbnail { }
 
 /** Large [[Thumbnail]] class. Large Thumbnail is a 800x500 PNG image.
- * @public
+ * @internal
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.LargeThumbnail", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class LargeThumbnail extends Thumbnail { }
@@ -54,7 +54,7 @@ export interface TipThumbnail {
 
 /**
  * Query object for getting [[Thumbnail]]s. You can use this to modify the [[ThumbnailHandler.get]] results.
- * @public
+ * @internal
  */
 export class ThumbnailQuery extends InstanceIdQuery {
   /**
@@ -73,7 +73,7 @@ export class ThumbnailQuery extends InstanceIdQuery {
 
 /**
  * Handler for retrieving [[Thumbnail]]s. Use [[IModelClient.Thumbnails]] to get an instance of this class.
- * @public
+ * @internal
  */
 export class ThumbnailHandler {
   private _handler: IModelBaseHandler;

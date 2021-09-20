@@ -21,7 +21,7 @@ const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
  * HubIModel represents an iModel on iModelHub. Getting a valid HubIModel instance from iModelHub is required for majority of iModelHub method calls, as wsgId of this object needs to be passed as iModelId argument to those methods.
  *
  * For iModel representation in iModel.js, see [IModel]($common). For the file that is used for that iModel, see [BriefcaseDb]($backend).
- * @public
+ * @internal
  */
 @ECJsonTypeMap.classToJson("wsg", "ContextScope.iModel", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class HubIModel extends WsgInstance {
@@ -246,7 +246,7 @@ class SeedFileHandler {
 
 /**
  * Query object for getting [[HubIModel]] instances. You can use this to modify the [[IModelsHandler.get]] results.
- * @public
+ * @internal
  */
 export class IModelQuery extends InstanceIdQuery {
   /**
@@ -373,7 +373,7 @@ export class DefaultIModelCreateOptionsProvider {
 /**
  * Handler for managing [[HubIModel]] instances. Use [[IModelHubClient.IModels]] to get an instance of this handler.
  * @note Use [[IModelHubClient.IModel]] for the preferred single iModel per context workflow.
- * @public
+ * @internal
  */
 export class IModelsHandler {
   private _handler: IModelBaseHandler;
@@ -725,7 +725,7 @@ export class IModelsHandler {
 /**
  * Handler for managing [[HubIModel]] instance. Use [[IModelHubClient.IModel]] to get an instance of this handler.
  * @note Use [[IModelHubClient.IModels]] if multiple iModels per context are supported.
- * @beta
+ * @internal
  */
 export class IModelHandler {
   private _handler: IModelsHandler;

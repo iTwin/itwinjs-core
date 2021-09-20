@@ -17,7 +17,7 @@ import { ArgumentCheck } from "./Errors";
 const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
 
 /** Information about the user, allowing to identify them based on their id.
- * @public
+ * @internal
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.UserInfo", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class HubUserInfo extends WsgInstance {
@@ -39,7 +39,7 @@ export class HubUserInfo extends WsgInstance {
 }
 
 /** Statistics of user created and owned instances on the iModel.
- * @public
+ * @internal
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.UserInfo", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class UserStatistics extends HubUserInfo {
@@ -62,7 +62,7 @@ export class UserStatistics extends HubUserInfo {
 
 /**
  * Query object for getting User Statistics. You can use this to modify the [[UserStatisticsHandler.get]] results.
- * @public
+ * @internal
  */
 export class UserStatisticsQuery extends WsgQuery {
   /** @internal */
@@ -157,7 +157,7 @@ export class UserStatisticsQuery extends WsgQuery {
 
 /**
  * Handler for querying [[UserStatistics]]. Use [[UserInfoHandler.Statistics]] to get an instance of this class.
- * @public
+ * @internal
  */
 export class UserStatisticsHandler {
   private _handler: IModelBaseHandler;
@@ -212,7 +212,7 @@ export class UserStatisticsHandler {
 }
 
 /** Query object for getting [[HubUserInfo]]. You can use this to modify the [[UserInfoHandler.get]] results.
- * @public
+ * @internal
  */
 export class UserInfoQuery extends WsgQuery {
   private _queriedByIds = false;
@@ -266,7 +266,7 @@ export class UserInfoQuery extends WsgQuery {
 }
 
 /** Handler for querying [[HubUserInfo]]. Use [[IModelClient.Users]] to get an instance of this class.
- * @public
+ * @internal
  */
 export class UserInfoHandler {
   private _handler: IModelBaseHandler;

@@ -12,7 +12,7 @@ import { WsgQuery } from "../wsg/WsgQuery";
 import { ArgumentCheck } from "./Errors";
 
 /** Query for instances with string based instance ids.
- * @public
+ * @internal
  */
 export class StringIdQuery extends WsgQuery {
   /** @internal */
@@ -46,7 +46,7 @@ export class StringIdQuery extends WsgQuery {
 }
 
 /** Query for instances with Guid based instance ids.
- * @public
+ * @internal
  */
 export class InstanceIdQuery extends WsgQuery {
   /** @internal */

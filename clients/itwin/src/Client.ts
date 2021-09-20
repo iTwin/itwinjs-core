@@ -83,7 +83,7 @@ export abstract class Client {
       throw new Error("need base url");
     }
 
-    let prefix = process.env.IMJS_URL_PREFIX;
+    const prefix = process.env.IMJS_URL_PREFIX;
     if (prefix) {
       const baseUrl = new URL(this.baseUrl);
       baseUrl.hostname = prefix + baseUrl.hostname;

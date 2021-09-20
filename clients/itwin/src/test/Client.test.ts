@@ -5,7 +5,6 @@
 
 import { Client } from "../Client";
 import { expect } from "chai";
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
 
 class TestApiClient extends Client {
   public constructor() {

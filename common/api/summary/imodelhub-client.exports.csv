@@ -1,8 +1,8 @@
 sep=;
 Release Tag;API Item
-beta;addApplicationVersion(version: string): HttpRequestOptionsTransformer
-beta;addCsrfHeader(headerName?: string, cookieName?: string): HttpRequestOptionsTransformer
-beta;addHeader(name: string, valueFactory: () => string): HttpRequestOptionsTransformer
+internal;addApplicationVersion(version: string): HttpRequestOptionsTransformer
+internal;addCsrfHeader(headerName?: string, cookieName?: string): HttpRequestOptionsTransformer
+internal;addHeader(name: string, valueFactory: () => string): HttpRequestOptionsTransformer
 internal;addSelectApplicationData(query: RequestQueryOptions): void
 internal;addSelectContainerAccessKey(query: RequestQueryOptions): void
 internal;addSelectFileAccessKey(query: RequestQueryOptions): void
@@ -17,12 +17,12 @@ internal;BriefcaseDeletedEvent
 public;class BriefcaseEvent 
 internal;BriefcaseHandler
 internal;BriefcaseQuery 
-public;ChangeSet 
+internal;ChangeSet 
 internal;ChangeSetCreatedEvent 
-public;ChangeSetHandler
+internal;ChangeSetHandler
 public;ChangeSetPostPushEvent 
 public;ChangeSetPrePushEvent 
-public;ChangeSetQuery 
+internal;ChangeSetQuery 
 internal;ChangeState = "new" | "modified" | "deleted" | "existing"
 public;ChangesType
 internal;Checkpoint 
@@ -59,10 +59,10 @@ internal;DefaultWsgRequestOptionsProvider
 internal;class ECInstance
 internal;ECJsonTypeMap
 internal;EmptyIModelTemplate = "Empty"
-public;EventHandler 
-public;EventSAS 
-public;EventSubscription 
-public;EventSubscriptionHandler
+internal;EventHandler 
+internal;EventSAS 
+internal;EventSubscription 
+internal;EventSubscriptionHandler
 internal;EventType = "LockEvent" | "AllLocksDeletedEvent" | "ChangeSetPostPushEvent" | "ChangeSetPrePushEvent" | "CodeEvent" | "AllCodesDeletedEvent" | "BriefcaseDeletedEvent" | "iModelDeletedEvent" | "VersionEvent" | "CheckpointCreatedEvent" | "CheckpointV2CreatedEvent"
 deprecated;EventType = "LockEvent" | "AllLocksDeletedEvent" | "ChangeSetPostPushEvent" | "ChangeSetPrePushEvent" | "CodeEvent" | "AllCodesDeletedEvent" | "BriefcaseDeletedEvent" | "iModelDeletedEvent" | "VersionEvent" | "CheckpointCreatedEvent" | "CheckpointV2CreatedEvent"
 internal;GetEventOperationType
@@ -74,35 +74,35 @@ internal;GlobalEventSubscription
 internal;GlobalEventSubscriptionHandler
 internal;HardiModelDeleteEvent 
 internal;HttpRequestOptions
-beta;HttpRequestOptionsTransformer = (options: HttpRequestOptions) => void
+internal;HttpRequestOptionsTransformer = (options: HttpRequestOptions) => void
 internal;HubCode 
-public;HubIModel 
-public;HubUserInfo 
+internal;HubIModel 
+internal;HubUserInfo 
 internal;IModelBankClient 
 internal;IModelBankFileSystemContextClient 
 internal;IModelBankHandler 
-public;IModelBaseHandler 
-public;class IModelClient
+internal;IModelBaseHandler 
+internal;class IModelClient
 internal;IModelCloudEnvironment
 internal;IModelCreatedEvent 
 public;IModelCreateOptions
 public;IModelDeletedEvent 
 internal;IModelFileSystemContextProps
-beta;IModelHandler
-public;IModelHubClient 
-public;IModelHubClientError 
+internal;IModelHandler
+internal;IModelHubClient 
+internal;IModelHubClientError 
 public;IModelHubClientLoggerCategory
-public;IModelHubError 
+internal;IModelHubError 
 public;class IModelHubEvent 
 public;IModelHubEventType
 internal;class IModelHubGlobalEvent 
 internal;IModelPermissions 
-public;IModelQuery 
-public;IModelsHandler
+internal;IModelQuery 
+internal;IModelsHandler
 public;IModelType
 public;InitializationState
-public;InstanceIdQuery 
-public;LargeThumbnail 
+internal;InstanceIdQuery 
+internal;LargeThumbnail 
 internal;Lock 
 internal;LockBase 
 internal;LockEvent 
@@ -118,23 +118,23 @@ internal;ParseEvent(response: Response): IModelHubEvent
 internal;ParseGlobalEvent(response: Response, handler?: IModelBaseHandler, sasToken?: string): IModelHubGlobalEvent
 internal;PermissionHandler
 internal;SeedFile 
-public;SmallThumbnail 
+internal;SmallThumbnail 
 internal;SoftiModelDeleteEvent 
-public;StringIdQuery 
-public;class Thumbnail 
-public;ThumbnailHandler
-public;ThumbnailQuery 
+internal;StringIdQuery 
+internal;class Thumbnail 
+internal;ThumbnailHandler
+internal;ThumbnailQuery 
 public;ThumbnailSize = "Small" | "Large"
 public;TipThumbnail
-public;UserInfoHandler
-public;UserInfoQuery 
-public;UserStatistics 
-public;UserStatisticsHandler
-public;UserStatisticsQuery 
-public;Version 
+internal;UserInfoHandler
+internal;UserInfoQuery 
+internal;UserStatistics 
+internal;UserStatisticsHandler
+internal;UserStatisticsQuery 
+internal;Version 
 public;VersionEvent 
-public;VersionHandler
-public;VersionQuery 
+internal;VersionHandler
+internal;VersionQuery 
 internal;class WsgClient 
 internal;WsgClientLoggerCategory
 internal;WsgError 

@@ -39,7 +39,6 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   }
 
   public async getCloudEnv(): Promise<CloudEnvProps> {
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     if (CloudEnv.cloudEnv.isIModelHub) {
       const region = process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION || "0";
       return { iModelHub: { region } };
