@@ -2138,7 +2138,7 @@ export abstract class IModelDb extends IModel {
     createBRepGeometry(createProps: BRepGeometryCreate): DbResult;
     // (undocumented)
     static readonly defaultLimit = 1000;
-    deleteFileProperty(prop: FilePropertyProps): DbResult;
+    deleteFileProperty(prop: FilePropertyProps): void;
     // @alpha
     elementGeometryRequest(requestProps: ElementGeometryRequest): DbResult;
     // @alpha
@@ -2234,7 +2234,7 @@ export abstract class IModelDb extends IModel {
     // @internal (undocumented)
     reverseTxns(numOperations: number): IModelStatus;
     saveChanges(description?: string): void;
-    saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): DbResult;
+    saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void;
     // (undocumented)
     readonly tiles: IModelDb.Tiles;
     static tryFindByKey(key: string): IModelDb | undefined;
@@ -2845,11 +2845,11 @@ export namespace LineStyleDefinition {
     // (undocumented)
     export type Symbols = SymbolProps[];
     export class Utils {
-        static createCompoundComponent(iModel: IModelDb, props: CompoundProps): StyleProps | undefined;
+        static createCompoundComponent(iModel: IModelDb, props: CompoundProps): StyleProps;
         static createPointSymbolComponent(iModel: IModelDb, props: PointSymbolProps): StyleProps | undefined;
         static createRasterComponent(iModel: IModelDb, props: RasterImageProps, image: Uint8Array): StyleProps | undefined;
-        static createStrokePatternComponent(iModel: IModelDb, props: StrokePatternProps): StyleProps | undefined;
-        static createStrokePointComponent(iModel: IModelDb, props: StrokePointProps): StyleProps | undefined;
+        static createStrokePatternComponent(iModel: IModelDb, props: StrokePatternProps): StyleProps;
+        static createStrokePointComponent(iModel: IModelDb, props: StrokePointProps): StyleProps;
         static createStyle(imodel: IModelDb, scopeModelId: Id64String, name: string, props: StyleProps): Id64String;
         static getOrCreateContinuousStyle(imodel: IModelDb, scopeModelId: Id64String, width?: number): Id64String;
         static getOrCreateLinePixelsStyle(imodel: IModelDb, scopeModelId: Id64String, linePixels: LinePixels): Id64String;
