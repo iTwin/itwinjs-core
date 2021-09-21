@@ -214,16 +214,6 @@ export interface BackendHubAccess {
    */
   releaseAllLocks(arg: BriefcaseDbArg): Promise<void>;
 
-  /** Query codes
-   * @internal
-   */
-  queryAllCodes(arg: BriefcaseDbArg): Promise<CodeProps[]>;
-  /**
-   * release codes
-   * @internal
-   */
-  releaseAllCodes(arg: BriefcaseDbArg): Promise<void>;
-
   /** Get the iModelId of an iModel by name. Undefined if no iModel with that name exists.  */
   queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
 

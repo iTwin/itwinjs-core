@@ -16,6 +16,7 @@ import { HubMock } from "../HubMock";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { LockStatusExclusive, LockStatusShared } from "../LocalHub";
+import { LocalhostHandler } from "@bentley/backend-itwin-client";
 
 describe.only("HubMock", () => {
   const tmpDir = join(KnownTestLocations.outputDir, "HubMockTest");
@@ -72,7 +73,7 @@ describe.only("HubMock", () => {
     assert.deepEqual(briefcases[1], { id: 5, user: "user4", alias: "user4 (5)" });
 
     const cs1: ChangesetFileProps = {
-      id: "changeset0", description: "first changeset", changesType: ChangesetType.Regular, parentId: "", briefcaseId: 100, pushDate: "", index: 0,
+      id: "changeset0", description: "first changeset", changesType: ChangesetType.Regular, parentId: "", briefcaseId: 5, pushDate: "", index: 0,
       userCreated: "user1", pathname: IModelTestUtils.resolveAssetFile("CloneTest.01.00.00.ecschema.xml"),
     };
     cs1.index = localHub.addChangeset(cs1);
@@ -82,14 +83,14 @@ describe.only("HubMock", () => {
     assert.equal(changesets1[0].description, cs1.description);
     assert.equal(changesets1[0].changesType, cs1.changesType);
     assert.equal(changesets1[0].index, 1);
-    assert.equal(changesets1[0].briefcaseId, 100);
+    assert.equal(changesets1[0].briefcaseId, 5);
     assert.isAtLeast(changesets1[0].size!, 1);
     assert.equal(changesets1[0].parentId, "");
     assert.isDefined(changesets1[0].pushDate);
     assert.equal(cs1.id, localHub.getLatestChangeset().id);
 
     const cs2: ChangesetFileProps = {
-      id: "changeset1", parentId: "changeset0", description: "second changeset", changesType: ChangesetType.Schema, briefcaseId: 200, pushDate: "", index: 0,
+      id: "changeset1", parentId: "changeset0", description: "second changeset", changesType: ChangesetType.Schema, briefcaseId: 5, pushDate: "", index: 0,
       userCreated: "user2", pathname: IModelTestUtils.resolveAssetFile("CloneTest.01.00.01.ecschema.xml"),
     };
     cs2.index = localHub.addChangeset(cs2);
@@ -101,7 +102,7 @@ describe.only("HubMock", () => {
     assert.equal(changesets2[1].description, cs2.description);
     assert.equal(changesets2[1].changesType, cs2.changesType);
     assert.equal(changesets2[1].index, 2);
-    assert.equal(changesets2[1].briefcaseId, 200);
+    assert.equal(changesets2[1].briefcaseId, 5);
     assert.isAtLeast(changesets2[1].size!, 1);
     assert.isDefined(changesets2[1].pushDate);
     assert.equal(cs2.id, localHub.getLatestChangeset().id);
@@ -122,7 +123,9 @@ describe.only("HubMock", () => {
     expect(() => localHub.findNamedVersion(version1)).throws("not found");
 
     // test for duplicate changeset id
-    const cs3: ChangesetFileProps = { id: "changeset0", parentId: "changeset1", description: "third changeset", changesType: ChangesetType.Regular, pathname: cs1.pathname, briefcaseId: 100, userCreated: "", pushDate: "", index: 0 };
+    const cs3: ChangesetFileProps = { id: "changeset0", parentId: "changeset1", description: "third changeset", changesType: ChangesetType.Regular, pathname: cs1.pathname, briefcaseId: 500, userCreated: "", pushDate: "", index: 0 };
+    expect(() => localHub.addChangeset(cs3)).throws("no briefcase with that id");
+    cs3.briefcaseId = 5;
     expect(() => localHub.addChangeset(cs3)).throws("can't insert");
     // now test for valid changeset id, but bad parentId
     const cs4 = { ...cs3, id: "changeset4", parentId: "bad", description: "fourth changeset" };
@@ -166,6 +169,11 @@ describe.only("HubMock", () => {
     assert.equal(6, localHub.acquireNewBriefcaseId("user5", "alias for 5"));
 
     localHub.acquireLock(lock1, { briefcaseId: 3, changeset: cs1 });
+    let sharedLocks = localHub.queryAllSharedLocks();
+    assert.equal(sharedLocks.length, 1);
+    let allLocks = localHub.queryLocks();
+    assert.equal(allLocks.length, 1);
+
     let lockStat = localHub.queryLockStatus(lock1.id);
     assert.equal(lockStat.state, LockState.Shared);
     assert.equal((lockStat as LockStatusShared).sharedBy.size, 1);
@@ -173,19 +181,32 @@ describe.only("HubMock", () => {
 
     assert.isUndefined(lockStat.lastCsIndex);
     localHub.acquireLock(lock1, { briefcaseId: 5, changeset: cs1 });
+    sharedLocks = localHub.queryAllSharedLocks();
+    allLocks = localHub.queryLocks();
+    assert.equal(sharedLocks.length, 2);
+    assert.equal(allLocks.length, 1);
     lockStat = localHub.queryLockStatus(lock1.id);
     assert.equal((lockStat as LockStatusShared).sharedBy.size, 2);
     assert.isTrue((lockStat as LockStatusShared).sharedBy.has(3));
     assert.isTrue((lockStat as LockStatusShared).sharedBy.has(5));
 
     expect(() => localHub.acquireLock({ ...lock1, state: LockState.Exclusive }, { briefcaseId: 6, changeset: { id: "cs1" } })).to.throw("shared lock is held").include({ briefcaseId: 3, briefcaseAlias: "user2 briefcase 1" });
-    expect(() => localHub.releaseLocks([lock1], { briefcaseId: 9, changeset: cs1 })).to.throw("shared lock not held");
+    expect(() => localHub.releaseLocks([lock1], { briefcaseId: 9, changesetIndex: cs1.index })).to.throw("shared lock not held");
 
-    localHub.releaseLocks([lock1], { briefcaseId: 3, changeset: cs1 });
+    localHub.releaseLocks([lock1], { briefcaseId: 3, changesetIndex: cs1.index });
+    sharedLocks = localHub.queryAllSharedLocks();
+    allLocks = localHub.queryLocks();
+    assert.equal(sharedLocks.length, 1);
+    assert.equal(allLocks.length, 1);
+
     lockStat = localHub.queryLockStatus(lock1.id);
     assert.equal((lockStat as LockStatusShared).sharedBy.size, 1);
 
-    localHub.releaseLocks([lock1], { briefcaseId: 5, changeset: cs1 });
+    localHub.releaseLocks([lock1], { briefcaseId: 5, changesetIndex: cs1.index });
+    sharedLocks = localHub.queryAllSharedLocks();
+    allLocks = localHub.queryLocks();
+    assert.equal(sharedLocks.length, 0);
+    assert.equal(allLocks.length, 1);
     lockStat = localHub.queryLockStatus(lock1.id);
     assert.equal(lockStat.state, LockState.None);
 
@@ -194,21 +215,29 @@ describe.only("HubMock", () => {
     lockStat = localHub.queryLockStatus(lock1.id);
     assert.equal(lockStat.state, LockState.Exclusive);
     localHub.acquireLock(lock1, { briefcaseId: 6, changeset: cs1 });
+    sharedLocks = localHub.queryAllSharedLocks();
+    allLocks = localHub.queryLocks();
+    assert.equal(sharedLocks.length, 0);
+    assert.equal(allLocks.length, 1);
     expect(() => localHub.acquireLock(lock1, { briefcaseId: 5, changeset: cs1 })).to.throw("exclusive lock is already held").include({ briefcaseId: 6, briefcaseAlias: "alias for 5" });
     expect(() => localHub.acquireLock({ ...lock1, state: LockState.Shared }, { briefcaseId: 5, changeset: cs1 })).to.throw("exclusive lock is already held").include({ briefcaseId: 6, briefcaseAlias: "alias for 5" });
-    localHub.releaseLocks([lock1], { briefcaseId: 6, changeset: cs2 });
+    localHub.releaseLocks([lock1], { briefcaseId: 6, changesetIndex: cs2.index });
+    allLocks = localHub.queryLocks();
+    assert.equal(allLocks.length, 1);
     lockStat = localHub.queryLockStatus(lock1.id);
     assert.equal(lockStat.state, LockState.None);
     assert.equal(lockStat.lastCsIndex, cs2.index);
 
     expect(() => localHub.acquireLock(lock1, { briefcaseId: 5, changeset: cs1 })).to.throw("pull is required");
     localHub.acquireLock(lock1, { briefcaseId: 5, changeset: cs2 });
+    allLocks = localHub.queryLocks();
     lockStat = localHub.queryLockStatus(lock1.id);
     assert.equal(lockStat.state, LockState.Exclusive);
     assert.equal((lockStat as LockStatusExclusive).briefcaseId, 5);
     assert.equal(lockStat.lastCsIndex, cs2.index);
 
     localHub.acquireLock({ state: LockState.Exclusive, id: "0x22" }, { briefcaseId: 5, changeset: cs1 });
+    allLocks = localHub.queryLocks();
     lockStat = localHub.queryLockStatus("0x22");
     assert.equal(lockStat.state, LockState.Exclusive);
     assert.equal((lockStat as LockStatusExclusive).briefcaseId, 5);
@@ -217,9 +246,25 @@ describe.only("HubMock", () => {
     localHub.acquireLock({ state: LockState.Exclusive, id: "0x23" }, { briefcaseId: 6, changeset: cs1 });
     localHub.acquireLock({ state: LockState.Shared, id: "0x24" }, { briefcaseId: 6, changeset: cs1 });
     localHub.acquireLock({ state: LockState.Shared, id: "0x24" }, { briefcaseId: 5, changeset: cs1 });
+    allLocks = localHub.queryLocks();
+    sharedLocks = localHub.queryAllSharedLocks();
 
-    const locks = localHub.queryAllLocks(5);
+    let locks = localHub.queryAllLocks(5);
     assert.equal(locks.length, 3);
+
+    localHub.releaseBriefcaseId(5); // releasing a briefcaseId with held locks should release them
+    sharedLocks = localHub.queryAllSharedLocks();
+    allLocks = localHub.queryLocks();
+    lockStat = localHub.queryLockStatus("0x22");
+    locks = localHub.queryAllLocks(5);
+    assert.equal(locks.length, 0);
+
+    localHub.releaseAllLocks({ briefcaseId: 6, changesetIndex: 3 });
+    sharedLocks = localHub.queryAllSharedLocks();
+    allLocks = localHub.queryLocks();
+    lockStat = localHub.queryLockStatus("0x23");
+    assert.equal(lockStat.lastCsIndex, 3);
+    assert.equal(lockStat.state, 0);
 
     await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId });
   });
