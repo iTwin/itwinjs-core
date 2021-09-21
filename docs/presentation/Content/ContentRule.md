@@ -47,7 +47,7 @@ The most commonly used symbols are:
 
 ### Attribute: `requiredSchemas`
 
-A list of ECSchema requirements that need to met for the rule to be used. See more details [here](../Advanced/SchemaRequirements.md).
+A list of ECSchema requirements that need to be met for the rule to be used. See more details in [Defining ECSchema Requirements for Presentation Rules](../Advanced/SchemaRequirements.md).
 
 ```ts
 [[include:ContentRule.RequiredSchemas.Ruleset]]
