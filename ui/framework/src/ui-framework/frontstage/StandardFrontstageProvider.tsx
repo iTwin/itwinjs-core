@@ -2,6 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Frontstage
+ */
+
 import * as React from "react";
 import { StageUsage } from "@bentley/ui-abstract";
 import { StagePanel, StagePanelProps } from "../stagepanels/StagePanel";

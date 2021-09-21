@@ -81,6 +81,10 @@ export * from "./ui-abstract/widget/WidgetState";
  * Common enums and functions used throughout the UI packages.
  */
 /**
+ * @docs-group-description ContentView
+ * Classes and interfaces used with Content Layouts.
+ */
+/**
  * @docs-group-description Dialog
  * Interfaces and classes for generating UI items for Dialogs.
  */

@@ -369,6 +369,10 @@ export * from "./ui-framework/zones/ZoneDef";
  * Classes and components used by settings pages displayed in the modal settings stage
  */
 /**
+ * @docs-group-description StandardUiItemsProvider
+ * Standard UiItemsProvider classes.
+ */
+/**
  * @docs-group-description StatusBar
  * Classes for defining a StatusBar
  */
