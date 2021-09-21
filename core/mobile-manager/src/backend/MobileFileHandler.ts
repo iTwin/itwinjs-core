@@ -9,7 +9,6 @@
 import * as fs from "fs";
 import * as https from "https";
 import * as path from "path";
-import * as urllib from "url";
 import { Logger } from "@bentley/bentleyjs-core";
 import { ArgumentCheck } from "@bentley/imodelhub-client";
 import {
