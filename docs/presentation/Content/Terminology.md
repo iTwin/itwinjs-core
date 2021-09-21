@@ -12,7 +12,7 @@ An ECInstance we requested content for.
 
 ECInstance whose properties are loaded at the root level of the content record.
 
-This usually, but not necessarily matches [input instance](#input-instance) - it depends on the [content specifications](./index.md#specifications) that produce content:
+This usually but not necessarily matches [input instance](#input-instance) — it depends on the [content specifications](./index.md#specifications) that produce content:
 
 - [Selected node instances](./SelectedNodeInstances.md) specification returns content records whose input instance matches primary instance.
 - [Content related instances](./ContentRelatedInstances.md) specification returns content records whose input instance doesn't match primary instance. Instead, the primary instance is related to the input instance through a relationship defined in the specification.
