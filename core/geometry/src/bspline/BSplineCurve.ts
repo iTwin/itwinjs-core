@@ -15,7 +15,6 @@ import { StrokeOptions } from "../curve/StrokeOptions";
 import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 /* eslint-disable @typescript-eslint/naming-convention, no-empty, no-console*/

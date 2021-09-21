@@ -17,7 +17,6 @@ import { Point2d } from "./Point2dVector2d";
 import { Point3dArrayCarrier } from "./Point3dArrayCarrier";
 import { Point3d, Vector3d, XYZ } from "./Point3dVector3d";
 import { PointStringDeepXYZArrayCollector, VariantPointDataStream } from "./PointStreaming";
-import { Range3d } from "./Range";
 import { Transform } from "./Transform";
 import { XAndY, XYAndZ, XYZProps } from "./XYZProps";
 
