@@ -12,26 +12,20 @@ This package can also be installed into an application and the method MapLayersU
 ## Development Setup
 
 1. Select and prepare an iTwin.js host application. You can use the [ui-test-app] to host the extension, for example.
-
 2. The dependencies are installed as part of "rush install" in the iTwin.js repository.
-
 3. Build the extension as part of the "rush build" in the iTwin.js repository, or separately build using the npm build command.
 
-  ```sh
-  npm run build
-  ```
+    ```sh
+    npm run build
+    ```
 
-5. Start the host application - go to its directory and run:
+4. Start the host application - go to its directory and run:
 
-  ```sh
-  npm run start:servers
-  ```
+    ```sh
+    npm run start:servers
+    ```
 
-6. Open a web browser (e.g., Chrome or Edge), and browse to localhost:3000.
-
-7. Start the extension using the ExtensionTool - ExtensionTool.run("map-layers");
-
-  Optionally in ui-test-app use the key-in browser tool and set Key-in to "load extension" and Arguments to "map-layers".  Once started look for the "Map Layers" widget in the right panel.
+5. Open a web browser (e.g., Chrome), and browse to http://localhost:3000.
 
 ## Contributing
 
