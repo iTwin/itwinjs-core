@@ -1873,7 +1873,7 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
     planProjections?: {
         [modelId: string]: PlanProjectionSettingsProps;
     };
-    // @internal @deprecated
+    // @internal
     sceneLights?: {
         sunDir?: XYZProps;
     };

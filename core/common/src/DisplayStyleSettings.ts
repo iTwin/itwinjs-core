@@ -164,8 +164,8 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
   lights?: LightSettingsProps;
   /** Settings controlling how plan projection models are to be rendered. The key for each entry is the Id of the model to which the settings apply. */
   planProjections?: { [modelId: string]: PlanProjectionSettingsProps };
-  /** Old lighting settings - only `sunDir` was ever used; it is now part of `lights`.
-   * @deprecated
+  /** Old lighting settings - only `sunDir` was ever used; it is now part of [[lights]].
+   * DisplayStyle3dSettings will construct a LightSettings from sceneLights.sunDir IFF [[lights]] is not present.
    * @internal
    */
   sceneLights?: { sunDir?: XYZProps };
@@ -1073,7 +1073,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     if (this._json3d.lights) {
       this._lights = LightSettings.fromJSON(this._json3d.lights);
     } else {
-      const sunDir = this._json3d.sceneLights?.sunDir; // eslint-disable-line deprecation/deprecation
+      const sunDir = this._json3d.sceneLights?.sunDir;
       this._lights = LightSettings.fromJSON(sunDir ? { solar: { direction: sunDir } } : undefined);
     }
 
