@@ -460,6 +460,7 @@ export class LocalHub {
   }
 
   public queryAllLocks(briefcaseId: number) {
+    this.getBriefcase(briefcaseId); // throws if briefcaseId invalid.
     const locks: LockProps[] = [];
     this.db.withPreparedSqliteStatement("SELECT id FROM locks WHERE briefcaseId=?", (stmt) => {
       stmt.bindInteger(1, briefcaseId);
@@ -638,23 +639,11 @@ export class LocalHub {
   }
 
   public releaseAllLocks(arg: { briefcaseId: BriefcaseId, changesetIndex: ChangesetIndex }) {
-    this.getBriefcase(arg.briefcaseId); // throws if id is not valid
-    this.db.withSqliteStatement("DELETE FROM sharedLocks WHERE briefcaseId=?", (stmt) => {
-      stmt.bindInteger(1, arg.briefcaseId);
-      const rc = stmt.step();
-      if (rc !== DbResult.BE_SQLITE_DONE)
-        throw new Error("can't delete shared");
-    });
-    this.db.withSqliteStatement("UPDATE locks SET level=0,lastCSetIndex=?1,briefcaseId=NULL WHERE briefcaseId=?2", (stmt) => {
-      stmt.bindInteger(1, arg.changesetIndex);
-      stmt.bindInteger(2, arg.briefcaseId);
-      const rc = stmt.step();
-      if (rc !== DbResult.BE_SQLITE_DONE)
-        throw new IModelError(rc, "can't delete exclusive");
-    });
-    this.db.saveChanges();
+    const locks = this.queryAllLocks(arg.briefcaseId);
+    this.releaseLocks(locks, arg);
   }
 
+  // for debugging
   public queryAllSharedLocks(): { id: string, briefcaseId: number }[] {
     const locks: { id: string, briefcaseId: number }[] = [];
     this.db.withPreparedSqliteStatement("SELECT lockId,briefcaseId FROM sharedLocks", (stmt) => {
@@ -662,9 +651,25 @@ export class LocalHub {
         locks.push({ id: stmt.getValueId(0), briefcaseId: stmt.getValueInteger(1) });
     });
     return locks;
-
   }
 
+  // for debugging
+  public countSharedLocks(): number {
+    return this.db.withPreparedSqliteStatement("SELECT count(*) from sharedLocks", (stmt) => {
+      stmt.step();
+      return stmt.getValueInteger(0);
+    });
+  }
+
+  // for debugging
+  public countLocks(): number {
+    return this.db.withPreparedSqliteStatement("SELECT count(*) from locks", (stmt) => {
+      stmt.step();
+      return stmt.getValueInteger(0);
+    });
+  }
+
+  // for debugging
   public queryLocks(): LocksEntry[] {
     const locks: LocksEntry[] = [];
     this.db.withPreparedSqliteStatement("SELECT id,level,lastCSetIndex,briefcaseId FROM locks", (stmt) => {
