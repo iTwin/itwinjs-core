@@ -61,6 +61,12 @@ function createConfig(shouldInstrument) {
     },
     externals: {
       electron: "commonjs electron",
+      "fs": "fs",
+      "dns": "dns",
+      "http2": "http2",
+      "net": "net",
+      "tls": "tls",
+      "ws": "ws",
     },
     plugins: [
       // Makes some environment variables available to the JS code, for example:

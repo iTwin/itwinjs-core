@@ -53,7 +53,11 @@ module.exports = {
     "fs": "fs",
     "process": "process",
     "child_process": "child_process",
-    "ws": "commonjs ws",
+    "ws": "ws",
+    "dns": "dns",
+    "http2": "http2",
+    "tls": "tls",
+    "module": "module"
   },
   node: {
     net: 'empty'
