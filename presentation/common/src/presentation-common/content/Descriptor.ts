@@ -6,7 +6,10 @@
  * @module Content
  */
 
-import { ClassInfo, ClassInfoJSON, CompressedClassInfoJSON, RelatedClassInfo, RelatedClassInfoJSON, RelationshipPath, RelationshipPathJSON } from "../EC";
+import { assert } from "@bentley/bentleyjs-core";
+import {
+  ClassInfo, ClassInfoJSON, CompressedClassInfoJSON, RelatedClassInfo, RelatedClassInfoJSON, RelationshipPath, RelationshipPathJSON,
+} from "../EC";
 import { CategoryDescription, CategoryDescriptionJSON } from "./Category";
 import { Field, FieldDescriptor, FieldJSON, getFieldByName } from "./Fields";
 
@@ -58,9 +61,10 @@ export namespace SelectClassInfo {
 
   /** Deserialize [[SelectClassInfo]] from compressed JSON */
   export function fromCompressedJSON(compressedSelectClass: SelectClassInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): SelectClassInfoJSON {
+    assert(classesMap.hasOwnProperty(compressedSelectClass.selectClassInfo));
     return {
       ...compressedSelectClass,
-      selectClassInfo: {id: compressedSelectClass.selectClassInfo, ...classesMap[compressedSelectClass.selectClassInfo]},
+      selectClassInfo: { id: compressedSelectClass.selectClassInfo, ...classesMap[compressedSelectClass.selectClassInfo] },
       navigationPropertyClasses: compressedSelectClass.navigationPropertyClasses.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedJSON(compressedInfoJSON, classesMap)),
       relatedInstanceClasses: compressedSelectClass.relatedInstanceClasses.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedJSON(compressedInfoJSON, classesMap)),
       pathToPrimaryClass: compressedSelectClass.pathToPrimaryClass.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedJSON(compressedInfoJSON, classesMap)),
@@ -311,7 +315,8 @@ export class Descriptor implements DescriptorSource {
       this.sortingField !== undefined && { sortingFieldName: this.sortingField.name },
       this.sortDirection !== undefined && { sortDirection: this.sortDirection },
       this.filterExpression !== undefined && { filterExpression: this.filterExpression },
-      this.selectionInfo !== undefined && { selectionInfo: this.selectionInfo }, {
+      this.selectionInfo !== undefined && { selectionInfo: this.selectionInfo },
+      {
         connectionId: this.connectionId,
         inputKeysHash: this.inputKeysHash,
         contentOptions: this.contentOptions,
