@@ -6,7 +6,7 @@
  * @module Content
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
+import { assert, Id64String } from "@bentley/bentleyjs-core";
 import {
   ClassInfo, ClassInfoJSON, CompressedClassInfoJSON, RelatedClassInfo, RelatedClassInfoJSON, RelationshipPath, RelationshipPathJSON,
 } from "../EC";
@@ -66,6 +66,7 @@ export namespace SelectClassInfo {
 
   /** Deserialize [[SelectClassInfo]] from compressed JSON */
   export function fromCompressedJSON(json: SelectClassInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): SelectClassInfo {
+    assert(classesMap.hasOwnProperty(json.selectClassInfo));
     return {
       selectClassInfo: { id: json.selectClassInfo, ...classesMap[json.selectClassInfo] },
       isSelectPolymorphic: json.isSelectPolymorphic,
