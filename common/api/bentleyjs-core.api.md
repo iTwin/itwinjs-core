@@ -8,9 +8,6 @@
 export class AbandonedError extends Error {
 }
 
-// @internal
-export const addClientRequestContext: (metaData: any) => void;
-
 // @public
 export function areEqualPossiblyUndefined<T, U>(t: T | undefined, u: U | undefined, areEqual: (t: T, u: U) => boolean): boolean;
 
@@ -86,10 +83,10 @@ export class BeEventList<T extends Listener> {
 
 // @public
 export class BentleyError extends Error {
-    constructor(errorNumber: number, message?: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
+    constructor(errorNumber: number, message?: string, getMetaData?: GetMetaDataFunction);
     // (undocumented)
     errorNumber: number;
-    getMetaData(): any;
+    getMetaData(): object | undefined;
     get hasMetaData(): boolean;
     protected _initName(): string;
 }
@@ -225,12 +222,14 @@ export class ClientRequestContext {
     readonly activityId: GuidString;
     readonly applicationId: string;
     readonly applicationVersion: string;
-    static get current(): ClientRequestContext;
-    // (undocumented)
-    protected static _current: ClientRequestContext;
-    enter(): this;
     // (undocumented)
     static fromJSON(json: ClientRequestContextProps): ClientRequestContext;
+    sanitize(): {
+        activityId: string;
+        applicationId: string;
+        applicationVersion: string;
+        sessionId: string;
+    };
     readonly sessionId: GuidString;
     // @internal (undocumented)
     toJSON(): ClientRequestContextProps;
@@ -584,7 +583,7 @@ export enum GeoServiceStatus {
 }
 
 // @public
-export type GetMetaDataFunction = () => any;
+export type GetMetaDataFunction = () => object | undefined;
 
 // @public
 export namespace Guid {
@@ -1028,14 +1027,12 @@ export type LogFunction = (category: string, message: string, metaData?: GetMeta
 // @public
 export class Logger {
     static configureLevels(cfg: LoggerLevelsConfig): void;
-    // @internal
-    static getCurrentClientRequestContext(): ClientRequestContext;
     static getLevel(category: string): LogLevel | undefined;
     static initialize(logError: LogFunction | undefined, logWarning?: LogFunction | undefined, logInfo?: LogFunction | undefined, logTrace?: LogFunction | undefined): void;
     static initializeToConsole(): void;
     static isEnabled(category: string, level: LogLevel): boolean;
     static logError(category: string, message: string, metaData?: GetMetaDataFunction): void;
-    static logException(category: string, err: Error, log?: LogFunction, metaData?: GetMetaDataFunction): void;
+    static logException(category: string, err: any, log?: LogFunction, metaData?: GetMetaDataFunction): void;
     static set logExceptionCallstacks(b: boolean);
     static get logExceptionCallstacks(): boolean;
     static logInfo(category: string, message: string, metaData?: GetMetaDataFunction): void;
@@ -1050,7 +1047,7 @@ export class Logger {
     // @beta
     static removeMetaDataSource(callback: (md: any) => void): boolean;
     // @internal
-    static setCurrentClientRequestContext(obj: any): void;
+    static setIntercept(logIntercept?: LogIntercept): void;
     static setLevel(category: string, minLevel: LogLevel): void;
     static setLevelDefault(minLevel: LogLevel): void;
     static turnOffCategories(): void;
@@ -1073,6 +1070,9 @@ export interface LoggerLevelsConfig {
     // (undocumented)
     defaultLevel?: string;
 }
+
+// @internal
+export type LogIntercept = (level: LogLevel, category: string, message: string, metaData?: GetMetaDataFunction) => boolean;
 
 // @public
 export enum LogLevel {
@@ -1261,6 +1261,7 @@ export class ProcessDetector {
     static get isAndroidAppFrontend(): boolean;
     static get isAndroidBrowser(): boolean;
     static get isBrowserProcess(): boolean;
+    static get isChromium(): boolean;
     static get isElectronAppBackend(): boolean;
     static get isElectronAppFrontend(): boolean;
     static get isIOSAppBackend(): boolean;
@@ -1372,9 +1373,9 @@ export interface SerializedClientRequestContext {
 
 // @public
 export interface SessionProps {
-    applicationId: string;
-    applicationVersion: string;
-    sessionId: GuidString;
+    readonly applicationId: string;
+    readonly applicationVersion: string;
+    readonly sessionId: GuidString;
 }
 
 // @public

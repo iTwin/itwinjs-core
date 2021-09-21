@@ -93,7 +93,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
     });
     this._includeFieldsWithNoValues = true;
     this._includeFieldsWithCompositeValues = true;
-    this._isNestedPropertyCategoryGroupingEnabled = false;
+    this._isNestedPropertyCategoryGroupingEnabled = true;
     this._onFavoritesChangedRemoveListener = Presentation.favoriteProperties.onFavoritesChanged.addListener(() => this.invalidateCache({}));
     this._shouldCreateFavoritesCategory = !props.disableFavoritesCategory;
   }

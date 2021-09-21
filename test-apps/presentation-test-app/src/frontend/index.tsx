@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 import "./index.css";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
@@ -10,7 +9,7 @@ import { Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { IModelApp, IModelAppOptions, WebViewerApp } from "@bentley/imodeljs-frontend";
 // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Imports
-import { Presentation } from "@bentley/presentation-frontend";
+import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@bentley/presentation-frontend";
 // __PUBLISH_EXTRACT_END__
 import { UiComponents } from "@bentley/ui-components";
 import rpcs from "../common/Rpcs";
@@ -58,15 +57,20 @@ export class SampleApp {
   private static async initializePresentation() {
     // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Initialization
     await Presentation.initialize({
-      // specify `clientId` so Presentation framework can share caches
-      // between sessions for the same clients
-      clientId: MyAppFrontend.getClientId(),
+      presentation: {
+        // specify `clientId` so Presentation framework can share caches
+        // between sessions for the same clients
+        clientId: MyAppFrontend.getClientId(),
 
-      // specify locale for localizing presentation data
-      activeLocale: IModelApp.i18n.languageList()[0],
+        // specify locale for localizing presentation data
+        activeLocale: IModelApp.i18n.languageList()[0],
 
-      // specify the preferred unit system
-      activeUnitSystem: "metric",
+        // specify the preferred unit system
+        activeUnitSystem: "metric",
+      },
+      favorites: {
+        storage: createFavoritePropertiesStorage(DefaultFavoritePropertiesStorageTypes.UserSettingsServiceStorage),
+      },
     });
     // __PUBLISH_EXTRACT_END__
 

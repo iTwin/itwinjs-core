@@ -240,7 +240,7 @@ function SaveFormatModalDialog({ formatProps, quantityType, onDialogCloseArgs, o
   }, [onDialogClose, onDialogCloseArgs]);
 
   const handleOK = React.useCallback(() => {
-    void IModelApp.quantityFormatter.setOverrideFormat(quantityType, formatProps); // eslint-disable-line @typescript-eslint/no-floating-promises
+    IModelApp.quantityFormatter.setOverrideFormat(quantityType, formatProps); // eslint-disable-line @typescript-eslint/no-floating-promises
     handleClose();
   }, [formatProps, handleClose, quantityType]);
 

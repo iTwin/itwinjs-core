@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { BentleyError, GetMetaDataFunction, LogFunction } from "@bentley/bentleyjs-core";
+import { BentleyError, GetMetaDataFunction } from "@bentley/bentleyjs-core";
 
 /**
  * Status codes used by Presentation APIs.
@@ -49,8 +49,8 @@ export class PresentationError extends BentleyError {
    * @param log Optional log function which logs the error.
    * @param getMetaData Optional function that returns meta-data related to an error.
    */
-  public constructor(errorNumber: PresentationStatus, message?: string, log?: LogFunction, getMetaData?: GetMetaDataFunction) {
-    super(errorNumber, message, log, "Presentation", getMetaData);
+  public constructor(errorNumber: PresentationStatus, message?: string, getMetaData?: GetMetaDataFunction) {
+    super(errorNumber, message, getMetaData);
   }
 
   /**

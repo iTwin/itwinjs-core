@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/geometry-core",
+      "comment": "Correct problems with all-convex mask clips",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core"
+}
