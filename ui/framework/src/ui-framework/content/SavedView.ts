@@ -33,7 +33,7 @@ export class SavedView {
 
     // istanbul ignore next
     if (undefined === ctor)
-      throw new IModelError(IModelStatus.WrongClass, "Invalid ViewState class", Logger.logError, UiFramework.loggerCategory(this), () => savedViewProps);
+      throw new Error(`Invalid ViewState class name of [${className}]`);
 
     const viewState = ctor.createFromProps(savedViewProps, iModelConnection)!;
     await viewState.load(); // loads models for ModelSelector

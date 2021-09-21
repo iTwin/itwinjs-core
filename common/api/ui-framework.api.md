@@ -2530,6 +2530,8 @@ export class FrontstageDef {
     // (undocumented)
     get contentGroup(): ContentGroup | undefined;
     // (undocumented)
+    get contentGroupProvider(): ContentGroupProvider | undefined;
+    // (undocumented)
     get contentLayoutDef(): ContentLayoutDef | undefined;
     static create(provider: FrontstageProvider): Promise<FrontstageDef>;
     // (undocumented)
