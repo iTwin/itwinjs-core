@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelApp, NativeApp } from "@bentley/imodeljs-frontend";
 import { BrowserAuthorizationCallbackHandler } from "@bentley/frontend-authorization-client";
-// import { AccessToken } from "@bentley/itwin-client";
 
 // Wraps the signIn process
 // @return Promise that resolves to true after signIn is complete
@@ -15,6 +14,5 @@ export async function signIn(): Promise<boolean> {
 
   const auth = IModelApp.authorizationClient!;
 
-  // Placeholder -- Figure this out
   return (await auth.getAccessToken()) !== undefined;
 }
