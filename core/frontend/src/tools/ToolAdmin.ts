@@ -882,8 +882,8 @@ export class ToolAdmin {
     const motion = ev;
 
     toolPromise.then(() => {
-      if (toolPromise !== this._toolMotionPromise)
-        return;
+      if (undefined === this._toolMotionPromise)
+        return; // Only early return if canceled, result from a previous motion is preferable to showing nothing...
 
       // Update decorations when dynamics are inactive...
       if (!IModelApp.viewManager.inDynamicsMode) {

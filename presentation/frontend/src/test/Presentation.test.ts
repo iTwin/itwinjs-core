@@ -6,16 +6,15 @@
 import "./_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { BeEvent } from "@bentley/bentleyjs-core";
 import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { I18N, LocalizationClient } from "@bentley/imodeljs-i18n";
+import { I18N } from "@bentley/imodeljs-i18n";
 import { PresentationError } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { Presentation, SelectionManager } from "../presentation-frontend";
-import { IConnectivityInformationProvider } from "../presentation-frontend/ConnectivityInformationProvider";
-import { FavoritePropertiesManager } from "../presentation-frontend/favorite-properties/FavoritePropertiesManager";
-import { IFavoritePropertiesStorage } from "../presentation-frontend/favorite-properties/FavoritePropertiesStorage";
+import * as favorites from "../presentation-frontend/favorite-properties/FavoritePropertiesManager";
+import { IFavoritePropertiesStorage, NoopFavoritePropertiesStorage } from "../presentation-frontend/favorite-properties/FavoritePropertiesStorage";
 import { PresentationManager } from "../presentation-frontend/PresentationManager";
+import * as selection from "../presentation-frontend/selection/SelectionManager";
 import { SelectionScopesManager } from "../presentation-frontend/selection/SelectionScopesManager";
 
 describe("Presentation", () => {
@@ -49,27 +48,26 @@ describe("Presentation", () => {
       expect(() => Presentation.selection).to.throw();
       expect(() => Presentation.favoriteProperties).to.throw();
       expect(() => Presentation.localizationClient).to.throw();
-      expect(() => Presentation.connectivity).to.throw();
       await Presentation.initialize();
       expect(Presentation.presentation).to.be.instanceof(PresentationManager);
-      expect(Presentation.selection).to.be.instanceof(SelectionManager);
-      expect(Presentation.favoriteProperties).to.be.instanceof(FavoritePropertiesManager);
+      expect(Presentation.selection).to.be.instanceof(selection.SelectionManager);
+      expect(Presentation.favoriteProperties).to.be.instanceof(favorites.FavoritePropertiesManager);
     });
 
-    it("initializes PresentationManager with props", async () => {
+    it("initializes PresentationManager with given props", async () => {
       const constructorSpy = sinon.spy(PresentationManager, "create");
       const props = {
         activeLocale: "test-locale",
       };
-      await Presentation.initialize(props);
+      await Presentation.initialize({ presentation: props });
       expect(constructorSpy).to.be.calledWith(props);
     });
 
-    it("initializes PresentationManager.localizationClient with IModelApp.localizationClient", async () => {
-      const localizationClient = mockI18N().object;
-      (IModelApp as any)._localizationClient = localizationClient;
-      await Presentation.initialize({ activeLocale: "test" });
-      expect(Presentation.localizationClient).to.equal(localizationClient);
+    it("initializes PresentationManager.i18n with IModelApp.i18", async () => {
+      const i18nMock = mockI18N();
+      (IModelApp as any)._localizationClient = i18nMock.object;
+      await Presentation.initialize({ presentation: { activeLocale: "test" } });
+      expect(Presentation.localizationClient).to.equal(i18nMock.object);
     });
 
     it("initializes PresentationManager with Presentation.i18 locale if no props provided", async () => {
@@ -108,6 +106,15 @@ describe("Presentation", () => {
       i18nMock.verifyAll();
     });
 
+    it("initializes FavoritePropertiesManager with given props", async () => {
+      const constructorSpy = sinon.spy(favorites, "FavoritePropertiesManager");
+      const props: favorites.FavoritePropertiesManagerProps = {
+        storage: new NoopFavoritePropertiesStorage(),
+      };
+      await Presentation.initialize({ favorites: props });
+      expect(constructorSpy).to.be.calledOnceWithExactly(props);
+    });
+
     it("calls registered initialization handlers", async () => {
       const spy = sinon.spy();
       Presentation.registerInitializationHandler(spy);
@@ -115,8 +122,17 @@ describe("Presentation", () => {
       expect(spy).to.be.calledOnce;
     });
 
+    it("initializes SelectionManager with given props", async () => {
+      const constructorSpy = sinon.spy(selection, "SelectionManager");
+      const props: selection.SelectionManagerProps = {
+        scopes: moq.Mock.ofType<SelectionScopesManager>().object,
+      };
+      await Presentation.initialize({ selection: props });
+      expect(constructorSpy).to.be.calledOnceWithExactly(props);
+    });
+
     it("initializes SelectionScopesManager's locale callback to return PresentationManager's activeLocale", async () => {
-      await Presentation.initialize({ activeLocale: "test" });
+      await Presentation.initialize({ presentation: { activeLocale: "test" } });
       expect(Presentation.presentation.activeLocale).to.eq("test");
       expect(Presentation.selection.scopes.activeLocale).to.eq("test");
       Presentation.presentation.activeLocale = "other";
@@ -194,14 +210,14 @@ describe("Presentation", () => {
   describe("setFavoritePropertiesManager", () => {
 
     it("overwrites favoriteProperties instance before initialization", async () => {
-      const manager = new FavoritePropertiesManager({ storage: moq.Mock.ofType<IFavoritePropertiesStorage>().object });
+      const manager = new favorites.FavoritePropertiesManager({ storage: moq.Mock.ofType<IFavoritePropertiesStorage>().object });
       Presentation.setFavoritePropertiesManager(manager);
       await Presentation.initialize();
       expect(Presentation.favoriteProperties).to.eq(manager);
     });
 
     it("overwrites favoriteProperties instance after initialization", async () => {
-      const otherManager = new FavoritePropertiesManager({ storage: moq.Mock.ofType<IFavoritePropertiesStorage>().object });
+      const otherManager = new favorites.FavoritePropertiesManager({ storage: moq.Mock.ofType<IFavoritePropertiesStorage>().object });
       await Presentation.initialize();
       expect(Presentation.favoriteProperties).to.be.not.null;
       expect(Presentation.favoriteProperties).to.not.eq(otherManager);
@@ -227,28 +243,6 @@ describe("Presentation", () => {
       expect(Presentation.localizationClient).to.not.eq(i18n);
       Presentation.setLocalizationClient(i18n);
       expect(Presentation.localizationClient).to.eq(i18n);
-    });
-
-  });
-
-  describe("setConnectivityInformationProvider", () => {
-
-    it("overwrites connectivity instance before initialization", async () => {
-      const mock = moq.Mock.ofType<IConnectivityInformationProvider>();
-      mock.setup((x) => x.onInternetConnectivityChanged).returns(() => new BeEvent());
-      Presentation.setConnectivityInformationProvider(mock.object);
-      await Presentation.initialize();
-      expect(Presentation.connectivity).to.eq(mock.object);
-    });
-
-    it("overwrites connectivity instance after initialization", async () => {
-      const mock = moq.Mock.ofType<IConnectivityInformationProvider>();
-      mock.setup((x) => x.onInternetConnectivityChanged).returns(() => new BeEvent());
-      await Presentation.initialize();
-      expect(Presentation.connectivity).to.be.not.null;
-      expect(Presentation.connectivity).to.not.eq(mock.object);
-      Presentation.setConnectivityInformationProvider(mock.object);
-      expect(Presentation.connectivity).to.eq(mock.object);
     });
 
   });

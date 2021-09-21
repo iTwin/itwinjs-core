@@ -14,6 +14,7 @@ import { StatusBarWidgetControl, StatusBarWidgetControlArgs } from "../../ui-fra
 import { ViewAttributesStatusField } from "../../ui-framework/statusfields/ViewAttributes";
 import { WidgetDef } from "../../ui-framework/widgets/WidgetDef";
 import TestUtils, { mount } from "../TestUtils";
+import { I18N } from "@bentley/imodeljs-i18n";
 
 describe("ViewAttributes", () => {
   class AppStatusBarWidgetControl extends StatusBarWidgetControl {
@@ -34,7 +35,7 @@ describe("ViewAttributes", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await MockRender.App.startup();
+    await MockRender.App.startup( { localizationClient: new I18N() });
 
     const statusBarWidgetDef = new WidgetDef({
       classId: AppStatusBarWidgetControl,

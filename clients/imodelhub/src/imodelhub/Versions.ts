@@ -170,13 +170,11 @@ export class VersionHandler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: VersionQuery = new VersionQuery()): Promise<Version[]> {
-    requestContext.enter();
     Logger.logInfo(loggerCategory, "Querying named versions for iModel", () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
 
     const versions = await this._handler.getInstances<Version>(requestContext, Version, this.getRelativeUrl(iModelId, query.getId()), query.getQueryOptions());
-    requestContext.enter();
     Logger.logTrace(loggerCategory, "Queried named versions for iModel", () => ({ iModelId }));
     return versions;
   }
@@ -195,7 +193,6 @@ export class VersionHandler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSetId: string, name: string, description?: string): Promise<Version> {
-    requestContext.enter();
     Logger.logInfo(loggerCategory, "Creating named version for iModel", () => ({ iModelId, changeSetId }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
@@ -208,7 +205,6 @@ export class VersionHandler {
     version.description = description;
 
     version = await this._handler.postInstance<Version>(requestContext, Version, this.getRelativeUrl(iModelId), version);
-    requestContext.enter();
     Logger.logTrace(loggerCategory, "Created named version for iModel", () => ({ iModelId, changeSetId }));
     return version;
   }
@@ -223,14 +219,12 @@ export class VersionHandler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async update(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, version: Version): Promise<Version> {
-    requestContext.enter();
     Logger.logInfo(loggerCategory, "Updating named version for iModel", () => ({ iModelId, changeSetId: version.changeSetId }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
     ArgumentCheck.validGuid("version.wsgId", version.wsgId);
 
     const updatedVersion = await this._handler.postInstance<Version>(requestContext, Version, this.getRelativeUrl(iModelId, version.id), version);
-    requestContext.enter();
     Logger.logTrace(loggerCategory, "Updated named version for iModel", () => ({ iModelId, changeSetId: version.changeSetId }));
     return updatedVersion;
   }

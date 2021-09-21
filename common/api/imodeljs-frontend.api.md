@@ -11,10 +11,8 @@ import { AnalysisStyleDisplacement } from '@bentley/imodeljs-common';
 import { Angle } from '@bentley/geometry-core';
 import { AngleSweep } from '@bentley/geometry-core';
 import { AnyCurvePrimitive } from '@bentley/geometry-core';
-import { AppearanceOverrideProps as AppearanceOverrideProps_2 } from '@bentley/imodeljs-common';
 import { Arc3d } from '@bentley/geometry-core';
-import { AsyncFunction as AsyncFunction_2 } from '@bentley/bentleyjs-core';
-import { AsyncMethodsOf as AsyncMethodsOf_2 } from '@bentley/bentleyjs-core';
+import { AsyncMethodsOf } from '@bentley/bentleyjs-core';
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { AuxChannel } from '@bentley/geometry-core';
 import { AuxCoordSystem2dProps } from '@bentley/imodeljs-common';
@@ -85,13 +83,12 @@ import { ElementLoadOptions } from '@bentley/imodeljs-common';
 import { ElementProps } from '@bentley/imodeljs-common';
 import { Ellipsoid } from '@bentley/geometry-core';
 import { EllipsoidPatch } from '@bentley/geometry-core';
-import { EmphasizeElementsProps as EmphasizeElementsProps_2 } from '@bentley/imodeljs-common';
+import { EmphasizeElementsProps } from '@bentley/imodeljs-common';
 import { EntityProps } from '@bentley/imodeljs-common';
 import { EntityQueryParams } from '@bentley/imodeljs-common';
 import { EnvironmentProps } from '@bentley/imodeljs-common';
 import { Feature } from '@bentley/imodeljs-common';
 import { FeatureAppearance } from '@bentley/imodeljs-common';
-import { FeatureAppearanceProps } from '@bentley/imodeljs-common';
 import { FeatureAppearanceProvider } from '@bentley/imodeljs-common';
 import { FeatureIndex } from '@bentley/imodeljs-common';
 import { FeatureIndexType } from '@bentley/imodeljs-common';
@@ -219,7 +216,7 @@ import { PolylineFlags } from '@bentley/imodeljs-common';
 import { PolylineTypeFlags } from '@bentley/imodeljs-common';
 import { PrimaryTileTreeId } from '@bentley/imodeljs-common';
 import { ProgressCallback } from '@bentley/itwin-client';
-import { PromiseReturnType as PromiseReturnType_2 } from '@bentley/bentleyjs-core';
+import { PromiseReturnType } from '@bentley/bentleyjs-core';
 import { PropertyDescription } from '@bentley/ui-abstract';
 import { QParams2d } from '@bentley/imodeljs-common';
 import { QParams3d } from '@bentley/imodeljs-common';
@@ -280,6 +277,7 @@ import { SubLayerId } from '@bentley/imodeljs-common';
 import { SyncMode } from '@bentley/imodeljs-common';
 import { TelemetryManager } from '@bentley/telemetry-client';
 import { TerrainProviderName } from '@bentley/imodeljs-common';
+import { TextureData } from '@bentley/imodeljs-common';
 import { TextureLoadProps } from '@bentley/imodeljs-common';
 import { TextureMapping } from '@bentley/imodeljs-common';
 import { ThematicDisplay } from '@bentley/imodeljs-common';
@@ -1079,9 +1077,6 @@ export interface Animator {
     interrupt(): void;
 }
 
-// @public @deprecated
-export type AppearanceOverrideProps = AppearanceOverrideProps_2;
-
 // @internal (undocumented)
 export enum ArcGisErrorCode {
     // (undocumented)
@@ -1209,12 +1204,6 @@ export function areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, o
 
 // @internal
 export function areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise<number>;
-
-// @public @deprecated (undocumented)
-export type AsyncFunction = AsyncFunction_2;
-
-// @public @deprecated (undocumented)
-export type AsyncMethodsOf<T> = AsyncMethodsOf_2<T>;
 
 // @public
 export class AuthorizedFrontendRequestContext extends AuthorizedClientRequestContext {
@@ -2846,7 +2835,7 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     set defaultAppearance(appearance: FeatureAppearance | undefined);
     emphasizeElements(ids: Id64Arg, vp: Viewport, defaultAppearance?: FeatureAppearance, replace?: boolean): boolean;
     emphasizeSelectedElements(vp: Viewport, defaultAppearance?: FeatureAppearance, replace?: boolean, clearSelection?: boolean): boolean;
-    fromJSON(props: EmphasizeElementsProps_2, vp: Viewport): boolean;
+    fromJSON(props: EmphasizeElementsProps, vp: Viewport): boolean;
     static get(vp: Viewport): EmphasizeElements | undefined;
     getAlwaysDrawnElements(vp: Viewport): Id64Set | undefined;
     getEmphasizedElements(vp: Viewport): Id64Set | undefined;
@@ -2872,16 +2861,13 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     setAlwaysDrawnElements(ids: Id64Arg, vp: Viewport, exclusive?: boolean, replace?: boolean): boolean;
     // @internal
     setNeverDrawnElements(ids: Id64Arg, vp: Viewport, replace?: boolean): boolean;
-    toJSON(vp: Viewport): EmphasizeElementsProps_2;
+    toJSON(vp: Viewport): EmphasizeElementsProps;
     get unanimatedAppearance(): FeatureAppearance | undefined;
     set unanimatedAppearance(appearance: FeatureAppearance | undefined);
     // @internal (undocumented)
     protected updateIdSet(ids: Id64Arg, replace: boolean, existingIds?: Id64Set): Id64Set | undefined;
     wantEmphasis: boolean;
 }
-
-// @public @deprecated
-export type EmphasizeElementsProps = EmphasizeElementsProps_2;
 
 // @beta
 export class EngineeringLengthDescription extends FormattedQuantityDescription {
@@ -3044,16 +3030,8 @@ export interface FeatureOverrideProvider {
     addFeatureOverrides(overrides: FeatureSymbology.Overrides, viewport: Viewport): void;
 }
 
-export { FeatureOverrideType }
-
 // @public
 export namespace FeatureSymbology {
-    // @deprecated (undocumented)
-    export class Appearance extends FeatureAppearance {
-    }
-    // @deprecated (undocumented)
-    export interface AppearanceProps extends FeatureAppearanceProps {
-    }
     export class Overrides extends FeatureOverrides {
         constructor(view?: ViewState | Viewport);
         // @internal
@@ -3062,12 +3040,6 @@ export namespace FeatureSymbology {
         initFromViewport(viewport: Viewport): void;
         }
 }
-
-// @internal @deprecated (undocumented)
-export function findAvailableRealityModels(iTwinId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]>;
-
-// @internal @deprecated (undocumented)
-export function findAvailableUnattachedRealityModels(iTwinId: GuidString, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]>;
 
 // @public
 export class FitViewTool extends ViewTool {
@@ -4508,7 +4480,6 @@ export abstract class IModelConnection extends IModel {
     // @internal (undocumented)
     getMapEcefToDb(bimElevationBias: number): Transform;
     getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
-    getTextureImage(textureLoadProps: TextureLoadProps): Promise<Uint8Array | undefined>;
     getToolTipMessage(id: Id64String): Promise<string[]>;
     readonly hilited: HiliteSet;
     get isBlank(): boolean;
@@ -4539,6 +4510,7 @@ export abstract class IModelConnection extends IModel {
     queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
     // @internal
     queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string, abbreviateBlobs?: boolean): Promise<QueryResponse>;
+    queryTextureData(textureLoadProps: TextureLoadProps): Promise<TextureData | undefined>;
     // @internal
     requestSnap(props: SnapRequestProps): Promise<SnapResponseProps>;
     // @beta
@@ -4898,7 +4870,7 @@ export class IpcApp {
     // @internal
     static callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any>;
     // (undocumented)
-    static callIpcHost<T extends AsyncMethodsOf_2<IpcAppFunctions>>(methodName: T, ...args: Parameters<IpcAppFunctions[T]>): Promise<PromiseReturnType_2<IpcAppFunctions[T]>>;
+    static callIpcHost<T extends AsyncMethodsOf<IpcAppFunctions>>(methodName: T, ...args: Parameters<IpcAppFunctions[T]>): Promise<PromiseReturnType<IpcAppFunctions[T]>>;
     static invoke(channel: string, ...args: any[]): Promise<any>;
     static get isValid(): boolean;
     static removeListener(channel: string, listener: IpcListener): void;
@@ -6583,7 +6555,7 @@ export class MutableChangeFlags extends ChangeFlags {
 // @public
 export class NativeApp {
     // (undocumented)
-    static callNativeHost<T extends AsyncMethodsOf_2<NativeAppFunctions>>(methodName: T, ...args: Parameters<NativeAppFunctions[T]>): Promise<PromiseReturnType_2<NativeAppFunctions[T]>>;
+    static callNativeHost<T extends AsyncMethodsOf<NativeAppFunctions>>(methodName: T, ...args: Parameters<NativeAppFunctions[T]>): Promise<PromiseReturnType<NativeAppFunctions[T]>>;
     static checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
     static closeStorage(storage: Storage, deleteStorage?: boolean): Promise<void>;
     static deleteBriefcase(fileName: string): Promise<void>;
@@ -7313,9 +7285,6 @@ export enum PrimitiveVisibility {
     Uninstanced = 2
 }
 
-// @public @deprecated (undocumented)
-export type PromiseReturnType<T extends AsyncFunction_2> = PromiseReturnType_2<T>;
-
 // @internal (undocumented)
 export class QuadId {
     constructor(level: number, column: number, row: number);
@@ -7531,7 +7500,7 @@ export type RealityModelSource = ViewState | DisplayStyleState;
 
 // @internal
 export class RealityModelTileClient {
-    constructor(url: string, accessToken?: AccessToken, iTwinId?: string);
+    constructor(url: string, iTwinId?: string);
     // (undocumented)
     getBlobAccessData(): Promise<URL | undefined>;
     getRealityDataType(): Promise<string | undefined>;
@@ -12280,9 +12249,7 @@ export abstract class Viewport implements IDisposable {
     dropTiledGraphicsProvider(provider: TiledGraphicsProvider): void;
     get emphasisSettings(): Hilite.Settings;
     set emphasisSettings(settings: Hilite.Settings);
-    // @deprecated
-    get featureOverrideProvider(): FeatureOverrideProvider | undefined;
-    set featureOverrideProvider(provider: FeatureOverrideProvider | undefined);
+    get featureOverrideProviders(): Iterable<FeatureOverrideProvider>;
     findFeatureOverrideProvider(predicate: (provider: FeatureOverrideProvider) => boolean): FeatureOverrideProvider | undefined;
     findFeatureOverrideProviderOfType<T>(type: Constructor<T>): T | undefined;
     get flashedId(): Id64String | undefined;
@@ -12429,15 +12396,11 @@ export abstract class Viewport implements IDisposable {
     setAlwaysDrawn(ids: Id64Set, exclusive?: boolean): void;
     setAnimator(animator?: Animator): void;
     setFeatureOverrideProviderChanged(): void;
-    // @deprecated
-    setFlashed(id: string | undefined, _duration?: number): void;
     // (undocumented)
     setLightSettings(settings: LightSettings): void;
     // @internal
     setModelDisplayTransformProvider(provider: ModelDisplayTransformProvider): void;
     setNeverDrawn(ids: Id64Set): void;
-    // @internal @deprecated (undocumented)
-    setRedrawPending(): void;
     // @internal (undocumented)
     setRenderPlanValid(): void;
     // (undocumented)

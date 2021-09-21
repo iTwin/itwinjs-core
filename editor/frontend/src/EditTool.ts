@@ -9,6 +9,7 @@
 import { editorChannel } from "@bentley/imodeljs-editor-common";
 import { IModelApp, IpcApp } from "@bentley/imodeljs-frontend";
 import { DeleteElementsTool } from "./DeleteElementsTool";
+import { OffsetFacesTool } from "./ElementGeometryTool";
 import { ProjectLocationCancelTool, ProjectLocationHideTool, ProjectLocationSaveTool, ProjectLocationShowTool } from "./ProjectLocation/ProjectExtentsDecoration";
 import { ProjectGeolocationMoveTool, ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./ProjectLocation/ProjectGeolocation";
 import { CreateArcTool, CreateBCurveTool, CreateCircleTool, CreateEllipseTool, CreateLineStringTool, CreateRectangleTool } from "./SketchTools";
@@ -27,6 +28,8 @@ export interface EditorOptions {
   registerBasicManipulationTools?: true | undefined;
   /** If true, tools for sketching will be registered. */
   registerSketchTools?: true | undefined;
+  /** If true, tools for solid modeling will be registered. */
+  registerSolidModelingTools?: true | undefined;
 }
 
 /** @alpha functions to support PrimitiveTool and InputCollector sub-classes with using EditCommand. */
@@ -111,6 +114,15 @@ export class EditTools {
         CreateEllipseTool,
         CreateLineStringTool,
         CreateRectangleTool,
+      ];
+
+      for (const tool of tools)
+        tool.register(this.namespace);
+    }
+
+    if (registerAllTools || options?.registerSolidModelingTools) {
+      const tools = [
+        OffsetFacesTool,
       ];
 
       for (const tool of tools)

@@ -44,7 +44,7 @@ export class AzureFileHandler implements FileHandler {
     // (undocumented)
     agent?: https.Agent;
     basename(filePath: string): string;
-    downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
+    downloadFile(_requestContext: AuthorizedClientRequestContext | undefined, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
     exists(filePath: string): boolean;
     getFileSize(filePath: string): number;
     isDirectory(filePath: string): boolean;
@@ -66,9 +66,10 @@ export abstract class BackendAuthorizationClient extends ImsAuthorizationClient 
 
 // @beta
 export interface BackendAuthorizationClientConfiguration {
-    clientId: string;
-    clientSecret: string;
-    scope: string;
+    readonly authority?: string;
+    readonly clientId: string;
+    readonly clientSecret: string;
+    readonly scope: string;
 }
 
 // @public
@@ -266,13 +267,13 @@ export class LocalhostHandler implements FileHandler {
     // (undocumented)
     agent?: https.Agent;
     basename(filePath: string): string;
-    downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, path: string, fileSize?: number, progress?: ProgressCallback): Promise<void>;
+    downloadFile(_requestContext: AuthorizedClientRequestContext, downloadUrl: string, path: string, fileSize?: number, progress?: ProgressCallback): Promise<void>;
     exists(filePath: string): boolean;
     getFileSize(filePath: string): number;
     isDirectory(filePath: string): boolean;
     join(...paths: string[]): string;
     unlink(filePath: string): void;
-    uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, path: string, progress?: ProgressCallback): Promise<void>;
+    uploadFile(_requestContext: AuthorizedClientRequestContext, uploadUrlString: string, path: string, progress?: ProgressCallback): Promise<void>;
 }
 
 // @alpha (undocumented)
@@ -317,7 +318,7 @@ export class UrlFileHandler implements FileHandler {
     agent?: https.Agent;
     basename(filePath: string): string;
     // (undocumented)
-    downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
+    downloadFile(_requestContext: AuthorizedClientRequestContext | undefined, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
     exists(filePath: string): boolean;
     getFileSize(filePath: string): number;
     isDirectory(filePath: string): boolean;

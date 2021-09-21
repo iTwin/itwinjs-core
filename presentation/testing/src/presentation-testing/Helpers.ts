@@ -17,7 +17,7 @@ import {
 import { IModelApp, IModelAppOptions, NoRenderApp } from "@bentley/imodeljs-frontend";
 import { HierarchyCacheMode, Presentation as PresentationBackend, PresentationManagerProps as PresentationBackendProps, PresentationManagerMode } from "@bentley/presentation-backend";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
-import { Presentation as PresentationFrontend, PresentationManagerProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
+import { Presentation as PresentationFrontend, PresentationProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
 
 function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
   const config = class extends RpcDefaultConfiguration {
@@ -84,7 +84,9 @@ export const initialize = async (props?: PresentationTestingInitProps) => {
     props.frontendApp = NoRenderApp;
   await props.frontendApp.startup(props.frontendAppOptions);
   const defaultFrontendProps: PresentationFrontendProps = {
-    activeLocale: IModelApp.localizationClient.languageList()[0],
+    presentation: {
+      activeLocale: IModelApp.localizationClient.languageList()[0],
+    },
   };
   await PresentationFrontend.initialize({ ...defaultFrontendProps, ...props.frontendProps });
 

@@ -15,11 +15,10 @@ import { I18N } from "@bentley/imodeljs-i18n";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "@bentley/oidc-signin-tool/lib/TestUtility";
 import {
-  HierarchyCacheMode, Presentation as PresentationBackend, PresentationBackendNativeLoggerCategory,
-  PresentationProps as PresentationBackendProps,
+  HierarchyCacheMode, Presentation as PresentationBackend, PresentationBackendNativeLoggerCategory, PresentationProps as PresentationBackendProps,
 } from "@bentley/presentation-backend";
 import { RequestPriority } from "@bentley/presentation-common";
-import { PresentationManagerProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
+import { PresentationProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
 import { initialize as initializeTesting, PresentationTestingInitProps, terminate as terminateTesting } from "@bentley/presentation-testing";
 
 /** Loads the provided `.env` file into process.env */
@@ -97,7 +96,9 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
     cacheConfig: { mode: HierarchyCacheMode.Disk, directory: path.join(libDir, "cache") },
   };
   const frontendInitProps: PresentationFrontendProps = {
-    activeLocale: "en-PSEUDO",
+    presentation: {
+      activeLocale: "en-PSEUDO",
+    },
   };
 
   const frontendAppOptions: IModelAppOptions = {
