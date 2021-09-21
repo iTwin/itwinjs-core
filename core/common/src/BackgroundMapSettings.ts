@@ -132,7 +132,7 @@ export class BackgroundMapSettings {
     // Handle deprecated TerrainProps.nonLocatable:
     // - If TerrainProps.nonLocatable=true and terrain is on, terrain is not locatable.
     // - Otherwise, use BackgroundMapProps.nonLocatable.
-    if (this.applyTerrain && !this.terrainSettings.locatable) // eslint-disable-line deprecation/deprecation
+    if (this.applyTerrain && this.terrainSettings.nonLocatable)
       return false;
 
     return this._locatable;
