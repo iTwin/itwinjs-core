@@ -80,6 +80,7 @@ export class FrontstageDef {
   private _nineZone?: NineZoneManagerProps;
   private _timeTracker: TimeTracker = new TimeTracker();
   private _nineZoneState?: NineZoneState;
+  private _contentGroupProvider?: ContentGroupProvider;
 
   public get id(): string { return this._id; }
   public get defaultTool(): ToolItemDef | undefined { return this._defaultTool; }
@@ -88,6 +89,7 @@ export class FrontstageDef {
   public get applicationData(): any | undefined { return this._applicationData; }
   public get usage(): string { return this._usage !== undefined ? this._usage : StageUsage.General; }
   public get version(): number { return this._version; }
+  public get contentGroupProvider(): ContentGroupProvider | undefined { return this._contentGroupProvider; }
 
   public get topLeft(): ZoneDef | undefined { return this._topLeft; }
   public get topCenter(): ZoneDef | undefined { return this._topCenter; }
@@ -476,6 +478,7 @@ export class FrontstageDef {
 
     if (props.contentGroup instanceof ContentGroupProvider) {
       this._contentGroup = await props.contentGroup.provideContentGroup(props);
+      this._contentGroupProvider = props.contentGroup;
     } else {
       this._contentGroup = props.contentGroup;
     }

@@ -38,10 +38,6 @@ export class SavedView {
     const viewState = ctor.createFromProps(savedViewProps, iModelConnection)!;
     await viewState.load(); // loads models for ModelSelector
 
-    // istanbul ignore else
-    if (viewState)
-      await viewState.load();
-
     return viewState;
   }
 
