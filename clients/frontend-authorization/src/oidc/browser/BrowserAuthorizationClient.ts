@@ -7,7 +7,7 @@
  * @module BrowserAuthorization
  */
 
-import { assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, IDisposable, Logger } from "@bentley/bentleyjs-core";
+import { assert, AuthStatus, BeEvent, BentleyError, IDisposable, Logger } from "@bentley/bentleyjs-core";
 import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
 import { User, UserManager, UserManagerSettings, WebStorageStateStore } from "oidc-client";
 import { FrontendAuthorizationClient } from "../../FrontendAuthorizationClient";
@@ -80,12 +80,12 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
     super(configuration);
   }
 
-  protected async getUserManager(requestContext: ClientRequestContext): Promise<UserManager> {
+  protected async getUserManager(): Promise<UserManager> {
     if (this._userManager) {
       return this._userManager;
     }
 
-    const settings = await this.getUserManagerSettings(requestContext, this._basicSettings, this._advancedSettings);
+    const settings = await this.getUserManagerSettings(this._basicSettings, this._advancedSettings);
     this._userManager = this.createUserManager(settings);
     return this._userManager;
   }
@@ -96,7 +96,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    * @param basicSettings
    * @param advancedSettings
    */
-  protected async getUserManagerSettings(requestContext: ClientRequestContext, basicSettings: BrowserAuthorizationClientConfiguration, advancedSettings?: UserManagerSettings): Promise<UserManagerSettings> {
+  protected async getUserManagerSettings(basicSettings: BrowserAuthorizationClientConfiguration, advancedSettings?: UserManagerSettings): Promise<UserManagerSettings> {
     let userManagerSettings: UserManagerSettings = {
       authority: basicSettings.authority,
       redirect_uri: basicSettings.redirectUri, // eslint-disable-line @typescript-eslint/naming-convention
@@ -116,7 +116,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
 
     if (!userManagerSettings.authority) {
       const imsAuthorizationClient = new ImsAuthorizationClient();
-      const authority = await imsAuthorizationClient.getUrl(requestContext);
+      const authority = await imsAuthorizationClient.getUrl();
       userManagerSettings.authority = authority;
     }
 
@@ -144,8 +144,8 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    * Alias for signInRedirect needed to satisfy [[FrontendAuthorizationClient]]
    * @param requestContext
    */
-  public async signIn(requestContext?: ClientRequestContext): Promise<void> {
-    return this.signInRedirect(requestContext ?? new ClientRequestContext());
+  public async signIn(): Promise<void> {
+    return this.signInRedirect();
   }
 
   /**
@@ -156,13 +156,13 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    * If an error prevents the redirection from occurring, the returned promise will be rejected with the responsible error.
    * Otherwise, the browser's window will be redirected away from the current page, effectively ending execution here.
    */
-  public async signInRedirect(requestContext: ClientRequestContext, successRedirectUrl?: string, args?: BrowserAuthorizationClientRequestOptions): Promise<void> {
-    const user = await this.nonInteractiveSignIn(requestContext, args);
+  public async signInRedirect(successRedirectUrl?: string, args?: BrowserAuthorizationClientRequestOptions): Promise<void> {
+    const user = await this.nonInteractiveSignIn(args);
     if (user) {
       return;
     }
 
-    const userManager = await this.getUserManager(requestContext);
+    const userManager = await this.getUserManager();
     const state: BrowserAuthorizationClientRedirectState = {
       successRedirectUrl: successRedirectUrl || window.location.href,
     };
@@ -175,13 +175,13 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    * Attempts a sign-in via popup with the authorization provider
    * @param requestContext
    */
-  public async signInPopup(requestContext: ClientRequestContext, args?: BrowserAuthorizationClientRequestOptions): Promise<void> {
-    let user = await this.nonInteractiveSignIn(requestContext, args);
+  public async signInPopup(args?: BrowserAuthorizationClientRequestOptions): Promise<void> {
+    let user = await this.nonInteractiveSignIn(args);
     if (user) {
       return;
     }
 
-    const userManager = await this.getUserManager(requestContext);
+    const userManager = await this.getUserManager();
     user = await userManager.signinPopup(args);
     assert(user && !user.expired, "Expected userManager.signinPopup to always resolve to an authorized user");
     return;
@@ -191,8 +191,8 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    * Attempts a silent sign in with the authorization provider
    * @throws [[BentleyError]] If the silent sign in fails
    */
-  public async signInSilent(requestContext: ClientRequestContext): Promise<void> {
-    const user = await this.nonInteractiveSignIn(requestContext);
+  public async signInSilent(): Promise<void> {
+    const user = await this.nonInteractiveSignIn();
     if (user === undefined || user.expired)
       throw new BentleyError(AuthStatus.Error, "Silent sign-in failed");
   }
@@ -202,15 +202,15 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    * - tries to load the user from storage
    * - tries to silently sign-in the user
    */
-  protected async nonInteractiveSignIn(requestContext: ClientRequestContext, args?: BrowserAuthorizationClientRequestOptions): Promise<User | undefined> {
-    const userManager = await this.getUserManager(requestContext);
+  protected async nonInteractiveSignIn(args?: BrowserAuthorizationClientRequestOptions): Promise<User | undefined> {
+    const userManager = await this.getUserManager();
     const settingsPromptRequired = userManager.settings.prompt !== undefined && userManager.settings.prompt !== "none";
     const argsPromptRequired = args?.prompt !== undefined && args.prompt !== "none";
     if (settingsPromptRequired || argsPromptRequired) { // No need to even try a silent sign in if we know the prompt will force its failure.
       return undefined;
     }
 
-    let user = await this.loadUser(requestContext);
+    let user = await this.loadUser();
     if (user) {
       return user;
     }
@@ -230,8 +230,8 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    * - Resolves to undefined if no user was found.
    * - Returned user may have expired - so it's up to the caller to check the expired state
    */
-  protected async loadUser(requestContext: ClientRequestContext): Promise<User | undefined> {
-    const userManager = await this.getUserManager(requestContext);
+  protected async loadUser(): Promise<User | undefined> {
+    const userManager = await this.getUserManager();
     const user = await userManager.getUser();
 
     if (user && !user.expired) {
@@ -253,19 +253,18 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
 
   /**
    * Alias for signOutRedirect
-   * @param requestContext
    */
-  public async signOut(requestContext?: ClientRequestContext): Promise<void> {
-    await this.signOutRedirect(requestContext ?? new ClientRequestContext());
+  public async signOut(): Promise<void> {
+    await this.signOutRedirect();
   }
 
-  public async signOutRedirect(requestContext: ClientRequestContext): Promise<void> {
-    const userManager = await this.getUserManager(requestContext);
+  public async signOutRedirect(): Promise<void> {
+    const userManager = await this.getUserManager();
     await userManager.signoutRedirect();
   }
 
-  public async signOutPopup(requestContext: ClientRequestContext): Promise<void> {
-    const userManager = await this.getUserManager(requestContext);
+  public async signOutPopup(): Promise<void> {
+    const userManager = await this.getUserManager();
     await userManager.signoutPopup();
   }
 
@@ -284,11 +283,9 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    * Checks the current local user session against that of the identity provider.
    * If the session is no longer valid, the local user is removed from storage.
    * @returns true if the local session is still active with the provider, false otherwise.
-   * @param requestContext
-   * @param ignoreCheckInterval Bypass the default behavior to wait until a certain time has passed since the last check was performed
    */
-  public async checkSessionStatus(requestContext: ClientRequestContext): Promise<boolean> {
-    const userManager = await this.getUserManager(requestContext);
+  public async checkSessionStatus(): Promise<boolean> {
+    const userManager = await this.getUserManager();
     try {
       await userManager.querySessionStatus();
     } catch (err) { // Access token is no longer valid in this session

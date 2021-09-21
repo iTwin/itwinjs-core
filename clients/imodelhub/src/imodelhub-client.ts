@@ -28,6 +28,12 @@ export * from "./imodelbank/IModelBankClient";
 export * from "./imodelbank/IModelBankFileSystemContextClient";
 export * from "./imodelbank/IModelBankHandler";
 
+export * from "./wsg/ChunkedQueryContext";
+export * from "./wsg/ECJsonTypeMap";
+export * from "./wsg/WsgClient";
+export * from "./wsg/WsgLoggerCategory";
+export * from "./wsg/WsgQuery";
+
 /**
  * @docs-package-description
  * The imodelhub-client package contains

@@ -5,10 +5,10 @@
 ```ts
 
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
+import { Client } from '@bentley/itwin-client';
 import { RequestOptions } from '@bentley/itwin-client';
 import { RequestQueryOptions } from '@bentley/itwin-client';
-import { WsgClient } from '@bentley/itwin-client';
-import { WsgInstance } from '@bentley/itwin-client';
+import { RequestTimeoutOptions } from '@bentley/itwin-client';
 
 // @beta
 export class Asset extends CommonAssetProjectContext {
@@ -45,10 +45,6 @@ export class ContextRegistryClient extends WsgClient {
     getProject(requestContext: AuthorizedClientRequestContext, queryOptions?: ContextRegistryRequestQueryOptions): Promise<Project>;
     getProjects(requestContext: AuthorizedClientRequestContext, queryOptions?: ContextRegistryRequestQueryOptions): Promise<Project[]>;
     getTeam(requestContext: AuthorizedClientRequestContext): Promise<Team>;
-    // @internal (undocumented)
-    protected getUrlSearchKey(): string;
-    // (undocumented)
-    static readonly searchKey: string;
     // (undocumented)
     protected setupOptionDefaults(options: RequestOptions): Promise<void>;
 }

@@ -96,20 +96,6 @@ export interface RealityDataQueryCriteria {
   filterIModel?: IModelConnection;
 }
 
-/** @deprecated Use queryRealityData
- * @internal
- */
-export async function findAvailableRealityModels(iTwinId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]> {
-  return queryRealityData({ iTwinId, range: modelCartographicRange });
-}
-
-/** @deprecated Use queryRealityData
- * @internal
- */
-export async function findAvailableUnattachedRealityModels(iTwinId: GuidString, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]> {
-  return queryRealityData({ iTwinId, filterIModel: iModel, range: modelCartographicRange });
-}
-
 /** Query for reality data associated with an iTwin context.
  * @param criteria Criteria by which to query.
  * @returns Properties of reality data associated with the context, filtered according to the criteria.
@@ -168,7 +154,7 @@ export async function queryRealityData(criteria: RealityDataQueryCriteria): Prom
 
     // If the RealityData is valid then we add it to the list.
     if (currentRealityData.id && validRd === true) {
-      const url = await client.getRealityDataUrl(requestContext, iTwinId, currentRealityData.id);
+      const url = await client.getRealityDataUrl(iTwinId, currentRealityData.id);
       let opcConfig: OrbitGtBlobProps | undefined;
 
       if (currentRealityData.type && (currentRealityData.type.toUpperCase() === "OPC") && currentRealityData.rootDocument !== undefined) {

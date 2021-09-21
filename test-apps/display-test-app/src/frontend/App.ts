@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AsyncMethodsOf, ProcessDetector, PromiseReturnType } from "@bentley/bentleyjs-core";
+import { AsyncMethodsOf, GuidString, ProcessDetector, PromiseReturnType } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
@@ -12,7 +12,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import {
-  AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, ExternalServerExtensionLoader, IModelApp, IpcApp, LocalhostIpcApp, RenderSystem,
+  AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, IModelApp, IpcApp, LocalhostIpcApp, RenderSystem,
   SelectionTool, SnapMode, TileAdmin, Tool, ToolAdmin,
 } from "@bentley/imodeljs-frontend";
 import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
@@ -42,6 +42,7 @@ import { ApplyModelDisplayScaleTool } from "./DisplayScale";
 import { SyncViewportsTool } from "./SyncViewportsTool";
 import { FrameStatsTool } from "./FrameStatsTool";
 import { signIn } from "./signIn";
+import { DtaConfiguration } from "../common/DtaConfiguration";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -186,8 +187,10 @@ export class DisplayTestApp {
   private static _surface?: Surface;
   public static get surface() { return this._surface!; }
   public static set surface(surface: Surface) { this._surface = surface; }
+  private static _iTwinId?: GuidString;
+  public static get iTwinId(): GuidString | undefined { return this._iTwinId;}
 
-  public static async startup(renderSys: RenderSystem.Options): Promise<void> {
+  public static async startup(configuration: DtaConfiguration, renderSys: RenderSystem.Options): Promise<void> {
     const opts = {
       iModelApp: {
         accuSnap: new DisplayTestAppAccuSnap(),
@@ -208,6 +211,8 @@ export class DisplayTestApp {
       },
     };
 
+    this._iTwinId = configuration.iTwinId;
+
     if (ProcessDetector.isElectronAppFrontend) {
       await ElectronApp.startup(opts);
     } else if (ProcessDetector.isIOSAppFrontend) {
@@ -217,9 +222,6 @@ export class DisplayTestApp {
     } else {
       await LocalhostIpcApp.startup(opts);
     }
-
-    // For testing local extensions only, should not be used in production.
-    IModelApp.extensionAdmin.addExtensionLoaderFront(new ExternalServerExtensionLoader("http://localhost:3000"));
 
     IModelApp.applicationLogoCard =
       () => IModelApp.makeLogoCard({ iconSrc: "DTA.png", iconWidth: 100, heading: "Display Test App", notice: "For internal testing" });

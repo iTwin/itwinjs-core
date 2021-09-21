@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ClientRequestContextProps, ProcessDetector } from "@bentley/bentleyjs-core";
+import { ProcessDetector } from "@bentley/bentleyjs-core";
 import { AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
 import { TestFrontendAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
@@ -55,12 +55,6 @@ if (!ProcessDetector.isElectronAppFrontend){
       assert.equal(actualAuthorizedRequestContext.sessionId, IModelApp.sessionId);
       assert.notEqual(actualAuthorizedRequestContext.activityId, activityId, "The activityId setup wasn't used by the RPC operation");
 
-      IModelApp.authorizationClient = undefined;
-      const requestContext: ClientRequestContextProps = await TestRpcInterface.getClient().reportRequestContext();
-      assert.equal(requestContext.applicationId, IModelApp.applicationId);
-      assert.equal(requestContext.sessionId, IModelApp.sessionId);
-      assert.notEqual(requestContext.activityId, activityId, "The activityId was not reset after an RPC operation");
     });
-
   });
 }

@@ -3,10 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { GuidString, Id64, Logger } from "@bentley/bentleyjs-core";
-import { Briefcase, CodeQuery, CodeState, HubCode, IModelClient, Lock, LockLevel, LockQuery, LockType } from "@bentley/imodelhub-client";
-import { AccessToken, AuthenticationError, AuthorizedClientRequestContext, ResponseError } from "@bentley/itwin-client";
-import * as utils from "./TestUtils";
+import {
+  AuthenticationError, Briefcase, CodeQuery, CodeState, HubCode, IModelClient, Lock, LockLevel, LockQuery, LockType,
+} from "@bentley/imodelhub-client";
+import { AccessToken, AuthorizedClientRequestContext, ResponseError } from "@bentley/itwin-client";
 import { TestConfig } from "../TestConfig";
+import * as utils from "./TestUtils";
 
 describe.skip("iModelHub Performance tests", () => {
   let iTwinId: string;

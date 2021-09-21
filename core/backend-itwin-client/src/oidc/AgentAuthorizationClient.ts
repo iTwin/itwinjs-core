@@ -7,7 +7,7 @@
  */
 
 import { GrantBody, TokenSet } from "openid-client";
-import { AuthStatus, BentleyError, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { AuthStatus, BentleyError } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
 import { BackendAuthorizationClient, BackendAuthorizationClientConfiguration } from "./BackendAuthorizationClient";
 
@@ -37,7 +37,7 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
     super(agentConfiguration);
   }
 
-  private async generateAccessToken(requestContext: ClientRequestContext): Promise<AccessToken | undefined> {
+  private async generateAccessToken(): Promise<AccessToken> {
     const scope = this._configuration.scope;
     if (scope.includes("openid") || scope.includes("email") || scope.includes("profile") || scope.includes("organization"))
       throw new BentleyError(AuthStatus.Error, "Scopes for an Agent cannot include 'openid email profile organization'");
@@ -48,7 +48,7 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
     };
 
     let tokenSet: TokenSet;
-    const client = await this.getClient(requestContext);
+    const client = await this.getClient();
     try {
       tokenSet = await client.grant(grantParams);
     } catch (error: any) {
@@ -88,9 +88,9 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
   /** Returns a promise that resolves to the AccessToken of the currently authorized client.
    * The token is refreshed if necessary.
    */
-  public async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken | undefined> {
+  public async getAccessToken(): Promise<AccessToken> {
     if (this.isAuthorized)
-      return this._accessToken;
-    return this.generateAccessToken(requestContext || new ClientRequestContext());
+      return this._accessToken!;
+    return this.generateAccessToken();
   }
 }

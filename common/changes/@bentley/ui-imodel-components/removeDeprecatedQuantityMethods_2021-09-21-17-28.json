@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-imodel-components",
+      "comment": "Remove deprecate QuantityFormatter methods",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-imodel-components"
+}

@@ -139,7 +139,6 @@ import { NavigationBindingValue } from '@bentley/imodeljs-common';
 import { NavigationValue } from '@bentley/imodeljs-common';
 import { OpenBriefcaseProps } from '@bentley/imodeljs-common';
 import { OpenMode } from '@bentley/bentleyjs-core';
-import { OrderedId64Array } from '@bentley/bentleyjs-core';
 import * as os from 'os';
 import { OverriddenBy } from '@bentley/imodeljs-common';
 import { PhysicalElementProps } from '@bentley/imodeljs-common';
@@ -3936,27 +3935,17 @@ export class Texture extends DefinitionElement {
     constructor(props: TextureCreateProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @deprecated
-    static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, _width: number, _height: number, description: string, _flags: 0): Texture;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, name: string): Code;
     static createTexture(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, description?: string): Texture;
     // (undocumented)
     data: Uint8Array;
     // (undocumented)
     description?: string;
-    // @deprecated (undocumented)
-    flags: 0;
     // (undocumented)
     format: ImageSourceFormat;
-    // @deprecated (undocumented)
-    height: number;
-    // @deprecated
-    static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, _width: number, _height: number, description: string, _flags: 0): Id64String;
     static insertTexture(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, description?: string): Id64String;
     // @internal (undocumented)
     toJSON(): TextureProps;
-    // @deprecated (undocumented)
-    width: number;
 }
 
 // @internal
@@ -3979,14 +3968,8 @@ export interface ToChangesetArgs extends UserArg {
 
 // @public
 export interface TxnChangedEntities {
-    // @deprecated
-    deleted: OrderedId64Array;
     readonly deletes: EntityIdAndClassIdIterable;
-    // @deprecated
-    inserted: OrderedId64Array;
     readonly inserts: EntityIdAndClassIdIterable;
-    // @deprecated
-    updated: OrderedId64Array;
     readonly updates: EntityIdAndClassIdIterable;
 }
 

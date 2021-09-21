@@ -8,8 +8,9 @@
 
 import { BeEvent } from "@bentley/bentleyjs-core";
 import {
-  AccessToken, AuthorizedClientRequestContext, DefaultRequestOptionsProvider, ECJsonTypeMap, request, RequestOptions, WsgInstance,
+  AccessToken, AuthorizedClientRequestContext, DefaultRequestOptionsProvider, request, RequestOptions,
 } from "@bentley/itwin-client";
+import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
 import { IModelBaseHandler } from "./BaseHandler";
 
 /**

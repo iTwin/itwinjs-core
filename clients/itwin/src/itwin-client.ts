@@ -6,14 +6,10 @@ export * from "./AuthorizationClient";
 export * from "./AuthorizedClientRequestContext";
 export * from "./Client";
 export * from "./ITwinClientLoggerCategory";
-export * from "./ECJsonTypeMap";
 export * from "./FileHandler";
 export * from "./Request";
 export * from "./Token";
-export * from "./WsgClient";
-export * from "./WsgQuery";
 export * from "./ImsAuthorizationClient";
-export * from "./ChunkedQueryContext";
 
 /** @docs-package-description
  * The itwin-client package allows sending requests to various iTwin services.

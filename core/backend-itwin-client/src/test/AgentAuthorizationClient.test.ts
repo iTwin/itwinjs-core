@@ -6,10 +6,9 @@
 import * as chai from "chai";
 import { Client, Issuer } from "openid-client";
 import * as path from "path";
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
+import { AccessToken } from "@bentley/itwin-client";
 import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "../oidc/AgentAuthorizationClient";
 import { HubAccessTestValidator } from "./HubAccessTestValidator";
-import { AccessToken } from "@bentley/itwin-client";
 
 import * as fs from "fs";
 
@@ -35,7 +34,6 @@ chai.should();
 describe("AgentAuthorizationClient (#integration)", () => {
 
   let validator: HubAccessTestValidator;
-  const requestContext = new ClientRequestContext();
 
   let agentConfiguration: AgentAuthorizationClientConfiguration;
 
@@ -59,9 +57,9 @@ describe("AgentAuthorizationClient (#integration)", () => {
 
   it("should discover token end points correctly", async () => {
     const client = new AgentAuthorizationClient(agentConfiguration);
-    const url: string = await client.getUrl(requestContext);
+    const url: string = await client.getUrl();
 
-    const issuer: Issuer<Client> = await client.discoverEndpoints(requestContext);
+    const issuer: Issuer<Client> = await client.discoverEndpoints();
     chai.expect(issuer.token_endpoint).equals(`${url}/connect/token`);
     chai.expect(issuer.authorization_endpoint).equals(`${url}/connect/authorize`);
     chai.expect(issuer.introspection_endpoint).equals(`${url}/connect/introspect`);
@@ -69,12 +67,12 @@ describe("AgentAuthorizationClient (#integration)", () => {
 
   it("should get valid OIDC tokens for agent applications", async () => {
     const agentClient = new AgentAuthorizationClient(agentConfiguration);
-    const jwt: AccessToken = await agentClient.getAccessToken(requestContext) ?? "";
+    const jwt: AccessToken = await agentClient.getAccessToken() ?? "";
 
     await validator.validateContextRegistryAccess(jwt);
     await validator.validateIModelHubAccess(jwt);
 
-    const refreshJwt: AccessToken = await agentClient.getAccessToken(requestContext) ?? "";
+    const refreshJwt: AccessToken = await agentClient.getAccessToken() ?? "";
     await validator.validateContextRegistryAccess(refreshJwt);
     await validator.validateIModelHubAccess(refreshJwt);
   });

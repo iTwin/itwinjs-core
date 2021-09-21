@@ -223,7 +223,7 @@ export class AppTools {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.item3",
       applicationData: { key: "value" },
-      execute: async () =>IModelApp.tools.run(SelectionTool.toolId),
+      execute: async () => IModelApp.tools.run(SelectionTool.toolId),
     });
   }
 
@@ -243,7 +243,7 @@ export class AppTools {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.item5",
       applicationData: { key: "value" },
-      execute: async () =>  IModelApp.tools.run(SelectionTool.toolId),
+      execute: async () => IModelApp.tools.run(SelectionTool.toolId),
     });
   }
 
@@ -286,8 +286,8 @@ export class AppTools {
       commandId: "setLengthFormatMetric",
       iconSpec: pathIconSpec,
       labelKey: "SampleApp:buttons.setLengthFormatMetric",
-      execute: () => {
-        IModelApp.quantityFormatter.useImperialFormats = false; // eslint-disable-line deprecation/deprecation
+      execute: async () => {
+        await IModelApp.quantityFormatter.setActiveUnitSystem("metric");
         Presentation.presentation.activeUnitSystem = "metric";
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Length Format to Metric"));
       },
@@ -300,8 +300,8 @@ export class AppTools {
       commandId: "setLengthFormatImperial",
       iconSpec: spriteIconSpec,
       labelKey: "SampleApp:buttons.setLengthFormatImperial",
-      execute: () => {
-        IModelApp.quantityFormatter.useImperialFormats = true; // eslint-disable-line deprecation/deprecation
+      execute: async () => {
+        await IModelApp.quantityFormatter.setActiveUnitSystem("imperial");
         Presentation.presentation.activeUnitSystem = "imperial";
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Length Format to Imperial"));
       },

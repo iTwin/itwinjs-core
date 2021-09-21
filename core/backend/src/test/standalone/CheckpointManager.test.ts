@@ -7,7 +7,7 @@ import { assert } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
 import { Guid, IModelHubStatus } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, WsgError } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, ResponseError } from "@bentley/itwin-client";
 import { CheckpointManager, V1CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
 import { SnapshotDb } from "../../IModelDb";
 import { BackendRequestContext, IModelHost } from "../../imodeljs-backend";
@@ -150,7 +150,7 @@ describe("Checkpoint Manager", () => {
     snapshot.close();
 
     const checkpointsV2Handler = IModelHubBackend.iModelClient.checkpointsV2;
-    sinon.stub(checkpointsV2Handler, "get").callsFake(async () => { throw new WsgError(IModelHubStatus.Unknown, "Feature is disabled."); });
+    sinon.stub(checkpointsV2Handler, "get").callsFake(async () => { throw new ResponseError(IModelHubStatus.Unknown, "Feature is disabled."); });
     sinon.stub(IModelHubBackend.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
 
     const v1Spy = sinon.stub(V1CheckpointManager, "downloadCheckpoint").callsFake(async (arg) => {

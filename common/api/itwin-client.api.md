@@ -17,10 +17,6 @@ import { SessionProps } from '@bentley/bentleyjs-core';
 export type AccessToken = string;
 
 // @beta
-export class AuthenticationError extends ResponseError {
-}
-
-// @beta
 export interface AuthorizationClient {
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken | undefined>;
 }
@@ -60,41 +56,16 @@ export interface CancelRequest {
     cancel: () => boolean;
 }
 
-// @beta (undocumented)
-export type ChangeState = "new" | "modified" | "deleted" | "existing";
-
-// @beta
-export class ChunkedQueryContext {
-    static create(queryOptions: RequestQueryOptions): ChunkedQueryContext | undefined;
-    handleIteration(queryOptions: RequestQueryOptions): void;
-    get instancesLeft(): number | undefined;
-    get isQueryFinished(): boolean;
-    get skipToken(): string;
-    set skipToken(value: string);
-    }
-
-// @internal (undocumented)
-export interface ClassKeyMapInfo {
-    classKeyPropertyName?: string;
-    classPropertyName?: string;
-    schemaPropertyName?: string;
-}
-
 // @beta
 export abstract class Client {
     protected constructor();
-    protected applyUserConfiguredHttpRequestOptions(requestOptions: RequestOptions, userDefinedRequestOptions?: HttpRequestOptions): void;
     protected baseUrl?: string;
-    protected delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, httpRequestOptions?: HttpRequestOptions): Promise<void>;
-    getUrl(requestContext: ClientRequestContext): Promise<string>;
-    protected abstract getUrlSearchKey(): string;
+    protected delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string): Promise<void>;
+    getUrl(): Promise<string>;
     protected setupOptionDefaults(options: RequestOptions): Promise<void>;
     // (undocumented)
     protected _url?: string;
 }
-
-// @internal (undocumented)
-export type ConstructorType = new () => any;
 
 // @internal
 export class DefaultRequestOptionsProvider {
@@ -105,29 +76,8 @@ export class DefaultRequestOptionsProvider {
 }
 
 // @internal
-export class DefaultWsgRequestOptionsProvider extends DefaultRequestOptionsProvider {
-    constructor();
-}
-
-// @internal
 export class DownloadFailed extends BentleyError {
     constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction);
-}
-
-// @beta
-export abstract class ECInstance {
-    // (undocumented)
-    [index: string]: any;
-    // (undocumented)
-    ecId: string;
-}
-
-// @internal
-export class ECJsonTypeMap {
-    static classToJson(applicationKey: string, classKey: string, classKeyMapInfo: ClassKeyMapInfo): (typedConstructor: ConstructorType) => void;
-    static fromJson<T extends ECInstance>(typedConstructor: new () => T, applicationKey: string, ecJsonInstance: any): T | undefined;
-    static propertyToJson(applicationKey: string, propertyAccessString: string): (object: any, propertyKey: string) => void;
-    static toJson<T extends ECInstance>(applicationKey: string, typedInstance: T): any | undefined;
 }
 
 // @beta
@@ -150,20 +100,9 @@ export function getArrayBuffer(requestContext: ClientRequestContext, url: string
 // @internal
 export function getJson(requestContext: ClientRequestContext, url: string): Promise<any>;
 
-// @beta
-export interface HttpRequestOptions {
-    // (undocumented)
-    headers?: any;
-    // (undocumented)
-    timeout?: RequestTimeoutOptions;
-}
-
 // @beta (undocumented)
 export class ImsAuthorizationClient extends Client {
     constructor();
-    protected getUrlSearchKey(): string;
-    // (undocumented)
-    static readonly searchKey: string;
 }
 
 // @beta
@@ -174,7 +113,6 @@ export enum ITwinClientLoggerCategory {
     // (undocumented)
     Authorization = "itwin-client.Authorization",
     Clients = "itwin-client.Clients",
-    ECJson = "itwin-client.ECJson",
     // (undocumented)
     Request = "itwin-client.Request"
 }

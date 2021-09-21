@@ -1,21 +1,19 @@
 {
   "name": "@bentley/map-layers",
-  "version": "3.0.0-dev.62",
+  "version": "3.0.0-dev.63",
   "description": "Extension that adds a Map Layers Widget",
   "main": "lib/map-layers.js",
   "typings": "lib/map-layers",
   "license": "MIT",
   "scripts": {
     "compile": "npm run build",
-    "prebuild": "npm run pseudolocalize && npm run copy:assets",
-    "build": "tsc 1>&2 && npm run prebuild && npm run build:extension",
-    "build:extension": "extension-webpack-tools build -s ./src/map-layers.ts -o ./lib/extension --sourceMap",
+    "prebuild": "npm run copy:assets",
+    "build": "tsc 1>&2 && npm run prebuild",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "copy:assets": "cpx \"./src/**/*.{*css,json,svg}\" \"./lib\" && cpx \"./src/public/locales/**/*\" ./lib/extension/locales/ && cpx \"./lib/extension/locales/en-PSEUDO/*\" ./lib/public/locales/en-PSEUDO/",
+    "copy:assets": "cpx \"./src/**/*.{*css,json,svg}\" \"./lib\" && cpx \"./src/public/**/*\" ./lib/public",
     "cover": "nyc npm test",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
-    "pseudolocalize": "betools pseudolocalize --englishDir=./src/public/locales/en --out=./lib/extension/locales/en-PSEUDO",
     "test": "mocha \"./lib/test/**/*.test.js\""
   },
   "repository": {
@@ -36,7 +34,6 @@
     "@bentley/bentleyjs-core": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/extension-webpack-tools": "workspace:*",
     "@bentley/geometry-core": "workspace:*",
     "@bentley/imodeljs-common": "workspace:*",
     "@bentley/imodeljs-frontend": "workspace:*",
