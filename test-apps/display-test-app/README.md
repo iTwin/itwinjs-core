@@ -162,6 +162,8 @@ You can use these environment variables to alter the default behavior of various
   * See TileAdmin.Props.minimumSpatialTolerance.
 * SVT_NO_EXTERNAL_TEXTURES
   * If defined, the backend will embed all texture image data directly in the tiles.
+* IMJS_ITWIN_ID.
+  * GuidString of the Context Id (aka project id) to use to query Reality Data - use by Spatial Classification (e.g. "fb1696c8-c074-4c76-a539-a5546e048cc6").
 
 ## Key-ins
 
