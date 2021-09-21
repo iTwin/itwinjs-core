@@ -46,10 +46,9 @@ class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNot
     Logger.logInfo(FrontendLoggerCategory.NativeApp, "Internet connectivity changed");
     NativeApp.onInternetConnectivityChanged.raiseEvent(status);
   }
-  public notifyUserStateChanged() {
-    // TODO: How should we handle this?
-    // takes in props?: AccessTokenProps
-    // IModelApp.authorizationClient?.onUserStateChanged.raiseEvent(props ? props.tokenString : undefined);
+  public notifyUserStateChanged(accessToken?: AccessToken) {
+    const client = (IModelApp.authorizationClient as NativeAppAuthorization);
+    client?.onUserStateChanged?.raiseEvent(accessToken ?? undefined);
   }
 }
 

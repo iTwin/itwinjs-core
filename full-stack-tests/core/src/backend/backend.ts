@@ -86,7 +86,11 @@ async function init() {
   iModelHost.concurrentQuery.pollInterval = 5;
 
   if (ProcessDetector.isElectronAppBackend) {
-    await ElectronHost.startup({ electronHost: { rpcInterfaces }, iModelHost });
+    await ElectronHost.startup({ electronHost: { rpcInterfaces, authConfig: {
+      clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
+      redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
+      scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
+    } }, iModelHost });
     EditCommandAdmin.registerModule(testCommands);
     EditCommandAdmin.register(BasicManipulationCommand);
     FullStackTestIpcHandler.register();
