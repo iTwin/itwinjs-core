@@ -16,4 +16,3 @@ export enum RelationshipDirection {
   /** Relationship should be followed only in backward direction. */
   Backward = "Backward",
 }
-
