@@ -363,14 +363,19 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `Platform.isNodeJs`                                          | `ProcessDetector.isNodeProcess`                |
 | `SnapshotDb.filePath`                                        | `SnapshotDb.pathName`                          |
 | `StandaloneDb.filePath`                                      | `StandaloneDb.pathName`                        |
+| `Texture.width, height, flags`                               | *eliminated*                                   |
 | `TxnAction`                                                  | `TxnAction` in @bentley/imodeljs-common        |
+| `TxnChangedEntities.inserted, deleted, updated`              | `TxnChangedEntities.inserts, deletes, updates` |
 
 ### @bentley/imodeljs-common
 
 | Removed                                      | Replacement                                                    |
 | -------------------------------------------- | -------------------------------------------------------------- |
+| `BriefcaseTypes.DeprecatedStandalone`        | `BriefcaseTypes.Unassigned`                                    |
+| `BriefcaseTypes.Standalone`                  | `BriefcaseTypes.Unassigned`                                    |
 | `Code.getValue`                              | `Code.value`                                                   |
 | `CodeSpec.specScopeType`                     | `CodeSpec.scopeType`                                           |
+| `DisplayStyleSettings.excludedElements`      | `DisplayStyleSettings.excludedElementIds`                      |
 | `IModel.changeSetId`                         | `IModel.changeset.id`                                          |
 | `IModelVersion.evaluateChangeSet`            | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
 | `IModelVersion.fromJson`                     | `IModelVersion.fromJSON`                                       |
@@ -379,6 +384,8 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `IModelWriteRpcInterface`                    | Use IPC for writing to iModels                                 |
 | `LatAndLong`                                 | *eliminated*                                                   |
 | `LatLongAndHeight`                           | [CartographicProps]($common)                                   |
+| `TerrainSettings.locatable`                  | `BackgroundMapSettings.locatable`                              |
+| `TerrainSettingsProps.nonLocatable`          | `BackgroundMapProps.nonLocatable`                              |
 | `ViewFlagOverrides` class                    | [ViewFlagOverrides]($common) type                              |
 | `ViewFlagProps.edgeMask`                     | *eliminated*                                                   |
 | `ViewFlagProps.hlMatColors`                  | *eliminated*                                                   |
@@ -394,8 +401,18 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 
 | Removed                                | Replacement                                               |
 | -------------------------------------- | --------------------------------------------------------- |
+| `AppearanceOverrideProps`              | [AppearanceOverrideProps]($common)                        |
+| `AsyncMethodsOf`                       | [AsyncMethodsOf]($bentleyjs-core)                         |
+| `AsyncFunction`                        | [AsyncFunction]($bentleyjs-core)                          |
+| `EmphasizeElementsProps`               | [EmphasizeElementsProps]($common)                         |
+| `PromiseReturnType`                    | [PromiseReturnType]($bentleyjs-core)                      |
 | `CheckpointConnection.open`            | `CheckpointConnection.openRemote`                         |
 | `DecorateContext.screenViewport`       | `DecorateContext.viewport`                                |
+| `FeatureOverrideType`                  | [FeatureOverrideType]($common)                            |
+| `FeatureSymbology.Appearance`          | [FeatureAppearance]($common)                              |
+| `FeatureSymbology.AppearanceProps`     | [FeatureAppearanceProps]($common)                         |
+| `findAvailableRealityModels`           | `queryRealityData`                                        |
+| `findAvailableUnattachedRealityModels` | `queryRealityData`                                        |
 | `IModelApp.iModelClient`               | `IModelHubFrontend.iModelClient`                          |
 | `IModelConnection.Models.loaded`       | use `for..of` to iterate and `getLoaded` to look up by Id |
 | `IModelConnection.Views.saveThumbnail` | use IPC and `IModelDb.saveThumbnail`                      |
@@ -409,6 +426,9 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `ViewManager.forEachViewport`          | Use a `for..of` loop                                      |
 | `ViewState3d.lookAtPerspectiveOrOrtho` | `ViewState3d.LookAt`                                      |
 | `ViewState3d.lookAtUsingLensAngle`     | `ViewState3d.lookAt`                                      |
+| `Viewport.featureOverrideProvider`     | [Viewport.featureOverrideProviders]($frontend)            |
+| `Viewport.setFlashed`                  | [Viewport.flashedId]($frontend)                           |
+| `Viewport.setRedrawPending`            | [Viewport.requestRedraw]($frontend)                       |
 
 ### @bentley/geometry-core
 
