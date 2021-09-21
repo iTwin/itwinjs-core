@@ -50,27 +50,6 @@ yargs.strict(true)
       })
     },
     (argv) => { testCommand(argv) })
-  .command("test-tsnode", "Run the ts-node version of the Mocha tests (NOTE: This may fail when running code coverage due to a behavior within Istanbul. If this occurs, you should run the script directly with Node)",
-    function (yargs) {
-      return yargs.options({
-        "packageRoot": {
-          describe: "The root of the package to locate the Mocha bin"
-        },
-        "testDir": {
-          describe: "The location of the test directory"
-        },
-        "watch": {
-          describe: "Adds the --watch and --inline-diffs parameters to the Mocha command"
-        },
-        "debug": {
-          describe: "Adds the --inspect=9229 and --debug-brk parameters to the Mocha command"
-        },
-        "tscPaths": {
-          describe: "Adds the --require tsconfig-paths/register arguments to the Mocha command"
-        }
-      })
-    },
-    (argv) => { testTsNodeCommand(argv) })
   .command("docs", "Generate TypeDoc documentation by using the provided parameters to pass to TypeDoc.  Supports generating html TypeScript documentation as well as a json representation of the documentation.",
     function (yargs) {
       return yargs.options({
@@ -166,15 +145,6 @@ function testCommand(options) {
   exec(["node", path.resolve(__dirname, "../scripts/test.js"),
     ...rootOpt, ...testDirOpt, ...optionsOpt, ...timeoutOpt, ...grepOpt,
     ...offlineOpt, ...watchOpt, ...debugOpt, ...windowOpt, ...invertOpt]);
-}
-
-function testTsNodeCommand(options) {
-  const rootOpt = options.packageRoot ? ["--packageRoot", options.packageRoot] : [];
-  const testDirOpt = options.testDir ? ["--testDir", options.testDir] : [];
-  const watchOpt = options.watch ? ["--watch"] : [];
-  const debugOpt = options.debug ? ["--debug"] : [];
-  const tscPathsOpt = options.tscPaths ? ["--tscPaths"] : [];
-  exec(["node", path.resolve(__dirname, "../scripts/test-tsnode.js"), ...rootOpt, ...testDirOpt, ...watchOpt, ...debugOpt, ...tscPathsOpt]);
 }
 
 function docsCommand(options) {
