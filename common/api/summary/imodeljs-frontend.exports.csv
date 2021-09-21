@@ -146,12 +146,7 @@ public;EntityState
 public;Environment
 public;EventController
 public;EventHandled
-beta;class Extension
-beta;ExtensionAdmin
-beta;ExtensionLoader
-beta;ExtensionProps
 public;ExtentLimits
-beta;ExternalServerExtensionLoader 
 internal;ExternalTileStatistics
 public;extractImageSourceDimensions(source: ImageSource): Promise
 internal;eyeToCartographicOnGlobe(viewport: ScreenViewport, preserveHeight?: boolean): Cartographic | undefined
@@ -293,7 +288,6 @@ public;KeyinParseError
 internal;KeyinStatus
 beta;LengthDescription 
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
-internal;LoadedExtensionProps
 internal;LocalhostIpcApp
 internal;LocalHostIpcAppOpts 
 beta;LocalUnitFormatProvider 
@@ -302,7 +296,6 @@ public;LocateFilterStatus
 public;LocateOptions
 public;LocateResponse
 internal;LockedStates
-internal;loggerCategory = "imodeljs-frontend.Extension"
 public;LookAndMoveTool 
 beta;LookAtArgs
 beta;LookAtOrthoArgs 
@@ -399,7 +392,6 @@ public;ParticleCollectionBuilder
 public;ParticleCollectionBuilderParams
 public;ParticleProps 
 internal;PatternGraphicParams
-beta;PendingExtension
 internal;PerformanceMetrics
 public;PerModelCategoryVisibility
 public;PhysicalModelState 

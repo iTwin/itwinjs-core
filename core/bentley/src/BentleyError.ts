@@ -341,21 +341,6 @@ export enum AuthStatus {
   Error = AUTHSTATUS_BASE,
 }
 
-/** iModel.js Extensions
- * @beta
- */
-export enum ExtensionStatus {
-  Success = 0,
-  EXTENSIONSTATUS_BASE = 0x23000,
-  UnknownError = EXTENSIONSTATUS_BASE + 1,
-  BadRequest = EXTENSIONSTATUS_BASE + 2,
-  ExtensionNotFound = EXTENSIONSTATUS_BASE + 3,
-  BadExtension = EXTENSIONSTATUS_BASE + 4,
-  ExtensionAlreadyExists = EXTENSIONSTATUS_BASE + 5,
-  UploadError = EXTENSIONSTATUS_BASE + 6,
-  DownloadError = EXTENSIONSTATUS_BASE + 7,
-}
-
 /** GeoServiceStatus errors
  * @public
  */
@@ -691,12 +676,6 @@ export class BentleyError extends Error {
       case IModelHubStatus.FileHandlerNotSet: return "File handler is not set";
       case IModelHubStatus.FileNotFound: return "File not found";
       case AuthStatus.Error: return "Authorization error";
-      case ExtensionStatus.UnknownError: return "Unknown error from backend";
-      case ExtensionStatus.BadExtension: return "Bad file extension";
-      case ExtensionStatus.BadRequest: return "Bad request";
-      case ExtensionStatus.ExtensionAlreadyExists: return "Extension with the given name and version already exists";
-      case ExtensionStatus.ExtensionNotFound: return "Extension not found";
-      case ExtensionStatus.UploadError: return "Failed to upload file";
       case GeoServiceStatus.NoGeoLocation: return "No GeoLocation";
       case GeoServiceStatus.OutOfUsefulRange: return "Out of useful range";
       case GeoServiceStatus.OutOfMathematicalDomain: return "Out of mathematical domain";
