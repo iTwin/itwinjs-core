@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/bentleyjs-core",
+      "comment": "remove ChangeSetApplyOption",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/bentleyjs-core"
+}
