@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import { assert, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { FormatProps } from "@bentley/imodeljs-quantity";
 
 /**
@@ -276,6 +276,9 @@ export namespace RelatedClassInfo {
 
   /** Deserialize [[RelatedClassInfo]] from compressed JSON */
   export function fromCompressedJSON(compressedInfoJSON: RelatedClassInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): RelatedClassInfoJSON {
+    assert(classesMap.hasOwnProperty(compressedInfoJSON.sourceClassInfo));
+    assert(classesMap.hasOwnProperty(compressedInfoJSON.targetClassInfo));
+    assert(classesMap.hasOwnProperty(compressedInfoJSON.relationshipInfo));
     return {
       ...compressedInfoJSON,
       sourceClassInfo: { id: compressedInfoJSON.sourceClassInfo, ...classesMap[compressedInfoJSON.sourceClassInfo] },

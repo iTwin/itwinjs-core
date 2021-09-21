@@ -6,8 +6,11 @@
  * @module Content
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
-import { ClassInfo, ClassInfoJSON, CompressedClassInfoJSON, PropertyInfoJSON, RelatedClassInfo, RelationshipPath, RelationshipPathJSON, StrippedRelationshipPath } from "../EC";
+import { assert, Id64String } from "@bentley/bentleyjs-core";
+import {
+  ClassInfo, ClassInfoJSON, CompressedClassInfoJSON, PropertyInfoJSON, RelatedClassInfo, RelationshipPath, RelationshipPathJSON,
+  StrippedRelationshipPath,
+} from "../EC";
 import { PresentationError, PresentationStatus } from "../Error";
 import { RelationshipMeaning } from "../rules/content/modifiers/RelatedPropertiesSpecification";
 import { CategoryDescription, CategoryDescriptionJSON } from "./Category";
@@ -43,7 +46,7 @@ export interface PropertiesFieldJSON<TClassInfoJSON = ClassInfoJSON> extends Bas
  * Data structure for a [[NestedContentField]] serialized to JSON.
  * @public
  */
-export interface NestedContentFieldJSON <TClassInfoJSON = ClassInfoJSON> extends BaseFieldJSON {
+export interface NestedContentFieldJSON<TClassInfoJSON = ClassInfoJSON> extends BaseFieldJSON {
   contentClassInfo: TClassInfoJSON;
   pathToPrimaryClass: RelationshipPathJSON<TClassInfoJSON>;
   /** @alpha */
@@ -178,6 +181,7 @@ export class Field {
         ...this.toJSON(),
         contentClassInfo: id,
         pathToPrimaryClass: this.pathToPrimaryClass.map((classInfo) => RelatedClassInfo.toCompressedJSON(classInfo, classesMap)),
+        nestedFields: this.nestedFields.map((field) => field.toCompressedJSON(classesMap)),
       };
     }
 
@@ -591,6 +595,7 @@ export interface PropertiesFieldDescriptor extends FieldDescriptorBase {
 }
 
 function fromCompressedNestedContentFieldJSON(compressedNestedContentFieldJSON: NestedContentFieldJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): NestedContentFieldJSON {
+  assert(classesMap.hasOwnProperty(compressedNestedContentFieldJSON.contentClassInfo));
   return {
     ...compressedNestedContentFieldJSON,
     contentClassInfo: { id: compressedNestedContentFieldJSON.contentClassInfo, ...classesMap[compressedNestedContentFieldJSON.contentClassInfo] },
@@ -615,8 +620,9 @@ function fromCompressedPropertyJSON(compressedPropertyJSON: PropertyJSON<string>
 }
 
 function fromCompressedPropertyInfoJSON(compressedPropertyJSON: PropertyInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): PropertyInfoJSON {
+  assert(classesMap.hasOwnProperty(compressedPropertyJSON.classInfo));
   return {
     ...compressedPropertyJSON,
-    classInfo: {id: compressedPropertyJSON.classInfo, ...classesMap[compressedPropertyJSON.classInfo]},
+    classInfo: { id: compressedPropertyJSON.classInfo, ...classesMap[compressedPropertyJSON.classInfo] },
   };
 }
