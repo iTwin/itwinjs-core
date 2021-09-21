@@ -97,15 +97,6 @@ async function init() {
     await server.initialize(port);
     console.log(`Web backend for full-stack-tests listening on port ${port}`);
 
-    // await new Promise((resolve) => {
-    //   http.createServer(async (request, response) => {
-    //     return serveHandler(request, response, {
-    //       cleanUrls: false,
-    //       public: "lib",
-    //       headers: [{ source: "*", headers: [{ key: "Access-Control-Allow-Origin", value: "*" }] }],
-    //     });
-    //   }).listen(Number(process.env.CERTA_PORT ?? 3011) + 4000, undefined, undefined, async () => resolve);
-    // });
     await IModelHost.startup(iModelHost);
   }
 

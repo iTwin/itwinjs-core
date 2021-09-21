@@ -2927,83 +2927,10 @@ export enum EventHandled {
     Yes = 1
 }
 
-// @beta
-export abstract class Extension {
-    constructor(name: string);
-    protected _defaultNs: string;
-    get i18n(): I18N;
-    // @internal (undocumented)
-    get loader(): ExtensionLoader | undefined;
-    set loader(loader: ExtensionLoader | undefined);
-    // (undocumented)
-    name: string;
-    abstract onExecute(_args: string[]): Promise<void>;
-    onLoad(_args: string[]): Promise<void>;
-    resolveResourceUrl(relativeUrl: string): string;
-    // @deprecated
-    setI18n(defaultNamespace?: string, options?: I18NOptions): void;
-}
-
-// @beta
-export class ExtensionAdmin {
-    constructor();
-    addExtensionLoader(extensionLoader: ExtensionLoader): void;
-    addExtensionLoaderFront(extensionLoader: ExtensionLoader): void;
-    // @internal (undocumented)
-    addPendingExtension(extensionRootName: string, pendingExtension: PendingExtension): void;
-    loadExtension(extensionRoot: string, extensionVersion?: string, args?: string[]): Promise<Extension | undefined>;
-    readonly onExtensionLoaded: BeEvent<(extensionName: string) => void>;
-    onInitialized(): void;
-    register(extension: Extension): void;
-    }
-
-// @beta
-export interface ExtensionLoader {
-    // (undocumented)
-    getExtensionName(extensionRoot: string): string;
-    // (undocumented)
-    loadExtension(extensionName: string, extensionVersion?: string, args?: string[]): Promise<PendingExtension | undefined>;
-    // (undocumented)
-    resolveResourceUrl(extensionName: string, relativeFileName: string): string;
-}
-
-// @beta
-export interface ExtensionProps {
-    // (undocumented)
-    contextId: string;
-    // (undocumented)
-    extensionName: string;
-    // (undocumented)
-    files: FileInfo[];
-    // (undocumented)
-    isPublic: boolean;
-    // (undocumented)
-    status: ExtensionUploadStatus;
-    // (undocumented)
-    timestamp: Date;
-    // (undocumented)
-    uploadedBy: string;
-    // (undocumented)
-    version: string;
-}
-
 // @public
 export interface ExtentLimits {
     max: number;
     min: number;
-}
-
-// @beta
-export class ExternalServerExtensionLoader implements ExtensionLoader {
-    constructor(serverName: string);
-    // (undocumented)
-    getExtensionName(extensionRoot: string): string;
-    // (undocumented)
-    loadExtension(extensionName: string, extensionVersion?: string, args?: string[]): Promise<PendingExtension | undefined>;
-    // (undocumented)
-    resolveResourceUrl(extensionName: string, relativeUrl: string): string;
-    // (undocumented)
-    serverName: string;
 }
 
 // @internal
@@ -4347,8 +4274,6 @@ export class IModelApp {
     static authorizationClient?: FrontendAuthorizationClient;
     // @internal (undocumented)
     static createRenderSys(opts?: RenderSystem.Options): RenderSystem;
-    // @beta
-    static get extensionAdmin(): ExtensionAdmin;
     // @alpha
     static formatElementToolTip(msg: string[]): HTMLElement;
     // @internal (undocumented)
@@ -4424,8 +4349,6 @@ export interface IModelAppOptions {
     applicationId?: string;
     applicationVersion?: string;
     authorizationClient?: FrontendAuthorizationClient;
-    // @beta
-    extensionAdmin?: ExtensionAdmin;
     i18n?: I18N | I18NOptions;
     imodelClient?: IModelClient;
     // @internal (undocumented)
@@ -4942,14 +4865,6 @@ export class LengthDescription extends FormattedQuantityDescription {
 // @internal (undocumented)
 export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void;
 
-// @internal (undocumented)
-export interface LoadedExtensionProps {
-    // (undocumented)
-    basePath: string;
-    // (undocumented)
-    props: ExtensionProps;
-}
-
 // @internal
 export class LocalhostIpcApp {
     // (undocumented)
@@ -5040,9 +4955,6 @@ export enum LockedStates {
     // (undocumented)
     Y_BM = 2
 }
-
-// @internal (undocumented)
-export const loggerCategory = "imodeljs-frontend.Extension";
 
 // @public
 export class LookAndMoveTool extends ViewManip {
@@ -7051,23 +6963,6 @@ export interface PatternGraphicParams {
     // (undocumented)
     readonly xyOffsets: Float32Array;
 }
-
-// @beta
-export class PendingExtension {
-    constructor(_tarFileUrl: string, loader: ExtensionLoader, args?: string[] | undefined);
-    // (undocumented)
-    args?: string[] | undefined;
-    // (undocumented)
-    executor(resolve: ResolveFunc, reject: RejectFunc): void;
-    // (undocumented)
-    loader: ExtensionLoader;
-    // (undocumented)
-    promise: Promise<Extension>;
-    // (undocumented)
-    reject: RejectFunc | undefined;
-    // (undocumented)
-    resolve: ResolveFunc | undefined;
-    }
 
 // @internal (undocumented)
 export class PerformanceMetrics {
