@@ -410,7 +410,7 @@ describe("DisplayStyleSettings overrides", () => {
       terrainSettings: {
         exaggeration: 2.5,
         heightOrigin: -42,
-        nonLocatable: true, // eslint-disable-line deprecation/deprecation
+        nonLocatable: true,
         heightOriginMode: 0,
       },
     },

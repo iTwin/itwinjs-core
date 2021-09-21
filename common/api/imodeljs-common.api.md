@@ -7826,7 +7826,7 @@ export interface TerrainProps {
     exaggeration?: number;
     heightOrigin?: number;
     heightOriginMode?: TerrainHeightOriginMode;
-    // @deprecated (undocumented)
+    // @internal
     nonLocatable?: boolean;
     providerName?: string;
 }
@@ -7836,7 +7836,7 @@ export type TerrainProviderName = "CesiumWorldTerrain";
 
 // @public
 export class TerrainSettings {
-    constructor(providerName?: TerrainProviderName, exaggeration?: number, applyLighting?: boolean, heightOrigin?: number, heightOriginMode?: TerrainHeightOriginMode, locatable?: boolean);
+    constructor(providerName?: TerrainProviderName, exaggeration?: number, applyLighting?: boolean, heightOrigin?: number, heightOriginMode?: TerrainHeightOriginMode);
     readonly applyLighting: boolean;
     clone(changedProps?: TerrainProps): TerrainSettings;
     // (undocumented)
@@ -7847,8 +7847,8 @@ export class TerrainSettings {
     static fromJSON(json?: TerrainProps): TerrainSettings;
     readonly heightOrigin: number;
     readonly heightOriginMode: TerrainHeightOriginMode;
-    // @deprecated (undocumented)
-    readonly locatable: boolean;
+    // @internal
+    get nonLocatable(): true | undefined;
     readonly providerName: TerrainProviderName;
     // (undocumented)
     toJSON(): TerrainProps;
