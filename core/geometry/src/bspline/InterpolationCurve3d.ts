@@ -86,8 +86,6 @@ export class InterpolationCurve3dOptions {
   /** `isColinearTangents` as property */
   public get isColinearTangents(): number { return Geometry.resolveNumber(this._isColinearTangents, 0); }
   public set isColinearTangents(val: number) { this._isColinearTangents = val; }
-  /** @deprecated Use `isChordLenTangents` instead */
-  public get isChordLenTangent(): number { return Geometry.resolveNumber(this._isChordLenTangents, 0); }
   /** `isChordLenTangents` as property */
   public get isChordLenTangents(): number { return Geometry.resolveNumber(this._isChordLenTangents, 0); }
   public set isChordLenTangents(val: number) { this._isChordLenTangents = val; }
@@ -184,7 +182,7 @@ export class InterpolationCurve3dOptions {
   }
   // ugh.
   // vector equality test with awkward rule that 000 matches undefined.
-  private static areAlmostEqualAllow000AsUndefined(a: Vector3d | undefined, b: Vector3d | undefined): boolean{
+  private static areAlmostEqualAllow000AsUndefined(a: Vector3d | undefined, b: Vector3d | undefined): boolean {
     if (a !== undefined && a.maxAbs() === 0)
       a = undefined;
     if (b !== undefined && b.maxAbs() === 0)
@@ -192,12 +190,12 @@ export class InterpolationCurve3dOptions {
     if (a !== undefined && b !== undefined)
       return a.isAlmostEqual(b);
     return a === undefined && b === undefined;
-}
+  }
   public static areAlmostEqual(dataA: InterpolationCurve3dOptions | undefined, dataB: InterpolationCurve3dOptions | undefined): boolean {
     if (dataA === undefined && dataB === undefined)
       return true;
     if (dataA !== undefined && dataB !== undefined) {
-      if ( Geometry.areEqualAllowUndefined(dataA.order, dataB.order)
+      if (Geometry.areEqualAllowUndefined(dataA.order, dataB.order)
         && Geometry.areEqualAllowUndefined(dataA.closed, dataB.closed)
         && Geometry.areEqualAllowUndefined(dataA.isChordLenKnots, dataB.isChordLenKnots)
         && Geometry.areEqualAllowUndefined(dataA.isColinearTangents, dataB.isColinearTangents)

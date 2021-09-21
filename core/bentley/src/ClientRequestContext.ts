@@ -59,7 +59,6 @@ export class ClientRequestContext {
     this.applicationId = applicationId;
     this.applicationVersion = applicationVersion;
     this.sessionId = sessionId;
-    this._useContextForRpc = false;
   }
 
   /** Use this for logging for ClientRequestContext.
@@ -74,12 +73,6 @@ export class ClientRequestContext {
     };
   }
 
-  /** Setup use of this context for the next RPC call
-   * @internal
-   */
-  private _useContextForRpc: boolean;
-  public get useContextForRpc(): boolean { return this._useContextForRpc; }
-  public set useContextForRpc(value: boolean) { this._useContextForRpc = value; }
   /** @internal */
   public toJSON(): ClientRequestContextProps {
     return {

@@ -173,13 +173,11 @@ export class ByteStream {
     rewind(numBytes: number): boolean;
     }
 
-// @public
+// @internal (undocumented)
 export enum ChangeSetApplyOption {
+    // (undocumented)
     Merge = 1,
-    None = 0,
-    // @deprecated
-    Reinstate = 3,
-    // @deprecated
+    // (undocumented)
     Reverse = 2
 }
 
@@ -233,10 +231,7 @@ export class ClientRequestContext {
     readonly sessionId: GuidString;
     // @internal (undocumented)
     toJSON(): ClientRequestContextProps;
-    // (undocumented)
-    get useContextForRpc(): boolean;
-    set useContextForRpc(value: boolean);
-    }
+}
 
 // @public
 export interface ClientRequestContextProps extends SessionProps {
