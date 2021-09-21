@@ -1,6 +1,6 @@
 # Sorting Customization Rule
 
-> Based on [SortingRule]($presentation-common) interface.
+> TypeScript type: [SortingRule]($presentation-common).
 
 Sorting rules provide a way to either disable sorting or sort instances my specific properties. There are 2 types of sorting rules for both of these scenarios.
 
@@ -11,7 +11,7 @@ Rule to configure sorting for certain ECInstances in the hierarchy and/or conten
 Multiple sorting rules may be applied for the same instances - in this case the
 instances are first sorted by the highest priority rule and then the lower priority ones.
 
-**Note:** This rule is not meant to be used to sort grouping nodes, custom nodes or other non ECInstance type of nodes.
+> **Note:** This rule is not meant to be used to sort grouping nodes, custom nodes or other non ECInstance type of nodes.
 
 ### Attributes
 
@@ -45,9 +45,9 @@ instances are first sorted by the highest priority rule and then the lower prior
 
 Rule to disable sorting for certain ECInstances in the hierarchy and/or content.
 
-**Note:** Disabling sorting increases performance
+> **Note:** Disabling sorting increases performance
 
-**Note:** This rule is not meant to be used to sort grouping nodes, custom nodes or
+> **Note:** This rule is not meant to be used to sort grouping nodes, custom nodes or
 other non ECInstance type of nodes.
 
 ### Attributes

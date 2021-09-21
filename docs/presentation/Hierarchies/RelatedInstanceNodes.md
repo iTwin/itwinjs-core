@@ -1,6 +1,6 @@
 # RelatedInstanceNodes
 
-> Based on [RelatedInstanceNodesSpecification]($presentation-common) interface.
+> TypeScript type: [RelatedInstanceNodesSpecification]($presentation-common).
 
 Returns nodes for instances related to parent instance node.
 

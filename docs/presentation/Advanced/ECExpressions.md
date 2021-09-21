@@ -113,7 +113,7 @@ value_list.AnyMatches(x => this.IsOfClass(x.PropertyValue))
 | Exclusive disjunction | `Xor`             |
 | Negation              | `Not`             |
 
-**Note:** *Checks right side of expression even if result value can be deducted from the left side.
+> **Note:** *Checks right side of expression even if result value can be deducted from the left side.
 
 ```
 False And True OrElse True
@@ -299,7 +299,7 @@ ECInstance key expression context provides access to class and instance IDs. The
 
 ### Ruleset Variables (User Settings)
 
-**Note:** *User Settings* is a deprecated name of *Ruleset Variables* concept.
+> **Note:** *User Settings* is a deprecated name of *Ruleset Variables* concept.
 
 Ruleset variable access symbols allow accessing variable values through ECExpressions.
 

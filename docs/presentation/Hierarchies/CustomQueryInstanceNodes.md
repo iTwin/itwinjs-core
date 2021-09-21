@@ -1,6 +1,6 @@
 # CustomQueryInstanceNodes
 
-> Based on [CustomQueryInstanceNodesSpecification]($presentation-common) interface.
+> TypeScript type: [CustomQueryInstanceNodesSpecification]($presentation-common).
 
 Returns nodes for instances which are returned by an ECSQL query.
 
@@ -38,7 +38,7 @@ SELECT ECClassId, ECInstanceId
  WHERE e.ParentId = 10
 ```
 
-**Note:** sorting and grouping happens after results of multiple query specifications are
+> **Note:** sorting and grouping happens after results of multiple query specifications are
 aggregated.
 
 ### String

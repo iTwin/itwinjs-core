@@ -1,6 +1,6 @@
 # PropertyCategory Content Modifier
 
-> Based on [PropertyCategorySpecification]($presentation-common) interface.
+> TypeScript type: [PropertyCategorySpecification]($presentation-common).
 
 This content modifier allows defining a custom property category. Simply defining it doesn't affect the content,
 but a defined category can be used in property overrides.
