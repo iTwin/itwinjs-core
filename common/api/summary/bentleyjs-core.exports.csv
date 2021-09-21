@@ -50,7 +50,7 @@ public;Entry
 public;EntryContainer
 beta;ExtensionStatus
 public;GeoServiceStatus
-public;GetMetaDataFunction = () => any
+public;GetMetaDataFunction = () => object | undefined
 public;Guid
 public;GuidString = string
 beta;HttpStatus

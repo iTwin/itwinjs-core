@@ -3314,7 +3314,7 @@ export class ViewGlobeLocationTool extends ViewTool {
       const latitude = parseFloat(args[0]);
       const longitude = parseFloat(args[1]);
       if (!Number.isNaN(latitude) || !Number.isNaN(longitude)) {
-        const center = Cartographic.fromRadians(Angle.degreesToRadians(longitude), Angle.degreesToRadians(latitude));
+        const center = Cartographic.fromDegrees({longitude, latitude});
         this._globalLocation = { center };
       }
     }
@@ -3331,7 +3331,6 @@ export class ViewGlobeLocationTool extends ViewTool {
             if (elevationOffset !== undefined)
               this._globalLocation.center.height = elevationOffset;
           }
-          await this._doLocationView();
         }
       } catch (_) {
       }

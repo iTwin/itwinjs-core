@@ -79,6 +79,7 @@ import { FilePropertyProps } from '@bentley/imodeljs-common';
 import { FontMap } from '@bentley/imodeljs-common';
 import { FontProps } from '@bentley/imodeljs-common';
 import { FunctionalElementProps } from '@bentley/imodeljs-common';
+import { GeoCoordinatesRequestProps } from '@bentley/imodeljs-common';
 import { GeoCoordinatesResponseProps } from '@bentley/imodeljs-common';
 import { GeometricElement2dProps } from '@bentley/imodeljs-common';
 import { GeometricElement3dProps } from '@bentley/imodeljs-common';
@@ -99,6 +100,7 @@ import { IDisposable } from '@bentley/bentleyjs-core';
 import { ImageSourceFormat } from '@bentley/imodeljs-common';
 import { IModel } from '@bentley/imodeljs-common';
 import { IModelClient } from '@bentley/imodelhub-client';
+import { IModelCoordinatesRequestProps } from '@bentley/imodeljs-common';
 import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
 import { IModelError } from '@bentley/imodeljs-common';
 import { IModelJsNative } from '@bentley/imodeljs-native';
@@ -2140,7 +2142,7 @@ export abstract class IModelDb extends IModel {
     createBRepGeometry(createProps: BRepGeometryCreate): DbResult;
     // (undocumented)
     static readonly defaultLimit = 1000;
-    deleteFileProperty(prop: FilePropertyProps): DbResult;
+    deleteFileProperty(prop: FilePropertyProps): void;
     // @alpha
     elementGeometryRequest(requestProps: ElementGeometryRequest): DbResult;
     // @alpha
@@ -2160,9 +2162,9 @@ export abstract class IModelDb extends IModel {
     static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom?: boolean): void;
     generateElementGraphics(request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
     getBriefcaseId(): BriefcaseId;
-    getGeoCoordinatesFromIModelCoordinates(props: string): Promise<GeoCoordinatesResponseProps>;
+    getGeoCoordinatesFromIModelCoordinates(props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps>;
     getGeometryContainment(props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
-    getIModelCoordinatesFromGeoCoordinates(props: string): Promise<IModelCoordinatesResponseProps>;
+    getIModelCoordinatesFromGeoCoordinates(props: IModelCoordinatesRequestProps): Promise<IModelCoordinatesResponseProps>;
     getJsClass<T extends typeof Entity>(classFullName: string): T;
     getMassProperties(props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     getMetaData(classFullName: string): EntityMetaData;
@@ -2233,7 +2235,7 @@ export abstract class IModelDb extends IModel {
     // @internal (undocumented)
     reverseTxns(numOperations: number): IModelStatus;
     saveChanges(description?: string): void;
-    saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): DbResult;
+    saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void;
     // (undocumented)
     readonly tiles: IModelDb.Tiles;
     static tryFindByKey(key: string): IModelDb | undefined;
@@ -2844,11 +2846,11 @@ export namespace LineStyleDefinition {
     // (undocumented)
     export type Symbols = SymbolProps[];
     export class Utils {
-        static createCompoundComponent(iModel: IModelDb, props: CompoundProps): StyleProps | undefined;
+        static createCompoundComponent(iModel: IModelDb, props: CompoundProps): StyleProps;
         static createPointSymbolComponent(iModel: IModelDb, props: PointSymbolProps): StyleProps | undefined;
         static createRasterComponent(iModel: IModelDb, props: RasterImageProps, image: Uint8Array): StyleProps | undefined;
-        static createStrokePatternComponent(iModel: IModelDb, props: StrokePatternProps): StyleProps | undefined;
-        static createStrokePointComponent(iModel: IModelDb, props: StrokePointProps): StyleProps | undefined;
+        static createStrokePatternComponent(iModel: IModelDb, props: StrokePatternProps): StyleProps;
+        static createStrokePointComponent(iModel: IModelDb, props: StrokePointProps): StyleProps;
         static createStyle(imodel: IModelDb, scopeModelId: Id64String, name: string, props: StyleProps): Id64String;
         static getOrCreateContinuousStyle(imodel: IModelDb, scopeModelId: Id64String, width?: number): Id64String;
         static getOrCreateLinePixelsStyle(imodel: IModelDb, scopeModelId: Id64String, linePixels: LinePixels): Id64String;

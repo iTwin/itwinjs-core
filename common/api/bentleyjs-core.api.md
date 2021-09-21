@@ -86,7 +86,7 @@ export class BentleyError extends Error {
     constructor(errorNumber: number, message?: string, getMetaData?: GetMetaDataFunction);
     // (undocumented)
     errorNumber: number;
-    getMetaData(): any;
+    getMetaData(): object | undefined;
     get hasMetaData(): boolean;
     protected _initName(): string;
 }
@@ -583,7 +583,7 @@ export enum GeoServiceStatus {
 }
 
 // @public
-export type GetMetaDataFunction = () => any;
+export type GetMetaDataFunction = () => object | undefined;
 
 // @public
 export namespace Guid {
