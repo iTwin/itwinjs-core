@@ -13,9 +13,9 @@ describe("SnapshotDb.reattachDaemon", () => {
   const fakeChangeset = { id: "fakeChangeSetId" };
   const fakeSnapshotDb: any = {
     isReadonly: () => true,
-    getDbGuid: () => "fakeIModelId",
-    queryProjectGuid: () => "fakeITwinId",
-    getParentChangeset: () => fakeChangeset,
+    getIModelId: () => "fakeIModelId",
+    getITwinId: () => "fakeITwinId",
+    getCurrentChangeset: () => fakeChangeset,
     setIModelDb: () => { },
   };
 

@@ -25,6 +25,8 @@ export class ToolUiProvider extends ConfigurableUiControl {
     super(info, options);
   }
 
+  public override get uniqueId(): string { return `${this.constructor.name}[${super.uniqueId}]`; }
+
   /** A React node that holds tool settings when shown in a rectangular area (i.e. not in Horizontal area at top of application window.) */
   public get toolSettingsNode(): React.ReactNode { return this._toolSettingsNode; }
   public set toolSettingsNode(r: React.ReactNode) { this._toolSettingsNode = r; }

@@ -86,7 +86,7 @@ async function signIn(): Promise<boolean> {
     });
   });
 
-  await oidcClient.signIn(requestContext);
+  await oidcClient.signIn();
   return retPromise;
 }
 

@@ -14,11 +14,29 @@ const mainWindowName = "mainWindow";
 /** Initializes Electron backend */
 export async function initializeElectron() {
 
+  const baseOidcScopes = [
+    "openid",
+    "email",
+    "profile",
+    "organization",
+    "imodelhub",
+    "context-registry-service:read-only",
+    "product-settings-service",
+    "projectwise-share",
+    "urlps-third-party",
+    "imodel-extension-service-api",
+  ];
+
   const opt = {
     electronHost: {
       webResourcesPath: join(__dirname, "..", "..", "..", "build"),
       developmentServer: process.env.NODE_ENV === "development",
       rpcInterfaces: getSupportedRpcs(),
+      authConfig: {
+        clientId: "imodeljs-electron-test",
+        redirectUri: "http://localhost:3000/signin-callback",
+        scope: baseOidcScopes.concat(["offline_access"]).join(" "),
+      },
     },
     nativeHost: {
       applicationName: "ui-test-app",

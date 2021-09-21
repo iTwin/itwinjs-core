@@ -32,7 +32,7 @@ export class SolarTimelineDataProvider extends BaseSolarDataProvider {
       this.supportsTimelineAnimation = true;
       this._cartographicCenter = this.getCartographicCenter(viewState.iModel);
     } else {
-      this._cartographicCenter = Cartographic.fromDegrees(this.longitude, this.latitude, 0.0);
+      this._cartographicCenter = Cartographic.fromDegrees({longitude: this.longitude, latitude: this.latitude, height: 0.0});
     }
 
     this._projectTimeZoneOffset = this.getZone(this._cartographicCenter);

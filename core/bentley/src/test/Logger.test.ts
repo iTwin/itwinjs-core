@@ -3,8 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { BentleyError } from "../BentleyError";
-import { DbResult, GetMetaDataFunction, Logger, LogLevel, PerfLogger, using } from "../bentleyjs-core";
+import { GetMetaDataFunction, Logger, LogLevel, PerfLogger, using } from "../bentleyjs-core";
 import { ClientRequestContext } from "../ClientRequestContext";
 import { BeDuration } from "../Time";
 
@@ -90,7 +89,7 @@ describe("Logger", () => {
       metaData.prop3 = "test3";
     };
     assert.isTrue(Logger.registerMetaDataSource(newMetaDataSource)); // Try to register source before initializing logger
-    const mdnew = Logger.makeMetaData(() => { });
+    const mdnew = Logger.makeMetaData(() => undefined);
     assert.include(mdnew, { prop1: "test1", prop2: "test2", prop3: "test3" });
   });
 
@@ -429,17 +428,11 @@ describe("Logger", () => {
     clearOutlets();
     try {
       throw new Error("error message");
-    } catch (err) {
+    } catch (err: any) {
       Logger.logException("testcat", err);
     }
     checkOutlets(["testcat", "Error: error message", { ExceptionType: "Error" }], [], [], []);
 
-    clearOutlets();
-    try {
-      throw new BentleyError(DbResult.BE_SQLITE_ERROR, "bentley error message", Logger.logError, "testcat", () => ({ MyProp: "mypropvalue" }));
-    } catch (_err) {
-    }
-    checkOutlets(["testcat", "BE_SQLITE_ERROR: bentley error message", { MyProp: "mypropvalue", ExceptionType: "BentleyError" }], [], [], []);
   });
 
   it("logger shouldn't mutate arguments", () => {
@@ -458,61 +451,17 @@ describe("Logger", () => {
       (c, m, d) => outtrace = [c, m, d ? d() : {}]);
     Logger.setLevel("testcat", LogLevel.Error);
 
-    const lctx1 = new ClientRequestContext("activity1").enter();
+    const lctx1 = new ClientRequestContext("activity1");
     clearOutlets();
     Logger.logError("testcat", "message1");
     checkOutlets(["testcat", "message1", { ActivityId: lctx1.activityId }], [], [], []);
 
-    const lctx2 = new ClientRequestContext("activity2").enter();
+    const lctx2 = new ClientRequestContext("activity2");
     clearOutlets();
     Logger.logError("testcat", "message2");
     checkOutlets(["testcat", "message2", { ActivityId: lctx2.activityId }], [], [], []);
 
     clearOutlets();
-    try {
-      throw new BentleyError(DbResult.BE_SQLITE_ERROR, "bentley error message", Logger.logError, "testcat", () => ({ MyProp: "mypropvalue" }));
-    } catch (_err) {
-    }
-    checkOutlets(["testcat", "BE_SQLITE_ERROR: bentley error message", { MyProp: "mypropvalue", ActivityId: lctx2.activityId, ExceptionType: "BentleyError" }], [], [], []);
-  });
-
-  it("register and remove metadata source", () => {
-    Logger.initialize(
-      (c, m, d) => outerr = [c, m, d],
-      (c, m, d) => outwarn = [c, m, d],
-      (c, m, d) => outinfo = [c, m, d],
-      (c, m, d) => outtrace = [c, m, d]);
-
-    const lctx1 = new ClientRequestContext("activity1").enter();
-    const md = Logger.makeMetaData(() => { });
-    assert.include(md, {
-      ActivityId: lctx1.activityId,
-      ApplicationId: "",
-      ApplicationVersion: "",
-      SessionId: "00000000-0000-0000-0000-000000000000",
-    });
-
-    const newMetaDataSource = (metaData: any) => {
-      metaData.prop1 = "test1";
-      metaData.prop2 = "test2";
-      metaData.prop3 = "test3";
-    };
-    assert.isTrue(Logger.registerMetaDataSource(newMetaDataSource));
-    assert.isFalse(Logger.registerMetaDataSource(newMetaDataSource)); // Try to register the same source twice
-    const md2 = Logger.makeMetaData(() => { });
-    assert.include(md2, {
-      prop1: "test1",
-      prop2: "test2",
-      prop3: "test3",
-    });
-
-    assert.isTrue(Logger.removeMetaDataSource(newMetaDataSource), "metadata source successfully removed");
-    const md3 = Logger.makeMetaData(() => { });
-    assert.notInclude(md3, {
-      prop1: "test1",
-      prop2: "test2",
-      prop3: "test3",
-    });
   });
 
 });

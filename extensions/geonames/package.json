@@ -1,12 +1,12 @@
 {
   "name": "@bentley/geonames-extension",
-  "version": "3.0.0-dev.57",
+  "version": "3.0.0-dev.63",
   "description": "Geolocation Extension",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
     "compile": "npm run build",
-    "build": "extension-webpack-tools build -s ./src/geoNames.ts -o ./lib/extension",
+    "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:assets": "cpx \"./src/public/**/*\" ./lib/extension/",
     "cover": "",
@@ -27,7 +27,6 @@
   "devDependencies": {
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/extension-webpack-tools": "workspace:*",
     "@types/node": "10.14.1",
     "cpx": "^1.5.0",
     "eslint": "^7.11.0",

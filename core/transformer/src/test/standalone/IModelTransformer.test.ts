@@ -742,7 +742,6 @@ describe("IModelTransformer", () => {
     await exporter.iModelExporter.exportAll();
     await exporter.iModelExporter.exportElement(IModel.rootSubjectId);
     await exporter.iModelExporter.exportChildElements(IModel.rootSubjectId);
-    await exporter.iModelExporter.exportRepositoryLinks(); // eslint-disable-line deprecation/deprecation
     await exporter.iModelExporter.exportModelContents(IModel.repositoryModelId);
     await exporter.iModelExporter.exportRelationships(ElementRefersToElements.classFullName);
     // make sure the exporter actually visited something
@@ -1134,8 +1133,8 @@ describe("IModelTransformer", () => {
   function setToStandalone(iModelName: string) {
     const nativeDb = new IModelHost.platform.DgnDb();
     nativeDb.openIModel(iModelName, OpenMode.ReadWrite);
-    nativeDb.saveProjectGuid(Guid.empty); // empty projectId means "standalone"
-    nativeDb.saveChanges(); // save change to ProjectId
+    nativeDb.setITwinId(Guid.empty); // empty iTwinId means "standalone"
+    nativeDb.saveChanges(); // save change to iTwinId
     nativeDb.deleteAllTxns(); // necessary before resetting briefcaseId
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned); // standalone iModels should always have BriefcaseId unassigned
     nativeDb.saveLocalValue("StandaloneEdit", JSON.stringify({ txns: true }));

@@ -21,12 +21,12 @@ export class OpenSettingsTool extends Tool {
   // istanbul ignore next
   public static override get maxArgs() { return 1; }
 
-  public override run(settingCategory?: string): boolean {
+  public override async run(settingCategory?: string): Promise<boolean> {
     SettingsModalFrontstage.showSettingsStage(settingCategory);
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     return this.run(args[0]);
   }
 }

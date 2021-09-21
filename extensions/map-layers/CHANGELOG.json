@@ -2,6 +2,18 @@
   "name": "@bentley/map-layers",
   "entries": [
     {
+      "version": "2.19.13",
+      "tag": "@bentley/map-layers_v2.19.13",
+      "date": "Tue, 21 Sep 2021 21:06:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.12",
+      "tag": "@bentley/map-layers_v2.19.12",
+      "date": "Wed, 15 Sep 2021 18:06:46 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.19.11",
       "tag": "@bentley/map-layers_v2.19.11",
       "date": "Thu, 09 Sep 2021 21:04:58 GMT",

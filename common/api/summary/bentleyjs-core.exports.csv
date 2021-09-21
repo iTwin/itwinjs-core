@@ -1,7 +1,6 @@
 sep=;
 Release Tag;API Item
 beta;AbandonedError 
-internal;addClientRequestContext: (metaData: any) => void
 public;areEqualPossiblyUndefined
 public;asInstanceOf
 public;assert(condition: boolean, msg?: string): asserts condition
@@ -21,7 +20,7 @@ public;BeTimePoint
 public;BeUiEvent
 beta;BriefcaseStatus
 public;ByteStream
-public;ChangeSetApplyOption
+internal;ChangeSetApplyOption
 beta;ChangeSetStatus
 public;ClientRequestContext
 public;ClientRequestContextProps 
@@ -49,9 +48,8 @@ public;DisposeFunc = () => void
 public;DuplicatePolicy
 public;Entry
 public;EntryContainer
-beta;ExtensionStatus
 public;GeoServiceStatus
-public;GetMetaDataFunction = () => any
+public;GetMetaDataFunction = () => object | undefined
 public;Guid
 public;GuidString = string
 beta;HttpStatus
@@ -73,6 +71,7 @@ public;LogFunction = (category: string, message: string, metaData?: GetMetaDataF
 public;Logger
 public;LoggerCategoryAndLevel
 public;LoggerLevelsConfig
+internal;LogIntercept = (level: LogLevel, category: string, message: string, metaData?: GetMetaDataFunction) => boolean
 public;LogLevel
 public;lowerBound
 public;LRUCache
@@ -109,4 +108,3 @@ public;TransientIdSequence
 public;using
 public;utf8ToString(utf8: Uint8Array): string | undefined
 internal;utf8ToStringPolyfill(utf8: Uint8Array): string | undefined
-beta;WSStatus
