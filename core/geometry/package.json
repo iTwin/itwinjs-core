@@ -16,7 +16,6 @@
     "extract-api-test": "betools extract-api --entry=geometry-core",
     "docs": "betools docs --tsIndexFile=./geometry-core.ts --json=../../generated-docs/core/geometry-core/file.json --onlyJson",
     "cover": "nyc npm test",
-    "cover:docs": "node ./node_modules/@bentley/build-tools/scripts/docscoverage.js",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2"
   },
   "repository": {
