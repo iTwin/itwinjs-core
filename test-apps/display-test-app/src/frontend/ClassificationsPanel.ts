@@ -98,12 +98,8 @@ export class ClassificationsPanel extends ToolBarDropDown {
     const range = new CartographicRange(this._vp.iModel.projectExtents, ecef.getTransform());
     let available = new Array<ContextRealityModelProps>();
     try {
-<<<<<<< HEAD
-      available = await queryRealityData({ contextId: "fb1696c8-c074-4c76-a539-a5546e048cc6", range });
-=======
       if (this._iTwinId !== undefined)
-        available = await queryRealityData({ iTwinId: this._iTwinId, range });
->>>>>>> 590d1edd96 (Remove hardcoded testing contextId (iTwinId)  (#2311))
+        available = await queryRealityData({ contextId: this._iTwinId, range });
     } catch (_error) {
       // eslint-disable-next-line no-console
       console.error("Error in query RealitydataList, you need to set SVT_STANDALONE_SIGNIN=true, and are your SVT_ITWIN_ID and IMJS_BUDDI_RESOLVE_URL_USING_REGION correctly set?");

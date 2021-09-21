@@ -3,11 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-<<<<<<< HEAD
-import { ProcessDetector } from "@bentley/bentleyjs-core";
-=======
-import { AsyncMethodsOf, GuidString, ProcessDetector, PromiseReturnType } from "@bentley/bentleyjs-core";
->>>>>>> 590d1edd96 (Remove hardcoded testing contextId (iTwinId)  (#2311))
+import { GuidString, ProcessDetector } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
