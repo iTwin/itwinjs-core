@@ -137,6 +137,7 @@ export * from "./ui-components/table/columnfiltering/TableFilterDescriptorCollec
 export * from "./ui-components/table/component/Table";
 export * from "./ui-components/table/component/TableCell";
 export * from "./ui-components/table/component/TableColumn";
+export * from "./ui-components/table/component/dragdrop/BeDragDropContext";
 
 export * from "./ui-components/toolbar/Toolbar";
 export * from "./ui-components/toolbar/ToolbarWithOverflow";

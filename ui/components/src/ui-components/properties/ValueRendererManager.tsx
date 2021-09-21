@@ -97,11 +97,11 @@ export class PropertyValueRendererManager {
     if (record.property.renderer && this._propertyRenderers.has(record.property.renderer.name))
       return this._propertyRenderers.get(record.property.renderer.name);
 
-    if (this._propertyRenderers.has(record.property.typename))
-      return this._propertyRenderers.get(record.property.typename)!;
-
     if (this._defaultMergedValueRenderer.canRender(record))
       return this._defaultMergedValueRenderer;
+
+    if (this._propertyRenderers.has(record.property.typename))
+      return this._propertyRenderers.get(record.property.typename)!;
 
     // Use one of default renderers
     switch (record.value.valueFormat) {

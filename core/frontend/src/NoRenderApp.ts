@@ -57,6 +57,7 @@ export class NullRenderSystem extends RenderSystem {
   public createBatch() { return undefined as any; }
   public dispose() { }
   public constructor() { super(); }
+  public override createRenderGraphic() { return undefined; }
 }
 
 /**

@@ -15,7 +15,7 @@ import { Omit } from '@bentley/presentation-common';
 import { PageOptions } from '@bentley/presentation-common';
 import { PresentationManagerProps as PresentationBackendProps } from '@bentley/presentation-backend';
 import { PresentationManagerMode } from '@bentley/presentation-backend';
-import { PresentationManagerProps } from '@bentley/presentation-frontend';
+import { PresentationProps } from '@bentley/presentation-frontend';
 import { PropertyRecord } from '@bentley/ui-abstract';
 import { Ruleset } from '@bentley/presentation-common';
 import { TreeNodeItem } from '@bentley/ui-components';
@@ -92,7 +92,7 @@ export interface PresentationTestingInitProps {
         startup: (opts?: IModelAppOptions) => Promise<void>;
     };
     frontendAppOptions?: IModelAppOptions;
-    frontendProps?: PresentationManagerProps;
+    frontendProps?: PresentationProps;
 }
 
 // @public

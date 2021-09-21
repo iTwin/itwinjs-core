@@ -2,10 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
+import { AuthStatus, BeEvent, BentleyError } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { AccessToken, IncludePrefix, ITwinClientLoggerCategory, TokenPrefix, UserInfo } from "@bentley/itwin-client";
-const loggerCategory = ITwinClientLoggerCategory.Authorization;
+import { AccessToken, IncludePrefix, TokenPrefix, UserInfo } from "@bentley/itwin-client";
 
 /**
  * Implements AccessToken that uses Basic access authentication
@@ -45,7 +44,7 @@ export class BasicAccessToken extends AccessToken {
    */
   public override initFromTokenString(tokenStr: string): void {
     if (!tokenStr.startsWith(this._prefix)) {
-      throw new BentleyError(AuthStatus.Error, "Invalid access token", Logger.logError, loggerCategory, () => ({ tokenStr }));
+      throw new BentleyError(AuthStatus.Error, "Invalid access token");
     }
     const userPass = tokenStr.substr(this._prefix.length + 1);
     this._tokenString = userPass;
@@ -62,14 +61,12 @@ export class IModelBankBasicAuthorizationClient implements FrontendAuthorization
   public constructor(_userInfo: UserInfo | undefined, private _userCredentials: any) {
   }
 
-  public async signIn(_requestContext?: ClientRequestContext): Promise<void> {
-    _requestContext?.enter();
+  public async signIn(): Promise<void> {
     this._token = BasicAccessToken.fromCredentials(this._userCredentials);
     this.onUserStateChanged.raiseEvent(this._token);
   }
 
-  public async signOut(_requestContext?: ClientRequestContext): Promise<void> {
-    _requestContext?.enter();
+  public async signOut(): Promise<void> {
     this._token = undefined;
     this.onUserStateChanged.raiseEvent(this._token);
   }
@@ -85,7 +82,7 @@ export class IModelBankBasicAuthorizationClient implements FrontendAuthorization
     return !!this._token;
   }
 
-  public async getAccessToken(_requestContext?: ClientRequestContext): Promise<AccessToken> {
+  public async getAccessToken(): Promise<AccessToken> {
     if (!this._token) {
       throw new Error("User is not signed in.");
     }
