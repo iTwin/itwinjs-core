@@ -82,4 +82,4 @@ In most cases property values are primitive, arrays or structs. However, it is p
 > Element1 Element2 Element3
 > ```
 >
-> In the above example *Model* has 3 related *Element* instances. We can request content for *Model* and ask to additionally > show related *Element* properties. In this case element properties are be called **nested content** because properties of > multiple *Element* instances are displayed as a single *Model* property. The property is created as an array of structs where each struct is created from *Element* instance.
+> In the above example *Model* has 3 related *Element* instances. We can request content for *Model* and ask to additionally show related *Element* properties. In this case element properties are called **nested content** because properties of multiple *Element* instances are displayed as a single *Model* property. The property is created as an array of structs where each struct is created from *Element* instance.
