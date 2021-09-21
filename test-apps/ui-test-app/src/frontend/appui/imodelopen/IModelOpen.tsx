@@ -12,10 +12,10 @@ import { BlockingPrompt } from "./BlockingPrompt";
 import { IModelList } from "./IModelList";
 import { NavigationItem, NavigationList } from "./Navigation";
 import { ProjectDropdown } from "./ProjectDropdown";
-import { ActivityMessageDetails, ActivityMessageEndReason, IModelApp } from "@bentley/imodeljs-frontend";
+import { ActivityMessageDetails, ActivityMessageEndReason, AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { Button } from "@itwin/itwinui-react";
-import { ITwin } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient } from "@bentley/context-registry-client";
 
 /** Properties for the [[IModelOpen]] component */
 export interface IModelOpenProps {
@@ -64,6 +64,19 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
         iModels: this.props.initialIModels,  // eslint-disable-line @bentley/react-set-state-usage
       });
     }
+
+    const client = new ITwinAccessClient();
+    const ctx = await AuthorizedFrontendRequestContext.create();
+
+    client.getAll(ctx, { pagination: { top: 40 } }).then((projectInfos: ITwin[]) => { // eslint-disable-line @typescript-eslint/no-floating-promises
+      this.setState({
+        isLoadingProjects: false,
+        isLoadingiModels: true,
+        recentProjects: projectInfos,
+      });
+      if (projectInfos.length > 0)
+        this._selectProject(projectInfos[0]);
+    });
   }
 
   // retrieves the IModels for a Project. Called when first mounted and when a new Project is selected.
@@ -75,8 +88,6 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
       currentProject: project,
     });
     const iModelInfos: IModelInfo[] = await UiFramework.iModelServices.getIModels(project, 80, 0);
-    // eslint-disable-next-line no-console
-    // console.log(JSON.stringify(iModelInfos));
     this.setState({
       isLoadingiModels: false,
       iModels: iModelInfos,
