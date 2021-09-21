@@ -369,8 +369,9 @@
       ],
       "type": "object"
     },
-    "ContentRelatedInstancesSpecificationNew": {
+    "ContentRelatedInstancesSpecification": {
       "additionalProperties": false,
+      "description": "Creates content for ECInstance(s) related to current selection.\n\nNote: Use `ContentRule.condition` to apply specification on correct selection.",
       "properties": {
         "calculatedProperties": {
           "description": "Specifications for including calculated properties",
@@ -492,10 +493,7 @@
           "items": {
             "anyOf": [
               {
-                "$ref": "#/definitions/DEPRECATED_ContentRelatedInstancesSpecification"
-              },
-              {
-                "$ref": "#/definitions/ContentRelatedInstancesSpecificationNew"
+                "$ref": "#/definitions/ContentRelatedInstancesSpecification"
               },
               {
                 "$ref": "#/definitions/SelectedNodeInstancesSpecification"
@@ -707,122 +705,6 @@
       },
       "required": [
         "rendererName"
-      ],
-      "type": "object"
-    },
-    "DEPRECATED_ContentRelatedInstancesSpecification": {
-      "additionalProperties": false,
-      "properties": {
-        "calculatedProperties": {
-          "description": "Specifications for including calculated properties",
-          "items": {
-            "$ref": "#/definitions/CalculatedPropertiesSpecification"
-          },
-          "type": "array"
-        },
-        "instanceFilter": {
-          "description": "Condition for filtering instances of defined related classes.\n\nSee: ECExpressions available in instance filter",
-          "type": "string"
-        },
-        "isRecursive": {
-          "description": "Walks the specified relationships recursively to find related instances.\n\nNote: Can't be used together with `skipRelatedLevel`.\n\nWarning: Using this specification has significant negative performance impact.",
-          "type": "boolean"
-        },
-        "priority": {
-          "description": "Defines the order in which specifications are evaluated and executed. Defaults to `1000`.",
-          "type": "integer"
-        },
-        "propertyCategories": {
-          "description": "Specifications for custom categories. Simply defining the categories does\nnothing - they have to be referenced from `PropertySpecification` defined in\n`propertyOverrides` by `id`.",
-          "items": {
-            "$ref": "#/definitions/PropertyCategorySpecification"
-          },
-          "type": "array"
-        },
-        "propertyOverrides": {
-          "description": "Specifications for various property overrides.",
-          "items": {
-            "$ref": "#/definitions/PropertySpecification"
-          },
-          "type": "array"
-        },
-        "relatedClasses": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/MultiSchemaClassesSpecification"
-            },
-            {
-              "items": {
-                "$ref": "#/definitions/MultiSchemaClassesSpecification"
-              },
-              "type": "array"
-            }
-          ],
-          "description": "List of related instance ECClass specifications. Optional if `relationships` is specified."
-        },
-        "relatedInstances": {
-          "description": "Specifications for joining related instances",
-          "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/DEPRECATED_RelatedInstanceSpecification"
-              },
-              {
-                "$ref": "#/definitions/RelatedInstanceSpecificationNew"
-              }
-            ]
-          },
-          "type": "array"
-        },
-        "relatedProperties": {
-          "description": "Specifications for including properties of related instances",
-          "items": {
-            "$ref": "#/definitions/RelatedPropertiesSpecification"
-          },
-          "type": "array"
-        },
-        "relationships": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/MultiSchemaClassesSpecification"
-            },
-            {
-              "items": {
-                "$ref": "#/definitions/MultiSchemaClassesSpecification"
-              },
-              "type": "array"
-            }
-          ],
-          "description": "List of ECRelationship specifications to follow when looking for related instances.\nOptional if `relatedClasses` is specified."
-        },
-        "requiredDirection": {
-          "description": "Direction that will be followed in the relationship select criteria.\nDefaults to `RelationshipDirection.Both`.",
-          "enum": [
-            "Backward",
-            "Both",
-            "Forward"
-          ],
-          "type": "string"
-        },
-        "showImages": {
-          "description": "Should each content record be assigned an image id",
-          "type": "boolean"
-        },
-        "skipRelatedLevel": {
-          "description": "Skips defined level of related items and shows next level related items. Defaults to `0`.\n\nNote: Can't be used together with `isRecursive`.",
-          "minimum": 0,
-          "type": "integer"
-        },
-        "specType": {
-          "description": "Used for serializing to JSON.",
-          "enum": [
-            "ContentRelatedInstances"
-          ],
-          "type": "string"
-        }
-      },
-      "required": [
-        "specType"
       ],
       "type": "object"
     },
@@ -2082,6 +1964,7 @@
     },
     "RelatedInstanceNodesSpecification": {
       "additionalProperties": false,
+      "description": "Creates nodes for related instances of specified ECClasses.\n\nPrecondition: can be used only if parent node is ECInstance\nnode. If there is no immediate parent instance node it will go up until it finds one.",
       "properties": {
         "doNotSort": {
           "description": "Set this flag to `true` to suppress default sorting of ECInstances returned by this specification.\n\nNote: setting this flag to `true` improves performance.",
