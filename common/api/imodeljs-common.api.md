@@ -1941,8 +1941,6 @@ export class DisplayStyleSettings {
     dropModelAppearanceOverride(id: Id64String): void;
     dropSubCategoryOverride(id: Id64String): void;
     get excludedElementIds(): OrderedId64Iterable;
-    // @deprecated
-    get excludedElements(): Set<Id64String>;
     getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined;
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
     get hasModelAppearanceOverride(): boolean;
