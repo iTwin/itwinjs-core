@@ -68,7 +68,6 @@ import { Interaction } from 'scheduler/tracing';
 import { InteractiveTool } from '@bentley/imodeljs-frontend';
 import { IPresentationTreeDataProvider } from '@bentley/presentation-components';
 import { ItemField } from '@bentley/imodeljs-frontend';
-import { ITwin } from '@bentley/context-registry-client';
 import { LayoutFragmentProps } from '@bentley/ui-abstract';
 import { MessageBoxIconType } from '@bentley/imodeljs-frontend';
 import { MessageBoxType } from '@bentley/imodeljs-frontend';
@@ -3100,9 +3099,9 @@ export interface IModelInfo {
     // (undocumented)
     description: string;
     // (undocumented)
-    name: string;
+    iTwinId: GuidString;
     // (undocumented)
-    projectInfo: ITwin;
+    name: string;
     // (undocumented)
     status: string;
     // (undocumented)
@@ -3124,7 +3123,7 @@ export enum IModelScope {
 // @internal
 export interface IModelServices {
     getChangeSets(iModelId: string): Promise<ChangeSetInfo[]>;
-    getIModels(projectInfo: ITwin, top: number, skip: number): Promise<IModelInfo[]>;
+    getIModels(iTwinId: GuidString, top: number, skip: number): Promise<IModelInfo[]>;
     getThumbnail(projectId: string, iModelId: string): Promise<string | undefined>;
     getUser(iModelId: string, userId: string): Promise<IModelUserInfo[]>;
     getUsers(iModelId: string): Promise<IModelUserInfo[]>;
