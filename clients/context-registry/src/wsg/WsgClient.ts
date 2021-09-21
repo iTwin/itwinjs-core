@@ -2,23 +2,52 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @packageDocumentation
- * @module iTwinServiceClients
- */
-import * as deepAssign from "deep-assign";
-import { ClientRequestContext, GetMetaDataFunction, HttpStatus, Logger, WSStatus } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
-import { AuthenticationError, Client, DefaultRequestOptionsProvider } from "./Client";
-import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
-import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
-import { request, RequestOptions, RequestQueryOptions, RequestTimeoutOptions, Response, ResponseError } from "./Request";
-import { ChunkedQueryContext } from "./ChunkedQueryContext";
-import { once } from "lodash";
 
-const loggerCategory: string = ITwinClientLoggerCategory.Clients;
+import * as deepAssign from "deep-assign";
+import { once } from "lodash";
+import { GetMetaDataFunction, HttpStatus, Logger } from "@bentley/bentleyjs-core";
+import {
+  AuthorizedClientRequestContext, Client, DefaultRequestOptionsProvider, request, RequestGlobalOptions, RequestOptions, RequestQueryOptions,
+  RequestTimeoutOptions, Response, ResponseError,
+} from "@bentley/itwin-client";
+import { ChunkedQueryContext } from "./ChunkedQueryContext";
+import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
+import { WsgClientLoggerCategory } from "./WsgLoggerCategory";
+
+const loggerCategory: string = WsgClientLoggerCategory.Client;
+
+/**
+ * Error for issues with authentication.
+ * @internal
+ */
+export class AuthenticationError extends ResponseError {
+}
+
+/** Server returned WSG errors
+ * @internal
+ */
+export enum WSStatus {
+  Success = 0,
+  WSERROR_BASE = 0x18000,
+  Unknown = WSERROR_BASE + 1,
+  LoginFailed = WSERROR_BASE + 2,
+  SslRequired = WSERROR_BASE + 3,
+  NotEnoughRights = WSERROR_BASE + 4,
+  RepositoryNotFound = WSERROR_BASE + 5,
+  SchemaNotFound = WSERROR_BASE + 6,
+  ClassNotFound = WSERROR_BASE + 7,
+  PropertyNotFound = WSERROR_BASE + 8,
+  InstanceNotFound = WSERROR_BASE + 9,
+  FileNotFound = WSERROR_BASE + 10,
+  NotSupported = WSERROR_BASE + 11,
+  NoServerLicense = WSERROR_BASE + 12,
+  NoClientLicense = WSERROR_BASE + 13,
+  TooManyBadLoginAttempts = WSERROR_BASE + 14,
+  LoginRequired = WSERROR_BASE + 15,
+}
 
 /** Error that was returned by a WSG based service.
- * @beta
+ * @internal
  */
 export class WsgError extends ResponseError {
   public constructor(errorNumber: number | HttpStatus, message?: string, getMetaData?: GetMetaDataFunction) {
@@ -190,7 +219,7 @@ export class DefaultWsgRequestOptionsProvider extends DefaultRequestOptionsProvi
 
 /**
  * Options for WSG requests sent to the service
- * @beta
+ * @internal
  */
 export interface WsgRequestOptions {
   ResponseContent?: "FullInstance" | "Empty" | "InstanceId"; // eslint-disable-line @typescript-eslint/naming-convention
@@ -200,7 +229,7 @@ export interface WsgRequestOptions {
 
 /**
  * Additional options used for requests
- * @beta
+ * @internal
  */
 export interface HttpRequestOptions {
   headers?: any;
@@ -209,7 +238,7 @@ export interface HttpRequestOptions {
 
 /**
  * Base class for Client implementations of services that are based on WSG
- * @beta
+ * @internal
  */
 export abstract class WsgClient extends Client {
   private static _defaultWsgRequestOptionsProvider: DefaultWsgRequestOptionsProvider;
@@ -244,12 +273,12 @@ export abstract class WsgClient extends Client {
    * @param excludeApiVersion Pass true to optionally exclude the API version from the URL.
    * @returns URL for the service
    */
-  public override async getUrl(requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string> {
-    return this._getUrlHelper(requestContext, excludeApiVersion);
+  public override async getUrl(excludeApiVersion?: boolean): Promise<string> {
+    return this._getUrlHelper(excludeApiVersion);
   }
 
-  private _getUrlHelper = once(async (requestContext: ClientRequestContext, excludeApiVersion?: boolean) => {
-    const url = await super.getUrl(requestContext);
+  private _getUrlHelper = once(async (excludeApiVersion?: boolean) => {
+    const url = await super.getUrl();
     this._url = url;
     if (!excludeApiVersion) {
       this._url = `${this._url}/${this.apiVersion}`;
@@ -259,7 +288,7 @@ export abstract class WsgClient extends Client {
 
   /** used by clients to delete strongly typed instances through the standard WSG REST API */
   protected async deleteInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<void> {
-    const url: string = await this.getUrl(requestContext) + relativeUrlPath;
+    const url: string = await this.getUrl() + relativeUrlPath;
     const untypedInstance: any = instance ? ECJsonTypeMap.toJson<T>("wsg", instance) : undefined;
     const options: RequestOptions = {
       method: "DELETE",
@@ -287,7 +316,7 @@ export abstract class WsgClient extends Client {
    * @returns The posted instance that's returned back from the server.
    */
   protected async postInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T> {
-    const url: string = await this.getUrl(requestContext) + relativeUrlPath;
+    const url: string = await this.getUrl() + relativeUrlPath;
     Logger.logInfo(loggerCategory, "Sending POST request", () => ({ url }));
     const untypedInstance: any = ECJsonTypeMap.toJson<T>("wsg", instance);
 
@@ -329,7 +358,7 @@ export abstract class WsgClient extends Client {
    * @returns The posted instances that's returned back from the server.
    */
   protected async postInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]> {
-    const url: string = await this.getUrl(requestContext) + relativeUrlPath;
+    const url: string = await this.getUrl() + relativeUrlPath;
     Logger.logInfo(loggerCategory, "Sending POST request", () => ({ url }));
     const untypedInstances: any[] = instances.map((value: T) => ECJsonTypeMap.toJson<T>("wsg", value));
 
@@ -378,7 +407,7 @@ export abstract class WsgClient extends Client {
    * @returns Array of strongly typed instances.
    */
   protected async getInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]> {
-    const url: string = await this.getUrl(requestContext) + relativeUrlPath;
+    const url: string = await this.getUrl() + relativeUrlPath;
     Logger.logInfo(loggerCategory, "Sending GET request", () => ({ url }));
 
     const chunkedQueryContext = queryOptions ? ChunkedQueryContext.create(queryOptions) : undefined;
@@ -477,7 +506,7 @@ export abstract class WsgClient extends Client {
    * @returns Array of strongly typed instances.
    */
   protected async postQuery<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]> {
-    const url: string = `${await this.getUrl(requestContext)}${relativeUrlPath}$query`;
+    const url: string = `${await this.getUrl()}${relativeUrlPath}$query`;
     Logger.logInfo(loggerCategory, "Sending POST request", () => ({ url }));
 
     const options: RequestOptions = {
@@ -504,5 +533,34 @@ export abstract class WsgClient extends Client {
 
     Logger.logTrace(loggerCategory, "Successful POST request", () => ({ url }));
     return typedInstances;
+  }
+
+  /** Configures request options based on user defined values in HttpRequestOptions */
+  protected applyUserConfiguredHttpRequestOptions(requestOptions: RequestOptions, userDefinedRequestOptions?: HttpRequestOptions): void {
+    if (!userDefinedRequestOptions)
+      return;
+
+    if (userDefinedRequestOptions.headers) {
+      requestOptions.headers = { ...requestOptions.headers, ...userDefinedRequestOptions.headers };
+    }
+
+    if (userDefinedRequestOptions.timeout) {
+      this.applyUserConfiguredTimeout(requestOptions, userDefinedRequestOptions.timeout);
+    }
+  }
+
+  /** Sets the request timeout based on user defined values */
+  private applyUserConfiguredTimeout(requestOptions: RequestOptions, userDefinedTimeout: RequestTimeoutOptions): void {
+    requestOptions.timeout = { ...requestOptions.timeout };
+
+    if (userDefinedTimeout.response)
+      requestOptions.timeout.response = userDefinedTimeout.response;
+
+    if (userDefinedTimeout.deadline)
+      requestOptions.timeout.deadline = userDefinedTimeout.deadline;
+    else if (userDefinedTimeout.response) {
+      const defaultNetworkOverheadBuffer = (RequestGlobalOptions.timeout.deadline as number) - (RequestGlobalOptions.timeout.response as number);
+      requestOptions.timeout.deadline = userDefinedTimeout.response + defaultNetworkOverheadBuffer;
+    }
   }
 }

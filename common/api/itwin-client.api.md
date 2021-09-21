@@ -54,10 +54,6 @@ export interface AccessTokenProps {
 }
 
 // @beta
-export class AuthenticationError extends ResponseError {
-}
-
-// @beta
 export interface AuthorizationClient {
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
     readonly isAuthorized: boolean;
@@ -98,41 +94,16 @@ export interface CancelRequest {
     cancel: () => boolean;
 }
 
-// @beta (undocumented)
-export type ChangeState = "new" | "modified" | "deleted" | "existing";
-
-// @beta
-export class ChunkedQueryContext {
-    static create(queryOptions: RequestQueryOptions): ChunkedQueryContext | undefined;
-    handleIteration(queryOptions: RequestQueryOptions): void;
-    get instancesLeft(): number | undefined;
-    get isQueryFinished(): boolean;
-    get skipToken(): string;
-    set skipToken(value: string);
-    }
-
-// @internal (undocumented)
-export interface ClassKeyMapInfo {
-    classKeyPropertyName?: string;
-    classPropertyName?: string;
-    schemaPropertyName?: string;
-}
-
 // @beta
 export abstract class Client {
     protected constructor();
-    protected applyUserConfiguredHttpRequestOptions(requestOptions: RequestOptions, userDefinedRequestOptions?: HttpRequestOptions): void;
     protected baseUrl?: string;
-    protected delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, httpRequestOptions?: HttpRequestOptions): Promise<void>;
-    getUrl(requestContext: ClientRequestContext): Promise<string>;
-    protected abstract getUrlSearchKey(): string;
+    protected delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string): Promise<void>;
+    getUrl(): Promise<string>;
     protected setupOptionDefaults(options: RequestOptions): Promise<void>;
     // (undocumented)
     protected _url?: string;
 }
-
-// @internal (undocumented)
-export type ConstructorType = new () => any;
 
 // @internal
 export class DefaultRequestOptionsProvider {
@@ -143,29 +114,8 @@ export class DefaultRequestOptionsProvider {
 }
 
 // @internal
-export class DefaultWsgRequestOptionsProvider extends DefaultRequestOptionsProvider {
-    constructor();
-}
-
-// @internal
 export class DownloadFailed extends BentleyError {
     constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction);
-}
-
-// @beta
-export abstract class ECInstance {
-    // (undocumented)
-    [index: string]: any;
-    // (undocumented)
-    ecId: string;
-}
-
-// @internal
-export class ECJsonTypeMap {
-    static classToJson(applicationKey: string, classKey: string, classKeyMapInfo: ClassKeyMapInfo): (typedConstructor: ConstructorType) => void;
-    static fromJson<T extends ECInstance>(typedConstructor: new () => T, applicationKey: string, ecJsonInstance: any): T | undefined;
-    static propertyToJson(applicationKey: string, propertyAccessString: string): (object: any, propertyKey: string) => void;
-    static toJson<T extends ECInstance>(applicationKey: string, typedInstance: T): any | undefined;
 }
 
 // @beta
@@ -188,20 +138,9 @@ export function getArrayBuffer(requestContext: ClientRequestContext, url: string
 // @internal
 export function getJson(requestContext: ClientRequestContext, url: string): Promise<any>;
 
-// @beta
-export interface HttpRequestOptions {
-    // (undocumented)
-    headers?: any;
-    // (undocumented)
-    timeout?: RequestTimeoutOptions;
-}
-
 // @beta (undocumented)
 export class ImsAuthorizationClient extends Client {
     constructor();
-    protected getUrlSearchKey(): string;
-    // (undocumented)
-    static readonly searchKey: string;
 }
 
 // @beta
@@ -220,7 +159,6 @@ export enum ITwinClientLoggerCategory {
     // (undocumented)
     Authorization = "itwin-client.Authorization",
     Clients = "itwin-client.Clients",
-    ECJson = "itwin-client.ECJson",
     // (undocumented)
     Request = "itwin-client.Request"
 }
@@ -374,16 +312,6 @@ export class SasUrlExpired extends BentleyError {
 export function TokenPrefix(prefix: string): (constructor: any) => void;
 
 // @internal
-export class UrlDiscoveryClient extends Client {
-    constructor();
-    // (undocumented)
-    static readonly configResolveUrlUsingRegion = "IMJS_BUDDI_RESOLVE_URL_USING_REGION";
-    discoverUrl(requestContext: ClientRequestContext, searchKey: string, regionId: number | undefined): Promise<string>;
-    getUrl(): Promise<string>;
-    protected getUrlSearchKey(): string;
-}
-
-// @internal
 export class UserCancelledError extends BentleyError {
     constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction);
 }
@@ -460,73 +388,6 @@ export interface UserInfoProps {
         name?: string;
         preferredUserName?: string;
     };
-}
-
-// @beta
-export abstract class WsgClient extends Client {
-    protected constructor(apiVersion: string);
-    // (undocumented)
-    apiVersion: string;
-    protected deleteInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<void>;
-    protected getInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
-    protected getInstancesChunk<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, url: string, chunkedQueryContext: ChunkedQueryContext | undefined, typedConstructor: new () => T, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
-    getUrl(requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string>;
-    protected postInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T>;
-    protected postInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
-    protected postQuery<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
-    protected setupOptionDefaults(options: RequestOptions): Promise<void>;
-    // (undocumented)
-    protected _url?: string;
-}
-
-// @beta
-export class WsgError extends ResponseError {
-    constructor(errorNumber: number | HttpStatus, message?: string, getMetaData?: GetMetaDataFunction);
-    static getErrorStatus(errorId: number, httpStatusType: number): number;
-    static getWSStatusId(error: string): number;
-    log(): void;
-    static parse(response: any, log?: boolean): ResponseError;
-    static shouldRetry(error: any, response: any): boolean;
-}
-
-// @beta
-export abstract class WsgInstance extends ECInstance {
-    // (undocumented)
-    changeState?: ChangeState;
-    // (undocumented)
-    eTag?: string;
-    // (undocumented)
-    wsgId: string;
-}
-
-// @beta
-export class WsgQuery {
-    // @internal
-    protected addFilter(filter: string, operator?: "and" | "or"): void;
-    // @internal
-    protected addSelect(select: string): this;
-    filter(filter: string): this;
-    // @internal
-    getQueryOptions(): RequestQueryOptions;
-    orderBy(orderBy: string): this;
-    pageSize(n: number): this;
-    // (undocumented)
-    protected _query: RequestQueryOptions;
-    // @internal
-    resetQueryOptions(): void;
-    select(select: string): this;
-    skip(n: number): this;
-    top(n: number): this;
-}
-
-// @beta
-export interface WsgRequestOptions {
-    // (undocumented)
-    CustomOptions?: any;
-    // (undocumented)
-    RefreshInstances?: boolean;
-    // (undocumented)
-    ResponseContent?: "FullInstance" | "Empty" | "InstanceId";
 }
 
 

@@ -2,14 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @packageDocumentation
- * @module iTwinServiceClients
- */
 
-import { RequestQueryOptions } from "./Request";
+import { RequestQueryOptions } from "@bentley/itwin-client";
 
 /** Base class for Query objects. Query objects are used to modify the results when getting instances.
- * @beta
+ * @internal
  */
 export class WsgQuery {
   protected _query: RequestQueryOptions = {};

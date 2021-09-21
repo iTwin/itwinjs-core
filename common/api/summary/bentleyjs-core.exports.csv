@@ -108,4 +108,3 @@ public;TransientIdSequence
 public;using
 public;utf8ToString(utf8: Uint8Array): string | undefined
 internal;utf8ToStringPolyfill(utf8: Uint8Array): string | undefined
-beta;WSStatus

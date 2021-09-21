@@ -45,13 +45,13 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
     constructor(configuration: BrowserAuthorizationClientConfiguration);
     // (undocumented)
     protected _accessToken?: AccessToken;
-    checkSessionStatus(requestContext: ClientRequestContext): Promise<boolean>;
+    checkSessionStatus(): Promise<boolean>;
     protected createUserManager(settings: UserManagerSettings): UserManager;
     dispose(): void;
     getAccessToken(): Promise<AccessToken>;
     // (undocumented)
-    protected getUserManager(requestContext: ClientRequestContext): Promise<UserManager>;
-    protected getUserManagerSettings(requestContext: ClientRequestContext, basicSettings: BrowserAuthorizationClientConfiguration, advancedSettings?: UserManagerSettings): Promise<UserManagerSettings>;
+    protected getUserManager(): Promise<UserManager>;
+    protected getUserManagerSettings(basicSettings: BrowserAuthorizationClientConfiguration, advancedSettings?: UserManagerSettings): Promise<UserManagerSettings>;
     // (undocumented)
     get hasExpired(): boolean;
     // (undocumented)
@@ -60,8 +60,8 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
     protected initAccessToken(user: User | undefined): void;
     // (undocumented)
     get isAuthorized(): boolean;
-    protected loadUser(requestContext: ClientRequestContext): Promise<User | undefined>;
-    protected nonInteractiveSignIn(requestContext: ClientRequestContext, args?: BrowserAuthorizationClientRequestOptions): Promise<User | undefined>;
+    protected loadUser(): Promise<User | undefined>;
+    protected nonInteractiveSignIn(args?: BrowserAuthorizationClientRequestOptions): Promise<User | undefined>;
     protected _onAccessTokenExpired: () => void;
     protected _onAccessTokenExpiring: () => Promise<void>;
     protected _onSilentRenewError: () => void;
@@ -72,15 +72,15 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
     // (undocumented)
     protected _onUserStateChanged: (user: User | undefined) => void;
     protected _onUserUnloaded: () => void;
-    signIn(requestContext?: ClientRequestContext): Promise<void>;
-    signInPopup(requestContext: ClientRequestContext, args?: BrowserAuthorizationClientRequestOptions): Promise<void>;
-    signInRedirect(requestContext: ClientRequestContext, successRedirectUrl?: string, args?: BrowserAuthorizationClientRequestOptions): Promise<void>;
-    signInSilent(requestContext: ClientRequestContext): Promise<void>;
-    signOut(requestContext?: ClientRequestContext): Promise<void>;
+    signIn(): Promise<void>;
+    signInPopup(args?: BrowserAuthorizationClientRequestOptions): Promise<void>;
+    signInRedirect(successRedirectUrl?: string, args?: BrowserAuthorizationClientRequestOptions): Promise<void>;
+    signInSilent(): Promise<void>;
+    signOut(): Promise<void>;
     // (undocumented)
-    signOutPopup(requestContext: ClientRequestContext): Promise<void>;
+    signOutPopup(): Promise<void>;
     // (undocumented)
-    signOutRedirect(requestContext: ClientRequestContext): Promise<void>;
+    signOutRedirect(): Promise<void>;
 }
 
 // @beta (undocumented)

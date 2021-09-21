@@ -36,7 +36,8 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "deep-assign": "^2.0.0"
+    "deep-assign": "^2.0.0",
+    "lodash": "^4.17.10"
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.63",
@@ -51,6 +52,7 @@
     "@bentley/oidc-signin-tool": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
+    "@types/lodash": "^4.14.0",
     "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",
     "chai": "^4.1.2",

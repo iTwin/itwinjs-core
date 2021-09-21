@@ -2,9 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @packageDocumentation
- * @module iTwinServiceClients
- */
 
 /**
  * Manages the mapping between TypeScript and EC Classes/Properties to transform back and forth
@@ -162,12 +159,12 @@
 // @todo Update example with property type conversions once that's available.
 
 import { assert, Logger } from "@bentley/bentleyjs-core";
-import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
+import { WsgClientLoggerCategory } from "./WsgLoggerCategory";
 
 /** @internal */
 export type ConstructorType = new () => any;
 
-const loggerCategory: string = ITwinClientLoggerCategory.ECJson;
+const loggerCategory: string = WsgClientLoggerCategory.ECJson;
 const className = "className";
 
 /** @internal */
@@ -633,7 +630,7 @@ export class ECJsonTypeMap {
 }
 
 /** Base class for all typed instances mapped to ECInstance-s in an ECDb
- * @beta
+ * @internal
  */
 export abstract class ECInstance {
   @ECJsonTypeMap.propertyToJson("ecdb", "id")
@@ -642,11 +639,11 @@ export abstract class ECInstance {
   [index: string]: any;
 }
 
-/** @beta */
+/** @internal */
 export type ChangeState = "new" | "modified" | "deleted" | "existing";
 
 /** Base class for all typed instances mapped to ECInstance-s in both an ECDb, and the WSG repository
- * @beta
+ * @internal
  */
 export abstract class WsgInstance extends ECInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "instanceId")
