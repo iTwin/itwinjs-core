@@ -2,8 +2,6 @@
 
 The Presentation library provides a declarative way to create content for tables, property grid and other content components based on iModel data.
 
-![Content rules' example](./media/content-rules-example.png)
-
 ## Reference
 
 There are 2 primary concepts for creating content: [rules](#rules) and [specifications](#specifications).
