@@ -8,18 +8,18 @@ A **Frontstage** is a full-screen configuration designed to enable the user to a
 |**Nested** | is accessed from a primary frontstage. It may use all zones and panels, but instead of the App button, the Tool Widget contains a Back button to return to the primary frontstage.
 |**Modal** | is accessed from another frontstage or the Backstage. It may contain any content along with a Back button. It does not use zones or stage panels. It is useful for application settings and data management user interfaces.
 
-## Frontstage shown using UI 2.0 components
+## Frontstage shown using UI 2.0/"App UI" components
 
-With the release of the `iTwin.js 2.0`, new UI components are available that provide a new look and feel for iTwin Apps. The new look and feel is referred to as `UI 2.0`. The two primary goals of `UI 2.0` are to limit the amount of UI components that obscure the iModel content and to ensure that Extensions can augment the UI provided by the host IModelApp.
+With the release of the `iTwin.js 2.0`, new UI components are available that provide a new look and feel for iTwin Apps. The new look and feel was initially referred to as `UI 2.0` and now has the more formal name of a `App UI`. The two primary goals of `App UI` are to limit the amount of UI components that obscure the iModel content and to ensure that Extensions can augment the UI provided by the host IModelApp.
 
-## Configuring an AppUI/UI 2.0 Frontstage
+## Configuring an "App UI", Frontstage
 
 A frontstage is configured in a class subclassing the [FrontstageProvider]($ui-framework) abstract class.
 The FrontstageProvider contains an abstract [FrontstageProvider.frontstage]($ui-framework) field containing a [Frontstage]($ui-framework) React component.  The Frontstage React component has props for populating the different areas of the stage as well as values for the default tool, application data, and usage.
 
 Below is an example frontstage that shows the different areas/zones.
 
-![FrontstageUi2](./images/FrontstageUi2.png "UI 2.0 Frontstage design")
+![FrontstageUi2](./images/FrontstageUi2.png "UI 2.0/App UI Frontstage design")
 
 ### Example Frontstage definition
 
@@ -27,7 +27,6 @@ The definition that produces the sample frontstage is shown below.
 
 ```tsx
   <Frontstage id="Ui2Sample"
-    version={2.1}
     defaultTool={CoreTools.selectElementCommand}
     contentGroup={myContentGroup}
     defaultContentId="singleIModelView"
