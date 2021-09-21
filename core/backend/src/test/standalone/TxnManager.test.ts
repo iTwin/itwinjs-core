@@ -786,4 +786,17 @@ describe("TxnManager", () => {
     dropListener();
   });
 
+  it.only("repro crash", () => {
+    imodel.nativeDb.setGeometricModelTrackingEnabled(true);
+
+    const model = PhysicalModel.insert(imodel, IModel.rootSubjectId, Guid.createValue());
+    expect(Id64.isValidId64(model)).to.be.true;
+    const elem = imodel.elements.insertElement({ ...props, model });
+    expect(Id64.isValidId64(elem)).to.be.true;
+
+    imodel.saveChanges("insert model and element");
+    imodel.txns.reverseSingleTxn();
+
+    imodel.nativeDb.setGeometricModelTrackingEnabled(false);
+  });
 });
