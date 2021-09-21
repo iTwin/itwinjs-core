@@ -89,7 +89,6 @@ describe("PresentationRpcImpl", () => {
       stub_IModelDb_findByKey = sinon.stub(IModelDb, "findByKey").returns(testData.imodelMock.object);
       impl = new PresentationRpcImpl();
       const requestContext = new ClientRequestContext();
-      requestContext.enter();
     });
 
     it("returns invalid argument status code when using invalid imodel token", async () => {

@@ -47,14 +47,11 @@ export class CheckpointConnection extends IModelConnection {
     const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
 
     const requestContext = await AuthorizedFrontendRequestContext.create();
-    requestContext.enter();
 
     const changeset = { id: await IModelApp.hubAccess.getChangesetIdFromVersion({ requestContext, iModelId, version }) };
-    requestContext.enter();
 
     const iModelRpcProps: IModelRpcOpenProps = { iTwinId, iModelId, changeset };
     const openResponse = await this.callOpen(requestContext, iModelRpcProps, routingContext);
-    requestContext.enter();
 
     const connection = new this(openResponse);
     RpcManager.setIModel(connection);
@@ -66,7 +63,6 @@ export class CheckpointConnection extends IModelConnection {
   }
 
   private static async callOpen(requestContext: AuthorizedFrontendRequestContext, iModelToken: IModelRpcOpenProps, routingContext: IModelRoutingContext): Promise<IModelConnectionProps> {
-    requestContext.enter();
 
     // Try opening the iModel repeatedly accommodating any pending responses from the backend.
     // Waits for an increasing amount of time (but within a range) before checking on the pending request again.
@@ -89,7 +85,6 @@ export class CheckpointConnection extends IModelConnection {
       if (!(openForReadOperation && request.operation === openForReadOperation))
         return;
 
-      requestContext.enter();
       Logger.logTrace(loggerCategory, "Received pending open notification in IModelConnection.open", () => iModelToken);
 
       const connectionTimeElapsed = Date.now() - startTime;
@@ -112,7 +107,6 @@ export class CheckpointConnection extends IModelConnection {
     try {
       openResponse = await openPromise;
     } finally {
-      requestContext.enter();
       Logger.logTrace(loggerCategory, "Completed open request in IModelConnection.open", () => iModelToken);
       removeListener();
     }
@@ -129,7 +123,6 @@ export class CheckpointConnection extends IModelConnection {
       return; // The handler is called for a different connection than this
 
     const requestContext: AuthorizedFrontendRequestContext = await AuthorizedFrontendRequestContext.create(request.id); // Reuse activityId
-    requestContext.enter();
 
     Logger.logTrace(loggerCategory, "Attempting to reopen connection", () => iModelRpcProps);
 
@@ -142,7 +135,6 @@ export class CheckpointConnection extends IModelConnection {
     } catch (error) {
       reject(error.message);
     } finally {
-      requestContext.enter();
     }
 
     Logger.logTrace(loggerCategory, "Resubmitting original request after reopening connection", () => iModelRpcProps);
@@ -157,7 +149,6 @@ export class CheckpointConnection extends IModelConnection {
 
     this.beforeClose();
     const requestContext = await AuthorizedFrontendRequestContext.create();
-    requestContext.enter();
 
     RpcRequest.notFoundHandlers.removeListener(this._reopenConnectionHandler);
     requestContext.useContextForRpc = true;
@@ -166,7 +157,6 @@ export class CheckpointConnection extends IModelConnection {
     try {
       await closePromise;
     } finally {
-      requestContext.enter();
       this._isClosed = true;
     }
   }

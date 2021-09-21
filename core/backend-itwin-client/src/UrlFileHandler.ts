@@ -35,7 +35,6 @@ export class UrlFileHandler implements FileHandler {
   }
 
   public async downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
-    requestContext.enter();
     if (fs.existsSync(downloadToPathname))
       fs.unlinkSync(downloadToPathname);
 

@@ -685,8 +685,7 @@ export class PresentationManager {
       keys: new KeySet(concreteKeys),
     };
     const content = await this.getContent(contentRequestOptions);
-    requestOptions.requestContext.enter();
-    return concreteKeys.map((key) => {
+    requestOptions.return concreteKeys.map((key) => {
       const item = content ? content.contentSet.find((it) => it.primaryKeys.length > 0 && InstanceKey.compare(it.primaryKeys[0], key) === 0) : undefined;
       if (!item)
         return { displayValue: "", rawValue: "", typeName: "" };
@@ -731,7 +730,6 @@ export class PresentationManager {
     }
 
     const response = await this.getNativePlatform().handleRequest(imodelAddon, JSON.stringify(nativeRequestParams));
-    requestContext.enter();
     diagnosticsListener && response.diagnostics && diagnosticsListener([response.diagnostics]);
     return JSON.parse(response.result, reviver);
   }

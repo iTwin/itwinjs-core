@@ -120,8 +120,7 @@ export class RpcInvocation {
   private async resolve(): Promise<any> {
     try {
       const clientRequestContext = await RpcConfiguration.requestContext.deserialize(this.request);
-      clientRequestContext.enter();
-
+      client
       this.protocol.events.raiseEvent(RpcProtocolEvent.RequestReceived, this);
 
       const parameters = RpcMarshaling.deserialize(this.protocol, this.request.parameters);

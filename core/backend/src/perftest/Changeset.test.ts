@@ -372,7 +372,6 @@ describe("ImodelChangesetPerformance big datasets", () => {
         csQuery.betweenChangeSets(changeSets[j].id!, changeSets[changeSets.length - 1].id);
       csQuery.selectDownloadUrl();
 
-      requestContext.enter();
       await IModelHubBackend.iModelClient.changeSets.download(requestContext, imodelId, csQuery, downloadDir);
     }
   }

@@ -88,7 +88,6 @@ export class MobileFileHandler implements FileHandler {
    */
   public async downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
     // strip search and hash parameters from download Url for logging purpose
-    requestContext.enter();
     const safeToLogUrl = MobileFileHandler.getSafeUrlForLogging(downloadUrl);
     Logger.logInfo(loggerCategory, `Downloading file from ${safeToLogUrl}`);
     ArgumentCheck.defined("downloadUrl", downloadUrl);
@@ -104,7 +103,6 @@ export class MobileFileHandler implements FileHandler {
     try {
       await MobileHost.downloadFile(downloadUrl, downloadToPathname, progressCallback, cancelRequest);
     } catch (err) {
-      requestContext.enter();
       if (fs.existsSync(downloadToPathname))
         fs.unlinkSync(downloadToPathname); // Just in case there was a partial download, delete the file
 
@@ -119,7 +117,6 @@ export class MobileFileHandler implements FileHandler {
         throw new DownloadFailed(403, "Download failed. Expected filesize does not match");
       }
     }
-    requestContext.enter();
     Logger.logTrace(loggerCategory, `Downloaded file from ${safeToLogUrl}`);
   }
   /** Get encoded block id from its number. */
@@ -128,7 +125,6 @@ export class MobileFileHandler implements FileHandler {
   }
 
   private async uploadChunk(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, fileDescriptor: number, blockId: number, callback?: ProgressCallback) {
-    requestContext.enter();
     const chunkSize = 4 * 1024 * 1024;
     let buffer = Buffer.alloc(chunkSize);
     const bytesRead = fs.readSync(fileDescriptor, buffer, 0, chunkSize, chunkSize * blockId);
@@ -164,7 +160,6 @@ export class MobileFileHandler implements FileHandler {
    */
   public async uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void> {
     const safeToLogUrl = MobileFileHandler.getSafeUrlForLogging(uploadUrlString);
-    requestContext.enter();
     Logger.logTrace(loggerCategory, `Uploading file to ${safeToLogUrl}`);
     ArgumentCheck.defined("uploadUrlString", uploadUrlString);
     ArgumentCheck.defined("uploadFromPathname", uploadFromPathname);

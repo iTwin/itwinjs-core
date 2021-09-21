@@ -327,7 +327,6 @@ export class IModelHost {
 
     // Setup a current context for all requests that originate from this backend
     const requestContext = new BackendRequestContext();
-    requestContext.enter();
 
     this.backendVersion = require("../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
     initializeRpcBackend();

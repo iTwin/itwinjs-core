@@ -286,7 +286,6 @@ export class IModelTestUtils {
     briefcaseDb.close();
 
     await BriefcaseManager.deleteBriefcaseFiles(fileName, requestContext);
-    requestContext.enter();
 
     // try to clean up empty briefcase directories, and empty iModel directories.
     if (0 === BriefcaseManager.getCachedBriefcases(iModelId).length) {

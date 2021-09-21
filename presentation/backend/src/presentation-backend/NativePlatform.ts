@@ -149,7 +149,6 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
     public async forceLoadSchemas(db: any): Promise<NativePlatformResponse<void>> {
       const requestContext = ClientRequestContext.current;
       return new Promise((resolve: (result: NativePlatformResponse<void>) => void, reject: () => void) => {
-        requestContext.enter();
         this._nativeAddon.forceLoadSchemas(db, (response: IModelJsNative.ECPresentationManagerResponse<void>) => {
           if (response.error)
             reject();
@@ -186,7 +185,6 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       const requestGuid = this.handleResult(this._nativeAddon.queueRequest(db, options)).result;
       return new Promise((resolve: (result: NativePlatformResponse<any>) => void, reject) => {
         const interval = setInterval(() => {
-          requestContext.enter();
           const pollResult = this._nativeAddon.pollResponse(requestGuid);
           if (pollResult.error) {
             if (pollResult.error.status !== IModelJsNative.ECPresentationStatus.Pending) {

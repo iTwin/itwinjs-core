@@ -438,8 +438,7 @@ export namespace OrbitGtTileTree {
     // If there's no rdsUrl, request one from RealityDataClient
     if (!props.rdsUrl) {
       const authRequestContext = new AuthorizedFrontendRequestContext(accessToken);
-      authRequestContext.enter();
-
+      auth
       const rdClient: RealityDataClient = new RealityDataClient();
       props.rdsUrl = await rdClient.getRealityDataUrl(authRequestContext, iModel.iTwinId, props.containerName);
     }

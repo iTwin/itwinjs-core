@@ -147,7 +147,6 @@ export class AzureFileHandler implements FileHandler {
   }
 
   private async transferFileUsingAzCopy(requestContext: AuthorizedClientRequestContext, source: string, target: string, progressCallback?: ProgressCallback): Promise<void> {
-    requestContext.enter();
     Logger.logTrace(loggerCategory, `Using AzCopy with version ${AzCopy.getVersion()} located at ${AzCopy.execPath}`);
 
     // setup log dir so we can delete it. It seem there is no way of disable it.
@@ -166,17 +165,14 @@ export class AzureFileHandler implements FileHandler {
     }
 
     azcopy.on("azerror", (args: StringEventArgs) => {
-      requestContext.enter();
       Logger.logError(loggerCategory, `AzCopy reported error: '${args.MessageContent}'`);
     });
 
     azcopy.on("azinit", (args: InitEventArgs) => {
-      requestContext.enter();
       Logger.logInfo(loggerCategory, `AzCopy started JobId: ${args.JobID} and log file located at ${args.LogFileLocation}`);
     });
 
     azcopy.on("azruntimeerror", (args: string) => {
-      requestContext.enter();
       Logger.logInfo(loggerCategory, `AzCopy runtime error: ${args}`);
     });
     // start download by spawning in a azcopy process
@@ -267,7 +263,6 @@ export class AzureFileHandler implements FileHandler {
    */
   public async downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
     // strip search and hash parameters from download Url for logging purpose
-    requestContext.enter();
     const safeToLogUrl = AzureFileHandler.getSafeUrlForLogging(downloadUrl);
     Logger.logInfo(loggerCategory, `Downloading file from ${safeToLogUrl}`);
     ArgumentCheck.defined("downloadUrl", downloadUrl);
@@ -287,7 +282,6 @@ export class AzureFileHandler implements FileHandler {
         await this.downloadFileUsingHttps(requestContext, downloadUrl, downloadToPathname, fileSize, progressCallback, cancelRequest);
       }
     } catch (err) {
-      requestContext.enter();
       if (fs.existsSync(downloadToPathname))
         fs.unlinkSync(downloadToPathname); // Just in case there was a partial download, delete the file
 
@@ -302,7 +296,6 @@ export class AzureFileHandler implements FileHandler {
         throw new DownloadFailed(403, "Download failed. Expected filesize does not match");
       }
     }
-    requestContext.enter();
     Logger.logTrace(loggerCategory, `Downloaded file from ${safeToLogUrl}`);
   }
   /** Get encoded block id from its number. */
@@ -311,7 +304,6 @@ export class AzureFileHandler implements FileHandler {
   }
 
   private async uploadChunk(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, fileDescriptor: number, blockId: number, callback?: ProgressCallback) {
-    requestContext.enter();
     const chunkSize = 4 * 1024 * 1024;
     let buffer = Buffer.alloc(chunkSize);
     const bytesRead = fs.readSync(fileDescriptor, buffer, 0, chunkSize, chunkSize * blockId);
@@ -348,7 +340,6 @@ export class AzureFileHandler implements FileHandler {
    */
   public async uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void> {
     const safeToLogUrl = AzureFileHandler.getSafeUrlForLogging(uploadUrlString);
-    requestContext.enter();
     Logger.logTrace(loggerCategory, `Uploading file to ${safeToLogUrl}`);
     ArgumentCheck.defined("uploadUrlString", uploadUrlString);
     ArgumentCheck.defined("uploadFromPathname", uploadFromPathname);

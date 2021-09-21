@@ -59,7 +59,6 @@ describe("Example Code", () => {
 
   //                                Rule: A Promise-returning function takes an ClientRequestContext as an argument
   async function asyncMethodExample(requestContext: ClientRequestContext): Promise<void> {
-    requestContext.enter();
 
     try {
       await someAsync(requestContext); // Rule: Pass the ClientRequestContext to Promise-returning methods

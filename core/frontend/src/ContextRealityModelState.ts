@@ -132,7 +132,6 @@ export async function queryRealityData(criteria: RealityDataQueryCriteria): Prom
     return availableRealityModels;
 
   const requestContext = await AuthorizedFrontendRequestContext.create();
-  requestContext.enter();
 
   const client = new RealityDataClient();
 
@@ -147,7 +146,6 @@ export async function queryRealityData(criteria: RealityDataQueryCriteria): Prom
     realityData = await client.getRealityDataInITwin(requestContext, iTwinId);
   }
 
-  requestContext.enter();
 
   // Get set of URLs that are directly attached to the model.
   const modelRealityDataIds = new Set<string>();
@@ -193,7 +191,6 @@ export async function queryRealityData(criteria: RealityDataQueryCriteria): Prom
         };
       }
 
-      requestContext.enter();
       if (!modelRealityDataIds.has(currentRealityData.id))
         availableRealityModels.push({
           tilesetUrl: url, name: realityDataName, description: (currentRealityData.description ? currentRealityData.description : ""),

@@ -322,7 +322,6 @@ export class IModelApp {
 
     // Setup a current context for all requests that originate from this frontend
     const requestContext = new FrontendRequestContext();
-    requestContext.enter();
 
     opts = opts ?? {};
     this._securityOptions = opts.security || {};

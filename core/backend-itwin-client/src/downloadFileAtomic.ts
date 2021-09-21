@@ -49,7 +49,6 @@ export async function downloadFileAtomic(requestContext: ClientRequestContext, d
         fileStream,
       );
     } catch (error) {
-      requestContext.enter();
       if (error instanceof got.CancelError)
         throw new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download", Logger.logWarning);
 

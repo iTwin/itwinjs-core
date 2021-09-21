@@ -851,7 +851,6 @@ export class RealityModelTileClient {
   }
 
   private async initializeRDSRealityData(requestContext: AuthorizedFrontendRequestContext): Promise<void> {
-    requestContext.enter();
 
     if (undefined !== this.rdsProps) {
       if (!this._realityData) {
@@ -859,7 +858,6 @@ export class RealityModelTileClient {
         // though this base URL is only the part relative to the root of the blob containing the data.
         // SWB
         this._realityData = await RealityModelTileClient._client.getRealityData(requestContext, this.rdsProps.projectId, this.rdsProps.tilesId);
-        requestContext.enter();
 
         // A reality data that has not root document set should not be considered.
         const rootDocument: string = (this._realityData.rootDocument ? this._realityData.rootDocument : "");
@@ -925,11 +923,9 @@ export class RealityModelTileClient {
 
     if (this.rdsProps && this._token) {
       const authRequestContext = new AuthorizedFrontendRequestContext(this._token);
-      authRequestContext.enter();
-
+      auth
       await this.initializeRDSRealityData(authRequestContext);
-      authRequestContext.enter();
-
+      auth
       return this._realityData!.getBlobUrl(authRequestContext, false);
     }
 
@@ -942,11 +938,9 @@ export class RealityModelTileClient {
   public async getRootDocument(url: string): Promise<any> {
     if (this.rdsProps && this._token) {
       const authRequestContext = new AuthorizedFrontendRequestContext(this._token);
-      authRequestContext.enter();
-
+      auth
       await this.initializeRDSRealityData(authRequestContext); // Only needed for PW Context Share data ... return immediately otherwise.
-      authRequestContext.enter();
-
+      auth
       return this._realityData!.getRootDocumentJson(authRequestContext);
     }
 
@@ -975,7 +969,6 @@ export class RealityModelTileClient {
     const requestContext = useRds ? new AuthorizedFrontendRequestContext(this._token!, "") : new FrontendRequestContext("");
     if (useRds) {
       await this.initializeRDSRealityData(requestContext as AuthorizedFrontendRequestContext); // Only needed for PW Context Share data ... return immediately otherwise.
-      requestContext.enter();
     }
 
     const tileUrl = this._baseUrl + url;
@@ -993,11 +986,9 @@ export class RealityModelTileClient {
     const useRds = this.rdsProps !== undefined && this._token !== undefined;
     // Use an empty activityId to keep tile json as simple request
     const requestContext = useRds ? new AuthorizedFrontendRequestContext(this._token!, "") : new FrontendRequestContext("");
-    requestContext.enter();
 
     if (this.rdsProps && this._token) {
       await this.initializeRDSRealityData(requestContext as AuthorizedFrontendRequestContext); // Only needed for PW Context Share data ... return immediately otherwise.
-      requestContext.enter();
     }
 
     const tileUrl = this._baseUrl + url;

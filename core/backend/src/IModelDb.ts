@@ -1156,8 +1156,7 @@ export abstract class IModelDb extends IModel {
    * @alpha
    */
   public async getTextureImage(requestContext: ClientRequestContext, props: TextureLoadProps): Promise<Uint8Array | undefined> {
-    requestContext.enter();
-    return new Promise<Uint8Array | undefined>((resolve, reject) => {
+        return new Promise<Uint8Array | undefined>((resolve, reject) => {
       this.nativeDb.getTextureImage(props, (result) => {
         if (result instanceof Error)
           reject(result);
@@ -2141,11 +2140,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
     /** @internal */
     public async requestTileTreeProps(requestContext: ClientRequestContext, id: string): Promise<IModelTileTreeProps> {
-      requestContext.enter();
 
       return new Promise<IModelTileTreeProps>((resolve, reject) => {
-        requestContext.enter();
-        this._iModel.nativeDb.getTileTree(id, (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, any>) => {
+                this._iModel.nativeDb.getTileTree(id, (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, any>) => {
           if (undefined !== ret.error)
             reject(new IModelError(ret.error.status, `TreeId=${id}`));
           else
@@ -2155,7 +2152,6 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     }
 
     private pollTileContent(resolve: (arg0: IModelJsNative.TileContent) => void, reject: (err: Error) => void, treeId: string, tileId: string, requestContext: ClientRequestContext) {
-      requestContext.enter();
 
       let ret;
       try {
@@ -2193,7 +2189,6 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
     /** @internal */
     public async requestTileContent(requestContext: ClientRequestContext, treeId: string, tileId: string): Promise<IModelJsNative.TileContent> {
-      requestContext.enter();
 
       return new Promise<IModelJsNative.TileContent>((resolve, reject) => {
         this.pollTileContent(resolve, reject, treeId, tileId, requestContext);
@@ -2202,7 +2197,6 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
     /** @internal */
     public async getTileContent(requestContext: ClientRequestContext, treeId: string, tileId: string): Promise<Uint8Array> {
-      requestContext.enter();
 
       const ret = await new Promise<IModelJsNative.ErrorStatusOrResult<any, Uint8Array>>((resolve) => {
         this._iModel.nativeDb.getTileContent(treeId, tileId, resolve);

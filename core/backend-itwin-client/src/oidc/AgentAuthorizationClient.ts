@@ -80,7 +80,6 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
    * @deprecated Use [[AgentAuthorizationClient.getAccessToken]] instead to always get a valid token.
    */
   public async refreshToken(requestContext: ClientRequestContext, jwt: AccessToken): Promise<AccessToken> {
-    requestContext.enter();
 
     // Refresh 1 minute before expiry
     const expiresAt = jwt.getExpiresAt();

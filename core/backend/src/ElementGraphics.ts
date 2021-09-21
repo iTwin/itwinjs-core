@@ -18,7 +18,6 @@ export async function generateElementGraphics(request: ElementGraphicsRequestPro
   const requestContext = ClientRequestContext.current;
   const result = await iModel.nativeDb.generateElementGraphics(request);
 
-  requestContext.enter();
   let error: string | undefined;
   switch (result.status) {
     case ElementGraphicsStatus.NoGeometry:
