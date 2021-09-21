@@ -548,7 +548,7 @@ export class ChangeSummaryManager {
     const { iModelId, iTwinId, range } = args;
     range.end = range.end ?? (await IModelHost.hubAccess.getChangesetFromVersion({ user, iModelId, version: IModelVersion.latest() })).index;
     if (range.first > range.end)
-      throw new IModelError(IModelStatus.BadArg, "Invalid range of changesets", undefined, undefined, () => ({ iModelId, ...range }));
+      throw new IModelError(IModelStatus.BadArg, "Invalid range of changesets");
 
     const changesets = await IModelHost.hubAccess.queryChangesets({ user, iModelId, range });
 

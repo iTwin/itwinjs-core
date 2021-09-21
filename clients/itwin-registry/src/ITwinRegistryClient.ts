@@ -160,7 +160,6 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
     innerQuery.$top = innerQuery.$top ? innerQuery.$top + (innerQuery.$skip ?? 0) : undefined;
     innerQuery.$skip = undefined;
 
-    requestContext.enter();
     const projectITwins: ITwin[] = await this.getInstances<Project>(requestContext, Project, "/Repositories/BentleyCONNECT--Main/ConnectedContext/project/", innerQuery);
     const assetITwins: ITwin[] = await this.getInstances<Asset>(requestContext, Asset, "/Repositories/BentleyCONNECT--Main/ConnectedContext/asset/", innerQuery);
 

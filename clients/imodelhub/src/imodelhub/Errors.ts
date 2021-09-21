@@ -60,7 +60,7 @@ export class IModelHubError extends WsgError {
   }
 
   /**
-   * Make extended data available publically.
+   * Make extended data available publicly.
    */
   private copyExtendedData(): void {
     this.data = this._data;
@@ -163,7 +163,7 @@ export class IModelHubError extends WsgError {
    * @internal
    */
   public override log(): void {
-    (this.getLogLevel())(loggerCategory, this.logMessage(), this.getMetaData());
+    (this.getLogLevel())(loggerCategory, this.logMessage(), () => this.getMetaData());
   }
 }
 

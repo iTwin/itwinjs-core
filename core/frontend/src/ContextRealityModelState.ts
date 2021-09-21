@@ -8,20 +8,16 @@
 
 import { GuidString, Id64String } from "@bentley/bentleyjs-core";
 import { Angle } from "@bentley/geometry-core";
-import {
-  CartographicRange, ContextRealityModel, ContextRealityModelProps, FeatureAppearance, OrbitGtBlobProps,
-} from "@bentley/imodeljs-common";
+import { CartographicRange, ContextRealityModel, ContextRealityModelProps, FeatureAppearance, OrbitGtBlobProps } from "@bentley/imodeljs-common";
 import { AccessToken } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
 import { DisplayStyleState } from "./DisplayStyleState";
 import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
-import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { SpatialModelState } from "./ModelState";
-import {
-  createOrbitGtTileTreeReference, createRealityTileTreeReference, RealityModelTileTree, TileTreeReference,
-} from "./tile/internal";
+import { PlanarClipMaskState } from "./PlanarClipMaskState";
+import { createOrbitGtTileTreeReference, createRealityTileTreeReference, RealityModelTileTree, TileTreeReference } from "./tile/internal";
 
 async function getAccessToken(): Promise<AccessToken | undefined> {
   if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.hasSignedIn)
@@ -128,7 +124,6 @@ export async function queryRealityData(criteria: RealityDataQueryCriteria): Prom
     return availableRealityModels;
 
   const requestContext = await AuthorizedFrontendRequestContext.create();
-  requestContext.enter();
 
   const client = new RealityDataClient();
 
@@ -142,8 +137,6 @@ export async function queryRealityData(criteria: RealityDataQueryCriteria): Prom
   } else {
     realityData = await client.getRealityDataInITwin(requestContext, iTwinId);
   }
-
-  requestContext.enter();
 
   // Get set of URLs that are directly attached to the model.
   const modelRealityDataIds = new Set<string>();
@@ -189,7 +182,6 @@ export async function queryRealityData(criteria: RealityDataQueryCriteria): Prom
         };
       }
 
-      requestContext.enter();
       if (!modelRealityDataIds.has(currentRealityData.id))
         availableRealityModels.push({
           tilesetUrl: url, name: realityDataName, description: (currentRealityData.description ? currentRealityData.description : ""),

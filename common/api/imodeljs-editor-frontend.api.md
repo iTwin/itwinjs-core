@@ -23,19 +23,27 @@ import { DynamicsContext } from '@bentley/imodeljs-frontend';
 import { EcefLocation } from '@bentley/imodeljs-common';
 import { EcefLocationProps } from '@bentley/imodeljs-common';
 import { EditManipulator } from '@bentley/imodeljs-frontend';
+import { ElementGeometryCacheFilter } from '@bentley/imodeljs-editor-common';
 import { ElementGeometryInfo } from '@bentley/imodeljs-common';
+import { ElementGeometryResultProps } from '@bentley/imodeljs-editor-common';
 import { ElementSetTool } from '@bentley/imodeljs-frontend';
 import { EventHandled } from '@bentley/imodeljs-frontend';
+import { FeatureAppearance } from '@bentley/imodeljs-common';
+import { FeatureOverrideProvider } from '@bentley/imodeljs-frontend';
+import { FeatureSymbology } from '@bentley/imodeljs-frontend';
 import { FlatBufferGeometryStream } from '@bentley/imodeljs-common';
 import { GeometricElementProps } from '@bentley/imodeljs-common';
 import { GeometryParams } from '@bentley/imodeljs-common';
 import { GeometryQuery } from '@bentley/geometry-core';
 import { GeometryStreamProps } from '@bentley/imodeljs-common';
+import { GraphicBranchOptions } from '@bentley/imodeljs-frontend';
+import { GraphicType } from '@bentley/imodeljs-frontend';
 import { HitDetail } from '@bentley/imodeljs-frontend';
 import { Id64Arg } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { JsonGeometryStream } from '@bentley/imodeljs-common';
+import { LocateResponse } from '@bentley/imodeljs-frontend';
 import { Matrix3d } from '@bentley/geometry-core';
 import { Path } from '@bentley/geometry-core';
 import { Placement } from '@bentley/imodeljs-common';
@@ -50,6 +58,10 @@ import { RenderGraphic } from '@bentley/imodeljs-frontend';
 import { RenderGraphicOwner } from '@bentley/imodeljs-frontend';
 import { ScreenViewport } from '@bentley/imodeljs-frontend';
 import { SnapDetail } from '@bentley/imodeljs-frontend';
+import { SolidModelingCommandIpc } from '@bentley/imodeljs-editor-common';
+import { SubEntityGeometryProps } from '@bentley/imodeljs-editor-common';
+import { SubEntityLocationProps } from '@bentley/imodeljs-editor-common';
+import { SubEntityProps } from '@bentley/imodeljs-editor-common';
 import { Tool } from '@bentley/imodeljs-frontend';
 import { ToolAssistanceInstruction } from '@bentley/imodeljs-frontend';
 import { Transform } from '@bentley/geometry-core';
@@ -563,6 +575,7 @@ export interface EditorOptions {
     registerBasicManipulationTools?: true | undefined;
     registerProjectLocationTools?: true | undefined;
     registerSketchTools?: true | undefined;
+    registerSolidModelingTools?: true | undefined;
     registerUndoRedoTools?: true | undefined;
 }
 
@@ -582,6 +595,69 @@ export class EditTools {
 }
 
 // @alpha
+export abstract class ElementGeometryCacheTool extends ElementSetTool implements FeatureOverrideProvider {
+    // (undocumented)
+    addFeatureOverrides(overrides: FeatureSymbology.Overrides, _vp: Viewport): void;
+    // (undocumented)
+    protected get agendaAppearance(): FeatureAppearance;
+    // (undocumented)
+    protected allowView(vp: Viewport): boolean;
+    // (undocumented)
+    static callCommand<T extends keyof SolidModelingCommandIpc>(method: T, ...args: Parameters<SolidModelingCommandIpc[T]>): ReturnType<SolidModelingCommandIpc[T]>;
+    // (undocumented)
+    protected clearElementGeometryCache(): Promise<void>;
+    // (undocumented)
+    protected clearGraphic(): void;
+    // (undocumented)
+    protected createGraphic(graphicData: Uint8Array): Promise<void>;
+    // (undocumented)
+    protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
+    // (undocumented)
+    protected getGraphicData(_ev: BeButtonEvent): Promise<Uint8Array | undefined>;
+    // (undocumented)
+    protected _graphicsPending?: true | undefined;
+    // (undocumented)
+    protected _graphicsProvider?: ElementGeometryGraphicsProvider;
+    // (undocumented)
+    isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
+    // (undocumented)
+    protected isElementValidForOperation(hit: HitDetail, out?: LocateResponse): Promise<boolean>;
+    // (undocumented)
+    protected onAgendaModified(): Promise<void>;
+    // (undocumented)
+    onCleanup(): Promise<void>;
+    // (undocumented)
+    onDynamicFrame(_ev: BeButtonEvent, context: DynamicsContext): void;
+    // (undocumented)
+    onMouseMotion(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    protected startCommand(): Promise<string>;
+    // (undocumented)
+    protected _startedCmd?: string;
+    // (undocumented)
+    protected updateAgendaAppearanceProvider(): void;
+    // (undocumented)
+    protected updateGraphic(ev: BeButtonEvent, isDynamics: boolean): Promise<void>;
+    // (undocumented)
+    protected get wantAgendaAppearanceOverride(): boolean;
+}
+
+// @alpha (undocumented)
+export class ElementGeometryGraphicsProvider {
+    constructor(iModel: IModelConnection);
+    // (undocumented)
+    addDecoration(context: DecorateContext, type: GraphicType, transform?: Transform, opts?: GraphicBranchOptions): void;
+    // (undocumented)
+    addGraphic(context: DynamicsContext, transform?: Transform, opts?: GraphicBranchOptions): void;
+    cleanupGraphic(): void;
+    createGraphic(graphicData: Uint8Array): Promise<boolean>;
+    // (undocumented)
+    graphic?: RenderGraphicOwner;
+    // (undocumented)
+    readonly iModel: IModelConnection;
+}
+
+// @alpha
 export class MoveElementsTool extends TransformElementsTool {
     // (undocumented)
     protected calculateTransform(ev: BeButtonEvent): Transform | undefined;
@@ -593,6 +669,60 @@ export class MoveElementsTool extends TransformElementsTool {
     protected provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void;
     // (undocumented)
     static toolId: string;
+}
+
+// @alpha
+export class OffsetFacesTool extends ElementGeometryCacheTool {
+    // (undocumented)
+    protected _acceptedSubEntity?: SubEntityLocationProps;
+    // (undocumented)
+    protected applyAgendaOperation(ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
+    protected chooseNextHit(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    protected clearSubEntityGraphic(): void;
+    // (undocumented)
+    protected _currentSubEntity?: SubEntityData;
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    // (undocumented)
+    protected doLocateSubEntity(ev: BeButtonEvent, newSearch: boolean): Promise<boolean>;
+    // (undocumented)
+    protected doPickSubEntities(id: Id64String, boresite: Ray3d): Promise<SubEntityLocationProps | undefined>;
+    // (undocumented)
+    protected gatherInput(ev: BeButtonEvent): Promise<EventHandled | undefined>;
+    // (undocumented)
+    protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
+    // (undocumented)
+    protected getGraphicData(ev: BeButtonEvent): Promise<Uint8Array | undefined>;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    onCleanup(): Promise<void>;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    processAgenda(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    requireWriteableTarget(): boolean;
+    // (undocumented)
+    protected setCurrentSubEntity(id?: Id64String, current?: SubEntityLocationProps, chordTolerance?: number): Promise<boolean>;
+    // (undocumented)
+    protected setupAndPromptForNextAction(): void;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    protected updateGraphic(ev: BeButtonEvent, isDynamics: boolean): Promise<void>;
+    // (undocumented)
+    protected updateSubEntityGraphic(ev: BeButtonEvent): Promise<boolean>;
+    // (undocumented)
+    protected get wantAccuSnap(): boolean;
+    // (undocumented)
+    protected get wantAdditionalInput(): boolean;
+    // (undocumented)
+    protected get wantAgendaAppearanceOverride(): boolean;
+    // (undocumented)
+    protected get wantDynamics(): boolean;
 }
 
 // @beta
@@ -810,7 +940,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     // (undocumented)
     protected _accept: boolean;
     // (undocumented)
-    acceptCoordinates(): void;
+    acceptCoordinates(): Promise<void>;
     // (undocumented)
     acceptKnownLocation(ev: BeButtonEvent): void;
     // (undocumented)
@@ -1013,6 +1143,28 @@ export enum RotateMethod {
     By3Points = 0,
     // (undocumented)
     ByAngle = 1
+}
+
+// @alpha (undocumented)
+export class SubEntityData {
+    // (undocumented)
+    cleanupGraphic(): void;
+    // (undocumented)
+    createGraphic(iModel: IModelConnection): Promise<boolean>;
+    // (undocumented)
+    display(context: DecorateContext, accepted: boolean): void;
+    // (undocumented)
+    geom?: SubEntityGeometryProps;
+    // (undocumented)
+    getAppearance(vp: Viewport, accepted: boolean): FeatureAppearance;
+    // (undocumented)
+    protected _graphicsProvider?: ElementGeometryGraphicsProvider;
+    // (undocumented)
+    get hasGraphic(): boolean;
+    // (undocumented)
+    info?: SubEntityProps;
+    // (undocumented)
+    isSame(other: SubEntityProps): boolean;
 }
 
 // @alpha

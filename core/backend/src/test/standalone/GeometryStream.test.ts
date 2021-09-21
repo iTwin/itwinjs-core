@@ -510,10 +510,10 @@ describe("GeometryStream", () => {
     const strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(imodel, { descr: "TestArrowHead", lcId: 0, lcType: LineStyleDefinition.ComponentType.Internal, symbols: [{ symId: pointSymbolData!.compId, strokeNum: -1, mod1: LineStyleDefinition.SymbolOptions.CurveEnd }] });
     assert.isTrue(undefined !== strokePointData);
 
-    const compoundData = LineStyleDefinition.Utils.createCompoundComponent(imodel, { comps: [{ id: strokePointData!.compId, type: strokePointData!.compType }, { id: 0, type: LineStyleDefinition.ComponentType.Internal }] });
+    const compoundData = LineStyleDefinition.Utils.createCompoundComponent(imodel, { comps: [{ id: strokePointData.compId, type: strokePointData.compType }, { id: 0, type: LineStyleDefinition.ComponentType.Internal }] });
     assert.isTrue(undefined !== compoundData);
 
-    const styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, "TestArrowStyle", compoundData!);
+    const styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, "TestArrowStyle", compoundData);
     assert.isTrue(Id64.isValidId64(styleId));
 
     const builder = new GeometryStreamBuilder();
@@ -566,17 +566,17 @@ describe("GeometryStream", () => {
     lsSymbols.push({ symId: pointSymbolData!.compId, strokeNum: 1, mod1: LineStyleDefinition.SymbolOptions.Center });
     lsSymbols.push({ symId: pointSymbolData!.compId, strokeNum: 3, mod1: LineStyleDefinition.SymbolOptions.Center });
 
-    const strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(imodel, { descr: "TestGapSymbolsLinePoint", lcId: strokePatternData!.compId, symbols: lsSymbols });
+    const strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(imodel, { descr: "TestGapSymbolsLinePoint", lcId: strokePatternData.compId, symbols: lsSymbols });
     assert.isTrue(undefined !== strokePointData);
 
     const lsComponents: LineStyleDefinition.Components = [];
-    lsComponents.push({ id: strokePointData!.compId, type: strokePointData!.compType });
-    lsComponents.push({ id: strokePatternData!.compId, type: strokePatternData!.compType });
+    lsComponents.push({ id: strokePointData.compId, type: strokePointData.compType });
+    lsComponents.push({ id: strokePatternData.compId, type: strokePatternData.compType });
 
     const compoundData = LineStyleDefinition.Utils.createCompoundComponent(imodel, { comps: lsComponents });
     assert.isTrue(undefined !== compoundData);
 
-    const styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, "TestDashCircleDotCircleDashStyle", compoundData!);
+    const styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, "TestDashCircleDotCircleDashStyle", compoundData);
     assert.isTrue(Id64.isValidId64(styleId));
 
     const builder = new GeometryStreamBuilder();

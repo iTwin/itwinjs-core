@@ -73,9 +73,9 @@ export class IModelImporter {
 
   /** Import the specified ModelProps (either as an insert or an update) into the target iModel. */
   public importModel(modelProps: ModelProps): void {
-    if ((undefined === modelProps.id) || !Id64.isValidId64(modelProps.id)) {
-      throw new IModelError(IModelStatus.InvalidId, "Model Id not provided, should be the same as the ModeledElementId", Logger.logError, loggerCategory);
-    }
+    if ((undefined === modelProps.id) || !Id64.isValidId64(modelProps.id))
+      throw new IModelError(IModelStatus.InvalidId, "Model Id not provided, should be the same as the ModeledElementId");
+
     if (this.doNotUpdateElementIds.has(modelProps.id)) {
       Logger.logInfo(loggerCategory, `Do not update target model ${modelProps.id}`);
       return;
@@ -108,7 +108,7 @@ export class IModelImporter {
       if (!this.targetDb.containsClass(modelProps.classFullName)) {
         // replace standard insert error with something more helpful
         const errorMessage = `Model class "${modelProps.classFullName}" not found in the target iModel. Was the latest version of the schema imported?`;
-        throw new IModelError(IModelStatus.InvalidName, errorMessage, Logger.logError, loggerCategory);
+        throw new IModelError(IModelStatus.InvalidName, errorMessage);
       }
       throw error; // throw original error
     }
@@ -160,7 +160,7 @@ export class IModelImporter {
       if (!this.targetDb.containsClass(elementProps.classFullName)) {
         // replace standard insert error with something more helpful
         const errorMessage = `Element class "${elementProps.classFullName}" not found in the target iModel. Was the latest version of the schema imported?`;
-        throw new IModelError(IModelStatus.InvalidName, errorMessage, Logger.logError, loggerCategory);
+        throw new IModelError(IModelStatus.InvalidName, errorMessage);
       }
       throw error; // throw original error
     }
@@ -171,7 +171,7 @@ export class IModelImporter {
    */
   protected onUpdateElement(elementProps: ElementProps): void {
     if (!elementProps.id) {
-      throw new IModelError(IModelStatus.InvalidId, "ElementId not provided", Logger.logError, loggerCategory);
+      throw new IModelError(IModelStatus.InvalidId, "ElementId not provided");
     }
     this.targetDb.elements.updateElement(elementProps);
     Logger.logInfo(loggerCategory, `Updated ${this.formatElementForLogger(elementProps)}`);
@@ -281,7 +281,7 @@ export class IModelImporter {
       if (!this.targetDb.containsClass(aspectProps.classFullName)) {
         // replace standard insert error with something more helpful
         const errorMessage = `ElementAspect class "${aspectProps.classFullName}" not found in the target iModel. Was the latest version of the schema imported?`;
-        throw new IModelError(IModelStatus.InvalidName, errorMessage, Logger.logError, loggerCategory);
+        throw new IModelError(IModelStatus.InvalidName, errorMessage);
       }
       throw error; // throw original error
     }
@@ -350,7 +350,7 @@ export class IModelImporter {
       if (!this.targetDb.containsClass(relationshipProps.classFullName)) {
         // replace standard insert error with something more helpful
         const errorMessage = `Relationship class "${relationshipProps.classFullName}" not found in the target iModel. Was the latest version of the schema imported?`;
-        throw new IModelError(IModelStatus.InvalidName, errorMessage, Logger.logError, loggerCategory);
+        throw new IModelError(IModelStatus.InvalidName, errorMessage);
       }
       throw error; // throw original error
     }
@@ -361,7 +361,7 @@ export class IModelImporter {
    */
   protected onUpdateRelationship(relationshipProps: RelationshipProps): void {
     if (!relationshipProps.id) {
-      throw new IModelError(IModelStatus.InvalidId, "Relationship instance Id not provided", Logger.logError, loggerCategory);
+      throw new IModelError(IModelStatus.InvalidId, "Relationship instance Id not provided");
     }
     this.targetDb.relationships.updateInstance(relationshipProps);
     Logger.logInfo(loggerCategory, `Updated ${this.formatRelationshipForLogger(relationshipProps)}`);

@@ -36,7 +36,6 @@ describe("Agent iModel Download (#integration)", () => {
     const agentClient = new AgentAuthorizationClient(agentConfiguration);
     const jwt = await agentClient.getAccessToken(new ClientRequestContext());
     user = new AuthorizedBackendRequestContext(jwt);
-    user.enter();
 
     testITwinId = await HubUtility.getTestITwinId(user);
     testReadIModelId = await HubUtility.getTestIModelId(user, HubUtility.testIModelNames.readOnly);

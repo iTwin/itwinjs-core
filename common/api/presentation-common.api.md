@@ -13,7 +13,6 @@ import { GuidString } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { IModelRpcProps } from '@bentley/imodeljs-common';
-import { LogFunction } from '@bentley/bentleyjs-core';
 import { RpcInterface } from '@bentley/imodeljs-common';
 import { UnitSystemKey } from '@bentley/imodeljs-quantity';
 
@@ -1932,7 +1931,7 @@ export const PRESENTATION_IPC_CHANNEL_NAME = "presentation-ipc-interface";
 
 // @public
 export class PresentationError extends BentleyError {
-    constructor(errorNumber: PresentationStatus, message?: string, log?: LogFunction, getMetaData?: GetMetaDataFunction);
+    constructor(errorNumber: PresentationStatus, message?: string, getMetaData?: GetMetaDataFunction);
     protected _initName(): string;
 }
 

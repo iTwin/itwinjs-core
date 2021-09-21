@@ -200,11 +200,9 @@ class SeedFileHandler {
    * @returns Resolves to the seed file.
    */
   public async get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: SeedFileQuery = new SeedFileQuery()): Promise<SeedFile[]> {
-    requestContext.enter();
     Logger.logInfo(loggerCategory, "Started querying seed files", () => ({ iModelId }));
 
     const seedFiles = await this._handler.getInstances<SeedFile>(requestContext, SeedFile, this.getRelativeUrl(iModelId, query.getId()), query.getQueryOptions());
-    requestContext.enter();
 
     Logger.logInfo(loggerCategory, "Finished querying seed files", () => ({ iModelId, count: seedFiles.length }));
     return seedFiles;
@@ -218,7 +216,6 @@ class SeedFileHandler {
    * @param progressCallback Callback for tracking progress.
    */
   public async uploadSeedFile(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, seedPath: string, seedFileDescription?: string, progressCallback?: ProgressCallback): Promise<SeedFile> {
-    requestContext.enter();
     Logger.logInfo(loggerCategory, "Started uploading seed file", () => ({ iModelId, seedPath }));
 
     const seedFile = new SeedFile();
@@ -228,15 +225,12 @@ class SeedFileHandler {
       seedFile.fileDescription = seedFileDescription;
 
     const createdSeedFile: SeedFile = await this._handler.postInstance<SeedFile>(requestContext, SeedFile, this.getRelativeUrl(iModelId), seedFile);
-    requestContext.enter();
     await this._fileHandler!.uploadFile(requestContext, createdSeedFile.uploadUrl!, seedPath, progressCallback);
-    requestContext.enter();
     createdSeedFile.uploadUrl = undefined;
     createdSeedFile.downloadUrl = undefined;
     createdSeedFile.isUploaded = true;
 
     const confirmSeedFile: SeedFile = await this._handler.postInstance<SeedFile>(requestContext, SeedFile, this.getRelativeUrl(iModelId, createdSeedFile.id), createdSeedFile);
-    requestContext.enter();
     Logger.logTrace(loggerCategory, "Finished uploading seed file", () => confirmSeedFile);
 
     return confirmSeedFile;
@@ -413,13 +407,11 @@ export class IModelsHandler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async get(requestContext: AuthorizedClientRequestContext, iTwinId: string, query: IModelQuery = new IModelQuery()): Promise<HubIModel[]> {
-    requestContext.enter();
     Logger.logInfo(loggerCategory, `Started querying iModels in iTwin`, () => ({ iTwinId }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.defined("iTwinId", iTwinId); // iTwinId is a GUID for iModelHub and a JSON representation of an IModelBankAccessContext for iModelBank.
 
     const imodels = await this._handler.getInstances<HubIModel>(requestContext, HubIModel, this.getRelativeUrl(iTwinId, query.getId()), query.getQueryOptions());
-    requestContext.enter();
     Logger.logInfo(loggerCategory, `Finished querying iModels in context`, () => ({ contextId: iTwinId, count: imodels.length }));
 
     return imodels;
@@ -435,7 +427,6 @@ export class IModelsHandler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async delete(requestContext: AuthorizedClientRequestContext, iTwinId: string, iModelId: GuidString): Promise<void> {
-    requestContext.enter();
     Logger.logInfo(loggerCategory, "Started deleting iModel", () => ({ iModelId, contextId: iTwinId }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iTwinId", iTwinId);
@@ -450,7 +441,6 @@ export class IModelsHandler {
     } else {
       await this._handler.delete(requestContext, this.getRelativeUrl(iTwinId, iModelId));
     }
-    requestContext.enter();
     Logger.logInfo(loggerCategory, "Finished deleting iModel", () => ({ iModelId, contextId: iTwinId }));
   }
 
@@ -463,7 +453,6 @@ export class IModelsHandler {
    * @param iModelType iModel type.
    */
   private async createIModelInstance(requestContext: AuthorizedClientRequestContext, iTwinId: string, iModelName: string, description?: string, iModelTemplate?: string, iModelType?: IModelType, extent?: number[]): Promise<HubIModel> {
-    requestContext.enter();
     Logger.logInfo(loggerCategory, `Creating iModel with name ${iModelName}`, () => ({ contextId: iTwinId }));
 
     let imodel: HubIModel;
@@ -480,10 +469,9 @@ export class IModelsHandler {
 
     try {
       imodel = await this._handler.postInstance<HubIModel>(requestContext, HubIModel, this.getRelativeUrl(iTwinId), iModel);
-      requestContext.enter();
+
       Logger.logTrace(loggerCategory, `Created iModel instance with name ${iModelName}`, () => ({ contextId: iTwinId }));
     } catch (err) {
-      requestContext.enter();
       if (!(err instanceof IModelHubError) || IModelHubStatus.iModelAlreadyExists !== err.errorNumber) {
         Logger.logWarning(loggerCategory, `Can not create iModel: ${err.message}`, () => ({ contextId: iTwinId }));
 
@@ -500,7 +488,7 @@ export class IModelsHandler {
       Logger.logInfo(loggerCategory, `Querying iModel by name ${iModelName}`, () => ({ contextId: iTwinId }));
 
       const imodels = await this.get(requestContext, iTwinId, new IModelQuery().byName(iModelName));
-      requestContext.enter();
+
       Logger.logTrace(loggerCategory, `Queried iModel by name ${iModelName}`, () => ({ contextId: iTwinId }));
 
       if (imodels.length > 0) {
@@ -525,7 +513,6 @@ export class IModelsHandler {
    */
   public async getInitializationState(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<InitializationState> {
     const seedFiles: SeedFile[] = await this._seedFileHandler.get(requestContext, iModelId, new SeedFileQuery().latest());
-    requestContext.enter();
     if (seedFiles.length < 1)
       throw new IModelHubError(IModelHubStatus.FileDoesNotExist);
 
@@ -550,13 +537,11 @@ export class IModelsHandler {
    * @param timeOutInMilliseconds Maximum time to wait for the initialization.
    */
   private async waitForInitialization(requestContext: AuthorizedClientRequestContext, iTwinId: string, imodel: HubIModel, timeOutInMilliseconds: number): Promise<HubIModel> {
-    requestContext.enter();
     const errorMessage = "iModel initialization failed";
     const retryDelay = timeOutInMilliseconds / 10;
     for (let retries = 10; retries > 0; --retries) {
       try {
         const initState = await this.getInitializationState(requestContext, imodel.id!);
-        requestContext.enter();
         if (initState === InitializationState.Successful) {
           Logger.logTrace(loggerCategory, "Created iModel", () => ({ contextId: iTwinId, iModelId: imodel.id }));
           imodel.initialized = true;
@@ -570,9 +555,7 @@ export class IModelsHandler {
         }
 
         await new Promise((resolve) => setTimeout(resolve, retryDelay));
-        requestContext.enter();
       } catch (err) {
-        requestContext.enter();
         Logger.logWarning(loggerCategory, errorMessage);
         throw err;
       }
@@ -622,8 +605,7 @@ export class IModelsHandler {
    * @internal
    */
   public async create(requestContext: AuthorizedClientRequestContext, iTwinId: string, name: string, createOptions?: IModelCreateOptions): Promise<HubIModel> {
-    requestContext.enter();
-    Logger.logInfo(loggerCategory, "Creating iModel", () => ({ contextId: iTwinId }));
+    Logger.logInfo(loggerCategory, "Creating iModel", () => ({ iTwinId }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iTwinId", iTwinId);
     ArgumentCheck.defined("name", name);
@@ -649,7 +631,6 @@ export class IModelsHandler {
 
     const template = IModelsHandler._defaultCreateOptionsProvider.templateToString(createOptions);
     const imodel = await this.createIModelInstance(requestContext, iTwinId, name, createOptions.description, template, createOptions.iModelType, createOptions.extent);
-    requestContext.enter();
 
     if (createOptions.template === iModelTemplateEmpty) {
       return imodel;
@@ -662,7 +643,6 @@ export class IModelsHandler {
         await this.delete(requestContext, iTwinId, imodel.id!);
         throw err;
       }
-      requestContext.enter();
     }
 
     return this.waitForInitialization(requestContext, iTwinId, imodel, createOptions.timeOutInMilliseconds!);
@@ -679,7 +659,6 @@ export class IModelsHandler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async update(requestContext: AuthorizedClientRequestContext, iTwinId: string, imodel: HubIModel): Promise<HubIModel> {
-    requestContext.enter();
     Logger.logInfo(loggerCategory, "Updating iModel", () => ({ contextId: iTwinId, iModelId: imodel.id }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iTwinId", iTwinId);
@@ -699,7 +678,6 @@ export class IModelsHandler {
    * @internal
    */
   public async download(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, path: string, progressCallback?: ProgressCallback): Promise<void> {
-    requestContext.enter();
     Logger.logInfo(loggerCategory, "Started downloading seed file", () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
@@ -712,13 +690,11 @@ export class IModelsHandler {
       throw IModelHubClientError.fileHandler();
 
     const seedFiles: SeedFile[] = await this._seedFileHandler.get(requestContext, iModelId, new SeedFileQuery().selectDownloadUrl().latest());
-    requestContext.enter();
 
     if (!seedFiles || !seedFiles[0] || !seedFiles[0].downloadUrl)
       throw IModelHubError.fromId(IModelHubStatus.FileDoesNotExist, "Failed to get seed file.");
 
     await this._fileHandler.downloadFile(requestContext, seedFiles[0].downloadUrl, path, parseInt(seedFiles[0].fileSize!, 10), progressCallback);
-    requestContext.enter();
     Logger.logInfo(loggerCategory, "Finished downloading seed file", () => ({ iModelId }));
   }
 }
@@ -751,7 +727,6 @@ export class IModelHandler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async get(requestContext: AuthorizedClientRequestContext, iTwinId: string): Promise<HubIModel> {
-    requestContext.enter();
 
     Logger.logInfo(loggerCategory, "Querying iModel", () => ({ iTwinId }));
     const query = new IModelQuery().orderBy("CreatedDate+asc").top(1);
@@ -794,7 +769,7 @@ export class IModelHandler {
   }
 
   /**
-   * Create an iModel from given seed file. In most cases [BriefcaseManager.create]($backend) should be used instead. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
+   * Create an iModel from given seed file. In most cases [BackendHubAccess.createNewIModel]($backend) should be used instead. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
    *
    * This method does not work on browsers. If iModel creation fails before finishing file upload, partially created iModel is deleted. This method is not supported in iModelBank.
    * @param requestContext The client request context.
@@ -807,12 +782,11 @@ export class IModelHandler {
    * @internal
    */
   public async create(requestContext: AuthorizedClientRequestContext, iTwinId: string, name: string, createOptions?: IModelCreateOptions): Promise<HubIModel> {
-    requestContext.enter();
 
     let imodelExists = true;
     try {
       await this.get(requestContext, iTwinId);
-      requestContext.enter();
+
     } catch (err) {
       if (err instanceof IModelHubError && err.errorNumber === IModelHubStatus.iModelDoesNotExist)
         imodelExists = false;
