@@ -186,7 +186,7 @@ Assistants for Tools to find existing geometry and for creating new geometry:
 
 Load new functionality to a running instance of an application in a web browser.
 
-- 👷 Load registered [Extension](./frontend/Extensions.md)
+- 👷 Load registered `Extension`
 - 🎫 Register and upload your own Extensions
 
 ## Bridging data into iModels
