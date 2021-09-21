@@ -330,7 +330,6 @@ export namespace IModelJson {
     /** Radius at end  (0 for straight line) */
     endRadius?: number;
     /** length along curve.
-     * REMARK: "length" is preferred.  "curveLength" is deprecated.
      */
     length?: number;
     /** Fractional part of active interval.
