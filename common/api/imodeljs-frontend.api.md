@@ -7408,10 +7408,6 @@ export class QuantityFormatter implements UnitsProvider {
     // @internal
     protected loadFormatAndParsingMapsForSystem(systemType?: UnitSystemKey): Promise<void>;
     readonly onActiveFormattingUnitSystemChanged: BeUiEvent<FormattingUnitSystemChangedArgs>;
-    // @deprecated
-    readonly onActiveUnitSystemChanged: BeUiEvent<{
-        useImperial: boolean;
-    }>;
     // @internal
     onInitialized(): Promise<void>;
     readonly onQuantityFormatsChanged: BeUiEvent<QuantityFormatsChangedArgs>;

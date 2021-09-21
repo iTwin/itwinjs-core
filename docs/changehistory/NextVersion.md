@@ -325,9 +325,7 @@ In `3.0` changes have been made that changed the way this attribute is calculate
   });
   ```
 
-
 It is no longer necessary to supply a [Viewport]($frontend) when creating a [GraphicBuilder]($frontend). Instead, you can supply to [RenderSystem.createGraphic]($frontend) a [CustomGraphicBuilderOptions]($frontend) containing a function that can compute the level of detail appropriate for the produced [RenderGraphic]($frontend).
-
 
 ## Changed return types
 
@@ -394,23 +392,25 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 
 ### @bentley/imodeljs-frontend
 
-| Removed                                | Replacement                                               |
-| -------------------------------------- | --------------------------------------------------------- |
-| `CheckpointConnection.open`            | `CheckpointConnection.openRemote`                         |
-| `DecorateContext.screenViewport`       | `DecorateContext.viewport`                                |
-| `IModelApp.iModelClient`               | `IModelHubFrontend.iModelClient`                          |
-| `IModelConnection.Models.loaded`       | use `for..of` to iterate and `getLoaded` to look up by Id |
-| `IModelConnection.Views.saveThumbnail` | use IPC and `IModelDb.saveThumbnail`                      |
-| `IOidcFrontendClient`                  | `FrontendAuthorizationClient`                             |
-| `isIOidcFrontendClient`                | `FrontendAuthorizationClient`                             |
-| `OidcBrowserClient`                    | `BrowserAuthorizationClient`                              |
-| `OidcFrontendClientConfiguration`      | `BrowserAuthorizationClientConfiguration`                 |
-| `RemoteBriefcaseConnection`            | `CheckpointConnection`                                    |
-| `ScreenViewport.decorationDiv`         | `DecorateContext.addHtmlDecoration`                       |
-| `UnitSystemKey`                        | Moved to `@bentley/imodeljs-quantity`                     |
-| `ViewManager.forEachViewport`          | Use a `for..of` loop                                      |
-| `ViewState3d.lookAtPerspectiveOrOrtho` | `ViewState3d.LookAt`                                      |
-| `ViewState3d.lookAtUsingLensAngle`     | `ViewState3d.lookAt`                                      |
+| Removed                                       | Replacement                                               |
+| --------------------------------------------- | --------------------------------------------------------- |
+| `CheckpointConnection.open`                   | `CheckpointConnection.openRemote`                         |
+| `DecorateContext.screenViewport`              | `DecorateContext.viewport`                                |
+| `IModelApp.iModelClient`                      | `IModelHubFrontend.iModelClient`                          |
+| `IModelConnection.Models.loaded`              | use `for..of` to iterate and `getLoaded` to look up by Id |
+| `IModelConnection.Views.saveThumbnail`        | use IPC and `IModelDb.saveThumbnail`                      |
+| `IOidcFrontendClient`                         | `FrontendAuthorizationClient`                             |
+| `isIOidcFrontendClient`                       | `FrontendAuthorizationClient`                             |
+| `OidcBrowserClient`                           | `BrowserAuthorizationClient`                              |
+| `OidcFrontendClientConfiguration`             | `BrowserAuthorizationClientConfiguration`                 |
+| `QuantityFormatter.onActiveUnitSystemChanged` | `QuantityFormatter.onActiveFormattingUnitSystemChanged`   |
+| `QuantityFormatter.useImperialFormats`        | `QuantityFormatter.setActiveUnitSystem/activeUnitSystem`  |
+| `RemoteBriefcaseConnection`                   | `CheckpointConnection`                                    |
+| `ScreenViewport.decorationDiv`                | `DecorateContext.addHtmlDecoration`                       |
+| `UnitSystemKey`                               | Moved to `@bentley/imodeljs-quantity`                     |
+| `ViewManager.forEachViewport`                 | Use a `for..of` loop                                      |
+| `ViewState3d.lookAtPerspectiveOrOrtho`        | `ViewState3d.LookAt`                                      |
+| `ViewState3d.lookAtUsingLensAngle`            | `ViewState3d.lookAt`                                      |
 
 ### @bentley/backend-itwin-client
 
