@@ -266,85 +266,8 @@ export class SasUrlExpired extends BentleyError {
 }
 
 // @internal
-export class UrlDiscoveryClient extends Client {
-    constructor();
-    // (undocumented)
-    static readonly configResolveUrlUsingRegion = "IMJS_BUDDI_RESOLVE_URL_USING_REGION";
-    discoverUrl(requestContext: ClientRequestContext, searchKey: string, regionId: number | undefined): Promise<string>;
-    getUrl(): Promise<string>;
-    protected getUrlSearchKey(): string;
-}
-
-// @internal
 export class UserCancelledError extends BentleyError {
     constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction);
-}
-
-// @beta
-export abstract class WsgClient extends Client {
-    protected constructor(apiVersion: string);
-    // (undocumented)
-    apiVersion: string;
-    protected deleteInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<void>;
-    protected getInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
-    protected getInstancesChunk<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, url: string, chunkedQueryContext: ChunkedQueryContext | undefined, typedConstructor: new () => T, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
-    getUrl(requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string>;
-    protected postInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T>;
-    protected postInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
-    protected postQuery<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
-    protected setupOptionDefaults(options: RequestOptions): Promise<void>;
-    // (undocumented)
-    protected _url?: string;
-}
-
-// @beta
-export class WsgError extends ResponseError {
-    constructor(errorNumber: number | HttpStatus, message?: string, getMetaData?: GetMetaDataFunction);
-    static getErrorStatus(errorId: number, httpStatusType: number): number;
-    static getWSStatusId(error: string): number;
-    log(): void;
-    static parse(response: any, log?: boolean): ResponseError;
-    static shouldRetry(error: any, response: any): boolean;
-}
-
-// @beta
-export abstract class WsgInstance extends ECInstance {
-    // (undocumented)
-    changeState?: ChangeState;
-    // (undocumented)
-    eTag?: string;
-    // (undocumented)
-    wsgId: string;
-}
-
-// @beta
-export class WsgQuery {
-    // @internal
-    protected addFilter(filter: string, operator?: "and" | "or"): void;
-    // @internal
-    protected addSelect(select: string): this;
-    filter(filter: string): this;
-    // @internal
-    getQueryOptions(): RequestQueryOptions;
-    orderBy(orderBy: string): this;
-    pageSize(n: number): this;
-    // (undocumented)
-    protected _query: RequestQueryOptions;
-    // @internal
-    resetQueryOptions(): void;
-    select(select: string): this;
-    skip(n: number): this;
-    top(n: number): this;
-}
-
-// @beta
-export interface WsgRequestOptions {
-    // (undocumented)
-    CustomOptions?: any;
-    // (undocumented)
-    RefreshInstances?: boolean;
-    // (undocumented)
-    ResponseContent?: "FullInstance" | "Empty" | "InstanceId";
 }
 
 

@@ -13,6 +13,7 @@ import { AngleSweep } from '@bentley/geometry-core';
 import { AnyCurvePrimitive } from '@bentley/geometry-core';
 import { Arc3d } from '@bentley/geometry-core';
 import { AsyncMethodsOf } from '@bentley/bentleyjs-core';
+import { AuthorizationClient } from '@bentley/itwin-client';
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { AuxChannel } from '@bentley/geometry-core';
 import { AuxCoordSystem2dProps } from '@bentley/imodeljs-common';

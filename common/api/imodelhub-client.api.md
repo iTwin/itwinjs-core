@@ -27,7 +27,6 @@ import { RequestQueryOptions } from '@bentley/itwin-client';
 import { RequestTimeoutOptions } from '@bentley/itwin-client';
 import { Response } from '@bentley/itwin-client';
 import { ResponseError } from '@bentley/itwin-client';
-import { UserInfo } from '@bentley/itwin-client';
 
 // @internal
 export function addApplicationVersion(version: string): HttpRequestOptionsTransformer;

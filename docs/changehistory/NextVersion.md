@@ -431,6 +431,7 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `Viewport.featureOverrideProvider`            | [Viewport.featureOverrideProviders]($frontend)                     |
 | `Viewport.setFlashed`                         | [Viewport.flashedId]($frontend)                                    |
 | `Viewport.setRedrawPending`                   | [Viewport.requestRedraw]($frontend)                                |
+| `WebAppViewer`                                | *eliminated*                                                       |
 
 ### @bentley/geometry-core
 
@@ -634,6 +635,13 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `RelationshipConstraint.deserialize`     | `RelationshipConstraint.fromJSON`                   |
 | `RelationshipConstraint.deserializeSync` | `RelationshipConstraint.fromJSONSync`               |
 | `RelationshipConstraint.toJson`          | `RelationshipConstraint.toJSON`                     |
+
+### @bentley/itwin-client
+
+| Removed                                  | Replacement                                                  |
+| -----------------------------------------| ------------------------------------------------------------ |
+| `UserInfo`                               | Moved to @bentley/ui-framework                               |
+| `AuthorizationClient.isAuthorized`       | *eliminated*
 
 <!---
 User Interface Changes - section to comment below

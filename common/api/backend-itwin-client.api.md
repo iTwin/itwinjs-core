@@ -24,7 +24,7 @@ import { TransformCallback } from 'stream';
 // @beta
 export class AgentAuthorizationClient extends BackendAuthorizationClient implements AuthorizationClient {
     constructor(agentConfiguration: AgentAuthorizationClientConfiguration);
-    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken | undefined>;
+    getAccessToken(): Promise<AccessToken>;
     get hasExpired(): boolean;
     get hasSignedIn(): boolean;
     get isAuthorized(): boolean;

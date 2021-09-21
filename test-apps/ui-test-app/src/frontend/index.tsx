@@ -15,7 +15,7 @@ import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-c
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
-import { BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
+import { IModelVersion, RpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
 import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import {
   AccuSnap, AuthorizedFrontendRequestContext, BriefcaseConnection, IModelApp, IModelConnection,
@@ -675,13 +675,6 @@ async function main() {
   SampleAppIModelApp.testAppConfiguration.useLocalSettings = SampleAppIModelApp.isEnvVarOn("IMJS_TESTAPP_USE_LOCAL_SETTINGS");
   Logger.logInfo("Configuration", JSON.stringify(SampleAppIModelApp.testAppConfiguration)); // eslint-disable-line no-console
 
-  let rpcParams: BentleyCloudRpcParams;
-  if (process.env.IMJS_GP_BACKEND) {
-    rpcParams = { info: { title: "general-purpose-imodeljs-backend", version: "v2.0" }, uriPrefix: `https://${undefined === process.env.IMJS_URL_PREFIX ? "" : process.env.IMJS_URL_PREFIX}api.bentley.com` };
-  } else {
-    rpcParams = { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
-  }
-
   const opts: NativeAppOpts = {
     iModelApp: {
       accuSnap: new SampleAppAccuSnap(),
@@ -695,9 +688,9 @@ async function main() {
     },
     nativeApp: {
       authConfig: {
-        clientId: "imodeljs-electron-test",
-        redirectUri: ProcessDetector.isMobileAppFrontend ? "imodeljs://app/signin-callback" : "http://localhost:3000/signin-callback",
-        scope: baseOidcScopes.concat(["offline_access"]).join(" "),
+        clientId: "imodeljs-spa-test",
+        redirectUri: "http://localhost:3000/signin-callback",
+        scope: baseOidcScopes.concat("imodeljs-router").join(" "),
       },
     },
   };
