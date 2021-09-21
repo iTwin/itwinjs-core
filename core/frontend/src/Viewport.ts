@@ -1259,7 +1259,7 @@ export abstract class Viewport implements IDisposable {
     return undefined;
   }
 
-  /** The list of [[FeatureOverrideProviders]] registered with this viewport.
+  /** The list of [[FeatureOverrideProvider]]s registered with this viewport.
    * @see [[addFeatureOverrideProvider]] to register a new provider.
    * @see [[dropFeatureOverrideProvider]] to unregister a provider.
    * @see [[findFeatureOverrideProvider]] or [[findFeatureOverrideProviderOfType]] to find a registered provider.
