@@ -21,17 +21,6 @@ This package can also be installed into an application and the method MapLayersU
   npm run build
   ```
 
-4. Copy all the output files in the lib/build directory tree to imjs_extensions/map-layers directory in the web resources of the host application.
-
-  Optionally symbolic link files on window. Example below sets up ui-test-app.
-
-  ```sh
-  cd/d D:\imodeljs\test-apps\ui-test-app\build
-  md imjs_extensions
-  cd imjs_extensions
-  mklink /d map-layers D:\imodeljs\extensions\map-layers\lib\extension\
-  ```
-
 5. Start the host application - go to its directory and run:
 
   ```sh

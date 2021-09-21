@@ -539,28 +539,6 @@ export interface EntryContainer<K, V> {
     readonly size: number;
 }
 
-// @beta
-export enum ExtensionStatus {
-    // (undocumented)
-    BadExtension = 143364,
-    // (undocumented)
-    BadRequest = 143362,
-    // (undocumented)
-    DownloadError = 143367,
-    // (undocumented)
-    ExtensionAlreadyExists = 143365,
-    // (undocumented)
-    ExtensionNotFound = 143363,
-    // (undocumented)
-    EXTENSIONSTATUS_BASE = 143360,
-    // (undocumented)
-    Success = 0,
-    // (undocumented)
-    UnknownError = 143361,
-    // (undocumented)
-    UploadError = 143366
-}
-
 // @public
 export enum GeoServiceStatus {
     // (undocumented)

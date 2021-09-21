@@ -49,7 +49,6 @@ public;DisposeFunc = () => void
 public;DuplicatePolicy
 public;Entry
 public;EntryContainer
-beta;ExtensionStatus
 public;GeoServiceStatus
 public;GetMetaDataFunction = () => any
 public;Guid
