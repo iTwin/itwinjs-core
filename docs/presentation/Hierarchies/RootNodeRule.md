@@ -101,7 +101,7 @@ A list of hierarchy specifications that define what nodes are going to be return
 
 Multiple specifications can contribute to the same branch by specifying multiple specifications in a single rule or specifying multiple rules that match the same parent node.
 
-**Note:** grouping and sorting is done at specification level which means nodes generated from different specifications do not get grouped and sorted together.
+> **Note:** grouping and sorting is done at specification level which means nodes generated from different specifications do not get grouped and sorted together.
 
 ### Attribute: `customizationRules`
 

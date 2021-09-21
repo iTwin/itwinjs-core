@@ -38,7 +38,7 @@ SELECT ECClassId, ECInstanceId
  WHERE e.ParentId = 10
 ```
 
-**Note:** sorting and grouping happens after results of multiple query specifications are
+> **Note:** sorting and grouping happens after results of multiple query specifications are
 aggregated.
 
 ### String
