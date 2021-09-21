@@ -8,8 +8,8 @@
 
 import { GuidString, Id64String, IModelHubStatus } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseId, ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, CodeProps,
-  IModelError, IModelVersion, LocalDirName, LocalFileName,
+  BriefcaseId, ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, IModelError,
+  IModelVersion, LocalDirName, LocalFileName,
 } from "@bentley/imodeljs-common";
 import { CheckpointProps, DownloadRequest } from "./CheckpointManager";
 import { UserArg } from "./IModelDb";
@@ -28,7 +28,9 @@ export enum LockState {
   Exclusive = 2,
 }
 
-/** Exception thrown if lock cannot be acquired. */
+/** Exception thrown if lock cannot be acquired.
+ * @beta
+*/
 export class LockConflict extends IModelError {
   public constructor(
     /** Id of Briefcase holding lock */

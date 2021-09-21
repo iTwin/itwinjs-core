@@ -7,7 +7,7 @@ import { join } from "path";
 import * as sinon from "sinon";
 import { Guid, GuidString } from "@bentley/bentleyjs-core";
 import {
-  ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, ChangesetRange, CodeProps, IModelVersion, LocalDirName,
+  ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, ChangesetRange, IModelVersion, LocalDirName,
 } from "@bentley/imodeljs-common";
 import {
   BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckPointArg, CreateNewIModelProps, IModelIdArg, IModelNameArg,

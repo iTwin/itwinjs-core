@@ -214,6 +214,11 @@ import { XAndY } from '@bentley/geometry-core';
 import { XYAndZ } from '@bentley/geometry-core';
 import { YawPitchRollAngles } from '@bentley/geometry-core';
 
+// @public
+export interface AcquireNewBriefcaseIdArg extends IModelIdArg {
+    readonly briefcaseAlias?: string;
+}
+
 // @beta (undocumented)
 export class AliCloudStorageService extends CloudStorageService {
     constructor(credentials: CloudStorageServiceCredentials);
@@ -304,7 +309,7 @@ export class AzureBlobStorage extends CloudStorageService {
 export interface BackendHubAccess {
     // @internal
     acquireLocks(arg: BriefcaseDbArg, locks: LockMap): Promise<void>;
-    acquireNewBriefcaseId(arg: IModelIdArg): Promise<BriefcaseId>;
+    acquireNewBriefcaseId(arg: AcquireNewBriefcaseIdArg): Promise<BriefcaseId>;
     createNewIModel(arg: CreateNewIModelProps): Promise<GuidString>;
     deleteIModel(arg: IModelIdArg & ITwinIdArg): Promise<void>;
     downloadChangeset(arg: ChangesetArg & {
@@ -329,16 +334,12 @@ export interface BackendHubAccess {
         changesetProps: ChangesetFileProps;
     }): Promise<ChangesetIndex>;
     // @internal
-    queryAllCodes(arg: BriefcaseDbArg): Promise<CodeProps[]>;
-    // @internal
     queryAllLocks(arg: BriefcaseDbArg): Promise<LockProps[]>;
     queryChangeset(arg: ChangesetArg): Promise<ChangesetProps>;
     queryChangesets(arg: ChangesetRangeArg): Promise<ChangesetProps[]>;
     queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
     // @internal
     queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined>;
-    // @internal
-    releaseAllCodes(arg: BriefcaseDbArg): Promise<void>;
     // @internal
     releaseAllLocks(arg: BriefcaseDbArg): Promise<void>;
     releaseBriefcase(arg: BriefcaseIdArg): Promise<void>;
@@ -435,7 +436,7 @@ export enum BriefcaseLocalValue {
 
 // @public
 export class BriefcaseManager {
-    static acquireNewBriefcaseId(arg: IModelIdArg): Promise<BriefcaseId>;
+    static acquireNewBriefcaseId(arg: AcquireNewBriefcaseIdArg): Promise<BriefcaseId>;
     static get cacheDir(): LocalDirName;
     static deleteBriefcaseFiles(filePath: LocalFileName, user?: AuthorizedClientRequestContext): Promise<void>;
     // @internal
@@ -2434,7 +2435,7 @@ export class IModelHubBackend {
         locks: LockProps[];
     }): Promise<void>;
     // (undocumented)
-    static acquireNewBriefcaseId(arg: IModelIdArg): Promise<number>;
+    static acquireNewBriefcaseId(arg: AcquireNewBriefcaseIdArg): Promise<number>;
     // (undocumented)
     static createNewIModel(arg: CreateNewIModelProps): Promise<GuidString>;
     // (undocumented)
@@ -2885,6 +2886,15 @@ export class LocalhostIpcHost {
         };
         iModelHost?: IModelHostConfiguration;
     }): Promise<void>;
+}
+
+// @beta
+export class LockConflict extends IModelError {
+    constructor(
+    briefcaseId: BriefcaseId,
+    briefcaseAlias: string, msg: "shared lock is held" | "exclusive lock is already held");
+    readonly briefcaseAlias: string;
+    readonly briefcaseId: BriefcaseId;
 }
 
 // @beta (undocumented)
