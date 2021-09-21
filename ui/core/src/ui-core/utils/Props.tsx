@@ -23,6 +23,8 @@ export interface ClassNameProps {
 export interface CommonProps extends ClassNameProps {
   /** Custom CSS style properties */
   style?: React.CSSProperties;
+  /** Optional unique identifier for item. If defined it will be added to DOM Element attribute as data-item-id */
+  itemId?: string;
 }
 
 /** Common properties using a div element.

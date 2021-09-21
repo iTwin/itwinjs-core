@@ -146,6 +146,7 @@ export class IModelViewportControl extends ViewportContentControl {
     return <UnifiedSelectionViewport
       viewState={viewState}
       imodel={iModelConnection}
+      controlId={this.controlId}
       viewportRef={(v: ScreenViewport) => {
         this.viewport = v;
         // for convenience, if window defined bind viewport to window

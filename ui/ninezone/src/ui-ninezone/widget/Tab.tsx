@@ -182,6 +182,8 @@ export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { 
   );
   return (
     <div
+      data-item-id={tab.id}
+      data-item-type="widget-tab"
       className={className}
       ref={refs}
       role="tab"
