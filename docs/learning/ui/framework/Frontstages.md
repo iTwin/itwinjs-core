@@ -19,7 +19,7 @@ The FrontstageProvider contains an abstract [FrontstageProvider.frontstage]($ui-
 
 Below is an example frontstage that shows the different areas/zones.
 
-![FrontstageUi2](.images/FrontstageUi2.png "UI 2.0 Frontstage design")
+![FrontstageUi2](./images/FrontstageUi2.png "UI 2.0 Frontstage design")
 
 ### Example Frontstage definition
 
