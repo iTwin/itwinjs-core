@@ -6,11 +6,12 @@
 /** @packageDocumentation
  * @module RealityData
  */
-import { ClientRequestContext, Guid } from "@bentley/bentleyjs-core";
-import {
-  AuthorizedClientRequestContext, ECJsonTypeMap, getArrayBuffer, getJson, RequestQueryOptions, WsgClient, WsgInstance,
-} from "@bentley/itwin-client";
+
 import { URL } from "url";
+import { Guid } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext, getArrayBuffer, getJson, RequestQueryOptions } from "@bentley/itwin-client";
+import { ECJsonTypeMap, WsgInstance } from "./wsg/ECJsonTypeMap";
+import { WsgClient } from "./wsg/WsgClient";
 
 /** Currenlty supported  ProjectWise ContextShare reality data types
  * @internal
@@ -357,7 +358,6 @@ export class DataLocation extends WsgInstance {
  * @internal
  */
 export class RealityDataClient extends WsgClient {
-  public static readonly searchKey: string = "RealityDataServices";
 
   /**
    * Creates an instance of RealityDataServicesClient.
@@ -365,14 +365,6 @@ export class RealityDataClient extends WsgClient {
   public constructor() {
     super("v1");
     this.baseUrl = "https://api.bentley.com/contextshare";
-  }
-
-  /**
-   * Gets name/key to query the service URLs from the URL Discovery Service ("Buddi")
-   * @returns Search key for the URL.
-   */
-  protected getUrlSearchKey(): string {
-    return RealityDataClient.searchKey;
   }
 
   /**
@@ -384,8 +376,8 @@ export class RealityDataClient extends WsgClient {
    * @param tilesId realityDataInstance id, called tilesId when returned from tile generator job
    * @returns string containing the URL to reality data for indicated tile.
    */
-  public async getRealityDataUrl(requestContext: ClientRequestContext, projectId: string | undefined, tilesId: string): Promise<string> {
-    const serverUrl: string = await this.getUrl(requestContext);
+  public async getRealityDataUrl(projectId: string | undefined, tilesId: string): Promise<string> {
+    const serverUrl: string = await this.getUrl();
 
     if (!projectId || projectId === "")
       projectId = "Server";

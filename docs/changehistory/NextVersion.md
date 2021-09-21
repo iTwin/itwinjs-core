@@ -403,36 +403,38 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 
 ### @bentley/imodeljs-frontend
 
-| Removed                                | Replacement                                               |
-| -------------------------------------- | --------------------------------------------------------- |
-| `AppearanceOverrideProps`              | [AppearanceOverrideProps]($common)                        |
-| `AsyncMethodsOf`                       | [AsyncMethodsOf]($bentleyjs-core)                         |
-| `AsyncFunction`                        | [AsyncFunction]($bentleyjs-core)                          |
-| `EmphasizeElementsProps`               | [EmphasizeElementsProps]($common)                         |
-| `PromiseReturnType`                    | [PromiseReturnType]($bentleyjs-core)                      |
-| `CheckpointConnection.open`            | `CheckpointConnection.openRemote`                         |
-| `DecorateContext.screenViewport`       | `DecorateContext.viewport`                                |
-| `FeatureOverrideType`                  | [FeatureOverrideType]($common)                            |
-| `FeatureSymbology.Appearance`          | [FeatureAppearance]($common)                              |
-| `FeatureSymbology.AppearanceProps`     | [FeatureAppearanceProps]($common)                         |
-| `findAvailableRealityModels`           | `queryRealityData`                                        |
-| `findAvailableUnattachedRealityModels` | `queryRealityData`                                        |
-| `IModelApp.iModelClient`               | `IModelHubFrontend.iModelClient`                          |
-| `IModelConnection.Models.loaded`       | use `for..of` to iterate and `getLoaded` to look up by Id |
-| `IModelConnection.Views.saveThumbnail` | use IPC and `IModelDb.saveThumbnail`                      |
-| `IOidcFrontendClient`                  | `FrontendAuthorizationClient`                             |
-| `isIOidcFrontendClient`                | `FrontendAuthorizationClient`                             |
-| `OidcBrowserClient`                    | `BrowserAuthorizationClient`                              |
-| `OidcFrontendClientConfiguration`      | `BrowserAuthorizationClientConfiguration`                 |
-| `RemoteBriefcaseConnection`            | `CheckpointConnection`                                    |
-| `ScreenViewport.decorationDiv`         | `DecorateContext.addHtmlDecoration`                       |
-| `UnitSystemKey`                        | Moved to `@bentley/imodeljs-quantity`                     |
-| `ViewManager.forEachViewport`          | Use a `for..of` loop                                      |
-| `ViewState3d.lookAtPerspectiveOrOrtho` | `ViewState3d.LookAt`                                      |
-| `ViewState3d.lookAtUsingLensAngle`     | `ViewState3d.lookAt`                                      |
-| `Viewport.featureOverrideProvider`     | [Viewport.featureOverrideProviders]($frontend)            |
-| `Viewport.setFlashed`                  | [Viewport.flashedId]($frontend)                           |
-| `Viewport.setRedrawPending`            | [Viewport.requestRedraw]($frontend)                       |
+| Removed                                       | Replacement                                                        |
+| --------------------------------------------- | ------------------------------------------------------------------ |
+| `AppearanceOverrideProps`                     | [AppearanceOverrideProps]($common)                                 |
+| `AsyncMethodsOf`                              | [AsyncMethodsOf]($bentleyjs-core)                                  |
+| `AsyncFunction`                               | [AsyncFunction]($bentleyjs-core)                                   |
+| `EmphasizeElementsProps`                      | [EmphasizeElementsProps]($common)                                  |
+| `PromiseReturnType`                           | [PromiseReturnType]($bentleyjs-core)                               |
+| `CheckpointConnection.open`                   | `CheckpointConnection.openRemote`                                  |
+| `DecorateContext.screenViewport`              | `DecorateContext.viewport`                                         |
+| `FeatureOverrideType`                         | [FeatureOverrideType]($common)                                     |
+| `FeatureSymbology.Appearance`                 | [FeatureAppearance]($common)                                       |
+| `FeatureSymbology.AppearanceProps`            | [FeatureAppearanceProps]($common)                                  |
+| `findAvailableRealityModels`                  | `queryRealityData`                                                 |
+| `findAvailableUnattachedRealityModels`        | `queryRealityData`                                                 |
+| `IModelApp.iModelClient`                      | `IModelHubFrontend.iModelClient`                                   |
+| `IModelConnection.Models.loaded`              | use `for..of` to iterate and `getLoaded` to look up by Id          |
+| `IModelConnection.Views.saveThumbnail`        | use IPC and `IModelDb.saveThumbnail`                               |
+| `IOidcFrontendClient`                         | `FrontendAuthorizationClient`                                      |
+| `isIOidcFrontendClient`                       | `FrontendAuthorizationClient`                                      |
+| `OidcBrowserClient`                           | `BrowserAuthorizationClient`                                       |
+| `OidcFrontendClientConfiguration`             | `BrowserAuthorizationClientConfiguration`                          |
+| `QuantityFormatter.onActiveUnitSystemChanged` | [QuantityFormatter.onActiveFormattingUnitSystemChanged]($frontend) |
+| `QuantityFormatter.useImperialFormats`        | [QuantityFormatter.setActiveUnitSystem]($frontend)                 |
+| `RemoteBriefcaseConnection`                   | `CheckpointConnection`                                             |
+| `ScreenViewport.decorationDiv`                | `DecorateContext.addHtmlDecoration`                                |
+| `UnitSystemKey`                               | Moved to `@bentley/imodeljs-quantity`                              |
+| `ViewManager.forEachViewport`                 | Use a `for..of` loop                                               |
+| `ViewState3d.lookAtPerspectiveOrOrtho`        | `ViewState3d.LookAt`                                               |
+| `ViewState3d.lookAtUsingLensAngle`            | `ViewState3d.lookAt`                                               |
+| `Viewport.featureOverrideProvider`            | [Viewport.featureOverrideProviders]($frontend)                     |
+| `Viewport.setFlashed`                         | [Viewport.flashedId]($frontend)                                    |
+| `Viewport.setRedrawPending`                   | [Viewport.requestRedraw]($frontend)                                |
 
 ### @bentley/geometry-core
 
