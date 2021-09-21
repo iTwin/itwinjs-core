@@ -33,7 +33,6 @@
   },
   "dependencies": {
     "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/context-registry-client": "workspace:*",
     "@bentley/geometry-core": "workspace:*",
     "@bentley/imodeljs-common": "workspace:*",
     "@bentley/imodeljs-frontend": "workspace:*",

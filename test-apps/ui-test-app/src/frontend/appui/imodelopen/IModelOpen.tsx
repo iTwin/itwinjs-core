@@ -13,7 +13,7 @@ import { IModelList } from "./IModelList";
 import { NavigationItem, NavigationList } from "./Navigation";
 import { ProjectDropdown } from "./ProjectDropdown";
 import { ActivityMessageDetails, ActivityMessageEndReason, AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
-import { BeDuration } from "@bentley/bentleyjs-core";
+import { BeDuration, GuidString } from "@bentley/bentleyjs-core";
 import { Button } from "@itwin/itwinui-react";
 import { ITwin, ITwinAccessClient } from "@bentley/context-registry-client";
 
@@ -27,9 +27,9 @@ interface IModelOpenState {
   isLoadingProjects: boolean;
   isLoadingiModels: boolean;
   isLoadingiModel: boolean;
-  recentProjects?: ITwin[];
+  recentITwins?: ITwin[];
   iModels?: IModelInfo[];
-  currentProject?: ITwin;
+  currentITwin?: ITwin;
   prompt: string;
   isNavigationExpanded: boolean;
 }
@@ -53,14 +53,13 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
 
   public override async componentDidMount(): Promise<void> {
     if (this.props.initialIModels && this.props.initialIModels.length > 0) {
-      const currentProject = this.props.initialIModels[0].projectInfo;
-      currentProject.id = "";
-
       this.setState({
         isLoadingProjects: false,
         isLoadingiModels: false,
         isLoadingiModel: false,
-        currentProject: this.props.initialIModels[0].projectInfo, // eslint-disable-line @bentley/react-set-state-usage
+        currentITwin: {
+          id: this.props.initialIModels[0].iTwinId
+        }, // eslint-disable-line @bentley/react-set-state-usage
         iModels: this.props.initialIModels,  // eslint-disable-line @bentley/react-set-state-usage
       });
     }
@@ -68,26 +67,26 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
     const client = new ITwinAccessClient();
     const ctx = await AuthorizedFrontendRequestContext.create();
 
-    client.getAll(ctx, { pagination: { top: 40 } }).then((projectInfos: ITwin[]) => { // eslint-disable-line @typescript-eslint/no-floating-promises
+    client.getAll(ctx, { pagination: { top: 40 } }).then((iTwins: ITwin[]) => { // eslint-disable-line @typescript-eslint/no-floating-promises
       this.setState({
         isLoadingProjects: false,
         isLoadingiModels: true,
-        recentProjects: projectInfos,
+        recentITwins: iTwins,
       });
-      if (projectInfos.length > 0)
-        this._selectProject(projectInfos[0]);
+      if (iTwins.length > 0)
+        this._selectITwin(iTwins[0]);
     });
   }
 
   // retrieves the IModels for a Project. Called when first mounted and when a new Project is selected.
-  private async startRetrieveIModels(project: ITwin) {
+  private async startRetrieveIModels(iTwin: ITwin) {
     this.setState({
       prompt: "Fetching iModel information...",
       isLoadingiModels: true,
       isLoadingProjects: false,
-      currentProject: project,
+      currentITwin: iTwin,
     });
-    const iModelInfos: IModelInfo[] = await UiFramework.iModelServices.getIModels(project, 80, 0);
+    const iModelInfos: IModelInfo[] = await UiFramework.iModelServices.getIModels(iTwin.id, 80, 0);
     this.setState({
       isLoadingiModels: false,
       iModels: iModelInfos,
@@ -98,8 +97,8 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
     this.setState({ isNavigationExpanded: expanded });
   };
 
-  private _selectProject(project: ITwin) {
-    this.startRetrieveIModels(project); // eslint-disable-line @typescript-eslint/no-floating-promises
+  private _selectITwin(iTwin: ITwin) {
+    this.startRetrieveIModels(iTwin); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   private _handleIModelSelected = (iModelInfo: IModelInfo): void => {
@@ -164,7 +163,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
             <div className="project-picker-content">
               <span className="projects-label">Projects</span>
               <div className="project-picker">
-                <ProjectDropdown currentProject={this.state.currentProject} recentProjects={this.state.recentProjects} onProjectClicked={this._selectProject.bind(this)} />
+                <ProjectDropdown currentProject={this.state.currentITwin} recentProjects={this.state.recentITwins} onProjectClicked={this._selectITwin.bind(this)} />
               </div>
             </div>
             <Button styleType="cta" style={{ display: "none" }} className="activity-button" onClick={this._activityTool}>Activity Message</Button>
