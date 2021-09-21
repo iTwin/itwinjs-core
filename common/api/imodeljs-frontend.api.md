@@ -7296,10 +7296,7 @@ export class QuantityFormatter implements UnitsProvider {
     // (undocumented)
     get unitsProvider(): UnitsProvider;
     set unitsProvider(unitsProvider: UnitsProvider);
-    // @deprecated (undocumented)
-    get useImperialFormats(): boolean;
-    set useImperialFormats(useImperial: boolean);
-}
+    }
 
 // @beta
 export enum QuantityType {
