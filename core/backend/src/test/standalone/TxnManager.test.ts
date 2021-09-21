@@ -786,7 +786,8 @@ describe("TxnManager", () => {
     dropListener();
   });
 
-  it.only("repro crash", () => {
+  // This bug occurred in one of the authoring apps. This test reproduced the problem, and now serves as a regression test.
+  it("doesn't crash when reversing a single txn that inserts a model and a contained element while geometric model tracking is enabled", () => {
     imodel.nativeDb.setGeometricModelTrackingEnabled(true);
 
     const model = PhysicalModel.insert(imodel, IModel.rootSubjectId, Guid.createValue());
