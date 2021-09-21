@@ -2353,7 +2353,7 @@ export class IModelHost {
     static configuration?: IModelHostConfiguration;
     // @internal (undocumented)
     static flushLog(): void;
-    static getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+    static getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken | undefined>;
     // @internal (undocumented)
     static getAuthorizedContext(): Promise<AuthorizedClientRequestContext>;
     // @alpha

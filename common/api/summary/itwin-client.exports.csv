@@ -1,6 +1,6 @@
 sep=;
 Release Tag;API Item
-public;AccessToken = string
+beta;AccessToken = string
 beta;AuthenticationError 
 beta;AuthorizationClient
 public;AuthorizedClientRequestContext 

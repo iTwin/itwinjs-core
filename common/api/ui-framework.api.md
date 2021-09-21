@@ -6773,7 +6773,7 @@ export function useNineZoneDispatch(frontstageDef: FrontstageDef): NineZoneDispa
 // @internal (undocumented)
 export function useNineZoneState(frontstageDef: FrontstageDef): NineZoneState | undefined;
 
-// @beta
+// @public
 export class UserInfo {
     constructor(
     id: string,

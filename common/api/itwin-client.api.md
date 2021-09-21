@@ -13,7 +13,7 @@ import * as https from 'https';
 import { HttpStatus } from '@bentley/bentleyjs-core';
 import { SessionProps } from '@bentley/bentleyjs-core';
 
-// @public (undocumented)
+// @beta
 export type AccessToken = string;
 
 // @beta
