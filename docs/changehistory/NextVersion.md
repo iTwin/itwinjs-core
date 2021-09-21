@@ -325,9 +325,7 @@ In `3.0` changes have been made that changed the way this attribute is calculate
   });
   ```
 
-
 It is no longer necessary to supply a [Viewport]($frontend) when creating a [GraphicBuilder]($frontend). Instead, you can supply to [RenderSystem.createGraphic]($frontend) a [CustomGraphicBuilderOptions]($frontend) containing a function that can compute the level of detail appropriate for the produced [RenderGraphic]($frontend).
-
 
 ## Changed return types
 
@@ -577,29 +575,32 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @bentley/ecschema-metadata
 
-| Removed                         | Replacement                                                  |
-| ------------------------------- | ------------------------------------------------------------ |
-| `IDiagnostic`                   | `IDiagnostic` in @bentley/ecschema-editing                   |
-| `BaseDiagnostic`                | `BaseDiagnostic` in @bentley/ecschema-editing                |
-| `DiagnosticType`                | `DiagnosticType` in @bentley/ecschema-editing                |
-| `DiagnosticCategory`            | `DiagnosticCategory` in @bentley/ecschema-editing            |
-| `DiagnosticCodes`               | `DiagnosticCodes` in @bentley/ecschema-editing               |
-| `Diagnostics`                   | `Diagnostics` in @bentley/ecschema-editing                   |
-| `IDiagnosticReporter`           | `IDiagnosticReporter` in @bentley/ecschema-editing           |
-| `SuppressionDiagnosticReporter` | `SuppressionDiagnosticReporter` in @bentley/ecschema-editing |
-| `FormatDiagnosticReporter`      | `FormatDiagnosticReporter` in @bentley/ecschema-editing      |
-| `LoggingDiagnosticReporter`     | `LoggingDiagnosticReporter` in @bentley/ecschema-editing     |
-| `IRuleSet`                      | `IRuleSet` in @bentley/ecschema-editing                      |
-| `ECRuleSet`                     | `ECRuleSet` in @bentley/ecschema-editing                     |
-| `ISuppressionRule`              | `ISuppressionRule` in @bentley/ecschema-editing              |
-| `BaseSuppressionRule`           | `BaseSuppressionRule` in @bentley/ecschema-editing           |
-| `IRuleSuppressionMap`           | `IRuleSuppressionMap` in @bentley/ecschema-editing           |
-| `BaseRuleSuppressionMap`        | `BaseRuleSuppressionMap` in @bentley/ecschema-editing        |
-| `IRuleSuppressionSet`           | `IRuleSuppressionSet` in @bentley/ecschema-editing           |
-| `SchemaCompareCodes`            | `SchemaCompareCodes` in @bentley/ecschema-editing            |
-| `SchemaCompareDiagnostics`      | `SchemaCompareDiagnostics` in @bentley/ecschema-editing      |
-| `SchemaValidater`               | `SchemaValidater` in @bentley/ecschema-editing               |
-| `SchemaValidationVisitor`       | `SchemaValidationVisitor` in @bentley/ecschema-editing       |
+| Removed                                  | Replacement                                                  |
+| -----------------------------------------| ------------------------------------------------------------ |
+| `IDiagnostic`                            | `IDiagnostic` in @bentley/ecschema-editing                   |
+| `BaseDiagnostic`                         | `BaseDiagnostic` in @bentley/ecschema-editing                |
+| `DiagnosticType`                         | `DiagnosticType` in @bentley/ecschema-editing                |
+| `DiagnosticCategory`                     | `DiagnosticCategory` in @bentley/ecschema-editing            |
+| `DiagnosticCodes`                        | `DiagnosticCodes` in @bentley/ecschema-editing               |
+| `Diagnostics`                            | `Diagnostics` in @bentley/ecschema-editing                   |
+| `IDiagnosticReporter`                    | `IDiagnosticReporter` in @bentley/ecschema-editing           |
+| `SuppressionDiagnosticReporter`          | `SuppressionDiagnosticReporter` in @bentley/ecschema-editing |
+| `FormatDiagnosticReporter`               | `FormatDiagnosticReporter` in @bentley/ecschema-editing      |
+| `LoggingDiagnosticReporter`              | `LoggingDiagnosticReporter` in @bentley/ecschema-editing     |
+| `IRuleSet`                               | `IRuleSet` in @bentley/ecschema-editing                      |
+| `ECRuleSet`                              | `ECRuleSet` in @bentley/ecschema-editing                     |
+| `ISuppressionRule`                       | `ISuppressionRule` in @bentley/ecschema-editing              |
+| `BaseSuppressionRule`                    | `BaseSuppressionRule` in @bentley/ecschema-editing           |
+| `IRuleSuppressionMap`                    | `IRuleSuppressionMap` in @bentley/ecschema-editing           |
+| `BaseRuleSuppressionMap`                 | `BaseRuleSuppressionMap` in @bentley/ecschema-editing        |
+| `IRuleSuppressionSet`                    | `IRuleSuppressionSet` in @bentley/ecschema-editing           |
+| `SchemaCompareCodes`                     | `SchemaCompareCodes` in @bentley/ecschema-editing            |
+| `SchemaCompareDiagnostics`               | `SchemaCompareDiagnostics` in @bentley/ecschema-editing      |
+| `SchemaValidater`                        | `SchemaValidater` in @bentley/ecschema-editing               |
+| `SchemaValidationVisitor`                | `SchemaValidationVisitor` in @bentley/ecschema-editing       |
+| `RelationshipConstraint.deserialize`     | `RelationshipConstraint.fromJSON`                   |
+| `RelationshipConstraint.deserializeSync` | `RelationshipConstraint.fromJSONSync`               |
+| `RelationshipConstraint.toJson`          | `RelationshipConstraint.toJSON`                     |
 
 <!---
 User Interface Changes - section to comment below
