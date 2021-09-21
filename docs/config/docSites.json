@@ -56,7 +56,6 @@
       "ecschema-metadata": "ecschema-metadata",
       "electron-manager": "electron-manager",
       "mobile-manager": "mobile-manager",
-      "extension-client": "extension-client",
       "frontend-authorization-client": "frontend-authorization-client",
       "frontend-devtools": "frontend-devtools",
       "frontend": "imodeljs-frontend",
