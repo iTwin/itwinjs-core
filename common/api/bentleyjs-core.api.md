@@ -173,16 +173,6 @@ export class ByteStream {
     rewind(numBytes: number): boolean;
     }
 
-// @public
-export enum ChangeSetApplyOption {
-    Merge = 1,
-    None = 0,
-    // @deprecated
-    Reinstate = 3,
-    // @deprecated
-    Reverse = 2
-}
-
 // @beta
 export enum ChangeSetStatus {
     ApplyError = 90113,

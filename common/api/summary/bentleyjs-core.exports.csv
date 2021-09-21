@@ -20,7 +20,6 @@ public;BeTimePoint
 public;BeUiEvent
 beta;BriefcaseStatus
 public;ByteStream
-public;ChangeSetApplyOption
 beta;ChangeSetStatus
 public;ClientRequestContext
 public;ClientRequestContextProps 
