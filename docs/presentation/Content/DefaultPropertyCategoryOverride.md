@@ -1,6 +1,6 @@
 # DefaultPropertyCategoryOverride
 
-> Based on [DefaultPropertyCategoryOverride]($presentation-common) interface.
+> TypeScript type: [DefaultPropertyCategoryOverride]($presentation-common).
 
 A rule that allows overriding the default property category.
 

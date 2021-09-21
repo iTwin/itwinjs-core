@@ -1,6 +1,6 @@
 # InstanceNodesOfSpecificClasses
 
-> Based on [InstanceNodesOfSpecificClassesSpecification]($presentation-common) interface.
+> TypeScript type: [InstanceNodesOfSpecificClassesSpecification]($presentation-common).
 
 Returns nodes for instances of specific ECClasses.
 

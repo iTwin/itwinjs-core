@@ -1,6 +1,6 @@
 # Child Node Rule
 
-> Based on [ChildNodeRule]($presentation-common) interface.
+> TypeScript type: [ChildNodeRule]($presentation-common).
 
 Child node rules are used to define child nodes in a hierarchy.
 

@@ -1,6 +1,6 @@
 # CustomNode
 
-> Based on [CustomNodeSpecification]($presentation-common) interface.
+> TypeScript type: [CustomNodeSpecification]($presentation-common).
 
 Returns a custom-defined node that's not based on an ECInstance.
 

@@ -1,6 +1,6 @@
 # RelationshipPath Specification
 
-> Based on [RepeatableRelationshipPathSpecification]($presentation-common) interface.
+> TypeScript type: [RepeatableRelationshipPathSpecification]($presentation-common).
 
 Relationship path specification and it's *repeatable* counterpart are used to define paths from one ECClass to another, optionally traversing through multiple relationships.
 

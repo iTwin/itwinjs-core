@@ -1,6 +1,6 @@
 # Grouping Customization Rule
 
-> Based on [GroupingRule]($presentation-common) interface.
+> TypeScript type: [GroupingRule]($presentation-common).
 
 Grouping rules provide advanced ways to group instances when creating hierarchies.
 

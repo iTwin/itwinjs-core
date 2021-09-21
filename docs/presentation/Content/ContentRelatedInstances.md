@@ -1,6 +1,6 @@
 # ContentRelatedInstances Specification
 
-> Based on [ContentRelatedInstancesSpecification]($presentation-common) interface.
+> TypeScript type: [ContentRelatedInstancesSpecification]($presentation-common).
 
 Returns content for instances related to the selected (input) instances.
 

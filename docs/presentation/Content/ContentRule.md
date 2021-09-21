@@ -1,6 +1,6 @@
 # ContentRule
 
-> Based on [ContentRule]($presentation-common) interface.
+> TypeScript type: [ContentRule]($presentation-common).
 
 Content rules are used to define content that is displayed for specific type of selection.
 

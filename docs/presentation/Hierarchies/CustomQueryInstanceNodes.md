@@ -1,6 +1,6 @@
 # CustomQueryInstanceNodes
 
-> Based on [CustomQueryInstanceNodesSpecification]($presentation-common) interface.
+> TypeScript type: [CustomQueryInstanceNodesSpecification]($presentation-common).
 
 Returns nodes for instances which are returned by an ECSQL query.
 

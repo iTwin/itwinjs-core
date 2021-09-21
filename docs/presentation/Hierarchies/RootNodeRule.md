@@ -1,6 +1,6 @@
 # Root Node Rule
 
-> Based on [RootNodeRule]($presentation-common) interface.
+> TypeScript type: [RootNodeRule]($presentation-common).
 
 Root node rules are used to define nodes that are displayed at the root hierarchy level.
 

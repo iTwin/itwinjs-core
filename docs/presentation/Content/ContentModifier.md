@@ -1,6 +1,6 @@
 # ContentModifier
 
-> Based on [ContentModifier]($presentation-common) interface.
+> TypeScript type: [ContentModifier]($presentation-common).
 
 Content modifiers are used to modify how instances of specified ECClasses are displayed in content which is produced using [content rules](./ContentRule.md). They do not produce any content by themselves.
 
