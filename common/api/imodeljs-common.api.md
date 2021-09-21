@@ -376,7 +376,7 @@ export class B3dmHeader extends TileHeader {
 
 // @public (undocumented)
 export class BackendError extends IModelError {
-    constructor(errorNumber: number, name: string, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
+    constructor(errorNumber: number, name: string, message: string, getMetaData?: GetMetaDataFunction);
 }
 
 // @public
@@ -672,14 +672,10 @@ export type BriefcaseId = number;
 
 // @public
 export enum BriefcaseIdValue {
-    // @internal @deprecated (undocumented)
-    DeprecatedStandalone = 1,
     FirstValid = 2,
     Illegal = 4294967295,
     LastValid = 16777205,
     Max = 16777216,
-    // @deprecated
-    Standalone = 0,
     Unassigned = 0
 }
 
@@ -977,7 +973,7 @@ export enum ChangesetType {
 
 // @alpha
 export class ChannelConstraintError extends IModelError {
-    constructor(message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
+    constructor(message: string, getMetaData?: GetMetaDataFunction);
 }
 
 // @public
@@ -1877,7 +1873,7 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
     planProjections?: {
         [modelId: string]: PlanProjectionSettingsProps;
     };
-    // @internal @deprecated
+    // @internal
     sceneLights?: {
         sunDir?: XYZProps;
     };
@@ -1945,8 +1941,6 @@ export class DisplayStyleSettings {
     dropModelAppearanceOverride(id: Id64String): void;
     dropSubCategoryOverride(id: Id64String): void;
     get excludedElementIds(): OrderedId64Iterable;
-    // @deprecated
-    get excludedElements(): Set<Id64String>;
     getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined;
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
     get hasModelAppearanceOverride(): boolean;
@@ -4234,7 +4228,7 @@ export interface IModelEncryptionProps {
 
 // @public
 export class IModelError extends BentleyError {
-    constructor(errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RepositoryStatus | ChangeSetStatus | RpcInterfaceStatus | AuthStatus, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
+    constructor(errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RepositoryStatus | ChangeSetStatus | RpcInterfaceStatus | AuthStatus, message: string, getMetaData?: GetMetaDataFunction);
 }
 
 // @public
@@ -4270,19 +4264,17 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     getElementProps(_iModelToken: IModelRpcProps, _elementIds: Id64String[]): Promise<ElementProps[]>;
     // (undocumented)
-    getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelRpcProps, _props: string): Promise<GeoCoordinatesResponseProps>;
+    getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelRpcProps, _props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps>;
     // (undocumented)
     getGeometryContainment(_iModelToken: IModelRpcProps, _props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     // (undocumented)
     getGeometrySummary(_iModelToken: IModelRpcProps, _props: GeometrySummaryRequestProps): Promise<string>;
     // (undocumented)
-    getIModelCoordinatesFromGeoCoordinates(_iModelToken: IModelRpcProps, _props: string): Promise<IModelCoordinatesResponseProps>;
+    getIModelCoordinatesFromGeoCoordinates(_iModelToken: IModelRpcProps, _props: IModelCoordinatesRequestProps): Promise<IModelCoordinatesResponseProps>;
     // (undocumented)
     getMassProperties(_iModelToken: IModelRpcProps, _props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     // (undocumented)
     getModelProps(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<ModelProps[]>;
-    // (undocumented)
-    getTextureImage(_iModelToken: IModelRpcProps, _textureLoadProps: TextureLoadProps): Promise<Uint8Array | undefined>;
     // (undocumented)
     getToolTipMessage(_iModelToken: IModelRpcProps, _elementId: string): Promise<string[]>;
     // (undocumented)
@@ -4306,7 +4298,9 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     queryRows(_iModelToken: IModelRpcProps, _ecsql: string, _bindings?: any[] | object, _limit?: QueryLimit, _quota?: QueryQuota, _priority?: QueryPriority, _restartToken?: string, _abbreviateBlobs?: boolean): Promise<QueryResponse>;
     // (undocumented)
-    readFontJson(_iModelToken: IModelRpcProps): Promise<any>;
+    queryTextureData(_iModelToken: IModelRpcProps, _textureLoadProps: TextureLoadProps): Promise<TextureData | undefined>;
+    // (undocumented)
+    readFontJson(_iModelToken: IModelRpcProps): Promise<FontMapProps>;
     // (undocumented)
     requestSnap(_iModelToken: IModelRpcProps, _sessionId: string, _props: SnapRequestProps): Promise<SnapResponseProps>;
 }
@@ -6840,8 +6834,12 @@ export { RpcInterfaceStatus }
 export class RpcInvocation {
     constructor(protocol: RpcProtocol, request: SerializedRpcRequest);
     static current(rpcImpl: RpcInterface): RpcInvocation;
+    // (undocumented)
+    static currentRequest: ClientRequestContext;
     get elapsed(): number;
     readonly fulfillment: Promise<RpcRequestFulfillment>;
+    // @internal
+    static logRpcException(currentRequest: ClientRequestContext, error: any): void;
     readonly operation: RpcOperation;
     readonly protocol: RpcProtocol;
     readonly request: SerializedRpcRequest;
@@ -7398,12 +7396,12 @@ export interface SerializedRpcRequest extends SerializedClientRequestContext {
 
 // @public (undocumented)
 export class ServerError extends IModelError {
-    constructor(errorNumber: number, message: string, log?: LogFunction);
+    constructor(errorNumber: number, message: string);
 }
 
 // @public (undocumented)
 export class ServerTimeoutError extends ServerError {
-    constructor(message: string, log?: LogFunction);
+    constructor(message: string);
 }
 
 // @beta
@@ -7826,7 +7824,7 @@ export interface TerrainProps {
     exaggeration?: number;
     heightOrigin?: number;
     heightOriginMode?: TerrainHeightOriginMode;
-    // @deprecated (undocumented)
+    // @internal
     nonLocatable?: boolean;
     providerName?: string;
 }
@@ -7836,7 +7834,7 @@ export type TerrainProviderName = "CesiumWorldTerrain";
 
 // @public
 export class TerrainSettings {
-    constructor(providerName?: TerrainProviderName, exaggeration?: number, applyLighting?: boolean, heightOrigin?: number, heightOriginMode?: TerrainHeightOriginMode, locatable?: boolean);
+    constructor(providerName?: TerrainProviderName, exaggeration?: number, applyLighting?: boolean, heightOrigin?: number, heightOriginMode?: TerrainHeightOriginMode);
     readonly applyLighting: boolean;
     clone(changedProps?: TerrainProps): TerrainSettings;
     // (undocumented)
@@ -7847,8 +7845,8 @@ export class TerrainSettings {
     static fromJSON(json?: TerrainProps): TerrainSettings;
     readonly heightOrigin: number;
     readonly heightOriginMode: TerrainHeightOriginMode;
-    // @deprecated (undocumented)
-    readonly locatable: boolean;
+    // @internal
+    get nonLocatable(): true | undefined;
     readonly providerName: TerrainProviderName;
     // (undocumented)
     toJSON(): TerrainProps;
@@ -7903,6 +7901,14 @@ export interface TextStringProps {
     underline?: boolean;
     // (undocumented)
     widthFactor?: number;
+}
+
+// @public
+export interface TextureData {
+    bytes: Uint8Array;
+    format: ImageSourceFormat;
+    height: number;
+    width: number;
 }
 
 // @public

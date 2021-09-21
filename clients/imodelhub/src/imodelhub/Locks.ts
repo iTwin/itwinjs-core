@@ -410,7 +410,6 @@ export class LockHandler {
 
   /** Send partial request for lock updates */
   private async updateInternal(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, locks: Lock[], updateOptions?: LockUpdateOptions): Promise<Lock[]> {
-    requestContext.enter();
     let requestOptions: WsgRequestOptions | undefined;
     if (updateOptions) {
       requestOptions = {};
@@ -430,7 +429,6 @@ export class LockHandler {
     }
 
     const result = await this._handler.postInstances<MultiLock>(requestContext, MultiLock, `/Repositories/iModel--${iModelId}/$changeset`, LockHandler.convertLocksToMultiLocks(locks), requestOptions);
-    requestContext.enter();
     return LockHandler.convertMultiLocksToLocks(result);
   }
 
@@ -450,7 +448,6 @@ export class LockHandler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async update(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, locks: Lock[], updateOptions?: LockUpdateOptions): Promise<Lock[]> {
-    requestContext.enter();
     Logger.logInfo(loggerCategory, "Requesting locks", () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
@@ -467,9 +464,7 @@ export class LockHandler {
       const chunk = locks.slice(i, i + updateOptions.locksPerRequest!);
       try {
         result.push(...await this.updateInternal(requestContext, iModelId, chunk, updateOptions));
-        requestContext.enter();
       } catch (error) {
-        requestContext.enter();
         if (error instanceof ResponseError) {
           if (updateOptions && updateOptions.deniedLocks && error instanceof IModelHubError
             && (error.errorNumber === IModelHubStatus.LockOwnedByAnotherBriefcase || error.errorNumber === IModelHubStatus.ConflictsAggregate)) {
@@ -509,7 +504,6 @@ export class LockHandler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: LockQuery = new LockQuery()): Promise<Lock[]> {
-    requestContext.enter();
     Logger.logInfo(loggerCategory, "Querying locks", () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
@@ -517,11 +511,9 @@ export class LockHandler {
     let locks: Lock[];
     if (query.isMultiLockQuery) {
       const result = await this._handler.getInstances<MultiLock>(requestContext, MultiLock, this.getRelativeUrl(iModelId), query.getQueryOptions());
-      requestContext.enter();
       locks = LockHandler.convertMultiLocksToLocks(result);
     } else {
       locks = await this._handler.postQuery<Lock>(requestContext, Lock, this.getRelativeUrl(iModelId, false), query.getQueryOptions());
-      requestContext.enter();
       locks = locks.map((value: Lock) => {
         const result = new Lock();
         result.briefcaseId = value.briefcaseId;
@@ -547,7 +539,6 @@ export class LockHandler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async deleteAll(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, briefcaseId: number): Promise<void> {
-    requestContext.enter();
     Logger.logInfo(loggerCategory, "Deleting all locks from briefcase", () => ({ iModelId, briefcaseId }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
@@ -570,10 +561,8 @@ export class LockHandler {
     do {
       try {
         await this._handler.delete(requestContext, relativeUrl, requestOptions);
-        requestContext.enter();
         Logger.logTrace(loggerCategory, "Deleted a chunk of locks from briefcase", () => ({ iModelId, briefcaseId }));
       } catch (error) {
-        requestContext.enter();
         if (error instanceof IModelHubError && error.errorNumber === IModelHubStatus.LockChunkDoesNotExist)
           shouldDeleteAnotherChunk = false;
         else

@@ -11,8 +11,8 @@
 import { GuidString, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point2d, Range3d } from "@bentley/geometry-core";
 import {
-  AxisAlignedBox3d, ElementProps, GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, IModel, IModelError,
-  InformationPartitionElementProps, ModelProps, RelatedElement,
+  AxisAlignedBox3d, ElementProps, GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, IModel, InformationPartitionElementProps,
+  ModelProps, RelatedElement,
 } from "@bentley/imodeljs-common";
 import { DefinitionPartition, DocumentPartition, InformationRecordPartition, PhysicalPartition, SpatialLocationPartition } from "./Element";
 import { Entity } from "./Entity";
@@ -230,10 +230,8 @@ export class GeometricModel extends Model implements GeometricModelProps {
 
   /** Query for the union of the extents of the elements contained by this model. */
   public queryExtents(): AxisAlignedBox3d {
-    const { error, result } = this.iModel.nativeDb.queryModelExtents(JSON.stringify({ id: this.id.toString() }));
-    if (error)
-      throw new IModelError(error.status, "Error querying model extents");
-    return Range3d.fromJSON(JSON.parse(result!).modelExtents);
+    const extents = this.iModel.nativeDb.queryModelExtents({ id: this.id }).modelExtents;
+    return Range3d.fromJSON(extents);
   }
 }
 

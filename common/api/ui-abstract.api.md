@@ -10,7 +10,6 @@ import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { Id64String } from '@bentley/bentleyjs-core';
-import { LogFunction } from '@bentley/bentleyjs-core';
 
 // @public
 export interface AbstractActionItemProps extends CommonItemProps, CommandHandler {
@@ -2041,7 +2040,9 @@ export abstract class UiDataProvider {
 
 // @public
 export class UiError extends BentleyError {
-    constructor(category: string, message: string, errorNumber?: number, log?: LogFunction, getMetaData?: GetMetaDataFunction | undefined);
+    constructor(category: string, message: string, errorNumber?: number, getMetaData?: GetMetaDataFunction);
+    // (undocumented)
+    category: string;
 }
 
 // @public

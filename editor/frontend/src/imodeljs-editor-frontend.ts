@@ -8,6 +8,7 @@
 export * from "./CreateElementTool";
 export * from "./DeleteElementsTool";
 export * from "./EditTool";
+export * from "./ElementGeometryTool";
 export * from "./SketchTools";
 export * from "./TransformElementsTool";
 export * from "./UndoRedoTool";
