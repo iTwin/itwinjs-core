@@ -73,21 +73,6 @@ export abstract class MobileRpcConfiguration extends RpcConfiguration {
 
   /** Return type of mobile platform using browser userAgent */
   public static get platform(): RpcMobilePlatform { return MobileRpcConfiguration.getMobilePlatform(); }
-
-  /** Check if backend running on mobile
-   * @deprecated use ProcessDetector.isMobileAppBackend
-   */
-  public static get isMobileBackend() { return ProcessDetector.isMobileAppBackend; }
-
-  /** Check if frontend running on mobile
-   * @deprecated use ProcessDetector.isMobileAppFrontend
-   */
-  public static get isMobileFrontend() { return ProcessDetector.isMobileAppFrontend; }
-
-  /** Check if frontend running on ios
-   * @deprecated use ProcessDetector.isIOSAppFrontend
-   */
-  public static get isIOSFrontend() { return ProcessDetector.isIOSAppFrontend; }
 }
 
 /** Coordinates usage of RPC interfaces for an Mobile-based application.
