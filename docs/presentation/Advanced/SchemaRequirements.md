@@ -31,22 +31,10 @@ used in it.
 }
 ```
 
-### Specifying required schema in hierarchy rule
+### Specifying required schema in a hierarchy rule
 
-The below rule requests `FunctionalElement` instances to be loaded from `Functional` schema. We want to make sure the `Functional` schema is available in the iModel,
-so we specify it as a required schema. The `FunctionalElement` class is available in all schema versions, so no need to specify versions range.
-
-```JSON
-{
-  "ruleType": "RootNodes",
-  "requiredSchemas": [{
-    "name": "Functional"
-  }],
-  "specifications": [{
-    "specType": "InstanceNodesOfSpecificClasses",
-    "classes": { "schemaName": "Functional", "classNames": ["FunctionalElement"] }
-  }]
-}
+```ts
+[[include:Hierarchies.RequiredSchemas.Ruleset]]
 ```
 
 ### Specifying required schema in content modifier

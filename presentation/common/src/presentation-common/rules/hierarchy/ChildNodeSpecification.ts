@@ -98,7 +98,7 @@ export interface ChildNodeSpecificationBase {
   /** Specifications of related instances that can be used in nodes' creation. */
   relatedInstances?: RelatedInstanceSpecification[];
 
-  /** [Nested rule]($docs/presentation/Hierarchies/Terminology.md#nested-rules) specifications. */
+  /** [Nested rule]($docs/presentation/Hierarchies/Terminology.md#nested-rule) specifications. */
   nestedRules?: ChildNodeRule[];
 }
 

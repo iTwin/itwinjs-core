@@ -1,6 +1,6 @@
 # StyleOverride Customization Rule
 
-> Based on [StyleOverride]($presentation-common) interface.
+> TypeScript type: [StyleOverride]($presentation-common).
 
 Style override rules allow customizing display style of specific types of ECInstances.
 

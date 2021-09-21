@@ -1,6 +1,6 @@
 # SelectedNodeInstances Specification
 
-> Based on [SelectedNodeInstancesSpecification]($presentation-common) interface.
+> TypeScript type: [SelectedNodeInstancesSpecification]($presentation-common).
 
 Returns content for selected (input) instances.
 

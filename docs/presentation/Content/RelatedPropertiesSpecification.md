@@ -1,6 +1,6 @@
 # RelatedProperties Content Modifier
 
-> Based on [RelatedPropertiesSpecification]($presentation-common) interface.
+> TypeScript type: [RelatedPropertiesSpecification]($presentation-common).
 
 This content modifier allows including related instance properties into the selected instance content.
 

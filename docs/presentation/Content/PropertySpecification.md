@@ -1,6 +1,6 @@
 # Property Overrides Content Modifier
 
-> Based on [PropertySpecification]($presentation-common) interface.
+> TypeScript type: [PropertySpecification]($presentation-common).
 
 This content modifier allows overriding some attributes of ECProperty.
 

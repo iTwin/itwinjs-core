@@ -40,4 +40,4 @@ All the issues defined in previous topic are solved by the Presentation Library.
 
   ![Hierarchy rules example](./media/hierarchy-rules-example.png)
 
-All customizations to what is returned are made in a declarative way - by specifying [Presentation Rules](#presentation-rules). This is an abstraction layer that helps us not only simplify how relationships, classes and polymorphism are handled, but also provides a way for [customization](../Customization/index.md).
+All customizations to what is returned are made in a declarative way - by specifying **Presentation Rules**. This is an abstraction layer that helps us not only simplify how relationships, classes and polymorphism are handled, but also provides a way for [customization](../Customization/index.md).

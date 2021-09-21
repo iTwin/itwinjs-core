@@ -1,6 +1,6 @@
 # CustomNode
 
-> Based on [CustomNodeSpecification]($presentation-common) interface.
+> TypeScript type: [CustomNodeSpecification]($presentation-common).
 
 Returns a custom-defined node that's not based on an ECInstance.
 
@@ -21,7 +21,7 @@ Returns a custom-defined node that's not based on an ECInstance.
 | `priority`             | No        | `number`                                         | `1000`      | Changes the order of specifications used to create nodes for specific branch.                      |
 | *Misc.*                |
 | `hasChildren`          | No        | `"Always" \| "Never" \| "Unknown"`               | `"Unknown"` | Tells the rules engine that nodes produced using this specification always or never have children. | Improves          |
-| `nestedRules`          | No        | [`ChildNodeRule[]`](./ChildNodeRule.md)          | `[]`        | Specifications of [nested child node rules](./Terminology.md#nested-rules).                        |
+| `nestedRules`          | No        | [`ChildNodeRule[]`](./ChildNodeRule.md)          | `[]`        | Specifications of [nested child node rules](./Terminology.md#nested-rule).                         |
 
 ## Example
 

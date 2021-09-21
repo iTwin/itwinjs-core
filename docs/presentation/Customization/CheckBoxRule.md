@@ -1,6 +1,6 @@
 # CheckBox Customization Rule
 
-> Based on [CheckBoxRule]($presentation-common) interface.
+> TypeScript type: [CheckBoxRule]($presentation-common).
 
 CheckBox rules provide a way to create a checkbox for specific types of ECInstance's.
 
