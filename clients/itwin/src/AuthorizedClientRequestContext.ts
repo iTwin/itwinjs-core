@@ -31,7 +31,6 @@ export interface AuthorizedClientRequestContextProps extends ClientRequestContex
 /** Provides generic context for a server application to get details of a particular request that originated at the client.
  * This context includes an [[AccessToken]] that carries authorization information. For services that do not require authorization
  * it's sufficient to pass an instance of the base class [[ClientRequestContext]].
- * @see [ClientRequestContext rules]($docs/learning/backend/managingclientrequestcontext.md).
  * @see [ClientRequestContext]($bentley)
  * @public
  */

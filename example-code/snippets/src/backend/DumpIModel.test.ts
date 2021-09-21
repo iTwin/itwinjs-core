@@ -22,7 +22,7 @@ import { IModelTestUtils } from "./IModelTestUtils";
 class DumpIModel {
   public static dump(iModel: IModelDb, baseDir: string): void {
     // Use the GUID of the iModel to create a new directory
-    const outputDir = path.join(baseDir, iModel.getGuid().toString());
+    const outputDir = path.join(baseDir, iModel.iModelId);
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir);
     }

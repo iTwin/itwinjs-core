@@ -370,7 +370,6 @@ describe("ImodelChangesetPerformance big datasets", () => {
         csQuery.betweenChangeSets(changeSets[j].id!, changeSets[changeSets.length - 1].id);
       csQuery.selectDownloadUrl();
 
-      requestContext.enter();
       await IModelHubBackend.iModelClient.changeSets.download(requestContext, imodelId, csQuery, downloadDir);
     }
   }
@@ -666,7 +665,6 @@ describe("ImodelChangesetPerformance own data", () => {
           if (undefined === spatialCategoryId)
             spatialCategoryId = SpatialCategory.insert(iModelDb, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
 
-          user.enter();
           for (let m = 0; m < dbSize; ++m) {
             const elementProps = PerfTestUtility.initElemProps(`${schemaName}:${className}`, iModelDb, newModelId, spatialCategoryId);
             const geomElement = iModelDb.elements.createElement(elementProps);

@@ -6,14 +6,11 @@
  * @module Authentication
  */
 
-import { AuthStatus, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
 import { decode } from "jsonwebtoken";
 import { GrantBody, TokenSet } from "openid-client";
-import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
+import { AuthStatus, BentleyError, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
 import { BackendAuthorizationClient, BackendAuthorizationClientConfiguration } from "./BackendAuthorizationClient";
-
-const loggerCategory = BackendITwinClientLoggerCategory.Authorization;
 
 /**
  * Configuration of clients for agent or service applications.
@@ -56,8 +53,8 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
     const client = await this.getClient(requestContext);
     try {
       tokenSet = await client.grant(grantParams);
-    } catch (error) {
-      throw new BentleyError(AuthStatus.Error, error.message || "Authorization error", Logger.logError, loggerCategory, () => ({ error: error.error, message: error.message }));
+    } catch (error: any) {
+      throw new BentleyError(AuthStatus.Error, error.message || "Authorization error", () => ({ error: error.error, message: error.message }));
     }
 
     const userProfile = tokenSet.access_token
@@ -80,7 +77,6 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
    * @deprecated Use [[AgentAuthorizationClient.getAccessToken]] instead to always get a valid token.
    */
   public async refreshToken(requestContext: ClientRequestContext, jwt: AccessToken): Promise<AccessToken> {
-    requestContext.enter();
 
     // Refresh 1 minute before expiry
     const expiresAt = jwt.getExpiresAt();

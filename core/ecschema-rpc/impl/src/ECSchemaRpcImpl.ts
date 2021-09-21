@@ -6,7 +6,6 @@ import { ECSchemaRpcInterface } from "@bentley/ecschema-rpcinterface-common";
 import { IModelRpcProps, RpcManager } from "@bentley/imodeljs-common";
 import * as backend from "@bentley/imodeljs-backend";
 import { SchemaKeyProps, SchemaProps } from "@bentley/ecschema-metadata";
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
 
 /**
  * Defines the interface how the rows of the iModel query look like.
@@ -50,7 +49,6 @@ export class ECSchemaRpcImpl extends ECSchemaRpcInterface {
    * @returns                 An array of SchemaKeyProps.
    */
   public override async getSchemaKeys(tokenProps: IModelRpcProps): Promise<SchemaKeyProps[]> {
-    ClientRequestContext.current.enter();
 
     const schemaKeyProps: SchemaKeyProps[] = [];
     const iModelDb = await this.getIModelDatabase(tokenProps);
@@ -77,8 +75,6 @@ export class ECSchemaRpcImpl extends ECSchemaRpcInterface {
    * @returns                 The SchemaProps.
    */
   public override async getSchemaJSON(tokenProps: IModelRpcProps, schemaName: string): Promise<SchemaProps> {
-    ClientRequestContext.current.enter();
-
     if (schemaName === undefined || schemaName.length < 1) {
       throw new Error(`Schema name must not be undefined or empty.`);
     }

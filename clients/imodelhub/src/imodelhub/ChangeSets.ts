@@ -419,14 +419,12 @@ export class ChangeSetHandler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: ChangeSetQuery = new ChangeSetQuery()): Promise<ChangeSet[]> {
-    requestContext.enter();
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
     Logger.logTrace(loggerCategory, `Querying ChangeSets`, () => ({ iModelId }));
 
     const id = query.getId();
     const changeSets = await this._handler.getInstances<ChangeSet>(requestContext, ChangeSet, this.getRelativeUrl(iModelId, id), query.getQueryOptions());
-    requestContext.enter();
 
     return changeSets;
   }
@@ -442,10 +440,8 @@ export class ChangeSetHandler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   private async getChunk(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, url: string, chunkedQueryContext: ChunkedQueryContext | undefined, queryOptions: RequestQueryOptions): Promise<ChangeSet[]> {
-    requestContext.enter();
     Logger.logTrace(loggerCategory, `Querying ChangeSets chunk`, () => ({ iModelId }));
     const changeSets = await this._handler.getInstancesChunk<ChangeSet>(requestContext, url, chunkedQueryContext, ChangeSet, queryOptions);
-    requestContext.enter();
     return changeSets;
   }
 
@@ -466,7 +462,6 @@ export class ChangeSetHandler {
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
     ArgumentCheck.defined("path", path);
-    requestContext.enter();
 
     if (typeof window !== "undefined")
       throw IModelHubClientError.browser();
@@ -477,7 +472,6 @@ export class ChangeSetHandler {
     const changeSetsToDownloadQuery: ChangeSetQuery = query.clone();
     changeSetsToDownloadQuery.select("FileSize");
     const changeSetsToDownload = await this.get(requestContext, iModelId, changeSetsToDownloadQuery);
-    requestContext.enter();
 
     if (changeSetsToDownload.length === 0)
       return new Array<ChangeSet>();
@@ -491,17 +485,14 @@ export class ChangeSetHandler {
     query.selectDownloadUrl();
 
     const url: string = await this._handler.getUrl(requestContext) + this.getRelativeUrl(iModelId, query.getId());
-    requestContext.enter();
 
     const queryOptions = query.getQueryOptions();
     const chunkedQueryContext = queryOptions ? ChunkedQueryContext.create(queryOptions) : undefined;
     const changeSets: ChangeSet[] = new Array<ChangeSet>();
     do {
       const changeSetsChunk = await this.getChunk(requestContext, iModelId, url, chunkedQueryContext, queryOptions);
-      requestContext.enter();
 
       await this.downloadChunk(requestContext, iModelId, changeSetsChunk, path, downloadProgress, progressCallback);
-      requestContext.enter();
 
       changeSets.push(...changeSetsChunk);
     } while (chunkedQueryContext && !chunkedQueryContext.isQueryFinished);
@@ -521,7 +512,6 @@ export class ChangeSetHandler {
    * @throws [ResponseError]($itwin-client) if the download fails.
    */
   private async downloadChunk(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSets: ChangeSet[], path: string, downloadProgress: DownloadProgress, progressCallback?: ProgressCallback): Promise<void> {
-    requestContext.enter();
 
     changeSets.forEach((changeSet) => {
       if (!changeSet.downloadUrl)
@@ -553,11 +543,9 @@ export class ChangeSetHandler {
         }
 
         await this.downloadChangeSetWithRetry(requestContext, iModelId, changeSet, downloadPath, progressCallback ? callback : undefined);
-        requestContext.enter();
       }));
 
     await queue.waitAll();
-    requestContext.enter();
 
     Logger.logTrace(loggerCategory, `Finished downloading changesets chunk`);
   }
@@ -571,13 +559,10 @@ export class ChangeSetHandler {
    * @throws [ResponseError]($itwin-client) if the download fails.
    */
   private async downloadChangeSetWithRetry(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSet: ChangeSet, downloadPath: string, changeSetProgress?: ProgressCallback): Promise<void> {
-    requestContext.enter();
     try {
       await this.downloadChangeSet(requestContext, changeSet, downloadPath, changeSetProgress);
-      requestContext.enter();
       return;
     } catch (error) {
-      requestContext.enter();
       if (!(error instanceof SasUrlExpired || error instanceof DownloadFailed))
         throw error;
 
@@ -588,12 +573,10 @@ export class ChangeSetHandler {
       changeSetQuery.selectDownloadUrl();
 
       const refreshedChangeSets = await this.get(requestContext, iModelId, changeSetQuery);
-      requestContext.enter();
       if (refreshedChangeSets.length === 0)
         throw error;
 
       await this.downloadChangeSet(requestContext, refreshedChangeSets[0], downloadPath, changeSetProgress);
-      requestContext.enter();
       return;
     }
   }
@@ -606,12 +589,9 @@ export class ChangeSetHandler {
    * @throws [ResponseError]($itwin-client) if the download fails.
    */
   private async downloadChangeSet(requestContext: AuthorizedClientRequestContext, changeSet: ChangeSet, downloadPath: string, changeSetProgress?: ProgressCallback): Promise<void> {
-    requestContext.enter();
     try {
       await this._fileHandler!.downloadFile(requestContext, changeSet.downloadUrl!, downloadPath, changeSet.fileSizeNumber, changeSetProgress);
-      requestContext.enter();
     } catch (error) {
-      requestContext.enter();
       // Note: If the cache was shared across processes, it's possible that the download was completed by another process
       if (this.wasChangeSetDownloaded(downloadPath, changeSet.fileSizeNumber, changeSet))
         return;
@@ -662,7 +642,6 @@ export class ChangeSetHandler {
    * @internal
    */
   public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSet: ChangeSet, path: string, progressCallback?: ProgressCallback): Promise<ChangeSet> {
-    requestContext.enter();
     Logger.logInfo(loggerCategory, "Started uploading ChangeSet", () => ({ iModelId, ...changeSet }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
@@ -681,14 +660,12 @@ export class ChangeSetHandler {
     const postChangeSet = await this._handler.postInstance<ChangeSet>(requestContext, ChangeSet, this.getRelativeUrl(iModelId), changeSet);
 
     await this._fileHandler.uploadFile(requestContext, postChangeSet.uploadUrl!, path, progressCallback);
-    requestContext.enter();
 
     postChangeSet.uploadUrl = undefined;
     postChangeSet.downloadUrl = undefined;
     postChangeSet.isUploaded = true;
 
     const confirmChangeSet = await this._handler.postInstance<ChangeSet>(requestContext, ChangeSet, this.getRelativeUrl(iModelId, postChangeSet.id), postChangeSet);
-    requestContext.enter();
 
     changeSet.isUploaded = true;
 

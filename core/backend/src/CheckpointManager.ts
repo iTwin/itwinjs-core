@@ -9,8 +9,8 @@
 // cspell:ignore BLOCKCACHE
 
 import * as path from "path";
-import { BeEvent, ChangeSetStatus, DbResult, Guid, GuidString, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
-import { BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, IModelError, IModelVersion, LocalDirName, LocalFileName } from "@bentley/imodeljs-common";
+import { BeEvent, ChangeSetStatus, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, OpenMode } from "@bentley/bentleyjs-core";
+import { BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, ChangesetIndexAndId, IModelError, IModelVersion, LocalDirName, LocalFileName } from "@bentley/imodeljs-common";
 import { BlobDaemon, BlobDaemonCommandArg, IModelJsNative } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
@@ -228,16 +228,16 @@ export class CheckpointManager {
 
         CheckpointManager.validateCheckpointGuids(checkpoint, nativeDb);
         // Apply change sets if necessary
-        const parentChangeset = nativeDb.getParentChangeset();
-        if (parentChangeset.id !== checkpoint.changeset.id) {
+        const currentChangeset: Mutable<ChangesetIndexAndId> = nativeDb.getCurrentChangeset();
+        if (currentChangeset.id !== checkpoint.changeset.id) {
           const user = checkpoint.user;
           const toIndex = checkpoint.changeset.index ??
             (await IModelHost.hubAccess.getChangesetFromVersion({ user, iModelId: checkpoint.iModelId, version: IModelVersion.asOfChangeSet(checkpoint.changeset.id) })).index;
           await BriefcaseManager.pullAndApplyChangesets(db, { user, toIndex });
         } else {
           // make sure the parent changeset index is saved in the file - old versions didn't have it.
-          parentChangeset.index = checkpoint.changeset.index;
-          nativeDb.saveLocalValue("parentChangeSet", JSON.stringify(parentChangeset));
+          currentChangeset.index = checkpoint.changeset.index!;
+          nativeDb.saveLocalValue("parentChangeSet", JSON.stringify(currentChangeset));
         }
       } finally {
         db.saveChanges();
@@ -278,23 +278,22 @@ export class CheckpointManager {
   public static validateCheckpointGuids(checkpoint: CheckpointProps, nativeDb: IModelJsNative.DgnDb) {
     const traceInfo = { iTwinId: checkpoint.iTwinId, iModelId: checkpoint.iModelId };
 
-    const dbChangeset = nativeDb.getParentChangeset();
-    const dbGuid = Guid.normalize(nativeDb.getDbGuid());
-    if (dbGuid !== Guid.normalize(checkpoint.iModelId)) {
+    const dbChangeset = nativeDb.getCurrentChangeset();
+    const iModelId = Guid.normalize(nativeDb.getIModelId());
+    if (iModelId !== Guid.normalize(checkpoint.iModelId)) {
       if (nativeDb.isReadonly())
         throw new IModelError(IModelStatus.ValidationFailed, "iModelId is not properly set up in the checkpoint");
 
-      Logger.logWarning(loggerCategory, "iModelId is not properly set up in the checkpoint. Updated checkpoint to the correct iModelId.", () => ({ ...traceInfo, dbGuid }));
-      nativeDb.setDbGuid(Guid.normalize(checkpoint.iModelId));
+      Logger.logWarning(loggerCategory, "iModelId is not properly set up in the checkpoint. Updated checkpoint to the correct iModelId.", () => ({ ...traceInfo, dbGuid: iModelId }));
+      nativeDb.setIModelId(Guid.normalize(checkpoint.iModelId));
       // Required to reset the ChangeSetId because setDbGuid clears the value.
       nativeDb.saveLocalValue("ParentChangeSetId", dbChangeset.id);
       if (undefined !== dbChangeset.index)
         nativeDb.saveLocalValue("parentChangeSet", JSON.stringify(dbChangeset));
     }
 
-    // SWB
-    const dbContextGuid = Guid.normalize(nativeDb.queryProjectGuid());
-    if (dbContextGuid !== Guid.normalize(checkpoint.iTwinId))
+    const iTwinId = Guid.normalize(nativeDb.getITwinId());
+    if (iTwinId !== Guid.normalize(checkpoint.iTwinId))
       throw new IModelError(IModelStatus.ValidationFailed, "iTwinId was not properly set up in the checkpoint");
   }
 
@@ -310,7 +309,7 @@ export class CheckpointManager {
       return false;
     }
 
-    const isValid = checkpoint.iModelId === nativeDb.getDbGuid() && checkpoint.changeset.id === nativeDb.getParentChangeset().id;
+    const isValid = checkpoint.iModelId === nativeDb.getIModelId() && checkpoint.changeset.id === nativeDb.getCurrentChangeset().id;
     nativeDb.closeIModel();
     if (!isValid)
       IModelJsFs.removeSync(fileName);

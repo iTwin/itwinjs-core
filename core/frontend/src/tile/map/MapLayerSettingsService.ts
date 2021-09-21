@@ -53,11 +53,9 @@ export class MapLayerSettingsService {
       transparentBackground: sourceJSON.transparentBackground,
     };
     const result: boolean = await MapLayerSettingsService.deleteOldSettings(requestContext, sourceJSON.url, sourceJSON.name, projectId, iModelId, storeOnIModel);
-    requestContext.enter();
     if (result) {
       await IModelApp.settings.saveSharedSetting(requestContext, mapLayerSetting, MapLayerSettingsService.SourceNamespace, sourceJSON.name, true,
         projectId, storeOnIModel ? iModelId : undefined);
-      requestContext.enter();
       MapLayerSettingsService.onLayerSourceChanged.raiseEvent(MapLayerSourceChangeType.Added, undefined, MapLayerSource.fromJSON(mapLayerSetting));
       return true;
     } else {
@@ -72,15 +70,12 @@ export class MapLayerSettingsService {
 
     let storeOnIModel = false;
     let result: SettingsResult = new SettingsResult(SettingsStatus.UnknownError);
-    requestContext.enter();
     result = await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, oldSource.name, true, projectId, iModelId);
-    requestContext.enter();
 
-  // SWB
+    // SWB
     // Make a second attempt at project level
     if (result.status === SettingsStatus.SettingNotFound) {
       result = await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, oldSource.name, true, projectId, undefined);
-      requestContext.enter();
       if (result.status === SettingsStatus.Success) {
         storeOnIModel = true;
       }
@@ -96,7 +91,6 @@ export class MapLayerSettingsService {
 
       await IModelApp.settings.saveSharedSetting(requestContext, mapLayerSetting, MapLayerSettingsService.SourceNamespace,
         newSource.name, true, projectId, storeOnIModel ? iModelId : undefined);
-      requestContext.enter();
       MapLayerSettingsService.onLayerSourceChanged.raiseEvent(MapLayerSourceChangeType.Replaced, oldSource, newSource);
       return true;
     } else {
@@ -108,15 +102,12 @@ export class MapLayerSettingsService {
   public static async deleteSharedSettings(source: MapLayerSource, projectId: GuidString, iModelId: GuidString): Promise<boolean> {
     let result: SettingsResult = new SettingsResult(SettingsStatus.UnknownError);
     const requestContext = await AuthorizedFrontendRequestContext.create();
-    requestContext.enter();
     result = await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, source.name, true, projectId, iModelId);
-    requestContext.enter();
 
-  // SWB
+    // SWB
     // Make a second attempt at project level
     if (result.status === SettingsStatus.SettingNotFound) {
       result = await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, source.name, true, projectId, undefined);
-      requestContext.enter();
     }
 
     if (result.status === SettingsStatus.Success) {
@@ -132,9 +123,7 @@ export class MapLayerSettingsService {
   // returns false if we should not save the setting the user added because we output an error to the user here saying it cannot be done
   // SWB
   private static async deleteOldSettings(requestContext: AuthorizedFrontendRequestContext, url: string, name: string, projectId: GuidString, iModelId: GuidString, storeOnIModel: boolean): Promise<boolean> {
-    requestContext.enter();
     const settingFromName = await IModelApp.settings.getSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, name, true, projectId, undefined);
-    requestContext.enter();
     if (settingFromName.setting && storeOnIModel) {
       // SWB What should be done for localization?
       const errorMessage = IModelApp.i18n.translate("mapLayers:CustomAttach.LayerExistsAsProjectSetting", { layer: settingFromName.setting.name });
@@ -144,11 +133,9 @@ export class MapLayerSettingsService {
       const infoMessage = IModelApp.i18n.translate("mapLayers:CustomAttach.LayerExistsOverwriting", { layer: settingFromName.setting.name });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, infoMessage));
       await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, settingFromName.setting.name, true, projectId, undefined);
-      requestContext.enter();
     }
 
     const settingFromUrl = await MapLayerSettingsService.getSettingFromUrl(requestContext, url, projectId, undefined); // check if setting with url already exists, if it does, delete it
-    requestContext.enter();
     if (settingFromUrl && storeOnIModel) {
       // SWB What should be done for localization?
       const errorMessage = IModelApp.i18n.translate("mapLayers:CustomAttach.LayerWithUrlExistsAsProjectSetting", { url: settingFromUrl.url, name: settingFromUrl.name });
@@ -158,25 +145,20 @@ export class MapLayerSettingsService {
       const infoMessage = IModelApp.i18n.translate("mapLayers:CustomAttach.LayerWithUrlExistsOverwriting", { url: settingFromUrl.url, oldName: settingFromUrl.name, newName: name });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, infoMessage));
       await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, settingFromUrl.name, true, projectId, undefined);
-      requestContext.enter();
     }
 
     if (iModelId) { // delete any settings on model so user can update them if theres collisions
       const settingOnIModelFromName = await IModelApp.settings.getSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, name, true, projectId, iModelId);
-      requestContext.enter();
       const settingFromUrlOnIModel = await MapLayerSettingsService.getSettingFromUrl(requestContext, url, projectId, iModelId);
-      requestContext.enter();
       if (settingOnIModelFromName.setting) {
         const infoMessage = IModelApp.i18n.translate("mapLayers:CustomAttach.LayerExistsOverwriting", { layer: settingOnIModelFromName.setting.name });
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, infoMessage));
         await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, settingOnIModelFromName.setting.name, true, projectId, iModelId);
-        requestContext.enter();
       }
       if (settingFromUrlOnIModel) {
         const infoMessage = IModelApp.i18n.translate("mapLayers:CustomAttach.LayerWithUrlExistsOverwriting", { url: settingFromUrlOnIModel.url, oldName: settingFromUrlOnIModel.name, newName: name });
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, infoMessage));
         await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, settingFromUrlOnIModel.name, true, projectId, iModelId);
-        requestContext.enter();
       }
     }
     return true;
@@ -184,9 +166,7 @@ export class MapLayerSettingsService {
 
   // SWB
   public static async getSettingFromUrl(requestContext: AuthorizedFrontendRequestContext, url: string, projectId: string, iModelId?: string): Promise<MapLayerSetting | undefined> {
-    requestContext.enter();
     const settingResponse = await IModelApp.settings.getSharedSettingsByNamespace(requestContext, MapLayerSettingsService.SourceNamespace, true, projectId, iModelId);
-    requestContext.enter();
     let savedMapLayer;
     settingResponse.settingsMap?.forEach((savedLayer: any) => {
       if (savedLayer.url === url) {
@@ -233,8 +213,6 @@ export class MapLayerSettingsService {
       projectId,
       undefined);
     const settingsMapArray: SettingsMapResult[] = await Promise.all([userResultByProjectPromise, userResultByImodelPromise, sharedResultByImodelPromise, sharedResultByProjectPromise]);
-    requestContext.enter();
-    // SWB
     const userResultByProject = settingsMapArray[0];
     const userResultByImodel = settingsMapArray[1];
     const sharedResultByImodel = settingsMapArray[2];

@@ -11,7 +11,6 @@ import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { GuidString } from '@bentley/bentleyjs-core';
 import * as https from 'https';
 import { HttpStatus } from '@bentley/bentleyjs-core';
-import { LogFunction } from '@bentley/bentleyjs-core';
 import { SessionProps } from '@bentley/bentleyjs-core';
 
 // @beta
@@ -150,7 +149,7 @@ export class DefaultWsgRequestOptionsProvider extends DefaultRequestOptionsProvi
 
 // @internal
 export class DownloadFailed extends BentleyError {
-    constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
+    constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction);
 }
 
 // @beta
@@ -368,7 +367,7 @@ export class ResponseError extends BentleyError {
 
 // @beta
 export class SasUrlExpired extends BentleyError {
-    constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
+    constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction);
 }
 
 // @internal
@@ -386,7 +385,7 @@ export class UrlDiscoveryClient extends Client {
 
 // @internal
 export class UserCancelledError extends BentleyError {
-    constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
+    constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction);
 }
 
 // @beta

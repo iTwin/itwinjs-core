@@ -3,10 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
 import { Constant, Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
-import { DynamicGraphicsRequest2dProps, DynamicGraphicsRequest3dProps, FlatBufferGeometryStream, IModelError, isPlacement3dProps, JsonGeometryStream, PlacementProps } from "@bentley/imodeljs-common";
-import { BeButtonEvent, CoordSystem, CoreTools, DynamicsContext, EventHandled, GraphicBranch, IModelApp, IModelConnection, PrimitiveTool, readElementGraphics, RenderGraphicOwner, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, Viewport } from "@bentley/imodeljs-frontend";
+import {
+  DynamicGraphicsRequest2dProps, DynamicGraphicsRequest3dProps, FlatBufferGeometryStream, IModelError, isPlacement3dProps, JsonGeometryStream,
+  PlacementProps,
+} from "@bentley/imodeljs-common";
+import {
+  BeButtonEvent, CoordSystem, CoreTools, DynamicsContext, EventHandled, GraphicBranch, IModelApp, IModelConnection, PrimitiveTool,
+  readElementGraphics, RenderGraphicOwner, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction,
+  ToolAssistanceSection, Viewport,
+} from "@bentley/imodeljs-frontend";
 
 function computeChordToleranceFromPointAndRadius(vp: Viewport, center: Point3d, radius: number): number {
   if (vp.view.isCameraEnabled()) {
@@ -169,13 +176,13 @@ export class DynamicGraphicsProvider {
 export abstract class CreateElementTool extends PrimitiveTool {
   public get targetCategory(): Id64String {
     if (IModelApp.toolAdmin.activeSettings.category === undefined)
-      throw new IModelError(IModelStatus.InvalidCategory, "", Logger.logError);
+      throw new IModelError(IModelStatus.InvalidCategory, "");
     return IModelApp.toolAdmin.activeSettings.category;
   }
 
   public override get targetModelId(): Id64String {
     if (IModelApp.toolAdmin.activeSettings.model === undefined)
-      throw new IModelError(IModelStatus.BadModel, "", Logger.logError);
+      throw new IModelError(IModelStatus.BadModel, "");
     return IModelApp.toolAdmin.activeSettings.model;
   }
 
