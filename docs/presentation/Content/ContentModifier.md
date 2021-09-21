@@ -38,7 +38,7 @@ A list of ECSchema requirements that need to met for the rule to be used. See mo
 
 ### Attribute: `priority`
 
-Defines the order in which rules are handled - higher priority means the rule is handled first. If priorities are equal, the rules are handled in the order they're defined.
+Defines the order in which rules are handled, higher number means the rule is handled first. If priorities are equal, the rules are handled in the order they're defined.
 
 ```ts
 [[include:ContentModifier.Priority.Ruleset]]
