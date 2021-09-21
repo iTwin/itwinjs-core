@@ -3,7 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+<<<<<<< HEAD
 import { ProcessDetector } from "@bentley/bentleyjs-core";
+=======
+import { AsyncMethodsOf, GuidString, ProcessDetector, PromiseReturnType } from "@bentley/bentleyjs-core";
+>>>>>>> 590d1edd96 (Remove hardcoded testing contextId (iTwinId)  (#2311))
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
@@ -146,6 +150,8 @@ export class DisplayTestApp {
   private static _surface?: Surface;
   public static get surface() { return this._surface!; }
   public static set surface(surface: Surface) { this._surface = surface; }
+  private static _iTwinId?: GuidString;
+  public static get iTwinId(): GuidString | undefined { return this._iTwinId;}
 
   public static async startup(configuration: DtaConfiguration, renderSys: RenderSystem.Options): Promise<void> {
     const opts = {
@@ -180,6 +186,8 @@ export class DisplayTestApp {
         socketPort: 3002,
       },
     };
+
+    this._iTwinId = configuration.iTwinId;
 
     if (ProcessDetector.isElectronAppFrontend) {
       await ElectronApp.startup(opts);
