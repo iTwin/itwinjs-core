@@ -22,7 +22,7 @@ Both rules have *picking attributes* to specify what [input](./Terminology.md#in
 Content specifications define **result of the rule** if it does get used after evaluating it's [condition](./ContentRule.md#attribute-condition) and other *picking attributes*. There are 3 types of specifications:
 
 - [Selected node instances](./SelectedNodeInstances.md) specification returns properties of the [input instance](./Terminology.md#input-instance).
-- [Content instances of specific classes](./ContentInstancesOfSpecificClasses.md) specification returns properties of instances of classes given classes. The returned content doesn't depend on the [input](./Terminology.md#input-instance).
+- [Content instances of specific classes](./ContentInstancesOfSpecificClasses.md) specification returns properties of instances of given classes. The returned content doesn't depend on the [input](./Terminology.md#input-instance).
 - [Content related instances](./ContentRelatedInstances.md) specification returns properties of instances that are related to [input instances](./Terminology.md#input-instance) through given relationship(s).
 
 ### Modifiers
