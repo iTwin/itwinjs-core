@@ -32,6 +32,25 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     await super.setupOptionDefaults(options);
   }
 
+  /** Gets the URL of the service.
+   * Attempts to discover and cache the URL from the URL Discovery Service. If not
+   * found uses the default URL provided by client implementations. Note that for consistency
+   * sake, the URL is stripped of any trailing "/"
+   * @param excludeApiVersion Pass true to optionally exclude the API version from the URL.
+   * @returns URL for the service
+   */
+  public override async getUrl(excludeApiVersion?: boolean): Promise<string> {
+    if (this._url)
+      return this._url;
+
+    const url = await super.getUrl();
+    this._url = url;
+    if (!excludeApiVersion)
+      this._url = `${this._url}/${ConnectSettingsClient.apiVersion}`;
+
+    return this._url;
+  }
+
   // gets the portion of the Url that encapsulates the type of setting requested.
   private getUrlOptions(forRead: boolean, settingNamespace: string | undefined, settingName: string | undefined, userSpecific: boolean, applicationSpecific: boolean, shared: boolean, contextId?: string, iModelId?: string) {
 

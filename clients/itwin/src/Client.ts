@@ -70,9 +70,11 @@ export abstract class Client {
   }
 
   /**
-   * Gets the URL of the service. Attempts to discover and cache the URL from the URL Discovery Service. If not
-   * found uses the default URL provided by client implementations. Note that for consistency
-   * sake, the URL is stripped of any trailing "/"
+   * Gets the URL of the service. Uses the default URL provided by client implementations.
+   * If defined, the value of `IMJS_URL_PREFIX` will be used as a prefix to all urls provided
+   * by the client implementations.
+   *
+   * Note that for consistency sake, the URL is stripped of any trailing "/".
    * @returns URL for the service
    */
   public async getUrl(): Promise<string> {
