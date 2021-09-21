@@ -82,7 +82,7 @@ export abstract class Client {
       return this._url;
 
     if (!this.baseUrl) {
-      throw new Error("need base url");
+      throw new Error("The client is missing a default url.");
     }
 
     const prefix = process.env.IMJS_URL_PREFIX;
