@@ -2,8 +2,6 @@
 
 The Presentation library provides a declarative way to create hierarchies based on iModel data.
 
-![Hierarchy rule example](./media/hierarchy-rule-example.png)
-
 ## Reference
 
 There are 2 primary concepts for creating hierarchies: [rules](#rules) and [specifications](#branch-content-attributes).
