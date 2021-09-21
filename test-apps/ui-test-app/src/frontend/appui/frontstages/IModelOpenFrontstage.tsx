@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelApp } from "@bentley/imodeljs-frontend";
+import { StageUsage, StandardContentLayouts } from "@bentley/ui-abstract";
 import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, IModelInfo,
 } from "@bentley/ui-framework";
@@ -27,22 +28,28 @@ class IModelOpenControl extends ContentControl {
 }
 
 export class IModelOpenFrontstage extends FrontstageProvider {
+  public get id(): string {
+    return "IModelOpen";
+  }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const contentGroup: ContentGroup = new ContentGroup({
+      id: "imodelIndexGroup",
+      layout: StandardContentLayouts.singleView,
       contents: [
         {
+          id: "imodel-open",
           classId: IModelOpenControl,
         },
       ],
     });
 
     return (
-      <Frontstage id="IModelOpen"
+      <Frontstage id={this.id}
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout="SingleContent"
         contentGroup={contentGroup}
         isInFooterMode={false}
+        usage={StageUsage.Private}
       />
     );
   }
