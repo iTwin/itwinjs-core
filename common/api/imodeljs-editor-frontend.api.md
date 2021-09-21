@@ -643,7 +643,7 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
     // (undocumented)
     protected _startedCmd?: string;
     // (undocumented)
-    protected updateAgendaAppearanceProvider(drop?: true | undefined): void;
+    protected updateAgendaAppearanceProvider(drop?: true): void;
     // (undocumented)
     protected updateGraphic(ev: BeButtonEvent, isDynamics: boolean): Promise<void>;
     // (undocumented)
