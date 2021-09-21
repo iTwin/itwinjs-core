@@ -40,7 +40,8 @@ export interface ViewportProps extends CommonProps {
   viewState?: ViewStateProp;
   /** Function to get a reference to the ScreenViewport */
   viewportRef?: (v: ScreenViewport) => void;
-
+  /** controlId for this content component @internal */
+  controlId?: string;
   /** @internal */
   onContextMenu?: (e: React.MouseEvent) => boolean;
   /** @internal */

@@ -75,32 +75,36 @@ export function SectionsStatusField(props: SectionsStatusFieldProps) {
   };
 
   return (
-    <>
-      <div ref={targetDiv} title={toolTip}>
-        <Indicator className={classes}
-          iconName="icon-section-tool"
-          onClick={() => setPopupOpen(!isPopupOpen)}
-          opened={isPopupOpen}
-          isInFooterMode={props.isInFooterMode}
-        />
-      </div>
-      <FooterPopup
-        target={targetDiv.current}
-        onClose={() => setPopupOpen(false)}
-        isOpen={isPopupOpen}>
-        <Dialog
-          titleBar={
-            <TitleBar title={toolTip} />
-          }>
-          <div className="uifw-sections-footer-contents">
-            <Button onClick={handleClear}>{clearLabel}</Button>
-            <div className="uifw-uifw-sections-toggle-container">
-              <div className={classnames("uifw-sections-label")}>{showHandlesLabel}</div>
-              <ToggleSwitch className="uifw-sections-toggle" onChange={toggleManipulators} checked={hasManipulatorsShown} />
-            </div>
+    <div className="uifw-section-footer-popup-container">
+      {showIndicator &&
+        <>
+          <div ref={targetDiv} title={toolTip}>
+            <Indicator className={classes}
+              iconName="icon-section-tool"
+              onClick={() => setPopupOpen(!isPopupOpen)}
+              opened={isPopupOpen}
+              isInFooterMode={props.isInFooterMode}
+            />
           </div>
-        </Dialog>
-      </FooterPopup>
-    </>
+          <FooterPopup
+            target={targetDiv.current}
+            onClose={() => setPopupOpen(false)}
+            isOpen={isPopupOpen}>
+            <Dialog
+              titleBar={
+                <TitleBar title={toolTip} />
+              }>
+              <div className="uifw-sections-footer-contents">
+                <Button onClick={handleClear}>{clearLabel}</Button>
+                <div className="uifw-uifw-sections-toggle-container">
+                  <div className={classnames("uifw-sections-label")}>{showHandlesLabel}</div>
+                  <ToggleSwitch className="uifw-sections-toggle" onChange={toggleManipulators} checked={hasManipulatorsShown} />
+                </div>
+              </div>
+            </Dialog>
+          </FooterPopup>
+        </>
+      }
+    </div>
   );
 }

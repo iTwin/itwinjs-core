@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import {
-  CommonStatusBarItem, StageUsage, StatusBarItemsChangedArgs, StatusBarItemsManager, UiItemsArbiter, UiItemsManager,
+  CommonStatusBarItem, StatusBarItemsChangedArgs, StatusBarItemsManager, UiItemsArbiter, UiItemsManager,
 } from "@bentley/ui-abstract";
 import { useActiveStageId } from "../hooks/useActiveStageId";
 import { useAvailableUiItemsProviders } from "../hooks/useAvailableUiItemsProviders";
@@ -32,14 +32,15 @@ export const useUiItemsProviderStatusBarItems = (manager: StatusBarItemsManager)
     // istanbul ignore else
     if (providersRef.current !== uiProviders || currentStageRef.current !== stageId) {
       currentStageRef.current = stageId;
-      const frontstageDef = FrontstageManager.findFrontstageDef(stageId);
-      // istanbul ignore next
-      const usage = frontstageDef?.usage ? frontstageDef.usage : StageUsage.General;
-      providersRef.current = uiProviders;
-      const statusBarItems = UiItemsManager.getStatusBarItems(stageId, usage);
-      const updatedStatusBarItems = UiItemsArbiter.updateStatusBarItems(statusBarItems);
-      manager.loadItems(updatedStatusBarItems);
-      setItems(manager.items);
+      const frontstageDef = FrontstageManager.activeFrontstageDef;
+      // istanbul ignore else
+      if (frontstageDef) {
+        providersRef.current = uiProviders;
+        const statusBarItems = UiItemsManager.getStatusBarItems(stageId, frontstageDef.usage, frontstageDef.applicationData);
+        const updatedStatusBarItems = UiItemsArbiter.updateStatusBarItems(statusBarItems);
+        manager.loadItems(updatedStatusBarItems);
+        setItems(manager.items);
+      }
     }
 
   }, [manager, uiItemProviderIds, stageId]);

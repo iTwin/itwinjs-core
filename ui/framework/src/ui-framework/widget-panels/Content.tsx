@@ -17,8 +17,10 @@ import { FrontstageNineZoneStateChangedEventArgs } from "../frontstage/Frontstag
 /** @internal */
 export function WidgetContent() {
   const widget = useWidgetDef();
+  // istanbul ignore next
+  const itemId = widget?.id ?? widget?.label ?? "unknown";
   return (
-    <ScrollableWidgetContent>
+    <ScrollableWidgetContent itemId={itemId}>
       {widget?.reactNode}
     </ScrollableWidgetContent>
   );

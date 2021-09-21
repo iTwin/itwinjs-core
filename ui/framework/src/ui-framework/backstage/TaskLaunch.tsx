@@ -122,7 +122,6 @@ export class TaskLaunchBackstageItem extends React.PureComponent<TaskLaunchBacks
       this.setState({ isActive });
   };
 
-  // TODO: add tooltip, subtitle, aria-label? to NZ_BackstageItem
   public override render(): React.ReactNode {
     return (
       <BackstageItem

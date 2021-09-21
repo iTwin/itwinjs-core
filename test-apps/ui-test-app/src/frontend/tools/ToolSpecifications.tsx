@@ -5,6 +5,9 @@
 import * as React from "react";
 import imperialIconSvg from "@bentley/icons-generic/icons/app-2.svg?sprite";
 import automationIconSvg from "@bentley/icons-generic/icons/automation.svg?sprite";
+import splitVerticalIconSvg from "@bentley/icons-generic/icons/window-split-vertical.svg?sprite";
+import singlePaneIconSvg from "@bentley/icons-generic/icons/window.svg?sprite";
+
 import {
   ActivityMessageDetails, ActivityMessageEndReason,
   IModelApp, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType,
@@ -14,11 +17,12 @@ import { UnitSystemKey } from "@bentley/imodeljs-quantity";
 import { Presentation } from "@bentley/presentation-frontend";
 import {
   BackstageItem, BackstageItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue, DialogButtonType,
-  MessageSeverity, StatusBarSection, UiItemsManager, UiItemsProvider, WidgetState,
+  MessageSeverity, StandardContentLayouts, StatusBarSection, UiItemsManager, UiItemsProvider, WidgetState,
 } from "@bentley/ui-abstract";
 import { Dialog, ReactMessage, SvgPath, SvgSprite, UnderlinedButton } from "@bentley/ui-core";
 import {
-  Backstage, CommandItemDef, ContentViewManager, FrontstageManager, MessageManager, ModalDialogManager, ReactNotifyMessageDetails,
+  Backstage, CommandItemDef, ContentGroup, ContentGroupProps, ContentLayoutManager, ContentProps, ContentViewManager,
+  FrontstageManager, IModelViewportControl, MessageManager, ModalDialogManager, ReactNotifyMessageDetails,
   StatusBarItemUtilities, SyncUiEventDispatcher, SyncUiEventId, ToolItemDef, withStatusFieldProps,
 } from "@bentley/ui-framework";
 import { FooterSeparator } from "@bentley/ui-ninezone";
@@ -32,6 +36,7 @@ import { Tool2 } from "../tools/Tool2";
 import { ToolWithSettings } from "./ToolWithSettings";
 import { Radio } from "@itwin/itwinui-react";
 import { BeDuration } from "@bentley/bentleyjs-core";
+import { RestoreSavedContentLayoutTool, SaveContentLayoutTool } from "./UiProviderTool";
 
 // cSpell:ignore appui appuiprovider
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -376,13 +381,90 @@ export class AppTools {
       // Even though the following will work because calling SampleAppIModelApp.getTestProperty will update redux and trigger event - exercise the tool's call to dispatchUiSyncEvent instead.
       // iconSpec: new ConditionalStringValue(() => SampleAppIModelApp.getTestProperty() !== "HIDE" ? "icon-visibility-hide-2" : "icon-visibility", [SampleAppUiActionId.setTestProperty]),
       // label: new ConditionalStringValue(() => SampleAppIModelApp.getTestProperty() !== "HIDE" ? "Hide items" : "Show items", [SampleAppUiActionId.setTestProperty]),
-      iconSpec: new ConditionalStringValue(() => SampleAppIModelApp.getTestProperty() !== "HIDE" ? "icon-visibility-hide-2" : "icon-visibility", [toolSyncUiEventId]),
+      iconSpec: new ConditionalStringValue(() => SampleAppIModelApp.getTestProperty() !== "HIDE" ? "icon-zoom-out" : "icon-zoom-in", [toolSyncUiEventId]),
       label: new ConditionalStringValue(() => SampleAppIModelApp.getTestProperty() !== "HIDE" ? "Hide items" : "Show items", [toolSyncUiEventId]),
 
       execute: () => {
         SampleAppIModelApp.setTestProperty(SampleAppIModelApp.getTestProperty() === "HIDE" ? "" : "HIDE");
         // demonstrate how tool could dispatch its own event.
         IModelApp.toolAdmin.dispatchUiSyncEvent(toolSyncUiEventId);
+      },
+    });
+  }
+
+  public static get splitSingleViewportCommandDef() {
+    const commandId = "splitSingleViewportCommandDef";
+    return new CommandItemDef({
+      commandId,
+      iconSpec: new ConditionalStringValue(() => 1 === FrontstageManager.activeFrontstageDef?.contentControls?.length ? `svg:${splitVerticalIconSvg}` : `svg:${singlePaneIconSvg}`, [SyncUiEventId.ActiveContentChanged]),
+      label: new ConditionalStringValue(() => 1 === FrontstageManager.activeFrontstageDef?.contentControls?.length ? "Split Content View" : "Single Content View", [SyncUiEventId.ActiveContentChanged]),
+      execute: async () => {
+        // if the active frontstage is only showing an single viewport then split it and have two copies of it
+        const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+        if (activeFrontstageDef && 1 === activeFrontstageDef.contentControls?.length &&
+          activeFrontstageDef.contentControls[0].viewport) {
+          const vp = activeFrontstageDef.contentControls[0].viewport;
+          if (vp) {
+            const contentPropsArray: ContentProps[] = [];
+            contentPropsArray.push({
+              id: "imodel-view-0",
+              classId: IModelViewportControl.id,
+              applicationData:
+              {
+                viewState: vp.view.clone(),
+                iModelConnection: vp.view.iModel,
+
+              },
+            });
+            contentPropsArray.push({
+              id: "imodel-view-1",
+              classId: IModelViewportControl.id,
+              applicationData:
+              {
+                viewState: vp.view.clone(),
+                iModelConnection: vp.view.iModel,
+              },
+            });
+
+            let contentGroupProps: ContentGroupProps = {
+              id: "split-vertical-group",
+              layout: StandardContentLayouts.twoVerticalSplit,
+              contents: contentPropsArray,
+            };
+
+            if (activeFrontstageDef.contentGroupProvider)
+              contentGroupProps = activeFrontstageDef.contentGroupProvider.applyUpdatesToSavedProps(contentGroupProps);
+
+            const contentGroup = new ContentGroup(contentGroupProps);
+            await FrontstageManager.setActiveContentGroup(contentGroup);
+          }
+        } else if (activeFrontstageDef && 2 === activeFrontstageDef.contentControls?.length &&
+          activeFrontstageDef.contentControls[0].viewport) {
+          const vp = activeFrontstageDef.contentControls[0].viewport;
+          if (vp) {
+            const contentPropsArray: ContentProps[] = [];
+            contentPropsArray.push({
+              id: "imodel-view-0",
+              classId: IModelViewportControl.id,
+              applicationData:
+              {
+                viewState: vp.view.clone(),
+                iModelConnection: vp.view.iModel,
+              },
+            });
+
+            let contentGroupProps: ContentGroupProps = {
+              id: "single-content",
+              layout: StandardContentLayouts.singleView,
+              contents: contentPropsArray,
+            };
+            if (activeFrontstageDef.contentGroupProvider)
+              contentGroupProps = activeFrontstageDef.contentGroupProvider.applyUpdatesToSavedProps(contentGroupProps);
+
+            const contentGroup = new ContentGroup(contentGroupProps);
+            await FrontstageManager.setActiveContentGroup(contentGroup);
+          }
+        }
       },
     });
   }
@@ -695,6 +777,68 @@ export class AppTools {
   public static get activityMessageItem() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.activityMessage", execute: async () => { await this._activityTool(); },
+    });
+  }
+
+  public static get saveContentLayout() {
+    return new ToolItemDef({
+      toolId: SaveContentLayoutTool.toolId,
+      iconSpec: SaveContentLayoutTool.iconSpec,
+      label: SaveContentLayoutTool.flyover,
+      tooltip: SaveContentLayoutTool.description,
+      execute: async () => {
+        await IModelApp.tools.run(SaveContentLayoutTool.toolId);
+      },
+    });
+  }
+
+  public static get restoreSavedContentLayout() {
+    return new ToolItemDef({
+      toolId: RestoreSavedContentLayoutTool.toolId,
+      iconSpec: RestoreSavedContentLayoutTool.iconSpec,
+      label: RestoreSavedContentLayoutTool.flyover,
+      tooltip: RestoreSavedContentLayoutTool.description,
+      execute: async () => {
+        await IModelApp.tools.run(RestoreSavedContentLayoutTool.toolId);
+      },
+    });
+  }
+
+  public static get switchLayout1() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder",
+      label: "Horizontal Layout",
+      execute: async () => {
+        const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+        if (activeFrontstageDef?.contentGroup && activeFrontstageDef?.contentGroup.getContentControls().length > 1) {
+          const contentLayout = ContentLayoutManager.getLayoutForGroup(activeFrontstageDef.contentGroup, StandardContentLayouts.twoHorizontalSplit);
+          if (contentLayout && activeFrontstageDef.contentGroup) {
+            await ContentLayoutManager.setActiveLayout(contentLayout, activeFrontstageDef.contentGroup);
+          } else {
+            IModelApp.notifications.outputMessage(
+              new NotifyMessageDetails(OutputMessagePriority.Info, "Content group must contain 2 or more content definition to be shown in this layout."));
+          }
+        }
+      },
+    });
+  }
+
+  public static get switchLayout2() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder",
+      label: "Vertical Layout",
+      execute: async () => {
+        const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+        if (activeFrontstageDef?.contentGroup && activeFrontstageDef?.contentGroup.getContentControls().length > 1) {
+          const contentLayout = ContentLayoutManager.getLayoutForGroup(activeFrontstageDef.contentGroup, StandardContentLayouts.twoVerticalSplit);
+          if (contentLayout && activeFrontstageDef.contentGroup) {
+            await ContentLayoutManager.setActiveLayout(contentLayout, activeFrontstageDef.contentGroup);
+          } else {
+            IModelApp.notifications.outputMessage(
+              new NotifyMessageDetails(OutputMessagePriority.Info, "Content group must contain 2 or more content definition to be shown in this layout."));
+          }
+        }
+      },
     });
   }
 
