@@ -18,14 +18,16 @@
           "arePolymorphic": true,
           "relatedInstances": [
             {
-              "relationship": {
-                "schemaName": "BisCore",
-                "className": "ModelContainsElements"
-              },
-              "requiredDirection": "Backward",
-              "class": {
-                "schemaName": "BisCore",
-                "className": "Model"
+              "relationshipPath": {
+                "relationship": {
+                  "schemaName": "BisCore",
+                  "className": "ModelContainsElements"
+                },
+                "targetClass": {
+                  "schemaName": "BisCore",
+                  "className": "Model"
+                },
+                "direction": "Backward"
               },
               "isRequired": true,
               "alias": "model"

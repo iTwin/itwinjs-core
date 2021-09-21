@@ -269,14 +269,7 @@
         "relatedInstances": {
           "description": "Specifications for joining related instances",
           "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/DEPRECATED_RelatedInstanceSpecification"
-              },
-              {
-                "$ref": "#/definitions/RelatedInstanceSpecificationNew"
-              }
-            ]
+            "$ref": "#/definitions/RelatedInstanceSpecification"
           },
           "type": "array"
         },
@@ -405,14 +398,7 @@
         "relatedInstances": {
           "description": "Specifications for joining related instances",
           "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/DEPRECATED_RelatedInstanceSpecification"
-              },
-              {
-                "$ref": "#/definitions/RelatedInstanceSpecificationNew"
-              }
-            ]
+            "$ref": "#/definitions/RelatedInstanceSpecification"
           },
           "type": "array"
         },
@@ -567,14 +553,7 @@
         "relatedInstances": {
           "description": "Specifications of related instances that can be used in nodes' creation.",
           "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/DEPRECATED_RelatedInstanceSpecification"
-              },
-              {
-                "$ref": "#/definitions/RelatedInstanceSpecificationNew"
-              }
-            ]
+            "$ref": "#/definitions/RelatedInstanceSpecification"
           },
           "type": "array"
         },
@@ -666,14 +645,7 @@
         "relatedInstances": {
           "description": "Specifications of related instances that can be used in nodes' creation.",
           "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/DEPRECATED_RelatedInstanceSpecification"
-              },
-              {
-                "$ref": "#/definitions/RelatedInstanceSpecificationNew"
-              }
-            ]
+            "$ref": "#/definitions/RelatedInstanceSpecification"
           },
           "type": "array"
         },
@@ -705,44 +677,6 @@
       },
       "required": [
         "rendererName"
-      ],
-      "type": "object"
-    },
-    "DEPRECATED_RelatedInstanceSpecification": {
-      "additionalProperties": false,
-      "description": "Deprecated `RelatedInstanceSpecification` specification.",
-      "properties": {
-        "alias": {
-          "description": "The alias to give for the joined related instance. Used to reference the related instance in\ninstance filter and customization rules.\n\n**The value must be unique per-specification!**",
-          "pattern": "^\\w[\\w\\d]*$",
-          "type": "string"
-        },
-        "class": {
-          "$ref": "#/definitions/SingleSchemaClassSpecification",
-          "description": "Specification of the related instance class."
-        },
-        "isRequired": {
-          "description": "Is the related instance required to exist. If yes, primary instance won't be returned\nif the related instance doesn't exist. If not, primary instance will be returned, but related\ninstance will be null.\n\nIn SQL terms in can be compared to INNER JOIN vs OUTER JOIN.",
-          "type": "boolean"
-        },
-        "relationship": {
-          "$ref": "#/definitions/SingleSchemaClassSpecification",
-          "description": "Specification of the relationship to use for joining the related instance"
-        },
-        "requiredDirection": {
-          "description": "Direction of the relationship",
-          "enum": [
-            "Backward",
-            "Forward"
-          ],
-          "type": "string"
-        }
-      },
-      "required": [
-        "alias",
-        "class",
-        "relationship",
-        "requiredDirection"
       ],
       "type": "object"
     },
@@ -1393,14 +1327,7 @@
         "relatedInstances": {
           "description": "Specifications of related instances that can be used in nodes' creation.",
           "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/DEPRECATED_RelatedInstanceSpecification"
-              },
-              {
-                "$ref": "#/definitions/RelatedInstanceSpecificationNew"
-              }
-            ]
+            "$ref": "#/definitions/RelatedInstanceSpecification"
           },
           "type": "array"
         },
@@ -2017,14 +1944,7 @@
         "relatedInstances": {
           "description": "Specifications of related instances that can be used in nodes' creation.",
           "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/DEPRECATED_RelatedInstanceSpecification"
-              },
-              {
-                "$ref": "#/definitions/RelatedInstanceSpecificationNew"
-              }
-            ]
+            "$ref": "#/definitions/RelatedInstanceSpecification"
           },
           "type": "array"
         },
@@ -2063,9 +1983,9 @@
       ],
       "type": "object"
     },
-    "RelatedInstanceSpecificationNew": {
+    "RelatedInstanceSpecification": {
       "additionalProperties": false,
-      "description": "Updated `RelatedInstanceSpecification` specification.",
+      "description": "This sub-specification allows joining the primary node instance with any number of related instances and creating\nhierarchies based on a mix of those related instances.\n\nThe related instance property values can be accessed from multiple different places:\n- Instance filter\n- Customization rule value\n- Grouping rule\n\nExample:\n```JSON\n{\n   \"id\": \"related_instance_example\",\n   \"rules\": [{\n     \"ruleType\": \"LabelOverride\",\n     \"condition\": \"ThisNode.IsInstanceNode ANDALSO this.IsOfClass(\\\"Model\\\", \\\"BisCore\\\")\",\n     \"label\": \"modeledElement.UserLabel\"\n   }, {\n     \"ruleType\": \"Grouping\",\n     \"condition\": \"ParentNode.IsNull\",\n     \"class\": {\n       \"schemaName\": \"BisCore\",\n       \"className\": \"Element\"\n     },\n     \"groups\": [{\n       \"specType\": \"Property\",\n       \"propertyName\": \"CodeValue\",\n       \"createGroupForSingleItem\": true\n     }]\n   }, {\n     \"ruleType\": \"RootNodes\",\n     \"specifications\": [{\n       \"specType\": \"InstanceNodesOfSpecificClasses\",\n       \"classes\": { \"schemaName\": \"BisCore\", \"classNames\": [\"GeometricModel\"] },\n       \"arePolymorphic\": true,\n       \"instanceFilter\": \"modeledElement.CodeNamespace = 1\",\n       \"relatedInstances\": [{\n         \"relationshipPath\": [{\n           \"relationship\": { \"schemaName\": \"BisCore\", \"className\": \"ModelModelsElement\" },\n           \"direction\": \"Forward\",\n         }],\n         \"class\": { \"schemaName\": \"BisCore\", \"className\": \"Element\" },\n         \"alias\": \"modeledElement\"\n       }]\n     }]\n   }]\n}\n```\nHere `BisCore:GeometricModel` instances are joined with `BisCore:Element` instances to create the hierarchy. This allows:\n- Related `BisCore:Element` properties to be accessed in `InstanceFilter` using `modeledElement` alias.\n- The `LabelOverride` rule to use `modeledElement` alias to access properties of the joined related instance.\n- The `GroupingRule` to be applied because it's grouping `BisCore:Element` which is now part of the generated nodes.",
       "properties": {
         "alias": {
           "description": "The alias to give for the joined related instance. Used to reference the related instance in\ninstance filter and customization rules.\n\n**The value must be unique per-specification!**",
@@ -2468,14 +2388,7 @@
         "relatedInstances": {
           "description": "Specifications for joining related instances",
           "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/DEPRECATED_RelatedInstanceSpecification"
-              },
-              {
-                "$ref": "#/definitions/RelatedInstanceSpecificationNew"
-              }
-            ]
+            "$ref": "#/definitions/RelatedInstanceSpecification"
           },
           "type": "array"
         },
