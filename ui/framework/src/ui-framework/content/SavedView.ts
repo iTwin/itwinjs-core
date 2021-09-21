@@ -6,12 +6,10 @@
  * @module ContentView
  */
 
-import { Logger } from "@bentley/bentleyjs-core";
-import { EmphasizeElementsProps, IModelError, IModelStatus, ViewStateProps } from "@bentley/imodeljs-common";
+import { EmphasizeElementsProps, ViewStateProps } from "@bentley/imodeljs-common";
 import {
   EmphasizeElements, EntityState, IModelConnection, ScreenViewport, ViewState,
 } from "@bentley/imodeljs-frontend";
-import { UiFramework } from "../UiFramework";
 import { ViewUtilities } from "../utils/ViewUtilities";
 
 /** SavedViewProps interface for sharing ViewState and EmphasizeElements information.
