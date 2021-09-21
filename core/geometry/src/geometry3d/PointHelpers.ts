@@ -153,26 +153,26 @@ export class NumberArray {
     return result;
   }
 
-/** Return a copy of the knots array, with multiplicity of first and last knots raised or lowered to expectedMultiplicity. */
-public static cloneWithStartAndEndMultiplicity(knots: number[] | undefined, target0: number, target1: number): number[] {
-  const result: number[] = [];
-  if (knots === undefined || knots.length === 0)
-    return result;
-  let multiplicity0 = 1;
-  const knot0 = knots[0];
-  const knot1 = knots[knots.length - 1];
-  for (; multiplicity0 < knots.length && knots[multiplicity0] === knot0;) { multiplicity0++; }
-  let multiplicity1 = 1;
-  const k1 = knots.length - 1;
-  for (; k1 - multiplicity1 >= 0 && knots[k1 - multiplicity1] === knot1;) { multiplicity1++; }
+  /** Return a copy of the knots array, with multiplicity of first and last knots raised or lowered to expectedMultiplicity. */
+  public static cloneWithStartAndEndMultiplicity(knots: number[] | undefined, target0: number, target1: number): number[] {
+    const result: number[] = [];
+    if (knots === undefined || knots.length === 0)
+      return result;
+    let multiplicity0 = 1;
+    const knot0 = knots[0];
+    const knot1 = knots[knots.length - 1];
+    for (; multiplicity0 < knots.length && knots[multiplicity0] === knot0;) { multiplicity0++; }
+    let multiplicity1 = 1;
+    const k1 = knots.length - 1;
+    for (; k1 - multiplicity1 >= 0 && knots[k1 - multiplicity1] === knot1;) { multiplicity1++; }
 
-  for (let k = 0; k < target0; k++)
-    result.push(knot0);
-  for (let k = multiplicity0; k + multiplicity1 < knots.length; k++)
-    result.push(knots[k]);
-  for (let k = 0; k < target1; k++)
-    result.push(knot1);
-  return result;
+    for (let k = 0; k < target0; k++)
+      result.push(knot0);
+    for (let k = multiplicity0; k + multiplicity1 < knots.length; k++)
+      result.push(knots[k]);
+    for (let k = 0; k < target1; k++)
+      result.push(knot1);
+    return result;
   }
 
 }
@@ -590,7 +590,7 @@ export class Point3dArray {
 
   /** return simple average of all coordinates.   (000 if empty array) */
   public static centroid(points: IndexedXYZCollection | Point3d[], result?: Point3d): Point3d {
-    if (points instanceof IndexedXYZCollection){
+    if (points instanceof IndexedXYZCollection) {
       result = Point3d.create(0, 0, 0, result);
       const p = Point3d.create();
       if (points.length > 0) {
@@ -721,7 +721,7 @@ export class Point3dArray {
     }
     for (const p of data) {
       if (Array.isArray(p))
-        result.push(Point3d.create (p[0], p[1], p[2]));
+        result.push(Point3d.create(p[0], p[1], p[2]));
       else
         result.push(Point3d.create(p.x, p.y, p.z));
     }
@@ -769,7 +769,7 @@ export class Point3dArray {
    * clone an array of [[XYZProps]] data, specifically as arrays of 3 numbers
    */
   public static cloneXYZPropsAsNumberArray(data: XYZProps[]): number[][] {
-     // data is an array ... each member is either Point3d or [x,y,z]
+    // data is an array ... each member is either Point3d or [x,y,z]
     const result = [];
     for (const p of data) {
       if (p instanceof Point3d) {
@@ -787,18 +787,18 @@ export class Point3dArray {
     const result = new Float64Array(data.length * 3);
     let i = 0;
     for (const p of data) {
-      if (p instanceof Point3d){
-      result[i++] = p.x;
-      result[i++] = p.y;
+      if (p instanceof Point3d) {
+        result[i++] = p.x;
+        result[i++] = p.y;
         result[i++] = p.z;
-      } else if (Array.isArray (p)){
+      } else if (Array.isArray(p)) {
         result[i++] = p[0];
         result[i++] = p[1];
         result[i++] = p.length > 2 ? p[2] : 0.0;    // allow missing z
       }
     }
     return result;
- }
+  }
 
   /**
    * return similarly-structured array, array of arrays, etc, with the lowest level point data specifically structured as `Point3d`.
@@ -809,12 +809,6 @@ export class Point3dArray {
     VariantPointDataStream.streamXYZ(data, collector);
     return collector.claimResult();
   }
-  /**
-   * `Point3dArray.createRange(data)` is deprecated.  Used `Range3d.createFromVariantData(data: MultiLineStringDataVariant): Range3d`
-   * @deprecated Use Range3d.createFromVariantData (data)
-   * @param data
-   */
-  public static createRange(data: MultiLineStringDataVariant): Range3d { return Range3d.createFromVariantData(data); }
 
   /**
    * return perpendicular distance from points[indexB] to the segment points[indexA] to points[indexC].
@@ -823,7 +817,7 @@ export class Point3dArray {
    *   * true ==> measure distance to extended line segment.
    * (no index checking!)
    */
-  public static distanceIndexedPointBToSegmentAC(points: Point3d[], indexA: number, indexB: number, indexC: number, extrapolate: boolean): number{
+  public static distanceIndexedPointBToSegmentAC(points: Point3d[], indexA: number, indexB: number, indexC: number, extrapolate: boolean): number {
     const vectorU = Vector3d.createStartEnd(points[indexA], points[indexC]);
     const vectorV = Vector3d.createStartEnd(points[indexA], points[indexB]);
     const uDotU = vectorU.dotProduct(vectorU);
@@ -842,7 +836,7 @@ export class Point3dArray {
     if (h2 < 0.0)
       h2 = 0.0;
     return Math.sqrt(h2);
-    }
+  }
 
   /** Computes the hull of the XY projection of points.
    * * Returns the hull as an array of Point3d

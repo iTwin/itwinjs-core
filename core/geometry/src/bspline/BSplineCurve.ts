@@ -89,7 +89,7 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
   protected _bcurve: BSpline1dNd;
   private _definitionData?: any;
   public set definitionData(data: any) { this._definitionData = data; }
-  public get definitionData(): any { return this._definitionData;}
+  public get definitionData(): any { return this._definitionData; }
   protected constructor(poleDimension: number, numPoles: number, order: number, knots: KnotVector) {
     super();
     this._bcurve = BSpline1dNd.create(numPoles, poleDimension, order, knots) as BSpline1dNd;
@@ -369,13 +369,6 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
   }
 
   /**
-   * @deprecated Use `createFromInterpolationCurve3dOptions` instead
-   */
-   public static createThroughPoints(points: IndexedXYZCollection | Point3d[], order: number): BSplineCurve3d | undefined {
-    return BSplineCurveOps.createThroughPoints(points, order);
-  }
-
-  /**
    * Create a C2 cubic B-spline curve that interpolates the given points and optional end tangents.
    * @param options collection of points and end conditions.
    */
@@ -388,7 +381,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
    * @param options collection of points and end conditions.
    */
   public static createFromAkimaCurve3dOptions(options: AkimaCurve3dOptions): BSplineCurve3d | undefined {
-    return BSplineCurveOps.createThroughPoints (options.fitPoints, 4);  // temporary
+    return BSplineCurveOps.createThroughPoints(options.fitPoints, 4);  // temporary
   }
 
   /** Create a bspline with given knots.
