@@ -13,7 +13,7 @@ import { IModelList } from "./IModelList";
 import { NavigationItem, NavigationList } from "./Navigation";
 import { ProjectDropdown } from "./ProjectDropdown";
 import { ActivityMessageDetails, ActivityMessageEndReason, AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
-import { BeDuration, GuidString } from "@bentley/bentleyjs-core";
+import { BeDuration } from "@bentley/bentleyjs-core";
 import { Button } from "@itwin/itwinui-react";
 import { ITwin, ITwinAccessClient } from "@bentley/context-registry-client";
 
@@ -58,8 +58,8 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
         isLoadingiModels: false,
         isLoadingiModel: false,
         currentITwin: {
-          id: this.props.initialIModels[0].iTwinId
-        }, // eslint-disable-line @bentley/react-set-state-usage
+          id: this.props.initialIModels[0].iTwinId, // eslint-disable-line @bentley/react-set-state-usage
+        },
         iModels: this.props.initialIModels,  // eslint-disable-line @bentley/react-set-state-usage
       });
     }
