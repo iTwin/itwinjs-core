@@ -332,13 +332,6 @@ export abstract class Viewport implements IDisposable {
     this._sceneValid = true;
   }
 
-  /** @deprecated Use requestRedraw.
-   * @internal
-   */
-  public setRedrawPending() {
-    this.requestRedraw();
-  }
-
   /** Request that the Viewport redraw its contents on the next frame. This is useful when some state outside of the Viewport's control but affecting its display has changed.
    * For example, if the parameters affecting a screen-space effect applied to this Viewport are modified, the Viewport's contents should be redrawn to reflect the change.
    * @note This does not necessarily cause the viewport to recreate its scene, decorations, or anything else - it only guarantees that the contents will be repainted.
@@ -1266,6 +1259,15 @@ export abstract class Viewport implements IDisposable {
     return undefined;
   }
 
+  /** The list of [[FeatureOverrideProviders]] registered with this viewport.
+   * @see [[addFeatureOverrideProvider]] to register a new provider.
+   * @see [[dropFeatureOverrideProvider]] to unregister a provider.
+   * @see [[findFeatureOverrideProvider]] or [[findFeatureOverrideProviderOfType]] to find a registered provider.
+   */
+  public get featureOverrideProviders(): Iterable<FeatureOverrideProvider> {
+    return this._featureOverrideProviders;
+  }
+
   /** Locate the first registered FeatureOverrideProvider of the specified class. For example, to locate a registered [[EmphasizeElements]] provider:
    * ```ts
    * const provider: EmphasizeElements = viewport.findFeatureOverrideProviderOfType<EmphasizeElements>(EmphasizeElements);
@@ -1281,34 +1283,6 @@ export abstract class Viewport implements IDisposable {
   public addFeatureOverrides(ovrs: FeatureSymbology.Overrides): void {
     for (const provider of this._featureOverrideProviders)
       provider.addFeatureOverrides(ovrs, this);
-  }
-
-  /** An object which can customize the appearance of [[Feature]]s within a viewport.
-   * If defined, the provider will be invoked whenever the overrides are determined to need updating.
-   * The overrides can be explicitly marked as needing a refresh by calling [[Viewport.setFeatureOverrideProviderChanged]]. This is typically called when
-   * the internal state of the provider changes such that the computed overrides must also change.
-   * @see [[FeatureSymbology.Overrides]]
-   * @see [[findFeatureOverrideProvider]] as a replacement for the deprecated getter.
-   * @see [[addFeatureOverrideProvider]] as the replacement for the deprecated setter.
-   * @note A viewport can now have any number of FeatureOverrideProviders, therefore this property is deprecated. The getter will return undefined unless exactly one provider is registered; the setter will remove any other providers and register only the new provider.
-   * @deprecated Use [[addFeatureOverrideProvider]].
-   */
-  public get featureOverrideProvider(): FeatureOverrideProvider | undefined {
-    return 1 === this._featureOverrideProviders.length ? this._featureOverrideProviders[0] : undefined;
-  }
-
-  public set featureOverrideProvider(provider: FeatureOverrideProvider | undefined) {
-    if (this.featureOverrideProvider === provider) // eslint-disable-line deprecation/deprecation
-      return;
-
-    if (undefined === provider) {
-      this._featureOverrideProviders.length = 0;
-      this.setFeatureOverrideProviderChanged();
-      return;
-    }
-
-    this._featureOverrideProviders.length = 0;
-    this.addFeatureOverrideProvider(provider);
   }
 
   /** Notifies this viewport that the internal state of its [[FeatureOverrideProvider]] has changed such that its
@@ -1468,16 +1442,6 @@ export abstract class Viewport implements IDisposable {
     } finally {
       this._assigningFlashedId = false;
     }
-  }
-
-  /** Set or clear the currently *flashed* element.
-   * @note This method is not typically invoked directly - [[ToolAdmin]] will invoke it for you when the user hovers over an element.
-   * @param id The Id of the element to flash. If undefined, remove (un-flash) the currently flashed element.
-   * @param _duration Ignored - the duration from [[Viewport.flashSettings]] is used.
-   * @deprecated Set flashedId directly.
-   */
-  public setFlashed(id: string | undefined, _duration?: number): void {
-    this.flashedId = id;
   }
 
   public get auxCoordSystem(): AuxCoordSystemState { return this.view.auxiliaryCoordinateSystem; }
