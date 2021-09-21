@@ -12,10 +12,14 @@ They should run on most Windows, Linux and MacOS versions with [Tier 1 support](
 
 ### Supported Node.js Versions
 
+The following Node.js versions are officially supported by the iTwin.js backend code.
+
+Each major version range (i.e. 14.x) only includes the Node.js LTS versions and does not include any versions that are not in LTS. Visit [Node.js versions](https://nodejs.org/en/download/releases/) to determine if a specific version is LTS or not.
+
 | Node Version | Supported |
 | - | - |
 | Node 14.x | ✔️ |
-| Node 12.x | ✔️ |
+| Node 12 (>=12.20) | ✔️ |
 | Node <12.20 | ❌ |
 | Node 10.x* | ❌ |
 
