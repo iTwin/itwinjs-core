@@ -2,7 +2,7 @@
 
 ## Input Class
 
-An ECClass we requested content for.
+An ECClass of ECInstance we requested content for.
 
 ## Input Instance
 
