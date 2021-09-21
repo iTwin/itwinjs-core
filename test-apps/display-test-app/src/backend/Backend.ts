@@ -231,6 +231,8 @@ const setupStandaloneConfiguration = () => {
   configuration.alwaysLoadEdges = undefined !== process.env.SVT_ALWAYS_LOAD_EDGES;
   configuration.alwaysSubdivideIncompleteTiles = undefined !== process.env.SVT_SUBDIVIDE_INCOMPLETE;
 
+  configuration.iTwinId = process.env.SVT_ITWIN_ID;
+
   const configPathname = path.normalize(path.join(__dirname, "..", "..", "build", "configuration.json"));
   try { fs.writeFileSync(configPathname, JSON.stringify(configuration), "utf8"); } catch { }
 

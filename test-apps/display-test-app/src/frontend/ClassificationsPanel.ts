@@ -12,6 +12,7 @@ import {
 import {
   ContextRealityModelState, DisplayStyle3dState, IModelApp, queryRealityData, SpatialModelState, SpatialViewState, Viewport,
 } from "@bentley/imodeljs-frontend";
+import { DisplayTestApp } from "./App";
 import { ToolBarDropDown } from "./ToolBar";
 
 function clearElement(element: HTMLElement): void {
@@ -32,11 +33,11 @@ export class ClassificationsPanel extends ToolBarDropDown {
   private _selectedSpatialClassifiersIndex: number = 0;
   private _modelComboBox?: ComboBox;
   private _models: { [modelId: string]: ModelProps } = {};
-  // for IMJS_ITWIN_ID to work it should be define in your .env before you rebuild (frontend .env is resolved at build time)
+  // for SVT_ITWIN_ID to work it should be define in your environment and you should be in signin mode with correct BUDDI region set
   //  SVT_STANDALONE_SIGNIN=true
   //  IMJS_BUDDI_RESOLVE_URL_USING_REGION=102
-  //  IMJS_ITWIN_ID="fb1696c8-c074-4c76-a539-a5546e048cc6"
-  private _iTwinId: GuidString | undefined = process.env.IMJS_ITWIN_ID;
+  //  SVT_ITWIN_ID="fb1696c8-c074-4c76-a539-a5546e048cc6"
+  private _iTwinId: GuidString | undefined = DisplayTestApp.iTwinId;
 
   private get _selectedClassifier(): SpatialClassifier | undefined {
     if (undefined === this._selectedSpatialClassifiers)
