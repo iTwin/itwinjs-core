@@ -20,7 +20,7 @@ public;BeTimePoint
 public;BeUiEvent
 beta;BriefcaseStatus
 public;ByteStream
-public;ChangeSetApplyOption
+internal;ChangeSetApplyOption
 beta;ChangeSetStatus
 public;ClientRequestContext
 public;ClientRequestContextProps 
@@ -48,7 +48,6 @@ public;DisposeFunc = () => void
 public;DuplicatePolicy
 public;Entry
 public;EntryContainer
-beta;ExtensionStatus
 public;GeoServiceStatus
 public;GetMetaDataFunction = () => object | undefined
 public;Guid

@@ -173,13 +173,11 @@ export class ByteStream {
     rewind(numBytes: number): boolean;
     }
 
-// @public
+// @internal (undocumented)
 export enum ChangeSetApplyOption {
+    // (undocumented)
     Merge = 1,
-    None = 0,
-    // @deprecated
-    Reinstate = 3,
-    // @deprecated
+    // (undocumented)
     Reverse = 2
 }
 
@@ -233,10 +231,7 @@ export class ClientRequestContext {
     readonly sessionId: GuidString;
     // @internal (undocumented)
     toJSON(): ClientRequestContextProps;
-    // (undocumented)
-    get useContextForRpc(): boolean;
-    set useContextForRpc(value: boolean);
-    }
+}
 
 // @public
 export interface ClientRequestContextProps extends SessionProps {
@@ -536,28 +531,6 @@ export interface EntryContainer<K, V> {
     set(key: K, value: Entry<K, V>): void;
     // (undocumented)
     readonly size: number;
-}
-
-// @beta
-export enum ExtensionStatus {
-    // (undocumented)
-    BadExtension = 143364,
-    // (undocumented)
-    BadRequest = 143362,
-    // (undocumented)
-    DownloadError = 143367,
-    // (undocumented)
-    ExtensionAlreadyExists = 143365,
-    // (undocumented)
-    ExtensionNotFound = 143363,
-    // (undocumented)
-    EXTENSIONSTATUS_BASE = 143360,
-    // (undocumented)
-    Success = 0,
-    // (undocumented)
-    UnknownError = 143361,
-    // (undocumented)
-    UploadError = 143366
 }
 
 // @public

@@ -363,14 +363,19 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `Platform.isNodeJs`                                          | `ProcessDetector.isNodeProcess`                |
 | `SnapshotDb.filePath`                                        | `SnapshotDb.pathName`                          |
 | `StandaloneDb.filePath`                                      | `StandaloneDb.pathName`                        |
+| `Texture.width, height, flags`                               | *eliminated*                                   |
 | `TxnAction`                                                  | `TxnAction` in @bentley/imodeljs-common        |
+| `TxnChangedEntities.inserted, deleted, updated`              | `TxnChangedEntities.inserts, deletes, updates` |
 
 ### @bentley/imodeljs-common
 
 | Removed                                      | Replacement                                                    |
 | -------------------------------------------- | -------------------------------------------------------------- |
+| `BriefcaseTypes.DeprecatedStandalone`        | `BriefcaseTypes.Unassigned`                                    |
+| `BriefcaseTypes.Standalone`                  | `BriefcaseTypes.Unassigned`                                    |
 | `Code.getValue`                              | `Code.value`                                                   |
 | `CodeSpec.specScopeType`                     | `CodeSpec.scopeType`                                           |
+| `DisplayStyleSettings.excludedElements`      | `DisplayStyleSettings.excludedElementIds`                      |
 | `IModel.changeSetId`                         | `IModel.changeset.id`                                          |
 | `IModelVersion.evaluateChangeSet`            | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
 | `IModelVersion.fromJson`                     | `IModelVersion.fromJSON`                                       |
@@ -379,6 +384,8 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `IModelWriteRpcInterface`                    | Use IPC for writing to iModels                                 |
 | `LatAndLong`                                 | *eliminated*                                                   |
 | `LatLongAndHeight`                           | [CartographicProps]($common)                                   |
+| `TerrainSettings.locatable`                  | `BackgroundMapSettings.locatable`                              |
+| `TerrainSettingsProps.nonLocatable`          | `BackgroundMapProps.nonLocatable`                              |
 | `ViewFlagOverrides` class                    | [ViewFlagOverrides]($common) type                              |
 | `ViewFlagProps.edgeMask`                     | *eliminated*                                                   |
 | `ViewFlagProps.hlMatColors`                  | *eliminated*                                                   |
@@ -392,25 +399,49 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 
 ### @bentley/imodeljs-frontend
 
-| Removed                                       | Replacement                                               |
-| --------------------------------------------- | --------------------------------------------------------- |
-| `CheckpointConnection.open`                   | `CheckpointConnection.openRemote`                         |
-| `DecorateContext.screenViewport`              | `DecorateContext.viewport`                                |
-| `IModelApp.iModelClient`                      | `IModelHubFrontend.iModelClient`                          |
-| `IModelConnection.Models.loaded`              | use `for..of` to iterate and `getLoaded` to look up by Id |
-| `IModelConnection.Views.saveThumbnail`        | use IPC and `IModelDb.saveThumbnail`                      |
-| `IOidcFrontendClient`                         | `FrontendAuthorizationClient`                             |
-| `isIOidcFrontendClient`                       | `FrontendAuthorizationClient`                             |
-| `OidcBrowserClient`                           | `BrowserAuthorizationClient`                              |
-| `OidcFrontendClientConfiguration`             | `BrowserAuthorizationClientConfiguration`                 |
-| `QuantityFormatter.onActiveUnitSystemChanged` | `QuantityFormatter.onActiveFormattingUnitSystemChanged`   |
-| `QuantityFormatter.useImperialFormats`        | `QuantityFormatter.setActiveUnitSystem/activeUnitSystem`  |
-| `RemoteBriefcaseConnection`                   | `CheckpointConnection`                                    |
-| `ScreenViewport.decorationDiv`                | `DecorateContext.addHtmlDecoration`                       |
-| `UnitSystemKey`                               | Moved to `@bentley/imodeljs-quantity`                     |
-| `ViewManager.forEachViewport`                 | Use a `for..of` loop                                      |
-| `ViewState3d.lookAtPerspectiveOrOrtho`        | `ViewState3d.LookAt`                                      |
-| `ViewState3d.lookAtUsingLensAngle`            | `ViewState3d.lookAt`                                      |
+| Removed                                       | Replacement                                                        |
+| --------------------------------------------- | ------------------------------------------------------------------ |
+| `AppearanceOverrideProps`                     | [AppearanceOverrideProps]($common)                                 |
+| `AsyncMethodsOf`                              | [AsyncMethodsOf]($bentleyjs-core)                                  |
+| `AsyncFunction`                               | [AsyncFunction]($bentleyjs-core)                                   |
+| `EmphasizeElementsProps`                      | [EmphasizeElementsProps]($common)                                  |
+| `PromiseReturnType`                           | [PromiseReturnType]($bentleyjs-core)                               |
+| `CheckpointConnection.open`                   | `CheckpointConnection.openRemote`                                  |
+| `DecorateContext.screenViewport`              | `DecorateContext.viewport`                                         |
+| `FeatureOverrideType`                         | [FeatureOverrideType]($common)                                     |
+| `FeatureSymbology.Appearance`                 | [FeatureAppearance]($common)                                       |
+| `FeatureSymbology.AppearanceProps`            | [FeatureAppearanceProps]($common)                                  |
+| `findAvailableRealityModels`                  | `queryRealityData`                                                 |
+| `findAvailableUnattachedRealityModels`        | `queryRealityData`                                                 |
+| `IModelApp.iModelClient`                      | `IModelHubFrontend.iModelClient`                                   |
+| `IModelConnection.Models.loaded`              | use `for..of` to iterate and `getLoaded` to look up by Id          |
+| `IModelConnection.Views.saveThumbnail`        | use IPC and `IModelDb.saveThumbnail`                               |
+| `IOidcFrontendClient`                         | `FrontendAuthorizationClient`                                      |
+| `isIOidcFrontendClient`                       | `FrontendAuthorizationClient`                                      |
+| `OidcBrowserClient`                           | `BrowserAuthorizationClient`                                       |
+| `OidcFrontendClientConfiguration`             | `BrowserAuthorizationClientConfiguration`                          |
+| `QuantityFormatter.onActiveUnitSystemChanged` | [QuantityFormatter.onActiveFormattingUnitSystemChanged]($frontend) |
+| `QuantityFormatter.useImperialFormats`        | [QuantityFormatter.setActiveUnitSystem]($frontend)                 |
+| `RemoteBriefcaseConnection`                   | `CheckpointConnection`                                             |
+| `ScreenViewport.decorationDiv`                | `DecorateContext.addHtmlDecoration`                                |
+| `UnitSystemKey`                               | Moved to `@bentley/imodeljs-quantity`                              |
+| `ViewManager.forEachViewport`                 | Use a `for..of` loop                                               |
+| `ViewState3d.lookAtPerspectiveOrOrtho`        | `ViewState3d.LookAt`                                               |
+| `ViewState3d.lookAtUsingLensAngle`            | `ViewState3d.lookAt`                                               |
+| `Viewport.featureOverrideProvider`            | [Viewport.featureOverrideProviders]($frontend)                     |
+| `Viewport.setFlashed`                         | [Viewport.flashedId]($frontend)                                    |
+| `Viewport.setRedrawPending`                   | [Viewport.requestRedraw]($frontend)                                |
+
+### @bentley/geometry-core
+
+| Removed                                         | Replacement                                                |
+| ----------------------------------------------- | ---------------------------------------------------------- |
+| `BSplineCurve3dBase.createThroughPoints`        | `BSplineCurve3dBase.createFromInterpolationCurve3dOptions` |
+| `TransitionSpiralProps.curveLength`             | `TransitionSpiralProps.length`                             |
+| `TransitionSpiralProps.fractionInterval`        | `TransitionSpiralProps.activeFractionInterval`             |
+| `TransitionSpiralProps.intervalFractions`       | `TransitionSpiralProps.activeFractionInterval`             |
+| `InterpolationCurve3dOptions.isChordLenTangent` | `InterpolationCurve3dOptions.isChordLenTangents`           |
+| `Point3dArray.createRange`                      | `Range3d.createFromVariantData`                            |
 
 ### @bentley/backend-itwin-client
 
@@ -577,29 +608,32 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @bentley/ecschema-metadata
 
-| Removed                         | Replacement                                                  |
-| ------------------------------- | ------------------------------------------------------------ |
-| `IDiagnostic`                   | `IDiagnostic` in @bentley/ecschema-editing                   |
-| `BaseDiagnostic`                | `BaseDiagnostic` in @bentley/ecschema-editing                |
-| `DiagnosticType`                | `DiagnosticType` in @bentley/ecschema-editing                |
-| `DiagnosticCategory`            | `DiagnosticCategory` in @bentley/ecschema-editing            |
-| `DiagnosticCodes`               | `DiagnosticCodes` in @bentley/ecschema-editing               |
-| `Diagnostics`                   | `Diagnostics` in @bentley/ecschema-editing                   |
-| `IDiagnosticReporter`           | `IDiagnosticReporter` in @bentley/ecschema-editing           |
-| `SuppressionDiagnosticReporter` | `SuppressionDiagnosticReporter` in @bentley/ecschema-editing |
-| `FormatDiagnosticReporter`      | `FormatDiagnosticReporter` in @bentley/ecschema-editing      |
-| `LoggingDiagnosticReporter`     | `LoggingDiagnosticReporter` in @bentley/ecschema-editing     |
-| `IRuleSet`                      | `IRuleSet` in @bentley/ecschema-editing                      |
-| `ECRuleSet`                     | `ECRuleSet` in @bentley/ecschema-editing                     |
-| `ISuppressionRule`              | `ISuppressionRule` in @bentley/ecschema-editing              |
-| `BaseSuppressionRule`           | `BaseSuppressionRule` in @bentley/ecschema-editing           |
-| `IRuleSuppressionMap`           | `IRuleSuppressionMap` in @bentley/ecschema-editing           |
-| `BaseRuleSuppressionMap`        | `BaseRuleSuppressionMap` in @bentley/ecschema-editing        |
-| `IRuleSuppressionSet`           | `IRuleSuppressionSet` in @bentley/ecschema-editing           |
-| `SchemaCompareCodes`            | `SchemaCompareCodes` in @bentley/ecschema-editing            |
-| `SchemaCompareDiagnostics`      | `SchemaCompareDiagnostics` in @bentley/ecschema-editing      |
-| `SchemaValidater`               | `SchemaValidater` in @bentley/ecschema-editing               |
-| `SchemaValidationVisitor`       | `SchemaValidationVisitor` in @bentley/ecschema-editing       |
+| Removed                                  | Replacement                                                  |
+| -----------------------------------------| ------------------------------------------------------------ |
+| `IDiagnostic`                            | `IDiagnostic` in @bentley/ecschema-editing                   |
+| `BaseDiagnostic`                         | `BaseDiagnostic` in @bentley/ecschema-editing                |
+| `DiagnosticType`                         | `DiagnosticType` in @bentley/ecschema-editing                |
+| `DiagnosticCategory`                     | `DiagnosticCategory` in @bentley/ecschema-editing            |
+| `DiagnosticCodes`                        | `DiagnosticCodes` in @bentley/ecschema-editing               |
+| `Diagnostics`                            | `Diagnostics` in @bentley/ecschema-editing                   |
+| `IDiagnosticReporter`                    | `IDiagnosticReporter` in @bentley/ecschema-editing           |
+| `SuppressionDiagnosticReporter`          | `SuppressionDiagnosticReporter` in @bentley/ecschema-editing |
+| `FormatDiagnosticReporter`               | `FormatDiagnosticReporter` in @bentley/ecschema-editing      |
+| `LoggingDiagnosticReporter`              | `LoggingDiagnosticReporter` in @bentley/ecschema-editing     |
+| `IRuleSet`                               | `IRuleSet` in @bentley/ecschema-editing                      |
+| `ECRuleSet`                              | `ECRuleSet` in @bentley/ecschema-editing                     |
+| `ISuppressionRule`                       | `ISuppressionRule` in @bentley/ecschema-editing              |
+| `BaseSuppressionRule`                    | `BaseSuppressionRule` in @bentley/ecschema-editing           |
+| `IRuleSuppressionMap`                    | `IRuleSuppressionMap` in @bentley/ecschema-editing           |
+| `BaseRuleSuppressionMap`                 | `BaseRuleSuppressionMap` in @bentley/ecschema-editing        |
+| `IRuleSuppressionSet`                    | `IRuleSuppressionSet` in @bentley/ecschema-editing           |
+| `SchemaCompareCodes`                     | `SchemaCompareCodes` in @bentley/ecschema-editing            |
+| `SchemaCompareDiagnostics`               | `SchemaCompareDiagnostics` in @bentley/ecschema-editing      |
+| `SchemaValidater`                        | `SchemaValidater` in @bentley/ecschema-editing               |
+| `SchemaValidationVisitor`                | `SchemaValidationVisitor` in @bentley/ecschema-editing       |
+| `RelationshipConstraint.deserialize`     | `RelationshipConstraint.fromJSON`                   |
+| `RelationshipConstraint.deserializeSync` | `RelationshipConstraint.fromJSONSync`               |
+| `RelationshipConstraint.toJson`          | `RelationshipConstraint.toJSON`                     |
 
 <!---
 User Interface Changes - section to comment below
