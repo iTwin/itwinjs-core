@@ -75,9 +75,9 @@ In most cases property values are primitive, arrays or structs. However, it is p
 > **Example:**
 >
 > ```text
->           Model
+>            Model
 >           /  |  \
->         /   |   \
+>          /   |   \
 >         /    |    \
 > Element1 Element2 Element3
 > ```

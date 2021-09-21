@@ -78,7 +78,7 @@ Tells the library that the rule should only be handled if no other rule of the s
 A list of content specifications that define what content is going to be returned. This is the most important attribute which is responsible for defining what instances' properties are included in the returned content. There are 4 types of specifications:
 
 - [Selected node instances](./SelectedNodeInstances.md) specification returns properties of the [input instance](./Terminology.md#input-instance).
-- [Content instances of specific classes](./ContentInstancesOfSpecificClasses.md) specification returns properties of instances of classes given classes. The returned content doesn't depend on the [input](./Terminology.md#input-instance).
+- [Content instances of specific classes](./ContentInstancesOfSpecificClasses.md) specification returns properties of instances of given classes. The returned content doesn't depend on the [input](./Terminology.md#input-instance).
 - [Content related instances](./ContentRelatedInstances.md) specification returns properties of instances that are related to [input instances](./Terminology.md#input-instance) through given relationship(s).
 
 Multiple specifications can contribute to the resulting content by specifying multiple specifications in a single [content rule](./ContentRule.md) or specifying multiple rules that match the same input.
