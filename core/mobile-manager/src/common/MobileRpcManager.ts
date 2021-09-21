@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ProcessDetector } from "@bentley/bentleyjs-core";
 import { RpcConfiguration, RpcEndpoint, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { MobileRpcProtocol } from "./MobileRpcProtocol";
 
