@@ -7,7 +7,8 @@
  */
 
 import { GuidString, Logger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ECJsonTypeMap, request, RequestOptions, WsgInstance } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, request, RequestOptions } from "@bentley/itwin-client";
+import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
 import { Base64 } from "js-base64";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { IModelBaseHandler } from "./BaseHandler";
@@ -22,7 +23,7 @@ const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
 export type ThumbnailSize = "Small" | "Large";
 
 /** Base class for Thumbnails.
- * @public
+ * @internal
  */
 export abstract class Thumbnail extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "instanceId")
@@ -30,13 +31,13 @@ export abstract class Thumbnail extends WsgInstance {
 }
 
 /** Small [[Thumbnail]] class. Small Thumbnail is a 400x250 PNG image.
- * @public
+ * @internal
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.SmallThumbnail", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class SmallThumbnail extends Thumbnail { }
 
 /** Large [[Thumbnail]] class. Large Thumbnail is a 800x500 PNG image.
- * @public
+ * @internal
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.LargeThumbnail", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class LargeThumbnail extends Thumbnail { }
@@ -53,7 +54,7 @@ export interface TipThumbnail {
 
 /**
  * Query object for getting [[Thumbnail]]s. You can use this to modify the [[ThumbnailHandler.get]] results.
- * @public
+ * @internal
  */
 export class ThumbnailQuery extends InstanceIdQuery {
   /**
@@ -72,7 +73,7 @@ export class ThumbnailQuery extends InstanceIdQuery {
 
 /**
  * Handler for retrieving [[Thumbnail]]s. Use [[IModelClient.Thumbnails]] to get an instance of this class.
- * @public
+ * @internal
  */
 export class ThumbnailHandler {
   private _handler: IModelBaseHandler;
@@ -149,7 +150,7 @@ export class ThumbnailHandler {
     ArgumentCheck.validGuid("contextId", contextId);
     ArgumentCheck.validGuid("iModelId", iModelId);
 
-    const url: string = await this._handler.getUrl(requestContext) + this.getRelativeContextUrl(contextId, iModelId, size);
+    const url: string = await this._handler.getUrl() + this.getRelativeContextUrl(contextId, iModelId, size);
     const pngImage = await this.downloadThumbnail(requestContext, url);
 
     Logger.logTrace(loggerCategory, `Downloaded tip ${size}Thumbnail`, () => ({ iModelId }));
@@ -201,7 +202,7 @@ export class ThumbnailHandler {
 
     Logger.logInfo(loggerCategory, `Downloading ${size}Thumbnail ${thumbnailId} for iModel`, () => ({ iModelId }));
 
-    const url: string = `${await this._handler.getUrl(requestContext) + this.getRelativeUrl(iModelId, size, thumbnailId)}/$file`;
+    const url: string = `${await this._handler.getUrl() + this.getRelativeUrl(iModelId, size, thumbnailId)}/$file`;
     const pngImage = await this.downloadThumbnail(requestContext, url);
     Logger.logTrace(loggerCategory, `Downloaded ${size}Thumbnail ${thumbnailId} for iModel`, () => ({ iModelId }));
     return pngImage;

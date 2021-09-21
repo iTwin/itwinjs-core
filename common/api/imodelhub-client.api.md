@@ -7,13 +7,13 @@
 import { AccessToken } from '@bentley/itwin-client';
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { CancelRequest } from '@bentley/itwin-client';
-import { ChunkedQueryContext } from '@bentley/itwin-client';
+import { Client } from '@bentley/itwin-client';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
+import { DefaultRequestOptionsProvider } from '@bentley/itwin-client';
 import { FileHandler } from '@bentley/itwin-client';
 import { FrontendAuthorizationClient } from '@bentley/frontend-authorization-client';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { GuidString } from '@bentley/bentleyjs-core';
-import { HttpRequestOptions } from '@bentley/itwin-client';
 import { HttpStatus } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IModelHubStatus } from '@bentley/bentleyjs-core';
@@ -22,22 +22,18 @@ import { LogFunction } from '@bentley/bentleyjs-core';
 import { ProgressCallback } from '@bentley/itwin-client';
 import { RequestOptions } from '@bentley/itwin-client';
 import { RequestQueryOptions } from '@bentley/itwin-client';
+import { RequestTimeoutOptions } from '@bentley/itwin-client';
 import { Response } from '@bentley/itwin-client';
 import { ResponseError } from '@bentley/itwin-client';
 import { UserInfo } from '@bentley/itwin-client';
-import { WsgClient } from '@bentley/itwin-client';
-import { WsgError } from '@bentley/itwin-client';
-import { WsgInstance } from '@bentley/itwin-client';
-import { WsgQuery } from '@bentley/itwin-client';
-import { WsgRequestOptions } from '@bentley/itwin-client';
 
-// @beta
+// @internal
 export function addApplicationVersion(version: string): HttpRequestOptionsTransformer;
 
-// @beta
+// @internal
 export function addCsrfHeader(headerName?: string, cookieName?: string): HttpRequestOptionsTransformer;
 
-// @beta
+// @internal
 export function addHeader(name: string, valueFactory: () => string): HttpRequestOptionsTransformer;
 
 // @internal
@@ -77,6 +73,10 @@ export class ArgumentCheck {
     static validChangeSetId(argumentName: string, argument?: string, allowEmpty?: boolean): void;
     // (undocumented)
     static validGuid(argumentName: string, argument?: string): void;
+}
+
+// @internal
+export class AuthenticationError extends ResponseError {
 }
 
 // @internal
@@ -144,7 +144,7 @@ export class BriefcaseQuery extends WsgQuery {
     selectDownloadUrl(): this;
 }
 
-// @public
+// @internal
 export class ChangeSet extends WsgInstance {
     applicationId?: string;
     applicationName?: string;
@@ -154,21 +154,18 @@ export class ChangeSet extends WsgInstance {
     briefcaseId?: number;
     changesType?: ChangesType;
     description?: string;
-    // @internal
     downloadUrl?: string;
     fileName?: string;
     fileSize?: string;
     get fileSizeNumber(): number;
     id?: string;
     index?: string;
-    // @internal
     isUploaded?: boolean;
     parentId?: string;
     pathname?: string;
     pushDate?: string;
-    // @internal @deprecated
+    // @deprecated
     seedFileId?: GuidString;
-    // @internal
     uploadUrl?: string;
     userCreated?: string;
 }
@@ -184,13 +181,10 @@ export class ChangeSetCreatedEvent extends IModelHubGlobalEvent {
     fromJson(obj: any): void;
 }
 
-// @public
+// @internal
 export class ChangeSetHandler {
-    // @internal
     constructor(handler: IModelBaseHandler, fileHandler?: FileHandler);
-    // @internal
     create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSet: ChangeSet, path: string, progressCallback?: ProgressCallback): Promise<ChangeSet>;
-    // @internal
     download(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: ChangeSetQuery, path: string, progressCallback?: ProgressCallback): Promise<ChangeSet[]>;
     get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query?: ChangeSetQuery): Promise<ChangeSet[]>;
     }
@@ -207,19 +201,17 @@ export class ChangeSetPostPushEvent extends BriefcaseEvent {
 export class ChangeSetPrePushEvent extends IModelHubEvent {
 }
 
-// @public
+// @internal
 export class ChangeSetQuery extends StringIdQuery {
     constructor();
     afterVersion(versionId: GuidString): this;
     betweenChangeSets(firstChangeSetId: string, secondChangeSetId?: string): this;
     betweenVersionAndChangeSet(versionId: GuidString, changeSetId: string): this;
     betweenVersions(sourceVersionId: GuidString, destinationVersionId: GuidString): this;
-    // @internal
     bySeedFileId(seedFileId: GuidString): this;
-    // @internal (undocumented)
+    // (undocumented)
     protected checkValue(id: string): void;
     clone(): ChangeSetQuery;
-    // @internal
     static defaultPageSize: number;
     fromId(id: string): this;
     getVersionChangeSets(versionId: GuidString): this;
@@ -228,6 +220,9 @@ export class ChangeSetQuery extends StringIdQuery {
     selectBridgeProperties(): this;
     selectDownloadUrl(): this;
 }
+
+// @internal (undocumented)
+export type ChangeState = "new" | "modified" | "deleted" | "existing";
 
 // @public
 export enum ChangesType {
@@ -341,6 +336,23 @@ export enum CheckpointV2State {
 }
 
 // @internal
+export class ChunkedQueryContext {
+    static create(queryOptions: RequestQueryOptions): ChunkedQueryContext | undefined;
+    handleIteration(queryOptions: RequestQueryOptions): void;
+    get instancesLeft(): number | undefined;
+    get isQueryFinished(): boolean;
+    get skipToken(): string;
+    set skipToken(value: string);
+    }
+
+// @internal (undocumented)
+export interface ClassKeyMapInfo {
+    classKeyPropertyName?: string;
+    classPropertyName?: string;
+    schemaPropertyName?: string;
+}
+
+// @internal
 export interface CloneIModelTemplate {
     changeSetId?: string;
     imodelId: string;
@@ -442,6 +454,9 @@ export class ConflictingLocksError extends IModelHubError {
 // @internal
 export function constructorFromEventType(type: IModelHubEventType): EventConstructor;
 
+// @internal (undocumented)
+export type ConstructorType = new () => any;
+
 // @internal
 export interface ContextManagerClient {
     // (undocumented)
@@ -474,11 +489,31 @@ export class DefaultLockUpdateOptionsProvider {
 }
 
 // @internal
+export class DefaultWsgRequestOptionsProvider extends DefaultRequestOptionsProvider {
+    constructor();
+}
+
+// @internal
+export abstract class ECInstance {
+    // (undocumented)
+    [index: string]: any;
+    // (undocumented)
+    ecId: string;
+}
+
+// @internal
+export class ECJsonTypeMap {
+    static classToJson(applicationKey: string, classKey: string, classKeyMapInfo: ClassKeyMapInfo): (typedConstructor: ConstructorType) => void;
+    static fromJson<T extends ECInstance>(typedConstructor: new () => T, applicationKey: string, ecJsonInstance: any): T | undefined;
+    static propertyToJson(applicationKey: string, propertyAccessString: string): (object: any, propertyKey: string) => void;
+    static toJson<T extends ECInstance>(applicationKey: string, typedInstance: T): any | undefined;
+}
+
+// @internal
 export type EmptyIModelTemplate = "Empty";
 
-// @public
+// @internal
 export class EventHandler extends EventBaseHandler {
-    // @internal
     constructor(handler: IModelBaseHandler);
     createListener<T extends IModelHubEvent>(requestContext: ClientRequestContext, authenticationCallback: () => Promise<AccessToken>, subscriptionId: string, iModelId: GuidString, listener: (event: T) => void): () => void;
     getEvent(requestContext: ClientRequestContext, sasToken: string, baseAddress: string, subscriptionId: string, timeout?: number): Promise<IModelHubEvent | undefined>;
@@ -486,20 +521,20 @@ export class EventHandler extends EventBaseHandler {
     get subscriptions(): EventSubscriptionHandler;
 }
 
-// @public
+// @internal
 export class EventSAS extends BaseEventSAS {
 }
 
-// @public
+// @internal
 export class EventSubscription extends WsgInstance {
     eventTypes?: IModelHubEventType[];
 }
 
-// @public
+// @internal
 export class EventSubscriptionHandler {
     constructor(handler: IModelBaseHandler);
     create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, events: IModelHubEventType[]): Promise<EventSubscription>;
-    // @internal @deprecated
+    // @deprecated
     create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, events: EventType[]): Promise<EventSubscription>;
     delete(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, eventSubscriptionId: string): Promise<void>;
     update(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, subscription: EventSubscription): Promise<EventSubscription>;
@@ -592,7 +627,15 @@ export type GlobalEventType =
 export class HardiModelDeleteEvent extends IModelHubGlobalEvent {
 }
 
-// @beta
+// @internal
+export interface HttpRequestOptions {
+    // (undocumented)
+    headers?: any;
+    // (undocumented)
+    timeout?: RequestTimeoutOptions;
+}
+
+// @internal
 export type HttpRequestOptionsTransformer = (options: HttpRequestOptions) => void;
 
 // @internal
@@ -600,14 +643,13 @@ export class HubCode extends CodeBase {
     value?: string;
 }
 
-// @public
+// @internal
 export class HubIModel extends WsgInstance {
     createdDate?: string;
     dataLocationId?: string;
     description?: string;
     extent?: number[];
     id?: GuidString;
-    // @internal
     iModelTemplate?: string;
     iModelType?: IModelType;
     initialized?: boolean;
@@ -616,7 +658,7 @@ export class HubIModel extends WsgInstance {
     userCreated?: string;
 }
 
-// @public
+// @internal
 export class HubUserInfo extends WsgInstance {
     email?: string;
     firstName?: string;
@@ -630,7 +672,7 @@ export class IModelBankClient extends IModelClient {
     // (undocumented)
     get baseUrl(): string;
     // (undocumented)
-    getUrl(rqctx: AuthorizedClientRequestContext): Promise<string>;
+    getUrl(): Promise<string>;
 }
 
 // @internal (undocumented)
@@ -652,14 +694,11 @@ export class IModelBankHandler extends IModelBaseHandler {
     // (undocumented)
     baseUrl?: string;
     // (undocumented)
-    getUrl(_requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string>;
-    // (undocumented)
-    protected getUrlSearchKey(): string;
+    getUrl(excludeApiVersion?: boolean): Promise<string>;
 }
 
-// @public
+// @internal
 export class IModelBaseHandler extends WsgClient {
-    // @internal
     constructor(keepAliveDuration?: number, fileHandler?: FileHandler);
     // (undocumented)
     protected _agent: any;
@@ -667,63 +706,45 @@ export class IModelBaseHandler extends WsgClient {
     deleteInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions): Promise<void>;
     // (undocumented)
     protected _fileHandler: FileHandler | undefined;
-    // @internal (undocumented)
+    // (undocumented)
     formatContextIdForUrl(contextId: string): string;
-    // @internal
     getAgent(): any;
-    // @internal
     getCustomRequestOptions(): CustomRequestOptions;
-    // @internal (undocumented)
+    // (undocumented)
     getFileHandler(): FileHandler | undefined;
     getInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
     getInstancesChunk<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, url: string, chunkedQueryContext: ChunkedQueryContext | undefined, typedConstructor: new () => T, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
-    // @internal
-    getUrl(requestContext: ClientRequestContext): Promise<string>;
-    // @internal (undocumented)
-    protected getUrlSearchKey(): string;
+    getUrl(): Promise<string>;
     postInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T>;
     postInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
     postQuery<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
-    // @internal
     protected setupHttpOptions(options?: HttpRequestOptions): HttpRequestOptions;
-    // @internal
     protected setupOptionDefaults(options: RequestOptions): Promise<void>;
     // (undocumented)
     protected _url?: string;
-    // @beta
     use(func: HttpRequestOptionsTransformer): void;
 }
 
-// @public
+// @internal
 export abstract class IModelClient {
     constructor(baseHandler: IModelBaseHandler, fileHandler?: FileHandler, applicationVersion?: string);
-    // @internal
     get briefcases(): BriefcaseHandler;
     get changeSets(): ChangeSetHandler;
-    // @internal
     get checkpoints(): CheckpointHandler;
-    // @internal
     get checkpointsV2(): CheckpointV2Handler;
-    // @internal
     get codes(): CodeHandler;
     get events(): EventHandler;
     get fileHandler(): FileHandler | undefined;
-    // @internal
     get globalEvents(): GlobalEventHandler;
     // (undocumented)
     protected _handler: IModelBaseHandler;
-    // @beta
     get iModel(): IModelHandler;
     get iModels(): IModelsHandler;
-    // @internal
     get locks(): LockHandler;
-    // @internal
     get permissions(): PermissionHandler | undefined;
-    // @internal
     get requestOptions(): CustomRequestOptions;
     setFileHandler(fileHandler: FileHandler): void;
     get thumbnails(): ThumbnailHandler;
-    // @beta
     use(transformer: HttpRequestOptionsTransformer): void;
     get users(): UserInfoHandler;
     get versions(): VersionHandler;
@@ -775,45 +796,32 @@ export interface IModelFileSystemContextProps {
     name: string;
 }
 
-// @beta
+// @internal
 export class IModelHandler {
-    // @internal
     constructor(handler: IModelsHandler);
-    // @internal
     create(requestContext: AuthorizedClientRequestContext, contextId: string, name: string, createOptions?: IModelCreateOptions): Promise<HubIModel>;
     delete(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<void>;
-    // @internal
     download(requestContext: AuthorizedClientRequestContext, contextId: string, path: string, progressCallback?: ProgressCallback): Promise<void>;
     get(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<HubIModel>;
-    // @internal
     getInitializationState(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<InitializationState>;
     update(requestContext: AuthorizedClientRequestContext, contextId: string, imodel: HubIModel): Promise<HubIModel>;
 }
 
-// @public
+// @internal
 export class IModelHubClient extends IModelClient {
     constructor(fileHandler?: FileHandler, iModelBaseHandler?: IModelBaseHandler, applicationVersion?: string);
-    // @internal
     get permissions(): PermissionHandler;
 }
 
-// @public
+// @internal
 export class IModelHubClientError extends IModelHubError {
-    // @internal
     static browser(): IModelHubClientError;
-    // @internal
     static fileHandler(): IModelHubClientError;
-    // @internal
     static fileNotFound(): IModelHubClientError;
-    // @internal
     static fromId(id: IModelHubStatus, message: string): IModelHubClientError;
-    // @internal
     static initializationTimeout(): IModelHubClientError;
-    // @internal
     static invalidArgument(argumentName: string): IModelHubClientError;
-    // @internal
     static missingDownloadUrl(argumentName: string): IModelHubClientError;
-    // @internal
     static undefinedArgument(argumentName: string): IModelHubClientError;
 }
 
@@ -824,20 +832,14 @@ export enum IModelHubClientLoggerCategory {
     IModelHub = "imodelhub-client.iModelHub"
 }
 
-// @public
+// @internal
 export class IModelHubError extends WsgError {
-    // @internal
     constructor(errorNumber: number | HttpStatus, message?: string, getMetaData?: GetMetaDataFunction);
     data: any;
-    // @internal
     static fromId(id: IModelHubStatus, message: string): IModelHubError;
-    // @internal
     getLogLevel(): LogFunction;
-    // @internal
     log(): void;
-    // @internal
     static parse(response: any, log?: boolean): ResponseError;
-    // @internal
     static shouldRetry(error: any, response: any): boolean;
 }
 
@@ -886,25 +888,20 @@ export class IModelPermissions extends WsgInstance {
     write?: string;
 }
 
-// @public
+// @internal
 export class IModelQuery extends InstanceIdQuery {
-    // @internal
     byiModelTemplate(iModelTemplate: string): this;
     byiModelType(iModelType: IModelType): this;
     byName(name: string): this;
 }
 
-// @public
+// @internal
 export class IModelsHandler {
-    // @internal
     constructor(handler: IModelBaseHandler, fileHandler?: FileHandler);
-    // @internal
     create(requestContext: AuthorizedClientRequestContext, contextId: string, name: string, createOptions?: IModelCreateOptions): Promise<HubIModel>;
     delete(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: GuidString): Promise<void>;
-    // @internal
     download(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, path: string, progressCallback?: ProgressCallback): Promise<void>;
     get(requestContext: AuthorizedClientRequestContext, contextId: string, query?: IModelQuery): Promise<HubIModel[]>;
-    // @internal
     getInitializationState(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<InitializationState>;
     update(requestContext: AuthorizedClientRequestContext, contextId: string, imodel: HubIModel): Promise<HubIModel>;
     }
@@ -926,16 +923,15 @@ export enum InitializationState {
     Successful = 0
 }
 
-// @public
+// @internal
 export class InstanceIdQuery extends WsgQuery {
     byId(id: GuidString): this;
-    // @internal (undocumented)
+    // (undocumented)
     protected _byId?: GuidString;
-    // @internal
     getId(): string | undefined;
 }
 
-// @public
+// @internal
 export class LargeThumbnail extends Thumbnail {
 }
 
@@ -1076,7 +1072,7 @@ export class SeedFile extends WsgInstance {
     userUploaded?: string;
 }
 
-// @public
+// @internal
 export class SmallThumbnail extends Thumbnail {
 }
 
@@ -1084,34 +1080,32 @@ export class SmallThumbnail extends Thumbnail {
 export class SoftiModelDeleteEvent extends IModelHubGlobalEvent {
 }
 
-// @public
+// @internal
 export class StringIdQuery extends WsgQuery {
     byId(id: string): this;
-    // @internal (undocumented)
+    // (undocumented)
     protected _byId?: string;
-    // @internal (undocumented)
+    // (undocumented)
     protected checkValue(id: string): void;
-    // @internal
     getId(): string | undefined;
 }
 
-// @public
+// @internal
 export abstract class Thumbnail extends WsgInstance {
     // (undocumented)
     id?: GuidString;
 }
 
-// @public
+// @internal
 export class ThumbnailHandler {
-    // @internal
     constructor(handler: IModelBaseHandler);
     download(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, thumbnail: Thumbnail | TipThumbnail): Promise<string>;
     get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, size: ThumbnailSize, query?: ThumbnailQuery): Promise<Thumbnail[]>;
     }
 
-// @public
+// @internal
 export class ThumbnailQuery extends InstanceIdQuery {
-    // @internal @deprecated
+    // @deprecated
     byVersionId(versionId: GuidString): this;
 }
 
@@ -1124,27 +1118,25 @@ export interface TipThumbnail {
     size: ThumbnailSize;
 }
 
-// @public
+// @internal
 export class UserInfoHandler {
-    // @internal
     constructor(handler: IModelBaseHandler);
     get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query?: UserInfoQuery): Promise<HubUserInfo[]>;
     get statistics(): UserStatisticsHandler;
 }
 
-// @public
+// @internal
 export class UserInfoQuery extends WsgQuery {
     byId(id: string): this;
-    // @internal (undocumented)
+    // (undocumented)
     protected _byId?: string;
     byIds(ids: string[]): this;
-    // @internal
     getId(): string | undefined;
-    // @internal (undocumented)
+    // (undocumented)
     get isQueriedByIds(): boolean;
     }
 
-// @public
+// @internal
 export class UserStatistics extends HubUserInfo {
     briefcasesCount?: number;
     lastChangeSetPushDate?: string;
@@ -1152,23 +1144,20 @@ export class UserStatistics extends HubUserInfo {
     pushedChangeSetsCount?: number;
 }
 
-// @public
+// @internal
 export class UserStatisticsHandler {
-    // @internal
     constructor(handler: IModelBaseHandler);
     get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query?: UserStatisticsQuery): Promise<UserStatistics[]>;
     }
 
-// @public
+// @internal
 export class UserStatisticsQuery extends WsgQuery {
     constructor();
     byId(id: string): this;
-    // @internal (undocumented)
+    // (undocumented)
     protected _byId?: string;
     byIds(ids: string[]): this;
-    // @internal
     getId(): string | undefined;
-    // @internal
     get isQueriedByIds(): boolean;
     selectAll(): this;
     selectBriefcasesCount(): this;
@@ -1177,7 +1166,7 @@ export class UserStatisticsQuery extends WsgQuery {
     selectPushedChangeSetsCount(): this;
     }
 
-// @public
+// @internal
 export class Version extends WsgInstance {
     applicationId?: string;
     applicationName?: string;
@@ -1187,10 +1176,10 @@ export class Version extends WsgInstance {
     hidden?: boolean;
     // (undocumented)
     id?: GuidString;
-    // @internal @deprecated
+    // @deprecated
     largeThumbnailId?: GuidString;
     name?: string;
-    // @internal @deprecated
+    // @deprecated
     smallThumbnailId?: GuidString;
     userCreated?: string;
 }
@@ -1204,23 +1193,131 @@ export class VersionEvent extends IModelHubEvent {
     versionName: string;
 }
 
-// @public
+// @internal
 export class VersionHandler {
-    // @internal
     constructor(handler: IModelBaseHandler);
     create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSetId: string, name: string, description?: string): Promise<Version>;
     get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query?: VersionQuery): Promise<Version[]>;
     update(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, version: Version): Promise<Version>;
 }
 
-// @public
+// @internal
 export class VersionQuery extends InstanceIdQuery {
     byChangeSet(changeSetId: string): this;
     byName(name: string): this;
     notHidden(): this;
     selectApplicationData(): this;
-    // @internal @deprecated
+    // @deprecated
     selectThumbnailId(...sizes: ThumbnailSize[]): this;
+}
+
+// @internal
+export abstract class WsgClient extends Client {
+    protected constructor(apiVersion: string);
+    // (undocumented)
+    apiVersion: string;
+    protected applyUserConfiguredHttpRequestOptions(requestOptions: RequestOptions, userDefinedRequestOptions?: HttpRequestOptions): void;
+    protected delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, httpRequestOptions?: HttpRequestOptions): Promise<void>;
+    protected deleteInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<void>;
+    protected getInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
+    protected getInstancesChunk<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, url: string, chunkedQueryContext: ChunkedQueryContext | undefined, typedConstructor: new () => T, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
+    getUrl(excludeApiVersion?: boolean): Promise<string>;
+    protected postInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T>;
+    protected postInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
+    protected postQuery<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
+    protected setupOptionDefaults(options: RequestOptions): Promise<void>;
+    // (undocumented)
+    protected _url?: string;
+}
+
+// @internal
+export enum WsgClientLoggerCategory {
+    Client = "wsg-client.Client",
+    ECJson = "wsg-client.ECJson"
+}
+
+// @internal
+export class WsgError extends ResponseError {
+    constructor(errorNumber: number | HttpStatus, message?: string, getMetaData?: GetMetaDataFunction);
+    static getErrorStatus(errorId: number, httpStatusType: number): number;
+    static getWSStatusId(error: string): number;
+    log(): void;
+    static parse(response: any, log?: boolean): ResponseError;
+    static shouldRetry(error: any, response: any): boolean;
+}
+
+// @internal
+export abstract class WsgInstance extends ECInstance {
+    // (undocumented)
+    changeState?: ChangeState;
+    // (undocumented)
+    eTag?: string;
+    // (undocumented)
+    wsgId: string;
+}
+
+// @internal
+export class WsgQuery {
+    protected addFilter(filter: string, operator?: "and" | "or"): void;
+    protected addSelect(select: string): this;
+    filter(filter: string): this;
+    getQueryOptions(): RequestQueryOptions;
+    orderBy(orderBy: string): this;
+    pageSize(n: number): this;
+    // (undocumented)
+    protected _query: RequestQueryOptions;
+    resetQueryOptions(): void;
+    select(select: string): this;
+    skip(n: number): this;
+    top(n: number): this;
+}
+
+// @internal
+export interface WsgRequestOptions {
+    // (undocumented)
+    CustomOptions?: any;
+    // (undocumented)
+    RefreshInstances?: boolean;
+    // (undocumented)
+    ResponseContent?: "FullInstance" | "Empty" | "InstanceId";
+}
+
+// @internal
+export enum WSStatus {
+    // (undocumented)
+    ClassNotFound = 98311,
+    // (undocumented)
+    FileNotFound = 98314,
+    // (undocumented)
+    InstanceNotFound = 98313,
+    // (undocumented)
+    LoginFailed = 98306,
+    // (undocumented)
+    LoginRequired = 98319,
+    // (undocumented)
+    NoClientLicense = 98317,
+    // (undocumented)
+    NoServerLicense = 98316,
+    // (undocumented)
+    NotEnoughRights = 98308,
+    // (undocumented)
+    NotSupported = 98315,
+    // (undocumented)
+    PropertyNotFound = 98312,
+    // (undocumented)
+    RepositoryNotFound = 98309,
+    // (undocumented)
+    SchemaNotFound = 98310,
+    // (undocumented)
+    SslRequired = 98307,
+    // (undocumented)
+    Success = 0,
+    // (undocumented)
+    TooManyBadLoginAttempts = 98318,
+    // (undocumented)
+    Unknown = 98305,
+    // (undocumented)
+    WSERROR_BASE = 98304
 }
 
 

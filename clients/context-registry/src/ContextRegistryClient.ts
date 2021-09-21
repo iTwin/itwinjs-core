@@ -6,9 +6,10 @@
  * @module ContextRegistry
  */
 import * as deepAssign from "deep-assign";
-import { assert } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ECJsonTypeMap, RequestOptions, RequestQueryOptions, WsgClient, WsgInstance } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, RequestOptions, RequestQueryOptions } from "@bentley/itwin-client";
+import { ECJsonTypeMap, WsgInstance } from "./wsg/ECJsonTypeMap";
 import { ITwin, ITwinAccess, ITwinQueryArg } from "./ITwinAccessProps";
+import { WsgClient } from "./wsg/WsgClient";
 
 /** The iTwin context such as Projects and Assets.
  * @beta
@@ -119,7 +120,6 @@ class Asset extends HiddenContext {
  * @beta
  */
 export class ITwinAccessClient extends WsgClient implements ITwinAccess {
-  public static readonly searchKey: string = "CONNECTEDContextService.URL";
 
   public constructor() {
     super("v2.5");
@@ -208,9 +208,6 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
         .slice(assetRange.skip, assetRange.top)
       );
   }
-
-  /** @internal */
-  protected getUrlSearchKey(): string { assert(false, "Bentley cloud-specific method should be factored out of WsgClient base class"); return ""; }
 
   protected override async setupOptionDefaults(options: RequestOptions): Promise<void> {
     await super.setupOptionDefaults(options);

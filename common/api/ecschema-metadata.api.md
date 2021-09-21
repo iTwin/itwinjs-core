@@ -1583,10 +1583,6 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     protected _constraintClasses?: LazyLoadedRelationshipConstraintClass[];
     // (undocumented)
     get customAttributes(): CustomAttributeSet | undefined;
-    // @deprecated (undocumented)
-    deserialize(relationshipConstraintProps: RelationshipConstraintProps): Promise<void>;
-    // @deprecated (undocumented)
-    deserializeSync(relationshipConstraintProps: RelationshipConstraintProps): void;
     // (undocumented)
     fromJSON(relationshipConstraintProps: RelationshipConstraintProps): Promise<void>;
     // (undocumented)
@@ -1618,8 +1614,6 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     get schema(): Schema;
     supportsClass(ecClass: ECClass): Promise<boolean>;
     toJSON(): RelationshipConstraintProps;
-    // @deprecated (undocumented)
-    toJson(): void;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
 }

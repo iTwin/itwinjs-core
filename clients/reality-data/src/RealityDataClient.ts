@@ -6,11 +6,12 @@
 /** @packageDocumentation
  * @module RealityData
  */
-import { ClientRequestContext, Guid } from "@bentley/bentleyjs-core";
-import {
-  AuthorizedClientRequestContext, ECJsonTypeMap, getArrayBuffer, getJson, RequestQueryOptions, WsgClient, WsgInstance,
-} from "@bentley/itwin-client";
+
 import { URL } from "url";
+import { Guid } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext, getArrayBuffer, getJson, RequestQueryOptions } from "@bentley/itwin-client";
+import { ECJsonTypeMap, WsgInstance } from "./wsg/ECJsonTypeMap";
+import { WsgClient } from "./wsg/WsgClient";
 
 /** Currenlty supported  ProjectWise ContextShare reality data types
  * @internal
@@ -191,18 +192,6 @@ export class RealityData extends WsgInstance {
   }
 
   /**
-   * Gets a tileset's tile data
-   * @param requestContext The client request context.
-   * @param name name or path of tile
-   * @param nameRelativeToRootDocumentPath (optional default is false) Indicates if the given name is relative to the root document path.
-   * @deprecated use [[getTileJson]] instead
-   * @returns tile data json
-   */
-  public async getModelData(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath: boolean = false): Promise<any> {
-    return this.getTileJson(requestContext, name, nameRelativeToRootDocumentPath);
-  }
-
-  /**
    * Gets a tile access url URL object
    * @param requestContext The client request context.
    * @param writeAccess Optional boolean indicating if write access is requested. Default is false for read-only access.
@@ -369,7 +358,6 @@ export class DataLocation extends WsgInstance {
  * @internal
  */
 export class RealityDataClient extends WsgClient {
-  public static readonly searchKey: string = "RealityDataServices";
 
   /**
    * Creates an instance of RealityDataServicesClient.
@@ -377,14 +365,6 @@ export class RealityDataClient extends WsgClient {
   public constructor() {
     super("v1");
     this.baseUrl = "https://api.bentley.com/contextshare";
-  }
-
-  /**
-   * Gets name/key to query the service URLs from the URL Discovery Service ("Buddi")
-   * @returns Search key for the URL.
-   */
-  protected getUrlSearchKey(): string {
-    return RealityDataClient.searchKey;
   }
 
   /**
@@ -396,8 +376,8 @@ export class RealityDataClient extends WsgClient {
    * @param tilesId realityDataInstance id, called tilesId when returned from tile generator job
    * @returns string containing the URL to reality data for indicated tile.
    */
-  public async getRealityDataUrl(requestContext: ClientRequestContext, projectId: string | undefined, tilesId: string): Promise<string> {
-    const serverUrl: string = await this.getUrl(requestContext);
+  public async getRealityDataUrl(projectId: string | undefined, tilesId: string): Promise<string> {
+    const serverUrl: string = await this.getUrl();
 
     if (!projectId || projectId === "")
       projectId = "Server";

@@ -6,22 +6,22 @@ import * as chai from "chai";
 import * as fs from "fs";
 import { Base64 } from "js-base64";
 import * as path from "path";
-import { ClientRequestContext, Guid, GuidString, Id64, Id64String, Logger, WSStatus } from "@bentley/bentleyjs-core";
+import { HttpRequestHost } from "@bentley/backend-itwin-client";
+import { ClientRequestContext, Guid, GuidString, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { ITwin } from "@bentley/context-registry-client";
 import {
-  Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, CodeState, HubCode, IModelBankClient, IModelBankFileSystemContextClient,
+  Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, CodeState, ECJsonTypeMap, HubCode, IModelBankClient, IModelBankFileSystemContextClient,
   IModelCloudEnvironment, IModelHubClient, IModelQuery, LargeThumbnail, Lock, LockLevel, LockType, MultiCode, MultiLock, SmallThumbnail, Thumbnail,
-  Version, VersionQuery,
+  Version, VersionQuery, WsgError, WSStatus,
 } from "@bentley/imodelhub-client";
-import { AccessToken, AuthorizedClientRequestContext, ECJsonTypeMap, ProgressInfo, UserInfo, WsgError } from "@bentley/itwin-client";
+import { AccessToken, AuthorizedClientRequestContext, ProgressInfo, UserInfo } from "@bentley/itwin-client";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool";
 import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
+import { createFileHandler } from "./FileHandler";
 import { getIModelBankCloudEnv } from "./IModelBankCloudEnv";
 import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
 import { assetsPath } from "./TestConstants";
-import { createFileHandler } from "./FileHandler";
-import { HttpRequestHost } from "@bentley/backend-itwin-client";
 
 const loggingCategory = "backend-itwin-client.TestUtils";
 
