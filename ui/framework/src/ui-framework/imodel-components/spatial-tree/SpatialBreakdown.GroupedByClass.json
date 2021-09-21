@@ -43,19 +43,19 @@
       "specifications": [
         {
           "specType": "RelatedInstanceNodes",
-          "relationships": {
-            "schemaName": "SpatialComposition",
-            "classNames": [
-              "CompositeComposesSubComposites"
-            ]
-          },
-          "relatedClasses": {
-            "schemaName": "SpatialComposition",
-            "classNames": [
-              "CompositeElement"
-            ]
-          },
-          "requiredDirection": "Forward",
+          "relationshipPaths": [
+            {
+              "relationship": {
+                "schemaName": "SpatialComposition",
+                "className": "CompositeComposesSubComposites"
+              },
+              "targetClass": {
+                "schemaName": "SpatialComposition",
+                "className": "CompositeElement"
+              },
+              "direction": "Forward"
+            }
+          ],
           "groupByClass": true,
           "groupByLabel": false
         }
@@ -67,19 +67,19 @@
       "specifications": [
         {
           "specType": "RelatedInstanceNodes",
-          "relationships": {
-            "schemaName": "SpatialComposition",
-            "classNames": [
-              "CompositeOverlapsSpatialElements"
-            ]
-          },
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "SpatialElement"
-            ]
-          },
-          "requiredDirection": "Forward",
+          "relationshipPaths": [
+            {
+              "relationship": {
+                "schemaName": "SpatialComposition",
+                "className": "CompositeOverlapsSpatialElements"
+              },
+              "targetClass": {
+                "schemaName": "BisCore",
+                "className": "SpatialElement"
+              },
+              "direction": "Forward"
+            }
+          ],
           "groupByClass": true,
           "groupByLabel": false
         }
