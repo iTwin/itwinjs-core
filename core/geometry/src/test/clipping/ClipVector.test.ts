@@ -361,7 +361,7 @@ describe("StringifiedClipVector", () => {
     expect(StringifiedClipVector.fromClipVector(cv)).to.equal(scv);
   });
 
-  it("OuterAndMask", () => {
+  it.only("OuterAndMask", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const outer = [[-10, -10], [10, 0], [10, 10], [-10, 10], [-10, -10]];
@@ -370,9 +370,10 @@ describe("StringifiedClipVector", () => {
     // const innerCircle = Sample.createArcStrokes(2, Point3d.create(5, 4), 12.0, Angle.createDegrees(12), Angle.createDegrees(372));
     const innerCircle = Sample.createArcStrokes(2, Point3d.create(0, 0), 5.0, Angle.createDegrees(0), Angle.createDegrees(360));
     const innerU = [[2, 1], [4, 2], [4, 5], [5, 6], [5, 2], [8, 1], [9, 8], [3, 7], [2, 1]];
-    const twoInlets = [[2, 1], [4, 2], [4, 5], [5, 6], [5, 2], [8, 1],
-        [10,8], [5,8],[5,9],[9,9],
-        [9, 12], [7, 11], [3, 12], [2, 1]];
+    const twoInletsWithWhisker = [[2, 1], [4, 2], [4, 5], [5, 6], [5, 2], [8, 1],
+      [10, 8], [5, 8], [5, 9], [9, 9], [9, 12],
+      [10,13],[12,13],[10,13],[9,12],
+      [7, 11], [3, 12], [2, 1]];
     const innerDart = [
         [0, 0],
         [-6, -8],
@@ -402,8 +403,8 @@ describe("StringifiedClipVector", () => {
       const jsonD = [{ shape: { points: outer } }, { shape: { points: innerU, mask: isMask}}];
       const jsonDart = [{ shape: { points: outer } }, { shape: { points: innerDart, mask: isMask}}];
       const jsonDart1 = [{ shape: { points: outer } }, { shape: { points: innerDart1, mask: isMask}}];
-      const jsonTwoInlets = [{ shape: { points: outer } }, { shape: { points: twoInlets, mask: isMask}}];
-      const jsonTwoInletsReversed = [{ shape: { points: outer } }, { shape: { points: twoInlets.slice().reverse(), mask: isMask } }];
+      const jsonTwoInlets = [{ shape: { points: outer } }, { shape: { points: twoInletsWithWhisker, mask: isMask}}];
+      const jsonTwoInletsReversed = [{ shape: { points: outer } }, { shape: { points: twoInletsWithWhisker.slice().reverse(), mask: isMask } }];
       const jsonDart1Trans = [{ shape: { points: outer } }, { shape: { points: innerDart, mask: isMask, trans: shiftAndRotateJson } }];
       const jsonTriangleTrans =  [{ shape: { points: outer } }, { shape: { points: triangle, mask: isMask, trans: shiftAndRotateJson } }];
       // const polygonToClip = Sample.createArcStrokes(3, Point3d.create(5, 5), 6.0, Angle.createDegrees(0), Angle.createDegrees(360));

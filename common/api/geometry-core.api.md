@@ -4466,10 +4466,11 @@ export class PolygonWireOffsetContext {
 export class PolylineOps {
     static compressByChordError(source: Point3d[], chordTolerance: number): Point3d[];
     static compressByPerpendicularDistance(source: Point3d[], maxDistance: number, numPass?: number): Point3d[];
+    static compressDanglers(source: Point3d[], closed?: boolean, tolerance?: number): Point3d[];
     static compressShortEdges(source: Point3d[], maxEdgeLength: number): Point3d[];
     static compressSmallTriangles(source: Point3d[], maxTriangleArea: number): Point3d[];
     static edgeLengthRange(points: Point3d[]): Range1d;
-}
+    }
 
 // @internal
 export class PowerPolynomial {
