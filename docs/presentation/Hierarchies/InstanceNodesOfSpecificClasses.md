@@ -1,6 +1,6 @@
 # InstanceNodesOfSpecificClasses
 
-> Based on [InstanceNodesOfSpecificClassesSpecification]($presentation-common) interface.
+> TypeScript type: [InstanceNodesOfSpecificClassesSpecification]($presentation-common).
 
 Returns nodes for instances of specific ECClasses.
 
@@ -25,7 +25,7 @@ Returns nodes for instances of specific ECClasses.
 | *Misc.*                          |
 | `hasChildren`                    | No        | `"Always" \| "Never" \| "Unknown"`                                                  | `"Unknown"` | Tells the rules engine that nodes produced using this specification always or never have children.                                                                                                                                                                  | Improves          |
 | `relatedInstances`               | No        | [`RelatedInstanceSpecification[]`](../Common-Rules/RelatedInstanceSpecification.md) | `[]`        | Specifications of [related instances](../Common-Rules/RelatedInstanceSpecification.md) that can be used in nodes' creation.                                                                                                                                         |
-| `nestedRules`                    | No        | [`ChildNodeRule[]`](./ChildNodeRule.md)                                             | `[]`        | Specifications of [nested child node rules](./Terminology.md#nested-rules).                                                                                                                                                                                         |
+| `nestedRules`                    | No        | [`ChildNodeRule[]`](./ChildNodeRule.md)                                             | `[]`        | Specifications of [nested child node rules](./Terminology.md#nested-rule).                                                                                                                                                                                          |
 
 ## Example
 

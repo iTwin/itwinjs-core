@@ -1,6 +1,6 @@
 # CalculatedProperties Content Modifier
 
-> Based on [CalculatedPropertiesSpecification]($presentation-common) interface.
+> TypeScript type: [CalculatedPropertiesSpecification]($presentation-common).
 
 This content modifier allows including additional calculated properties into the content.
 

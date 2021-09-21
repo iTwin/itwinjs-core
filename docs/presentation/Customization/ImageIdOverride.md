@@ -1,6 +1,6 @@
 # ImageIdOverride Customization Rule
 
-> Based on [ImageIdOverride]($presentation-common) interface.
+> TypeScript type: [ImageIdOverride]($presentation-common).
 
 ImageId override rules allow setting an image ID to specific types of ECInstances.
 

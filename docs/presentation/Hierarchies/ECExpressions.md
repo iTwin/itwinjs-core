@@ -9,8 +9,9 @@ be applied for which parent nodes. The following ECExpression symbols are availa
 | ------------ | ------------------------------------------------------- | -------------------------------------- |
 | `ParentNode` | [NavNode context](../Advanced/ECExpressions.md#navnode) | The parent NavNode expression context. |
 
-Additionally, [Ruleset variable symbols](../Advanced/ECExpressions.md#ruleset-variables-user-settings)
-are available as well.
+Additionally, [Ruleset variable symbols](../Advanced/ECExpressions.md#ruleset-variables-user-settings) are available as well.
+
+See [this topic](./ChildNodeRule.md#attribute-condition) for an example.
 
 ## Instance Filter
 
@@ -25,8 +26,7 @@ The below table lists all of them:
 | `parent` | [ECInstance context](../Advanced/ECExpressions.md#ecinstance) | The parent ECInstance expression context.                                       |
 | `this`   | [ECInstance context](../Advanced/ECExpressions.md#ecinstance) | ECInstance expression context of the ECInstance that's currently being handled. |
 
-Additionally, [Ruleset variable symbols](../Advanced/ECExpressions.md#ruleset-variables-user-settings)
-are available as well.
+Additionally, [Ruleset variable symbols](../Advanced/ECExpressions.md#ruleset-variables-user-settings) are available as well.
 
 ## Specification
 
@@ -37,4 +37,4 @@ Symbols available in expressions evaluated at each node's level (e.g. `hideExpre
 | ThisNode | [Node context](../Advanced/ECExpressions.md#navnode)          | NavNode expression context of the ECInstance that's currently being handled.    |
 | this     | [ECInstance context](../Advanced/ECExpressions.md#ecinstance) | ECInstance expression context of the ECInstance that's currently being handled. |
 
-Additionally, [User Settings symbols](../Advanced/ECExpressions.md#symbols-in-global-context) are available as well.
+Additionally, [Ruleset variable symbols](../Advanced/ECExpressions.md#ruleset-variables-user-settings) are available as well.

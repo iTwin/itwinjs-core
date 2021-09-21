@@ -1,6 +1,6 @@
 # CustomQueryInstanceNodes
 
-> Based on [CustomQueryInstanceNodesSpecification]($presentation-common) interface.
+> TypeScript type: [CustomQueryInstanceNodesSpecification]($presentation-common).
 
 Returns nodes for instances which are returned by an ECSQL query.
 
@@ -23,7 +23,7 @@ Returns nodes for instances which are returned by an ECSQL query.
 | *Misc.*                         |
 | `hasChildren`                   | No        | `"Always" \| "Never" \| "Unknown"`                                                  | `"Unknown"` | Tells the rules engine that nodes produced using this specification always or never have children.                                        | Improves          |
 | `relatedInstances`              | No        | [`RelatedInstanceSpecification[]`](../Common-Rules/RelatedInstanceSpecification.md) | `[]`        | Specifications of [related instances](../Common-Rules/RelatedInstanceSpecification.md) that can be used in nodes' creation.               |
-| `nestedRules`                   | No        | [`ChildNodeRule[]`](./ChildNodeRule.md)                                             | `[]`        | Specifications of [nested child node rules](./Terminology.md#nested-rules).                                                               |
+| `nestedRules`                   | No        | [`ChildNodeRule[]`](./ChildNodeRule.md)                                             | `[]`        | Specifications of [nested child node rules](./Terminology.md#nested-rule).                                                                |
 
 ## Query Specifications
 
@@ -38,7 +38,7 @@ SELECT ECClassId, ECInstanceId
  WHERE e.ParentId = 10
 ```
 
-**Note:** sorting and grouping happens after results of multiple query specifications are
+> **Note:** sorting and grouping happens after results of multiple query specifications are
 aggregated.
 
 ### String
