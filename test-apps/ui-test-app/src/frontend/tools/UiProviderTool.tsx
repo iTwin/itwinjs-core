@@ -9,23 +9,28 @@
 // cSpell: ignore popout
 
 import * as React from "react";
-import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, Tool } from "@bentley/imodeljs-frontend";
 
 import {
   AbstractStatusBarItemUtilities, AbstractWidgetProps, BadgeType, CommonStatusBarItem, CommonToolbarItem, ConditionalBooleanValue,
-  ConditionalStringValue, IconSpecUtilities, StagePanelLocation, StagePanelSection, StageUsage, StatusBarSection, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
+  ConditionalStringValue, IconSpecUtilities, StagePanelLocation, StagePanelSection, StageUsage, StatusBarSection,
+  ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
   UiItemsManager, UiItemsProvider, WidgetState,
 } from "@bentley/ui-abstract";
-import { FillCentered } from "@bentley/ui-core";
+import { FillCentered, LocalSettingsStorage } from "@bentley/ui-core";
 import {
-  ActionCreatorsObject, ActionsUnion, ChildWindowLocationProps, createAction,
-  ReducerRegistryInstance, StateManager, StatusBarItemUtilities, UiFramework, withStatusFieldProps,
+  ActionCreatorsObject, ActionsUnion, ChildWindowLocationProps, ContentGroup, ContentLayoutManager, ContentProps, createAction,
+  FrontstageManager, ReducerRegistryInstance, SavedViewLayout, SavedViewLayoutProps, StateManager, StatusBarItemUtilities, SyncUiEventId,
+  UiFramework, withStatusFieldProps,
 } from "@bentley/ui-framework";
 import { ShadowField } from "../appui/statusfields/ShadowField";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../index";
 import toolIconSvg from "@bentley/icons-generic/icons/window-add.svg?sprite";
 import tool2IconSvg from "@bentley/icons-generic/icons/window-maximize.svg?sprite";
 import tool3IconSvg from "@bentley/icons-generic/icons/3d-render.svg?sprite";
+import layoutRestoreIconSvg from "@bentley/icons-generic/icons/folder-export.svg?sprite";
+import removeLayoutIconSvg from "@bentley/icons-generic/icons/remove.svg?sprite";
+import layoutSaveIconSvg from "@bentley/icons-generic/icons/folder-import.svg?sprite";
 import { PopupTestPanel } from "./PopupTestPanel";
 import { PopupTestView } from "./PopupTestView";
 import { ComponentExamplesPage } from "../appui/frontstages/component-examples/ComponentExamples";
@@ -36,7 +41,6 @@ import { ITwinUIExamplesProvider } from "../appui/frontstages/component-examples
 interface SampleExtensionState {
   extensionUiVisible?: boolean;
 }
-
 class SampleExtensionStateManager {
   public static extensionStateManagerLoaded = false;
 
@@ -124,7 +128,13 @@ class TestUiProvider implements UiItemsProvider {
         });
       const groupSpec = ToolbarItemUtilities.createGroupButton("test-tool-group", 230, "icon-developer", "test group", [childActionSpec, simpleActionSpec], { badgeType: BadgeType.TechnicalPreview, parentToolGroupId: "tool-formatting-setting" });
 
-      return [simpleActionSpec, nestedActionSpec, groupSpec];
+      const isClearMeasureHiddenCondition = new ConditionalBooleanValue((): boolean => !IModelApp.toolAdmin.currentTool?.toolId.startsWith("Measure."), [SyncUiEventId.ToolActivated]);
+      const clearMeasureActionSpec = ToolbarItemUtilities.createActionButton("clear-measure-tool", 100, "icon-paintbrush", "Clear Measure Decorations",
+        (): void => {
+          IModelApp.toolAdmin.currentTool?.onReinitialize();
+        }, { isHidden: isClearMeasureHiddenCondition });
+
+      return [clearMeasureActionSpec, simpleActionSpec, nestedActionSpec, groupSpec];
     }
     return [];
   }
@@ -211,6 +221,37 @@ class TestUiProvider implements UiItemsProvider {
   }
 }
 
+function getImodelSpecificKey(inKey: string, iModelConnection: IModelConnection | undefined) {
+  const imodelId = iModelConnection?.iModelId ?? "unknownImodel";
+  return `[${imodelId}]${inKey}`;
+}
+
+export async function hasSavedViewLayoutProps(activeFrontstageId: string, iModelConnection: IModelConnection | undefined) {
+  const localSettings = new LocalSettingsStorage();
+  return localSettings.hasSetting("ContentGroupLayout", getImodelSpecificKey(activeFrontstageId, iModelConnection));
+}
+
+export async function getSavedViewLayoutProps(activeFrontstageId: string, iModelConnection: IModelConnection | undefined) {
+  const localSettings = new LocalSettingsStorage();
+  const result = await localSettings.getSetting("ContentGroupLayout", getImodelSpecificKey(activeFrontstageId, iModelConnection));
+
+  if (result.setting) {
+    // Parse SavedViewLayoutProps
+    const savedViewLayoutProps: SavedViewLayoutProps = result.setting;
+    if (iModelConnection) {
+      // Create ViewStates
+      const viewStates = await SavedViewLayout.viewStatesFromProps(iModelConnection, savedViewLayoutProps);
+
+      // Add applicationData to the ContentProps
+      savedViewLayoutProps.contentGroupProps.contents.forEach((contentProps: ContentProps, index: number) => {
+        contentProps.applicationData = { viewState: viewStates[index], iModelConnection };
+      });
+    }
+    return savedViewLayoutProps;
+  }
+  return undefined;
+}
+
 /** An Immediate Tool that toggles the test ui provider defined above. */
 export class UiProviderTool extends Tool {
   public static testExtensionLoaded = "";
@@ -230,6 +271,104 @@ export class UiProviderTool extends Tool {
       UiProviderTool.testExtensionLoaded = testUiProvider.id;
     }
 
+    return true;
+  }
+}
+
+export class SaveContentLayoutTool extends Tool {
+  public static override toolId = "SaveContentLayoutTool";
+  public static override iconSpec = IconSpecUtilities.createSvgIconSpec(layoutSaveIconSvg);
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 0; }
+  public static override get keyin(): string {
+    return "content layout save";
+  }
+
+  public static override get englishKeyin(): string {
+    return this.keyin;
+  }
+
+  public override async run(): Promise<boolean> {
+    if (FrontstageManager.activeFrontstageDef && ContentLayoutManager.activeLayout && ContentLayoutManager.activeContentGroup) {
+      const localSettings = new LocalSettingsStorage();
+
+      // Create props for the Layout, ContentGroup and ViewStates
+      const savedViewLayoutProps = SavedViewLayout.viewLayoutToProps(ContentLayoutManager.activeLayout,
+        ContentLayoutManager.activeContentGroup, true, (contentProps: ContentProps) => {
+          if (contentProps.applicationData) {
+            if (contentProps.applicationData.iModelConnection)
+              delete contentProps.applicationData.iModelConnection;
+            if (contentProps.applicationData.viewState)
+              delete contentProps.applicationData.viewState;
+          }
+        });
+
+      if (savedViewLayoutProps.contentLayoutProps)
+        delete savedViewLayoutProps.contentLayoutProps;
+
+      if (FrontstageManager.activeFrontstageDef.contentGroupProvider)
+        savedViewLayoutProps.contentGroupProps = FrontstageManager.activeFrontstageDef.contentGroupProvider.prepareToSaveProps(savedViewLayoutProps.contentGroupProps);
+
+      await localSettings.saveSetting("ContentGroupLayout",
+        getImodelSpecificKey(FrontstageManager.activeFrontstageDef.id, UiFramework.getIModelConnection()),
+        savedViewLayoutProps);
+    }
+    return true;
+  }
+
+}
+
+export class RestoreSavedContentLayoutTool extends Tool {
+  public static override toolId = "RestoreSavedContentLayoutTool";
+  public static override iconSpec = IconSpecUtilities.createSvgIconSpec(layoutRestoreIconSvg);
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 0; }
+  public static override get keyin(): string {
+    return "content layout restore";
+  }
+  public static override get englishKeyin(): string {
+    return this.keyin;
+  }
+
+  public override async run(): Promise<boolean> {
+    if (FrontstageManager.activeFrontstageDef) {
+      const savedViewLayoutProps = await getSavedViewLayoutProps(FrontstageManager.activeFrontstageDef.id, UiFramework.getIModelConnection());
+      if (savedViewLayoutProps) {
+        let contentGroupProps = savedViewLayoutProps.contentGroupProps;
+        if (FrontstageManager.activeFrontstageDef.contentGroupProvider)
+          contentGroupProps = FrontstageManager.activeFrontstageDef.contentGroupProvider.applyUpdatesToSavedProps(savedViewLayoutProps.contentGroupProps);
+        const contentGroup = new ContentGroup(contentGroupProps);
+
+        // activate the layout
+        await ContentLayoutManager.setActiveContentGroup(contentGroup);
+
+        // emphasize the elements
+        SavedViewLayout.emphasizeElementsFromProps(contentGroup, savedViewLayoutProps);
+      }
+    }
+    return true;
+  }
+}
+
+export class RemoveSavedContentLayoutTool extends Tool {
+  public static override toolId = "RemoveSavedContentLayoutTool";
+  public static override iconSpec = IconSpecUtilities.createSvgIconSpec(removeLayoutIconSvg);
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 0; }
+  public static override get keyin(): string {
+    return "content layout remove";
+  }
+  public static override get englishKeyin(): string {
+    return this.keyin;
+  }
+
+  public override async run(): Promise<boolean> {
+    if (FrontstageManager.activeFrontstageDef) {
+      const localSettings = new LocalSettingsStorage();
+
+      await localSettings.deleteSetting("ContentGroupLayout",
+        getImodelSpecificKey(FrontstageManager.activeFrontstageDef.id, UiFramework.getIModelConnection()));
+    }
     return true;
   }
 }
@@ -278,7 +417,7 @@ export class OpenComponentExamplesPopoutTool extends Tool {
       groupPriority,
     };
     return ToolbarItemUtilities.createActionButton(OpenComponentExamplesPopoutTool.toolId, itemPriority, OpenComponentExamplesPopoutTool.iconSpec, OpenComponentExamplesPopoutTool.flyover,
-      async () => {await IModelApp.tools.run(OpenComponentExamplesPopoutTool.toolId); }, overrides);
+      async () => { await IModelApp.tools.run(OpenComponentExamplesPopoutTool.toolId); }, overrides);
   }
 }
 export class OpenCustomPopoutTool extends Tool {

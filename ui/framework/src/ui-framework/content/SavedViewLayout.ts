@@ -9,21 +9,21 @@
 import { IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
 import { ContentCallback, ContentGroup, ContentGroupProps } from "./ContentGroup";
 import { ContentLayoutDef } from "./ContentLayout";
-import { ContentLayoutProps } from "./ContentLayoutProps";
 import { SavedView, SavedViewProps } from "./SavedView";
+import { ContentLayoutProps } from "@bentley/ui-abstract";
 
 /** SavedViewLayoutProps interface for sharing view layout information.
  * @public
- */
+ */
 export interface SavedViewLayoutProps {
-  contentLayoutProps: ContentLayoutProps;
+  contentLayoutProps?: ContentLayoutProps;
   contentGroupProps: ContentGroupProps;
   savedViews: SavedViewProps[];
 }
 
 /** ViewLayout interface for sharing view layout information.
  * @public
- */
+ */
 export interface ViewLayout {
   contentLayoutDef: ContentLayoutDef;
   contentGroup: ContentGroup;
@@ -32,17 +32,13 @@ export interface ViewLayout {
 
 /** SavedViewLayout class. Used to serialize/deserialize a View Layout with Saved Views.
  * @public
- */
+ */
 export class SavedViewLayout {
-
   /** Create props for a View Layout */
   public static viewLayoutToProps(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup, emphasizeElements: boolean = false, contentCallback?: ContentCallback): SavedViewLayoutProps {
-
     const contentLayoutProps = contentLayoutDef.toJSON();
-    contentLayoutProps.id = "";   // Will generate a new id when ContentLayoutDef is created
-
-    const contentGroupProps = contentGroup.toJSON(contentCallback);
-
+    // update layout in contentGroup to contain latest values from contentLayoutDef this way we don't need to save both.
+    const contentGroupProps = { ...contentGroup.toJSON(contentCallback), layout: contentLayoutProps };
     const savedViews = new Array<SavedViewProps>();
     const viewports = contentGroup.getViewports();
     for (const viewport of viewports) {
@@ -56,7 +52,6 @@ export class SavedViewLayout {
     }
 
     const savedViewLayoutProps: SavedViewLayoutProps = {
-      contentLayoutProps,
       contentGroupProps,
       savedViews,
     };
@@ -94,5 +89,4 @@ export class SavedViewLayout {
 
     return changedList.some((changed: boolean) => changed);
   }
-
 }

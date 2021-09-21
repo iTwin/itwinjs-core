@@ -3,7 +3,7 @@
 exports[`ContentLayout FourQuadrantsVertical renders correctly 1`] = `
 <div
   id="uifw-contentlayout-div"
-  key="fourQuadrantsVertical"
+  key="[contentGroup2-3]-fourQuadrantsVertical"
   onMouseDown={[Function]}
   onMouseUp={[Function]}
   role="presentation"
@@ -35,7 +35,7 @@ exports[`ContentLayout FourQuadrantsVertical renders correctly 1`] = `
         orientation={0}
         percentage={0.5}
         resizable={false}
-        splitterStateId=""
+        splitterStateId="fourQuadrantsRightHorizontal"
       />
     }
     contentB={
@@ -64,7 +64,7 @@ exports[`ContentLayout FourQuadrantsVertical renders correctly 1`] = `
         orientation={0}
         percentage={0.5}
         resizable={false}
-        splitterStateId=""
+        splitterStateId="fourQuadrantsLeftHorizontal"
       />
     }
     minSizeBottomRight={100}
@@ -73,7 +73,7 @@ exports[`ContentLayout FourQuadrantsVertical renders correctly 1`] = `
     orientation={1}
     percentage={0.5}
     resizable={false}
-    splitterStateId=""
+    splitterStateId="fourQuadrantsVertical"
   />
 </div>
 `;
@@ -81,7 +81,7 @@ exports[`ContentLayout FourQuadrantsVertical renders correctly 1`] = `
 exports[`ContentLayout FourQuadrantsVertical renders correctly 2`] = `
 <div
   id="uifw-contentlayout-div"
-  key="ContentLayout-1"
+  key="[contentGroup2-3]-fourQuadrantsHorizontal"
   onMouseDown={[Function]}
   onMouseUp={[Function]}
   role="presentation"
@@ -113,7 +113,7 @@ exports[`ContentLayout FourQuadrantsVertical renders correctly 2`] = `
         orientation={1}
         percentage={0.5}
         resizable={false}
-        splitterStateId=""
+        splitterStateId="fourQuadrantsTopVertical"
       />
     }
     contentB={
@@ -142,7 +142,7 @@ exports[`ContentLayout FourQuadrantsVertical renders correctly 2`] = `
         orientation={1}
         percentage={0.5}
         resizable={false}
-        splitterStateId=""
+        splitterStateId="fourQuadrantsBottomVertical"
       />
     }
     minSizeBottomRight={100}
@@ -151,7 +151,7 @@ exports[`ContentLayout FourQuadrantsVertical renders correctly 2`] = `
     orientation={0}
     percentage={0.5}
     resizable={false}
-    splitterStateId=""
+    splitterStateId="fourQuadrantsHorizontal"
   />
 </div>
 `;
@@ -159,7 +159,7 @@ exports[`ContentLayout FourQuadrantsVertical renders correctly 2`] = `
 exports[`ContentLayout SingleContent renders correctly 1`] = `
 <div
   id="uifw-contentlayout-div"
-  key="SingleContent"
+  key="[testGroup-2]-SingleContent"
   onMouseDown={[Function]}
   onMouseUp={[Function]}
   role="presentation"
@@ -177,7 +177,7 @@ exports[`ContentLayout SingleContent renders correctly 1`] = `
 exports[`ContentLayout TwoHalvesHorizontal renders correctly 1`] = `
 <div
   id="uifw-contentlayout-div"
-  key="TwoHalvesHorizontal"
+  key="[contentGroup2-3]-TwoHalvesHorizontal"
   onMouseDown={[Function]}
   onMouseUp={[Function]}
   role="presentation"
@@ -215,7 +215,7 @@ exports[`ContentLayout TwoHalvesHorizontal renders correctly 1`] = `
 exports[`ContentLayout TwoHalvesVertical renders correctly 1`] = `
 <div
   id="uifw-contentlayout-div"
-  key="TwoHalvesVertical"
+  key="[contentGroup2-3]-TwoHalvesVertical"
   onMouseDown={[Function]}
   onMouseUp={[Function]}
   role="presentation"

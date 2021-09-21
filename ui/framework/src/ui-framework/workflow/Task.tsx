@@ -65,7 +65,7 @@ export class Task extends ItemDefBase {
   }
 
   public async onActivated(): Promise<void> {
-    const frontstage = FrontstageManager.findFrontstageDef(this.primaryStageId);
+    const frontstage = await FrontstageManager.getFrontstageDef(this.primaryStageId);
     if (frontstage)
       await FrontstageManager.setActiveFrontstageDef(frontstage);
   }

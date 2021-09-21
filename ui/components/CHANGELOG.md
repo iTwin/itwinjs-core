@@ -1,6 +1,13 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Wed, 15 Sep 2021 18:06:47 GMT and should not be manually modified.
+This log was last generated on Tue, 21 Sep 2021 21:06:40 GMT and should not be manually modified.
+
+## 2.19.13
+Tue, 21 Sep 2021 21:06:40 GMT
+
+### Updates
+
+- 'PropertyValueRendererManager': use merged MergedPropertyValueRenderer before looking for typename specific renderer if property is merged.
 
 ## 2.19.12
 Wed, 15 Sep 2021 18:06:47 GMT

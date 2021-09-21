@@ -453,6 +453,12 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `OidcDelegationClientConfiguration` | `DelegationAuthorizationClientConfiguration` |
 | `OidcDelegationClient`              | `DelegationAuthorizationClient`              |
 
+### @bentley/ui-abstract
+
+| Removed                             | Replacement                                  |
+| ----------------------------------- | -------------------------------------------- |
+| `ContentLayoutProps.priority`       | *eliminated*                                 |
+
 ### @bentley/ui-core
 
 | Removed                              | Replacement                                            |
@@ -488,30 +494,43 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @bentley/ui-framework
 
-| Removed                                 | Replacement                                                                                                                   |
-| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `COLOR_THEME_DEFAULT`                   | `SYSTEM_PREFERRED_COLOR_THEME` in @bentley/ui-framework is used as default color theme                                        |
-| `FunctionKey`                           | `FunctionKey` in @bentley/ui-abstract                                                                                         |
-| `IModelAppUiSettings`                   | `UserSettingsStorage` in @bentley/ui-framework                                                                                |
-| `reactElement` in ContentControl        | `ContentControl.reactNode`                                                                                                    |
-| `reactElement` in NavigationAidControl  | `NavigationAidControl.reactNode`                                                                                              |
-| `reactElement` in NavigationWidgetDef   | `NavigationWidgetDef.reactNode`                                                                                               |
-| `reactElement` in ToolWidgetDef         | `ToolWidgetDef.reactNode`                                                                                                     |
-| `reactElement` in WidgetControl         | `WidgetControl.reactNode`                                                                                                     |
-| `reactElement` in WidgetDef             | `WidgetDef.reactNode`                                                                                                         |
-| `ReactMessage`                          | `ReactMessage` in @bentley/ui-core                                                                                            |
-| `SpecialKey`                            | `SpecialKey` in @bentley/ui-abstract                                                                                          |
-| `WidgetState`                           | `WidgetState` in @bentley/ui-abstract                                                                                         |
-| `UserProfileBackstageItem`              | *eliminated*                                                                                                                  |
-| `SignIn`                                | *eliminated*                                                                                                                  |
-| `SignOutModalFrontstage`                | *eliminated*                                                                                                                  |
-| `IModelConnectedCategoryTree`           | *eliminated*                                                                                                                  |
-| `IModelConnectedModelsTree`             | *eliminated*                                                                                                                  |
-| `IModelConnectedSpatialContainmentTree` | *eliminated*                                                                                                                  |
-| `CategoryTreeWithSearchBox`             | *eliminated*                                                                                                                  |
-| `VisibilityComponent`                   | `TreeWidgetComponent` in @bentley/tree-widget-react                                                                           |
-| `VisibilityWidget`                      | `TreeWidgetControl` in @bentley/tree-widget-react                                                                             |
-| All drag & drop related APIs            | Third party components. E.g. see this [example](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=drag-and-drop) |
+| Removed                                   | Replacement                                                                                                                   |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `COLOR_THEME_DEFAULT`                     | `SYSTEM_PREFERRED_COLOR_THEME` in @bentley/ui-framework is used as default color theme                                        |
+| `FunctionKey`                             | `FunctionKey` in @bentley/ui-abstract                                                                                         |
+| `IModelAppUiSettings`                     | `UserSettingsStorage` in @bentley/ui-framework
+| `ConfigurableUiManager.findFrontstageDef` | `FrontstageManager.findFrontstageDef`
+| `ConfigurableUiManager.loadContentGroup`  | *eliminated*
+| `ConfigurableUiManager.loadContentGroups` | *eliminated*
+| `ConfigurableUiManager.loadContentLayout` | *eliminated*
+| `ConfigurableUiManager.loadContentLayouts`| *eliminated*
+| `ContentGroupManager`                     | *eliminated*
+| `Frontstage.initializeFrontstageDef`      | `FrontstageManager.getFrontstageDef` (async method)
+| `Frontstage.findFrontstageDef`            | `FrontstageManager.getFrontstageDef` (async method)
+| `Frontstage.initializeFromProvider`       | `Frontstage.create` (async method)
+| `FrontstageProps.defaultLayout`           | `ContentGroup` now holds the layout information.
+| `FrontstageProvider.initializeDef`        | *eliminated*
+| `FrontstageProvider.frontstageDef`        | `FrontstageManager.getFrontstageDef` (async method)
+| `reactElement` in ContentControl          | `ContentControl.reactNode`                                                                                                    |
+| `reactElement` in NavigationAidControl    | `NavigationAidControl.reactNode`                                                                                              |
+| `reactElement` in NavigationWidgetDef     | `NavigationWidgetDef.reactNode`                                                                                               |
+| `reactElement` in ToolWidgetDef           | `ToolWidgetDef.reactNode`                                                                                                     |
+| `reactElement` in WidgetControl           | `WidgetControl.reactNode`                                                                                                     |
+| `reactElement` in WidgetDef               | `WidgetDef.reactNode`                                                                                                         |
+| `ReactMessage`                            | `ReactMessage` in @bentley/ui-core                                                                                            |
+| `SpecialKey`                              | `SpecialKey` in @bentley/ui-abstract                                                                                          |
+| `WidgetState`                             | `WidgetState` in @bentley/ui-abstract                                                                                         |
+| `UserProfileBackstageItem`                | *eliminated*                                                                                                                  |
+| `SignIn`                                  | *eliminated*                                                                                                                  |
+| `SignOutModalFrontstage`                  | *eliminated*                                                                                                                  |
+| `IModelConnectedCategoryTree`             | *eliminated*                                                                                                                  |
+| `IModelConnectedModelsTree`               | *eliminated*                                                                                                                  |
+| `IModelConnectedSpatialContainmentTree`   | *eliminated*                                                                                                                  |
+| `CategoryTreeWithSearchBox`               | *eliminated*                                                                                                                  |
+| `VisibilityComponent`                     | `TreeWidgetComponent` in @bentley/tree-widget-react                                                                           |
+| `VisibilityWidget`                        | `TreeWidgetControl` in @bentley/tree-widget-react
+| `ContentLayoutProps`                      | `ContentLayoutProps` in @bentley/ui-abstract                                                                               |
+| All drag & drop related APIs              | Third party components. E.g. see this [example](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=drag-and-drop) |
 
 ### @bentley/bentleyjs-core
 
@@ -657,6 +676,19 @@ A new @bentley/ui-imodel-components package has been added and contains items re
 The @bentley/ui-* and @bentley/presentation-components packages are now dependent on React version 17. **Applications using the ui packages must update to React 17.** Details about React version 17 can be found in the [React Blog](https://reactjs.org/blog/2020/10/20/react-v17.html).
 
 For migration purposes, React 16 is included in the peerDependencies for the packages. React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
+
+### New options for defining Frontstages
+
+| Class/Component                                        | Description                                                                                        |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------|
+| [StandardFrontstageProvider]($ui-framework)            | Frontstage provider that provides an 'empty' stage that is to be populated via UiItemsProviders.   |
+| [StandardContentToolsProvider]($ui-framework)          | UiItemsProvider that will add common tool entries to Tool Widget.                                  |
+| [StandardNavigationToolsProvider]($ui-framework)       | UiItemsProvider that will add common view tool entries to Navigation Widget.                       |
+| [StandardStatusbarItemsProvider]($ui-framework)        | UiItemsProvider that will add common statusbar items.                                              |
+| [ContentToolWidgetComposer]($ui-framework)             | Provides an empty Tool Widget that is to be populate via UiItemsProviders.                         |
+| [ViewToolWidgetComposer]($ui-framework)                | Provides an empty Navigation Widget that is to be populate via UiItemsProviders.                   |
+| [StandardContentLayouts]($ui-abstract)                 | Provides standard view layouts that can be used when defining a ContentGroup.                      |
+| [ContentGroupProvider]($ui-framework)                  | Class that generates a ContentGroup at runtime when the frontstageDef is being constructed.        |
 
 ### New Timeline Date Marker
 
