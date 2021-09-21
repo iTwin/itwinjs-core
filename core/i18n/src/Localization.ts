@@ -12,78 +12,58 @@ import XHR, { I18NextXhrBackend } from "i18next-xhr-backend";
 import { Logger } from "@bentley/bentleyjs-core";
 
 /** @public */
+// This should be more clearly defined or removed as we remove I18N and its dependencies (Formerly i18next::TranslationOptions).
+type LocalizationOptions = any;
+interface LocalizationInitOptions {
+  urlTemplate: string;
+}
 export interface LocalizationClient {
-  getLocalizedString(key: string | string[], options?: any): string;
-  getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: any): string;
-  getEnglishString(namespace: string, key: string | string[], options?: any): string;
-  getLocalizedKeys(inputString: string, options?: any): string;
-  registerNamespace(namespace: string): LocalizationNamespace | undefined;
+  getLocalizedString(key: string | string[], options?: LocalizationOptions): string;
+  getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: LocalizationOptions): string;
+  getEnglishString(namespace: string, key: string | string[], options?: LocalizationOptions): string;
+  getLocalizedKeys(inputString: string): string;
+  registerNamespace(namespace: string): Promise<void>;
   unregisterNamespace(namespace: string): void;
-  getNamespace(name: string): LocalizationNamespace | undefined;
-  waitForAllRead(): Promise<void[]>;
+  getNamespace(name: string): Promise<void> | undefined;
   languageList(): string[];
 }
-export interface LocalizationNamespace {
-  name: string;
-  readFinished: Promise<void>;
-}
 
-export class LocalizationProvider {
-  protected readonly _client?: LocalizationClient;
-
-  constructor(client?: LocalizationClient) {
-    this._client = client;
+export class EmptyLocalizationClient implements LocalizationClient {
+  public getLocalizedString(key: string | string[]): string {
+    Logger.logWarning("Localization", `Empty localization client will not localize key '${key}'.`);
+    return typeof(key) == "string" ? key : key[0];
   }
-
-  public getLocalizedString(key: string | string[], options?: any): string {
-    if (this._client === undefined) {
-      return typeof(key) === "string" ? key : key[0];
-    }
-    return this._client.getLocalizedString(key, options);
+  public getLocalizedStringWithNamespace(namespace: string, key: string | string[]): string {
+    Logger.logWarning("Localization", `Empty localization client will not identify namespace '${namespace}'.`);
+    return typeof(key) == "string" ? key : key[0];
   }
-
-  public getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: any): string {
-    if (this._client === undefined) {
-      return typeof(key) === "string" ? key : key[0];
-    }
-    return this._client.getLocalizedStringWithNamespace(namespace, key, options);
+  public getEnglishString(namespace: string, key: string | string[]): string {
+    Logger.logWarning("Localization", `Empty localization client will not identify namespace '${namespace}'.`);
+    return typeof(key) == "string" ? key : key[0];
   }
-
-  public getEnglishString(namespace: string, key: string | string[], options?: any): string {
-    if (this._client === undefined) {
-      return typeof(key) === "string" ? key : key[0];
-    }
-    return this._client.getEnglishString(namespace, key, options);
+  public getLocalizedKeys(inputString: string): string {
+    Logger.logWarning("Localization", `Empty localization client will not localize input string '${inputString}'.`);
+    return inputString;
   }
-
-  public getLocalizedKeys(inputString: string, options?: any): string {
-    return this._client ? this._client.getLocalizedKeys(inputString, options) : inputString;
+  public async registerNamespace(namespace: string): Promise<void> {
+    Logger.logWarning("Localization", `Empty localization client will not register namespace '${namespace}'.`);
+    return Promise.resolve();
   }
-
-  public registerNamespace(namespace: string): LocalizationNamespace | undefined {
-    return this._client?.registerNamespace(namespace);
-  }
-
   public unregisterNamespace(namespace: string): void {
-    this._client?.unregisterNamespace(namespace);
+    Logger.logWarning("Localization", `Empty localization client will not unregister namespace '${namespace}'.`);
   }
-
-  public getNamespace(name: string): LocalizationNamespace | undefined {
-    return this._client?.getNamespace(name);
+  public getNamespace(name: string): Promise<void> | undefined {
+    Logger.logWarning("Localization", `Namespace '${name}' requested from empty authorization client.`);
+    return Promise.resolve();
   }
-
-  public async waitForAllRead(): Promise<void[] | undefined> {
-    return this._client?.waitForAllRead();
-  }
-
   public languageList(): string[] {
-    return this._client ? this._client.languageList() : [];
+    return [];
   }
 }
 
-export interface I18NOptions {
-  urlTemplate?: I18NextXhrBackend.LoadPathOption;
-}
+// export interface LocalizationOptions {
+//   urlTemplate?: I18NextXhrBackend.LoadPathOption;
+// }
 
 /** Supplies Internationalization services.
  * @note Internally, this class uses the [i18next](https://www.i18next.com/) package.
@@ -91,14 +71,14 @@ export interface I18NOptions {
  */
 export class I18N implements LocalizationClient {
   private _i18next: i18n;
-  private readonly _namespaceRegistry: Map<string, I18NNamespace> = new Map<string, I18NNamespace>();
+  private readonly _namespaceRegistry: Map<string, Promise<void>> = new Map<string, Promise<void>>();
 
   /** Constructor for I18N.
    * @param nameSpaces either the name of the default namespace, an array of namespaces, or undefined. If an array, the first entry is the default.
    * @param options object with I18NOptions (optional)
    * @param renderFunction optional i18next.Callback function
    */
-  public constructor(nameSpaces?: string | string[], options?: I18NOptions, renderFunction?: Callback) {
+  public constructor(nameSpaces?: string | string[], options?: LocalizationInitOptions, renderFunction?: Callback) {
     this._i18next = createInstance();
 
     const backendOptions: I18NextXhrBackend.BackendOptions = {
@@ -144,8 +124,7 @@ export class I18N implements LocalizationClient {
     });
 
     for (const nameSpace of nameSpaces) {
-      const i18nNameSpace = new I18NNamespace(nameSpace, initPromise);
-      this._namespaceRegistry.set(nameSpace, i18nNameSpace);
+      this._namespaceRegistry.set(nameSpace, initPromise);
     }
   }
 
@@ -173,7 +152,7 @@ export class I18N implements LocalizationClient {
    * followed by a colon, followed by the property in the JSON file.
    * For example:
    * ``` ts
-   * const dataString: string = IModelApp.localizationProvider.getLocalizedString("iModelJs:BackgroundMap.BingDataAttribution");
+   * const dataString: string = IModelApp.localizationClient.getLocalizedString("iModelJs:BackgroundMap.BingDataAttribution");
    *  ```
    * assigns to dataString the string with property BackgroundMap.BingDataAttribution from the iModelJs.json localization file.
    * @returns The string corresponding to the first key that resolves.
@@ -232,7 +211,7 @@ export class I18N implements LocalizationClient {
    * @param name - the name of the namespace
    * @public
    */
-  public getNamespace(name: string): I18NNamespace | undefined {
+  public getNamespace(name: string): Promise<void> | undefined {
     return this._namespaceRegistry.get(name);
   }
 
@@ -243,11 +222,11 @@ export class I18N implements LocalizationClient {
    * @param name - the name of the namespace, which is the base name of the JSON file that contains the localization properties.
    * @note - The registerNamespace method starts fetching the appropriate version of the JSON localization file from the server,
    * based on the current locale. To make sure that fetch is complete before performing translations from this namespace, await
-   * fulfillment of the readPromise Promise property of the returned I18NNamespace.
+   * fulfillment of the readPromise Promise property of the returned LocalizationNamespace.
    * @see [Localization in iModel.js]($docs/learning/frontend/Localization.md)
    * @public
    */
-  public registerNamespace(name: string): LocalizationNamespace {
+  public async registerNamespace(name: string): Promise<void> {
     const existing = this._namespaceRegistry.get(name);
     if (existing !== undefined)
       return existing;
@@ -277,20 +256,8 @@ export class I18N implements LocalizationClient {
         resolve();
       });
     });
-    const thisNamespace = new I18NNamespace(name, theReadPromise);
-    this._namespaceRegistry.set(name, thisNamespace);
-    return thisNamespace;
-  }
-
-  /** Waits for the Promises for all the registered namespaces to be fulfilled.
-   * @internal
-   */
-  public async waitForAllRead(): Promise<void[]> {
-    const namespacePromises = new Array<Promise<void>>();
-    for (const thisNamespace of this._namespaceRegistry.values()) {
-      namespacePromises.push(thisNamespace.readFinished);
-    }
-    return Promise.all(namespacePromises);
+    this._namespaceRegistry.set(name, theReadPromise);
+    return theReadPromise;
   }
 
   /** @internal */
@@ -300,13 +267,10 @@ export class I18N implements LocalizationClient {
 
 }
 
-/** The class that represents a registered I18N Namespace
+/** The class that represents a registered Localization Namespace
  * @note The readFinished member is a Promise that is resolved when the JSON file for the namespace has been retrieved from the server, or rejected if an error occurs.
  * @public
  */
-export class I18NNamespace {
-  public constructor(public name: string, public readFinished: Promise<void>) { }
-}
 
 class BentleyLogger {
   public static readonly type = "logger";

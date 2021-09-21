@@ -21,8 +21,8 @@ const localizationNamespaceName = "PresentationComponents";
  * @internal
  */
 export const initializeLocalization = async () => {
-  await Presentation.localizationProvider.registerNamespace(localizationNamespaceName)?.readFinished;
-  return () => Presentation.localizationProvider.unregisterNamespace(localizationNamespaceName);
+  await Presentation.localizationClient.registerNamespace(localizationNamespaceName);
+  return () => Presentation.localizationClient.unregisterNamespace(localizationNamespaceName);
 };
 
 /**
@@ -54,7 +54,7 @@ export const initializePropertyValueRenderers = async () => {
  */
 export const translate = (stringId: string): string => {
   stringId = `${localizationNamespaceName}:${stringId}`;
-  return Presentation.localizationProvider.getLocalizedString(stringId);
+  return Presentation.localizationClient.getLocalizedString(stringId);
 };
 
 /**

@@ -55,8 +55,8 @@ class Tool2UiProvider extends ToolUiProvider {
 
   private getHorizontalToolSettings(): ToolSettingsEntry[] | undefined {
     return [
-      { labelNode: <label htmlFor="month">{IModelApp.localizationProvider.getLocalizedString("SampleApp:tool2.month")}</label>, editorNode: <input name="month" type="month" /> },
-      { labelNode: IModelApp.localizationProvider.getLocalizedString("SampleApp:tool2.number"), editorNode: <input type="number" min="10" max="20" /> },
+      { labelNode: <label htmlFor="month">{IModelApp.localizationClient.getLocalizedString("SampleApp:tool2.month")}</label>, editorNode: <input name="month" type="month" /> },
+      { labelNode: IModelApp.localizationClient.getLocalizedString("SampleApp:tool2.number"), editorNode: <input type="number" min="10" max="20" /> },
       { labelNode: "Slider", editorNode: <BasicSlider /> },
       { labelNode: "Slider w/ Ticks", editorNode: <FancySlider /> },
       { labelNode: "Input", editorNode: <Input /> },

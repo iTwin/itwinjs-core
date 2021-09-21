@@ -14,7 +14,7 @@ import {
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelClient } from "@bentley/imodelhub-client";
 import { IModelStatus, RpcConfiguration, RpcInterfaceDefinition, RpcRequest } from "@bentley/imodeljs-common";
-import { LocalizationClient, LocalizationProvider } from "@bentley/imodeljs-i18n";
+import { EmptyLocalizationClient, LocalizationClient } from "@bentley/imodeljs-i18n";
 import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
 import { UiAdmin } from "@bentley/ui-abstract";
@@ -174,7 +174,7 @@ export class IModelApp {
   private static _accuSnap: AccuSnap;
   private static _applicationId: string;
   private static _applicationVersion: string;
-  private static _localizationProvider: LocalizationProvider;
+  private static _localizationClient: LocalizationClient;
   private static _locateManager: ElementLocateManager;
   private static _notifications: NotificationManager;
   private static _extensionAdmin: ExtensionAdmin;
@@ -232,8 +232,8 @@ export class IModelApp {
   public static get locateManager(): ElementLocateManager { return this._locateManager; }
   /** @internal */
   public static get tentativePoint(): TentativePoint { return this._tentativePoint; }
-  /** The [[LocalizationProvider]] for this session. */
-  public static get localizationProvider(): LocalizationProvider { return this._localizationProvider; }
+  /** The [[LocalizationClient]] for this session. */
+  public static get localizationClient(): LocalizationClient { return this._localizationClient; }
   /** The [[SettingsAdmin]] for this session. */
   public static get settings(): SettingsAdmin { return this._settings; }
   /** The Id of this application. Applications must set this to the Global Product Registry ID (GPRID) for usage logging. */
@@ -311,7 +311,7 @@ export class IModelApp {
    * This method must be called before any iModel.js frontend services are used.
    * In your code, somewhere before you use any iModel.js services, call [[IModelApp.startup]]. E.g.:
    * ``` ts
-   * IModelApp.startup( {applicationId: myAppId, i18n: myi18Opts} );
+   * IModelApp.startup( {applicationId: myAppId, localizationClient: myLocalizationClient} );
    * ```
    * @param opts The options for configuring IModelApp
    */
@@ -342,10 +342,11 @@ export class IModelApp {
     this._setupRpcRequestContext();
 
     // get the localization system set up so registering tools works. At startup, the only namespace is the system namespace.
-    this._localizationProvider = new LocalizationProvider(opts.localizationClient);
+    this._localizationClient = opts.localizationClient || new EmptyLocalizationClient();
 
     // first register all the core tools. Subclasses may choose to override them.
-    const namespace = this.localizationProvider.registerNamespace("CoreTools");
+    const namespace = "CoreTools";
+    this.localizationClient.registerNamespace(namespace);
     [
       selectTool,
       idleTool,
@@ -696,7 +697,7 @@ export class IModelApp {
   public static makeIModelJsLogoCard() {
     return this.makeLogoCard({
       iconSrc: "images/about-imodeljs.svg",
-      heading: `<span style="font-weight:normal">${this.localizationProvider.getLocalizedString("Notices.PoweredBy")}</span>&nbsp;iModel.js`,
+      heading: `<span style="font-weight:normal">${this.localizationClient?.getLocalizedString("Notices.PoweredBy")}</span>&nbsp;iModel.js`,
       notice: `${require("../package.json").version}<br>${copyrightNotice}`, // eslint-disable-line @typescript-eslint/no-var-requires
     });
   }
@@ -706,7 +707,7 @@ export class IModelApp {
    */
   public static formatElementToolTip(msg: string[]): HTMLElement {
     let out = "";
-    msg.forEach((line) => out += `${IModelApp.localizationProvider.getLocalizedKeys(line)}<br>`);
+    msg.forEach((line) => out += `${IModelApp.localizationClient?.getLocalizedKeys(line)}<br>`);
     const div = document.createElement("div");
     div.innerHTML = out;
     return div;
@@ -731,6 +732,6 @@ export class IModelApp {
         key = { scope: "Errors", val: "Status", status: status.toString() };
     }
 
-    return this.localizationProvider.getLocalizedString(`${key.scope}.${key.val}`, key);
+    return this.localizationClient.getLocalizedString(`${key.scope}.${key.val}`, key);
   }
 }

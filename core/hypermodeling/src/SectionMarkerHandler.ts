@@ -42,13 +42,13 @@ export class SectionMarkerHandler {
    * @see [[executeCommand]] to implement each toolbar command.
    */
   public getToolbarProps(marker: SectionMarker, _decorator: HyperModelingDecorator): AbstractToolbarProps {
-    const localizationProvider = IModelApp.localizationProvider;
+    const localizationClient = IModelApp.localizationClient;
     return {
       items: [
         {
           id: "apply_view",
           itemPriority: 10,
-          label: localizationProvider.getLocalizedString("HyperModeling:Message.ApplyView"),
+          label: localizationClient.getLocalizedString("HyperModeling:Message.ApplyView"),
           icon: "icon-spatial-view-apply",
           execute: () => { },
           isDisabled: false,
@@ -56,7 +56,7 @@ export class SectionMarkerHandler {
         {
           id: "open_section",
           itemPriority: 20,
-          label: localizationProvider.getLocalizedString("HyperModeling:Message.OpenSection"),
+          label: localizationClient.getLocalizedString("HyperModeling:Message.OpenSection"),
           icon: "icon-plan-drawing",
           execute: () => { },
           isDisabled: false,
@@ -64,7 +64,7 @@ export class SectionMarkerHandler {
         {
           id: "open_sheet",
           itemPriority: 30,
-          label: localizationProvider.getLocalizedString("HyperModeling:Message.OpenSheet"),
+          label: localizationClient.getLocalizedString("HyperModeling:Message.OpenSheet"),
           icon: "icon-plan-floor",
           execute: () => { },
           isDisabled: undefined === marker.state.viewAttachment?.viewId,

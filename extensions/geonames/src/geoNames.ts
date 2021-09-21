@@ -10,7 +10,6 @@ import {
   BeButton, BeButtonEvent, Cluster, DecorateContext, Extension, imageElementFromUrl, IModelApp, InputSource, Marker, MarkerSet, NotifyMessageDetails,
   OutputMessagePriority, ScreenViewport, Tool, ViewState3d,
 } from "@bentley/imodeljs-frontend";
-import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { request, RequestOptions, Response } from "@bentley/itwin-client";
 
 /*-----------------------------------------------------------------------
@@ -47,7 +46,7 @@ class GeoNameMarker extends Marker {
     this.labelOffset = { x: 0, y: -24 };
     this.title = props.name;
     if (props.population)
-      this.title = `${this.title} (${GeoNameExtension.extension!.localizationProvider.getLocalizedString("geoNames:misc.Population")}: ${props.population})`;
+      this.title = `${this.title} (${GeoNameExtension.extension!.localizationClient.getLocalizedString("geoNames:misc.Population")}: ${props.population})`;
 
     // it would be better to use "this.label" here for a pure text string. We'll do it this way just to show that you can use HTML too
     // this.htmlElement = document.createElement("div");
@@ -125,7 +124,7 @@ export class GeoNameMarkerManager {
   }
 
   private outputInfoMessage(messageKey: string) {
-    const message: string = GeoNameExtension.extension!.localizationProvider.getLocalizedString(`geoNames:messages.${messageKey}`);
+    const message: string = GeoNameExtension.extension!.localizationClient.getLocalizedString(`geoNames:messages.${messageKey}`);
     const msgDetails: NotifyMessageDetails = new NotifyMessageDetails(OutputMessagePriority.Info, message);
     IModelApp.notifications.outputMessage(msgDetails);
   }
@@ -212,7 +211,7 @@ class GeoNameUpdateTool extends GeoNameTool {
 }
 
 export class GeoNameExtension extends Extension {
-  private _i18NNamespace?: I18NNamespace;
+  private _namespacePromise?: Promise<void>;
   protected override _defaultNs = "geoNames";
   public static extension: GeoNameExtension | undefined;
 
@@ -221,11 +220,13 @@ export class GeoNameExtension extends Extension {
     // store the extension in the tool prototype.
     GeoNameExtension.extension = this;
 
-    this._i18NNamespace = this.localizationProvider.getNamespace(this._defaultNs);
-    await this._i18NNamespace!.readFinished;
-    IModelApp.tools.register(GeoNameOnTool, this._i18NNamespace, this.localizationProvider);
-    IModelApp.tools.register(GeoNameOffTool, this._i18NNamespace, this.localizationProvider);
-    IModelApp.tools.register(GeoNameUpdateTool, this._i18NNamespace, this.localizationProvider);
+    this._namespacePromise = this.localizationClient.getNamespace(this._defaultNs);
+    if (undefined !== this._namespacePromise) {
+      await this._namespacePromise;
+    }
+    IModelApp.tools.register(GeoNameOnTool, this._defaultNs, this.localizationClient);
+    IModelApp.tools.register(GeoNameOffTool, this._defaultNs, this.localizationClient);
+    IModelApp.tools.register(GeoNameUpdateTool, this._defaultNs, this.localizationClient);
     if (undefined !== IModelApp.viewManager.selectedView)
       await GeoNameMarkerManager.show(IModelApp.viewManager.selectedView);
   }
@@ -236,7 +237,8 @@ export class GeoNameExtension extends Extension {
     if (args.length < 1)
       return;
 
-    await this._i18NNamespace!.readFinished;
+    if (undefined !== this._namespacePromise)
+      await this._namespacePromise;
   }
 }
 

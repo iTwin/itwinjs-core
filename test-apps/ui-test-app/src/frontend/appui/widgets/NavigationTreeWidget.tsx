@@ -41,35 +41,35 @@ class NavigationTreeWidget extends React.Component<NavigationTreeWidgetProps> {
               <td>{this.props.iModelConnection ? this.props.iModelConnection.name : ""}</td>
             </tr>
             <tr>
-              <td><label htmlFor="demo-month">{IModelApp.localizationProvider.getLocalizedString("SampleApp:zone6.month")}</label></td>
+              <td><label htmlFor="demo-month">{IModelApp.localizationClient.getLocalizedString("SampleApp:zone6.month")}</label></td>
               <td> <Input type="month" id="demo-month" /> </td>
             </tr>
             <tr>
-              <td><label htmlFor="demo-number">{IModelApp.localizationProvider.getLocalizedString("SampleApp:zone6.number")}</label></td>
+              <td><label htmlFor="demo-number">{IModelApp.localizationClient.getLocalizedString("SampleApp:zone6.number")}</label></td>
               <td> <Input type="number" id="demo-number" min="10" max="20" /> </td>
             </tr>
             <tr>
-              <td><label htmlFor="demo-password">{IModelApp.localizationProvider.getLocalizedString("SampleApp:zone6.password")}</label></td>
+              <td><label htmlFor="demo-password">{IModelApp.localizationClient.getLocalizedString("SampleApp:zone6.password")}</label></td>
               <td> <Input type="password" id="demo-password" /> </td>
             </tr>
             <tr>
-              <td><label htmlFor="demo-radio">{IModelApp.localizationProvider.getLocalizedString("SampleApp:zone6.radio")}</label></td>
+              <td><label htmlFor="demo-radio">{IModelApp.localizationClient.getLocalizedString("SampleApp:zone6.radio")}</label></td>
               <td> <Input type="radio" id="demo-radio" /> </td>
             </tr>
             <tr>
-              <td><label htmlFor="demo-range">{IModelApp.localizationProvider.getLocalizedString("SampleApp:zone6.range")}</label></td>
+              <td><label htmlFor="demo-range">{IModelApp.localizationClient.getLocalizedString("SampleApp:zone6.range")}</label></td>
               <td> <Input type="range" id="demo-range" /> </td>
             </tr>
             <tr>
-              <td><label htmlFor="demo-search">{IModelApp.localizationProvider.getLocalizedString("SampleApp:zone6.search")}</label></td>
+              <td><label htmlFor="demo-search">{IModelApp.localizationClient.getLocalizedString("SampleApp:zone6.search")}</label></td>
               <td> <Input type="search" id="demo-search" /> </td>
             </tr>
             <tr>
-              <td><label htmlFor="demo-tel">{IModelApp.localizationProvider.getLocalizedString("SampleApp:zone6.Tel")}</label></td>
+              <td><label htmlFor="demo-tel">{IModelApp.localizationClient.getLocalizedString("SampleApp:zone6.Tel")}</label></td>
               <td> <Input type="tel" id="demo-tel" /> </td>
             </tr>
             <tr>
-              <td><label htmlFor="demo-text">{IModelApp.localizationProvider.getLocalizedString("SampleApp:zone6.Text")}</label></td>
+              <td><label htmlFor="demo-text">{IModelApp.localizationClient.getLocalizedString("SampleApp:zone6.Text")}</label></td>
               <td> <Input type="text" id="demo-text" /> </td>
             </tr>
           </tbody>

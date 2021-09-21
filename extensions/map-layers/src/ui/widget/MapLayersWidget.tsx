@@ -19,7 +19,7 @@ interface MapLayersWidgetProps {
 }
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function MapLayersWidget(props: MapLayersWidgetProps) {
-  const [notGeoLocatedMsg] = React.useState(MapLayersUiItemsProvider.localizationProvider.getLocalizedString("mapLayers:Messages.NotSupported"));
+  const [notGeoLocatedMsg] = React.useState(MapLayersUiItemsProvider.localizationClient.getLocalizedString("mapLayers:Messages.NotSupported"));
   const activeViewport = useActiveViewport();
   const ref = React.useRef<HTMLDivElement>(null);
 

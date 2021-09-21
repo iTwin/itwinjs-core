@@ -33,7 +33,7 @@ interface BaseOption extends OptionType {
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function BasemapPanel() {
-  const [useColorLabel] = React.useState(MapLayersUiItemsProvider.localizationProvider.getLocalizedString("mapLayers:Basemap.ColorFill"));
+  const [useColorLabel] = React.useState(MapLayersUiItemsProvider.localizationClient.getLocalizedString("mapLayers:Basemap.ColorFill"));
   const { activeViewport, bases } = useSourceMapContext();
 
   const [baseMapTransparencyValue, setBaseMapTransparencyValue] = React.useState(() => {
@@ -75,7 +75,7 @@ export function BasemapPanel() {
   const baseIsColor = React.useMemo(() => typeof selectedBaseMap === "number", [selectedBaseMap]);
   const baseIsMap = React.useMemo(() => !baseIsColor && (selectedBaseMap !== undefined), [baseIsColor, selectedBaseMap]);
   const bgColor = React.useMemo(() => baseIsColor ? selectedBaseMap as number : presetColors[0].toJSON(), [baseIsColor, selectedBaseMap, presetColors]);
-  const [colorDialogTitle] = React.useState(MapLayersUiItemsProvider.localizationProvider.getLocalizedString("mapLayers:ColorDialog.Title"));
+  const [colorDialogTitle] = React.useState(MapLayersUiItemsProvider.localizationClient.getLocalizedString("mapLayers:ColorDialog.Title"));
   const selectedBaseMapValue = React.useMemo(() => {
     if (baseIsMap) {
       const mapName = (selectedBaseMap! as MapLayerProps).name!;
@@ -138,9 +138,9 @@ export function BasemapPanel() {
     }
   }, [baseMapVisible, activeViewport]);
 
-  const [baseLayerLabel] = React.useState(MapLayersUiItemsProvider.localizationProvider.getLocalizedString("mapLayers:Basemap.BaseLayer"));
-  const [selectBaseMapLabel] = React.useState(MapLayersUiItemsProvider.localizationProvider.getLocalizedString("mapLayers:Basemap.SelectBaseMap"));
-  const [toggleVisibility] = React.useState(MapLayersUiItemsProvider.localizationProvider.getLocalizedString("mapLayers:Widget.ToggleVisibility"));
+  const [baseLayerLabel] = React.useState(MapLayersUiItemsProvider.localizationClient.getLocalizedString("mapLayers:Basemap.BaseLayer"));
+  const [selectBaseMapLabel] = React.useState(MapLayersUiItemsProvider.localizationClient.getLocalizedString("mapLayers:Basemap.SelectBaseMap"));
+  const [toggleVisibility] = React.useState(MapLayersUiItemsProvider.localizationClient.getLocalizedString("mapLayers:Widget.ToggleVisibility"));
 
   return (
     <>

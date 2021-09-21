@@ -91,8 +91,8 @@ describe("Utils", () => {
     const i18nMock = moq.Mock.ofType<I18N>();
 
     beforeEach(() => {
-      i18nMock.setup((x) => x.registerNamespace(moq.It.isAny())).returns(() => ({ name: "namespace", readFinished: Promise.resolve() }));
-      Presentation.setLocalizationProvider(i18nMock.object);
+      i18nMock.setup((x) => x.registerNamespace(moq.It.isAny())).returns(async () => (Promise.resolve()));
+      Presentation.setLocalizationClient(i18nMock.object);
     });
 
     afterEach(() => {

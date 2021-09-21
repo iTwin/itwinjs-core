@@ -5,7 +5,7 @@
 
 import { assert, expect } from "chai";
 import { Logger } from "@bentley/bentleyjs-core";
-import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
+import { I18N } from "@bentley/imodeljs-i18n";
 import { ECClass, EntityClass, PrimitiveProperty, PrimitiveType, Schema, SchemaContext } from "@bentley/ecschema-metadata";
 import { MutableClass } from "../../Editing/Mutable/MutableClass";
 import { AnyDiagnostic, createPropertyDiagnosticClass, DiagnosticCategory } from "../../Validation/Diagnostic";
@@ -121,7 +121,7 @@ describe("DiagnosticReporters tests", () => {
       const i18n = new I18N();
       const i18nMock = sinon.mock(i18n);
       const registerNamespace = i18nMock.expects("registerNamespace");
-      registerNamespace.resolves(new I18NNamespace("ECSchemaMetaData", Promise.resolve()));
+      registerNamespace.resolves(Promise.resolve());
       const translate = i18nMock.expects("getLocalizedString");
       translate.returns("Translated text {0} {1}");
       const logMessage = sinon.stub(Logger, "logError");
@@ -137,7 +137,7 @@ describe("DiagnosticReporters tests", () => {
       const i18n = new I18N();
       const i18nMock = sinon.mock(i18n);
       const registerNamespace = i18nMock.expects("registerNamespace");
-      registerNamespace.resolves(new I18NNamespace("ECSchemaMetaData", Promise.resolve()));
+      registerNamespace.resolves(Promise.resolve()); // (new LocalizationNamespace("ECSchemaMetaData", Promise.resolve()));
       const translate = i18nMock.expects("getLocalizedString");
       translate.returns("Translated text");
       const logMessage = sinon.stub(Logger, "logError");

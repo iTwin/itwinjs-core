@@ -12,7 +12,7 @@ import { Store } from "redux";
 import { GuidString, Logger, ProcessDetector } from "@bentley/bentleyjs-core";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection, SnapMode, ViewState } from "@bentley/imodeljs-frontend";
-import { LocalizationProvider } from "@bentley/imodeljs-i18n";
+import { LocalizationClient } from "@bentley/imodeljs-i18n";
 import { AccessToken, UserInfo } from "@bentley/itwin-client";
 import { Presentation } from "@bentley/presentation-frontend";
 import { TelemetryEvent } from "@bentley/telemetry-client";
@@ -93,7 +93,7 @@ export class UiFramework {
   private static _initialized = false;
   private static _projectServices?: ProjectServices;
   private static _iModelServices?: IModelServices;
-  private static _localizationProvider?: LocalizationProvider;
+  private static _localizationClient?: LocalizationClient;
   private static _store?: Store<any>;
   private static _complaint = "UiFramework not initialized";
   private static _frameworkStateKeyInStore: string = "frameworkState";  // default name
@@ -138,24 +138,24 @@ export class UiFramework {
   /**
    * Called by the application to initialize the UiFramework. Also initializes UIIModelComponents, UiComponents, UiCore and UiAbstract.
    * @param store The single Redux store created by the host application. If this is `undefined` then it is assumed that the [[StateManager]] is being used to provide the Redux store.
-   * @param localizationProvider The internationalization service created by the application. Defaults to IModelApp.localizationProvider.
+   * @param localizationClient The internationalization service created by the application. Defaults to IModelApp.localizationClient.
    * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed. This value is ignored if [[StateManager]] is being used. The StateManager use "frameworkState".
    */
-  public static async initialize(store: Store<any> | undefined, localizationProvider?: LocalizationProvider, frameworkStateKey?: string): Promise<void> {
-    return this.initializeEx(store, localizationProvider, frameworkStateKey);
+  public static async initialize(store: Store<any> | undefined, localizationClient?: LocalizationClient, frameworkStateKey?: string): Promise<void> {
+    return this.initializeEx(store, localizationClient, frameworkStateKey);
   }
 
   /**
    * Called by the application to initialize the UiFramework. Also initializes UIIModelComponents, UiComponents, UiCore and UiAbstract.
    * @param store The single Redux store created by the host application. If this is `undefined` then it is assumed that the [[StateManager]] is being used to provide the Redux store.
-   * @param localizationProvider The internationalization service created by the application. Defaults to IModelApp.localizationProvider.
+   * @param localizationClient The internationalization service created by the application. Defaults to IModelApp.localizationClient.
    * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed. This value is ignored if [[StateManager]] is being used. The StateManager use "frameworkState".
    * @param projectServices Optional app defined projectServices. If not specified DefaultProjectServices will be used.
    * @param iModelServices Optional app defined iModelServices. If not specified DefaultIModelServices will be used.
    *
    * @internal
    */
-  public static async initializeEx(store: Store<any> | undefined, localizationProvider?: LocalizationProvider, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<void> {
+  public static async initializeEx(store: Store<any> | undefined, localizationClient?: LocalizationClient, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<void> {
     if (UiFramework._initialized) {
       Logger.logInfo(UiFramework.loggerCategory(UiFramework), `UiFramework.initialize already called`);
       return;
@@ -163,21 +163,19 @@ export class UiFramework {
 
     // if store is undefined then the StateManager class should have been initialized by parent app and the apps default set of reducer registered with it.
     UiFramework._store = store;
-    UiFramework._localizationProvider = localizationProvider || IModelApp.localizationProvider;
+    UiFramework._localizationClient = localizationClient || IModelApp.localizationClient;
     // ignore setting _frameworkStateKeyInStore if not using store
     if (frameworkStateKey && store)
       UiFramework._frameworkStateKeyInStore = frameworkStateKey;
 
     // set up namespace and register all tools from package
-    const frameworkNamespace = UiFramework._localizationProvider.registerNamespace(UiFramework.localizationNamespace);
+    const readFinishedPromise = UiFramework._localizationClient.registerNamespace(UiFramework.localizationNamespace);
     [
       restoreLayoutTools,
       keyinPaletteTools,
       openSettingTools,
       toolSettingTools,
-    ].forEach((tool) => IModelApp.tools.registerModule(tool, frameworkNamespace));
-
-    const readFinishedPromise = frameworkNamespace?.readFinished;
+    ].forEach((tool) => IModelApp.tools.registerModule(tool, UiFramework.localizationNamespace));
 
     UiFramework._projectServices = projectServices ? /* istanbul ignore next */ projectServices : new DefaultProjectServices();
     UiFramework._iModelServices = iModelServices ? /* istanbul ignore next */ iModelServices : new DefaultIModelServices();
@@ -199,7 +197,7 @@ export class UiFramework {
     }
 
     // Initialize ui-imodel-components, ui-components, ui-core & ui-abstract
-    await UiIModelComponents.initialize(UiFramework._localizationProvider);
+    await UiIModelComponents.initialize(UiFramework._localizationClient);
 
     UiFramework.settingsManager.onSettingsProvidersChanged.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.SettingsProvidersChanged);
@@ -223,9 +221,9 @@ export class UiFramework {
     UiFramework._store = undefined;
     UiFramework._frameworkStateKeyInStore = "frameworkState";
 
-    if (UiFramework._localizationProvider)
-      UiFramework._localizationProvider.unregisterNamespace(UiFramework.localizationNamespace);
-    UiFramework._localizationProvider = undefined;
+    if (UiFramework._localizationClient)
+      UiFramework._localizationClient.unregisterNamespace(UiFramework.localizationNamespace);
+    UiFramework._localizationClient = undefined;
     UiFramework._projectServices = undefined;
     UiFramework._iModelServices = undefined;
     UiFramework._backstageManager = undefined;
@@ -281,10 +279,10 @@ export class UiFramework {
   }
 
   /** The internationalization service created by the app. */
-  public static get localizationProvider(): LocalizationProvider {
-    if (!UiFramework._localizationProvider)
+  public static get localizationClient(): LocalizationClient {
+    if (!UiFramework._localizationClient)
       throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
-    return UiFramework._localizationProvider;
+    return UiFramework._localizationClient;
   }
 
   /** The internationalization service namespace. */
@@ -325,11 +323,11 @@ export class UiFramework {
     return UiFramework._widgetManager;
   }
 
-  /** Calls localizationProvider.getLocalizedStringWithNamespace with the "UiFramework" namespace. Do NOT include the namespace in the key.
+  /** Calls localizationClient.getLocalizedStringWithNamespace with the "UiFramework" namespace. Do NOT include the namespace in the key.
    * @internal
    */
   public static translate(key: string | string[]): string {
-    return UiFramework._localizationProvider!.getLocalizedStringWithNamespace(UiFramework.localizationNamespace, key);
+    return UiFramework._localizationClient!.getLocalizedStringWithNamespace(UiFramework.localizationNamespace, key);
   }
 
   /** @internal */

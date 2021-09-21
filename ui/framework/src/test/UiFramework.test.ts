@@ -50,8 +50,8 @@ describe("UiFramework localStorage Wrapper", () => {
       expect(() => UiFramework.store).to.throw(Error);
     });
 
-    it("localizationProvider should throw Error without initialize", () => {
-      expect(() => UiFramework.localizationProvider).to.throw(Error);
+    it("localizationClient should throw Error without initialize", () => {
+      expect(() => UiFramework.localizationClient).to.throw(Error);
     });
 
     it("localizationNamespace should return UiFramework", () => {
@@ -110,9 +110,9 @@ describe("UiFramework localStorage Wrapper", () => {
     it("calling initialize twice should log", async () => {
       const spyLogger = sinon.spy(Logger, "logInfo");
       expect(UiFramework.initialized).to.be.false;
-      await UiFramework.initialize(TestUtils.store, TestUtils.i18n);
+      await UiFramework.initialize(TestUtils.store, TestUtils.localizationClient);
       expect(UiFramework.initialized).to.be.true;
-      await UiFramework.initialize(TestUtils.store, TestUtils.i18n);
+      await UiFramework.initialize(TestUtils.store, TestUtils.localizationClient);
       spyLogger.calledOnce.should.true;
     });
 
@@ -120,7 +120,7 @@ describe("UiFramework localStorage Wrapper", () => {
       await MockRender.App.startup();
 
       await UiFramework.initialize(TestUtils.store);
-      expect(UiFramework.localizationProvider).to.eq(IModelApp.localizationProvider);
+      expect(UiFramework.localizationClient).to.eq(IModelApp.localizationClient);
 
       await MockRender.App.shutdown();
     });

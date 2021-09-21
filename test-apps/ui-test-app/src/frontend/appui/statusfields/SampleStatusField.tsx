@@ -21,7 +21,7 @@ interface SampleStatusFieldState {
 
 export class SampleStatusField extends React.Component<StatusFieldProps, SampleStatusFieldState> {
   private _className: string;
-  private _title = IModelApp.localizationProvider.getLocalizedString("SampleApp:statusFields.sampleField");
+  private _title = IModelApp.localizationClient.getLocalizedString("SampleApp:statusFields.sampleField");
 
   constructor(props: any) {
     super(props);
@@ -66,7 +66,7 @@ export class SampleStatusField extends React.Component<StatusFieldProps, SampleS
         <FillCentered>
           <div style={{ display: "flex", flexDirection: "column" }}>
             <ColorPickerPopup initialColor={colorDef} />
-            <Button styleType="high-visibility" size="small">{IModelApp.localizationProvider.getLocalizedString("SampleApp:statusFields.sampleButton")}</Button>
+            <Button styleType="high-visibility" size="small">{IModelApp.localizationClient.getLocalizedString("SampleApp:statusFields.sampleButton")}</Button>
           </div>
         </FillCentered>
       </div>

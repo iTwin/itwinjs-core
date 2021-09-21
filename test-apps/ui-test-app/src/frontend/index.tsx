@@ -22,7 +22,6 @@ import {
   LocalUnitFormatProvider, NativeApp, NativeAppLogger, NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState,
   WebViewerApp, WebViewerAppOpts,
 } from "@bentley/imodeljs-frontend";
-import { LocalizationNamespace } from "@bentley/imodeljs-i18n";
 import { MarkupApp } from "@bentley/imodeljs-markup";
 import { AccessToken, ProgressInfo, UrlDiscoveryClient } from "@bentley/itwin-client";
 // To test map-layer extension comment out the following and ensure ui-test-app\build\imjs_extensions contains map-layers, if not see Readme.md in map-layers package.
@@ -145,7 +144,7 @@ interface SampleIModelParams {
 }
 
 export class SampleAppIModelApp {
-  public static sampleAppNamespace?: LocalizationNamespace;
+  public static sampleAppNamespace?: string;
   public static iModelParams: SampleIModelParams | undefined;
   public static testAppConfiguration: TestAppConfiguration | undefined;
   private static _appStateManager: StateManager | undefined;
@@ -186,7 +185,8 @@ export class SampleAppIModelApp {
     // For testing local extensions only, should not be used in production.
     IModelApp.extensionAdmin.addExtensionLoaderFront(new ExternalServerExtensionLoader("http://localhost:3000"));
 
-    this.sampleAppNamespace = IModelApp.localizationProvider.registerNamespace("SampleApp");
+    this.sampleAppNamespace = "SampleApp";
+    await IModelApp.localizationClient.registerNamespace(this.sampleAppNamespace);
 
     // use new state manager that allows dynamic additions from extensions and snippets
     if (!this._appStateManager) {
@@ -212,7 +212,7 @@ export class SampleAppIModelApp {
 
     // initialize Presentation
     await Presentation.initialize({
-      activeLocale: IModelApp.localizationProvider.languageList()[0],
+      activeLocale: IModelApp.localizationClient.languageList()[0],
     });
     Presentation.selection.scopes.activeScope = "top-assembly";
 

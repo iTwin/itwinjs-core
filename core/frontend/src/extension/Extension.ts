@@ -6,7 +6,7 @@
  * @module Extensions
  */
 
-import { I18N, I18NOptions, LocalizationProvider } from "@bentley/imodeljs-i18n";
+import { I18N, LocalizationClient } from "@bentley/imodeljs-i18n";
 import { IModelApp } from "../IModelApp";
 
 /**
@@ -78,14 +78,8 @@ export abstract class Extension {
   public constructor(public name: string) { }
 
   // returns an instance of I18N that can be reliably called from the Extension.
-  private getI18n(): I18N {
-    return new I18N(this._defaultNs, {
-      urlTemplate: (lng: string[], ns: string[]) => {
-        if (lng.length < 1 || ns.length < 1)
-          throw new Error("No language info provided");
-        return this.resolveResourceUrl("locales".concat("/", lng[0], "/", ns[0], ".json"));
-      },
-    });
+  private getLocalizationClient(): LocalizationClient {
+    return new I18N(this._defaultNs);
   }
 
   /** Method called when the Extension is first loaded.
@@ -116,17 +110,17 @@ export abstract class Extension {
     return this._loader.resolveResourceUrl(this.name, relativeUrl);
   }
 
-  private _localizationProvider: LocalizationProvider | undefined;
+  private _localizationClient: LocalizationClient | undefined;
 
   /** Property that retrieves the localization instance specific to the Extension. */
-  public get localizationProvider(): LocalizationProvider {
-    if (this._localizationProvider)
-      return this._localizationProvider;
+  public get localizationClient(): LocalizationClient {
+    if (this._localizationClient)
+      return this._localizationClient;
 
     if (this._loader === undefined)
-      throw new Error("The register method must be called prior to using the localizationProvider member of Extension.");
+      throw new Error("The register method must be called prior to using the i18n member of Extension.");
 
-    return (this._localizationProvider = this.getI18n());
+    return (this._localizationClient = this.getLocalizationClient());
   }
 
   /** Can be used to set up a localization instance. Used only if non-standard treatment is required.
@@ -134,8 +128,8 @@ export abstract class Extension {
    * @param options
    * @deprecated Please override _defaultNs instead
    */
-  public setI18n(defaultNamespace?: string, options?: I18NOptions) {
-    this._localizationProvider = new I18N(defaultNamespace, options);
+  public setLocalizationClient(defaultNamespace?: string) {
+    this._localizationClient = new I18N(defaultNamespace);
   }
 
 }
@@ -173,7 +167,7 @@ export class PendingExtension {
 
   // called when we can't load the URL
   private cantLoad(_ev: string | Event) {
-    this.resolve!(IModelApp.localizationProvider.getLocalizedString("iModelJs:ExtensionErrors.CantFind", { extensionUrl: this._tarFileUrl }));
+    this.resolve!(IModelApp.localizationClient.getLocalizedString("iModelJs:ExtensionErrors.CantFind", { extensionUrl: this._tarFileUrl }));
   }
 }
 

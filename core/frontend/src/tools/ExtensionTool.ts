@@ -31,7 +31,7 @@ export class ExtensionTool extends Tool {
     if (args && args.length > 0 && args[0]) {
       IModelApp.extensionAdmin.loadExtension(args[0], undefined, args.slice(1))
         .then(ExtensionTool.showLoadProblems.bind(null, args[0]), (err) => {
-          const briefMessage = IModelApp.localizationProvider.getLocalizedString("iModelJs:ExtensionErrors.UnableToLoad", { extensionName: args[0] });
+          const briefMessage = IModelApp.localizationClient.getLocalizedString("iModelJs:ExtensionErrors.UnableToLoad", { extensionName: args[0] });
           const errorDetails = new NotifyMessageDetails(OutputMessagePriority.Error, briefMessage, (typeof err.message === "string") ? err.message : undefined, OutputMessageType.Alert, OutputMessageAlert.Balloon);
           IModelApp.notifications.outputMessage(errorDetails);
         });
@@ -40,7 +40,7 @@ export class ExtensionTool extends Tool {
   }
 
   private static showLoadSuccess(extensionName: string) {
-    const briefMessage = IModelApp.localizationProvider.getLocalizedString("iModelJs:ExtensionErrors.Success", { extensionName });
+    const briefMessage = IModelApp.localizationClient.getLocalizedString("iModelJs:ExtensionErrors.Success", { extensionName });
     const info = new NotifyMessageDetails(OutputMessagePriority.Info, briefMessage, undefined, OutputMessageType.Toast);
     IModelApp.notifications.outputMessage(info);
     Logger.logInfo(loggerCategory, briefMessage);
@@ -49,7 +49,7 @@ export class ExtensionTool extends Tool {
   // displays the problems encountered while trying to load a extension
   private static showLoadProblems(extensionName: string, extensionResults: Extension | undefined) {
     if (extensionResults === undefined) {
-      const briefMessage = IModelApp.localizationProvider.getLocalizedString("iModelJs:ExtensionErrors.CantFind", { extensionName });
+      const briefMessage = IModelApp.localizationClient.getLocalizedString("iModelJs:ExtensionErrors.CantFind", { extensionName });
       const errorDetails = new NotifyMessageDetails(OutputMessagePriority.Warning, briefMessage, undefined, OutputMessageType.Alert, OutputMessageAlert.Balloon);
       IModelApp.notifications.outputMessage(errorDetails);
       Logger.logError(loggerCategory, `Extension ${extensionName} was not found`);

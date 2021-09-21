@@ -7,7 +7,6 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { LocalizationNamespace } from "@bentley/imodeljs-i18n";
 import { SectionType } from "@bentley/imodeljs-common";
 import { IModelApp, IModelConnection, ScreenViewport, tryImageElementFromUrl, ViewManip } from "@bentley/imodeljs-frontend";
 import { registerTools } from "./Tools";
@@ -22,7 +21,7 @@ export interface MarkerData {
 }
 
 interface Resources {
-  readonly namespace?: LocalizationNamespace;
+  readonly namespace?: string;
   readonly markers: {
     readonly section: MarkerData;
     readonly plan: MarkerData;
@@ -72,10 +71,8 @@ export class HyperModeling {
       return;
     }
 
-    const namespace = IModelApp.localizationProvider.registerNamespace("HyperModeling");
-    if (namespace !== undefined) {
-      await namespace.readFinished;
-    }
+    const namespace = "HyperModeling";
+    await IModelApp.localizationClient.registerNamespace(namespace);
 
     const loadImages = [
       tryImageElementFromUrl("section-marker.svg"),
@@ -88,14 +85,14 @@ export class HyperModeling {
     this.resources = {
       namespace,
       markers: {
-        section: { image: images[0], label: IModelApp.localizationProvider.getLocalizedString("HyperModeling:Message.SectionCallout") },
-        detail: { image: images[1], label: IModelApp.localizationProvider.getLocalizedString("HyperModeling:Message.DetailCallout") },
-        elevation: { image: images[2], label: IModelApp.localizationProvider.getLocalizedString("HyperModeling:Message.ElevationCallout") },
-        plan: { image: images[3], label: IModelApp.localizationProvider.getLocalizedString("HyperModeling:Message.PlanCallout") },
+        section: { image: images[0], label: IModelApp.localizationClient.getLocalizedString("HyperModeling:Message.SectionCallout") },
+        detail: { image: images[1], label: IModelApp.localizationClient.getLocalizedString("HyperModeling:Message.DetailCallout") },
+        elevation: { image: images[2], label: IModelApp.localizationClient.getLocalizedString("HyperModeling:Message.ElevationCallout") },
+        plan: { image: images[3], label: IModelApp.localizationClient.getLocalizedString("HyperModeling:Message.PlanCallout") },
       },
     };
 
-    registerTools(namespace, IModelApp.localizationProvider);
+    registerTools(namespace, IModelApp.localizationClient);
     this.replaceConfiguration(config);
   }
 
@@ -256,7 +253,7 @@ export class HyperModeling {
   }
 
   /** @internal */
-  public static get namespace(): LocalizationNamespace | undefined {
+  public static get namespace(): string | undefined {
     assertInitialized(this);
     return this.resources.namespace;
   }

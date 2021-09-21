@@ -237,7 +237,8 @@ export class DisplayTestApp {
     IModelApp.applicationLogoCard =
       () => IModelApp.makeLogoCard({ iconSrc: "DTA.png", iconWidth: 100, heading: "Display Test App", notice: "For internal testing" });
 
-    const svtToolNamespace = IModelApp.localizationProvider.registerNamespace("SVTTools");
+    const svtToolNamespace = "SVTTools";
+    await IModelApp.localizationClient.registerNamespace(svtToolNamespace);
     [
       ApplyModelDisplayScaleTool,
       ApplyModelTransformTool,

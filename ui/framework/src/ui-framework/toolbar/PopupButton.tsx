@@ -79,7 +79,7 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
       this._label = props.label;
     // istanbul ignore else
     else if (props.labelKey)
-      this._label = UiFramework.localizationProvider.getLocalizedString(props.labelKey);
+      this._label = UiFramework.localizationClient.getLocalizedString(props.labelKey);
 
     this.state = {
       isVisible: undefined !== props.isVisible ? props.isVisible : true, // eslint-disable-line deprecation/deprecation

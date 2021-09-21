@@ -11,7 +11,7 @@ import * as path from "path";
 import sinonChai from "sinon-chai";
 import { ClientRequestContext, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelAppOptions, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
+import { I18N } from "@bentley/imodeljs-i18n";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "@bentley/oidc-signin-tool/lib/TestUtility";
 import {
@@ -67,13 +67,12 @@ const copyBentleyFrontendAssets = (outputDir: string) => {
 };
 
 class IntegrationTestsApp extends NoRenderApp {
-  protected static supplyI18NOptions(): I18NOptions {
-    const urlTemplate = `file://${path.join(path.resolve("lib/public/locales"), "{{lng}}/{{ns}}.json").replace(/\\/g, "/")}`;
-    return { urlTemplate };
+  protected static supplyUrlTemplate(): string {
+    return `file://${path.join(path.resolve("lib/public/locales"), "{{lng}}/{{ns}}.json").replace(/\\/g, "/")}`;
   }
 
   public static override async startup(opts?: IModelAppOptions): Promise<void> {
-    await NoRenderApp.startup({ ...opts, localizationClient: new I18N("iModelJs", this.supplyI18NOptions()) });
+    await NoRenderApp.startup({ ...opts, localizationClient: new I18N("iModelJs", { urlTemplate: this.supplyUrlTemplate() }) });
     cpx.copySync(`assets/**/*`, "lib/assets");
     copyBentleyBackendAssets("lib/assets");
     copyBentleyFrontendAssets("lib/public");

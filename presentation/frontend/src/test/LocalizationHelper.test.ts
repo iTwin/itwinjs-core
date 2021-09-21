@@ -21,7 +21,7 @@ describe("LocalizationHelper", () => {
   beforeEach(() => {
     i18nMock.reset();
     localizationHelper = new LocalizationHelper();
-    Presentation.setLocalizationProvider(i18nMock.object);
+    Presentation.setLocalizationClient(i18nMock.object);
   });
 
   afterEach(() => {

@@ -13,8 +13,8 @@ import { ToggleSwitch } from "@itwin/itwinui-react";
 
 /** UiSettingsPage displaying the active settings. */
 export class AccudrawSettingsPageComponent extends React.Component {
-  private _accuDrawNotificationsTitle: string = UiFramework.localizationProvider.getLocalizedString("SampleApp:settingsStage.accuDrawNotificationsTitle");
-  private _accuDrawNotificationsDescription: string = UiFramework.localizationProvider.getLocalizedString("SampleApp:settingsStage.accuDrawNotificationsDescription");
+  private _accuDrawNotificationsTitle: string = UiFramework.localizationClient.getLocalizedString("SampleApp:settingsStage.accuDrawNotificationsTitle");
+  private _accuDrawNotificationsDescription: string = UiFramework.localizationClient.getLocalizedString("SampleApp:settingsStage.accuDrawNotificationsDescription");
 
   private _onAccuDrawNotificationsChange = async () => {
     FrameworkAccuDraw.displayNotifications = !FrameworkAccuDraw.displayNotifications;

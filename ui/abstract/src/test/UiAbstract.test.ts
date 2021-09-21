@@ -17,7 +17,7 @@ describe("UiAbstract", () => {
   });
 
   it("i18n should throw Error without initialize", () => {
-    expect(() => UiAbstract.localizationProvider).to.throw(Error);
+    expect(() => UiAbstract.localizationClient).to.throw(Error);
   });
 
   it("terminate should run even if no i18n to unregister", () => {
@@ -25,7 +25,7 @@ describe("UiAbstract", () => {
   });
 
   it("i18nNamespace should return UiAbstract", () => {
-    expect(UiAbstract.i18nNamespace).to.eq("UiAbstract");
+    expect(UiAbstract.localizationNamespace).to.eq("UiAbstract");
   });
 
   it("packageName should return ui-abstract", () => {

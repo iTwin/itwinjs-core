@@ -79,7 +79,8 @@ export class FrontendDevTools {
 
     this._initialized = true;
 
-    const namespace = IModelApp.localizationProvider.registerNamespace("FrontendDevTools");
+    const namespace = "FrontendDevTools";
+    const namespacePromise = IModelApp.localizationClient.registerNamespace(namespace);
     const tools = [
       AttachMapLayerTool,
       AttachMapOverlayTool,
@@ -217,6 +218,6 @@ export class FrontendDevTools {
     for (const tool of tools)
       tool.register(namespace);
 
-    return namespace?.readFinished;
+    return namespacePromise;
   }
 }

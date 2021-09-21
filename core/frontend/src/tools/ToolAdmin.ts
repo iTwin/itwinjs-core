@@ -385,9 +385,9 @@ export class ToolAdmin {
     if (!opts.alertBox)
       return;
 
-    let out = `<h2>${IModelApp.localizationProvider.getLocalizedString("iModelJs:Errors.ReloadPage")}</h2>`;
+    let out = `<h2>${IModelApp.localizationClient.getLocalizedString("iModelJs:Errors.ReloadPage")}</h2>`;
     if (opts.details) {
-      out += `<h3>${IModelApp.localizationProvider.getLocalizedString("iModelJs:Errors.Details")}</h3><h4>`;
+      out += `<h3>${IModelApp.localizationClient.getLocalizedString("iModelJs:Errors.Details")}</h3><h4>`;
       msg.split("\n").forEach((line) => out += `${line}<br>`);
       out += "</h4>";
     }

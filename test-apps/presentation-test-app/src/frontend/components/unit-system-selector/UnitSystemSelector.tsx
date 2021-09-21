@@ -24,7 +24,7 @@ export function UnitSystemSelector(props: UnitSystemSelectorProps) {
       <Select
         options={availableUnitSystems}
         defaultValue={selectedUnitSystem}
-        placeholder={IModelApp.localizationProvider.getLocalizedString("Sample:controls.notifications.select-unit-system")}
+        placeholder={IModelApp.localizationClient.getLocalizedString("Sample:controls.notifications.select-unit-system")}
         onChange={onUnitSystemSelected}
       />
     </div>

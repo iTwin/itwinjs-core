@@ -9,7 +9,7 @@
 import { assert } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, PolygonOps, XAndY } from "@bentley/geometry-core";
 import { GeometryStreamProps, IModelError } from "@bentley/imodeljs-common";
-import { LocalizationNamespace, LocalizationProvider } from "@bentley/imodeljs-i18n";
+import { LocalizationClient } from "@bentley/imodeljs-i18n";
 import { DialogItem, DialogPropertySyncItem } from "@bentley/ui-abstract";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
@@ -327,10 +327,10 @@ export class Tool {
    */
   public static iconSpec = "";
   /** The ($localizationNamespace) that provides localized strings for this Tool. Subclasses should override this. */
-  public static namespace: LocalizationNamespace;
+  public static namespace: string;
 
   /** The internationalization services instance used to translate strings from the namespace. */
-  public static localizationProvider: LocalizationProvider;
+  public static localizationClient: LocalizationClient;
 
   /** @internal */
   public get ctor() { return this.constructor as ToolType; }
@@ -352,13 +352,16 @@ export class Tool {
   /**
    * Register this Tool class with the [[ToolRegistry]].
    * @param namespace optional namespace to supply to [[ToolRegistry.register]]. If undefined, use namespace from superclass.
-   * @param i18n optional internationalization services object (required only for externally hosted extensions). If undefined, use IModelApp.i18n.
+   * @param localizationClient optional internationalization services object (required only for externally hosted extensions). If undefined, use IModelApp.i18n.
    */
-  public static register(namespace?: LocalizationNamespace, localizationProvider?: LocalizationProvider) { IModelApp.tools.register(this, namespace, localizationProvider); }
+  public static register(namespace?: string, localizationClient?: LocalizationClient) { IModelApp.tools.register(this, namespace, localizationClient); }
 
   private static getLocalizedKey(name: string): string | undefined {
     const key = `tools.${this.toolId}.${name}`;
-    const val = this.localizationProvider.getLocalizedStringWithNamespace(this.namespace.name, key);
+    if (this.namespace === undefined) {
+      return undefined;
+    }
+    const val = this.localizationClient?.getLocalizedStringWithNamespace(this.namespace, key);
     return key === val ? undefined : val; // if translation for key doesn't exist, `translate` returns the key as the result
   }
 
@@ -377,8 +380,8 @@ export class Tool {
    */
   public static get englishKeyin(): string {
     const key = `tools.${this.toolId}.keyin`;
-    const val = this.localizationProvider.getEnglishString(this.namespace.name, key);
-    return val !== key ? val : ""; // default to empty string
+    const val = this.localizationClient?.getEnglishString(this.namespace, key);
+    return val && val !== key ? val : ""; // default to empty string
   }
 
   /**
@@ -809,11 +812,11 @@ export class ToolRegistry {
    * @param toolClass the subclass of Tool to register.
    * @param namespace the namespace for the localized strings for this tool. If undefined, use namespace from superclass.
    */
-  public register(toolClass: ToolType, namespace?: LocalizationNamespace, localizationProvider?: LocalizationProvider) {
+  public register(toolClass: ToolType, namespace?: string, localizationClient?: LocalizationClient) {
     if (namespace) // namespace is optional because it can come from superclass
       toolClass.namespace = namespace;
 
-    toolClass.localizationProvider = (localizationProvider) ? localizationProvider : IModelApp.localizationProvider;
+    toolClass.localizationClient = localizationClient || IModelApp.localizationClient;
 
     if (toolClass.toolId.length === 0)
       return; // must be an abstract class, ignore it
@@ -829,11 +832,11 @@ export class ToolRegistry {
    * Register all the Tool classes found in a module.
    * @param modelObj the module to search for subclasses of Tool.
    */
-  public registerModule(moduleObj: any, namespace?: LocalizationNamespace, localizationProvider?: LocalizationProvider) {
+  public registerModule(moduleObj: any, namespace?: string, localizationClient?: LocalizationClient) {
     for (const thisMember in moduleObj) {  // eslint-disable-line guard-for-in
       const thisTool = moduleObj[thisMember];
       if (thisTool.prototype instanceof Tool) {
-        this.register(thisTool, namespace, localizationProvider);
+        this.register(thisTool, namespace, localizationClient);
       }
     }
   }
@@ -1054,6 +1057,11 @@ export class ToolRegistry {
 export class CoreTools {
   public static namespace = "CoreTools";
   public static tools = "CoreTools:tools.";
-  public static translate(prompt: string) { return IModelApp.localizationProvider.getLocalizedString(this.tools + prompt); }
+  public static translate(prompt: string) {
+    if (IModelApp.localizationClient) {
+      return IModelApp.localizationClient.getLocalizedString(this.tools + prompt);
+    }
+    return prompt;
+  }
   public static outputPromptByKey(key: string) { return IModelApp.notifications.outputPromptByKey(this.tools + key); }
 }

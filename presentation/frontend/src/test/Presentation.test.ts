@@ -8,7 +8,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { I18N, LocalizationProvider } from "@bentley/imodeljs-i18n";
+import { I18N, LocalizationClient } from "@bentley/imodeljs-i18n";
 import { PresentationError } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { Presentation, SelectionManager } from "../presentation-frontend";
@@ -27,13 +27,13 @@ describe("Presentation", () => {
 
   const mockI18N = () => {
     const mock = moq.Mock.ofType<I18N>();
-    mock.setup((x) => x.registerNamespace(moq.It.isAny())).returns(() => ({ name: "namespace", readFinished: Promise.resolve() }));
+    mock.setup((x) => x.registerNamespace(moq.It.isAny())).returns(async () => ( Promise.resolve() ));
     return mock;
   };
 
   beforeEach(async () => {
     await shutdownIModelApp();
-    await NoRenderApp.startup({localizationClient: new I18N()});
+    await NoRenderApp.startup({localizationClient: new I18N("iModelJs")});
     Presentation.terminate();
   });
 
@@ -48,7 +48,7 @@ describe("Presentation", () => {
       expect(() => Presentation.presentation).to.throw();
       expect(() => Presentation.selection).to.throw();
       expect(() => Presentation.favoriteProperties).to.throw();
-      expect(() => Presentation.localizationProvider).to.throw();
+      expect(() => Presentation.localizationClient).to.throw();
       expect(() => Presentation.connectivity).to.throw();
       await Presentation.initialize();
       expect(Presentation.presentation).to.be.instanceof(PresentationManager);
@@ -65,17 +65,17 @@ describe("Presentation", () => {
       expect(constructorSpy).to.be.calledWith(props);
     });
 
-    it("initializes PresentationManager.localizationProvider with IModelApp.localizationProvider", async () => {
-      const localizationProvider = new LocalizationProvider(mockI18N().object);
-      (IModelApp as any)._localizationProvider = localizationProvider;
+    it("initializes PresentationManager.localizationClient with IModelApp.localizationClient", async () => {
+      const localizationClient = mockI18N().object;
+      (IModelApp as any)._localizationClient = localizationClient;
       await Presentation.initialize({ activeLocale: "test" });
-      expect(Presentation.localizationProvider).to.equal(localizationProvider);
+      expect(Presentation.localizationClient).to.equal(localizationClient);
     });
 
     it("initializes PresentationManager with Presentation.i18 locale if no props provided", async () => {
       const i18nMock = mockI18N();
       i18nMock.setup((x) => x.languageList()).returns(() => ["test-locale"]).verifiable();
-      Presentation.setLocalizationProvider(i18nMock.object);
+      Presentation.setLocalizationClient(i18nMock.object);
       const constructorSpy = sinon.spy(PresentationManager, "create");
       await Presentation.initialize();
       expect(constructorSpy).to.be.calledWith({
@@ -87,7 +87,7 @@ describe("Presentation", () => {
     it("initializes PresentationManager with i18 locale if no activeLocale set in props", async () => {
       const i18nMock = mockI18N();
       i18nMock.setup((x) => x.languageList()).returns(() => ["test-locale"]).verifiable();
-      Presentation.setLocalizationProvider(i18nMock.object);
+      Presentation.setLocalizationClient(i18nMock.object);
       const constructorSpy = sinon.spy(PresentationManager, "create");
       await Presentation.initialize({});
       expect(constructorSpy).to.be.calledWith({
@@ -99,7 +99,7 @@ describe("Presentation", () => {
     it("initializes PresentationManager with undefined locale if i18n.languageList() returns empty array", async () => {
       const i18nMock = mockI18N();
       i18nMock.setup((x) => x.languageList()).returns(() => []).verifiable();
-      Presentation.setLocalizationProvider(i18nMock.object);
+      Presentation.setLocalizationClient(i18nMock.object);
       const constructorSpy = sinon.spy(PresentationManager, "create");
       await Presentation.initialize({});
       expect(constructorSpy).to.be.calledWith({
@@ -133,12 +133,12 @@ describe("Presentation", () => {
       expect(Presentation.presentation).to.be.not.null;
       expect(Presentation.selection).to.be.not.null;
       expect(Presentation.favoriteProperties).to.be.not.null;
-      expect(Presentation.localizationProvider).to.be.not.null;
+      expect(Presentation.localizationClient).to.be.not.null;
       Presentation.terminate();
       expect(() => Presentation.presentation).to.throw;
       expect(() => Presentation.selection).to.throw;
       expect(() => Presentation.favoriteProperties).to.throw;
-      expect(() => Presentation.localizationProvider).to.throw;
+      expect(() => Presentation.localizationClient).to.throw;
     });
 
     it("calls registered initialization handler terminate callback", async () => {
@@ -211,22 +211,22 @@ describe("Presentation", () => {
 
   });
 
-  describe("setLocalizationProvider", () => {
+  describe("setLocalizationClient", () => {
 
     it("overwrites i18n instance before initialization", async () => {
       const i18n = new I18N();
-      Presentation.setLocalizationProvider(i18n);
+      Presentation.setLocalizationClient(i18n);
       await Presentation.initialize();
-      expect(Presentation.localizationProvider).to.eq(i18n);
+      expect(Presentation.localizationClient).to.eq(i18n);
     });
 
     it("overwrites i18n instance after initialization", async () => {
       const i18n = new I18N();
       await Presentation.initialize();
-      expect(Presentation.localizationProvider).to.be.not.null;
-      expect(Presentation.localizationProvider).to.not.eq(i18n);
-      Presentation.setLocalizationProvider(i18n);
-      expect(Presentation.localizationProvider).to.eq(i18n);
+      expect(Presentation.localizationClient).to.be.not.null;
+      expect(Presentation.localizationClient).to.not.eq(i18n);
+      Presentation.setLocalizationClient(i18n);
+      expect(Presentation.localizationClient).to.eq(i18n);
     });
 
   });

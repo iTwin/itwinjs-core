@@ -9,7 +9,7 @@
 import { enablePatches } from "immer";
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { LocalizationProvider } from "@bentley/imodeljs-i18n";
+import { LocalizationClient } from "@bentley/imodeljs-i18n";
 import { getClassName, UiError } from "@bentley/ui-abstract";
 import { UiComponents } from "@bentley/ui-components";
 
@@ -19,31 +19,31 @@ import { UiComponents } from "@bentley/ui-components";
  */
 export class UiIModelComponents {
   private static _initialized = false;
-  private static _localizationProvider?: LocalizationProvider;
+  private static _localizationClient?: LocalizationClient;
 
   /**
    * Registers the I18N service namespace for UiIModelComponents. Also initializes UiCore.
-   * @param localizationProvider The internationalization service created by the application. Defaults to IModelApp.i18n.
+   * @param localizationClient The internationalization service created by the application. Defaults to IModelApp.i18n.
    */
-  public static async initialize(localizationProvider?: LocalizationProvider): Promise<void> {
+  public static async initialize(localizationClient?: LocalizationClient): Promise<void> {
     if (UiIModelComponents._initialized) {
       Logger.logInfo(UiIModelComponents.loggerCategory(UiIModelComponents), `UiIModelComponents.initialize already called`);
       return;
     }
 
     enablePatches();
-    UiIModelComponents._localizationProvider = localizationProvider || IModelApp.localizationProvider;
-    await UiIModelComponents._localizationProvider.registerNamespace(UiIModelComponents.localizationNamespace)?.readFinished;
+    UiIModelComponents._localizationClient = localizationClient || IModelApp.localizationClient;
+    await UiIModelComponents._localizationClient.registerNamespace(UiIModelComponents.localizationNamespace);
 
-    await UiComponents.initialize(UiIModelComponents._localizationProvider);
+    await UiComponents.initialize(UiIModelComponents._localizationClient);
     UiIModelComponents._initialized = true;
   }
 
   /** Unregisters the UiIModelComponents I18N namespace */
   public static terminate() {
-    if (UiIModelComponents._localizationProvider)
-      UiIModelComponents._localizationProvider.unregisterNamespace(UiIModelComponents.localizationNamespace);
-    UiIModelComponents._localizationProvider = undefined;
+    if (UiIModelComponents._localizationClient)
+      UiIModelComponents._localizationClient.unregisterNamespace(UiIModelComponents.localizationNamespace);
+    UiIModelComponents._localizationClient = undefined;
 
     UiComponents.terminate();
     UiIModelComponents._initialized = false;
@@ -53,10 +53,10 @@ export class UiIModelComponents {
   public static get initialized(): boolean { return UiIModelComponents._initialized; }
 
   /** The internationalization service created by the application. */
-  public static get localizationProvider(): LocalizationProvider {
-    if (!UiIModelComponents._localizationProvider)
-      throw new UiError(UiIModelComponents.loggerCategory(this), "i18n: UiIModelComponents.initialize has not been called. Unable to return LocalizationProvider object.");
-    return UiIModelComponents._localizationProvider;
+  public static get localizationClient(): LocalizationClient {
+    if (!UiIModelComponents._localizationClient)
+      throw new UiError(UiIModelComponents.loggerCategory(this), "i18n: UiIModelComponents.initialize has not been called. Unable to return LocalizationClient object.");
+    return UiIModelComponents._localizationClient;
   }
 
   /** The internationalization service namespace. */
@@ -77,7 +77,7 @@ export class UiIModelComponents {
       Logger.logError(UiIModelComponents.loggerCategory(this), `translate: UiIModelComponents.initialize has not been called. Returning blank string.`);
       return "";
     }
-    return UiIModelComponents.localizationProvider.getLocalizedStringWithNamespace(UiIModelComponents.localizationNamespace, key);
+    return UiIModelComponents.localizationClient.getLocalizedStringWithNamespace(UiIModelComponents.localizationNamespace, key);
   }
 
   /** @internal */

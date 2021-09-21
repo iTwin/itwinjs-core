@@ -43,7 +43,7 @@ export class ErrorHandling {
       // Various special cases:
       const owner = this.parseChannelConstraintError(err);
       if (owner !== undefined) {
-        this.displayError(IModelApp.localizationProvider.getLocalizedString("SampleApp:error:ChannelConstraintViolation", { owner }));
+        this.displayError(IModelApp.localizationClient.getLocalizedString("SampleApp:error:ChannelConstraintViolation", { owner }));
         return;
       }
 
@@ -55,13 +55,13 @@ export class ErrorHandling {
 
     // ResponseError
     if (err.status === 403) {
-      alert(IModelApp.localizationProvider.getLocalizedString("error:missingPermission", { message: err.message }));
+      alert(IModelApp.localizationClient.getLocalizedString("error:missingPermission", { message: err.message }));
     } else {
       if (err.status === 401) {
         if (err.message.includes("not active")) {
-          this.displayError(IModelApp.localizationProvider.getLocalizedString("error:expiredLogin"));
+          this.displayError(IModelApp.localizationClient.getLocalizedString("error:expiredLogin"));
         } else {
-          alert(IModelApp.localizationProvider.getLocalizedString("error:authenticationFailure", { message: err.message }));
+          alert(IModelApp.localizationClient.getLocalizedString("error:authenticationFailure", { message: err.message }));
         }
       } else {
         this.displayError(err.logMessage(), "");

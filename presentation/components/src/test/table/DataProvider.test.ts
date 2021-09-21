@@ -53,7 +53,7 @@ describe("TableDataProvider", () => {
     const mocks = mockPresentationManager();
     presentationManagerMock = mocks.presentationManager;
     Presentation.setPresentationManager(presentationManagerMock.object);
-    Presentation.setLocalizationProvider(new I18N("", {
+    Presentation.setLocalizationClient(new I18N("", {
       urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
     }));
     await initializeLocalization();

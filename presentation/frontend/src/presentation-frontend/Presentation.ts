@@ -8,7 +8,7 @@
 
 import { isIDisposable } from "@bentley/bentleyjs-core";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { LocalizationProvider } from "@bentley/imodeljs-i18n";
+import { LocalizationClient } from "@bentley/imodeljs-i18n";
 import { PresentationError, PresentationStatus } from "@bentley/presentation-common";
 import { ConnectivityInformationProvider, IConnectivityInformationProvider } from "./ConnectivityInformationProvider";
 import { FavoritePropertiesManager } from "./favorite-properties/FavoritePropertiesManager";
@@ -19,7 +19,7 @@ import { SelectionManager } from "./selection/SelectionManager";
 import { SelectionScopesManager } from "./selection/SelectionScopesManager";
 
 let connectivityInfoProvider: IConnectivityInformationProvider | undefined;
-let localizationProvider: LocalizationProvider | undefined;
+let localizationClient: LocalizationClient | undefined;
 let presentationManager: PresentationManager | undefined;
 let selectionManager: SelectionManager | undefined;
 let favoritePropertiesManager: FavoritePropertiesManager | undefined;
@@ -59,8 +59,8 @@ export class Presentation {
       throw new PresentationError(PresentationStatus.NotInitialized,
         "IModelApp.startup must be called before calling Presentation.initialize");
     }
-    if (!localizationProvider) {
-      localizationProvider = IModelApp.localizationProvider;
+    if (!localizationClient) {
+      localizationClient = IModelApp.localizationClient;
     }
     if (!connectivityInfoProvider) {
       connectivityInfoProvider = new ConnectivityInformationProvider();
@@ -69,7 +69,7 @@ export class Presentation {
       if (!props)
         props = {};
       if (!props.activeLocale) {
-        const languages = Presentation.localizationProvider.languageList();
+        const languages = Presentation.localizationClient.languageList();
         props.activeLocale = (languages.length ? languages[0] : undefined);
       }
       presentationManager = PresentationManager.create(props);
@@ -108,7 +108,7 @@ export class Presentation {
     terminationHandlers.forEach((handler) => handler());
     terminationHandlers.length = 0;
 
-    if (localizationProvider)
+    if (localizationClient)
       LocalizationHelper.unregisterNamespaces();
 
     if (connectivityInfoProvider && isIDisposable(connectivityInfoProvider))
@@ -124,7 +124,7 @@ export class Presentation {
     favoritePropertiesManager = undefined;
 
     selectionManager = undefined;
-    localizationProvider = undefined;
+    localizationClient = undefined;
   }
 
   /**
@@ -183,15 +183,15 @@ export class Presentation {
   /**
    * The localization manager used by Presentation frontend. Returns the result of `IModelApp.i18n`.
    */
-  public static get localizationProvider(): LocalizationProvider {
-    if (!localizationProvider)
+  public static get localizationClient(): LocalizationClient {
+    if (!localizationClient)
       throw new Error("Presentation must be first initialized by calling Presentation.initialize");
-    return localizationProvider;
+    return localizationClient;
   }
 
   /** @internal */
-  public static setLocalizationProvider(value: LocalizationProvider) {
-    localizationProvider = value;
+  public static setLocalizationClient(value: LocalizationClient) {
+    localizationClient = value;
   }
 
   /** Provides information about current connection status. */

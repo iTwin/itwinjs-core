@@ -305,7 +305,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     }
 
     if (!model) {
-      const name = IModelApp.localizationProvider.getLocalizedString("iModelJs:RealityModelNames.OSMBuildings");
+      const name = IModelApp.localizationClient.getLocalizedString("iModelJs:RealityModelNames.OSMBuildings");
       model = this.attachRealityModel({ tilesetUrl: url, name });
       this.onOSMBuildingDisplayChanged.raiseEvent(true);
     }

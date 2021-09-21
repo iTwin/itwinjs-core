@@ -84,7 +84,7 @@ export const initialize = async (props?: PresentationTestingInitProps) => {
     props.frontendApp = NoRenderApp;
   await props.frontendApp.startup(props.frontendAppOptions);
   const defaultFrontendProps: PresentationFrontendProps = {
-    activeLocale: IModelApp.localizationProvider.languageList()[0],
+    activeLocale: IModelApp.localizationClient.languageList()[0],
   };
   await PresentationFrontend.initialize({ ...defaultFrontendProps, ...props.frontendProps });
 

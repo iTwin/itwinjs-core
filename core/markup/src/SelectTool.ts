@@ -509,11 +509,11 @@ export class SelectTool extends MarkupTool {
   public override async onRestartTool() { this.initSelect(); }
 
   protected override showPrompt(): void {
-    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.localizationProvider.getLocalizedString(`${MarkupTool.toolKey}Select.Prompts.IdentifyMarkup`));
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.localizationClient.getLocalizedString(`${MarkupTool.toolKey}Select.Prompts.IdentifyMarkup`));
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
 
-    const acceptMsg = IModelApp.localizationProvider.getLocalizedString(`${MarkupTool.toolKey}Select.Prompts.AcceptMarkup`);
+    const acceptMsg = IModelApp.localizationClient.getLocalizedString(`${MarkupTool.toolKey}Select.Prompts.AcceptMarkup`);
     touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, acceptMsg, false, ToolAssistanceInputMethod.Touch));
     mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, acceptMsg, false, ToolAssistanceInputMethod.Mouse));
 

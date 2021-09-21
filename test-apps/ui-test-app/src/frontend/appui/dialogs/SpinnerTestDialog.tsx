@@ -17,7 +17,7 @@ export interface SpinnerTestDialogState {
 
 export class SpinnerTestDialog extends React.Component<SpinnerTestDialogProps, SpinnerTestDialogState> {
   public override readonly state: Readonly<SpinnerTestDialogState>;
-  private _title = IModelApp.localizationProvider.getLocalizedString("SampleApp:buttons.spinnerTestDialog");
+  private _title = IModelApp.localizationClient.getLocalizedString("SampleApp:buttons.spinnerTestDialog");
 
   constructor(props: SpinnerTestDialogProps) {
     super(props);

@@ -67,7 +67,7 @@ describe("MapManagerSettings", () => {
 
   before(async () => {
     await TestUtils.initialize();
-    await MockRender.App.startup({localizationClient: new I18N()});
+    await MockRender.App.startup({localizationClient: new I18N("iModelJs")});
   });
 
   after(async () => {

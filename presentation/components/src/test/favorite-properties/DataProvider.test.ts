@@ -36,7 +36,7 @@ describe("FavoritePropertiesDataProvider", () => {
     Presentation.setPresentationManager(presentationManagerMock.object);
     Presentation.setSelectionManager(selectionManagerMock.object);
     Presentation.setFavoritePropertiesManager(favoritePropertiesManagerMock.object);
-    Presentation.setLocalizationProvider(new I18N("", {
+    Presentation.setLocalizationClient(new I18N("", {
       urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
     }));
   });

@@ -26,7 +26,7 @@ describe("InstanceKeyValueRenderer", () => {
   }
 
   before(async () => {
-    await NoRenderApp.startup({localizationClient: new I18N()});
+    await NoRenderApp.startup({localizationClient: new I18N("iModelJs")});
     await Presentation.initialize();
   });
 

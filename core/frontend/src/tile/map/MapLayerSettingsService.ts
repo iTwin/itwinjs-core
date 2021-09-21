@@ -127,11 +127,11 @@ export class MapLayerSettingsService {
     const settingFromName = await IModelApp.settings.getSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, name, true, projectId, undefined);
     requestContext.enter();
     if (settingFromName.setting && storeOnIModel) {
-      const errorMessage = IModelApp.localizationProvider.getLocalizedString("mapLayers:CustomAttach.LayerExistsAsProjectSetting", { layer: settingFromName.setting.name });
+      const errorMessage = IModelApp.localizationClient.getLocalizedString("mapLayers:CustomAttach.LayerExistsAsProjectSetting", { layer: settingFromName.setting.name });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, errorMessage));
       return false;
     } else if (settingFromName.setting) {
-      const infoMessage = IModelApp.localizationProvider.getLocalizedString("mapLayers:CustomAttach.LayerExistsOverwriting", { layer: settingFromName.setting.name });
+      const infoMessage = IModelApp.localizationClient.getLocalizedString("mapLayers:CustomAttach.LayerExistsOverwriting", { layer: settingFromName.setting.name });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, infoMessage));
       await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, settingFromName.setting.name, true, projectId, undefined);
       requestContext.enter();
@@ -140,11 +140,11 @@ export class MapLayerSettingsService {
     const settingFromUrl = await MapLayerSettingsService.getSettingFromUrl(requestContext, url, projectId, undefined); // check if setting with url already exists, if it does, delete it
     requestContext.enter();
     if (settingFromUrl && storeOnIModel) {
-      const errorMessage = IModelApp.localizationProvider.getLocalizedString("mapLayers:CustomAttach.LayerWithUrlExistsAsProjectSetting", { url: settingFromUrl.url, name: settingFromUrl.name });
+      const errorMessage = IModelApp.localizationClient.getLocalizedString("mapLayers:CustomAttach.LayerWithUrlExistsAsProjectSetting", { url: settingFromUrl.url, name: settingFromUrl.name });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, errorMessage));
       return false;
     } else if (settingFromUrl) {
-      const infoMessage = IModelApp.localizationProvider.getLocalizedString("mapLayers:CustomAttach.LayerWithUrlExistsOverwriting", { url: settingFromUrl.url, oldName: settingFromUrl.name, newName: name });
+      const infoMessage = IModelApp.localizationClient.getLocalizedString("mapLayers:CustomAttach.LayerWithUrlExistsOverwriting", { url: settingFromUrl.url, oldName: settingFromUrl.name, newName: name });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, infoMessage));
       await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, settingFromUrl.name, true, projectId, undefined);
       requestContext.enter();
@@ -156,13 +156,13 @@ export class MapLayerSettingsService {
       const settingFromUrlOnIModel = await MapLayerSettingsService.getSettingFromUrl(requestContext, url, projectId, iModelId);
       requestContext.enter();
       if (settingOnIModelFromName.setting) {
-        const infoMessage = IModelApp.localizationProvider.getLocalizedString("mapLayers:CustomAttach.LayerExistsOverwriting", { layer: settingOnIModelFromName.setting.name });
+        const infoMessage = IModelApp.localizationClient.getLocalizedString("mapLayers:CustomAttach.LayerExistsOverwriting", { layer: settingOnIModelFromName.setting.name });
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, infoMessage));
         await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, settingOnIModelFromName.setting.name, true, projectId, iModelId);
         requestContext.enter();
       }
       if (settingFromUrlOnIModel) {
-        const infoMessage = IModelApp.localizationProvider.getLocalizedString("mapLayers:CustomAttach.LayerWithUrlExistsOverwriting", { url: settingFromUrlOnIModel.url, oldName: settingFromUrlOnIModel.name, newName: name });
+        const infoMessage = IModelApp.localizationClient.getLocalizedString("mapLayers:CustomAttach.LayerWithUrlExistsOverwriting", { url: settingFromUrlOnIModel.url, oldName: settingFromUrlOnIModel.name, newName: name });
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, infoMessage));
         await IModelApp.settings.deleteSharedSetting(requestContext, MapLayerSettingsService.SourceNamespace, settingFromUrlOnIModel.name, true, projectId, iModelId);
         requestContext.enter();
@@ -221,17 +221,17 @@ export class MapLayerSettingsService {
     const sharedResultByImodel = settingsMapArray[2];
     const sharedResultByProject = settingsMapArray[3];
     if (userResultByProject.status !== SettingsStatus.Success || !userResultByProject.settingsMap) {
-      throw new Error(IModelApp.localizationProvider.getLocalizedString("mapLayers:CustomAttach.ErrorRetrieveUserProject", { errorMessage: userResultByProject.errorMessage }));
+      throw new Error(IModelApp.localizationClient.getLocalizedString("mapLayers:CustomAttach.ErrorRetrieveUserProject", { errorMessage: userResultByProject.errorMessage }));
     }
     if (userResultByImodel.status !== SettingsStatus.Success || !userResultByImodel.settingsMap) {
-      throw new Error(IModelApp.localizationProvider.getLocalizedString("mapLayers:CustomAttach.ErrorRetrieveUserModel", { errorMessage: userResultByImodel.errorMessage }));
+      throw new Error(IModelApp.localizationClient.getLocalizedString("mapLayers:CustomAttach.ErrorRetrieveUserModel", { errorMessage: userResultByImodel.errorMessage }));
     }
 
     if (sharedResultByImodel.status !== SettingsStatus.Success || !sharedResultByImodel.settingsMap) {
-      throw new Error(IModelApp.localizationProvider.getLocalizedString("mapLayers:CustomAttach.ErrorRetrieveSharedModel", { errorMessage: sharedResultByImodel.errorMessage }));
+      throw new Error(IModelApp.localizationClient.getLocalizedString("mapLayers:CustomAttach.ErrorRetrieveSharedModel", { errorMessage: sharedResultByImodel.errorMessage }));
     }
     if (sharedResultByProject.status !== SettingsStatus.Success || !sharedResultByProject.settingsMap) {
-      throw new Error(IModelApp.localizationProvider.getLocalizedString("mapLayers:CustomAttach.ErrorRetrieveSharedProject", { errorMessage: sharedResultByProject.errorMessage }));
+      throw new Error(IModelApp.localizationClient.getLocalizedString("mapLayers:CustomAttach.ErrorRetrieveSharedProject", { errorMessage: sharedResultByProject.errorMessage }));
     }
 
     const savedMapLayerSources: MapLayerSource[] = [];

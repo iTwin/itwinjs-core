@@ -33,16 +33,16 @@ export class RulesetSelector extends React.Component<RulesetSelectorProps, Rules
   };
   public override render() {
     if (!this.state.availableRulesets)
-      return (<div className="RulesetSelector">{IModelApp.localizationProvider.getLocalizedString("Sample:controls.notifications.loading")}</div>);
+      return (<div className="RulesetSelector">{IModelApp.localizationClient.getLocalizedString("Sample:controls.notifications.loading")}</div>);
     if (0 === this.state.availableRulesets.length)
-      return (<div className="RulesetSelector">{IModelApp.localizationProvider.getLocalizedString("Sample:controls.notifications.no-available-rulesets")}</div>);
+      return (<div className="RulesetSelector">{IModelApp.localizationClient.getLocalizedString("Sample:controls.notifications.no-available-rulesets")}</div>);
     return (
       <div className="RulesetSelector">
         {/* eslint-disable-next-line deprecation/deprecation */}
         <Select
           options={this.state.availableRulesets}
           defaultValue={this.props.activeRulesetId}
-          placeholder={IModelApp.localizationProvider.getLocalizedString("Sample:controls.notifications.select-ruleset")}
+          placeholder={IModelApp.localizationClient.getLocalizedString("Sample:controls.notifications.select-ruleset")}
           onChange={this.onSelectedRulesetIdChanged}
         />
       </div>

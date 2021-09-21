@@ -90,7 +90,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
             // and then encountered an error, otherwise I assume an error was already reported
             // through the source validation process.
             if (this._hasSuccessfullyFetchedTile) {
-              const msg = IModelApp.localizationProvider.getLocalizedString("iModelJs:MapLayers.Messages.LoadTileTokenError", { layerName: this._settings.name });
+              const msg = IModelApp.localizationClient.getLocalizedString("iModelJs:MapLayers.Messages.LoadTileTokenError", { layerName: this._settings.name });
               IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
             }
 
@@ -234,7 +234,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
         // Check again layer status, it might have change during await.
         if (this.status === MapLayerImageryProviderStatus.Valid) {
           this.status = MapLayerImageryProviderStatus.RequireAuth;
-          const msg = IModelApp.localizationProvider.getLocalizedString("iModelJs:MapLayers.Messages.FetchTooltipTokenError", { layerName: this._settings.name });
+          const msg = IModelApp.localizationClient.getLocalizedString("iModelJs:MapLayers.Messages.FetchTooltipTokenError", { layerName: this._settings.name });
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
         }
 

@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { I18N } from "@bentley/imodeljs-i18n";
 import { assert } from "chai";
 import { PendingExtension } from "../extension/Extension";
 import { IModelApp } from "../IModelApp";
@@ -10,7 +11,7 @@ import { IModelApp } from "../IModelApp";
 describe("ExtensionAdmin tests", () => {
   beforeEach(async function () {
     this.timeout(5000);
-    await IModelApp.startup();
+    await IModelApp.startup({localizationClient: new I18N("iModelJs")});
   });
   afterEach(async function () {
     this.timeout(5000);
