@@ -346,7 +346,6 @@ export namespace OrbitGtTileTree {
   }
 
   async function getAccessTokenRDS(): Promise<AccessToken | undefined> {
-
     if (!IModelApp.authorizationClient)
       return undefined; // Not signed in
 

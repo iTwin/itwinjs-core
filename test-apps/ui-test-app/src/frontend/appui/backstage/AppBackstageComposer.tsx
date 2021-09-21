@@ -6,7 +6,7 @@ import * as React from "react";
 import { connect } from "react-redux";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { BackstageItemUtilities, BadgeType, ConditionalBooleanValue } from "@bentley/ui-abstract";
-import { BackstageComposer, FrontstageManager, SettingsModalFrontstage, UiFramework } from "@bentley/ui-framework";
+import { BackstageComposer, FrontstageManager, SettingsModalFrontstage, UiFramework, UserInfo } from "@bentley/ui-framework";
 import { UserProfileBackstageItem } from "./UserProfile";
 import { ComponentExamplesModalFrontstage } from "../frontstages/component-examples/ComponentExamples";
 import { LocalFileOpenFrontstage } from "../frontstages/LocalFileStage";
@@ -27,7 +27,7 @@ function mapStateToProps(state: RootState) {
 
 interface AppBackstageComposerProps {
   /** UserInfo from sign-in */
-  userInfo: any | undefined;
+  userInfo: UserInfo | undefined;
 }
 
 export function AppBackstageComposerComponent({ userInfo }: AppBackstageComposerProps) {

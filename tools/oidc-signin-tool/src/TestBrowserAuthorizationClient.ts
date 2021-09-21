@@ -184,7 +184,8 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
     // console.log(`Finished OIDC signin for ${this._user.email} ...`);
 
     this._accessToken = `Bearer ${tokenSet.access_token}`;
-    this._expiresAt = new Date(tokenSet.expires_at!);
+    if (tokenSet.expires_at)
+      this._expiresAt = new Date(tokenSet.expires_at * 1000);
     this.onUserStateChanged.raiseEvent(this._accessToken);
   }
 

@@ -17,7 +17,7 @@ export function exposeBackendCallbacks() {
   registerBackendCallback(getClientAccessTokenCallbackName, async (clientConfiguration: AgentAuthorizationClientConfiguration) => {
     const authClient = new AgentAuthorizationClient(clientConfiguration);
     const token = await authClient.getAccessToken();
-    return token as string;
+    return token ?? "";
   });
 
 }

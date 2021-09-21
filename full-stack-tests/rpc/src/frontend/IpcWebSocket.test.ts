@@ -7,7 +7,6 @@ import { IpcWebSocketFrontend } from "@bentley/imodeljs-common";
 import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
 import { assert } from "chai";
 import { BackendTestCallbacks } from "../common/SideChannels";
-import { IModelApp, NativeApp } from "@bentley/imodeljs-frontend";
 
 if (!ProcessDetector.isElectronAppFrontend) {
   describe("IpcWebSocket", () => {

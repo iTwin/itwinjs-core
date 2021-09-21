@@ -66,7 +66,7 @@ export class IntrospectionClient {
   }
 
   public async introspect(requestContext: AuthorizedClientRequestContext): Promise<IntrospectionResponse> {
-    const accessTokenStr = removeAccessTokenPrefix(requestContext.accessToken) ?? ""; // Is there a better solution for this? It needs a string value, will return
+    const accessTokenStr = removeAccessTokenPrefix(requestContext.accessToken) ?? "";
 
     try {
       const cachedResponse = await this._cache.get(accessTokenStr);

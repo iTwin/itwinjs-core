@@ -20,6 +20,7 @@ import {
 import { RequestPriority } from "@bentley/presentation-common";
 import { PresentationProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
 import { initialize as initializeTesting, PresentationTestingInitProps, terminate as terminateTesting } from "@bentley/presentation-testing";
+import { TestBrowserAuthorizationClient } from "@bentley/oidc-signin-tool/lib/TestBrowserAuthorizationClient";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -109,7 +110,7 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
   };
 
   if (props.useClientServices)
-    await frontendAppOptions.authorizationClient!.getAccessToken(); // Is this what we want?
+    await (frontendAppOptions.authorizationClient! as TestBrowserAuthorizationClient).signIn();
 
   const presentationTestingInitProps: PresentationTestingInitProps = {
     backendProps: backendInitProps,

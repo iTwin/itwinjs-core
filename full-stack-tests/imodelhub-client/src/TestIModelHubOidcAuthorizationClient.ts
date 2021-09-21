@@ -17,7 +17,7 @@ export class TestIModelHubOidcAuthorizationClient implements FrontendAuthorizati
 
   public isExpired(token?: AccessToken): boolean {
     token = token ?? this._token;
-    return !(token === this._token && this._expiresAt !== undefined && this._expiresAt > new Date());
+    return !(token === this._token && this._expiresAt !== undefined && this._expiresAt.getTime() - Date.now() >= 1 * 60 * 1000);
   }
 
   public async signIn(): Promise<void> {

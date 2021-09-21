@@ -16,9 +16,8 @@ export class IModelHubUserMgr implements FrontendAuthorizationClient {
   }
 
   public isExpired(token?: AccessToken ): boolean {
-    // Should we make this check 1 minute in advance?
     token = token ?? this._token;
-    return !(token === this._token && this._expiresAt !== undefined && this._expiresAt > new Date());
+    return !(token === this._token && this._expiresAt !== undefined && this._expiresAt.getTime() - Date.now() >= 1 * 60 * 1000);
   }
 
   public async signIn(): Promise<void> {

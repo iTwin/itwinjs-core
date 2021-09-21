@@ -16,7 +16,6 @@ import {
   SelectionTool, SnapMode, TileAdmin, Tool, ToolAdmin,
 } from "@bentley/imodeljs-frontend";
 import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
-import { DtaConfiguration } from "../common/DtaConfiguration";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";

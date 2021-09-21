@@ -48,7 +48,7 @@ class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNot
   }
   public notifyUserStateChanged(accessToken?: AccessToken) {
     const client = (IModelApp.authorizationClient as NativeAppAuthorization);
-    client?.onUserStateChanged?.raiseEvent(accessToken ?? undefined);
+    client?.onUserStateChanged.raiseEvent(accessToken ?? undefined);
   }
 }
 
