@@ -484,10 +484,8 @@ export class IModelsHandler {
 
     try {
       imodel = await this._handler.postInstance<HubIModel>(requestContext, HubIModel, this.getRelativeUrl(contextId), iModel);
-      requestContext.enter();
       Logger.logTrace(loggerCategory, `Created iModel instance with name ${iModelName}`, () => ({ contextId }));
     } catch (err) {
-      requestContext.enter();
       if (!(err instanceof IModelHubError) || IModelHubStatus.iModelAlreadyExists !== err.errorNumber) {
         Logger.logWarning(loggerCategory, `Can not create iModel: ${err.message}`, () => ({ contextId }));
 
@@ -504,7 +502,6 @@ export class IModelsHandler {
       Logger.logInfo(loggerCategory, `Querying iModel by name ${iModelName}`, () => ({ contextId }));
 
       const imodels = await this.get(requestContext, contextId, new IModelQuery().byName(iModelName));
-      requestContext.enter();
       Logger.logTrace(loggerCategory, `Queried iModel by name ${iModelName}`, () => ({ contextId }));
 
       if (imodels.length > 0) {
@@ -560,7 +557,6 @@ export class IModelsHandler {
     for (let retries = 10; retries > 0; --retries) {
       try {
         const initState = await this.getInitializationState(requestContext, imodel.id!);
-        requestContext.enter();
         if (initState === InitializationState.Successful) {
           Logger.logTrace(loggerCategory, "Created iModel", () => ({ contextId, iModelId: imodel.id }));
           imodel.initialized = true;
@@ -574,9 +570,7 @@ export class IModelsHandler {
         }
 
         await new Promise((resolve) => setTimeout(resolve, retryDelay));
-        requestContext.enter();
       } catch (err) {
-        requestContext.enter();
         Logger.logWarning(loggerCategory, errorMessage);
         throw err;
       }
@@ -667,7 +661,6 @@ export class IModelsHandler {
         await this.delete(requestContext, contextId, imodel.id!);
         throw err;
       }
-      requestContext.enter();
     }
 
     return this.waitForInitialization(requestContext, contextId, imodel, createOptions.timeOutInMilliseconds!);
@@ -822,7 +815,6 @@ export class IModelHandler {
     let imodelExists = true;
     try {
       await this.get(requestContext, contextId);
-      requestContext.enter();
     } catch (err) {
       if (err instanceof IModelHubError && err.errorNumber === IModelHubStatus.iModelDoesNotExist)
         imodelExists = false;

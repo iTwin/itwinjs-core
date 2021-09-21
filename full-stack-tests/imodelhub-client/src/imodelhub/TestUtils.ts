@@ -25,7 +25,7 @@ import { HttpRequestHost } from "@bentley/backend-itwin-client";
 
 const loggingCategory = "backend-itwin-client.TestUtils";
 
-  // SWB
+// SWB
 const bankProjects: string[] = [];
 
 export const sharedimodelName = "imodeljs-clients Shared iModel";

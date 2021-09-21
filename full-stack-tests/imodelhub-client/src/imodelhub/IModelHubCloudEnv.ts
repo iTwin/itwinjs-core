@@ -21,7 +21,7 @@ class TestITwinManagerClient implements ITwinManagerClient {
         searchString: name,
         propertyName: ITwinSearchableProperty.Name,
         exactMatch: true,
-      }
+      },
     });
 
     if (iTwinList.length === 0)

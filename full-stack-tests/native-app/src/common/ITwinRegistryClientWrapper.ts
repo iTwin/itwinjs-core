@@ -17,7 +17,7 @@ export class ITwinRegistryClientWrapper implements ITwinManagerClient {
         searchString: name,
         propertyName: ITwinSearchableProperty.Name,
         exactMatch: true,
-      }
+      },
     });
 
     if (iTwinList.length === 0)

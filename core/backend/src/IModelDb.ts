@@ -1201,7 +1201,7 @@ export abstract class IModelDb extends IModel {
       request.cancelSnap();
 
     try {
-      return request.doSnap(this.nativeDb, JsonUtils.toObject(props));
+      return await request.doSnap(this.nativeDb, JsonUtils.toObject(props));
     } finally {
       this._snaps.delete(sessionId);
     }
