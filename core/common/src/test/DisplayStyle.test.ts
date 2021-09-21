@@ -160,14 +160,11 @@ describe("DisplayStyleSettings", () => {
         const settings = new DisplayStyleSettings({});
         func(settings);
 
-        // eslint-disable-next-line deprecation/deprecation
         expect(settings.toJSON().excludedElements).to.equal(expectedExcludedElements);
         expect(settings.compressedExcludedElementIds).to.equal(undefined === expectedExcludedElements ? "" : expectedExcludedElements);
 
         const excludedIds = Array.from(settings.excludedElementIds);
-        // eslint-disable-next-line deprecation/deprecation
         expect(new Set<string>(settings.excludedElementIds).size).to.equal(excludedIds.length);
-        // eslint-disable-next-line deprecation/deprecation
         const set = OrderedId64Iterable.sortArray(Array.from(settings.excludedElementIds));
         expect(set).to.deep.equal(excludedIds);
       };
@@ -181,21 +178,14 @@ describe("DisplayStyleSettings", () => {
       test("+2", (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.dropExcludedElement("0x1"); });
       test(undefined, (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.dropExcludedElements(["0x2", "0x1"]); });
 
-      // eslint-disable-next-line deprecation/deprecation
       test("+3", (settings) => settings.addExcludedElements("0x3"));
-      // eslint-disable-next-line deprecation/deprecation
       test(undefined, (settings) => { settings.addExcludedElements("0x2"); settings.dropExcludedElement("0x2"); });
-      // eslint-disable-next-line deprecation/deprecation
       test("+2", (settings) => { settings.addExcludedElements("0x1"); settings.addExcludedElements("0x2"); settings.dropExcludedElements("0x1"); });
-      // eslint-disable-next-line deprecation/deprecation
       test("+1", (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.dropExcludedElements("0x2"); });
-      // eslint-disable-next-line deprecation/deprecation
       test("+2", (settings) => { settings.addExcludedElements("0x1"); settings.addExcludedElements(["0x2", "0x3"]); settings.dropExcludedElement("0x3"); settings.dropExcludedElements("0x1"); });
 
-      // eslint-disable-next-line deprecation/deprecation
       test(undefined, (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.clearExcludedElements(); });
 
-      // eslint-disable-next-line deprecation/deprecation
       test(undefined, (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.addExcludedElements("0x3"); settings.clearExcludedElements(); });
     });
   });
@@ -457,7 +447,6 @@ describe("DisplayStyleSettings overrides", () => {
       nonLocatable: true,
       emphasized: true,
     }],
-    // eslint-disable-next-line deprecation/deprecation
     excludedElements: CompressedId64Set.compressIds(["0x4", "0x8", "0x10"]),
     contextRealityModels: [{
       tilesetUrl: "google.com",
@@ -629,7 +618,6 @@ describe("DisplayStyleSettings overrides", () => {
       }],
     });
 
-    // eslint-disable-next-line deprecation/deprecation
     test({ viewflags, excludedElements: CompressedId64Set.compressIds(["0xbaadf00d", "0xdeadbeef"]) });
 
     test({
