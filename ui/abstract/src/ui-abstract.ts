@@ -109,6 +109,10 @@ export * from "./ui-abstract/widget/WidgetState";
  * Classes for creating and managing items in a toolbar.
  */
 /**
+ * @docs-group-description StandardContentLayouts
+ * Class that contains standard layout definitions for frontstage content/views.
+ */
+/**
  * @docs-group-description UiAdmin
  * Abstractions for UI controls, such as toolbars, buttons and menus and are callable from IModelApp.uiAdmin in imodeljs-frontend.
  */
