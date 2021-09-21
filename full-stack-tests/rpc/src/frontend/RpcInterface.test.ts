@@ -217,9 +217,6 @@ describe("RpcInterface", () => {
       });
 
       const id = interfaces.sort().join(",");
-      if (typeof (btoa) !== "undefined")
-        return btoa(id);
-
       return Buffer.from(id, "binary").toString("base64");
     };
 

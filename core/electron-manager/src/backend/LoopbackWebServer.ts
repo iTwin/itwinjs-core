@@ -53,7 +53,7 @@ export class LoopbackWebServer {
       return;
 
     LoopbackWebServer._httpServer = Http.createServer(LoopbackWebServer.onBrowserRequest);
-    const urlParts: Url.UrlWithStringQuery = Url.parse(clientConfiguration.redirectUri ?? ElectronAuthorizationBackend.defaultRedirectUri);
+    const urlParts: URL = new URL(clientConfiguration.redirectUri ?? ElectronAuthorizationBackend.defaultRedirectUri);
     LoopbackWebServer._httpServer.listen(urlParts.port);
   }
 

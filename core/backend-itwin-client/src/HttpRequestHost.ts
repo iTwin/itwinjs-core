@@ -6,7 +6,6 @@ import { RequestGlobalOptions } from "@bentley/itwin-client";
 import * as http from "http";
 import * as https from "https";
 import { HttpsProxyAgent, HttpsProxyAgentOptions } from "https-proxy-agent";
-import * as url from "url";
 
 /** Utility to configure all HTTP service requests make from the backend
  * @internal

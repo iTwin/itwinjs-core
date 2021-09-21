@@ -105,9 +105,7 @@ export class RpcControlChannel {
     this._configuration.interfaces().forEach((definition) => interfaces.push(`${definition.interfaceName}@${definition.interfaceVersion}`));
     const id = interfaces.sort().join(",");
 
-    if (typeof (btoa) !== "undefined")
-      return btoa(id);
-    else if (typeof (Buffer) !== "undefined")
+    if (typeof (Buffer) !== "undefined")
       return Buffer.from(id, "binary").toString("base64");
     else
       return id;

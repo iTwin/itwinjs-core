@@ -62,7 +62,8 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
       retry: 3,
     });
 
-    this._issuer = await Issuer.discover(url.resolve(this._imsUrl, "/.well-known/openid-configuration"));
+    const imsUrl = new URL("/.well-known/openid-configuration", this._imsUrl);
+    this._issuer = await Issuer.discover(imsUrl.toString());
     this._client = new this._issuer.Client({ client_id: this._config.clientId, token_endpoint_auth_method: "none" }); // eslint-disable-line @typescript-eslint/naming-convention
   }
 

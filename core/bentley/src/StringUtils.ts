@@ -155,5 +155,5 @@ export function utf8ToString(utf8: Uint8Array): string | undefined {
  * @public
  */
 export function base64StringToUint8Array(base64: string): Uint8Array {
-  return new Uint8Array(atob(base64).split("").map((c) => c.charCodeAt(0)));
+  return new Uint8Array(Buffer.from(base64, "base64").toString("base64").split("").map((c) => c.charCodeAt(0)));
 }
