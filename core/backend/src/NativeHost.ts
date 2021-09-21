@@ -32,8 +32,6 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
   protected constructor(config?: NativeAppAuthorizationConfiguration) {
     super();
     this.config = config;
-    if (config?.issuerUrl)
-      this.baseUrl = config?.issuerUrl;
   }
 
   public get isAuthorized(): boolean {

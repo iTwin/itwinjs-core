@@ -125,7 +125,6 @@ async function init() {
         clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
         redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
         scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
-        issuerUrl: process.env.IMS_OIDC_ELECTRON_ISSUER_URL ?? "",
       },
     },
     iModelHost,
