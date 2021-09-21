@@ -325,9 +325,7 @@ In `3.0` changes have been made that changed the way this attribute is calculate
   });
   ```
 
-
 It is no longer necessary to supply a [Viewport]($frontend) when creating a [GraphicBuilder]($frontend). Instead, you can supply to [RenderSystem.createGraphic]($frontend) a [CustomGraphicBuilderOptions]($frontend) containing a function that can compute the level of detail appropriate for the produced [RenderGraphic]($frontend).
-
 
 ## Changed return types
 
@@ -431,6 +429,17 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `Viewport.featureOverrideProvider`     | [Viewport.featureOverrideProviders]($frontend)            |
 | `Viewport.setFlashed`                  | [Viewport.flashedId]($frontend)                           |
 | `Viewport.setRedrawPending`            | [Viewport.requestRedraw]($frontend)                       |
+
+### @bentley/geometry-core
+
+| Removed                                         | Replacement                                                |
+| ----------------------------------------------- | ---------------------------------------------------------- |
+| `BSplineCurve3dBase.createThroughPoints`        | `BSplineCurve3dBase.createFromInterpolationCurve3dOptions` |
+| `TransitionSpiralProps.curveLength`             | `TransitionSpiralProps.length`                             |
+| `TransitionSpiralProps.fractionInterval`        | `TransitionSpiralProps.activeFractionInterval`             |
+| `TransitionSpiralProps.intervalFractions`       | `TransitionSpiralProps.activeFractionInterval`             |
+| `InterpolationCurve3dOptions.isChordLenTangent` | `InterpolationCurve3dOptions.isChordLenTangents`           |
+| `Point3dArray.createRange`                      | `Range3d.createFromVariantData`                            |
 
 ### @bentley/backend-itwin-client
 
