@@ -54,17 +54,17 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
 
   // called when this component is first loaded
   public override async componentDidMount() {
-    this.getRecentProjects(this.props.filterType!);
+    this.getRecentProjects(this.props.filterType!); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   private async getRecentProjects(projectScope: ProjectScope) {
     this.setState({ isLoading: true, projects: undefined, activeFilter: projectScope });
     const client = new ITwinAccessClient();
     const ctx = await AuthorizedFrontendRequestContext.create();
-    client.getAll(ctx, {
+    client.getAll(ctx, { // eslint-disable-line @typescript-eslint/no-floating-promises
       pagination: {
         top: 40,
-      }
+      },
     }).then((projectInfos: ITwin[]) => { // eslint-disable-line @typescript-eslint/no-floating-promises
       this.setState({ isLoading: false, projects: projectInfos });
     });
@@ -76,15 +76,15 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
   };
 
   private _onMyProjectsClicked = () => {
-    this.getRecentProjects(ProjectScope.Invited);
+    this.getRecentProjects(ProjectScope.Invited); // eslint-disable-line @typescript-eslint/no-floating-promises
   };
 
   private _onFavoritesClicked = () => {
-    this.getRecentProjects(ProjectScope.Favorites);
+    this.getRecentProjects(ProjectScope.Favorites); // eslint-disable-line @typescript-eslint/no-floating-promises
   };
 
   private _onRecentClicked = () => {
-    this.getRecentProjects(ProjectScope.MostRecentlyUsed);
+    this.getRecentProjects(ProjectScope.MostRecentlyUsed); // eslint-disable-line @typescript-eslint/no-floating-promises
   };
 
   private _onSearchClicked = () => {
@@ -103,11 +103,11 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
     } else {
       this.setState({ isLoading: true, projects: undefined, activeFilter: ProjectScope.All });
 
-      AuthorizedFrontendRequestContext.create().then((ctx) => {
+      AuthorizedFrontendRequestContext.create().then((ctx: AuthorizedFrontendRequestContext) => { // eslint-disable-line @typescript-eslint/no-floating-promises
         const client = new ITwinAccessClient();
-        client.getAll(ctx, {
+        client.getAll(ctx, { // eslint-disable-line @typescript-eslint/no-floating-promises
           pagination: {
-            top: 40
+            top: 40,
           },
           search: {
             searchString: value,
