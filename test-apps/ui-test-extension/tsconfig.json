@@ -5,7 +5,7 @@
     "module": "commonjs",
     "outDir": "./lib",
     "types": [
-      "@bentley/extension-webpack-tools"
+      "@bentley/react-scripts"
     ]
   },
   "include": [
