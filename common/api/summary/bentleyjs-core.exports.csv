@@ -1,7 +1,6 @@
 sep=;
 Release Tag;API Item
 beta;AbandonedError 
-internal;addClientRequestContext: (metaData: any) => void
 public;areEqualPossiblyUndefined
 public;asInstanceOf
 public;assert(condition: boolean, msg?: string): asserts condition
@@ -50,7 +49,7 @@ public;DuplicatePolicy
 public;Entry
 public;EntryContainer
 public;GeoServiceStatus
-public;GetMetaDataFunction = () => any
+public;GetMetaDataFunction = () => object | undefined
 public;Guid
 public;GuidString = string
 beta;HttpStatus

@@ -252,7 +252,7 @@ export class IModelExporter {
    */
   public async exportChanges(user?: AuthorizedClientRequestContext, startChangesetId?: string): Promise<void> {
     if (!this.sourceDb.isBriefcaseDb()) {
-      throw new IModelError(IModelStatus.BadRequest, "Must be a briefcase to export changes", Logger.logError, loggerCategory);
+      throw new IModelError(IModelStatus.BadRequest, "Must be a briefcase to export changes");
     }
     if ("" === this.sourceDb.changeset.id) {
       await this.exportAll(); // no changesets, so revert to exportAll
@@ -754,7 +754,7 @@ class ChangedInstanceIds {
       const changesetPath = changeset.pathname;
       const statusOrResult = iModel.nativeDb.extractChangedInstanceIdsFromChangeSet(changesetPath);
       if (undefined !== statusOrResult.error) {
-        throw new IModelError(statusOrResult.error.status, "Error processing changeset", Logger.logError, loggerCategory);
+        throw new IModelError(statusOrResult.error.status, "Error processing changeset");
       }
       if ("" !== statusOrResult.result) {
         const result: IModelJsNative.ChangedInstanceIdsProps = JSON.parse(statusOrResult.result!);

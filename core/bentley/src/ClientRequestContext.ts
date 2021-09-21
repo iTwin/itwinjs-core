@@ -15,13 +15,13 @@ import { Guid, GuidString } from "./Id";
  */
 export interface SessionProps {
   /** Used for logging and usage tracking to identify the application  */
-  applicationId: string;
+  readonly applicationId: string;
 
   /** Used for logging and usage tracking to identify the application version  */
-  applicationVersion: string;
+  readonly applicationVersion: string;
 
   /** Used for logging to identify a session  */
-  sessionId: GuidString;
+  readonly sessionId: GuidString;
 }
 
 /** The properties of ClientRequestContext.
@@ -37,7 +37,6 @@ export interface ClientRequestContextProps extends SessionProps {
  * purposes including usage tracking and logging. Services that require authorization are
  * passed an instance of the subclass:
  * [AuthorizedClientRequestContext]($itwin-client)
- * @see [ClientRequestContext rules]($docs/learning/backend/managingclientrequestcontext.md).
  * @see [AuthorizedClientRequestContext]($itwin-client)
  * @public
  */
@@ -63,17 +62,16 @@ export class ClientRequestContext {
     this._useContextForRpc = false;
   }
 
-  /** Get the current client request context */
-  public static get current() { return ClientRequestContext._current; }
-  protected static _current: ClientRequestContext = new ClientRequestContext();
-
-  /**
-   * Set or reset the current ClientRequestContext to be this object. Should be called by async functions and the functions that they call
-   * at every resume point. See [ClientRequestContext rules]($docs/learning/backend/managingclientrequestcontext.md).
+  /** Use this for logging for ClientRequestContext.
+   * It returns only sanitized members, intentionally removing all others to avoid logging secrets or violating user-privacy rules.
    */
-  public enter(): this {
-    ClientRequestContext._current = this;
-    return this;
+  public sanitize() {
+    return {
+      activityId: this.activityId,
+      applicationId: this.applicationId,
+      applicationVersion: this.applicationVersion,
+      sessionId: this.sessionId,
+    };
   }
 
   /** Setup use of this context for the next RPC call
@@ -108,14 +106,3 @@ export interface SerializedClientRequestContext {
   userId?: string;
   csrfToken?: { headerName: string, headerValue: string };
 }
-
-/** Used by Logger to set ClientRequestContext metadata
- * @internal
- */
-export const addClientRequestContext = (metaData: any) => {
-  const requestContext = ClientRequestContext.current;
-  metaData.ActivityId = requestContext.activityId;
-  metaData.SessionId = requestContext.sessionId;
-  metaData.ApplicationId = requestContext.applicationId;
-  metaData.ApplicationVersion = requestContext.applicationVersion;
-};

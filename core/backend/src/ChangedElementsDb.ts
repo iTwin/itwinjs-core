@@ -138,7 +138,7 @@ export class ChangedElementsDb implements IDisposable {
     changesets.reverse();
     // Close briefcase before doing processing and rolling briefcase
     const dbFilename = briefcase.pathName;
-    const dbGuid = briefcase.getGuid();
+    const dbGuid = briefcase.iModelId;
     briefcase.close();
     // Process changesets
     const status = this.nativeDb.processChangesetsAndRoll(

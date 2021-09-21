@@ -115,8 +115,6 @@ The impl must override each method in the interface definition class. Each overr
 
 Each impl method must return the operation's result as a Promise.
 
-The impl method must obtain the ClientRequestContext by calling [ClientRequestContext.current]($bentley). It must then follow the [rules of managing the ClientRequestContext](./backend/ManagingClientRequestContext.md).
-
 The methods in the impl may have to transform certain argument types, such as IModelRpcProps, before they can be used by backend code.
 
 A best practice is that an impl should be a thin layer on top of normal classes in the server. The impl wrapper should be concerned only with transforming types, not with functionality, while backend operation methods should be concerned only with functionality. Backend operation methods should be static, since a server should be stateless. Preferably, backend operation methods should be [synchronous if possible](#asynchronous-nature-of-rpcinterfaces).
@@ -271,8 +269,6 @@ Briefly, here is how it works:
   * Calls to the Logging manager also occur in this context, and so the Logging manager gets the ActivityId from the context and adds to the logging messages as metadata using a Bentley-standard "ActivityId" property id.
 * Log Browsers
   * Can filter on the Bentley-standard "ActivityId" property to correlate all messages related to the same request.
-
-See [managing the ClientRequestContext](../learning/backend/ManagingClientRequestContext.md) for details.
 
 ## RpcInterface Versioning
 

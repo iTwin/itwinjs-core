@@ -15,7 +15,8 @@ import { SettingsAdmin, SettingsStatus } from "@bentley/product-settings-client"
 import { IConnectivityInformationProvider } from "../../presentation-frontend/ConnectivityInformationProvider";
 import { FavoritePropertiesOrderInfo, PropertyFullName } from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager";
 import {
-  IModelAppFavoritePropertiesStorage, OfflineCachingFavoritePropertiesStorage,
+  BrowserLocalFavoritePropertiesStorage, createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, IModelAppFavoritePropertiesStorage,
+  NoopFavoritePropertiesStorage, OfflineCachingFavoritePropertiesStorage,
 } from "../../presentation-frontend/favorite-properties/FavoritePropertiesStorage";
 
 describe("IModelAppFavoritePropertiesStorage", () => {
@@ -583,11 +584,15 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
 
   });
 
-  const createRandomPropertiesOrderInfo = () => ({
-    parentClassName: "parent.class.name",
-    name: "full.property.name",
-    priority: 9999,
-    orderedTimestamp: new Date(),
+  it("disposes IConnectivityInformationProvider", () => {
+    const disposableConnectivityInfo = {
+      onInternetConnectivityChanged: new BeEvent(),
+      status: InternetConnectivityStatus.Offline,
+      dispose: sinon.spy(),
+    };
+    storage = new OfflineCachingFavoritePropertiesStorage({ impl, connectivityInfo: disposableConnectivityInfo });
+    storage.dispose();
+    expect(disposableConnectivityInfo.dispose).to.be.calledOnce;
   });
 
   const callInConnectivityContext = async <T>(cb: (() => Promise<T>), connectivityStatus: InternetConnectivityStatus) => {
@@ -604,5 +609,109 @@ describe("OfflineCachingFavoritePropertiesStorage", () => {
   const online = async <T>(cb: (() => Promise<T>)) => {
     return callInConnectivityContext(cb, InternetConnectivityStatus.Online);
   };
+
+});
+
+describe("BrowserLocalFavoritePropertiesStorage", () => {
+
+  let storage: BrowserLocalFavoritePropertiesStorage;
+  let storageMock: moq.IMock<Storage>;
+
+  beforeEach(() => {
+    storageMock = moq.Mock.ofType<Storage>();
+    storage = new BrowserLocalFavoritePropertiesStorage({ localStorage: storageMock.object });
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  describe("saveProperties", () => {
+
+    it("saves properties to local storage", async () => {
+      await storage.saveProperties(new Set(["test"]), "a", "b");
+      storageMock.verify((x) => x.setItem(storage.createFavoritesSettingItemKey("a", "b"), `["test"]`), moq.Times.once());
+    });
+
+  });
+
+  describe("loadProperties", () => {
+
+    it("returns `undefined`and there's no cached value", async () => {
+      storageMock.setup((x) => x.getItem(moq.It.isAny())).returns(() => null);
+      const result = await storage.loadProperties("a", "b");
+      expect(result).to.be.undefined;
+    });
+
+    it("loads from local storage where there's a value", async () => {
+      storageMock.setup((x) => x.getItem(storage.createFavoritesSettingItemKey("a", "b"))).returns(() => `["abc", "def"]`).verifiable();
+      const result = await storage.loadProperties("a", "b");
+      storageMock.verifyAll();
+      expect(result?.size).to.eq(2);
+      expect(result).to.contain("abc");
+      expect(result).to.contain("def");
+    });
+
+  });
+
+  describe("savePropertiesOrder", () => {
+
+    it("saves properties order to local storage", async () => {
+      const orderInfos = [createRandomPropertiesOrderInfo()];
+      await storage.savePropertiesOrder(orderInfos, "a", "b");
+      storageMock.verify((x) => x.setItem(storage.createOrderSettingItemKey("a", "b"), JSON.stringify(orderInfos)), moq.Times.once());
+    });
+
+  });
+
+  describe("loadPropertiesOrder", () => {
+
+    it("returns `undefined` and there's no cached value", async () => {
+      storageMock.setup((x) => x.getItem(moq.It.isAny())).returns(() => null);
+      const result = await storage.loadPropertiesOrder("a", "b");
+      expect(result).to.be.undefined;
+    });
+
+    it("loads from cache and there's cached value", async () => {
+      const orderInfos = [createRandomPropertiesOrderInfo()];
+      storageMock.setup((x) => x.getItem(storage.createOrderSettingItemKey("a", "b"))).returns(() => JSON.stringify(orderInfos)).verifiable();
+      const result = await storage.loadPropertiesOrder("a", "b");
+      storageMock.verifyAll();
+      expect(result).to.deep.eq(orderInfos);
+    });
+
+  });
+
+});
+
+const createRandomPropertiesOrderInfo = () => ({
+  parentClassName: "parent.class.name",
+  name: "full.property.name",
+  priority: 9999,
+  orderedTimestamp: new Date(),
+});
+
+describe("createFavoritePropertiesStorage", () => {
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it("creates noop storage", () => {
+    const result = createFavoritePropertiesStorage(DefaultFavoritePropertiesStorageTypes.Noop);
+    expect(result).to.be.instanceOf(NoopFavoritePropertiesStorage);
+  });
+
+  it("creates browser local storage", () => {
+    sinon.stub(window, "localStorage").get(() => moq.Mock.ofType<Storage>().object);
+    const result = createFavoritePropertiesStorage(DefaultFavoritePropertiesStorageTypes.BrowserLocalStorage);
+    expect(result).to.be.instanceOf(BrowserLocalFavoritePropertiesStorage);
+  });
+
+  it("creates user settings service storage", () => {
+    const result = createFavoritePropertiesStorage(DefaultFavoritePropertiesStorageTypes.UserSettingsServiceStorage);
+    expect(result).to.be.instanceOf(OfflineCachingFavoritePropertiesStorage);
+    expect((result as OfflineCachingFavoritePropertiesStorage).impl).to.be.instanceOf(IModelAppFavoritePropertiesStorage);
+  });
 
 });
