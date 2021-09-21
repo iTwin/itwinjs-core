@@ -487,8 +487,6 @@ export class IModelsHandler {
 
       Logger.logInfo(loggerCategory, `Querying iModel by name ${iModelName}`, () => ({ contextId: iTwinId }));
 
-      const imodels = await this.get(requestContext, iTwinId, new IModelQuery().byName(iModelName));
-
       Logger.logTrace(loggerCategory, `Queried iModel by name ${iModelName}`, () => ({ contextId: iTwinId }));
 
       if (imodels.length > 0) {
@@ -659,13 +657,13 @@ export class IModelsHandler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async update(requestContext: AuthorizedClientRequestContext, iTwinId: string, imodel: HubIModel): Promise<HubIModel> {
-    Logger.logInfo(loggerCategory, "Updating iModel", () => ({ contextId: iTwinId, iModelId: imodel.id }));
+    Logger.logInfo(loggerCategory, "Updating iModel", () => ({ iTwinId, iModelId: imodel.id }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iTwinId", iTwinId);
 
     const updatedIModel = await this._handler.postInstance<HubIModel>(requestContext, HubIModel, this.getRelativeUrl(iTwinId, imodel.id), imodel);
 
-    Logger.logTrace(loggerCategory, "Updated iModel", () => ({ contextId: iTwinId, iModelId: imodel.id }));
+    Logger.logTrace(loggerCategory, "Updated iModel", () => ({ iTwinId, iModelId: imodel.id }));
     return updatedIModel;
   }
 
