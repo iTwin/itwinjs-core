@@ -17,7 +17,7 @@ import {
   FieldDescriptor, FieldDescriptorType, FieldJSON, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions,
   getLocalesDirectory, HierarchyCompareInfo, HierarchyCompareInfoJSON, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey,
   IntRulesetVariable, ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions,
-  PresentationError, PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RequestPriority, Ruleset,
+  PresentationError, PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, Ruleset,
   SelectClassInfo, SelectClassInfoJSON, SelectionInfo, SelectionScope, StandardNodeTypes, StructTypeDescription, VariableValueTypes,
 } from "@bentley/presentation-common";
 import {
@@ -92,7 +92,7 @@ describe("PresentationManager", () => {
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
             localeDirectories: [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)],
-            taskAllocationsMap: { [RequestPriority.Max]: 2 },
+            taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
             mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
@@ -149,7 +149,7 @@ describe("PresentationManager", () => {
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: props.id,
             localeDirectories: [getLocalesDirectory("/test"), testLocale],
-            taskAllocationsMap: { [RequestPriority.Max]: 999 },
+            taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 999 },
             mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: true,
             cacheConfig: expectedCacheConfig,
@@ -169,7 +169,7 @@ describe("PresentationManager", () => {
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
             localeDirectories: [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)],
-            taskAllocationsMap: { [RequestPriority.Max]: 2 },
+            taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
             mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
@@ -189,7 +189,7 @@ describe("PresentationManager", () => {
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
             localeDirectories: [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)],
-            taskAllocationsMap: { [RequestPriority.Max]: 2 },
+            taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
             mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: false,
             cacheConfig: expectedConfig,
@@ -207,7 +207,7 @@ describe("PresentationManager", () => {
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
             localeDirectories: [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)],
-            taskAllocationsMap: { [RequestPriority.Max]: 2 },
+            taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
             mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Hybrid, disk: undefined },
@@ -232,7 +232,7 @@ describe("PresentationManager", () => {
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
             localeDirectories: [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)],
-            taskAllocationsMap: { [RequestPriority.Max]: 2 },
+            taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
             mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: false,
             cacheConfig: expectedConfig,

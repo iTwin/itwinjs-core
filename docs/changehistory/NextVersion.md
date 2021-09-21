@@ -572,6 +572,8 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `PropertiesFieldDescriptor.propertyName`              | `PropertiesFieldDescriptor.properties.name`                                                                                                                    |
 | `Property.relatedClassPath`                           | `NestedContentField.pathToPrimaryClass`                                                                                                                        |
 | `PropertyJSON.relatedClassPath`                       | `NestedContentFieldJSON.pathToPrimaryClass`                                                                                                                    |
+| `RequestPriority`                                     | *eliminated*                                                                                                                                                   |
+| `RequestOptions<TIModel>.priority`                    | *eliminated*                                                                                                                                                   |
 | `SelectClassInfo.pathToPrimaryClass`                  | `SelectClassInfo.pathFromInputToSelectClass`                                                                                                                   |
 | `SelectClassInfo.relatedInstanceClasses`              | `SelectClassInfo.relatedInstancePaths`                                                                                                                         |
 | `SelectClassInfoJSON.pathToPrimaryClass`              | `SelectClassInfoJSON.pathFromInputToSelectClass`                                                                                                               |
@@ -593,6 +595,7 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `PresentationManagerProps.contentCacheSize`   | `PresentationManagerProps.caching.content.size`                                                                           |
 | `PresentationManagerProps.taskAllocationsMap` | `PresentationManagerProps.workerThreadsCount`                                                                             |
 | `UnitSystemFormat.unitSystems`                | Changed type from `PresentationUnitSystem[]` to `UnitSystemKey[]`                                                         |
+| `WithClientRequestContext<T>`                 | *eliminated*                                                                                                              |
 
 ### @bentley/presentation-frontend
 

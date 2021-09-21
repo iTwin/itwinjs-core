@@ -9,7 +9,6 @@ import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 // __PUBLISH_EXTRACT_START__ Presentation.Backend.Initialization
-import { RequestPriority } from "@bentley/presentation-common";
 import { Presentation, PresentationManagerMode } from "@bentley/presentation-backend";
 import rpcs from "../common/Rpcs";
 // __PUBLISH_EXTRACT_END__

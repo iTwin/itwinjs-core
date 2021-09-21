@@ -17,7 +17,6 @@ import { TestUtility } from "@bentley/oidc-signin-tool/lib/TestUtility";
 import {
   HierarchyCacheMode, Presentation as PresentationBackend, PresentationBackendNativeLoggerCategory, PresentationProps as PresentationBackendProps,
 } from "@bentley/presentation-backend";
-import { RequestPriority } from "@bentley/presentation-common";
 import { PresentationProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
 import { initialize as initializeTesting, PresentationTestingInitProps, terminate as terminateTesting } from "@bentley/presentation-testing";
 

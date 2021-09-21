@@ -16,7 +16,7 @@ import {
   DescriptorOverrides, DiagnosticsOptionsWithHandler, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
   DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
   FilterByTextHierarchyRequestOptions, getLocalesDirectory, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey,
-  KeySet, LabelDefinition, Node, NodeKey, NodePathElement, Paged, PagedResponse, PresentationError, PresentationStatus, RequestPriority, Ruleset,
+  KeySet, LabelDefinition, Node, NodeKey, NodePathElement, Paged, PagedResponse, PresentationError, PresentationStatus, Prioritized, Ruleset,
   SelectClassInfo, SelectionScope, SelectionScopeRequestOptions,
 } from "@bentley/presentation-common";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
@@ -481,7 +481,7 @@ export class PresentationManager {
    * Retrieves nodes
    * @public
    */
-  public async getNodes(requestOptions: Paged<HierarchyRequestOptions<IModelDb, NodeKey>>): Promise<Node[]> {
+  public async getNodes(requestOptions: Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey>>>): Promise<Node[]> {
     const { rulesetId, strippedOptions: { parentKey, ...strippedOptions } } = this.registerRuleset(requestOptions);
     const params = {
       requestId: parentKey ? NativePlatformRequestTypes.GetChildren : NativePlatformRequestTypes.GetRootNodes,
@@ -496,7 +496,7 @@ export class PresentationManager {
    * Retrieves nodes count
    * @public
    */
-  public async getNodesCount(requestOptions: HierarchyRequestOptions<IModelDb, NodeKey>): Promise<number> {
+  public async getNodesCount(requestOptions: Prioritized<HierarchyRequestOptions<IModelDb, NodeKey>>): Promise<number> {
     const { rulesetId, strippedOptions: { parentKey, ...strippedOptions } } = this.registerRuleset(requestOptions);
     const params = {
       requestId: parentKey ? NativePlatformRequestTypes.GetChildrenCount : NativePlatformRequestTypes.GetRootNodesCount,
@@ -512,7 +512,7 @@ export class PresentationManager {
    * TODO: Return results in pages
    * @public
    */
-  public async getNodePaths(requestOptions: FilterByInstancePathsHierarchyRequestOptions<IModelDb>): Promise<NodePathElement[]> {
+  public async getNodePaths(requestOptions: Prioritized<FilterByInstancePathsHierarchyRequestOptions<IModelDb>>): Promise<NodePathElement[]> {
     const { rulesetId, strippedOptions: { instancePaths, ...strippedOptions } } = this.registerRuleset(requestOptions);
     const params = {
       requestId: NativePlatformRequestTypes.GetNodePaths,
@@ -528,7 +528,7 @@ export class PresentationManager {
    * TODO: Return results in pages
    * @public
    */
-  public async getFilteredNodePaths(requestOptions: FilterByTextHierarchyRequestOptions<IModelDb>): Promise<NodePathElement[]> {
+  public async getFilteredNodePaths(requestOptions: Prioritized<FilterByTextHierarchyRequestOptions<IModelDb>>): Promise<NodePathElement[]> {
     const { rulesetId, strippedOptions } = this.registerRuleset(requestOptions);
     const params = {
       requestId: NativePlatformRequestTypes.GetFilteredNodePaths,
@@ -539,7 +539,7 @@ export class PresentationManager {
   }
 
   /** @beta */
-  public async getContentSources(requestOptions: ContentSourcesRequestOptions<IModelDb>): Promise<SelectClassInfo[]> {
+  public async getContentSources(requestOptions: Prioritized<ContentSourcesRequestOptions<IModelDb>>): Promise<SelectClassInfo[]> {
     const params = {
       requestId: NativePlatformRequestTypes.GetContentSources,
       rulesetId: "ElementProperties",
@@ -555,7 +555,7 @@ export class PresentationManager {
    * Retrieves the content descriptor which can be used to get content
    * @public
    */
-  public async getContentDescriptor(requestOptions: ContentDescriptorRequestOptions<IModelDb, KeySet>): Promise<Descriptor | undefined> {
+  public async getContentDescriptor(requestOptions: Prioritized<ContentDescriptorRequestOptions<IModelDb, KeySet>>): Promise<Descriptor | undefined> {
     const { rulesetId, strippedOptions } = this.registerRuleset(requestOptions);
     const params = {
       requestId: NativePlatformRequestTypes.GetContentDescriptor,
@@ -573,7 +573,7 @@ export class PresentationManager {
    * Retrieves the content set size based on the supplied content descriptor override
    * @public
    */
-  public async getContentSetSize(requestOptions: ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>): Promise<number> {
+  public async getContentSetSize(requestOptions: Prioritized<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>): Promise<number> {
     const { rulesetId, strippedOptions: { descriptor, ...strippedOptions } } = this.registerRuleset(requestOptions);
     const params = {
       requestId: NativePlatformRequestTypes.GetContentSetSize,
@@ -589,7 +589,7 @@ export class PresentationManager {
    * Retrieves the content based on the supplied content descriptor override.
    * @public
    */
-  public async getContent(requestOptions: Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>): Promise<Content | undefined> {
+  public async getContent(requestOptions: Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>>): Promise<Content | undefined> {
     const { rulesetId, strippedOptions: { descriptor, ...strippedOptions } } = this.registerRuleset(requestOptions);
     const params = {
       requestId: NativePlatformRequestTypes.GetContent,
@@ -608,7 +608,7 @@ export class PresentationManager {
    * @return A promise object that returns either distinct values on success or an error string on error.
    * @public
    */
-  public async getPagedDistinctValues(requestOptions: DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>): Promise<PagedResponse<DisplayValueGroup>> {
+  public async getPagedDistinctValues(requestOptions: Prioritized<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>): Promise<PagedResponse<DisplayValueGroup>> {
     const { rulesetId, strippedOptions } = this.registerRuleset(requestOptions);
     const { descriptor, keys, ...strippedOptionsNoDescriptorAndKeys } = strippedOptions;
     const params = {
@@ -631,7 +631,7 @@ export class PresentationManager {
    * Retrieves property data in a simplified format for a single element specified by ID.
    * @beta
    */
-  public async getElementProperties(requestOptions: ElementPropertiesRequestOptions<IModelDb>): Promise<ElementProperties | undefined> {
+  public async getElementProperties(requestOptions: Prioritized<ElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined> {
     const { elementId, ...optionsNoElementId } = requestOptions;
     const content = await this.getContent({
       ...optionsNoElementId,
@@ -649,7 +649,7 @@ export class PresentationManager {
    * Retrieves display label definition of specific item
    * @public
    */
-  public async getDisplayLabelDefinition(requestOptions: DisplayLabelRequestOptions<IModelDb, InstanceKey>): Promise<LabelDefinition> {
+  public async getDisplayLabelDefinition(requestOptions: Prioritized<DisplayLabelRequestOptions<IModelDb, InstanceKey>>): Promise<LabelDefinition> {
     const params = {
       requestId: NativePlatformRequestTypes.GetDisplayLabel,
       ...requestOptions,
@@ -662,7 +662,7 @@ export class PresentationManager {
    * Retrieves display label definitions of specific items
    * @public
    */
-  public async getDisplayLabelDefinitions(requestOptions: Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>): Promise<LabelDefinition[]> {
+  public async getDisplayLabelDefinitions(requestOptions: Prioritized<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>): Promise<LabelDefinition[]> {
     const concreteKeys = requestOptions.keys.map((k) => {
       if (k.className === "BisCore:Element")
         return getElementKey(requestOptions.imodel, k.id);
@@ -797,7 +797,7 @@ const createLocaleDirectoryList = (props?: PresentationManagerProps) => {
 const createTaskAllocationsMap = (props?: PresentationManagerProps) => {
   const count = props?.workerThreadsCount ?? 2;
   return {
-    [RequestPriority.Max]: count,
+    [Number.MAX_SAFE_INTEGER]: count,
   };
 };
 

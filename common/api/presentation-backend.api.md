@@ -4,7 +4,6 @@
 
 ```ts
 
-import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { Content } from '@bentley/presentation-common';
 import { ContentDescriptorRequestOptions } from '@bentley/presentation-common';
 import { ContentRequestOptions } from '@bentley/presentation-common';
@@ -36,6 +35,7 @@ import { NodeKey } from '@bentley/presentation-common';
 import { NodePathElement } from '@bentley/presentation-common';
 import { Paged } from '@bentley/presentation-common';
 import { PagedResponse } from '@bentley/presentation-common';
+import { Prioritized } from '@bentley/presentation-common';
 import { RegisteredRuleset } from '@bentley/presentation-common';
 import { Ruleset } from '@bentley/presentation-common';
 import { SelectClassInfo } from '@bentley/presentation-common';
@@ -165,22 +165,22 @@ export class PresentationManager {
         scopeId: string;
     }): Promise<KeySet>;
     dispose(): void;
-    getContent(requestOptions: Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>): Promise<Content | undefined>;
-    getContentDescriptor(requestOptions: ContentDescriptorRequestOptions<IModelDb, KeySet>): Promise<Descriptor | undefined>;
-    getContentSetSize(requestOptions: ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>): Promise<number>;
+    getContent(requestOptions: Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>>): Promise<Content | undefined>;
+    getContentDescriptor(requestOptions: Prioritized<ContentDescriptorRequestOptions<IModelDb, KeySet>>): Promise<Descriptor | undefined>;
+    getContentSetSize(requestOptions: Prioritized<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>): Promise<number>;
     // @beta (undocumented)
-    getContentSources(requestOptions: ContentSourcesRequestOptions<IModelDb>): Promise<SelectClassInfo[]>;
-    getDisplayLabelDefinition(requestOptions: DisplayLabelRequestOptions<IModelDb, InstanceKey>): Promise<LabelDefinition>;
-    getDisplayLabelDefinitions(requestOptions: Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>): Promise<LabelDefinition[]>;
+    getContentSources(requestOptions: Prioritized<ContentSourcesRequestOptions<IModelDb>>): Promise<SelectClassInfo[]>;
+    getDisplayLabelDefinition(requestOptions: Prioritized<DisplayLabelRequestOptions<IModelDb, InstanceKey>>): Promise<LabelDefinition>;
+    getDisplayLabelDefinitions(requestOptions: Prioritized<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>): Promise<LabelDefinition[]>;
     // @beta
-    getElementProperties(requestOptions: ElementPropertiesRequestOptions<IModelDb>): Promise<ElementProperties | undefined>;
-    getFilteredNodePaths(requestOptions: FilterByTextHierarchyRequestOptions<IModelDb>): Promise<NodePathElement[]>;
+    getElementProperties(requestOptions: Prioritized<ElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined>;
+    getFilteredNodePaths(requestOptions: Prioritized<FilterByTextHierarchyRequestOptions<IModelDb>>): Promise<NodePathElement[]>;
     // @internal (undocumented)
     getNativePlatform: () => NativePlatformDefinition;
-    getNodePaths(requestOptions: FilterByInstancePathsHierarchyRequestOptions<IModelDb>): Promise<NodePathElement[]>;
-    getNodes(requestOptions: Paged<HierarchyRequestOptions<IModelDb, NodeKey>>): Promise<Node[]>;
-    getNodesCount(requestOptions: HierarchyRequestOptions<IModelDb, NodeKey>): Promise<number>;
-    getPagedDistinctValues(requestOptions: DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>): Promise<PagedResponse<DisplayValueGroup>>;
+    getNodePaths(requestOptions: Prioritized<FilterByInstancePathsHierarchyRequestOptions<IModelDb>>): Promise<NodePathElement[]>;
+    getNodes(requestOptions: Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey>>>): Promise<Node[]>;
+    getNodesCount(requestOptions: Prioritized<HierarchyRequestOptions<IModelDb, NodeKey>>): Promise<number>;
+    getPagedDistinctValues(requestOptions: Prioritized<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>): Promise<PagedResponse<DisplayValueGroup>>;
     // @internal (undocumented)
     getRulesetId(rulesetOrId: Ruleset | string): string;
     getSelectionScopes(_requestOptions: SelectionScopeRequestOptions<IModelDb>): Promise<SelectionScope[]>;
@@ -326,11 +326,6 @@ export interface UnitSystemFormat {
     // (undocumented)
     unitSystems: UnitSystemKey[];
 }
-
-// @public
-export type WithClientRequestContext<T> = T & {
-    requestContext: ClientRequestContext;
-};
 
 
 // (No @packageDocumentation comment for this package)
