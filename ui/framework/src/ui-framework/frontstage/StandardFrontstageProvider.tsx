@@ -70,7 +70,7 @@ export interface StandardFrontstageProps {
 /**
  * FrontstageProvider that provides an "empty" stage. All tool buttons, statusbar items, and widgets must
  * be provided by one or more item providers, see [UiItemsProvider]($ui-abstract).
- * @beta
+ * @public
  */
 export class StandardFrontstageProvider extends FrontstageProvider {
   constructor(private props: StandardFrontstageProps) {

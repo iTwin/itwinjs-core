@@ -5744,7 +5744,7 @@ export interface StandardFrontstageProps {
     version?: number;
 }
 
-// @beta
+// @public
 export class StandardFrontstageProvider extends FrontstageProvider {
     constructor(props: StandardFrontstageProps);
     // (undocumented)

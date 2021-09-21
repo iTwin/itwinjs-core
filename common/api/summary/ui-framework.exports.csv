@@ -525,7 +525,7 @@ internal;StagePanelZonesDef
 public;StagePanelZonesProps
 public;StandardContentToolsProvider 
 public;StandardFrontstageProps
-beta;StandardFrontstageProvider 
+public;StandardFrontstageProvider 
 public;StandardMessageBox 
 public;StandardMessageBoxProps 
 public;StandardNavigationToolsProvider 
