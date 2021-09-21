@@ -768,8 +768,6 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     // (undocumented)
     static createFromAkimaCurve3dOptions(options: AkimaCurve3dOptions): BSplineCurve3d | undefined;
     static createFromInterpolationCurve3dOptions(options: InterpolationCurve3dOptions): BSplineCurve3d | undefined;
-    // @deprecated (undocumented)
-    static createThroughPoints(points: IndexedXYZCollection | Point3d[], order: number): BSplineCurve3d | undefined;
     static createUniformKnots(poles: Point3d[] | Float64Array | GrowableXYZArray, order: number): BSplineCurve3d | undefined;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     emitStrokableParts(handler: IStrokeHandler, options?: StrokeOptions): void;
@@ -2649,14 +2647,8 @@ export namespace IModelJson {
     }
     export interface TransitionSpiralProps extends AxesProps {
         activeFractionInterval?: number[];
-        // @deprecated
-        curveLength?: number;
         endBearing?: AngleProps;
         endRadius?: number;
-        // @deprecated
-        fractionInterval?: number[];
-        // @deprecated
-        intervalFractions?: [number, number];
         length?: number;
         origin: XYZProps;
         startBearing?: AngleProps;
@@ -2957,8 +2949,6 @@ export class InterpolationCurve3dOptions {
     set fitPoints(val: Point3d[]);
     get isChordLenKnots(): number;
     set isChordLenKnots(val: number);
-    // @deprecated (undocumented)
-    get isChordLenTangent(): number;
     get isChordLenTangents(): number;
     set isChordLenTangents(val: number);
     get isColinearTangents(): number;
@@ -4010,8 +4000,6 @@ export class Point3dArray {
     static cloneXYZPropsAsNumberArray(data: XYZProps[]): number[][];
     static closestPointIndex(data: XYAndZ[], spacePoint: XYAndZ): number;
     static computeConvexHullXY(points: Point3d[], hullPoints: Point3d[], insidePoints: Point3d[], addClosurePoint?: boolean): void;
-    // @deprecated
-    static createRange(data: MultiLineStringDataVariant): Range3d;
     static distanceIndexedPointBToSegmentAC(points: Point3d[], indexA: number, indexB: number, indexC: number, extrapolate: boolean): number;
     static evaluateTrilinearDerivativeTransform(points: Point3d[], u: number, v: number, w: number, result?: Transform): Transform;
     static evaluateTrilinearPoint(points: Point3d[], u: number, v: number, w: number, result?: Point3d): Point3d;

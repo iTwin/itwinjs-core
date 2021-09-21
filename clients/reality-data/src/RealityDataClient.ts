@@ -191,18 +191,6 @@ export class RealityData extends WsgInstance {
   }
 
   /**
-   * Gets a tileset's tile data
-   * @param requestContext The client request context.
-   * @param name name or path of tile
-   * @param nameRelativeToRootDocumentPath (optional default is false) Indicates if the given name is relative to the root document path.
-   * @deprecated use [[getTileJson]] instead
-   * @returns tile data json
-   */
-  public async getModelData(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath: boolean = false): Promise<any> {
-    return this.getTileJson(requestContext, name, nameRelativeToRootDocumentPath);
-  }
-
-  /**
    * Gets a tile access url URL object
    * @param requestContext The client request context.
    * @param writeAccess Optional boolean indicating if write access is requested. Default is false for read-only access.
