@@ -1,5 +1,6 @@
 sep=;
 Release Tag;API Item
+public;ContentCacheConfig
 beta;DiskHierarchyCacheConfig 
 internal;getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined
 beta;HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig
@@ -7,6 +8,7 @@ beta;HierarchyCacheConfigBase
 beta;HierarchyCacheMode
 beta;HybridCacheConfig 
 beta;MemoryHierarchyCacheConfig 
+public;MultiManagerPresentationProps 
 internal;normalizeVersion(version?: string): string
 public;Presentation
 public;PresentationBackendLoggerCategory
@@ -14,10 +16,7 @@ public;PresentationBackendNativeLoggerCategory
 public;PresentationManager
 public;PresentationManagerMode
 public;PresentationManagerProps
-public;PresentationProps = PresentationPropsDeprecated | PresentationPropsNew
-public;PresentationPropsDeprecated 
-deprecated;PresentationPropsDeprecated 
-public;PresentationPropsNew 
+public;PresentationProps = MultiManagerPresentationProps | SingleManagerPresentationProps
 beta;RulesetEmbedder
 public;RulesetEmbedderProps
 beta;RulesetInsertOptions
@@ -25,5 +24,6 @@ public;RulesetManager
 internal;RulesetManagerImpl 
 public;RulesetVariablesManager
 internal;RulesetVariablesManagerImpl 
+public;SingleManagerPresentationProps 
 public;UnitSystemFormat
 public;WithClientRequestContext

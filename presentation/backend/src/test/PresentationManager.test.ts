@@ -92,7 +92,7 @@ describe("PresentationManager", () => {
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
             localeDirectories: [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)],
-            taskAllocationsMap: { [RequestPriority.Preload]: 1, [RequestPriority.Max]: 1 },
+            taskAllocationsMap: { [RequestPriority.Max]: 2 },
             mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
@@ -106,8 +106,8 @@ describe("PresentationManager", () => {
       it("creates with props", () => {
         const constructorSpy = sinon.spy(IModelHost.platform, "ECPresentationManager");
         const testLocale = faker.random.locale();
-        const testTaskAllocations = { [999]: 111 };
-        const cacheConfig = {
+        const testThreadsCount = 999;
+        const hierarchyCacheConfig = {
           mode: HierarchyCacheMode.Memory,
         };
         const formatProps = {
@@ -127,11 +127,15 @@ describe("PresentationManager", () => {
           id: faker.random.uuid(),
           presentationAssetsRoot: "/test",
           localeDirectories: [testLocale, testLocale],
-          taskAllocationsMap: testTaskAllocations,
+          workerThreadsCount: testThreadsCount,
           mode: PresentationManagerMode.ReadWrite,
           updatesPollInterval: 1,
-          cacheConfig,
-          contentCacheSize: 999,
+          caching: {
+            hierarchies: hierarchyCacheConfig,
+            content: {
+              size: 999,
+            },
+          },
           useMmap: 666,
           defaultFormats: {
             length: { unitSystems: ["imperial"], format: formatProps },
@@ -145,7 +149,7 @@ describe("PresentationManager", () => {
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: props.id,
             localeDirectories: [getLocalesDirectory("/test"), testLocale],
-            taskAllocationsMap: testTaskAllocations,
+            taskAllocationsMap: { [RequestPriority.Max]: 999 },
             mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: true,
             cacheConfig: expectedCacheConfig,
@@ -160,12 +164,12 @@ describe("PresentationManager", () => {
 
       it("creates with disk cache config", () => {
         const constructorSpy = sinon.spy(IModelHost.platform, "ECPresentationManager");
-        using(new PresentationManager({ cacheConfig: { mode: HierarchyCacheMode.Disk } }), (manager) => {
+        using(new PresentationManager({ caching: { hierarchies: { mode: HierarchyCacheMode.Disk } } }), (manager) => {
           expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
             localeDirectories: [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)],
-            taskAllocationsMap: { [RequestPriority.Preload]: 1, [RequestPriority.Max]: 1 },
+            taskAllocationsMap: { [RequestPriority.Max]: 2 },
             mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
@@ -180,12 +184,12 @@ describe("PresentationManager", () => {
           directory: faker.random.word(),
         };
         const expectedConfig = { ...cacheConfig, directory: path.resolve(cacheConfig.directory) };
-        using(new PresentationManager({ cacheConfig }), (manager) => {
+        using(new PresentationManager({ caching: { hierarchies: cacheConfig } }), (manager) => {
           expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
             localeDirectories: [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)],
-            taskAllocationsMap: { [RequestPriority.Preload]: 1, [RequestPriority.Max]: 1 },
+            taskAllocationsMap: { [RequestPriority.Max]: 2 },
             mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: false,
             cacheConfig: expectedConfig,
@@ -198,12 +202,12 @@ describe("PresentationManager", () => {
 
       it("creates with hybrid cache config", () => {
         const constructorSpy = sinon.spy(IModelHost.platform, "ECPresentationManager");
-        using(new PresentationManager({ cacheConfig: { mode: HierarchyCacheMode.Hybrid } }), (manager) => {
+        using(new PresentationManager({ caching: { hierarchies: { mode: HierarchyCacheMode.Hybrid } } }), (manager) => {
           expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
             localeDirectories: [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)],
-            taskAllocationsMap: { [RequestPriority.Preload]: 1, [RequestPriority.Max]: 1 },
+            taskAllocationsMap: { [RequestPriority.Max]: 2 },
             mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Hybrid, disk: undefined },
@@ -223,12 +227,12 @@ describe("PresentationManager", () => {
         const expectedConfig = {
           ...cacheConfig, disk: { ...cacheConfig.disk, directory: path.resolve(cacheConfig.disk!.directory!) },
         };
-        using(new PresentationManager({ cacheConfig }), (manager) => {
+        using(new PresentationManager({ caching: { hierarchies: cacheConfig } }), (manager) => {
           expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
             localeDirectories: [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)],
-            taskAllocationsMap: { [RequestPriority.Preload]: 1, [RequestPriority.Max]: 1 },
+            taskAllocationsMap: { [RequestPriority.Max]: 2 },
             mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: false,
             cacheConfig: expectedConfig,
@@ -334,7 +338,7 @@ describe("PresentationManager", () => {
 
       it("sets up active locale if supplied", () => {
         const locale = faker.random.locale();
-        using(new PresentationManager({ addon: addon.object, activeLocale: locale }), (manager) => {
+        using(new PresentationManager({ addon: addon.object, defaultLocale: locale }), (manager) => {
           expect(manager.activeLocale).to.eq(locale);
         });
       });
@@ -382,7 +386,7 @@ describe("PresentationManager", () => {
     });
 
     it("returns initialization props", () => {
-      const props = { activeLocale: faker.random.locale() };
+      const props = { defaultLocale: faker.random.locale() };
       using(new PresentationManager(props), (newManager) => {
         expect(newManager.props).to.equal(props);
       });
@@ -390,18 +394,18 @@ describe("PresentationManager", () => {
 
   });
 
-  describe("activeLocale", () => {
+  describe("defaultLocale", () => {
 
     const addonMock = moq.Mock.ofType<NativePlatformDefinition>();
     beforeEach(() => {
       addonMock.reset();
     });
 
-    it("uses manager's activeLocale when not specified in request options", async () => {
+    it("uses manager's defaultLocale when not specified in request options", async () => {
       const imodelMock = moq.Mock.ofType<IModelDb>();
       const rulesetId = faker.random.word();
       const locale = faker.random.locale().toLowerCase();
-      await using(new PresentationManager({ addon: addonMock.object, activeLocale: locale }), async (manager) => {
+      await using(new PresentationManager({ addon: addonMock.object, defaultLocale: locale }), async (manager) => {
         addonMock
           .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
             const request = JSON.parse(serializedRequest);
@@ -414,11 +418,11 @@ describe("PresentationManager", () => {
       });
     });
 
-    it("ignores manager's activeLocale when locale is specified in request options", async () => {
+    it("ignores manager's defaultLocale when locale is specified in request options", async () => {
       const imodelMock = moq.Mock.ofType<IModelDb>();
       const rulesetId = faker.random.word();
       const locale = faker.random.locale().toLowerCase();
-      await using(new PresentationManager({ addon: addonMock.object, activeLocale: faker.random.locale().toLowerCase() }), async (manager) => {
+      await using(new PresentationManager({ addon: addonMock.object, defaultLocale: faker.random.locale().toLowerCase() }), async (manager) => {
         expect(manager.activeLocale).to.not.eq(locale);
         addonMock
           .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
@@ -434,7 +438,7 @@ describe("PresentationManager", () => {
 
   });
 
-  describe("activeUnitSystem", () => {
+  describe("defaultUnitSystem", () => {
 
     const addonMock = moq.Mock.ofType<NativePlatformDefinition>();
     beforeEach(() => {
@@ -458,11 +462,11 @@ describe("PresentationManager", () => {
       });
     });
 
-    it("uses manager's activeUnitSystem when not specified in request options", async () => {
+    it("uses manager's defaultUnitSystem when not specified in request options", async () => {
       const imodelMock = moq.Mock.ofType<IModelDb>();
       const rulesetId = faker.random.word();
       const unitSystem = "usSurvey";
-      await using(new PresentationManager({ addon: addonMock.object, activeUnitSystem: unitSystem }), async (manager) => {
+      await using(new PresentationManager({ addon: addonMock.object, defaultUnitSystem: unitSystem }), async (manager) => {
         addonMock
           .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
             const request = JSON.parse(serializedRequest);
@@ -475,11 +479,11 @@ describe("PresentationManager", () => {
       });
     });
 
-    it("ignores manager's activeUnitSystem when unit system is specified in request options", async () => {
+    it("ignores manager's defaultUnitSystem when unit system is specified in request options", async () => {
       const imodelMock = moq.Mock.ofType<IModelDb>();
       const rulesetId = faker.random.word();
       const unitSystem = "usCustomary";
-      await using(new PresentationManager({ addon: addonMock.object, activeUnitSystem: "metric" }), async (manager) => {
+      await using(new PresentationManager({ addon: addonMock.object, defaultUnitSystem: "metric" }), async (manager) => {
         expect(manager.activeUnitSystem).to.not.eq(unitSystem);
         addonMock
           .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {

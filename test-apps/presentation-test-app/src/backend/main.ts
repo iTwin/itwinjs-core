@@ -50,9 +50,7 @@ function loadEnv(envFile: string) {
     rulesetDirectories: [path.join("assets", "presentation_rules")],
     localeDirectories: [path.join("assets", "locales")],
     mode: PresentationManagerMode.ReadWrite,
-    taskAllocationsMap: {
-      [RequestPriority.Max]: 1,
-    },
+    workerThreadsCount: 1,
     useMmap: true,
     updatesPollInterval: 20,
   });

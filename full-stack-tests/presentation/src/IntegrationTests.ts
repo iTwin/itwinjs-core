@@ -90,11 +90,14 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
     requestTimeout: props.backendTimeout ?? 0,
     rulesetDirectories: [path.join(libDir, "assets", "rulesets")],
     localeDirectories: [path.join(libDir, "assets", "locales")],
-    activeLocale: "en-PSEUDO",
-    taskAllocationsMap: {
-      [RequestPriority.Max]: 1,
+    defaultLocale: "en-PSEUDO",
+    workerThreadsCount: 1,
+    caching: {
+      hierarchies: {
+        mode: HierarchyCacheMode.Disk,
+        directory: path.join(libDir, "cache"),
+      },
     },
-    cacheConfig: { mode: HierarchyCacheMode.Disk, directory: path.join(libDir, "cache") },
   };
   const frontendInitProps: PresentationFrontendProps = {
     presentation: {

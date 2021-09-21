@@ -46,6 +46,12 @@ import { UpdateInfoJSON } from '@bentley/presentation-common';
 import { VariableValue } from '@bentley/presentation-common';
 import { VariableValueTypes } from '@bentley/presentation-common';
 
+// @public
+export interface ContentCacheConfig {
+    // @alpha
+    size?: number;
+}
+
 // @beta
 export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
     directory?: string;
@@ -83,6 +89,14 @@ export interface HybridCacheConfig extends HierarchyCacheConfigBase {
 export interface MemoryHierarchyCacheConfig extends HierarchyCacheConfigBase {
     // (undocumented)
     mode: HierarchyCacheMode.Memory;
+}
+
+// @public
+export interface MultiManagerPresentationProps extends PresentationManagerProps {
+    // @internal
+    clientManagerFactory?: (clientId: string, props: PresentationManagerProps) => PresentationManager;
+    requestTimeout?: number;
+    unusedClientLifetime?: number;
 }
 
 // @internal (undocumented)
@@ -183,17 +197,17 @@ export enum PresentationManagerMode {
 
 // @public
 export interface PresentationManagerProps {
-    activeLocale?: string;
-    activeUnitSystem?: UnitSystemKey;
     // @internal (undocumented)
     addon?: NativePlatformDefinition;
-    // @beta
-    cacheConfig?: HierarchyCacheConfig;
-    // @alpha (undocumented)
-    contentCacheSize?: number;
+    caching?: {
+        hierarchies?: HierarchyCacheConfig;
+        content?: ContentCacheConfig;
+    };
     defaultFormats?: {
         [phenomenon: string]: UnitSystemFormat;
     };
+    defaultLocale?: string;
+    defaultUnitSystem?: UnitSystemKey;
     enableSchemasPreload?: boolean;
     // @internal
     id?: string;
@@ -205,32 +219,15 @@ export interface PresentationManagerProps {
     };
     rulesetDirectories?: string[];
     supplementalRulesetDirectories?: string[];
-    taskAllocationsMap?: {
-        [priority: number]: number;
-    };
     // @alpha
     updatesPollInterval?: number;
     // @alpha
     useMmap?: boolean | number;
+    workerThreadsCount?: number;
 }
 
 // @public
-export type PresentationProps = PresentationPropsDeprecated | PresentationPropsNew;
-
-// @public @deprecated (undocumented)
-export interface PresentationPropsDeprecated extends PresentationManagerProps {
-    // @internal
-    clientManagerFactory?: (clientId: string, props: PresentationManagerProps) => PresentationManager;
-    requestTimeout?: number;
-    unusedClientLifetime?: number;
-}
-
-// @public (undocumented)
-export interface PresentationPropsNew extends PresentationManagerProps {
-    requestTimeout?: number;
-    // @internal
-    useSingleManager?: boolean;
-}
+export type PresentationProps = MultiManagerPresentationProps | SingleManagerPresentationProps;
 
 // @beta
 export class RulesetEmbedder {
@@ -313,6 +310,13 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
     setValueInternal(variableId: string, type: VariableValueTypes, value: VariableValue): void;
     // (undocumented)
     unset(variableId: string): void;
+}
+
+// @public
+export interface SingleManagerPresentationProps extends PresentationManagerProps {
+    requestTimeout?: number;
+    // @alpha
+    useSingleManager?: boolean;
 }
 
 // @public

@@ -86,7 +86,7 @@ export interface HierarchyCacheConfigBase {
 }
 
 /**
- * Configuration for memory hierarchy cache.
+ * Configuration for in-memory hierarchy cache.
  * @beta
  */
 export interface MemoryHierarchyCacheConfig extends HierarchyCacheConfigBase {
@@ -94,28 +94,44 @@ export interface MemoryHierarchyCacheConfig extends HierarchyCacheConfigBase {
 }
 
 /**
- * Configuration for disk hierarchy cache.
+ * Configuration for persistent disk hierarchy cache.
  * @beta
  */
 export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
   mode: HierarchyCacheMode.Disk;
-  /**
-   * A directory for Presentation hierarchy cache. If not set hierarchy cache is created
-   * along side iModel.
-   */
+
+  /** A directory for Presentation hierarchy cache. Defaults to location of the iModel. */
   directory?: string;
 }
 
 /**
- * Configuration for hybrid hierarchy cache.
+ * Configuration for the experimental hybrid hierarchy cache.
+ *
+ * Hybrid cache uses a combination of in-memory and disk caches, which should make it a better
+ * alternative for cases when there are lots of simultaneous requests.
+ *
  * @beta
  */
 export interface HybridCacheConfig extends HierarchyCacheConfigBase {
   mode: HierarchyCacheMode.Hybrid;
-  /**
-   * Configuration for disk cache used to persist hierarchy.
-   */
+
+  /** Configuration for disk cache used to persist hierarchies. */
   disk?: DiskHierarchyCacheConfig;
+}
+
+/**
+ * Configuration for content cache.
+ * @public
+ */
+export interface ContentCacheConfig {
+  /**
+   * Maximum number of content descriptors cached in memory for quicker paged content requests.
+   *
+   * Defaults to `100`.
+   *
+   * @alpha
+   */
+  size?: number;
 }
 
 /**
@@ -188,17 +204,25 @@ export interface PresentationManagerProps {
 
   /**
    * Sets the active locale to use when localizing presentation-related
-   * strings. It can later be changed through [[PresentationManager]].
+   * strings. It can later be changed through [[PresentationManager.activeLocale]].
    */
-  activeLocale?: string;
+  defaultLocale?: string;
 
   /**
    * Sets the active unit system to use for formatting property values with
    * units. Default presentation units are used if this is not specified. The active unit
-   * system can later be changed through [[PresentationManager]] or overriden for each request
+   * system can later be changed through [[PresentationManager.activeUnitSystem]] or overriden for each request
    * through request options.
    */
-  activeUnitSystem?: UnitSystemKey;
+  defaultUnitSystem?: UnitSystemKey;
+
+  /**
+   * A map of default unit formats to use for formatting properties that don't have a presentation format
+   * in requested unit system.
+   */
+  defaultFormats?: {
+    [phenomenon: string]: UnitSystemFormat;
+  };
 
   /**
    * Should schemas preloading be enabled. If true, presentation manager listens
@@ -207,41 +231,15 @@ export interface PresentationManagerProps {
   enableSchemasPreload?: boolean;
 
   /**
-   * A map of 'priority' to 'number of slots allocated for simultaneously running tasks'
-   * where 'priority' is the highest task priority that can allocate a slot. Example:
-   * ```ts
-   * {
-   *   100: 1,
-   *   500: 2,
-   * }
-   * ```
-   * The above means there's one slot for tasks that are at most of 100 priority and there are
-   * 2 slots for tasks that have at most of 500 priority. Higher priority tasks may allocate lower
-   * priority slots, so a task of 400 priority could take all 3 slots.
-   *
-   * Configuring this map provides ability to choose how many tasks of what priority can run simultaneously.
-   * E.g. in the above example only 1 task can run simultaneously if it's priority is less than 100 even though
-   * we have lots of them queued. This leaves 2 slots for higher priority tasks which can be handled without
-   * having to wait for the lower priority slot to free up.
-   *
-   * Defaults to
-   * ```ts
-   * {
-   *   [RequestPriority.Preload]: 1,
-   *   [RequestPriority.Max]: 1,
-   * }
-   * ```
-   *
-   * **Warning:** Tasks with priority higher than maximum priority in the slots allocation map will never
-   * be handled.
+   * A number of worker threads to use for handling presentation requests. Defaults to `2`.
    */
-  taskAllocationsMap?: { [priority: number]: number };
+  workerThreadsCount?: number;
 
   /**
    * Presentation manager working mode. Backends that use iModels in read-write mode should
    * use `ReadWrite`, others might want to set to `ReadOnly` for better performance.
    *
-   * Defaults to `ReadWrite`.
+   * Defaults to [[PresentationManagerMode.ReadWrite]].
    */
   mode?: PresentationManagerMode;
 
@@ -253,21 +251,16 @@ export interface PresentationManagerProps {
    */
   updatesPollInterval?: number;
 
-  /**
-   * A configuration for Presentation hierarchy cache.
-   * @beta
-   */
-  cacheConfig?: HierarchyCacheConfig;
+  /** Options for caching. */
+  caching?: {
+    /**
+     * Hierarchies-related caching options.
+     * @beta
+     */
+    hierarchies?: HierarchyCacheConfig;
 
-  /** @alpha */
-  contentCacheSize?: number;
-
-  /**
-   * A map of default unit formats to use for formatting properties that don't have a presentation format
-   * in requested unit system.
-   */
-  defaultFormats?: {
-    [phenomenon: string]: UnitSystemFormat;
+    /** Content-related caching options. */
+    content?: ContentCacheConfig;
   };
 
   /**
@@ -337,8 +330,8 @@ export class PresentationManager {
         taskAllocationsMap: createTaskAllocationsMap(props),
         mode,
         isChangeTrackingEnabled,
-        cacheConfig: createCacheConfig(this._props.cacheConfig),
-        contentCacheSize: this._props.contentCacheSize,
+        cacheConfig: createCacheConfig(this._props.caching?.hierarchies),
+        contentCacheSize: this._props.caching?.content?.size,
         defaultFormats: toNativeUnitFormatsMap(this._props.defaultFormats),
         useMmap: this._props.useMmap,
       });
@@ -347,8 +340,8 @@ export class PresentationManager {
 
     this.setupRulesetDirectories(props);
     if (props) {
-      this.activeLocale = props.activeLocale;
-      this.activeUnitSystem = props.activeUnitSystem;
+      this.activeLocale = props.defaultLocale;
+      this.activeUnitSystem = props.defaultUnitSystem;
     }
 
     this._rulesets = new RulesetManagerImpl(this.getNativePlatform);
@@ -802,13 +795,9 @@ const createLocaleDirectoryList = (props?: PresentationManagerProps) => {
 };
 
 const createTaskAllocationsMap = (props?: PresentationManagerProps) => {
-  if (props && props.taskAllocationsMap)
-    return props.taskAllocationsMap;
-
-  // by default we allocate one slot for preloading tasks and one for all other requests
+  const count = props?.workerThreadsCount ?? 2;
   return {
-    [RequestPriority.Preload]: 1,
-    [RequestPriority.Max]: 1,
+    [RequestPriority.Max]: count,
   };
 };
 
