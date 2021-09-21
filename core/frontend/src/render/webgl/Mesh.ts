@@ -152,10 +152,14 @@ export class MeshGraphic extends Graphic {
   public static create(geometry: MeshRenderGeometry, instances?: InstancedGraphicParams | PatternBuffers): MeshGraphic | undefined {
     let buffers;
     if (instances) {
-      // ###TODO: Accept InstanceBuffers or PatternBuffers, not Params.
-      buffers = instances instanceof PatternBuffers ? instances : InstanceBuffers.create(instances, true, geometry.range);
-      if (!buffers)
-        return undefined;
+      if (instances instanceof PatternBuffers) {
+        buffers = instances;
+      } else {
+        const instancesRange = InstanceBuffers.computeRange(geometry.range, instances.transforms, instances.transformCenter);
+        buffers = InstanceBuffers.create(instances, true, instancesRange);
+        if (!buffers)
+          return undefined;
+      }
     }
 
     return new MeshGraphic(geometry, buffers);

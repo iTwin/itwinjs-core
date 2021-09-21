@@ -18,7 +18,10 @@ alpha;DeleteElementsTool
 alpha;DynamicGraphicsProvider
 alpha;EditorOptions
 alpha;EditTools
+alpha;class ElementGeometryCacheTool 
+alpha;ElementGeometryGraphicsProvider
 alpha;MoveElementsTool 
+alpha;OffsetFacesTool 
 beta;ProjectExtentsClipDecoration 
 beta;ProjectGeolocationMoveTool 
 beta;ProjectGeolocationNorthTool 
@@ -32,6 +35,7 @@ alpha;RedoTool
 alpha;RotateAbout
 alpha;RotateElementsTool 
 alpha;RotateMethod
+alpha;SubEntityData
 alpha;class TransformElementsTool 
 alpha;TransformGraphicsData
 alpha;TransformGraphicsProvider

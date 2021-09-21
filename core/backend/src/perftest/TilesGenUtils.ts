@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
+import { ByteStream, GuidString, Id64String, Logger, StopWatch } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
+import {
+  BatchType, computeChildTileProps, ContentIdProvider, CurrentImdlVersion, iModelTileTreeIdToString, TileMetadata, TileMetadataReader, TileProps,
+} from "@bentley/imodeljs-common";
 import { IModelDb } from "../IModelDb";
 import { SpatialModel } from "../Model";
-import {
-  BatchType, computeChildTileProps, ContentIdProvider, CurrentImdlVersion, iModelTileTreeIdToString,
-  TileMetadata, TileMetadataReader, TileProps,
-} from "@bentley/imodeljs-common";
-import { ByteStream, ClientRequestContext, GuidString, Id64String, Logger, StopWatch } from "@bentley/bentleyjs-core";
 import { ConcurrencyQueue } from "./ConcurrencyQueue";
 
 interface TileTreeInfo {
@@ -53,7 +53,6 @@ const loggerCategory = "TileGenerationPerformance";
 
 export class BackendTileGenerator {
   private readonly _iModel: IModelDb;
-  private readonly _requestContext = ClientRequestContext.current;
   private readonly _maxDepth: number;
   private readonly _treeQueue: ConcurrencyQueue<void>;
   private readonly _tileQueue: ConcurrencyQueue<void>;
@@ -135,7 +134,7 @@ export class BackendTileGenerator {
     const tilePropsTime = new StopWatch(undefined, true);
 
     try {
-      treeProps = await this._iModel.tiles.requestTileTreeProps(this._requestContext, info.treeId);
+      treeProps = await this._iModel.tiles.requestTileTreeProps(info.treeId);
     } catch (err) {
       Logger.logInfo(loggerCategory, `Failed to get "${info.treeId}" tile tree props: ${err}`);
       return;
@@ -171,7 +170,7 @@ export class BackendTileGenerator {
     const tileTime = new StopWatch(undefined, true);
     let content;
     try {
-      content = (await this._iModel.tiles.requestTileContent(this._requestContext, treeInfo.treeId, tile.contentId)).content;
+      content = (await this._iModel.tiles.requestTileContent(treeInfo.treeId, tile.contentId)).content;
     } catch (err) {
       throw err;
     }

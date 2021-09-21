@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { assert, expect } from "chai";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { Matrix4d } from "@bentley/geometry-core";
 import { IModelHost } from "../../IModelHost";
@@ -28,20 +28,14 @@ describe("DgnDbWorker", () => {
   });
 
   class Worker {
-    public readonly promise: Promise<void>;
+    public promise: Promise<void> | undefined;
     private readonly _worker: IModelJsNative.TestWorker;
 
     public constructor() {
-      let worker: unknown;
-      this.promise = new Promise<void>((resolve) => {
-        worker = new IModelHost.platform.TestWorker(imodel.nativeDb, () => resolve());
-      });
-
-      expect(worker).instanceof(IModelHost.platform.TestWorker);
-      this._worker = worker as IModelJsNative.TestWorker;
+      this._worker = new IModelHost.platform.TestWorker(imodel.nativeDb);
     }
 
-    public queue() { this._worker.queue(); }
+    public queue() { this.promise = this._worker.queue(); }
     public cancel() { this._worker.cancel(); }
     public setReady() { this._worker.setReady(); }
     public setThrow() { this._worker.setThrow(); }
@@ -125,7 +119,7 @@ describe("DgnDbWorker", () => {
     worker.cancel();
     expect(worker.isCanceled).to.be.true;
     worker.queue();
-    await worker.promise;
+    await assert.isRejected(worker.promise!, "canceled");
     expect(worker.isSkipped).to.be.true;
     expect(worker.wasExecuted).to.be.false;
   });
@@ -146,7 +140,7 @@ describe("DgnDbWorker", () => {
     const worker = new Worker();
     worker.setThrow();
     worker.queue();
-    await worker.promise;
+    await assert.isRejected(worker.promise!, "throw");
     expect(worker.isCanceled).to.be.false;
     expect(worker.isError).to.be.true;
   });
@@ -168,7 +162,8 @@ describe("DgnDbWorker", () => {
     // Closing the iModel cancels all extant workers.
     imodel.close();
     openIModel();
-    await Promise.all(workers.map((x) => x.promise)); // eslint-disable-line @typescript-eslint/promise-function-async
+
+    await expect(Promise.all(workers.map((x) => x.promise))).rejectedWith("canceled");
 
     expect(cancel.every((x) => x.isCanceled)).to.be.true;
     expect(cancel.every((x) => x.isAborted || x.isSkipped)).to.be.true;

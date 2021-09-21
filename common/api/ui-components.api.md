@@ -164,6 +164,11 @@ export class BasicPropertyEditor extends PropertyEditorBase {
     get reactNode(): React.ReactNode;
 }
 
+// @beta @deprecated
+export function BeDragDropContext(props: {
+    children?: React.ReactNode;
+}): JSX.Element;
+
 // @beta
 export class BooleanEditor extends React.PureComponent<PropertyEditorProps, BooleanEditorState> implements TypeEditor {
     // @internal (undocumented)

@@ -8,7 +8,7 @@ import * as faker from "faker";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { ClientRequestContext, DbResult, Id64String, using } from "@bentley/bentleyjs-core";
+import { DbResult, Id64String, using } from "@bentley/bentleyjs-core";
 import { BriefcaseDb, ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IpcHost } from "@bentley/imodeljs-backend";
 import {
   ArrayTypeDescription, CategoryDescription, Content, ContentDescriptorRequestOptions, ContentFlags, ContentJSON, ContentRequestOptions,
@@ -39,7 +39,6 @@ import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager";
 import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper";
 import { UpdatesTracker } from "../presentation-backend/UpdatesTracker";
-import { WithClientRequestContext } from "../presentation-backend/Utils";
 
 const deepEqual = require("deep-equal"); // eslint-disable-line @typescript-eslint/no-var-requires
 
@@ -410,7 +409,7 @@ describe("PresentationManager", () => {
           })))
           .returns(async () => ({ result: "{}" }))
           .verifiable(moq.Times.once());
-        await manager.getNodesCount({ requestContext: ClientRequestContext.current, imodel: imodelMock.object, rulesetOrId: rulesetId });
+        await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: rulesetId });
         addonMock.verifyAll();
       });
     });
@@ -428,7 +427,7 @@ describe("PresentationManager", () => {
           })))
           .returns(async () => ({ result: "{}" }))
           .verifiable(moq.Times.once());
-        await manager.getNodesCount({ requestContext: ClientRequestContext.current, imodel: imodelMock.object, rulesetOrId: rulesetId, locale });
+        await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, locale });
         addonMock.verifyAll();
       });
     });
@@ -454,7 +453,7 @@ describe("PresentationManager", () => {
           })))
           .returns(async () => ({ result: "null" }))
           .verifiable(moq.Times.once());
-        await manager.getContentDescriptor({ requestContext: ClientRequestContext.current, imodel: imodelMock.object, rulesetOrId: rulesetId, displayType: "", keys: new KeySet(), unitSystem });
+        await manager.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId, displayType: "", keys: new KeySet(), unitSystem });
         addonMock.verifyAll();
       });
     });
@@ -471,7 +470,7 @@ describe("PresentationManager", () => {
           })))
           .returns(async () => ({ result: "null" }))
           .verifiable(moq.Times.once());
-        await manager.getContentDescriptor({ requestContext: ClientRequestContext.current, imodel: imodelMock.object, rulesetOrId: rulesetId, displayType: "", keys: new KeySet() });
+        await manager.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId, displayType: "", keys: new KeySet() });
         addonMock.verifyAll();
       });
     });
@@ -489,7 +488,7 @@ describe("PresentationManager", () => {
           })))
           .returns(async () => ({ result: "null" }))
           .verifiable(moq.Times.once());
-        await manager.getContentDescriptor({ requestContext: ClientRequestContext.current, imodel: imodelMock.object, rulesetOrId: rulesetId, unitSystem, displayType: "", keys: new KeySet() });
+        await manager.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId, unitSystem, displayType: "", keys: new KeySet() });
         addonMock.verifyAll();
       });
     });
@@ -611,7 +610,7 @@ describe("PresentationManager", () => {
         .setup((x) => x.addRuleset(moq.It.isAnyString()))
         .returns(() => ({ result: "hash" }))
         .verifiable(moq.Times.once());
-      await manager.getNodesCount({ requestContext: ClientRequestContext.current, imodel: imodelMock.object, rulesetOrId: ruleset });
+      await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: ruleset });
       addonMock.verifyAll();
     });
 
@@ -625,7 +624,7 @@ describe("PresentationManager", () => {
         .setup((x) => x.addRuleset(moq.It.isAnyString()))
         .returns(() => ({ result: "hash" }))
         .verifiable(moq.Times.never());
-      await manager.getNodesCount({ requestContext: ClientRequestContext.current, imodel: imodelMock.object, rulesetOrId: rulesetId });
+      await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: rulesetId });
       addonMock.verifyAll();
     });
 
@@ -644,7 +643,7 @@ describe("PresentationManager", () => {
         .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((reqStr) => sinon.match(diagnosticOptions).test(JSON.parse(reqStr).params.diagnostics))))
         .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult }))
         .verifiable(moq.Times.once());
-      await manager.getNodesCount({ requestContext: ClientRequestContext.current, imodel: imodelMock.object, rulesetOrId: "ruleset", diagnostics: { ...diagnosticOptions, handler: diagnosticsListener } });
+      await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: "ruleset", diagnostics: { ...diagnosticOptions, handler: diagnosticsListener } });
       addonMock.verifyAll();
       expect(diagnosticsListener).to.be.calledOnceWith([diagnosticsResult]);
     });
@@ -780,8 +779,7 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
-        const options: WithClientRequestContext<Paged<HierarchyRequestOptions<IModelDb, NodeKey>>> = {
-          requestContext: ClientRequestContext.current,
+        const options: Paged<HierarchyRequestOptions<IModelDb, NodeKey>> = {
           imodel: imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
@@ -820,8 +818,7 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
-        const options: WithClientRequestContext<Paged<HierarchyRequestOptions<IModelDb, NodeKey>>> = {
-          requestContext: ClientRequestContext.current,
+        const options: Paged<HierarchyRequestOptions<IModelDb, NodeKey>> = {
           imodel: imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
@@ -849,8 +846,7 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
-        const options: WithClientRequestContext<HierarchyRequestOptions<IModelDb, NodeKey>> = {
-          requestContext: ClientRequestContext.current,
+        const options: HierarchyRequestOptions<IModelDb, NodeKey> = {
           imodel: imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
         };
@@ -874,8 +870,7 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
-        const options: WithClientRequestContext<HierarchyRequestOptions<IModelDb, NodeKey>> = {
-          requestContext: ClientRequestContext.current,
+        const options: HierarchyRequestOptions<IModelDb, NodeKey> = {
           imodel: imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           parentKey: NodeKey.fromJSON(parentNodeKeyJSON),
@@ -903,8 +898,7 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
-        const options: WithClientRequestContext<FilterByTextHierarchyRequestOptions<IModelDb>> = {
-          requestContext: ClientRequestContext.current,
+        const options: FilterByTextHierarchyRequestOptions<IModelDb> = {
           imodel: imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           filterText: "filter",
@@ -936,8 +930,7 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
-        const options: WithClientRequestContext<FilterByInstancePathsHierarchyRequestOptions<IModelDb>> = {
-          requestContext: ClientRequestContext.current,
+        const options: FilterByInstancePathsHierarchyRequestOptions<IModelDb> = {
           imodel: imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           instancePaths: keyArray,
@@ -979,8 +972,7 @@ describe("PresentationManager", () => {
         const addonResponse = setup(unprocessedResponse);
 
         // test
-        const options: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>> = {
-          requestContext: ClientRequestContext.current,
+        const options: HierarchyCompareOptions<IModelDb, NodeKey> = {
           imodel: imodelMock.object,
           prev: {
             rulesetOrId: "test",
@@ -1018,8 +1010,7 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
-        const options: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>> = {
-          requestContext: ClientRequestContext.current,
+        const options: HierarchyCompareOptions<IModelDb, NodeKey> = {
           imodel: imodelMock.object,
           prev: {
             rulesetOrId: "test",
@@ -1057,8 +1048,7 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
-        const options: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>> = {
-          requestContext: ClientRequestContext.current,
+        const options: HierarchyCompareOptions<IModelDb, NodeKey> = {
           imodel: imodelMock.object,
           prev: {
             rulesetVariables: [var1],
@@ -1073,7 +1063,6 @@ describe("PresentationManager", () => {
       it("returns empty result if neither ruleset nor ruleset variables changed", async () => {
         nativePlatformMock.reset();
         const result = await manager.compareHierarchies({
-          requestContext: ClientRequestContext.current,
           imodel: imodelMock.object,
           prev: {},
           rulesetOrId: "test",
@@ -1084,8 +1073,7 @@ describe("PresentationManager", () => {
 
       it("throws when trying to compare hierarchies with different ruleset ids", async () => {
         nativePlatformMock.reset();
-        const options: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>> = {
-          requestContext: ClientRequestContext.current,
+        const options: HierarchyCompareOptions<IModelDb, NodeKey> = {
           imodel: imodelMock.object,
           prev: {
             rulesetOrId: "1",
@@ -1120,8 +1108,7 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
-        const options: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>> = {
-          requestContext: ClientRequestContext.current,
+        const options: HierarchyCompareOptions<IModelDb, NodeKey> = {
           imodel: imodelMock.object,
           prev: {
             rulesetOrId: "test",
@@ -1156,8 +1143,7 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
-        const options: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>> = {
-          requestContext: ClientRequestContext.current,
+        const options: HierarchyCompareOptions<IModelDb, NodeKey> = {
           imodel: imodelMock.object,
           prev: {
             rulesetOrId: "test",
@@ -1206,8 +1192,7 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
-        const options: WithClientRequestContext<ContentSourcesRequestOptions<IModelDb>> = {
-          requestContext: ClientRequestContext.current,
+        const options: ContentSourcesRequestOptions<IModelDb> = {
           imodel: imodelMock.object,
           classes,
         };
@@ -1367,8 +1352,7 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
-        const options: WithClientRequestContext<ContentDescriptorRequestOptions<IModelDb, KeySet>> = {
-          requestContext: ClientRequestContext.current,
+        const options: ContentDescriptorRequestOptions<IModelDb, KeySet> = {
           imodel: imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           displayType: testData.displayType,
@@ -1401,8 +1385,7 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
-        const options: WithClientRequestContext<ContentRequestOptions<IModelDb, Descriptor, KeySet>> = {
-          requestContext: ClientRequestContext.current,
+        const options: ContentRequestOptions<IModelDb, Descriptor, KeySet> = {
           imodel: imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           keys,
@@ -1432,8 +1415,7 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
-        const options: WithClientRequestContext<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
-          requestContext: ClientRequestContext.current,
+        const options: ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet> = {
           imodel: imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           descriptor: descriptor.createDescriptorOverrides(),
@@ -1489,8 +1471,7 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
-        const options: WithClientRequestContext<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>> = {
-          requestContext: ClientRequestContext.current,
+        const options: Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
           imodel: imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
@@ -1544,8 +1525,7 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
-        const options: WithClientRequestContext<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>> = {
-          requestContext: ClientRequestContext.current,
+        const options: Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
           imodel: imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
@@ -1598,8 +1578,7 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
-        const options: WithClientRequestContext<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>> = {
-          requestContext: ClientRequestContext.current,
+        const options: Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
           imodel: imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
@@ -1647,8 +1626,7 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
-        const options: WithClientRequestContext<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>> = {
-          requestContext: ClientRequestContext.current,
+        const options: Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
           imodel: imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
@@ -1697,8 +1675,7 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
-        const options: WithClientRequestContext<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
-          requestContext: ClientRequestContext.current,
+        const options: DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet> = {
           imodel: imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           descriptor,
@@ -1759,8 +1736,7 @@ describe("PresentationManager", () => {
         setup(addonContentResponse);
 
         // test
-        const options: WithClientRequestContext<ElementPropertiesRequestOptions<IModelDb>> = {
-          requestContext: ClientRequestContext.current,
+        const options: ElementPropertiesRequestOptions<IModelDb> = {
           imodel: imodelMock.object,
           elementId: elementKey.id,
         };
@@ -1804,8 +1780,7 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
-        const options: WithClientRequestContext<DisplayLabelRequestOptions<IModelDb, InstanceKey>> = {
-          requestContext: ClientRequestContext.current,
+        const options: DisplayLabelRequestOptions<IModelDb, InstanceKey> = {
           imodel: imodelMock.object,
           key,
         };
@@ -1860,8 +1835,7 @@ describe("PresentationManager", () => {
         setup(addonContentResponse);
 
         // test
-        const options: WithClientRequestContext<DisplayLabelsRequestOptions<IModelDb, InstanceKey>> = {
-          requestContext: ClientRequestContext.current,
+        const options: DisplayLabelsRequestOptions<IModelDb, InstanceKey> = {
           imodel: imodelMock.object,
           keys,
         };
@@ -1915,8 +1889,7 @@ describe("PresentationManager", () => {
         setup(addonContentResponse);
 
         // test
-        const options: WithClientRequestContext<DisplayLabelsRequestOptions<IModelDb, InstanceKey>> = {
-          requestContext: ClientRequestContext.current,
+        const options: DisplayLabelsRequestOptions<IModelDb, InstanceKey> = {
           imodel: imodelMock.object,
           keys: [baseClassKey],
         };
@@ -1955,8 +1928,7 @@ describe("PresentationManager", () => {
         setup(addonContentResponse);
 
         // test
-        const options: WithClientRequestContext<DisplayLabelsRequestOptions<IModelDb, InstanceKey>> = {
-          requestContext: ClientRequestContext.current,
+        const options: DisplayLabelsRequestOptions<IModelDb, InstanceKey> = {
           imodel: imodelMock.object,
           keys,
         };
@@ -1983,8 +1955,7 @@ describe("PresentationManager", () => {
         setup(null);
 
         // test
-        const options: WithClientRequestContext<DisplayLabelsRequestOptions<IModelDb, InstanceKey>> = {
-          requestContext: ClientRequestContext.current,
+        const options: DisplayLabelsRequestOptions<IModelDb, InstanceKey> = {
           imodel: imodelMock.object,
           keys,
         };
@@ -1997,8 +1968,7 @@ describe("PresentationManager", () => {
 
     it("throws on invalid addon response", async () => {
       nativePlatformMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString())).returns(() => (undefined as any));
-      const options: WithClientRequestContext<HierarchyRequestOptions<IModelDb, NodeKey>> = {
-        requestContext: ClientRequestContext.current,
+      const options: HierarchyRequestOptions<IModelDb, NodeKey> = {
         imodel: imodelMock.object,
         rulesetOrId: testData.rulesetOrId,
       };
@@ -2026,7 +1996,7 @@ describe("PresentationManager", () => {
     it("requests scopes from `SelectionScopesHelper`", async () => {
       const scopes = new Array<SelectionScope>();
       const stub = sinon.stub(SelectionScopesHelper, "getSelectionScopes").returns(scopes);
-      const result = await manager.getSelectionScopes({ requestContext: ClientRequestContext.current, imodel: imodel.object });
+      const result = await manager.getSelectionScopes({ imodel: imodel.object });
       expect(stub).to.be.calledOnce;
       expect(result).to.deep.eq(scopes);
     });
@@ -2053,7 +2023,7 @@ describe("PresentationManager", () => {
       const ids = [createRandomId()];
       const resultKeys = new KeySet();
       const stub = sinon.stub(SelectionScopesHelper, "computeSelection").resolves(resultKeys);
-      const result = await manager.computeSelection({ requestContext: ClientRequestContext.current, imodel: imodel.object, ids, scopeId: "test scope" });
+      const result = await manager.computeSelection({ imodel: imodel.object, ids, scopeId: "test scope" });
       expect(stub).to.be.calledOnceWith({ imodel: imodel.object }, ids, "test scope");
       expect(result).to.eq(resultKeys);
     });

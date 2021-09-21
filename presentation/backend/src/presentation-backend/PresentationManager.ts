@@ -8,7 +8,7 @@
 
 import * as hash from "object-hash";
 import * as path from "path";
-import { ClientRequestContext, Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@bentley/bentleyjs-core";
 import { BriefcaseDb, IModelDb, IModelJsNative, IpcHost } from "@bentley/imodeljs-backend";
 import { FormatProps, UnitSystemKey } from "@bentley/imodeljs-quantity";
 import {
@@ -30,7 +30,7 @@ import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { SelectionScopesHelper } from "./SelectionScopesHelper";
 import { UpdatesTracker } from "./UpdatesTracker";
-import { getElementKey, WithClientRequestContext } from "./Utils";
+import { getElementKey } from "./Utils";
 
 /**
  * Presentation manager working mode.
@@ -488,7 +488,7 @@ export class PresentationManager {
    * Retrieves nodes
    * @public
    */
-  public async getNodes(requestOptions: WithClientRequestContext<Paged<HierarchyRequestOptions<IModelDb, NodeKey>>>): Promise<Node[]> {
+  public async getNodes(requestOptions: Paged<HierarchyRequestOptions<IModelDb, NodeKey>>): Promise<Node[]> {
     const { rulesetId, strippedOptions: { parentKey, ...strippedOptions } } = this.registerRuleset(requestOptions);
     const params = {
       requestId: parentKey ? NativePlatformRequestTypes.GetChildren : NativePlatformRequestTypes.GetRootNodes,
@@ -503,7 +503,7 @@ export class PresentationManager {
    * Retrieves nodes count
    * @public
    */
-  public async getNodesCount(requestOptions: WithClientRequestContext<HierarchyRequestOptions<IModelDb, NodeKey>>): Promise<number> {
+  public async getNodesCount(requestOptions: HierarchyRequestOptions<IModelDb, NodeKey>): Promise<number> {
     const { rulesetId, strippedOptions: { parentKey, ...strippedOptions } } = this.registerRuleset(requestOptions);
     const params = {
       requestId: parentKey ? NativePlatformRequestTypes.GetChildrenCount : NativePlatformRequestTypes.GetRootNodesCount,
@@ -519,7 +519,7 @@ export class PresentationManager {
    * TODO: Return results in pages
    * @public
    */
-  public async getNodePaths(requestOptions: WithClientRequestContext<FilterByInstancePathsHierarchyRequestOptions<IModelDb>>): Promise<NodePathElement[]> {
+  public async getNodePaths(requestOptions: FilterByInstancePathsHierarchyRequestOptions<IModelDb>): Promise<NodePathElement[]> {
     const { rulesetId, strippedOptions: { instancePaths, ...strippedOptions } } = this.registerRuleset(requestOptions);
     const params = {
       requestId: NativePlatformRequestTypes.GetNodePaths,
@@ -535,7 +535,7 @@ export class PresentationManager {
    * TODO: Return results in pages
    * @public
    */
-  public async getFilteredNodePaths(requestOptions: WithClientRequestContext<FilterByTextHierarchyRequestOptions<IModelDb>>): Promise<NodePathElement[]> {
+  public async getFilteredNodePaths(requestOptions: FilterByTextHierarchyRequestOptions<IModelDb>): Promise<NodePathElement[]> {
     const { rulesetId, strippedOptions } = this.registerRuleset(requestOptions);
     const params = {
       requestId: NativePlatformRequestTypes.GetFilteredNodePaths,
@@ -546,7 +546,7 @@ export class PresentationManager {
   }
 
   /** @beta */
-  public async getContentSources(requestOptions: WithClientRequestContext<ContentSourcesRequestOptions<IModelDb>>): Promise<SelectClassInfo[]> {
+  public async getContentSources(requestOptions: ContentSourcesRequestOptions<IModelDb>): Promise<SelectClassInfo[]> {
     const params = {
       requestId: NativePlatformRequestTypes.GetContentSources,
       rulesetId: "ElementProperties",
@@ -562,7 +562,7 @@ export class PresentationManager {
    * Retrieves the content descriptor which can be used to get content
    * @public
    */
-  public async getContentDescriptor(requestOptions: WithClientRequestContext<ContentDescriptorRequestOptions<IModelDb, KeySet>>): Promise<Descriptor | undefined> {
+  public async getContentDescriptor(requestOptions: ContentDescriptorRequestOptions<IModelDb, KeySet>): Promise<Descriptor | undefined> {
     const { rulesetId, strippedOptions } = this.registerRuleset(requestOptions);
     const params = {
       requestId: NativePlatformRequestTypes.GetContentDescriptor,
@@ -580,7 +580,7 @@ export class PresentationManager {
    * Retrieves the content set size based on the supplied content descriptor override
    * @public
    */
-  public async getContentSetSize(requestOptions: WithClientRequestContext<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>): Promise<number> {
+  public async getContentSetSize(requestOptions: ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>): Promise<number> {
     const { rulesetId, strippedOptions: { descriptor, ...strippedOptions } } = this.registerRuleset(requestOptions);
     const params = {
       requestId: NativePlatformRequestTypes.GetContentSetSize,
@@ -596,7 +596,7 @@ export class PresentationManager {
    * Retrieves the content based on the supplied content descriptor override.
    * @public
    */
-  public async getContent(requestOptions: WithClientRequestContext<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>>): Promise<Content | undefined> {
+  public async getContent(requestOptions: Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>): Promise<Content | undefined> {
     const { rulesetId, strippedOptions: { descriptor, ...strippedOptions } } = this.registerRuleset(requestOptions);
     const params = {
       requestId: NativePlatformRequestTypes.GetContent,
@@ -615,7 +615,7 @@ export class PresentationManager {
    * @return A promise object that returns either distinct values on success or an error string on error.
    * @public
    */
-  public async getPagedDistinctValues(requestOptions: WithClientRequestContext<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>): Promise<PagedResponse<DisplayValueGroup>> {
+  public async getPagedDistinctValues(requestOptions: DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>): Promise<PagedResponse<DisplayValueGroup>> {
     const { rulesetId, strippedOptions } = this.registerRuleset(requestOptions);
     const { descriptor, keys, ...strippedOptionsNoDescriptorAndKeys } = strippedOptions;
     const params = {
@@ -638,7 +638,7 @@ export class PresentationManager {
    * Retrieves property data in a simplified format for a single element specified by ID.
    * @beta
    */
-  public async getElementProperties(requestOptions: WithClientRequestContext<ElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined> {
+  public async getElementProperties(requestOptions: ElementPropertiesRequestOptions<IModelDb>): Promise<ElementProperties | undefined> {
     const { elementId, ...optionsNoElementId } = requestOptions;
     const content = await this.getContent({
       ...optionsNoElementId,
@@ -656,7 +656,7 @@ export class PresentationManager {
    * Retrieves display label definition of specific item
    * @public
    */
-  public async getDisplayLabelDefinition(requestOptions: WithClientRequestContext<DisplayLabelRequestOptions<IModelDb, InstanceKey>>): Promise<LabelDefinition> {
+  public async getDisplayLabelDefinition(requestOptions: DisplayLabelRequestOptions<IModelDb, InstanceKey>): Promise<LabelDefinition> {
     const params = {
       requestId: NativePlatformRequestTypes.GetDisplayLabel,
       ...requestOptions,
@@ -669,13 +669,13 @@ export class PresentationManager {
    * Retrieves display label definitions of specific items
    * @public
    */
-  public async getDisplayLabelDefinitions(requestOptions: WithClientRequestContext<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>): Promise<LabelDefinition[]> {
+  public async getDisplayLabelDefinitions(requestOptions: Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>): Promise<LabelDefinition[]> {
     const concreteKeys = requestOptions.keys.map((k) => {
       if (k.className === "BisCore:Element")
         return getElementKey(requestOptions.imodel, k.id);
       return k;
     }).filter<InstanceKey>((k): k is InstanceKey => !!k);
-    const contentRequestOptions: WithClientRequestContext<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
+    const contentRequestOptions: ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet> = {
       ...requestOptions,
       rulesetOrId: "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
       descriptor: {
@@ -685,7 +685,6 @@ export class PresentationManager {
       keys: new KeySet(concreteKeys),
     };
     const content = await this.getContent(contentRequestOptions);
-    requestOptions.requestContext.enter();
     return concreteKeys.map((key) => {
       const item = content ? content.contentSet.find((it) => it.primaryKeys.length > 0 && InstanceKey.compare(it.primaryKeys[0], key) === 0) : undefined;
       if (!item)
@@ -698,7 +697,7 @@ export class PresentationManager {
    * Retrieves available selection scopes.
    * @public
    */
-  public async getSelectionScopes(_requestOptions: WithClientRequestContext<SelectionScopeRequestOptions<IModelDb>>): Promise<SelectionScope[]> {
+  public async getSelectionScopes(_requestOptions: SelectionScopeRequestOptions<IModelDb>): Promise<SelectionScope[]> {
     return SelectionScopesHelper.getSelectionScopes();
   }
 
@@ -706,13 +705,13 @@ export class PresentationManager {
    * Computes selection set based on provided selection scope.
    * @public
    */
-  public async computeSelection(requestOptions: WithClientRequestContext<SelectionScopeRequestOptions<IModelDb> & { ids: Id64String[], scopeId: string }>): Promise<KeySet> {
-    const { requestContext, ids, scopeId, ...opts } = requestOptions; // eslint-disable-line @typescript-eslint/no-unused-vars
+  public async computeSelection(requestOptions: SelectionScopeRequestOptions<IModelDb> & { ids: Id64String[], scopeId: string }): Promise<KeySet> {
+    const { ids, scopeId, ...opts } = requestOptions; // eslint-disable-line @typescript-eslint/no-unused-vars
     return SelectionScopesHelper.computeSelection(opts, ids, scopeId);
   }
 
-  private async request<TParams extends { requestContext: ClientRequestContext, diagnostics?: DiagnosticsOptionsWithHandler, requestId: string, imodel: IModelDb, locale?: string, unitSystem?: UnitSystemKey }, TResult>(params: TParams, reviver?: (key: string, value: any) => any): Promise<TResult> {
-    const { requestContext, requestId, imodel, locale, unitSystem, diagnostics, ...strippedParams } = params;
+  private async request<TParams extends { diagnostics?: DiagnosticsOptionsWithHandler, requestId: string, imodel: IModelDb, locale?: string, unitSystem?: UnitSystemKey }, TResult>(params: TParams, reviver?: (key: string, value: any) => any): Promise<TResult> {
+    const { requestId, imodel, locale, unitSystem, diagnostics, ...strippedParams } = params;
     const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
     const nativeRequestParams: any = {
       requestId,
@@ -731,7 +730,6 @@ export class PresentationManager {
     }
 
     const response = await this.getNativePlatform().handleRequest(imodelAddon, JSON.stringify(nativeRequestParams));
-    requestContext.enter();
     diagnosticsListener && response.diagnostics && diagnosticsListener([response.diagnostics]);
     return JSON.parse(response.result, reviver);
   }
@@ -740,7 +738,7 @@ export class PresentationManager {
    * Compares two hierarchies specified in the request options
    * @public
    */
-  public async compareHierarchies(requestOptions: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>>): Promise<HierarchyCompareInfo> {
+  public async compareHierarchies(requestOptions: HierarchyCompareOptions<IModelDb, NodeKey>): Promise<HierarchyCompareInfo> {
     if (!requestOptions.prev.rulesetOrId && !requestOptions.prev.rulesetVariables)
       return { changes: [] };
 
