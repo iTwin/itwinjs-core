@@ -6,7 +6,6 @@
  * @module CartesianGeometry
  */
 
-import { DESTRUCTION } from "dns";
 import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "./GrowableXYZArray";
 import { Point3d } from "./Point3dVector3d";

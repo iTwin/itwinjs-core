@@ -23,7 +23,7 @@ import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets, UnionOfConvexClipPlaneSetsProps } from "./UnionOfConvexClipPlaneSets";
 import { AlternatingCCTreeNode } from "./AlternatingConvexClipTree";
 import { Point3dArray } from "../geometry3d/PointHelpers";
-import { PolylineOps } from "../geometry-core";
+import { PolylineOps } from "../geometry3d/PolylineOps";
 
 /**
  * Bit mask type for referencing subsets of 6 planes of range box.

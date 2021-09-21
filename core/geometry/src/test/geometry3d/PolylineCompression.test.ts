@@ -190,7 +190,7 @@ describe("GlobalCompression", () => {
     return result;
   }
 
-  it.only("Danglers", () => {
+  it("Danglers", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const originalPoints: Point3d[] = [];

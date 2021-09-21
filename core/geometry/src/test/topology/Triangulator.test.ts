@@ -9,7 +9,7 @@ import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Geometry } from "../../Geometry";
-import { Point3dArray, PolyfaceQuery, PolylineOps, RegionOps } from "../../geometry-core";
+import { Point3dArray, PolyfaceQuery, PolylineOps} from "../../geometry-core";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
@@ -835,10 +835,6 @@ describe("Triangulation", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "DartInTriangle");
     expect(ck.getNumErrors()).equals(0);
   });
-  const ex0 = 0.3;
-  const ey0 = 0;
-  const ex1 = 0.3;
-  const ey1 = -0.2;
   function messyShapePointsJson(ex0: number = 0, ey0: number = 0, ex1: number = 0, ey1: number = 0): any {
     return [
       [0, 0],
@@ -987,14 +983,8 @@ const _messyShape = [
           GeometryCoreTestIO.captureGeometry(allGeometry, polyface2, x0 + range.xLength (), y0);
         }
     }
-    /*
-    const union1 = RegionOps.polygonXYAreaUnionLoopsToPolyface(points, [], false);
-    const union2 = RegionOps.polygonXYAreaUnionLoopsToPolyface(points, [], true);
-    GeometryCoreTestIO.captureGeometry(allGeometry,union1, x0, y0 + 2 * range.yLength ());
-    GeometryCoreTestIO.captureGeometry(allGeometry,union2, x0, y0 + 3 * range.yLength ());
-    */
   }
-  it.only("MessyPolygon", () => {
+  it("MessyPolygon", () => {
     // This simple dart-inside-triangle showed an error in a special case test in the earcut triangulator.
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
