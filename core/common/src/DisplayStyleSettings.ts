@@ -1142,7 +1142,6 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
       };
 
       if (ThematicDisplayMode.Height === props.thematic.displayMode) {
-        // SWB What does project mean here?
         // DisplayStyle3dState will compute range based on project extents.
         props.thematic.range = undefined;
       }

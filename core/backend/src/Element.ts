@@ -577,7 +577,6 @@ export class TextAnnotation3d extends GraphicalElement3d {
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-// SWB What does project mean here?
 /** An Element that occupies real world space. Its coordinates are in the project space of its iModel.
  * @public
  */

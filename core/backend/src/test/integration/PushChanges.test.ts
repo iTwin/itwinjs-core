@@ -106,9 +106,7 @@ describe("PushChangesTest (#integration)", () => {
     try {
       iModel = await BriefcaseDb.open({ user, fileName: briefcaseProps.fileName });
 
-      // SWB What does project mean here?
       // Initialize project extents
-      // SWB What does project mean here?
       const projectExtents = new Range3d(-1000, -1000, -1000, 1000, 1000, 1000);
       iModel.updateProjectExtents(projectExtents);
 
