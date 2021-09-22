@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, compareStringsOrUndefined } from "@bentley/bentleyjs-core";
+import { assert, compareStringsOrUndefined, GuidString } from "@bentley/bentleyjs-core";
 import { ComboBox, ComboBoxEntry, createCheckBox, createComboBox, createNestedMenu, createNumericInput, NestedMenu } from "@bentley/frontend-devtools";
 import {
   CartographicRange, ContextRealityModelProps, ModelProps, SpatialClassifier, SpatialClassifierFlagsProps, SpatialClassifierInsideDisplay,
@@ -12,6 +12,7 @@ import {
 import {
   ContextRealityModelState, DisplayStyle3dState, IModelApp, queryRealityData, SpatialModelState, SpatialViewState, Viewport,
 } from "@bentley/imodeljs-frontend";
+import { DisplayTestApp } from "./App";
 import { ToolBarDropDown } from "./ToolBar";
 
 function clearElement(element: HTMLElement): void {
@@ -32,6 +33,11 @@ export class ClassificationsPanel extends ToolBarDropDown {
   private _selectedSpatialClassifiersIndex: number = 0;
   private _modelComboBox?: ComboBox;
   private _models: { [modelId: string]: ModelProps } = {};
+  // for SVT_ITWIN_ID to work it should be define in your environment and you should be in signin mode with correct BUDDI region set
+  //  SVT_STANDALONE_SIGNIN=true
+  //  IMJS_BUDDI_RESOLVE_URL_USING_REGION=102
+  //  SVT_ITWIN_ID="fb1696c8-c074-4c76-a539-a5546e048cc6"
+  private _iTwinId: GuidString | undefined = DisplayTestApp.iTwinId;
 
   private get _selectedClassifier(): SpatialClassifier | undefined {
     if (undefined === this._selectedSpatialClassifiers)
@@ -90,11 +96,13 @@ export class ClassificationsPanel extends ToolBarDropDown {
     }
 
     const range = new CartographicRange(this._vp.iModel.projectExtents, ecef.getTransform());
-    let available;
+    let available = new Array<ContextRealityModelProps>();
     try {
-      available = await queryRealityData({ iTwinId: "fb1696c8-c074-4c76-a539-a5546e048cc6", range });
+      if (this._iTwinId !== undefined)
+        available = await queryRealityData({ iTwinId: this._iTwinId, range });
     } catch (_error) {
-      available = new Array<ContextRealityModelProps>();
+      // eslint-disable-next-line no-console
+      console.error("Error in query RealitydataList, you need to set SVT_STANDALONE_SIGNIN=true, and are your SVT_ITWIN_ID and IMJS_BUDDI_RESOLVE_URL_USING_REGION correctly set?");
     }
     for (const entry of available) {
       const name = undefined !== entry.name ? entry.name : entry.tilesetUrl;

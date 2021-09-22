@@ -6,8 +6,9 @@
  * @module ContextRegistry
  */
 import * as deepAssign from "deep-assign";
-import { assert } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ECJsonTypeMap, RequestOptions, RequestQueryOptions, WsgClient, WsgInstance } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, RequestOptions, RequestQueryOptions } from "@bentley/itwin-client";
+import { ECJsonTypeMap, WsgInstance } from "./wsg/ECJsonTypeMap";
+import { WsgClient } from "./wsg/WsgClient";
 
 /** The iTwin context type.
  * @beta
@@ -138,15 +139,10 @@ export interface ContextRegistryRequestQueryOptions extends RequestQueryOptions 
  * @beta
  */
 export class ContextRegistryClient extends WsgClient {
-  public static readonly searchKey: string = "CONNECTEDContextService.URL";
-
   public constructor() {
     super("v2.5");
     this.baseUrl = "https://api.bentley.com/contextregistry";
   }
-
-  /** @internal */
-  protected getUrlSearchKey(): string { assert(false, "Bentley cloud-specific method should be factored out of WsgClient base class"); return ""; }
 
   protected override async setupOptionDefaults(options: RequestOptions): Promise<void> {
     await super.setupOptionDefaults(options);

@@ -6,7 +6,8 @@
  * @module iModelHubClient
  */
 import { ClientRequestContext, GuidString, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizedClientRequestContext, ECJsonTypeMap, request, Response, WsgInstance } from "@bentley/itwin-client";
+import { AccessToken, AuthorizedClientRequestContext, request, Response } from "@bentley/itwin-client";
+import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { IModelBaseHandler } from "./BaseHandler";
 import { CodeState } from "./Codes";
@@ -323,7 +324,7 @@ export function ParseEvent(response: Response) {
 }
 
 /** Subscription to receive [[IModelHubEvent]]s. Each subscription has a separate queue for events that it hasn't read yet. Subscriptions are deleted, if they are inactive for an hour. Use wsgId of this instance for the methods that require subscriptionId. See [[EventSubscriptionHandler]].
- * @public
+ * @internal
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.EventSubscription", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class EventSubscription extends WsgInstance {
@@ -333,14 +334,14 @@ export class EventSubscription extends WsgInstance {
 }
 
 /** Shared access signature token for getting [[IModelHubEvent]]s. It's used to authenticate for [[EventHandler.getEvent]]. To receive an instance call [[EventHandler.getSASToken]].
- * @public
+ * @internal
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.EventSAS", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class EventSAS extends BaseEventSAS {
 }
 
 /** Handler for managing [[EventSubscription]]s. Use [[EventHandler.Subscriptions]] to get an instance of this class.
- * @public
+ * @internal
  */
 export class EventSubscriptionHandler {
   private _handler: IModelBaseHandler;
@@ -433,7 +434,7 @@ export class EventSubscriptionHandler {
 }
 
 /** Handler for receiving [[IModelHubEvent]]s. Use [[IModelClient.Events]] to get an instance of this class.
- * @public
+ * @internal
  */
 export class EventHandler extends EventBaseHandler {
   private _subscriptionHandler: EventSubscriptionHandler | undefined;

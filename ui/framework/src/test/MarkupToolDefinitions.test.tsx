@@ -6,7 +6,7 @@ import { shallow } from "enzyme";
 import * as React from "react";
 import { MarkupApp } from "@bentley/imodeljs-markup";
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
-import { ActionItemButton, MarkupTools, ToolWidget } from "../ui-framework";
+import { ActionItemButton, FrontstageManager, MarkupTools, ToolWidget } from "../ui-framework";
 import TestUtils, { mount } from "./TestUtils";
 
 describe("MarkupToolDefinitions", () => {
@@ -51,13 +51,18 @@ describe("MarkupToolDefinitions", () => {
     );
   });
 
-  it("ToolWidget should render correctly with Markup Tool Definitions", () => {
-    shallow(
-      <ToolWidget // eslint-disable-line deprecation/deprecation
-        id="toolWidget"
-        horizontalToolbar={horizontalToolbar}
-      />,
-    ).should.matchSnapshot();
+  it("ToolWidget should render correctly with Markup Tool Definitions", async () => {
+    FrontstageManager.clearFrontstageDefs();
+    await FrontstageManager.setActiveFrontstageDef(undefined);
+    setImmediate(async () => {
+      await TestUtils.flushAsyncOperations();
+      shallow(
+        <ToolWidget // eslint-disable-line deprecation/deprecation
+          id="toolWidget"
+          horizontalToolbar={horizontalToolbar}
+        />,
+      ).should.matchSnapshot();
+    });
   });
 
 });
