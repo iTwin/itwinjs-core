@@ -237,6 +237,7 @@ beta;OnSubModelIdArg
 beta;OnSubModelPropsArg 
 public;OpenBriefcaseArgs = OpenBriefcaseProps & UserArg
 public;OrthographicViewDefinition 
+public;ParameterValue = undefined | null | number | boolean | string | Uint8Array |
 public;class PhysicalElement 
 public;PhysicalElementAssemblesElements 
 public;PhysicalElementFulfillsFunction 
@@ -266,6 +267,7 @@ public;RepositoryModel
 public;RequestNewBriefcaseArg 
 public;class RoleElement 
 public;RoleModel 
+public;RowValue
 public;Schema
 internal;SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey
 internal;SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType
@@ -297,7 +299,6 @@ public;SqliteValue
 public;SqliteValueType
 public;StandaloneDb 
 internal;StatementCache
-internal;StringParam
 public;SubCategory 
 public;Subject 
 public;SubjectOwnsPartitionElements 

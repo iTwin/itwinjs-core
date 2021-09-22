@@ -2121,6 +2121,7 @@ export abstract class IModelDb extends IModel {
     acquireSchemaLock(): Promise<void>;
     // @internal
     protected beforeClose(): void;
+    // @internal
     cancelSnap(sessionId: string): void;
     // @internal
     get classMetaDataRegistry(): MetaDataRegistry;
@@ -2226,7 +2227,7 @@ export abstract class IModelDb extends IModel {
     // @internal (undocumented)
     reinstateTxn(): IModelStatus;
     get relationships(): Relationships;
-    // (undocumented)
+    // @internal (undocumented)
     requestSnap(sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps>;
     restartQuery(token: string, ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
     // @internal (undocumented)
@@ -2887,7 +2888,7 @@ export class LocalhostIpcHost {
     }): Promise<void>;
 }
 
-// @beta (undocumented)
+// @beta
 export interface LockControl {
     acquireExclusiveLock(ids: Id64Arg): Promise<void>;
     acquireSharedLock(ids: Id64Arg): Promise<void>;
@@ -3179,6 +3180,12 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
 }
 
 // @public
+export type ParameterValue = undefined | null | number | boolean | string | Uint8Array | {
+    id?: Id64String;
+    guid?: GuidString;
+};
+
+// @public
 export abstract class PhysicalElement extends SpatialElement {
     // @internal
     constructor(props: PhysicalElementProps, iModel: IModelDb);
@@ -3455,6 +3462,12 @@ export class RoleModel extends Model {
 }
 
 // @public
+export interface RowValue {
+    // (undocumented)
+    [propName: string]: Uint8Array | number | string;
+}
+
+// @public
 export class Schema {
     // @internal
     protected constructor();
@@ -3711,8 +3724,8 @@ export class SQLiteDb implements IDisposable {
 }
 
 // @public
-export class SqliteStatement implements IterableIterator<any>, IDisposable {
-    [Symbol.iterator](): IterableIterator<any>;
+export class SqliteStatement implements IterableIterator<RowValue>, IDisposable {
+    [Symbol.iterator](): IterableIterator<RowValue>;
     constructor(_sql: string);
     bindBlob(parameter: BindParameter, blob: Uint8Array): void;
     bindDouble(parameter: BindParameter, val: number): void;
@@ -3720,12 +3733,14 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     bindId(parameter: BindParameter, id: Id64String): void;
     bindInteger(parameter: BindParameter, val: number): void;
     bindString(parameter: BindParameter, val: string): void;
-    bindValue(parameter: BindParameter, value: any): void;
-    bindValues(values: any[] | object): void;
+    bindValue(parameter: BindParameter, value: ParameterValue): void;
+    bindValues(values: ParameterValue[] | {
+        [propName: string]: ParameterValue;
+    }): void;
     clearBindings(): void;
     dispose(): void;
     getColumnCount(): number;
-    getRow(): any;
+    getRow(): RowValue;
     getValue(columnIx: number): SqliteValue;
     getValueBlob(colIndex: number): Uint8Array;
     getValueDouble(colIndex: number): number;
@@ -3735,7 +3750,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     getValueString(colIndex: number): string;
     get isPrepared(): boolean;
     get isReadonly(): boolean;
-    next(): IteratorResult<any>;
+    next(): IteratorResult<RowValue>;
     prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb | IModelJsNative.SQLiteDb, logErrors?: boolean): void;
     reset(): void;
     // (undocumented)
@@ -3757,7 +3772,7 @@ export class SqliteValue {
     getString(): string;
     get isNull(): boolean;
     get type(): SqliteValueType;
-    get value(): any;
+    get value(): Uint8Array | number | string | undefined;
 }
 
 // @public
@@ -3800,14 +3815,6 @@ export class StatementCache<Stmt extends Statement> {
     findAndRemove(sql: string): Stmt | undefined;
     // (undocumented)
     get size(): number;
-}
-
-// @internal
-export interface StringParam {
-    // (undocumented)
-    guid?: GuidString;
-    // (undocumented)
-    id?: Id64String;
 }
 
 // @public
