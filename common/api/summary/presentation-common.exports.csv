@@ -255,6 +255,7 @@ public;PresentationRpcRequestOptions
 public;PresentationStatus
 public;PrimitivePropertyValue = string | number | boolean | Point | InstanceKey | undefined
 public;PrimitiveTypeDescription 
+public;Prioritized
 alpha;ProcessFieldHierarchiesProps
 alpha;ProcessMergedValueProps
 alpha;ProcessPrimitiveValueProps
@@ -308,7 +309,6 @@ public;RepeatableRelationshipPathSpecification = RepeatableRelationshipStepSpeci
 public;RepeatableRelationshipStepSpecification 
 public;RequestOptions
 public;RequestOptionsWithRuleset
-public;RequestPriority
 beta;RequiredSchemaSpecification
 public;RootCategoryIdentifier
 public;RootNodeRule 
