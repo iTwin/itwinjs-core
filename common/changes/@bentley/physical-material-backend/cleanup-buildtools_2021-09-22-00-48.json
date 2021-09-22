@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/physical-material-backend",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/physical-material-backend"
+}
