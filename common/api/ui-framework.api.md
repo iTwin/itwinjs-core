@@ -3099,9 +3099,9 @@ export interface IModelInfo {
     // (undocumented)
     description: string;
     // (undocumented)
-    name: string;
+    iTwinId: GuidString;
     // (undocumented)
-    projectInfo: ProjectInfo;
+    name: string;
     // (undocumented)
     status: string;
     // (undocumented)
@@ -3123,7 +3123,7 @@ export enum IModelScope {
 // @internal
 export interface IModelServices {
     getChangeSets(iModelId: string): Promise<ChangeSetInfo[]>;
-    getIModels(projectInfo: ProjectInfo, top: number, skip: number): Promise<IModelInfo[]>;
+    getIModels(iTwinId: GuidString, top: number, skip: number): Promise<IModelInfo[]>;
     getThumbnail(projectId: string, iModelId: string): Promise<string | undefined>;
     getUser(iModelId: string, userId: string): Promise<IModelUserInfo[]>;
     getUsers(iModelId: string): Promise<IModelUserInfo[]>;
@@ -4395,45 +4395,6 @@ export interface PresentationSelectionScope {
     id: string;
     // (undocumented)
     label: string;
-}
-
-// @internal
-export interface ProjectInfo {
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    projectNumber: string;
-    // (undocumented)
-    readStatus: ProjectReadStatus;
-    // (undocumented)
-    wsgId: string;
-}
-
-// @internal
-export enum ProjectReadStatus {
-    // (undocumented)
-    DoneReading = 2,
-    // (undocumented)
-    NotRead = 0,
-    // (undocumented)
-    Reading = 1
-}
-
-// @internal
-export enum ProjectScope {
-    // (undocumented)
-    All = 3,
-    // (undocumented)
-    Favorites = 0,
-    // (undocumented)
-    Invited = 2,
-    // (undocumented)
-    MostRecentlyUsed = 1
-}
-
-// @internal
-export interface ProjectServices {
-    getProjects(projectScope: ProjectScope, top: number, skip: number, filter?: string): Promise<ProjectInfo[]>;
 }
 
 // @public @deprecated
@@ -6677,7 +6638,7 @@ export class UiFramework {
     static initialize(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string): Promise<void>;
     static get initialized(): boolean;
     // @internal
-    static initializeEx(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<void>;
+    static initializeEx(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string, iModelServices?: IModelServices): Promise<void>;
     // @alpha
     static get isContextMenuOpen(): boolean;
     // (undocumented)
@@ -6695,8 +6656,6 @@ export class UiFramework {
     static postTelemetry(eventName: string, eventId?: GuidString, iTwinId?: GuidString, iModeId?: GuidString, changeSetId?: string, time?: TrackingTime, additionalProperties?: {
         [key: string]: any;
     }): Promise<void>;
-    // @internal (undocumented)
-    static get projectServices(): ProjectServices;
     // @alpha
     static registerUserSettingsProvider(entry: UserSettingsProvider): boolean;
     // (undocumented)
