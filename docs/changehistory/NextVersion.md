@@ -11,8 +11,9 @@ The following dependencies of iTwin.js have been updated;
 
 ## Build tools changes
 
-Removed TSLint support from `@bentley/build-tools`. If you're still using it, please switch to ESLint.
-Also removed legacy `.eslintrc.js` file from the same package. Instead, use `@bentley/eslint-plugin` and the `imodeljs-recommended` config included in it.
+- Removed `test` and `test-tsnode` scripts from `@bentley/build-tools`.  Please use mocha directly instead.
+- Removed TSLint support from `@bentley/build-tools`. If you're still using it, please switch to ESLint.
+- Removed legacy `.eslintrc.js` file from the same package. Instead, use `@bentley/eslint-plugin` and the `imodeljs-recommended` config included in it.
 
 ## BentleyError constructor no longer logs
 

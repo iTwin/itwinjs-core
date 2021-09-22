@@ -16,8 +16,8 @@
     "docs": "npm run extract",
     "extract": "betools extract --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "cross-env NODE_ENV=development mocha \"./lib/**/*.js\" --grep \"#with-services\" --invert",
-    "test:integration": "mocha \"./lib/**/*.js\" --grep \"#with-services\"",
+    "test": "cross-env NODE_ENV=development mocha --no-config --grep \"#with-services\" --invert",
+    "test:integration": "mocha --no-config --grep \"#with-services\"",
     "copy:config": "internal-tools copy-config",
     "cover": "npm run test"
   },
@@ -110,6 +110,9 @@
     ],
     "reporterOptions": [
       "mochaFile=lib/test/junit_results.xml"
+    ],
+    "spec": [
+      "./lib/**/*.js"
     ]
   }
 }

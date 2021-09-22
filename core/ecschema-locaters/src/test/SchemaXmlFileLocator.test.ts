@@ -6,8 +6,8 @@
 import { assert, expect } from "chai";
 import * as path from "path";
 import { ECObjectsError, ECObjectsStatus, ECVersion, SchemaContext, SchemaKey, SchemaMatchType } from "@bentley/ecschema-metadata";
-import { FileSchemaKey } from "../src/SchemaFileLocater";
-import { SchemaXmlFileLocater } from "../src/SchemaXmlFileLocater";
+import { FileSchemaKey } from "../SchemaFileLocater";
+import { SchemaXmlFileLocater } from "../SchemaXmlFileLocater";
 
 describe("SchemaXmlFileLocater tests:", () => {
   let locater: SchemaXmlFileLocater;
