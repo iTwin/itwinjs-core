@@ -58,7 +58,7 @@ Table is a component that displays data in a table layout. In the context of [EC
 
 The rules for interacting with unified selection are:
 
-- when unified selection changes at the 0 level, we load properties for selected *ECInstances*.
+- when unified selection changes at the 0th level, we load properties for selected *ECInstances*.
 - when unified selection changes at the 1 level, we highlight rows that represent selected *ECInstances*.
 - when a row is selected, we add the *ECInstance* it represents to unified selection at the 1 level.
 
