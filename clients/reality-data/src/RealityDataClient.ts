@@ -12,7 +12,6 @@ import {
 } from "@bentley/itwin-client";
 import { URL } from "url";
 
-// SWB What to do here, keep PW reference?
 /** Currenlty supported  ProjectWise ContextShare reality data types
  * @internal
  */
@@ -25,16 +24,13 @@ export enum RealityDataType {
 }
 
 /** RealityData
-// SWB What to do here, keep PW reference?
  * This class implements a Reality Data stored in ProjectWise Context Share (Reality Data Service)
  * Data is accessed directly through methods of the reality data instance.
  * Access to the data required a properly entitled token though the access to the blob is controlled through
  * an Azure blob URL, the token may be required to obtain this Azure blob URL or refresh it.
  * The Azure blob URL is considered valid for an hour and is refreshed after 50 minutes.
  * In addition to the reality data properties, and Azure blob URL and internal states, a reality data also contains
-// SWB What do project and context mean here?
  * the identification of the iTwin to identify the context(used for access permissions resolution) and
-// SWB What to do here, keep PW reference?
  * may contain a RealityDataClient to obtain the WSG client specialization to communicate with ProjectWise Context Share (to obtain the Azure blob URL).
  * @internal
  */
@@ -365,10 +361,8 @@ export class DataLocation extends WsgInstance {
 
 /**
  * Client wrapper to Reality Data Service.
-// SWB What to do here, keep PW reference?
  * An instance of this class is used to extract reality data from the ProjectWise Context Share (Reality Data Service)
  * Most important methods enable to obtain a specific reality data, fetch all reality data associated with an iTwin and
-// SWB Is this referring to iTwins or "project extents" which currently are keeping their name?
  * all reality data of an iTwin within a provided spatial extent.
  * This class also implements extraction of the Azure blob address.
  * @internal
@@ -474,7 +468,6 @@ export class RealityDataClient extends WsgClient {
 
   /**
    * Gets all reality data that has a footprint defined that overlaps the given area and that are associated with the iTwin. Reality Data returned must be accessible by user
-   // SWB What does context mean here?
    * as public, enterprise data, private or accessible through context RBAC rights attributed to user.
    * @param requestContext The client request context.
    * @param iTwinId id of associated iTwin
@@ -592,7 +585,6 @@ export class RealityDataClient extends WsgClient {
   public async createRealityDataRelationship(requestContext: AuthorizedClientRequestContext, iTwinId: string, relationship: RealityDataRelationship): Promise<RealityDataRelationship> {
     const resultRealityDataRelationship: RealityDataRelationship = await this.postInstance<RealityDataRelationship>(requestContext, RealityDataRelationship, `/Repositories/S3MXECPlugin--${iTwinId}/S3MX/RealityDataRelationship`, relationship);
     if (!resultRealityDataRelationship)
-      // SWB What does context mean here?
       throw new Error(`Could not create new reality data relationship between reality data: ${relationship.realityDataId ? relationship.realityDataId : ""} and context: ${relationship.relatedId ? relationship.relatedId : ""}`);
 
     return resultRealityDataRelationship;

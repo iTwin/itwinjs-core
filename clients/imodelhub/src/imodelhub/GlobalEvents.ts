@@ -47,7 +47,6 @@ export type GlobalEventType =
 export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
   /** Id of the iModel that caused this event. */
   public iModelId?: GuidString;
-  // SWB What does project mean here? How is this different from iTwinId
   /** Id of the [[Project]] that this iModel belongs to. */
   public projectId?: string;
   /** Id of the iTwin that this iModel belongs to. */
@@ -60,7 +59,6 @@ export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
   public override fromJson(obj: any) {
     super.fromJson(obj);
     this.iModelId = obj.iModelId;
-    // SWB
     this.projectId = obj.ProjectId;
     this.iTwinId = obj.iTwinId;
   }

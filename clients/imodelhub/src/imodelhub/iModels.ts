@@ -399,7 +399,6 @@ export class IModelsHandler {
 
   /** Get iModels that belong to the specified iTwin.
    * @param requestContext The client request context.
-   // SWB When is the second part of the comment not the case?
    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin ([[ITwin]]).
    * @param query Optional query object to filter the queried iModels or select different data from them.
    * @returns [[HubIModel]] instances that match the query.
@@ -419,7 +418,6 @@ export class IModelsHandler {
 
   /** Delete an iModel with specified id from its parent iTwin. This method is not supported in iModelBank.
    * @param requestContext The client request context.
-  // SWB When is the second part of the comment not true?
    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin ([[ITwin]]).
    * @param iModelId Id of the iModel to be deleted. See [[HubIModel]].
    * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel with specified id does not exist.
@@ -718,7 +716,6 @@ export class IModelHandler {
   /**
    * Get iModel that belong to the specified iTwin.
    * @param requestContext The client request context.
-   // SWB What does the second part mean?
    * @param iTwinId Id for the iModel's parent  iTwin. For iModelHub it should be the id of the iTwin ([[ITwin]]).
    * @returns [[HubIModel]] instances that match the query.
    * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
@@ -739,7 +736,6 @@ export class IModelHandler {
   /**
    * Delete an iModel from its parent iTwin. This method is not supported in iModelBank.
    * @param requestContext The client request context.
-   // SWB What does the second part mean?
    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin ([[ITwin]]).
    * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have DeleteiModel permission.
@@ -753,7 +749,6 @@ export class IModelHandler {
   /**
    * Get the [[InitializationState]] for the specified iModel. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
    * @param requestContext The client request context.
-   // SWB What does the second part mean?
    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin ([[ITwin]]).
    * @returns State of the seed file initialization.
    * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
@@ -771,7 +766,6 @@ export class IModelHandler {
    *
    * This method does not work on browsers. If iModel creation fails before finishing file upload, partially created iModel is deleted. This method is not supported in iModelBank.
    * @param requestContext The client request context.
-   // SWB What does the second part mean?
    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin ([[ITwin]]).
    * @param name Name of the iModel on the Hub.
    * @param createOptions Optional arguments for iModel creation.
@@ -800,7 +794,6 @@ export class IModelHandler {
   /**
    * Update iModel's name and/or description
    * @param requestContext The client request context.
-   // SWB What does the second part mean?
    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin ([[ITwin]]).
    * @param imodel iModel to update. See [[HubIModel]].
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
@@ -816,7 +809,6 @@ export class IModelHandler {
   /**
    * Method to download the seed file for iModel. This will download the original seed file, that was uploaded when creating iModel. To download a file that was updated with ChangeSets on iModelHub, see [[BriefcaseHandler.download]].
    * @param requestContext The client request context.
-   // SWB What does the second part mean?
    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin ([[ITwin]]).
    * @param path Path where seed file should be downloaded, including filename.
    * @param progressCallback Callback for tracking progress.
