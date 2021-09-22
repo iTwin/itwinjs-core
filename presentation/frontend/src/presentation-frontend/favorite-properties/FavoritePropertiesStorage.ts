@@ -168,9 +168,9 @@ export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropert
       // note: we're copying the cached values to temp arrays because `saveProperties` and `savePropertiesOrder` both
       // attempt to modify cache dictionaries
 
-      const propertiesCache = new Array<{ properties: Set<PropertyFullName>, iTwinID?: string, imodelId?: string }>();
-      this._propertiesOfflineCache.forEach((key, value) => propertiesCache.push({ properties: value, iTwinID: key[0], imodelId: key[1] }));
-      propertiesCache.forEach(async (cached) => this.saveProperties(cached.properties, cached.iTwinID, cached.imodelId));
+      const propertiesCache = new Array<{ properties: Set<PropertyFullName>, iTwinId?: string, imodelId?: string }>();
+      this._propertiesOfflineCache.forEach((key, value) => propertiesCache.push({ properties: value, iTwinId: key[0], imodelId: key[1] }));
+      propertiesCache.forEach(async (cached) => this.saveProperties(cached.properties, cached.iTwinId, cached.imodelId));
 
       const ordersCache = new Array<{ order: FavoritePropertiesOrderInfo[], iTwinId?: string, imodelId: string }>();
       this._propertiesOrderOfflineCache.forEach((key, value) => ordersCache.push({ order: value, iTwinId: key[0], imodelId: key[1]! }));
