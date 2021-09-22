@@ -845,14 +845,12 @@ export class RealityModelTileClient {
   }
 
   private async initializeRDSRealityData(requestContext: AuthorizedFrontendRequestContext): Promise<void> {
-    requestContext.enter();
 
     if (undefined !== this.rdsProps) {
       if (!this._realityData) {
         // TODO Temporary fix ... the root document may not be located at the root. We need to set the base URL even for RD stored on server
         // though this base URL is only the part relative to the root of the blob containing the data.
         this._realityData = await RealityModelTileClient._client.getRealityData(requestContext, this.rdsProps.projectId, this.rdsProps.tilesId);
-        requestContext.enter();
 
         // A reality data that has not root document set should not be considered.
         const rootDocument: string = (this._realityData.rootDocument ? this._realityData.rootDocument : "");
@@ -872,12 +870,7 @@ export class RealityModelTileClient {
     const tilesId = urlParts.find(Guid.isGuid);
     let props: RDSClientProps | undefined;
     if (undefined !== tilesId) {
-      let projectId = urlParts.find((val: string) => val.includes("--"))!.split("--")[1];
-
-      // ###TODO This is a temporary workaround for accessing the reality meshes with a test account
-      // The hardcoded project id corresponds to a project setup to yield access to the test account which is linked to the tileId
-      if (projectId === "Server")
-        projectId = "fb1696c8-c074-4c76-a539-a5546e048cc6";
+      const projectId = urlParts.find((val: string) => val.includes("--"))!.split("--")[1];
 
       props = { projectId, tilesId };
     }
@@ -913,11 +906,7 @@ export class RealityModelTileClient {
     const token = await this.getAccessToken();
     if (this.rdsProps && token) {
       const authRequestContext = new AuthorizedFrontendRequestContext(token);
-      authRequestContext.enter();
-
       await this.initializeRDSRealityData(authRequestContext);
-      authRequestContext.enter();
-
       return this._realityData!.getBlobUrl(authRequestContext, false);
     }
 
@@ -931,11 +920,7 @@ export class RealityModelTileClient {
     const token = await this.getAccessToken();
     if (this.rdsProps && token) {
       const authRequestContext = new AuthorizedFrontendRequestContext(token);
-      authRequestContext.enter();
-
       await this.initializeRDSRealityData(authRequestContext); // Only needed for PW Context Share data ... return immediately otherwise.
-      authRequestContext.enter();
-
       return this._realityData!.getRootDocumentJson(authRequestContext);
     }
 
@@ -965,7 +950,6 @@ export class RealityModelTileClient {
     const requestContext = useRds && token !== undefined ? new AuthorizedFrontendRequestContext(token, "") : new FrontendRequestContext("");
     if (useRds) {
       await this.initializeRDSRealityData(requestContext as AuthorizedFrontendRequestContext); // Only needed for PW Context Share data ... return immediately otherwise.
-      requestContext.enter();
     }
 
     const tileUrl = this._baseUrl + url;
@@ -984,12 +968,9 @@ export class RealityModelTileClient {
     const useRds = this.rdsProps !== undefined && token !== undefined;
     // Use an empty activityId to keep tile json as simple request
     const requestContext = useRds ? new AuthorizedFrontendRequestContext(token!, "") : new FrontendRequestContext("");
-    requestContext.enter();
 
-    if (this.rdsProps && token) {
+    if (this.rdsProps && token)
       await this.initializeRDSRealityData(requestContext as AuthorizedFrontendRequestContext); // Only needed for PW Context Share data ... return immediately otherwise.
-      requestContext.enter();
-    }
 
     const tileUrl = this._baseUrl + url;
 

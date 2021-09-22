@@ -37,6 +37,15 @@ export class SessionSettingsStorage implements UiSettingsStorage {
     this.w.sessionStorage.removeItem(name);
     return { status: UiSettingsStatus.Success };
   }
+
+  public async hasSetting(settingNamespace: string, settingName: string): Promise<boolean> {
+    const name = `${settingNamespace}.${settingName}`;
+    const setting = this.w.sessionStorage.getItem(name);
+    if (setting === null)
+      return false;
+    return true;
+  }
+
 }
 
 /** Alias for [[SessionSettingsStorage]]
@@ -44,5 +53,5 @@ export class SessionSettingsStorage implements UiSettingsStorage {
  * @deprecated use [SessionSettingsStorage]($ui-core) instead
  */
 export class SessionUiSettings extends SessionSettingsStorage {
-  constructor(w: Window = window) { super (w);}
+  constructor(w: Window = window) { super(w); }
 }

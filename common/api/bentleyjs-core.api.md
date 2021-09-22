@@ -8,9 +8,6 @@
 export class AbandonedError extends Error {
 }
 
-// @internal
-export const addClientRequestContext: (metaData: any) => void;
-
 // @public
 export function areEqualPossiblyUndefined<T, U>(t: T | undefined, u: U | undefined, areEqual: (t: T, u: U) => boolean): boolean;
 
@@ -86,10 +83,10 @@ export class BeEventList<T extends Listener> {
 
 // @public
 export class BentleyError extends Error {
-    constructor(errorNumber: number, message?: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
+    constructor(errorNumber: number, message?: string, getMetaData?: GetMetaDataFunction);
     // (undocumented)
     errorNumber: number;
-    getMetaData(): any;
+    getMetaData(): object | undefined;
     get hasMetaData(): boolean;
     protected _initName(): string;
 }
@@ -176,13 +173,11 @@ export class ByteStream {
     rewind(numBytes: number): boolean;
     }
 
-// @public
+// @internal (undocumented)
 export enum ChangeSetApplyOption {
+    // (undocumented)
     Merge = 1,
-    None = 0,
-    // @deprecated
-    Reinstate = 3,
-    // @deprecated
+    // (undocumented)
     Reverse = 2
 }
 
@@ -225,19 +220,18 @@ export class ClientRequestContext {
     readonly activityId: GuidString;
     readonly applicationId: string;
     readonly applicationVersion: string;
-    static get current(): ClientRequestContext;
-    // (undocumented)
-    protected static _current: ClientRequestContext;
-    enter(): this;
     // (undocumented)
     static fromJSON(json: ClientRequestContextProps): ClientRequestContext;
+    sanitize(): {
+        activityId: string;
+        applicationId: string;
+        applicationVersion: string;
+        sessionId: string;
+    };
     readonly sessionId: GuidString;
     // @internal (undocumented)
     toJSON(): ClientRequestContextProps;
-    // (undocumented)
-    get useContextForRpc(): boolean;
-    set useContextForRpc(value: boolean);
-    }
+}
 
 // @public
 export interface ClientRequestContextProps extends SessionProps {
@@ -539,28 +533,6 @@ export interface EntryContainer<K, V> {
     readonly size: number;
 }
 
-// @beta
-export enum ExtensionStatus {
-    // (undocumented)
-    BadExtension = 143364,
-    // (undocumented)
-    BadRequest = 143362,
-    // (undocumented)
-    DownloadError = 143367,
-    // (undocumented)
-    ExtensionAlreadyExists = 143365,
-    // (undocumented)
-    ExtensionNotFound = 143363,
-    // (undocumented)
-    EXTENSIONSTATUS_BASE = 143360,
-    // (undocumented)
-    Success = 0,
-    // (undocumented)
-    UnknownError = 143361,
-    // (undocumented)
-    UploadError = 143366
-}
-
 // @public
 export enum GeoServiceStatus {
     // (undocumented)
@@ -584,7 +556,7 @@ export enum GeoServiceStatus {
 }
 
 // @public
-export type GetMetaDataFunction = () => any;
+export type GetMetaDataFunction = () => object | undefined;
 
 // @public
 export namespace Guid {
@@ -1028,14 +1000,12 @@ export type LogFunction = (category: string, message: string, metaData?: GetMeta
 // @public
 export class Logger {
     static configureLevels(cfg: LoggerLevelsConfig): void;
-    // @internal
-    static getCurrentClientRequestContext(): ClientRequestContext;
     static getLevel(category: string): LogLevel | undefined;
     static initialize(logError: LogFunction | undefined, logWarning?: LogFunction | undefined, logInfo?: LogFunction | undefined, logTrace?: LogFunction | undefined): void;
     static initializeToConsole(): void;
     static isEnabled(category: string, level: LogLevel): boolean;
     static logError(category: string, message: string, metaData?: GetMetaDataFunction): void;
-    static logException(category: string, err: Error, log?: LogFunction, metaData?: GetMetaDataFunction): void;
+    static logException(category: string, err: any, log?: LogFunction, metaData?: GetMetaDataFunction): void;
     static set logExceptionCallstacks(b: boolean);
     static get logExceptionCallstacks(): boolean;
     static logInfo(category: string, message: string, metaData?: GetMetaDataFunction): void;
@@ -1049,8 +1019,6 @@ export class Logger {
     static registerMetaDataSource(callback: (metadata: any) => void): boolean;
     // @beta
     static removeMetaDataSource(callback: (md: any) => void): boolean;
-    // @internal
-    static setCurrentClientRequestContext(obj: any): void;
     // @internal
     static setIntercept(logIntercept?: LogIntercept): void;
     static setLevel(category: string, minLevel: LogLevel): void;
@@ -1266,6 +1234,7 @@ export class ProcessDetector {
     static get isAndroidAppFrontend(): boolean;
     static get isAndroidBrowser(): boolean;
     static get isBrowserProcess(): boolean;
+    static get isChromium(): boolean;
     static get isElectronAppBackend(): boolean;
     static get isElectronAppFrontend(): boolean;
     static get isIOSAppBackend(): boolean;
@@ -1377,9 +1346,9 @@ export interface SerializedClientRequestContext {
 
 // @public
 export interface SessionProps {
-    applicationId: string;
-    applicationVersion: string;
-    sessionId: GuidString;
+    readonly applicationId: string;
+    readonly applicationVersion: string;
+    readonly sessionId: GuidString;
 }
 
 // @public
@@ -1429,44 +1398,6 @@ export function utf8ToString(utf8: Uint8Array): string | undefined;
 
 // @internal
 export function utf8ToStringPolyfill(utf8: Uint8Array): string | undefined;
-
-// @beta
-export enum WSStatus {
-    // (undocumented)
-    ClassNotFound = 98311,
-    // (undocumented)
-    FileNotFound = 98314,
-    // (undocumented)
-    InstanceNotFound = 98313,
-    // (undocumented)
-    LoginFailed = 98306,
-    // (undocumented)
-    LoginRequired = 98319,
-    // (undocumented)
-    NoClientLicense = 98317,
-    // (undocumented)
-    NoServerLicense = 98316,
-    // (undocumented)
-    NotEnoughRights = 98308,
-    // (undocumented)
-    NotSupported = 98315,
-    // (undocumented)
-    PropertyNotFound = 98312,
-    // (undocumented)
-    RepositoryNotFound = 98309,
-    // (undocumented)
-    SchemaNotFound = 98310,
-    // (undocumented)
-    SslRequired = 98307,
-    // (undocumented)
-    Success = 0,
-    // (undocumented)
-    TooManyBadLoginAttempts = 98318,
-    // (undocumented)
-    Unknown = 98305,
-    // (undocumented)
-    WSERROR_BASE = 98304
-}
 
 
 // (No @packageDocumentation comment for this package)

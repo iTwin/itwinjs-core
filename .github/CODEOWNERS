@@ -40,8 +40,6 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 # Covers most client libraries, all others with more specific reviewers should be after these two lines
 /common/**/*-client.*                             @calebmshafer @ramanujam-raman
 /common/**/*-client/                              @calebmshafer @ramanujam-raman
-/common/**/extension-client.*                     @calebmshafer @paulius-valiunas
-/common/**/extension-client/                      @calebmshafer @paulius-valiunas
 /common/**/imodelhub-client.*                     @amikoliunas @Animagne
 /common/**/imodelhub-client/                      @amikoliunas @Animagne
 
@@ -61,7 +59,6 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /common/**/eslint-plugin/                         @calebmshafer @paulius-valiunas
 /common/**/express-server.*                       @calebmshafer @wgoehrig
 /common/**/express-server/                        @calebmshafer @wgoehrig
-/common/**/extension-webpack-tools/               @calebmshafer @wgoehrig
 /common/**/frontend-devtools.*                    @imodeljs/display @Ellord207
 /common/**/frontend-devtools/                     @imodeljs/display @Ellord207
 /common/**/geometry-core.*                        @bbastings @EarlinLutz @mgooding @RBBentley @dassaf4
@@ -176,7 +173,6 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /tools/backend-webpack @calebmshafer @wgoehrig
 /tools/build @calebmshafer @wgoehrig
 /tools/certa @calebmshafer @wgoehrig
-/tools/extension-webpack @calebmshafer @wgoehrig
 /tools/oidc-signin-tool @calebmshafer @wgoehrig
 /tools/webpack-core @calebmshafer @wgoehrig
 /tools/ecschema2ts @calebmshafer @ColinKerr @wgoehrig

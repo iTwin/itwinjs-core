@@ -119,8 +119,8 @@ export class LocalHub {
 
     const nativeDb = IModelDb.openDgnDb({ path }, OpenMode.ReadWrite);
     try {
-      nativeDb.saveProjectGuid(this.iTwinId);
-      nativeDb.setDbGuid(this.iModelId);
+      nativeDb.setITwinId(this.iTwinId);
+      nativeDb.setIModelId(this.iModelId);
       nativeDb.saveChanges();
       nativeDb.deleteAllTxns(); // necessary before resetting briefcaseId
       nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);

@@ -17,7 +17,8 @@ import { AndroidHost, IOSHost, MobileHostOpts } from "@bentley/mobile-manager/li
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { FakeTileCacheService } from "./FakeTileCacheService";
-import { BasicManipulationCommand, EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
+import { EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
+import * as editorBuiltInCommands from "@bentley/imodeljs-editor-backend";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -231,6 +232,8 @@ const setupStandaloneConfiguration = () => {
   configuration.alwaysLoadEdges = undefined !== process.env.SVT_ALWAYS_LOAD_EDGES;
   configuration.alwaysSubdivideIncompleteTiles = undefined !== process.env.SVT_SUBDIVIDE_INCOMPLETE;
 
+  configuration.iTwinId = process.env.SVT_ITWIN_ID;
+
   const configPathname = path.normalize(path.join(__dirname, "..", "..", "build", "configuration.json"));
   try { fs.writeFileSync(configPathname, JSON.stringify(configuration), "utf8"); } catch { }
 
@@ -272,7 +275,7 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   RpcManager.registerImpl(DtaRpcInterface, DisplayTestAppRpc);
   if (ProcessDetector.isElectronAppBackend) {
     await ElectronHost.startup(opts);
-    EditCommandAdmin.register(BasicManipulationCommand);
+    EditCommandAdmin.registerModule(editorBuiltInCommands);
   } else if (ProcessDetector.isIOSAppBackend) {
     await IOSHost.startup(opts);
   } else if (ProcessDetector.isAndroidAppBackend) {

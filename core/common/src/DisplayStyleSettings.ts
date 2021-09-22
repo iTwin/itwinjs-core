@@ -9,7 +9,7 @@
 // cspell:ignore greyscale ovrs
 
 import {
-  assert, BeEvent, CompressedId64Set, Id64, Id64Array, Id64String, JsonUtils, MutableCompressedId64Set, ObservableSet, OrderedId64Iterable,
+  assert, BeEvent, CompressedId64Set, Id64, Id64Array, Id64String, JsonUtils, MutableCompressedId64Set, OrderedId64Iterable,
 } from "@bentley/bentleyjs-core";
 import { XYZProps } from "@bentley/geometry-core";
 import { AmbientOcclusion } from "./AmbientOcclusion";
@@ -164,8 +164,8 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
   lights?: LightSettingsProps;
   /** Settings controlling how plan projection models are to be rendered. The key for each entry is the Id of the model to which the settings apply. */
   planProjections?: { [modelId: string]: PlanProjectionSettingsProps };
-  /** Old lighting settings - only `sunDir` was ever used; it is now part of `lights`.
-   * @deprecated
+  /** Old lighting settings - only `sunDir` was ever used; it is now part of [[lights]].
+   * DisplayStyle3dSettings will construct a LightSettings from sceneLights.sunDir IFF [[lights]] is not present.
    * @internal
    */
   sceneLights?: { sunDir?: XYZProps };
@@ -236,7 +236,6 @@ export interface DisplayStyleOverridesOptions {
 class ExcludedElements implements OrderedId64Iterable {
   private readonly _json: DisplayStyleSettingsProps;
   private readonly _ids: MutableCompressedId64Set;
-  private _set?: ObservableSet<Id64String>;
   private _synchronizing = false;
 
   public constructor(json: DisplayStyleSettingsProps) {
@@ -249,7 +248,6 @@ class ExcludedElements implements OrderedId64Iterable {
 
   public reset(ids: CompressedId64Set | OrderedId64Iterable | undefined) {
     this.synchronize(() => {
-      this._set?.clear();
       this._ids.reset((ids && "string" !== typeof ids) ? CompressedId64Set.compressIds(ids) : ids);
     });
   }
@@ -260,51 +258,20 @@ class ExcludedElements implements OrderedId64Iterable {
 
   public add(ids: Iterable<Id64String>): void {
     this.synchronize(() => {
-      for (const id of ids) {
+      for (const id of ids)
         this._ids.add(id);
-        this._set?.add(id);
-      }
     });
   }
 
   public delete(ids: Iterable<Id64String>): void {
     this.synchronize(() => {
-      for (const id of ids) {
+      for (const id of ids)
         this._ids.delete(id);
-        this._set?.delete(id);
-      }
     });
-  }
-
-  public obtainSet(): Set<Id64String> {
-    if (this._set)
-      return this._set;
-
-    this.synchronize(() => {
-      this._set = new ObservableSet<string>(this._ids);
-      this._set.onAdded.addListener((id) => this.onAdded(id));
-      this._set.onDeleted.addListener((id) => this.onDeleted(id));
-      this._set.onCleared.addListener(() => this.onCleared());
-    });
-
-    assert(undefined !== this._set);
-    return this._set;
   }
 
   public [Symbol.iterator]() {
     return this._ids[Symbol.iterator]();
-  }
-
-  private onAdded(id: Id64String): void {
-    this.synchronize(() => this._ids.add(id));
-  }
-
-  private onDeleted(id: Id64String): void {
-    this.synchronize(() => this._ids.delete(id));
-  }
-
-  private onCleared(): void {
-    this.synchronize(() => this._ids.clear());
   }
 
   /** The JSON must be kept up-to-date at all times. */
@@ -825,15 +792,6 @@ export class DisplayStyleSettings {
   }
 
   /** The set of elements that will not be drawn by this display style.
-   * @returns The set of excluded elements.
-   * @note The set and the Ids it contains may be very large. It is allocated the first time this property is requested.
-   * @deprecated Use [[excludedElementIds]] for better performance and reduced memory overhead, unless efficient lookup of Ids within the set is required.
-   */
-  public get excludedElements(): Set<Id64String> {
-    return this._excludedElements.obtainSet();
-  }
-
-  /** The set of elements that will not be drawn by this display style.
    * @returns An iterable over the elements' Ids.
    */
   public get excludedElementIds(): OrderedId64Iterable {
@@ -1073,7 +1031,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     if (this._json3d.lights) {
       this._lights = LightSettings.fromJSON(this._json3d.lights);
     } else {
-      const sunDir = this._json3d.sceneLights?.sunDir; // eslint-disable-line deprecation/deprecation
+      const sunDir = this._json3d.sceneLights?.sunDir;
       this._lights = LightSettings.fromJSON(sunDir ? { solar: { direction: sunDir } } : undefined);
     }
 

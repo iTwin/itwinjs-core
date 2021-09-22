@@ -22,7 +22,7 @@ const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
 /** @internal */
 export interface DownloadAndOpenArgs {
-  user: AuthorizedClientRequestContext;
+  user?: AuthorizedClientRequestContext;
   tokenProps: IModelRpcOpenProps;
   syncMode: SyncMode;
   fileNameResolvers?: ((arg: BriefcaseProps) => string)[];
@@ -67,7 +67,7 @@ export class RpcBriefcaseUtility {
                 await BriefcaseManager.pullAndApplyChangesets(db, { user, toIndex });
               }
               return db;
-            } catch (error) {
+            } catch (error: any) {
               if (!(error.errorNumber === IModelStatus.AlreadyOpen))
                 // somehow we have this briefcaseId and the file exists, but we can't open it. Delete it.
                 await BriefcaseManager.deleteBriefcaseFiles(fileName, args.user);
@@ -102,13 +102,12 @@ export class RpcBriefcaseUtility {
     }
   }
 
-  public static async findOrOpen(requestContext: AuthorizedClientRequestContext, iModel: IModelRpcProps, syncMode: SyncMode): Promise<IModelDb> {
+  public static async findOrOpen(user: AuthorizedClientRequestContext, iModel: IModelRpcProps, syncMode: SyncMode): Promise<IModelDb> {
     const iModelDb = IModelDb.tryFindByKey(iModel.key);
-    if (undefined === iModelDb) {
-      return this.open({ user: requestContext, tokenProps: iModel, syncMode, timeout: 1000 });
-    }
-    await iModelDb.reattachDaemon(requestContext);
-    requestContext.enter();
+    if (undefined === iModelDb)
+      return this.open({ user, tokenProps: iModel, syncMode, timeout: 1000 });
+
+    await iModelDb.reattachDaemon(user);
     return iModelDb;
   }
 
@@ -118,13 +117,11 @@ export class RpcBriefcaseUtility {
    */
   public static async open(args: DownloadAndOpenArgs): Promise<IModelDb> {
     const { user, tokenProps, syncMode } = args;
-    user.enter();
     Logger.logTrace(loggerCategory, "RpcBriefcaseUtility.open", () => ({ ...tokenProps }));
 
     const timeout = args.timeout ?? 1000;
     if (syncMode === SyncMode.PullOnly || syncMode === SyncMode.PullAndPush) {
       const briefcaseDb = await BeDuration.race(timeout, this.openBriefcase(args));
-      user.enter();
 
       if (briefcaseDb === undefined) {
         Logger.logTrace(loggerCategory, "Open briefcase - pending", () => ({ ...tokenProps }));
@@ -154,7 +151,6 @@ export class RpcBriefcaseUtility {
     try {
       // now try V2 checkpoint
       db = await SnapshotDb.openCheckpointV2(checkpoint);
-      user.enter();
       Logger.logTrace(loggerCategory, "using V2 checkpoint briefcase", () => ({ ...tokenProps }));
     } catch (e) {
       Logger.logTrace(loggerCategory, "unable to open V2 checkpoint - falling back to V1 checkpoint", () => ({ ...tokenProps }));
@@ -166,7 +162,6 @@ export class RpcBriefcaseUtility {
         aliasFiles: [],
       };
       db = await BeDuration.race(timeout, V1CheckpointManager.getCheckpointDb(request));
-      user.enter();
 
       if (db === undefined) {
         Logger.logTrace(loggerCategory, "Open V1 checkpoint - pending", () => ({ ...tokenProps }));

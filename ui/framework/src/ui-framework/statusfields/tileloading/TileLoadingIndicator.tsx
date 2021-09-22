@@ -10,13 +10,10 @@ import "./TileLoadingIndicator.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
-import { IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
+import { IModelApp, ScreenViewport, Viewport } from "@bentley/imodeljs-frontend";
 import { ProgressLinear } from "@itwin/itwinui-react";
 import { UiFramework } from "../../UiFramework";
 import { StatusFieldProps } from "../StatusFieldProps";
-
-let onViewOpen: (vp: ScreenViewport) => void;
-let onRenderUpdate: () => void;
 
 /** State for the [[TileLoadingIndicator]] component
  * @internal
@@ -40,7 +37,7 @@ export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, 
     this.state = { label: "", progress: 0, enabled: false, finished: true };
   }
 
-  private _update(vp: ScreenViewport) {
+  private _refreshState = (vp: Viewport) => {
     const requested = vp.numRequestedTiles;
     const ready = vp.numReadyTiles;
     const total = ready + requested;
@@ -66,16 +63,18 @@ export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, 
       finished = false;
 
     this.setState({ label: `${ready} / ${total}`, progress: pctComplete, enabled, finished });
-  }
+  };
 
-  private _onViewOpen(vp: ScreenViewport) {
-    onRenderUpdate = () => this._update(vp);
+  private _update = (vp: Viewport) => {
+    // set progress animation before the next repaint.
+    setImmediate(() => this._refreshState(vp));
+  };
 
-    // istanbul ignore if
-    if (this._removeOnRenderListener)
-      this._removeOnRenderListener();
-    this._removeOnRenderListener = vp.onRender.addListener(onRenderUpdate, this);
-  }
+  private _onViewOpen = (vp: ScreenViewport) => {
+    // istanbul ignore next
+    this._removeOnRenderListener && this._removeOnRenderListener();
+    this._removeOnRenderListener = vp.onRender.addListener(this._update);
+  };
 
   public override componentDidMount() {
     // istanbul ignore next
@@ -86,12 +85,11 @@ export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, 
     const vp = IModelApp.viewManager.selectedView;
 
     // if view exists bind update routine to onRender loop, otherwise do so once the onViewOpen event runs
+    // istanbul ignore else
     if (vp) {
       this._onViewOpen(vp);
     } else {
-      // istanbul ignore next
-      onViewOpen = (_vp: ScreenViewport) => this._onViewOpen(_vp);
-      this._removeViewOpenListener = IModelApp.viewManager.onViewOpen.addListener(onViewOpen, this);
+      this._removeViewOpenListener = IModelApp.viewManager.onViewOpen.addListener(this._onViewOpen);
     }
   }
 
@@ -100,7 +98,7 @@ export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, 
     if (!IModelApp.viewManager)
       return;
 
-    // istanbul ignore else
+    // istanbul ignore next
     if (this._removeViewOpenListener)
       this._removeViewOpenListener();
 

@@ -79,6 +79,7 @@ import { FilePropertyProps } from '@bentley/imodeljs-common';
 import { FontMap } from '@bentley/imodeljs-common';
 import { FontProps } from '@bentley/imodeljs-common';
 import { FunctionalElementProps } from '@bentley/imodeljs-common';
+import { GeoCoordinatesRequestProps } from '@bentley/imodeljs-common';
 import { GeoCoordinatesResponseProps } from '@bentley/imodeljs-common';
 import { GeometricElement2dProps } from '@bentley/imodeljs-common';
 import { GeometricElement3dProps } from '@bentley/imodeljs-common';
@@ -99,6 +100,7 @@ import { IDisposable } from '@bentley/bentleyjs-core';
 import { ImageSourceFormat } from '@bentley/imodeljs-common';
 import { IModel } from '@bentley/imodeljs-common';
 import { IModelClient } from '@bentley/imodelhub-client';
+import { IModelCoordinatesRequestProps } from '@bentley/imodeljs-common';
 import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
 import { IModelError } from '@bentley/imodeljs-common';
 import { IModelJsNative } from '@bentley/imodeljs-native';
@@ -129,6 +131,7 @@ import { ModelIdAndGeometryGuid } from '@bentley/imodeljs-common';
 import { ModelLoadProps } from '@bentley/imodeljs-common';
 import { ModelProps } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
+import { Mutable } from '@bentley/bentleyjs-core';
 import { NativeAppAuthorizationConfiguration } from '@bentley/imodeljs-common';
 import { NativeAppNotifications } from '@bentley/imodeljs-common';
 import { NativeLoggerCategory } from '@bentley/imodeljs-native';
@@ -136,7 +139,6 @@ import { NavigationBindingValue } from '@bentley/imodeljs-common';
 import { NavigationValue } from '@bentley/imodeljs-common';
 import { OpenBriefcaseProps } from '@bentley/imodeljs-common';
 import { OpenMode } from '@bentley/bentleyjs-core';
-import { OrderedId64Array } from '@bentley/bentleyjs-core';
 import * as os from 'os';
 import { OverriddenBy } from '@bentley/imodeljs-common';
 import { PhysicalElementProps } from '@bentley/imodeljs-common';
@@ -188,6 +190,7 @@ import { SubCategoryProps } from '@bentley/imodeljs-common';
 import { SubjectProps } from '@bentley/imodeljs-common';
 import { SynchronizationConfigLinkProps } from '@bentley/imodeljs-common';
 import { TelemetryManager } from '@bentley/telemetry-client';
+import { TextureData } from '@bentley/imodeljs-common';
 import { TextureLoadProps } from '@bentley/imodeljs-common';
 import { TextureMapProps } from '@bentley/imodeljs-common';
 import { TextureProps } from '@bentley/imodeljs-common';
@@ -2139,7 +2142,7 @@ export abstract class IModelDb extends IModel {
     createBRepGeometry(createProps: BRepGeometryCreate): DbResult;
     // (undocumented)
     static readonly defaultLimit = 1000;
-    deleteFileProperty(prop: FilePropertyProps): DbResult;
+    deleteFileProperty(prop: FilePropertyProps): void;
     // @alpha
     elementGeometryRequest(requestProps: ElementGeometryRequest): DbResult;
     // @alpha
@@ -2159,15 +2162,12 @@ export abstract class IModelDb extends IModel {
     static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom?: boolean): void;
     generateElementGraphics(request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
     getBriefcaseId(): BriefcaseId;
-    getGeoCoordinatesFromIModelCoordinates(props: string): Promise<GeoCoordinatesResponseProps>;
+    getGeoCoordinatesFromIModelCoordinates(props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps>;
     getGeometryContainment(props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
-    getGuid(): GuidString;
-    getIModelCoordinatesFromGeoCoordinates(props: string): Promise<IModelCoordinatesResponseProps>;
+    getIModelCoordinatesFromGeoCoordinates(props: IModelCoordinatesRequestProps): Promise<IModelCoordinatesResponseProps>;
     getJsClass<T extends typeof Entity>(classFullName: string): T;
     getMassProperties(props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     getMetaData(classFullName: string): EntityMetaData;
-    // @alpha
-    getTextureImage(requestContext: ClientRequestContext, props: TextureLoadProps): Promise<Uint8Array | undefined>;
     get holdsSchemaLock(): boolean;
     get iModelId(): GuidString;
     importSchemas(schemaFileNames: LocalFileName[]): Promise<void>;
@@ -2218,10 +2218,10 @@ export abstract class IModelDb extends IModel {
     queryNextAvailableFileProperty(prop: FilePropertyProps): number;
     queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number>;
     // @internal
-    queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string, abbreviateBlobs?: boolean): Promise<QueryResponse>;
+    queryRows(sessionId: string, ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string, abbreviateBlobs?: boolean): Promise<QueryResponse>;
     querySchemaVersion(schemaName: string): string | undefined;
-    // (undocumented)
-    readFontJson(): string;
+    // @alpha
+    queryTextureData(props: TextureLoadProps): Promise<TextureData | undefined>;
     // @internal (undocumented)
     reattachDaemon(_user: AuthorizedClientRequestContext): Promise<void>;
     // @internal (undocumented)
@@ -2235,7 +2235,7 @@ export abstract class IModelDb extends IModel {
     // @internal (undocumented)
     reverseTxns(numOperations: number): IModelStatus;
     saveChanges(description?: string): void;
-    saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): DbResult;
+    saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void;
     // (undocumented)
     readonly tiles: IModelDb.Tiles;
     static tryFindByKey(key: string): IModelDb | undefined;
@@ -2315,11 +2315,11 @@ export namespace IModelDb {
     export class Tiles {
         constructor(_iModel: IModelDb);
         // (undocumented)
-        getTileContent(requestContext: ClientRequestContext, treeId: string, tileId: string): Promise<Uint8Array>;
+        getTileContent(treeId: string, tileId: string): Promise<Uint8Array>;
         // (undocumented)
-        requestTileContent(requestContext: ClientRequestContext, treeId: string, tileId: string): Promise<IModelJsNative.TileContent>;
+        requestTileContent(treeId: string, tileId: string): Promise<IModelJsNative.TileContent>;
         // (undocumented)
-        requestTileTreeProps(requestContext: ClientRequestContext, id: string): Promise<IModelTileTreeProps>;
+        requestTileTreeProps(id: string): Promise<IModelTileTreeProps>;
     }
     export class Views {
         // @internal
@@ -2374,7 +2374,7 @@ export class IModelHost {
     // @internal
     static get restrictTileUrlsByClientIp(): boolean;
     // @internal (undocumented)
-    static readonly session: SessionProps;
+    static readonly session: Mutable<SessionProps>;
     static get sessionId(): GuidString;
     static set sessionId(id: GuidString);
     // @alpha
@@ -2846,11 +2846,11 @@ export namespace LineStyleDefinition {
     // (undocumented)
     export type Symbols = SymbolProps[];
     export class Utils {
-        static createCompoundComponent(iModel: IModelDb, props: CompoundProps): StyleProps | undefined;
+        static createCompoundComponent(iModel: IModelDb, props: CompoundProps): StyleProps;
         static createPointSymbolComponent(iModel: IModelDb, props: PointSymbolProps): StyleProps | undefined;
         static createRasterComponent(iModel: IModelDb, props: RasterImageProps, image: Uint8Array): StyleProps | undefined;
-        static createStrokePatternComponent(iModel: IModelDb, props: StrokePatternProps): StyleProps | undefined;
-        static createStrokePointComponent(iModel: IModelDb, props: StrokePointProps): StyleProps | undefined;
+        static createStrokePatternComponent(iModel: IModelDb, props: StrokePatternProps): StyleProps;
+        static createStrokePointComponent(iModel: IModelDb, props: StrokePointProps): StyleProps;
         static createStyle(imodel: IModelDb, scopeModelId: Id64String, name: string, props: StyleProps): Id64String;
         static getOrCreateContinuousStyle(imodel: IModelDb, scopeModelId: Id64String, width?: number): Id64String;
         static getOrCreateLinePixelsStyle(imodel: IModelDb, scopeModelId: Id64String, linePixels: LinePixels): Id64String;
@@ -3947,27 +3947,17 @@ export class Texture extends DefinitionElement {
     constructor(props: TextureCreateProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @deprecated
-    static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, _width: number, _height: number, description: string, _flags: 0): Texture;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, name: string): Code;
     static createTexture(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, description?: string): Texture;
     // (undocumented)
     data: Uint8Array;
     // (undocumented)
     description?: string;
-    // @deprecated (undocumented)
-    flags: 0;
     // (undocumented)
     format: ImageSourceFormat;
-    // @deprecated (undocumented)
-    height: number;
-    // @deprecated
-    static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, _width: number, _height: number, description: string, _flags: 0): Id64String;
     static insertTexture(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, description?: string): Id64String;
     // @internal (undocumented)
     toJSON(): TextureProps;
-    // @deprecated (undocumented)
-    width: number;
 }
 
 // @internal
@@ -3990,14 +3980,8 @@ export interface ToChangesetArgs extends UserArg {
 
 // @public
 export interface TxnChangedEntities {
-    // @deprecated
-    deleted: OrderedId64Array;
     readonly deletes: EntityIdAndClassIdIterable;
-    // @deprecated
-    inserted: OrderedId64Array;
     readonly inserts: EntityIdAndClassIdIterable;
-    // @deprecated
-    updated: OrderedId64Array;
     readonly updates: EntityIdAndClassIdIterable;
 }
 

@@ -27,11 +27,13 @@ Typically in the index.tsx file of an IModelApp that uses `App UI` user interfac
 The component [UiSettingsProvider]($ui-framework) can be added into the component tree to provide the storage object via React context. See hook [useUiSettingsStorageContext]($ui-framework). Below is an example of how to wrap the [ConfigurableUiContent]($ui-framework) element so that the context is available to all App UI components.
 
 ```tsx
+<FrameworkVersion version="2">
   <UiSettingsProvider settingsStorage={uiSettingsStorage}>
     <ConfigurableUiContent
       appBackstage={<AppBackstageComposer />}
     />
   </UiSettingsProvider>
+</FrameworkVersion>
 ```
 
 ## UserSettingsProvider
@@ -73,6 +75,10 @@ The [AppUiSettings]($ui-framework) class, which implements the UserSettingsProvi
     await UiFramework.setUiSettingsStorage(SampleAppIModelApp.getUiSettingsStorage());
   }
 ```
+
+### FrameworkVersion
+
+The [FrameworkVersion]($ui-framework) component defines the version context that is accessible to any lower level components. The version string should typically be set to "2" and it should match the value returned by UiFramework.uiVersion. Version "1" compatible components are deprecated and will be removed in a future release.
 
 ## Settings Components
 

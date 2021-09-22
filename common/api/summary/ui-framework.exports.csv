@@ -109,6 +109,7 @@ beta;ChildWindowLocationProps
 beta;ChildWindowManager
 beta;ClassGroupingOption
 beta;ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element
+deprecated;ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element
 internal;clearKeyinPaletteHistory(): void
 public;ColorTheme
 public;CombinedReducerState
@@ -141,16 +142,17 @@ public;ContentControl
 public;ContentControlActivatedEvent 
 public;ContentControlActivatedEventArgs
 public;ContentGroup
-public;ContentGroupManager
 public;ContentGroupProps
+public;class ContentGroupProvider
 public;ContentLayout 
 public;ContentLayoutActivatedEvent 
 public;ContentLayoutActivatedEventArgs
 public;ContentLayoutComponentProps 
 public;ContentLayoutDef
 public;ContentLayoutManager
-public;ContentLayoutProps 
 public;ContentProps
+public;ContentToolWidgetComposer(props: ContentToolWidgetComposerProps): JSX.Element
+public;ContentToolWidgetComposerProps
 public;ContentViewManager
 public;CoreTools
 public;createAction
@@ -182,11 +184,15 @@ public;CustomItemProps
 public;DeepReadonly
 public;DeepReadonlyArray
 public;DeepReadonlyObject
+public;DefaultContentTools
+public;DefaultContentToolsAppData
 beta;DefaultDialogGridContainer({ componentGenerator, isToolSettings }:
 beta;DefaultNavigationProps
 deprecated;DefaultNavigationProps
+public;DefaultNavigationTools
 beta;DefaultNavigationWidget 
 deprecated;DefaultNavigationWidget 
+public;DefaultStatusbarItems
 internal;DefaultToolSettingsProvider 
 public;DefaultViewOverlay({ viewport, onPlayPause, featureOptions }: ViewOverlayProps): JSX.Element | null
 public;DialogChangedEvent 
@@ -332,10 +338,6 @@ public;KeyinFieldLocalization
 internal;KeyinPalettePanel({ keyins, onKeyinExecuted, historyLength: allowedHistoryLength }: KeyinPalettePanelProps): JSX.Element
 alpha;KeyinPalettePopup({ el, id, keyins, onCancel, onItemExecuted }: KeyinPalettePopupProps): JSX.Element
 alpha;KeyinPalettePopupProps
-public;LayoutFragmentProps
-public;LayoutHorizontalSplitProps 
-public;LayoutSplitPropsBase
-public;LayoutVerticalSplitProps 
 beta;ListItem
 beta;ListItemType
 beta;ListPicker 
@@ -521,10 +523,15 @@ internal;StagePanelZoneDefKeys = keyof Pick
 public;StagePanelZoneProps
 internal;StagePanelZonesDef
 public;StagePanelZonesProps
+public;StandardContentToolsProvider 
+public;StandardFrontstageProps
+public;StandardFrontstageProvider 
 public;StandardMessageBox 
 public;StandardMessageBoxProps 
+public;StandardNavigationToolsProvider 
 alpha;StandardRotationNavigationAid 
 alpha;StandardRotationNavigationAidControl 
+public;StandardStatusbarItemsProvider 
 public;StateManager
 public;StateType
 public;StatusBar 
@@ -542,6 +549,7 @@ public;StatusBarLeftSection(props: CommonDivProps): JSX.Element
 public;StatusBarProps 
 public;StatusBarRightSection(props: CommonDivProps): JSX.Element
 public;StatusBarSpaceBetween(props: CommonDivProps): JSX.Element
+public;StatusBarWidgetComposerControl 
 public;class StatusBarWidgetControl 
 public;StatusBarWidgetControlArgs
 internal;StatusBarZone 
@@ -647,7 +655,7 @@ public;UiVisibilityChangedEvent
 public;UiVisibilityEventArgs
 alpha;UnitSystemSelector(props: UnitSystemSelectorProps): JSX.Element
 beta;UnitSystemSelectorProps
-internal;useActiveFrontstageDef(): FrontstageDef | undefined
+internal;useActiveFrontstageDef(): import("./FrontstageDef").FrontstageDef | undefined
 beta;useActiveFrontstageId: () => string
 public;useActiveIModelConnection(): IModelConnection | undefined
 internal;useActiveModalFrontstageInfo(): ModalFrontstageInfo | undefined
@@ -698,6 +706,8 @@ beta;ViewSelectorChangedEvent
 beta;ViewSelectorChangedEventArgs
 beta;ViewSelectorDefaultProps = Pick
 beta;ViewSelectorProps
+public;ViewToolWidgetComposer(props: ViewToolWidgetComposerProps): JSX.Element
+public;ViewToolWidgetComposerProps
 public;ViewUtilities
 alpha;VisibilityChangeListener = (nodeIds?: string[], visibilityStatus?: Map
 alpha;VisibilityStatus
@@ -719,6 +729,7 @@ internal;WidgetEventArgs
 public;WidgetHost
 internal;WidgetInfo
 beta;WidgetManager
+public;WidgetPanelProps = Omit
 internal;WidgetPanelsFrontstage: React.NamedExoticComponent
 internal;WidgetPanelsFrontstageContent(): JSX.Element | null
 internal;WidgetPanelsFrontstageState

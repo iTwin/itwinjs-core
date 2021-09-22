@@ -6,7 +6,7 @@ import * as React from "react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import {
   DialogButtonDef, DialogButtonType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem,
-  PropertyChangeResult, PropertyChangeStatus, PropertyDescription, StandardTypeNames, WidgetState,
+  PropertyChangeResult, PropertyChangeStatus, PropertyDescription, StandardContentLayouts, StandardTypeNames, WidgetState,
 } from "@bentley/ui-abstract";
 import {
   ActionItemButton, CommandItemDef, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, GroupButton, ModalDialogManager,
@@ -137,12 +137,18 @@ class DynamicModalUiDataProvider extends DialogLayoutDataProvider {
 }
 
 export class Frontstage4 extends FrontstageProvider {
+  public get id(): string {
+    return "Test4";
+  }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const myContentGroup: ContentGroup = new ContentGroup(
       {
+        id: "CubeContent",
+        layout: StandardContentLayouts.singleView,
         contents: [
           {
+            id: "navigationCube",
             classId: "CubeContent",
           },
         ],
@@ -151,13 +157,11 @@ export class Frontstage4 extends FrontstageProvider {
 
     return (
       <Frontstage
-        id="Test4"
+        id={this.id}
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout="SingleContent"
         contentGroup={myContentGroup}
         defaultContentId="TestContent1"
         isInFooterMode={true}
-        applicationData={{ key: "value" }}
         contentManipulationTools={
           <Zone
             widgets={[

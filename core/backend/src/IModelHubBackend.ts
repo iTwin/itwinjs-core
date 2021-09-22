@@ -98,7 +98,7 @@ export class IModelHubBackend {
 
     const nativeDb = IModelDb.openDgnDb({ path: revision0 }, OpenMode.ReadWrite);
     try {
-      nativeDb.saveProjectGuid(arg.iTwinId);
+      nativeDb.setITwinId(arg.iTwinId);
       // nativeDb.setDbGuid(this.iModelId); NEEDS_WORK - iModelHub should accept this value, not create it.
       nativeDb.saveChanges();
       nativeDb.deleteAllTxns(); // necessary before resetting briefcaseId
@@ -159,14 +159,11 @@ export class IModelHubBackend {
     const user = arg.user ?? await AuthorizedBackendRequestContext.create();
     try {
       await this.iModelClient.briefcases.get(user, iModelId, new BriefcaseQuery().byId(briefcaseId));
-      user.enter();
     } catch (error) {
-      user.enter();
       throw error;
     }
 
     await this.iModelClient.briefcases.delete(user, iModelId, briefcaseId);
-    user.enter();
   }
 
   public static async getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]> {
@@ -181,7 +178,6 @@ export class IModelHubBackend {
   public static async acquireNewBriefcaseId(arg: AcquireNewBriefcaseIdArg): Promise<number> {
     const user = arg.user ?? await AuthorizedBackendRequestContext.create();
     const briefcase = await this.iModelClient.briefcases.create(user, arg.iModelId);
-    user.enter();
 
     if (!briefcase)
       throw new IModelError(BriefcaseStatus.CannotAcquire, "Could not acquire briefcase");
@@ -261,7 +257,6 @@ export class IModelHubBackend {
     if (query) {
       const user = arg.user ?? await AuthorizedBackendRequestContext.create();
       const changeSets = await this.iModelClient.changeSets.get(user, arg.iModelId, query);
-      user.enter();
 
       for (const cs of changeSets)
         val.push(this.toChangeSetProps(cs));
