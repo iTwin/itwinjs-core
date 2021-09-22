@@ -236,29 +236,6 @@ export enum HttpStatus {
   ServerError = 0x17004,
 }
 
-/** Server returned WSG errors
- * @beta Right name? Right package?
- */
-export enum WSStatus {
-  Success = 0,
-  WSERROR_BASE = 0x18000,
-  Unknown = WSERROR_BASE + 1,
-  LoginFailed = WSERROR_BASE + 2,
-  SslRequired = WSERROR_BASE + 3,
-  NotEnoughRights = WSERROR_BASE + 4,
-  RepositoryNotFound = WSERROR_BASE + 5,
-  SchemaNotFound = WSERROR_BASE + 6,
-  ClassNotFound = WSERROR_BASE + 7,
-  PropertyNotFound = WSERROR_BASE + 8,
-  InstanceNotFound = WSERROR_BASE + 9,
-  FileNotFound = WSERROR_BASE + 10,
-  NotSupported = WSERROR_BASE + 11,
-  NoServerLicense = WSERROR_BASE + 12,
-  NoClientLicense = WSERROR_BASE + 13,
-  TooManyBadLoginAttempts = WSERROR_BASE + 14,
-  LoginRequired = WSERROR_BASE + 15,
-}
-
 /** iModelHub Services Errors
  * @beta Right package?
  */
@@ -607,20 +584,6 @@ export class BentleyError extends Error {
       case HttpStatus.Redirection: return "HTTP Redirection";
       case HttpStatus.ClientError: return "HTTP Client error";
       case HttpStatus.ServerError: return "HTTP Server error";
-      case WSStatus.Unknown: return "Unknown error";
-      case WSStatus.ClassNotFound: return "Class not found";
-      case WSStatus.FileNotFound: return "File not found";
-      case WSStatus.InstanceNotFound: return "Instance not found";
-      case WSStatus.LoginFailed: return "Login failed";
-      case WSStatus.NoClientLicense: return "No client license";
-      case WSStatus.NoServerLicense: return "No server license";
-      case WSStatus.NotEnoughRights: return "Not enough rights";
-      case WSStatus.NotSupported: return "Not supported";
-      case WSStatus.PropertyNotFound: return "Property not found";
-      case WSStatus.RepositoryNotFound: return "Repository not found";
-      case WSStatus.SchemaNotFound: return "Schema not found";
-      case WSStatus.SslRequired: return "SSL required";
-      case WSStatus.TooManyBadLoginAttempts: return "Too many bad login attempts";
       case IModelHubStatus.Unknown: return "Unknown error";
       case IModelHubStatus.MissingRequiredProperties: return "Missing required properties";
       case IModelHubStatus.InvalidPropertiesValues: return "Invalid properties values";

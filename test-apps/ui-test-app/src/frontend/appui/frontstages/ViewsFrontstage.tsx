@@ -5,22 +5,24 @@
 import * as React from "react";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import {
-  ActivityMessageDetails, ActivityMessageEndReason, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, OutputMessageType,
+  ActivityMessageDetails, ActivityMessageEndReason, IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType,
   ScreenViewport, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { MapLayersWidgetControl } from "@bentley/map-layers"; // used to test map-layers widget control
 import { NodeKey } from "@bentley/presentation-common";
 import {
-  BadgeType, CommonToolbarItem, ConditionalBooleanValue, RelativePosition, SpecialKey, StageUsage, ToolbarItemUtilities, WidgetState,
+  BadgeType, CommonToolbarItem, ConditionalBooleanValue, ContentLayoutProps, RelativePosition, SpecialKey, StageUsage, ToolbarItemUtilities, WidgetState,
 } from "@bentley/ui-abstract";
 import { CustomToolbarItem, SelectionMode, useToolbarPopupContext } from "@bentley/ui-components";
 import { Point, ScrollView } from "@bentley/ui-core";
 import {
-  BasicNavigationWidget, BasicToolWidget, CommandItemDef, ConfigurableUiManager, ContentGroup, ContentLayoutDef, ContentLayoutManager,
-  ContentLayoutProps, ContentProps, ContentViewManager, CoreTools, CursorInformation, CursorPopupContent, CursorPopupManager, CursorUpdatedEventArgs,
-  CustomItemDef, EmphasizeElementsChangedArgs, Frontstage, FrontstageDef, FrontstageManager, FrontstageProvider, GroupItemDef,
-  HideIsolateEmphasizeAction, HideIsolateEmphasizeActionHandler, HideIsolateEmphasizeManager, IModelConnectedViewSelector, MessageManager,
-  ModalDialogManager, ModelessDialogManager, ModelsTreeNodeType, SavedViewLayout, SavedViewLayoutProps, StagePanel,
+  BasicNavigationWidget, BasicToolWidget, CommandItemDef, ConfigurableUiManager, ContentGroup, ContentGroupProps,
+  ContentGroupProvider, ContentProps, ContentViewManager, CoreTools, CursorInformation,
+  CursorPopupContent, CursorPopupManager, CursorUpdatedEventArgs, CustomItemDef,
+  EmphasizeElementsChangedArgs, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider,
+  GroupItemDef, HideIsolateEmphasizeAction, HideIsolateEmphasizeActionHandler,
+  HideIsolateEmphasizeManager, IModelConnectedViewSelector, MessageManager,
+  ModalDialogManager, ModelessDialogManager, ModelsTreeNodeType, StagePanel,
   SyncUiEventId, ToolbarHelper, UiFramework, Widget, WIDGET_OPACITY_DEFAULT, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
 import { Button, Slider } from "@itwin/itwinui-react";
@@ -30,7 +32,7 @@ import { SampleAppIModelApp, SampleAppUiActionId } from "../../../frontend/index
 import { AccuDrawPopupTools } from "../../tools/AccuDrawPopupTools";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { ToolWithDynamicSettings } from "../../tools/ToolWithDynamicSettings";
-import { OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool } from "../../tools/UiProviderTool";
+import { getSavedViewLayoutProps, OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool } from "../../tools/UiProviderTool";
 import { AppUi } from "../AppUi";
 // cSpell:Ignore contentviews statusbars uitestapp
 import { IModelViewportControl } from "../contentviews/IModelViewport";
@@ -60,7 +62,7 @@ function MySliderPanel() {
   }, []);
 
   const { closePanel } = useToolbarPopupContext();
-  const handlApply = React.useCallback(() => {
+  const handleApply = React.useCallback(() => {
     closePanel();
   }, [closePanel]);
 
@@ -71,13 +73,121 @@ function MySliderPanel() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "4px", alignItems: "center", width: "300px", height: "68px", padding: "6px", boxSizing: "border-box" }}>
       <Slider style={{ width: "100%" }} min={0} max={100} values={sliderValues} step={1} onChange={handleChange} />
-      <Button onClick={handlApply}>Apply</Button>
+      <Button onClick={handleApply}>Apply</Button>
     </div>
   );
 }
 
+export class InitialIModelContentStageProvider extends ContentGroupProvider {
+  public override prepareToSaveProps(contentGroupProps: ContentGroupProps) {
+    const newContentsArray = contentGroupProps.contents.map((content: ContentProps) => {
+      const newContent = { ...content };
+      if (newContent.applicationData)
+        delete newContent.applicationData;
+      return newContent;
+    });
+    return { ...contentGroupProps, contents: newContentsArray };
+  }
+
+  public override applyUpdatesToSavedProps(contentGroupProps: ContentGroupProps) {
+    const newContentsArray = contentGroupProps.contents.map((content: ContentProps) => {
+      const newContent = { ...content };
+
+      if (newContent.classId === IModelViewportControl.id) {
+        newContent.applicationData = {
+          ...newContent.applicationData,
+          featureOptions:
+          {
+            defaultViewOverlay: {
+              enableScheduleAnimationViewOverlay: true,
+              enableAnalysisTimelineViewOverlay: true,
+              enableSolarTimelineViewOverlay: true,
+            },
+          },
+        };
+      }
+      return newContent;
+    });
+    return { ...contentGroupProps, contents: newContentsArray };
+  }
+
+  public async provideContentGroup(props: FrontstageProps): Promise<ContentGroup> {
+    const viewIdsSelected = SampleAppIModelApp.getInitialViewIds();
+    const iModelConnection = UiFramework.getIModelConnection();
+
+    if (!iModelConnection)
+      throw new Error(`Unable to generate content group if not iModelConnection is available`);
+
+    if (0 === viewIdsSelected.length) {
+      const savedViewLayoutProps = await getSavedViewLayoutProps(props.id, iModelConnection);
+      if (savedViewLayoutProps) {
+        const viewState = savedViewLayoutProps.contentGroupProps.contents[0].applicationData?.viewState;
+        if (viewState) {
+          UiFramework.setDefaultViewState(viewState);
+        }
+        return new ContentGroup(savedViewLayoutProps.contentGroupProps);
+      }
+      throw (Error(`Could not load saved layout ContentLayoutProps`));
+    }
+
+    // first find an appropriate layout
+    const contentLayoutProps: ContentLayoutProps | undefined = AppUi.findLayoutFromContentCount(viewIdsSelected.length);
+    if (!contentLayoutProps) {
+      throw (Error(`Could not find layout ContentLayoutProps when number of viewStates=${viewIdsSelected.length}`));
+    }
+
+    let viewStates: ViewState[] = [];
+    const promises = new Array<Promise<ViewState>>();
+    viewIdsSelected.forEach((viewId: string) => {
+      promises.push(iModelConnection.views.load(viewId));
+    });
+
+    try {
+      viewStates = await Promise.all(promises);
+    } catch { }
+
+    // create the content props that specifies an iModelConnection and a viewState entry in the application data.
+    const contentProps: ContentProps[] = [];
+    viewStates.forEach((viewState, index) => {
+      if (0 === index) {
+        UiFramework.setDefaultViewState(viewState);
+      }
+      const thisContentProps: ContentProps = {
+        id: `imodel-view-${index}`,
+        classId: IModelViewportControl,
+        applicationData:
+        {
+          viewState, iModelConnection,
+          featureOptions:
+          {
+            defaultViewOverlay: {
+              enableScheduleAnimationViewOverlay: true,
+              enableAnalysisTimelineViewOverlay: true,
+              enableSolarTimelineViewOverlay: true,
+            },
+          },
+        },
+      };
+      contentProps.push(thisContentProps);
+    });
+
+    const myContentGroup: ContentGroup = new ContentGroup(
+      {
+        id: "default-group",
+        layout: contentLayoutProps,
+        contents: contentProps,
+      });
+    return myContentGroup;
+  }
+}
+
 export class ViewsFrontstage extends FrontstageProvider {
+  private _contentGroupProvider = new InitialIModelContentStageProvider();
   public static stageId = "ViewsFrontstage";
+  public get id(): string {
+    return ViewsFrontstage.stageId;
+  }
+
   public static unifiedSelectionPropertyGridId = "UnifiedSelectionPropertyGrid";
   private _additionalTools = new AdditionalTools();
 
@@ -138,7 +248,7 @@ export class ViewsFrontstage extends FrontstageProvider {
       this.applyVisibilityOverrideToSpatialViewports(FrontstageManager.activeFrontstageDef, args.viewport, args.action); // eslint-disable-line @typescript-eslint/no-floating-promises
   };
 
-  constructor(public viewStates: ViewState[], public iModelConnection: IModelConnection) {
+  constructor() {
     super();
 
     HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.addListener(this._onEmphasizeElementsChangedHandler);
@@ -157,38 +267,6 @@ export class ViewsFrontstage extends FrontstageProvider {
   }
 
   /** Commands that opens switches the content layout */
-  private get _switchLayout1() {
-    return new CommandItemDef({
-      iconSpec: "icon-placeholder",
-      label: "Horizontal Layout",
-      execute: async () => {
-        const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
-        if (activeFrontstageDef) {
-          const contentLayout = ContentLayoutManager.findLayout("TwoHalvesHorizontal");
-          if (contentLayout && activeFrontstageDef.contentGroup) {
-            await ContentLayoutManager.setActiveLayout(contentLayout, activeFrontstageDef.contentGroup);
-          }
-        }
-      },
-    });
-  }
-
-  private get _switchLayout2() {
-    return new CommandItemDef({
-      iconSpec: "icon-placeholder",
-      label: "Vertical Layout",
-      execute: async () => {
-        const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
-        if (activeFrontstageDef) {
-          const contentLayout = ContentLayoutManager.findLayout("TwoHalvesVertical");
-          if (contentLayout && activeFrontstageDef.contentGroup) {
-            await ContentLayoutManager.setActiveLayout(contentLayout, activeFrontstageDef.contentGroup);
-          }
-        }
-      },
-    });
-  }
-
   private get _additionalNavigationVerticalToolbarItems() {
     const customPopupButton: CustomToolbarItem = {
       isCustom: true,
@@ -207,7 +285,7 @@ export class ViewsFrontstage extends FrontstageProvider {
           label: "Layout Demos",
           panelLabel: "Layout Demos",
           iconSpec: "icon-placeholder",
-          items: [this._switchLayout1, this._switchLayout2],
+          items: [AppTools.switchLayout1, AppTools.switchLayout2],
         }),
       ),
       customPopupButton,
@@ -215,39 +293,12 @@ export class ViewsFrontstage extends FrontstageProvider {
   }
 
   public get frontstage() {
-    // first find an appropriate layout
-    const contentLayoutProps: ContentLayoutProps | undefined = AppUi.findLayoutFromContentCount(this.viewStates.length);
-    if (!contentLayoutProps) {
-      throw (Error(`Could not find layout ContentLayoutProps when number of viewStates=${this.viewStates.length}`));
-    }
+    const iModelConnection = UiFramework.getIModelConnection();
 
-    const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(contentLayoutProps);
-
-    // create the content props that specifies an iModelConnection and a viewState entry in the application data.
-    const contentProps: ContentProps[] = [];
-    for (const viewState of this.viewStates) {
-      const thisContentProps: ContentProps = {
-        classId: IModelViewportControl,
-        applicationData:
-        {
-          viewState, iModelConnection: this.iModelConnection,
-          featureOptions:
-          {
-            defaultViewOverlay: {
-              enableScheduleAnimationViewOverlay: true,
-              enableAnalysisTimelineViewOverlay: true,
-              enableSolarTimelineViewOverlay: true,
-            },
-          },
-        },
-      };
-      contentProps.push(thisContentProps);
-    }
-    const myContentGroup: ContentGroup = new ContentGroup({ contents: contentProps });
     return (
       <Frontstage id={ViewsFrontstage.stageId}
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout={contentLayoutDef} contentGroup={myContentGroup}
+        contentGroup={this._contentGroupProvider}
         isInFooterMode={true} applicationData={{ key: "value" }}
         usage={StageUsage.General}
         version={3.1} // Defaults to 0. Increment this when Frontstage changes are meaningful enough to reinitialize saved user layout settings.
@@ -298,7 +349,7 @@ export class ViewsFrontstage extends FrontstageProvider {
               //   applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
               <Widget iconSpec="icon-visibility" label="Searchable Tree" control={VisibilityWidgetControl}
                 applicationData={{
-                  iModelConnection: this.iModelConnection,
+                  iModelConnection,
                   config: {
                     modelsTree: {
                       selectionMode: SelectionMode.Extended,
@@ -318,7 +369,7 @@ export class ViewsFrontstage extends FrontstageProvider {
             widgets={
               [
                 <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectionTable" control={UnifiedSelectionTableWidgetControl}
-                  applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} badgeType={BadgeType.New} />,
+                  applicationData={{ iModelConnection }} fillZone={true} badgeType={BadgeType.New} />,
                 /* <Widget iconSpec="icon-placeholder" label="External iModel View" control={ViewportWidgetControl} fillZone={true} badgeType={BadgeType.TechnicalPreview}
                    applicationData={{ projectName: "iModelHubTest", imodelName: "GrandCanyonTerrain" }} />, */
               ]}
@@ -340,7 +391,7 @@ export class ViewsFrontstage extends FrontstageProvider {
                 <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectPropertyGrid"
                   id={ViewsFrontstage.unifiedSelectionPropertyGridId}
                   control={UnifiedSelectionPropertyGridWidgetControl} fillZone={true}
-                  applicationData={{ iModelConnection: this.iModelConnection }}
+                  applicationData={{ iModelConnection }}
                 />,
                 <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
               ]}
@@ -383,9 +434,11 @@ class AdditionalTools {
       if (activeContentControl && activeContentControl.viewport &&
         (undefined !== activeContentControl.viewport.view.analysisStyle || undefined !== activeContentControl.viewport.view.scheduleScript)) {
         const frontstageProvider = new NestedAnimationStage();
-        const frontstageDef = frontstageProvider.initializeDef();
-        SampleAppIModelApp.saveAnimationViewId(activeContentControl.viewport.view.id);
-        await FrontstageManager.openNestedFrontstage(frontstageDef);
+        const frontstageDef = await FrontstageDef.create(frontstageProvider);
+        if (frontstageDef) {
+          SampleAppIModelApp.saveAnimationViewId(activeContentControl.viewport.view.id);
+          await FrontstageManager.openNestedFrontstage(frontstageDef);
+        }
       }
     },
     isHidden: new ConditionalBooleanValue(() => {
@@ -569,52 +622,6 @@ class AdditionalTools {
     });
   }
 
-  private get _saveContentLayout() {
-    return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.saveContentLayout", badgeType: BadgeType.TechnicalPreview, execute: () => {
-        if (ContentLayoutManager.activeLayout && ContentLayoutManager.activeContentGroup) {
-          // Create props for the Layout, ContentGroup and ViewStates
-          const savedViewLayoutProps = SavedViewLayout.viewLayoutToProps(ContentLayoutManager.activeLayout, ContentLayoutManager.activeContentGroup, true,
-            (contentProps: ContentProps) => {
-              if (contentProps.applicationData)
-                delete contentProps.applicationData;
-            });
-
-          // Save the SavedViewLayoutProps
-          ViewsFrontstage.savedViewLayoutProps = JSON.stringify(savedViewLayoutProps);
-        }
-      },
-    });
-  }
-
-  private get _restoreContentLayout() {
-    return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.restoreContentLayout", badgeType: BadgeType.New, execute: async () => {
-        const iModelConnection = UiFramework.getIModelConnection();
-        if (ViewsFrontstage.savedViewLayoutProps && iModelConnection) {
-          // Parse SavedViewLayoutProps
-          const savedViewLayoutProps: SavedViewLayoutProps = JSON.parse(ViewsFrontstage.savedViewLayoutProps);
-          // Create ContentLayoutDef
-          const contentLayoutDef = new ContentLayoutDef(savedViewLayoutProps.contentLayoutProps);
-          // Create ViewStates
-          const viewStates = await SavedViewLayout.viewStatesFromProps(iModelConnection, savedViewLayoutProps);
-
-          // Add applicationData to the ContentProps
-          savedViewLayoutProps.contentGroupProps.contents.forEach((contentProps: ContentProps, index: number) => {
-            contentProps.applicationData = { viewState: viewStates[index], iModelConnection };
-          });
-          const contentGroup = new ContentGroup(savedViewLayoutProps.contentGroupProps);
-
-          // activate the layout
-          await ContentLayoutManager.setActiveLayout(contentLayoutDef, contentGroup);
-
-          // emphasize the elements
-          SavedViewLayout.emphasizeElementsFromProps(contentGroup, savedViewLayoutProps);
-        }
-      },
-    });
-  }
-
   private get _startCursorPopup() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.startCursorPopup", execute: async () => {
@@ -760,8 +767,8 @@ class AdditionalTools {
   public getMiscGroupItem = (): CommonToolbarItem => {
     const children = ToolbarHelper.constructChildToolbarItems([
       this._nestedGroup,
-      this._saveContentLayout,
-      this._restoreContentLayout,
+      AppTools.saveContentLayout,
+      AppTools.restoreSavedContentLayout,
       this._startCursorPopup,
       this._addCursorPopups,
       this._endCursorPopup,
@@ -806,3 +813,4 @@ class AdditionalTools {
   ], 100, { groupPriority: 20 }), this.getMiscGroupItem(), OpenComponentExamplesPopoutTool.getActionButtonDef(400, 40),
   OpenCustomPopoutTool.getActionButtonDef(410, 40), OpenViewPopoutTool.getActionButtonDef(420, 40)];
 }
+

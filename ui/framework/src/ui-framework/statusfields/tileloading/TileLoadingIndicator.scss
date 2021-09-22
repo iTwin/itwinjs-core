@@ -9,7 +9,7 @@
   $font-size-medium: $iui-font-size-small;
   $font-size-small: $iui-font-size-small - 1px;
 
-  transition: opacity 1s ease-in;
+  transition: opacity .3s ease-in;
   opacity: 0;
   display: flex;
   flex-direction: column;

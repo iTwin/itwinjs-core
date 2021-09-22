@@ -59,7 +59,8 @@ export interface WidgetProvider {
    * Semi-stable id is used when auto-generated `widgetDef` id is detected,
    * but correctness of such id depends on widget index in the returned array.
    */
-  getWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, section?: StagePanelSection): ReadonlyArray<WidgetDef> | undefined;
+  getWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation,
+    section?: StagePanelSection, frontstageApplicationData?: any): ReadonlyArray<WidgetDef> | undefined;
 }
 
 function isZoneLocation(location: ZoneLocation | StagePanelLocation): location is ZoneLocation {
@@ -209,7 +210,8 @@ export class WidgetManager {
 
   /** Gets WidgetDefs for a Frontstage location.
    */
-  public getWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, section?: StagePanelSection): ReadonlyArray<WidgetDef> | undefined {
+  public getWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, section?: StagePanelSection,
+    frontstageApplicationData?: any): ReadonlyArray<WidgetDef> | undefined {
     const definedSection = section === undefined ? StagePanelSection.Start : section;
 
     const widgetInfos = this._widgets.filter((info) => {
@@ -223,7 +225,8 @@ export class WidgetManager {
 
     // Consult the registered WidgetProviders
     this._providers.forEach((p, index) => {
-      const wds = p.getWidgetDefs(stageId, stageUsage, location, definedSection);
+      const wds = p.getWidgetDefs(stageId, stageUsage, location, definedSection, frontstageApplicationData);
+      // istanbul ignore else
       if (wds) {
         const stableWds = wds.map((wd) => {
           const stableId = getWidgetProviderStableWidgetId(p.id, stageUsage, location, definedSection, index);
@@ -235,7 +238,7 @@ export class WidgetManager {
 
     // Consult the UiItemsManager to get any Abstract widgets
     if (location in StagePanelLocation) {
-      const widgets = UiItemsManager.getWidgets(stageId, stageUsage, location as StagePanelLocation, definedSection);
+      const widgets = UiItemsManager.getWidgets(stageId, stageUsage, location as StagePanelLocation, definedSection, frontstageApplicationData);
       const updatedWidgets = UiItemsArbiter.updateWidgets(widgets);
       updatedWidgets.forEach((abstractProps, index) => {
         const props = WidgetDef.createWidgetPropsFromAbstractProps(abstractProps);
@@ -250,7 +253,7 @@ export class WidgetManager {
         const panelLocation = this.getStagePanelLocationFromZoneLocation(location as ZoneLocation);
         // istanbul ignore else
         if (panelLocation && location in AbstractZoneLocation) {
-          const widgets = UiItemsManager.getWidgets(stageId, stageUsage, panelLocation, undefined, location as unknown as AbstractZoneLocation);
+          const widgets = UiItemsManager.getWidgets(stageId, stageUsage, panelLocation, undefined, location as unknown as AbstractZoneLocation, frontstageApplicationData);
           const updatedWidgets = UiItemsArbiter.updateWidgets(widgets);
           updatedWidgets.forEach((abstractProps, index) => {
             const props = WidgetDef.createWidgetPropsFromAbstractProps(abstractProps);

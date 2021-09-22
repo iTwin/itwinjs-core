@@ -53,7 +53,7 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
       this._deploymentRegion = process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION !== undefined ? Number(process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION) : 0; // Defaults to PROD (for 3rd party users)
 
     const imsClient = new ImsAuthorizationClient();
-    this._imsUrl = await imsClient.getUrl(new ClientRequestContext(""));
+    this._imsUrl = await imsClient.getUrl();
 
     // Due to issues with a timeout or failed request to the authorization service increasing the standard timeout and adding retries.
     // Docs for this option here, https://github.com/panva/node-openid-client/tree/master/docs#customizing-http-requests

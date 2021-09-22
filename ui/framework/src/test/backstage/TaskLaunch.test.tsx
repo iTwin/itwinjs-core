@@ -35,13 +35,16 @@ describe("Backstage", () => {
   describe("<TaskLaunchBackstageItem />", async () => {
     it("TaskLaunchBackstageItem should render & execute", async () => {
       class Frontstage1 extends FrontstageProvider {
+        public static stageId = "Test1";
+        public get id(): string {
+          return Frontstage1.stageId;
+        }
         public get frontstage(): React.ReactElement<FrontstageProps> {
           return (
             <Frontstage
-              id="Test1"
+              id={this.id}
               defaultTool={CoreTools.selectElementCommand}
-              defaultLayout="FourQuadrants"
-              contentGroup="TestContentGroup1"
+              contentGroup={TestUtils.TestContentGroup1}
             />
           );
         }
@@ -53,7 +56,7 @@ describe("Backstage", () => {
         tasks: [
           {
             id: "Task1",
-            primaryStageId: "Test1",
+            primaryStageId: Frontstage1.stageId,
             iconSpec: "icon-placeholder",
             labelKey: "SampleApp:backstage.task1",
           },

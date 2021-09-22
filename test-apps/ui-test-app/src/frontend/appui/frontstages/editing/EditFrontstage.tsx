@@ -3,18 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelApp, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
+import { IModelApp } from "@bentley/imodeljs-frontend";
 import { CommonToolbarItem, ConditionalBooleanValue, IconSpecUtilities, StageUsage, ToolbarItemUtilities, WidgetState } from "@bentley/ui-abstract";
 import {
-  AccuDrawDialog, AccuDrawWidgetControl, BasicNavigationWidget, BasicToolWidget, CommandItemDef, ContentGroup, ContentLayoutDef, ContentLayoutProps, ContentProps,
+  AccuDrawDialog, AccuDrawWidgetControl, BasicNavigationWidget, BasicToolWidget, CommandItemDef,
   CoreTools, CustomItemDef, Frontstage, FrontstageProvider, IModelConnectedViewSelector, ModelessDialogManager,
   StagePanel, ToolbarHelper, Widget, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../../../../frontend/index";
 import { EditTools } from "../../../tools/editing/ToolSpecifications";
-import { AppUi } from "../../AppUi";
 // cSpell:Ignore contentviews statusbars
-import { IModelViewportControl } from "../../contentviews/IModelViewport";
 import { EditStatusBarWidgetControl } from "../../statusbars/editing/EditStatusBar";
 import { ActiveSettingsWidget } from "../../widgets/editing/ActiveSettingsWidget";
 import { ModelCreationWidget } from "../../widgets/editing/ModelCreationWidget";
@@ -23,9 +21,14 @@ import { Orientation } from "@bentley/ui-core";
 /* eslint-disable react/jsx-key, deprecation/deprecation */
 
 import sketchIconSvg from "../../icons/draw.svg?sprite";
+import { InitialIModelContentStageProvider } from "../ViewsFrontstage";
 
 export class EditFrontstage extends FrontstageProvider {
+  private _contentGroupProvider = new InitialIModelContentStageProvider();
   public static stageId = "EditFrontstage";
+  public get id(): string {
+    return EditFrontstage.stageId;
+  }
 
   private _additionalTools = new AdditionalTools();
 
@@ -36,10 +39,6 @@ export class EditFrontstage extends FrontstageProvider {
       <Widget id={AccuDrawWidgetControl.id} label={AccuDrawWidgetControl.label} control={AccuDrawWidgetControl} />,
     ],
   };
-
-  constructor(public viewStates: ViewState[], public iModelConnection: IModelConnection) {
-    super();
-  }
 
   /** Get the CustomItemDef for ViewSelector  */
   private get _viewSelectorItemDef() {
@@ -59,28 +58,10 @@ export class EditFrontstage extends FrontstageProvider {
   }
 
   public get frontstage() {
-    // first find an appropriate layout
-    const contentLayoutProps: ContentLayoutProps | undefined = AppUi.findLayoutFromContentCount(this.viewStates.length);
-    if (!contentLayoutProps) {
-      throw (Error(`Could not find layout ContentLayoutProps when number of viewStates=${this.viewStates.length}`));
-    }
-
-    const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(contentLayoutProps);
-
-    // create the content props that specifies an iModelConnection and a viewState entry in the application data.
-    const contentProps: ContentProps[] = [];
-    for (const viewState of this.viewStates) {
-      const thisContentProps: ContentProps = {
-        classId: IModelViewportControl,
-        applicationData: { viewState, iModelConnection: this.iModelConnection },
-      };
-      contentProps.push(thisContentProps);
-    }
-    const myContentGroup: ContentGroup = new ContentGroup({ contents: contentProps });
     return (
-      <Frontstage id="EditFrontstage"
+      <Frontstage id={this.id}
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout={contentLayoutDef} contentGroup={myContentGroup}
+        contentGroup={this._contentGroupProvider}
         isInFooterMode={true} applicationData={{ key: "value" }}
         usage={StageUsage.Edit}
         contentManipulationTools={

@@ -44,7 +44,6 @@ export * from "./ui-framework/configurableui/state";
 export * from "./ui-framework/content/ContentControl";
 export * from "./ui-framework/content/ContentGroup";
 export * from "./ui-framework/content/ContentLayout";
-export * from "./ui-framework/content/ContentLayoutProps";
 export * from "./ui-framework/content/ContentLayoutManager";
 export * from "./ui-framework/content/ContentViewManager";
 export * from "./ui-framework/content/SavedView";
@@ -77,6 +76,7 @@ export * from "./ui-framework/frontstage/FrontstageProvider";
 export * from "./ui-framework/frontstage/NestedFrontstage";
 export * from "./ui-framework/frontstage/ModalFrontstage";
 export * from "./ui-framework/frontstage/ModalSettingsStage";
+export * from "./ui-framework/frontstage/StandardFrontstageProvider";
 
 export * from "./ui-framework/hooks/useActiveIModelConnection";
 export * from "./ui-framework/hooks/useActiveStageId";
@@ -224,6 +224,9 @@ export * from "./ui-framework/tools/ToolSettingsTools";
 
 export * from "./ui-framework/uiadmin/FrameworkUiAdmin";
 
+export * from "./ui-framework/ui-items-provider/StandardContentToolsProvider";
+export * from "./ui-framework/ui-items-provider/StandardNavigationToolsProvider";
+export * from "./ui-framework/ui-items-provider/StandardStatusbarItemsProvider";
 export * from "./ui-framework/uiprovider/DefaultDialogGridContainer";
 
 export * from "./ui-framework/uisettings/AppUiSettings";
@@ -251,6 +254,9 @@ export * from "./ui-framework/widgets/DefaultNavigationWidget";
 export * from "./ui-framework/widgets/NavigationWidget";
 export * from "./ui-framework/widgets/NavigationWidgetComposer";
 export * from "./ui-framework/widgets/ReviewToolWidget";
+export * from "./ui-framework/widgets/ViewToolWidgetComposer";
+export * from "./ui-framework/widgets/StatusBarWidgetComposerControl";
+export * from "./ui-framework/widgets/ContentToolWidgetComposer";
 export * from "./ui-framework/widgets/StableWidgetDef";
 export * from "./ui-framework/widgets/ToolbarWidgetBase";
 export * from "./ui-framework/widgets/ToolWidget";
@@ -361,6 +367,10 @@ export * from "./ui-framework/zones/ZoneDef";
 /**
  * @docs-group-description Settings
  * Classes and components used by settings pages displayed in the modal settings stage
+ */
+/**
+ * @docs-group-description StandardUiItemsProvider
+ * Standard UiItemsProvider classes.
  */
 /**
  * @docs-group-description StatusBar
