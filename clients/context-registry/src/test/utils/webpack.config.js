@@ -25,7 +25,7 @@ function loadEnv(envFile) {
 
 loadEnv(path.join(__dirname, "..", "..", "..", ".env"));
 
-const clientsLib = path.resolve(__dirname, "../../../lib");
+const clientsLib = path.resolve(__dirname, "../../../lib/cjs");
 
 function createConfig(shouldInstrument) {
   const config = {
@@ -62,7 +62,13 @@ function createConfig(shouldInstrument) {
       nodeEnv: "production"
     },
     externals: {
-      electron: "commonjs electron",
+      "electron": "commonjs electron",
+      "fs": "fs",
+      "dns": "dns",
+      "http2": "http2",
+      "net": "net",
+      "tls": "tls",
+      "ws": "ws",
     },
     plugins: [
       // Makes some environment variables available to the JS code, for example:
