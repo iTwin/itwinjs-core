@@ -101,7 +101,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
         available = await queryRealityData({ iTwinId: this._iTwinId, range });
     } catch (_error) {
       // eslint-disable-next-line no-console
-      console.error("Error in query RealitydataList, you need to set IMJS_STANDALONE_SIGNIN=true, and is your IMJS_ITWIN_ID?");
+      console.error("Error in query RealitydataList, you need to set IMJS_STANDALONE_SIGNIN=true, and is your IMJS_ITWIN_ID set?");
     }
     for (const entry of available) {
       const name = undefined !== entry.name ? entry.name : entry.tilesetUrl;
