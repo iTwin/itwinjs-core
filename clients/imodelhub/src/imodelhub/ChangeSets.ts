@@ -7,7 +7,9 @@
  */
 
 import { GuidString, Logger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ChunkedQueryContext, DownloadFailed, ECJsonTypeMap, FileHandler, ProgressCallback, ProgressInfo, RequestQueryOptions, SasUrlExpired, WsgInstance } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, DownloadFailed, FileHandler, ProgressCallback, ProgressInfo, RequestQueryOptions, SasUrlExpired } from "@bentley/itwin-client";
+import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
+import { ChunkedQueryContext } from "../wsg/ChunkedQueryContext";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck, IModelHubClientError } from "./Errors";
@@ -38,7 +40,7 @@ export enum ChangesType {
 
 /**
  * [ChangeSet]($docs/learning/Glossary.md#changeset) represents a file containing changes to the iModel. A single ChangeSet contains changes made on a single [[Briefcase]] file and pushed as a single file. ChangeSets form a linear change history of the iModel. If a user wants to push their changes to iModelHub, they first have to merge all ChangeSet they do not have yet. Only a single briefcase is allowed to push their changes at a time.
- * @public
+ * @internal
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.ChangeSet", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class ChangeSet extends WsgInstance {
@@ -147,12 +149,11 @@ export class ChangeSet extends WsgInstance {
 
 /**
  * Query object for getting [[ChangeSet]]s. You can use this to modify the query. See [[ChangeSetHandler.get]].
- * @public
+ * @internal
  */
 export class ChangeSetQuery extends StringIdQuery {
   /**
    * Default page size which is used when querying ChangeSets
-   * @internal
    */
   public static defaultPageSize: number = 1000;
 
@@ -384,7 +385,7 @@ class DownloadProgress {
 
 /**
  * Handler for managing [[ChangeSet]]s. Use [[IModelClient.ChangeSets]] to get an instance of this class. In most cases, you should use [BriefcaseDb]($backend) methods instead.
- * @public
+ * @internal
  */
 export class ChangeSetHandler {
   private _handler: IModelBaseHandler;
@@ -484,7 +485,7 @@ export class ChangeSetHandler {
 
     query.selectDownloadUrl();
 
-    const url: string = await this._handler.getUrl(requestContext) + this.getRelativeUrl(iModelId, query.getId());
+    const url: string = await this._handler.getUrl() + this.getRelativeUrl(iModelId, query.getId());
 
     const queryOptions = query.getQueryOptions();
     const chunkedQueryContext = queryOptions ? ChunkedQueryContext.create(queryOptions) : undefined;

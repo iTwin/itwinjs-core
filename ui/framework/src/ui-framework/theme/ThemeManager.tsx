@@ -72,7 +72,8 @@ class ThemeManagerComponent extends React.Component<ThemeManagerProps, ThemeMana
   public override componentDidUpdate(prevProps: ThemeManagerProps) {
     if (this.props.theme !== prevProps.theme)
       this._setTheme(this.props.theme);
-    if (this.props.widgetOpacity !== prevProps.widgetOpacity)
+    const currentOpacity = document.documentElement.style.getPropertyValue("--buic-widget-opacity");
+    if (this.props.widgetOpacity.toString() !== currentOpacity)
       this._setWidgetOpacity(this.props.widgetOpacity);
   }
 
@@ -83,7 +84,8 @@ class ThemeManagerComponent extends React.Component<ThemeManagerProps, ThemeMana
   };
 
   private _setWidgetOpacity = (opacity: number) => {
-    document.documentElement.style.setProperty("--buic-widget-opacity", opacity.toString());
+    setImmediate(() =>
+      document.documentElement.style.setProperty("--buic-widget-opacity", opacity.toString()));
   };
 
   private _handleRefSet = (popupDiv: HTMLElement | null) => {

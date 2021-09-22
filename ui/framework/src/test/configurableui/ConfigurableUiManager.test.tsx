@@ -6,8 +6,9 @@
 import { expect } from "chai";
 import * as React from "react";
 import { MockRender } from "@bentley/imodeljs-frontend";
+import { StandardContentLayouts } from "@bentley/ui-abstract";
 import {
-  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroupManager, ContentGroupProps, ContentLayoutManager, ContentLayoutProps, CoreTools,
+  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroup, ContentGroupProps, CoreTools,
   Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider, MessageManager, ModalDialogManager, ModelessDialogManager, PopupManager,
   TaskManager, TaskPropsList, WidgetControl, WorkflowManager, WorkflowProps, WorkflowPropsList,
 } from "../../ui-framework";
@@ -36,27 +37,30 @@ describe("ConfigurableUiManager", () => {
     TestUtils.terminateUiFramework();
   });
 
-  it("findFrontstageDef passed no argument", async () => {
+  it("setActiveFrontstageDef passed no argument", async () => {
     await FrontstageManager.setActiveFrontstageDef(undefined);
-    expect(ConfigurableUiManager.findFrontstageDef()).to.be.undefined;
+    expect(FrontstageManager.activeFrontstageDef).to.be.undefined;
   });
 
-  it("addFrontstageProvider & findFrontstageDef", async () => {
+  it("addFrontstageProvider & getFrontstageDef", async () => {
     class Frontstage1 extends FrontstageProvider {
+      public static stageId = "TestFrontstage2";
+      public get id(): string {
+        return Frontstage1.stageId;
+      }
+
       public get frontstage(): React.ReactElement<FrontstageProps> {
         return (
           <Frontstage
-            id="TestFrontstage2"
+            id={Frontstage1.stageId}
             defaultTool={CoreTools.selectElementCommand}
-            defaultLayout="FourQuadrants"
-            contentGroup="TestContentGroup1"
+            contentGroup={TestUtils.TestContentGroup1}
           />
         );
       }
     }
     ConfigurableUiManager.addFrontstageProvider(new Frontstage1());
-
-    const frontstageDef2 = ConfigurableUiManager.findFrontstageDef("TestFrontstage2");
+    const frontstageDef2 = await FrontstageManager.getFrontstageDef(Frontstage1.stageId);
     expect(frontstageDef2).to.not.be.undefined;
     await FrontstageManager.setActiveFrontstageDef(frontstageDef2);
   });
@@ -95,6 +99,7 @@ describe("ConfigurableUiManager", () => {
   it("loadContentGroup and read applicationData from control", () => {
     const contentGroupProps: ContentGroupProps = {
       id: "testContentGroup1",
+      layout: StandardContentLayouts.singleView,
       contents: [
         {
           id: "test-content-control",
@@ -103,8 +108,7 @@ describe("ConfigurableUiManager", () => {
         },
       ],
     };
-    ConfigurableUiManager.loadContentGroup(contentGroupProps);
-    const contentGroup = ContentGroupManager.findGroup("testContentGroup1");
+    const contentGroup = new ContentGroup(contentGroupProps);
     expect(contentGroup).to.not.be.undefined;
     // force controls to be creates
     const controls = contentGroup?.getContentControls();
@@ -112,56 +116,6 @@ describe("ConfigurableUiManager", () => {
     const control = contentGroup?.getContentControlById("test-content-control");
     expect(control).to.not.be.undefined;
     expect(control?.applicationData.label).eql("Content 1a");
-  });
-
-  it("loadContentGroups", () => {
-    const contentGroupProps: ContentGroupProps[] = [
-      {
-        id: "testContentGroup2",
-        contents: [
-          {
-            classId: "TestContentControl",
-            applicationData: { label: "Content 1a", bgColor: "black" },
-          },
-        ],
-      },
-    ];
-    ConfigurableUiManager.loadContentGroups(contentGroupProps);
-    expect(ContentGroupManager.findGroup("testContentGroup2")).to.not.be.undefined;
-  });
-
-  it("loadContentLayout", () => {
-    const contentLayoutProps: ContentLayoutProps = {
-      // Three Views, one on the left, two stacked on the right.
-      id: "testContentLayout1",
-      descriptionKey: "SampleApp:ContentDef.ThreeRightStacked",
-      priority: 85,
-      verticalSplit: {
-        percentage: 0.50,
-        left: 0,
-        right: { horizontalSplit: { percentage: 0.50, top: 1, bottom: 2 } },
-      },
-    };
-    ConfigurableUiManager.loadContentLayout(contentLayoutProps);
-    expect(ContentLayoutManager.findLayout("testContentLayout1")).to.not.be.undefined;
-  });
-
-  it("loadContentLayouts", () => {
-    const contentLayoutProps: ContentLayoutProps[] = [
-      {
-        // Three Views, one on the left, two stacked on the right.
-        id: "testContentLayout2",
-        descriptionKey: "SampleApp:ContentDef.ThreeRightStacked",
-        priority: 85,
-        verticalSplit: {
-          percentage: 0.50,
-          left: 0,
-          right: { horizontalSplit: { percentage: 0.50, top: 1, bottom: 2 } },
-        },
-      },
-    ];
-    ConfigurableUiManager.loadContentLayouts(contentLayoutProps);
-    expect(ContentLayoutManager.findLayout("testContentLayout2")).to.not.be.undefined;
   });
 
   it("loadTasks", () => {

@@ -39,19 +39,6 @@ export interface ValidationError {
  * @public
  */
 export interface TxnChangedEntities {
-  /** Ids of entities that were inserted by the transaction.
-   * @deprecated use [[inserts]].
-   */
-  inserted: OrderedId64Array;
-  /** Ids of entities that were deleted by the transaction.
-   * @deprecated use [[deletes]].
-   */
-  deleted: OrderedId64Array;
-  /** Ids of entities that were modified by the transaction.
-   * @deprecated use [[updates]].
-   */
-  updated: OrderedId64Array;
-
   /** The entities that were inserted by the transaction. */
   readonly inserts: EntityIdAndClassIdIterable;
   /** The entities that were deleted by the transaction. */
@@ -148,9 +135,6 @@ class ChangedEntitiesProc {
 
     // Notify backend listeners.
     const txnEntities: TxnChangedEntities = {
-      inserted: this._inserted.entityIds,
-      deleted: this._deleted.entityIds,
-      updated: this._updated.entityIds,
       inserts: this._inserted.iterable(classIds),
       deletes: this._deleted.iterable(classIds),
       updates: this._updated.iterable(classIds),

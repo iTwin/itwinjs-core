@@ -6,7 +6,6 @@
  * @module Authentication
  */
 
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { ImsAuthorizationClient, RequestGlobalOptions } from "@bentley/itwin-client";
 import { ClientMetadata, custom, Issuer, Client as OpenIdClient } from "openid-client";
 
@@ -50,11 +49,11 @@ export abstract class BackendAuthorizationClient extends ImsAuthorizationClient 
   }
 
   private _issuer?: Issuer<OpenIdClient>;
-  private async getIssuer(requestContext: ClientRequestContext): Promise<Issuer<OpenIdClient>> {
+  private async getIssuer(): Promise<Issuer<OpenIdClient>> {
     if (this._issuer)
       return this._issuer;
 
-    const url = await this.getUrl(requestContext);
+    const url = await this.getUrl();
     this._issuer = await Issuer.discover(url);
     return this._issuer;
   }
@@ -62,13 +61,12 @@ export abstract class BackendAuthorizationClient extends ImsAuthorizationClient 
   /**
    * Discover the endpoints of the service
    */
-  public async discoverEndpoints(requestContext: ClientRequestContext): Promise<Issuer<OpenIdClient>> {
-    return this.getIssuer(requestContext);
+  public async discoverEndpoints(): Promise<Issuer<OpenIdClient>> {
+    return this.getIssuer();
   }
 
   private _client?: OpenIdClient;
-  protected async getClient(requestContext: ClientRequestContext): Promise<OpenIdClient> {
-
+  protected async getClient(): Promise<OpenIdClient> {
     if (this._client)
       return this._client;
 
@@ -77,7 +75,7 @@ export abstract class BackendAuthorizationClient extends ImsAuthorizationClient 
       client_secret: this._configuration.clientSecret, // eslint-disable-line @typescript-eslint/naming-convention
     };
 
-    const issuer = await this.getIssuer(requestContext);
+    const issuer = await this.getIssuer();
     this._client = new issuer.Client(clientConfiguration);
 
     return this._client;

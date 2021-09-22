@@ -8,10 +8,6 @@
 
 import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { UiError } from "@bentley/ui-abstract";
-import { ContentGroupManager, ContentGroupProps } from "../content/ContentGroup";
-import { ContentLayoutManager } from "../content/ContentLayoutManager";
-import { ContentLayoutProps } from "../content/ContentLayoutProps";
-import { FrontstageDef } from "../frontstage/FrontstageDef";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { FrontstageProvider } from "../frontstage/FrontstageProvider";
 import { KeyboardShortcutManager, KeyboardShortcutProps } from "../keyboardshortcut/KeyboardShortcut";
@@ -150,10 +146,11 @@ export class ConfigurableUiManager {
    * @param classId   the class id of the control to create
    * @param uniqueId  a unique id for the control
    * @param options   options passed to the constructor of the control
+   * @param controlId controlId which may not be unique across all control instances.
    * @returns  the created control
    */
-  public static createControl(classId: string, uniqueId: string, options?: any): ConfigurableUiElement | undefined {
-    const info = new ConfigurableCreateInfo(classId, uniqueId, uniqueId);
+  public static createControl(classId: string, uniqueId: string, options?: any, controlId?: string): ConfigurableUiElement | undefined {
+    const info = new ConfigurableCreateInfo(classId, uniqueId, controlId ?? uniqueId);
     const constructor = this._registeredControls.get(info.classId);
     if (!constructor) {
       throw new UiError(UiFramework.loggerCategory(this), `createControl: classId '${classId}' not registered`);
@@ -168,45 +165,6 @@ export class ConfigurableUiManager {
    */
   public static addFrontstageProvider(frontstageProvider: FrontstageProvider): void {
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-  }
-
-  /** Finds a FrontstageDef, given its id.
-   * @param id  the id of the FrontstageDef to find
-   * @returns the FrontstageDef with the given id, or undefined if not found
-   */
-  public static findFrontstageDef(id?: string): FrontstageDef | undefined {
-    const frontstageDef = FrontstageManager.findFrontstageDef(id);
-    if (frontstageDef && frontstageDef instanceof FrontstageDef)
-      return frontstageDef;
-    return undefined;
-  }
-
-  /** Loads one or more ContentGroups into the [[ContentGroupManager]].
-   * @param groupPropsList  the list of ContentGroups to load
-   */
-  public static loadContentGroups(groupPropsList: ContentGroupProps[]): void {
-    ContentGroupManager.loadGroups(groupPropsList);
-  }
-
-  /** Loads a [[ContentGroup]] into the [[ContentGroupManager]].
-   * @param groupProps  the properties of the ContentGroup to load
-   */
-  public static loadContentGroup(groupProps: ContentGroupProps): void {
-    ContentGroupManager.loadGroup(groupProps);
-  }
-
-  /** Loads one or more ContentLayouts into the [[ContentLayoutManager]].
-   * @param layoutPropsList  the list of ContentLayouts to load
-   */
-  public static loadContentLayouts(layoutPropsList: ContentLayoutProps[]): void {
-    ContentLayoutManager.loadLayouts(layoutPropsList);
-  }
-
-  /** Loads a [[ContentLayout]] into the [[ContentLayoutManager]].
-   * @param layoutProps  the properties of the ContentLayout to load
-   */
-  public static loadContentLayout(layoutProps: ContentLayoutProps): void {
-    ContentLayoutManager.loadLayout(layoutProps);
   }
 
   /** Loads one or more Tasks into the [[TaskManager]].

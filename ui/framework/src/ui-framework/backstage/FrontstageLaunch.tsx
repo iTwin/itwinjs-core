@@ -25,7 +25,7 @@ const BackstageItem = withSafeArea(NZ_BackstageItem);
 
 /** Properties for a [[FrontstageLaunchBackstageItem]] component
  * @public
- */
+ */
 export interface FrontstageLaunchBackstageItemProps extends BackstageItemProps { // eslint-disable-line deprecation/deprecation
   /** id of the frontstage */
   frontstageId: string;
@@ -84,12 +84,12 @@ export class FrontstageLaunchBackstageItem extends React.PureComponent<Frontstag
     }
   };
 
-  public execute = (): void => {
+  public execute = async () => {
     Backstage.hide(); // eslint-disable-line deprecation/deprecation
 
-    const frontstageDef = FrontstageManager.findFrontstageDef(this.props.frontstageId);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(this.props.frontstageId);
     if (frontstageDef)
-      FrontstageManager.setActiveFrontstageDef(frontstageDef); // eslint-disable-line @typescript-eslint/no-floating-promises
+      await FrontstageManager.setActiveFrontstageDef(frontstageDef);
     else
       Logger.logError(UiFramework.loggerCategory(this), `Frontstage with id '${this.props.frontstageId}' not found`);
   };

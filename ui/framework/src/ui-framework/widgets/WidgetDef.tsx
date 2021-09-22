@@ -20,6 +20,7 @@ import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
 import { WidgetControl } from "./WidgetControl";
 import { WidgetProps } from "./WidgetProps";
+import { StatusBarWidgetComposerControl } from "./StatusBarWidgetComposerControl";
 
 const widgetStateNameMap = new Map<WidgetState, string>([
   [WidgetState.Closed, "Closed"],
@@ -348,6 +349,14 @@ export class WidgetDef {
       }
     }
 
+    // istanbul ignore next - To avoid breaking API changes, if a WidgetControl is not specified for a status bar use Default one.
+    if (!this._widgetControl && this.isStatusBar) {
+      const info = new ConfigurableCreateInfo("StatusBarWidgetComposerControl", StatusBarWidgetComposerControl.controlId, StatusBarWidgetComposerControl.controlId);
+      this._widgetControl = new StatusBarWidgetComposerControl(info, undefined);
+      this._widgetControl.widgetDef = this;
+      this._widgetControl.initialize();
+    }
+
     return this._widgetControl;
   }
 
@@ -412,6 +421,7 @@ export class WidgetDef {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.widgetControl && UiFramework.postTelemetry(`Widget ${this.widgetControl.classId} state set to ${widgetStateNameMap.get(this._state)}`, "35402486-9839-441E-A5C7-46D546142D11");
     this.widgetControl && this.widgetControl.onWidgetStateChanged();
+    // istanbul ignore next
     this._onWidgetStateChanged && this._onWidgetStateChanged();
   }
 

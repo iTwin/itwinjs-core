@@ -5,11 +5,10 @@
 /** @packageDocumentation
  * @module iModelHubClient
  */
-import { assert, ClientRequestContext } from "@bentley/bentleyjs-core";
-import {
-  AuthorizedClientRequestContext, ChunkedQueryContext, DefaultWsgRequestOptionsProvider, FileHandler, HttpRequestOptions, RequestGlobalOptions, RequestOptions,
-  RequestQueryOptions, WsgClient, WsgInstance, WsgRequestOptions,
-} from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, FileHandler, RequestGlobalOptions, RequestOptions, RequestQueryOptions } from "@bentley/itwin-client";
+import { ChunkedQueryContext } from "../wsg/ChunkedQueryContext";
+import { WsgInstance } from "../wsg/ECJsonTypeMap";
+import { DefaultWsgRequestOptionsProvider, HttpRequestOptions, WsgClient, WsgRequestOptions } from "../wsg/WsgClient";
 import { CustomRequestOptions } from "./CustomRequestOptions";
 import { IModelHubError } from "./Errors";
 
@@ -29,13 +28,13 @@ class DefaultIModelHubRequestOptionsProvider extends DefaultWsgRequestOptionsPro
 
 /**
  * This type allows modifying HttpRequestOptions that are sent for every request.
- * @beta
+ * @internal
  */
 export type HttpRequestOptionsTransformer = (options: HttpRequestOptions) => void;
 
 /**
  * This function when used on IModelClient adds specified header to every request.
- * @beta
+ * @internal
  */
 export function addHeader(name: string, valueFactory: () => string): HttpRequestOptionsTransformer {
   return (options: HttpRequestOptions) => {
@@ -47,7 +46,7 @@ export function addHeader(name: string, valueFactory: () => string): HttpRequest
 
 /**
  * This function when used on IModelClient adds specified application version header to every request.
- * @beta
+ * @internal
  */
 export function addApplicationVersion(version: string) {
   return addHeader(applicationVersionHeaderName, () => version);
@@ -55,7 +54,7 @@ export function addApplicationVersion(version: string) {
 
 /**
  * This function when used on IModelClient adds CSRF header to every request.
- * @beta
+ * @internal
  */
 export function addCsrfHeader(headerName: string = "X-XSRF-TOKEN", cookieName: string = "XSRF-TOKEN"): HttpRequestOptionsTransformer {
   return addHeader(headerName, () => {
@@ -65,7 +64,7 @@ export function addCsrfHeader(headerName: string = "X-XSRF-TOKEN", cookieName: s
 
 /**
  * This class acts as the WsgClient for other iModelHub Handlers.
- * @public
+ * @internal
  */
 export class IModelBaseHandler extends WsgClient {
   protected override _url?: string;
@@ -74,9 +73,6 @@ export class IModelBaseHandler extends WsgClient {
   protected _fileHandler: FileHandler | undefined;
   private _customRequestOptions: CustomRequestOptions = new CustomRequestOptions();
   private _httpRequestOptionsTransformers: HttpRequestOptionsTransformer[] = [];
-
-  /** @internal */
-  protected getUrlSearchKey(): string { assert(false, "Bentley cloud-specific method should be factored out of WsgClient base class"); return ""; }
 
   /**
    * Create an instance of IModelBaseHandler.
@@ -137,7 +133,7 @@ export class IModelBaseHandler extends WsgClient {
   /**
    * Adds a method that will be called for every request to modify HttpRequestOptions.
    * @param func Method that will be used to modify HttpRequestOptions.
-   * @beta
+   * @internal
    */
   public use(func: HttpRequestOptionsTransformer) {
     this._httpRequestOptionsTransformers.push(func);
@@ -157,8 +153,8 @@ export class IModelBaseHandler extends WsgClient {
    * @returns URL for the service
    * @internal
    */
-  public override async getUrl(requestContext: ClientRequestContext): Promise<string> {
-    return super.getUrl(requestContext);
+  public override async getUrl(): Promise<string> {
+    return super.getUrl();
   }
 
   /**
@@ -169,7 +165,7 @@ export class IModelBaseHandler extends WsgClient {
    * @returns Promise resolves after successfully deleting REST resource at the specified path.
    */
   public override async delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, httpRequestOptions?: HttpRequestOptions): Promise<void> {
-    return super.delete(requestContext, relativeUrlPath, this.setupHttpOptions(httpRequestOptions));
+    return super.delete(requestContext, relativeUrlPath, httpRequestOptions);
   }
 
   /**

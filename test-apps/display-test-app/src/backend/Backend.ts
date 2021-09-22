@@ -158,6 +158,12 @@ const setupStandaloneConfiguration = () => {
   if (undefined !== process.env.SVT_DEBUG_SHADERS)
     configuration.debugShaders = true;
 
+  if (undefined !== process.env.SVT_BING_MAPS_KEY)
+    configuration.bingMapsKey = process.env.SVT_BING_MAPS_KEY;
+
+  if (undefined !== process.env.SVT_MAPBOX_KEY)
+    configuration.bingMapsKey = process.env.SVT_MAPBOX_KEY;
+
   configuration.useProjectExtents = undefined === process.env.SVT_NO_USE_PROJECT_EXTENTS;
 
   const parseSeconds = (key: string) => {
@@ -231,6 +237,8 @@ const setupStandaloneConfiguration = () => {
   configuration.disableEdges = undefined !== process.env.SVT_DISABLE_EDGE_DISPLAY;
   configuration.alwaysLoadEdges = undefined !== process.env.SVT_ALWAYS_LOAD_EDGES;
   configuration.alwaysSubdivideIncompleteTiles = undefined !== process.env.SVT_SUBDIVIDE_INCOMPLETE;
+
+  configuration.iTwinId = process.env.SVT_ITWIN_ID;
 
   const configPathname = path.normalize(path.join(__dirname, "..", "..", "build", "configuration.json"));
   try { fs.writeFileSync(configPathname, JSON.stringify(configuration), "utf8"); } catch { }
