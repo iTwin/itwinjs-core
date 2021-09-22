@@ -138,7 +138,7 @@ describe("RpcInterface", () => {
 
     try {
       assert.equal(await response, customId);
-    } catch (reason) {
+    } catch (reason: any) {
       assert(false, reason);
     }
 
@@ -295,7 +295,7 @@ describe("RpcInterface", () => {
       let err: Error | undefined;
       try {
         await c.op1({ a: 0, b: 0 });
-      } catch (error) {
+      } catch (error: any) {
         err = error;
       }
 

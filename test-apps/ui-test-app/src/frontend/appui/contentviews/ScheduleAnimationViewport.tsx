@@ -99,13 +99,13 @@ class ScheduleAnimationViewport extends React.Component<ScheduleAnimationViewpor
 
     timelineDataProvider = new ScheduleAnimationTimelineDataProvider(viewState);
     if (timelineDataProvider.supportsTimelineAnimation) {
-      if (timelineDataProvider.loadTimelineData()) // eslint-disable-line @typescript-eslint/no-misused-promises
-        return timelineDataProvider;
+      timelineDataProvider.loadTimelineData(); // eslint-disable-line @typescript-eslint/no-floating-promises
+      return timelineDataProvider;
     } else {
       timelineDataProvider = new AnalysisAnimationTimelineDataProvider(viewState);
       if (timelineDataProvider.supportsTimelineAnimation) {
-        if (timelineDataProvider.loadTimelineData()) // eslint-disable-line @typescript-eslint/no-misused-promises
-          return timelineDataProvider;
+        timelineDataProvider.loadTimelineData(); // eslint-disable-line @typescript-eslint/no-floating-promises
+        return timelineDataProvider;
       }
     }
     return undefined;

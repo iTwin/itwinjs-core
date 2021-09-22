@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BentleyStatus, ProcessDetector } from "@bentley/bentleyjs-core";
+import { BentleyStatus, getErrorMetadata, ProcessDetector } from "@bentley/bentleyjs-core";
 import {
   IModelError, iTwinChannel, RpcPushChannel, RpcPushConnection, RpcRequestFulfillment, RpcSerializedValue, SerializedRpcRequest,
 } from "@bentley/imodeljs-common";
@@ -207,7 +207,7 @@ export class BackendIpcTransport extends ElectronIpcTransport<SerializedRpcReque
     try { // Wrapping require in a try/catch signals to webpack that this is only an optional dependency
       this._browserWindow = require("electron").BrowserWindow; // eslint-disable-line @typescript-eslint/no-var-requires
     } catch (err) {
-      throw new IModelError(BentleyStatus.ERROR, `Error requiring electron`, () => err);
+      throw new IModelError(BentleyStatus.ERROR, `Error requiring electron`, () => getErrorMetadata(err));
     }
   }
 }

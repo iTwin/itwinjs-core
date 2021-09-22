@@ -275,7 +275,7 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
     try {
       await iModelClient.locks.update(requestContext, imodelId, [lock2, lock3, lock4],
         { deniedLocks: false, locksPerRequest: 1 });
-    } catch (error) {
+    } catch (error: any) {
       receivedError = error;
     }
 
@@ -304,7 +304,7 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
     try {
       await iModelClient.locks.update(requestContext, imodelId, [lock2, lock3],
         { deniedLocks: true, locksPerRequest: 1 });
-    } catch (error) {
+    } catch (error: any) {
       chai.expect(error).to.be.instanceof(ConflictingLocksError);
       receivedError = error;
     }
@@ -339,7 +339,7 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
     try {
       await iModelClient.locks.update(requestContext, imodelId, [lock2, lock3, lock4],
         { deniedLocks: true, locksPerRequest: 1, continueOnConflict: true });
-    } catch (error) {
+    } catch (error: any) {
       chai.expect(error).to.be.instanceof(ConflictingLocksError);
       receivedError = error;
     }

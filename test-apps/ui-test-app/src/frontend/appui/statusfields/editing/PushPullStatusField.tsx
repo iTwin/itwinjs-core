@@ -70,7 +70,7 @@ class SyncManager {
             }
           });
         }
-      } catch (err) {
+      } catch (err: any) {
         ErrorHandling.onUnexpectedError(err);
       }
     }
@@ -84,7 +84,7 @@ class SyncManager {
     try {
       // Bootstrap the process by finding out if the briefcase has local txns already.
       this.state.mustPush = await this.briefcaseConnection.hasPendingTxns();
-    } catch (err) {
+    } catch (err: any) {
       ErrorHandling.onUnexpectedError(err);
     }
 
@@ -139,7 +139,7 @@ class SyncManager {
       await this.briefcaseConnection.pushChanges("");
       const parentChangesetId = this.briefcaseConnection.changeset.id;
       this.updateParentChangesetId(parentChangesetId);
-    } catch (err) {
+    } catch (err: any) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, failmsg, err.message, OutputMessageType.Alert, OutputMessageAlert.Dialog));
     } finally {
       this.state.isSynchronizing = false;

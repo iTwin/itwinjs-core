@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64String } from "@bentley/bentleyjs-core";
+import { getErrorMessage, Id64String } from "@bentley/bentleyjs-core";
 import { Angle, AngleSweep, Arc3d, BSplineCurve3d, BSplineCurveOps, CurveCollection, CurveFactory, CurvePrimitive, FrameBuilder, Geometry, GeometryQuery, IModelJson, LineString3d, Loop, Matrix3d, Path, Plane3dByOriginAndUnitNormal, Point3d, PointString3d, Ray3d, RegionOps, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { Code, ColorDef, ElementGeometry, ElementGeometryInfo, FlatBufferGeometryStream, GeometricElementProps, GeometryParams, GeometryStreamProps, isPlacement3dProps, JsonGeometryStream, LinePixels, PlacementProps } from "@bentley/imodeljs-common";
 import { AccuDrawHintBuilder, AngleDescription, BeButton, BeButtonEvent, BeModifierKeys, CoreTools, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp, LengthDescription, NotifyMessageDetails, OutputMessagePriority, SnapDetail, TentativeOrAccuSnap, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "@bentley/imodeljs-frontend";
@@ -130,8 +130,8 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
         return;
 
       return { props, path: data.path, params: data.params };
-    } catch (err: any) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
+    } catch (err) {
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, getErrorMessage(err) ?? "An unknown error occurred."));
       return;
     }
   }
@@ -676,8 +676,8 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
       else
         await CreateOrContinuePathTool.callCommand("updateGeometricElement", elemProps, data);
       await this.saveChanges();
-    } catch (err: any) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
+    } catch (err) {
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, getErrorMessage(err) ?? "An unknown error occurred."));
     }
   }
 

@@ -658,3 +658,60 @@ export class BentleyError extends Error {
     }
   }
 }
+
+function hasProperty<T extends string>(obj: object, propertyName: T): obj is { [key in T]: unknown } {
+  return propertyName in obj;
+}
+
+/** @internal */
+export function getErrorStack(error: unknown): string | undefined {
+  if (typeof error === "object" && error !== null && hasProperty(error, "stack") && typeof error.stack === "string")
+    return error.stack;
+
+  return undefined;
+}
+
+/** @internal */
+export function getErrorMessage(error: unknown): string | undefined {
+  if (typeof error === "string")
+    return error;
+
+  if (error instanceof Error)
+    return error.toString();
+
+  if (typeof error === "object") {
+    if (error === null)
+      return undefined;
+
+    if (hasProperty(error, "message") && typeof error.message === "string")
+      return error.message;
+
+    if (hasProperty(error, "msg") && typeof error.msg === "string")
+      return error.msg;
+
+    if (error.toString() !== "[object Object]")
+      return error.toString();
+  }
+
+  return undefined;
+}
+
+/** @internal */
+export function getErrorMetadata(error: unknown): { message: string, stack: string | undefined } {
+  let otherProps: object = {};
+
+  if (typeof error === "object" && error !== null) {
+    otherProps = error;
+    if (hasProperty(error, "getMetaData") && typeof error.getMetaData === "function") {
+      const metaData = error.getMetaData();
+      if (typeof metaData === "object")
+        otherProps = metaData;
+    }
+  }
+
+  return {
+    ...otherProps,
+    message: getErrorMessage(error) ?? "Unknown Error",
+    stack: getErrorStack(error),
+  };
+}

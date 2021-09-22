@@ -304,7 +304,7 @@ export interface CommonProps extends ClassNameProps {
 export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMenuState> {
     constructor(props: ContextMenuProps);
     // @internal (undocumented)
-    static autoFlip: (dir: ContextMenuDirection, rect: ClientRect, windowWidth: number, windowHeight: number) => ContextMenuDirection;
+    static autoFlip: (dir: ContextMenuDirection, rect: DOMRectReadOnly, windowWidth: number, windowHeight: number) => ContextMenuDirection;
     // (undocumented)
     blur: () => void;
     // @internal (undocumented)
@@ -320,7 +320,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
     // @internal (undocumented)
     static getCSSClassNameFromDirection: (direction?: ContextMenuDirection | undefined) => string;
     // (undocumented)
-    getRect: () => ClientRect;
+    getRect: () => DOMRect;
     // (undocumented)
     render(): JSX.Element;
     // @internal (undocumented)

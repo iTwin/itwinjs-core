@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, BeEvent, compareStrings, CompressedId64Set, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array,
+  assert, BeEvent, compareStrings, CompressedId64Set, DbResult, getErrorMessage, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array,
 } from "@bentley/bentleyjs-core";
 import { ChangedEntities, EntityIdAndClassIdIterable, ModelGeometryChangesProps, ModelIdAndGeometryGuid } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -187,7 +187,7 @@ class ChangedEntitiesProc {
 
       changes.sendEvent(iModel, changedEvent, evtName);
     } catch (err) {
-      Logger.logError(BackendLoggerCategory.IModelDb, err.message);
+      Logger.logError(BackendLoggerCategory.IModelDb, getErrorMessage(err) ?? "Unknown error in ChangedEntitiesProc.processChanges");
     }
   }
 }

@@ -555,6 +555,18 @@ export enum GeoServiceStatus {
     VerticalDatumConvertError = 147460
 }
 
+// @internal (undocumented)
+export function getErrorMessage(error: unknown): string | undefined;
+
+// @internal (undocumented)
+export function getErrorMetadata(error: unknown): {
+    message: string;
+    stack: string | undefined;
+};
+
+// @internal (undocumented)
+export function getErrorStack(error: unknown): string | undefined;
+
 // @public
 export type GetMetaDataFunction = () => object | undefined;
 

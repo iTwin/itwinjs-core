@@ -298,7 +298,7 @@ void (async () => {
     sourceDb.close();
     targetDb.close();
     await IModelHost.shutdown();
-  } catch (error) {
+  } catch (error: any) {
     process.stdout.write(`${error.message}\n${error.stack}`);
   }
 })();

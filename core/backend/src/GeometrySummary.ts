@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64Array, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
+import { getErrorMessage, Id64Array, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
 import {
   AkimaCurve3d, AnyGeometryQuery, Arc3d, BezierCurveBase, Box, BSplineCurve3d, Cone, CurveChainWithDistanceIndex, CurveCollection, CurvePrimitive, IModelJson,
   InterpolationCurve3d,
@@ -99,12 +99,7 @@ class ResponseGenerator {
       }
     } catch (err) {
       lines = lines.slice(0, 1);
-
-      let message = err.message;
-      if (undefined === message)
-        message = err.toString();
-
-      lines.push(`ERROR: ${message}`);
+      lines.push(`ERROR: ${getErrorMessage(err) ?? "Failed to generate geometry summary."}`);
     }
 
     return lines.filter((line) => line !== "").join("\n");
@@ -227,7 +222,7 @@ class ResponseGenerator {
       const str = JSON.stringify(json);
       return this.wantSquish ? this.squish(str) : str;
     } catch (err) {
-      return err.toString();
+      return getErrorMessage(err) ?? "Unknown Error in geometryQueryToJson";
     }
   }
 
