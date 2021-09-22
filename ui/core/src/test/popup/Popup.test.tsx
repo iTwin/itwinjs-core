@@ -444,7 +444,7 @@ describe("<Popup />", () => {
 
     it("should render Left", () => {
       const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ y: 100, height: 50 }));
+      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ x: 100, width: 50 }));
       const wrapper = mount<PopupProps>(<Popup position={RelativePosition.Left} target={target} />);
       wrapper.setProps({ isOpen: true });
       const popup = wrapper.find("div.core-popup-left");
@@ -474,7 +474,7 @@ describe("<Popup />", () => {
 
     it("should render LeftTop", () => {
       const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ y: 100, height: 50 }));
+      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ x: 100, width: 50 }));
       const wrapper = mount<PopupProps>(<Popup position={RelativePosition.LeftTop} target={target} />);
       wrapper.setProps({ isOpen: true });
       const popup = wrapper.find("div.core-popup-left-top");

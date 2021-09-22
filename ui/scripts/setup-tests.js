@@ -16,6 +16,7 @@ performance = window.performance;
 
 // See https://github.com/jsdom/jsdom/issues/2527
 global.PointerEvent = global.MouseEvent;
+global.WheelEvent = global.MouseEvent;
 
 // See https://github.com/jsdom/jsdom/pull/2926
 global.DOMRect = class DOMRect {
