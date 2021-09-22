@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/bentleyjs-core",
+      "comment": "Add GeometryClass to ExportGraphics",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/bentleyjs-core"
+}
