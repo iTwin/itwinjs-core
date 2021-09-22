@@ -226,7 +226,7 @@ The [AsyncFunction]($bentleyjs-core), [AsyncMethodsOf]($bentleyjs-core), and [Pr
 
 ## Removed default Bing Maps and MapBox keys
 
-The `@bentley/imodeljs-frontend` has always been delivered with a Bing Maps and MapBox Imagery key which should have never been publicly exposed. Both keys have now been completely removed and all applications will need to provide their own keys.
+Previous versions of `@bentley/imodeljs-frontend` included API keys for Bing Maps and MapBox Imagery that would be used for _all_ iTwin.js applications.  These common keys are no longer supported and will soon be disabled.  All applications will now need to provide their own keys.
 
 In order to configure a key for Bing Maps, or any other map layers, use the [[IModelAppOptions.mapLayerOptions]] configuration to supply the necessary information.
 
