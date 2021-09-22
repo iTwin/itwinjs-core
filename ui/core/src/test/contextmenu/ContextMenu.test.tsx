@@ -664,51 +664,51 @@ describe("ContextMenu", () => {
 
   describe("ContextMenu.autoFlip", () => {
     it("should handle rect overflowing right side of window", () => {
-      expect(ContextMenu.autoFlip(ContextMenuDirection.TopRight, DOMRectReadOnly.fromRect({ x: 51, y: 25, height: 50, width: 50 }), 100, 100))
+      expect(ContextMenu.autoFlip(ContextMenuDirection.TopRight, DOMRect.fromRect({ x: 51, y: 25, height: 50, width: 50 }), 100, 100))
         .to.equal(ContextMenuDirection.TopLeft);
-      expect(ContextMenu.autoFlip(ContextMenuDirection.Right, DOMRectReadOnly.fromRect({ x: 51, y: 25, height: 50, width: 50 }), 100, 100))
+      expect(ContextMenu.autoFlip(ContextMenuDirection.Right, DOMRect.fromRect({ x: 51, y: 25, height: 50, width: 50 }), 100, 100))
         .to.equal(ContextMenuDirection.Left);
-      expect(ContextMenu.autoFlip(ContextMenuDirection.BottomRight, DOMRectReadOnly.fromRect({ x: 51, y: 25, height: 50, width: 50 }), 100, 100))
+      expect(ContextMenu.autoFlip(ContextMenuDirection.BottomRight, DOMRect.fromRect({ x: 51, y: 25, height: 50, width: 50 }), 100, 100))
         .to.equal(ContextMenuDirection.BottomLeft);
     });
     it("should handle rect overflowing left side of window", () => {
-      expect(ContextMenu.autoFlip(ContextMenuDirection.TopLeft, DOMRectReadOnly.fromRect({ x: -1, y: 25, height: 50, width: 50 }), 100, 100))
+      expect(ContextMenu.autoFlip(ContextMenuDirection.TopLeft, DOMRect.fromRect({ x: -1, y: 25, height: 50, width: 50 }), 100, 100))
         .to.equal(ContextMenuDirection.TopRight);
-      expect(ContextMenu.autoFlip(ContextMenuDirection.Left, DOMRectReadOnly.fromRect({ x: -1, y: 25, height: 50, width: 50 }), 100, 100))
+      expect(ContextMenu.autoFlip(ContextMenuDirection.Left, DOMRect.fromRect({ x: -1, y: 25, height: 50, width: 50 }), 100, 100))
         .to.equal(ContextMenuDirection.Right);
-      expect(ContextMenu.autoFlip(ContextMenuDirection.BottomLeft, DOMRectReadOnly.fromRect({ x: -1, y: 25, height: 50, width: 50 }), 100, 100))
+      expect(ContextMenu.autoFlip(ContextMenuDirection.BottomLeft, DOMRect.fromRect({ x: -1, y: 25, height: 50, width: 50 }), 100, 100))
         .to.equal(ContextMenuDirection.BottomRight);
     });
     it("should handle rect overflowing bottom side of window", () => {
-      expect(ContextMenu.autoFlip(ContextMenuDirection.BottomLeft, DOMRectReadOnly.fromRect({ x: 25, y: 51, height: 50, width: 50 }), 100, 100))
+      expect(ContextMenu.autoFlip(ContextMenuDirection.BottomLeft, DOMRect.fromRect({ x: 25, y: 51, height: 50, width: 50 }), 100, 100))
         .to.equal(ContextMenuDirection.TopLeft);
-      expect(ContextMenu.autoFlip(ContextMenuDirection.Bottom, DOMRectReadOnly.fromRect({ x: 25, y: 51, height: 50, width: 50 }), 100, 100))
+      expect(ContextMenu.autoFlip(ContextMenuDirection.Bottom, DOMRect.fromRect({ x: 25, y: 51, height: 50, width: 50 }), 100, 100))
         .to.equal(ContextMenuDirection.Top);
-      expect(ContextMenu.autoFlip(ContextMenuDirection.BottomRight, DOMRectReadOnly.fromRect({ x: 25, y: 51, height: 50, width: 50 }), 100, 100))
+      expect(ContextMenu.autoFlip(ContextMenuDirection.BottomRight, DOMRect.fromRect({ x: 25, y: 51, height: 50, width: 50 }), 100, 100))
         .to.equal(ContextMenuDirection.TopRight);
     });
     it("should handle rect overflowing top side of window", () => {
-      expect(ContextMenu.autoFlip(ContextMenuDirection.TopLeft, DOMRectReadOnly.fromRect({ x: 25, y: -1, height: 50, width: 50 }), 100, 100))
+      expect(ContextMenu.autoFlip(ContextMenuDirection.TopLeft, DOMRect.fromRect({ x: 25, y: -1, height: 50, width: 50 }), 100, 100))
         .to.equal(ContextMenuDirection.BottomLeft);
-      expect(ContextMenu.autoFlip(ContextMenuDirection.Top, DOMRectReadOnly.fromRect({ x: 25, y: -1, height: 50, width: 50 }), 100, 100))
+      expect(ContextMenu.autoFlip(ContextMenuDirection.Top, DOMRect.fromRect({ x: 25, y: -1, height: 50, width: 50 }), 100, 100))
         .to.equal(ContextMenuDirection.Bottom);
-      expect(ContextMenu.autoFlip(ContextMenuDirection.TopRight, DOMRectReadOnly.fromRect({ x: 25, y: -1, height: 50, width: 50 }), 100, 100))
+      expect(ContextMenu.autoFlip(ContextMenuDirection.TopRight, DOMRect.fromRect({ x: 25, y: -1, height: 50, width: 50 }), 100, 100))
         .to.equal(ContextMenuDirection.BottomRight);
     });
     it("should handle rect overflowing top left side of window", () => {
-      expect(ContextMenu.autoFlip(ContextMenuDirection.TopLeft, DOMRectReadOnly.fromRect({ x: -1, y: -1, height: 50, width: 50 }), 100, 100))
+      expect(ContextMenu.autoFlip(ContextMenuDirection.TopLeft, DOMRect.fromRect({ x: -1, y: -1, height: 50, width: 50 }), 100, 100))
         .to.equal(ContextMenuDirection.BottomRight);
     });
     it("should handle rect overflowing top right side of window", () => {
-      expect(ContextMenu.autoFlip(ContextMenuDirection.TopRight, DOMRectReadOnly.fromRect({ x: 51, y: -1, height: 50, width: 50 }), 100, 100))
+      expect(ContextMenu.autoFlip(ContextMenuDirection.TopRight, DOMRect.fromRect({ x: 51, y: -1, height: 50, width: 50 }), 100, 100))
         .to.equal(ContextMenuDirection.BottomLeft);
     });
     it("should handle rect overflowing bottom left side of window", () => {
-      expect(ContextMenu.autoFlip(ContextMenuDirection.BottomLeft, DOMRectReadOnly.fromRect({ x: -1, y: 51, height: 50, width: 50 }), 100, 100))
+      expect(ContextMenu.autoFlip(ContextMenuDirection.BottomLeft, DOMRect.fromRect({ x: -1, y: 51, height: 50, width: 50 }), 100, 100))
         .to.equal(ContextMenuDirection.TopRight);
     });
     it("should handle rect overflowing bottom right side of window", () => {
-      expect(ContextMenu.autoFlip(ContextMenuDirection.BottomRight, DOMRectReadOnly.fromRect({ x: 51, y: 51, height: 50, width: 50 }), 100, 100))
+      expect(ContextMenu.autoFlip(ContextMenuDirection.BottomRight, DOMRect.fromRect({ x: 51, y: 51, height: 50, width: 50 }), 100, 100))
         .to.equal(ContextMenuDirection.TopLeft);
     });
   });
