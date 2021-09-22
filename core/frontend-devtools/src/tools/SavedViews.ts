@@ -7,10 +7,10 @@
  * @module Tools
  */
 
-import { ViewStateProps } from "@bentley/imodeljs-common";
+import { ViewStateProps } from "@itwin/core-common";
 import {
   EntityState, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, Tool, ViewState,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
 

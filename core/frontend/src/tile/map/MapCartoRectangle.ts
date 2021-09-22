@@ -7,7 +7,7 @@
  */
 
 import { Angle, Point2d, Range2d } from "@bentley/geometry-core";
-import { Cartographic } from "@bentley/imodeljs-common";
+import { Cartographic } from "@itwin/core-common";
 import { GlobalLocation, GlobalLocationArea } from "../../ViewGlobalLocation";
 import { MapTilingScheme } from "../internal";
 

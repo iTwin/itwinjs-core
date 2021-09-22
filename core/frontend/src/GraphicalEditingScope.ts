@@ -10,7 +10,7 @@ import { assert, BeEvent, compareStrings, DbOpcode, DuplicatePolicy, GuidString,
 import { Range3d } from "@bentley/geometry-core";
 import {
   EditingScopeNotifications, ElementGeometryChange, IpcAppChannel, ModelGeometryChanges, ModelGeometryChangesProps, RemoveFunction,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { BriefcaseNotificationHandler } from "./BriefcaseTxns";
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { IpcApp } from "./IpcApp";

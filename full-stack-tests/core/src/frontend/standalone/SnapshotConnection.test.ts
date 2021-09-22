@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Guid } from "@bentley/bentleyjs-core";
-import { IModel } from "@bentley/imodeljs-common";
-import { IModelApp, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { IModel } from "@itwin/core-common";
+import { IModelApp, SnapshotConnection } from "@itwin/core-frontend";
 
 describe("SnapshotConnection", () => {
   before(async () => {

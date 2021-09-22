@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { AuxChannel, AuxChannelData, AuxChannelDataType, Geometry, Vector3d } from "@bentley/geometry-core";
-import { OctEncodedNormal } from "@bentley/imodeljs-common";
+import { OctEncodedNormal } from "@itwin/core-common";
 import { MockRender } from "../../../render/MockRender";
 import { AuxChannelTable } from "../../../render/primitives/AuxChannelTable";
 

@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import { BeDuration } from "@bentley/bentleyjs-core";
-import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { OutputMessagePriority } from "@itwin/core-frontend";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { isReactNotifyMessageDetails, ReactNotifyMessageDetails } from "../../ui-framework";
 import { isReactMessage } from "@bentley/ui-core";

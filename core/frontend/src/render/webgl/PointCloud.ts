@@ -8,7 +8,7 @@
  */
 
 import { assert, dispose } from "@bentley/bentleyjs-core";
-import { FeatureIndexType } from "@bentley/imodeljs-common";
+import { FeatureIndexType } from "@itwin/core-common";
 import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
 import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";

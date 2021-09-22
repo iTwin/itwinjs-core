@@ -8,7 +8,7 @@
 
 import { assert, dispose } from "@bentley/bentleyjs-core";
 import { ClipPlaneContainment, ClipVector, Point3d, Range3d, Transform } from "@bentley/geometry-core";
-import { RgbColor } from "@bentley/imodeljs-common";
+import { RgbColor } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { RenderClipVolume } from "../RenderClipVolume";
 import { FloatRgba } from "./FloatRGBA";

@@ -8,7 +8,7 @@ import { UiError } from "@bentley/ui-abstract";
 import { ActionCreatorsObject, ActionsUnion, createAction, FrameworkReducer, ReducerRegistryInstance, SYSTEM_PREFERRED_COLOR_THEME, WIDGET_OPACITY_DEFAULT } from "../../ui-framework";
 import { StateManager } from "../../ui-framework/redux/StateManager";
 import { ConfigurableUiActions, ConfigurableUiReducer, ConfigurableUiState } from "../../ui-framework/configurableui/state";
-import { SnapMode } from "@bentley/imodeljs-frontend";
+import { SnapMode } from "@itwin/core-frontend";
 
 // Fake state for the host app
 interface IAppState {

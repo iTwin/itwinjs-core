@@ -9,7 +9,7 @@
 import "./InputField.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { OutputMessagePriority } from "@itwin/core-frontend";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { Popup } from "@bentley/ui-core";
 import { InputFieldMessageEventArgs, MessageManager } from "../messages/MessageManager";

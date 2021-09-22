@@ -35,7 +35,7 @@
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.63",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.63",
+    "@itwin/core-common": "workspace:^3.0.0-dev.63",
     "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.63"
   },
   "//devDependencies": [
@@ -47,7 +47,7 @@
     "@bentley/build-tools": "workspace:*",
     "@bentley/certa": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
+    "@itwin/core-common": "workspace:*",
     "@bentley/imodeljs-i18n": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^8.2.2",
@@ -70,7 +70,7 @@
   "dependencies": {
     "@bentley/geometry-core": "workspace:*",
     "@bentley/imodeljs-editor-common": "workspace:*",
-    "@bentley/imodeljs-frontend": "workspace:*",
+    "@itwin/core-frontend": "workspace:*",
     "@bentley/ui-abstract": "workspace:*"
   },
   "eslintConfig": {

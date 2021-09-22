@@ -7,8 +7,8 @@
  */
 
 import { Point3d } from "@bentley/geometry-core";
-import { calculateSunriseOrSunset, Cartographic, ColorByName, ColorDef } from "@bentley/imodeljs-common";
-import { IModelConnection, ScreenViewport } from "@bentley/imodeljs-frontend";
+import { calculateSunriseOrSunset, Cartographic, ColorByName, ColorDef } from "@itwin/core-common";
+import { IModelConnection, ScreenViewport } from "@itwin/core-frontend";
 import { SolarDataProvider } from "./interfaces";
 
 const millisecPerMinute = 1000 * 60;

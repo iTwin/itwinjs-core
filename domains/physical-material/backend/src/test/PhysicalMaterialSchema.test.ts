@@ -6,8 +6,8 @@
 import { assert } from "chai";
 import * as path from "path";
 import { DbResult } from "@bentley/bentleyjs-core";
-import { ECSqlStatement, IModelDb, IModelHost, IModelJsFs, PhysicalMaterial, SnapshotDb } from "@bentley/imodeljs-backend";
-import { IModel } from "@bentley/imodeljs-common";
+import { ECSqlStatement, IModelDb, IModelHost, IModelJsFs, PhysicalMaterial, SnapshotDb } from "@itwin/core-backend";
+import { IModel } from "@itwin/core-common";
 import { Aggregate, Aluminum, Asphalt, Concrete, PhysicalMaterialSchema, Steel } from "../physical-material-backend";
 
 describe("PhysicalMaterialSchema", () => {

@@ -9,7 +9,7 @@ import { ChangeSetPostPushEvent, ChangeSetQuery } from "@bentley/imodelhub-clien
 import {
   AuthorizedFrontendRequestContext, BriefcaseConnection, IModelApp, IModelHubFrontend, NotifyMessageDetails, OutputMessageAlert,
   OutputMessagePriority, OutputMessageType,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { Icon } from "@bentley/ui-core";
 import { StatusFieldProps, UiFramework } from "@bentley/ui-framework";
 import { FooterIndicator } from "@bentley/ui-ninezone";

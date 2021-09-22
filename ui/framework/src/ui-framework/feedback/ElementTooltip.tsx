@@ -9,7 +9,7 @@
 import classnames from "classnames";
 import * as React from "react";
 import { XAndY } from "@bentley/geometry-core";
-import { ToolTipOptions } from "@bentley/imodeljs-frontend";
+import { ToolTipOptions } from "@itwin/core-frontend";
 import { PointProps } from "@bentley/ui-abstract";
 import { CommonProps, Point, Rectangle, SizeProps, UiEvent } from "@bentley/ui-core";
 import { offsetAndContainInContainer, Tooltip } from "@bentley/ui-ninezone";

@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
+import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import { StagePanelLocation, StagePanelSection, WidgetState } from "@bentley/ui-abstract";
 import { getDefaultZonesManagerProps } from "@bentley/ui-ninezone";
 import {

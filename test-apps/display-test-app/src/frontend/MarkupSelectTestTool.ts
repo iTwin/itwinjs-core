@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { EventHandled, IModelApp } from "@bentley/imodeljs-frontend";
+import { EventHandled, IModelApp } from "@itwin/core-frontend";
 import { SelectTool } from "@bentley/imodeljs-markup";
 
 async function getSvgFile(uri: string): Promise<string> {

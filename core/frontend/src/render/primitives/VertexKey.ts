@@ -8,7 +8,7 @@
 
 import { assert, compareWithTolerance, IndexMap } from "@bentley/bentleyjs-core";
 import { Point2d } from "@bentley/geometry-core";
-import { OctEncodedNormal, QPoint3d } from "@bentley/imodeljs-common";
+import { OctEncodedNormal, QPoint3d } from "@itwin/core-common";
 
 /** @internal */
 export interface VertexKeyProps {

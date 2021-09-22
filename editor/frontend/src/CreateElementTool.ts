@@ -8,12 +8,12 @@ import { Constant, Point3d, Range3d, Transform, Vector3d } from "@bentley/geomet
 import {
   DynamicGraphicsRequest2dProps, DynamicGraphicsRequest3dProps, FlatBufferGeometryStream, IModelError, isPlacement3dProps, JsonGeometryStream,
   PlacementProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   BeButtonEvent, CoordSystem, CoreTools, DynamicsContext, EventHandled, GraphicBranch, IModelApp, IModelConnection, PrimitiveTool,
   readElementGraphics, RenderGraphicOwner, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction,
   ToolAssistanceSection, Viewport,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 
 function computeChordToleranceFromPointAndRadius(vp: Viewport, center: Point3d, radius: number): number {
   if (vp.view.isCameraEnabled()) {

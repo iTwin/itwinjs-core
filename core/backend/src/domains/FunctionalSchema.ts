@@ -8,7 +8,7 @@
 
 import * as path from "path";
 import { DbResult } from "@bentley/bentleyjs-core";
-import { IModelError } from "@bentley/imodeljs-common";
+import { IModelError } from "@itwin/core-common";
 import { ClassRegistry } from "../ClassRegistry";
 import { IModelDb } from "../IModelDb";
 import { KnownLocations } from "../IModelHost";

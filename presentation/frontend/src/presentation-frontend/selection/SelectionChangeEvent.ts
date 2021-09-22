@@ -7,7 +7,7 @@
  */
 
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { KeySet } from "@bentley/presentation-common";
 import { ISelectionProvider } from "./ISelectionProvider";
 

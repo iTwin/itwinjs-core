@@ -7,8 +7,8 @@
 
 import * as path from "path";
 import { IModelJsExpressServer } from "@bentley/express-server";
-import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
-import { BentleyCloudRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
+import { IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
+import { BentleyCloudRpcManager, RpcConfiguration } from "@itwin/core-common";
 import { Presentation as PresentationBackend } from "@bentley/presentation-backend";
 import { getRpcInterfaces, Settings } from "../common/Settings";
 import * as fs from "fs";

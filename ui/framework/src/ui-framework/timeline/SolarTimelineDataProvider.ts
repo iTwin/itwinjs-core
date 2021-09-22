@@ -6,8 +6,8 @@
  * @module Timeline
  */
 
-import { Cartographic, ColorByName, ColorDef, SolarShadowSettings } from "@bentley/imodeljs-common";
-import { DisplayStyle3dState, ScreenViewport, ViewState } from "@bentley/imodeljs-frontend";
+import { Cartographic, ColorByName, ColorDef, SolarShadowSettings } from "@itwin/core-common";
+import { DisplayStyle3dState, ScreenViewport, ViewState } from "@itwin/core-frontend";
 import { BaseSolarDataProvider } from "@bentley/ui-imodel-components";
 
 // the interface and class are in alpha state - it may change after usability testing - test coverage not complete

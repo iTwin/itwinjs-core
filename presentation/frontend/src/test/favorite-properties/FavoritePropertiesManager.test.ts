@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { Field, NestedContentField, PropertiesField, PropertyInfo } from "@bentley/presentation-common";
 import {
   createTestNestedContentField, createTestPropertiesContentField, createTestSimpleContentField,

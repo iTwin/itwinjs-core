@@ -7,7 +7,7 @@
  */
 
 import { assert, DbResult, GuidString, Id64String, IDisposable, LRUMap } from "@bentley/bentleyjs-core";
-import { ECJsNames, IModelError } from "@bentley/imodeljs-common";
+import { ECJsNames, IModelError } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelHost } from "./IModelHost";
 

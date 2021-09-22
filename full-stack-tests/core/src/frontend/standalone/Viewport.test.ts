@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Point3d } from "@bentley/geometry-core";
-import { BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, ColorDef, FontMap, FontType } from "@bentley/imodeljs-common";
+import { BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, ColorDef, FontMap, FontType } from "@itwin/core-common";
 import {
   CompassMode, createRenderPlanFromViewport, IModelApp, IModelConnection, MockRender, PanViewTool,
   RenderPlan, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, TwoWayViewportSync,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { assert, expect } from "chai";
 
 // cSpell:ignore calibri subcats subcat pmcv ovrs

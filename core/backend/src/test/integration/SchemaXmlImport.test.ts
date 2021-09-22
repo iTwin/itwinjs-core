@@ -7,7 +7,7 @@ import { assert } from "chai";
 import * as fs from "fs";
 import * as path from "path";
 import { GuidString } from "@bentley/bentleyjs-core";
-import { AuthorizedBackendRequestContext, IModelHost, PhysicalElement } from "../../imodeljs-backend";
+import { AuthorizedBackendRequestContext, IModelHost, PhysicalElement } from "../../core-backend";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";

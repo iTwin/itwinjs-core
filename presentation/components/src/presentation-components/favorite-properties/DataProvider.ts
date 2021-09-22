@@ -7,7 +7,7 @@
  */
 
 import { Id64Arg, using } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { CategoryDescription, KeySet, Ruleset } from "@bentley/presentation-common";
 import { getScopeId, Presentation } from "@bentley/presentation-frontend";
 import { PropertyData } from "@bentley/ui-components";

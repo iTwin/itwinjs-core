@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import sinon from "sinon";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { KeySet } from "@bentley/presentation-common";
 import { Presentation, SelectionManager } from "@bentley/presentation-frontend";
 import { act, renderHook, RenderHookResult } from "@testing-library/react-hooks";

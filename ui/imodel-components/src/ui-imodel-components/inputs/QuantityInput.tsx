@@ -8,7 +8,7 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { IModelApp, QuantityFormatsChangedArgs, QuantityTypeArg } from "@bentley/imodeljs-frontend";
+import { IModelApp, QuantityFormatsChangedArgs, QuantityTypeArg } from "@itwin/core-frontend";
 import { Parser } from "@bentley/imodeljs-quantity";
 import { ParseResults } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";
@@ -19,7 +19,7 @@ import { ParsedInput } from "@bentley/ui-components";
  * @beta
  */
 export interface QuantityProps extends CommonProps {
-  /** Initial magnitude in 'persistence' units. See `getPersistenceUnitByQuantityType` in [QuantityFormatter]($imodeljs-frontend) */
+  /** Initial magnitude in 'persistence' units. See `getPersistenceUnitByQuantityType` in [QuantityFormatter]($core-frontend) */
   initialValue: number;
   /** Type of quantity being input. */
   quantityType: QuantityTypeArg;

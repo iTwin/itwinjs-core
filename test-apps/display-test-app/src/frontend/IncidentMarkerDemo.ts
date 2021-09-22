@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { Logger } from "@bentley/bentleyjs-core";
 import { AngleSweep, Arc3d, Point2d, Point3d, XAndY, XYAndZ } from "@bentley/geometry-core";
-import { AxisAlignedBox3d, ColorByName, ColorDef } from "@bentley/imodeljs-common";
+import { AxisAlignedBox3d, ColorByName, ColorDef } from "@itwin/core-common";
 import {
   BeButton, BeButtonEvent, Cluster, DecorateContext, GraphicType, imageElementFromUrl, IModelApp, Marker, MarkerImage, MarkerSet, MessageBoxIconType,
   MessageBoxType, Tool,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 
 // cspell:ignore lerp
 

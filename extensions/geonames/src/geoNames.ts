@@ -5,11 +5,11 @@
 
 import { ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { Angle, Point2d, Point3d, Range2d, XYAndZ } from "@bentley/geometry-core";
-import { Cartographic } from "@bentley/imodeljs-common";
+import { Cartographic } from "@itwin/core-common";
 import {
   BeButton, BeButtonEvent, Cluster, DecorateContext, imageElementFromUrl, IModelApp, InputSource, Marker, MarkerSet, NotifyMessageDetails,
   OutputMessagePriority, ScreenViewport, Tool, ViewState3d,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { request, RequestOptions, Response } from "@bentley/itwin-client";
 

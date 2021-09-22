@@ -7,12 +7,12 @@
  */
 
 import * as React from "react";
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 import { FillCentered } from "@bentley/ui-core";
 import { Indicator, StatusBarFieldId, StatusFieldProps } from "@bentley/ui-framework";
 import { Dialog, FooterPopup, TitleBar } from "@bentley/ui-ninezone";
 import { ColorPickerPopup } from "@bentley/ui-imodel-components";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { ColorDef } from "@itwin/core-common";
 import { Button } from "@itwin/itwinui-react";
 
 interface SampleStatusFieldState {

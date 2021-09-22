@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import * as React from "react";
 import { render } from "@testing-library/react";
-import { IModelApp, MockRender } from "@bentley/imodeljs-frontend";
+import { IModelApp, MockRender } from "@itwin/core-frontend";
 import { Format, FormatProps, FormatterSpec, FormatTraits, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
 import { Checkbox } from "@itwin/itwinui-react";
 import { TestUtils } from "../TestUtils";

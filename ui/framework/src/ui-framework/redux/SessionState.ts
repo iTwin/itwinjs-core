@@ -8,7 +8,7 @@
 
 // The following definitions are causing extract-api issues on linux so for now just using any until we can figure out the issue.
 import { XAndY } from "@bentley/geometry-core";
-// import { IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
+// import { IModelConnection, ViewState } from "@itwin/core-frontend";
 import { UserInfo } from "@bentley/itwin-client";
 import { MenuItemProps } from "../shared/MenuItem";
 import { ActionsUnion, createAction, DeepReadonly } from "./redux-ts";

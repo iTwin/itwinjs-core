@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BeEvent, compareBooleans, compareStrings, Id64, Id64String, SortedArray } from "@bentley/bentleyjs-core";
-import { ColorDef } from "@bentley/imodeljs-common";
-import { IModelConnection, SpatialViewState, ViewState } from "@bentley/imodeljs-frontend";
+import { ColorDef } from "@itwin/core-common";
+import { IModelConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
 
 interface ViewSpec extends IModelConnection.ViewSpec {
   isPrivate: boolean;

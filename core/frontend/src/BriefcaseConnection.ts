@@ -10,7 +10,7 @@ import { assert, BeEvent, CompressedId64Set, Guid, GuidString, Id64String, IMode
 import {
   ChangesetIndex,
   ChangesetIndexAndId, IModelConnectionProps, IModelError, OpenBriefcaseProps, StandaloneOpenOptions,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { BriefcaseTxns } from "./BriefcaseTxns";
 import { GraphicalEditingScope } from "./GraphicalEditingScope";
 import { IModelApp } from "./IModelApp";

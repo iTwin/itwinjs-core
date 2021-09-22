@@ -9,9 +9,9 @@ import { Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core"
 import {
   AxisAlignedBox3d, Base64EncodedString, ElementAspectProps, ElementProps, EntityProps, IModel, IModelError, ModelProps, PrimitiveTypeCode,
   PropertyMetaData, RelatedElement,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
-import { ElementAspect, ElementMultiAspect, Entity, IModelDb, Model, Relationship, RelationshipProps, SourceAndTarget } from "@bentley/imodeljs-backend";
+import { ElementAspect, ElementMultiAspect, Entity, IModelDb, Model, Relationship, RelationshipProps, SourceAndTarget } from "@itwin/core-backend";
 
 const loggerCategory: string = TransformerLoggerCategory.IModelImporter;
 

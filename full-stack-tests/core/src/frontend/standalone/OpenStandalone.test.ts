@@ -6,8 +6,8 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import { Guid, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
-import { IModel, IModelError } from "@bentley/imodeljs-common";
-import { BriefcaseConnection } from "@bentley/imodeljs-frontend";
+import { IModel, IModelError } from "@itwin/core-common";
+import { BriefcaseConnection } from "@itwin/core-frontend";
 
 if (ProcessDetector.isElectronAppFrontend) { // BriefcaseConnection tests only run on electron
   describe("BriefcaseConnection.openStandalone", () => {

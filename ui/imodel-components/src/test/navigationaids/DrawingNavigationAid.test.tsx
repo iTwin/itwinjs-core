@@ -8,7 +8,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { AxisIndex, Matrix3d, Point3d, Vector3d } from "@bentley/geometry-core";
-import { DrawingViewState, IModelConnection, ScreenViewport, ViewManager, ViewState, ViewState3d } from "@bentley/imodeljs-frontend";
+import { DrawingViewState, IModelConnection, ScreenViewport, ViewManager, ViewState, ViewState3d } from "@itwin/core-frontend";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { TestUtils } from "../TestUtils";
 import { DrawingNavigationAid, DrawingNavigationCanvas, MapMode } from "../../ui-imodel-components/navigationaids/DrawingNavigationAid";

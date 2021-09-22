@@ -7,7 +7,7 @@
  */
 
 import { assert, Id64String } from "@bentley/bentleyjs-core";
-import { GeometryClass } from "@bentley/imodeljs-common";
+import { GeometryClass } from "@itwin/core-common";
 import { ViewRect } from "../ViewRect";
 import { Viewport } from "../Viewport";
 import { IModelConnection } from "../IModelConnection";

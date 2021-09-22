@@ -9,7 +9,7 @@ import { Logger, PerfLogger } from "@bentley/bentleyjs-core";
 import {
   BentleyStatus, CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageProvider, CloudStorageTileCache, IModelError, IModelRpcProps,
   TileContentIdentifier,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelHost } from "./IModelHost";
 

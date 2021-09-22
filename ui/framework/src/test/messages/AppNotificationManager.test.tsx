@@ -9,7 +9,7 @@ import * as sinon from "sinon";
 import {
   ActivityMessageDetails, ActivityMessageEndReason, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessageAlert,
   OutputMessagePriority, OutputMessageType,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { AppNotificationManager, ElementTooltip, MessageManager, ModalDialogManager, ModalDialogRenderer } from "../../ui-framework";
 import TestUtils, { mount } from "../TestUtils";
 

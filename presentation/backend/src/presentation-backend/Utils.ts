@@ -8,7 +8,7 @@
 
 import { parse as parseVersion } from "semver";
 import { ClientRequestContext, DbResult, Id64String } from "@bentley/bentleyjs-core";
-import { Element, IModelDb } from "@bentley/imodeljs-backend";
+import { Element, IModelDb } from "@itwin/core-backend";
 import { InstanceKey } from "@bentley/presentation-common";
 
 /** @internal */

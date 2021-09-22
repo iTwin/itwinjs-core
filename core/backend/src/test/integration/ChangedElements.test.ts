@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { DbResult, GuidString, OpenMode } from "@bentley/bentleyjs-core";
-import { IModelError, IModelVersion } from "@bentley/imodeljs-common";
+import { IModelError, IModelVersion } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
 import { AuthorizedBackendRequestContext } from "../../BackendRequestContext";

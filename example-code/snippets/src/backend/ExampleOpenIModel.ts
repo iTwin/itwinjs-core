@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { OpenMode } from "@bentley/bentleyjs-core";
-import { BriefcaseDb } from "@bentley/imodeljs-backend";
-import { IModelError, IModelStatus, OpenBriefcaseProps } from "@bentley/imodeljs-common";
+import { BriefcaseDb } from "@itwin/core-backend";
+import { IModelError, IModelStatus, OpenBriefcaseProps } from "@itwin/core-common";
 import { AccessToken } from "@bentley/itwin-client";
 import { TestUserCredentials, TestUtility } from "@bentley/oidc-signin-tool";
 

@@ -7,7 +7,7 @@
  */
 
 import { Angle, Geometry, Matrix3d, Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
-import { Tweens } from "@bentley/imodeljs-common";
+import { Tweens } from "@itwin/core-common";
 import { Animator, ViewAnimationOptions } from "./ViewAnimation";
 import { ScreenViewport } from "./Viewport";
 import { ViewPose, ViewPose3d } from "./ViewPose";

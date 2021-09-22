@@ -10,7 +10,7 @@ import "./ModalSettingsStage.scss";
 import * as React from "react";
 import { BackstageItemUtilities, ConditionalBooleanValue, IconSpecUtilities, StageUsage } from "@bentley/ui-abstract";
 import settingsIconSvg from "@bentley/icons-generic/icons/settings.svg?sprite";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 import { Logger } from "@bentley/bentleyjs-core";
 import { Centered, SettingsContainer } from "@bentley/ui-core";
 import { FrontstageManager, ModalFrontstageInfo, ModalFrontstageRequestedCloseEventArgs } from "./FrontstageManager";

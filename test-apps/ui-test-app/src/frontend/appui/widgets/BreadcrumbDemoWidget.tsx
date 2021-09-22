@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { Breadcrumb, BreadcrumbDetails, BreadcrumbMode, BreadcrumbPath } from "@bentley/ui-components";
 import { ConfigurableCreateInfo, ConfigurableUiManager, UiFramework, WidgetControl } from "@bentley/ui-framework";
 import { demoMutableTreeDataProvider } from "./demodataproviders/demoTreeDataProvider";

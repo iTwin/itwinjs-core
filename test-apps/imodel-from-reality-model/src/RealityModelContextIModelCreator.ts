@@ -7,8 +7,8 @@ import { ClientRequestContext, Id64, Id64String, JsonUtils } from "@bentley/bent
 import { Matrix3d, Point3d, Range3d, StandardViewIndex, Transform, Vector3d } from "@bentley/geometry-core";
 import {
   CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotDb,
-} from "@bentley/imodeljs-backend";
-import { AxisAlignedBox3d, Cartographic, ContextRealityModelProps, EcefLocation, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
+} from "@itwin/core-backend";
+import { AxisAlignedBox3d, Cartographic, ContextRealityModelProps, EcefLocation, RenderMode, ViewFlags } from "@itwin/core-common";
 import { getJson } from "@bentley/itwin-client";
 
 class RealityModelTileUtils {

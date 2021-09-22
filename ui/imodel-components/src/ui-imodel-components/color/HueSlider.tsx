@@ -9,7 +9,7 @@
 import "./HueSlider.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { HSVColor } from "@bentley/imodeljs-common";
+import { HSVColor } from "@itwin/core-common";
 import { SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";
 import { UiIModelComponents } from "../UiIModelComponents";

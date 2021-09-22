@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { AnalysisStyleDisplacement, AnalysisStyleScalar, ThematicGradientSettings } from "@bentley/imodeljs-common";
+import { AnalysisStyleDisplacement, AnalysisStyleScalar, ThematicGradientSettings } from "@itwin/core-common";
 import { AuxChannel, AuxDisplacementChannel, AuxParamChannel } from "../../primitives/AuxChannelTable";
 import { DrawParams } from "../DrawCommand";
 import { TextureUnit } from "../RenderFlags";

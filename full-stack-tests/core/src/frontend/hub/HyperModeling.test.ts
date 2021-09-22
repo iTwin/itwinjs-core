@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Point3d } from "@bentley/geometry-core";
-import { SectionType } from "@bentley/imodeljs-common";
+import { SectionType } from "@itwin/core-common";
 import {
   CheckpointConnection, IModelApp, IModelConnection, ParseAndRunResult, SnapshotConnection,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import {
   HyperModeling, HyperModelingDecorator, SectionDrawingLocationState, SectionMarker, SectionMarkerConfig, SectionMarkerHandler,
 } from "@bentley/hypermodeling-frontend";

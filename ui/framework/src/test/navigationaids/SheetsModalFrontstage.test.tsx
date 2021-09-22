@@ -8,7 +8,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { fireEvent, render } from "@testing-library/react";
-import { IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
+import { IModelConnection, MockRender } from "@itwin/core-frontend";
 import { CardContainer, CardInfo, FrontstageManager, SheetCard, SheetData, SheetsModalFrontstage } from "../../ui-framework";
 import TestUtils, { mount } from "../TestUtils";
 

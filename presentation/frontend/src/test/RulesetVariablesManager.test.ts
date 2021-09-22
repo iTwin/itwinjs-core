@@ -7,7 +7,7 @@ import { expect } from "chai";
 import * as faker from "faker";
 import sinon from "sinon";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { IpcApp } from "@bentley/imodeljs-frontend";
+import { IpcApp } from "@itwin/core-frontend";
 import { RulesetVariable, VariableValueTypes } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";

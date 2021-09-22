@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { Feature, FeatureTable, GeometryClass, PackedFeatureTable } from "@bentley/imodeljs-common";
+import { Feature, FeatureTable, GeometryClass, PackedFeatureTable } from "@itwin/core-common";
 import {
   HiliteSet, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
-} from "@bentley/imodeljs-frontend";
-import { FeatureOverrides, Target } from "@bentley/imodeljs-frontend/lib/webgl";
+} from "@itwin/core-frontend";
+import { FeatureOverrides, Target } from "@itwin/core-frontend/lib/webgl";
 
 function waitUntilTimeHasPassed() {
   const ot = Date.now();

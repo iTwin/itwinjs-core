@@ -8,7 +8,7 @@
 
 import { assert, ByteStream } from "@bentley/bentleyjs-core";
 import { Point3d, Transform } from "@bentley/geometry-core";
-import { BatchType, CompositeTileHeader, TileFormat, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { BatchType, CompositeTileHeader, TileFormat, ViewFlagOverrides } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderSystem } from "../render/RenderSystem";

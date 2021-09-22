@@ -6,11 +6,11 @@
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
-import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
+import { ColorByName, ColorDef } from "@itwin/core-common";
 import {
   AngleDescription, BeButtonEvent, EventHandled, IModelApp, LengthDescription, NotifyMessageDetails, OutputMessagePriority, PrimitiveTool,
   QuantityType, SurveyLengthDescription, ToolAssistance, ToolAssistanceImage,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { FormatterSpec } from "@bentley/imodeljs-quantity";
 import {
   DialogItem, DialogLayoutDataProvider, DialogProperty, DialogPropertyItem, DialogPropertySyncItem,

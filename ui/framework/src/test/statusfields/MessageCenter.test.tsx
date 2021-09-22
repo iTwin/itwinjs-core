@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
 import { WidgetState } from "@bentley/ui-abstract";
 import { FooterPopup } from "@bentley/ui-ninezone";
 import {

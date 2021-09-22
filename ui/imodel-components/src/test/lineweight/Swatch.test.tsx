@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { ColorDef } from "@itwin/core-common";
 import { fireEvent, render } from "@testing-library/react"; // , waitForElement
 import { LineWeightSwatch } from "../../ui-imodel-components/lineweight/Swatch";
 import { TestUtils } from "../TestUtils";

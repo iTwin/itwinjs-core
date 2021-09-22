@@ -6,10 +6,10 @@
  * @module ContentView
  */
 
-import { EmphasizeElementsProps, ViewStateProps } from "@bentley/imodeljs-common";
+import { EmphasizeElementsProps, ViewStateProps } from "@itwin/core-common";
 import {
   EmphasizeElements, EntityState, IModelConnection, ScreenViewport, ViewState,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { ViewUtilities } from "../utils/ViewUtilities";
 
 /** SavedViewProps interface for sharing ViewState and EmphasizeElements information.

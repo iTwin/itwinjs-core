@@ -10,7 +10,7 @@ import { Id64String } from "@bentley/bentleyjs-core";
 import {
   CalloutProps, DefinitionElementProps, ElementProps, GeometricElement2dProps, GeometricElement3dProps, GeometricModel3dProps, IModel,
   InformationPartitionElementProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, TypeDefinitionElementProps, ViewAttachmentLabelProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   Document, GraphicalElement2d, GraphicalElement3d, GraphicalPartition3d, GraphicalType2d, GroupInformationElement, GroupInformationPartition,
   PhysicalElement, PhysicalType, SpatialLocationElement,

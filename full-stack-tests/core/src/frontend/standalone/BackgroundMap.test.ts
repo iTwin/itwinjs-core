@@ -6,10 +6,10 @@ import { expect } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core";
 import {
   BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, ColorDef, GlobeMode, TerrainHeightOriginMode,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   IModelApp, IModelConnection, Pixel, SnapshotConnection,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { testOnScreenViewport, TestViewport } from "../TestViewport";
 
 describe("Background map", () => {
@@ -69,7 +69,7 @@ describe("Background map", () => {
       [ { terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Ground } }, true ],
 
       // Terrain enabled.
-      /* ###TODO ApproximateTerrainHeights.json supplied by imodeljs-frontend is not found...
+      /* ###TODO ApproximateTerrainHeights.json supplied by core-frontend is not found...
       [ { applyTerrain: true }, false ],
       [ { applyTerrain: true, terrainSettings: { exaggeration: 0 } }, false ],
       [ { applyTerrain: true, terrainSettings: { heightOrigin: 0 } }, false ],

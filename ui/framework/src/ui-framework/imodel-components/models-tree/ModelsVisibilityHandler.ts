@@ -7,7 +7,7 @@
  */
 
 import { BeEvent, Id64String } from "@bentley/bentleyjs-core";
-import { IModelConnection, PerModelCategoryVisibility, Viewport } from "@bentley/imodeljs-frontend";
+import { IModelConnection, PerModelCategoryVisibility, Viewport } from "@itwin/core-frontend";
 import { ContentFlags, ECClassGroupingNodeKey, GroupingNodeKey, Keys, KeySet, NodeKey } from "@bentley/presentation-common";
 import { ContentDataProvider, IFilteredPresentationTreeDataProvider, IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";

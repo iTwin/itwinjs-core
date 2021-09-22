@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { CodeProps, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { CodeProps, SubCategoryAppearance } from "@itwin/core-common";
 import { Id64String } from "@bentley/bentleyjs-core";
 
 export const fullstackIpcChannel = "fullStackIpc";

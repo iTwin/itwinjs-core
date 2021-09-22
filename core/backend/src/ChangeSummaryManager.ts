@@ -7,7 +7,7 @@
  */
 
 import { assert, DbResult, GuidString, Id64String, IModelStatus, Logger, PerfLogger, using } from "@bentley/bentleyjs-core";
-import { ChangedValueState, ChangeOpCode, ChangesetRange, IModelError, IModelVersion } from "@bentley/imodeljs-common";
+import { ChangedValueState, ChangeOpCode, ChangesetRange, IModelError, IModelVersion } from "@itwin/core-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -51,7 +51,7 @@ export interface InstanceChange {
 
 /** Options for [ChangeSummaryManager.extractChangeSummaries]($backend).
  * @beta
- * @deprecated Use [CreateChangeSummaryArgs]($imodeljs-backend) instead
+ * @deprecated Use [CreateChangeSummaryArgs]($core-backend) instead
  */
 export interface ChangeSummaryExtractOptions {
   /** If specified, change summaries are extracted from the start version to the current version as of which the iModel
@@ -152,7 +152,7 @@ export class ChangeSummaryManager {
    * @param options Extraction options
    * @return the Ids of the extracted change summaries.
    * @throws [IModelError]($common) if the iModel is standalone
-   * @deprecated Use [ChangeSummaryManager.createChangeSummaries]($imodeljs-backend) instead
+   * @deprecated Use [ChangeSummaryManager.createChangeSummaries]($core-backend) instead
    */
   public static async extractChangeSummaries(user: AuthorizedClientRequestContext, iModel: BriefcaseDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]> { // eslint-disable-line deprecation/deprecation
     if (!iModel?.isOpen)
@@ -455,7 +455,7 @@ export class ChangeSummaryManager {
    *        changedInstance.className must be fully qualified and schema and class name must be escaped with square brackets if they collide with reserved ECSQL words: `[schema name].[class name]`
    * @param changedValueState The Changed State to query the values for. This must correspond to the [InstanceChange.OpCode]($backend) of the InstanceChange.
    * @param changedPropertyNames List of the property names for which values have changed for the specified instance change.
-   *        The list can be obtained by calling [ChangeSummaryManager.getChangedPropertyValueNames]($imodeljs-backend).
+   *        The list can be obtained by calling [ChangeSummaryManager.getChangedPropertyValueNames]($core-backend).
    *        If omitted, the method will call the above method by itself. The parameter allows for checking first whether
    *        an instance change has any property value changes at all. If there are no property value changes, this method
    *        should not be called, as it will throw an error.

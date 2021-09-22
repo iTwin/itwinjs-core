@@ -35,8 +35,8 @@
     "@bentley/ecschema-rpcinterface-common": "workspace:*",
     "@bentley/geometry-core": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
-    "@bentley/imodeljs-backend": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
+    "@itwin/core-backend": "workspace:*",
+    "@itwin/core-common": "workspace:*",
     "@bentley/itwin-client": "workspace:*"
   },
   "devDependencies": {
@@ -47,8 +47,8 @@
     "@bentley/eslint-plugin": "workspace:*",
     "@bentley/geometry-core": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
-    "@bentley/imodeljs-backend": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
+    "@itwin/core-backend": "workspace:*",
+    "@itwin/core-common": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "eslint": "^7.11.0",
     "rimraf": "^3.0.2",

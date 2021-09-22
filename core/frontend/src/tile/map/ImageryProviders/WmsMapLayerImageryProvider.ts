@@ -7,7 +7,7 @@
  */
 import { IModelStatus } from "@bentley/bentleyjs-core";
 import { Point2d } from "@bentley/geometry-core";
-import { Cartographic, MapLayerSettings, ServerError } from "@bentley/imodeljs-common";
+import { Cartographic, MapLayerSettings, ServerError } from "@itwin/core-common";
 
 import {
   ImageryMapTileTree, MapCartoRectangle, MapLayerImageryProvider, MapLayerImageryProviderStatus, QuadId, WmsCapabilities,

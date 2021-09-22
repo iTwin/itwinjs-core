@@ -35,8 +35,8 @@
   "peerDependencies": {
     "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.63",
     "@bentley/geometry-core": "workspace:^3.0.0-dev.63",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.63",
-    "@bentley/imodeljs-frontend": "workspace:^3.0.0-dev.63",
+    "@itwin/core-common": "workspace:^3.0.0-dev.63",
+    "@itwin/core-frontend": "workspace:^3.0.0-dev.63",
     "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.63",
     "@bentley/imodeljs-quantity": "workspace:^3.0.0-dev.63",
     "@bentley/ui-abstract": "workspace:^3.0.0-dev.63",
@@ -54,8 +54,8 @@
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@bentley/geometry-core": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
-    "@bentley/imodeljs-frontend": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-frontend": "workspace:*",
     "@bentley/imodeljs-i18n": "workspace:*",
     "@bentley/imodeljs-quantity": "workspace:*",
     "@bentley/ui-abstract": "workspace:*",
@@ -108,7 +108,7 @@
   },
   "//dependencies": [
     "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",
-    "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
+    "NOTE: core-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
     "@bentley/icons-generic-webfont": "^1.0.15",

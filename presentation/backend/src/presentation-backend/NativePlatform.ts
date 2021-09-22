@@ -7,7 +7,7 @@
  */
 
 import { IDisposable } from "@bentley/bentleyjs-core";
-import { IModelDb, IModelHost, IModelJsNative } from "@bentley/imodeljs-backend";
+import { IModelDb, IModelHost, IModelJsNative } from "@itwin/core-backend";
 import { FormatProps } from "@bentley/imodeljs-quantity";
 import {
   DiagnosticsScopeLogs, PresentationError, PresentationStatus, UpdateInfoJSON, VariableValue, VariableValueJSON, VariableValueTypes,

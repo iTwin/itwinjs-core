@@ -8,10 +8,10 @@
 
 import { Id64String } from "@bentley/bentleyjs-core";
 import { Point3d, Range1d, Vector3d } from "@bentley/geometry-core";
-import { RenderTexture } from "@bentley/imodeljs-common";
+import { RenderTexture } from "@itwin/core-common";
 import {
   DecorateContext, GraphicType, HitDetail, imageElementFromUrl, IModelApp, IModelConnection, ParticleCollectionBuilder, ParticleProps, Tool,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { randomFloat, randomFloatInRange, randomIntegerInRange, randomPositionInRange } from "./Random";
 
 /** Represents one particle in the system. */

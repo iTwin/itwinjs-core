@@ -9,7 +9,7 @@
 import "./StandardRotationNavigationAid.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { StandardViewId } from "@bentley/imodeljs-frontend";
+import { StandardViewId } from "@itwin/core-frontend";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { ViewportComponentEvents } from "@bentley/ui-imodel-components";
 import { CommonProps, Icon, Popup } from "@bentley/ui-core";

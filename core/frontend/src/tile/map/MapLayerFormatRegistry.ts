@@ -5,7 +5,7 @@
 /** @module Views */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { MapLayerKey, MapLayerSettings, MapSubLayerProps } from "@bentley/imodeljs-common";
+import { MapLayerKey, MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerTileTreeReference } from "../internal";

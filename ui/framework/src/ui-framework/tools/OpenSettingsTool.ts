@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Tools
  */
-import { Tool } from "@bentley/imodeljs-frontend";
+import { Tool } from "@itwin/core-frontend";
 import { SettingsModalFrontstage } from "../frontstage/ModalSettingsStage";
 
 /**

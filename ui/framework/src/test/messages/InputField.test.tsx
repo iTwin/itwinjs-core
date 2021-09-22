@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
-import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
+import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 import { InputFieldMessage, KeyboardShortcutManager, MessageManager } from "../../ui-framework";
 import TestUtils, { mount } from "../TestUtils";
 

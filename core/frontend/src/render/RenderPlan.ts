@@ -10,7 +10,7 @@ import { ClipVector, Point3d, Vector3d } from "@bentley/geometry-core";
 import {
   AmbientOcclusion, AnalysisStyle, ClipStyle, ColorDef, Frustum, GlobeMode, HiddenLine, Hilite, LightSettings, MonochromeMode, Npc, RenderTexture,
   ThematicDisplay, ViewFlags, WhiteOnWhiteReversalSettings,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { FlashSettings } from "../FlashSettings";
 import { Viewport } from "../Viewport";
 

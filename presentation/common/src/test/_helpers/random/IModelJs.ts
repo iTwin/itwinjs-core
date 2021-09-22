@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { EntityProps } from "@bentley/imodeljs-common";
+import { EntityProps } from "@itwin/core-common";
 import { createRandomId } from "./Misc";
 
 interface RandomEntityProps extends EntityProps {

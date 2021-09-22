@@ -16,7 +16,7 @@ import {
 import {
   BriefcaseIdValue,
   ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, CodeProps, IModelError, IModelVersion, LocalDirName,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 import {
   BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckPointArg, CreateNewIModelProps, IModelIdArg, IModelNameArg, ITwinIdArg, LockProps, V2CheckpointAccessProps,

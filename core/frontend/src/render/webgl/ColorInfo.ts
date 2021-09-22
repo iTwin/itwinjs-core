@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { ColorDef, ColorIndex } from "@bentley/imodeljs-common";
+import { ColorDef, ColorIndex } from "@itwin/core-common";
 import { VertexTable } from "../primitives/VertexTable";
 import { FloatRgba } from "./FloatRGBA";
 

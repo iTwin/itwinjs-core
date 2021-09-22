@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { ToolAssistance } from "@bentley/imodeljs-frontend";
+import { ToolAssistance } from "@itwin/core-frontend";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { Point } from "@bentley/ui-core";
 import { CursorInformation } from "../../../ui-framework/cursor/CursorInformation";

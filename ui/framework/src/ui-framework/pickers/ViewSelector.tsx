@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { Id64String, Logger } from "@bentley/bentleyjs-core";
-import { IModelApp, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, ViewState } from "@itwin/core-frontend";
 import { UiEvent } from "@bentley/ui-core";
 import { SupportsViewSelectorChange } from "../content/ContentControl";
 import { ContentViewManager } from "../content/ContentViewManager";

@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { HubIModel, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
-import { IModelVersion } from "@bentley/imodeljs-common";
-import { AuthorizedFrontendRequestContext, CheckpointConnection, IModelHubFrontend } from "@bentley/imodeljs-frontend";
+import { IModelVersion } from "@itwin/core-common";
+import { AuthorizedFrontendRequestContext, CheckpointConnection, IModelHubFrontend } from "@itwin/core-frontend";
 
 export class IModelApi {
 

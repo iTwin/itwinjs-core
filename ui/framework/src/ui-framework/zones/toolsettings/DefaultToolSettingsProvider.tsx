@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 // cSpell:Ignore configurableui Fronstage
 import { DialogItem, DialogPropertySyncItem, UiLayoutDataProvider } from "@bentley/ui-abstract";
 import { ConfigurableCreateInfo } from "../../configurableui/ConfigurableUiControl";

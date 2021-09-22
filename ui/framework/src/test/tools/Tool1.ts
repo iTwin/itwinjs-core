@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Point3d } from "@bentley/geometry-core";
-import { BeButtonEvent, EventHandled, IModelApp, PrimitiveTool } from "@bentley/imodeljs-frontend";
+import { BeButtonEvent, EventHandled, IModelApp, PrimitiveTool } from "@itwin/core-frontend";
 
 /** @internal */
 export class Tool1 extends PrimitiveTool {

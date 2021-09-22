@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { CheckBox, createButton, createCheckBox, createColorInput, createLabeledNumericInput, createTextBox } from "@bentley/frontend-devtools";
 import { Vector3d } from "@bentley/geometry-core";
-import { ColorDef, LightSettings, LightSettingsProps, RenderMode, RgbColor, SolarShadowSettings } from "@bentley/imodeljs-common";
-import { Viewport, ViewState } from "@bentley/imodeljs-frontend";
+import { ColorDef, LightSettings, LightSettingsProps, RenderMode, RgbColor, SolarShadowSettings } from "@itwin/core-common";
+import { Viewport, ViewState } from "@itwin/core-frontend";
 
 // cspell:ignore cels sundir textbox hemi lighteditor
 

@@ -7,7 +7,7 @@
  */
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Arc3d, CurvePrimitive, LineSegment3d, LineString3d, Path, Point3d, Transform, Vector3d, XYZProps } from "@bentley/geometry-core";
-import { GeometryClass, LinePixels } from "@bentley/imodeljs-common";
+import { GeometryClass, LinePixels } from "@itwin/core-common";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { GraphicType } from "./render/GraphicBuilder";

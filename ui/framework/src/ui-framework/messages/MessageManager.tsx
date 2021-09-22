@@ -13,7 +13,7 @@ import { XAndY } from "@bentley/geometry-core";
 import {
   ActivityMessageDetails, IModelApp, MessageBoxIconType, MessageBoxType, MessageBoxValue, OutputMessageAlert, OutputMessagePriority,
   OutputMessageType, ToolAssistanceInstructions, ToolTipOptions,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { MessageSeverity } from "@bentley/ui-abstract";
 import { MessageContainer, UiEvent } from "@bentley/ui-core";
 import { ConfigurableUiActionId } from "../configurableui/state";

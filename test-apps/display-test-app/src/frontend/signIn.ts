@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelApp, NativeApp } from "@bentley/imodeljs-frontend";
+import { IModelApp, NativeApp } from "@itwin/core-frontend";
 import { BrowserAuthorizationCallbackHandler } from "@bentley/frontend-authorization-client";
 import { AccessToken } from "@bentley/itwin-client";
 

@@ -16,7 +16,7 @@ import { CursorInformation, FrameworkUiAdmin, KeyinFieldLocalization } from "../
 import { ClearKeyinPaletteHistoryTool } from "../../ui-framework/tools/KeyinPaletteTools";
 import * as keyinExports from "../../ui-framework/popup/KeyinPalettePanel";
 import TestUtils from "../TestUtils";
-import { MockRender, Tool } from "@bentley/imodeljs-frontend";
+import { MockRender, Tool } from "@itwin/core-frontend";
 import { Button } from "@itwin/itwinui-react";
 
 class TestDialogUiDataProvider extends DialogLayoutDataProvider {

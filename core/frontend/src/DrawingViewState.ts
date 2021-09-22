@@ -12,7 +12,7 @@ import {
 } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, Frustum, SectionDrawingViewProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { ViewRect } from "./ViewRect";
 import { Frustum2d } from "./Frustum2d";
 import { ExtentLimits, ViewState2d, ViewState3d } from "./ViewState";

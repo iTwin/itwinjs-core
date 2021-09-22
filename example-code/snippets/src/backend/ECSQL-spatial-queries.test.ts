@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Range3d, Range3dProps } from "@bentley/geometry-core";
-import { ECSqlStatement, Element, GeometricElement3d, PhysicalPartition, SnapshotDb } from "@bentley/imodeljs-backend";
+import { ECSqlStatement, Element, GeometricElement3d, PhysicalPartition, SnapshotDb } from "@itwin/core-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */

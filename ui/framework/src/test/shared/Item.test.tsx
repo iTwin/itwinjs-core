@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { IModelApp, SelectionTool } from "@bentley/imodeljs-frontend";
+import { IModelApp, SelectionTool } from "@itwin/core-frontend";
 import { ConditionalStringValue } from "@bentley/ui-abstract";
 import { Orientation, Size } from "@bentley/ui-core";
 import { ActionButtonItemDef, CommandItemDef, ItemProps, ToolItemDef } from "../../ui-framework";

@@ -10,7 +10,7 @@ import {
   LengthDescription, NotifyMessageDetails, OutputMessagePriority,
   PrimitiveTool, QuantityType,
   SurveyLengthDescription, ToolAssistance, ToolAssistanceImage,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import {
   ColorEditorParams, DialogItem, DialogItemValue, DialogPropertySyncItem,
   InputEditorSizeParams,
@@ -19,7 +19,7 @@ import {
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
-import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
+import { ColorByName, ColorDef } from "@itwin/core-common";
 import { FormatterSpec } from "@bentley/imodeljs-quantity";
 import { CursorInformation, MenuItemProps, UiFramework } from "@bentley/ui-framework";
 import sampleToolSvg from "./SampleTool.svg?sprite";

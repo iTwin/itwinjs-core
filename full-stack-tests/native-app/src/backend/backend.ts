@@ -14,8 +14,8 @@ import { IModelBankClient, IModelHubClientLoggerCategory } from "@bentley/imodel
 import {
   AuthorizedBackendRequestContext, BackendLoggerCategory, BriefcaseDb, BriefcaseManager, ChangeSummaryManager, IModelHostConfiguration, IModelJsFs,
   IpcHandler, NativeHost, NativeLoggerCategory,
-} from "@bentley/imodeljs-backend";
-import { IModelRpcProps, RpcConfiguration } from "@bentley/imodeljs-common";
+} from "@itwin/core-backend";
+import { IModelRpcProps, RpcConfiguration } from "@itwin/core-common";
 import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
 import { TestUtility } from "@bentley/oidc-signin-tool";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool/lib/TestUsers";

@@ -5,7 +5,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64Arg } from "@bentley/bentleyjs-core";
-import { ElementProps } from "@bentley/imodeljs-common";
+import { ElementProps } from "@itwin/core-common";
 
 /** @internal */
 export const PRESENTATION_TEST_APP_IPC_CHANNEL_NAME = "presentation-test-app-ipc-interface";

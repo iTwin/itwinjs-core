@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Guid, using } from "@bentley/bentleyjs-core";
-import { IModelDb, SnapshotDb } from "@bentley/imodeljs-backend";
+import { IModelDb, SnapshotDb } from "@itwin/core-backend";
 import { UnitSystemKey } from "@bentley/imodeljs-quantity";
 import { PresentationManager, UnitSystemFormat } from "@bentley/presentation-backend";
 import {

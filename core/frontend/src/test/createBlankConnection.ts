@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Guid } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
-import { Cartographic } from "@bentley/imodeljs-common";
+import { Cartographic } from "@itwin/core-common";
 import { BlankConnection } from "../IModelConnection";
 
 /** Open a blank connection for tests. */

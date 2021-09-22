@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as yargs from "yargs";
 import { Logger } from "@bentley/bentleyjs-core";
-import { IModelHost } from "@bentley/imodeljs-backend";
+import { IModelHost } from "@itwin/core-backend";
 import { OrbitGtContextIModelCreator } from "./OrbitGtContextModelCreator";
 
 /** Use [yargs](https://www.npmjs.com/package/yargs) to validate and extract command line options. */

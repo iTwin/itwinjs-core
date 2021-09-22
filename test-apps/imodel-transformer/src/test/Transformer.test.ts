@@ -9,9 +9,9 @@ import { DbResult, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import {
   Category, ECSqlStatement, Element, GeometricElement2d, GeometricElement3d, IModelDb, IModelHost,
   IModelJsFs, PhysicalModel, PhysicalPartition, SnapshotDb, SpatialCategory, SpatialElement,
-} from "@bentley/imodeljs-backend";
+} from "@itwin/core-backend";
 import { TransformerLoggerCategory } from "@bentley/imodeljs-transformer";
-import { Code, PhysicalElementProps } from "@bentley/imodeljs-common";
+import { Code, PhysicalElementProps } from "@itwin/core-common";
 import { loggerCategory, Transformer } from "../Transformer";
 
 describe("imodel-transformer", () => {

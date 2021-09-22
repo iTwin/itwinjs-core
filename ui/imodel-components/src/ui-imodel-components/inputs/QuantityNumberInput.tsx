@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { WebFontIcon } from "@bentley/ui-core";
 import { SpecialKey } from "@bentley/ui-abstract";
-import { IModelApp, QuantityFormatsChangedArgs, QuantityTypeArg } from "@bentley/imodeljs-frontend";
+import { IModelApp, QuantityFormatsChangedArgs, QuantityTypeArg } from "@itwin/core-frontend";
 import { DecimalPrecision, FormatterSpec, FormatTraits, FormatType, Parser, ParserSpec, UnitConversionSpec, UnitProps } from "@bentley/imodeljs-quantity";
 import { Input, InputProps } from "@itwin/itwinui-react";
 
@@ -24,7 +24,7 @@ export type StepFunctionProp = number | ((direction: string) => number | undefin
  * @beta
  */
 export interface QuantityNumberInputProps extends Omit<InputProps, "value" | "min" | "max" | "step" | "onFocus" | "onChange"> {
-  /** Initial magnitude in 'persistence' units. See `getPersistenceUnitByQuantityType` in [QuantityFormatter]($imodeljs-frontend).
+  /** Initial magnitude in 'persistence' units. See `getPersistenceUnitByQuantityType` in [QuantityFormatter]($core-frontend).
    * Set to `undefined` to show placeholder text */
   persistenceValue?: number;
   /** CSS class name for the QuantityNumberInput component container div */

@@ -9,7 +9,7 @@
 import "./SaturationPicker.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ColorDef, HSVColor } from "@bentley/imodeljs-common";
+import { ColorDef, HSVColor } from "@itwin/core-common";
 import { SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";
 import { UiIModelComponents } from "../UiIModelComponents";

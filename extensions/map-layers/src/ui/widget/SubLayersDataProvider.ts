@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BeEvent, compareStringsOrUndefined } from "@bentley/bentleyjs-core";
-import { MapSubLayerProps, SubLayerId } from "@bentley/imodeljs-common";
+import { MapSubLayerProps, SubLayerId } from "@itwin/core-common";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { DelayLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
 import { CheckBoxState } from "@bentley/ui-core";

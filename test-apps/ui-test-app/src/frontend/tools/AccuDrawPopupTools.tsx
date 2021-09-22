@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import {
   FitViewTool, IModelApp, NotifyMessageDetails, OutputMessagePriority, PanViewTool, RotateViewTool, SelectionTool, WindowAreaTool, ZoomViewTool,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { AbstractMenuItemProps, AbstractToolbarProps, BadgeType, Primitives, PropertyDescription, RelativePosition } from "@bentley/ui-abstract";
 import { ActionButtonItemDef, CommandItemDef } from "@bentley/ui-framework";
 

@@ -7,7 +7,7 @@
  */
 
 import { dispose } from "@bentley/bentleyjs-core";
-import { QParams2d, QParams3d } from "@bentley/imodeljs-common";
+import { QParams2d, QParams3d } from "@itwin/core-common";
 import { AuxChannel, AuxChannelTable, AuxDisplacementChannel, AuxParamChannel } from "../primitives/AuxChannelTable";
 import { VertexTable } from "../primitives/VertexTable";
 import { ColorInfo } from "./ColorInfo";

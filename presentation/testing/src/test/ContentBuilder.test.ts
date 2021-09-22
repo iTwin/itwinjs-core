@@ -7,7 +7,7 @@ import ChaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { BeEvent, Guid, Id64String } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import {
   CategoryDescription, Content, DefaultContentDisplayTypes, Descriptor, DisplayValue, Field, Item, KeySet, PrimitiveTypeDescription,
   PropertyValueFormat, RegisteredRuleset, Ruleset, Value, ValuesDictionary,

@@ -8,7 +8,7 @@
 
 import { assert, dispose } from "@bentley/bentleyjs-core";
 import { Angle, Point2d, Point3d, Range3d, Vector2d, Vector3d } from "@bentley/geometry-core";
-import { Npc, QParams2d, QParams3d, QPoint2dList, QPoint3dList, RenderMode, RenderTexture } from "@bentley/imodeljs-common";
+import { Npc, QParams2d, QParams3d, QPoint2dList, QPoint3dList, RenderMode, RenderTexture } from "@itwin/core-common";
 import { SkyBox } from "../../DisplayStyleState";
 import { FlashMode } from "../../FlashSettings";
 import { TesselatedPolyline } from "../primitives/VertexTable";

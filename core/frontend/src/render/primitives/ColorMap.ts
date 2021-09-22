@@ -7,7 +7,7 @@
  */
 
 import { assert, compareNumbers, IndexMap } from "@bentley/bentleyjs-core";
-import { ColorDef, ColorIndex } from "@bentley/imodeljs-common";
+import { ColorDef, ColorIndex } from "@itwin/core-common";
 
 /** @internal */
 export class ColorMap extends IndexMap<number> {

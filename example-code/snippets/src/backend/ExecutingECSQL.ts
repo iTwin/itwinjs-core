@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, Id64String } from "@bentley/bentleyjs-core";
-import { ECSqlStatement, ECSqlValue, IModelDb, SnapshotDb } from "@bentley/imodeljs-backend";
-import { NavigationValue } from "@bentley/imodeljs-common";
+import { ECSqlStatement, ECSqlValue, IModelDb, SnapshotDb } from "@itwin/core-backend";
+import { NavigationValue } from "@itwin/core-common";
 
 /* eslint-disable no-console, @typescript-eslint/naming-convention */
 

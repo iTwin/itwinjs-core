@@ -5,8 +5,8 @@
 import "./ViewItem.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ThumbnailProps, ViewDefinitionProps } from "@bentley/imodeljs-common";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { ThumbnailProps, ViewDefinitionProps } from "@itwin/core-common";
+import { IModelConnection } from "@itwin/core-frontend";
 import { CommonProps, LoadingSpinner } from "@bentley/ui-core";
 
 class ThumbnailCache {

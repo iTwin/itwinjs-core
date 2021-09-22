@@ -8,7 +8,7 @@ import {
   BeButtonEvent, CoordinateLockOverrides, EventHandled, HitDetail, IModelApp,
   LocateFilterStatus, LocateResponse, PrimitiveTool,
   SelectionMethod, SelectionMode,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { Point3d } from "@bentley/geometry-core";
 import { UiFramework } from "@bentley/ui-framework";
 import { ToolbarItemUtilities } from "@bentley/ui-abstract";

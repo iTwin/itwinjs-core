@@ -17,7 +17,7 @@ import {
   BriefcaseId,
   BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps, LocalDirName,
   LocalFileName, RequestNewBriefcaseProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TelemetryEvent } from "@bentley/telemetry-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -489,7 +489,7 @@ export class BriefcaseManager {
       return;
 
     const telemetryEvent = new TelemetryEvent(
-      "imodeljs-backend - Open iModel",
+      "core-backend - Open iModel",
       "7a6424d1-2114-4e89-b13b-43670a38ccd4", // Feature: "iModel Use"
       imodel.iTwinId,
       imodel.iModelId,

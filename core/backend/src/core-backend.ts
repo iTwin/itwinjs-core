@@ -54,7 +54,7 @@ export * from "./ElementGraphics";
 export * from "./IModelDb"; // must be last
 
 /** @docs-package-description
- * The imodeljs-backend package always runs on the computer with a local Briefcase.
+ * The core-backend package always runs on the computer with a local Briefcase.
  *
  * It contains classes that [backend code]($docs/learning/backend/index.md) can use to work with directly with iModels.
  */

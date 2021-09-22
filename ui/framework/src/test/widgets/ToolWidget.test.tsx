@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
+import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import { WidgetState } from "@bentley/ui-abstract";
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
 import { render } from "@testing-library/react";

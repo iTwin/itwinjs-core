@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BentleyStatus } from "@bentley/bentleyjs-core";
-import { IModelError } from "@bentley/imodeljs-common";
+import { IModelError } from "@itwin/core-common";
 import { GLTimerResult, GLTimerResultCallback } from "../RenderSystem";
 import { System } from "./System";
 

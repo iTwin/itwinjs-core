@@ -6,7 +6,7 @@ import { ClientRequestContextProps, GuidString } from "@bentley/bentleyjs-core";
 import {
   DevToolsRpcInterface, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface,
   RpcInterface, RpcManager, SnapshotIModelRpcInterface, WipRpcInterface,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { AuthorizedClientRequestContextProps } from "@bentley/itwin-client";
 
 export interface CloudEnvProps {

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ColorDef } from "@bentley/imodeljs-common";
+import { ColorDef } from "@itwin/core-common";
 import { Point3d, Sphere, Transform } from "@bentley/geometry-core";
 import { IModelApp } from "../IModelApp";
 import { DecorateContext } from "../ViewContext";

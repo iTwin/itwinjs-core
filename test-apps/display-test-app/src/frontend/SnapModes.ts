@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { createComboBox } from "@bentley/frontend-devtools";
-import { SnapMode } from "@bentley/imodeljs-frontend";
+import { SnapMode } from "@itwin/core-frontend";
 import { DisplayTestApp } from "./App";
 
 const multiSnapModes = [

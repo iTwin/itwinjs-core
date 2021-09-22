@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { SelectionHandler } from "@bentley/presentation-frontend";
 
 /**

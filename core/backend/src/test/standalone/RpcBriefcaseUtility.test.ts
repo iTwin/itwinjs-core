@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { IModelRpcProps, SyncMode } from "@bentley/imodeljs-common";
+import { IModelRpcProps, SyncMode } from "@itwin/core-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { expect } from "chai";
 import * as sinon from "sinon";

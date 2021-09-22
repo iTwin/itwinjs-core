@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { Id64String } from "@bentley/bentleyjs-core";
-import { IModelConnection, ScreenViewport, ViewState } from "@bentley/imodeljs-frontend";
+import { IModelConnection, ScreenViewport, ViewState } from "@itwin/core-frontend";
 import { UiEvent } from "@bentley/ui-core";
 import { ConfigurableCreateInfo, ConfigurableUiControl, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 

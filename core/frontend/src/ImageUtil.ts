@@ -8,7 +8,7 @@
 
 import { ProcessDetector } from "@bentley/bentleyjs-core";
 import { Point2d } from "@bentley/geometry-core";
-import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
+import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { ViewRect } from "./ViewRect";
 
 interface Rgba {

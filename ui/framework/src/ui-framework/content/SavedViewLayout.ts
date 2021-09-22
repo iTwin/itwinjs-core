@@ -6,7 +6,7 @@
  * @module ContentView
  */
 
-import { IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
+import { IModelConnection, ViewState } from "@itwin/core-frontend";
 import { ContentCallback, ContentGroup, ContentGroupProps } from "./ContentGroup";
 import { ContentLayoutDef } from "./ContentLayout";
 import { SavedView, SavedViewProps } from "./SavedView";

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, Id64, Id64Arg, Id64Set, Id64String } from "@bentley/bentleyjs-core";
-import { SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { SubCategoryAppearance } from "@itwin/core-common";
 import { IModelConnection } from "./IModelConnection";
 
 /** A cancelable paginated request for subcategory information.

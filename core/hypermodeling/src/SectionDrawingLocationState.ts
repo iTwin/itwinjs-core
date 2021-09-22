@@ -12,10 +12,10 @@ import {
 } from "@bentley/geometry-core";
 import {
   Placement3d, SectionType,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   DrawingViewState, IModelConnection, SheetViewState, SpatialViewState,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 
 const selectSectionDrawingLocationStatesECSql = `
   SELECT

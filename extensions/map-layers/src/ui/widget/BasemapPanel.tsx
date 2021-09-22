@@ -5,8 +5,8 @@
 // cSpell:ignore droppable Sublayer Basemap
 
 import * as React from "react";
-import { ColorByName, ColorDef, MapLayerProps, MapLayerSettings } from "@bentley/imodeljs-common";
-import { DisplayStyleState } from "@bentley/imodeljs-frontend";
+import { ColorByName, ColorDef, MapLayerProps, MapLayerSettings } from "@itwin/core-common";
+import { DisplayStyleState } from "@itwin/core-frontend";
 import { ColorPickerDialog, ColorSwatch } from "@bentley/ui-imodel-components";
 import { OptionType, ThemedSelect, WebFontIcon } from "@bentley/ui-core";
 import { ActionMeta, ValueType } from "react-select/src/types";

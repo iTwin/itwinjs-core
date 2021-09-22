@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
-import { HSVColor } from "@bentley/imodeljs-common";
+import { HSVColor } from "@itwin/core-common";
 import { fireEvent, render } from "@testing-library/react";
 import { TestUtils } from "../TestUtils";
 import { SaturationPicker } from "../../ui-imodel-components/color/SaturationPicker";

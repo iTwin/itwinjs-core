@@ -7,7 +7,7 @@
  */
 
 import { clearKeyinPaletteHistory } from "../popup/KeyinPalettePanel";
-import { Tool } from "@bentley/imodeljs-frontend";
+import { Tool } from "@itwin/core-frontend";
 
 /**
  * Immediate tool that will clear the recent history of command/tool keyins shown in

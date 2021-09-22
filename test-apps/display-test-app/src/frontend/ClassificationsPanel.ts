@@ -8,10 +8,10 @@ import { ComboBox, ComboBoxEntry, createCheckBox, createComboBox, createNestedMe
 import {
   CartographicRange, ContextRealityModelProps, ModelProps, SpatialClassifier, SpatialClassifierFlagsProps, SpatialClassifierInsideDisplay,
   SpatialClassifierOutsideDisplay, SpatialClassifiers,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   ContextRealityModelState, DisplayStyle3dState, IModelApp, queryRealityData, SpatialModelState, SpatialViewState, Viewport,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { DisplayTestApp } from "./App";
 import { ToolBarDropDown } from "./ToolBar";
 

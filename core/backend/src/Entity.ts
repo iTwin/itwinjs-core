@@ -7,7 +7,7 @@
  */
 
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { EntityProps, PropertyCallback, PropertyMetaData } from "@bentley/imodeljs-common";
+import { EntityProps, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
 import { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
 

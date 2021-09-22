@@ -5,8 +5,8 @@
 
 import { expect } from "chai";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { BentleyCloudRpcManager, OpenAPIInfo } from "@bentley/imodeljs-common";
-import { AuthorizedFrontendRequestContext, NoRenderApp } from "@bentley/imodeljs-frontend";
+import { BentleyCloudRpcManager, OpenAPIInfo } from "@itwin/core-common";
+import { AuthorizedFrontendRequestContext, NoRenderApp } from "@itwin/core-frontend";
 import { AccessToken } from "@bentley/itwin-client";
 import {
   getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials,

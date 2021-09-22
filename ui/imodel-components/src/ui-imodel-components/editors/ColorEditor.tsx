@@ -9,7 +9,7 @@
 import "./ColorEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { ColorDef } from "@itwin/core-common";
 import {
   ColorEditorParams, PropertyEditorParams, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
   StandardEditorNames, StandardTypeNames,

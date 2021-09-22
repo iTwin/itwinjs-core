@@ -21,7 +21,7 @@ import "./navigationaids/CubeExampleNavigationAid";
 import * as React from "react";
 import { BadgeType, ContentLayoutProps, FunctionKey, StagePanelLocation, StagePanelSection, StageUsage, StandardContentLayouts, WidgetState } from "@bentley/ui-abstract";
 import { FillCentered } from "@bentley/ui-core";
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 
 import {
   AccuDrawCommandItems,
@@ -50,7 +50,7 @@ import { ScheduleAnimationFrontstage } from "./frontstages/ScheduleAnimationFron
 import { SignInFrontstage } from "./frontstages/SignInFrontstage";
 import { AccuDrawPopupTools } from "../tools/AccuDrawPopupTools";
 import { AppTools } from "../tools/ToolSpecifications";
-import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
+import { ColorByName, ColorDef } from "@itwin/core-common";
 import { FrontstageUi2 } from "./frontstages/FrontstageUi2";
 
 // cSpell:ignore uitestapp

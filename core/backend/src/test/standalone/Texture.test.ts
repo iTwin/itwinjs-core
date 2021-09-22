@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { Base64EncodedString, ImageSourceFormat, IModel } from "@bentley/imodeljs-common";
-import { SnapshotDb, Texture } from "../../imodeljs-backend";
+import { Base64EncodedString, ImageSourceFormat, IModel } from "@itwin/core-common";
+import { SnapshotDb, Texture } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("Texture", () => {

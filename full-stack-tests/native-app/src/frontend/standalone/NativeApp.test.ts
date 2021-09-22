@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
-import { NativeApp } from "@bentley/imodeljs-frontend";
+import { NativeApp } from "@itwin/core-frontend";
 import { NativeAppTest } from "../NativeAppTest";
 import { usingOfflineScope } from "../HttpRequestHook";
 

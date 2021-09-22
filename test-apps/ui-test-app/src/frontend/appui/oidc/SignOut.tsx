@@ -10,7 +10,7 @@ import "./SignOut.scss";
 import * as React from "react";
 import { ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 import { UserInfo } from "@bentley/itwin-client";
 import { getUserColor } from "@bentley/ui-core";
 import { Button } from "@itwin/itwinui-react";

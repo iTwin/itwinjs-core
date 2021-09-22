@@ -11,7 +11,7 @@ import {
   BriefcaseId,
   ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, CodeProps, IModelVersion,
   LocalDirName, LocalFileName,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { CheckpointProps, DownloadRequest } from "./CheckpointManager";
 import { UserArg } from "./IModelDb";
 

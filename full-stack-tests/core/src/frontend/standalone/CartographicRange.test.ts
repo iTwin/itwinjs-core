@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Range2d } from "@bentley/geometry-core";
-import { CartographicRange } from "@bentley/imodeljs-common";
-import { IModelApp, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { CartographicRange } from "@itwin/core-common";
+import { IModelApp, SnapshotConnection } from "@itwin/core-frontend";
 
 describe("Cartographic range tests", () => {
   let imodel: SnapshotConnection;

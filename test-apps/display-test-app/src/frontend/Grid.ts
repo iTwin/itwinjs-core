@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { parseArgs } from "@bentley/frontend-devtools";
-import { GridOrientationType } from "@bentley/imodeljs-common";
-import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
+import { GridOrientationType } from "@itwin/core-common";
+import { IModelApp, Tool } from "@itwin/core-frontend";
 
 /** Change grid settings for testing. */
 export class ChangeGridSettingsTool extends Tool {

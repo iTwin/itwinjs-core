@@ -5,8 +5,8 @@
 import { Id64 } from "@bentley/bentleyjs-core";
 import {
   ColorDef, Feature, FeatureAppearance, FeatureAppearanceProps, GeometryClass, LinePixels, RgbColor, SubCategoryOverride, ViewDefinitionProps, ViewFlags,
-} from "@bentley/imodeljs-common";
-import { FeatureSymbology, IModelApp, IModelConnection, SnapshotConnection, SpatialViewState, ViewState } from "@bentley/imodeljs-frontend";
+} from "@itwin/core-common";
+import { FeatureSymbology, IModelApp, IModelConnection, SnapshotConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
 import { assert, expect } from "chai";
 
 class Overrides extends FeatureSymbology.Overrides {

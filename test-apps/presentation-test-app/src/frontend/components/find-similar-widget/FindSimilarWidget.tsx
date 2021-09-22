@@ -5,7 +5,7 @@
 
 import "./FindSimilarWidget.css";
 import * as React from "react";
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 import { IPresentationTableDataProvider, tableWithUnifiedSelection } from "@bentley/presentation-components";
 import { SelectionMode, Table } from "@bentley/ui-components";
 

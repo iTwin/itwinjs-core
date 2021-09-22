@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@bentley/bentleyjs-core";
-import { DrawingViewState, IModelApp, IModelConnection, ScreenViewport, SpatialViewState, ViewState } from "@bentley/imodeljs-frontend";
+import { DrawingViewState, IModelApp, IModelConnection, ScreenViewport, SpatialViewState, ViewState } from "@itwin/core-frontend";
 
 export class RobotWorldApp {
 

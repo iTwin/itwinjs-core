@@ -7,7 +7,7 @@
  */
 
 import { Id64 } from "@bentley/bentleyjs-core";
-import { FeatureAppearance, FeatureOverrides } from "@bentley/imodeljs-common";
+import { FeatureAppearance, FeatureOverrides } from "@itwin/core-common";
 import { Viewport } from "../Viewport";
 import { ViewState } from "../ViewState";
 

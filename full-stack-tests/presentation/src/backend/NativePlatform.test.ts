@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as path from "path";
-import { SnapshotDb } from "@bentley/imodeljs-backend";
+import { SnapshotDb } from "@itwin/core-backend";
 import { HierarchyCacheMode, PresentationManagerMode } from "@bentley/presentation-backend";
 import { createDefaultNativePlatform, NativePlatformDefinition } from "@bentley/presentation-backend/lib/presentation-backend/NativePlatform";
 import { PresentationError } from "@bentley/presentation-common";

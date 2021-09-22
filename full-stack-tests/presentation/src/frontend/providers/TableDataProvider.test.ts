@@ -5,8 +5,8 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { ModelProps } from "@bentley/imodeljs-common";
-import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { ModelProps } from "@itwin/core-common";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import {
   ContentSpecificationTypes, InstanceKey, KeySet, RelationshipDirection, RelationshipMeaning, Ruleset, RuleTypes,
 } from "@bentley/presentation-common";

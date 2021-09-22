@@ -6,7 +6,7 @@
  * @module Color
  */
 
-import { ColorDef } from "@bentley/imodeljs-common";
+import { ColorDef } from "@itwin/core-common";
 
 /** @internal */
 export function getCSSColorFromDef(colorDef: ColorDef): string {

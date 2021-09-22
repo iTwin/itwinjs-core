@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
-import { FontMap, GeometryContainmentRequestProps } from "@bentley/imodeljs-common";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { FontMap, GeometryContainmentRequestProps } from "@itwin/core-common";
+import { IModelConnection } from "@itwin/core-frontend";
 import { TestContext } from "./setup/TestContext";
 
 const expect = chai.expect;

@@ -8,7 +8,7 @@ import { expect } from "chai";
 import chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { ECSchemaRpcInterface } from "@bentley/ecschema-rpcinterface-common";
 import { TestContext } from "./setup/TestContext";
 import { SchemaKey, SchemaKeyProps, SchemaProps } from "@bentley/ecschema-metadata";

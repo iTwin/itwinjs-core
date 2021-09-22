@@ -11,10 +11,10 @@ import { gt as versionGt, gte as versionGte, lt as versionLt } from "semver";
 import { assert, DbResult, Id64String } from "@bentley/bentleyjs-core";
 import {
   DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, Entity, IModelDb, KnownLocations, Model, Subject,
-} from "@bentley/imodeljs-backend";
+} from "@itwin/core-backend";
 import {
   BisCodeSpec, Code, CodeScopeSpec, CodeSpec, DefinitionElementProps, ElementProps, InformationPartitionElementProps, ModelProps, SubjectProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { Ruleset } from "@bentley/presentation-common";
 import { PresentationRules } from "./domain/PresentationRulesDomain";
 import * as RulesetElements from "./domain/RulesetElements";
@@ -314,7 +314,7 @@ export class RulesetEmbedder {
       return;
 
     // import PresentationRules ECSchema
-    await this._imodel.importSchemas( [this._schemaPath]);
+    await this._imodel.importSchemas([this._schemaPath]);
 
     // insert CodeSpec for ruleset elements
     this._imodel.codeSpecs.insert(CodeSpec.create(this._imodel, PresentationRules.CodeSpec.Ruleset, CodeScopeSpec.Type.Model));

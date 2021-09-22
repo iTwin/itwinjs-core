@@ -8,7 +8,7 @@
 
 import { XAndY } from "@bentley/geometry-core";
 import { AbstractToolbarProps } from "@bentley/ui-abstract";
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 
 /** @internal */
 export interface PopupToolbarProvider {

@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
-import { ScreenViewport } from "@bentley/imodeljs-frontend";
+import { ScreenViewport } from "@itwin/core-frontend";
 import { ContentLayoutProps, UiError } from "@bentley/ui-abstract";
 import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";

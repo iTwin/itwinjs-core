@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BentleyError, GuidString } from "@bentley/bentleyjs-core";
-import { IModelVersion } from "@bentley/imodeljs-common";
+import { IModelVersion } from "@itwin/core-common";
 import { AccessToken } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert, expect } from "chai";
 import { SnapshotDb } from "../../IModelDb";
-import { AuthorizedBackendRequestContext, BriefcaseManager, IModelHost } from "../../imodeljs-backend";
+import { AuthorizedBackendRequestContext, BriefcaseManager, IModelHost } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 

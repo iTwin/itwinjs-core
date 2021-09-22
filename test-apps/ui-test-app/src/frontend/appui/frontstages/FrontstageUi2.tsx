@@ -12,7 +12,7 @@ import {
   UiFramework,
 } from "@bentley/ui-framework";
 import { StageUsage, StandardContentLayouts } from "@bentley/ui-abstract";
-import { ScreenViewport } from "@bentley/imodeljs-frontend";
+import { ScreenViewport } from "@itwin/core-frontend";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
 import { AppUi2StageItemsProvider } from "../../tools/AppUi2StageItemsProvider";
 import { getSavedViewLayoutProps } from "../../tools/UiProviderTool";

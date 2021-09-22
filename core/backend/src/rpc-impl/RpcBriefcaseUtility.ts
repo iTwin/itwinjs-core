@@ -9,7 +9,7 @@
 import { BeDuration, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import {
   BriefcaseProps, IModelConnectionProps, IModelRpcOpenProps, IModelRpcProps, IModelVersion, RpcPendingResponse, SyncMode,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { BriefcaseManager, RequestNewBriefcaseArg } from "../BriefcaseManager";

@@ -6,7 +6,7 @@ import * as React from "react";
 import sinon from "sinon";
 import { expect } from "chai";
 import { fireEvent, render } from "@testing-library/react";
-import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
+import { ColorByName, ColorDef } from "@itwin/core-common";
 import { TestUtils } from "../TestUtils";
 import { ColorPickerDialog } from "../../ui-imodel-components/color/ColorPickerDialog";
 

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelJsExpressServer } from "@bentley/express-server";
 /* eslint-disable no-console */
-import { BentleyCloudRpcManager, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcManager, RpcInterfaceDefinition } from "@itwin/core-common";
 
 /**
  * Initializes Web Server backend

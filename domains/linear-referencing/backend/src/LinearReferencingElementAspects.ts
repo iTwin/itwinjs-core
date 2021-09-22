@@ -7,8 +7,8 @@
  */
 
 import { Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { ElementMultiAspect, IModelDb } from "@bentley/imodeljs-backend";
-import { RelatedElement } from "@bentley/imodeljs-common";
+import { ElementMultiAspect, IModelDb } from "@itwin/core-backend";
+import { RelatedElement } from "@itwin/core-common";
 import {
   DistanceExpressionProps, LinearlyReferencedAtLocationAspectProps, LinearlyReferencedFromToLocationAspectProps,
 } from "@bentley/linear-referencing-common";

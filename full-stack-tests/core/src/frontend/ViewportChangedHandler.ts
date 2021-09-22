@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import {
   ChangeFlag, ChangeFlags, MutableChangeFlags, Viewport,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 
 /** Aspects of a Viewport that can become invalidated when its state changes. */
 export enum ViewportState {

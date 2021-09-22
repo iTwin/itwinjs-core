@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { ProcessDetector } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
-import { BentleyCloudRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcManager, RpcConfiguration } from "@itwin/core-common";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 
 RpcConfiguration.developmentMode = true;

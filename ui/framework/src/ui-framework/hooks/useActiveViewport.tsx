@@ -7,7 +7,7 @@
  */
 
 import { useEffect, useState } from "react";
-import { IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
+import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
 import { ActiveContentChangedEventArgs, ContentViewManager } from "../content/ContentViewManager";
 import { SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 

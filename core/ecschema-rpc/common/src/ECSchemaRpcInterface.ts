@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelRpcProps, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
+import { IModelRpcProps, RpcInterface, RpcManager } from "@itwin/core-common";
 import { SchemaKeyProps, SchemaProps } from "@bentley/ecschema-metadata";
 
 /***

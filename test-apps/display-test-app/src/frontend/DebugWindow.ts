@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core";
 import { DiagnosticsPanel } from "@bentley/frontend-devtools";
-import { IModelApp, Viewport } from "@bentley/imodeljs-frontend";
+import { IModelApp, Viewport } from "@itwin/core-frontend";
 import { Surface } from "./Surface";
 import { Window } from "./Window";
 

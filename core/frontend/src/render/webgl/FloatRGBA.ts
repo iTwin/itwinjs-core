@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { ColorDef, RgbColor } from "@bentley/imodeljs-common";
+import { ColorDef, RgbColor } from "@itwin/core-common";
 import { UniformHandle } from "./UniformHandle";
 
 function scale(norm: number): number {

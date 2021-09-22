@@ -7,7 +7,7 @@
  */
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { IModelDb, IpcHandler } from "@bentley/imodeljs-backend";
+import { IModelDb, IpcHandler } from "@itwin/core-backend";
 import {
   NodeKeyJSON, PRESENTATION_IPC_CHANNEL_NAME, PresentationIpcInterface, RulesetVariableJSON, SetRulesetVariableParams, UnsetRulesetVariableParams,
   UpdateHierarchyStateParams,

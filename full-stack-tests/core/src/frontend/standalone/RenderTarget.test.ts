@@ -5,11 +5,11 @@
 import { ClipVector, Point2d, Point3d, Transform } from "@bentley/geometry-core";
 import {
   ClipStyle, ColorDef, FeatureAppearance, FeatureAppearanceProvider, Hilite, RenderMode, RgbColor,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   DecorateContext, Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, IModelApp, IModelConnection, OffScreenViewport,
   Pixel, RenderSystem, SnapshotConnection, SpatialViewState, Viewport, ViewRect,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { expect } from "chai";
 import { Color, comparePixelData, createOnScreenTestViewport, testOnScreenViewport, TestViewport, testViewports, testViewportsWithDpr } from "../TestViewport";
 

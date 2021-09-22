@@ -10,11 +10,11 @@ import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
 import {
   BisCoreSchema, ClassRegistry, GenericSchema, GeometricElement3d, IModelDb, IModelHost, IModelJsFs, KnownLocations, PhysicalPartition, Schema,
   Schemas, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
-} from "@bentley/imodeljs-backend";
+} from "@itwin/core-backend";
 import {
   CategoryProps, Code, ColorDef, GeometricElement3dProps, IModel, InformationPartitionElementProps, ModelProps, PropertyMetaData, RelatedElement,
   TypeDefinitionElementProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { AnalyticalElement, AnalyticalModel, AnalyticalPartition, AnalyticalSchema } from "../analytical-backend";
 
 class TestAnalyticalSchema extends Schema {

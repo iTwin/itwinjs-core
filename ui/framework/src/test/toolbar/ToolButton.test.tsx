@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { SelectionTool } from "@bentley/imodeljs-frontend";
+import { SelectionTool } from "@itwin/core-frontend";
 import { BadgeType } from "@bentley/ui-abstract";
 import { BaseItemState, FrontstageManager, KeyboardShortcutManager, SyncUiEventDispatcher, SyncUiEventId, ToolButton } from "../../ui-framework";
 import TestUtils, { mount } from "../TestUtils";

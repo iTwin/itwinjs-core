@@ -7,7 +7,7 @@
  */
 
 import { assert, PriorityQueue } from "@bentley/bentleyjs-core";
-import { TileTreeContentIds } from "@bentley/imodeljs-common";
+import { TileTreeContentIds } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IpcApp } from "../IpcApp";
 import { IModelConnection } from "../IModelConnection";

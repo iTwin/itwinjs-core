@@ -9,8 +9,8 @@ import { Point3d, Range1d } from "@bentley/geometry-core";
 import {
   calculateSolarDirectionFromAngles, ColorByName, ColorDef, ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps,
   ThematicDisplaySensorProps, ThematicGradientColorScheme, ThematicGradientMode, ViewFlags,
-} from "@bentley/imodeljs-common";
-import { Viewport, ViewState, ViewState3d } from "@bentley/imodeljs-frontend";
+} from "@itwin/core-common";
+import { Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
 
 type Required<T> = {
   [P in keyof T]-?: T[P];

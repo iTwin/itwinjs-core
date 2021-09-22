@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Matrix3d, Point3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
-import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
+import { IModelApp, Tool } from "@itwin/core-frontend";
 import { parseArgs } from "@bentley/frontend-devtools";
 
 class TransformProvider {

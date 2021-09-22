@@ -6,7 +6,7 @@
  * @module AccuDraw
  */
 
-import { ColorDef } from "@bentley/imodeljs-common";
+import { ColorDef } from "@itwin/core-common";
 import { IconSpec } from "@bentley/ui-core";
 
 /** AccuDraw User Interface Settings

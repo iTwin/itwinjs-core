@@ -11,7 +11,7 @@ import { Point2d, Point3d, Range2d, Vector3d } from "@bentley/geometry-core";
 import {
   ColorDef, ColorIndex, FeatureIndex, FeatureIndexType, FillFlags, LinePixels, MeshEdge, OctEncodedNormalPair, PolylineData, PolylineTypeFlags,
   QParams2d, QParams3d, QPoint2d, QPoint3dList, RenderMaterial, RenderTexture,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { AuxChannelTable } from "./AuxChannelTable";
 import { MeshArgs, PolylineArgs } from "./mesh/MeshPrimitives";

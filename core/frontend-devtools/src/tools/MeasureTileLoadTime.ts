@@ -8,7 +8,7 @@
  */
 
 import { StopWatch } from "@bentley/bentleyjs-core";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@bentley/imodeljs-frontend";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@itwin/core-frontend";
 
 class TileLoadTimer {
   private readonly _vp: Viewport;

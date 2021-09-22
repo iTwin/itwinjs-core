@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { PresentationError, PresentationStatus } from "@bentley/presentation-common";
 import { FavoritePropertiesManager, FavoritePropertiesManagerProps } from "./favorite-properties/FavoritePropertiesManager";
@@ -60,7 +60,7 @@ export class Presentation {
    * [[include:Presentation.Frontend.Initialization]]
    * ```
    *
-   * The method should be called after a call to [IModelApp.startup]($imodeljs-frontend).
+   * The method should be called after a call to [IModelApp.startup]($core-frontend).
    */
   public static async initialize(props?: PresentationProps): Promise<void> {
     if (!IModelApp.initialized) {
@@ -103,7 +103,7 @@ export class Presentation {
 
   /**
    * Terminates Presentation library frontend. This method should be called
-   * before a call to [IModelApp.shutdown]($imodeljs-frontend)
+   * before a call to [IModelApp.shutdown]($core-frontend)
    */
   public static terminate(): void {
     terminationHandlers.forEach((handler) => handler());

@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { XAndY } from "@bentley/geometry-core";
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 import {
   AbstractMenuItemProps, AbstractToolbarProps, DialogLayoutDataProvider, DialogProps, IMatch,
   OnCancelFunc, OnItemExecutedFunc, OnNumberCommitFunc, OnValueCommitFunc,
@@ -49,7 +49,7 @@ export interface KeyinEntry {
   isHistory?: boolean;
 }
 
-/** The UiAdmin controls various UI components and is callable from IModelApp.uiAdmin in the imodeljs-frontend package.
+/** The UiAdmin controls various UI components and is callable from IModelApp.uiAdmin in the core-frontend package.
  * @public
  */
 export class FrameworkUiAdmin extends UiAdmin {

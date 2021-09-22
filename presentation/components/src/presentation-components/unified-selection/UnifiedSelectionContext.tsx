@@ -10,7 +10,7 @@
 import memoize from "micro-memoize";
 import * as React from "react";
 import { assert } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { Keys, KeySet } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 

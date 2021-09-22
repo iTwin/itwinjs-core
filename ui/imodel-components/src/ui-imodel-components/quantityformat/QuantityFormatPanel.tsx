@@ -10,7 +10,7 @@ import * as React from "react";
 import {
   CustomFormatPropEditorSpec, getQuantityTypeKey, IModelApp, isCheckboxFormatPropEditorSpec, isCustomQuantityTypeDefinition,
   isTextInputFormatPropEditorSpec, isTextSelectFormatPropEditorSpec, QuantityTypeArg,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { FormatProps, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
 import { CommonProps, Select } from "@bentley/ui-core";
 import { Checkbox, Input } from "@itwin/itwinui-react";

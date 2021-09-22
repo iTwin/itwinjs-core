@@ -7,7 +7,7 @@
 import { expect } from "chai";
 import { IDisposable } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
-import { ElementAlignedBox3d, PackedFeatureTable } from "@bentley/imodeljs-common";
+import { ElementAlignedBox3d, PackedFeatureTable } from "@itwin/core-common";
 import { GraphicBranch, GraphicBranchOptions } from "../../render/GraphicBranch";
 import { MockRender } from "../../render/MockRender";
 import { RenderGraphic } from "../../render/RenderGraphic";

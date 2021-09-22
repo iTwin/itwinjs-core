@@ -10,7 +10,7 @@ import "./DisplayStyleField.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { Id64String } from "@bentley/bentleyjs-core";
-import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
+import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, IModelApp, ScreenViewport } from "@itwin/core-frontend";
 import { ContentControl, ContentControlActivatedEventArgs, ContentViewManager, FrontstageManager, StatusFieldProps } from "@bentley/ui-framework";
 import { FooterIndicator } from "@bentley/ui-ninezone";
 import { Select, SelectOption } from "@itwin/itwinui-react";

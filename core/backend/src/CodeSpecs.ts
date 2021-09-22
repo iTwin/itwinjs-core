@@ -7,7 +7,7 @@
  */
 
 import { DbResult, Id64, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
-import { CodeScopeSpec, CodeSpec, IModelError } from "@bentley/imodeljs-common";
+import { CodeScopeSpec, CodeSpec, IModelError } from "@itwin/core-common";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { IModelDb } from "./IModelDb";
 

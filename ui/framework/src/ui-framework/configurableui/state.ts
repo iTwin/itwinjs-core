@@ -6,7 +6,7 @@
  * @module State
  */
 
-import { SnapMode } from "@bentley/imodeljs-frontend";
+import { SnapMode } from "@itwin/core-frontend";
 import { ActionsUnion, createAction } from "../redux/redux-ts";
 import { SYSTEM_PREFERRED_COLOR_THEME, WIDGET_OPACITY_DEFAULT } from "../theme/ThemeManager";
 

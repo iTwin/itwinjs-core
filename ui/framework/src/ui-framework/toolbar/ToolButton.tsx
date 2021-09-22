@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
+import { IModelApp, Tool } from "@itwin/core-frontend";
 import { ConditionalStringValue, StringGetter } from "@bentley/ui-abstract";
 import { BadgeUtilities, CommonProps, Icon } from "@bentley/ui-core";
 import { getToolbarItemProps, Item } from "@bentley/ui-ninezone";

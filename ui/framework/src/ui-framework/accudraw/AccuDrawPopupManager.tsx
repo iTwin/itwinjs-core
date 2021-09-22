@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { XAndY } from "@bentley/geometry-core";
-import { AngleDescription, LengthDescription } from "@bentley/imodeljs-frontend";
+import { AngleDescription, LengthDescription } from "@itwin/core-frontend";
 import { AbstractMenuItemProps, IconSpecUtilities, OnCancelFunc, OnNumberCommitFunc, OnValueCommitFunc } from "@bentley/ui-abstract";
 
 import { PopupInfo, PopupManager } from "../popup/PopupManager";

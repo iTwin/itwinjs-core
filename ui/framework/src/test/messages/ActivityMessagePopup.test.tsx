@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as React from "react";
-import { ActivityMessageDetails, ActivityMessageEndReason } from "@bentley/imodeljs-frontend";
+import { ActivityMessageDetails, ActivityMessageEndReason } from "@itwin/core-frontend";
 import { MessageHyperlink, MessageProgress } from "@bentley/ui-ninezone";
 import { IconButton } from "@itwin/itwinui-react";
 import { ToastPresentation } from "@itwin/itwinui-react/cjs/core/Toast/Toast";

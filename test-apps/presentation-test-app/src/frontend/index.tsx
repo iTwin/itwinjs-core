@@ -7,7 +7,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
-import { IModelApp, IModelAppOptions, WebViewerApp } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelAppOptions, WebViewerApp } from "@itwin/core-frontend";
 // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Imports
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@bentley/presentation-frontend";
 // __PUBLISH_EXTRACT_END__

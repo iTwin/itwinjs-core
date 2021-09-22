@@ -7,7 +7,7 @@
  */
 
 import { Id64, Id64Arg, Id64Set } from "@bentley/bentleyjs-core";
-import { AppearanceOverrideProps, ColorDef, EmphasizeElementsProps, FeatureAppearance, FeatureOverrideType, RgbColor } from "@bentley/imodeljs-common";
+import { AppearanceOverrideProps, ColorDef, EmphasizeElementsProps, FeatureAppearance, FeatureOverrideType, RgbColor } from "@itwin/core-common";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { FeatureOverrideProvider } from "./FeatureOverrideProvider";
 import { Viewport } from "./Viewport";

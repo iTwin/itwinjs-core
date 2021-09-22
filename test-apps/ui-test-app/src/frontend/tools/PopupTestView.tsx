@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 import { AbstractMenuItemProps } from "@bentley/ui-abstract";
 import { useActiveIModelConnection } from "@bentley/ui-framework";
 import ViewportContentComponent from "../appui/childwindows/ViewportContentControl";

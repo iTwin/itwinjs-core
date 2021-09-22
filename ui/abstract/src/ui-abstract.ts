@@ -114,7 +114,7 @@ export * from "./ui-abstract/widget/WidgetState";
  */
 /**
  * @docs-group-description UiAdmin
- * Abstractions for UI controls, such as toolbars, buttons and menus and are callable from IModelApp.uiAdmin in imodeljs-frontend.
+ * Abstractions for UI controls, such as toolbars, buttons and menus and are callable from IModelApp.uiAdmin in core-frontend.
  */
 /**
  * @docs-group-description UiItemsProvider

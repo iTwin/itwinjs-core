@@ -8,12 +8,12 @@ import {
 } from "@bentley/geometry-core";
 import {
   Code, ColorDef, ElementGeometry, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps, IModel, PhysicalElementProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { CreateElementTool, EditTools } from "@bentley/imodeljs-editor-frontend";
 import {
   AccuDrawHintBuilder, BeButtonEvent, CoreTools, DecorateContext, DynamicsContext,
   EventHandled, GraphicType, HitDetail, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";
 import { setTitle } from "./Title";
 

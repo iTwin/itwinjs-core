@@ -8,7 +8,7 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
-import { HiddenLine, ViewFlags } from "@bentley/imodeljs-common";
+import { HiddenLine, ViewFlags } from "@itwin/core-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { BranchState } from "./BranchState";
 import { Branch } from "./Graphic";

@@ -7,7 +7,7 @@ import { ByteStream, GuidString, Id64String, Logger, StopWatch } from "@bentley/
 import { Range3d } from "@bentley/geometry-core";
 import {
   BatchType, computeChildTileProps, ContentIdProvider, CurrentImdlVersion, iModelTileTreeIdToString, TileMetadata, TileMetadataReader, TileProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { IModelDb } from "../IModelDb";
 import { SpatialModel } from "../Model";
 import { ConcurrencyQueue } from "./ConcurrencyQueue";

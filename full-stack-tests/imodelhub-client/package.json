@@ -41,7 +41,7 @@
     "@bentley/context-registry-client": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
+    "@itwin/core-common": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "chai": "^4.1.2",
     "deep-assign": "^2.0.0",

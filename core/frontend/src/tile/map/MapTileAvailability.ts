@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { Cartographic } from "@bentley/imodeljs-common";
+import { Cartographic } from "@itwin/core-common";
 import { MapCartoRectangle, MapTilingScheme } from "../internal";
 import { SortedArray } from "@bentley/bentleyjs-core";
 

@@ -10,7 +10,7 @@ import { SpecialKey } from "@bentley/ui-abstract";
 import { AccuDrawInputField } from "../../ui-framework/accudraw/AccuDrawInputField";
 import { KeyboardShortcutManager } from "../../ui-framework/keyboardshortcut/KeyboardShortcut";
 import { TestUtils } from "../TestUtils";
-import { IModelApp, IModelAppOptions, ItemField, MockRender } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelAppOptions, ItemField, MockRender } from "@itwin/core-frontend";
 import { FrameworkAccuDraw } from "../../ui-framework/accudraw/FrameworkAccuDraw";
 import { FrameworkUiAdmin } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
 

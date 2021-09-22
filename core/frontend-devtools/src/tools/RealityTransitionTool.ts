@@ -8,8 +8,8 @@
  */
 
 import { Vector3d } from "@bentley/geometry-core";
-import { RenderSchedule } from "@bentley/imodeljs-common";
-import { IModelApp, RenderScheduleState, Tool } from "@bentley/imodeljs-frontend";
+import { RenderSchedule } from "@itwin/core-common";
+import { IModelApp, RenderScheduleState, Tool } from "@itwin/core-frontend";
 
 enum FadeMode { X, Y, Z, Transparent }
 

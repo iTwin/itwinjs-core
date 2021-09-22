@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
-import { RpcProtocolEvent, RpcRequest } from "@bentley/imodeljs-common";
+import { RpcProtocolEvent, RpcRequest } from "@itwin/core-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { TestRpcInterface3 } from "../common/TestRpcInterface";
 import { ProcessDetector } from "@bentley/bentleyjs-core";

@@ -7,7 +7,7 @@
  */
 
 import { AxisOrder, Matrix3d, Point3d, Transform, Vector3d } from "@bentley/geometry-core";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { ColorDef } from "@itwin/core-common";
 import { AccuDrawHintBuilder } from "../AccuDraw";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";

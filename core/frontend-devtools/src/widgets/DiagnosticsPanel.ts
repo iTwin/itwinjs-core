@@ -8,7 +8,7 @@
  */
 
 import { dispose } from "@bentley/bentleyjs-core";
-import { Viewport } from "@bentley/imodeljs-frontend";
+import { Viewport } from "@itwin/core-frontend";
 import { FpsTracker } from "./FpsTracker";
 import { GpuProfiler } from "./GpuProfiler";
 import { KeyinField } from "./KeyinField";

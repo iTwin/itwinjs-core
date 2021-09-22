@@ -6,7 +6,7 @@
  * @module ClientServices
  */
 
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { ProjectInfo } from "./ProjectServices";
 
 /** Enumeration for iModel scope

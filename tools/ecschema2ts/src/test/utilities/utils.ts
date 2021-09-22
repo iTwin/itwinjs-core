@@ -152,7 +152,7 @@ export function createExpectedSchemaTsString(schemaName: string): string {
 
 export function createExpectedSchemaImportTs(schemaName: string): RegExp[] {
   const importTs: RegExp[] = [
-    new RegExp(`import { (?=.*\\b(ClassRegistry)\\b)(?=.*\\b(Schema)\\b)(?=.*\\b(Schemas)\\b).* } from "@bentley/imodeljs-backend";`),
+    new RegExp(`import { (?=.*\\b(ClassRegistry)\\b)(?=.*\\b(Schema)\\b)(?=.*\\b(Schemas)\\b).* } from "@itwin/core-backend";`),
     new RegExp(`import \\* as elementsModule from "./${schemaName}Elements";`),
   ];
 

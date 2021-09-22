@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { BisCodeSpec, DisplayStyleProps, IModel } from "@bentley/imodeljs-common";
-import { DisplayStyle3d, SnapshotDb } from "../../imodeljs-backend";
+import { BisCodeSpec, DisplayStyleProps, IModel } from "@itwin/core-common";
+import { DisplayStyle3d, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 // spell-checker: disable

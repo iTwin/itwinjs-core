@@ -8,10 +8,10 @@
  */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskSettings } from "@bentley/imodeljs-common";
+import { PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskSettings } from "@itwin/core-common";
 import {
   BeButtonEvent, ContextRealityModelState, EventHandled, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, PrimitiveTool, ScreenViewport, Tool,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 
 /** Set Map Masking by selected models.
  * @beta

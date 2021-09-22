@@ -10,7 +10,7 @@ import { CoreTools, FrontstageDef, FrontstageManager, FrontstageProps, ModalFron
 import TestUtils from "../TestUtils";
 import { UiFramework } from "../../ui-framework/UiFramework";
 import { SettingsManager, SettingsTabEntry, SettingsTabsProvider, useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer } from "@bentley/ui-core";
-import { IModelApp, MockRender } from "@bentley/imodeljs-frontend";
+import { IModelApp, MockRender } from "@itwin/core-frontend";
 import { ConditionalBooleanValue } from "@bentley/ui-abstract";
 
 function TestModalSettingsPage({ settingsManager, title }: { settingsManager: SettingsManager, title: string }) {

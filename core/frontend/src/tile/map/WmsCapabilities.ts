@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { MapSubLayerProps } from "@bentley/imodeljs-common";
+import { MapSubLayerProps } from "@itwin/core-common";
 import { request, RequestBasicCredentials, RequestOptions } from "@bentley/itwin-client";
 import { MapCartoRectangle, WmsUtilities } from "../internal";
 import WMS = require("wms-capabilities");

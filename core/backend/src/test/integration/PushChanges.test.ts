@@ -7,11 +7,11 @@ import { Box, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@bentley/ge
 import {
   Code, ColorDef, GeometryParams, GeometryPartProps,
   GeometryStreamBuilder, GeometryStreamProps, IModel, PhysicalElementProps, SubCategoryAppearance,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { AccessToken, AuthorizedClientRequestContext, IncludePrefix } from "@bentley/itwin-client";
 import { assert } from "chai";
 import { IModelHost } from "../../IModelHost";
-import { BriefcaseDb, BriefcaseManager, DefinitionModel, GeometryPart, IModelDb, PhysicalModel, PhysicalObject, RenderMaterialElement, SpatialCategory, SubCategory, Subject } from "../../imodeljs-backend";
+import { BriefcaseDb, BriefcaseManager, DefinitionModel, GeometryPart, IModelDb, PhysicalModel, PhysicalObject, RenderMaterialElement, SpatialCategory, SubCategory, Subject } from "../../core-backend";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";

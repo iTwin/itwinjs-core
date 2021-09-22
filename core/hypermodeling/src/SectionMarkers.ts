@@ -8,10 +8,10 @@
 
 import { assert, BeEvent, Id64String } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, XAndY, XYAndZ } from "@bentley/geometry-core";
-import { IModelReadRpcInterface } from "@bentley/imodeljs-common";
+import { IModelReadRpcInterface } from "@itwin/core-common";
 import {
   BeButton, BeButtonEvent, Cluster, DecorateContext, IModelApp, InputSource, Marker, MarkerImage, MarkerSet, ScreenViewport, ViewClipTool,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { SectionDrawingLocationState } from "./SectionDrawingLocationState";
 import { HyperModeling } from "./HyperModeling";
 

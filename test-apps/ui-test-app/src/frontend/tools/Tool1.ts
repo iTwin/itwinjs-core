@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Point3d } from "@bentley/geometry-core";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { ColorDef } from "@itwin/core-common";
 import {
   BeButtonEvent, EventHandled, IModelApp, NotifyMessageDetails, OutputMessagePriority, PrimitiveTool, ToolAssistance, ToolAssistanceImage,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { DialogItemValue, DialogPropertySyncItem } from "@bentley/ui-abstract";
 
 export class Tool1 extends PrimitiveTool {

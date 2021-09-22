@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { MockRender, ScreenViewport, ViewState3d } from "@bentley/imodeljs-frontend";
+import { MockRender, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
 import { ViewportComponentEvents } from "@bentley/ui-imodel-components";
 import {
   ConfigurableCreateInfo, ConfigurableUiControlType, ConfigurableUiManager, ContentGroup, ContentLayoutManager, ContentViewManager,

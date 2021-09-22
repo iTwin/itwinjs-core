@@ -21,7 +21,7 @@ import {
   useSaveFrontstageSettings, useSyncDefinitions, useUpdateNineZoneSize, Widget, WidgetDef, WidgetPanelsFrontstage, WidgetPanelsFrontstageState, Zone, ZoneDef,
 } from "../../ui-framework";
 import TestUtils, { mount, storageMock, stubRaf, UiSettingsStub } from "../TestUtils";
-import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
+import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import { expect, should } from "chai";
 
 /* eslint-disable @typescript-eslint/no-floating-promises, react/display-name */

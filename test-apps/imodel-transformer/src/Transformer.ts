@@ -8,9 +8,9 @@ import {
   Category, CategorySelector, DisplayStyle, DisplayStyle3d, ECSqlStatement, Element, ElementRefersToElements, GeometricModel3d, GeometryPart,
   IModelDb, ModelSelector, PhysicalModel, PhysicalPartition, Relationship, SpatialCategory,
   SpatialViewDefinition, SubCategory, ViewDefinition,
-} from "@bentley/imodeljs-backend";
+} from "@itwin/core-backend";
 import { IModelTransformer, IModelTransformOptions } from "@bentley/imodeljs-transformer";
-import { ElementProps, IModel } from "@bentley/imodeljs-common";
+import { ElementProps, IModel } from "@itwin/core-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 export const loggerCategory = "imodel-transformer";

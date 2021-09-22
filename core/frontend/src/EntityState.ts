@@ -7,7 +7,7 @@
  */
 
 import { GuidString, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Code, ElementProps, EntityProps, RelatedElement } from "@bentley/imodeljs-common";
+import { Code, ElementProps, EntityProps, RelatedElement } from "@itwin/core-common";
 import { IModelConnection } from "./IModelConnection";
 
 /** The "state" of an Entity as represented in a web browser. Every subclass of EntityState handles one BIS class.

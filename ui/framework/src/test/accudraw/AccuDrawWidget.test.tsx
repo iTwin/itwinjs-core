@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
-import { IModelAppOptions, MockRender } from "@bentley/imodeljs-frontend";
+import { IModelAppOptions, MockRender } from "@itwin/core-frontend";
 import { ConfigurableUiControlType } from "../../ui-framework/configurableui/ConfigurableUiControl";
 import { WidgetProps } from "../../ui-framework/widgets/WidgetProps";
 import { WidgetDef } from "../../ui-framework/widgets/WidgetDef";

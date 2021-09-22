@@ -15,7 +15,7 @@ import {
   IModelRpcOpenProps, IModelRpcProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, NoContentError, QueryLimit, QueryPriority,
   QueryQuota, QueryResponse, RpcInterface, RpcInvocation, RpcManager, SnapRequestProps, SnapResponseProps, SyncMode, TextureData, TextureLoadProps,
   ViewStateLoadProps, ViewStateProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { SpatialCategory } from "../Category";
 import { generateGeometrySummaries } from "../GeometrySummary";

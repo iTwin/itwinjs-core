@@ -7,7 +7,7 @@
  */
 
 import { assert, Id64String } from "@bentley/bentleyjs-core";
-import { PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskProps, PlanarClipMaskSettings } from "@bentley/imodeljs-common";
+import { PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskProps, PlanarClipMaskSettings } from "@itwin/core-common";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { createMaskTreeReference, DisclosedTileTreeSet, TileTreeReference } from "./tile/internal";
 import { ViewState3d } from "./ViewState";

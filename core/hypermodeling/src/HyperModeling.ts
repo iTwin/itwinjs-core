@@ -8,8 +8,8 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
-import { SectionType } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, ScreenViewport, tryImageElementFromUrl, ViewManip } from "@bentley/imodeljs-frontend";
+import { SectionType } from "@itwin/core-common";
+import { IModelApp, IModelConnection, ScreenViewport, tryImageElementFromUrl, ViewManip } from "@itwin/core-frontend";
 import { registerTools } from "./Tools";
 import { HyperModelingDecorator } from "./HyperModelingDecorator";
 import { HyperModelingConfig, SectionGraphicsConfig, SectionMarkerConfig } from "./HyperModelingConfig";

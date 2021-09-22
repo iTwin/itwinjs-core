@@ -5,11 +5,11 @@
 import { expect } from "chai";
 import { compareStrings } from "@bentley/bentleyjs-core";
 import { Range3d, Transform } from "@bentley/geometry-core";
-import { IModelTileTreeProps, ServerTimeoutError } from "@bentley/imodeljs-common";
+import { IModelTileTreeProps, ServerTimeoutError } from "@itwin/core-common";
 import {
   IModelApp, IModelConnection, overrideRequestTileTreeProps, RenderSystem, SnapshotConnection, Tile, TileContent, TileDrawArgs,
   TileLoadPriority, TileRequest, TileRequestChannel, TileTree,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 
 class MockTile extends Tile {
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {

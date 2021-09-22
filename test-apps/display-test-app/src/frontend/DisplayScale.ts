@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Matrix3d, Point3d, Transform } from "@bentley/geometry-core";
-import { IModelApp, ModelDisplayTransformProvider, Tool } from "@bentley/imodeljs-frontend";
+import { IModelApp, ModelDisplayTransformProvider, Tool } from "@itwin/core-frontend";
 import { parseArgs } from "@bentley/frontend-devtools";
 
 class DisplayScaleTransformProvider implements ModelDisplayTransformProvider {

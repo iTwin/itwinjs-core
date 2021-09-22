@@ -17,7 +17,7 @@ import {
 } from "@bentley/ui-abstract";
 import {
   IModelApp,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import {
   Window,
   WindowProps,

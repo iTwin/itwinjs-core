@@ -38,8 +38,8 @@
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.63",
-    "@bentley/imodeljs-backend": "workspace:^3.0.0-dev.63",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.63",
+    "@itwin/core-backend": "workspace:^3.0.0-dev.63",
+    "@itwin/core-common": "workspace:^3.0.0-dev.63",
     "@bentley/imodeljs-quantity": "workspace:^3.0.0-dev.63",
     "@bentley/presentation-common": "workspace:^3.0.0-dev.63"
   },
@@ -47,8 +47,8 @@
     "@bentley/bentleyjs-core": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/imodeljs-backend": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
+    "@itwin/core-backend": "workspace:*",
+    "@itwin/core-common": "workspace:*",
     "@bentley/imodeljs-quantity": "workspace:*",
     "@bentley/presentation-common": "workspace:*",
     "@types/chai": "^4.1.4",

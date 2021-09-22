@@ -7,8 +7,8 @@
  */
 
 import { compareStrings, Dictionary, Guid, IDisposable, isIDisposable, OrderedComparator } from "@bentley/bentleyjs-core";
-import { InternetConnectivityStatus } from "@bentley/imodeljs-common";
-import { AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
+import { InternetConnectivityStatus } from "@itwin/core-common";
+import { AuthorizedFrontendRequestContext, IModelApp } from "@itwin/core-frontend";
 import { PresentationError, PresentationStatus } from "@bentley/presentation-common";
 import { ConnectivityInformationProvider, IConnectivityInformationProvider } from "../ConnectivityInformationProvider";
 import { FavoritePropertiesOrderInfo, PropertyFullName } from "./FavoritePropertiesManager";

@@ -5,7 +5,7 @@
 import { XAndY } from "@bentley/geometry-core";
 import {
   IModelApp, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotificationManager, NotifyMessageDetails, ToolTipOptions,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { Surface } from "./Surface";
 import { showError, showStatus } from "./Utils";
 import { Window, WindowProps } from "./Window";

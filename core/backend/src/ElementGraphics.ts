@@ -7,7 +7,7 @@
  */
 
 import { assert, IModelStatus } from "@bentley/bentleyjs-core";
-import { ElementGraphicsRequestProps, IModelError } from "@bentley/imodeljs-common";
+import { ElementGraphicsRequestProps, IModelError } from "@itwin/core-common";
 import { ElementGraphicsStatus } from "@bentley/imodeljs-native";
 import { IModelDb } from "./IModelDb";
 

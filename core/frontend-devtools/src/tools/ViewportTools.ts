@@ -8,10 +8,10 @@
  */
 
 import { BeDuration } from "@bentley/bentleyjs-core";
-import { Camera, ColorDef, Hilite } from "@bentley/imodeljs-common";
+import { Camera, ColorDef, Hilite } from "@itwin/core-common";
 import {
   DrawingViewState, FlashMode, FlashSettings, FlashSettingsOptions, IModelApp, TileBoundingBoxes, Tool, Viewport,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { parseArgs } from "./parseArgs";
 import { parseToggle } from "./parseToggle";
 

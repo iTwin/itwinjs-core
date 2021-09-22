@@ -6,8 +6,8 @@ import "./ViewsList.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { IModelReadRpcInterface, ViewDefinitionProps, ViewQueryParams } from "@bentley/imodeljs-common";
-import { IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
+import { IModelReadRpcInterface, ViewDefinitionProps, ViewQueryParams } from "@itwin/core-common";
+import { IModelConnection, ViewState } from "@itwin/core-frontend";
 import { CommonProps, LoadingSpinner } from "@bentley/ui-core";
 import ViewItem, { ViewItemProps } from "./ViewItem";
 

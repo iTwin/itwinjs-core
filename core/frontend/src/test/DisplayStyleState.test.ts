@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Point3d } from "@bentley/geometry-core";
-import { BackgroundMapType, MapLayerSettings } from "@bentley/imodeljs-common";
+import { BackgroundMapType, MapLayerSettings } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { SpatialViewState } from "../SpatialViewState";

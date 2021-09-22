@@ -8,7 +8,7 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
-import { QParams2d, QParams3d } from "@bentley/imodeljs-common";
+import { QParams2d, QParams3d } from "@itwin/core-common";
 import { WebGLDisposable } from "./Disposable";
 import { GL } from "./GL";
 import { System } from "./System";

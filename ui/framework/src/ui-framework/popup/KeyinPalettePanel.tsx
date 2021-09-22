@@ -11,7 +11,7 @@
 import * as React from "react";
 import "./KeyinPalettePanel.scss";
 import { FilteredText, Listbox, ListboxItem, UiSettingsStatus } from "@bentley/ui-core";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, ParseAndRunResult } from "@bentley/imodeljs-frontend";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, ParseAndRunResult } from "@itwin/core-frontend";
 import { UiFramework } from "../UiFramework";
 import { matchesWords, OnItemExecutedFunc, SpecialKey } from "@bentley/ui-abstract";
 import { ClearKeyinPaletteHistoryTool } from "../tools/KeyinPaletteTools";

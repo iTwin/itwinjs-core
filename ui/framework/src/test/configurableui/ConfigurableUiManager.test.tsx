@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import * as React from "react";
-import { MockRender } from "@bentley/imodeljs-frontend";
+import { MockRender } from "@itwin/core-frontend";
 import { StandardContentLayouts } from "@bentley/ui-abstract";
 import {
   ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroup, ContentGroupProps, CoreTools,

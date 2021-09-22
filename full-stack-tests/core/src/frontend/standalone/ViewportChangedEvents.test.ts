@@ -7,10 +7,10 @@ import { BeDuration, Id64, Id64Arg, Id64String } from "@bentley/bentleyjs-core";
 import { ClipVector, Transform } from "@bentley/geometry-core";
 import {
   AmbientOcclusion, AnalysisStyle, ClipStyle, ColorDef, FeatureAppearance, ModelClipGroup, ModelClipGroups, MonochromeMode, PlanProjectionSettings, SubCategoryOverride, ThematicDisplay, ViewFlags,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   ChangeFlag, FeatureSymbology, MockRender, PerModelCategoryVisibility, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, Viewport,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { ViewportChangedHandler, ViewportState } from "../ViewportChangedHandler";
 
 describe("Viewport changed events", async () => {

@@ -5,7 +5,7 @@
 import * as React from "react";
 import { expect } from "chai";
 import sinon from "sinon";
-import { IModelApp, IModelConnection, NoRenderApp } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, NoRenderApp } from "@itwin/core-frontend";
 import { Presentation, SelectionManager } from "@bentley/presentation-frontend";
 import { Primitives, PrimitiveValue, PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
 import { TypeConverter, TypeConverterManager } from "@bentley/ui-components";

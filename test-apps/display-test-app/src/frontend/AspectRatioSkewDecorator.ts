@@ -5,8 +5,8 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import { IModelJson, Path } from "@bentley/geometry-core";
-import { ColorDef, ViewDetails } from "@bentley/imodeljs-common";
-import { DecorateContext, GraphicType, IModelApp, IModelConnection, Tool } from "@bentley/imodeljs-frontend";
+import { ColorDef, ViewDetails } from "@itwin/core-common";
+import { DecorateContext, GraphicType, IModelApp, IModelConnection, Tool } from "@itwin/core-frontend";
 import { parseArgs } from "@bentley/frontend-devtools";
 
 class AspectRatioSkewDecorator {

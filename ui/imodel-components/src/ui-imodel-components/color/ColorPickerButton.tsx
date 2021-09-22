@@ -9,7 +9,7 @@
 import "./ColorPickerButton.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
+import { ColorByName, ColorDef } from "@itwin/core-common";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { CommonProps, Popup, useRefs, WebFontIcon } from "@bentley/ui-core";
 import { ColorSwatch } from "./Swatch";

@@ -7,7 +7,7 @@
  */
 
 import { Arc3d, Geometry, Point3d, SmoothTransformBetweenFrusta } from "@bentley/geometry-core";
-import { Cartographic, Easing, Frustum, GlobeMode, Interpolation, Tweens } from "@bentley/imodeljs-common";
+import { Cartographic, Easing, Frustum, GlobeMode, Interpolation, Tweens } from "@itwin/core-common";
 import {
   areaToEyeHeight, areaToEyeHeightFromGcs, eyeToCartographicOnGlobe, GlobalLocation, metersToRange, ViewGlobalLocationConstants,
 } from "./ViewGlobalLocation";

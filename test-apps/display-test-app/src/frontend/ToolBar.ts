@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "@bentley/bentleyjs-core";
-import { IModelApp, Viewport } from "@bentley/imodeljs-frontend";
+import { IModelApp, Viewport } from "@itwin/core-frontend";
 
 // cspell:ignore simpleicon
 

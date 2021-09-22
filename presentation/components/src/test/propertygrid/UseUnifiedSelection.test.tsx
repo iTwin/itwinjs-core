@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { KeySet } from "@bentley/presentation-common";
 import { isKeySet } from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";

@@ -9,7 +9,7 @@
 // cSpell: ignore popout
 
 import * as React from "react";
-import { IModelApp, IModelConnection, Tool } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, Tool } from "@itwin/core-frontend";
 
 import {
   AbstractStatusBarItemUtilities, AbstractWidgetProps, BadgeType, CommonStatusBarItem, CommonToolbarItem, ConditionalBooleanValue,

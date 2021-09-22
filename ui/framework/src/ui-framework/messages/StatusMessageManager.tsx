@@ -9,7 +9,7 @@
 import { NotifyMessageDetailsType } from "./ReactNotifyMessageDetails";
 import { MessageSeverity } from "@bentley/ui-abstract";
 import { MessageManager } from "./MessageManager";
-import { OutputMessageType } from "@bentley/imodeljs-frontend";
+import { OutputMessageType } from "@itwin/core-frontend";
 
 /** Interface for Status Message
  * @internal

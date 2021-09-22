@@ -10,7 +10,7 @@ import { BeUiEvent } from "@bentley/bentleyjs-core";
 import {
   AccuDraw, BeButtonEvent, CompassMode, IModelApp, ItemField,
   NotifyMessageDetails, OutputMessagePriority, QuantityType, RotationMode,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { ConditionalBooleanValue } from "@bentley/ui-abstract";
 import { UiSettings, UiSettingsStatus } from "@bentley/ui-core";
 import { UiFramework, UserSettingsProvider } from "../UiFramework";

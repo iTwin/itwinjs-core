@@ -8,8 +8,8 @@ import { Vector3d } from "@bentley/geometry-core";
 import {
   BackgroundMapType, ColorByName, DisplayStyle3dProps, DisplayStyle3dSettingsProps, PlanarClipMaskMode, PlanarClipMaskSettings,
   SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, ThematicDisplayMode,
-} from "@bentley/imodeljs-common";
-import { ContextRealityModelState, DisplayStyle3dState, IModelConnection, MockRender, SnapshotConnection } from "@bentley/imodeljs-frontend";
+} from "@itwin/core-common";
+import { ContextRealityModelState, DisplayStyle3dState, IModelConnection, MockRender, SnapshotConnection } from "@itwin/core-frontend";
 
 describe("DisplayStyle", () => {
   let imodel: IModelConnection;

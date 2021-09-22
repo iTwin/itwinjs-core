@@ -9,10 +9,10 @@ import { Range3d, Range3dProps } from "@bentley/geometry-core";
 import {
   BatchType, computeChildTileProps, computeTileChordTolerance, ContentIdProvider, defaultTileOptions, ImdlHeader, iModelTileTreeIdToString,
   TileMetadata, TileProps, TileTreeMetadata,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   GeometricModelState, IModelApp, IModelConnection, IModelTile, IModelTileTree, SnapshotConnection, Tile, TileTreeLoadStatus,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { fakeViewState } from "./TileIO.test";
 
 describe("Tile tolerance", () => {

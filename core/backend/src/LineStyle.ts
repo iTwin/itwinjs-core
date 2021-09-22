@@ -7,7 +7,7 @@
  */
 
 import { Id64String, IModelStatus } from "@bentley/bentleyjs-core";
-import { FilePropertyProps, IModelError, LinePixels, LineStyleProps } from "@bentley/imodeljs-common";
+import { FilePropertyProps, IModelError, LinePixels, LineStyleProps } from "@itwin/core-common";
 import { GeometryPart, LineStyle } from "./Element";
 import { IModelDb } from "./IModelDb";
 

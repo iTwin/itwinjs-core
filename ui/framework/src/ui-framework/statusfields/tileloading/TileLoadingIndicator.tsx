@@ -10,7 +10,7 @@ import "./TileLoadingIndicator.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
-import { IModelApp, ScreenViewport, Viewport } from "@bentley/imodeljs-frontend";
+import { IModelApp, ScreenViewport, Viewport } from "@itwin/core-frontend";
 import { ProgressLinear } from "@itwin/itwinui-react";
 import { UiFramework } from "../../UiFramework";
 import { StatusFieldProps } from "../StatusFieldProps";

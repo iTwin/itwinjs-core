@@ -5,7 +5,7 @@
 import {
   IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition,
   SnapshotIModelRpcInterface,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
 
 /**

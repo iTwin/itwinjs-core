@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import "./TreeWidget.css";
 import React from "react";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import {
   DiagnosticsProps, useControlledPresentationTreeFiltering, usePresentationTreeNodeLoader, useUnifiedSelectionTreeEventHandler,
 } from "@bentley/presentation-components";

@@ -9,7 +9,7 @@
 import "./ModelsTree.scss";
 import * as React from "react";
 import { Id64Array } from "@bentley/bentleyjs-core";
-import { IModelConnection, Viewport } from "@bentley/imodeljs-frontend";
+import { IModelConnection, Viewport } from "@itwin/core-frontend";
 import { NodeKey, Ruleset } from "@bentley/presentation-common";
 import {
   IFilteredPresentationTreeDataProvider, IPresentationTreeDataProvider, usePresentationTreeNodeLoader,

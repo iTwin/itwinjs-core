@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Point3d, Transform, Vector3d } from "@bentley/geometry-core";
-import { ColorDef, RenderMode } from "@bentley/imodeljs-common";
+import { ColorDef, RenderMode } from "@itwin/core-common";
 import { IModelConnection } from "../../../IModelConnection";
 import { ScreenViewport } from "../../../Viewport";
 import { IModelApp } from "../../../IModelApp";

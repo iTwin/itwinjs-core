@@ -6,11 +6,11 @@ import { assert } from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { Id64String } from "@bentley/bentleyjs-core";
-import { ElementAspectProps, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { ElementAspectProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
-import { DictionaryModel, ElementAspect, IModelDb, SnapshotDb, SpatialCategory } from "../imodeljs-backend";
+import { DictionaryModel, ElementAspect, IModelDb, SnapshotDb, SpatialCategory } from "../core-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
 

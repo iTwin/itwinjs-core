@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { IDisposable, using } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { AsyncTasksTracker, KeySet, SelectionInfo } from "@bentley/presentation-common";
 import { ISelectionProvider, Presentation, SelectionChangeEventArgs, SelectionHandler } from "@bentley/presentation-frontend";
 import { ViewportProps } from "@bentley/ui-imodel-components";

@@ -8,7 +8,7 @@
 
 import { ByteStream, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point3d, Transform, Vector3d } from "@bentley/geometry-core";
-import { B3dmHeader, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, GltfBufferData, GltfDataType, TileReadStatus } from "@bentley/imodeljs-common";
+import { B3dmHeader, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, GltfBufferData, GltfDataType, TileReadStatus } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { RenderSystem } from "../render/RenderSystem";

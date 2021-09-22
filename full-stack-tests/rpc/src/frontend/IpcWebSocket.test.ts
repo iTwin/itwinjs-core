@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ProcessDetector } from "@bentley/bentleyjs-core";
-import { IpcWebSocketFrontend } from "@bentley/imodeljs-common";
+import { IpcWebSocketFrontend } from "@itwin/core-common";
 import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
 import { assert } from "chai";
 import { BackendTestCallbacks } from "../common/SideChannels";
-import { IModelApp, NativeApp } from "@bentley/imodeljs-frontend";
+import { IModelApp, NativeApp } from "@itwin/core-frontend";
 import { AccessToken } from "@bentley/itwin-client";
 
 if (!ProcessDetector.isElectronAppFrontend) {

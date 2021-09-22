@@ -5,7 +5,7 @@
 
 import * as yargs from "yargs";
 import { Logger } from "@bentley/bentleyjs-core";
-import { IModelHost } from "@bentley/imodeljs-backend";
+import { IModelHost } from "@itwin/core-backend";
 import { GeoJson } from "./GeoJson";
 import { GeoJsonImporter } from "./GeoJsonImporter";
 

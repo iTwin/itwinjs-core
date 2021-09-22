@@ -12,10 +12,10 @@ import { LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-co
 import {
   CodeScopeSpec, CodeSpec, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, RelatedElementProps, RelationshipProps, SubCategoryAppearance,
   UpgradeOptions,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   ElementDrivesElementProps, IModelHost, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb,
-} from "../../imodeljs-backend";
+} from "../../core-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 
 export function copyFile(newName: string, pathToCopy: string): string {

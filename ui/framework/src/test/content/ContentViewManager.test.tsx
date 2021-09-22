@@ -6,7 +6,7 @@
 
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { DrawingViewState, OrthographicViewState, ScreenViewport, SheetViewState, SpatialViewState } from "@bentley/imodeljs-frontend";
+import { DrawingViewState, OrthographicViewState, ScreenViewport, SheetViewState, SpatialViewState } from "@itwin/core-frontend";
 import { ContentViewManager, ViewportContentControl } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 

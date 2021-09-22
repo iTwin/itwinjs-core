@@ -7,7 +7,7 @@
  */
 
 import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
-import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcRoutingToken } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcRoutingToken } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
 
 /**

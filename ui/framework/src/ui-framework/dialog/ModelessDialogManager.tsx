@@ -11,7 +11,7 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { CommonProps, getCssVariableAsNumber } from "@bentley/ui-core";
 import { UiFramework } from "../UiFramework";
 import { DialogChangedEvent, DialogManagerBase, DialogRendererBase } from "./DialogManagerBase";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 
 // cSpell:ignore ZINDEX modeless
 

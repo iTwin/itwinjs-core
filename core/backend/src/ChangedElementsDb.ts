@@ -7,7 +7,7 @@
  */
 
 import { DbResult, IDisposable, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
-import { ChangeData, ChangedElements, ChangedModels, IModelError } from "@bentley/imodeljs-common";
+import { ChangeData, ChangedElements, ChangedModels, IModelError } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BriefcaseManager } from "./BriefcaseManager";

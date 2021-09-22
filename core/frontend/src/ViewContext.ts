@@ -11,7 +11,7 @@ import {
   Matrix3d, Point2d,
   Point3d, Range1d, Transform, XAndY,
 } from "@bentley/geometry-core";
-import { Frustum, FrustumPlanes, SpatialClassifier, ViewFlags } from "@bentley/imodeljs-common";
+import { Frustum, FrustumPlanes, SpatialClassifier, ViewFlags } from "@itwin/core-common";
 import { CachedDecoration, DecorationsCache } from "./DecorationsCache";
 import { IModelApp } from "./IModelApp";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";

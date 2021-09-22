@@ -7,7 +7,7 @@
  */
 
 import { Id64 } from "@bentley/bentleyjs-core";
-import { BatchType, PackedFeature } from "@bentley/imodeljs-common";
+import { BatchType, PackedFeature } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { QueryTileFeaturesOptions, VisibleFeature } from "../VisibleFeature";
 import { RenderPass } from "./RenderFlags";

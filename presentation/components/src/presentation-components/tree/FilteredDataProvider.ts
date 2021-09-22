@@ -7,7 +7,7 @@
  */
 
 import memoize from "micro-memoize";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { NodeKey, NodePathElement } from "@bentley/presentation-common";
 import {
   ActiveMatchInfo, DelayLoadedTreeNodeItem, PageOptions, SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy, TreeNodeItem,

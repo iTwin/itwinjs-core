@@ -84,7 +84,7 @@ export interface ElementGeometryDataEntry {
  * @alpha
  */
 export interface ElementGeometryInfo {
-  /** ID for the [Category]($imodeljs-backend), undefined for geometry parts */
+  /** ID for the [Category]($core-backend), undefined for geometry parts */
   categoryId?: Id64String;
   /** A row-major storage 4x3 transform to world coordinate, undefined for geometry parts */
   sourceToWorld?: Float64Array;
@@ -99,12 +99,12 @@ export interface ElementGeometryInfo {
 }
 
 /** A callback function that receives geometry stream data.
- * @see [IModelDb.elementGeometryRequest]($imodeljs-backend)
+ * @see [IModelDb.elementGeometryRequest]($core-backend)
  * @alpha
  */
 export type ElementGeometryFunction = (info: ElementGeometryInfo) => void;
 
-/** Parameters for [IModelDb.elementGeometryRequest]($imodeljs-backend)
+/** Parameters for [IModelDb.elementGeometryRequest]($core-backend)
  * @alpha
  */
 export interface ElementGeometryRequest {
@@ -126,7 +126,7 @@ export interface ElementGeometryRequest {
   minBRepFeatureSize?: number;
 }
 
-/** Parameters for [IModelDb.elementGeometryUpdate]($imodeljs-backend)
+/** Parameters for [IModelDb.elementGeometryUpdate]($core-backend)
  * @alpha
  */
 export interface ElementGeometryUpdate {
@@ -216,7 +216,7 @@ export interface BRepOffsetProps {
   distance: number;
 }
 
-/** Parameters for [IModelDb.createBRepGeometry]($imodeljs-backend)
+/** Parameters for [IModelDb.createBRepGeometry]($core-backend)
  * @alpha
  */
 export interface BRepGeometryCreate {
@@ -241,7 +241,7 @@ export interface BRepGeometryInfo {
 }
 
 /** A callback function that receives brep operation result geometry.
- * @see [IModelDb.createBRepGeometry]($imodeljs-backend)
+ * @see [IModelDb.createBRepGeometry]($core-backend)
  * @alpha
  */
 export type BRepGeometryFunction = (info: BRepGeometryInfo) => void;

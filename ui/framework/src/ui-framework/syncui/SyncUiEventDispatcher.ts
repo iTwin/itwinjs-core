@@ -7,7 +7,7 @@
  */
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { IModelApp, IModelConnection, SelectedViewportChangedArgs, SelectionSetEvent } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, SelectedViewportChangedArgs, SelectionSetEvent } from "@itwin/core-frontend";
 import { getInstancesCount, SelectionScope } from "@bentley/presentation-common";
 import { ISelectionProvider, Presentation, SelectionChangeEventArgs } from "@bentley/presentation-frontend";
 // cSpell:ignore configurableui

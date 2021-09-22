@@ -5,7 +5,7 @@
 import * as React from "react";
 import { render } from "@testing-library/react";
 import { expect } from "chai";
-import { MockRender } from "@bentley/imodeljs-frontend";
+import { MockRender } from "@itwin/core-frontend";
 import { TestUtils } from "../TestUtils";
 import { BumpToolSetting, FocusToolSettings } from "../../ui-framework/tools/ToolSettingsTools";
 

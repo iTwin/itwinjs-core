@@ -12,8 +12,8 @@ import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@bentley/geometry
 import {
   BriefcaseDb, BriefcaseManager, CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, ModelSelector,
   OrthographicViewDefinition, PhysicalModel, SpatialCategory, Subject,
-} from "@bentley/imodeljs-backend";
-import { ColorByName, IModel, LocalFileName } from "@bentley/imodeljs-common";
+} from "@itwin/core-backend";
+import { ColorByName, IModel, LocalFileName } from "@itwin/core-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { Barrier } from "../BarrierElement";

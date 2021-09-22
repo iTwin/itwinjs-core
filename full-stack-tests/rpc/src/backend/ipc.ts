@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { registerBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
-import { IpcWebSocketBackend, iTwinChannel } from "@bentley/imodeljs-common";
+import { IpcWebSocketBackend, iTwinChannel } from "@itwin/core-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
 
 export async function setupIpcTest(before = async () => { }) {

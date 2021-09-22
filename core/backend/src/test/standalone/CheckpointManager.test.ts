@@ -10,7 +10,7 @@ import { Guid, IModelHubStatus } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizedClientRequestContext, ResponseError } from "@bentley/itwin-client";
 import { CheckpointManager, V1CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
 import { SnapshotDb } from "../../IModelDb";
-import { BackendRequestContext, IModelHost } from "../../imodeljs-backend";
+import { BackendRequestContext, IModelHost } from "../../core-backend";
 import { IModelJsFs } from "../../IModelJsFs";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { IModelHubBackend } from "../../IModelHubBackend";

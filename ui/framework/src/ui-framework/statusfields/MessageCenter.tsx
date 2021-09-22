@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { OutputMessagePriority } from "@itwin/core-frontend";
 import { FooterPopup, MessageCenter, MessageCenterDialog, MessageCenterMessage, MessageCenterTab } from "@bentley/ui-ninezone";
 import { MessageManager } from "../messages/MessageManager";
 import { MessageSpan } from "../messages/MessageSpan";

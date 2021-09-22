@@ -8,7 +8,7 @@ import {
   StageUsage, ToolbarOrientation, ToolbarUsage, UiItemsManager,
 } from "@bentley/ui-abstract";
 import TestUtils from "../TestUtils";
-import { MockRender } from "@bentley/imodeljs-frontend";
+import { MockRender } from "@itwin/core-frontend";
 import { DefaultContentTools, DefaultContentToolsAppData, StandardContentToolsProvider } from "../../ui-framework/ui-items-provider/StandardContentToolsProvider";
 
 const testAppDataPropsArray: DefaultContentToolsAppData[] = [

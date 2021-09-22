@@ -9,12 +9,12 @@ import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import {
   IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import {
   AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, IModelApp, IpcApp, LocalhostIpcApp, RenderSystem,
   SelectionTool, SnapMode, TileAdmin, Tool, ToolAdmin,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";

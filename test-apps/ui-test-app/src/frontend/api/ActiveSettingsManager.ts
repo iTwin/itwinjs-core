@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BeEvent, Id64Array, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
-import { IModelError } from "@bentley/imodeljs-common";
-import { IModelApp, SpatialViewState, ViewState, ViewState2d } from "@bentley/imodeljs-frontend";
+import { IModelError } from "@itwin/core-common";
+import { IModelApp, SpatialViewState, ViewState, ViewState2d } from "@itwin/core-frontend";
 import { UiFramework } from "@bentley/ui-framework";
 import { ErrorHandling } from "./ErrorHandling";
 

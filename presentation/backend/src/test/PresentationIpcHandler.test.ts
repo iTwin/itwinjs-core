@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { IModelDb, IModelJsNative } from "@bentley/imodeljs-backend";
+import { IModelDb, IModelJsNative } from "@itwin/core-backend";
 import {
   NodeKeyJSON, RulesetVariableJSON, SetRulesetVariableParams, StringRulesetVariable, UnsetRulesetVariableParams, UpdateHierarchyStateParams,
   VariableValueTypes,

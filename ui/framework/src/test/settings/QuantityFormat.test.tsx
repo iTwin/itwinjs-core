@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 
 import * as React from "react";
 import { fireEvent, render } from "@testing-library/react";
-import { IModelApp, MockRender, QuantityType, QuantityTypeKey } from "@bentley/imodeljs-frontend";
+import { IModelApp, MockRender, QuantityType, QuantityTypeKey } from "@itwin/core-frontend";
 import TestUtils, { getButtonWithText, handleError, selectChangeValueByText, stubScrollIntoView } from "../TestUtils";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";

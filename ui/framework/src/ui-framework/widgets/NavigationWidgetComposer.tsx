@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { ScreenViewport } from "@bentley/imodeljs-frontend";
+import { ScreenViewport } from "@itwin/core-frontend";
 import { ViewClassFullNameChangedEventArgs, ViewportComponentEvents } from "@bentley/ui-imodel-components";
 import { CommonProps, useProximityToMouse, useWidgetOpacityContext, WidgetElementSet, WidgetOpacityContext } from "@bentley/ui-core";
 import { NavigationArea } from "@bentley/ui-ninezone";

@@ -10,7 +10,7 @@ import * as fs from "fs";
 import * as path from "path";
 import sinonChai from "sinon-chai";
 import { ClientRequestContext, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { IModelAppOptions, NoRenderApp } from "@bentley/imodeljs-frontend";
+import { IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "@bentley/oidc-signin-tool/lib/TestUtility";

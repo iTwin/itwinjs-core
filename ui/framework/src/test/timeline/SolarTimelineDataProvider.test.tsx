@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { ViewFlags } from "@bentley/imodeljs-common";
-import { DisplayStyle3dState, IModelConnection, ScreenViewport, ViewState3d } from "@bentley/imodeljs-frontend";
+import { ViewFlags } from "@itwin/core-common";
+import { DisplayStyle3dState, IModelConnection, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
 import { SolarTimelineDataProvider } from "../../ui-framework/timeline/SolarTimelineDataProvider";
 
 describe("SolarTimelineDataProvider", () => {

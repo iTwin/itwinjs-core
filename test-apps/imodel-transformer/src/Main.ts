@@ -11,9 +11,9 @@ import { Version } from "@bentley/imodelhub-client";
 import {
   BackendRequestContext, IModelDb, IModelHost, IModelJsFs, SnapshotDb,
   StandaloneDb,
-} from "@bentley/imodeljs-backend";
+} from "@itwin/core-backend";
 import { TransformerLoggerCategory } from "@bentley/imodeljs-transformer";
-import { BriefcaseIdValue, ChangesetId, ChangesetIndex, ChangesetProps, IModelVersion } from "@bentley/imodeljs-common";
+import { BriefcaseIdValue, ChangesetId, ChangesetIndex, ChangesetProps, IModelVersion } from "@itwin/core-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { ElementUtils } from "./ElementUtils";
 import { IModelHubUtils } from "./IModelHubUtils";

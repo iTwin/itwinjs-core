@@ -8,7 +8,7 @@ import { Point3d } from "@bentley/geometry-core";
 import {
   BeButtonEvent, EventHandled, IModelApp, PrimitiveTool,
   ToolAssistance, ToolAssistanceImage,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import {
   DialogItem, DialogItemValue, DialogPropertySyncItem,
   EnumerationChoice,

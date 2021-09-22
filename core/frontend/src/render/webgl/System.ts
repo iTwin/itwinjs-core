@@ -10,7 +10,7 @@ import { assert, BentleyStatus, Dictionary, dispose, Id64, Id64String } from "@b
 import { ClipVector, Point3d, Transform } from "@bentley/geometry-core";
 import {
   ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, IModelError, PackedFeatureTable, RenderMaterial, RenderTexture,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { Capabilities, DepthType, WebGLContext } from "@bentley/webgl-compatibility";
 import { SkyBox } from "../../DisplayStyleState";
 import { imageElementFromImageSource } from "../../ImageUtil";

@@ -15,7 +15,7 @@ import {
   UiItemsProvider,
 } from "@bentley/ui-abstract";
 import { SyncUiEventDispatcher } from "@bentley/ui-framework";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 
 import upstreamIcon from "./icons/upstream-query.svg?sprite";
 import downstreamIcon from "./icons/downstream-query.svg?sprite";

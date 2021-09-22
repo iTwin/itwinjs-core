@@ -9,11 +9,11 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { GuidString } from "@bentley/bentleyjs-core";
 import { CheckpointV2Query } from "@bentley/imodelhub-client";
-import { ChangesetProps } from "@bentley/imodeljs-common";
+import { ChangesetProps } from "@itwin/core-common";
 import { BlobDaemon } from "@bentley/imodeljs-native";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { IModelHubBackend } from "../../IModelHubBackend";
-import { AuthorizedBackendRequestContext, IModelHost, IModelJsFs, SnapshotDb } from "../../imodeljs-backend";
+import { AuthorizedBackendRequestContext, IModelHost, IModelJsFs, SnapshotDb } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
 

@@ -5,7 +5,7 @@
 import "./ViewportDialog.scss";
 import * as React from "react";
 import { Id64String } from "@bentley/bentleyjs-core";
-import { IModelApp, IModelConnection, ScreenViewport } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, ScreenViewport } from "@itwin/core-frontend";
 import { FillCentered, LoadingSpinner } from "@bentley/ui-core";
 import { ViewportComponent } from "@bentley/ui-imodel-components";
 import { ModelessDialog, ModelessDialogManager, ViewSelector, ViewSelectorChangedEventArgs } from "@bentley/ui-framework";

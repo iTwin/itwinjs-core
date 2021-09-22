@@ -7,8 +7,8 @@
  */
 
 import { BeEvent, GuidString, Id64String } from "@bentley/bentleyjs-core";
-import { FeatureAppearance, GeometricElementProps } from "@bentley/imodeljs-common";
-import { EmphasizeElements, FeatureOverrideProvider, FeatureSymbology, IModelApp, IModelConnection, ScreenViewport, Viewport } from "@bentley/imodeljs-frontend";
+import { FeatureAppearance, GeometricElementProps } from "@itwin/core-common";
+import { EmphasizeElements, FeatureOverrideProvider, FeatureSymbology, IModelApp, IModelConnection, ScreenViewport, Viewport } from "@itwin/core-frontend";
 import { Presentation } from "@bentley/presentation-frontend";
 import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";

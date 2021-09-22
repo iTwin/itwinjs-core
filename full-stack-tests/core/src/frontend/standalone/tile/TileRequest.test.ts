@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { BeDuration } from "@bentley/bentleyjs-core";
-import { ServerTimeoutError } from "@bentley/imodeljs-common";
+import { ServerTimeoutError } from "@itwin/core-common";
 import {
   IModelApp, IModelTile, IModelTileTree, IpcApp, SnapshotConnection, Tile, TileLoadStatus, TileRequestChannel, Viewport,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { TILE_DATA_2_0 } from "./data/TileIO.data.2.0";
 import { fakeViewState } from "./TileIO.test";
 

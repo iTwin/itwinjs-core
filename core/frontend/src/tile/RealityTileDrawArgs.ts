@@ -7,7 +7,7 @@
  */
 
 import { Map4d } from "@bentley/geometry-core";
-import { FrustumPlanes } from "@bentley/imodeljs-common";
+import { FrustumPlanes } from "@itwin/core-common";
 import { TileDrawArgs } from "./internal";
 
 /** @internal */

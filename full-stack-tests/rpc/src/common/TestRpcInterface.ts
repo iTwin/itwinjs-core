@@ -6,7 +6,7 @@ import { Id64String } from "@bentley/bentleyjs-core";
 import {
   IModelReadRpcInterface, IModelRpcProps, RpcInterface, RpcInterfaceDefinition, RpcManager, RpcNotFoundResponse, RpcOperationsProfile,
   RpcPushChannel, RpcRoutingToken, WipRpcInterface,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 
 export const testChannel = RpcPushChannel.create<number>("test");
 

@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import {  IModelApp, Tool } from "@bentley/imodeljs-frontend";
+import {  IModelApp, Tool } from "@itwin/core-frontend";
 import { ModalDialogManager } from "@bentley/ui-framework";
 import { SampleModalDialog } from "../dialogs/SampleModalDialog";
 import { BadgeType, ConditionalBooleanValue, IconSpecUtilities, ToolbarItemUtilities } from "@bentley/ui-abstract";

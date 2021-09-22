@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { AsyncMethodsOf, ProcessDetector, PromiseReturnType } from "@bentley/bentleyjs-core";
-import { IpcListener, IpcSocketFrontend } from "@bentley/imodeljs-common";
-import { IpcApp, NativeApp, NativeAppOpts } from "@bentley/imodeljs-frontend";
+import { IpcListener, IpcSocketFrontend } from "@itwin/core-common";
+import { IpcApp, NativeApp, NativeAppOpts } from "@itwin/core-frontend";
 import { ITwinElectronApi } from "../backend/ElectronPreload";
 import { ElectronRpcManager } from "../common/ElectronRpcManager";
 

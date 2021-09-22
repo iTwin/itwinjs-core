@@ -7,8 +7,8 @@ import { DbResult, Id64Array, Id64Set, Id64String } from "@bentley/bentleyjs-cor
 import {
   Category, CategorySelector, DisplayStyle, DisplayStyle3d, ECSqlStatement, ExternalSourceAspect, GeometricModel3d, IModelDb, ModelSelector,
   SpatialCategory, SpatialModel, SpatialViewDefinition, SubCategory, ViewDefinition,
-} from "@bentley/imodeljs-backend";
-import { IModel } from "@bentley/imodeljs-common";
+} from "@itwin/core-backend";
+import { IModel } from "@itwin/core-common";
 
 export namespace ElementUtils {
 

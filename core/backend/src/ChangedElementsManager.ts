@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { GuidString } from "@bentley/bentleyjs-core";
-import { ChangeData, ChangedElements, ChangedModels } from "@bentley/imodeljs-common";
+import { ChangeData, ChangedElements, ChangedModels } from "@itwin/core-common";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ChangedElementsDb } from "./ChangedElementsDb";
 import { IModelJsFs } from "./IModelJsFs";

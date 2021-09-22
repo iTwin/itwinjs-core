@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 import { expect } from "chai";
-import { AuthorizedFrontendRequestContext, IModelApp, MockRender } from "@bentley/imodeljs-frontend";
+import { AuthorizedFrontendRequestContext, IModelApp, MockRender } from "@itwin/core-frontend";
 import { SettingsAdmin, SettingsResult, SettingsStatus } from "@bentley/product-settings-client";
 import { UiSettingsStatus } from "@bentley/ui-core";
 import { settingsStatusToUiSettingsStatus, UserSettingsStorage } from "../../ui-framework";

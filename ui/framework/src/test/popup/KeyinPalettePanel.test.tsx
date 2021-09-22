@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 
-import { IModelApp, IModelAppOptions, MockRender, Tool } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelAppOptions, MockRender, Tool } from "@itwin/core-frontend";
 import { SpecialKey } from "@bentley/ui-abstract";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { clearKeyinPaletteHistory, FrameworkUiAdmin, KeyinEntry, KeyinPalettePanel, UiFramework } from "../../ui-framework";

@@ -11,7 +11,7 @@ import * as React from "react";
 import { DeepCompare } from "@bentley/geometry-core";
 import {
   getQuantityTypeKey, IModelApp, QuantityFormatsChangedArgs, QuantityType, QuantityTypeArg, QuantityTypeKey,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { FormatProps, FormatterSpec, UnitSystemKey } from "@bentley/imodeljs-quantity";
 import { DialogButtonType } from "@bentley/ui-abstract";
 import { FormatSample, QuantityFormatPanel } from "@bentley/ui-imodel-components";

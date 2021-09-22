@@ -6,7 +6,7 @@ import { shallow } from "enzyme";
 import * as React from "react";
 import * as moq from "typemoq";
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { IModelApp, MockRender, ScreenViewport, Viewport } from "@bentley/imodeljs-frontend";
+import { IModelApp, MockRender, ScreenViewport, Viewport } from "@itwin/core-frontend";
 import { TileLoadingIndicator } from "../../../ui-framework";
 import TestUtils, { mount } from "../../TestUtils";
 

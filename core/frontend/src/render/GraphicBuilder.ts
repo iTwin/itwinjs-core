@@ -10,7 +10,7 @@ import { Id64String } from "@bentley/bentleyjs-core";
 import {
   AnyCurvePrimitive, Arc3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, SolidPrimitive, Transform,
 } from "@bentley/geometry-core";
-import { AnalysisStyle, ColorDef, Frustum, GraphicParams, LinePixels, Npc } from "@bentley/imodeljs-common";
+import { AnalysisStyle, ColorDef, Frustum, GraphicParams, LinePixels, Npc } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
 import { RenderGraphic } from "./RenderGraphic";

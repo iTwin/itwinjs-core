@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as ChaiJestSnapshot from "chai-jest-snapshot";
 import path from "path";
-import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { ChildNodeSpecificationTypes, ContentSpecificationTypes, RelationshipDirection, Ruleset, RuleTypes } from "@bentley/presentation-common";
 import { ContentBuilder, ContentBuilderResult, HierarchyBuilder } from "@bentley/presentation-testing";
 import { initialize, terminate } from "../IntegrationTests";

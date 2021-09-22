@@ -7,8 +7,8 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { NativeAppAuthorizationBackend } from "@bentley/imodeljs-backend";
-import { NativeAppAuthorizationConfiguration } from "@bentley/imodeljs-common";
+import { NativeAppAuthorizationBackend } from "@itwin/core-backend";
+import { NativeAppAuthorizationConfiguration } from "@itwin/core-common";
 import { AccessToken, AccessTokenProps, UserInfo } from "@bentley/itwin-client";
 import { MobileHost } from "./MobileHost";
 

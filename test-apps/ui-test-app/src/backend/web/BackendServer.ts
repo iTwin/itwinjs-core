@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelJsExpressServer } from "@bentley/express-server";
-import { IModelHost } from "@bentley/imodeljs-backend";
-import { BentleyCloudRpcManager } from "@bentley/imodeljs-common";
+import { IModelHost } from "@itwin/core-backend";
+import { BentleyCloudRpcManager } from "@itwin/core-common";
 import { getSupportedRpcs } from "../../common/rpcs";
 import { loggerCategory } from "../../common/TestAppConfiguration";
 

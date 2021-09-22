@@ -10,7 +10,7 @@ import { XAndY } from "@bentley/geometry-core";
 import {
   ActivityMessageDetails, ActivityMessageEndReason, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotificationManager, NotifyMessageDetails,
   ToolAssistance, ToolAssistanceInstructions, ToolTipOptions,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { ElementTooltip } from "../feedback/ElementTooltip";
 import { UiFramework } from "../UiFramework";
@@ -18,7 +18,7 @@ import { MessageManager } from "./MessageManager";
 import { PointerMessage } from "./Pointer";
 
 /**
- * The AppNotificationManager class is a subclass of NotificationManager in @bentley/imodeljs-frontend.
+ * The AppNotificationManager class is a subclass of NotificationManager in @itwin/core-frontend.
  * This implementation uses the iModel.js UI library to display alerts, messages, prompts and tooltips.
  * @public
  */

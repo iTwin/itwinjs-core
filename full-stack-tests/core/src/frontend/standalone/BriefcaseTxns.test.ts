@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as path from "path";
 import { Guid, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
-import { BriefcaseConnection } from "@bentley/imodeljs-frontend";
+import { BriefcaseConnection } from "@itwin/core-frontend";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { callFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing";
 

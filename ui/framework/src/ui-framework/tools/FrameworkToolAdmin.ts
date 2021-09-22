@@ -6,7 +6,7 @@
  * @module Tools
  */
 
-import { ToolAdmin } from "@bentley/imodeljs-frontend";
+import { ToolAdmin } from "@itwin/core-frontend";
 import { SpecialKey } from "@bentley/ui-abstract";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { UiFramework } from "../UiFramework";

@@ -5,7 +5,7 @@
 import { fireEvent, render } from "@testing-library/react";
 import * as sinon from "sinon";
 import * as React from "react";
-import { CompassMode, IModelApp, IModelAppOptions, MockRender } from "@bentley/imodeljs-frontend";
+import { CompassMode, IModelApp, IModelAppOptions, MockRender } from "@itwin/core-frontend";
 import { SpecialKey } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
 import { TestUtils } from "../TestUtils";

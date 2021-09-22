@@ -7,7 +7,7 @@
  */
 
 import { assert, dispose } from "@bentley/bentleyjs-core";
-import { Gradient, RenderTexture, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode } from "@bentley/imodeljs-common";
+import { Gradient, RenderTexture, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode } from "@itwin/core-common";
 import { WebGLDisposable } from "./Disposable";
 import { UniformHandle } from "./UniformHandle";
 import { TextureUnit } from "./RenderFlags";

@@ -26,10 +26,10 @@
   "dependencies": {
     "@bentley/bentleyjs-core": "workspace:*",
     "@bentley/geometry-core": "workspace:*",
-    "@bentley/imodeljs-backend": "workspace:*",
+    "@itwin/core-backend": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@bentley/backend-itwin-client": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
+    "@itwin/core-common": "workspace:*",
     "@bentley/imodeljs-i18n": "workspace:*",
     "chai": "^4.1.2",
     "yargs": "^16.0.0"

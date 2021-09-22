@@ -8,7 +8,7 @@ import {
   IModelViewportControl as UIFW_IModelViewportControl, ViewSelector, ViewUtilities,
 } from "@bentley/ui-framework";
 // uncomment following to test overriding default view overlay
-// import { ScreenViewport } from "@bentley/imodeljs-frontend";
+// import { ScreenViewport } from "@itwin/core-frontend";
 // import { MyCustomViewOverlay } from "../frontstages/FrontstageUi2";
 
 /** iModel Viewport Control

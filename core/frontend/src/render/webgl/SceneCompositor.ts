@@ -10,7 +10,7 @@ import { assert, dispose } from "@bentley/bentleyjs-core";
 import { Transform, Vector2d, Vector3d } from "@bentley/geometry-core";
 import {
   Feature, PackedFeatureTable, RenderMode, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { DepthType, RenderType } from "@bentley/webgl-compatibility";
 import { IModelConnection } from "../../IModelConnection";
 import { SceneContext } from "../../ViewContext";

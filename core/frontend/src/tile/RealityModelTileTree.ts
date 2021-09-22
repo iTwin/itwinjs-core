@@ -13,7 +13,7 @@ import { Angle, Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transfor
 import {
   Cartographic, GeoCoordStatus, IModelError, PlanarClipMaskPriority, PlanarClipMaskSettings,
   SpatialClassifiers, ViewFlagOverrides,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { AccessToken, request, RequestOptions } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";

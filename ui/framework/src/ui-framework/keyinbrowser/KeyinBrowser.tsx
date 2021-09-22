@@ -9,7 +9,7 @@
 import "./KeyinBrowser.scss";
 // cSpell:ignore Modeless keyins keyinbrowser testid
 import * as React from "react";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, Tool } from "@bentley/imodeljs-frontend";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, Tool } from "@itwin/core-frontend";
 import { AutoSuggest, AutoSuggestData, CommonProps, InputLabel } from "@bentley/ui-core";
 import { Button, LabeledInput } from "@itwin/itwinui-react";
 import { UiFramework } from "../UiFramework";

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Point3d } from "@bentley/geometry-core";
-import { PolylineData, QPoint3dList } from "@bentley/imodeljs-common";
+import { PolylineData, QPoint3dList } from "@itwin/core-common";
 import { tesselatePolyline } from "../../../render/primitives/VertexTable";
 
 describe("PolylineTesselator", () => {

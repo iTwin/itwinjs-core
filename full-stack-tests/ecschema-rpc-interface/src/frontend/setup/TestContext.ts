@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { AuthorizedFrontendRequestContext, NoRenderApp } from "@bentley/imodeljs-frontend";
+import { AuthorizedFrontendRequestContext, NoRenderApp } from "@itwin/core-frontend";
 import { AccessToken } from "@bentley/itwin-client";
 import {
   getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials,
@@ -13,7 +13,7 @@ import {
 import { getRpcInterfaces, Settings } from "../../common/Settings";
 import { getProcessEnvFromBackend } from "../../common/SideChannels";
 import { IModelSession } from "./IModelSession";
-import { BentleyCloudRpcManager, OpenAPIInfo } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcManager, OpenAPIInfo } from "@itwin/core-common";
 
 export class TestContext {
   public adminUserAccessToken!: AccessToken;

@@ -6,7 +6,7 @@ import "./App.css";
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 import * as React from "react";
 import { Geometry } from "@bentley/geometry-core";
-import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection } from "@itwin/core-frontend";
 import { UnitSystemKey } from "@bentley/imodeljs-quantity";
 import { DefaultContentDisplayTypes } from "@bentley/presentation-common";
 import {

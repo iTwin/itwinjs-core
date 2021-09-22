@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as moq from "typemoq";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { WidgetState } from "@bentley/ui-abstract";
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
 import {

@@ -9,7 +9,7 @@
 // cSpell:ignore popout
 
 import * as React from "react";
-import { IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
+import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
 import { PointProps, StagePanelLocation, StageUsage, UiError } from "@bentley/ui-abstract";
 import { RectangleProps, SizeProps } from "@bentley/ui-core";
 import {

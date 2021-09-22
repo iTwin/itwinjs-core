@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { CanvasDecoration, DecorateContext, GraphicType, HitDetail, IModelApp, Tool } from "@bentley/imodeljs-frontend";
-import { AxisAlignedBox3d, GeometryStreamProps } from "@bentley/imodeljs-common";
+import { CanvasDecoration, DecorateContext, GraphicType, HitDetail, IModelApp, Tool } from "@itwin/core-frontend";
+import { AxisAlignedBox3d, GeometryStreamProps } from "@itwin/core-common";
 import { AngleSweep, Arc3d, Path, Range1d, Range3d } from "@bentley/geometry-core";
 
 class PathCanvasDecoration implements CanvasDecoration {

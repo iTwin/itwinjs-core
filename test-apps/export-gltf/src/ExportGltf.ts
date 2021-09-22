@@ -10,8 +10,8 @@ import { Angle, Geometry, Matrix3d, Point3d } from "@bentley/geometry-core";
 import {
   ECSqlStatement, ExportGraphics, ExportGraphicsInfo, ExportGraphicsLines, ExportGraphicsMesh, ExportLinesInfo, ExportPartInfo,
   ExportPartInstanceInfo, ExportPartLinesInfo, IModelHost, SnapshotDb, Texture,
-} from "@bentley/imodeljs-backend";
-import { ColorDef, ImageSourceFormat } from "@bentley/imodeljs-common";
+} from "@itwin/core-backend";
+import { ColorDef, ImageSourceFormat } from "@itwin/core-common";
 
 const exportGraphicsDetailOptions = {
   chordTol: 0.001,

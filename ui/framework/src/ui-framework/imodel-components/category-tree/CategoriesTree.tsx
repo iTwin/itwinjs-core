@@ -8,7 +8,7 @@
 
 import "./CategoriesTree.scss";
 import * as React from "react";
-import { IModelApp, IModelConnection, SpatialViewState, ViewManager, Viewport } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, SpatialViewState, ViewManager, Viewport } from "@itwin/core-frontend";
 import { Ruleset } from "@bentley/presentation-common";
 import { IPresentationTreeDataProvider, usePresentationTreeNodeLoader } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";

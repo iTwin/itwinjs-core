@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
+import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { ActiveContentChangedEventArgs, ContentViewManager, useActiveViewport } from "../../ui-framework";
 import { mount } from "../TestUtils";

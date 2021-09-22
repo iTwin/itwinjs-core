@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { connect } from "react-redux";
-import { SnapMode } from "@bentley/imodeljs-frontend";
+import { SnapMode } from "@itwin/core-frontend";
 import { FooterPopup, FooterPopupContentType, SnapMode as NZ_SnapMode, Snap, SnapModePanel } from "@bentley/ui-ninezone";
 import { ConfigurableUiActions } from "../configurableui/state";
 import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl";

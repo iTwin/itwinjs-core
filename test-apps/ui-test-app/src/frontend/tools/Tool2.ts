@@ -7,7 +7,7 @@ import { Point3d } from "@bentley/geometry-core";
 import placeholderSvg from "@bentley/icons-generic/icons/placeholder.svg?sprite";
 import {
   BeButtonEvent, EventHandled, IModelApp, PrimitiveTool, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { IconSpecUtilities } from "@bentley/ui-abstract";
 
 export class Tool2 extends PrimitiveTool {

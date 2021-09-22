@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import * as React from "react";
 import { act, fireEvent, render, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { IModelApp, MockRender, QuantityType } from "@bentley/imodeljs-frontend";
+import { IModelApp, MockRender, QuantityType } from "@itwin/core-frontend";
 import { FormatProps, FormatType, ShowSignOption } from "@bentley/imodeljs-quantity";
 import { BearingQuantityType } from "./BearingQuantityType";
 import { SpecialKey } from "@bentley/ui-abstract";

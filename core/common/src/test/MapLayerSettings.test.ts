@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { BackgroundMapSettings, BackgroundMapType } from "../BackgroundMapSettings";
-import { MapLayerProps, MapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "../imodeljs-common";
+import { MapLayerProps, MapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "../core-common";
 
 const testMapSubLayer0 = { name: "TestName", title: "TestTitle", visible: true };
 const testMapSubLayer1 = { name: "TestName", title: "TestTitle", visible: true, id: 0, parent: -1, children: [1, 2, 3] };

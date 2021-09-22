@@ -23,7 +23,7 @@ import {
   AccuDrawSetLockZTool,
   AccuDrawSetOriginTool,
   DefineACSByPointsTool,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { ToolItemDef } from "../shared/ToolItemDef";
 import { BumpToolSetting, FocusToolSettings } from "../tools/ToolSettingsTools";
 

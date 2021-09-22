@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import { Provider } from "react-redux";
-import { MockRender } from "@bentley/imodeljs-frontend";
+import { MockRender } from "@itwin/core-frontend";
 import { WidgetState } from "@bentley/ui-abstract";
 import { Checkbox } from "@itwin/itwinui-react";
 import { ConfigurableCreateInfo, ConfigurableUiControlType } from "../../ui-framework/configurableui/ConfigurableUiControl";

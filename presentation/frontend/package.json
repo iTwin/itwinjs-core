@@ -41,8 +41,8 @@
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.63",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.63",
-    "@bentley/imodeljs-frontend": "workspace:^3.0.0-dev.63",
+    "@itwin/core-common": "workspace:^3.0.0-dev.63",
+    "@itwin/core-frontend": "workspace:^3.0.0-dev.63",
     "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.63",
     "@bentley/imodeljs-quantity": "workspace:^3.0.0-dev.63",
     "@bentley/presentation-common": "workspace:^3.0.0-dev.63"
@@ -52,8 +52,8 @@
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
-    "@bentley/imodeljs-frontend": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-frontend": "workspace:*",
     "@bentley/imodeljs-i18n": "workspace:*",
     "@bentley/imodeljs-quantity": "workspace:*",
     "@bentley/itwin-client": "workspace:*",

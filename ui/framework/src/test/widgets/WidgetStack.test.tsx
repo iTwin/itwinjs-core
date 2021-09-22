@@ -16,7 +16,7 @@ import {
   WidgetStackTabs, Zone, ZoneState,
 } from "../../ui-framework";
 import TestUtils, { mount } from "../TestUtils";
-import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
+import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 
 const defaultWidgetTabs = {
   [1]: [],

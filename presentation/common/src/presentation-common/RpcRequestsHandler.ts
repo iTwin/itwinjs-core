@@ -7,7 +7,7 @@
  */
 
 import { Guid, Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { IModelRpcProps, RpcManager } from "@bentley/imodeljs-common";
+import { IModelRpcProps, RpcManager } from "@itwin/core-common";
 import { DescriptorJSON, DescriptorOverrides } from "./content/Descriptor";
 import { ItemJSON } from "./content/Item";
 import { DisplayValueGroupJSON } from "./content/Value";

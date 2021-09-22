@@ -5,10 +5,10 @@
 import * as path from "path";
 import { DbResult, Id64String } from "@bentley/bentleyjs-core";
 import { Angle, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { BriefcaseDb, ECSqlStatement, Element, IModelDb, IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
+import { BriefcaseDb, ECSqlStatement, Element, IModelDb, IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
 import {
   Code, FeatureGates, IModelReadRpcInterface, RpcInterfaceDefinition, RpcManager, TestRpcManager,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../common/RobotWorldRpcInterface";
 import { Barrier } from "./BarrierElement";
 import { Robot } from "./RobotElement";

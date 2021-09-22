@@ -9,12 +9,12 @@ import * as rimraf from "rimraf";
 // common includes
 import { Guid } from "@bentley/bentleyjs-core";
 // backend includes
-import { IModelHost } from "@bentley/imodeljs-backend";
+import { IModelHost } from "@itwin/core-backend";
 // frontend includes
 import {
   IModelReadRpcInterface, RpcConfiguration, RpcDefaultConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface,
-} from "@bentley/imodeljs-common";
-import { IModelApp, IModelAppOptions, NoRenderApp } from "@bentley/imodeljs-frontend";
+} from "@itwin/core-common";
+import { IModelApp, IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
 import { HierarchyCacheMode, Presentation as PresentationBackend, PresentationManagerProps as PresentationBackendProps, PresentationManagerMode } from "@bentley/presentation-backend";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
 import { Presentation as PresentationFrontend, PresentationProps as PresentationFrontendProps } from "@bentley/presentation-frontend";

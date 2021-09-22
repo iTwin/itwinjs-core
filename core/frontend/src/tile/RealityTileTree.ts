@@ -8,7 +8,7 @@
 
 import { assert, BeTimePoint } from "@bentley/bentleyjs-core";
 import { Matrix3d, Point3d, Range3d, Transform, Vector3d, XYZProps } from "@bentley/geometry-core";
-import { Cartographic, ColorDef, Frustum, FrustumPlanes, GeoCoordStatus, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { Cartographic, ColorDef, Frustum, FrustumPlanes, GeoCoordStatus, ViewFlagOverrides } from "@itwin/core-common";
 import { BackgroundMapGeometry } from "../BackgroundMapGeometry";
 import { GeoConverter } from "../GeoServices";
 import { IModelApp } from "../IModelApp";

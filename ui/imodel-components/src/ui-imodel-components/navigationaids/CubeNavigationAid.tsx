@@ -10,7 +10,7 @@ import "./CubeNavigationAid.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { Angle, AxisIndex, AxisOrder, Geometry, Matrix3d, Point2d, Vector2d, Vector3d, XYAndZ } from "@bentley/geometry-core";
-import { IModelConnection, Viewport } from "@bentley/imodeljs-frontend";
+import { IModelConnection, Viewport } from "@itwin/core-frontend";
 import { CommonProps } from "@bentley/ui-core";
 import { UiIModelComponents } from "../UiIModelComponents";
 import { ViewportComponentEvents, ViewRotationChangeEventArgs } from "../viewport/ViewportComponentEvents";

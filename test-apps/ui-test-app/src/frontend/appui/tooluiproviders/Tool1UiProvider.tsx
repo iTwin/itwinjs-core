@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { ColorDef } from "@bentley/imodeljs-common";
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { ColorDef } from "@itwin/core-common";
+import { IModelApp } from "@itwin/core-frontend";
 import { DialogPropertySyncItem } from "@bentley/ui-abstract";
 import { ColorPickerButton, ColorSwatch, WeightPickerButton } from "@bentley/ui-imodel-components";
 import {

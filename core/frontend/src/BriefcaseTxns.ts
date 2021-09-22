@@ -11,7 +11,7 @@ import { Point3d, Range3d, Range3dProps, XYZProps } from "@bentley/geometry-core
 import {
   ChangedEntities, ChangesetIndexAndId, EcefLocation, EcefLocationProps, GeographicCRS, GeographicCRSProps, IModelStatus, IpcAppChannel, ModelIdAndGeometryGuid,
   RemoveFunction, RootSubjectProps, TxnNotifications,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { IpcApp, NotificationHandler } from "./IpcApp";
 

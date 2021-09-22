@@ -7,7 +7,7 @@
  */
 
 import { Map4d } from "@bentley/geometry-core";
-import { FrustumPlanes } from "@bentley/imodeljs-common";
+import { FrustumPlanes } from "@itwin/core-common";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { SceneContext } from "../ViewContext";

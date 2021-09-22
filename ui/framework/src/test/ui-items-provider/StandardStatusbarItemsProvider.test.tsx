@@ -8,7 +8,7 @@ import {
   StageUsage, UiItemsManager,
 } from "@bentley/ui-abstract";
 import TestUtils from "../TestUtils";
-import { MockRender } from "@bentley/imodeljs-frontend";
+import { MockRender } from "@itwin/core-frontend";
 import { DefaultStatusbarItems, StandardStatusbarItemsProvider } from "../../ui-framework/ui-items-provider/StandardStatusbarItemsProvider";
 
 const testArray: DefaultStatusbarItems[] = [

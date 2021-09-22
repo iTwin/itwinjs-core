@@ -9,7 +9,7 @@
 import "./Swatch.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { ColorDef } from "@itwin/core-common";
 import { CommonProps } from "@bentley/ui-core";
 import { getCSSColorFromDef } from "../color/getCSSColorFromDef";
 

@@ -11,8 +11,8 @@ import {
   ChangeSet, ChangeSetQuery, HubIModel, HubUserInfo, IModelHubClient, IModelQuery, UserInfoQuery, Version, VersionQuery,
 } from "@bentley/imodelhub-client";
 // import GatewayProxyApi from "./gatewayProxy";
-import { IModelVersion } from "@bentley/imodeljs-common";
-import { AuthorizedFrontendRequestContext, CheckpointConnection, IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelVersion } from "@itwin/core-common";
+import { AuthorizedFrontendRequestContext, CheckpointConnection, IModelConnection } from "@itwin/core-frontend";
 import { UiFramework } from "../UiFramework";
 import { ChangeSetInfo, IModelInfo, IModelServices, IModelUserInfo, VersionInfo } from "./IModelServices";
 import { ProjectInfo } from "./ProjectServices";

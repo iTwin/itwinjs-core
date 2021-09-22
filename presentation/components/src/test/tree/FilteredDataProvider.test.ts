@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import * as faker from "faker";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { LabelDefinition, NodePathElement } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomECInstancesNodeKey, createRandomNodePathElement } from "@bentley/presentation-common/lib/test/_helpers/random";

@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import * as fs from "fs";
 import * as path from "path";
-import { PhysicalElement, SnapshotDb } from "../../imodeljs-backend";
+import { PhysicalElement, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { KnownTestLocations } from "../KnownTestLocations";

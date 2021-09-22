@@ -7,11 +7,11 @@
 import { expect } from "chai";
 import * as moq from "typemoq";
 import * as sinon from "sinon";
-import { IModelRpcProps } from "@bentley/imodeljs-common";
+import { IModelRpcProps } from "@itwin/core-common";
 import { RpcRequestsHandler } from "@bentley/presentation-common";
 import { createRandomSelectionScope } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { Id64String, Logger } from "@bentley/bentleyjs-core";
-import { IModelApp, IModelConnection, MockRender, SelectionSet, ViewState } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, MockRender, SelectionSet, ViewState } from "@itwin/core-frontend";
 import { Presentation, SelectionManager, SelectionScopesManager, SelectionScopesManagerProps } from "@bentley/presentation-frontend";
 import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@bentley/presentation-testing";
 import { ColorTheme, CursorMenuData, SettingsModalFrontstage, UiFramework, UserSettingsProvider } from "../ui-framework";

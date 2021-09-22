@@ -17,8 +17,8 @@
     "@bentley/bentleyjs-core": "workspace:*",
     "@bentley/geometry-core": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
-    "@bentley/imodeljs-backend": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-backend": "workspace:*",
     "yargs": "^16.0.0"
   },
   "devDependencies": {

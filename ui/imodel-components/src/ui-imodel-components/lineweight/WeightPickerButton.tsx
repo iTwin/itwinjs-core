@@ -9,7 +9,7 @@
 import "./WeightPickerButton.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { ColorDef } from "@itwin/core-common";
 import { RelativePosition, SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps, ElementResizeObserver, Popup } from "@bentley/ui-core";
 import { LineWeightSwatch } from "./Swatch";

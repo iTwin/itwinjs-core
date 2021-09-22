@@ -5,8 +5,8 @@
 import { assert } from "chai";
 import { GuidString } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
-import { IModelVersion, SyncMode } from "@bentley/imodeljs-common";
-import { BriefcaseConnection, NativeApp } from "@bentley/imodeljs-frontend";
+import { IModelVersion, SyncMode } from "@itwin/core-common";
+import { BriefcaseConnection, NativeApp } from "@itwin/core-frontend";
 import { ProgressInfo } from "@bentley/itwin-client";
 import { usingOfflineScope } from "../HttpRequestHook";
 import { NativeAppTest } from "../NativeAppTest";

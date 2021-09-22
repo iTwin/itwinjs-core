@@ -9,7 +9,7 @@
 import "./SectionsField.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ClipEventType, IModelApp, ViewClipClearTool, ViewClipDecoration, ViewClipDecorationProvider, Viewport } from "@bentley/imodeljs-frontend";
+import { ClipEventType, IModelApp, ViewClipClearTool, ViewClipDecoration, ViewClipDecorationProvider, Viewport } from "@itwin/core-frontend";
 import { Dialog, FooterPopup, TitleBar } from "@bentley/ui-ninezone";
 import { Button, ToggleSwitch } from "@itwin/itwinui-react";
 import { useActiveViewport } from "../hooks/useActiveViewport";

@@ -10,12 +10,12 @@ import { BentleyStatus, CompressedId64Set, DbResult, Id64String, IModelStatus } 
 import {
   Matrix3d, Matrix3dProps, Point3d, PointString3d, Range3d, Range3dProps, Transform, TransformProps, XYZProps, YawPitchRollAngles,
 } from "@bentley/geometry-core";
-import { GeometricElement, IModelDb } from "@bentley/imodeljs-backend";
+import { GeometricElement, IModelDb } from "@itwin/core-backend";
 import {
   BRepEntity, ColorDefProps, DynamicGraphicsRequest3dProps, EcefLocation, EcefLocationProps, ElementGeometry, ElementGeometryDataEntry,
   ElementGeometryFunction, ElementGeometryInfo, ElementGeometryRequest, ElementGeometryUpdate, FilePropertyProps, GeometricElementProps,
   GeometryPartProps, GeometryStreamBuilder, IModelError, Placement3dProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   BasicManipulationCommandIpc, editorBuiltInCmdIds, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps,
   FlatBufferGeometricElementData, FlatBufferGeometryFilter, FlatBufferGeometryPartData, OffsetFacesProps, SolidModelingCommandIpc,

@@ -8,7 +8,7 @@
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient, ContextRegistryRequestQueryOptions, Project } from "@bentley/context-registry-client";
-import { AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
+import { AuthorizedFrontendRequestContext } from "@itwin/core-frontend";
 import { UiFramework } from "../UiFramework";
 import { ProjectInfo, ProjectReadStatus, ProjectScope, ProjectServices } from "./ProjectServices";
 

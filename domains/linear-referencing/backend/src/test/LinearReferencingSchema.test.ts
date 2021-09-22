@@ -9,10 +9,10 @@ import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
 import {
   ClassRegistry, IModelDb, IModelHost, IModelJsFs, PhysicalModel, PhysicalPartition, Schema, Schemas, SnapshotDb, SpatialCategory,
   SubjectOwnsPartitionElements,
-} from "@bentley/imodeljs-backend";
+} from "@itwin/core-backend";
 import {
   CategoryProps, Code, GeometricElement3dProps, IModel, InformationPartitionElementProps, PhysicalElementProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { ILinearElementProps, LinearlyLocatedAttributionProps, LinearlyReferencedFromToLocationProps } from "@bentley/linear-referencing-common";
 import {
   LinearElement, LinearlyLocated, LinearlyLocatedAttribution, LinearlyLocatedSingleFromTo, LinearlyReferencedFromToLocation, LinearReferencingSchema,

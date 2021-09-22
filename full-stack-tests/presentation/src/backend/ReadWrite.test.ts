@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as fs from "fs";
-import { SnapshotDb } from "@bentley/imodeljs-backend";
+import { SnapshotDb } from "@itwin/core-backend";
 import { PresentationManager } from "@bentley/presentation-backend";
 import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@bentley/presentation-common";
 import { initialize, terminate } from "../IntegrationTests";

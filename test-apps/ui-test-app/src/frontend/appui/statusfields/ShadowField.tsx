@@ -9,8 +9,8 @@
 import "./ShadowField.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { RenderMode } from "@bentley/imodeljs-common";
-import { ScreenViewport } from "@bentley/imodeljs-frontend";
+import { RenderMode } from "@itwin/core-common";
+import { ScreenViewport } from "@itwin/core-frontend";
 import { ContentControl, ContentControlActivatedEventArgs, ContentViewManager, FrontstageManager, StatusFieldProps } from "@bentley/ui-framework";
 import { FooterIndicator } from "@bentley/ui-ninezone";
 import { Checkbox } from "@itwin/itwinui-react";

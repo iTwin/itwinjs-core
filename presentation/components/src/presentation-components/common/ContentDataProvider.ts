@@ -8,7 +8,7 @@
 
 import memoize from "micro-memoize";
 import { Logger } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import {
   Content, DEFAULT_KEYS_BATCH_SIZE, Descriptor, DescriptorOverrides, DiagnosticsOptionsWithHandler, Field, KeySet, PageOptions, RegisteredRuleset,
   RequestOptionsWithRuleset, Ruleset, RulesetVariable, SelectionInfo,

@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Guid, Id64 } from "@bentley/bentleyjs-core";
-import { SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { SubCategoryAppearance } from "@itwin/core-common";
 import {
   IModelDb, RenderMaterialElement, SpatialCategory, StandaloneDb, SubCategory,
-} from "../../imodeljs-backend";
+} from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("Category", () => {

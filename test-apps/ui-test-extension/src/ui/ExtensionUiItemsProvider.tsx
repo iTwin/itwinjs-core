@@ -10,7 +10,7 @@ import {
 } from "@bentley/ui-abstract";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { UiFramework } from "@bentley/ui-framework";
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 import statusBarButtonSvg from "./StatusField.svg?sprite"; // use once svg are working again.
 import { UnitsPopupUiDataProvider } from "./UnitsPopup";
 import { SampleTool } from "./tools/SampleTool";

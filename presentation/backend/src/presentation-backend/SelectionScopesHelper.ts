@@ -7,7 +7,7 @@
  */
 
 import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { GeometricElement, GeometricElement3d, IModelDb } from "@bentley/imodeljs-backend";
+import { GeometricElement, GeometricElement3d, IModelDb } from "@itwin/core-backend";
 import {
   InstanceKey, KeySet, PresentationError, PresentationStatus, SelectionScope, SelectionScopeRequestOptions,
 } from "@bentley/presentation-common";

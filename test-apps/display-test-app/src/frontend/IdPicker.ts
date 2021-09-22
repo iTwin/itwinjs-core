@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, compareStringsOrUndefined, Id64, Id64Arg } from "@bentley/bentleyjs-core";
 import { CheckBox, ComboBoxEntry, createButton, createCheckBox, createComboBox, createTextBox } from "@bentley/frontend-devtools";
-import { GeometricModel3dProps } from "@bentley/imodeljs-common";
-import { GeometricModel3dState, ScreenViewport, SpatialViewState, ViewManip } from "@bentley/imodeljs-frontend";
+import { GeometricModel3dProps } from "@itwin/core-common";
+import { GeometricModel3dState, ScreenViewport, SpatialViewState, ViewManip } from "@itwin/core-frontend";
 import { ToolBarDropDown } from "./ToolBar";
 
 // cspell:ignore dehilite textbox subcat

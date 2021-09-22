@@ -5,9 +5,9 @@
 
 import { expect } from "chai";
 import { assert } from "@bentley/bentleyjs-core";
-import { CurrentImdlVersion, DynamicGraphicsRequest3dProps, ElementGeometry, ElementGeometryDataEntry, ElementGraphicsRequestProps, GeometryStreamIterator } from "@bentley/imodeljs-common";
+import { CurrentImdlVersion, DynamicGraphicsRequest3dProps, ElementGeometry, ElementGeometryDataEntry, ElementGraphicsRequestProps, GeometryStreamIterator } from "@itwin/core-common";
 import { ElementGraphicsStatus } from "@bentley/imodeljs-native";
-import { GeometricElement3d, SnapshotDb } from "../../imodeljs-backend";
+import { GeometricElement3d, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("ElementGraphics", () => {

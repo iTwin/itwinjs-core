@@ -5,7 +5,7 @@
 import * as React from "react";
 import { connect } from "react-redux";
 import { UserInfo } from "@bentley/itwin-client";
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 import { BackstageItemUtilities, BadgeType, ConditionalBooleanValue } from "@bentley/ui-abstract";
 import { BackstageComposer, FrontstageManager, SettingsModalFrontstage, UiFramework } from "@bentley/ui-framework";
 import { UserProfileBackstageItem } from "./UserProfile";

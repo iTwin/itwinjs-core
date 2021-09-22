@@ -17,7 +17,7 @@ import {
   MassPropertiesResponseProps, ModelProps, ModelQueryParams, Placement, Placement2d, Placement3d, QueryLimit, QueryPriority, QueryQuota,
   QueryResponse, QueryResponseStatus, RpcManager, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, TextureData, TextureLoadProps,
   ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { CheckpointConnection } from "./CheckpointConnection";
 import { EntityState } from "./EntityState";

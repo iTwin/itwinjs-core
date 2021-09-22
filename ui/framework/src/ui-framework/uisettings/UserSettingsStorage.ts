@@ -6,7 +6,7 @@
  * @module UiSettings
  */
 
-import { AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
+import { AuthorizedFrontendRequestContext, IModelApp } from "@itwin/core-frontend";
 import { SettingsStatus } from "@bentley/product-settings-client";
 import { UiSettingsResult, UiSettingsStatus, UiSettingsStorage } from "@bentley/ui-core";
 

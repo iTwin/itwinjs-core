@@ -14,7 +14,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { Slider, Tooltip } from "@itwin/itwinui-react";
 
-import { ColorByName, ColorDef, HSVColor } from "@bentley/imodeljs-common";
+import { ColorByName, ColorDef, HSVColor } from "@itwin/core-common";
 import { RelativePosition, TimeDisplay } from "@bentley/ui-abstract";
 import { BodyText, CommonProps, Popup } from "@bentley/ui-core";
 import { adjustDateToTimezone, DatePicker, TimeField, TimeSpec, UiComponents } from "@bentley/ui-components";

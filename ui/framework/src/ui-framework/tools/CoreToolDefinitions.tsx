@@ -12,7 +12,7 @@ import {
   FitViewTool, FlyViewTool, IModelApp, MeasureDistanceTool, MeasureLocationTool, PanViewTool, RotateViewTool, SelectionTool, ViewClipByElementTool,
   ViewClipByPlaneTool, ViewClipByRangeTool, ViewClipByShapeTool, ViewClipDecorationProvider, ViewRedoTool, ViewToggleCameraTool, ViewUndoTool,
   WalkViewTool, WindowAreaTool, ZoomViewTool,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { ConditionalBooleanValue, ConditionalStringValue } from "@bentley/ui-abstract";
 import { ToolbarPopupContext } from "@bentley/ui-components";
 import { PopupButton, PopupButtonChildrenRenderPropArgs } from "../toolbar/PopupButton";

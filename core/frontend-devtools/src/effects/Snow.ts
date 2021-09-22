@@ -8,10 +8,10 @@
 
 import { dispose } from "@bentley/bentleyjs-core";
 import { Point2d, Range1d, Range2d, Vector2d } from "@bentley/geometry-core";
-import { RenderTexture } from "@bentley/imodeljs-common";
+import { RenderTexture } from "@itwin/core-common";
 import {
   DecorateContext, Decorator, GraphicType, imageElementFromUrl, IModelApp, ParticleCollectionBuilder, ParticleProps, Tool, Viewport,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { parseToggle } from "../tools/parseToggle";
 import { randomFloat, randomInteger } from "./Random";
 

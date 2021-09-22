@@ -7,7 +7,7 @@
  */
 
 import { assert, dispose, Id64 } from "@bentley/bentleyjs-core";
-import { PackedFeature, PackedFeatureTable } from "@bentley/imodeljs-common";
+import { PackedFeature, PackedFeatureTable } from "@itwin/core-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { DisplayParams } from "../primitives/DisplayParams";
 import { BatchOptions } from "../GraphicBuilder";

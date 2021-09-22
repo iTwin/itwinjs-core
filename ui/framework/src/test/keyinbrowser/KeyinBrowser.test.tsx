@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { IModelApp, MockRender } from "@bentley/imodeljs-frontend";
+import { IModelApp, MockRender } from "@itwin/core-frontend";
 import { AutoSuggest } from "@bentley/ui-core";
 import { Button, LabeledInput } from "@itwin/itwinui-react";
 import { fireEvent, render } from "@testing-library/react";

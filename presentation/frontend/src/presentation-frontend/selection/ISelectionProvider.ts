@@ -6,7 +6,7 @@
  * @module UnifiedSelection
  */
 
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { KeySet } from "@bentley/presentation-common";
 import { SelectionChangeEvent } from "./SelectionChangeEvent";
 

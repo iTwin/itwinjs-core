@@ -8,8 +8,8 @@
 
 import "./ViewAttributes.scss";
 import * as React from "react";
-import { ViewFlagProps, ViewFlags } from "@bentley/imodeljs-common";
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { ViewFlagProps, ViewFlags } from "@itwin/core-common";
+import { IModelApp } from "@itwin/core-frontend";
 import { Dialog, FooterPopup, TitleBar } from "@bentley/ui-ninezone";
 import { Checkbox } from "@itwin/itwinui-react";
 import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl";

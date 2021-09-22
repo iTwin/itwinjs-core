@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable deprecation/deprecation */
 
-import { DisplayStyle3dState, IModelConnection, MockRender, ScreenViewport, ViewState3d } from "@bentley/imodeljs-frontend";
+import { DisplayStyle3dState, IModelConnection, MockRender, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
 import { assert, expect } from "chai";
 import * as enzyme from "enzyme";
 import * as React from "react";
@@ -14,7 +14,7 @@ import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import {
   BackgroundMapSettings, DisplayStyle3dSettings, PlanarClipMaskMode,
   PlanarClipMaskPriority, TerrainHeightOriginMode, TerrainSettings,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { MapManagerSettings } from "../ui/widget/MapManagerSettings";
 import { SourceMapContext } from "../ui/widget/MapLayerManager";
 import { NumberInput, Toggle } from "@bentley/ui-core";

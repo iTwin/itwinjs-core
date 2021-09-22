@@ -7,7 +7,7 @@
  */
 
 import { Id64, Id64Arg, Id64String, ObservableSet } from "@bentley/bentleyjs-core";
-import { ModelSelectorProps } from "@bentley/imodeljs-common";
+import { ModelSelectorProps } from "@itwin/core-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 

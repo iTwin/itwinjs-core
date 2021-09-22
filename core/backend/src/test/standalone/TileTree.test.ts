@@ -9,11 +9,11 @@ import { Box, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@bentley/ge
 import {
   BatchType, Code, ColorDef, defaultTileOptions, GeometryStreamBuilder, IModel, iModelTileTreeIdToString, PhysicalElementProps, PrimaryTileTreeId,
   RenderSchedule,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   GenericSchema, IModelDb, PhysicalModel, PhysicalObject, PhysicalPartition, RenderTimeline, SnapshotDb, SpatialCategory,
   SubjectOwnsPartitionElements,
-} from "../../imodeljs-backend";
+} from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 let uniqueId = 0;

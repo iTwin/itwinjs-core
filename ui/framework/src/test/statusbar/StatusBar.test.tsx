@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import { render } from "@testing-library/react";
 import {
   ActivityMessageDetails, ActivityMessageEndReason, NotifyMessageDetails, OutputMessagePriority, OutputMessageType,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { MessageSeverity, WidgetState } from "@bentley/ui-abstract";
 import { MessageHyperlink, MessageLayout, MessageProgress, Toast } from "@bentley/ui-ninezone";
 import { IconButton } from "@itwin/itwinui-react";

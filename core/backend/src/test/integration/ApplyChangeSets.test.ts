@@ -8,7 +8,7 @@ import * as path from "path";
 import { GuidString } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { IModelHost, IModelJsFs } from "../../imodeljs-backend";
+import { IModelHost, IModelJsFs } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 

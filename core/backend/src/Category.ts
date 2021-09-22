@@ -9,7 +9,7 @@
 import { Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import {
   BisCodeSpec, CategoryProps, Code, CodeScopeProps, CodeSpec, ElementProps, Rank, SubCategoryAppearance, SubCategoryProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { CategoryOwnsSubCategories } from "./NavigationRelationship";

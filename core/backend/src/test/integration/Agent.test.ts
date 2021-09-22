@@ -5,7 +5,7 @@
 
 import { assert } from "chai";
 import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
-import { AuthorizedBackendRequestContext } from "../../imodeljs-backend";
+import { AuthorizedBackendRequestContext } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 

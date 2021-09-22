@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { NodeKey } from "@bentley/presentation-common";
 import { IpcRequestsHandler } from "./IpcRequestsHandler";
 

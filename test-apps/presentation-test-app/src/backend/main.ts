@@ -6,8 +6,8 @@ import "./SampleRpcImpl"; // just to get the RPC implementation registered
 import { app as electron } from "electron";
 import * as path from "path";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { IModelHost } from "@bentley/imodeljs-backend";
-import { RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { IModelHost } from "@itwin/core-backend";
+import { RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
 // __PUBLISH_EXTRACT_START__ Presentation.Backend.Initialization
 import { RequestPriority } from "@bentley/presentation-common";
 import { Presentation, PresentationManagerMode } from "@bentley/presentation-backend";
@@ -41,7 +41,7 @@ function loadEnv(envFile: string) {
   Logger.setLevel(PresentationBackendNativeLoggerCategory.ECPresentation, LogLevel.Info);
   Logger.setLevel(PresentationBackendLoggerCategory.Package, LogLevel.Info);
 
-  // initialize imodeljs-backend
+  // initialize core-backend
   await IModelHost.startup();
 
   // __PUBLISH_EXTRACT_START__ Presentation.Backend.Initialization2

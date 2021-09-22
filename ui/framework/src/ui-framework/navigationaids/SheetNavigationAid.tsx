@@ -9,7 +9,7 @@
 import "./SheetNavigationAid.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { IModelApp, IModelConnection, ScreenViewport, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, ScreenViewport, SelectedViewportChangedArgs } from "@itwin/core-frontend";
 import { UiComponents } from "@bentley/ui-components";
 import { ViewIdChangedEventArgs, ViewportComponentEvents } from "@bentley/ui-imodel-components";
 import { CommonProps } from "@bentley/ui-core";

@@ -9,7 +9,7 @@
 import { Id64String } from "@bentley/bentleyjs-core";
 import {
   Base64EncodedString, BisCodeSpec, Code, CodeScopeProps, CodeSpec, ImageSourceFormat, TextureProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 

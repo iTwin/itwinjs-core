@@ -8,7 +8,7 @@ import { DbResult, GuidString, Id64String, IModelHubStatus, IModelStatus, OpenMo
 import {
   BriefcaseId, BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps,
   ChangesetRange, IModelError, LocalDirName, LocalFileName,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { LockMap, LockProps, LockState } from "../BackendHubAccess";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { BriefcaseLocalValue, IModelDb, SnapshotDb } from "../IModelDb";

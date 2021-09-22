@@ -13,8 +13,8 @@ import { MapTypesOptions } from "../Interfaces";
 import {
   IModelApp, MapLayerImageryProviderStatus, MapLayerSettingsService, MapLayerSource,
   MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority, ScreenViewport,
-} from "@bentley/imodeljs-frontend";
-import { MapLayerProps } from "@bentley/imodeljs-common";
+} from "@itwin/core-frontend";
+import { MapLayerProps } from "@itwin/core-common";
 import "./MapUrlDialog.scss";
 import { DialogButtonType, SpecialKey } from "@bentley/ui-abstract";
 

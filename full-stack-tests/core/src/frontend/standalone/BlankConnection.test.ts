@@ -5,8 +5,8 @@
 import { assert } from "chai";
 import { Guid, GuidString } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, Vector3d } from "@bentley/geometry-core";
-import { Cartographic, ElementProps, IModel } from "@bentley/imodeljs-common";
-import { BlankConnection, MockRender, ScreenViewport, SpatialViewState } from "@bentley/imodeljs-frontend";
+import { Cartographic, ElementProps, IModel } from "@itwin/core-common";
+import { BlankConnection, MockRender, ScreenViewport, SpatialViewState } from "@itwin/core-frontend";
 
 function createViewDiv() {
   const div = document.createElement("div");

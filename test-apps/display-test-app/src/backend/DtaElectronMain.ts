@@ -7,7 +7,7 @@ import { assert } from "@bentley/bentleyjs-core";
 import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronBackend";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
-import { IpcHandler } from "@bentley/imodeljs-backend";
+import { IpcHandler } from "@itwin/core-backend";
 
 const mainWindowName = "mainWindow";
 const getWindowSize = () => {

@@ -8,8 +8,8 @@ import { GeometryQuery, IModelJson, Point3d, Range3d, StandardViewIndex, Transfo
 import {
   CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, SnapshotDb,
   SpatialCategory, SpatialModel,
-} from "@bentley/imodeljs-backend";
-import { AxisAlignedBox3d, Code, ColorDef, PhysicalElementProps, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
+} from "@itwin/core-backend";
+import { AxisAlignedBox3d, Code, ColorDef, PhysicalElementProps, RenderMode, ViewFlags } from "@itwin/core-common";
 /* eslint-disable no-console */
 function collectRange(g: any, rangeToExtend: Range3d) {
   if (g instanceof GeometryQuery) {

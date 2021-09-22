@@ -6,10 +6,10 @@ import { expect } from "chai";
 import { Id64, ProcessDetector } from "@bentley/bentleyjs-core";
 import {
   BackgroundMapSettings, ColorByName, ColorDef, GlobeMode, PlanProjectionSettings, PlanProjectionSettingsProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   DisplayStyle3dState, GeometricModel3dState, IModelApp, IModelConnection, Pixel, SnapshotConnection,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { testOnScreenViewport } from "../TestViewport";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { rpcInterfaces } from "../../common/RpcInterfaces";

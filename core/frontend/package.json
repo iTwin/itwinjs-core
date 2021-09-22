@@ -1,9 +1,9 @@
 {
-  "name": "@bentley/imodeljs-frontend",
+  "name": "@itwin/core-frontend",
   "version": "3.0.0-dev.63",
   "description": "iModel.js frontend components",
-  "main": "lib/imodeljs-frontend.js",
-  "typings": "lib/imodeljs-frontend",
+  "main": "lib/core-frontend.js",
+  "typings": "lib/core-frontend",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
@@ -11,8 +11,8 @@
     "build": "npm run copy:assets && npm run pseudolocalize && tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:assets": "cpx ./src/loader/checkbrowser.js ./lib/loader && cpx \"./src/public/**/*\" ./lib/public",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-frontend/file.json --tsIndexFile=./imodeljs-frontend.ts --onlyJson --excludes=webgl/**/*,**/primitives --excludeGlob=**/*-css.ts",
-    "extract-api": "betools extract-api --entry=imodeljs-frontend",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-frontend/file.json --tsIndexFile=./core-frontend.ts --onlyJson --excludes=webgl/**/*,**/primitives --excludeGlob=**/*-css.ts",
+    "extract-api": "betools extract-api --entry=core-frontend",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./lib/public/locales/en-PSEUDO",
     "test": "npm run webpackTests && certa -r chrome",
@@ -40,7 +40,7 @@
     "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.63",
     "@bentley/geometry-core": "workspace:^3.0.0-dev.63",
     "@bentley/imodelhub-client": "workspace:^3.0.0-dev.63",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.63",
+    "@itwin/core-common": "workspace:^3.0.0-dev.63",
     "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.63",
     "@bentley/imodeljs-quantity": "workspace:^3.0.0-dev.63",
     "@bentley/itwin-client": "workspace:^3.0.0-dev.63",
@@ -62,7 +62,7 @@
     "@bentley/frontend-authorization-client": "workspace:*",
     "@bentley/geometry-core": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
+    "@itwin/core-common": "workspace:*",
     "@bentley/imodeljs-i18n": "workspace:*",
     "@bentley/imodeljs-quantity": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
@@ -92,7 +92,7 @@
   },
   "//dependencies": [
     "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",
-    "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
+    "NOTE: core-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
     "@bentley/context-registry-client": "workspace:*",

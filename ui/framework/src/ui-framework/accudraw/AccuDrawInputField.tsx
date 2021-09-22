@@ -9,7 +9,7 @@
 import "./AccuDrawInputField.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ItemField } from "@bentley/imodeljs-frontend";
+import { ItemField } from "@itwin/core-frontend";
 import { CommonProps, Icon, IconSpec, useRefs } from "@bentley/ui-core";
 import { isLetter, SpecialKey } from "@bentley/ui-abstract";
 import { Input } from "@itwin/itwinui-react";

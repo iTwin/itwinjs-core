@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { IModelApp, IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { DbResult } from "@bentley/bentleyjs-core";
 
 describe("ECSql Query", () => {

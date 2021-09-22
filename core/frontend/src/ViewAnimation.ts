@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { EasingFunction } from "@bentley/imodeljs-common";
+import { EasingFunction } from "@itwin/core-common";
 import { ViewStatus } from "./ViewStatus";
 import { MarginPercent } from "./MarginPercent";
 import { Point3d } from "@bentley/geometry-core";

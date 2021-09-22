@@ -18,7 +18,7 @@ import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
 import {
   HorizontalPropertyGridContentControl, HorizontalPropertyGridWidgetControl,
 } from "../widgets/PropertyGridDemoWidget";
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 import { ConditionalBooleanValue, StandardContentLayouts, WidgetState } from "@bentley/ui-abstract";
 
 /* eslint-disable react/jsx-key, deprecation/deprecation */

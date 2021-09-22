@@ -6,7 +6,7 @@
  * @module Timeline
  */
 
-import { ScreenViewport } from "@bentley/imodeljs-frontend";
+import { ScreenViewport } from "@itwin/core-frontend";
 import { PlaybackSettings, TimelineDataProvider } from "./interfaces";
 
 /** Base Timeline Data Provider

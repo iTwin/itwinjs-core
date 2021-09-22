@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { GuidString } from "@bentley/bentleyjs-core";
-import { ColorDef, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { ColorDef, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { SpatialCategory } from "../../Category";
-import { BriefcaseDb, IModelHost } from "../../imodeljs-backend";
+import { BriefcaseDb, IModelHost } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 

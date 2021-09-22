@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { UiError } from "@bentley/ui-abstract";
 import { ViewClassFullNameChangedEventArgs, ViewportComponentEvents } from "@bentley/ui-imodel-components";
 import { CommonProps } from "@bentley/ui-core";

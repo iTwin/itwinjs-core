@@ -7,8 +7,8 @@
  */
 
 import { Id64String, Logger } from "@bentley/bentleyjs-core";
-import { IModelDb } from "@bentley/imodeljs-backend";
-import { IModelRpcProps } from "@bentley/imodeljs-common";
+import { IModelDb } from "@itwin/core-backend";
+import { IModelRpcProps } from "@itwin/core-common";
 import {
   ContentDescriptorRpcRequestOptions, ContentRpcRequestOptions, ContentSourcesRpcRequestOptions, ContentSourcesRpcResult, DescriptorJSON,
   DiagnosticsOptions, DiagnosticsScopeLogs, DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions, DisplayValueGroup, DisplayValueGroupJSON,

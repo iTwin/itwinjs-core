@@ -10,7 +10,7 @@
 // NOTE: It does, however, have a classFullName property for consistency with Entity subclasses.
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { RelatedElement, TypeDefinition } from "@bentley/imodeljs-common";
+import { RelatedElement, TypeDefinition } from "@itwin/core-common";
 
 /** Relates a parent Element to child Elements which represent parts of the Entity modeled by the parent Element.
  * @public

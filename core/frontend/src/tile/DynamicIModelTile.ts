@@ -12,7 +12,7 @@ import {
 import { Range3d, Transform } from "@bentley/geometry-core";
 import {
   BatchType, ElementGeometryChange, ElementGraphicsRequestProps, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, TileFormat,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { RenderSystem } from "../render/RenderSystem";
 import { Viewport } from "../Viewport";
 import { IModelApp } from "../IModelApp";

@@ -239,6 +239,18 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "@itwin/core-backend",
+      "allowedCategories": [ "backend", "edit", "integration-testing", "internal", "tools" ]
+    },
+    {
+      "name": "@itwin/core-common",
+      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+    },
+    {
+      "name": "@itwin/core-frontend",
+      "allowedCategories": [ "backend", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+    },
+    {
       "name": "@itwin/itwinui-css",
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },

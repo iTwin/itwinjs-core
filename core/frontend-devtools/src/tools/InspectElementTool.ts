@@ -8,11 +8,11 @@
  */
 
 import { Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
-import { GeometrySummaryOptions, GeometrySummaryVerbosity, IModelReadRpcInterface } from "@bentley/imodeljs-common";
+import { GeometrySummaryOptions, GeometrySummaryVerbosity, IModelReadRpcInterface } from "@itwin/core-common";
 import {
   BeButtonEvent, CoreTools, EventHandled, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, MessageBoxIconType, MessageBoxType,
   NotifyMessageDetails, OutputMessagePriority, PrimitiveTool,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
 

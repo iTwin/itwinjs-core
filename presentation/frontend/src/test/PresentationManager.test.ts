@@ -6,8 +6,8 @@ import { expect } from "chai";
 import * as faker from "faker";
 import sinon from "sinon";
 import { BeDuration, BeEvent, CompressedId64Set, Logger, using } from "@bentley/bentleyjs-core";
-import { IModelRpcProps, IpcListener, RemoveFunction } from "@bentley/imodeljs-common";
-import { IModelConnection, IpcApp } from "@bentley/imodeljs-frontend";
+import { IModelRpcProps, IpcListener, RemoveFunction } from "@itwin/core-common";
+import { IModelConnection, IpcApp } from "@itwin/core-frontend";
 import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
 import { UnitSystemKey } from "@bentley/imodeljs-quantity";
 import {

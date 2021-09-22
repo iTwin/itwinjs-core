@@ -8,7 +8,7 @@
 
 import "./SpatialContainmentTree.scss";
 import * as React from "react";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { Ruleset } from "@bentley/presentation-common";
 import { UnifiedSelectionTreeEventHandler, usePresentationTreeNodeLoader } from "@bentley/presentation-components";
 import { ControlledTree, SelectionMode, useTreeModel } from "@bentley/ui-components";

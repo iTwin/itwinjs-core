@@ -6,7 +6,7 @@
  * @module ToolSettings
  */
 
-import { IModelApp, InteractiveTool } from "@bentley/imodeljs-frontend";
+import { IModelApp, InteractiveTool } from "@itwin/core-frontend";
 import { DialogItem, DialogPropertySyncItem } from "@bentley/ui-abstract";
 import { focusIntoContainer, UiEvent } from "@bentley/ui-core";
 import { SyncUiEventDispatcher } from "../../syncui/SyncUiEventDispatcher";

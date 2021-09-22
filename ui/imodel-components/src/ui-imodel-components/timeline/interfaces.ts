@@ -6,8 +6,8 @@
  * @module Timeline
  */
 
-import { ColorDef } from "@bentley/imodeljs-common";
-import { ScreenViewport } from "@bentley/imodeljs-frontend";
+import { ColorDef } from "@itwin/core-common";
+import { ScreenViewport } from "@itwin/core-frontend";
 import { GenericUiEventArgs } from "@bentley/ui-abstract";
 
 /**

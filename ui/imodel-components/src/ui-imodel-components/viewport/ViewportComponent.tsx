@@ -9,12 +9,12 @@
 import * as React from "react";
 import { Id64String, Logger } from "@bentley/bentleyjs-core";
 import { Point3d, Transform } from "@bentley/geometry-core";
-import { NpcCenter } from "@bentley/imodeljs-common";
+import { NpcCenter } from "@itwin/core-common";
 import {
   IModelApp, IModelConnection, ScreenViewport,
   TentativePoint, ToolSettings, ViewManager,
   Viewport, ViewState,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 
 import { CommonProps } from "@bentley/ui-core";
 import { UiIModelComponents } from "../UiIModelComponents";

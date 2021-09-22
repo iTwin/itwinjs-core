@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import * as React from "react";
 import { fireEvent, render } from "@testing-library/react";
-import { IModelApp, MockRender, QuantityType } from "@bentley/imodeljs-frontend";
+import { IModelApp, MockRender, QuantityType } from "@itwin/core-frontend";
 import { QuantityInput } from "../../ui-imodel-components/inputs/QuantityInput";
 import { SpecialKey } from "@bentley/ui-abstract";
 import { TestUtils } from "../TestUtils";

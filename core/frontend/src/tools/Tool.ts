@@ -8,7 +8,7 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, PolygonOps, XAndY } from "@bentley/geometry-core";
-import { GeometryStreamProps, IModelError } from "@bentley/imodeljs-common";
+import { GeometryStreamProps, IModelError } from "@itwin/core-common";
 import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
 import { DialogItem, DialogPropertySyncItem } from "@bentley/ui-abstract";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";

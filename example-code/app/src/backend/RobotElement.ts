@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { Arc3d, Point3d } from "@bentley/geometry-core";
 // __PUBLISH_EXTRACT_START__ Element.subclass
-import { IModelDb, SpatialCategory, SpatialLocationElement } from "@bentley/imodeljs-backend";
-import { GeometryStreamBuilder, GeometryStreamProps } from "@bentley/imodeljs-common";
+import { IModelDb, SpatialCategory, SpatialLocationElement } from "@itwin/core-backend";
+import { GeometryStreamBuilder, GeometryStreamProps } from "@itwin/core-common";
 import { RobotWorld } from "./RobotWorldSchema";
 
 /**

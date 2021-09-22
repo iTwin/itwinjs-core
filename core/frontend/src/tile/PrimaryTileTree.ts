@@ -10,7 +10,7 @@ import { assert, compareBooleans, compareStrings, Id64String } from "@bentley/be
 import { Geometry, Range3d, StringifiedClipVector, Transform } from "@bentley/geometry-core";
 import {
   BatchType, compareIModelTileTreeIds, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, PrimaryTileTreeId, RenderMode, ViewFlagOverrides,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { GeometricModel3dState, GeometricModelState } from "../ModelState";

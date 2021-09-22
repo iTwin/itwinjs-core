@@ -7,7 +7,7 @@
  */
 
 import { assert, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { ViewFlagOverrides } from "@itwin/core-common";
 import { BranchState } from "./BranchState";
 import { CachedGeometry } from "./CachedGeometry";
 import { ClipVolume } from "./ClipVolume";

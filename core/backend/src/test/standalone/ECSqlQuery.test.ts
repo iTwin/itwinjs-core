@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { DbResult, Id64 } from "@bentley/bentleyjs-core";
-import { IModelDb, IModelHost, SnapshotDb } from "../../imodeljs-backend";
+import { IModelDb, IModelHost, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
 

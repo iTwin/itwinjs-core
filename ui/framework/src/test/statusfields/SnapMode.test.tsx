@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as React from "react";
 import { Provider } from "react-redux";
 import * as sinon from "sinon";
-import { SnapMode } from "@bentley/imodeljs-frontend";
+import { SnapMode } from "@itwin/core-frontend";
 import { WidgetState } from "@bentley/ui-abstract";
 import { FooterPopup } from "@bentley/ui-ninezone";
 import {

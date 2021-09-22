@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as faker from "faker";
 import { enablePatches } from "immer";
 import * as sinon from "sinon";
-import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { ChildNodeSpecificationTypes, RuleTypes } from "@bentley/presentation-common";
 import { IPresentationTreeDataProvider, PresentationTreeNodeLoaderProps, usePresentationTreeNodeLoader } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";

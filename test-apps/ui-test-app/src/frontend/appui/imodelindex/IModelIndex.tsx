@@ -6,7 +6,7 @@ import "./IModelIndex.scss";
 import * as React from "react";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelClient, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
-import { AuthorizedFrontendRequestContext, IModelConnection } from "@bentley/imodeljs-frontend";
+import { AuthorizedFrontendRequestContext, IModelConnection } from "@itwin/core-frontend";
 import { LoadingSpinner } from "@bentley/ui-core";
 import { UiFramework } from "@bentley/ui-framework";
 import { ModelsTab } from "./ModelsTab";

@@ -7,7 +7,7 @@ import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
 import { Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
-import { IModelVersion } from "@bentley/imodeljs-common";
+import { IModelVersion } from "@itwin/core-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";

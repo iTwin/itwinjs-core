@@ -9,8 +9,8 @@
 import "./AccuDrawFieldContainer.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ColorDef } from "@bentley/imodeljs-common";
-import { CompassMode, IModelApp, ItemField, ScreenViewport, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
+import { ColorDef } from "@itwin/core-common";
+import { CompassMode, IModelApp, ItemField, ScreenViewport, SelectedViewportChangedArgs } from "@itwin/core-frontend";
 import { IconSpecUtilities } from "@bentley/ui-abstract";
 import { CommonProps, IconSpec, Orientation, UiSettingsStorage } from "@bentley/ui-core";
 import { getCSSColorFromDef } from "@bentley/ui-imodel-components";

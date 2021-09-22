@@ -5,8 +5,8 @@
 
 import { AsyncMethodsOf, CompressedId64Set, Id64, Id64String, OrderedId64Array, PromiseReturnType } from "@bentley/bentleyjs-core";
 import { LineSegment3d, Point3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
-import { BisCodeSpec, Code, CodeProps, GeometryStreamBuilder, PhysicalElementProps } from "@bentley/imodeljs-common";
-import { BriefcaseConnection, IModelConnection, IpcApp } from "@bentley/imodeljs-frontend";
+import { BisCodeSpec, Code, CodeProps, GeometryStreamBuilder, PhysicalElementProps } from "@itwin/core-common";
+import { BriefcaseConnection, IModelConnection, IpcApp } from "@itwin/core-frontend";
 import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";

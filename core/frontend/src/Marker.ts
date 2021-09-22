@@ -8,7 +8,7 @@
 
 import { Logger, ObservableSet } from "@bentley/bentleyjs-core";
 import { Geometry, Matrix4d, Point2d, Point3d, Range1d, Range1dProps, Vector3d, XAndY, XYAndZ } from "@bentley/geometry-core";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { ColorDef } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { imageElementFromUrl } from "./ImageUtil";
 import { IModelApp } from "./IModelApp";

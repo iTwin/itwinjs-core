@@ -8,7 +8,7 @@
 
 import { GuidString, IModelStatus } from "@bentley/bentleyjs-core";
 import { addCsrfHeader, ChangeSet, ChangeSetQuery, IModelClient, IModelHubClient, VersionQuery } from "@bentley/imodelhub-client";
-import { IModelError, IModelVersion } from "@bentley/imodeljs-common";
+import { IModelError, IModelVersion } from "@itwin/core-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelApp } from "./IModelApp";
 

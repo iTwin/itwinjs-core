@@ -6,7 +6,7 @@ import "./VisibilityWidget.scss";
 import * as React from "react";
 import { useResizeDetector } from "react-resize-detector";
 import { BeEvent, Id64Array, Id64String } from "@bentley/bentleyjs-core";
-import { IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@itwin/core-frontend";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import { FilteringInput, FilteringInputStatus, SelectableContent, SelectionMode } from "@bentley/ui-components";
 import { Icon, WebFontIcon } from "@bentley/ui-core";

@@ -6,12 +6,12 @@ import { assert, expect } from "chai";
 import { Angle, DeepCompare, Geometry, Matrix3d, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
   AmbientOcclusion, BackgroundMapSettings, BackgroundMapType, ColorDef, HiddenLine, RenderMode, SpatialViewDefinitionProps, ViewDefinitionProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   AuxCoordSystemSpatialState, CategorySelectorState, DrawingModelState, DrawingViewState, IModelConnection, LookAtOrthoArgs, MarginPercent,
   MockRender, ModelSelectorState, SheetModelState, SheetViewState, SnapshotConnection, SpatialModelState, SpatialViewState, StandardView,
   StandardViewId, ViewState, ViewState3d, ViewStatus,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { Mutable } from "@bentley/bentleyjs-core";
 
