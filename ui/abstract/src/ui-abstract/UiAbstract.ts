@@ -63,9 +63,7 @@ export class UiAbstract {
    * @internal
    */
   public static translate(key: string | string[]): string {
-    if (!UiAbstract._localizationClient)
-      throw new UiError(UiAbstract.loggerCategory(this), "UiAbstract not initialized");
-    return UiAbstract._localizationClient.getLocalizedStringWithNamespace(UiAbstract.localizationNamespace, key);
+    return UiAbstract.localizationClient.getLocalizedStringWithNamespace(UiAbstract.localizationNamespace, key);
   }
 
   /** @internal */

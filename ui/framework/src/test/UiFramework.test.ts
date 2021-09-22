@@ -16,7 +16,6 @@ import { Presentation, SelectionManager, SelectionScopesManager, SelectionScopes
 import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@bentley/presentation-testing";
 import { ColorTheme, CursorMenuData, SettingsModalFrontstage, UiFramework, UserSettingsProvider } from "../ui-framework";
 import { DefaultIModelServices } from "../ui-framework/clientservices/DefaultIModelServices";
-import { DefaultProjectServices } from "../ui-framework/clientservices/DefaultProjectServices";
 import TestUtils, { mockUserInfo, storageMock } from "./TestUtils";
 import { LocalSettingsStorage, UiSettingsStorage } from "@bentley/ui-core";
 import { OpenSettingsTool } from "../ui-framework/tools/OpenSettingsTool";
@@ -125,24 +124,18 @@ describe("UiFramework localStorage Wrapper", () => {
       await MockRender.App.shutdown();
     });
 
-    it("projectServices should throw Error without initialize", () => {
-      expect(() => UiFramework.projectServices).to.throw(Error);
-    });
-
     it("iModelServices should throw Error without initialize", () => {
       expect(() => UiFramework.iModelServices).to.throw(Error);
     });
 
-    it("projectServices & iModelServices should return defaults", async () => {
+    it("iModelServices should return default", async () => {
       await TestUtils.initializeUiFramework(true);
-      expect(UiFramework.projectServices).to.be.instanceOf(DefaultProjectServices);
       expect(UiFramework.iModelServices).to.be.instanceOf(DefaultIModelServices);
       expect(UiFramework.frameworkStateKey).to.equal("testDifferentFrameworkKey");
     });
 
     it("test default frameworkState key", async () => {
       await TestUtils.initializeUiFramework();
-      expect(UiFramework.projectServices).to.be.instanceOf(DefaultProjectServices);
       expect(UiFramework.iModelServices).to.be.instanceOf(DefaultIModelServices);
       expect(UiFramework.frameworkStateKey).to.equal("frameworkState");
       TestUtils.terminateUiFramework();

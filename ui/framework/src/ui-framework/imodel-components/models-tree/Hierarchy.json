@@ -1,11 +1,11 @@
 {
   "$schema": "../../../../node_modules/@bentley/presentation-common/Ruleset.schema.json",
   "id": "ui-framework/ModelsTree",
-  "supportedSchemas": {
-    "schemaNames": [
-      "BisCore"
-    ]
-  },
+  "requiredSchemas": [
+    {
+      "name": "BisCore"
+    }
+  ],
   "rules": [
     {
       "ruleType": "RootNodes",
