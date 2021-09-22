@@ -7,7 +7,8 @@
  */
 import { ClientRequestContext, GuidString, Logger } from "@bentley/bentleyjs-core";
 import { ContextType } from "@bentley/context-registry-client";
-import { AccessToken, AuthorizedClientRequestContext, ECJsonTypeMap, request, RequestOptions, Response, WsgInstance } from "@bentley/itwin-client";
+import { AccessToken, AuthorizedClientRequestContext, request, RequestOptions, Response } from "@bentley/itwin-client";
+import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";

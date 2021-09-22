@@ -135,6 +135,8 @@ export function CustomItem({ item, addGroupSeparator }: { item: CustomToolbarIte
     const badge = BadgeUtilities.getComponentForBadgeType(item.badgeType);
     const title = ConditionalStringValue.getValue(item.label);
     return <PopupItem
+      key={item.id}
+      itemId={item.id}
       icon={item.icon ? IconHelper.getIconReactNode(item.icon, item.internalData) : /* istanbul ignore next */ <i className="icon icon-placeholder" />}
       isDisabled={ConditionalBooleanValue.getValue(item.isDisabled)}
       title={title ? title : /* istanbul ignore next */ item.id}
@@ -161,6 +163,8 @@ export function GroupPopupItem({ item, addGroupSeparator }: { item: GroupButton,
 
   if (useDragInteraction) {
     return <PopupItemWithDrag
+      key={item.id}
+      itemId={item.id}
       icon={IconHelper.getIconReactNode(item.icon, item.internalData)}
       isDisabled={ConditionalBooleanValue.getValue(item.isDisabled)}
       title={title}
@@ -170,6 +174,8 @@ export function GroupPopupItem({ item, addGroupSeparator }: { item: GroupButton,
     />;
   }
   return <PopupItem
+    key={item.id}
+    itemId={item.id}
     icon={IconHelper.getIconReactNode(item.icon, item.internalData)}
     isDisabled={ConditionalBooleanValue.getValue(item.isDisabled)}
     title={title}
@@ -191,6 +197,8 @@ export function ActionItem({ item, addGroupSeparator }: { item: ActionButton, ad
   }, [item, onItemExecuted]);
 
   return <ToolbarButtonItem
+    itemId={item.id}
+    key={item.id}
     isDisabled={ConditionalBooleanValue.getValue(item.isDisabled)}
     title={title}
     icon={IconHelper.getIconReactNode(item.icon, item.internalData)}

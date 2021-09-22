@@ -128,6 +128,8 @@ export interface NavigationWidgetComposerProps extends CommonProps {
   verticalToolbar?: React.ReactNode;
   /** Optional Navigation Aid host. If not specified a default host is provided which will use registered Navigation Aids and the active content control to determine which if any Navigation Aid to display. */
   navigationAidHost?: React.ReactNode;
+  /** If true no navigation aid will be shown. Defaults to false. */
+  hideNavigationAid?: boolean;
 }
 
 /**
@@ -136,12 +138,14 @@ export interface NavigationWidgetComposerProps extends CommonProps {
  * @public
  */
 export function NavigationWidgetComposer(props: NavigationWidgetComposerProps) {
-  const { navigationAidHost, horizontalToolbar, verticalToolbar, ...otherProps } = props;
+  const { navigationAidHost, horizontalToolbar, verticalToolbar, hideNavigationAid, ...otherProps } = props;
   const [elementSet] = React.useState(new WidgetElementSet());
   const handleChildRef = React.useCallback((elementRef: React.RefObject<Element>) => {
     elementSet.add(elementRef);
   }, [elementSet]);
   const proximityScale = useProximityToMouse(elementSet, UiShowHideManager.snapWidgetOpacity);
+  /* istanbul ignore next */
+  const navigationAid = hideNavigationAid ? undefined : navigationAidHost ?? <NavigationAidHost />;
 
   return (
     <WidgetOpacityContext.Provider
@@ -151,7 +155,7 @@ export function NavigationWidgetComposer(props: NavigationWidgetComposerProps) {
       }}
     >
       <NavigationArea
-        navigationAid={navigationAidHost ? /* istanbul ignore next */ navigationAidHost : <NavigationAidHost />}
+        navigationAid={navigationAid}
         horizontalToolbar={horizontalToolbar}
         verticalToolbar={verticalToolbar}
         {...otherProps}

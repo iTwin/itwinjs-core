@@ -17,7 +17,7 @@ import {
   NineZoneManagerProps, NineZoneState, popoutWidgetToChildWindow, setFloatingWidgetContainerBounds,
 } from "@bentley/ui-ninezone";
 import { ContentControl } from "../content/ContentControl";
-import { ContentGroup, ContentGroupManager } from "../content/ContentGroup";
+import { ContentGroup, ContentGroupProvider } from "../content/ContentGroup";
 import { ContentLayoutDef } from "../content/ContentLayout";
 import { ContentLayoutManager } from "../content/ContentLayoutManager";
 import { ContentViewManager } from "../content/ContentViewManager";
@@ -53,9 +53,7 @@ export interface FrontstageNineZoneStateChangedEventArgs extends FrontstageEvent
 export class FrontstageDef {
   private _id: string = "";
   private _defaultTool?: ToolItemDef;
-  private _defaultLayoutId: string = "";
   private _defaultContentId: string = "";
-  private _contentGroupId: string = "";
   private _isInFooterMode: boolean = true;
   private _isStageClosing = false;
   private _isApplicationClosing = false;
@@ -76,23 +74,22 @@ export class FrontstageDef {
   private _rightPanel?: StagePanelDef;
   private _bottomPanel?: StagePanelDef;
   private _bottomMostPanel?: StagePanelDef;
-  private _defaultLayout?: ContentLayoutDef;
   private _contentLayoutDef?: ContentLayoutDef;
   private _contentGroup?: ContentGroup;
   private _frontstageProvider?: FrontstageProvider;
   private _nineZone?: NineZoneManagerProps;
   private _timeTracker: TimeTracker = new TimeTracker();
   private _nineZoneState?: NineZoneState;
+  private _contentGroupProvider?: ContentGroupProvider;
 
   public get id(): string { return this._id; }
   public get defaultTool(): ToolItemDef | undefined { return this._defaultTool; }
-  public get defaultLayoutId(): string { return this._defaultLayoutId; }
   public get defaultContentId(): string { return this._defaultContentId; }
-  public get contentGroupId(): string { return this._contentGroupId; }
   public get isInFooterMode(): boolean { return this._isInFooterMode; }
   public get applicationData(): any | undefined { return this._applicationData; }
   public get usage(): string { return this._usage !== undefined ? this._usage : StageUsage.General; }
   public get version(): number { return this._version; }
+  public get contentGroupProvider(): ContentGroupProvider | undefined { return this._contentGroupProvider; }
 
   public get topLeft(): ZoneDef | undefined { return this._topLeft; }
   public get topCenter(): ZoneDef | undefined { return this._topCenter; }
@@ -118,13 +115,12 @@ export class FrontstageDef {
    * @deprecated Only bottomPanel is supported in UI 2.0  */
   public get bottomMostPanel(): StagePanelDef | undefined { return this._bottomMostPanel; }
 
-  public get defaultLayout(): ContentLayoutDef | undefined { return this._defaultLayout; }
   public get contentLayoutDef(): ContentLayoutDef | undefined { return this._contentLayoutDef; }
   public get contentGroup(): ContentGroup | undefined { return this._contentGroup; }
   public get frontstageProvider(): FrontstageProvider | undefined { return this._frontstageProvider; }
 
   /** @internal */
-  public get nineZone(): NineZoneManagerProps | undefined { return this._nineZone; }
+  public get nineZone(): NineZoneManagerProps | undefined { return this._nineZone; } // istanbul ignore next
   public set nineZone(props: NineZoneManagerProps | undefined) { this._nineZone = props; }
 
   /** @internal */
@@ -145,10 +141,16 @@ export class FrontstageDef {
   /** @internal */
   public get timeTracker(): TimeTracker { return this._timeTracker; }
 
-  /** Constructs the [[FrontstageDef]]  */
-  constructor(props?: FrontstageProps) {
-    if (props)
-      this.initializeFromProps(props);
+  /** Created a [[FrontstageDef]] and initialize it */
+  public static async create(provider: FrontstageProvider) {
+    const def = new FrontstageDef();
+    def._frontstageProvider = provider;
+
+    // istanbul ignore else
+    if (provider.frontstage.props)
+      await def.initializeFromProps(provider.frontstage.props);
+
+    return def;
   }
 
   /** Handles when the Frontstage becomes activated */
@@ -158,24 +160,14 @@ export class FrontstageDef {
   public onActivated(): void {
     this.updateWidgetDefs();
 
-    this._contentLayoutDef = this.defaultLayout;
+    // istanbul ignore next
+    if (!this._contentGroup)
+      throw new UiError(UiFramework.loggerCategory(this), `onActivated: Content Group not defined`);
 
-    if (!this._contentLayoutDef) {
-      this._contentLayoutDef = ContentLayoutManager.findLayout(this.defaultLayoutId);
-      if (!this._contentLayoutDef)
-        throw new UiError(UiFramework.loggerCategory(this), `onActivated: Content Layout '${this.defaultLayoutId}' not registered`);
-    }
-
-    if (!this._contentGroup) {
-      this._contentGroup = ContentGroupManager.findGroup(this.contentGroupId);
-      if (!this._contentGroup)
-        throw new UiError(UiFramework.loggerCategory(this), `onActivated: Content Group '${this.contentGroupId}' not registered`);
-    }
-
+    this._contentLayoutDef = ContentLayoutManager.getLayoutForGroup(this._contentGroup);
     FrontstageManager.onContentLayoutActivatedEvent.emit({ contentLayout: this._contentLayoutDef, contentGroup: this._contentGroup });
 
     this._timeTracker.startTiming();
-
     this._onActivated();
   }
 
@@ -192,6 +184,7 @@ export class FrontstageDef {
       control.onFrontstageDeactivated();
     }
 
+    // istanbul ignore else
     if (this.contentGroup)
       this.contentGroup.onFrontstageDeactivated();
 
@@ -464,28 +457,18 @@ export class FrontstageDef {
 
   /** Gets the list of [[ContentControl]]s */
   public get contentControls(): ContentControl[] {
+    // istanbul ignore else
     if (this.contentGroup) {
       return this.contentGroup.getContentControls();
-    }
-    return [];
-  }
-
-  /**
-   * Initializes this [[FrontstageDef]] from a [[FrontstageProvider]]
-   * @param frontstageProvider The FrontstageProvider to initialize from
-   */
-  public initializeFromProvider(frontstageProvider: FrontstageProvider) {
-    // istanbul ignore else
-    if (frontstageProvider.frontstage && React.isValidElement(frontstageProvider.frontstage)) {
-      Frontstage.initializeFrontstageDef(this, frontstageProvider.frontstage.props);
-      this._frontstageProvider = frontstageProvider;
+    } else {
+      return [];
     }
   }
 
   /** Initializes a FrontstageDef from FrontstageProps
    * @internal
    */
-  public initializeFromProps(props: FrontstageProps): void {
+  public async initializeFromProps(props: FrontstageProps): Promise<void> {
     this._id = props.id;
 
     this._defaultTool = props.defaultTool;
@@ -493,15 +476,12 @@ export class FrontstageDef {
     if (props.defaultContentId !== undefined)
       this._defaultContentId = props.defaultContentId;
 
-    if (typeof props.defaultLayout === "string")
-      this._defaultLayoutId = props.defaultLayout;
-    else
-      this._defaultLayout = props.defaultLayout;
-
-    if (typeof props.contentGroup === "string")
-      this._contentGroupId = props.contentGroup;
-    else
+    if (props.contentGroup instanceof ContentGroupProvider) {
+      this._contentGroup = await props.contentGroup.provideContentGroup(props);
+      this._contentGroupProvider = props.contentGroup;
+    } else {
       this._contentGroup = props.contentGroup;
+    }
 
     if (props.isInFooterMode !== undefined)
       this._isInFooterMode = props.isInFooterMode;
@@ -544,11 +524,11 @@ export class FrontstageDef {
 
     // Process panels before zones so in uiVersion="2" extension can explicitly target a widget for a StagePanelSection
     this.panelDefs.forEach((panelDef: StagePanelDef) => {
-      panelDef.updateDynamicWidgetDefs(this.id, this.usage, panelDef.location, undefined, widgetDefs);
+      panelDef.updateDynamicWidgetDefs(this.id, this.usage, panelDef.location, undefined, widgetDefs, this.applicationData);
     });
 
     this.zoneDefs.forEach((zoneDef: ZoneDef) => {
-      zoneDef.updateDynamicWidgetDefs(this.id, this.usage, zoneDef.zoneLocation, undefined, widgetDefs);
+      zoneDef.updateDynamicWidgetDefs(this.id, this.usage, zoneDef.zoneLocation, undefined, widgetDefs, this.applicationData);
     });
   }
 

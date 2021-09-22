@@ -24,6 +24,7 @@ interface ClearEmphasisStatusFieldProps extends StatusFieldProps {
 
 /** Clear Emphasis StatusField
  * @beta
+ * @deprecated use clear emphasis tool button option instead.
  */
 export function ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps) {
   const [toolTip] = React.useState(UiFramework.translate("tools.clearVisibility"));

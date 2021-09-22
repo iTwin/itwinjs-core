@@ -9,7 +9,6 @@ import { AuthorizationClient } from '@bentley/itwin-client';
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { CancelRequest } from '@bentley/itwin-client';
 import { Client } from 'openid-client';
-import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ClientTelemetryEvent } from '@bentley/telemetry-client';
 import { FileHandler } from '@bentley/itwin-client';
 import * as https from 'https';
@@ -25,14 +24,14 @@ import { TransformCallback } from 'stream';
 // @beta
 export class AgentAuthorizationClient extends BackendAuthorizationClient implements AuthorizationClient {
     constructor(agentConfiguration: AgentAuthorizationClientConfiguration);
-    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+    getAccessToken(): Promise<AccessToken>;
     // @deprecated
-    getToken(requestContext: ClientRequestContext): Promise<AccessToken>;
+    getToken(): Promise<AccessToken>;
     get hasExpired(): boolean;
     get hasSignedIn(): boolean;
     get isAuthorized(): boolean;
     // @deprecated
-    refreshToken(requestContext: ClientRequestContext, jwt: AccessToken): Promise<AccessToken>;
+    refreshToken(jwt: AccessToken): Promise<AccessToken>;
 }
 
 // @beta
@@ -59,9 +58,9 @@ export abstract class BackendAuthorizationClient extends ImsAuthorizationClient 
     constructor(configuration: BackendAuthorizationClientConfiguration);
     // (undocumented)
     protected _configuration: BackendAuthorizationClientConfiguration;
-    discoverEndpoints(requestContext: ClientRequestContext): Promise<Issuer<Client>>;
+    discoverEndpoints(): Promise<Issuer<Client>>;
     // (undocumented)
-    protected getClient(requestContext: ClientRequestContext): Promise<Client>;
+    protected getClient(): Promise<Client>;
     }
 
 // @beta
@@ -170,7 +169,7 @@ export interface ConfigData {
 // @beta
 export class DelegationAuthorizationClient extends BackendAuthorizationClient {
     constructor(configuration: DelegationAuthorizationClientConfiguration);
-    getJwtFromJwt(requestContext: ClientRequestContext, accessToken: AccessToken): Promise<AccessToken>;
+    getJwtFromJwt(accessToken: AccessToken): Promise<AccessToken>;
 }
 
 // @beta
@@ -237,7 +236,7 @@ export class IntrospectionClient {
     // (undocumented)
     protected readonly _clientSecret: string;
     // (undocumented)
-    protected getIssuerUrl(requestContext: AuthorizedClientRequestContext): Promise<string>;
+    protected getIssuerUrl(): Promise<string>;
     // (undocumented)
     introspect(requestContext: AuthorizedClientRequestContext): Promise<IntrospectionResponse>;
     // (undocumented)

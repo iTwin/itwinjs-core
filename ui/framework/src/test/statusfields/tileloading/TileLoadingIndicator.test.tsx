@@ -41,21 +41,34 @@ describe("TileLoadingIndicator", () => {
 
   it("50% then 100% complete", async () => {
     // numReadyTiles / (numReadyTiles + numRequestedTiles)
-    let numRequestedTiles = 500;
-    const numTilesReady = 500;
     const onRenderEvent = new BeEvent<(vp: Viewport) => void>();
     const viewportMock = moq.Mock.ofType<ScreenViewport>();
-    viewportMock.setup((viewport) => viewport.numRequestedTiles).returns(() => numRequestedTiles);
-    viewportMock.setup((viewport) => viewport.numReadyTiles).returns(() => numTilesReady);
+
     // added because component registers interest in onRender events
     viewportMock.setup((x) => x.onRender).returns(() => onRenderEvent);
 
     await IModelApp.viewManager.setSelectedView(viewportMock.object);
-    mount(<TileLoadingIndicator isInFooterMode={true} onOpenWidget={() => { }} openWidget={"TileLoadingIndicator"} />);
+    const wrapper = mount(<TileLoadingIndicator isInFooterMode={true} onOpenWidget={() => { }} openWidget={"TileLoadingIndicator"} />);
+    IModelApp.viewManager.onViewOpen.emit(viewportMock.object);
+    // 10% complete
+    viewportMock.setup((viewport) => viewport.numRequestedTiles).returns(() => 90);
+    viewportMock.setup((viewport) => viewport.numReadyTiles).returns(() => 10);
+    onRenderEvent.raiseEvent(viewportMock.object);
+    await TestUtils.flushAsyncOperations();
+
     // 50% complete
+    viewportMock.setup((viewport) => viewport.numRequestedTiles).returns(() => 250);
+    viewportMock.setup((viewport) => viewport.numReadyTiles).returns(() => 250);
     onRenderEvent.raiseEvent(viewportMock.object);
-    numRequestedTiles = 0;
+    await TestUtils.flushAsyncOperations();
+
     // 100% complete
+    viewportMock.setup((viewport) => viewport.numRequestedTiles).returns(() => 0);
+    viewportMock.setup((viewport) => viewport.numReadyTiles).returns(() => 0);
     onRenderEvent.raiseEvent(viewportMock.object);
+    await TestUtils.flushAsyncOperations();
+
+    wrapper.update();
+    wrapper.unmount();
   });
 });

@@ -19,6 +19,8 @@ exports[`PanelWidget should render 1`] = `
       />
       <div
         class="nz-widget-tab nz-active nz-first nz-last"
+        data-item-id="t1"
+        data-item-type="widget-tab"
         role="tab"
         title=""
       >
@@ -79,6 +81,8 @@ exports[`PanelWidget should render horizontal with fit-content 1`] = `
       />
       <div
         class="nz-widget-tab nz-active nz-first nz-last"
+        data-item-id="t1"
+        data-item-type="widget-tab"
         role="tab"
         title=""
       >
@@ -130,6 +134,8 @@ exports[`PanelWidget should render minimized 1`] = `
       />
       <div
         class="nz-widget-tab nz-active nz-minimized nz-first nz-last"
+        data-item-id="t1"
+        data-item-type="widget-tab"
         role="tab"
         title=""
       >
@@ -190,6 +196,8 @@ exports[`PanelWidget should render with fit-content 1`] = `
       />
       <div
         class="nz-widget-tab nz-active nz-first nz-last"
+        data-item-id="t1"
+        data-item-type="widget-tab"
         role="tab"
         title=""
       >

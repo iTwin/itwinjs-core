@@ -65,10 +65,10 @@ export class WidgetHost {
    * @internal
    */
   public updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, section: StagePanelSection | undefined,
-    widgetDefs: WidgetDef[],
+    widgetDefs: WidgetDef[], frontstageApplicationData?: any
   ): void {
     widgetDefs.push(...this._widgetDefs);
-    this._dynamicWidgetDefs = UiFramework.widgetManager.getWidgetDefs(stageId, stageUsage, location, section)
+    this._dynamicWidgetDefs = UiFramework.widgetManager.getWidgetDefs(stageId, stageUsage, location, section, frontstageApplicationData)
       ?.filter((widgetDef) => {
         const duplicate = widgetDefs.find((wDef) => wDef.id === widgetDef.id);
         return !duplicate;

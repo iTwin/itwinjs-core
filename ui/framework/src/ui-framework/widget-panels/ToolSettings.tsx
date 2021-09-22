@@ -45,7 +45,7 @@ export function ToolSettingsDockedContent() {
   const settings = useHorizontalToolSettingNodes();
   // for the overflow to work properly each setting in the DockedToolSettings should be wrapped by a DockedToolSetting component
   return (
-    <DockedToolSettings key={Date.now()}>
+    <DockedToolSettings itemId={FrontstageManager.activeToolSettingsProvider?.uniqueId ?? "none"} key={Date.now()}>
       {settings && settings.map((entry, index) => <DockedToolSetting key={index}><TsLabel>{entry.labelNode}</TsLabel>{entry.editorNode}</DockedToolSetting>)}
     </DockedToolSettings>
   );
@@ -161,8 +161,11 @@ export function ToolSettingsWidgetContent() {
     }
   }, [node]);
 
+  // istanbul ignore next
+  const providerId = FrontstageManager.activeToolSettingsProvider?.uniqueId ?? "none";
+
   return (
-    <div className="uifw-floating-toolsettings-container" ref={floatingToolSettingsContainerRef} >
+    <div data-toolsettings-provider={providerId} className="uifw-floating-toolsettings-container" ref={floatingToolSettingsContainerRef} >
       <ScrollableWidgetContent>
         {node}
       </ScrollableWidgetContent>
