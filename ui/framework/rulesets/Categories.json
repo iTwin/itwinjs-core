@@ -59,10 +59,6 @@
                 "schemaName": "BisCore",
                 "className": "CategoryOwnsSubCategories"
               },
-              "targetClass": {
-                "schemaName": "BisCore",
-                "className": "SubCategory"
-              },
               "direction": "Forward"
             }
           ],

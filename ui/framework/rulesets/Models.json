@@ -24,7 +24,7 @@
               "relationshipPath": {
                 "relationship": {
                   "schemaName": "BisCore",
-                  "className": "ModelContainsElements"
+                  "className": "ModelModelsElement"
                 },
                 "direction": "Forward"
               },

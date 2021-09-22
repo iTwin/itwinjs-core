@@ -232,10 +232,6 @@
               "className": "BisCore",
               "schemaName": "ElementOwnsUniqueAspect"
             },
-            "targetClass": {
-              "schemaName": "BisCore",
-              "className": "ElementUniqueAspect"
-            },
             "direction": "Forward"
           },
           "handleTargetClassPolymorphically": true,
@@ -248,10 +244,6 @@
               "schemaName": "BisCore",
               "className": "ElementOwnsMultiAspects"
             },
-            "targetClass": {
-              "schemaName": "BisCore",
-              "className": "ElementMultiAspect"
-            },
             "direction": "Forward"
           },
           "handleTargetClassPolymorphically": true,
@@ -263,10 +255,6 @@
             "relationship": {
               "schemaName": "BisCore",
               "className": "ElementHasLinks"
-            },
-            "targetClass": {
-              "schemaName": "BisCore",
-              "className": "LinkElement"
             },
             "direction": "Forward"
           },
@@ -294,10 +282,6 @@
                 "relationship": {
                   "schemaName": "BisCore",
                   "className": "ElementHasLinks"
-                },
-                "targetClass": {
-                  "schemaName": "BisCore",
-                  "className": "LinkElement"
                 },
                 "direction": "Forward"
               },
@@ -643,10 +627,6 @@
               "schemaName": "BisCore",
               "className": "DrawingGraphicRepresentsElement"
             },
-            "targetClass": {
-              "schemaName": "BisCore",
-              "className": "Element"
-            },
             "direction": "Forward"
           },
           "handleTargetClassPolymorphically": true,
@@ -667,10 +647,6 @@
             "relationship": {
               "schemaName": "BisCore",
               "className": "GraphicalElement3dRepresentsElement"
-            },
-            "targetClass": {
-              "schemaName": "BisCore",
-              "className": "Element"
             },
             "direction": "Forward"
           },

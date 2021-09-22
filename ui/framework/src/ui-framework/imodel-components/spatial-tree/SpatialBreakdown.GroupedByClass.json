@@ -23,10 +23,6 @@
                   "schemaName": "BisCore",
                   "className": "ModelContainsElements"
                 },
-                "targetClass": {
-                  "schemaName": "BisCore",
-                  "className": "Model"
-                },
                 "direction": "Backward"
               },
               "isRequired": true,
@@ -51,10 +47,6 @@
                 "schemaName": "SpatialComposition",
                 "className": "CompositeComposesSubComposites"
               },
-              "targetClass": {
-                "schemaName": "SpatialComposition",
-                "className": "CompositeElement"
-              },
               "direction": "Forward"
             }
           ],
@@ -74,10 +66,6 @@
               "relationship": {
                 "schemaName": "SpatialComposition",
                 "className": "CompositeOverlapsSpatialElements"
-              },
-              "targetClass": {
-                "schemaName": "BisCore",
-                "className": "SpatialElement"
               },
               "direction": "Forward"
             }

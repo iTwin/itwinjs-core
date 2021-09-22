@@ -48,6 +48,8 @@ export enum RelatedPropertiesSpecialValues {
 
 /**
  * Sub-specification to include additional related instance properties.
+ *
+ * @see [More details]($docs/learning/presentation/Content/RelatedPropertiesSpecification.md)
  * @public
  */
 export interface RelatedPropertiesSpecification {
@@ -60,7 +62,6 @@ export interface RelatedPropertiesSpecification {
    * Should the target class specified in [[propertiesSource]] be handled
    * polymorphically. This means properties of not only the target class, but also all its subclasses
    * are loaded.
-   *
    *
    * @note There's a difference between loading properties and instances polymorphically. This attribute
    * only controls polymorphism of properties, while instances are always looked up in a polymorphic fashion.

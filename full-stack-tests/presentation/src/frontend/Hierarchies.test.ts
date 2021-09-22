@@ -2,23 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import {expect} from "chai";
+import { expect } from "chai";
 import * as faker from "faker";
-import {Id64, using} from "@bentley/bentleyjs-core";
-import {IModelConnection, SnapshotConnection} from "@bentley/imodeljs-frontend";
+import { Id64, using } from "@bentley/bentleyjs-core";
+import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import {
-  ChildNodeSpecificationTypes,
-  ECInstancesNodeKey,
-  getInstancesCount,
-  InstanceKey,
-  KeySet,
-  RegisteredRuleset,
-  RelationshipDirection,
-  Ruleset,
+  ChildNodeSpecificationTypes, ECInstancesNodeKey, getInstancesCount, InstanceKey, KeySet, RegisteredRuleset, RelationshipDirection, Ruleset,
   RuleTypes,
 } from "@bentley/presentation-common";
-import {Presentation, PresentationManager} from "@bentley/presentation-frontend";
-import {initialize, resetBackend, terminate} from "../IntegrationTests";
+import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
+import { initialize, resetBackend, terminate } from "../IntegrationTests";
 
 describe("Hierarchies", () => {
 
@@ -119,14 +112,14 @@ describe("Hierarchies", () => {
                   {
                     relationship: {
                       schemaName: "BisCore",
-                      className: "ModelContainsElements"
+                      className: "ModelContainsElements",
                     },
                     targetClass: {
                       schemaName: "BisCore",
-                      className: "Subject"
+                      className: "Subject",
                     },
-                    direction: RelationshipDirection.Forward
-                  }
+                    direction: RelationshipDirection.Forward,
+                  },
                 ],
                 groupByClass: false,
                 groupByLabel: false,
@@ -138,10 +131,10 @@ describe("Hierarchies", () => {
                       {
                         relationship: {
                           schemaName: "BisCore",
-                          className: "ElementOwnsChildElements"
+                          className: "ElementOwnsChildElements",
                         },
-                        direction: RelationshipDirection.Forward
-                      }
+                        direction: RelationshipDirection.Forward,
+                      },
                     ],
                     groupByClass: true,
                     groupByLabel: false,

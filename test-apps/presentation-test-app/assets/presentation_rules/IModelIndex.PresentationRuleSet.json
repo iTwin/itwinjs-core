@@ -42,10 +42,6 @@
                 "schemaName": "BisCore",
                 "className": "SubjectOwnsSubjects"
               },
-              "targetClass": {
-                "schemaName": "BisCore",
-                "className": "Subject"
-              },
               "direction": "Forward"
             }
           ],
@@ -61,10 +57,6 @@
               "relationship": {
                 "schemaName": "BisCore",
                 "className": "SubjectOwnsSubjects"
-              },
-              "targetClass": {
-                "schemaName": "BisCore",
-                "className": "Subject"
               },
               "direction": "Forward"
             }
