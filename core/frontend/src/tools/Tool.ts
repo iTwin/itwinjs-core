@@ -1057,11 +1057,6 @@ export class ToolRegistry {
 export class CoreTools {
   public static namespace = "CoreTools";
   public static tools = "CoreTools:tools.";
-  public static translate(prompt: string) {
-    if (IModelApp.localizationClient) {
-      return IModelApp.localizationClient.getLocalizedString(this.tools + prompt);
-    }
-    return prompt;
-  }
+  public static translate(prompt: string) { return IModelApp.localizationClient.getLocalizedString(this.tools + prompt); }
   public static outputPromptByKey(key: string) { return IModelApp.notifications.outputPromptByKey(this.tools + key); }
 }

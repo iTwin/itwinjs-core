@@ -19,7 +19,7 @@ import { getClassName, UiAbstract, UiError } from "@bentley/ui-abstract";
 // cSpell:ignore colorthemes colorvariables
 
 /**
- * Manages the I18N service for the ui-core package.
+ * Manages the localization service for the ui-core package.
  * @public
  */
 export class UiCore {
@@ -27,8 +27,8 @@ export class UiCore {
   private static _localizationClient?: LocalizationClient;
 
   /**
-   * Registers the I18N service namespace for UiCore. Also initializes UiAbstract.
-   * @param i18n The internationalization service created by the application.
+   * Registers the localization service namespace for UiCore. Also initializes UiAbstract.
+   * @param localizationClient The internationalization service created by the application.
    */
   public static async initialize(localizationClient: LocalizationClient): Promise<void> {
     if (UiCore._initialized) {
@@ -37,15 +37,15 @@ export class UiCore {
     }
 
     UiCore._localizationClient = localizationClient;
-    await UiCore._localizationClient.registerNamespace(UiCore.i18nNamespace);
+    await UiCore._localizationClient.registerNamespace(UiCore.localizationNamespace);
     await UiAbstract.initialize(localizationClient);
     UiCore._initialized = true;
   }
 
-  /** Unregisters the UiCore I18N namespace */
+  /** Unregisters the UiCore localization namespace */
   public static terminate() {
     if (UiCore._localizationClient)
-      UiCore._localizationClient.unregisterNamespace(UiCore.i18nNamespace);
+      UiCore._localizationClient.unregisterNamespace(UiCore.localizationNamespace);
     UiCore._localizationClient = undefined;
 
     UiAbstract.terminate();
@@ -58,12 +58,12 @@ export class UiCore {
   /** The internationalization service created by the application. */
   public static get localizationClient(): LocalizationClient {
     if (!UiCore._localizationClient)
-      throw new UiError(UiCore.loggerCategory(this), "i18n: UiCore.initialize has not been called. Unable to return I18N object.");
+      throw new UiError(UiCore.loggerCategory(this), "localization: UiCore.initialize has not been called. Unable to return localizationClient object.");
     return UiCore._localizationClient;
   }
 
   /** The internationalization service namespace. */
-  public static get i18nNamespace(): string {
+  public static get localizationNamespace(): string {
     return "UiCore";
   }
 
@@ -75,7 +75,7 @@ export class UiCore {
       Logger.logError(UiCore.loggerCategory(this), `translate: UiCore.initialize has not been called. Returning blank string.`);
       return "";
     }
-    return UiCore.localizationClient.getLocalizedStringWithNamespace(UiCore.i18nNamespace, key);
+    return UiCore.localizationClient.getLocalizedStringWithNamespace(UiCore.localizationNamespace, key);
   }
 
   /** @internal */

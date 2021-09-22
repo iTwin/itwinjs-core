@@ -54,7 +54,7 @@ export class UiComponents {
   /** The internationalization service created by the application. */
   public static get localizationClient(): LocalizationClient {
     if (!UiComponents._localizationClient)
-      throw new UiError(UiComponents.loggerCategory(this), "i18n: UiComponents.initialize has not been called. Unable to return LocalizationClient object.");
+      throw new UiError(UiComponents.loggerCategory(this), "localization: UiComponents.initialize has not been called. Unable to return LocalizationClient object.");
     return UiComponents._localizationClient;
   }
 

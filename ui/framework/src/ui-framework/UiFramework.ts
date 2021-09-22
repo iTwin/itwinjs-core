@@ -327,9 +327,7 @@ export class UiFramework {
    * @internal
    */
   public static translate(key: string | string[]): string {
-    if (!UiFramework._localizationClient)
-      throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
-    return UiFramework._localizationClient.getLocalizedStringWithNamespace(UiFramework.localizationNamespace, key);
+    return UiFramework.localizationClient.getLocalizedStringWithNamespace(UiFramework.localizationNamespace, key);
   }
 
   /** @internal */
