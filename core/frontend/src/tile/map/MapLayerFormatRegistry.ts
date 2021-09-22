@@ -50,7 +50,7 @@ export interface MapLayerOptions {
 export class MapLayerFormatRegistry {
   private _configOptions: MapLayerOptions;
   constructor(opts?: MapLayerOptions) {
-    this._configOptions = opts ? opts : {};
+    this._configOptions = opts ?? {};
     internalMapLayerImageryFormats.forEach((format) => this.register(format));
   }
   private _formats = new Map<string, MapLayerFormatType>();
