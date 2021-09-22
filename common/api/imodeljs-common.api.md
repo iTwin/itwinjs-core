@@ -3210,7 +3210,7 @@ export interface GeometryContainmentRequestProps {
     // (undocumented)
     candidates: Id64Array;
     // (undocumented)
-    clip: any;
+    clip: ClipVectorProps;
     // (undocumented)
     offSubCategories?: Id64Array;
     // (undocumented)
@@ -7513,7 +7513,7 @@ export interface SnapRequestProps {
     // (undocumented)
     testPoint: XYZProps;
     // (undocumented)
-    viewFlags?: any;
+    viewFlags?: ViewFlagProps;
     // (undocumented)
     worldToView: Matrix4dProps;
 }

@@ -20,8 +20,10 @@ import { SelectionInfoField } from "../statusfields/SelectionInfo";
 import { TileLoadingIndicator } from "../statusfields/tileloading/TileLoadingIndicator";
 import { SelectionScopeField } from "../statusfields/SelectionScope";
 
-/** Defines what tools to include
- * @beta
+/**
+ * Defines what items to include from the provider. If any items are
+ * specified then only those items will be added to statusbar.
+ * @public
  */
 export interface DefaultStatusbarItems {
   messageCenter?: boolean;
@@ -35,8 +37,9 @@ export interface DefaultStatusbarItems {
   selectionInfo?: boolean;
 }
 
-/** Provide standard tools for the SimpleStatusbarWidget
- * @beta
+/**
+ * Provide standard tools for the SimpleStatusbarWidget
+ * @public
  */
 export class StandardStatusbarItemsProvider implements UiItemsProvider {
   public static providerId = "uifw:StandardStatusbarItemsProvider";
@@ -44,6 +47,13 @@ export class StandardStatusbarItemsProvider implements UiItemsProvider {
 
   constructor(private _defaultItems?: DefaultStatusbarItems, private _isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean) { }
 
+  /**
+  * static function to register the StandardStatusbarItemsProvider
+  * @param defaultNavigationTools - if undefined all available tools are provided to stage. If defined only those
+  * specific tool buttons are shown.
+  * @param isSupportedStage - optional function that will be called to determine if tools should be added to current stage. If not set and
+  * the current stage's `usage` is set to `StageUsage.General` then the provider will add items to frontstage.
+  */
   public static register(defaultItems?: DefaultStatusbarItems, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean) {
     UiItemsManager.register(new StandardStatusbarItemsProvider(defaultItems, isSupportedStage));
   }

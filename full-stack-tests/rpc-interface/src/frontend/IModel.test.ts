@@ -31,7 +31,7 @@ describe("IModel Views", () => {
   it("should successfully get geometry containment", async () => {
     const requestProps: GeometryContainmentRequestProps = {
       candidates: [],
-      clip: {},
+      clip: [],
     };
 
     const result = await iModel.getGeometryContainment(requestProps);

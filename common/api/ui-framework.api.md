@@ -1737,7 +1737,7 @@ export type DeepReadonlyObject<T> = {
     readonly [P in keyof T]: DeepReadonly<T[P]>;
 };
 
-// @beta
+// @public
 export interface DefaultContentTools {
     // (undocumented)
     horizontal?: {
@@ -1755,7 +1755,7 @@ export interface DefaultContentTools {
     };
 }
 
-// @beta
+// @public
 export interface DefaultContentToolsAppData {
     // (undocumented)
     defaultContentTools?: {
@@ -1785,7 +1785,7 @@ export interface DefaultNavigationProps {
     suffixVerticalItems?: ItemList;
 }
 
-// @beta
+// @public
 export interface DefaultNavigationTools {
     // (undocumented)
     horizontal?: {
@@ -1808,7 +1808,7 @@ export class DefaultNavigationWidget extends React.Component<DefaultNavigationPr
     render(): JSX.Element;
     }
 
-// @beta
+// @public
 export interface DefaultStatusbarItems {
     // (undocumented)
     accuSnapModePicker?: boolean;
@@ -5709,7 +5709,7 @@ export interface StagePanelZonesProps {
     start?: StagePanelZoneProps;
 }
 
-// @beta
+// @public
 export class StandardContentToolsProvider implements UiItemsProvider {
     constructor(defaultContextTools?: DefaultContentTools | undefined, isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any) => boolean) | undefined);
     // (undocumented)
@@ -5720,13 +5720,12 @@ export class StandardContentToolsProvider implements UiItemsProvider {
     provideStatusBarItems(stageId: string, stageUsage: string, stageAppData?: any): CommonStatusBarItem[];
     // (undocumented)
     provideToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[];
-    // (undocumented)
     static register(defaultContextTools?: DefaultContentTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): void;
     // (undocumented)
     static unregister(): void;
 }
 
-// @beta (undocumented)
+// @public
 export interface StandardFrontstageProps {
     applicationData?: any;
     bottomPanelProps?: WidgetPanelProps;
@@ -5745,7 +5744,7 @@ export interface StandardFrontstageProps {
     version?: number;
 }
 
-// @beta (undocumented)
+// @public
 export class StandardFrontstageProvider extends FrontstageProvider {
     constructor(props: StandardFrontstageProps);
     // (undocumented)
@@ -5772,7 +5771,7 @@ export interface StandardMessageBoxProps extends CommonProps {
     title: string;
 }
 
-// @beta
+// @public
 export class StandardNavigationToolsProvider implements UiItemsProvider {
     constructor(defaultNavigationTools?: DefaultNavigationTools | undefined, isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any) => boolean) | undefined);
     // (undocumented)
@@ -5781,7 +5780,6 @@ export class StandardNavigationToolsProvider implements UiItemsProvider {
     static providerId: string;
     // (undocumented)
     provideToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[];
-    // (undocumented)
     static register(defaultNavigationTools?: DefaultNavigationTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): void;
     // (undocumented)
     static unregister(): void;
@@ -5803,7 +5801,7 @@ export class StandardRotationNavigationAidControl extends NavigationAidControl {
     static navigationAidId: string;
 }
 
-// @beta
+// @public
 export class StandardStatusbarItemsProvider implements UiItemsProvider {
     constructor(_defaultItems?: DefaultStatusbarItems | undefined, _isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any) => boolean) | undefined);
     // (undocumented)
@@ -5812,7 +5810,6 @@ export class StandardStatusbarItemsProvider implements UiItemsProvider {
     static providerId: string;
     // (undocumented)
     provideStatusBarItems(stageId: string, stageUsage: string, stageAppData?: any): CommonStatusBarItem[];
-    // (undocumented)
     static register(defaultItems?: DefaultStatusbarItems, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): void;
     // (undocumented)
     static unregister(): void;
@@ -7383,7 +7380,7 @@ export class WidgetManager {
     set widgets(w: ReadonlyArray<WidgetInfo>);
     }
 
-// @beta
+// @public
 export type WidgetPanelProps = Omit<StagePanelProps, "widgets" | "runtimeProps" | "header" | "allowedZones" | "panelZones">;
 
 // @internal (undocumented)

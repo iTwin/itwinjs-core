@@ -228,6 +228,23 @@ Upgrade instructions:
 
 The [AsyncFunction]($bentleyjs-core), [AsyncMethodsOf]($bentleyjs-core), and [PromiseReturnType]($bentleyjs-core) types have moved to the @bentley/bentleyjs-core package. The ones in @bentley/imodeljs-frontend have been deprecated.
 
+## Removed default Bing Maps and MapBox keys
+
+Previous versions of `@bentley/imodeljs-frontend` included API keys for Bing Maps and MapBox Imagery that would be used for _all_ iTwin.js applications.  These common keys are no longer supported and will soon be disabled.  All applications will now need to provide their own keys.
+
+In order to configure a key for Bing Maps, or any other map layers, use the [[IModelAppOptions.mapLayerOptions]] configuration to supply the necessary information.
+
+```ts
+const appOptions = {
+  maplayerOptions: {
+    BingMaps: {
+      key: "some key",
+      value: "key"
+    }
+  }
+}
+```
+
 ## Concurrency Control
 
 The previous implementation of `ConcurrencyControl` for locking elements has been replaced with the [LockControl]($backend) interface.
@@ -284,6 +301,54 @@ These methods were previously synchronous and are now async:
 The [NodeKey]($presentation-common) object contains a `pathFromRoot` attribute which can be used to uniquely identify a node in a hierarchy. In addition, the attribute is stable - the value for the same node is the same even when being created by different backends, which allows it to be persisted and later be used to identify specific nodes.
 
 In `3.0` changes have been made that changed the way this attribute is calculated, which means the same node produced by pre-3.0 and 3.x versions of `imodeljs` will have keys with different `pathFromRoot` value. To help identify the version of `NodeKey` a new `version` attribute has been added, with `undefined` or `1` being assigned to keys produced by pre-3.0 and `2` being assigned to keys produced by `3.x` versions of imodeljs. In addition, a new [NodeKey.equals]($presentation-common) function has been added to help with the equality checking of node keys, taking their version into account.
+
+## Changes to `Presentation` initialization in `@bentley/presentation-backend`
+
+- [PresentationManagerProps]($presentation-backend) have been restructured to make attributes' purpose clearer. This affects calls to constructor of [PresentationManager]($presentation-backend) and [Presentation.initialize]($presentation-backend). Typical migration:
+
+  **Before:**
+
+  ```ts
+  await Presentation.initialize({
+    // now `defaultLocale`
+    activeLocale: "en-us",
+
+    // now `defaultUnitSystem`
+    activeUnitSystem: "metric",
+
+    // now under `caching.hierarchies`
+    cacheConfig: { mode: HierarchyCacheMode.Memory },
+
+    // now under `caching.content.size`
+    contentCacheSize: 999,
+
+    // removed in favor of `workerThreadsCount`
+    taskAllocationsMap: {
+        [RequestPriority.Preload]: 1,
+        [RequestPriority.Max]: 2,
+    },
+  });
+  ```
+
+  **After:**
+
+  ```ts
+  await Presentation.initialize({
+    presentation: {
+      defaultLocale: "en-us",
+      defaultUnitSystem: "metric",
+      caching: {
+        hierarchies: {
+          mode: HierarchyCacheMode.Memory,
+        },
+        content: {
+          size: 999,
+        },
+      },
+      workerThreadsCount: 3,
+    },
+  });
+  ```
 
 ## Changes to `Presentation` initialization in `@bentley/presentation-frontend`
 
@@ -578,6 +643,8 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `PropertiesFieldDescriptor.propertyName`              | `PropertiesFieldDescriptor.properties.name`                                                                                                                    |
 | `Property.relatedClassPath`                           | `NestedContentField.pathToPrimaryClass`                                                                                                                        |
 | `PropertyJSON.relatedClassPath`                       | `NestedContentFieldJSON.pathToPrimaryClass`                                                                                                                    |
+| `RequestPriority`                                     | *eliminated*                                                                                                                                                   |
+| `RequestOptions<TIModel>.priority`                    | *eliminated*                                                                                                                                                   |
 | `SelectClassInfo.pathToPrimaryClass`                  | `SelectClassInfo.pathFromInputToSelectClass`                                                                                                                   |
 | `SelectClassInfo.relatedInstanceClasses`              | `SelectClassInfo.relatedInstancePaths`                                                                                                                         |
 | `SelectClassInfoJSON.pathToPrimaryClass`              | `SelectClassInfoJSON.pathFromInputToSelectClass`                                                                                                               |
@@ -585,16 +652,21 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @bentley/presentation-backend
 
-| Removed                                     | Replacement                                                       |
-| ------------------------------------------- | ----------------------------------------------------------------- |
-| `DuplicateRulesetHandlingStrategy`          | `RulesetInsertOptions`                                            |
-| `PresentationManager.activeUnitSystem`      | Changed type from `PresentationUnitSystem` to `UnitSystemKey`     |
-| `PresentationManager.getContentAndSize`     | `PresentationManager.getContent` and `getContentSetSize`          |
-| `PresentationManager.getDistinctValues`     | `PresentationManager.getPagedDistinctValues`                      |
-| `PresentationManager.getNodesAndCount`      | `PresentationManager.getNodes` and `getNodesCount`                |
-| `PresentationManager.loadHierarchy`         | *eliminated*                                                      |
-| `PresentationManagerProps.activeUnitSystem` | Changed type from `PresentationUnitSystem` to `UnitSystemKey`     |
-| `UnitSystemFormat.unitSystems`              | Changed type from `PresentationUnitSystem[]` to `UnitSystemKey[]` |
+| Removed                                       | Replacement                                                                                                               |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `DuplicateRulesetHandlingStrategy`            | `RulesetInsertOptions`                                                                                                    |
+| `PresentationManager.activeUnitSystem`        | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                                                             |
+| `PresentationManager.getContentAndSize`       | `PresentationManager.getContent` and `getContentSetSize`                                                                  |
+| `PresentationManager.getDistinctValues`       | `PresentationManager.getPagedDistinctValues`                                                                              |
+| `PresentationManager.getNodesAndCount`        | `PresentationManager.getNodes` and `getNodesCount`                                                                        |
+| `PresentationManager.loadHierarchy`           | *eliminated*                                                                                                              |
+| `PresentationManagerProps.activeLocale`       | `PresentationManagerProps.defaultLocale`                                                                                  |
+| `PresentationManagerProps.activeUnitSystem`   | Renamed to `PresentationManagerProps.defaultUnitSystem` and changed type from `PresentationUnitSystem` to `UnitSystemKey` |
+| `PresentationManagerProps.cacheConfig`        | `PresentationManagerProps.caching.hierarchies`                                                                            |
+| `PresentationManagerProps.contentCacheSize`   | `PresentationManagerProps.caching.content.size`                                                                           |
+| `PresentationManagerProps.taskAllocationsMap` | `PresentationManagerProps.workerThreadsCount`                                                                             |
+| `UnitSystemFormat.unitSystems`                | Changed type from `PresentationUnitSystem[]` to `UnitSystemKey[]`                                                         |
+| `WithClientRequestContext<T>`                 | *eliminated*                                                                                                              |
 
 ### @bentley/presentation-frontend
 

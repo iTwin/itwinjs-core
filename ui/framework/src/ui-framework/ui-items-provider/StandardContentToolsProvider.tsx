@@ -7,6 +7,7 @@
  */
 
 import * as React from "react";
+import { ViewClipByPlaneTool } from "@bentley/imodeljs-frontend";
 import { CommonStatusBarItem, CommonToolbarItem, StageUsage, StatusBarSection, ToolbarOrientation, ToolbarUsage, UiItemsManager, UiItemsProvider } from "@bentley/ui-abstract";
 import { SelectionContextToolDefinitions } from "../selection/SelectionContextItemDef";
 import { StatusBarItemUtilities } from "../statusbar/StatusBarItemUtilities";
@@ -17,8 +18,27 @@ import { CoreTools } from "../tools/CoreToolDefinitions";
 
 /**
  * Defines options that may be set in frontstage app data to control what group priorities
- * to use for each tool button that can be added by this extension.
- * @beta
+ * to use for each tool button that can be added by this extension. Defining groupIds is optional
+ * and only required if use wants to override the default grouping. This application data is statically
+ * set in the FrontstageProvider.
+ * @example
+ * ```
+ * const applicationData = {
+ *    defaultContentTools: {
+ *      vertical: {
+ *        selectElementGroupPriority: 100,
+ *        measureGroupPriority: 200,
+ *        selectionGroupPriority: 300,
+ *      },
+ *      horizontal: {
+ *        clearSelectionGroupPriority: 100,
+ *        overridesGroupPriority: 200,
+ *      },
+ *    },
+ *  }
+ *
+ * ```
+ * @public
  */
 export interface DefaultContentToolsAppData {
   defaultContentTools?: {
@@ -34,8 +54,10 @@ export interface DefaultContentToolsAppData {
   };
 }
 
-/** Defines what tools to include.
- * @beta
+/**
+ * Defines what tools to include from the provider. If any tools in the horizontal or vertical group are
+ * specified then only those tools will be provided to stage.
+ * @public
  */
 export interface DefaultContentTools {
   horizontal?: {
@@ -68,15 +90,26 @@ function getGroupPriority(potentialId: any, defaultValue: number) {
   return defaultValue;
 }
 
-/** Provide standard tools for the ContentManipulationWidgetComposer
- * @beta
+/**
+ * Provide standard tools for the ContentManipulationWidgetComposer.
+ * @public
  */
 export class StandardContentToolsProvider implements UiItemsProvider {
   public static providerId = "uifw:StandardContentToolsProvider";
   public readonly id = StandardContentToolsProvider.providerId;
 
+  /**
+   * static function to register the StandardContentToolsProvider
+   * @param defaultContextTools - if undefined all available tools are provided to stage. If defined only those
+   * specific tool buttons are shown.
+   * @param isSupportedStage - optional function that will be called to determine if tools should be added to current stage. If not set and
+   * the current stage's `usage` is set to `StageUsage.General` then the provider will add items to frontstage.
+   */
   public static register(defaultContextTools?: DefaultContentTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean) {
     UiItemsManager.register(new StandardContentToolsProvider(defaultContextTools, isSupportedStage));
+
+    // register core commands not automatically registered
+    ViewClipByPlaneTool.register();
   }
 
   public static unregister() {
