@@ -17,7 +17,7 @@ import { ChangeSetInfo, IModelInfo, IModelServices, IModelUserInfo, VersionInfo 
 
 // istanbul ignore next
 class IModelInfoImpl implements IModelInfo {
-  constructor(public name: string, public description: string, public wsgId: string, public createdDate: Date, public projectInfo: ProjectInfo, public status: string = "", public thumbnail: string | undefined) {
+  constructor(public name: string, public description: string, public wsgId: string, public createdDate: Date, public iTwinId: GuidString, public status: string = "", public thumbnail: string | undefined) {
   }
 }
 
