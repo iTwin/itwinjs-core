@@ -322,7 +322,7 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/ecschema2ts",
+      "packageName": "@itwin/ecschema2ts",
       "projectFolder": "tools/ecschema2ts",
       "reviewCategory": "tools",
       "shouldPublish": true,
@@ -336,14 +336,14 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/webpack-tools-core",
+      "packageName": "@itwin/core-webpack-tools",
       "projectFolder": "tools/webpack-core",
       "reviewCategory": "tools",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/backend-webpack-tools",
+      "packageName": "@itwin/backend-webpack-tools",
       "projectFolder": "tools/backend-webpack",
       "reviewCategory": "tools",
       "shouldPublish": true,

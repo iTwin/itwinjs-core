@@ -239,6 +239,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "@itwin/backend-webpack-tools",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/core-backend",
       "allowedCategories": [ "backend", "edit", "integration-testing", "internal", "tools" ]
     },
@@ -269,6 +273,10 @@
     {
       "name": "@itwin/core-transformer",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/core-webpack-tools",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "@itwin/ecschema-locaters",
