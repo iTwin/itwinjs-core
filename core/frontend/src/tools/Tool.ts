@@ -8,8 +8,7 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, PolygonOps, XAndY } from "@bentley/geometry-core";
-import { GeometryStreamProps, IModelError } from "@bentley/imodeljs-common";
-import { LocalizationClient } from "@bentley/imodeljs-common";
+import { GeometryStreamProps, IModelError, LocalizationClient } from "@bentley/imodeljs-common";
 import { DialogItem, DialogPropertySyncItem } from "@bentley/ui-abstract";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
@@ -358,10 +357,7 @@ export class Tool {
 
   private static getLocalizedKey(name: string): string | undefined {
     const key = `tools.${this.toolId}.${name}`;
-    if (this.namespace === undefined) {
-      return undefined;
-    }
-    const val = this.localizationClient?.getLocalizedStringWithNamespace(this.namespace, key);
+    const val = this.localizationClient.getLocalizedStringWithNamespace(this.namespace, key);
     return key === val ? undefined : val; // if translation for key doesn't exist, `translate` returns the key as the result
   }
 
@@ -380,8 +376,8 @@ export class Tool {
    */
   public static get englishKeyin(): string {
     const key = `tools.${this.toolId}.keyin`;
-    const val = this.localizationClient?.getEnglishString(this.namespace, key);
-    return val && val !== key ? val : ""; // default to empty string
+    const val = this.localizationClient.getEnglishString(this.namespace, key);
+    return val !== key ? val : ""; // default to empty string
   }
 
   /**

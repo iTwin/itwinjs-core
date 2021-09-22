@@ -675,7 +675,7 @@ export class IModelApp {
   public static makeIModelJsLogoCard() {
     return this.makeLogoCard({
       iconSrc: "images/about-imodeljs.svg",
-      heading: `<span style="font-weight:normal">${this.localizationClient?.getLocalizedString("Notices.PoweredBy")}</span>&nbsp;iModel.js`,
+      heading: `<span style="font-weight:normal">${this.localizationClient.getLocalizedString("Notices.PoweredBy")}</span>&nbsp;iModel.js`,
       notice: `${require("../package.json").version}<br>${copyrightNotice}`, // eslint-disable-line @typescript-eslint/no-var-requires
     });
   }
