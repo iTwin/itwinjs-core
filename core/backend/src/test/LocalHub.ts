@@ -37,7 +37,7 @@ interface LocalHubProps {
 
 interface LocksEntry {
   id: Id64String;
-  level: number;
+  level: LockState;
   lastCsIndex?: ChangesetIndex;
   briefcaseId?: BriefcaseId;
 }
@@ -459,7 +459,7 @@ export class LocalHub {
     });
   }
 
-  public queryAllLocks(briefcaseId: number) {
+  public queryAllLocks(briefcaseId: BriefcaseId) {
     this.getBriefcase(briefcaseId); // throws if briefcaseId invalid.
     const locks: LockProps[] = [];
     this.db.withPreparedSqliteStatement("SELECT id FROM locks WHERE briefcaseId=?", (stmt) => {
@@ -513,7 +513,7 @@ export class LocalHub {
       stmt.bindValue(3, wantShared ? undefined : briefcase.briefcaseId);
       const rc = stmt.step();
       if (rc !== DbResult.BE_SQLITE_DONE)
-        throw new Error("cannot insert lock");
+        throw new IModelError(rc, "cannot insert lock");
     });
 
     if (wantShared) {
@@ -522,7 +522,7 @@ export class LocalHub {
         stmt.bindInteger(2, briefcase.briefcaseId);
         const rc = stmt.step();
         if (rc !== DbResult.BE_SQLITE_DONE)
-          throw new Error("cannot insert shared lock");
+          throw new IModelError(rc, "cannot insert shared lock");
       });
     }
   }
@@ -532,7 +532,7 @@ export class LocalHub {
       stmt.bindId(1, id);
       const rc = stmt.step();
       if (rc !== DbResult.BE_SQLITE_DONE)
-        throw new Error("can't release lock");
+        throw new IModelError(rc, "can't release lock");
     });
   }
 
@@ -545,7 +545,7 @@ export class LocalHub {
       stmt.bindId(2, id);
       const rc = stmt.step();
       if (rc !== DbResult.BE_SQLITE_DONE)
-        throw new Error("can't update lock changeSetId");
+        throw new IModelError(rc, "can't update lock changeSetId");
     });
   }
 
@@ -587,7 +587,7 @@ export class LocalHub {
       stmt.bindInteger(2, briefcaseId);
       const rc = stmt.step();
       if (rc !== DbResult.BE_SQLITE_DONE)
-        throw new Error("can't remove shared lock");
+        throw new IModelError(rc, "can't remove shared lock");
     });
   }
 
