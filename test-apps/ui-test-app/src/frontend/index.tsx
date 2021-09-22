@@ -658,12 +658,7 @@ const baseOidcScopes = [
   "email",
   "profile",
   "organization",
-  "imodelhub",
-  "context-registry-service:read-only",
-  "product-settings-service",
-  "projectwise-share",
-  "urlps-third-party",
-  "imodel-extension-service-api",
+  "itwinjs",
 ];
 
 // main entry point.
@@ -708,7 +703,7 @@ async function main() {
       authConfig: {
         clientId: "imodeljs-spa-test",
         redirectUri: "http://localhost:3000/signin-callback",
-        scope: baseOidcScopes.concat("imodeljs-router").join(" "),
+        scope: baseOidcScopes.join(" "),
         responseType: "code",
       },
     },
