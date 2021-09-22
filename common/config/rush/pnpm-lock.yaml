@@ -3844,7 +3844,6 @@ importers:
       '@bentley/eslint-plugin': workspace:*
       '@microsoft/api-extractor': 7.7.3
       '@types/node': 10.14.1
-      chai: ^4.1.2
       chalk: ^3.0.0
       cpx: ^1.5.0
       cross-spawn: ^7.0.1
@@ -3856,7 +3855,6 @@ importers:
       recursive-readdir: ^2.2.2
       rimraf: ^3.0.2
       tree-kill: ^1.2.0
-      ts-node: ^7.0.1
       tsconfig-paths: ^3.3.2
       typedoc: ^0.16.8
       typedoc-plugin-external-module-name: 3.0.0
@@ -3865,7 +3863,6 @@ importers:
       yargs: ^16.0.0
     dependencies:
       '@microsoft/api-extractor': 7.7.3
-      chai: 4.3.4
       chalk: 3.0.0
       cpx: 1.5.0
       cross-spawn: 7.0.3
@@ -3876,7 +3873,6 @@ importers:
       recursive-readdir: 2.2.2
       rimraf: 3.0.2
       tree-kill: 1.2.2
-      ts-node: 7.0.1
       tsconfig-paths: 3.11.0
       typedoc: 0.16.11
       typedoc-plugin-external-module-name: 3.0.0_typedoc@0.16.11
@@ -9660,6 +9656,7 @@ packages:
   /arrify/1.0.1:
     resolution: {integrity: sha1-iYUI2iIm84DfkEcoRWhJwVAaSw0=}
     engines: {node: '>=0.10.0'}
+    dev: true
 
   /arrify/2.0.1:
     resolution: {integrity: sha512-3duEwti880xqi4eAMN8AyR4a0ByT90zoYdLlevfrvU43vb0YZwZVfxOgxWrLXXXpyugL0hNZc9G6BiB5B3nUug==}
@@ -21760,6 +21757,7 @@ packages:
       mkdirp: 0.5.5
       source-map-support: 0.5.20
       yn: 2.0.0
+    dev: true
 
   /ts-pnp/1.2.0_typescript@4.3.5:
     resolution: {integrity: sha512-csd+vJOb/gkzvcCHgTGSChYpy5f1/XKNsmvBGO4JXS+z1v2HobugDz4s1IeFXM3wZB44uczs+eazB5Q/ccdhQw==}
@@ -23114,6 +23112,7 @@ packages:
   /yn/2.0.0:
     resolution: {integrity: sha1-5a2ryKz0CPY4X8dklWhMiOavaJo=}
     engines: {node: '>=4'}
+    dev: true
 
   /yocto-queue/0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}

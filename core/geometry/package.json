@@ -11,7 +11,7 @@
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json ./src/test/output",
     "watch": "tsc --watch",
-    "test": "betools test",
+    "test": "mocha",
     "extract-api": "betools extract-api --entry=geometry-core",
     "extract-api-test": "betools extract-api --entry=geometry-core",
     "docs": "betools docs --tsIndexFile=./geometry-core.ts --json=../../generated-docs/core/geometry-core/file.json --onlyJson",
