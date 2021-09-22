@@ -21,6 +21,8 @@ exports[`FloatingWidget should render 1`] = `
       />
       <div
         class="nz-widget-tab nz-active nz-first nz-last"
+        data-item-id="t1"
+        data-item-type="widget-tab"
         role="tab"
         title=""
       >
@@ -104,6 +106,8 @@ exports[`FloatingWidget should render dragged 1`] = `
       />
       <div
         class="nz-widget-tab nz-active nz-minimized nz-first nz-last"
+        data-item-id="t1"
+        data-item-type="widget-tab"
         role="tab"
         title=""
       >
@@ -187,6 +191,8 @@ exports[`FloatingWidget should render minimized 1`] = `
       />
       <div
         class="nz-widget-tab nz-active nz-minimized nz-first nz-last"
+        data-item-id="t1"
+        data-item-type="widget-tab"
         role="tab"
         title=""
       >

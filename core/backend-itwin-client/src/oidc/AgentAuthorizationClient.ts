@@ -6,14 +6,11 @@
  * @module Authentication
  */
 
-import { AuthStatus, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
 import { decode } from "jsonwebtoken";
 import { GrantBody, TokenSet } from "openid-client";
-import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
+import { AuthStatus, BentleyError } from "@bentley/bentleyjs-core";
+import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
 import { BackendAuthorizationClient, BackendAuthorizationClientConfiguration } from "./BackendAuthorizationClient";
-
-const loggerCategory = BackendITwinClientLoggerCategory.Authorization;
 
 /**
  * Configuration of clients for agent or service applications.
@@ -40,7 +37,7 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
     super(agentConfiguration);
   }
 
-  private async generateAccessToken(requestContext: ClientRequestContext): Promise<AccessToken> {
+  private async generateAccessToken(): Promise<AccessToken> {
     const scope = this._configuration.scope;
     if (scope.includes("openid") || scope.includes("email") || scope.includes("profile") || scope.includes("organization"))
       throw new BentleyError(AuthStatus.Error, "Scopes for an Agent cannot include 'openid email profile organization'");
@@ -51,11 +48,11 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
     };
 
     let tokenSet: TokenSet;
-    const client = await this.getClient(requestContext);
+    const client = await this.getClient();
     try {
       tokenSet = await client.grant(grantParams);
-    } catch (error) {
-      throw new BentleyError(AuthStatus.Error, error.message || "Authorization error", Logger.logError, loggerCategory, () => ({ error: error.error, message: error.message }));
+    } catch (error: any) {
+      throw new BentleyError(AuthStatus.Error, error.message || "Authorization error", () => ({ error: error.error, message: error.message }));
     }
 
     const userProfile = tokenSet.access_token
@@ -69,17 +66,15 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
    * Get the access token
    * @deprecated Use [[AgentAuthorizationClient.getAccessToken]] instead.
    */
-  public async getToken(requestContext: ClientRequestContext): Promise<AccessToken> {
-    return this.generateAccessToken(requestContext);
+  public async getToken(): Promise<AccessToken> {
+    return this.generateAccessToken();
   }
 
   /**
    * Refresh the access token - simply checks if the token is still valid before re-fetching a new access token
    * @deprecated Use [[AgentAuthorizationClient.getAccessToken]] instead to always get a valid token.
    */
-  public async refreshToken(requestContext: ClientRequestContext, jwt: AccessToken): Promise<AccessToken> {
-    requestContext.enter();
-
+  public async refreshToken(jwt: AccessToken): Promise<AccessToken> {
     // Refresh 1 minute before expiry
     const expiresAt = jwt.getExpiresAt();
     if (!expiresAt)
@@ -87,7 +82,7 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
     if (expiresAt.getTime() - Date.now() > 1 * 60 * 1000)
       return jwt;
 
-    this._accessToken = await this.generateAccessToken(requestContext);
+    this._accessToken = await this.generateAccessToken();
     return this._accessToken;
   }
 
@@ -119,9 +114,9 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
   /** Returns a promise that resolves to the AccessToken of the currently authorized client.
    * The token is refreshed if necessary.
    */
-  public async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken> {
+  public async getAccessToken(): Promise<AccessToken> {
     if (this.isAuthorized)
       return this._accessToken!;
-    return this.generateAccessToken(requestContext || new ClientRequestContext());
+    return this.generateAccessToken();
   }
 }

@@ -14,6 +14,26 @@ The following dependencies of iTwin.js have been updated;
 Removed TSLint support from `@bentley/build-tools`. If you're still using it, please switch to ESLint.
 Also removed legacy `.eslintrc.js` file from the same package. Instead, use `@bentley/eslint-plugin` and the `imodeljs-recommended` config included in it.
 
+## BentleyError constructor no longer logs
+
+In V2, the constructor of the base exception class [BentleyError]($bentleyjs-core) accepted 5 arguments, the last 3 being optional. Arguments 3 and 4 were for logging the exception in the constructor itself. That is a bad idea, since exceptions are often handled and recovered in `catch` statements, so there is no actual "problem" to report. In that case the message in the log is either misleading or just plain wrong. Also, code in `catch` statements always has more "context" about *why* the error may have happened than the lower level code that threw (e.g. "invalid Id" vs. "invalid MyHashClass Id") so log messages from callers can be more helpful than from callees. Since every thrown exception must be caught *somewhere*, logging should be done when exceptions are caught, not when they're thrown.
+
+The [BentleyError]($bentleyjs-core) constructor now accepts 3 arguments, the last argument (`getMetaData`) is optional. The previous `log` and `category` arguments were removed. If your code passed 5 arguments, remove the 3rd and 4th. If you previously passed 3 or 4 arguments, just leave the first two.
+
+## ClientRequestContext.current has been removed
+
+The class [ClientRequestContext]($bentleyjs-core) exists to identify RPC requests between a web frontend and a cloud backend. In V2, had a static (i.e. global) member called `current` whose purpose was to identify the *current request* for logging from the backend. The members of `ClientRequestContext` called `sessionId` and `activityId` were "magically" appended in log messages without the need for passing the current request context as an argument. That originally seemed like a good idea, but became hopelessly complicated as asynchronous code was introduced. That's because when async methods run, there can be many request contexts extant simultaneously. So, it became the job of all code that awaited an async function to accept an argument with a request context and call `.enter()` on it, to set the very global variable whose existence was solely to avoid having to have the argument in the first place! Needless to say, global variables and `async`s don't mix and the whole concept has been removed.
+
+If you have code that has something like this:
+
+```ts
+requestContext.enter();
+```
+
+you can simply delete it. If your function accepts a [ClientRequestContext]($bentleyjs-core) merely to call `enter` on it, consider refactoring your code to remove the argument.
+
+This change mostly affects backend code. For backend [RPC]($docs/learning/RpcInterface.md) implementations, all *unhandled* exceptions will automatically be logged along the appropriate `ClientRequestContext`. For this reason, it often preferable to throw an exception rather than logging an error and returning a status in code that may or may not be called from RPC.
+
 ## Viewport.zoomToElements improvements
 
 [Viewport.zoomToElements]($frontend) accepts any number of element Ids and fits the viewport to the union of their [Placement]($common)s. A handful of shortcomings of the previous implementation have been addressed:
@@ -305,11 +325,15 @@ In `3.0` changes have been made that changed the way this attribute is calculate
   });
   ```
 
-## Changes to GraphicBuilder
-
 It is no longer necessary to supply a [Viewport]($frontend) when creating a [GraphicBuilder]($frontend). Instead, you can supply to [RenderSystem.createGraphic]($frontend) a [CustomGraphicBuilderOptions]($frontend) containing a function that can compute the level of detail appropriate for the produced [RenderGraphic]($frontend).
 
-[GraphicBuilder]($frontend)'s properties are all now read-only - you can no longer change `placement`, `pickId`, `wantNormals`, or `wantEdges` after creating the builder. Previously, a caller could create a graphic builder, add some geometry, then modify any of these properties before adding more geometry, more often than not producing surprising results.
+## Changed return types
+
+The backend methods [IModelDb.saveFileProperty]($backend) and [IModelDb.deleteFileProperty]($backend) used to return a [DbResult]($bentleyjs-core). They now are `void`, and throw an exception if an error occurred. The error value can be retrieved in the `errorNumber` member of the exception object, if desired.
+
+## Signature change to backend Geocoordinate methods
+
+The two methods [IModelDb.getIModelCoordinatesFromGeoCoordinates]($backend) and [IModelDb.getGeoCoordinatesFromIModelCoordinates]($backend) used to take a string argument that was a stringified [IModelCoordinatesRequestProps]($common) and [GeoCoordinatesRequestProps]($common) respectively. Those arguments were changed to accept the interfaces directly. You should remove `JSON.stringify` from your code if you get compile errors.
 
 ## Removal of previously deprecated APIs
 
@@ -339,14 +363,19 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `Platform.isNodeJs`                                          | `ProcessDetector.isNodeProcess`                |
 | `SnapshotDb.filePath`                                        | `SnapshotDb.pathName`                          |
 | `StandaloneDb.filePath`                                      | `StandaloneDb.pathName`                        |
+| `Texture.width, height, flags`                               | *eliminated*                                   |
 | `TxnAction`                                                  | `TxnAction` in @bentley/imodeljs-common        |
+| `TxnChangedEntities.inserted, deleted, updated`              | `TxnChangedEntities.inserts, deletes, updates` |
 
 ### @bentley/imodeljs-common
 
 | Removed                                      | Replacement                                                    |
 | -------------------------------------------- | -------------------------------------------------------------- |
+| `BriefcaseTypes.DeprecatedStandalone`        | `BriefcaseTypes.Unassigned`                                    |
+| `BriefcaseTypes.Standalone`                  | `BriefcaseTypes.Unassigned`                                    |
 | `Code.getValue`                              | `Code.value`                                                   |
 | `CodeSpec.specScopeType`                     | `CodeSpec.scopeType`                                           |
+| `DisplayStyleSettings.excludedElements`      | `DisplayStyleSettings.excludedElementIds`                      |
 | `IModel.changeSetId`                         | `IModel.changeset.id`                                          |
 | `IModelVersion.evaluateChangeSet`            | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
 | `IModelVersion.fromJson`                     | `IModelVersion.fromJSON`                                       |
@@ -355,6 +384,8 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `IModelWriteRpcInterface`                    | Use IPC for writing to iModels                                 |
 | `LatAndLong`                                 | *eliminated*                                                   |
 | `LatLongAndHeight`                           | [CartographicProps]($common)                                   |
+| `TerrainSettings.locatable`                  | `BackgroundMapSettings.locatable`                              |
+| `TerrainSettingsProps.nonLocatable`          | `BackgroundMapProps.nonLocatable`                              |
 | `ViewFlagOverrides` class                    | [ViewFlagOverrides]($common) type                              |
 | `ViewFlagProps.edgeMask`                     | *eliminated*                                                   |
 | `ViewFlagProps.hlMatColors`                  | *eliminated*                                                   |
@@ -368,23 +399,49 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 
 ### @bentley/imodeljs-frontend
 
-| Removed                                | Replacement                                               |
-| -------------------------------------- | --------------------------------------------------------- |
-| `CheckpointConnection.open`            | `CheckpointConnection.openRemote`                         |
-| `DecorateContext.screenViewport`       | `DecorateContext.viewport`                                |
-| `IModelApp.iModelClient`               | `IModelHubFrontend.iModelClient`                          |
-| `IModelConnection.Models.loaded`       | use `for..of` to iterate and `getLoaded` to look up by Id |
-| `IModelConnection.Views.saveThumbnail` | use IPC and `IModelDb.saveThumbnail`                      |
-| `IOidcFrontendClient`                  | `FrontendAuthorizationClient`                             |
-| `isIOidcFrontendClient`                | `FrontendAuthorizationClient`                             |
-| `OidcBrowserClient`                    | `BrowserAuthorizationClient`                              |
-| `OidcFrontendClientConfiguration`      | `BrowserAuthorizationClientConfiguration`                 |
-| `RemoteBriefcaseConnection`            | `CheckpointConnection`                                    |
-| `ScreenViewport.decorationDiv`         | `DecorateContext.addHtmlDecoration`                       |
-| `UnitSystemKey`                        | Moved to `@bentley/imodeljs-quantity`                     |
-| `ViewManager.forEachViewport`          | Use a `for..of` loop                                      |
-| `ViewState3d.lookAtPerspectiveOrOrtho` | `ViewState3d.LookAt`                                      |
-| `ViewState3d.lookAtUsingLensAngle`     | `ViewState3d.lookAt`                                      |
+| Removed                                       | Replacement                                                        |
+| --------------------------------------------- | ------------------------------------------------------------------ |
+| `AppearanceOverrideProps`                     | [AppearanceOverrideProps]($common)                                 |
+| `AsyncMethodsOf`                              | [AsyncMethodsOf]($bentleyjs-core)                                  |
+| `AsyncFunction`                               | [AsyncFunction]($bentleyjs-core)                                   |
+| `EmphasizeElementsProps`                      | [EmphasizeElementsProps]($common)                                  |
+| `PromiseReturnType`                           | [PromiseReturnType]($bentleyjs-core)                               |
+| `CheckpointConnection.open`                   | `CheckpointConnection.openRemote`                                  |
+| `DecorateContext.screenViewport`              | `DecorateContext.viewport`                                         |
+| `FeatureOverrideType`                         | [FeatureOverrideType]($common)                                     |
+| `FeatureSymbology.Appearance`                 | [FeatureAppearance]($common)                                       |
+| `FeatureSymbology.AppearanceProps`            | [FeatureAppearanceProps]($common)                                  |
+| `findAvailableRealityModels`                  | `queryRealityData`                                                 |
+| `findAvailableUnattachedRealityModels`        | `queryRealityData`                                                 |
+| `IModelApp.iModelClient`                      | `IModelHubFrontend.iModelClient`                                   |
+| `IModelConnection.Models.loaded`              | use `for..of` to iterate and `getLoaded` to look up by Id          |
+| `IModelConnection.Views.saveThumbnail`        | use IPC and `IModelDb.saveThumbnail`                               |
+| `IOidcFrontendClient`                         | `FrontendAuthorizationClient`                                      |
+| `isIOidcFrontendClient`                       | `FrontendAuthorizationClient`                                      |
+| `OidcBrowserClient`                           | `BrowserAuthorizationClient`                                       |
+| `OidcFrontendClientConfiguration`             | `BrowserAuthorizationClientConfiguration`                          |
+| `QuantityFormatter.onActiveUnitSystemChanged` | [QuantityFormatter.onActiveFormattingUnitSystemChanged]($frontend) |
+| `QuantityFormatter.useImperialFormats`        | [QuantityFormatter.setActiveUnitSystem]($frontend)                 |
+| `RemoteBriefcaseConnection`                   | `CheckpointConnection`                                             |
+| `ScreenViewport.decorationDiv`                | `DecorateContext.addHtmlDecoration`                                |
+| `UnitSystemKey`                               | Moved to `@bentley/imodeljs-quantity`                              |
+| `ViewManager.forEachViewport`                 | Use a `for..of` loop                                               |
+| `ViewState3d.lookAtPerspectiveOrOrtho`        | `ViewState3d.LookAt`                                               |
+| `ViewState3d.lookAtUsingLensAngle`            | `ViewState3d.lookAt`                                               |
+| `Viewport.featureOverrideProvider`            | [Viewport.featureOverrideProviders]($frontend)                     |
+| `Viewport.setFlashed`                         | [Viewport.flashedId]($frontend)                                    |
+| `Viewport.setRedrawPending`                   | [Viewport.requestRedraw]($frontend)                                |
+
+### @bentley/geometry-core
+
+| Removed                                         | Replacement                                                |
+| ----------------------------------------------- | ---------------------------------------------------------- |
+| `BSplineCurve3dBase.createThroughPoints`        | `BSplineCurve3dBase.createFromInterpolationCurve3dOptions` |
+| `TransitionSpiralProps.curveLength`             | `TransitionSpiralProps.length`                             |
+| `TransitionSpiralProps.fractionInterval`        | `TransitionSpiralProps.activeFractionInterval`             |
+| `TransitionSpiralProps.intervalFractions`       | `TransitionSpiralProps.activeFractionInterval`             |
+| `InterpolationCurve3dOptions.isChordLenTangent` | `InterpolationCurve3dOptions.isChordLenTangents`           |
+| `Point3dArray.createRange`                      | `Range3d.createFromVariantData`                            |
 
 ### @bentley/backend-itwin-client
 
@@ -394,6 +451,12 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | ----------------------------------- | -------------------------------------------- |
 | `OidcDelegationClientConfiguration` | `DelegationAuthorizationClientConfiguration` |
 | `OidcDelegationClient`              | `DelegationAuthorizationClient`              |
+
+### @bentley/ui-abstract
+
+| Removed                             | Replacement                                  |
+| ----------------------------------- | -------------------------------------------- |
+| `ContentLayoutProps.priority`       | *eliminated*                                 |
 
 ### @bentley/ui-core
 
@@ -405,55 +468,68 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @bentley/ui-components
 
-| Removed                                                     | Replacement                                                                                                                   |
-| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `hasFlag`                                                   | `hasSelectionModeFlag` in @bentley/ui-components                                                                              |
-| `StandardEditorNames`                                       | `StandardEditorNames` in @bentley/ui-abstract                                                                                 |
-| `StandardTypeConverterTypeNames`                            | `StandardTypeNames` in @bentley/ui-abstract                                                                                   |
-| `StandardTypeNames`                                         | `StandardTypeNames` in @bentley/ui-abstract                                                                                   |
-| `Timeline`                                                  | `TimelineComponent` in @bentley/ui-components                                                                                 |
-| `ControlledTreeProps.treeEvents`                            | `ControlledTreeProps.eventsHandler`                                                                                           |
-| `ControlledTreeProps.visibleNodes`                          | `ControlledTreeProps.model`                                                                                                   |
-| `MutableTreeModel.computeVisibleNodes`                      | `computeVisibleNodes` in @bentley/ui-components                                                                               |
-| `TreeModelSource.getVisibleNodes`                           | memoized result of `computeVisibleNodes`                                                                                      |
-| `useVisibleTreeNodes`                                       | `useTreeModel` and `computeVisibleNodes`                                                                                      |
-| `SignIn`                                                    | *eliminated*                                                                                                                  |
-| All drag & drop related APIs                                | Third party components. E.g. see this [example](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=drag-and-drop) |
-| `DEPRECATED_Tree`, `BeInspireTree` and related APIs         | `ControlledTree`                                                                                                              |
-| `PropertyValueRendererContext.decoratedTextElement`         | `IPropertyValueRenderer` that can properly render a `PropertyRecord`                                                          |
-| `CommonPropertyGridProps.onPropertyLinkClick`               | `PropertyRecord.links.onClick`                                                                                                |
-| `onPropertyLinkClick` prop in `usePropertyData`             | `PropertyRecord.links.onClick`                                                                                                |
-| `onPropertyLinkClick` prop in `usePropertyGridModelSource`  | `PropertyRecord.links.onClick`                                                                                                |
-| `FilteringInputProps.filteringInProgress`                   | `FilteringInputProps.status`                                                                                                  |
-| `hasLinks`                                                  | `!!PropertyRecord.links?.length`                                                                                              |
-| `PropertyListProps.onListWidthChanged`                      | Width is now passed to `PropertyList` through `PropertyListProps.width` prop                                                  |
+| Removed                                                    | Replacement                                                                                                                   |
+| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `hasFlag`                                                  | `hasSelectionModeFlag` in @bentley/ui-components                                                                              |
+| `StandardEditorNames`                                      | `StandardEditorNames` in @bentley/ui-abstract                                                                                 |
+| `StandardTypeConverterTypeNames`                           | `StandardTypeNames` in @bentley/ui-abstract                                                                                   |
+| `StandardTypeNames`                                        | `StandardTypeNames` in @bentley/ui-abstract                                                                                   |
+| `Timeline`                                                 | `TimelineComponent` in @bentley/ui-components                                                                                 |
+| `ControlledTreeProps.treeEvents`                           | `ControlledTreeProps.eventsHandler`                                                                                           |
+| `ControlledTreeProps.visibleNodes`                         | `ControlledTreeProps.model`                                                                                                   |
+| `MutableTreeModel.computeVisibleNodes`                     | `computeVisibleNodes` in @bentley/ui-components                                                                               |
+| `TreeModelSource.getVisibleNodes`                          | memoized result of `computeVisibleNodes`                                                                                      |
+| `useVisibleTreeNodes`                                      | `useTreeModel` and `computeVisibleNodes`                                                                                      |
+| `SignIn`                                                   | *eliminated*                                                                                                                  |
+| All drag & drop related APIs                               | Third party components. E.g. see this [example](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=drag-and-drop) |
+| `DEPRECATED_Tree`, `BeInspireTree` and related APIs        | `ControlledTree`                                                                                                              |
+| `PropertyValueRendererContext.decoratedTextElement`        | `IPropertyValueRenderer` that can properly render a `PropertyRecord`                                                          |
+| `CommonPropertyGridProps.onPropertyLinkClick`              | `PropertyRecord.links.onClick`                                                                                                |
+| `onPropertyLinkClick` prop in `usePropertyData`            | `PropertyRecord.links.onClick`                                                                                                |
+| `onPropertyLinkClick` prop in `usePropertyGridModelSource` | `PropertyRecord.links.onClick`                                                                                                |
+| `FilteringInputProps.filteringInProgress`                  | `FilteringInputProps.status`                                                                                                  |
+| `hasLinks`                                                 | `!!PropertyRecord.links?.length`                                                                                              |
+| `PropertyListProps.onListWidthChanged`                     | Width is now passed to `PropertyList` through `PropertyListProps.width` prop                                                  |
 
 ### @bentley/ui-framework
 
-| Removed                                 | Replacement                                                                                                                   |
-| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `COLOR_THEME_DEFAULT`                   | `SYSTEM_PREFERRED_COLOR_THEME` in @bentley/ui-framework is used as default color theme                                        |
-| `FunctionKey`                           | `FunctionKey` in @bentley/ui-abstract                                                                                         |
-| `IModelAppUiSettings`                   | `UserSettingsStorage` in @bentley/ui-framework                                                                                |
-| `reactElement` in ContentControl        | `ContentControl.reactNode`                                                                                                    |
-| `reactElement` in NavigationAidControl  | `NavigationAidControl.reactNode`                                                                                              |
-| `reactElement` in NavigationWidgetDef   | `NavigationWidgetDef.reactNode`                                                                                               |
-| `reactElement` in ToolWidgetDef         | `ToolWidgetDef.reactNode`                                                                                                     |
-| `reactElement` in WidgetControl         | `WidgetControl.reactNode`                                                                                                     |
-| `reactElement` in WidgetDef             | `WidgetDef.reactNode`                                                                                                         |
-| `ReactMessage`                          | `ReactMessage` in @bentley/ui-core                                                                                            |
-| `SpecialKey`                            | `SpecialKey` in @bentley/ui-abstract                                                                                          |
-| `WidgetState`                           | `WidgetState` in @bentley/ui-abstract                                                                                         |
-| `UserProfileBackstageItem`              | *eliminated*                                                                                                                  |
-| `SignIn`                                | *eliminated*                                                                                                                  |
-| `SignOutModalFrontstage`                | *eliminated*                                                                                                                  |
-| `IModelConnectedCategoryTree`           | *eliminated*                                                                                                                  |
-| `IModelConnectedModelsTree`             | *eliminated*                                                                                                                  |
-| `IModelConnectedSpatialContainmentTree` | *eliminated*                                                                                                                  |
-| `CategoryTreeWithSearchBox`             | *eliminated*                                                                                                                  |
-| `VisibilityComponent`                   | `TreeWidgetComponent` in @bentley/tree-widget-react                                                                           |
-| `VisibilityWidget`                      | `TreeWidgetControl` in @bentley/tree-widget-react                                                                             |
-| All drag & drop related APIs            | Third party components. E.g. see this [example](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=drag-and-drop) |
+| Removed                                   | Replacement                                                                                                                   |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `COLOR_THEME_DEFAULT`                     | `SYSTEM_PREFERRED_COLOR_THEME` in @bentley/ui-framework is used as default color theme                                        |
+| `FunctionKey`                             | `FunctionKey` in @bentley/ui-abstract                                                                                         |
+| `IModelAppUiSettings`                     | `UserSettingsStorage` in @bentley/ui-framework
+| `ConfigurableUiManager.findFrontstageDef` | `FrontstageManager.findFrontstageDef`
+| `ConfigurableUiManager.loadContentGroup`  | *eliminated*
+| `ConfigurableUiManager.loadContentGroups` | *eliminated*
+| `ConfigurableUiManager.loadContentLayout` | *eliminated*
+| `ConfigurableUiManager.loadContentLayouts`| *eliminated*
+| `ContentGroupManager`                     | *eliminated*
+| `Frontstage.initializeFrontstageDef`      | `FrontstageManager.getFrontstageDef` (async method)
+| `Frontstage.findFrontstageDef`            | `FrontstageManager.getFrontstageDef` (async method)
+| `Frontstage.initializeFromProvider`       | `Frontstage.create` (async method)
+| `FrontstageProps.defaultLayout`           | `ContentGroup` now holds the layout information.
+| `FrontstageProvider.initializeDef`        | *eliminated*
+| `FrontstageProvider.frontstageDef`        | `FrontstageManager.getFrontstageDef` (async method)
+| `reactElement` in ContentControl          | `ContentControl.reactNode`                                                                                                    |
+| `reactElement` in NavigationAidControl    | `NavigationAidControl.reactNode`                                                                                              |
+| `reactElement` in NavigationWidgetDef     | `NavigationWidgetDef.reactNode`                                                                                               |
+| `reactElement` in ToolWidgetDef           | `ToolWidgetDef.reactNode`                                                                                                     |
+| `reactElement` in WidgetControl           | `WidgetControl.reactNode`                                                                                                     |
+| `reactElement` in WidgetDef               | `WidgetDef.reactNode`                                                                                                         |
+| `ReactMessage`                            | `ReactMessage` in @bentley/ui-core                                                                                            |
+| `SpecialKey`                              | `SpecialKey` in @bentley/ui-abstract                                                                                          |
+| `WidgetState`                             | `WidgetState` in @bentley/ui-abstract                                                                                         |
+| `UserProfileBackstageItem`                | *eliminated*                                                                                                                  |
+| `SignIn`                                  | *eliminated*                                                                                                                  |
+| `SignOutModalFrontstage`                  | *eliminated*                                                                                                                  |
+| `IModelConnectedCategoryTree`             | *eliminated*                                                                                                                  |
+| `IModelConnectedModelsTree`               | *eliminated*                                                                                                                  |
+| `IModelConnectedSpatialContainmentTree`   | *eliminated*                                                                                                                  |
+| `CategoryTreeWithSearchBox`               | *eliminated*                                                                                                                  |
+| `VisibilityComponent`                     | `TreeWidgetComponent` in @bentley/tree-widget-react                                                                           |
+| `VisibilityWidget`                        | `TreeWidgetControl` in @bentley/tree-widget-react
+| `ContentLayoutProps`                      | `ContentLayoutProps` in @bentley/ui-abstract                                                                               |
+| All drag & drop related APIs              | Third party components. E.g. see this [example](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=drag-and-drop) |
 
 ### @bentley/bentleyjs-core
 
@@ -551,29 +627,32 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @bentley/ecschema-metadata
 
-| Removed                         | Replacement                                                  |
-| ------------------------------- | ------------------------------------------------------------ |
-| `IDiagnostic`                   | `IDiagnostic` in @bentley/ecschema-editing                   |
-| `BaseDiagnostic`                | `BaseDiagnostic` in @bentley/ecschema-editing                |
-| `DiagnosticType`                | `DiagnosticType` in @bentley/ecschema-editing                |
-| `DiagnosticCategory`            | `DiagnosticCategory` in @bentley/ecschema-editing            |
-| `DiagnosticCodes`               | `DiagnosticCodes` in @bentley/ecschema-editing               |
-| `Diagnostics`                   | `Diagnostics` in @bentley/ecschema-editing                   |
-| `IDiagnosticReporter`           | `IDiagnosticReporter` in @bentley/ecschema-editing           |
-| `SuppressionDiagnosticReporter` | `SuppressionDiagnosticReporter` in @bentley/ecschema-editing |
-| `FormatDiagnosticReporter`      | `FormatDiagnosticReporter` in @bentley/ecschema-editing      |
-| `LoggingDiagnosticReporter`     | `LoggingDiagnosticReporter` in @bentley/ecschema-editing     |
-| `IRuleSet`                      | `IRuleSet` in @bentley/ecschema-editing                      |
-| `ECRuleSet`                     | `ECRuleSet` in @bentley/ecschema-editing                     |
-| `ISuppressionRule`              | `ISuppressionRule` in @bentley/ecschema-editing              |
-| `BaseSuppressionRule`           | `BaseSuppressionRule` in @bentley/ecschema-editing           |
-| `IRuleSuppressionMap`           | `IRuleSuppressionMap` in @bentley/ecschema-editing           |
-| `BaseRuleSuppressionMap`        | `BaseRuleSuppressionMap` in @bentley/ecschema-editing        |
-| `IRuleSuppressionSet`           | `IRuleSuppressionSet` in @bentley/ecschema-editing           |
-| `SchemaCompareCodes`            | `SchemaCompareCodes` in @bentley/ecschema-editing            |
-| `SchemaCompareDiagnostics`      | `SchemaCompareDiagnostics` in @bentley/ecschema-editing      |
-| `SchemaValidater`               | `SchemaValidater` in @bentley/ecschema-editing               |
-| `SchemaValidationVisitor`       | `SchemaValidationVisitor` in @bentley/ecschema-editing       |
+| Removed                                  | Replacement                                                  |
+| -----------------------------------------| ------------------------------------------------------------ |
+| `IDiagnostic`                            | `IDiagnostic` in @bentley/ecschema-editing                   |
+| `BaseDiagnostic`                         | `BaseDiagnostic` in @bentley/ecschema-editing                |
+| `DiagnosticType`                         | `DiagnosticType` in @bentley/ecschema-editing                |
+| `DiagnosticCategory`                     | `DiagnosticCategory` in @bentley/ecschema-editing            |
+| `DiagnosticCodes`                        | `DiagnosticCodes` in @bentley/ecschema-editing               |
+| `Diagnostics`                            | `Diagnostics` in @bentley/ecschema-editing                   |
+| `IDiagnosticReporter`                    | `IDiagnosticReporter` in @bentley/ecschema-editing           |
+| `SuppressionDiagnosticReporter`          | `SuppressionDiagnosticReporter` in @bentley/ecschema-editing |
+| `FormatDiagnosticReporter`               | `FormatDiagnosticReporter` in @bentley/ecschema-editing      |
+| `LoggingDiagnosticReporter`              | `LoggingDiagnosticReporter` in @bentley/ecschema-editing     |
+| `IRuleSet`                               | `IRuleSet` in @bentley/ecschema-editing                      |
+| `ECRuleSet`                              | `ECRuleSet` in @bentley/ecschema-editing                     |
+| `ISuppressionRule`                       | `ISuppressionRule` in @bentley/ecschema-editing              |
+| `BaseSuppressionRule`                    | `BaseSuppressionRule` in @bentley/ecschema-editing           |
+| `IRuleSuppressionMap`                    | `IRuleSuppressionMap` in @bentley/ecschema-editing           |
+| `BaseRuleSuppressionMap`                 | `BaseRuleSuppressionMap` in @bentley/ecschema-editing        |
+| `IRuleSuppressionSet`                    | `IRuleSuppressionSet` in @bentley/ecschema-editing           |
+| `SchemaCompareCodes`                     | `SchemaCompareCodes` in @bentley/ecschema-editing            |
+| `SchemaCompareDiagnostics`               | `SchemaCompareDiagnostics` in @bentley/ecschema-editing      |
+| `SchemaValidater`                        | `SchemaValidater` in @bentley/ecschema-editing               |
+| `SchemaValidationVisitor`                | `SchemaValidationVisitor` in @bentley/ecschema-editing       |
+| `RelationshipConstraint.deserialize`     | `RelationshipConstraint.fromJSON`                   |
+| `RelationshipConstraint.deserializeSync` | `RelationshipConstraint.fromJSONSync`               |
+| `RelationshipConstraint.toJson`          | `RelationshipConstraint.toJSON`                     |
 
 <!---
 User Interface Changes - section to comment below
@@ -589,6 +668,19 @@ A new @bentley/ui-imodel-components package has been added and contains items re
 The @bentley/ui-* and @bentley/presentation-components packages are now dependent on React version 17. **Applications using the ui packages must update to React 17.** Details about React version 17 can be found in the [React Blog](https://reactjs.org/blog/2020/10/20/react-v17.html).
 
 For migration purposes, React 16 is included in the peerDependencies for the packages. React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
+
+### New options for defining Frontstages
+
+| Class/Component                                        | Description                                                                                        |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------|
+| [StandardFrontstageProvider]($ui-framework)            | Frontstage provider that provides an 'empty' stage that is to be populated via UiItemsProviders.   |
+| [StandardContentToolsProvider]($ui-framework)          | UiItemsProvider that will add common tool entries to Tool Widget.                                  |
+| [StandardNavigationToolsProvider]($ui-framework)       | UiItemsProvider that will add common view tool entries to Navigation Widget.                       |
+| [StandardStatusbarItemsProvider]($ui-framework)        | UiItemsProvider that will add common statusbar items.                                              |
+| [ContentToolWidgetComposer]($ui-framework)             | Provides an empty Tool Widget that is to be populate via UiItemsProviders.                         |
+| [ViewToolWidgetComposer]($ui-framework)                | Provides an empty Navigation Widget that is to be populate via UiItemsProviders.                   |
+| [StandardContentLayouts]($ui-abstract)                 | Provides standard view layouts that can be used when defining a ContentGroup.                      |
+| [ContentGroupProvider]($ui-framework)                  | Class that generates a ContentGroup at runtime when the frontstageDef is being constructed.        |
 
 ### New Timeline Date Marker
 

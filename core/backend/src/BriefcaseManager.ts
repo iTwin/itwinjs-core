@@ -152,7 +152,7 @@ export class BriefcaseManager {
             const fileName = path.join(bcPath, briefcaseName);
             const fileSize = IModelJsFs.lstatSync(fileName)?.size ?? 0;
             const db = IModelDb.openDgnDb({ path: fileName }, OpenMode.Readonly);
-            briefcaseList.push({ fileName, iTwinId: db.queryProjectGuid(), iModelId: db.getDbGuid(), briefcaseId: db.getBriefcaseId(), changeset: db.getParentChangeset(), fileSize });
+            briefcaseList.push({ fileName, iTwinId: db.getITwinId(), iModelId: db.getIModelId(), briefcaseId: db.getBriefcaseId(), changeset: db.getCurrentChangeset(), fileSize });
             db.closeIModel();
           } catch (_err) {
           }
@@ -233,7 +233,7 @@ export class BriefcaseManager {
     }
     try {
       nativeDb.resetBriefcaseId(briefcaseId);
-      if (nativeDb.getParentChangeset().id !== checkpoint.changeset.id)
+      if (nativeDb.getCurrentChangeset().id !== checkpoint.changeset.id)
         throw new IModelError(IModelStatus.InvalidId, `Downloaded briefcase has wrong changesetId: ${fileName}`);
     } finally {
       nativeDb.saveChanges();
@@ -270,7 +270,7 @@ export class BriefcaseManager {
     try {
       const db = IModelDb.openDgnDb({ path: filePath }, OpenMode.Readonly);
       const briefcase: BriefcaseProps = {
-        iModelId: db.getDbGuid(),
+        iModelId: db.getIModelId(),
         briefcaseId: db.getBriefcaseId(),
       };
       db.closeIModel();
@@ -378,7 +378,7 @@ export class BriefcaseManager {
 
     // eslint-disable-next-line deprecation/deprecation
     db.nativeDb.applyChangeset(changesetFile, reverse ? ChangeSetApplyOption.Reverse : ChangeSetApplyOption.Merge);
-    db.changeset = db.nativeDb.getParentChangeset();
+    db.changeset = db.nativeDb.getCurrentChangeset();
 
     // we're done with this changeset, delete it
     IModelJsFs.removeSync(changesetFile.pathname);
@@ -437,7 +437,7 @@ export class BriefcaseManager {
 
         const index = await IModelHost.hubAccess.pushChangeset({ user: arg.user, iModelId: db.iModelId, changesetProps });
         db.nativeDb.completeCreateChangeset({ index });
-        db.changeset = db.nativeDb.getParentChangeset();
+        db.changeset = db.nativeDb.getCurrentChangeset();
         if (!arg.retainLocks)
           await IModelHost.hubAccess.releaseAllLocks(db);
 

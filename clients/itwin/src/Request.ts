@@ -154,7 +154,7 @@ export class ResponseError extends BentleyError {
   public status?: number;
   public description?: string;
   public constructor(errorNumber: number | HttpStatus, message?: string, getMetaData?: GetMetaDataFunction) {
-    super(errorNumber, message, undefined, undefined, getMetaData);
+    super(errorNumber, message, getMetaData);
   }
 
   /**
@@ -243,7 +243,7 @@ export class ResponseError extends BentleyError {
    * @internal
    */
   public log(): void {
-    Logger.logError(loggerCategory, this.logMessage(), this.getMetaData());
+    Logger.logError(loggerCategory, this.logMessage(), () => this.getMetaData());
   }
 }
 
@@ -271,7 +271,6 @@ const logRequest = (req: sarequest.SuperAgentRequest): sarequest.SuperAgentReque
  * @internal
  */
 export async function request(requestContext: ClientRequestContext, url: string, options: RequestOptions): Promise<Response> {
-  requestContext.enter();
   if (!RequestGlobalOptions.online) {
     throw new ResponseError(503, "Service unavailable");
   }

@@ -92,26 +92,30 @@ export class TableContent extends ContentControl {
 
 When defining Content Groups, the [ContentProps]($ui-framework) and [ContentGroupProps]($ui-framework) interfaces and [ContentGroup]($ui-framework) class are used.
 
-The following shows a sample Content Group with a single entry that references the ViewportContent defined above. The Content Group is loaded and registered into ConfigurableUiManager and can be referenced by its id by any Frontstage.
+The following shows a sample Content Group with a single entry that references the ViewportContent defined above. The Content Group is specified by frontstage the uses it. The Content Group define how the different contents are to be presented to the user in the group's `layout` property.
 
 ```ts
 const one2dIModelViewport: ContentGroupProps = {
   id: "one2dIModelViewport",
+  layout: StandardContentLayouts.singleView,
+
   contents: [
     {
+      id: "main-view"
       classId: ViewportContent,
     },
   ],
 };
 
 const contentGroup = new ContentGroup(one2dIModelViewport);
-ConfigurableUiManager.loadContentGroup(contentGroup);
 ```
 
 The following shows a sample with two entries that reference the ViewportContent and TableContent defined above. `applicationData` is defined for each content control, which is provided to the ContentControl constructor via the `options` parameter.
 
 ```ts
 contentGroup = new ContentGroup({
+  id: "myApp:IModelWithTable",
+  layout: StandardContentLayouts.twoHorizontalSplit,
   contents: [
     {
       classId: ViewportContent,
@@ -132,9 +136,13 @@ contentGroup = new ContentGroup({
 });
 ```
 
-## Defining Content Layouts
+### Content Group Provider
 
-When defining Content Layouts, the [ContentLayoutProps]($ui-framework) interface and [ContentLayoutDef]($ui-framework) class are used. The ContentLayoutDef can be referenced directly by a Frontstage or it may be registered and referenced by id. The Content Layout uses index numbers to reference content within a Content Group. Both the Content Layout and the Content Group are provided as properties to a Frontstage.
+A frontstage may either specify a 'static' ContentGroup or it may specify a [ContentGroupProvider]($ui-framework) instance that will construct a ContentGroup when the FrontstageDef is being created the first time a stage is activated. This allows the user to potentially generate a ContentGroup based on state that was saved the last time the user opened the stage in a specific imodel.
+
+## Content Layouts
+
+Standard Content Layouts are provided via the class [StandardContentLayouts]($ui-abstract). Users may also provide custom layouts using the  [ContentLayoutProps]($ui-abstract) interface. The layout is referenced by a ContentGroup within a Frontstage.
 
 ### A single view
 

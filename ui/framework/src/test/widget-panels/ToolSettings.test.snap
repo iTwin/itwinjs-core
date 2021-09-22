@@ -7,9 +7,11 @@ exports[`ToolSettingsContent should render (Floating Widget mode) 1`] = `
 >
   <div
     class="uifw-floating-toolsettings-container"
+    data-toolsettings-provider="ToolUiProviderMock[test]"
   >
     <div
       class="nz-widget-content"
+      data-item-type="widget-content"
     >
       <div>
         Hello World
@@ -19,23 +21,10 @@ exports[`ToolSettingsContent should render (Floating Widget mode) 1`] = `
 </div>
 `;
 
-exports[`ToolSettingsContent should render 1`] = `
-<div
-  class="uifw-floating-toolsettings-container"
->
-  <div
-    class="nz-widget-content"
-  >
-    <div>
-      Hello World
-    </div>
-  </div>
-</div>
-`;
-
 exports[`ToolSettingsDockedContent should render settings 1`] = `
 <div
   class="nz-toolSettings-docked"
+  data-toolsettings-provider="ToolUiProviderMock[test]"
 >
   <div
     class="nz-toolSettings-handle"
@@ -106,6 +95,7 @@ exports[`WidgetPanelsToolSettings should not render w/o tool settings top center
 exports[`WidgetPanelsToolSettings should render 1`] = `
 <div
   class="nz-toolSettings-docked"
+  data-toolsettings-provider="none"
 >
   <div
     class="nz-toolSettings-handle"

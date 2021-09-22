@@ -12,6 +12,6 @@ import { Client } from "./Client";
 export class ImsAuthorizationClient extends Client {
   public constructor() {
     super();
-    this.baseUrl = process.env.IMJS_ITWIN_PLATFORM_AUTHORITY;
+    this.baseUrl = process.env.IMJS_ITWIN_PLATFORM_AUTHORITY ?? "https://ims.bentley.com";
   }
 }

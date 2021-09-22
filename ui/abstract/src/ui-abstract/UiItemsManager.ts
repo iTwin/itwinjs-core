@@ -34,16 +34,16 @@ export interface UiItemsProvider {
   readonly id: string;
 
   /** UiItemsManager calls following method to get items to populate specific toolbars */
-  provideToolbarButtonItems?: (stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => CommonToolbarItem[];
+  provideToolbarButtonItems?: (stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any) => CommonToolbarItem[];
   /** UiItemsManager calls following method to augment base statusbar for stages that allow it. */
-  provideStatusBarItems?: (stageId: string, stageUsage: string) => CommonStatusBarItem[];
+  provideStatusBarItems?: (stageId: string, stageUsage: string, stageAppData?: any) => CommonStatusBarItem[];
   /** UiItemsManager calls following method to augment backstage items. */
   provideBackstageItems?: () => BackstageItem[];
   /** UiItemsManager calls following method to augment Widget lists.
    * @note Returned widgets must provide unique `AbstractWidgetProps["id"]` to correctly save/restore App layout.
    */
   provideWidgets?: (stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection,
-    zoneLocation?: AbstractZoneLocation) => ReadonlyArray<AbstractWidgetProps>;
+    zoneLocation?: AbstractZoneLocation, stageAppData?: any) => ReadonlyArray<AbstractWidgetProps>;
   /** Called if the application changed the Toolbar button item */
   onToolbarButtonItemArbiterChange?: (item: CommonToolbarItem, action: UiItemsApplicationAction) => void;
   /** Called if the application changed the StatusBar item */
@@ -129,7 +129,8 @@ export class UiItemsManager {
    * @param toolbarOrientation orientation of the toolbar
    * @returns an array of error messages. The array will be empty if the load is successful, otherwise it is a list of one or more problems.
    */
-  public static getToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
+  public static getToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage,
+    toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[] {
     const buttonItems: CommonToolbarItem[] = [];
     if (0 === UiItemsManager._registeredUiItemsProviders.size)
       return buttonItems;
@@ -137,7 +138,7 @@ export class UiItemsManager {
     UiItemsManager._registeredUiItemsProviders.forEach((uiProvider: UiItemsProvider) => {
       // istanbul ignore else
       if (uiProvider.provideToolbarButtonItems) {
-        uiProvider.provideToolbarButtonItems(stageId, stageUsage, toolbarUsage, toolbarOrientation)
+        uiProvider.provideToolbarButtonItems(stageId, stageUsage, toolbarUsage, toolbarOrientation, stageAppData)
           .forEach((spec: CommonToolbarItem) => buttonItems.push({ ...spec, providerId: uiProvider.id }));
       }
     });
@@ -150,7 +151,7 @@ export class UiItemsManager {
    * @param stageUsage the StageUsage of the active stage.
    * @returns An array of CommonStatusBarItem that will be used to create controls for the status bar.
    */
-  public static getStatusBarItems(stageId: string, stageUsage: string): CommonStatusBarItem[] {
+  public static getStatusBarItems(stageId: string, stageUsage: string, stageAppData?: any): CommonStatusBarItem[] {
     const statusBarItems: CommonStatusBarItem[] = [];
 
     if (0 === UiItemsManager._registeredUiItemsProviders.size)
@@ -159,7 +160,7 @@ export class UiItemsManager {
     UiItemsManager._registeredUiItemsProviders.forEach((uiProvider: UiItemsProvider) => {
       // istanbul ignore else
       if (uiProvider.provideStatusBarItems) {
-        uiProvider.provideStatusBarItems(stageId, stageUsage)
+        uiProvider.provideStatusBarItems(stageId, stageUsage, stageAppData)
           .forEach((item: CommonStatusBarItem) => statusBarItems.push({ ...item, providerId: uiProvider.id }));
       }
     });
@@ -192,7 +193,7 @@ export class UiItemsManager {
    * @param section the section within location.
    * @returns An array of AbstractWidgetProps that will be used to create widgets.
    */
-  public static getWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, zoneLocation?: AbstractZoneLocation): ReadonlyArray<AbstractWidgetProps> {
+  public static getWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, zoneLocation?: AbstractZoneLocation, stageAppData?: any): ReadonlyArray<AbstractWidgetProps> {
     const widgets: AbstractWidgetProps[] = [];
 
     if (0 === UiItemsManager._registeredUiItemsProviders.size)
@@ -201,7 +202,7 @@ export class UiItemsManager {
     UiItemsManager._registeredUiItemsProviders.forEach((uiProvider: UiItemsProvider) => {
       // istanbul ignore else
       if (uiProvider.provideWidgets) {
-        uiProvider.provideWidgets(stageId, stageUsage, location, section, zoneLocation)
+        uiProvider.provideWidgets(stageId, stageUsage, location, section, zoneLocation, stageAppData)
           .forEach((widget: AbstractWidgetProps) => widgets.push({ ...widget, providerId: uiProvider.id }));
       }
     });
