@@ -43,6 +43,8 @@
     "@bentley/itwin-client": "workspace:^3.0.0-dev.63"
   },
   "devDependencies": {
+    "@bentley/imodeljs-frontend": "workspace:*",
+    "@bentley/imodeljs-common": "workspace:*",
     "@bentley/bentleyjs-core": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",

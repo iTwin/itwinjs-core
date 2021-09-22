@@ -82,6 +82,8 @@ importers:
       '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/frontend-authorization-client': workspace:*
+      '@bentley/imodeljs-common': workspace:*
+      '@bentley/imodeljs-frontend': workspace:*
       '@bentley/itwin-client': workspace:*
       '@types/deep-assign': ^0.1.0
       '@types/node': 10.14.1
@@ -99,6 +101,8 @@ importers:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/frontend-authorization-client': link:../frontend-authorization
+      '@bentley/imodeljs-common': link:../../core/common
+      '@bentley/imodeljs-frontend': link:../../core/frontend
       '@bentley/itwin-client': link:../itwin
       '@types/deep-assign': 0.1.1
       '@types/node': 10.14.1
@@ -170,7 +174,6 @@ importers:
       '@bentley/certa': workspace:*
       '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
@@ -192,7 +195,6 @@ importers:
       '@bentley/certa': link:../../tools/certa
       '@bentley/context-registry-client': link:../context-registry
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/imodelhub-client': link:../imodelhub
       '@bentley/itwin-client': link:../itwin
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/chai': 4.2.21
@@ -3925,9 +3927,7 @@ importers:
       '@bentley/ecschema-locaters': workspace:*
       '@bentley/ecschema-metadata': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/frontend-authorization-client': workspace:*
       '@bentley/geometry-core': workspace:*
-      '@bentley/imodelhub-client': workspace:*
       '@bentley/imodeljs-backend': workspace:*
       '@bentley/imodeljs-common': workspace:*
       '@bentley/itwin-client': workspace:*
@@ -3954,9 +3954,7 @@ importers:
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/ecschema-locaters': link:../../core/ecschema-locaters
       '@bentley/ecschema-metadata': link:../../core/ecschema-metadata
-      '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/geometry-core': link:../../core/geometry
-      '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/imodeljs-backend': link:../../core/backend
       '@bentley/imodeljs-common': link:../../core/common
       '@bentley/itwin-client': link:../../clients/itwin
@@ -4547,7 +4545,6 @@ importers:
       '@bentley/geometry-core': workspace:*
       '@bentley/icons-generic': ^1.0.15
       '@bentley/icons-generic-webfont': ^1.0.15
-      '@bentley/imodelhub-client': workspace:*
       '@bentley/imodeljs-common': workspace:*
       '@bentley/imodeljs-frontend': workspace:*
       '@bentley/imodeljs-i18n': workspace:*
@@ -4644,7 +4641,6 @@ importers:
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/geometry-core': link:../../core/geometry
-      '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/imodeljs-common': link:../../core/common
       '@bentley/imodeljs-frontend': link:../../core/frontend
       '@bentley/imodeljs-i18n': link:../../core/i18n
