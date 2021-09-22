@@ -528,7 +528,7 @@ describe("Content", () => {
                 isPolymorphicRelationship: true,
                 isForwardRelationship: true,
               },
-            ]
+            ],
           ],
           navigationPropertyClasses: [
             {

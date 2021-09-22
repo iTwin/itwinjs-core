@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* eslint-disable deprecation/deprecation */
 import { expect } from "chai";
 import * as faker from "faker";
 import { RegisteredRuleset, Ruleset, RuleTypes } from "../presentation-common";
@@ -27,8 +26,8 @@ describe("RegisteredRuleset", () => {
         id: faker.random.uuid(),
         requiredSchemas: [
           {
-            name: faker.random.word()
-          }
+            name: faker.random.word(),
+          },
         ],
         supplementationInfo: {
           supplementationPurpose: faker.random.words(),
