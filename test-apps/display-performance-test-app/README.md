@@ -38,9 +38,9 @@ Performance tests on iOS have more restrictions than performance tests run on ot
 
 ## Environment Variables
 
-* SVT_MAPBOX_KEY
+* IMJS_MAPBOX_KEY
   * If defined, sets the MapBox key for the `MapLayerOptions` as an "access_token".
-* SVT_BING_MAPS_KEY
+* IMJS_BING_MAPS_KEY
   * If defined, sets a Bing Maps key within the `MapLayerOptions` as a "key" type.
 
 ## Configuration json file
@@ -67,7 +67,7 @@ The default configuration file allows you to specify the following:
 You can specify filename options that you wish to ignore:
 When you chose to produce images through an 'image' or 'both' test, the program will name them in the following format: modelName_viewName_renderMode_viewFlagOpts_renderModeOpts_tilePropsOpts.png (for example, SmallTextTest008_Wireframe_-fll+scL+cmL+slL-clp+con_+solShd_+inst.png). If you chose to do a 'readPixels' test, the program will save the images produced from this in the following format: depth/elemId/type_readPixelsSelectorOpts_modelName_viewName_renderMode_viewFlagOpts_renderModeOpts_tilePropsOpts.png (for example, type_+geom+dist_TimingTest01_V0_HiddenLine_-fll+scL+cmL+slL-clp+con_+solShd_+inst.png). The read pixels selector options, view flag options, render mode options, and tile properties options will all be an abbreviated string representation of the actual property. For example, the render mode option 'enableInstancing' would be shown as '+inst' in the filename. The 'filenameOptsToIgnore' property allows you to specify either an array of strings or a single space delimited string, where each string item is an abbreviated string representation of a read pixels selector option, view flag option, render mode option, or tile properties option. These options will not be included in the image names.
 
-You can specify which saved view you wish to use for each test with the viewName property.  If external saved views exist for the local file you can specify which external saved view to use with the extViewName property (you can also specify external saved views by name using the viewName property if the name does not clash with a normal saved view).  You can also specify a saved view to use via the viewString property.  The viewString property must include the _viewname and _viewStatePropsString properties (and optionally the _selectedElements and/or _overrideElements properties) which you can copy from the external saved view file.
+You can specify which saved view you wish to use for each test with the viewName property.  If external saved views exist for the local file you can specify which external saved view to use with the extViewName property (you can also specify external saved views by name using the viewName property if the name does not clash with a normal saved view).  You can also specify a saved view to use via the viewString property.  The viewString property must include the _viewname and_viewStatePropsString properties (and optionally the _selectedElements and/or_overrideElements properties) which you can copy from the external saved view file.
 
 If you wish to specify multiple iModels in the same folder, you can use a asterisk wildcard instead of a specific iModel name to test multiple iModels matching the given wildcard. This is NOT case-sensitive. For example, to test all iModels, set modelName to "*". To test all iModels with the word 'Edge' in them, set modelName to "*edge*". To test iModels starting with the word edge, use "edge*". If no modelName is specified, it will default to testing all iModels in the given iModelLocation. This currently does NOT work when using an iModelHub location with iModelHubProject instead of a local directory with iModelLocation.
 
