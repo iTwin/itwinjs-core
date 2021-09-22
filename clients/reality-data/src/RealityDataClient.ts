@@ -30,7 +30,7 @@ export enum RealityDataType {
  * an Azure blob URL, the token may be required to obtain this Azure blob URL or refresh it.
  * The Azure blob URL is considered valid for an hour and is refreshed after 50 minutes.
  * In addition to the reality data properties, and Azure blob URL and internal states, a reality data also contains
- * the identification of the iTwin to identify the context(used for access permissions resolution) and
+ * the identification of the iTwin to be used for access permissions and
  * may contain a RealityDataClient to obtain the WSG client specialization to communicate with ProjectWise Context Share (to obtain the Azure blob URL).
  * @internal
  */
