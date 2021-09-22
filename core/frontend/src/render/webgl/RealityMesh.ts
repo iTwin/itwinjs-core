@@ -134,7 +134,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
   public get uvQParams() { return this._realityMeshParams.uvParams.params; }
   public override get hasFeatures(): boolean { return this._realityMeshParams.featureID !== undefined; }
   public override get supportsThematicDisplay() { return true; }
-  public get overrideColorMix() { return .5; }     // TThis could be a setting from either the mesh or the override if required.
+  public get overrideColorMix() { return .5; }     // This could be a setting from either the mesh or the override if required.
 
   private constructor(private _realityMeshParams: RealityMeshGeometryParams, public textureParams: RealityTextureParams | undefined, private readonly _transform: Transform | undefined, public readonly baseColor: ColorDef | undefined, private _baseIsTransparent: boolean, private _isTerrain: boolean) {
     super(_realityMeshParams);
