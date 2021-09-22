@@ -48,7 +48,7 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
       pagination: {
         top: 40,
       },
-    })
+    });
 
     this.setState({ isLoading: false, projects: iTwins });
   }

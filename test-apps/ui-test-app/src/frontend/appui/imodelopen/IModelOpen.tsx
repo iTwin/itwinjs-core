@@ -99,7 +99,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
       isLoadingiModels: false,
       iModels: iModelInfos,
     });
-  }
+  };
 
   private _onNavigationChanged = (expanded: boolean) => {
     this.setState({ isNavigationExpanded: expanded });
@@ -107,7 +107,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
 
   private _selectITwin = async (iTwin: ITwin) => {
     return this.startRetrieveIModels(iTwin);
-  }
+  };
 
   private _handleIModelSelected = (iModelInfo: IModelInfo): void => {
     this.setState({

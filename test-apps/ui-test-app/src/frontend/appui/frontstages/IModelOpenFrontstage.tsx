@@ -30,7 +30,7 @@ class IModelOpenControl extends ContentControl {
       return IModelApp.authorizationClient.getAccessToken();
 
     return undefined;
-  }
+  };
 }
 
 export class IModelOpenFrontstage extends FrontstageProvider {

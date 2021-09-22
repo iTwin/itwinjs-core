@@ -19,7 +19,7 @@ export async function initializeElectron() {
     "email",
     "profile",
     "organization",
-    "itwinjs"
+    "itwinjs",
   ];
 
   const opt = {

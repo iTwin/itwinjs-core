@@ -188,7 +188,7 @@ export class DisplayTestApp {
   public static get surface() { return this._surface!; }
   public static set surface(surface: Surface) { this._surface = surface; }
   private static _iTwinId?: GuidString;
-  public static get iTwinId(): GuidString | undefined { return this._iTwinId;}
+  public static get iTwinId(): GuidString | undefined { return this._iTwinId; }
 
   public static async startup(configuration: DtaConfiguration, renderSys: RenderSystem.Options): Promise<void> {
     const opts = {
@@ -214,7 +214,7 @@ export class DisplayTestApp {
         authConfig: {
           clientId: "imodeljs-spa-test",
           redirectUri: "http://localhost:3000/signin-callback",
-          scope: "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party imodel-extension-service-api imodeljs-router",
+          scope: "openid email profile organization itwinjs",
           responseType: "code",
         },
       },
