@@ -6,7 +6,7 @@
  * @module iModelBankClient
  */
 import { IModelHubStatus, Logger } from "@itwin/core-bentley";
-import { Asset, Project } from "@bentley/context-registry-client";
+import { ITwin } from "@bentley/context-registry-client";
 import { AuthorizedClientRequestContext, request, RequestOptions, Response } from "@bentley/itwin-client";
 import { WsgInstance } from "../wsg/ECJsonTypeMap";
 import { WsgError, WSStatus } from "../wsg/WsgClient";
@@ -63,21 +63,11 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
     return props.map((value) => value.properties as IModelFileSystemContextProps);
   }
 
-  public async queryAssetByName(requestContext: AuthorizedClientRequestContext, assetName: string): Promise<Asset> {
-    const props = await this.queryContextProps(requestContext, assetName);
-    const asset = new Asset();
-    asset.wsgId = asset.ecId = props[0].id;
-    asset.name = props[0].name;
-    return asset;
-  }
+  public async getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
+    const props = await this.queryContextProps(requestContext, name);
 
-  public async queryProjectByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project> {
-    const props = await this.queryContextProps(requestContext, projectName);
-
-    const project = new Project();
-    project.wsgId = project.ecId = props[0].id;
-    project.name = props[0].name;
-    return project;
+    // Get first context
+    return props[0] as ITwin;
   }
 
   public async createContext(requestContext: AuthorizedClientRequestContext, name: string): Promise<void> {

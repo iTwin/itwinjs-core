@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { GuidString } from "@itwin/core-bentley";
-import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
 import { HubIModel, IModelClient, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import * as fs from "fs";
@@ -29,18 +29,25 @@ loadEnv(path.join(__dirname, "..", "..", ".env"));
 /** Basic configuration used by all tests
  */
 export class TestConfig {
-  /** Query for the specified project */
-  public static async queryProjectId(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<string> {
-    const contextRegistry = new ContextRegistryClient();
-    const project: Project | undefined = await contextRegistry.getProject(requestContext, {
-      $select: "*",
-      $filter: `Name+eq+'${projectName}'`,
-    });
-    if (!project || !project.wsgId) {
+  /** Query for the specified iTwin */
+  public static async getITwinIdByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<string> {
+    const iTwinAccessClient = new ITwinAccessClient();
+    const iTwinList: ITwin[] = await iTwinAccessClient.getAll(requestContext, {
+      search: {
+        searchString: name,
+        propertyName: ITwinSearchableProperty.Name,
+        exactMatch: true,
+      }});
+
+    if (iTwinList.length === 0) {
       const userInfo = requestContext.accessToken.getUserInfo();
-      throw new Error(`Project ${projectName} not found for user ${!userInfo ? "n/a" : userInfo.email}.`);
+      throw new Error(`ITwin ${name} not found for user ${!userInfo ? "n/a" : userInfo.email}.`);
+    } else if (iTwinList.length > 1) {
+      const userInfo = requestContext.accessToken.getUserInfo();
+      throw new Error(`Multiple iTwins named ${name} were found for user ${!userInfo ? "n/a" : userInfo.email}.`);
     }
-    return project.wsgId;
+
+    return iTwinList[0].id;
   }
 
   /** Query for the specified iModel */

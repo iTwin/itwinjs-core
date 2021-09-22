@@ -77,7 +77,7 @@ describe("DelegationAuthorizationClient (#integration)", () => {
       throw new Error("Could not find IMJS_DELEGATION_TEST_CLIENT_SECRET");
 
     const delegationJwt = await delegationClient.getJwtFromJwt(jwt);
-    await validator.validateContextRegistryAccess(delegationJwt);
+    await validator.validateITwinClientAccess(delegationJwt);
     await validator.validateIModelHubAccess(delegationJwt);
   });
 

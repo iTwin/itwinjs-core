@@ -19,7 +19,7 @@
     "extract-api": "betools extract-api --entry=ecschema2ts",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "docs": "",
-    "test": "betools test",
+    "test": "mocha",
     "cli:dev": "npm run clean & npm run build & npm link",
     "cover": "nyc npm test"
   },

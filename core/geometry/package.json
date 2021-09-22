@@ -11,12 +11,11 @@
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json ./src/test/output",
     "watch": "tsc --watch",
-    "test": "betools test",
+    "test": "mocha",
     "extract-api": "betools extract-api --entry=core-geometry",
     "extract-api-test": "betools extract-api --entry=core-geometry",
     "docs": "betools docs --tsIndexFile=./core-geometry.ts --json=../../generated-docs/core/core-geometry/file.json --onlyJson",
     "cover": "nyc npm test",
-    "cover:docs": "node ./node_modules/@bentley/build-tools/scripts/docscoverage.js",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2"
   },
   "repository": {

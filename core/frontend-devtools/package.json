@@ -33,7 +33,6 @@
   },
   "dependencies": {
     "@itwin/core-bentley": "workspace:*",
-    "@bentley/context-registry-client": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",

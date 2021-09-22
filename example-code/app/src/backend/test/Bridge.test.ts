@@ -7,7 +7,7 @@ import * as path from "path";
 
 // __PUBLISH_EXTRACT_START__ Bridge.imports.example-code
 import { GuidString, Id64String } from "@itwin/core-bentley";
-import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
 import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@itwin/core-geometry";
 import {
   BriefcaseDb, BriefcaseManager, CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, ModelSelector,
@@ -54,11 +54,20 @@ function convertToBis(briefcase: IModelDb, modelId: Id64String, data: RobotWorld
 
 // __PUBLISH_EXTRACT_END__
 
-async function queryITwinIdByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project> {
-  return (new ContextRegistryClient()).getProject(requestContext, {
-    $select: "*",
-    $filter: `Name+eq+'${projectName}'`,
-  });
+async function getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
+  const iTwinList: ITwin[] = await (new ITwinAccessClient()).getAll(requestContext, {
+    search: {
+      searchString: name,
+      propertyName: ITwinSearchableProperty.Name,
+      exactMatch: true,
+    }});
+
+  if (iTwinList.length === 0)
+    throw new Error(`ITwin ${name} was not found for the user.`);
+  else if (iTwinList.length > 1)
+    throw new Error(`Multiple iTwins named ${name} were found for the user.`);
+
+  return iTwinList[0];
 }
 
 async function createIModel(user: AuthorizedClientRequestContext, iTwinId: GuidString, iModelName: string, revision0: LocalFileName) {
@@ -150,7 +159,7 @@ describe.skip("Bridge", async () => {
   before(async () => {
     await IModelHost.startup();
     user = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
-    testITwinId = (await queryITwinIdByName(user, "iModelJsIntegrationTest")).wsgId;
+    testITwinId = (await getITwinByName(user, "iModelJsIntegrationTest")).id;
     revision0 = path.join(KnownTestLocations.assetsDir, "empty.bim");
     iModelId = await createIModel(user, testITwinId, "BridgeTest", revision0);
     await IModelHost.shutdown();

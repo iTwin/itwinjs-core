@@ -515,11 +515,7 @@ export class IModelTestUtils {
     Logger.initializeToConsole();
     Logger.setLevelDefault(LogLevel.Error);
 
-    if (process.env.IMJS_TEST_LOGGING_CONFIG === undefined) {
-      // eslint-disable-next-line no-console
-      console.log(`You can set the environment variable IMJS_TEST_LOGGING_CONFIG to point to a logging configuration json file.`);
-    }
-    const loggingConfigFile: string = process.env.IMJS_TEST_LOGGING_CONFIG || path.join(__dirname, "logging.config.json");
+    const loggingConfigFile: string = path.join(__dirname, "logging.config.json");
 
     if (IModelJsFs.existsSync(loggingConfigFile)) {
       // eslint-disable-next-line no-console

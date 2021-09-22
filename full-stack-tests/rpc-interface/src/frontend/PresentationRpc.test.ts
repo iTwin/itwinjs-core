@@ -6,12 +6,8 @@ import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { CheckpointConnection, IModelApp, IModelConnection } from "@itwin/core-frontend";
 import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
-import { InstanceKey, KeySet, Ruleset } from "@itwin/presentation-common";
+import { ChildNodeSpecificationTypes, ContentSpecificationTypes, InstanceKey, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import * as defaultRuleset from "./rulesets/default.json";
-import * as getRelatedDistinctValues from "./rulesets/DistinctValues/getRelatedDistinctValues.json";
-import * as getFilteredNodePaths from "./rulesets/NodePaths/getFilteredNodePaths.json";
-import * as getNodePaths from "./rulesets/NodePaths/getNodePaths.json";
 import { TestContext } from "./setup/TestContext";
 
 describe("PresentationRpcInterface tests", () => {
@@ -39,15 +35,15 @@ describe("PresentationRpcInterface tests", () => {
   it("getNodes works as expected", async () => {
     const rootNodes = await Presentation.presentation.getNodes({
       imodel,
-      rulesetOrId: defaultRuleset as Ruleset,
+      rulesetOrId: createNodesRuleset(),
     });
-    expect(rootNodes.length).to.be.equal(1);
+    expect(rootNodes).to.not.be.empty;
   });
 
   it("getNodesAndCount works as expected", async () => {
     const nodesAndCount = await Presentation.presentation.getNodesAndCount({
       imodel,
-      rulesetOrId: defaultRuleset as Ruleset,
+      rulesetOrId: createNodesRuleset(),
     });
     expect(nodesAndCount.count).to.not.be.undefined;
   });
@@ -55,23 +51,17 @@ describe("PresentationRpcInterface tests", () => {
   it("getNodesCount works as expected", async () => {
     const count = await Presentation.presentation.getNodesCount({
       imodel,
-      rulesetOrId: defaultRuleset as Ruleset,
+      rulesetOrId: createNodesRuleset(),
     });
     expect(count).to.not.be.undefined;
   });
 
-  it("getNodePath works as expected", async () => {
-    const key1: InstanceKey = { id: Id64.fromString("0x1"), className: "BisCore:RepositoryModel" };
-    const key2: InstanceKey = { id: Id64.fromString("0x1"), className: "BisCore:Subject" };
-    const key3: InstanceKey = { id: Id64.fromString("0x10"), className: "BisCore:DefinitionPartition" };
-    const key4: InstanceKey = { id: Id64.fromString("0xe"), className: "BisCore:LinkPartition" };
-    const keys: InstanceKey[][] = [[key1, key2, key3], [key1, key2, key4]];
-
+  it("getNodePaths works as expected", async () => {
     const result = await Presentation.presentation.getNodePaths({
       imodel,
-      rulesetOrId: getNodePaths as Ruleset,
-      instancePaths: keys,
-      markedIndex: 1,
+      rulesetOrId: createNodesRuleset(),
+      instancePaths: [[{ id: Id64.fromString("0x1"), className: "BisCore:RepositoryModel" }]],
+      markedIndex: 0,
     });
     expect(result).to.not.be.undefined;
   });
@@ -79,8 +69,8 @@ describe("PresentationRpcInterface tests", () => {
   it("getFilteredNodePaths works as expected", async () => {
     const result = await Presentation.presentation.getFilteredNodePaths({
       imodel,
-      rulesetOrId: getFilteredNodePaths as Ruleset,
-      filterText: "filter",
+      rulesetOrId: createNodesRuleset(),
+      filterText: "",
     });
     expect(result).to.not.be.undefined;
   });
@@ -88,7 +78,7 @@ describe("PresentationRpcInterface tests", () => {
   it("getContentSources works as expected", async () => {
     const result = await Presentation.presentation.getContentSources({
       imodel,
-      classes: [],
+      classes: ["BisCore:Subject"],
     });
     expect(result).to.not.be.undefined;
   });
@@ -99,7 +89,7 @@ describe("PresentationRpcInterface tests", () => {
     const keys = new KeySet([key1, key2]);
     const descriptor = await Presentation.presentation.getContentDescriptor({
       imodel,
-      rulesetOrId: getRelatedDistinctValues as Ruleset,
+      rulesetOrId: createContentRuleset(),
       displayType: "Grid",
       keys,
     });
@@ -112,7 +102,7 @@ describe("PresentationRpcInterface tests", () => {
     const keys = new KeySet([key1, key2]);
     const contentAndSize = await Presentation.presentation.getContentAndSize({
       imodel,
-      rulesetOrId: getRelatedDistinctValues as Ruleset,
+      rulesetOrId: createContentRuleset(),
       descriptor: {},
       keys,
     });
@@ -125,7 +115,7 @@ describe("PresentationRpcInterface tests", () => {
     const keys = new KeySet([key1, key2]);
     const content = await Presentation.presentation.getContent({
       imodel,
-      rulesetOrId: getRelatedDistinctValues as Ruleset,
+      rulesetOrId: createContentRuleset(),
       descriptor: {},
       keys,
     });
@@ -138,7 +128,7 @@ describe("PresentationRpcInterface tests", () => {
     const keys = new KeySet([key1, key2]);
     const contentSetSize = await Presentation.presentation.getContentSetSize({
       imodel,
-      rulesetOrId: getRelatedDistinctValues as Ruleset,
+      rulesetOrId: createContentRuleset(),
       descriptor: {},
       keys,
     });
@@ -181,4 +171,37 @@ describe("PresentationRpcInterface tests", () => {
     expect(computedSelections).to.not.be.undefined;
   });
 
+});
+
+const createNodesRuleset = (): Ruleset => ({
+  id: "nodes",
+  rules: [
+    {
+      ruleType: RuleTypes.RootNodes,
+      specifications: [
+        {
+          specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+          classes: {
+            schemaName: "BisCore",
+            classNames: ["Model"],
+          },
+          arePolymorphic: true,
+        },
+      ],
+    },
+  ],
+});
+
+const createContentRuleset = (): Ruleset => ({
+  id: "content",
+  rules: [
+    {
+      ruleType: RuleTypes.Content,
+      specifications: [
+        {
+          specType: ContentSpecificationTypes.SelectedNodeInstances,
+        },
+      ],
+    },
+  ],
 });

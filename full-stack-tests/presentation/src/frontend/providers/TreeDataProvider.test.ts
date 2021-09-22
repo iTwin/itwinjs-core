@@ -13,7 +13,6 @@ import { initialize, terminate } from "../../IntegrationTests";
 
 const RULESET: Ruleset = {
   id: "SimpleHierarchy",
-  supportedSchemas: { schemaNames: ["Generic", "BisCore"] },
   rules: [{
     ruleType: RuleTypes.RootNodes,
     specifications: [{

@@ -19,12 +19,7 @@ export async function initializeElectron() {
     "email",
     "profile",
     "organization",
-    "imodelhub",
-    "context-registry-service:read-only",
-    "product-settings-service",
-    "projectwise-share",
-    "urlps-third-party",
-    "imodel-extension-service-api",
+    "itwinjs",
   ];
 
   const opt = {
@@ -35,7 +30,7 @@ export async function initializeElectron() {
       authConfig: {
         clientId: "imodeljs-electron-test",
         redirectUri: "http://localhost:3000/signin-callback",
-        scope: baseOidcScopes.concat(["offline_access"]).join(" "),
+        scope: baseOidcScopes.join(" "),
       },
     },
     nativeHost: {

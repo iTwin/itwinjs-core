@@ -11,11 +11,12 @@
   },
   "scripts": {
     "compile": "npm run build",
-    "build": "tsc 1>&2",
+    "build": "tsc 1>&2 && npm run copy:test-assets",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
     "extract-api": "betools extract-api --entry=ecschema-locaters",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "betools test-tsnode --testDir=./test/",
+    "test": "mocha",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/ecschema-locaters/file.json --tsIndexFile=./ecschema-locaters.ts --onlyJson",
     "cover": "nyc npm test",
     "start": "npm run lint && npm run clean && npm run build && npm run test & npm run cover & npm run docs"
@@ -43,6 +44,7 @@
     "@xmldom/xmldom": "^0.7.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
+    "cpx": "^1.5.0",
     "eslint": "^7.11.0",
     "mocha": "^8.3.2",
     "nyc": "^15.1.0",

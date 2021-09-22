@@ -497,7 +497,7 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
       accepted = info;
     };
 
-    const props: ElementGeometryCacheOperationRequestProps = { id, onOffsetFaces: params, onGeometry: opts ? onResult : undefined };
+    const props: ElementGeometryCacheOperationRequestProps = { id, onOffsetFaces: params, onGeometry: onResult };
     this.iModel.nativeDb.elementGeometryCacheOperation(props);
 
     if (undefined === accepted)

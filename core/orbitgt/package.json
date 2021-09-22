@@ -14,7 +14,7 @@
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-orbitgt/file.json --tsIndexFile=./core-orbitgt.ts --onlyJson",
     "extract-api": "betools extract-api --entry=core-orbitgt",
     "lint": "",
-    "test": "betools test",
+    "test": "mocha",
     "cover": "nyc npm test"
   },
   "repository": {
