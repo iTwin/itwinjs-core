@@ -12,7 +12,7 @@
     "compile": "npm run build",
     "build": "npm run build:cjs && npm run copy:assets && npm run copy:test-assets",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
-    "clean": "rimraf lib cjs esm types types .rush/temp/package-deps*.json",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-backend/file.json --tsIndexFile=./imodeljs-backend.ts --onlyJson",
     "copy:assets": "cpx \"./src/assets/**/*\" ./lib/cjs/assets",
     "copy:config": "internal-tools copy-config",
@@ -33,12 +33,7 @@
     "perftest:cs": "npm run perftest:pre && betools test --testDir=\"./lib/cjs/perftest\" --timeout=999999999 --grep ImodelChangesetPerformance",
     "perftest:elAspect": "npm run perftest:pre && betools test --testDir=\"./lib/cjs/perftest\" --timeout=999999999 --grep ElementAspectPerformance",
     "perftest:schema": "npm run perftest:pre && betools test --testDir=\"./lib/cjs/perftest\" --timeout=999999999 --grep SchemaDesignPerf",
-    "perftest:tile": "npm run perftest:pre && betools test --testDir=\"./lib/cjs/perftest\" --timeout=999999999 --grep TilesGenerationPerformance",
-    "copy:ios-test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/ios/webpack/assets && cpx \"./lib/cjs/assets/**/*\" ./lib/cjs/test/ios/webpack/assets",
-    "build:imodeljs-backend-test-app": "xcrun xcodebuild build-for-testing -configuration Debug -sdk iphoneos -workspace ./src/test/ios/imodeljs-backend-test-app.xcworkspace -scheme imodeljs-backend-test-app -derivedDataPath ./lib/cjs/test/ios/DerivedData -allowProvisioningUpdates",
-    "webpack:imodeljs-test": "npm run copy:ios-test-assets && cpx ./src/test/ios/config/ignoreTest.js ./lib/cjs/test && cpx ./src/test/ios/runMochaTestsDirectly.js ./lib/cjs/test && node ./src/test/ios/scripts/generateTestBarrel.js ./lib/cjs/test ./lib/cjs/test/ios-test-barrel.js && webpack --target=webworker --config=./src/test/ios/config/mobile.webpack.config.js",
-    "install-ios-lib": "node ./src/test/ios/scripts/installIosNativeLib.js",
-    "build:ios-test": "npm run install-ios-lib && npm run webpack:imodeljs-test && npm run build:imodeljs-backend-test-app"
+    "perftest:tile": "npm run perftest:pre && betools test --testDir=\"./lib/cjs/perftest\" --timeout=999999999 --grep TilesGenerationPerformance"
   },
   "repository": {
     "type": "git",

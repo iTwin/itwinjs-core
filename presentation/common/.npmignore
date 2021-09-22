@@ -1,25 +1,17 @@
 # start off ignoring everything
 *
 # then add back only the files we want
-!cjs/**/*.d.ts
-!cjs/**/*.d.ts.map
-!cjs/**/*.js
-!cjs/**/*.js.map
-!cjs/assets/**/*
-!cjs/public/**/*
+!*.md
 
-!esm/**/*.d.ts
-!esm/**/*.d.ts.map
-!esm/**/*.js
-!esm/**/*.js.map
-!esm/assets/**/*
-!esm/public/**/*
+!lib/**/*.d.ts
+!lib/**/*.d.ts.map
+!lib/**/*.js
+!lib/**/*.js.map
+!lib/**/assets/**/*
+!lib/**/public/**/*
 
-!types/**/*.d.ts
-!types/**/*.d.ts.map
 
 !Ruleset.schema.json
-!*.md
 
 # then ignore some stuff again
 test

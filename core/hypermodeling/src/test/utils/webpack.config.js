@@ -7,7 +7,7 @@ const path = require("path");
 const webpack = require("webpack");
 const glob = require("glob");
 
-const frontendLib = path.resolve(__dirname, "../../../lib");
+const frontendLib = path.resolve(__dirname, "../../../lib/cjs");
 
 function createConfig(shouldInstrument) {
   const config = {

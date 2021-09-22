@@ -4,7 +4,7 @@
   "description": "EC Schema file locaters",
   "license": "MIT",
   "main": "lib/cjs/ecschema-locaters.js",
-  "typings": "lib/types/ecschema-locaters",
+  "typings": "lib/cjs/ecschema-locaters",
   "repository": {
     "type": "git",
     "url": "https://github.com/imodeljs/imodeljs/tree/master/core/ecschema-locaters"
@@ -12,8 +12,8 @@
   "scripts": {
     "compile": "npm run build",
     "build": "npm run build:cjs",
-    "build:cjs": "tsc 1>&2 --outDir lib/cjs --declarationDir lib/types",
-    "clean": "rimraf lib cjs esm types .rush/temp/package-deps*.json",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
     "extract-api": "betools extract-api --entry=ecschema-locaters",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "betools test-tsnode --testDir=./test/",

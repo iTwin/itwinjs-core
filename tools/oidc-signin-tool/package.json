@@ -3,8 +3,7 @@
   "version": "3.0.0-dev.49",
   "description": "OIDC Signin Helper",
   "main": "lib/cjs/index.js",
-  "module": "lib/esm/index.js",
-  "typings": "lib/types/index",
+  "typings": "lib/cjs/index",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -12,10 +11,9 @@
   },
   "scripts": {
     "compile": "npm run build",
-    "build": "npm run build:cjs && npm run build:esm",
-    "build:cjs": "tsc 1>&2 --outDir lib/cjs --declaration false --declarationMap false",
-    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm --declarationDir lib/types",
-    "clean": "rimraf lib cjs esm types .rush/temp/package-deps*.json",
+    "build": "npm run build:cjs",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "",
     "test:integration": "betools test",

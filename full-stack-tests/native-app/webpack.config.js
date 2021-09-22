@@ -92,10 +92,14 @@ function createConfig(shouldInstrument) {
         path.join(__dirname, "../../core/backend"),
         path.join(__dirname, "../../core/frontend"),
       ],
+      // exclude: "/node_modules/",
       loader: require.resolve("istanbul-instrumenter-loader"),
-      options: {
-        debug: true
-      },
+      // query: {
+      //   esModules: true
+      // },
+      // options: {
+      //   debug: true
+      // },
       enforce: "post",
     });
   }

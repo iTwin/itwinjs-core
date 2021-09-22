@@ -29,7 +29,7 @@
     "copy:cjs": "cpx \"./assets/**/*\" ./lib/cjs/assets && cpx \"./assets/**/*\" ./lib/cjs/public",
     "copy:esm": "cpx \"./assets/**/*\" ./lib/esm/assets && cpx \"./assets/**/*\" ./lib/esm/public",
     "build:watch": "npm run ruleset-json-schema && npm run copy:assets && tsc -w",
-    "clean": "rimraf lib cjs esm types .rush/temp/package-deps*.json",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm test",
     "docs": "npm run docs:reference && npm run docs:changelog",
     "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/presentation-common",

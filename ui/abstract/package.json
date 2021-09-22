@@ -14,15 +14,15 @@
   "scripts": {
     "compile": "npm run build",
     "pseudolocalize": "betools pseudolocalize --englishDir ./public/locales/en --out ./public/locales/en-PSEUDO",
-    "build": "npm run pseudolocalize && npm run build:cjs && npm run build:esm",
+    "build": "npm run build:cjs && npm run build:esm",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs --declaration false --declarationMap false",
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm --declarationDir lib/types",
-    "clean": "rimraf lib cjs esm types .rush/temp/package-deps*.json",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm test",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-abstract/file.json --tsIndexFile=./ui-abstract.ts --onlyJson",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
     "extract-api": "betools extract-api --entry=ui-abstract",
-    "test": "mocha --config ../.mocharc.json \"./cjs/test/**/*.test.js\"",
+    "test": "mocha --config ../.mocharc.json \"./lib/cjs/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
   },
   "keywords": [

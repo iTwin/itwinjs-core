@@ -3,20 +3,13 @@
 # then add back only the files we want
 !*.md
 
-!cjs/**/*.d.ts
-!cjs/**/*.d.ts.map
-!cjs/**/*.js
-!cjs/**/*.js.map
-!cjs/**/*.json
-
-!esm/**/*.d.ts
-!esm/**/*.d.ts.map
-!esm/**/*.js
-!esm/**/*.js.map
-!esm/**/*.json
-
-!types/**/*.d.ts
-!types/**/*.d.ts.map
+!lib/**/*.d.ts
+!lib/**/*.d.ts.map
+!lib/**/*.js
+!lib/**/*.js.map
+!lib/**/*.json
+!lib/**/assets/*.json
+!lib/**/public/*.json
 
 # then ignore some stuff again
 test

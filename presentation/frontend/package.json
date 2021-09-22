@@ -30,7 +30,7 @@
     "copy:cjs": "cpx \"../common/assets/**/*.json\" ./lib/cjs/public && cpx \"./src/**/*.json\" ./lib/cjs",
     "copy:esm": "cpx \"../common/assets/**/*.json\" ./lib/esm/public && cpx \"./src/**/*.json\" ./lib/esm",
     "build:watch": "tsc -w",
-    "clean": "rimraf lib cjs esm types .rush/temp/package-deps*.json",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm test",
     "docs": "npm run docs:reference && npm run docs:changelog",
     "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/presentation-frontend",
@@ -40,7 +40,7 @@
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "pseudolocalize:cjs": "betools pseudolocalize --englishDir ./cjs/public/locales/en --out ./cjs/public/locales/en-PSEUDO",
     "pseudolocalize:esm": "betools pseudolocalize --englishDir ./esm/public/locales/en --out ./esm/public/locales/en-PSEUDO",
-    "test": "mocha -r jsdom-global/register --config ../.mocharc.json \"./cjs/test/**/*.test.js\"",
+    "test": "mocha -r jsdom-global/register --config ../.mocharc.json \"./lib/cjs/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {

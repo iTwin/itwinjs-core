@@ -13,7 +13,7 @@
     "compile": "npm run build",
     "build": "npm run build:cjs",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs --declarationDir lib/types",
-    "clean": "rimraf lib cjs esm types .rush/temp/package-deps*.json",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
     "lint": "eslint -f visualstudio \"./reporter/**/*.ts\" 1>&2",
     "extract-api": "betools extract-api --entry=Reporter",
     "test": "",

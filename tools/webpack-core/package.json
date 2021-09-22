@@ -17,7 +17,7 @@
     "compile": "npm run build",
     "build": "npm run build:cjs",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs --declarationDir lib/types",
-    "clean": "rimraf lib cjs esm types .rush/temp/package-deps*.json",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "mocha \"./lib/cjs/test/**/*.test.js\"",

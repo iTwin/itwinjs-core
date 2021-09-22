@@ -25,7 +25,7 @@ function loadEnv(envFile) {
 
 loadEnv(path.join(__dirname, "..", "..", "..", ".env"));
 
-const clientsLib = path.resolve(__dirname, "../../../lib");
+const clientsLib = path.resolve(__dirname, "../../../lib/cjs");
 
 function createConfig(shouldInstrument) {
   const config = {

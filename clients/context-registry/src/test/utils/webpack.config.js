@@ -69,6 +69,7 @@ function createConfig(shouldInstrument) {
       "net": "net",
       "tls": "tls",
       "ws": "ws",
+      // "crypto": "crypto"
     },
     plugins: [
       // Makes some environment variables available to the JS code, for example:

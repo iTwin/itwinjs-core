@@ -31,7 +31,7 @@
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm --declarationDir lib/types && npm run copy:esm",
     "copy:cjs": "cpx \"../common/assets/**/*\" ./lib/cjs/public && cpx \"./public/**/*\" ./lib/cjs/public && cpx \"./src/**/*.{scss,json}\" ./lib/cjs",
     "copy:esm": "cpx \"../common/assets/**/*\" ./lib/esm/public && cpx \"./public/**/*\" ./lib/esm/public && cpx \"./src/**/*.{scss,json}\" ./lib/esm",
-    "clean": "rimraf lib cjs esm types .rush/temp/package-deps*.json",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm test",
     "docs": "npm run docs:reference && npm run extract && npm run docs:changelog",
     "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/presentation-components",
