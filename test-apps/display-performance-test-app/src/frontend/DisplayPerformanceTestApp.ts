@@ -26,6 +26,13 @@ export class DisplayPerfTestApp {
     iModelApp = iModelApp ?? {};
     iModelApp.i18n = { urlTemplate: "locales/en/{{ns}}.json" } as I18NOptions;
 
+    /* eslint-disable @typescript-eslint/naming-convention */
+    iModelApp.mapLayerOptions = {
+      MapBoxImagery: process.env.SVT_MAPBOX_KEY ? { key: "access_token", value: process.env.SVT_MAPBOX_KEY } : undefined,
+      BingMaps: process.env.SVT_BING_MAPS_KEY ? { key: "key", value: process.env.SVT_BING_MAPS_KEY } : undefined,
+    };
+    /* eslint-enable @typescript-eslint/naming-convention */
+
     iModelApp.rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
     if (ProcessDetector.isElectronAppFrontend)
       await ElectronApp.startup({ iModelApp });
