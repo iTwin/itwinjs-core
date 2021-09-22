@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-backend",
+      "comment": "remove use of \"any\" types in SqliteStatement",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend"
+}
