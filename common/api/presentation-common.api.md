@@ -2018,6 +2018,11 @@ export interface PrimitiveTypeDescription extends BaseTypeDescription {
     valueFormat: PropertyValueFormat.Primitive;
 }
 
+// @public
+export type Prioritized<TOptions extends {}> = TOptions & {
+    priority?: number;
+};
+
 // @alpha (undocumented)
 export interface ProcessFieldHierarchiesProps {
     // (undocumented)
@@ -2440,7 +2445,6 @@ export interface RequestOptions<TIModel> {
     diagnostics?: DiagnosticsOptionsWithHandler;
     imodel: TIModel;
     locale?: string;
-    priority?: number;
     unitSystem?: UnitSystemKey;
 }
 
@@ -2448,13 +2452,6 @@ export interface RequestOptions<TIModel> {
 export interface RequestOptionsWithRuleset<TIModel, TRulesetVariable = RulesetVariable> extends RequestOptions<TIModel> {
     rulesetOrId: Ruleset | string;
     rulesetVariables?: TRulesetVariable[];
-}
-
-// @public
-export enum RequestPriority {
-    Max,
-    Normal = 1000,
-    Preload = 0
 }
 
 // @beta
