@@ -1,0 +1,46 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ContentToolWidgetComposer ContentToolWidgetComposer should render 1`] = `
+<ToolWidgetComposer
+  className="nz-hidden"
+  horizontalToolbar={
+    <ToolbarComposer
+      items={Array []}
+      orientation={0}
+      usage={0}
+    />
+  }
+  verticalToolbar={
+    <ToolbarComposer
+      items={Array []}
+      orientation={1}
+      usage={0}
+    />
+  }
+/>
+`;
+
+exports[`ContentToolWidgetComposer ContentToolWidgetComposer with backstage button should render 1`] = `
+<ToolWidgetComposer
+  className="nz-hidden"
+  cornerItem={
+    <BackstageAppButton
+      icon="icon-bentley-systems"
+    />
+  }
+  horizontalToolbar={
+    <ToolbarComposer
+      items={Array []}
+      orientation={0}
+      usage={0}
+    />
+  }
+  verticalToolbar={
+    <ToolbarComposer
+      items={Array []}
+      orientation={1}
+      usage={0}
+    />
+  }
+/>
+`;

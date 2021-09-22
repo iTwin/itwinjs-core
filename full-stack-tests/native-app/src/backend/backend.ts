@@ -67,8 +67,7 @@ class TestIpcHandler extends IpcHandler implements TestIpcInterface {
       const region = process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION || "0";
       return { projectName, iModelHub: { region } };
     }
-    const requestContext = await AuthorizedBackendRequestContext.create();
-    const url = await (CloudEnv.cloudEnv.imodelClient as IModelBankClient).getUrl(requestContext);
+    const url = await (CloudEnv.cloudEnv.imodelClient as IModelBankClient).getUrl();
     return { projectName, iModelBank: { url } };
   }
 

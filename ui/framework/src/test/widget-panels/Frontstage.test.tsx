@@ -54,13 +54,17 @@ function createFrontstageState(nineZone = createSavedNineZoneState()): WidgetPan
 
 /** @internal */
 export class TestFrontstageUi2 extends FrontstageProvider {
+  public static stageId = "TestFrontstageUi2";
+  public get id(): string {
+    return TestFrontstageUi2.stageId;
+  }
+
   public get frontstage() {
     return (
       <Frontstage
-        id="TestFrontstageUi2"
+        id={this.id}
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout="SingleContent"
-        contentGroup="TestContentGroup1"
+        contentGroup={TestUtils.TestContentGroup1}
         leftPanel={
           <StagePanel
             panelZones={{
@@ -84,13 +88,17 @@ export class TestFrontstageUi2 extends FrontstageProvider {
 
 /** @internal */
 export class TestFrontstageUi1 extends FrontstageProvider {
+  public static stageId = "TestFrontstageUi1";
+  public get id(): string {
+    return TestFrontstageUi1.stageId;
+  }
+
   public get frontstage() {
     return (
       <Frontstage
-        id="TestFrontstageUi1"
+        id={this.id}
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout="SingleContent"
-        contentGroup="TestContentGroup1"
+        contentGroup={TestUtils.TestContentGroup1}
         centerLeft={
           <Zone
             widgets={[
@@ -318,7 +326,10 @@ export class TestFrontstageUi1 extends FrontstageProvider {
 
 /** @internal */
 export class TestUi2Provider implements UiItemsProvider {
-  public readonly id = "TestUi2Provider";
+  public static stageId = "TestUi2Provider";
+  public get id(): string {
+    return TestUi2Provider.stageId;
+  }
 
   public provideWidgets(_stageId: string, _stageUsage: string, location: StagePanelLocation, section?: StagePanelSection) {
     const widgets: Array<AbstractWidgetProps> = [];
@@ -1851,7 +1862,8 @@ describe("Frontstage local storage wrapper", () => {
 
         const frontstageProvider = new TestFrontstageUi2();
         FrontstageManager.addFrontstageProvider(frontstageProvider);
-        await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+        const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+        await FrontstageManager.setActiveFrontstageDef(frontstageDef);
         const { findByText } = render(<WidgetPanelsFrontstage />);
         await findByText("Left Start 1");
         await findByText("TestUi2Provider RM1");
@@ -1862,8 +1874,9 @@ describe("Frontstage local storage wrapper", () => {
         UiItemsManager.register(new TestUi2Provider());
         const frontstageProvider = new TestFrontstageUi2();
         FrontstageManager.addFrontstageProvider(frontstageProvider);
-        await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
-        const spy = sinon.stub(frontstageProvider.frontstageDef!, "setIsApplicationClosing");
+        const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+        await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+        const spy = sinon.stub(frontstageDef!, "setIsApplicationClosing");
         const wrapper = render(<WidgetPanelsFrontstage />);
         spy.calledOnce.should.true;
         window.dispatchEvent(new Event("beforeunload"));
@@ -1888,7 +1901,8 @@ describe("Frontstage local storage wrapper", () => {
 
         const frontstageProvider = new TestFrontstageUi2();
         FrontstageManager.addFrontstageProvider(frontstageProvider);
-        await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+        const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+        await FrontstageManager.setActiveFrontstageDef(frontstageDef);
         const { findByText } = render(<WidgetPanelsFrontstage />, {
           wrapper: (props) => <UiSettingsProvider {...props} settingsStorage={uiSettings} />,
         });
@@ -1902,7 +1916,8 @@ describe("Frontstage local storage wrapper", () => {
       it("should render loaded extension widgets", async () => {
         const frontstageProvider = new TestFrontstageUi2();
         FrontstageManager.addFrontstageProvider(frontstageProvider);
-        await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+        const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+        await FrontstageManager.setActiveFrontstageDef(frontstageDef);
         const { findByText } = render(<WidgetPanelsFrontstage />);
         await findByText("Left Start 1");
 
@@ -1916,8 +1931,9 @@ describe("Frontstage local storage wrapper", () => {
       it("should stop rendering unloaded extension widgets", async () => {
         const frontstageProvider = new TestFrontstageUi2();
         FrontstageManager.addFrontstageProvider(frontstageProvider);
-        await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
-        const frontstageDef = FrontstageManager.activeFrontstageDef!;
+        const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+
+        await FrontstageManager.setActiveFrontstageDef(frontstageDef);
         render(<WidgetPanelsFrontstage />);
 
         act(() => {
@@ -1925,34 +1941,35 @@ describe("Frontstage local storage wrapper", () => {
         });
 
         await TestUtils.flushAsyncOperations();
-        should().exist(frontstageDef.nineZoneState!.tabs.LeftStart1, "LeftStart1");
-        should().exist(frontstageDef.nineZoneState!.tabs.TestUi2ProviderRM1, "TestUi2ProviderRM1");
-        should().exist(frontstageDef.nineZoneState!.tabs.TestUi2ProviderW1, "TestUi2ProviderW1");
-        frontstageDef.nineZoneState!.widgets.rightMiddle.tabs.should.eql(["TestUi2ProviderRM1"], "rightMiddle widget tabs");
-        frontstageDef.nineZoneState!.widgets.leftStart.tabs.should.eql(["LeftStart1", "TestUi2ProviderW1"], "leftStart widget tabs");
+        should().exist(frontstageDef?.nineZoneState!.tabs.LeftStart1, "LeftStart1");
+        should().exist(frontstageDef?.nineZoneState!.tabs.TestUi2ProviderRM1, "TestUi2ProviderRM1");
+        should().exist(frontstageDef?.nineZoneState!.tabs.TestUi2ProviderW1, "TestUi2ProviderW1");
+        frontstageDef?.nineZoneState!.widgets.rightMiddle.tabs.should.eql(["TestUi2ProviderRM1"], "rightMiddle widget tabs");
+        frontstageDef?.nineZoneState!.widgets.leftStart.tabs.should.eql(["LeftStart1", "TestUi2ProviderW1"], "leftStart widget tabs");
 
         act(() => {
           UiItemsManager.unregister("TestUi2Provider");
         });
 
         await TestUtils.flushAsyncOperations();
-        should().exist(frontstageDef.nineZoneState!.tabs.LeftStart1, "LeftStart1 after unregister");
+        should().exist(frontstageDef?.nineZoneState!.tabs.LeftStart1, "LeftStart1 after unregister");
         // tabs should remain but no widget container should reference them
-        should().exist(frontstageDef.nineZoneState!.tabs.TestUi2ProviderRM1, "TestUi2ProviderRM1 after unregister");
-        should().exist(frontstageDef.nineZoneState!.tabs.TestUi2ProviderW1, "TestUi2ProviderW1 after unregister");
-        should().not.exist(frontstageDef.nineZoneState!.widgets.rightMiddle, "rightMiddle widget");
-        frontstageDef.nineZoneState!.widgets.leftStart.tabs.should.eql(["LeftStart1"], "leftStart widget tabs");
+        should().exist(frontstageDef?.nineZoneState!.tabs.TestUi2ProviderRM1, "TestUi2ProviderRM1 after unregister");
+        should().exist(frontstageDef?.nineZoneState!.tabs.TestUi2ProviderW1, "TestUi2ProviderW1 after unregister");
+        should().not.exist(frontstageDef?.nineZoneState!.widgets.rightMiddle, "rightMiddle widget");
+        frontstageDef?.nineZoneState!.widgets.leftStart.tabs.should.eql(["LeftStart1"], "leftStart widget tabs");
       });
 
       it("should render from 1.0 definition", async () => {
         const frontstageProvider = new TestFrontstageUi1();
         FrontstageManager.addFrontstageProvider(frontstageProvider);
-        await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
-        const frontstageDef = FrontstageManager.activeFrontstageDef!;
+        const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+
+        await FrontstageManager.setActiveFrontstageDef(frontstageDef);
         render(<WidgetPanelsFrontstage />);
 
         await TestUtils.flushAsyncOperations();
-        const state = frontstageDef.nineZoneState!;
+        const state = frontstageDef!.nineZoneState!;
 
         state.panels.left.widgets.should.eql(["leftStart", "leftMiddle", "leftEnd"]);
         state.panels.right.widgets.should.eql(["rightStart", "rightMiddle", "rightEnd"]);

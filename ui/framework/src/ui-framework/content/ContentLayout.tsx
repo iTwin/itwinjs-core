@@ -16,9 +16,7 @@ import { CommonProps, Orientation, UiEvent } from "@bentley/ui-core";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { ContentGroup } from "./ContentGroup";
-import {
-  ContentLayoutProps, LayoutFragmentProps, LayoutHorizontalSplitProps, LayoutSplitPropsBase, LayoutVerticalSplitProps,
-} from "./ContentLayoutProps";
+import { ContentLayoutProps, LayoutFragmentProps, LayoutHorizontalSplitProps, LayoutSplitPropsBase, LayoutVerticalSplitProps } from "@bentley/ui-abstract";
 import { ActiveContentChangedEventArgs, ContentViewManager } from "./ContentViewManager";
 
 /** Properties for [[ContentWrapper]] */
@@ -204,9 +202,11 @@ class BaseSplit {
   constructor(props: LayoutSplitPropsBase) {
     this.defaultPercentage = props.percentage;
 
+    // istanbul ignore else
     if (props.id)
       this.stateId = props.id;
 
+    // istanbul ignore else
     if (props.lock)
       this.isLocked = props.lock;
   }
@@ -348,31 +348,18 @@ class VerticalSplit extends BaseSplit implements LayoutSplit {
  * @public
  */
 export class ContentLayoutDef {
-  private static _sId = 0;
   private _layoutProps: ContentLayoutProps;
   private _rootSplit?: LayoutSplit;
 
   /** ID for this Content Layout */
   public id: string = "";
-  /** Localization key for a description. */
-  public descriptionKey: string = "";
-  /** The priority for the layout. Determines its position in menus. Higher numbers appear first. */
-  public priority: number = 0;
-
+  /** Description of the layout. */
+  public description: string = "";
   constructor(layoutProps: ContentLayoutProps) {
     this._layoutProps = layoutProps;
-
-    if (layoutProps.id)
-      this.id = layoutProps.id;
-    else {
-      ContentLayoutDef._sId++;
-      this.id = `ContentLayout-${ContentLayoutDef._sId}`;
-    }
-
-    if (layoutProps.descriptionKey !== undefined)
-      this.descriptionKey = layoutProps.descriptionKey;
-    if (layoutProps.priority !== undefined)
-      this.priority = layoutProps.priority;
+    this.id = layoutProps.id;
+    if (layoutProps.description !== undefined)
+      this.description = layoutProps.description;
   }
 
   public get rootSplit(): LayoutSplit | undefined { return this._rootSplit; }
@@ -491,6 +478,7 @@ export class ContentLayoutActivatedEvent extends UiEvent<ContentLayoutActivatedE
 interface ContentLayoutState {
   contentLayoutDef: ContentLayoutDef;
   contentContainer?: React.ReactNode;
+  contentGroupId?: string;
 }
 
 /** Properties for the [[ContentLayout]] React component.
@@ -522,6 +510,7 @@ export class ContentLayout extends React.Component<ContentLayoutComponentProps, 
     this.state = {
       contentLayoutDef: this.props.contentLayout,
       contentContainer,
+      contentGroupId: this.props.contentGroup.groupId,
     };
   }
 
@@ -543,13 +532,15 @@ export class ContentLayout extends React.Component<ContentLayoutComponentProps, 
     this.setState({
       contentLayoutDef: args.contentLayout,
       contentContainer,
+      contentGroupId: contentGroup.groupId,
     });
   };
 
   public override render(): React.ReactNode {
     if (this.state.contentContainer) {
       return (
-        <div id="uifw-contentlayout-div" className={this.props.className} style={this.props.style} key={this.state.contentLayoutDef.id}
+        <div id="uifw-contentlayout-div" className={this.props.className} style={this.props.style}
+          key={`${this.state.contentGroupId}-${this.state.contentLayoutDef.id}`}
           onMouseDown={this._onMouseDown} onMouseUp={this._onMouseUp} role="presentation"
         >
           {this.state.contentContainer}

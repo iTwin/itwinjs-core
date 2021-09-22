@@ -173,13 +173,11 @@ export class ByteStream {
     rewind(numBytes: number): boolean;
     }
 
-// @public
+// @internal (undocumented)
 export enum ChangeSetApplyOption {
+    // (undocumented)
     Merge = 1,
-    None = 0,
-    // @deprecated
-    Reinstate = 3,
-    // @deprecated
+    // (undocumented)
     Reverse = 2
 }
 
@@ -233,10 +231,7 @@ export class ClientRequestContext {
     readonly sessionId: GuidString;
     // @internal (undocumented)
     toJSON(): ClientRequestContextProps;
-    // (undocumented)
-    get useContextForRpc(): boolean;
-    set useContextForRpc(value: boolean);
-    }
+}
 
 // @public
 export interface ClientRequestContextProps extends SessionProps {
@@ -536,28 +531,6 @@ export interface EntryContainer<K, V> {
     set(key: K, value: Entry<K, V>): void;
     // (undocumented)
     readonly size: number;
-}
-
-// @beta
-export enum ExtensionStatus {
-    // (undocumented)
-    BadExtension = 143364,
-    // (undocumented)
-    BadRequest = 143362,
-    // (undocumented)
-    DownloadError = 143367,
-    // (undocumented)
-    ExtensionAlreadyExists = 143365,
-    // (undocumented)
-    ExtensionNotFound = 143363,
-    // (undocumented)
-    EXTENSIONSTATUS_BASE = 143360,
-    // (undocumented)
-    Success = 0,
-    // (undocumented)
-    UnknownError = 143361,
-    // (undocumented)
-    UploadError = 143366
 }
 
 // @public
@@ -1425,44 +1398,6 @@ export function utf8ToString(utf8: Uint8Array): string | undefined;
 
 // @internal
 export function utf8ToStringPolyfill(utf8: Uint8Array): string | undefined;
-
-// @beta
-export enum WSStatus {
-    // (undocumented)
-    ClassNotFound = 98311,
-    // (undocumented)
-    FileNotFound = 98314,
-    // (undocumented)
-    InstanceNotFound = 98313,
-    // (undocumented)
-    LoginFailed = 98306,
-    // (undocumented)
-    LoginRequired = 98319,
-    // (undocumented)
-    NoClientLicense = 98317,
-    // (undocumented)
-    NoServerLicense = 98316,
-    // (undocumented)
-    NotEnoughRights = 98308,
-    // (undocumented)
-    NotSupported = 98315,
-    // (undocumented)
-    PropertyNotFound = 98312,
-    // (undocumented)
-    RepositoryNotFound = 98309,
-    // (undocumented)
-    SchemaNotFound = 98310,
-    // (undocumented)
-    SslRequired = 98307,
-    // (undocumented)
-    Success = 0,
-    // (undocumented)
-    TooManyBadLoginAttempts = 98318,
-    // (undocumented)
-    Unknown = 98305,
-    // (undocumented)
-    WSERROR_BASE = 98304
-}
 
 
 // (No @packageDocumentation comment for this package)

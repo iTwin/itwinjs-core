@@ -7,14 +7,14 @@
  */
 
 import { GuidString, IModelHubStatus, Logger } from "@bentley/bentleyjs-core";
-import {
-  AuthorizedClientRequestContext, CancelRequest, ECJsonTypeMap, FileHandler, ProgressCallback, WsgInstance, WsgQuery,
-} from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, CancelRequest, FileHandler, ProgressCallback } from "@bentley/itwin-client";
+import { IModelClient } from "../IModelClient";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
+import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
+import { WsgQuery } from "../wsg/WsgQuery";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck, IModelHubClientError, IModelHubError } from "./Errors";
 import { addSelectApplicationData, addSelectFileAccessKey } from "./HubQuery";
-import { IModelClient } from "../IModelClient";
 import { LockQuery } from "./Locks";
 
 const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;

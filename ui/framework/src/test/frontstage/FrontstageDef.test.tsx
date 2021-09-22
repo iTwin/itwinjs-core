@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { MockRender } from "@bentley/imodeljs-frontend";
-import { ContentLayoutDef, CoreTools, Frontstage, FRONTSTAGE_SETTINGS_NAMESPACE, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, getFrontstageStateSettingName, StagePanelDef, UiFramework, WidgetDef } from "../../ui-framework";
+import { CoreTools, Frontstage, FRONTSTAGE_SETTINGS_NAMESPACE, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, getFrontstageStateSettingName, StagePanelDef, UiFramework, WidgetDef } from "../../ui-framework";
 import TestUtils, { storageMock } from "../TestUtils";
 import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, UiItemsManager, UiItemsProvider, WidgetState } from "@bentley/ui-abstract";
 import { addFloatingWidget, addPanelWidget, addPopoutWidget, addTab, createNineZoneState, NineZoneState } from "@bentley/ui-ninezone";
@@ -30,37 +30,43 @@ describe("FrontstageDef", () => {
   });
 
   class BadLayoutFrontstage extends FrontstageProvider {
+    public static stageId = "BadLayout";
+    public get id(): string {
+      return BadLayoutFrontstage.stageId;
+    }
 
     public get frontstage(): React.ReactElement<FrontstageProps> {
 
       return (
         <Frontstage
-          id="BadLayout"
+          id={this.id}
           defaultTool={CoreTools.selectElementCommand}
-          defaultLayout="abc"
-          contentGroup="def"
+          contentGroup={TestUtils.TestContentGroup1}
         />
       );
     }
   }
 
   class BadGroupFrontstage extends FrontstageProvider {
+    public static stageId = "BadGroup";
+    public get id(): string {
+      return BadGroupFrontstage.stageId;
+    }
+
     public get frontstage(): React.ReactElement<FrontstageProps> {
 
-      const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
-        {
-          id: "SingleContent",
-          descriptionKey: "App:ContentLayoutDef.SingleContent",
-          priority: 100,
-        },
-      );
+      // const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
+      //   {
+      //     id: "SingleContent",
+      //     description: "App:ContentLayoutDef.SingleContent",
+      //   },
+      // );
 
       return (
         <Frontstage
-          id="BadGroup"
+          id={this.id}
           defaultTool={CoreTools.selectElementCommand}
-          defaultLayout={contentLayoutDef}
-          contentGroup="def"
+          contentGroup={TestUtils.TestContentGroup1}
         />
       );
     }
@@ -142,13 +148,17 @@ describe("FrontstageDef", () => {
     }
 
     class EmptyFrontstageProvider extends FrontstageProvider {
+      public static stageId = "TestFrontstageUi2";
+      public get id(): string {
+        return EmptyFrontstageProvider.stageId;
+      }
+
       public get frontstage() {
         return (
           <Frontstage
-            id="TestFrontstageUi2"
+            id={this.id}
             defaultTool={CoreTools.selectElementCommand}
-            defaultLayout="SingleContent"
-            contentGroup="TestContentGroup1"
+            contentGroup={TestUtils.TestContentGroup1}
             defaultContentId="defaultContentId"
             isInFooterMode={false}
             applicationData={{ key: "value" }}
@@ -168,7 +178,8 @@ describe("FrontstageDef", () => {
     it("should add extension widgets to stage panel zones", async () => {
       const frontstageProvider = new EmptyFrontstageProvider();
       FrontstageManager.addFrontstageProvider(frontstageProvider);
-      await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+      const frontstageDef = await FrontstageManager.getFrontstageDef(EmptyFrontstageProvider.stageId);
+      await FrontstageManager.setActiveFrontstageDef(frontstageDef);
       const sut = FrontstageManager.activeFrontstageDef!;
       sut.rightPanel!.panelZones.start.widgetDefs.map((w) => w.id).should.eql(["WidgetsProviderR1"]);
       sut.rightPanel!.panelZones.middle.widgetDefs.map((w) => w.id).should.eql(["WidgetsProviderRM1"]);

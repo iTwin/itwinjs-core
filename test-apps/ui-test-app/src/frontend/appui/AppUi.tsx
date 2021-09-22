@@ -19,8 +19,10 @@ import "./tooluiproviders/Tool2UiProvider";
 import "./statusbars/AppStatusBar";
 import "./navigationaids/CubeExampleNavigationAid";
 import * as React from "react";
-import { BadgeType, FunctionKey, StagePanelLocation, StagePanelSection, StageUsage, WidgetState } from "@bentley/ui-abstract";
+import { BadgeType, ContentLayoutProps, FunctionKey, StagePanelLocation, StagePanelSection, StageUsage, StandardContentLayouts, WidgetState } from "@bentley/ui-abstract";
 import { FillCentered } from "@bentley/ui-core";
+import { IModelApp } from "@bentley/imodeljs-frontend";
+
 import {
   AccuDrawCommandItems,
   AccuDrawKeyboardShortcuts,
@@ -28,7 +30,6 @@ import {
   CommandItemDef,
   ConfigurableUiManager,
   ContentGroupProps,
-  ContentLayoutProps,
   FrameworkAccuDraw,
   FrontstageManager,
   KeyboardShortcutManager,
@@ -43,15 +44,14 @@ import { Frontstage1 } from "./frontstages/Frontstage1";
 import { Frontstage2 } from "./frontstages/Frontstage2";
 import { Frontstage3 } from "./frontstages/Frontstage3";
 import { Frontstage4 } from "./frontstages/Frontstage4";
-import { FrontstageUi2 } from "./frontstages/FrontstageUi2";
 import { IModelIndexFrontstage } from "./frontstages/IModelIndexFrontstage";
 import { IModelOpenFrontstage } from "./frontstages/IModelOpenFrontstage";
 import { ScheduleAnimationFrontstage } from "./frontstages/ScheduleAnimationFrontstage";
 import { SignInFrontstage } from "./frontstages/SignInFrontstage";
 import { AccuDrawPopupTools } from "../tools/AccuDrawPopupTools";
 import { AppTools } from "../tools/ToolSpecifications";
-import { IModelApp } from "@bentley/imodeljs-frontend";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
+import { FrontstageUi2 } from "./frontstages/FrontstageUi2";
 
 // cSpell:ignore uitestapp
 
@@ -60,11 +60,11 @@ import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 export class AppUi {
 
   public static initialize() {
+    // initialize content groups and layouts before any frontstages.
     AppUi.defineFrontstages();
-    AppUi.defineContentGroups();
-    AppUi.defineContentLayouts();
     AppUi.defineKeyboardShortcuts();
 
+    // TODO: should this be removed in 3.0 and just use UiItemsProvider for consistent approach???
     // use to test WidgetProvider API - Note: this is different from UiItemsProvider
     AppUi.defineDynamicWidgets();
 
@@ -74,12 +74,11 @@ export class AppUi {
   /** Define Frontstages
    */
   private static defineFrontstages() {
-
     ConfigurableUiManager.addFrontstageProvider(new Frontstage1());
     ConfigurableUiManager.addFrontstageProvider(new Frontstage2());
     ConfigurableUiManager.addFrontstageProvider(new Frontstage3());
     ConfigurableUiManager.addFrontstageProvider(new Frontstage4());
-    ConfigurableUiManager.addFrontstageProvider(new FrontstageUi2());
+    FrontstageUi2.register();
     ConfigurableUiManager.addFrontstageProvider(new IModelIndexFrontstage());
     ConfigurableUiManager.addFrontstageProvider(new IModelOpenFrontstage());
     ConfigurableUiManager.addFrontstageProvider(new SignInFrontstage());
@@ -106,196 +105,80 @@ export class AppUi {
     }
   };
 
+  public static ThreeStackedVertical: ContentLayoutProps = {
+    id: "ui-test-app:ThreeStacked",
+    horizontalSplit: {
+      id: "ui-test-app:ThreeStacked-TopSplit",
+      percentage: 0.50,
+      minSizeTop: 100,
+      minSizeBottom: 200,
+      top: 0,
+      bottom: {
+        horizontalSplit: { id: "ui-test-app:ThreeStacked-BottomSplit", percentage: 0.50, top: 1, bottom: 2, minSizeTop: 100, minSizeBottom: 100 },
+      },
+    },
+  };
+
   /** Define Content Groups referenced by Frontstages.
    */
-  private static defineContentGroups() {
-    const singleIModelViewport: ContentGroupProps = {
-      id: "singleIModelViewport",
-      contents: [
-        {
-          classId: IModelViewportControl,
-          id: "singleIModelView",
-        },
-      ],
-    };
-
-    const drawingAndSheetViewports: ContentGroupProps = {
-      id: "DrawingAndSheetViewports",
-      contents: [
-        {
-          classId: IModelViewportControl,
-        },
-        {
-          classId: IModelViewportControl,
-        },
-      ],
-    };
-
-    const threeIModelViewportsWithItemsTable: ContentGroupProps = {
-      id: "ThreeIModelViewportsWithItemsTable",
-      contents: [
-        {
-          classId: IModelViewportControl,
-        },
-        {
-          classId: IModelViewportControl,
-        },
-        {
-          classId: "TablePane",
-        },
-        {
-          classId: IModelViewportControl,
-        },
-      ],
-    };
-
-    const testContentGroup1: ContentGroupProps = {
-      id: "TestContentGroup1",
-      contents: [
-        {
-          classId: IModelViewportControl,
-          applicationData: { label: "Content 1a", bgColor: "black" },
-        },
-        {
-          classId: IModelViewportControl,
-          applicationData: { label: "Content 2a", bgColor: "black" },
-        },
-        {
-          classId: "TableExampleContent",
-          applicationData: { label: "Content 3a", bgColor: "black" },
-        },
-        {
-          classId: "TestContent",
-          applicationData: { label: "Content 4a", bgColor: "black" },
-        },
-      ],
-    };
-
-    const testContentGroup2: ContentGroupProps = {
-      id: "TestContentGroup2",
-      contents: [
-        {
-          classId: IModelViewportControl,
-          applicationData: { label: "Content 1b", bgColor: "black" },
-        },
-        {
-          classId: IModelViewportControl,
-          applicationData: { label: "Content 2b", bgColor: "black" },
-        },
-        {
-          classId: "TableExampleContent",
-          applicationData: { label: "Content 3b", bgColor: "black" },
-        },
-        {
-          classId: IModelViewportControl,
-          applicationData: { label: "Content 4b", bgColor: "black" },
-        },
-      ],
-    };
-
-    const testContentGroup3: ContentGroupProps = {
-      id: "TestContentGroup3",
-      contents: [
-        {
-          classId: IModelViewportControl,
-          applicationData: { label: "Content 1a", bgColor: "black" },
-        },
-        {
-          classId: "CubeContent",
-          applicationData: { label: "Content 2a", bgColor: "black" },
-        },
-        {
-          classId: "TableExampleContent",
-          applicationData: { label: "Content 3a", bgColor: "black" },
-        },
-        {
-          classId: IModelViewportControl,
-          applicationData: { label: "Content 4a", bgColor: "black" },
-        },
-      ],
-    };
-
-    const testContentGroup4: ContentGroupProps = {
-      id: "TestContentGroup4",
-      contents: [
-        {
-          classId: IModelViewportControl,
-          applicationData: { label: "Content 1a", bgColor: "black" },
-        },
-        {
-          classId: IModelViewportControl,
-          applicationData: { label: "Content 2a", bgColor: "black" },
-        },
-        {
-          classId: "TableExampleContent",
-          applicationData: { label: "Content 3a", bgColor: "black" },
-        },
-        {
-          classId: "TreeExampleContent",
-          applicationData: { label: "Content 4a", bgColor: "black" },
-        },
-      ],
-    };
-
-    const contentGroups: ContentGroupProps[] = [];
-    contentGroups.push(singleIModelViewport, drawingAndSheetViewports, threeIModelViewportsWithItemsTable, testContentGroup1, testContentGroup2, testContentGroup3, testContentGroup4);
-    ConfigurableUiManager.loadContentGroups(contentGroups);
-  }
-
-  /** Define Content Layouts referenced by Frontstages.
-   */
-  private static defineContentLayouts() {
-    const contentLayouts: ContentLayoutProps[] = AppUi.getContentLayouts();
-    ConfigurableUiManager.loadContentLayouts(contentLayouts);
-  }
-
-  private static getContentLayouts(): ContentLayoutProps[] {
-    const fourQuadrants: ContentLayoutProps = {
-      id: "FourQuadrants",
-      horizontalSplit: {
-        percentage: 0.50,
-        minSizeTop: 100, minSizeBottom: 100,
-        top: { verticalSplit: { percentage: 0.50, left: 0, right: 1, minSizeLeft: 100, minSizeRight: 100 } },
-        bottom: { verticalSplit: { percentage: 0.50, left: 2, right: 3, minSizeLeft: 100, minSizeRight: 100 } },
+  public static TestContentGroup1: ContentGroupProps = {
+    id: "TestContentGroup1",
+    layout: StandardContentLayouts.threeViewsTwoOnLeft,
+    contents: [
+      {
+        id: "primaryIModelView",
+        classId: IModelViewportControl,
+        applicationData: { label: "Content 1a", bgColor: "black" },
       },
-    };
-
-    const twoHalvesVertical: ContentLayoutProps = {
-      id: "TwoHalvesVertical",
-      verticalSplit: { percentage: 0.50, left: 0, right: 1, minSizeLeft: 100, minSizeRight: 100 },
-    };
-
-    const twoHalvesHorizontal: ContentLayoutProps = {
-      id: "TwoHalvesHorizontal",
-      horizontalSplit: { percentage: 0.50, top: 0, bottom: 1, minSizeTop: 100, minSizeBottom: 100 },
-    };
-
-    const singleContent: ContentLayoutProps = {
-      id: "SingleContent",
-    };
-
-    const threeRightStacked: ContentLayoutProps = { // Three Views, one on the left, two stacked on the right.
-      id: "ThreeRightStacked",
-      verticalSplit: {
-        id: "ThreeRightStacked.MainVertical",
-        percentage: 0.50,
-        minSizeLeft: 100, minSizeRight: 100,
-        left: 0,
-        right: { horizontalSplit: { percentage: 0.50, top: 1, bottom: 2, minSizeTop: 100, minSizeBottom: 100 } },
+      {
+        id: "secondIModelView",
+        classId: IModelViewportControl,
+        applicationData: { label: "Content 2a", bgColor: "black" },
       },
-    };
+      {
+        id: "tableView",
+        classId: "TableExampleContent",
+        applicationData: { label: "Content 3a", bgColor: "black" },
+      },
+    ],
+  };
 
-    const contentLayouts: ContentLayoutProps[] = [];
-    // in order to pick out by number of views for convenience.
-    contentLayouts.push(singleContent, twoHalvesVertical, threeRightStacked, fourQuadrants, singleContent, twoHalvesHorizontal);
-    return contentLayouts;
-  }
+  public static TestContentGroup2: ContentGroupProps = {
+    id: "TestContentGroup2",
+    layout: AppUi.ThreeStackedVertical,
+    contents: [
+      {
+        id: "primaryIModelView",
+        classId: IModelViewportControl,
+        applicationData: { label: "Content 1b", bgColor: "black" },
+      },
+      {
+        id: "secondIModelView",
+        classId: IModelViewportControl,
+        applicationData: { label: "Content 2b", bgColor: "black" },
+      },
+      {
+        id: "tableView",
+        classId: "TableExampleContent",
+        applicationData: { label: "Content 3b", bgColor: "black" },
+      },
+    ],
+  };
 
   public static findLayoutFromContentCount(contentCount: number): ContentLayoutProps | undefined {
-    const contentLayouts: ContentLayoutProps[] = AppUi.getContentLayouts();
-    if (contentCount <= 4)
-      return contentLayouts[contentCount - 1];
-    return undefined;
+    if (contentCount < 0)
+      return undefined;
+
+    switch (contentCount) {
+      case 1:
+        return StandardContentLayouts.singleView;
+      case 2:
+        return StandardContentLayouts.twoHorizontalSplit;
+      case 3:
+        return StandardContentLayouts.threeViewsTwoOnRight;
+      default:
+        return StandardContentLayouts.fourQuadrants;
+    }
   }
 
   /** Define Keyboard Shortcuts list.
@@ -404,7 +287,8 @@ export class AppUi {
     });
     const provider: WidgetProvider = {
       id: "test",
-      getWidgetDefs: (stageId: string, _stageUsage: string, location: ZoneLocation | StagePanelLocation, _section?: StagePanelSection | undefined): ReadonlyArray<WidgetDef> | undefined => {
+      getWidgetDefs: (stageId: string, _stageUsage: string, location: ZoneLocation | StagePanelLocation,
+        _section?: StagePanelSection | undefined, _frontstageAppData?: any): ReadonlyArray<WidgetDef> | undefined => {
         if (stageId === "ViewsFrontstage" && location === StagePanelLocation.Right) {
           return [widgetDef3];
         }

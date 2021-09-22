@@ -22,6 +22,6 @@ The following code that instantiates a nested frontstage, initializes the [Front
 
 ```ts
 const frontstageProvider = new NestedFrontstage();
-const frontstageDef = frontstageProvider.initializeDef();
+const frontstageDef = await FrontstageDef.create(frontstageProvider);
 await FrontstageManager.openNestedFrontstage(frontstageDef);
 ```

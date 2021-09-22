@@ -387,7 +387,7 @@ export class TransformerExtensiveTestScenario {
     assert.isTrue(displayStyle3d.settings.hasSubCategoryOverride);
     assert.equal(displayStyle3d.settings.subCategoryOverrides.size, 1);
     assert.exists(displayStyle3d.settings.getSubCategoryOverride(subCategoryId), "Expect subCategoryOverrides to have been remapped");
-    assert.isTrue(displayStyle3d.settings.excludedElements.has(physicalObjectId1), "Expect excludedElements to be remapped"); // eslint-disable-line deprecation/deprecation
+    assert.isTrue(new Set<string>(displayStyle3d.settings.excludedElementIds).has(physicalObjectId1), "Expect excludedElements to be remapped");
     assert.equal(displayStyle3d.settings.environment.sky?.image?.type, SkyBoxImageType.Spherical);
     assert.equal(displayStyle3d.settings.environment.sky?.image?.texture, textureId);
     assert.equal(displayStyle3d.settings.getPlanProjectionSettings(spatialLocationModelId)?.elevation, 10.0);

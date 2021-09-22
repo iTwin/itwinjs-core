@@ -44,17 +44,6 @@ export enum BriefcaseIdValue {
    *  - **Standalone**. Standalone iModels are local files that are not connected to iModelHub, and therefore cannot accept or create changesets.
    */
   Unassigned = 0,
-
-  /** Alias for `Unassigned`.
-   * @deprecated use Unassigned
-   */
-  Standalone = 0,
-
-  /**
-   * @internal
-   * @deprecated use Unassigned
-   */
-  DeprecatedStandalone = 1,
 }
 
 /** Whether a briefcase is editable or may only accept incoming changesets from iModelHub
