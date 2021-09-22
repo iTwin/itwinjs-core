@@ -12,7 +12,6 @@ import { Cluster } from '@bentley/imodeljs-frontend';
 import { DecorateContext } from '@bentley/imodeljs-frontend';
 import { Decorator } from '@bentley/imodeljs-frontend';
 import { DrawingViewState } from '@bentley/imodeljs-frontend';
-import { I18NNamespace } from '@bentley/imodeljs-i18n';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { Marker } from '@bentley/imodeljs-frontend';
@@ -43,7 +42,7 @@ export class HyperModeling {
     static get markerConfig(): SectionMarkerConfig;
     static get markerHandler(): SectionMarkerHandler;
     // @internal (undocumented)
-    static get namespace(): I18NNamespace;
+    static get namespace(): string | undefined;
     static replaceConfiguration(config?: HyperModelingConfig): void;
     // @internal (undocumented)
     static resources?: Resources;

@@ -8,7 +8,7 @@
 
 import { enablePatches } from "immer";
 import { Logger } from "@bentley/bentleyjs-core";
-import { LocalizationClient } from "@bentley/imodeljs-i18n";
+import { LocalizationClient } from "@bentley/imodeljs-common";
 import { getClassName, UiError } from "@bentley/ui-abstract";
 import { UiCore } from "@bentley/ui-core";
 

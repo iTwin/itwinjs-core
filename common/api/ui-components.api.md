@@ -22,7 +22,6 @@ import { GlobalContextMenuProps } from '@bentley/ui-core';
 import { GlobalDialogProps } from '@bentley/ui-core';
 import { GroupButton } from '@bentley/ui-abstract';
 import { HorizontalAlignment } from '@bentley/ui-core';
-import { I18N } from '@bentley/imodeljs-i18n';
 import { IconDefinition } from '@bentley/ui-abstract';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
@@ -30,6 +29,7 @@ import { immerable } from 'immer';
 import * as Inspire from 'inspire-tree';
 import { Interaction } from 'scheduler/tracing';
 import { LinkElementsInfo } from '@bentley/ui-abstract';
+import { LocalizationClient } from '@bentley/imodeljs-i18n';
 import { MessageSeverity } from '@bentley/ui-abstract';
 import { NoChildrenProps } from '@bentley/ui-core';
 import { NodeCheckboxRenderer } from '@bentley/ui-core';
@@ -4202,10 +4202,10 @@ export interface TypeEditor {
 
 // @public
 export class UiComponents {
-    static get i18n(): I18N;
-    static get i18nNamespace(): string;
-    static initialize(i18n: I18N): Promise<void>;
+    static initialize(localizationClient: LocalizationClient): Promise<void>;
     static get initialized(): boolean;
+    static get localizationClient(): LocalizationClient;
+    static get localizationNamespace(): string;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
     // @internal (undocumented)

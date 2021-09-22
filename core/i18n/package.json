@@ -40,6 +40,7 @@
     "@bentley/bentleyjs-core": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
+    "@bentley/imodeljs-common": "workspace:*",
     "@types/i18next": "^8.4.2",
     "@types/i18next-browser-languagedetector": "^2.0.1",
     "@types/node": "10.14.1",

@@ -7,7 +7,7 @@
  */
 
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { LocalizationClient } from "@bentley/imodeljs-i18n";
+import { LocalizationClient } from "@bentley/imodeljs-common";
 import { PresentationError, PresentationStatus } from "@bentley/presentation-common";
 import { FavoritePropertiesManager, FavoritePropertiesManagerProps } from "./favorite-properties/FavoritePropertiesManager";
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes } from "./favorite-properties/FavoritePropertiesStorage";

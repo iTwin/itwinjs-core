@@ -7,8 +7,8 @@ import { createStore, Store } from "redux";
 import * as sinon from "sinon";
 import { fireEvent } from "@testing-library/react";
 import { expect } from "chai";
-
-import { I18N, LocalizationClient } from "@bentley/imodeljs-i18n";
+import { LocalizationClient } from "@bentley/imodeljs-common";
+import { I18N } from "@bentley/imodeljs-i18n";
 import { UserInfo } from "@bentley/itwin-client";
 import { PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValueFormat, StandardTypeNames } from "@bentley/ui-abstract";
 import { UiSettings, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";

@@ -12,7 +12,7 @@ import { Store } from "redux";
 import { GuidString, Logger, ProcessDetector } from "@bentley/bentleyjs-core";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection, SnapMode, ViewState } from "@bentley/imodeljs-frontend";
-import { LocalizationClient } from "@bentley/imodeljs-i18n";
+import { LocalizationClient } from "@bentley/imodeljs-common";
 import { AccessToken, UserInfo } from "@bentley/itwin-client";
 import { Presentation } from "@bentley/presentation-frontend";
 import { TelemetryEvent } from "@bentley/telemetry-client";
@@ -327,7 +327,9 @@ export class UiFramework {
    * @internal
    */
   public static translate(key: string | string[]): string {
-    return UiFramework._localizationClient!.getLocalizedStringWithNamespace(UiFramework.localizationNamespace, key);
+    if (!UiFramework._localizationClient)
+      throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
+    return UiFramework._localizationClient.getLocalizedStringWithNamespace(UiFramework.localizationNamespace, key);
   }
 
   /** @internal */

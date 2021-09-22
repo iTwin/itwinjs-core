@@ -11,10 +11,10 @@ import { FormatProps } from '@bentley/imodeljs-quantity';
 import { FormatterSpec } from '@bentley/imodeljs-quantity';
 import { GenericUiEventArgs } from '@bentley/ui-abstract';
 import { HSVColor } from '@bentley/imodeljs-common';
-import { I18N } from '@bentley/imodeljs-i18n';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { InputProps } from '@itwin/itwinui-react';
+import { LocalizationClient } from '@bentley/imodeljs-i18n';
 import { Matrix3d } from '@bentley/geometry-core';
 import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
@@ -1039,10 +1039,10 @@ export enum TimelineScale {
 
 // @public
 export class UiIModelComponents {
-    static get i18n(): I18N;
-    static get i18nNamespace(): string;
-    static initialize(i18n?: I18N): Promise<void>;
+    static initialize(localizationClient?: LocalizationClient): Promise<void>;
     static get initialized(): boolean;
+    static get localizationClient(): LocalizationClient;
+    static get localizationNamespace(): string;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
     // @internal (undocumented)

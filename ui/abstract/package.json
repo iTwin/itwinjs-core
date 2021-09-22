@@ -44,6 +44,7 @@
     "@bentley/bentleyjs-core": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
+    "@bentley/imodeljs-common": "workspace:*",
     "@bentley/imodeljs-i18n": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",

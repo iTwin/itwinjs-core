@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { LocalizationClient } from "@bentley/imodeljs-i18n";
+import { LocalizationClient } from "@bentley/imodeljs-common";
 import { UnitSystemKey } from "@bentley/imodeljs-quantity";
 import { Presentation } from "@bentley/presentation-frontend";
 import {

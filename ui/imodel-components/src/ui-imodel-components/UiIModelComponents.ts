@@ -9,7 +9,7 @@
 import { enablePatches } from "immer";
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { LocalizationClient } from "@bentley/imodeljs-i18n";
+import { LocalizationClient } from "@bentley/imodeljs-common";
 import { getClassName, UiError } from "@bentley/ui-abstract";
 import { UiComponents } from "@bentley/ui-components";
 

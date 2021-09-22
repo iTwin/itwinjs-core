@@ -49,6 +49,7 @@
     "@bentley/bentleyjs-core": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
+    "@bentley/imodeljs-common": "workspace:*",
     "@bentley/imodeljs-i18n": "workspace:*",
     "@bentley/react-scripts": "4.0.3",
     "@bentley/ui-abstract": "workspace:*",

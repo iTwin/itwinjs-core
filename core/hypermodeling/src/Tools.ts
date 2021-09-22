@@ -7,7 +7,7 @@
  */
 
 import { SectionType } from "@bentley/imodeljs-common";
-import { LocalizationClient } from "@bentley/imodeljs-i18n";
+import { LocalizationClient } from "@bentley/imodeljs-common";
 import {
   IModelApp,
   ScreenViewport,

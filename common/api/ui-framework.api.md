@@ -54,7 +54,6 @@ import { FunctionKey } from '@bentley/ui-abstract';
 import { GroupButton as GroupButton_2 } from '@bentley/ui-abstract';
 import { GuidString } from '@bentley/bentleyjs-core';
 import { HorizontalAnchor } from '@bentley/ui-ninezone';
-import { I18N } from '@bentley/imodeljs-i18n';
 import { IconProps } from '@bentley/ui-core';
 import { IconSpec } from '@bentley/ui-core';
 import { Id64Array } from '@bentley/bentleyjs-core';
@@ -67,6 +66,7 @@ import { Interaction } from 'scheduler/tracing';
 import { InteractiveTool } from '@bentley/imodeljs-frontend';
 import { IPresentationTreeDataProvider } from '@bentley/presentation-components';
 import { ItemField } from '@bentley/imodeljs-frontend';
+import { LocalizationClient } from '@bentley/imodeljs-i18n';
 import { MessageBoxIconType } from '@bentley/imodeljs-frontend';
 import { MessageBoxType } from '@bentley/imodeljs-frontend';
 import { MessageBoxValue } from '@bentley/imodeljs-frontend';
@@ -6539,18 +6539,18 @@ export class UiFramework {
     static getWidgetOpacity(): number;
     // @alpha (undocumented)
     static get hideIsolateEmphasizeActionHandler(): HideIsolateEmphasizeActionHandler;
-    static get i18n(): I18N;
-    static get i18nNamespace(): string;
     // @internal (undocumented)
     static get iModelServices(): IModelServices;
-    static initialize(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string): Promise<void>;
+    static initialize(store: Store<any> | undefined, localizationClient?: LocalizationClient, frameworkStateKey?: string): Promise<void>;
     static get initialized(): boolean;
     // @internal
-    static initializeEx(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<void>;
+    static initializeEx(store: Store<any> | undefined, localizationClient?: LocalizationClient, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<void>;
     // @alpha
     static get isContextMenuOpen(): boolean;
     // (undocumented)
     static isMobile(): boolean;
+    static get localizationClient(): LocalizationClient;
+    static get localizationNamespace(): string;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
     // @internal

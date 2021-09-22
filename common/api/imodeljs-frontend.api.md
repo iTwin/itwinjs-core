@@ -126,9 +126,6 @@ import { GroundPlane } from '@bentley/imodeljs-common';
 import { GuidString } from '@bentley/bentleyjs-core';
 import { HiddenLine } from '@bentley/imodeljs-common';
 import { Hilite } from '@bentley/imodeljs-common';
-import { I18N } from '@bentley/imodeljs-i18n';
-import { I18NNamespace } from '@bentley/imodeljs-i18n';
-import { I18NOptions } from '@bentley/imodeljs-i18n';
 import { Id64 } from '@bentley/bentleyjs-core';
 import { Id64Arg } from '@bentley/bentleyjs-core';
 import { Id64Array } from '@bentley/bentleyjs-core';
@@ -158,6 +155,7 @@ import { IpcSocketFrontend } from '@bentley/imodeljs-common';
 import { LightSettings } from '@bentley/imodeljs-common';
 import { LinePixels } from '@bentley/imodeljs-common';
 import { LocalBriefcaseProps } from '@bentley/imodeljs-common';
+import { LocalizationClient } from '@bentley/imodeljs-i18n';
 import { LogLevel } from '@bentley/bentleyjs-core';
 import { Loop } from '@bentley/geometry-core';
 import { LowAndHighXY } from '@bentley/geometry-core';
@@ -2927,83 +2925,10 @@ export enum EventHandled {
     Yes = 1
 }
 
-// @beta
-export abstract class Extension {
-    constructor(name: string);
-    protected _defaultNs: string;
-    get i18n(): I18N;
-    // @internal (undocumented)
-    get loader(): ExtensionLoader | undefined;
-    set loader(loader: ExtensionLoader | undefined);
-    // (undocumented)
-    name: string;
-    abstract onExecute(_args: string[]): Promise<void>;
-    onLoad(_args: string[]): Promise<void>;
-    resolveResourceUrl(relativeUrl: string): string;
-    // @deprecated
-    setI18n(defaultNamespace?: string, options?: I18NOptions): void;
-}
-
-// @beta
-export class ExtensionAdmin {
-    constructor();
-    addExtensionLoader(extensionLoader: ExtensionLoader): void;
-    addExtensionLoaderFront(extensionLoader: ExtensionLoader): void;
-    // @internal (undocumented)
-    addPendingExtension(extensionRootName: string, pendingExtension: PendingExtension): void;
-    loadExtension(extensionRoot: string, extensionVersion?: string, args?: string[]): Promise<Extension | undefined>;
-    readonly onExtensionLoaded: BeEvent<(extensionName: string) => void>;
-    onInitialized(): void;
-    register(extension: Extension): void;
-    }
-
-// @beta
-export interface ExtensionLoader {
-    // (undocumented)
-    getExtensionName(extensionRoot: string): string;
-    // (undocumented)
-    loadExtension(extensionName: string, extensionVersion?: string, args?: string[]): Promise<PendingExtension | undefined>;
-    // (undocumented)
-    resolveResourceUrl(extensionName: string, relativeFileName: string): string;
-}
-
-// @beta
-export interface ExtensionProps {
-    // (undocumented)
-    contextId: string;
-    // (undocumented)
-    extensionName: string;
-    // (undocumented)
-    files: FileInfo[];
-    // (undocumented)
-    isPublic: boolean;
-    // (undocumented)
-    status: ExtensionUploadStatus;
-    // (undocumented)
-    timestamp: Date;
-    // (undocumented)
-    uploadedBy: string;
-    // (undocumented)
-    version: string;
-}
-
 // @public
 export interface ExtentLimits {
     max: number;
     min: number;
-}
-
-// @beta
-export class ExternalServerExtensionLoader implements ExtensionLoader {
-    constructor(serverName: string);
-    // (undocumented)
-    getExtensionName(extensionRoot: string): string;
-    // (undocumented)
-    loadExtension(extensionName: string, extensionVersion?: string, args?: string[]): Promise<PendingExtension | undefined>;
-    // (undocumented)
-    resolveResourceUrl(extensionName: string, relativeUrl: string): string;
-    // (undocumented)
-    serverName: string;
 }
 
 // @internal
@@ -4347,17 +4272,15 @@ export class IModelApp {
     static authorizationClient?: FrontendAuthorizationClient;
     // @internal (undocumented)
     static createRenderSys(opts?: RenderSystem.Options): RenderSystem;
-    // @beta
-    static get extensionAdmin(): ExtensionAdmin;
     // @alpha
     static formatElementToolTip(msg: string[]): HTMLElement;
     // @internal (undocumented)
     static get hasRenderSystem(): boolean;
     // @internal
     static get hubAccess(): FrontendHubAccess;
-    static get i18n(): I18N;
     // @internal (undocumented)
     static get initialized(): boolean;
+    static get localizationClient(): LocalizationClient;
     // @internal (undocumented)
     static get locateManager(): ElementLocateManager;
     // @internal (undocumented)
@@ -4424,10 +4347,8 @@ export interface IModelAppOptions {
     applicationId?: string;
     applicationVersion?: string;
     authorizationClient?: FrontendAuthorizationClient;
-    // @beta
-    extensionAdmin?: ExtensionAdmin;
-    i18n?: I18N | I18NOptions;
     imodelClient?: IModelClient;
+    localizationClient?: LocalizationClient;
     // @internal (undocumented)
     locateManager?: ElementLocateManager;
     // @beta
@@ -4942,14 +4863,6 @@ export class LengthDescription extends FormattedQuantityDescription {
 // @internal (undocumented)
 export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void;
 
-// @internal (undocumented)
-export interface LoadedExtensionProps {
-    // (undocumented)
-    basePath: string;
-    // (undocumented)
-    props: ExtensionProps;
-}
-
 // @internal
 export class LocalhostIpcApp {
     // (undocumented)
@@ -5040,9 +4953,6 @@ export enum LockedStates {
     // (undocumented)
     Y_BM = 2
 }
-
-// @internal (undocumented)
-export const loggerCategory = "imodeljs-frontend.Extension";
 
 // @public
 export class LookAndMoveTool extends ViewManip {
@@ -7051,23 +6961,6 @@ export interface PatternGraphicParams {
     // (undocumented)
     readonly xyOffsets: Float32Array;
 }
-
-// @beta
-export class PendingExtension {
-    constructor(_tarFileUrl: string, loader: ExtensionLoader, args?: string[] | undefined);
-    // (undocumented)
-    args?: string[] | undefined;
-    // (undocumented)
-    executor(resolve: ResolveFunc, reject: RejectFunc): void;
-    // (undocumented)
-    loader: ExtensionLoader;
-    // (undocumented)
-    promise: Promise<Extension>;
-    // (undocumented)
-    reject: RejectFunc | undefined;
-    // (undocumented)
-    resolve: ResolveFunc | undefined;
-    }
 
 // @internal (undocumented)
 export class PerformanceMetrics {
@@ -10707,16 +10600,16 @@ export class Tool {
     static get flyover(): string;
     get flyover(): string;
     static hidden: boolean;
-    static i18n: I18N;
     static iconSpec: string;
     get iconSpec(): string;
     static get keyin(): string;
     get keyin(): string;
+    static localizationClient: LocalizationClient;
     static get maxArgs(): number | undefined;
     static get minArgs(): number;
-    static namespace: I18NNamespace;
+    static namespace: string;
     parseAndRun(..._args: string[]): Promise<boolean>;
-    static register(namespace?: I18NNamespace, i18n?: I18N): void;
+    static register(namespace?: string, localizationClient?: LocalizationClient): void;
     run(..._args: any[]): Promise<boolean>;
     static toolId: string;
     get toolId(): string;
@@ -10979,8 +10872,8 @@ export class ToolRegistry {
     getToolList(): ToolList;
     parseAndRun(keyin: string): Promise<ParseAndRunResult>;
     parseKeyin(keyin: string): ParseKeyinResult;
-    register(toolClass: ToolType, namespace?: I18NNamespace, i18n?: I18N): void;
-    registerModule(moduleObj: any, namespace?: I18NNamespace, i18n?: I18N): void;
+    register(toolClass: ToolType, namespace?: string, localizationClient?: LocalizationClient): void;
+    registerModule(moduleObj: any, namespace?: string, localizationClient?: LocalizationClient): void;
     run(toolId: string, ...args: any[]): Promise<boolean>;
     // (undocumented)
     readonly tools: Map<string, typeof Tool>;

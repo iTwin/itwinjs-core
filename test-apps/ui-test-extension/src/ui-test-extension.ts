@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Extension, IModelApp } from "@bentley/imodeljs-frontend";
+import { LocalizationClient } from "@bentley/imodeljs-common";
 import { ExtensionUiItemsProvider } from "./ui/ExtensionUiItemsProvider";
 import { TraceUiItemsProvider } from "./ui/NetworkTraceUIProvider";
 import { UiItemsManager } from "@bentley/ui-abstract";
@@ -23,19 +23,14 @@ import { OpenTraceDialogTool } from "./ui/tools/OpenTraceDialogTool";
  *
  * For more information about Extensions, see Extension in the iModel.js documentation. *
  */
-export class UiTestExtension extends Extension {
+export class UiTestExtension {
+
+  private static localizationClient: LocalizationClient;
   /** We'll register the uiTestExtension.json as the Extension's namespace/ */
-  private _localizationNamespace?: string;
-  private _localizationTraceNamespace?: string;
+  private static _localizationNamespace?: string;
   /** The uiProvider will add a tool to the Toolbar and an item to the StatusBar in the host app */
-  public uiProvider?: ExtensionUiItemsProvider;
 
-  public constructor(name: string) {
-    super(name);
-    // args might override this.
-  }
-
-  private registerUiComponents(): void {
+  private static registerUiComponents(): void {
     SampleTool.register(this._localizationNamespace, this.localizationClient);
     GenericTool.register(this._localizationNamespace, this.localizationClient);
     OpenTraceDialogTool.register(this._localizationNamespace, this.localizationClient);
@@ -48,11 +43,13 @@ export class UiTestExtension extends Extension {
     UiItemsManager.register(new TraceUiItemsProvider(this.localizationClient, "uiTestExtension"));
   }
 
-  /** Invoked the first time this extension is loaded. */
-  public override async onLoad(_args: string[]): Promise<void> {
+  public static async initialize(localizationClient: LocalizationClient): Promise<void> {
+    if (undefined === this.localizationClient)
+      this.localizationClient = localizationClient;
     /** Register the localized strings for this extension
      * We'll pass the localizationClient member to the rest of the classes in the Extension to allow them to translate strings in the UI they implement.
      */
+    this._localizationNamespace = "uiTestExtension";
     await this.localizationClient.registerNamespace("uiTestExtension");
     this.registerUiComponents();
   }
@@ -62,5 +59,3 @@ export class UiTestExtension extends Extension {
     // currently, everything is done in onLoad.
   }
 }
-
-IModelApp.extensionAdmin.register(new UiTestExtension("ui-test"));

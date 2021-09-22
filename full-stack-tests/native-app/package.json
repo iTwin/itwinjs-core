@@ -30,7 +30,6 @@
     "@bentley/imodeljs-backend": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@bentley/imodeljs-common": "workspace:*",
-    "@bentley/imodeljs-i18n": "workspace:*",
     "@bentley/imodeljs-frontend": "workspace:*",
     "@bentley/imodeljs-markup": "workspace:*",
     "@bentley/electron-manager": "workspace:*",

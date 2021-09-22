@@ -6,69 +6,19 @@
  * @module Localization
  */
 
+import { LocalizationClient } from "@bentley/imodeljs-common";
 import { Callback, createInstance, i18n, InitOptions, TranslationOptions } from "i18next";
 import * as i18nextBrowserLanguageDetector from "i18next-browser-languagedetector";
 import XHR, { I18NextXhrBackend } from "i18next-xhr-backend";
 import { Logger } from "@bentley/bentleyjs-core";
 
-/** @public */
-// This should be more clearly defined or removed as we remove I18N and its dependencies (Formerly i18next::TranslationOptions).
-type LocalizationOptions = any;
-interface LocalizationInitOptions {
-  urlTemplate: string;
-}
-export interface LocalizationClient {
-  getLocalizedString(key: string | string[], options?: LocalizationOptions): string;
-  getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: LocalizationOptions): string;
-  getEnglishString(namespace: string, key: string | string[], options?: LocalizationOptions): string;
-  getLocalizedKeys(inputString: string): string;
-  registerNamespace(namespace: string): Promise<void>;
-  unregisterNamespace(namespace: string): void;
-  getNamespace(name: string): Promise<void> | undefined;
-  languageList(): string[];
-}
-
-export class EmptyLocalizationClient implements LocalizationClient {
-  public getLocalizedString(key: string | string[]): string {
-    Logger.logWarning("Localization", `Empty localization client will not localize key '${key}'.`);
-    return typeof(key) == "string" ? key : key[0];
-  }
-  public getLocalizedStringWithNamespace(namespace: string, key: string | string[]): string {
-    Logger.logWarning("Localization", `Empty localization client will not identify namespace '${namespace}'.`);
-    return typeof(key) == "string" ? key : key[0];
-  }
-  public getEnglishString(namespace: string, key: string | string[]): string {
-    Logger.logWarning("Localization", `Empty localization client will not identify namespace '${namespace}'.`);
-    return typeof(key) == "string" ? key : key[0];
-  }
-  public getLocalizedKeys(inputString: string): string {
-    Logger.logWarning("Localization", `Empty localization client will not localize input string '${inputString}'.`);
-    return inputString;
-  }
-  public async registerNamespace(namespace: string): Promise<void> {
-    Logger.logWarning("Localization", `Empty localization client will not register namespace '${namespace}'.`);
-    return Promise.resolve();
-  }
-  public unregisterNamespace(namespace: string): void {
-    Logger.logWarning("Localization", `Empty localization client will not unregister namespace '${namespace}'.`);
-  }
-  public getNamespace(name: string): Promise<void> | undefined {
-    Logger.logWarning("Localization", `Namespace '${name}' requested from empty authorization client.`);
-    return Promise.resolve();
-  }
-  public languageList(): string[] {
-    return [];
-  }
-}
-
-// export interface LocalizationOptions {
-//   urlTemplate?: I18NextXhrBackend.LoadPathOption;
-// }
-
 /** Supplies Internationalization services.
  * @note Internally, this class uses the [i18next](https://www.i18next.com/) package.
  * @public
  */
+interface LocalizationInitOptions {
+  urlTemplate: string;
+}
 export class I18N implements LocalizationClient {
   private _i18next: i18n;
   private readonly _namespaceRegistry: Map<string, Promise<void>> = new Map<string, Promise<void>>();

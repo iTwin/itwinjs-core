@@ -5,7 +5,7 @@
 
 import * as React from "react";
 import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, StageUsage, UiItemsProvider } from "@bentley/ui-abstract";
-import { LocalizationClient } from "@bentley/imodeljs-i18n";
+import { LocalizationClient } from "@bentley/imodeljs-common";
 import { MapLayersWidget } from "./widget/MapLayersWidget";
 import { ConfigurableCreateInfo, WidgetControl } from "@bentley/ui-framework";
 import { IModelApp } from "@bentley/imodeljs-frontend";

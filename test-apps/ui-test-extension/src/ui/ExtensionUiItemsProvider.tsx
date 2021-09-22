@@ -8,7 +8,7 @@ import {
   CommonStatusBarItem, CommonToolbarItem, StagePanelLocation, StagePanelSection,
   StageUsage, StatusBarSection, ToolbarOrientation, ToolbarUsage, UiItemsProvider, WidgetState,
 } from "@bentley/ui-abstract";
-import { LocalizationClient } from "@bentley/imodeljs-i18n";
+import { LocalizationClient } from "@bentley/imodeljs-common";
 import { UiFramework } from "@bentley/ui-framework";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import statusBarButtonSvg from "./StatusField.svg?sprite"; // use once svg are working again.

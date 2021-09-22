@@ -12,7 +12,6 @@ import { Box } from '@svgdotjs/svg.js';
 import { Element } from '@svgdotjs/svg.js';
 import { EventHandled } from '@bentley/imodeljs-frontend';
 import { G } from '@svgdotjs/svg.js';
-import { I18NNamespace } from '@bentley/imodeljs-i18n';
 import { Marker } from '@svgdotjs/svg.js';
 import { Matrix } from '@svgdotjs/svg.js';
 import { Point2d } from '@bentley/geometry-core';
@@ -252,7 +251,7 @@ export class MarkupApp {
     static get markupSvgClass(): string;
     // @internal (undocumented)
     static get moveHandleClass(): string;
-    static namespace: I18NNamespace;
+    static namespace?: string;
     static props: {
         handles: {
             size: number;

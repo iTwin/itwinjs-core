@@ -24,12 +24,12 @@ import { EnumerationProps } from '@bentley/ecschema-metadata';
 import { Format } from '@bentley/ecschema-metadata';
 import { FormatProps } from '@bentley/ecschema-metadata';
 import { FormatType } from '@bentley/ecschema-metadata';
-import { I18N } from '@bentley/imodeljs-i18n';
 import { InvertedUnit } from '@bentley/ecschema-metadata';
 import { InvertedUnitProps } from '@bentley/ecschema-metadata';
 import { ISchemaPartVisitor } from '@bentley/ecschema-metadata';
 import { KindOfQuantity } from '@bentley/ecschema-metadata';
 import { KindOfQuantityProps } from '@bentley/ecschema-metadata';
+import { LocalizationClient } from '@bentley/imodeljs-i18n';
 import { Mixin } from '@bentley/ecschema-metadata';
 import { MixinProps } from '@bentley/ecschema-metadata';
 import { OverrideFormat } from '@bentley/ecschema-metadata';
@@ -623,9 +623,9 @@ export class FormatChanges extends SchemaItemChanges {
 
 // @beta
 export abstract class FormatDiagnosticReporter extends SuppressionDiagnosticReporter {
-    constructor(suppressions?: Map<string, string[]>, i18n?: I18N);
+    constructor(suppressions?: Map<string, string[]>, localizationClient?: LocalizationClient);
     protected formatStringFromArgs(text: string, args: ArrayLike<string>, baseIndex?: number): string;
-    i18N?: I18N;
+    localizationClient?: LocalizationClient;
     protected abstract reportDiagnostic(diagnostic: AnyDiagnostic, messageText: string): void;
     reportInternal(diagnostic: AnyDiagnostic): void;
     }
@@ -658,7 +658,7 @@ export interface IDiagnostic<TYPE extends AnyECType, ARGS extends any[]> {
 
 // @beta
 export interface IDiagnosticReporter {
-    i18N?: I18N;
+    localizationClient?: LocalizationClient;
     report(diagnostic: AnyDiagnostic): void;
     suppressions?: Map<string, string[]>;
 }

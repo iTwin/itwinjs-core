@@ -8,8 +8,8 @@ import { BeEvent } from '@bentley/bentleyjs-core';
 import { BentleyError } from '@bentley/bentleyjs-core';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
-import { I18N } from '@bentley/imodeljs-i18n';
 import { Id64String } from '@bentley/bentleyjs-core';
+import { LocalizationClient } from '@bentley/imodeljs-i18n';
 
 // @public
 export interface AbstractActionItemProps extends CommonItemProps, CommandHandler {
@@ -1915,10 +1915,10 @@ export enum ToolbarUsage {
 
 // @public
 export class UiAbstract {
-    static get i18n(): I18N;
-    static get i18nNamespace(): string;
-    static initialize(i18n: I18N): Promise<void>;
+    static initialize(localizationClient: LocalizationClient): Promise<void>;
     static get initialized(): boolean;
+    static get localizationClient(): LocalizationClient;
+    static get localizationNamespace(): string;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
     static get messagePresenter(): MessagePresenter;

@@ -7,7 +7,7 @@
  */
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { LocalizationClient } from "@bentley/imodeljs-i18n";
+import { LocalizationClient } from "@bentley/imodeljs-common";
 import { MessagePresenter } from "./notification/MessagePresenter";
 import { getClassName } from "./utils/getClassName";
 import { UiError } from "./utils/UiError";

@@ -13,8 +13,7 @@ import {
 } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelClient } from "@bentley/imodelhub-client";
-import { IModelStatus, RpcConfiguration, RpcInterfaceDefinition, RpcRequest } from "@bentley/imodeljs-common";
-import { EmptyLocalizationClient, LocalizationClient } from "@bentley/imodeljs-i18n";
+import { EmptyLocalizationClient, IModelStatus, LocalizationClient, RpcConfiguration, RpcInterfaceDefinition, RpcRequest } from "@bentley/imodeljs-common";
 import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
 import { UiAdmin } from "@bentley/ui-abstract";
@@ -27,7 +26,6 @@ import * as displayStyleState from "./DisplayStyleState";
 import * as drawingViewState from "./DrawingViewState";
 import { ElementLocateManager } from "./ElementLocateManager";
 import { EntityState } from "./EntityState";
-import { ExtensionAdmin } from "./extension/ExtensionAdmin";
 import { FrontendHubAccess, IModelHubFrontend } from "./FrontendHubAccess";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import * as modelselector from "./ModelSelectorState";
@@ -42,7 +40,6 @@ import { TentativePoint } from "./TentativePoint";
 import { MapLayerFormatRegistry, MapLayerOptions, TileAdmin } from "./tile/internal";
 import * as accudrawTool from "./tools/AccuDrawTool";
 import * as clipViewTool from "./tools/ClipViewTool";
-import * as extensionTool from "./tools/ExtensionTool";
 import * as idleTool from "./tools/IdleTool";
 import * as measureTool from "./tools/MeasureTool";
 import * as selectTool from "./tools/SelectTool";
@@ -118,10 +115,6 @@ export interface IModelAppOptions {
   quantityFormatter?: QuantityFormatter;
   /** @internal */
   renderSys?: RenderSystem | RenderSystem.Options;
-  /** If present, supplies the [[ExtensionAdmin]] for this session.
-   * @beta
-   */
-  extensionAdmin?: ExtensionAdmin;
   /** If present, supplies the [[UiAdmin]] for this session. */
   uiAdmin?: UiAdmin;
   rpcInterfaces?: RpcInterfaceDefinition[];
@@ -176,7 +169,6 @@ export class IModelApp {
   private static _localizationClient: LocalizationClient;
   private static _locateManager: ElementLocateManager;
   private static _notifications: NotificationManager;
-  private static _extensionAdmin: ExtensionAdmin;
   private static _quantityFormatter: QuantityFormatter;
   private static _renderSystem?: RenderSystem;
   private static _settings: SettingsAdmin;
@@ -249,10 +241,6 @@ export class IModelApp {
 
   /** @internal */
   public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid; }
-  /** The [[ExtensionAdmin]] for this session.
-   * @beta
-   */
-  public static get extensionAdmin() { return this._extensionAdmin; }
   /** The [[UiAdmin]] for this session. */
   public static get uiAdmin() { return this._uiAdmin; }
   /** The requested security options for the frontend. */
@@ -349,7 +337,6 @@ export class IModelApp {
       clipViewTool,
       measureTool,
       accudrawTool,
-      extensionTool,
     ].forEach((tool) => this.tools.registerModule(tool, namespace));
 
     this.registerEntityState(EntityState.classFullName, EntityState);
@@ -393,7 +380,6 @@ export class IModelApp {
     this._accuSnap = (opts.accuSnap !== undefined) ? opts.accuSnap : new AccuSnap();
     this._locateManager = (opts.locateManager !== undefined) ? opts.locateManager : new ElementLocateManager();
     this._tentativePoint = (opts.tentativePoint !== undefined) ? opts.tentativePoint : new TentativePoint();
-    this._extensionAdmin = (opts.extensionAdmin !== undefined) ? opts.extensionAdmin : new ExtensionAdmin();
     this._quantityFormatter = (opts.quantityFormatter !== undefined) ? opts.quantityFormatter : new QuantityFormatter();
     this._uiAdmin = (opts.uiAdmin !== undefined) ? opts.uiAdmin : new UiAdmin();
     this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);
@@ -406,7 +392,6 @@ export class IModelApp {
       this.accuSnap,
       this.locateManager,
       this.tentativePoint,
-      this.extensionAdmin,
       this.uiAdmin,
     ].forEach((sys) => {
       if (sys)

@@ -25,7 +25,6 @@ import { FilterByInstancePathsHierarchyRequestOptions } from '@bentley/presentat
 import { FilterByTextHierarchyRequestOptions } from '@bentley/presentation-common';
 import { HierarchyRequestOptions } from '@bentley/presentation-common';
 import { HierarchyUpdateInfo } from '@bentley/presentation-common';
-import { I18N } from '@bentley/imodeljs-i18n';
 import { Id64Arg } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
@@ -36,6 +35,7 @@ import { Key } from '@bentley/presentation-common';
 import { Keys } from '@bentley/presentation-common';
 import { KeySet } from '@bentley/presentation-common';
 import { LabelDefinition } from '@bentley/presentation-common';
+import { LocalizationClient } from '@bentley/imodeljs-i18n';
 import { Node } from '@bentley/presentation-common';
 import { NodeKey } from '@bentley/presentation-common';
 import { NodePathElement } from '@bentley/presentation-common';
@@ -258,8 +258,8 @@ export interface OfflineCachingFavoritePropertiesStorageProps {
 // @public
 export class Presentation {
     static get favoriteProperties(): FavoritePropertiesManager;
-    static get i18n(): I18N;
     static initialize(props?: PresentationProps): Promise<void>;
+    static get localizationClient(): LocalizationClient;
     static get presentation(): PresentationManager;
     // @internal
     static registerInitializationHandler(handler: () => Promise<() => void>): void;
@@ -267,7 +267,7 @@ export class Presentation {
     // @internal (undocumented)
     static setFavoritePropertiesManager(value: FavoritePropertiesManager): void;
     // @internal (undocumented)
-    static setI18nManager(value: I18N): void;
+    static setLocalizationClient(value: LocalizationClient): void;
     // @internal (undocumented)
     static setPresentationManager(value: PresentationManager): void;
     // @internal (undocumented)

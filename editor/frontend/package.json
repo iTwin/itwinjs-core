@@ -48,7 +48,6 @@
     "@bentley/certa": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@bentley/imodeljs-common": "workspace:*",
-    "@bentley/imodeljs-i18n": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",
