@@ -203,28 +203,28 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/analytical-backend",
+      "packageName": "@itwin/analytical-backend",
       "projectFolder": "domains/analytical/backend",
       "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/linear-referencing-backend",
+      "packageName": "@itwin/linear-referencing-backend",
       "projectFolder": "domains/linear-referencing/backend",
       "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/linear-referencing-common",
+      "packageName": "@itwin/linear-referencing-common",
       "projectFolder": "domains/linear-referencing/common",
       "reviewCategory": "common",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/physical-material-backend",
+      "packageName": "@itwin/physical-material-backend",
       "projectFolder": "domains/physical-material/backend",
       "reviewCategory": "backend",
       "shouldPublish": true,

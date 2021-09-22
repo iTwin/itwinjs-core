@@ -1,5 +1,5 @@
 {
-  "name": "@bentley/analytical-backend",
+  "name": "@itwin/analytical-backend",
   "version": "3.0.0-dev.64",
   "main": "lib/analytical-backend.js",
   "typings": "lib/analytical-backend",

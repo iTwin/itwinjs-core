@@ -1,5 +1,5 @@
 {
-  "name": "@bentley/linear-referencing-common",
+  "name": "@itwin/linear-referencing-common",
   "version": "3.0.0-dev.64",
   "main": "lib/linear-referencing-common.js",
   "typings": "lib/linear-referencing-common",

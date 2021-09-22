@@ -1,5 +1,5 @@
 {
-  "name": "@bentley/physical-material-backend",
+  "name": "@itwin/physical-material-backend",
   "version": "3.0.0-dev.64",
   "main": "lib/physical-material-backend.js",
   "typings": "lib/physical-material-backend",

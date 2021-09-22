@@ -1454,10 +1454,10 @@ importers:
     specifiers:
       '@bentley/build-tools': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/linear-referencing-common': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
+      '@itwin/linear-referencing-common': workspace:*
       '@types/chai': ^4.1.4
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
@@ -1472,10 +1472,10 @@ importers:
     devDependencies:
       '@bentley/build-tools': link:../../../tools/build
       '@bentley/eslint-plugin': link:../../../tools/eslint-plugin
-      '@bentley/linear-referencing-common': link:../common
       '@itwin/core-backend': link:../../../core/backend
       '@itwin/core-bentley': link:../../../core/bentley
       '@itwin/core-common': link:../../../core/common
+      '@itwin/linear-referencing-common': link:../common
       '@types/chai': 4.2.22
       '@types/fs-extra': 4.0.12
       '@types/mocha': 8.2.3
