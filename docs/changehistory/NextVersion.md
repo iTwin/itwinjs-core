@@ -224,6 +224,23 @@ Upgrade instructions:
 
 The [AsyncFunction]($bentleyjs-core), [AsyncMethodsOf]($bentleyjs-core), and [PromiseReturnType]($bentleyjs-core) types have moved to the @bentley/bentleyjs-core package. The ones in @bentley/imodeljs-frontend have been deprecated.
 
+## Removed default Bing Maps and MapBox keys
+
+Previous versions of `@bentley/imodeljs-frontend` included API keys for Bing Maps and MapBox Imagery that would be used for _all_ iTwin.js applications.  These common keys are no longer supported and will soon be disabled.  All applications will now need to provide their own keys.
+
+In order to configure a key for Bing Maps, or any other map layers, use the [[IModelAppOptions.mapLayerOptions]] configuration to supply the necessary information.
+
+```ts
+const appOptions = {
+  maplayerOptions: {
+    BingMaps: {
+      key: "some key",
+      value: "key"
+    }
+  }
+}
+```
+
 ## Concurrency Control
 
 The previous implementation of `ConcurrencyControl` for locking elements has been replaced with the [LockControl]($backend) interface.

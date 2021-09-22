@@ -221,6 +221,12 @@ export class DisplayTestApp {
       localhostIpcApp: {
         socketPort: 3002,
       },
+      /* eslint-disable @typescript-eslint/naming-convention */
+      mapLayerOptions: {
+        MapBoxImagery: configuration.mapBoxKey ? { key: "access_token", value: configuration.mapBoxKey } : undefined,
+        BingMaps: configuration.bingMapsKey ? { key: "key", value: configuration.bingMapsKey } : undefined,
+      },
+      /* eslint-enable @typescript-eslint/naming-convention */
     };
 
     this._iTwinId = configuration.iTwinId;
