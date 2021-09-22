@@ -5,10 +5,10 @@
 import * as chai from "chai";
 import { Guid, GuidString } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { TestFrontendAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
+import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 
 import { TestUtility } from "./TestUtility";
-import { IModelApp, IModelAppOptions, MapLayerSettingsService, MapLayerSource } from "@bentley/imodeljs-frontend";
+import { IModelApp, MapLayerSettingsService, MapLayerSource } from "@bentley/imodeljs-frontend";
 import { SettingsResult, SettingsStatus } from "@bentley/product-settings-client";
 
 chai.should();
@@ -19,15 +19,14 @@ describe("MapLayerSettingsService (#integration)", () => {
   const testName: string = `test${Guid.createValue()}`;
 
   before(async () => {
-    const authorizationClient = await TestUtility.initializeTestProject(TestUtility.testContextName, TestUsers.regular);
+    await TestUtility.initialize(TestUsers.regular);
+
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
 
-    new TestFrontendAuthorizationClient(requestContext.accessToken);
-    const options: IModelAppOptions = {
-      authorizationClient,
-    };
     await IModelApp.shutdown();
-    await IModelApp.startup(options);
+    await IModelApp.startup({
+      authorizationClient: TestUtility.itwinPlatformEnv.authClient,
+    });
     contextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
     chai.assert.isDefined(contextId);
     iModelId = await TestUtility.queryIModelIdbyName(contextId, TestUtility.testIModelNames.readOnly);

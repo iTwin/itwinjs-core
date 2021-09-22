@@ -96,7 +96,7 @@
     },
     {
       "name": "@bentley/imodeljs-backend",
-      "allowedCategories": [ "backend", "edit", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "edit", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@bentley/imodeljs-common",

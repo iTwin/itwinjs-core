@@ -33,7 +33,6 @@ export * from "./ui-framework/backstage/useDefaultBackstageItems";
 export * from "./ui-framework/backstage/TaskLaunch";
 export * from "./ui-framework/backstage/useUiItemsProviderBackstageItems";
 
-export * from "./ui-framework/clientservices/IModelServices";
 export * from "./ui-framework/clientservices/ProjectServices";
 
 export * from "./ui-framework/configurableui/ConfigurableUiContent";

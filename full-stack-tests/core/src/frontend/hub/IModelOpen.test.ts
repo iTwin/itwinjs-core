@@ -22,8 +22,8 @@ describe("Opening IModelConnection (#integration)", () => {
     });
     Logger.initializeToConsole();
 
-    const authorizationClient = await TestUtility.initializeTestProject(TestUtility.testContextName, TestUsers.regular);
-    IModelApp.authorizationClient = authorizationClient;
+    await TestUtility.initialize(TestUsers.regular);
+    IModelApp.authorizationClient = TestUtility.itwinPlatformEnv.authClient;
 
     // Setup a model with a large number of change sets
     testContextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);

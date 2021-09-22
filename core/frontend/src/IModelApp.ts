@@ -12,7 +12,6 @@ import {
   BeDuration, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger, SerializedClientRequestContext,
 } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { IModelClient } from "@bentley/imodelhub-client";
 import { IModelStatus, RpcConfiguration, RpcInterfaceDefinition, RpcRequest } from "@bentley/imodeljs-common";
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
 import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
@@ -27,7 +26,7 @@ import * as displayStyleState from "./DisplayStyleState";
 import * as drawingViewState from "./DrawingViewState";
 import { ElementLocateManager } from "./ElementLocateManager";
 import { EntityState } from "./EntityState";
-import { FrontendHubAccess, IModelHubFrontend } from "./FrontendHubAccess";
+import { FrontendHubAccess } from "./FrontendHubAccess";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import * as modelselector from "./ModelSelectorState";
 import * as modelState from "./ModelState";
@@ -75,7 +74,7 @@ export interface FrontendSecurityOptions {
  */
 export interface IModelAppOptions {
   /** If present, supplies the [[IModelClient]] for this session. */
-  imodelClient?: IModelClient;
+  hubAccess?: FrontendHubAccess;
   /** If present, supplies the Id of this application. Applications must set this to the Bentley Global Product Registry Id (GPRID) for usage logging. */
   applicationId?: string;
   /** If present, supplies the version of this application. Must be set for usage logging. */
@@ -320,8 +319,8 @@ export class IModelApp {
     this._applicationVersion = (opts.applicationVersion !== undefined) ? opts.applicationVersion : "1.0.0";
     this.authorizationClient = opts.authorizationClient;
 
-    this._hubAccess = IModelHubFrontend;
-    IModelHubFrontend.setIModelClient(opts.imodelClient);
+    if (undefined !== opts.hubAccess)
+      this._hubAccess = opts.hubAccess;
 
     this._setupRpcRequestContext();
 

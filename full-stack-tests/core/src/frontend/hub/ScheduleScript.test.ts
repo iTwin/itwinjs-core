@@ -29,10 +29,12 @@ describe("Schedule script (#integration)", () => {
   const modelId = "0x10000000001";
 
   before(async () => {
+    await TestUtility.initialize(TestUsers.regular)
+
     await IModelApp.shutdown();
     await IModelApp.startup({
-      authorizationClient: await TestUtility.initializeTestProject(TestUtility.testContextName, TestUsers.regular),
-      imodelClient: TestUtility.imodelCloudEnv.imodelClient,
+      authorizationClient: TestUtility.itwinPlatformEnv.authClient,
+      hubAccess: TestUtility.itwinPlatformEnv.hubAccess,
       applicationVersion: "1.2.1.1",
     });
 

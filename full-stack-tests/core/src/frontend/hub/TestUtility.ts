@@ -6,13 +6,12 @@ import { assert } from "chai";
 import { GuidString, Logger } from "@bentley/bentleyjs-core";
 import { Project } from "@bentley/context-registry-client";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { BriefcaseQuery, Briefcase as HubBriefcase, IModelCloudEnvironment, IModelQuery } from "@bentley/imodelhub-client";
-import { AuthorizedFrontendRequestContext, IModelHubFrontend, NativeApp, NativeAppAuthorization } from "@bentley/imodeljs-frontend";
+import { AuthorizedFrontendRequestContext, NativeApp, NativeAppAuthorization } from "@bentley/imodeljs-frontend";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend, TestUserCredentials } from "@bentley/oidc-signin-tool/lib/frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
-import { IModelBankCloudEnv } from "./IModelBankCloudEnv";
-import { IModelHubCloudEnv } from "./IModelHubCloudEnv";
+import { ITwinPlatformAbstraction, ITwinPlatformCloudEnv, ITwinStackCloudEnv } from "./ITwinPlatformEnv";
+import { IModelHubUserMgr } from "../../common/IModelHubUserMgr";
 
 export class TestUtility {
   public static testContextName = "iModelJsIntegrationTest";
@@ -43,64 +42,65 @@ export class TestUtility {
     return TestUtility.queryContextIdByName(TestUtility.testContextName);
   }
 
-  public static imodelCloudEnv: IModelCloudEnvironment;
+  public static itwinPlatformEnv: ITwinPlatformAbstraction;
 
   public static async getAuthorizedClientRequestContext(user: TestUserCredentials): Promise<AuthorizedClientRequestContext> {
     const accessToken = await getAccessTokenFromBackend(user);
     return new AuthorizedClientRequestContext(accessToken);
   }
 
-  public static async initializeTestProject(testContextName: string, user: TestUserCredentials): Promise<FrontendAuthorizationClient> {
+  /** The initialize methods wraps creating and setting up all of the clients needed to perform integrations tests. If a user is provided,
+   * a headless sign-in will be attempted in both Web and Electron setups.
+   *
+   * By default, it will setup the tests to use the iTwin Platform but can be configured to use an iTwin Stack implementation as well.
+   *
+   * @param user The user to sign-in with to perform all of the tests.
+   */
+  public static async initialize(user?: TestUserCredentials): Promise<void> {
+    // If provided, create, setup and sign-in with the Auth client.
+    let authorizationClient: FrontendAuthorizationClient | undefined;
+    if (user) {
+      if (NativeApp.isValid) {
+        authorizationClient = new NativeAppAuthorization({ clientId: "testapp", redirectUri: "", scope: "" });
+        await NativeApp.callNativeHost("setAccessTokenProps", (await getAccessTokenFromBackend(user)).toJSON());
+      } else {
+        authorizationClient = new IModelHubUserMgr(user);
+        await authorizationClient.signIn();
+      }
+    }
+
     const cloudParams = await TestRpcInterface.getClient().getCloudEnv();
-    if (cloudParams.iModelBank) {
-      this.imodelCloudEnv = new IModelBankCloudEnv(cloudParams.iModelBank.url, false);
-    } else {
-      this.imodelCloudEnv = new IModelHubCloudEnv();
-    }
-
-    let authorizationClient: FrontendAuthorizationClient;
-    if (NativeApp.isValid) {
-      authorizationClient = new NativeAppAuthorization({ clientId: "testapp", redirectUri: "", scope: "" });
-      await NativeApp.callNativeHost("setAccessTokenProps", (await getAccessTokenFromBackend(user)).toJSON());
-    } else {
-      authorizationClient = this.imodelCloudEnv.getAuthorizationClient(undefined, user);
-      await authorizationClient.signIn();
-    }
-    const accessToken = await authorizationClient.getAccessToken();
-    if (this.imodelCloudEnv instanceof IModelBankCloudEnv) {
-      await this.imodelCloudEnv.bootstrapIModelBankProject(new AuthorizedClientRequestContext(accessToken), testContextName);
-    }
-
-    return authorizationClient;
+    if (cloudParams.iModelBank)
+      this.itwinPlatformEnv = new ITwinStackCloudEnv(cloudParams.iModelBank.url);
+    else
+      this.itwinPlatformEnv = new ITwinPlatformCloudEnv(authorizationClient);
   }
 
   public static async queryContextIdByName(contextName: string): Promise<string> {
     const requestContext = await AuthorizedFrontendRequestContext.create();
-    const project: Project = await this.imodelCloudEnv.contextMgr.queryProjectByName(requestContext, contextName);
+    const project: Project = await this.itwinPlatformEnv.contextMgr.queryProjectByName(requestContext, contextName);
     assert(project && project.wsgId);
     return project.wsgId;
   }
 
   public static async queryIModelIdbyName(iTwinId: string, iModelName: string): Promise<string> {
     const requestContext = await AuthorizedFrontendRequestContext.create();
-    const iModels = await this.imodelCloudEnv.imodelClient.iModels.get(requestContext, iTwinId, new IModelQuery().byName(iModelName));
-    assert(iModels.length > 0);
-    assert(iModels[0].wsgId);
-
-    return iModels[0].wsgId;
+    const iModelId = await this.itwinPlatformEnv.hubAccess.queryIModelByName({ requestContext, iTwinId, iModelName });
+    assert.isDefined(iModelId);
+    return iModelId!;
   }
 
   /** Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded */
   public static async purgeAcquiredBriefcases(iModelId: string, acquireThreshold: number = 16): Promise<void> {
     const requestContext = await AuthorizedFrontendRequestContext.create();
-    const briefcases: HubBriefcase[] = await IModelHubFrontend.iModelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().ownedByMe());
-    if (briefcases.length > acquireThreshold) {
+    const briefcaseIds = await this.itwinPlatformEnv.hubAccess.getMyBriefcaseIds({ requestContext, iModelId });
+
+    if (briefcaseIds.length > acquireThreshold) {
       Logger.logInfo("TestUtility", `Reached limit of maximum number of briefcases for ${iModelId}. Purging all briefcases.`);
 
       const promises = new Array<Promise<void>>();
-      briefcases.forEach((briefcase: HubBriefcase) => {
-        promises.push(IModelHubFrontend.iModelClient.briefcases.delete(requestContext, iModelId, briefcase.briefcaseId!));
-      });
+      for (const briefcaseId of briefcaseIds)
+        promises.push(this.itwinPlatformEnv.hubAccess.releaseBriefcase({ requestContext, iModelId, briefcaseId }));
       await Promise.all(promises);
     }
   }

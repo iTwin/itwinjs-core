@@ -39,7 +39,6 @@
   "peerDependencies": {
     "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.63",
     "@bentley/geometry-core": "workspace:^3.0.0-dev.63",
-    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.63",
     "@bentley/itwin-client": "workspace:^3.0.0-dev.63"
   },
   "devDependencies": {
@@ -47,7 +46,6 @@
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@bentley/geometry-core": "workspace:*",
-    "@bentley/imodelhub-client": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/flatbuffers": "~1.10.0",
