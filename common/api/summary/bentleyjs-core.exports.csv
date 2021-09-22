@@ -49,9 +49,10 @@ public;DuplicatePolicy
 public;Entry
 public;EntryContainer
 public;GeoServiceStatus
-internal;getErrorMessage(error: unknown): string | undefined
-internal;getErrorMetadata(error: unknown):
-internal;getErrorStack(error: unknown): string | undefined
+public;getErrorMessage(error: unknown): string
+public;getErrorMetadata(error: unknown): object | undefined
+public;getErrorProps(error: unknown): ErrorProps
+public;getErrorStack(error: unknown): string | undefined
 public;GetMetaDataFunction = () => object | undefined
 public;Guid
 public;GuidString = string
