@@ -36,6 +36,7 @@ export class PointCloudGeometry extends CachedGeometry {
   public get isDisposed(): boolean { return this.buffers.isDisposed && this._vertices.isDisposed; }
   public override get asPointCloud(): PointCloudGeometry | undefined { return this; }
   public override get supportsThematicDisplay() { return true; }
+  public get overrideColorMix() { return .5; }     // TThis could be a setting from either the mesh or the override if required.
 
   public dispose() {
     dispose(this.buffers);
