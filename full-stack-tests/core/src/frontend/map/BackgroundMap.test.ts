@@ -9,11 +9,10 @@ import { IModelApp, IModelConnection, Pixel, SnapshotConnection } from "@bentley
 import { testOnScreenViewport, TestViewport } from "../TestViewport";
 
 // Set of tests require a BingMap key to be defined
-describe.only("Background map (#integration)", () => {
+describe("Background map (#integration)", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    console.log(process.env);
     assert.isDefined(process.env.TEST_BING_MAPS_KEY, "The test requires that a Bing Maps key is configured.");
     assert.isDefined(process.env.TEST_MAPBOX_KEY, "The test requires that a MapBox key is configured.");
 
