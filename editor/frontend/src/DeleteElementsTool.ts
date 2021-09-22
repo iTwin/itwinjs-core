@@ -29,7 +29,7 @@ export class DeleteElementsTool extends ElementSetTool {
       if (IModelStatus.Success === await DeleteElementsTool.callCommand("deleteElements", this.agenda.compressIds()))
         await this.saveChanges();
     } catch (err) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, getErrorMessage(err) ?? "An unknown error occurred."));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, getErrorMessage(err) || "An unknown error occurred."));
     }
   }
 

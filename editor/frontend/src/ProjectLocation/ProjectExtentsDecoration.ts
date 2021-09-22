@@ -960,7 +960,7 @@ export class ProjectLocationSaveTool extends Tool {
       await deco.iModel.saveChanges(this.toolId);
       await deco.iModel.txns.restartTxnSession();
     } catch (err) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, getErrorMessage(err) ?? "An unknown error occurred."));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, getErrorMessage(err) || "An unknown error occurred."));
     }
 
     deco.onChanged.raiseEvent(deco.iModel, ProjectLocationChanged.Save);

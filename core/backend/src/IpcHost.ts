@@ -162,12 +162,12 @@ export abstract class IpcHandler {
         const ret: IpcInvokeReturn = {
           error: {
             name: (err && typeof (err) === "object") ? err.constructor.name : "Unknown Error",
-            message: getErrorMessage(err) ?? "",
+            message: getErrorMessage(err),
             errorNumber: (err as any).errorNumber ?? 0,
           },
         };
         if (!IpcHost.noStack)
-          ret.error.stack = getErrorStack(err) ?? "";
+          ret.error.stack = getErrorStack(err);
         return ret;
       }
     });

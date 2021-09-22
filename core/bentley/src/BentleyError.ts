@@ -659,59 +659,84 @@ export class BentleyError extends Error {
   }
 }
 
-function hasProperty<T extends string>(obj: object, propertyName: T): obj is { [key in T]: unknown } {
-  return propertyName in obj;
+function isObject(obj: unknown): obj is { [key: string]: unknown } {
+  return typeof obj === "object" && obj !== null;
 }
 
-/** @internal */
-export function getErrorStack(error: unknown): string | undefined {
-  if (typeof error === "object" && error !== null && hasProperty(error, "stack") && typeof error.stack === "string")
-    return error.stack;
-
-  return undefined;
-}
-
-/** @internal */
-export function getErrorMessage(error: unknown): string | undefined {
+/** Use run-time type checking to safely get a useful string summary of an unknown error value, or `""` if none exists.
+ * @note It's recommended to use this function in `catch` clauses, where a caught value cannot be assumed to be `instanceof Error`
+ * @public
+ */
+export function getErrorMessage(error: unknown): string {
   if (typeof error === "string")
     return error;
 
   if (error instanceof Error)
     return error.toString();
 
-  if (typeof error === "object") {
-    if (error === null)
-      return undefined;
-
-    if (hasProperty(error, "message") && typeof error.message === "string")
+  if (isObject(error)) {
+    if (typeof error.message === "string")
       return error.message;
 
-    if (hasProperty(error, "msg") && typeof error.msg === "string")
+    if (typeof error.msg === "string")
       return error.msg;
 
     if (error.toString() !== "[object Object]")
       return error.toString();
   }
 
+  return "";
+}
+
+/** Use run-time type checking to safely get the call stack of an unknown error value, if possible.
+ * @note It's recommended to use this function in `catch` clauses, where a caught value cannot be assumed to be `instanceof Error`
+ * @public
+ */
+export function getErrorStack(error: unknown): string | undefined {
+  if (isObject(error) && typeof error.stack === "string")
+    return error.stack;
+
   return undefined;
 }
 
-/** @internal */
-export function getErrorMetadata(error: unknown): { message: string, stack: string | undefined } {
-  let otherProps: object = {};
-
-  if (typeof error === "object" && error !== null) {
-    otherProps = error;
-    if (hasProperty(error, "getMetaData") && typeof error.getMetaData === "function") {
-      const metaData = error.getMetaData();
-      if (typeof metaData === "object")
-        otherProps = metaData;
-    }
+/** Use run-time type checking to safely get the metadata with an unknown error value, if possible.
+ * @note It's recommended to use this function in `catch` clauses, where a caught value cannot be assumed to be `instanceof BentleyError`
+ * @see [[BentleyError.getMetaData]]
+ * @public
+ */
+export function getErrorMetadata(error: unknown): object | undefined {
+  if (isObject(error) && typeof error.getMetaData === "function") {
+    const metadata = error.getMetaData();
+    if (typeof metadata === "object" && metadata !== null)
+      return metadata;
   }
 
-  return {
-    ...otherProps,
-    message: getErrorMessage(error) ?? "Unknown Error",
-    stack: getErrorStack(error),
+  return undefined;
+}
+
+interface ErrorProps {
+  message: string;
+  stack?: string;
+  metadata?: object;
+}
+
+/** Returns a new `ErrorProps` object representing an unknown error value.  Useful for logging or wrapping/re-throwing caught errors.
+ * @note Unlike `Error` objects (which lose messages and call stacks when serialized to JSON), objects
+ *       returned by this are plain old JavaScript objects, and can be easily logged/serialized to JSON.
+ * @public
+ */
+export function getErrorProps(error: unknown): ErrorProps {
+  const serialized: ErrorProps = {
+    message: getErrorMessage(error),
   };
+
+  const stack = getErrorStack(error);
+  if (stack)
+    serialized.stack = stack;
+
+  const metadata = getErrorMetadata(error);
+  if (metadata)
+    serialized.metadata = metadata;
+
+  return serialized;
 }

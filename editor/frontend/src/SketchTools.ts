@@ -131,7 +131,7 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
 
       return { props, path: data.path, params: data.params };
     } catch (err) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, getErrorMessage(err) ?? "An unknown error occurred."));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, getErrorMessage(err) || "An unknown error occurred."));
       return;
     }
   }
@@ -677,7 +677,7 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
         await CreateOrContinuePathTool.callCommand("updateGeometricElement", elemProps, data);
       await this.saveChanges();
     } catch (err) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, getErrorMessage(err) ?? "An unknown error occurred."));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, getErrorMessage(err) || "An unknown error occurred."));
     }
   }
 

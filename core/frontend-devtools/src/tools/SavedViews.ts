@@ -81,7 +81,7 @@ export class SaveViewTool extends Tool {
       copyStringToClipboard(json);
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "JSON copied to clipboard"));
     } catch (err) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, getErrorMessage(err) ?? "An unknown error occurred."));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, getErrorMessage(err) || "An unknown error occurred."));
     }
 
     return true;
@@ -117,7 +117,7 @@ export class ApplyViewTool extends Tool {
       const view = await deserializeViewState(json, vp.iModel);
       await this.run(view);
     } catch (err) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, getErrorMessage(err) ?? "An unknown error occurred."));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, getErrorMessage(err) || "An unknown error occurred."));
     }
 
     return true;

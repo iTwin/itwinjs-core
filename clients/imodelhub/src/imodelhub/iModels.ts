@@ -471,7 +471,7 @@ export class IModelsHandler {
       Logger.logTrace(loggerCategory, `Created iModel instance with name ${iModelName}`, () => ({ contextId }));
     } catch (err) {
       if (!(err instanceof IModelHubError) || IModelHubStatus.iModelAlreadyExists !== err.errorNumber) {
-        Logger.logWarning(loggerCategory, `Can not create iModel: ${getErrorMessage(err) ?? "<Unknown Error>"}`, () => ({ contextId }));
+        Logger.logWarning(loggerCategory, `Can not create iModel: ${getErrorMessage(err)}`, () => ({ contextId }));
 
         throw err;
       }

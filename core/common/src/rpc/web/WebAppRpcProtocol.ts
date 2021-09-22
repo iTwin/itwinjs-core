@@ -102,7 +102,7 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
           (response.headers.get("Access-Control-Allow-Headers") || "").split(",").forEach((v) => this.allowedHeaders.add(v.trim()));
         }
       } catch (err) {
-        Logger.logWarning(CommonLoggerCategory.RpcInterfaceFrontend, "Unable to discover backend capabilities.", () => getErrorMetadata(err));
+        Logger.logWarning(CommonLoggerCategory.RpcInterfaceFrontend, "Unable to discover backend capabilities.", () => getErrorProps(err));
       }
 
       resolve();

@@ -80,7 +80,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
     try {
       return await this.refreshAccessToken(tokenResponse.refreshToken);
     } catch (err) {
-      Logger.logError(loggerCategory, `Error refreshing access token`, () => getErrorMetadata(err));
+      Logger.logError(loggerCategory, `Error refreshing access token`, () => getErrorProps(err));
       return undefined;
     }
   }

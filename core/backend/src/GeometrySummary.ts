@@ -99,7 +99,7 @@ class ResponseGenerator {
       }
     } catch (err) {
       lines = lines.slice(0, 1);
-      lines.push(`ERROR: ${getErrorMessage(err) ?? "Failed to generate geometry summary."}`);
+      lines.push(`ERROR: ${getErrorMessage(err)}`);
     }
 
     return lines.filter((line) => line !== "").join("\n");
@@ -222,7 +222,7 @@ class ResponseGenerator {
       const str = JSON.stringify(json);
       return this.wantSquish ? this.squish(str) : str;
     } catch (err) {
-      return getErrorMessage(err) ?? "Unknown Error in geometryQueryToJson";
+      return getErrorMessage(err);
     }
   }
 

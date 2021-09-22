@@ -187,7 +187,7 @@ class ChangedEntitiesProc {
 
       changes.sendEvent(iModel, changedEvent, evtName);
     } catch (err) {
-      Logger.logError(BackendLoggerCategory.IModelDb, getErrorMessage(err) ?? "Unknown error in ChangedEntitiesProc.processChanges");
+      Logger.logError(BackendLoggerCategory.IModelDb, getErrorMessage(err));
     }
   }
 }

@@ -72,7 +72,7 @@ export class TelemetryManager {
       try {
         await subClient.postTelemetry(requestContext, telemetryEvent);
       } catch (err) {
-        Logger.logError(TelemetryClientLoggerCategory.Telemetry, `Failed to post telemetry via subclient`, () => getErrorMetadata(err));
+        Logger.logError(TelemetryClientLoggerCategory.Telemetry, `Failed to post telemetry via subclient`, () => getErrorProps(err));
       }
     };
 

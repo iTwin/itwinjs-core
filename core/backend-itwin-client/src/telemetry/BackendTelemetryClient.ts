@@ -67,7 +67,7 @@ export abstract class BackendTelemetryClient implements TelemetryClient {
         ? await this._clientAuthManager.getClientAuthDetails(requestContext)
         : undefined;
     } catch (err) {
-      Logger.logWarning(BackendITwinClientLoggerCategory.Telemetry, `Unable to obtain client auth details from request context`, () => getErrorMetadata(err));
+      Logger.logWarning(BackendITwinClientLoggerCategory.Telemetry, `Unable to obtain client auth details from request context`, () => getErrorProps(err));
     }
 
     const backendTelemetryEvent = new BackendTelemetryEvent(telemetryEvent, requestContext, this._backendMachineName, this._backendApplicationId, this._backendApplicationVersion, clientAuth);
