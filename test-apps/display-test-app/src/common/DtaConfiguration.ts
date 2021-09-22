@@ -60,8 +60,6 @@ let configuration: DtaConfiguration | undefined;
  *      All subsequent calls will return the initial config.
  */
 export const getConfig = (): DtaConfiguration => {
-  // If the configuration has already been initialized, just return the already parsed config.
-  // This allows the method to
   if (undefined !== configuration)
     return configuration;
 
