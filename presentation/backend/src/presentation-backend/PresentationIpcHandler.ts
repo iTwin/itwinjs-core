@@ -11,7 +11,7 @@ import { IModelDb, IpcHandler } from "@itwin/core-backend";
 import {
   NodeKeyJSON, PRESENTATION_IPC_CHANNEL_NAME, PresentationIpcInterface, RulesetVariableJSON, SetRulesetVariableParams, UnsetRulesetVariableParams,
   UpdateHierarchyStateParams,
-} from "@bentley/presentation-common";
+} from "@itwin/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { Presentation } from "./Presentation";
 

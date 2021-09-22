@@ -35,7 +35,7 @@
     "@itwin/core-common": "workspace:^3.0.0-dev.64",
     "@itwin/core-frontend": "workspace:^3.0.0-dev.64",
     "@bentley/itwin-client": "workspace:^3.0.0-dev.64",
-    "@bentley/presentation-common": "workspace:^3.0.0-dev.64",
+    "@itwin/presentation-common": "workspace:^3.0.0-dev.64",
     "electron": "^11.1.0"
   },
   "devDependencies": {
@@ -46,7 +46,7 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/presentation-common": "workspace:*",
+    "@itwin/presentation-common": "workspace:*",
     "@types/node": "10.14.1",
     "electron": "^11.1.0",
     "eslint": "^7.11.0",

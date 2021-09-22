@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import "@bentley/presentation-common/lib/test/_helpers/Promises";
+import "@itwin/presentation-common/lib/test/_helpers/Promises";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "typemoq";
 import { IModelDb, IModelHost, IModelJsNative } from "@itwin/core-backend";
-import { DiagnosticsScopeLogs, PresentationError, UpdateInfo, VariableValueTypes } from "@bentley/presentation-common";
+import { DiagnosticsScopeLogs, PresentationError, UpdateInfo, VariableValueTypes } from "@itwin/presentation-common";
 import { createDefaultNativePlatform, NativePlatformDefinition } from "../presentation-backend/NativePlatform";
 import { PresentationManagerMode } from "../presentation-backend/PresentationManager";
 

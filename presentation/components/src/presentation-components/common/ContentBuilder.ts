@@ -10,7 +10,7 @@ import {
   applyOptionalPrefix, EditorDescription, EnumerationInfo, Field, FieldHierarchy, IContentVisitor, Item, PropertyValueFormat as PresentationPropertyValueFormat,
   ProcessFieldHierarchiesProps, ProcessMergedValueProps, ProcessPrimitiveValueProps, RendererDescription, StartArrayProps,
   StartCategoryProps, StartContentProps, StartFieldProps, StartItemProps, StartStructProps, TypeDescription,
-} from "@bentley/presentation-common";
+} from "@itwin/presentation-common";
 import {
   ArrayValue, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, StructValue, PropertyValueFormat as UiPropertyValueFormat,
 } from "@bentley/ui-abstract";

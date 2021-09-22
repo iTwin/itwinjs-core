@@ -12,8 +12,8 @@ import { IModelConnection } from "@itwin/core-frontend";
 import {
   Content, DEFAULT_KEYS_BATCH_SIZE, Descriptor, DescriptorOverrides, DiagnosticsOptionsWithHandler, Field, KeySet, PageOptions, RegisteredRuleset,
   RequestOptionsWithRuleset, Ruleset, RulesetVariable, SelectionInfo,
-} from "@bentley/presentation-common";
-import { IModelContentChangeEventArgs, Presentation } from "@bentley/presentation-frontend";
+} from "@itwin/presentation-common";
+import { IModelContentChangeEventArgs, Presentation } from "@itwin/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { PresentationComponentsLoggerCategory } from "../ComponentsLoggerCategory";
 import { createDiagnosticsOptions, DiagnosticsProps } from "./Diagnostics";

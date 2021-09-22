@@ -7,7 +7,7 @@ import * as React from "react";
 import { useResizeDetector } from "react-resize-detector";
 import { BeEvent, Id64Array, Id64String } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@itwin/core-frontend";
-import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
+import { IPresentationTreeDataProvider } from "@itwin/presentation-components";
 import { FilteringInput, FilteringInputStatus, SelectableContent, SelectionMode } from "@bentley/ui-components";
 import { Icon, WebFontIcon } from "@bentley/ui-core";
 import {

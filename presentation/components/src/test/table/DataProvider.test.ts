@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
+import "@itwin/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as path from "path";
@@ -13,14 +13,14 @@ import { I18N } from "@bentley/imodeljs-i18n";
 import {
   Content, DefaultContentDisplayTypes, Descriptor, FieldDescriptorType, Item, KeySet, NestedContentValue, PresentationError,
   SortDirection as PresentationSortDirection, RelationshipMeaning, ValuesDictionary,
-} from "@bentley/presentation-common";
+} from "@itwin/presentation-common";
 import {
   createTestContentDescriptor, createTestContentItem, createTestNestedContentField, createTestSimpleContentField,
-} from "@bentley/presentation-common/lib/test/_helpers/Content";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { PromiseContainer } from "@bentley/presentation-common/lib/test/_helpers/Promises";
-import { createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
+} from "@itwin/presentation-common/lib/test/_helpers/Content";
+import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
+import { PromiseContainer } from "@itwin/presentation-common/lib/test/_helpers/Promises";
+import { createRandomECInstanceKey } from "@itwin/presentation-common/lib/test/_helpers/random";
+import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
 import { RowItem } from "@bentley/ui-components";
 import { HorizontalAlignment, SortDirection } from "@bentley/ui-core";
 import { CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";

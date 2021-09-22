@@ -14,7 +14,7 @@ import {
   Content, createFieldHierarchies, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, Field, FieldDescriptorType, InstanceKey, Item,
   NestedContentValue, PresentationError, PresentationStatus, ProcessFieldHierarchiesProps, RelationshipMeaning, Ruleset, SortDirection,
   StartItemProps, traverseContentItem, Value, ValuesDictionary,
-} from "@bentley/presentation-common";
+} from "@itwin/presentation-common";
 import { CellItem, ColumnDescription, TableDataProvider as ITableDataProvider, RowItem, TableDataChangeEvent } from "@bentley/ui-components";
 import { HorizontalAlignment, SortDirection as UiSortDirection } from "@bentley/ui-core";
 import { FieldHierarchyRecord, PropertyRecordsBuilder } from "../common/ContentBuilder";

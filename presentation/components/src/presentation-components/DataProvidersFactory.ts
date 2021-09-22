@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { Omit, PrimitivePropertyValue, RulesetsFactory } from "@bentley/presentation-common";
+import { Omit, PrimitivePropertyValue, RulesetsFactory } from "@itwin/presentation-common";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { TypeConverterManager } from "@bentley/ui-components";
 import { findField } from "./common/Utils";

@@ -10,7 +10,7 @@ import {
   SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
 import { CancelRequest, DownloadFailed, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
-import { PresentationRpcInterface } from "@bentley/presentation-common";
+import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { BatteryState, DeviceEvents, mobileAppChannel, MobileAppFunctions, Orientation } from "../common/MobileAppProps";
 import { MobileRpcManager } from "../common/MobileRpcManager";
 import { MobileAuthorizationBackend } from "./MobileAuthorizationBackend";

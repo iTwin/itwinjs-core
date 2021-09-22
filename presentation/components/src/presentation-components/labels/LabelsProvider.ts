@@ -8,8 +8,8 @@
 
 import memoize from "micro-memoize";
 import { IModelConnection } from "@itwin/core-frontend";
-import { DEFAULT_KEYS_BATCH_SIZE, InstanceKey, LabelDefinition } from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
+import { DEFAULT_KEYS_BATCH_SIZE, InstanceKey, LabelDefinition } from "@itwin/presentation-common";
+import { Presentation } from "@itwin/presentation-frontend";
 
 /**
  * Interface for presentation rules-driven labels provider.

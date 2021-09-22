@@ -7,12 +7,12 @@ import "./PropertiesWidget.css";
 import * as React from "react";
 import { useResizeDetector } from "react-resize-detector";
 import { IModelApp, IModelConnection } from "@itwin/core-frontend";
-import { Field } from "@bentley/presentation-common";
+import { Field } from "@itwin/presentation-common";
 import {
   DiagnosticsProps, FavoritePropertiesDataFilterer, IPresentationPropertyDataProvider, PresentationPropertyDataProvider,
   usePropertyDataProviderWithUnifiedSelection,
-} from "@bentley/presentation-components";
-import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
+} from "@itwin/presentation-components";
+import { FavoritePropertiesScope, Presentation } from "@itwin/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import {
   ActionButtonRendererProps, CompositeFilterType, CompositePropertyDataFilterer, DisplayValuePropertyDataFilterer, FilteredPropertyData,

@@ -7,7 +7,7 @@
  */
 
 import { IModelConnection } from "@itwin/core-frontend";
-import { NodeKey } from "@bentley/presentation-common";
+import { NodeKey } from "@itwin/presentation-common";
 import { IpcRequestsHandler } from "./IpcRequestsHandler";
 
 /**

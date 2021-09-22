@@ -7,7 +7,7 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { VariableValue, VariableValueTypes } from "@bentley/presentation-common";
+import { VariableValue, VariableValueTypes } from "@itwin/presentation-common";
 import { NativePlatformDefinition } from "./NativePlatform";
 
 /**

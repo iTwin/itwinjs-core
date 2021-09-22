@@ -11,8 +11,8 @@ import { from } from "rxjs/internal/observable/from";
 import { map } from "rxjs/internal/operators/map";
 import { mergeMap } from "rxjs/internal/operators/mergeMap";
 import { BeEvent, IDisposable } from "@itwin/core-bentley";
-import { NodeKey } from "@bentley/presentation-common";
-import { UnifiedSelectionTreeEventHandler, UnifiedSelectionTreeEventHandlerParams } from "@bentley/presentation-components";
+import { NodeKey } from "@itwin/presentation-common";
+import { UnifiedSelectionTreeEventHandler, UnifiedSelectionTreeEventHandlerParams } from "@itwin/presentation-components";
 import {
   CheckBoxInfo, CheckboxStateChange, toRxjsObservable, TreeCheckboxStateChangeEventArgs, TreeModelNode, TreeNodeItem,
   TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,

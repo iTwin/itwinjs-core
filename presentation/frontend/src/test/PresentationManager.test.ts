@@ -16,13 +16,13 @@ import {
   ElementPropertiesRequestOptions, FieldDescriptor, FieldDescriptorType, FilterByInstancePathsHierarchyRequestOptions,
   FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, InstanceKey, Item, KeySet, LabelDefinition, Node, NodeKey, NodePathElement, Paged,
   PresentationIpcEvents, RegisteredRuleset, RpcRequestsHandler, Ruleset, RulesetVariable, SelectClassInfo, UpdateInfo, VariableValueTypes,
-} from "@bentley/presentation-common";
-import { createTestContentDescriptor } from "@bentley/presentation-common/lib/test/_helpers/Content";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+} from "@itwin/presentation-common";
+import { createTestContentDescriptor } from "@itwin/presentation-common/lib/test/_helpers/Content";
+import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
 import {
   createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomLabelDefinition, createRandomNodePathElement,
   createRandomRuleset, createRandomTransientId,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
+} from "@itwin/presentation-common/lib/test/_helpers/random";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
 import { Presentation } from "../presentation-frontend/Presentation";
 import {

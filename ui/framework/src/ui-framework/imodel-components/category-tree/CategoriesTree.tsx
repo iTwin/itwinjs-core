@@ -9,9 +9,9 @@
 import "./CategoriesTree.scss";
 import * as React from "react";
 import { IModelApp, IModelConnection, SpatialViewState, ViewManager, Viewport } from "@itwin/core-frontend";
-import { Ruleset } from "@bentley/presentation-common";
-import { IPresentationTreeDataProvider, usePresentationTreeNodeLoader } from "@bentley/presentation-components";
-import { Presentation } from "@bentley/presentation-frontend";
+import { Ruleset } from "@itwin/presentation-common";
+import { IPresentationTreeDataProvider, usePresentationTreeNodeLoader } from "@itwin/presentation-components";
+import { Presentation } from "@itwin/presentation-frontend";
 import { ControlledTree, SelectionMode, useTreeModel } from "@bentley/ui-components";
 import { useDisposable } from "@bentley/ui-core";
 import { UiFramework } from "../../UiFramework";

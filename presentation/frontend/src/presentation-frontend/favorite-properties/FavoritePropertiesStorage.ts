@@ -9,7 +9,7 @@
 import { compareStrings, Dictionary, Guid, IDisposable, isIDisposable, OrderedComparator } from "@itwin/core-bentley";
 import { InternetConnectivityStatus } from "@itwin/core-common";
 import { AuthorizedFrontendRequestContext, IModelApp } from "@itwin/core-frontend";
-import { PresentationError, PresentationStatus } from "@bentley/presentation-common";
+import { PresentationError, PresentationStatus } from "@itwin/presentation-common";
 import { ConnectivityInformationProvider, IConnectivityInformationProvider } from "../ConnectivityInformationProvider";
 import { FavoritePropertiesOrderInfo, PropertyFullName } from "./FavoritePropertiesManager";
 

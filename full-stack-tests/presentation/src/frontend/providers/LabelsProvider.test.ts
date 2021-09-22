@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { PresentationLabelsProvider } from "@bentley/presentation-components";
+import { PresentationLabelsProvider } from "@itwin/presentation-components";
 import { initialize, terminate } from "../../IntegrationTests";
 
 describe("LabelsProvider", async () => {

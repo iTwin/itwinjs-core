@@ -8,11 +8,11 @@ import * as React from "react";
 import { Geometry } from "@itwin/core-geometry";
 import { IModelApp, IModelConnection } from "@itwin/core-frontend";
 import { UnitSystemKey } from "@bentley/imodeljs-quantity";
-import { DefaultContentDisplayTypes } from "@bentley/presentation-common";
+import { DefaultContentDisplayTypes } from "@itwin/presentation-common";
 import {
   DataProvidersFactory, IPresentationPropertyDataProvider, IPresentationTableDataProvider, UnifiedSelectionContextProvider,
-} from "@bentley/presentation-components";
-import { Presentation, SelectionChangeEventArgs } from "@bentley/presentation-frontend";
+} from "@itwin/presentation-components";
+import { Presentation, SelectionChangeEventArgs } from "@itwin/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { ElementSeparator, Orientation, RatioChangeResult } from "@bentley/ui-core";
 import { ToggleSwitch } from "@itwin/itwinui-react";

@@ -8,8 +8,8 @@ import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import {
   ContentFlags, ContentSpecificationTypes, DefaultContentDisplayTypes, Descriptor, DisplayValueGroup, Field, FieldDescriptor, InstanceKey, KeySet,
   NestedContentField, PresentationError, PresentationStatus, RelationshipDirection, Ruleset, RuleTypes, SelectClassInfo,
-} from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
+} from "@itwin/presentation-common";
+import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";
 import { findFieldByLabel } from "../Utils";
 

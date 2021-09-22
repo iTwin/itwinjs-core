@@ -1,5 +1,5 @@
 {
-  "name": "@bentley/presentation-frontend",
+  "name": "@itwin/presentation-frontend",
   "version": "3.0.0-dev.64",
   "description": "Frontend of iModel.js Presentation library",
   "main": "lib/presentation-frontend.js",
@@ -45,7 +45,7 @@
     "@itwin/core-frontend": "workspace:^3.0.0-dev.64",
     "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.64",
     "@bentley/imodeljs-quantity": "workspace:^3.0.0-dev.64",
-    "@bentley/presentation-common": "workspace:^3.0.0-dev.64"
+    "@itwin/presentation-common": "workspace:^3.0.0-dev.64"
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",
@@ -57,7 +57,7 @@
     "@bentley/imodeljs-i18n": "workspace:*",
     "@bentley/imodeljs-quantity": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/presentation-common": "workspace:*",
+    "@itwin/presentation-common": "workspace:*",
     "@bentley/product-settings-client": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",

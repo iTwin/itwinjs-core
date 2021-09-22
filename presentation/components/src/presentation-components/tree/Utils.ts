@@ -6,7 +6,7 @@
  * @module Tree
  */
 
-import { LabelDefinition, Node, NodeKey, PartialNode, PageOptions as PresentationPageOptions } from "@bentley/presentation-common";
+import { LabelDefinition, Node, NodeKey, PartialNode, PageOptions as PresentationPageOptions } from "@itwin/presentation-common";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { DelayLoadedTreeNodeItem, ItemColorOverrides, ItemStyle, PageOptions as UiPageOptions } from "@bentley/ui-components";
 import { CheckBoxState } from "@bentley/ui-core";

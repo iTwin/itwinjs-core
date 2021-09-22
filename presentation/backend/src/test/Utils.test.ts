@@ -5,8 +5,8 @@
 import { expect } from "chai";
 import { DbResult } from "@itwin/core-bentley";
 import { ECSqlStatement, ECSqlValue, IModelDb } from "@itwin/core-backend";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
+import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
+import { createRandomId } from "@itwin/presentation-common/lib/test/_helpers/random";
 import { getElementKey, normalizeVersion } from "../presentation-backend/Utils";
 
 describe("getElementKey", () => {

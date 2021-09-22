@@ -8,7 +8,7 @@
 
 import { Id64, Id64Arg, Id64Array, IDisposable, using } from "@itwin/core-bentley";
 import { IModelConnection, SelectionSetEvent, SelectionSetEventType } from "@itwin/core-frontend";
-import { AsyncTasksTracker, Keys, KeySet, SelectionScope } from "@bentley/presentation-common";
+import { AsyncTasksTracker, Keys, KeySet, SelectionScope } from "@itwin/presentation-common";
 import { HiliteSet, HiliteSetProvider } from "./HiliteSetProvider";
 import { ISelectionProvider } from "./ISelectionProvider";
 import { SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType } from "./SelectionChangeEvent";

@@ -10,7 +10,7 @@ import * as enzyme from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { TestUtils } from "./TestUtils";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
 import {
   BackgroundMapSettings, DisplayStyle3dSettings, PlanarClipMaskMode,
   PlanarClipMaskPriority, TerrainHeightOriginMode, TerrainSettings,

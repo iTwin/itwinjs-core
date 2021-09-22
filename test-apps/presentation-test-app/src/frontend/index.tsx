@@ -9,7 +9,7 @@ import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { IModelApp, IModelAppOptions, WebViewerApp } from "@itwin/core-frontend";
 // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Imports
-import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@bentley/presentation-frontend";
+import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@itwin/presentation-frontend";
 // __PUBLISH_EXTRACT_END__
 import { UiComponents } from "@bentley/ui-components";
 import rpcs from "../common/Rpcs";

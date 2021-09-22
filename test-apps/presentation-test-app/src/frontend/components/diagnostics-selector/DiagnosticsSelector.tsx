@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import "./DiagnosticsSelector.css";
 import React from "react";
-import { DiagnosticsLoggerSeverity } from "@bentley/presentation-common";
-import { DiagnosticsProps } from "@bentley/presentation-components";
-import { consoleDiagnosticsHandler } from "@bentley/presentation-frontend";
+import { DiagnosticsLoggerSeverity } from "@itwin/presentation-common";
+import { DiagnosticsProps } from "@itwin/presentation-components";
+import { consoleDiagnosticsHandler } from "@itwin/presentation-frontend";
 import { PointProps } from "@bentley/ui-abstract";
 import { ContextMenuDirection, GlobalContextMenu } from "@bentley/ui-core";
 import { LabeledSelect, ToggleSwitch } from "@itwin/itwinui-react";

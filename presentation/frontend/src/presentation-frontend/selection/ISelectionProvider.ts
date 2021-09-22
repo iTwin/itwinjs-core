@@ -7,7 +7,7 @@
  */
 
 import { IModelConnection } from "@itwin/core-frontend";
-import { KeySet } from "@bentley/presentation-common";
+import { KeySet } from "@itwin/presentation-common";
 import { SelectionChangeEvent } from "./SelectionChangeEvent";
 
 /**

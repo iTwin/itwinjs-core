@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
 // __PUBLISH_EXTRACT_START__ Presentation.Common.Imports
-import { PresentationRpcInterface } from "@bentley/presentation-common";
+import { PresentationRpcInterface } from "@itwin/presentation-common";
 // __PUBLISH_EXTRACT_END__
 import SampleRpcInterface from "./SampleRpcInterface";
 

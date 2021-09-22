@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { Presentation } from "@bentley/presentation-frontend";
+import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";
 
 describe("Selection Scopes", () => {

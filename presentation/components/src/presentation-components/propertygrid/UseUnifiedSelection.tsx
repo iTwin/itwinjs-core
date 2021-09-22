@@ -7,8 +7,8 @@
  */
 
 import * as React from "react";
-import { KeySet } from "@bentley/presentation-common";
-import { Presentation, SelectionChangeEventArgs, SelectionHandler } from "@bentley/presentation-frontend";
+import { KeySet } from "@itwin/presentation-common";
+import { Presentation, SelectionChangeEventArgs, SelectionHandler } from "@itwin/presentation-frontend";
 import { useDisposable } from "@bentley/ui-core";
 import { IPresentationPropertyDataProvider } from "./DataProvider";
 

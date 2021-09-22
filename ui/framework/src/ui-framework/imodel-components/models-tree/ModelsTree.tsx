@@ -10,11 +10,11 @@ import "./ModelsTree.scss";
 import * as React from "react";
 import { Id64Array } from "@itwin/core-bentley";
 import { IModelConnection, Viewport } from "@itwin/core-frontend";
-import { NodeKey, Ruleset } from "@bentley/presentation-common";
+import { NodeKey, Ruleset } from "@itwin/presentation-common";
 import {
   IFilteredPresentationTreeDataProvider, IPresentationTreeDataProvider, usePresentationTreeNodeLoader,
-} from "@bentley/presentation-components";
-import { Presentation } from "@bentley/presentation-frontend";
+} from "@itwin/presentation-components";
+import { Presentation } from "@itwin/presentation-frontend";
 import { ControlledTree, SelectionMode, TreeNodeItem, useTreeModel } from "@bentley/ui-components";
 import { useDisposable, useOptionalDisposable } from "@bentley/ui-core";
 import { UiFramework } from "../../../ui-framework/UiFramework";

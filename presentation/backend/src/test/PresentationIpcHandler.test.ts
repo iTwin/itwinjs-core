@@ -8,8 +8,8 @@ import { IModelDb, IModelJsNative } from "@itwin/core-backend";
 import {
   NodeKeyJSON, RulesetVariableJSON, SetRulesetVariableParams, StringRulesetVariable, UnsetRulesetVariableParams, UpdateHierarchyStateParams,
   VariableValueTypes,
-} from "@bentley/presentation-common";
-import { createRandomBaseNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+} from "@itwin/presentation-common";
+import { createRandomBaseNodeKey } from "@itwin/presentation-common/lib/test/_helpers/random";
 import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
 import { Presentation } from "../presentation-backend/Presentation";
 import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler";

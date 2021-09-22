@@ -6,8 +6,8 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import { IpcApp } from "@itwin/core-frontend";
-import { NodeKey, PRESENTATION_IPC_CHANNEL_NAME, RulesetVariable, VariableValueTypes } from "@bentley/presentation-common";
-import { createRandomECInstancesNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { NodeKey, PRESENTATION_IPC_CHANNEL_NAME, RulesetVariable, VariableValueTypes } from "@itwin/presentation-common";
+import { createRandomECInstancesNodeKey } from "@itwin/presentation-common/lib/test/_helpers/random";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
 
 describe("IpcRequestsHandler", () => {

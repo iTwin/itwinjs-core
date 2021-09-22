@@ -6,7 +6,7 @@ import * as React from "react";
 import { Id64String } from "@itwin/core-bentley";
 import { ViewDefinitionProps, ViewQueryParams } from "@itwin/core-common";
 import { IModelConnection, ScreenViewport, ViewState } from "@itwin/core-frontend";
-import { viewWithUnifiedSelection } from "@bentley/presentation-components";
+import { viewWithUnifiedSelection } from "@itwin/presentation-components";
 import { TimelineComponent, TimelineDataProvider, ViewportComponent } from "@bentley/ui-imodel-components";
 import { LoadingSpinner } from "@bentley/ui-core";
 import {

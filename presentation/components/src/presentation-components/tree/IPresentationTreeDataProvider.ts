@@ -6,7 +6,7 @@
  * @module Tree
  */
 
-import { NodeKey, NodePathElement } from "@bentley/presentation-common";
+import { NodeKey, NodePathElement } from "@itwin/presentation-common";
 import { ITreeDataProvider, TreeNodeItem } from "@bentley/ui-components";
 import { IPresentationDataProvider } from "../common/IPresentationDataProvider";
 

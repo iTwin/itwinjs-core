@@ -6,8 +6,8 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import { IModelConnection } from "@itwin/core-frontend";
-import { KeySet } from "@bentley/presentation-common";
-import { Presentation, SelectionManager } from "@bentley/presentation-frontend";
+import { KeySet } from "@itwin/presentation-common";
+import { Presentation, SelectionManager } from "@itwin/presentation-frontend";
 import { act, renderHook, RenderHookResult } from "@testing-library/react-hooks";
 import {
   UnifiedSelectionContext, UnifiedSelectionContextProvider, UnifiedSelectionContextProviderProps, useUnifiedSelectionContext,

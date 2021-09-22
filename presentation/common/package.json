@@ -1,5 +1,5 @@
 {
-  "name": "@bentley/presentation-common",
+  "name": "@itwin/presentation-common",
   "version": "3.0.0-dev.64",
   "description": "Common pieces for iModel.js presentation packages",
   "imodeljsSharedLibrary": true,

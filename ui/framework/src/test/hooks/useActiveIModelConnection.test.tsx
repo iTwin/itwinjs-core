@@ -8,7 +8,7 @@ import { Provider } from "react-redux";
 import * as moq from "typemoq";
 import * as sinon from "sinon";
 
-import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@bentley/presentation-testing";
+import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@itwin/presentation-testing";
 import { IModelConnection, MockRender, SelectionSet } from "@itwin/core-frontend";
 import { render } from "@testing-library/react";
 import { IModelRpcProps } from "@itwin/core-common";

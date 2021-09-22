@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
+import "@itwin/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import * as chai from "chai";
 import chaiSubset from "chai-subset";
 import * as cpx from "cpx";
@@ -16,9 +16,9 @@ import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "@bentley/oidc-signin-tool/lib/TestUtility";
 import {
   HierarchyCacheMode, Presentation as PresentationBackend, PresentationBackendNativeLoggerCategory, PresentationProps as PresentationBackendProps,
-} from "@bentley/presentation-backend";
-import { PresentationProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
-import { initialize as initializeTesting, PresentationTestingInitProps, terminate as terminateTesting } from "@bentley/presentation-testing";
+} from "@itwin/presentation-backend";
+import { PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
+import { initialize as initializeTesting, PresentationTestingInitProps, terminate as terminateTesting } from "@itwin/presentation-testing";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {

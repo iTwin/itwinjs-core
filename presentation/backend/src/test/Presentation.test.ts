@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { IModelHost } from "@itwin/core-backend";
 import { RpcManager } from "@itwin/core-common";
-import { PresentationError } from "@bentley/presentation-common";
+import { PresentationError } from "@itwin/presentation-common";
 import { MultiManagerPresentationProps, Presentation } from "../presentation-backend/Presentation";
 import { PresentationManager } from "../presentation-backend/PresentationManager";
 import { TemporaryStorage } from "../presentation-backend/TemporaryStorage";

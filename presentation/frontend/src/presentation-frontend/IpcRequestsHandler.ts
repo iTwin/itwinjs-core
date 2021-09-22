@@ -8,7 +8,7 @@ import { IpcApp } from "@itwin/core-frontend";
 import {
   NodeKey, NodeKeyJSON, PRESENTATION_IPC_CHANNEL_NAME, PresentationIpcInterface, RulesetVariable, RulesetVariableJSON, SetRulesetVariableParams,
   UnsetRulesetVariableParams, UpdateHierarchyStateParams,
-} from "@bentley/presentation-common";
+} from "@itwin/presentation-common";
 
 /** @internal */
 export class IpcRequestsHandler {

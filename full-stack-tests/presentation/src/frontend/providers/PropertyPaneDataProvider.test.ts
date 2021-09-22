@@ -7,10 +7,10 @@ import * as sinon from "sinon";
 import { using } from "@itwin/core-bentley";
 import { ModelProps } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { KeySet, RuleTypes } from "@bentley/presentation-common";
-import { PresentationPropertyDataProvider } from "@bentley/presentation-components";
-import { DEFAULT_PROPERTY_GRID_RULESET } from "@bentley/presentation-components/lib/presentation-components/propertygrid/DataProvider";
-import { Presentation } from "@bentley/presentation-frontend";
+import { KeySet, RuleTypes } from "@itwin/presentation-common";
+import { PresentationPropertyDataProvider } from "@itwin/presentation-components";
+import { DEFAULT_PROPERTY_GRID_RULESET } from "@itwin/presentation-components/lib/presentation-components/propertygrid/DataProvider";
+import { Presentation } from "@itwin/presentation-frontend";
 import { PropertyCategory } from "@bentley/ui-components";
 import { initialize, terminate } from "../../IntegrationTests";
 

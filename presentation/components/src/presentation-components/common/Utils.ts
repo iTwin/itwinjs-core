@@ -7,8 +7,8 @@
  */
 
 import * as React from "react";
-import { Descriptor, Field, FIELD_NAMES_SEPARATOR, LabelCompositeValue, LabelDefinition } from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
+import { Descriptor, Field, FIELD_NAMES_SEPARATOR, LabelCompositeValue, LabelDefinition } from "@itwin/presentation-common";
+import { Presentation } from "@itwin/presentation-frontend";
 import { Primitives, PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { IPropertyValueRenderer, PropertyValueRendererManager } from "@bentley/ui-components";
 import { InstanceKeyValueRenderer } from "../properties/InstanceKeyValueRenderer";

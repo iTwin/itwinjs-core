@@ -7,9 +7,9 @@ import * as faker from "faker";
 import { enablePatches } from "immer";
 import * as sinon from "sinon";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { ChildNodeSpecificationTypes, RuleTypes } from "@bentley/presentation-common";
-import { IPresentationTreeDataProvider, PresentationTreeNodeLoaderProps, usePresentationTreeNodeLoader } from "@bentley/presentation-components";
-import { Presentation } from "@bentley/presentation-frontend";
+import { ChildNodeSpecificationTypes, RuleTypes } from "@itwin/presentation-common";
+import { IPresentationTreeDataProvider, PresentationTreeNodeLoaderProps, usePresentationTreeNodeLoader } from "@itwin/presentation-components";
+import { Presentation } from "@itwin/presentation-frontend";
 import { PrimitiveValue } from "@bentley/ui-abstract";
 import {
   AbstractTreeNodeLoader, DelayLoadedTreeNodeItem, MutableTreeModelNode, PagedTreeNodeLoader, Subscription, TreeModelNode, TreeModelRootNode,

@@ -9,7 +9,7 @@ import {
   ScreenViewport, ViewState,
 } from "@itwin/core-frontend";
 import { MapLayersWidgetControl } from "@bentley/map-layers"; // used to test map-layers widget control
-import { NodeKey } from "@bentley/presentation-common";
+import { NodeKey } from "@itwin/presentation-common";
 import {
   BadgeType, CommonToolbarItem, ConditionalBooleanValue, ContentLayoutProps, RelativePosition, SpecialKey, StageUsage, ToolbarItemUtilities, WidgetState,
 } from "@bentley/ui-abstract";

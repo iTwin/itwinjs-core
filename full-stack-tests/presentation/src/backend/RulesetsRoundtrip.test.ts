@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { using } from "@itwin/core-bentley";
-import { PresentationManagerMode } from "@bentley/presentation-backend";
-import { createDefaultNativePlatform, NativePlatformDefinition } from "@bentley/presentation-backend/lib/presentation-backend/NativePlatform";
-import { RulesetManagerImpl } from "@bentley/presentation-backend/lib/presentation-backend/RulesetManager";
-import { Ruleset } from "@bentley/presentation-common";
-import { createRandomRuleset } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { PresentationManagerMode } from "@itwin/presentation-backend";
+import { createDefaultNativePlatform, NativePlatformDefinition } from "@itwin/presentation-backend/lib/presentation-backend/NativePlatform";
+import { RulesetManagerImpl } from "@itwin/presentation-backend/lib/presentation-backend/RulesetManager";
+import { Ruleset } from "@itwin/presentation-common";
+import { createRandomRuleset } from "@itwin/presentation-common/lib/test/_helpers/random";
 import { initialize, terminate } from "../IntegrationTests";
 import { tweakRuleset } from "./Helpers";
 

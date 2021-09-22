@@ -8,15 +8,15 @@ import * as sinon from "sinon";
 import * as React from "react";
 import { BeEvent } from "@itwin/core-bentley";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { KeySet, LabelDefinition, Node, NodeKey, NodePathElement } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { PresentationTreeDataProvider } from "@bentley/presentation-components";
-import { mockPresentationManager } from "@bentley/presentation-components/lib/test/_helpers/UiComponents";
-import { Presentation, PresentationManager, RulesetVariablesManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
+import { KeySet, LabelDefinition, Node, NodeKey, NodePathElement } from "@itwin/presentation-common";
+import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
+import { createRandomId } from "@itwin/presentation-common/lib/test/_helpers/random";
+import { PresentationTreeDataProvider } from "@itwin/presentation-components";
+import { mockPresentationManager } from "@itwin/presentation-components/lib/test/_helpers/UiComponents";
+import { Presentation, PresentationManager, RulesetVariablesManager, SelectionChangeEvent, SelectionManager } from "@itwin/presentation-frontend";
 import {
   HierarchyBuilder, HierarchyCacheMode, initialize as initializePresentationTesting, terminate as terminatePresentationTesting,
-} from "@bentley/presentation-testing";
+} from "@itwin/presentation-testing";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { SelectionMode, TreeNodeItem } from "@bentley/ui-components";
 import { fireEvent, render, waitFor } from "@testing-library/react";

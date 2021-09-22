@@ -6,9 +6,9 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import { IModelConnection } from "@itwin/core-frontend";
-import { LabelDefinition, NodePathElement } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomECInstancesNodeKey, createRandomNodePathElement } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { LabelDefinition, NodePathElement } from "@itwin/presentation-common";
+import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
+import { createRandomECInstancesNodeKey, createRandomNodePathElement } from "@itwin/presentation-common/lib/test/_helpers/random";
 import { PageOptions } from "@bentley/ui-components";
 import { FilteredPresentationTreeDataProvider } from "../../presentation-components/tree/FilteredDataProvider";
 import { IPresentationTreeDataProvider } from "../../presentation-components/tree/IPresentationTreeDataProvider";

@@ -7,7 +7,7 @@
  */
 
 import { IModelReadRpcInterface, IModelTileRpcInterface, IpcSocket, IpcSocketBackend, IpcSocketFrontend, RpcConfiguration, RpcInterfaceDefinition, RpcManager, SnapshotIModelRpcInterface } from "@itwin/core-common";
-import { PresentationRpcInterface } from "@bentley/presentation-common";
+import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 
 /** RPC interface configuration for an Electron-based application.

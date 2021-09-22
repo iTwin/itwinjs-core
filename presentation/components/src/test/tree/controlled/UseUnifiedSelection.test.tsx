@@ -10,12 +10,12 @@ import sinon from "sinon";
 import * as moq from "typemoq";
 import { BeUiEvent } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
-import { Keys, KeySet, NodeKey } from "@bentley/presentation-common";
-import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
-import { createRandomECInstancesNodeKey, createRandomGroupingNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { Keys, KeySet, NodeKey } from "@itwin/presentation-common";
+import { ResolvablePromise } from "@itwin/presentation-common/lib/test/_helpers/Promises";
+import { createRandomECInstancesNodeKey, createRandomGroupingNodeKey } from "@itwin/presentation-common/lib/test/_helpers/random";
 import {
   ISelectionProvider, Presentation, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler, SelectionHelper, SelectionManager,
-} from "@bentley/presentation-frontend";
+} from "@itwin/presentation-frontend";
 import {
   AbstractTreeNodeLoaderWithProvider, MutableTreeModelNode, TreeModel, TreeModelChanges, TreeModelSource, TreeNodeItem,
   TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,

@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { IPresentationTreeDataProvider, useControlledPresentationTreeFiltering } from "@bentley/presentation-components";
+import { IPresentationTreeDataProvider, useControlledPresentationTreeFiltering } from "@itwin/presentation-components";
 import {
   AbstractTreeNodeLoaderWithProvider, TreeImageLoader, TreeNodeRenderer, TreeNodeRendererProps, TreeRenderer, TreeRendererProps,
 } from "@bentley/ui-components";

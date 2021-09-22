@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { Subtract } from "@bentley/presentation-common";
+import { Subtract } from "@itwin/presentation-common";
 import { SafeAreaInsets } from "@bentley/ui-ninezone";
 
 /**

@@ -40,7 +40,7 @@
     "@bentley/imodeljs-i18n": "workspace:*",
     "@bentley/imodeljs-quantity": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/presentation-common": "workspace:*",
+    "@itwin/presentation-common": "workspace:*",
     "@bentley/react-scripts": "4.0.3",
     "@bentley/ui-abstract": "workspace:*",
     "@bentley/ui-components": "workspace:*",

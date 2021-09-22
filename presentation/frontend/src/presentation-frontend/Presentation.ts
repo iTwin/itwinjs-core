@@ -8,7 +8,7 @@
 
 import { IModelApp } from "@itwin/core-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
-import { PresentationError, PresentationStatus } from "@bentley/presentation-common";
+import { PresentationError, PresentationStatus } from "@itwin/presentation-common";
 import { FavoritePropertiesManager, FavoritePropertiesManagerProps } from "./favorite-properties/FavoritePropertiesManager";
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes } from "./favorite-properties/FavoritePropertiesStorage";
 import { LocalizationHelper } from "./LocalizationHelper";

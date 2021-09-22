@@ -8,8 +8,8 @@
 
 import { Logger } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection, SelectedViewportChangedArgs, SelectionSetEvent } from "@itwin/core-frontend";
-import { getInstancesCount, SelectionScope } from "@bentley/presentation-common";
-import { ISelectionProvider, Presentation, SelectionChangeEventArgs } from "@bentley/presentation-frontend";
+import { getInstancesCount, SelectionScope } from "@itwin/presentation-common";
+import { ISelectionProvider, Presentation, SelectionChangeEventArgs } from "@itwin/presentation-frontend";
 // cSpell:ignore configurableui
 import { UiEvent } from "@bentley/ui-core";
 import { Backstage } from "../backstage/Backstage";

@@ -231,35 +231,35 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/presentation-common",
+      "packageName": "@itwin/presentation-common",
       "projectFolder": "presentation/common",
       "reviewCategory": "common",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/presentation-backend",
+      "packageName": "@itwin/presentation-backend",
       "projectFolder": "presentation/backend",
       "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/presentation-frontend",
+      "packageName": "@itwin/presentation-frontend",
       "projectFolder": "presentation/frontend",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/presentation-components",
+      "packageName": "@itwin/presentation-components",
       "projectFolder": "presentation/components",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/presentation-testing",
+      "packageName": "@itwin/presentation-testing",
       "projectFolder": "presentation/testing",
       "reviewCategory": "tools",
       "shouldPublish": true,

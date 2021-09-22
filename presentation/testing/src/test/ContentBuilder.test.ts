@@ -11,8 +11,8 @@ import { IModelConnection } from "@itwin/core-frontend";
 import {
   CategoryDescription, Content, DefaultContentDisplayTypes, Descriptor, DisplayValue, Field, Item, KeySet, PrimitiveTypeDescription,
   PropertyValueFormat, RegisteredRuleset, Ruleset, Value, ValuesDictionary,
-} from "@bentley/presentation-common";
-import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
+} from "@itwin/presentation-common";
+import { Presentation, PresentationManager, RulesetManager } from "@itwin/presentation-frontend";
 import { ContentBuilder, IContentBuilderDataProvider } from "../presentation-testing/ContentBuilder";
 
 use(ChaiAsPromised);

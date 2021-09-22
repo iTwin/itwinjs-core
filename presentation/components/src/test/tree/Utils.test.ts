@@ -5,8 +5,8 @@
 
 import { expect } from "chai";
 import * as faker from "faker";
-import { GroupingNodeKey, LabelDefinition, Node } from "@bentley/presentation-common";
-import { createRandomECInstancesNode, createRandomGroupingNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { GroupingNodeKey, LabelDefinition, Node } from "@itwin/presentation-common";
+import { createRandomECInstancesNode, createRandomGroupingNodeKey } from "@itwin/presentation-common/lib/test/_helpers/random";
 import { PageOptions } from "@bentley/ui-components";
 import {
   createPartialTreeNodeItem, createTreeNodeItem, createTreeNodeItems, pageOptionsUiToPresentation, PRESENTATION_TREE_NODE_KEY,

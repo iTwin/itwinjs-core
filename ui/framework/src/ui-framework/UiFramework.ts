@@ -14,7 +14,7 @@ import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-c
 import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection, SnapMode, ViewState } from "@itwin/core-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { AccessToken, UserInfo } from "@bentley/itwin-client";
-import { Presentation } from "@bentley/presentation-frontend";
+import { Presentation } from "@itwin/presentation-frontend";
 import { TelemetryEvent } from "@bentley/telemetry-client";
 import { getClassName, UiAbstract, UiError } from "@bentley/ui-abstract";
 import { LocalSettingsStorage, SettingsManager, UiEvent, UiSettingsStorage } from "@bentley/ui-core";

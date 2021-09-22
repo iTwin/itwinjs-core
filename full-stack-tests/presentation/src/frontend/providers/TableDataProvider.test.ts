@@ -9,9 +9,9 @@ import { ModelProps } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import {
   ContentSpecificationTypes, InstanceKey, KeySet, RelationshipDirection, RelationshipMeaning, Ruleset, RuleTypes,
-} from "@bentley/presentation-common";
-import { PresentationTableDataProvider } from "@bentley/presentation-components";
-import { Presentation } from "@bentley/presentation-frontend";
+} from "@itwin/presentation-common";
+import { PresentationTableDataProvider } from "@itwin/presentation-components";
+import { Presentation } from "@itwin/presentation-frontend";
 import { PropertyRecord, PropertyValueFormat, StructValue } from "@bentley/ui-abstract";
 import { SortDirection } from "@bentley/ui-core";
 import { initialize, terminate } from "../../IntegrationTests";

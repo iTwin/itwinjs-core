@@ -27,7 +27,7 @@ import { MarkupApp } from "@itwin/core-markup";
 import { AccessToken, ProgressInfo } from "@bentley/itwin-client";
 import { MapLayersUI } from "@bentley/map-layers";
 import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
-import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@bentley/presentation-frontend";
+import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@itwin/presentation-frontend";
 import { getClassName } from "@bentley/ui-abstract";
 import { LocalSettingsStorage, UiSettings } from "@bentley/ui-core";
 import {

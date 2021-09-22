@@ -9,10 +9,10 @@ import { Logger, LogLevel } from "@itwin/core-bentley";
 import { IModelHost } from "@itwin/core-backend";
 import { RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
 // __PUBLISH_EXTRACT_START__ Presentation.Backend.Initialization
-import { Presentation, PresentationManagerMode } from "@bentley/presentation-backend";
+import { Presentation, PresentationManagerMode } from "@itwin/presentation-backend";
 import rpcs from "../common/Rpcs";
 // __PUBLISH_EXTRACT_END__
-import { PresentationBackendLoggerCategory, PresentationBackendNativeLoggerCategory } from "@bentley/presentation-backend"; // eslint-disable-line no-duplicate-imports
+import { PresentationBackendLoggerCategory, PresentationBackendNativeLoggerCategory } from "@itwin/presentation-backend"; // eslint-disable-line no-duplicate-imports
 import * as fs from "fs";
 
 /** Loads the provided `.env` file into process.env */

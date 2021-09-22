@@ -6,7 +6,7 @@
 import "./GridWidget.css";
 import * as React from "react";
 import { IModelApp, IModelConnection } from "@itwin/core-frontend";
-import { DiagnosticsProps, PresentationTableDataProvider, tableWithUnifiedSelection } from "@bentley/presentation-components";
+import { DiagnosticsProps, PresentationTableDataProvider, tableWithUnifiedSelection } from "@itwin/presentation-components";
 import { Table } from "@bentley/ui-components";
 import { useDisposable } from "@bentley/ui-core";
 import { DiagnosticsSelector } from "../diagnostics-selector/DiagnosticsSelector";

@@ -8,8 +8,8 @@ import * as moq from "typemoq";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { DrawingGraphic, ECSqlStatement, ECSqlValue, Element, IModelDb, IModelHost } from "@itwin/core-backend";
 import { ElementProps, EntityMetaData, IModelError, ModelProps } from "@itwin/core-common";
-import { InstanceKey } from "@bentley/presentation-common";
-import { createRandomECInstanceKey, createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { InstanceKey } from "@itwin/presentation-common";
+import { createRandomECInstanceKey, createRandomId } from "@itwin/presentation-common/lib/test/_helpers/random";
 import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper";
 
 describe("SelectionScopesHelper", () => {

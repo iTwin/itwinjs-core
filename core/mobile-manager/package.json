@@ -38,7 +38,7 @@
     "@itwin/core-common": "workspace:^3.0.0-dev.64",
     "@itwin/core-frontend": "workspace:^3.0.0-dev.64",
     "@bentley/itwin-client": "workspace:^3.0.0-dev.64",
-    "@bentley/presentation-common": "workspace:^3.0.0-dev.64",
+    "@itwin/presentation-common": "workspace:^3.0.0-dev.64",
     "js-base64": "^3.6.1",
     "ws": "^7.5.3"
   },
@@ -52,7 +52,7 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/presentation-common": "workspace:*",
+    "@itwin/presentation-common": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/fs-extra": "^4.0.7",
     "@types/mocha": "^8.2.2",

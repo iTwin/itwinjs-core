@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
-import { PresentationTableDataProvider, tableWithUnifiedSelection } from "@bentley/presentation-components";
+import { PresentationTableDataProvider, tableWithUnifiedSelection } from "@itwin/presentation-components";
 import { Table, TableCellContextMenuArgs } from "@bentley/ui-components";
 import { ContextMenuItem, GlobalContextMenu } from "@bentley/ui-core";
 import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@bentley/ui-framework";

@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelApp } from "@itwin/core-frontend";
-import { KeySet } from "@bentley/presentation-common";
-import { FavoritePropertiesDataProvider } from "@bentley/presentation-components";
-import { ISelectionProvider, Presentation, SelectionChangeEventArgs } from "@bentley/presentation-frontend";
+import { KeySet } from "@itwin/presentation-common";
+import { FavoritePropertiesDataProvider } from "@itwin/presentation-components";
+import { ISelectionProvider, Presentation, SelectionChangeEventArgs } from "@itwin/presentation-frontend";
 import { AbstractToolbarProps, CommonToolbarItem, RelativePosition, WidgetState } from "@bentley/ui-abstract";
 import { FavoritePropertiesRenderer, FavoritePropertyList } from "@bentley/ui-components";
 import {

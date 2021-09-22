@@ -22,7 +22,7 @@ import {
 import { ModalDialogManager } from "../../dialog/ModalDialogManager";
 import { UiFramework } from "../../UiFramework";
 import { UnitSystemSelector } from "./UnitSystemSelector";
-import { Presentation } from "@bentley/presentation-frontend";
+import { Presentation } from "@itwin/presentation-frontend";
 import { Button } from "@itwin/itwinui-react";
 
 function formatAreEqual(obj1: FormatProps, obj2: FormatProps) {

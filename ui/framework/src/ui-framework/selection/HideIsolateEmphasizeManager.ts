@@ -9,7 +9,7 @@
 import { BeEvent, GuidString, Id64String } from "@itwin/core-bentley";
 import { FeatureAppearance, GeometricElementProps } from "@itwin/core-common";
 import { EmphasizeElements, FeatureOverrideProvider, FeatureSymbology, IModelApp, IModelConnection, ScreenViewport, Viewport } from "@itwin/core-frontend";
-import { Presentation } from "@bentley/presentation-frontend";
+import { Presentation } from "@itwin/presentation-frontend";
 import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 

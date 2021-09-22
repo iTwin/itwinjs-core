@@ -8,8 +8,8 @@
 
 import * as React from "react";
 import { Subscription } from "rxjs/internal/Subscription";
-import { HierarchyUpdateRecord, PageOptions, UPDATE_FULL } from "@bentley/presentation-common";
-import { IModelHierarchyChangeEventArgs, Presentation } from "@bentley/presentation-frontend";
+import { HierarchyUpdateRecord, PageOptions, UPDATE_FULL } from "@itwin/presentation-common";
+import { IModelHierarchyChangeEventArgs, Presentation } from "@itwin/presentation-frontend";
 import {
   computeVisibleNodes, isTreeModelNode, isTreeModelNodePlaceholder, MutableTreeModel, MutableTreeModelNode, PagedTreeNodeLoader, RenderedItemsRange,
   TreeModelNode, TreeModelNodeInput, TreeModelSource, TreeNodeItem, usePagedTreeNodeLoader, VisibleTreeNodes,

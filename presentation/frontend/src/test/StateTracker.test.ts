@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelConnection } from "@itwin/core-frontend";
-import { NodeKey } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomECInstancesNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { NodeKey } from "@itwin/presentation-common";
+import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
+import { createRandomECInstancesNodeKey } from "@itwin/presentation-common/lib/test/_helpers/random";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
 import { NodeIdentifier, StateTracker } from "../presentation-frontend/StateTracker";
 

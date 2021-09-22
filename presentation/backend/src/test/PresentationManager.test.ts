@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import "@bentley/presentation-common/lib/test/_helpers/Promises";
+import "@itwin/presentation-common/lib/test/_helpers/Promises";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as path from "path";
@@ -19,16 +19,16 @@ import {
   IntRulesetVariable, ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions,
   PresentationError, PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, Ruleset,
   SelectClassInfo, SelectClassInfoJSON, SelectionInfo, SelectionScope, StandardNodeTypes, StructTypeDescription, VariableValueTypes,
-} from "@bentley/presentation-common";
+} from "@itwin/presentation-common";
 import {
   createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestSelectClassInfo, createTestSimpleContentField,
-} from "@bentley/presentation-common/lib/test/_helpers/Content";
-import { createTestECClassInfo, createTestRelatedClassInfo, createTestRelationshipPath } from "@bentley/presentation-common/lib/test/_helpers/EC";
+} from "@itwin/presentation-common/lib/test/_helpers/Content";
+import { createTestECClassInfo, createTestRelatedClassInfo, createTestRelationshipPath } from "@itwin/presentation-common/lib/test/_helpers/EC";
 import {
   createRandomECClassInfoJSON, createRandomECInstanceKey, createRandomECInstanceKeyJSON, createRandomECInstancesNodeJSON,
   createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON, createRandomId, createRandomLabelDefinitionJSON,
   createRandomNodePathElementJSON, createRandomRelationshipPathJSON, createRandomRuleset,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
+} from "@itwin/presentation-common/lib/test/_helpers/random";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "../presentation-backend/Constants";
 import { NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationUnitSystem } from "../presentation-backend/NativePlatform";
 import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler";

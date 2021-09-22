@@ -8,9 +8,9 @@ import * as faker from "faker";
 import sinon from "sinon";
 import { Id64 } from "@itwin/core-bentley";
 import { IpcApp } from "@itwin/core-frontend";
-import { RulesetVariable, VariableValueTypes } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { RulesetVariable, VariableValueTypes } from "@itwin/presentation-common";
+import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
+import { createRandomId } from "@itwin/presentation-common/lib/test/_helpers/random";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
 import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
 

@@ -8,8 +8,8 @@ import { BeEvent, Id64String, using } from "@itwin/core-bentley";
 import {
   IModelConnection, PerModelCategoryVisibility, ScreenViewport, SubCategoriesCache, ViewManager, Viewport, ViewState,
 } from "@itwin/core-frontend";
-import { ECInstancesNodeKey, StandardNodeTypes } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import { ECInstancesNodeKey, StandardNodeTypes } from "@itwin/presentation-common";
+import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import * as UiComponents from "@bentley/ui-components";
 import { renderHook } from "@testing-library/react-hooks";

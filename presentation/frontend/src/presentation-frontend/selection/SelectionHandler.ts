@@ -8,7 +8,7 @@
 
 import { DisposableList, IDisposable } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
-import { Keys, KeySet } from "@bentley/presentation-common";
+import { Keys, KeySet } from "@itwin/presentation-common";
 import { ISelectionProvider } from "./ISelectionProvider";
 import { SelectionChangeEventArgs, SelectionChangesListener } from "./SelectionChangeEvent";
 import { SelectionManager } from "./SelectionManager";

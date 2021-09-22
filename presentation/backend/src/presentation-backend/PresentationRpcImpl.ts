@@ -17,7 +17,7 @@ import {
   Node, NodeJSON, NodeKey, NodeKeyJSON, NodePathElement, NodePathElementJSON, Paged, PagedResponse, PageOptions, PresentationError,
   PresentationRpcInterface, PresentationRpcResponse, PresentationStatus, Ruleset, RulesetVariable, RulesetVariableJSON, SelectClassInfo,
   SelectionScope, SelectionScopeRpcRequestOptions,
-} from "@bentley/presentation-common";
+} from "@itwin/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { Presentation } from "./Presentation";
 import { PresentationManager } from "./PresentationManager";

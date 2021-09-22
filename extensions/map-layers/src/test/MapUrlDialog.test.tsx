@@ -10,7 +10,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { MapUrlDialog } from "../ui/widget/MapUrlDialog";
 import { TestUtils } from "./TestUtils";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
 import { MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { Select } from "@itwin/itwinui-react";
 

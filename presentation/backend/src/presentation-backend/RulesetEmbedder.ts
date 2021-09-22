@@ -15,7 +15,7 @@ import {
 import {
   BisCodeSpec, Code, CodeScopeSpec, CodeSpec, DefinitionElementProps, ElementProps, InformationPartitionElementProps, ModelProps, SubjectProps,
 } from "@itwin/core-common";
-import { Ruleset } from "@bentley/presentation-common";
+import { Ruleset } from "@itwin/presentation-common";
 import { PresentationRules } from "./domain/PresentationRulesDomain";
 import * as RulesetElements from "./domain/RulesetElements";
 import { normalizeVersion } from "./Utils";

@@ -830,11 +830,11 @@ importers:
       '@bentley/build-tools': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/itwin-client': workspace:*
-      '@bentley/presentation-common': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
+      '@itwin/presentation-common': workspace:*
       '@openid/appauth': ^1.2.6
       '@types/node': 10.14.1
       electron: ^11.1.0
@@ -851,11 +851,11 @@ importers:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/presentation-common': link:../../presentation/common
       '@itwin/core-backend': link:../backend
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-common': link:../common
       '@itwin/core-frontend': link:../frontend
+      '@itwin/presentation-common': link:../../presentation/common
       '@types/node': 10.14.1
       electron: 11.5.0
       eslint: 7.32.0
@@ -1199,11 +1199,11 @@ importers:
       '@bentley/frontend-authorization-client': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
-      '@bentley/presentation-common': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
+      '@itwin/presentation-common': workspace:*
       '@types/chai': ^4.1.4
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
@@ -1226,11 +1226,11 @@ importers:
       '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/presentation-common': link:../../presentation/common
       '@itwin/core-backend': link:../backend
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-common': link:../common
       '@itwin/core-frontend': link:../frontend
+      '@itwin/presentation-common': link:../../presentation/common
       '@types/chai': 4.2.22
       '@types/fs-extra': 4.0.12
       '@types/mocha': 8.2.3
@@ -1894,7 +1894,6 @@ importers:
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/imodeljs-quantity': workspace:*
       '@bentley/itwin-client': workspace:*
-      '@bentley/presentation-common': workspace:*
       '@bentley/react-scripts': 4.0.3
       '@bentley/ui-abstract': workspace:*
       '@bentley/ui-components': workspace:*
@@ -1908,6 +1907,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/itwinui-css': ^0.27.0
       '@itwin/itwinui-react': ^1.16.2
+      '@itwin/presentation-common': workspace:*
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^3.2.1
       '@types/chai': ^4.1.4
@@ -1954,7 +1954,6 @@ importers:
       '@bentley/imodeljs-i18n': link:../../core/i18n
       '@bentley/imodeljs-quantity': link:../../core/quantity
       '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/presentation-common': link:../../presentation/common
       '@bentley/react-scripts': 4.0.3_react@17.0.2+typescript@4.3.5
       '@bentley/ui-abstract': link:../../ui/abstract
       '@bentley/ui-components': link:../../ui/components
@@ -1968,6 +1967,7 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/itwinui-css': 0.27.3
       '@itwin/itwinui-react': 1.19.0_react@17.0.2
+      '@itwin/presentation-common': link:../../presentation/common
       '@testing-library/react': 12.1.0_react@17.0.2
       '@testing-library/react-hooks': 3.7.0_react@17.0.2
       '@types/chai': 4.2.22
@@ -2113,14 +2113,14 @@ importers:
       '@bentley/imodeljs-quantity': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
-      '@bentley/presentation-common': workspace:*
-      '@bentley/presentation-frontend': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/ecschema-metadata': workspace:*
+      '@itwin/presentation-common': workspace:*
+      '@itwin/presentation-frontend': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
@@ -2154,13 +2154,13 @@ importers:
       '@bentley/imodeljs-quantity': link:../../core/quantity
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
-      '@bentley/presentation-common': link:../../presentation/common
-      '@bentley/presentation-frontend': link:../../presentation/frontend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
+      '@itwin/presentation-common': link:../../presentation/common
+      '@itwin/presentation-frontend': link:../../presentation/frontend
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
       dotenv: 10.0.0
@@ -2338,11 +2338,6 @@ importers:
       '@bentley/imodeljs-quantity': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
-      '@bentley/presentation-backend': workspace:*
-      '@bentley/presentation-common': workspace:*
-      '@bentley/presentation-components': workspace:*
-      '@bentley/presentation-frontend': workspace:*
-      '@bentley/presentation-testing': workspace:*
       '@bentley/product-settings-client': workspace:*
       '@bentley/ui-abstract': workspace:*
       '@bentley/ui-components': workspace:*
@@ -2352,6 +2347,11 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
+      '@itwin/presentation-backend': workspace:*
+      '@itwin/presentation-common': workspace:*
+      '@itwin/presentation-components': workspace:*
+      '@itwin/presentation-frontend': workspace:*
+      '@itwin/presentation-testing': workspace:*
       '@testing-library/react-hooks': ^3.2.1
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
@@ -2399,11 +2399,6 @@ importers:
       '@bentley/imodeljs-quantity': link:../../core/quantity
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
-      '@bentley/presentation-backend': link:../../presentation/backend
-      '@bentley/presentation-common': link:../../presentation/common
-      '@bentley/presentation-components': link:../../presentation/components
-      '@bentley/presentation-frontend': link:../../presentation/frontend
-      '@bentley/presentation-testing': link:../../presentation/testing
       '@bentley/product-settings-client': link:../../clients/product-settings
       '@bentley/ui-abstract': link:../../ui/abstract
       '@bentley/ui-components': link:../../ui/components
@@ -2413,6 +2408,11 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
+      '@itwin/presentation-backend': link:../../presentation/backend
+      '@itwin/presentation-common': link:../../presentation/common
+      '@itwin/presentation-components': link:../../presentation/components
+      '@itwin/presentation-frontend': link:../../presentation/frontend
+      '@itwin/presentation-testing': link:../../presentation/testing
       '@testing-library/react-hooks': 3.7.0_509016fd322278d497c1e58f6164ce1d
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
@@ -2535,15 +2535,15 @@ importers:
       '@bentley/imodeljs-quantity': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
-      '@bentley/presentation-backend': workspace:*
-      '@bentley/presentation-common': workspace:*
-      '@bentley/presentation-frontend': workspace:*
       '@bentley/telemetry-client': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
+      '@itwin/presentation-backend': workspace:*
+      '@itwin/presentation-common': workspace:*
+      '@itwin/presentation-frontend': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
@@ -2577,13 +2577,13 @@ importers:
       '@bentley/imodeljs-quantity': link:../../core/quantity
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
-      '@bentley/presentation-common': link:../../presentation/common
-      '@bentley/presentation-frontend': link:../../presentation/frontend
       '@bentley/telemetry-client': link:../../clients/telemetry
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
+      '@itwin/presentation-common': link:../../presentation/common
+      '@itwin/presentation-frontend': link:../../presentation/frontend
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
       dotenv: 10.0.0
@@ -2593,8 +2593,8 @@ importers:
       puppeteer: 5.3.1
     devDependencies:
       '@bentley/express-server': link:../../core/express-server
-      '@bentley/presentation-backend': link:../../presentation/backend
       '@itwin/core-backend': link:../../core/backend
+      '@itwin/presentation-backend': link:../../presentation/backend
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
       '@types/mocha': 8.2.3
@@ -2616,10 +2616,10 @@ importers:
       '@bentley/build-tools': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/imodeljs-quantity': workspace:*
-      '@bentley/presentation-common': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
+      '@itwin/presentation-common': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.0
@@ -2659,10 +2659,10 @@ importers:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/imodeljs-quantity': link:../../core/quantity
-      '@bentley/presentation-common': link:../common
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
+      '@itwin/presentation-common': link:../common
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
       '@types/chai-jest-snapshot': 1.3.6
@@ -2771,8 +2771,6 @@ importers:
       '@bentley/build-tools': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/imodeljs-i18n': workspace:*
-      '@bentley/presentation-common': workspace:*
-      '@bentley/presentation-frontend': workspace:*
       '@bentley/ui-abstract': workspace:*
       '@bentley/ui-components': workspace:*
       '@bentley/ui-core': workspace:*
@@ -2780,6 +2778,8 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
+      '@itwin/presentation-common': workspace:*
+      '@itwin/presentation-frontend': workspace:*
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^3.2.1
       '@types/chai': ^4.1.4
@@ -2831,8 +2831,6 @@ importers:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/imodeljs-i18n': link:../../core/i18n
-      '@bentley/presentation-common': link:../common
-      '@bentley/presentation-frontend': link:../frontend
       '@bentley/ui-abstract': link:../../ui/abstract
       '@bentley/ui-components': link:../../ui/components
       '@bentley/ui-core': link:../../ui/core
@@ -2840,6 +2838,8 @@ importers:
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
+      '@itwin/presentation-common': link:../common
+      '@itwin/presentation-frontend': link:../frontend
       '@testing-library/react': 12.1.0_react-dom@17.0.2+react@17.0.2
       '@testing-library/react-hooks': 3.7.0_509016fd322278d497c1e58f6164ce1d
       '@types/chai': 4.2.22
@@ -2887,11 +2887,11 @@ importers:
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/imodeljs-quantity': workspace:*
       '@bentley/itwin-client': workspace:*
-      '@bentley/presentation-common': workspace:*
       '@bentley/product-settings-client': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
+      '@itwin/presentation-common': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.0
@@ -2925,11 +2925,11 @@ importers:
       '@bentley/imodeljs-i18n': link:../../core/i18n
       '@bentley/imodeljs-quantity': link:../../core/quantity
       '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/presentation-common': link:../common
       '@bentley/product-settings-client': link:../../clients/product-settings
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
+      '@itwin/presentation-common': link:../common
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
       '@types/chai-jest-snapshot': 1.3.6
@@ -2963,16 +2963,16 @@ importers:
       '@bentley/build-tools': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/itwin-client': workspace:*
-      '@bentley/presentation-backend': workspace:*
-      '@bentley/presentation-common': workspace:*
-      '@bentley/presentation-components': workspace:*
-      '@bentley/presentation-frontend': workspace:*
       '@bentley/ui-abstract': workspace:*
       '@bentley/ui-components': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
+      '@itwin/presentation-backend': workspace:*
+      '@itwin/presentation-common': workspace:*
+      '@itwin/presentation-components': workspace:*
+      '@itwin/presentation-frontend': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.0
@@ -3004,16 +3004,16 @@ importers:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/presentation-backend': link:../backend
-      '@bentley/presentation-common': link:../common
-      '@bentley/presentation-components': link:../components
-      '@bentley/presentation-frontend': link:../frontend
       '@bentley/ui-abstract': link:../../ui/abstract
       '@bentley/ui-components': link:../../ui/components
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
+      '@itwin/presentation-backend': link:../backend
+      '@itwin/presentation-common': link:../common
+      '@itwin/presentation-components': link:../components
+      '@itwin/presentation-frontend': link:../frontend
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
       '@types/chai-jest-snapshot': 1.3.6
@@ -3506,10 +3506,6 @@ importers:
       '@bentley/icons-generic-webfont': ^1.0.15
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/imodeljs-quantity': workspace:*
-      '@bentley/presentation-backend': workspace:*
-      '@bentley/presentation-common': workspace:*
-      '@bentley/presentation-components': workspace:*
-      '@bentley/presentation-frontend': workspace:*
       '@bentley/react-scripts': 4.0.3
       '@bentley/ui-abstract': workspace:*
       '@bentley/ui-components': workspace:*
@@ -3522,6 +3518,10 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/itwinui-css': ^0.27.0
       '@itwin/itwinui-react': ^1.16.2
+      '@itwin/presentation-backend': workspace:*
+      '@itwin/presentation-common': workspace:*
+      '@itwin/presentation-components': workspace:*
+      '@itwin/presentation-frontend': workspace:*
       '@types/bunyan': ^1.8.4
       '@types/react': ^17.0.0
       '@types/react-dom': ^17.0.0
@@ -3550,10 +3550,6 @@ importers:
       '@bentley/icons-generic-webfont': 1.0.34
       '@bentley/imodeljs-i18n': link:../../core/i18n
       '@bentley/imodeljs-quantity': link:../../core/quantity
-      '@bentley/presentation-backend': link:../../presentation/backend
-      '@bentley/presentation-common': link:../../presentation/common
-      '@bentley/presentation-components': link:../../presentation/components
-      '@bentley/presentation-frontend': link:../../presentation/frontend
       '@bentley/ui-abstract': link:../../ui/abstract
       '@bentley/ui-components': link:../../ui/components
       '@bentley/ui-core': link:../../ui/core
@@ -3565,6 +3561,10 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/itwinui-css': 0.27.3
       '@itwin/itwinui-react': 1.19.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/presentation-backend': link:../../presentation/backend
+      '@itwin/presentation-common': link:../../presentation/common
+      '@itwin/presentation-components': link:../../presentation/components
+      '@itwin/presentation-frontend': link:../../presentation/frontend
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
       react-resize-detector: 6.7.6_react-dom@17.0.2+react@17.0.2
@@ -3611,10 +3611,6 @@ importers:
       '@bentley/itwin-client': workspace:*
       '@bentley/map-layers': workspace:*
       '@bentley/mobile-manager': workspace:*
-      '@bentley/presentation-backend': workspace:*
-      '@bentley/presentation-common': workspace:*
-      '@bentley/presentation-components': workspace:*
-      '@bentley/presentation-frontend': workspace:*
       '@bentley/react-scripts': 4.0.3
       '@bentley/ui-abstract': workspace:*
       '@bentley/ui-components': workspace:*
@@ -3634,6 +3630,10 @@ importers:
       '@itwin/frontend-devtools': workspace:*
       '@itwin/itwinui-css': ^0.27.0
       '@itwin/itwinui-react': ^1.16.2
+      '@itwin/presentation-backend': workspace:*
+      '@itwin/presentation-common': workspace:*
+      '@itwin/presentation-components': workspace:*
+      '@itwin/presentation-frontend': workspace:*
       '@types/lorem-ipsum': ^1.0.2
       '@types/node': 10.14.1
       '@types/react': ^17.0.0
@@ -3681,10 +3681,6 @@ importers:
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/map-layers': link:../../extensions/map-layers
       '@bentley/mobile-manager': link:../../core/mobile-manager
-      '@bentley/presentation-backend': link:../../presentation/backend
-      '@bentley/presentation-common': link:../../presentation/common
-      '@bentley/presentation-components': link:../../presentation/components
-      '@bentley/presentation-frontend': link:../../presentation/frontend
       '@bentley/ui-abstract': link:../../ui/abstract
       '@bentley/ui-components': link:../../ui/components
       '@bentley/ui-core': link:../../ui/core
@@ -3703,6 +3699,10 @@ importers:
       '@itwin/frontend-devtools': link:../../core/frontend-devtools
       '@itwin/itwinui-css': 0.27.3
       '@itwin/itwinui-react': 1.19.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/presentation-backend': link:../../presentation/backend
+      '@itwin/presentation-common': link:../../presentation/common
+      '@itwin/presentation-components': link:../../presentation/components
+      '@itwin/presentation-frontend': link:../../presentation/frontend
       classnames: 2.3.1
       lorem-ipsum: 2.0.3
       react: 17.0.2
@@ -3748,9 +3748,6 @@ importers:
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/imodeljs-quantity': workspace:*
       '@bentley/itwin-client': workspace:*
-      '@bentley/presentation-common': workspace:*
-      '@bentley/presentation-components': workspace:*
-      '@bentley/presentation-frontend': workspace:*
       '@bentley/react-scripts': 4.0.3
       '@bentley/ui-abstract': workspace:*
       '@bentley/ui-components': workspace:*
@@ -3761,6 +3758,9 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
+      '@itwin/presentation-common': workspace:*
+      '@itwin/presentation-components': workspace:*
+      '@itwin/presentation-frontend': workspace:*
       '@types/react': ^17.0.0
       '@types/react-select': 3.0.26
       classnames: ^2.3.1
@@ -3776,9 +3776,6 @@ importers:
       '@bentley/imodeljs-i18n': link:../../core/i18n
       '@bentley/imodeljs-quantity': link:../../core/quantity
       '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/presentation-common': link:../../presentation/common
-      '@bentley/presentation-components': link:../../presentation/components
-      '@bentley/presentation-frontend': link:../../presentation/frontend
       '@bentley/ui-abstract': link:../../ui/abstract
       '@bentley/ui-components': link:../../ui/components
       '@bentley/ui-core': link:../../ui/core
@@ -3788,6 +3785,9 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
+      '@itwin/presentation-common': link:../../presentation/common
+      '@itwin/presentation-components': link:../../presentation/components
+      '@itwin/presentation-frontend': link:../../presentation/frontend
       classnames: 2.3.1
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
@@ -4573,10 +4573,6 @@ importers:
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/imodeljs-quantity': workspace:*
       '@bentley/itwin-client': workspace:*
-      '@bentley/presentation-common': workspace:*
-      '@bentley/presentation-components': workspace:*
-      '@bentley/presentation-frontend': workspace:*
-      '@bentley/presentation-testing': workspace:*
       '@bentley/product-settings-client': workspace:*
       '@bentley/react-scripts': 4.0.3
       '@bentley/telemetry-client': workspace:*
@@ -4592,6 +4588,10 @@ importers:
       '@itwin/core-markup': workspace:*
       '@itwin/itwinui-css': ^0.27.0
       '@itwin/itwinui-react': ^1.16.2
+      '@itwin/presentation-common': workspace:*
+      '@itwin/presentation-components': workspace:*
+      '@itwin/presentation-frontend': workspace:*
+      '@itwin/presentation-testing': workspace:*
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^3.2.1
       '@types/chai': ^4.1.4
@@ -4651,9 +4651,9 @@ importers:
       '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/icons-generic': 1.0.34
       '@bentley/icons-generic-webfont': 1.0.34
-      '@bentley/presentation-components': link:../../presentation/components
       '@itwin/itwinui-css': 0.27.3
       '@itwin/itwinui-react': 1.19.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/presentation-components': link:../../presentation/components
       classnames: 2.3.1
       immer: 9.0.2
       lodash: 4.17.21
@@ -4670,9 +4670,6 @@ importers:
       '@bentley/imodeljs-i18n': link:../../core/i18n
       '@bentley/imodeljs-quantity': link:../../core/quantity
       '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/presentation-common': link:../../presentation/common
-      '@bentley/presentation-frontend': link:../../presentation/frontend
-      '@bentley/presentation-testing': link:../../presentation/testing
       '@bentley/product-settings-client': link:../../clients/product-settings
       '@bentley/react-scripts': 4.0.3_428b90cc0d849ebb6ccbdf38609f3b43
       '@bentley/telemetry-client': link:../../clients/telemetry
@@ -4686,6 +4683,9 @@ importers:
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-markup': link:../../core/markup
+      '@itwin/presentation-common': link:../../presentation/common
+      '@itwin/presentation-frontend': link:../../presentation/frontend
+      '@itwin/presentation-testing': link:../../presentation/testing
       '@testing-library/react': 12.1.0_react-dom@17.0.2+react@17.0.2
       '@testing-library/react-hooks': 3.7.0_509016fd322278d497c1e58f6164ce1d
       '@types/chai': 4.2.22

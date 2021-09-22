@@ -6,8 +6,8 @@ import { expect } from "chai";
 import * as React from "react";
 import { Provider } from "react-redux";
 import { IModelApp } from "@itwin/core-frontend";
-import { Presentation } from "@bentley/presentation-frontend";
-import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@bentley/presentation-testing";
+import { Presentation } from "@itwin/presentation-frontend";
+import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@itwin/presentation-testing";
 import { WidgetState } from "@bentley/ui-abstract";
 import { render } from "@testing-library/react";
 import {
