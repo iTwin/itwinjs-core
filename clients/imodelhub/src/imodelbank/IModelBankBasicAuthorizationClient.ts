@@ -5,7 +5,14 @@
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { AccessToken } from "@bentley/itwin-client";
+/** @packageDocumentation
+ * @module iModelBankClient
+ */
 
+/**
+ * Converts user credentials to basic access token string
+ * @internal
+ */
 export function tokenFromUserCredentials(userCredentials: any): AccessToken {
   const tokenString = Buffer.from(`${userCredentials.email}:${userCredentials.password}`).toString("base64");
   return tokenString;
