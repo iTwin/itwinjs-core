@@ -17,7 +17,7 @@ import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { LockStatusExclusive, LockStatusShared } from "../LocalHub";
 
-describe("HubMock", () => {
+describe.only("HubMock", () => {
   const tmpDir = join(KnownTestLocations.outputDir, "HubMockTest");
   const iTwinId = Guid.createValue();
   const revision0 = IModelTestUtils.resolveAssetFile("test.bim");
@@ -50,32 +50,35 @@ describe("HubMock", () => {
 
     let briefcases = localHub.getBriefcases();
     assert.equal(briefcases.length, 3);
-    assert.deepEqual(briefcases[0], { id: 2, user: "user1", alias: "user1 briefcase 1" });
-    assert.deepEqual(briefcases[1], { id: 3, user: "user2", alias: "user2 briefcase 1" });
-    assert.deepEqual(briefcases[2], { id: 4, user: "user3", alias: "user3 briefcase 1" });
+    assert.deepEqual(briefcases[0], { id: 2, user: "user1", alias: "user1 briefcase 1", assigned: true });
+    assert.deepEqual(briefcases[1], { id: 3, user: "user2", alias: "user2 briefcase 1", assigned: true });
+    assert.deepEqual(briefcases[2], { id: 4, user: "user3", alias: "user3 briefcase 1", assigned: true });
 
+    // releasing a briefcaseId should mark it as unassigned
     localHub.releaseBriefcaseId(2);
-    briefcases = localHub.getBriefcases();
-    assert.equal(briefcases.length, 2);
-    assert.deepEqual(briefcases[0], { id: 3, user: "user2", alias: "user2 briefcase 1" });
-    assert.deepEqual(briefcases[1], { id: 4, user: "user3", alias: "user3 briefcase 1" });
+    briefcases = localHub.getBriefcases(false);
+    assert.equal(briefcases.length, 3);
+    assert.deepEqual(briefcases[0], { id: 2, user: "user1", alias: "user1 briefcase 1", assigned: false });
+    assert.deepEqual(briefcases[1], { id: 3, user: "user2", alias: "user2 briefcase 1", assigned: true });
+    assert.deepEqual(briefcases[2], { id: 4, user: "user3", alias: "user3 briefcase 1", assigned: true });
 
     localHub.releaseBriefcaseId(4);
     briefcases = localHub.getBriefcases();
     assert.equal(briefcases.length, 1);
-    assert.deepEqual(briefcases[0], { id: 3, user: "user2", alias: "user2 briefcase 1" });
+    assert.deepEqual(briefcases[0], { id: 3, user: "user2", alias: "user2 briefcase 1", assigned: true });
 
     assert.equal(5, localHub.acquireNewBriefcaseId("user4"));
     briefcases = localHub.getBriefcases();
     assert.equal(briefcases.length, 2);
-    assert.deepEqual(briefcases[0], { id: 3, user: "user2", alias: "user2 briefcase 1" });
-    assert.deepEqual(briefcases[1], { id: 5, user: "user4", alias: "user4 (5)" });
+    assert.deepEqual(briefcases[0], { id: 3, user: "user2", alias: "user2 briefcase 1", assigned: true });
+    assert.deepEqual(briefcases[1], { id: 5, user: "user4", alias: "user4 (5)", assigned: true });
 
+    // try pushing changesets
     const cs1: ChangesetFileProps = {
       id: "changeset0", description: "first changeset", changesType: ChangesetType.Regular, parentId: "", briefcaseId: 5, pushDate: "", index: 0,
       userCreated: "user1", pathname: IModelTestUtils.resolveAssetFile("CloneTest.01.00.00.ecschema.xml"),
     };
-    cs1.index = localHub.addChangeset(cs1);
+    cs1.index = localHub.addChangeset(cs1); // first changeset
     const changesets1 = localHub.queryChangesets();
     assert.equal(changesets1.length, 1);
     assert.equal(changesets1[0].id, cs1.id);
@@ -89,10 +92,10 @@ describe("HubMock", () => {
     assert.equal(cs1.id, localHub.getLatestChangeset().id);
 
     const cs2: ChangesetFileProps = {
-      id: "changeset1", parentId: "changeset0", description: "second changeset", changesType: ChangesetType.Schema, briefcaseId: 5, pushDate: "", index: 0,
+      id: "changeset1", parentId: cs1.id, description: "second changeset", changesType: ChangesetType.Schema, briefcaseId: 5, pushDate: "", index: 0,
       userCreated: "user2", pathname: IModelTestUtils.resolveAssetFile("CloneTest.01.00.01.ecschema.xml"),
     };
-    cs2.index = localHub.addChangeset(cs2);
+    cs2.index = localHub.addChangeset(cs2); // second changeset, parent = cs1
     const changesets2 = localHub.queryChangesets();
     assert.equal(changesets2.length, 2);
     assert.deepEqual(changesets1[0], changesets2[0]);
@@ -111,6 +114,7 @@ describe("HubMock", () => {
     assert.equal(checkpoints.length, 2);
     assert.equal(checkpoints[1], 2);
 
+    // test named versions
     const version1 = "release 1";
     const version2 = "release 2";
     localHub.addNamedVersion({ versionName: version1, csIndex: cs1.index });
@@ -121,7 +125,7 @@ describe("HubMock", () => {
     localHub.deleteNamedVersion(version1);
     expect(() => localHub.findNamedVersion(version1)).throws("not found");
 
-    // test for duplicate changeset id
+    // test for duplicate changeset id fails
     const cs3: ChangesetFileProps = { id: "changeset0", parentId: "changeset1", description: "third changeset", changesType: ChangesetType.Regular, pathname: cs1.pathname, briefcaseId: 500, userCreated: "", pushDate: "", index: 0 };
     expect(() => localHub.addChangeset(cs3)).throws("no briefcase with that id");
     cs3.briefcaseId = 5;
@@ -138,6 +142,7 @@ describe("HubMock", () => {
     assert.equal(cs2.index, localHub.queryPreviousCheckpoint(cs2.index));
     assert.equal(cs2.index, localHub.queryPreviousCheckpoint(cs3.index));
 
+    // downloading changesets
     const cSets = localHub.downloadChangesets({ range: { first: cs1.index, end: cs2.index }, targetDir: tmpDir });
     assert.equal(cSets.length, 2);
     assert.equal(cSets[0].id, cs1.id);
@@ -161,11 +166,14 @@ describe("HubMock", () => {
     assert.deepEqual(orig2, downloaded2);
     assert.notDeepEqual(orig1, orig2);
 
+    // test locks
     const lock1: Mutable<LockProps> = {
       state: LockState.Shared,
       id: "0x12",
     };
+    // get a new briefcaseId for some locks
     assert.equal(6, localHub.acquireNewBriefcaseId("user5", "alias for 5"));
+
 
     localHub.acquireLock(lock1, { briefcaseId: 3, changeset: cs1 });
     assert.equal(localHub.countSharedLocks(), 1);

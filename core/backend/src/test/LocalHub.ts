@@ -20,9 +20,10 @@ import { SQLiteDb } from "../SQLiteDb";
 
 /** @internal */
 interface MockBriefcaseIdProps {
-  id: number;
+  id: BriefcaseId;
   user: string;
   alias: string;
+  assigned: boolean;
 }
 
 /** @internal */
@@ -95,7 +96,7 @@ export class LocalHub {
     db.createDb(this.mockDbName);
     db.executeSQL("CREATE TABLE briefcases(id INTEGER PRIMARY KEY NOT NULL,user TEXT NOT NULL,alias TEXT NOT NULL,assigned INTEGER DEFAULT 1)");
     db.executeSQL("CREATE TABLE timeline(csIndex INTEGER PRIMARY KEY NOT NULL,csId TEXT NOT NULL UNIQUE,description TEXT,user TEXT,size BIGINT,type INTEGER,pushDate TEXT,briefcaseId INTEGER,\
-                  FOREIGN KEY(briefcaseId) REFERENCES briefcases(id))");
+                   FOREIGN KEY(briefcaseId) REFERENCES briefcases(id))");
     db.executeSQL("CREATE TABLE checkpoints(csIndex INTEGER PRIMARY KEY NOT NULL)");
     db.executeSQL("CREATE TABLE versions(name TEXT PRIMARY KEY NOT NULL,csIndex TEXT,FOREIGN KEY(csIndex) REFERENCES timeline(csIndex))");
     db.executeSQL("CREATE TABLE locks(id INTEGER PRIMARY KEY NOT NULL,level INTEGER NOT NULL,lastCSetIndex INTEGER,briefcaseId INTEGER)");
@@ -137,7 +138,7 @@ export class LocalHub {
   public get mockDbName() { return join(this.rootDir, "localHub.db"); }
 
   /** Acquire the next available briefcaseId and assign it to the supplied user */
-  public acquireNewBriefcaseId(user: string, alias?: string): number {
+  public acquireNewBriefcaseId(user: string, alias?: string): BriefcaseId {
     const db = this.db;
     const newId = this._nextBriefcaseId++;
     alias = alias ?? `${user} (${newId})`;
@@ -154,7 +155,7 @@ export class LocalHub {
   }
 
   /** Release a briefcaseId */
-  public releaseBriefcaseId(id: number) {
+  public releaseBriefcaseId(id: BriefcaseId) {
     const db = this.db;
     this.releaseAllLocks({ briefcaseId: id, changesetIndex: 0 });
     db.withSqliteStatement("UPDATE briefcases SET assigned=0 WHERE id=?", (stmt) => {
@@ -167,14 +168,19 @@ export class LocalHub {
   }
 
   /** Get an array of all of the currently assigned Briefcases */
-  public getBriefcases(): MockBriefcaseIdProps[] {
+  public getBriefcases(onlyAssigned = true): MockBriefcaseIdProps[] {
     const briefcases: MockBriefcaseIdProps[] = [];
-    this.db.withSqliteStatement("SELECT id,user,alias FROM briefcases WHERE assigned=1", (stmt) => {
+    let sql = "SELECT id,user,alias,assigned FROM briefcases";
+    if (onlyAssigned)
+      sql += " WHERE assigned=1";
+
+    this.db.withSqliteStatement(sql, (stmt) => {
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
         briefcases.push({
           id: stmt.getValueInteger(0),
           user: stmt.getValueString(1),
           alias: stmt.getValueString(2),
+          assigned: stmt.getValueInteger(3) !== 0,
         });
       }
     });
@@ -182,8 +188,8 @@ export class LocalHub {
   }
 
   /** Get an array of all of the currently assigned BriefcaseIds for a user */
-  public getBriefcaseIds(user: string): number[] {
-    const briefcases: number[] = [];
+  public getBriefcaseIds(user: string): BriefcaseId[] {
+    const briefcases: BriefcaseId[] = [];
     this.db.withSqliteStatement("SELECT id FROM briefcases WHERE user=? AND assigned=1", (stmt) => {
       stmt.bindString(1, user);
       while (DbResult.BE_SQLITE_ROW === stmt.step())
@@ -193,15 +199,15 @@ export class LocalHub {
   }
 
   public getBriefcase(id: BriefcaseId): MockBriefcaseIdProps {
-    return this.db.withSqliteStatement("SELECT user,alias FROM briefcases WHERE id=?", (stmt) => {
+    return this.db.withSqliteStatement("SELECT user,alias,assigned FROM briefcases WHERE id=?", (stmt) => {
       stmt.bindInteger(1, id);
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
         throw new IModelError(IModelStatus.NotFound, "no briefcase with that id");
-      return { id, user: stmt.getValueString(0), alias: stmt.getValueString(1) };
+      return { id, user: stmt.getValueString(0), alias: stmt.getValueString(1), assigned: stmt.getValueInteger(2) !== 0 };
     });
   }
 
-  private getChangesetFileName(index: number) {
+  private getChangesetFileName(index: ChangesetIndex) {
     return join(this.changesetDir, `changeset-${index}`);
   }
 
@@ -239,12 +245,12 @@ export class LocalHub {
     return changeset.index;
   }
 
-  public getIndexFromChangeset(changeset: ChangesetIndexOrId): number {
+  public getIndexFromChangeset(changeset: ChangesetIndexOrId): ChangesetIndex {
     return changeset.index ?? this.getChangesetIndex(changeset.id);
   }
 
   /** Get the index of a changeset by its Id */
-  public getChangesetIndex(id: ChangesetId): number {
+  public getChangesetIndex(id: ChangesetId): ChangesetIndex {
     if (id === "")
       return 0;
 
@@ -286,7 +292,7 @@ export class LocalHub {
   }
 
   /** Get the properties of a changeset by its index */
-  public getChangesetByIndex(index: number): ChangesetProps {
+  public getChangesetByIndex(index: ChangesetIndex): ChangesetProps {
     if (index <= 0)
       return { id: "", changesType: 0, description: "revision0", parentId: "", briefcaseId: 0, pushDate: "", userCreated: "", index: 0 };
 
@@ -643,30 +649,26 @@ export class LocalHub {
     this.releaseLocks(locks, arg);
   }
 
+  private countTable(tableName: string): number {
+    return this.db.withSqliteStatement(`SELECT count(*) from ${tableName}`, (stmt) => {
+      stmt.step();
+      return stmt.getValueInteger(0);
+    });
+  }
+
   // for debugging
-  public queryAllSharedLocks(): { id: string, briefcaseId: number }[] {
-    const locks: { id: string, briefcaseId: number }[] = [];
+  public countSharedLocks(): number { return this.countTable("sharedLocks"); }
+  // for debugging
+  public countLocks(): number { return this.countTable("locks"); }
+
+  // for debugging
+  public queryAllSharedLocks(): { id: Id64String, briefcaseId: BriefcaseId }[] {
+    const locks: { id: Id64String, briefcaseId: BriefcaseId }[] = [];
     this.db.withPreparedSqliteStatement("SELECT lockId,briefcaseId FROM sharedLocks", (stmt) => {
       while (DbResult.BE_SQLITE_ROW === stmt.step())
         locks.push({ id: stmt.getValueId(0), briefcaseId: stmt.getValueInteger(1) });
     });
     return locks;
-  }
-
-  // for debugging
-  public countSharedLocks(): number {
-    return this.db.withPreparedSqliteStatement("SELECT count(*) from sharedLocks", (stmt) => {
-      stmt.step();
-      return stmt.getValueInteger(0);
-    });
-  }
-
-  // for debugging
-  public countLocks(): number {
-    return this.db.withPreparedSqliteStatement("SELECT count(*) from locks", (stmt) => {
-      stmt.step();
-      return stmt.getValueInteger(0);
-    });
   }
 
   // for debugging
