@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import "./ProjectDropdown.scss";
 import classnames from "classnames";
-import * as React from "react";
+import React, { useEffect, useState } from "react";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { Popup } from "@bentley/ui-core";
 import { ITwin } from "@bentley/context-registry-client";
@@ -22,6 +22,68 @@ interface ProjectDropdownState {
   isDropdownOpen: boolean;
   showProjectsDialog: boolean;
 }
+
+// export const ProjectDropdown2: React.FC<ProjectDropdownProps> = ({
+//   numVisibleProjects,
+//   recentProjects,
+//   currentProject,
+//   onProjectClicked,
+// }): ProjectDropdownProps => {
+//   const [showProjectsDialog, setProjectsDialog] = useState(false);
+//   const [recentProjects, setRecentProjects] = useState(recentProjects);
+
+//   const _onMoreClicked = (_event: React.MouseEvent<HTMLDivElement>) => {
+//     closeDropdown();
+//     setProjectsDialog(true);
+//   };
+
+//   const _onCloseProjectDialog = () => {
+//     closeDialog();
+//   };
+
+//   const _onItemClick = (iTwin: ITwin) => {
+//     closeDropdown();
+//     onProjectClicked(iTwin);
+//   }
+
+//   const _onProjectSelected = (iTwin: ITwin) => {
+//     closeDialog();
+//     onProjectClicked(iTwin);
+//   };
+
+//   const _splitterClicked = (_event: React.MouseEvent<HTMLElement>) => {
+//     this.setState((prevState) => ({ isDropdownOpen: !prevState.isDropdownOpen }));
+//   };
+
+//   const _handleOnOutsideClick = () => {
+//     closeDropdown();
+//   };
+
+//   const closeDropdown = () => {
+//     this.setState({ isDropdownOpen: false });
+//   }
+
+//   const closeDialog = () => {
+//     setProjectsDialog(false);
+//   }
+
+//   return (
+//     <div className="pp">
+//       <div className="pp-content" onClick={this._splitterClicked} ref={(element) => { this._target = element; }}>
+//         <div>
+//           <span className="number">{this.props.currentProject ? this.props.currentProject.code : ""}</span>
+//           <span className="name">{this.props.currentProject ? this.props.currentProject.name : ""}</span>
+//         </div>
+//         <span className={splitterClassName} />
+//       </div>
+//       <div className="pp-highlight" />
+//       {this.renderDropdown()}
+//       {this.state.showProjectsDialog &&
+//         <ProjectDialog onClose={this._onCloseProjectDialog} onProjectSelected={this._onProjectSelected} />
+//       }
+//     </div>
+//   );
+// };
 
 /**
  * List of projects in a dropdown

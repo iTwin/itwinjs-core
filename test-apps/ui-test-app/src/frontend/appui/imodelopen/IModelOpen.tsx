@@ -16,9 +16,11 @@ import { ActivityMessageDetails, ActivityMessageEndReason, AuthorizedFrontendReq
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { Button } from "@itwin/itwinui-react";
 import { ITwin, ITwinAccessClient } from "@bentley/context-registry-client";
+import { AccessToken } from "@bentley/itwin-client";
 
 /** Properties for the [[IModelOpen]] component */
 export interface IModelOpenProps {
+  getAccessToken?: () => Promise<AccessToken | undefined>;
   onIModelSelected?: (iModelInfo: IModelInfo) => void;
   initialIModels?: IModelInfo[];
 }
@@ -64,22 +66,28 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
       });
     }
 
-    const client = new ITwinAccessClient();
-    const ctx = await AuthorizedFrontendRequestContext.create();
+    if (undefined === this.props.getAccessToken)
+      return;
 
-    client.getAll(ctx, { pagination: { top: 40 } }).then((iTwins: ITwin[]) => { // eslint-disable-line @typescript-eslint/no-floating-promises
-      this.setState({
-        isLoadingProjects: false,
-        isLoadingiModels: true,
-        recentITwins: iTwins,
-      });
-      if (iTwins.length > 0)
-        this._selectITwin(iTwins[0]);
+    const token = await this.props.getAccessToken();
+    if (undefined === token)
+      return;
+
+    const ctx = new AuthorizedFrontendRequestContext(token);
+
+    const client = new ITwinAccessClient();
+    const iTwins = await client.getAll(ctx, { pagination: { skip: 0, top: 10 } });
+    this.setState({
+      isLoadingProjects: false,
+      isLoadingiModels: true,
+      recentITwins: iTwins,
     });
+    if (iTwins.length > 0)
+      this._selectITwin(iTwins[0]);  // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   // retrieves the IModels for a Project. Called when first mounted and when a new Project is selected.
-  private async startRetrieveIModels(iTwin: ITwin) {
+  private startRetrieveIModels = async (iTwin: ITwin) => {
     this.setState({
       prompt: "Fetching iModel information...",
       isLoadingiModels: true,
@@ -97,8 +105,8 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
     this.setState({ isNavigationExpanded: expanded });
   };
 
-  private _selectITwin(iTwin: ITwin) {
-    this.startRetrieveIModels(iTwin); // eslint-disable-line @typescript-eslint/no-floating-promises
+  private _selectITwin = async (iTwin: ITwin) => {
+    return this.startRetrieveIModels(iTwin);
   }
 
   private _handleIModelSelected = (iModelInfo: IModelInfo): void => {
@@ -129,8 +137,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
     }
   }
 
-  /** Tool that will start a sample activity and display ActivityMessage.
-   */
+  /** Tool that will start a sample activity and display ActivityMessage. */
   private _activityTool = async () => {
     let isCancelled = false;
     let progress = 0;

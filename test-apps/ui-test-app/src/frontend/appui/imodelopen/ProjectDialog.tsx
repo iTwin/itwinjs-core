@@ -12,28 +12,15 @@ import { ProjectTab, ProjectTabs } from "./ProjectTabs";
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
 import { AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
 
-/** The possible values for Project scope in the iTwin services environment.
- * @internal
- */
-export enum ProjectScope {
-  Favorites,
-  MostRecentlyUsed,
-  Invited,
-  All,
-}
-
 /** Properties for the [[ProjectDialog]] component */
 export interface ProjectDialogProps {
-  filterType?: ProjectScope;
   onClose: () => void;
   onProjectSelected?: (iTwin: ITwin) => void;
-
 }
 
 interface ProjectDialogState {
   isLoading: boolean;
   projects?: ITwin[];
-  activeFilter: ProjectScope;
   filter: string;
 }
 
@@ -45,29 +32,25 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
   constructor(props?: any, context?: any) {
     super(props, context);
 
-    this.state = { isLoading: true, activeFilter: this.props.filterType!, filter: "" };
+    this.state = { isLoading: true, filter: "" };
   }
-
-  public static defaultProps: Partial<ProjectDialogProps> = {
-    filterType: ProjectScope.MostRecentlyUsed,
-  };
 
   // called when this component is first loaded
   public override async componentDidMount() {
-    this.getRecentProjects(this.props.filterType!); // eslint-disable-line @typescript-eslint/no-floating-promises
+    this.getRecentProjects(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
-  private async getRecentProjects(projectScope: ProjectScope) {
-    this.setState({ isLoading: true, projects: undefined, activeFilter: projectScope });
+  private async getRecentProjects() {
+    this.setState({ isLoading: true, projects: undefined });
     const client = new ITwinAccessClient();
     const ctx = await AuthorizedFrontendRequestContext.create();
-    client.getAll(ctx, { // eslint-disable-line @typescript-eslint/no-floating-promises
+    const iTwins = await client.getAll(ctx, {
       pagination: {
         top: 40,
       },
-    }).then((projectInfos: ITwin[]) => { // eslint-disable-line @typescript-eslint/no-floating-promises
-      this.setState({ isLoading: false, projects: projectInfos });
-    });
+    })
+
+    this.setState({ isLoading: false, projects: iTwins });
   }
 
   private _onClose = () => {
@@ -76,19 +59,11 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
   };
 
   private _onMyProjectsClicked = () => {
-    this.getRecentProjects(ProjectScope.Invited); // eslint-disable-line @typescript-eslint/no-floating-promises
-  };
-
-  private _onFavoritesClicked = () => {
-    this.getRecentProjects(ProjectScope.Favorites); // eslint-disable-line @typescript-eslint/no-floating-promises
-  };
-
-  private _onRecentClicked = () => {
-    this.getRecentProjects(ProjectScope.MostRecentlyUsed); // eslint-disable-line @typescript-eslint/no-floating-promises
+    this.getRecentProjects(); // eslint-disable-line @typescript-eslint/no-floating-promises
   };
 
   private _onSearchClicked = () => {
-    this.setState({ projects: undefined, activeFilter: ProjectScope.All });
+    this.setState({ projects: undefined });
   };
 
   private _onProjectSelected = (projectInfo: ITwin) => {
@@ -99,9 +74,9 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
 
   private _handleSearchValueChanged = (value: string): void => {
     if (!value || value.trim().length === 0) {
-      this.setState({ isLoading: false, projects: undefined, activeFilter: ProjectScope.All, filter: value });
+      this.setState({ isLoading: false, projects: undefined, filter: value });
     } else {
-      this.setState({ isLoading: true, projects: undefined, activeFilter: ProjectScope.All });
+      this.setState({ isLoading: true, projects: undefined });
 
       AuthorizedFrontendRequestContext.create().then((ctx: AuthorizedFrontendRequestContext) => { // eslint-disable-line @typescript-eslint/no-floating-promises
         const client = new ITwinAccessClient();
@@ -122,30 +97,14 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
   };
 
   private getNoProjectsPrompt(): string {
-    switch (this.state.activeFilter) {
-      case ProjectScope.Favorites:
-        return "There are no favorite projects. Try a search.";
-      case ProjectScope.MostRecentlyUsed:
-        return "There are no recent projects. Try a search.";
-      case ProjectScope.Invited:
-        return "You have no projects assigned. Try a search.";
-      default:
-        if (this.state.filter.trim() !== "")
-          return `No matches found for '${this.state.filter}'`;
-        else
-          return "Search all projects by name, number, or other project attribute.";
-    }
+    if (this.state.filter.trim() !== "")
+      return `No matches found for '${this.state.filter}'`;
+    else
+      return "Search all projects by name, number, or other project attribute.";
   }
 
   private getTabIndexFromProjectScope() {
-    if (this.props.filterType === ProjectScope.Invited)
-      return 0;
-    if (this.props.filterType === ProjectScope.Favorites)
-      return 1;
-    if (this.props.filterType === ProjectScope.MostRecentlyUsed)
-      return 2;
-    else
-      return 3;
+    return 3;
   }
 
   private renderProject(project: ITwin) {
@@ -160,7 +119,7 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
   }
 
   public override render() {
-    const searchClassName = classnames("tabs-searchbox", this.state.activeFilter !== ProjectScope.All && "hidden");
+    const searchClassName = classnames("tabs-searchbox", "hidden");
     return (
       <div className="modal-background fade-in-fast">
         <div className="projects animate">
@@ -172,8 +131,6 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
             <div className="tabs-container">
               <ProjectTabs defaultTab={this.getTabIndexFromProjectScope()}>
                 <ProjectTab label="My Projects" icon="icon-manager" onTabClicked={this._onMyProjectsClicked} />
-                <ProjectTab label="Favorites" icon="icon-star" onTabClicked={this._onFavoritesClicked} />
-                <ProjectTab label="Recent" icon="icon-history" onTabClicked={this._onRecentClicked} />
                 <ProjectTab label="Search" icon="icon-search" onTabClicked={this._onSearchClicked} />
               </ProjectTabs>
               <div className={searchClassName}>
@@ -186,8 +143,6 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
                   <tr>
                     <th>Project Number</th>
                     <th>Project Name</th>
-                    <th>Asset Type</th>
-                    <th>Location</th>
                   </tr>
                 </thead>
                 <tbody>
