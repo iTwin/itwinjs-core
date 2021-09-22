@@ -2464,13 +2464,13 @@ export interface EmphasizeElementsProps {
 // @public
 export class EmptyLocalizationClient implements LocalizationClient {
     // (undocumented)
-    getEnglishString(key: string | string[]): string;
+    getEnglishString(namespace: string, key: string | string[]): string;
     // (undocumented)
     getLocalizedKeys(inputString: string): string;
     // (undocumented)
     getLocalizedString(key: string | string[]): string;
     // (undocumented)
-    getLocalizedStringWithNamespace(key: string | string[]): string;
+    getLocalizedStringWithNamespace(namespace: string, key: string | string[]): string;
     // (undocumented)
     getNamespace(): Promise<void> | undefined;
     // (undocumented)
