@@ -5,15 +5,15 @@ Array [
   Object {
     "__presentation-components/key": Object {
       "pathFromRoot": Array [
-        "b7f8f9b0afcaae16f3a88565d71367b1",
-        "20db219263887ce4b25515d2dd72c241",
+        "d40a267dc8ff557a9c69ad79d652e39f",
+        "45a35284023f06495cb8802368089dd5",
       ],
       "type": "child",
       "version": 2,
     },
     "description": "child description",
     "icon": "child image id",
-    "id": "20db219263887ce4b25515d2dd72c241/b7f8f9b0afcaae16f3a88565d71367b1",
+    "id": "45a35284023f06495cb8802368089dd5/d40a267dc8ff557a9c69ad79d652e39f",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -26,7 +26,7 @@ Array [
         "valueFormat": 0,
       },
     },
-    "parentId": "b7f8f9b0afcaae16f3a88565d71367b1",
+    "parentId": "d40a267dc8ff557a9c69ad79d652e39f",
   },
 ]
 `;
@@ -36,15 +36,15 @@ Array [
   Object {
     "__presentation-components/key": Object {
       "pathFromRoot": Array [
-        "b7f8f9b0afcaae16f3a88565d71367b1",
-        "20db219263887ce4b25515d2dd72c241",
+        "d40a267dc8ff557a9c69ad79d652e39f",
+        "45a35284023f06495cb8802368089dd5",
       ],
       "type": "child",
       "version": 2,
     },
     "description": "child description",
     "icon": "child image id",
-    "id": "20db219263887ce4b25515d2dd72c241/b7f8f9b0afcaae16f3a88565d71367b1",
+    "id": "45a35284023f06495cb8802368089dd5/d40a267dc8ff557a9c69ad79d652e39f",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -57,7 +57,7 @@ Array [
         "valueFormat": 0,
       },
     },
-    "parentId": "b7f8f9b0afcaae16f3a88565d71367b1",
+    "parentId": "d40a267dc8ff557a9c69ad79d652e39f",
   },
 ]
 `;
@@ -67,7 +67,7 @@ Array [
   Object {
     "__presentation-components/key": Object {
       "pathFromRoot": Array [
-        "b7f8f9b0afcaae16f3a88565d71367b1",
+        "d40a267dc8ff557a9c69ad79d652e39f",
       ],
       "type": "root",
       "version": 2,
@@ -76,7 +76,7 @@ Array [
     "description": "root description",
     "hasChildren": true,
     "icon": "root image id",
-    "id": "b7f8f9b0afcaae16f3a88565d71367b1",
+    "id": "d40a267dc8ff557a9c69ad79d652e39f",
     "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
     "label": PropertyRecord {
@@ -108,7 +108,7 @@ Array [
   Object {
     "__presentation-components/key": Object {
       "pathFromRoot": Array [
-        "b7f8f9b0afcaae16f3a88565d71367b1",
+        "d40a267dc8ff557a9c69ad79d652e39f",
       ],
       "type": "root",
       "version": 2,
@@ -117,7 +117,7 @@ Array [
     "description": "root description",
     "hasChildren": true,
     "icon": "root image id",
-    "id": "b7f8f9b0afcaae16f3a88565d71367b1",
+    "id": "d40a267dc8ff557a9c69ad79d652e39f",
     "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
     "label": PropertyRecord {
@@ -151,14 +151,14 @@ Array [
       "className": "BisCore:DefinitionModel",
       "groupedInstancesCount": 1,
       "pathFromRoot": Array [
-        "0a7cb27e64840e2a50d2030e1e79933a",
+        "3d1db70c6b7c8c78d98a5c282adf9e66",
       ],
       "type": "ECClassGroupingNode",
       "version": 2,
     },
     "description": "A container for persisting definition elements.",
     "hasChildren": true,
-    "id": "0a7cb27e64840e2a50d2030e1e79933a",
+    "id": "3d1db70c6b7c8c78d98a5c282adf9e66",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -191,14 +191,14 @@ Array [
       "className": "BisCore:DictionaryModel",
       "groupedInstancesCount": 1,
       "pathFromRoot": Array [
-        "c85596ef0f14fc8b857af5e825007d1f",
+        "a6bd24cb2440ab4d99027d34d997d9d4",
       ],
       "type": "ECClassGroupingNode",
       "version": 2,
     },
     "description": "The singleton container for repository-specific definition elements.",
     "hasChildren": true,
-    "id": "c85596ef0f14fc8b857af5e825007d1f",
+    "id": "a6bd24cb2440ab4d99027d34d997d9d4",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -231,14 +231,14 @@ Array [
       "className": "BisCore:DocumentListModel",
       "groupedInstancesCount": 2,
       "pathFromRoot": Array [
-        "a6998092e78c5613f70b0cc62683d862",
+        "c96df45736573276c564ed4e7b1f04e6",
       ],
       "type": "ECClassGroupingNode",
       "version": 2,
     },
     "description": "Contains a list of document elements.",
     "hasChildren": true,
-    "id": "a6998092e78c5613f70b0cc62683d862",
+    "id": "c96df45736573276c564ed4e7b1f04e6",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -271,13 +271,13 @@ Array [
       "className": "Generic:GroupModel",
       "groupedInstancesCount": 1,
       "pathFromRoot": Array [
-        "7f4fd45e49a4883718feaf44e65fdaa1",
+        "06cabae2852b0dfaa70d978d8f827b55",
       ],
       "type": "ECClassGroupingNode",
       "version": 2,
     },
     "hasChildren": true,
-    "id": "7f4fd45e49a4883718feaf44e65fdaa1",
+    "id": "06cabae2852b0dfaa70d978d8f827b55",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -310,14 +310,14 @@ Array [
       "className": "BisCore:LinkModel",
       "groupedInstancesCount": 1,
       "pathFromRoot": Array [
-        "b7a987b6754280ca8430ce6242dd3d43",
+        "eefa3d5c80967e174f4f7769fe07615e",
       ],
       "type": "ECClassGroupingNode",
       "version": 2,
     },
     "description": "A container for persisting link elements.",
     "hasChildren": true,
-    "id": "b7a987b6754280ca8430ce6242dd3d43",
+    "id": "eefa3d5c80967e174f4f7769fe07615e",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -350,14 +350,14 @@ Array [
       "className": "BisCore:PhysicalModel",
       "groupedInstancesCount": 1,
       "pathFromRoot": Array [
-        "b6420e783462c6748ea0e2e192173d57",
+        "b6c1d1e960b872311238c910c99c6b9b",
       ],
       "type": "ECClassGroupingNode",
       "version": 2,
     },
     "description": "A container for persisting physical elements that model physical space.",
     "hasChildren": true,
-    "id": "b6420e783462c6748ea0e2e192173d57",
+    "id": "b6c1d1e960b872311238c910c99c6b9b",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -390,14 +390,14 @@ Array [
       "className": "BisCore:RepositoryModel",
       "groupedInstancesCount": 1,
       "pathFromRoot": Array [
-        "89b375b46091b4a6b5c82af9e7efa1ce",
+        "29dd582b91c6d4f7bd88de3e0b502d0a",
       ],
       "type": "ECClassGroupingNode",
       "version": 2,
     },
     "description": "The singleton container of repository-related information elements.",
     "hasChildren": true,
-    "id": "89b375b46091b4a6b5c82af9e7efa1ce",
+    "id": "29dd582b91c6d4f7bd88de3e0b502d0a",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",

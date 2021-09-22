@@ -786,4 +786,18 @@ describe("TxnManager", () => {
     dropListener();
   });
 
+  // This bug occurred in one of the authoring apps. This test reproduced the problem, and now serves as a regression test.
+  it("doesn't crash when reversing a single txn that inserts a model and a contained element while geometric model tracking is enabled", () => {
+    imodel.nativeDb.setGeometricModelTrackingEnabled(true);
+
+    const model = PhysicalModel.insert(imodel, IModel.rootSubjectId, Guid.createValue());
+    expect(Id64.isValidId64(model)).to.be.true;
+    const elem = imodel.elements.insertElement({ ...props, model });
+    expect(Id64.isValidId64(elem)).to.be.true;
+
+    imodel.saveChanges("insert model and element");
+    imodel.txns.reverseSingleTxn();
+
+    imodel.nativeDb.setGeometricModelTrackingEnabled(false);
+  });
 });
