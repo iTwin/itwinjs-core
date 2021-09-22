@@ -5,6 +5,7 @@
 ```ts
 
 import { AccessToken } from '@bentley/itwin-client';
+import { AuthorizationClient } from '@bentley/itwin-client';
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { CancelRequest } from '@bentley/itwin-client';
 import { Client } from '@bentley/itwin-client';
