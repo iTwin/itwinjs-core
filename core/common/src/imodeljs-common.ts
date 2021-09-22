@@ -194,6 +194,10 @@ export * from "./WhiteOnWhiteReversalSettings";
  * Types for working with [ECSQL]($docs/learning/ECSQL.md), [Spatial Queries]($docs/learning/SpatialQueries.md), and [ECSQL Geometry Functions]($docs/learning/GeometrySqlFuncs.md).
  */
 /**
+ * @docs-group-description Localization
+ * Types for Localization services.
+ */
+/**
  * @docs-group-description Logging
  * Logger categories used by this package.
  */
