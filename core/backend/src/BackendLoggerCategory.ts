@@ -20,11 +20,6 @@ export enum BackendLoggerCategory {
    */
   CodeSpecs = "imodeljs-backend.CodeSpecs",
 
-  /** The logger category used by the following classes:
-   * - [[ConcurrencyControl]]
-   */
-  ConcurrencyControl = "imodeljs-backend.ConcurrencyControl",
-
   /** The logger category used by the [[DevTools]] class and related classes.
    * @internal
    */
@@ -57,21 +52,6 @@ export enum BackendLoggerCategory {
    * - [[IModelHost]]
    */
   IModelHost = "imodeljs-backend.IModelHost",
-
-  /** The logger category used by the [IModelExporter]($backend) class.
-   * @beta
-   */
-  IModelExporter = "imodeljs-backend.IModelExporter",
-
-  /** The logger category used by the [IModelImporter]($backend) class.
-   * @beta
-   */
-  IModelImporter = "imodeljs-backend.IModelImporter",
-
-  /** The logger category used by the [IModelTransformer]($backend) class.
-   * @beta
-   */
-  IModelTransformer = "imodeljs-backend.IModelTransformer",
 
   /** The logger category used by the following classes:
    * - TileRequestMemoizer

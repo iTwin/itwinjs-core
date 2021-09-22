@@ -10,24 +10,21 @@ import * as os from "os";
 import * as path from "path";
 import * as semver from "semver";
 import { HttpRequestHost } from "@bentley/backend-itwin-client";
-import {
-  assert, BeEvent, ClientRequestContext, Guid, GuidString, IModelStatus, Logger, LogLevel, ProcessDetector, SessionProps,
-} from "@bentley/bentleyjs-core";
+import { assert, BeEvent, ClientRequestContext, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector, SessionProps } from "@bentley/bentleyjs-core";
 import { IModelClient } from "@bentley/imodelhub-client";
 import { BentleyStatus, IModelError, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext, UserInfo } from "@bentley/itwin-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
 import { AliCloudStorageService } from "./AliCloudStorageService";
+import { BackendHubAccess } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BackendRequestContext } from "./BackendRequestContext";
 import { BisCoreSchema } from "./BisCoreSchema";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { AzureBlobStorage, CloudStorageService, CloudStorageServiceCredentials, CloudStorageTileUploader } from "./CloudStorageBackend";
 import { Config as ConcurrentQueryConfig } from "./ConcurrentQuery";
 import { FunctionalSchema } from "./domains/FunctionalSchema";
 import { GenericSchema } from "./domains/GenericSchema";
-import { BackendHubAccess } from "./BackendHubAccess";
 import { IModelHubBackend } from "./IModelHubBackend";
 import { IModelJsFs } from "./IModelJsFs";
 import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
@@ -37,7 +34,7 @@ import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 
-const loggerCategory: string = BackendLoggerCategory.IModelHost;
+const loggerCategory = BackendLoggerCategory.IModelHost;
 
 // cspell:ignore nodereport fatalerror apicall alicloud rpcs
 
@@ -187,7 +184,11 @@ export class IModelHost {
 
   private static _platform?: typeof IModelJsNative;
   /** @internal */
-  public static get platform(): typeof IModelJsNative { return this._platform!; }
+  public static get platform(): typeof IModelJsNative {
+    if (this._platform === undefined)
+      throw new Error("IModelHost.startup must be called first");
+    return this._platform;
+  }
 
   public static configuration?: IModelHostConfiguration;
   /** Event raised just after the backend IModelHost was started */
@@ -197,7 +198,7 @@ export class IModelHost {
   public static readonly onBeforeShutdown = new BeEvent<() => void>();
 
   /** @internal */
-  public static readonly session: SessionProps = { applicationId: "2686", applicationVersion: "1.0.0", sessionId: "" };
+  public static readonly session: Mutable<SessionProps> = { applicationId: "2686", applicationVersion: "1.0.0", sessionId: "" };
 
   /** A uniqueId for this session */
   public static get sessionId() { return this.session.sessionId; }
@@ -227,7 +228,10 @@ export class IModelHost {
   public static async getAuthorizedContext() {
     return new AuthorizedClientRequestContext(await this.getAccessToken(), undefined, this.applicationId, this.applicationVersion, this.sessionId);
   }
-
+  /** @internal */
+  public static flushLog() {
+    return this.platform.DgnDb.flushLog();
+  }
   /** @internal */
   public static loadNative(): void {
     const platform = Platform.load();
@@ -296,8 +300,8 @@ export class IModelHost {
   /** @internal */
   public static setHubAccess(hubAccess: BackendHubAccess) { this._hubAccess = hubAccess; }
 
-  /** Provides access to the IModelHub implementation for this IModelHost
-   * @internal
+  /** Provides access to the IModelHub for this IModelHost
+   * @beta
    */
   public static get hubAccess(): BackendHubAccess { return this._hubAccess; }
 
@@ -320,10 +324,6 @@ export class IModelHost {
     this.logStartup();
 
     await HttpRequestHost.initialize(); // Initialize configuration for HTTP requests at the backend.
-
-    // Setup a current context for all requests that originate from this backend
-    const requestContext = new BackendRequestContext();
-    requestContext.enter();
 
     this.backendVersion = require("../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
     initializeRpcBackend();
@@ -386,13 +386,6 @@ export class IModelHost {
     IModelHost.setupTileCache();
 
     this.platform.setUseTileCache(configuration.tileCacheCredentials ? false : true);
-
-    // const introspectionClientId = Config.App.getString("imjs_introspection_client_id", "");
-    // const introspectionClientSecret = Config.App.getString("imjs_introspection_client_secret", "");
-    // if (introspectionClientId && introspectionClientSecret) {
-    //   const introspectionClient = new IntrospectionClient(introspectionClientId, introspectionClientSecret);
-    //   this._clientAuthIntrospectionManager = new ImsClientAuthIntrospectionManager(introspectionClient);
-    // }
 
     process.once("beforeExit", IModelHost.shutdown);
     IModelHost.onAfterStartup.raiseEvent();
@@ -580,7 +573,7 @@ export abstract class FileNameResolver {
   public resolveKey(fileKey: string): string {
     const resolvedFileName: string | undefined = this.tryResolveKey(fileKey);
     if (undefined === resolvedFileName) {
-      throw new IModelError(IModelStatus.NotFound, `${fileKey} not resolved`, Logger.logWarning, loggerCategory);
+      throw new IModelError(IModelStatus.NotFound, `${fileKey} not resolved`);
     }
     return resolvedFileName;
   }
@@ -597,7 +590,7 @@ export abstract class FileNameResolver {
   public resolveFileName(inFileName: string): string {
     const resolvedFileName: string | undefined = this.tryResolveFileName(inFileName);
     if (undefined === resolvedFileName) {
-      throw new IModelError(IModelStatus.NotFound, `${inFileName} not resolved`, Logger.logWarning, loggerCategory);
+      throw new IModelError(IModelStatus.NotFound, `${inFileName} not resolved`);
     }
     return resolvedFileName;
   }

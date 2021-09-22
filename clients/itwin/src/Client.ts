@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module iTwinServiceClients
  */
-import { ClientRequestContext, Config, Logger } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import * as deepAssign from "deep-assign";
 import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
 import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
@@ -89,19 +89,17 @@ export abstract class Client {
       return this._url;
 
     if (this.baseUrl) {
-      let prefix = Config.App.query("imjs_url_prefix");
+      let prefix = process.env.IMJS_URL_PREFIX;
 
-      // Need to ensure the usage of the previous imjs_buddi_resolve_url_using_region to not break any
+      // Need to ensure the usage of the previous IMJS_BUDDI_RESOLVE_URL_USING_REGION to not break any
       // existing users relying on the behavior.
       // This needs to be removed...
       if (undefined === prefix) {
-        const region = Config.App.query("imjs_buddi_resolve_url_using_region");
+        const region = process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION;
         switch (region) {
-          case 102:
           case "102":
             prefix = "qa-";
             break;
-          case 103:
           case "103":
             prefix = "dev-";
             break;
@@ -115,6 +113,9 @@ export abstract class Client {
       } else {
         this._url = this.baseUrl;
       }
+
+      // Strip trailing '/'
+      this._url = this._url.replace(/\/$/, "");
       return this._url;
     }
 
@@ -132,7 +133,6 @@ export abstract class Client {
 
   /** used by clients to send delete requests */
   protected async delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, httpRequestOptions?: HttpRequestOptions): Promise<void> {
-    requestContext.enter();
     const url: string = await this.getUrl(requestContext) + relativeUrlPath;
     Logger.logInfo(loggerCategory, "Sending DELETE request", () => ({ url }));
     const options: RequestOptions = {
@@ -142,7 +142,6 @@ export abstract class Client {
     this.applyUserConfiguredHttpRequestOptions(options, httpRequestOptions);
     await this.setupOptionDefaults(options);
     await request(requestContext, url, options);
-    requestContext.enter();
     Logger.logTrace(loggerCategory, "Successful DELETE request", () => ({ url }));
   }
 
@@ -188,8 +187,7 @@ export class AuthenticationError extends ResponseError {
  * @internal
  */
 export class UrlDiscoveryClient extends Client {
-  public static readonly configURL = "imjs_buddi_url";
-  public static readonly configResolveUrlUsingRegion = "imjs_buddi_resolve_url_using_region";
+  public static readonly configResolveUrlUsingRegion = "IMJS_BUDDI_RESOLVE_URL_USING_REGION";
   /**
    * Creates an instance of UrlDiscoveryClient.
    */
@@ -210,7 +208,7 @@ export class UrlDiscoveryClient extends Client {
    * @returns URL of the discovery service.
    */
   public override async getUrl(): Promise<string> {
-    return Config.App.getString(UrlDiscoveryClient.configURL, "https://buddi.bentley.com/WebService");
+    return "https://buddi.bentley.com/WebService";
   }
 
   /**
@@ -220,11 +218,9 @@ export class UrlDiscoveryClient extends Client {
    * @returns Registered URL for the service.
    */
   public async discoverUrl(requestContext: ClientRequestContext, searchKey: string, regionId: number | undefined): Promise<string> {
-    requestContext.enter();
-
     const urlBase: string = await this.getUrl();
     const url: string = `${urlBase}/GetUrl/`;
-    const resolvedRegion = typeof regionId !== "undefined" ? regionId : Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);
+    const resolvedRegion = typeof regionId !== "undefined" ? regionId : process.env[UrlDiscoveryClient.configResolveUrlUsingRegion] ? Number(process.env[UrlDiscoveryClient.configResolveUrlUsingRegion]) : 0;
     const options: RequestOptions = {
       method: "GET",
       qs: {
@@ -234,11 +230,7 @@ export class UrlDiscoveryClient extends Client {
     };
 
     await this.setupOptionDefaults(options);
-    requestContext.enter();
-
     const response: Response = await request(requestContext, url, options);
-    requestContext.enter();
-
     const discoveredUrl: string = response.body.result.url.replace(/\/$/, ""); // strip trailing "/" for consistency
     return discoveredUrl;
   }

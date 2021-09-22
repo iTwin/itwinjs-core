@@ -7,7 +7,8 @@
  */
 
 import * as React from "react";
-import { CommonProps, Point, PointProps } from "@bentley/ui-core";
+import { PointProps } from "@bentley/ui-abstract";
+import { CommonProps, Point } from "@bentley/ui-core";
 import { PointerCaptor } from "./PointerCaptor";
 
 /** Properties of [[DragHandle]] component.

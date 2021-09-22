@@ -53,7 +53,8 @@ export class ViewportContent extends ViewportContentControl {
 }
 ```
 
-**Note:** It is important to provide a `viewportRef` Prop to the **ViewportComponent** implementation. The `viewportRef` function should set `this.viewport`. This is important in determining when the Frontstage is ready for use.
+**Note:** It is important to provide a `viewportRef` Prop to the [ViewportComponent]($ui-imodel-components) implementation.
+The `viewportRef` function should set `this.viewport`. This is important in determining when the Frontstage is ready for use.
 
 ```js
 viewportRef={(v: ScreenViewport) => { this.viewport = v; }}
@@ -61,7 +62,7 @@ viewportRef={(v: ScreenViewport) => { this.viewport = v; }}
 
 ### Subclassing ContentControl
 
-The following shows a sample content control that subclasses ContentControl and displays a Table data component.
+The following shows a sample content control that subclasses [ContentControl]($ui-framework) and displays a Table data component.
 
 ```ts
 import * as React from "react";
@@ -89,7 +90,7 @@ export class TableContent extends ContentControl {
 
 ## Defining Content Groups
 
-When defining Content Groups, the **ContentProps** and **ContentGroupProps** interfaces and **ContentGroup** class are used.
+When defining Content Groups, the [ContentProps]($ui-framework) and [ContentGroupProps]($ui-framework) interfaces and [ContentGroup]($ui-framework) class are used.
 
 The following shows a sample Content Group with a single entry that references the ViewportContent defined above. The Content Group is loaded and registered into ConfigurableUiManager and can be referenced by its id by any Frontstage.
 
@@ -133,7 +134,7 @@ contentGroup = new ContentGroup({
 
 ## Defining Content Layouts
 
-When defining Content Layouts, the **ContentLayoutProps** interface and **ContentLayoutDef** class are used. The ContentLayoutDef can be referenced directly by a Frontstage or it may be registered and referenced by id. The Content Layout uses index numbers to reference content within a Content Group. Both the Content Layout and the Content Group are provided as properties to a Frontstage.
+When defining Content Layouts, the [ContentLayoutProps]($ui-framework) interface and [ContentLayoutDef]($ui-framework) class are used. The ContentLayoutDef can be referenced directly by a Frontstage or it may be registered and referenced by id. The Content Layout uses index numbers to reference content within a Content Group. Both the Content Layout and the Content Group are provided as properties to a Frontstage.
 
 ### A single view
 

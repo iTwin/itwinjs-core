@@ -1,6 +1,48 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Fri, 13 Aug 2021 21:48:08 GMT and should not be manually modified.
+This log was last generated on Wed, 15 Sep 2021 18:06:46 GMT and should not be manually modified.
+
+## 2.19.12
+Wed, 15 Sep 2021 18:06:46 GMT
+
+_Version update only_
+
+## 2.19.11
+Thu, 09 Sep 2021 21:04:58 GMT
+
+### Updates
+
+- Allow white-on-white reversal to be applied regardless of background color.
+
+## 2.19.10
+Wed, 08 Sep 2021 14:36:01 GMT
+
+### Updates
+
+- Geometry created by a GraphicBuilder needs to have its specified placement transform applied properly.
+- The previous fix to the graphicbuilder transform problem actually resulted in some graphicbuilder primitives being transformed twice because they already had the transform applied to them. This fixes that issue by moving the transformation only to primitives that were missing it. This also adds code to ensure that GeometryAccumulator does not mutate the graphicbuilder's transform in-place.
+
+## 2.19.9
+Wed, 25 Aug 2021 15:36:01 GMT
+
+### Updates
+
+- Correct OpenStreetMap display with reprojection, clipping or geoid offset
+
+## 2.19.8
+Mon, 23 Aug 2021 13:23:13 GMT
+
+_Version update only_
+
+## 2.19.7
+Fri, 20 Aug 2021 17:47:22 GMT
+
+_Version update only_
+
+## 2.19.6
+Tue, 17 Aug 2021 20:34:29 GMT
+
+_Version update only_
 
 ## 2.19.5
 Fri, 13 Aug 2021 21:48:08 GMT

@@ -8,12 +8,14 @@ import { BentleyStatus, IModelError } from "@bentley/imodeljs-common";
 import { MobileRpcGateway, MobileRpcProtocol } from "../common/MobileRpcProtocol";
 import { MobileRpcConfiguration } from "../common/MobileRpcManager";
 import { MobileHost } from "./MobileHost";
+import { ProcessDetector } from "@bentley/bentleyjs-core";
 
 interface MobileAddon {
   notifyListening: (port: number) => void;
+  registerDeviceImpl: () => void;
 }
 
-let addon: MobileAddon;
+let addon: MobileAddon | undefined;
 
 export class MobileRpcServer {
   private static _nextId = -1;
@@ -61,7 +63,10 @@ export class MobileRpcServer {
 
   private _notifyListening() {
     MobileRpcServer.interop.port = this._port;
-    addon.notifyListening(this._port);
+
+    if (addon) {
+      addon.notifyListening(this._port);
+    }
 
     if (this._connectionId !== 0) {
       MobileHost.reconnect(this._port);
@@ -131,7 +136,10 @@ export function setupMobileRpc() {
     return;
   }
 
-  addon = (process as any)._linkedBinding("iModelJsMobile");
+  if (ProcessDetector.isMobileAppBackend) {
+    addon = (process as any)._linkedBinding("iModelJsMobile");
+    addon?.registerDeviceImpl();
+  }
 
   let server: MobileRpcServer | null = new MobileRpcServer();
 

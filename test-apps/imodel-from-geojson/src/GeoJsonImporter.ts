@@ -36,7 +36,7 @@ export class GeoJsonImporter {
    * @param iModelFileName the output iModel file name
    * @param geoJson the input GeoJson data
    */
-  public constructor(iModelFileName: string, geoJson: GeoJson, appendToExisting: boolean, modelName?: string, labelProperty?: string, pointRadius?: number, pseudoColor?: boolean, mapType?: string, mapGroundBias?: number,
+  public constructor(iModelFileName: string, geoJson: GeoJson, appendToExisting: boolean, modelName?: string, labelProperty?: string, pointRadius?: number, pseudoColor?: boolean, mapTypeString?: string, mapGroundBias?: number,
     private _classifiedURL?: string, private _classifiedName?: string, private _classifiedOutside?: string, private _classifiedInside?: string) {
     this.iModelDb = appendToExisting ? StandaloneDb.openFile(iModelFileName, OpenMode.ReadWrite) : SnapshotDb.createEmpty(iModelFileName, { rootSubject: { name: geoJson.title } });
     this._geoJson = geoJson;
@@ -45,26 +45,17 @@ export class GeoJsonImporter {
     this._labelProperty = labelProperty;
     this._pointRadius = pointRadius === undefined ? .25 : pointRadius;
     this._colorIndex = pseudoColor ? 0 : undefined;
-    this._viewFlags = new ViewFlags();
-    this._viewFlags.renderMode = RenderMode.SmoothShade;
-    switch (mapType) {
-      case "none":
-        this._viewFlags.backgroundMap = false;
-        break;
-      case "streets":
-        this._viewFlags.backgroundMap = true;
-        this._backgroundMap = { providerName: "BingProvider", groundBias: mapGroundBias, providerData: { mapType: BackgroundMapType.Street } };
-        break;
-      case "aerial":
-        this._viewFlags.backgroundMap = true;
-        this._backgroundMap = { providerName: "BingProvider", groundBias: mapGroundBias, providerData: { mapType: BackgroundMapType.Aerial } };
-        break;
-      default:
-      case "hybrid":
-        this._viewFlags.backgroundMap = true;
-        this._backgroundMap = { providerName: "BingProvider", groundBias: mapGroundBias, providerData: { mapType: BackgroundMapType.Hybrid } };
-        break;
+
+    let mapType;
+    switch (mapTypeString) {
+      case "streets": mapType = BackgroundMapType.Street; break;
+      case "aerial": mapType = BackgroundMapType.Aerial; break;
+      case "hybrid": mapType = BackgroundMapType.Hybrid; break;
     }
+
+    this._viewFlags = new ViewFlags({ renderMode: RenderMode.SmoothShade, backgroundMap: undefined !== mapType });
+    if (undefined !== mapType)
+      this._backgroundMap = { providerName: "BingProvider", groundBias: mapGroundBias, providerData: { mapType } };
   }
 
   /** Perform the import */
@@ -90,10 +81,10 @@ export class GeoJsonImporter {
       /** To geo-locate the project, we need to first scan the GeoJSon and extract range. This would not be required
        * if the bounding box was directly available.
        */
-      const featureMin = new Cartographic(), featureMax = new Cartographic();
+      const featureMin = Cartographic.createZero(), featureMax = Cartographic.createZero();
       if (!this.getFeatureRange(featureMin, featureMax))
         return;
-      const featureCenter = new Cartographic((featureMin.longitude + featureMax.longitude) / 2, (featureMin.latitude + featureMax.latitude) / 2);
+      const featureCenter = Cartographic.fromRadians({longitude: (featureMin.longitude + featureMax.longitude) / 2, latitude: (featureMin.latitude + featureMax.latitude) / 2});
 
       this.iModelDb.setEcefLocation(EcefLocation.createFromCartographicOrigin(featureCenter));
       this.convertFeatureCollection();
@@ -282,7 +273,7 @@ export class GeoJsonImporter {
         return undefined;   // TBD... Multi-loop Regions,
     }
   }
-  private static _scratchCartographic = new Cartographic();
+  private static _scratchCartographic = Cartographic.createZero();
 
   /** Convert a GeoJSON LineString into an @bentley/geometry-core Loop */
   private convertLoop(inLoop: GeoJson.LineString): Loop | undefined {

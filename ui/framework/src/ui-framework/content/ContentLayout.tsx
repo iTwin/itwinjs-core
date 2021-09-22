@@ -185,9 +185,8 @@ class SingleContentContainer extends React.Component<SingleContentProps> {
 }
 
 /** Common interface for HorizontalSplit and VerticalSplit
- * @public
  */
-export interface LayoutSplit {
+interface LayoutSplit {
   createContentContainer(contentNodes: React.ReactNode[], resizable: boolean): React.ReactNode;
   isLocked: boolean;
 }

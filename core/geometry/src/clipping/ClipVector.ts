@@ -295,7 +295,7 @@ export class ClipVector {
 
   /**
    * Determines whether a 3D range lies inside or outside this set of ClipShapes. If any set is defined by masking planes,
-   * checks the mask planes only, provided that ignoreMasks is false. Otherwise, checks the _clipplanes member.
+   * checks the mask planes only, provided that ignoreMasks is false. Otherwise, checks the clip planes member.
    */
   public classifyRangeContainment(range: Range3d, ignoreMasks: boolean): ClipPlaneContainment {
     const corners: Point3d[] = range.corners();

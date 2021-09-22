@@ -35,3 +35,8 @@ Below is an example of defining the ConfigurableUiContent and specifying the bac
 ```tsx
 <ConfigurableUiContent appBackstage={<AppBackstageComposer />} />
 ```
+
+## API Reference
+
+- [Backstage in ui-framework]($ui-framework:Backstage)
+- [Backstage in ui-abstract]($ui-abstract:Backstage)

@@ -8,7 +8,7 @@
 
 import { Cartographic, ColorByName, ColorDef, SolarShadowSettings } from "@bentley/imodeljs-common";
 import { DisplayStyle3dState, ScreenViewport, ViewState } from "@bentley/imodeljs-frontend";
-import { BaseSolarDataProvider } from "@bentley/ui-components";
+import { BaseSolarDataProvider } from "@bentley/ui-imodel-components";
 
 // the interface and class are in alpha state - it may change after usability testing - test coverage not complete
 /* istanbul ignore file */
@@ -32,7 +32,7 @@ export class SolarTimelineDataProvider extends BaseSolarDataProvider {
       this.supportsTimelineAnimation = true;
       this._cartographicCenter = this.getCartographicCenter(viewState.iModel);
     } else {
-      this._cartographicCenter = Cartographic.fromDegrees(this.longitude, this.latitude, 0.0);
+      this._cartographicCenter = Cartographic.fromDegrees({longitude: this.longitude, latitude: this.latitude, height: 0.0});
     }
 
     this._projectTimeZoneOffset = this.getZone(this._cartographicCenter);

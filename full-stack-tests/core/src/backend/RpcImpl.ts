@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext, ClientRequestContextProps, Config } from "@bentley/bentleyjs-core";
+import { ClientRequestContextProps } from "@bentley/bentleyjs-core";
 import { IModelBankClient } from "@bentley/imodelhub-client";
 import { IModelDb, IModelHost, IModelJsFs } from "@bentley/imodeljs-backend";
 import { V1CheckpointManager } from "@bentley/imodeljs-backend/lib/CheckpointManager";
-import { IModelRpcProps, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
+import { IModelRpcProps, RpcInterface, RpcInvocation, RpcManager } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, AuthorizedClientRequestContextProps } from "@bentley/itwin-client";
 import { CloudEnvProps, TestRpcInterface } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
@@ -26,22 +26,22 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   }
 
   public async reportRequestContext(): Promise<ClientRequestContextProps> {
-    if (ClientRequestContext.current instanceof AuthorizedClientRequestContext)
+    if (RpcInvocation.currentRequest instanceof AuthorizedClientRequestContext)
       throw new Error("Did not expect AuthorizedClientRequestContext");
-    return ClientRequestContext.current.toJSON();
+    return RpcInvocation.currentRequest.toJSON();
   }
 
   public async reportAuthorizedRequestContext(): Promise<AuthorizedClientRequestContextProps> {
-    if (!(ClientRequestContext.current instanceof AuthorizedClientRequestContext))
+    if (!(RpcInvocation.currentRequest instanceof AuthorizedClientRequestContext))
       throw new Error("Expected AuthorizedClientRequestContext");
-    const context = ClientRequestContext.current;
+    const context = RpcInvocation.currentRequest;
     return context.toJSON();
   }
 
   public async getCloudEnv(): Promise<CloudEnvProps> {
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const requestContext = RpcInvocation.currentRequest as AuthorizedClientRequestContext;
     if (CloudEnv.cloudEnv.isIModelHub) {
-      const region = Config.App.get("imjs_buddi_resolve_url_using_region") || "0";
+      const region = process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION || "0";
       return { iModelHub: { region } };
     }
     const url = await (CloudEnv.cloudEnv.imodelClient as IModelBankClient).getUrl(requestContext);

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-transformer",
+      "comment": "rename contextId -> iTwinId",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-transformer"
+}

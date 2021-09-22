@@ -1,7 +1,7 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
-  "rushVersion": "5.47.0",
-  "pnpmVersion": "6.4.0",
+  "rushVersion": "5.51.1",
+  "pnpmVersion": "6.13.0",
   "nodeSupportedVersionRange": ">=12.17.0 <15.0.0",
   "projectFolderMinDepth": 2,
   "projectFolderMaxDepth": 3,
@@ -56,13 +56,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/extension-client",
-      "projectFolder": "clients/extension",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@bentley/frontend-authorization-client",
       "projectFolder": "clients/frontend-authorization",
       "reviewCategory": "frontend",
@@ -105,13 +98,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/usage-logging-client",
-      "projectFolder": "clients/usage-logging",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@bentley/bentleyjs-core",
       "projectFolder": "core/bentley",
       "reviewCategory": "common",
@@ -142,6 +128,13 @@
     {
       "packageName": "@bentley/imodeljs-backend",
       "projectFolder": "core/backend",
+      "reviewCategory": "backend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/imodeljs-transformer",
+      "projectFolder": "core/transformer",
       "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
@@ -289,6 +282,13 @@
     {
       "packageName": "@bentley/ui-components",
       "projectFolder": "ui/components",
+      "reviewCategory": "frontend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/ui-imodel-components",
+      "projectFolder": "ui/imodel-components",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"

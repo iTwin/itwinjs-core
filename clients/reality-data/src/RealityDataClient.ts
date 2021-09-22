@@ -6,7 +6,7 @@
 /** @packageDocumentation
  * @module RealityData
  */
-import { ClientRequestContext, Config, Guid } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Guid } from "@bentley/bentleyjs-core";
 import {
   AuthorizedClientRequestContext, ECJsonTypeMap, getArrayBuffer, getJson, RequestQueryOptions, WsgClient, WsgInstance,
 } from "@bentley/itwin-client";
@@ -16,7 +16,7 @@ import { URL } from "url";
  * @internal
  */
 export enum RealityDataType {
-  REALITYMESH3DTILES  = "RealityMesh3DTiles", // Web Ready Scalable Mesh
+  REALITYMESH3DTILES = "RealityMesh3DTiles", // Web Ready Scalable Mesh
   OPC = "OPC", // Orbit Point Cloud
   TERRAIN3DTILE = "Terrain3DTiles", // Terrain3DTiles
   OMR = "OMR", // Mapping Resource,
@@ -177,7 +177,6 @@ export class RealityData extends WsgInstance {
    * @returns string url for blob data
    */
   public async getBlobStringUrl(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath: boolean = false): Promise<string> {
-    requestContext.enter();
     const url = await this.getBlobUrl(requestContext);
 
     let host: string = "";
@@ -200,7 +199,6 @@ export class RealityData extends WsgInstance {
    * @returns tile data json
    */
   public async getModelData(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath: boolean = false): Promise<any> {
-    requestContext.enter();
     return this.getTileJson(requestContext, name, nameRelativeToRootDocumentPath);
   }
 
@@ -211,7 +209,6 @@ export class RealityData extends WsgInstance {
    * @returns app URL object for blob url
    */
   public async getBlobUrl(requestContext: AuthorizedClientRequestContext, writeAccess: boolean = false): Promise<URL> {
-    requestContext.enter();
     // Normally the client is set when the reality data is extracted for the client but it could be undefined
     // if the reality data instance is created manually.
     if (!this.client)
@@ -226,7 +223,6 @@ export class RealityData extends WsgInstance {
     const blobUrlRequiresRefresh = !this._blobTimeStamp || (Date.now() - this._blobTimeStamp.getTime()) > 3000000; // 3 million milliseconds or 50 minutes
     if (undefined === this._blobUrl || blobUrlRequiresRefresh) {
       const fileAccess: FileAccessKey[] = await this.client.getFileAccessKey(requestContext, this.projectId, this.id, writeAccess);
-      requestContext.enter();
       if (fileAccess.length !== 1)
         throw new Error(`Could not obtain blob file access key for reality data: ${this.id}`);
       const urlString = fileAccess[0].url!;
@@ -253,12 +249,9 @@ export class RealityData extends WsgInstance {
    * @returns app data json object
    */
   public async getTileJson(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath: boolean = false): Promise<any> {
-    requestContext.enter();
     const stringUrl = await this.getBlobStringUrl(requestContext, name, nameRelativeToRootDocumentPath);
-    requestContext.enter();
 
     const data = await getJson(requestContext, stringUrl);
-    requestContext.enter();
     return data;
   }
 
@@ -270,12 +263,9 @@ export class RealityData extends WsgInstance {
    * @returns array buffer of tile content
    */
   public async getTileContent(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath: boolean = false): Promise<any> {
-    requestContext.enter();
     const stringUrl = await this.getBlobStringUrl(requestContext, name, nameRelativeToRootDocumentPath);
-    requestContext.enter();
 
     const data = await getArrayBuffer(requestContext, stringUrl);
-    requestContext.enter();
     return data;
   }
 
@@ -285,14 +275,11 @@ export class RealityData extends WsgInstance {
    * @returns tile data json
    */
   public async getRootDocumentJson(requestContext: AuthorizedClientRequestContext): Promise<any> {
-    requestContext.enter();
-
     if (!this.rootDocument)
       throw new Error(`Root document not defined for reality data: ${this.id}`);
 
     const root = this.rootDocument;
     const rootJson = await this.getTileJson(requestContext, root, false);
-    requestContext.enter();
     return rootJson;
   }
 
@@ -383,14 +370,13 @@ export class DataLocation extends WsgInstance {
  */
 export class RealityDataClient extends WsgClient {
   public static readonly searchKey: string = "RealityDataServices";
-  public static readonly configRelyingPartyUri = "imjs_reality_data_service_relying_party_uri";
 
   /**
    * Creates an instance of RealityDataServicesClient.
    */
   public constructor() {
-    super("v2.5");
-    // this.baseUrl = "https://api.bentley.com/contextshare";
+    super("v1");
+    this.baseUrl = "https://api.bentley.com/contextshare";
   }
 
   /**
@@ -399,22 +385,6 @@ export class RealityDataClient extends WsgClient {
    */
   protected getUrlSearchKey(): string {
     return RealityDataClient.searchKey;
-  }
-
-  /**
-   * Gets theRelyingPartyUrl for the service.
-   * @returns RelyingPartyUrl for the service.
-   */
-  protected getRelyingPartyUrl(): string {
-    if (Config.App.has(RealityDataClient.configRelyingPartyUri))
-      return `${Config.App.get(RealityDataClient.configRelyingPartyUri)}/`;
-
-    if (Config.App.getBoolean(WsgClient.configUseHostRelyingPartyUriAsFallback, true)) {
-      if (Config.App.has(WsgClient.configHostRelyingPartyUri))
-        return `${Config.App.get(WsgClient.configHostRelyingPartyUri)}/`;
-    }
-
-    throw new Error(`RelyingPartyUrl not set. Set it in Config.App using key ${RealityDataClient.configRelyingPartyUri}`);
   }
 
   /**
@@ -427,9 +397,7 @@ export class RealityDataClient extends WsgClient {
    * @returns string containing the URL to reality data for indicated tile.
    */
   public async getRealityDataUrl(requestContext: ClientRequestContext, projectId: string | undefined, tilesId: string): Promise<string> {
-    requestContext.enter();
     const serverUrl: string = await this.getUrl(requestContext);
-    requestContext.enter();
 
     if (!projectId || projectId === "")
       projectId = "Server";
@@ -444,12 +412,10 @@ export class RealityDataClient extends WsgClient {
    * @returns The requested reality data.
    */
   public async getRealityData(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, tilesId: string): Promise<RealityData> {
-    requestContext.enter();
     if (!projectId || projectId === "")
       projectId = "Server";
 
     const realityDatas: RealityData[] = await this.getInstances<RealityData>(requestContext, RealityData, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData/${tilesId}`);
-    requestContext.enter();
 
     if (realityDatas.length !== 1)
       throw new Error(`Could not fetch reality data: ${tilesId}`);
@@ -472,10 +438,10 @@ export class RealityDataClient extends WsgClient {
         return Object.keys(obj).filter((k) => Number.isNaN(+k)) as K[];
       }
       // If type not specified, add all supported known types
-      let isFirst=true;
+      let isFirst = true;
       for (const rdType of enumKeys(RealityDataType)) {
         if (isFirst)
-          isFirst=false;
+          isFirst = false;
         else
           filter += `+or+`;
         filter += `Type+eq+'${RealityDataType[rdType]}'`;
@@ -494,13 +460,10 @@ export class RealityDataClient extends WsgClient {
    * @returns an array of RealityData that are associated to the project.
    */
   public async getRealityDataInProject(requestContext: AuthorizedClientRequestContext, projectId: string, type?: string): Promise<RealityData[]> {
-    requestContext.enter();
-
     const newQueryOptions = { project: projectId } as RequestQueryOptions;
     newQueryOptions.$filter = this.getRealityDataTypesFilter(type);
 
     const realityDatas: RealityData[] = await this.getRealityDatas(requestContext, projectId, newQueryOptions);
-    requestContext.enter();
     return realityDatas;
   }
 
@@ -516,7 +479,6 @@ export class RealityDataClient extends WsgClient {
    * @returns an array of RealityData
    */
   public async getRealityDataInProjectOverlapping(requestContext: AuthorizedClientRequestContext, projectId: string, minLongDeg: number, maxLongDeg: number, minLatDeg: number, maxLatDeg: number, type?: string): Promise<RealityData[]> {
-    requestContext.enter();
     const polygonString = `{\"points\":[[${minLongDeg},${minLatDeg}],[${maxLongDeg},${minLatDeg}],[${maxLongDeg},${maxLatDeg}],[${minLongDeg},${maxLatDeg}],[${minLongDeg},${minLatDeg}]], \"coordinate_system\":\"4326\"}`;
 
     const newQueryOptions = { project: projectId, polygon: polygonString } as RequestQueryOptions;
@@ -533,12 +495,10 @@ export class RealityDataClient extends WsgClient {
    * @returns The requested reality data.
    */
   public async getRealityDatas(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, queryOptions: RealityDataRequestQueryOptions): Promise<RealityData[]> {
-    requestContext.enter();
     if (!projectId || projectId === "")
       projectId = "Server";
 
     const realityDatas: RealityData[] = await this.getInstances<RealityData>(requestContext, RealityData, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData`, queryOptions);
-    requestContext.enter();
 
     realityDatas.forEach((realityData) => { realityData.client = this; realityData.projectId = projectId; });
     return realityDatas;
@@ -554,12 +514,10 @@ export class RealityDataClient extends WsgClient {
    * @returns The new reality data with all read-only properties set.
    */
   public async createRealityData(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, realityData: RealityData): Promise<RealityData> {
-    requestContext.enter();
     if (!projectId || projectId === "")
       projectId = "Server";
 
     const resultRealityData: RealityData = await this.postInstance<RealityData>(requestContext, RealityData, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData`, realityData);
-    requestContext.enter();
 
     if (!resultRealityData)
       throw new Error(`Could not create new reality data: ${realityData.id ? realityData.id : realityData.name}`);
@@ -579,12 +537,10 @@ export class RealityDataClient extends WsgClient {
    * @returns The newly modified reality data.
    */
   public async updateRealityData(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, realityData: RealityData): Promise<RealityData> {
-    requestContext.enter();
     if (!projectId || projectId === "")
       projectId = "Server";
 
     const resultRealityData: RealityData = await this.postInstance<RealityData>(requestContext, RealityData, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityData/${realityData.id}`, realityData);
-    requestContext.enter();
 
     if (!resultRealityData)
       throw new Error(`Could not update reality data: ${realityData.id ? realityData.id : realityData.name}`);
@@ -602,7 +558,6 @@ export class RealityDataClient extends WsgClient {
    * @returns a void Promise.
    */
   public async deleteRealityData(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, realityDataId: string): Promise<void> {
-    requestContext.enter();
     if (!projectId || projectId === "")
       projectId = "Server";
 
@@ -617,7 +572,6 @@ export class RealityDataClient extends WsgClient {
    * @returns All relationships associated to reality data. The requested reality data.
    */
   public async getRealityDataRelationships(requestContext: AuthorizedClientRequestContext, projectId: string, realityDataId: string): Promise<RealityDataRelationship[]> {
-    requestContext.enter();
     const relationships: RealityDataRelationship[] = await this.getInstances<RealityDataRelationship>(requestContext, RealityDataRelationship, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityDataRelationship?$filter=RealityDataId+eq+'${realityDataId}'`);
     return relationships;
   }
@@ -630,7 +584,6 @@ export class RealityDataClient extends WsgClient {
    * @returns All relationships associated to reality data. The requested reality data.
    */
   public async createRealityDataRelationship(requestContext: AuthorizedClientRequestContext, projectId: string, relationship: RealityDataRelationship): Promise<RealityDataRelationship> {
-    requestContext.enter();
     const resultRealityDataRelationship: RealityDataRelationship = await this.postInstance<RealityDataRelationship>(requestContext, RealityDataRelationship, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityDataRelationship`, relationship);
     if (!resultRealityDataRelationship)
       throw new Error(`Could not create new reality data relationship between reality data: ${relationship.realityDataId ? relationship.realityDataId : ""} and context: ${relationship.relatedId ? relationship.relatedId : ""}`);
@@ -646,7 +599,6 @@ export class RealityDataClient extends WsgClient {
    * @returns All relationships associated to reality data. The requested reality data.
    */
   public async deleteRealityDataRelationship(requestContext: AuthorizedClientRequestContext, projectId: string, relationshipId: string): Promise<void> {
-    requestContext.enter();
     return this.deleteInstance<RealityDataRelationship>(requestContext, `/Repositories/S3MXECPlugin--${projectId}/S3MX/RealityDataRelationship/${relationshipId}`);
   }
 
@@ -659,7 +611,6 @@ export class RealityDataClient extends WsgClient {
    * @returns a FileAccessKey object containing the Azure blob address.
    */
   public async getFileAccessKey(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, tilesId: string, writeAccess: boolean = false): Promise<FileAccessKey[]> {
-    requestContext.enter();
     const path = encodeURIComponent(tilesId);
     if (!projectId || projectId === "")
       projectId = "Server";
@@ -706,7 +657,6 @@ export class RealityDataClient extends WsgClient {
    * @returns The requested data locations list.
    */
   public async getDataLocation(requestContext: AuthorizedClientRequestContext): Promise<DataLocation[]> {
-    requestContext.enter();
     const dataLocation: DataLocation[] = await this.getInstances<DataLocation>(requestContext, DataLocation, `/Repositories/S3MXECPlugin--Server/S3MX/DataLocation`);
     return dataLocation;
   }

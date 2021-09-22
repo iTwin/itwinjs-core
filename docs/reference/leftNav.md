@@ -7,6 +7,7 @@ packageClassification:  [
          "imodeljs-frontend",
          "imodeljs-common",
          "imodeljs-backend",
+         "imodeljs-transformer",
          "imodeljs-markup",
          "imodeljs-i18n",
          "imodeljs-quantity",
@@ -30,8 +31,7 @@ packageClassification:  [
        "imodelhub-client",
        "itwin-client",
        "product-settings-client",
-       "reality-data-client",
-       "usage-logging-client"
+       "reality-data-client"
      ]
    },
    {
@@ -41,6 +41,7 @@ packageClassification:  [
          "ui-abstract",
          "ui-core",
          "ui-components",
+         "ui-imodel-components",
          "ui-ninezone",
          "ui-framework"
       ]

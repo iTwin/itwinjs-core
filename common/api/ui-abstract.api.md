@@ -10,8 +10,6 @@ import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { Id64String } from '@bentley/bentleyjs-core';
-import { LogFunction } from '@bentley/bentleyjs-core';
-import { XAndY } from '@bentley/geometry-core';
 
 // @public
 export interface AbstractActionItemProps extends CommonItemProps, CommandHandler {
@@ -76,8 +74,14 @@ export interface AbstractWidgetProps extends ProvidedItem {
     readonly badgeType?: BadgeType;
     // @beta
     readonly canPopout?: boolean;
+    readonly defaultFloatingPosition?: {
+        x: number;
+        y: number;
+    };
     readonly defaultState?: WidgetState;
     readonly fillZone?: boolean;
+    // @beta
+    readonly floatingContainerId?: string;
     readonly getWidgetContent: () => any;
     readonly icon?: string | ConditionalStringValue;
     readonly id?: string;
@@ -107,107 +111,6 @@ export enum AbstractZoneLocation {
     CenterLeft = 4,
     // (undocumented)
     CenterRight = 6
-}
-
-// @alpha
-export enum AccuDrawField {
-    // (undocumented)
-    Angle = 1,
-    // (undocumented)
-    Distance = 0,
-    // (undocumented)
-    X = 2,
-    // (undocumented)
-    Y = 3,
-    // (undocumented)
-    Z = 4
-}
-
-// @alpha (undocumented)
-export class AccuDrawGrabInputFocusEvent extends BeUiEvent<{}> {
-}
-
-// @alpha
-export enum AccuDrawMode {
-    // (undocumented)
-    Polar = 0,
-    // (undocumented)
-    Rectangular = 1
-}
-
-// @alpha (undocumented)
-export class AccuDrawSetFieldFocusEvent extends BeUiEvent<AccuDrawSetFieldFocusEventArgs> {
-}
-
-// @alpha (undocumented)
-export interface AccuDrawSetFieldFocusEventArgs {
-    // (undocumented)
-    field: AccuDrawField;
-}
-
-// @alpha (undocumented)
-export class AccuDrawSetFieldLockEvent extends BeUiEvent<AccuDrawSetFieldLockEventArgs> {
-}
-
-// @alpha (undocumented)
-export interface AccuDrawSetFieldLockEventArgs {
-    // (undocumented)
-    field: AccuDrawField;
-    // (undocumented)
-    lock: boolean;
-}
-
-// @alpha (undocumented)
-export class AccuDrawSetFieldValueFromUiEvent extends BeUiEvent<AccuDrawSetFieldValueFromUiEventArgs> {
-}
-
-// @alpha (undocumented)
-export interface AccuDrawSetFieldValueFromUiEventArgs {
-    // (undocumented)
-    field: AccuDrawField;
-    // (undocumented)
-    stringValue: string;
-}
-
-// @alpha (undocumented)
-export class AccuDrawSetFieldValueToUiEvent extends BeUiEvent<AccuDrawSetFieldValueToUiEventArgs> {
-}
-
-// @alpha (undocumented)
-export interface AccuDrawSetFieldValueToUiEventArgs {
-    // (undocumented)
-    field: AccuDrawField;
-    // (undocumented)
-    formattedValue: string;
-    // (undocumented)
-    value: number;
-}
-
-// @alpha (undocumented)
-export class AccuDrawSetModeEvent extends BeUiEvent<AccuDrawSetModeEventArgs> {
-}
-
-// @alpha (undocumented)
-export interface AccuDrawSetModeEventArgs {
-    // (undocumented)
-    mode: AccuDrawMode;
-}
-
-// @alpha (undocumented)
-export class AccuDrawUiAdmin {
-    grabInputFocus(): void;
-    get hasInputFocus(): boolean;
-    static readonly onAccuDrawGrabInputFocusEvent: AccuDrawGrabInputFocusEvent;
-    static readonly onAccuDrawSetFieldFocusEvent: AccuDrawSetFieldFocusEvent;
-    static readonly onAccuDrawSetFieldLockEvent: AccuDrawSetFieldLockEvent;
-    static readonly onAccuDrawSetFieldValueFromUiEvent: AccuDrawSetFieldValueFromUiEvent;
-    static readonly onAccuDrawSetFieldValueToUiEvent: AccuDrawSetFieldValueToUiEvent;
-    static readonly onAccuDrawSetModeEvent: AccuDrawSetModeEvent;
-    setFieldFocus(field: AccuDrawField): void;
-    setFieldLock(field: AccuDrawField, lock: boolean): void;
-    setFieldValueFromUi(field: AccuDrawField, stringValue: string): void;
-    setFieldValueToUi(field: AccuDrawField, value: number, formattedValue: string): void;
-    setMode(mode: AccuDrawMode): void;
 }
 
 // @public
@@ -1133,6 +1036,14 @@ export interface DialogRow {
 }
 
 // @public
+export enum DisplayMessageType {
+    Alert = 4,
+    InputField = 3,
+    Sticky = 2,
+    Toast = 0
+}
+
+// @public
 export interface EditorPosition {
     columnIndex: number;
     // @deprecated
@@ -1373,6 +1284,29 @@ export function matchesSubString(word: string, wordToMatchAgainst: string): IMat
 export function matchesWords(word: string, target: string, contiguous?: boolean): IMatch[] | null;
 
 // @public
+export interface MessagePresenter {
+    closeInputFieldMessage(): void;
+    displayInputFieldMessage(inputField: HTMLElement, severity: MessageSeverity, briefMessage: HTMLElement | string, detailedMessage?: HTMLElement | string): void;
+    displayMessage(severity: MessageSeverity, briefMessage: HTMLElement | string, detailedMessage?: HTMLElement | string, messageType?: DisplayMessageType): void;
+}
+
+// @public
+export enum MessageSeverity {
+    // (undocumented)
+    Error = 4,
+    // (undocumented)
+    Fatal = 5,
+    // (undocumented)
+    Information = 1,
+    // (undocumented)
+    None = 0,
+    // (undocumented)
+    Question = 2,
+    // (undocumented)
+    Warning = 3
+}
+
+// @public
 export interface MultilineTextEditorParams extends BasePropertyEditorParams {
     // (undocumented)
     rows: number;
@@ -1401,6 +1335,14 @@ export interface ParseResults {
     parseError?: string;
     // (undocumented)
     value?: string | number | boolean | {} | string[] | Date | [] | undefined;
+}
+
+// @public
+export interface PointProps {
+    // (undocumented)
+    readonly x: number;
+    // (undocumented)
+    readonly y: number;
 }
 
 // @public
@@ -1979,6 +1921,8 @@ export class UiAbstract {
     static get initialized(): boolean;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
+    static get messagePresenter(): MessagePresenter;
+    static set messagePresenter(mp: MessagePresenter);
     // @internal (undocumented)
     static get packageName(): string;
     static terminate(): void;
@@ -1988,13 +1932,10 @@ export class UiAbstract {
 
 // @public
 export class UiAdmin {
-    // @alpha
-    get accuDrawUi(): AccuDrawUiAdmin;
-    set accuDrawUi(v: AccuDrawUiAdmin);
     closeDialog(_dialogId: string): boolean;
     closeToolSettingsPopup(): boolean;
-    createXAndY(x: number, y: number): XAndY;
-    get cursorPosition(): XAndY;
+    createXAndY(x: number, y: number): PointProps;
+    get cursorPosition(): PointProps;
     // (undocumented)
     get featureFlags(): UiFlags;
     hideCalculator(): boolean;
@@ -2009,20 +1950,20 @@ export class UiAdmin {
     // @internal (undocumented)
     onInitialized(): void;
     openDialog(_uiDataProvider: DialogLayoutDataProvider, _title: string, _isModal: boolean, _id: string, _optionalProps?: DialogProps): boolean;
-    openToolSettingsPopup(_dataProvider: UiDataProvider, _location: XAndY, _offset: XAndY, _onCancel: OnCancelFunc, _relativePosition?: RelativePosition, _anchorElement?: HTMLElement): boolean;
+    openToolSettingsPopup(_dataProvider: UiDataProvider, _location: PointProps, _offset: PointProps, _onCancel: OnCancelFunc, _relativePosition?: RelativePosition, _anchorElement?: HTMLElement): boolean;
     static sendUiEvent(args: GenericUiEventArgs): void;
     setFocusToHome(): void;
-    showAngleEditor(_initialValue: number, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;
-    showCalculator(_initialValue: number, _resultIcon: string, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;
-    showCard(_content: HTMLElement, _title: string | PropertyRecord | undefined, _toolbarProps: AbstractToolbarProps | undefined, _location: XAndY, _offset: XAndY, _onItemExecuted: OnItemExecutedFunc, _onCancel: OnCancelFunc, _relativePosition?: RelativePosition, _anchorElement?: HTMLElement): boolean;
-    showContextMenu(_menuItemsProps: AbstractMenuItemProps[], _location: XAndY, _htmlElement?: HTMLElement): boolean;
-    showHeightEditor(_initialValue: number, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;
-    showHTMLElement(_displayElement: HTMLElement, _location: XAndY, _offset: XAndY, _onCancel: OnCancelFunc, _relativePosition?: RelativePosition, _anchorElement?: HTMLElement): boolean;
-    showInputEditor(_initialValue: Primitives.Value, _propertyDescription: PropertyDescription, _location: XAndY, _onCommit: OnValueCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;
+    showAngleEditor(_initialValue: number, _location: PointProps, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;
+    showCalculator(_initialValue: number, _resultIcon: string, _location: PointProps, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;
+    showCard(_content: HTMLElement, _title: string | PropertyRecord | undefined, _toolbarProps: AbstractToolbarProps | undefined, _location: PointProps, _offset: PointProps, _onItemExecuted: OnItemExecutedFunc, _onCancel: OnCancelFunc, _relativePosition?: RelativePosition, _anchorElement?: HTMLElement): boolean;
+    showContextMenu(_menuItemsProps: AbstractMenuItemProps[], _location: PointProps, _htmlElement?: HTMLElement): boolean;
+    showHeightEditor(_initialValue: number, _location: PointProps, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;
+    showHTMLElement(_displayElement: HTMLElement, _location: PointProps, _offset: PointProps, _onCancel: OnCancelFunc, _relativePosition?: RelativePosition, _anchorElement?: HTMLElement): boolean;
+    showInputEditor(_initialValue: Primitives.Value, _propertyDescription: PropertyDescription, _location: PointProps, _onCommit: OnValueCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;
     showKeyinPalette(_htmlElement?: HTMLElement): boolean;
-    showLengthEditor(_initialValue: number, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;
-    showMenuButton(_id: string, _menuItemsProps: AbstractMenuItemProps[], _location: XAndY, _htmlElement?: HTMLElement): boolean;
-    showToolbar(_toolbarProps: AbstractToolbarProps, _location: XAndY, _offset: XAndY, _onItemExecuted: OnItemExecutedFunc, _onCancel: OnCancelFunc, _relativePosition?: RelativePosition, _htmlElement?: HTMLElement): boolean;
+    showLengthEditor(_initialValue: number, _location: PointProps, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;
+    showMenuButton(_id: string, _menuItemsProps: AbstractMenuItemProps[], _location: PointProps, _htmlElement?: HTMLElement): boolean;
+    showToolbar(_toolbarProps: AbstractToolbarProps, _location: PointProps, _offset: PointProps, _onItemExecuted: OnItemExecutedFunc, _onCancel: OnCancelFunc, _relativePosition?: RelativePosition, _htmlElement?: HTMLElement): boolean;
     // (undocumented)
     updateFeatureFlags(uiFlags: UiFlags): void;
 }
@@ -2042,7 +1983,9 @@ export abstract class UiDataProvider {
 
 // @public
 export class UiError extends BentleyError {
-    constructor(category: string, message: string, errorNumber?: number, log?: LogFunction, getMetaData?: GetMetaDataFunction | undefined);
+    constructor(category: string, message: string, errorNumber?: number, getMetaData?: GetMetaDataFunction);
+    // (undocumented)
+    category: string;
 }
 
 // @public

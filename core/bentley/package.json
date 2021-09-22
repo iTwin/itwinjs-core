@@ -1,6 +1,6 @@
 {
   "name": "@bentley/bentleyjs-core",
-  "version": "3.0.0-dev.27",
+  "version": "3.0.0-dev.62",
   "description": "Bentley JavaScript core components",
   "main": "lib/bentleyjs-core.js",
   "typings": "lib/bentleyjs-core",

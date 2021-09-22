@@ -10,12 +10,10 @@ import "./contentviews/TableExampleContent";
 import "./contentviews/TreeExampleContent";
 import "./contentviews/ScheduleAnimationViewport";
 import "./widgets/BreadcrumbDemoWidget";
-import "./widgets/TreeDemoWidget";
 import "./widgets/TableDemoWidget";
 import "./widgets/FeedbackWidget";
 import "./widgets/NavigationTreeWidget";
 import "./widgets/PropertyGridDemoWidget";
-import "./widgets/VisibilityTreeWidget";
 import "./tooluiproviders/Tool1UiProvider";
 import "./tooluiproviders/Tool2UiProvider";
 import "./statusbars/AppStatusBar";
@@ -35,12 +33,9 @@ import {
   FrontstageManager,
   KeyboardShortcutManager,
   KeyboardShortcutProps,
-  TaskPropsList,
   UiFramework,
   WidgetDef,
   WidgetProvider,
-  WorkflowProps,
-  WorkflowPropsList,
   ZoneLocation,
 } from "@bentley/ui-framework";
 import { IModelViewportControl } from "./contentviews/IModelViewport";
@@ -68,7 +63,6 @@ export class AppUi {
     AppUi.defineFrontstages();
     AppUi.defineContentGroups();
     AppUi.defineContentLayouts();
-    AppUi.defineTasksAndWorkflows();
     AppUi.defineKeyboardShortcuts();
 
     // use to test WidgetProvider API - Note: this is different from UiItemsProvider
@@ -302,56 +296,6 @@ export class AppUi {
     if (contentCount <= 4)
       return contentLayouts[contentCount - 1];
     return undefined;
-  }
-
-  /** Define Tasks list and Workflows list.
-   */
-  private static defineTasksAndWorkflows() {
-    const taskPropsList: TaskPropsList = {
-      tasks: [
-        {
-          id: "Task1",
-          primaryStageId: "Test1",
-          iconSpec: "icon-placeholder",
-          labelKey: "SampleApp:backstage.task1",
-        },
-        {
-          id: "Task2",
-          primaryStageId: "ViewsFrontstage",
-          iconSpec: "icon-placeholder",
-          labelKey: "SampleApp:backstage.task2",
-        },
-      ],
-    };
-
-    ConfigurableUiManager.loadTasks(taskPropsList);
-
-    // Test Workflows
-    const workflowProps: WorkflowProps = {
-      id: "ExampleWorkflow",
-      iconSpec: "icon-placeholder",
-      labelKey: "SampleApp:Test.my-label",
-      defaultTaskId: "task1",
-      tasks: ["Task1", "Task2"],
-    };
-
-    ConfigurableUiManager.loadWorkflow(workflowProps);
-
-    // Test Workflows
-    const workflowPropsList: WorkflowPropsList = {
-      defaultWorkflowId: "ExampleWorkflow",
-      workflows: [
-        {
-          id: "ExampleWorkflow",
-          iconSpec: "icon-placeholder",
-          labelKey: "SampleApp:Test.my-label",
-          defaultTaskId: "task1",
-          tasks: ["Task1", "Task2"],
-        },
-      ],
-    };
-
-    ConfigurableUiManager.loadWorkflows(workflowPropsList);
   }
 
   /** Define Keyboard Shortcuts list.

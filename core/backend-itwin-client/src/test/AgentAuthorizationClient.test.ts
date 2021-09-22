@@ -6,7 +6,7 @@
 import * as chai from "chai";
 import { Client, Issuer } from "openid-client";
 import * as path from "path";
-import { BeDuration, ClientRequestContext, Config } from "@bentley/bentleyjs-core";
+import { BeDuration, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { AccessToken, IncludePrefix } from "@bentley/itwin-client";
 import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "../oidc/AgentAuthorizationClient";
 import { HubAccessTestValidator } from "./HubAccessTestValidator";
@@ -41,10 +41,17 @@ describe("AgentAuthorizationClient (#integration)", () => {
   before(async () => {
     validator = await HubAccessTestValidator.getInstance();
 
+    if (process.env.IMJS_AGENT_TEST_CLIENT_ID === undefined)
+      throw new Error("Could not find IMJS_AGENT_TEST_CLIENT_ID");
+    if (process.env.IMJS_AGENT_TEST_CLIENT_SECRET === undefined)
+      throw new Error("Could not find IMJS_AGENT_TEST_CLIENT_SECRET");
+    if (process.env.IMJS_AGENT_TEST_CLIENT_SCOPES === undefined)
+      throw new Error("Could not find IMJS_AGENT_TEST_CLIENT_SCOPES");
+
     agentConfiguration = {
-      clientId: Config.App.getString("imjs_agent_test_client_id"),
-      clientSecret: Config.App.getString("imjs_agent_test_client_secret"),
-      scope: "imodelhub rbac-user:external-client reality-data:read urlps-third-party context-registry-service:read-only imodeljs-backend-2686",
+      clientId: process.env.IMJS_AGENT_TEST_CLIENT_ID ?? "",
+      clientSecret: process.env.IMJS_AGENT_TEST_CLIENT_SECRET ?? "",
+      scope: process.env.IMJS_AGENT_TEST_CLIENT_SCOPES ?? "",
     };
 
   });
@@ -70,7 +77,7 @@ describe("AgentAuthorizationClient (#integration)", () => {
 
     const startsAt = jwt.getStartsAt();
     chai.assert.isDefined(startsAt);
-    chai.assert.isAtLeast(startsAt!.getTime(), expiresAt!.getTime() - 1 * 60 * 60 * 1000); // Starts atleast 1 hour before expiry
+    chai.assert.isAtLeast(startsAt!.getTime(), expiresAt!.getTime() - 1 * 60 * 60 * 1000); // Starts at least 1 hour before expiry
 
     await validator.validateContextRegistryAccess(jwt);
     await validator.validateIModelHubAccess(jwt);

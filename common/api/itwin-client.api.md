@@ -11,7 +11,6 @@ import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { GuidString } from '@bentley/bentleyjs-core';
 import * as https from 'https';
 import { HttpStatus } from '@bentley/bentleyjs-core';
-import { LogFunction } from '@bentley/bentleyjs-core';
 import { SessionProps } from '@bentley/bentleyjs-core';
 
 // @beta
@@ -150,7 +149,7 @@ export class DefaultWsgRequestOptionsProvider extends DefaultRequestOptionsProvi
 
 // @internal
 export class DownloadFailed extends BentleyError {
-    constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
+    constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction);
 }
 
 // @beta
@@ -368,7 +367,7 @@ export class ResponseError extends BentleyError {
 
 // @beta
 export class SasUrlExpired extends BentleyError {
-    constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
+    constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction);
 }
 
 // @internal
@@ -378,9 +377,7 @@ export function TokenPrefix(prefix: string): (constructor: any) => void;
 export class UrlDiscoveryClient extends Client {
     constructor();
     // (undocumented)
-    static readonly configResolveUrlUsingRegion = "imjs_buddi_resolve_url_using_region";
-    // (undocumented)
-    static readonly configURL = "imjs_buddi_url";
+    static readonly configResolveUrlUsingRegion = "IMJS_BUDDI_RESOLVE_URL_USING_REGION";
     discoverUrl(requestContext: ClientRequestContext, searchKey: string, regionId: number | undefined): Promise<string>;
     getUrl(): Promise<string>;
     protected getUrlSearchKey(): string;
@@ -388,7 +385,7 @@ export class UrlDiscoveryClient extends Client {
 
 // @internal
 export class UserCancelledError extends BentleyError {
-    constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
+    constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction);
 }
 
 // @beta
@@ -470,14 +467,9 @@ export abstract class WsgClient extends Client {
     protected constructor(apiVersion: string);
     // (undocumented)
     apiVersion: string;
-    // (undocumented)
-    static readonly configHostRelyingPartyUri = "imjs_default_relying_party_uri";
-    // (undocumented)
-    static readonly configUseHostRelyingPartyUriAsFallback = "imjs_use_default_relying_party_uri_as_fallback";
     protected deleteInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<void>;
     protected getInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
     protected getInstancesChunk<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, url: string, chunkedQueryContext: ChunkedQueryContext | undefined, typedConstructor: new () => T, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
-    protected abstract getRelyingPartyUrl(): string;
     getUrl(requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string>;
     protected postInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T>;
     protected postInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;

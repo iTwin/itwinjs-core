@@ -12,7 +12,7 @@ import * as os from "os";
 import * as path from "path";
 import { Transform, TransformCallback } from "stream";
 import * as urllib from "url";
-import { Config, Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@bentley/bentleyjs-core";
 import { ArgumentCheck } from "@bentley/imodelhub-client";
 import {
   AuthorizedClientRequestContext, CancelRequest, DownloadFailed, FileHandler, ProgressCallback, ProgressInfo, request, RequestOptions, SasUrlExpired,
@@ -146,8 +146,7 @@ export class AzureFileHandler implements FileHandler {
     fs.mkdirSync(dirPath);
   }
 
-  private async transferFileUsingAzCopy(requestContext: AuthorizedClientRequestContext, source: string, target: string, progressCallback?: ProgressCallback): Promise<void> {
-    requestContext.enter();
+  private async transferFileUsingAzCopy(source: string, target: string, progressCallback?: ProgressCallback): Promise<void> {
     Logger.logTrace(loggerCategory, `Using AzCopy with version ${AzCopy.getVersion()} located at ${AzCopy.execPath}`);
 
     // setup log dir so we can delete it. It seem there is no way of disable it.
@@ -166,17 +165,14 @@ export class AzureFileHandler implements FileHandler {
     }
 
     azcopy.on("azerror", (args: StringEventArgs) => {
-      requestContext.enter();
       Logger.logError(loggerCategory, `AzCopy reported error: '${args.MessageContent}'`);
     });
 
     azcopy.on("azinit", (args: InitEventArgs) => {
-      requestContext.enter();
       Logger.logInfo(loggerCategory, `AzCopy started JobId: ${args.JobID} and log file located at ${args.LogFileLocation}`);
     });
 
     azcopy.on("azruntimeerror", (args: string) => {
-      requestContext.enter();
       Logger.logInfo(loggerCategory, `AzCopy runtime error: ${args}`);
     });
     // start download by spawning in a azcopy process
@@ -186,7 +182,7 @@ export class AzureFileHandler implements FileHandler {
     }
   }
 
-  private async downloadFileUsingHttps(_requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, _fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
+  private async downloadFileUsingHttps(downloadUrl: string, downloadToPathname: string, _fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
     let lastProgressStat: ProgressData;
     const onProgress = (data: ProgressData) => {
       if (progressCallback)
@@ -245,16 +241,14 @@ export class AzureFileHandler implements FileHandler {
    * @param fileSize size of the transferred file in bytes
    */
   private useAzCopyForFileTransfer(fileSize?: number): boolean {
-    let useAzcopy = AzCopy.isAvailable;
-
     // suppress azcopy for smaller file as it take longer to spawn and exit then it take Http downloader to download it.
-    if (useAzcopy && fileSize) {
-      const minFileSize = Config.App.getNumber("imjs_az_min_filesize_threshold", 500 * 1024 * 1024 /** 500 Mb */);
+    if (fileSize) {
+      const minFileSize = process.env.IMJS_AZ_MIN_FILESIZE_THRESHOLD ? Number(process.env.IMJS_AZ_MIN_FILESIZE_THRESHOLD) : 500 * 1024 * 1024 /** 500 Mb */;
       if (fileSize < minFileSize)
-        useAzcopy = false;
+        return false;
     }
 
-    return useAzcopy;
+    return AzCopy.isAvailable;
   }
 
   /**
@@ -267,9 +261,8 @@ export class AzureFileHandler implements FileHandler {
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if one of the arguments is undefined or empty.
    * @throws [[ResponseError]] if the file cannot be downloaded.
    */
-  public async downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
+  public async downloadFile(_requestContext: AuthorizedClientRequestContext | undefined, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
     // strip search and hash parameters from download Url for logging purpose
-    requestContext.enter();
     const safeToLogUrl = AzureFileHandler.getSafeUrlForLogging(downloadUrl);
     Logger.logInfo(loggerCategory, `Downloading file from ${safeToLogUrl}`);
     ArgumentCheck.defined("downloadUrl", downloadUrl);
@@ -284,12 +277,11 @@ export class AzureFileHandler implements FileHandler {
     AzureFileHandler.makeDirectoryRecursive(path.dirname(downloadToPathname));
     try {
       if (this.useAzCopyForFileTransfer(fileSize)) {
-        await this.transferFileUsingAzCopy(requestContext, downloadUrl, downloadToPathname, progressCallback);
+        await this.transferFileUsingAzCopy(downloadUrl, downloadToPathname, progressCallback);
       } else {
-        await this.downloadFileUsingHttps(requestContext, downloadUrl, downloadToPathname, fileSize, progressCallback, cancelRequest);
+        await this.downloadFileUsingHttps(downloadUrl, downloadToPathname, fileSize, progressCallback, cancelRequest);
       }
     } catch (err) {
-      requestContext.enter();
       if (fs.existsSync(downloadToPathname))
         fs.unlinkSync(downloadToPathname); // Just in case there was a partial download, delete the file
 
@@ -304,7 +296,6 @@ export class AzureFileHandler implements FileHandler {
         throw new DownloadFailed(403, "Download failed. Expected filesize does not match");
       }
     }
-    requestContext.enter();
     Logger.logTrace(loggerCategory, `Downloaded file from ${safeToLogUrl}`);
   }
   /** Get encoded block id from its number. */
@@ -313,7 +304,6 @@ export class AzureFileHandler implements FileHandler {
   }
 
   private async uploadChunk(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, fileDescriptor: number, blockId: number, callback?: ProgressCallback) {
-    requestContext.enter();
     const chunkSize = 4 * 1024 * 1024;
     let buffer = Buffer.alloc(chunkSize);
     const bytesRead = fs.readSync(fileDescriptor, buffer, 0, chunkSize, chunkSize * blockId);
@@ -350,14 +340,13 @@ export class AzureFileHandler implements FileHandler {
    */
   public async uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void> {
     const safeToLogUrl = AzureFileHandler.getSafeUrlForLogging(uploadUrlString);
-    requestContext.enter();
     Logger.logTrace(loggerCategory, `Uploading file to ${safeToLogUrl}`);
     ArgumentCheck.defined("uploadUrlString", uploadUrlString);
     ArgumentCheck.defined("uploadFromPathname", uploadFromPathname);
 
     const fileSize = this.getFileSize(uploadFromPathname);
     if (this.useAzCopyForFileTransfer(fileSize)) {
-      await this.transferFileUsingAzCopy(requestContext, uploadFromPathname, uploadUrlString, progressCallback);
+      await this.transferFileUsingAzCopy(uploadFromPathname, uploadUrlString, progressCallback);
     } else {
       await this.uploadFileUsingHttps(requestContext, uploadUrlString, uploadFromPathname, fileSize, progressCallback);
     }

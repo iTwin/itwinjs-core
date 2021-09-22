@@ -8,24 +8,24 @@ public;AuxCoordSystem2d
 public;AuxCoordSystem3d 
 public;AuxCoordSystemSpatial 
 beta;AzureBlobStorage 
-internal;BackendHubAccess
+beta;BackendHubAccess
 public;BackendLoggerCategory
 public;BackendRequestContext 
 public;BindParameter = number | string
 public;BisCoreSchema 
 public;BriefcaseDb 
-internal;BriefcaseDbArg
-public;BriefcaseId = number
-internal;BriefcaseIdArg 
+public;BriefcaseDbArg 
+public;BriefcaseIdArg 
+internal;BriefcaseLocalValue
 public;BriefcaseManager
 public;class Callout 
 public;Category 
 public;CategoryOwnsSubCategories 
 public;CategorySelector 
 internal;ChangedElementsDb 
-internal;ChangesetArg 
+public;ChangesetArg 
 internal;ChangesetIndexArg 
-internal;ChangesetRangeArg 
+public;ChangesetRangeArg 
 beta;ChangeSummary
 beta;ChangeSummaryExtractOptions
 deprecated;ChangeSummaryExtractOptions
@@ -33,7 +33,7 @@ beta;ChangeSummaryManager
 public;ChannelRootAspect 
 internal;CheckPointArg = DownloadRequest
 internal;CheckpointManager
-public;CheckpointProps
+public;CheckpointProps 
 public;ClassRegistry
 beta;class CloudStorageService
 beta;CloudStorageServiceCredentials
@@ -42,17 +42,10 @@ beta;CloudStorageUploadOptions
 public;CodeSpecs
 public;ComputedProjectExtents
 public;ComputeProjectExtentsOptions
-beta;ConcurrencyControl
-beta;ConcurrencyControl
-alpha;Channel
-alpha;ChannelInfo
-alpha;ChannelRootInfo 
-alpha;RepositoryChannelInfo 
-internal;StateCache
-alpha;ConcurrencyControlChannel = ConcurrencyControl.Channel
 alpha;CrashReportingConfig
 alpha;CrashReportingConfigNameValuePair
-beta;CreateChangeSummaryArgs
+beta;CreateChangeSummaryArgs 
+public;CreateNewIModelProps 
 public;DefinitionContainer 
 public;class DefinitionElement 
 public;DefinitionGroup 
@@ -187,20 +180,14 @@ public;class IModelDb
 public;IModelDb
 internal;TileContentState
 internal;Tiles
-beta;IModelExporter
-beta;class IModelExportHandler
 public;IModelHost
 public;IModelHostConfiguration
 internal;IModelHubBackend
-internal;IModelIdArg
-beta;IModelImporter
-beta;IModelImportOptions
+public;IModelIdArg 
 public;IModelJsFs
 public;IModelJsFsStats
-internal;IModelNameArg
+public;IModelNameArg 
 alpha;IModelSchemaLoader
-beta;IModelTransformer 
-beta;IModelTransformOptions
 public;class InformationContentElement 
 public;class InformationModel 
 public;class InformationPartitionElement 
@@ -212,6 +199,7 @@ beta;InstanceChange
 public;class IpcHandler
 public;IpcHost
 public;IpcHostOpts
+public;ITwinIdArg
 public;KnownLocations
 internal;LightLocation 
 public;LineStyle 
@@ -220,8 +208,10 @@ public;class LinkElement
 public;LinkModel 
 public;LinkPartition 
 internal;LocalhostIpcHost
+beta;LockControl
+internal;LockMap = Map
 beta;LockProps
-public;LockScope
+public;LockState
 internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 
@@ -245,6 +235,7 @@ beta;OnModelIdArg
 beta;OnModelPropsArg 
 beta;OnSubModelIdArg 
 beta;OnSubModelPropsArg 
+public;OpenBriefcaseArgs = OpenBriefcaseProps & UserArg
 public;OrthographicViewDefinition 
 public;class PhysicalElement 
 public;PhysicalElementAssemblesElements 
@@ -261,6 +252,8 @@ public;PlanCallout
 public;Platform
 internal;ProcessChangesetOptions
 public;ProgressFunction = (loaded: number, total: number) => number
+public;PullChangesArgs = ToChangesetArgs
+public;PushChangesArgs 
 beta;class RecipeDefinitionElement 
 public;Relationship 
 public;Relationships
@@ -270,7 +263,7 @@ public;RenderMaterialOwnsRenderMaterials
 public;RenderTimeline 
 public;RepositoryLink 
 public;RepositoryModel 
-public;RequestNewBriefcaseArg = RequestNewBriefcaseProps &
+public;RequestNewBriefcaseArg 
 public;class RoleElement 
 public;RoleModel 
 public;Schema
@@ -312,7 +305,6 @@ public;SubjectOwnsSubjects
 beta;SynchronizationConfigLink 
 beta;SynchronizationConfigProcessesSources 
 beta;SynchronizationConfigSpecifiesRootSources 
-beta;TemplateModelCloner 
 beta;TemplateRecipe2d 
 beta;TemplateRecipe3d 
 internal;TemplateViewDefinition2d 
@@ -322,13 +314,16 @@ public;TextAnnotation3d
 public;Texture 
 internal;TextureCreateProps 
 public;TitleText 
+public;ToChangesetArgs 
 public;TxnChangedEntities
 public;TxnIdString = string
 public;TxnManager
 public;class TypeDefinitionElement 
 public;UpdateModelOptions 
 public;UrlLink 
+public;UserArg
 internal;V1CheckpointManager
+beta;V2CheckpointAccessProps
 internal;V2CheckpointManager
 public;ValidationError
 public;ViewAttachment 

@@ -7,9 +7,9 @@
  * @module BrowserAuthorization
  */
 
-import { User, UserManager, UserManagerSettings, WebStorageStateStore } from "oidc-client";
 import { assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, IDisposable, Logger } from "@bentley/bentleyjs-core";
 import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
+import { User, UserManager, UserManagerSettings, WebStorageStateStore } from "oidc-client";
 import { FrontendAuthorizationClient } from "../../FrontendAuthorizationClient";
 import { FrontendAuthorizationClientLoggerCategory } from "../../FrontendAuthorizationClientLoggerCategory";
 import { BrowserAuthorizationBase } from "./BrowserAuthorizationBase";
@@ -39,6 +39,8 @@ export interface BrowserAuthorizationClientConfiguration extends BrowserAuthoriz
   readonly responseType?: "code" | "id_token" | "id_token token" | "code id_token" | "code token" | "code id_token token" | string;
   /** if true, do NOT attempt a silent signIn on startup of the application */
   readonly noSilentSignInOnAppStartup?: boolean;
+  /** The redirect URL used for silent sign in and renew. If not provided, will default to redirectUri. */
+  readonly silentRedirectUri?: string;
 }
 
 /**
@@ -100,6 +102,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
       post_logout_redirect_uri: basicSettings.postSignoutRedirectUri, // eslint-disable-line @typescript-eslint/naming-convention
       response_type: basicSettings.responseType, // eslint-disable-line @typescript-eslint/naming-convention
       automaticSilentRenew: true,
+      silent_redirect_uri: basicSettings.silentRedirectUri, // eslint-disable-line @typescript-eslint/naming-convention
       userStore: new WebStorageStateStore({ store: window.localStorage }),
       prompt: basicSettings.prompt,
     };
@@ -151,8 +154,6 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    * Otherwise, the browser's window will be redirected away from the current page, effectively ending execution here.
    */
   public async signInRedirect(requestContext: ClientRequestContext, successRedirectUrl?: string, args?: BrowserAuthorizationClientRequestOptions): Promise<void> {
-    requestContext.enter();
-
     const user = await this.nonInteractiveSignIn(requestContext, args);
     if (user) {
       return;
@@ -172,8 +173,6 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    * @param requestContext
    */
   public async signInPopup(requestContext: ClientRequestContext, args?: BrowserAuthorizationClientRequestOptions): Promise<void> {
-    requestContext.enter();
-
     let user = await this.nonInteractiveSignIn(requestContext, args);
     if (user) {
       return;
@@ -190,8 +189,6 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    * @throws [[BentleyError]] If the silent sign in fails
    */
   public async signInSilent(requestContext: ClientRequestContext): Promise<void> {
-    requestContext.enter();
-
     const user = await this.nonInteractiveSignIn(requestContext);
     if (user === undefined || user.expired)
       throw new BentleyError(AuthStatus.Error, "Silent sign-in failed");
@@ -232,10 +229,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    */
   protected async loadUser(requestContext: ClientRequestContext): Promise<User | undefined> {
     const userManager = await this.getUserManager(requestContext);
-    requestContext.enter();
-
     const user = await userManager.getUser();
-    requestContext.enter();
 
     if (user && !user.expired) {
       this._onUserLoaded(user); // Call only because getUser() doesn't call any events
@@ -263,15 +257,11 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
 
   public async signOutRedirect(requestContext: ClientRequestContext): Promise<void> {
     const userManager = await this.getUserManager(requestContext);
-    requestContext.enter();
-
     await userManager.signoutRedirect();
   }
 
   public async signOutPopup(requestContext: ClientRequestContext): Promise<void> {
     const userManager = await this.getUserManager(requestContext);
-    requestContext.enter();
-
     await userManager.signoutPopup();
   }
 
@@ -280,12 +270,10 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    * The token is refreshed as necessary.
    * @throws [BentleyError]($bentley) If signIn() was not called, or there was an authorization error.
    */
-  public async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken> {
+  public async getAccessToken(): Promise<AccessToken> {
     if (this._accessToken)
       return this._accessToken;
-    if (requestContext)
-      requestContext.enter();
-    throw new BentleyError(AuthStatus.Error, "Not signed in.", Logger.logError, FrontendAuthorizationClientLoggerCategory.Authorization);
+    throw new BentleyError(AuthStatus.Error, "Not signed in.");
   }
 
   /**
@@ -296,8 +284,6 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    * @param ignoreCheckInterval Bypass the default behavior to wait until a certain time has passed since the last check was performed
    */
   public async checkSessionStatus(requestContext: ClientRequestContext): Promise<boolean> {
-    requestContext.enter();
-
     const userManager = await this.getUserManager(requestContext);
     try {
       await userManager.querySessionStatus();
@@ -313,7 +299,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
     this.initAccessToken(user);
     try {
       this.onUserStateChanged.raiseEvent(this._accessToken);
-    } catch (err) {
+    } catch (err: any) {
       Logger.logError(FrontendAuthorizationClientLoggerCategory.Authorization, "Error thrown when handing OidcBrowserClient.onUserStateChanged event", () => ({ message: err.message }));
     }
   };

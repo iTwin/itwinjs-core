@@ -8,7 +8,7 @@ import * as ReactDOM from "react-dom";
 import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
-import { ClientRequestContext, Config, Id64String, Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Id64String, Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
@@ -28,20 +28,19 @@ import { AccessToken, ProgressInfo, UrlDiscoveryClient } from "@bentley/itwin-cl
 // To test map-layer extension comment out the following and ensure ui-test-app\build\imjs_extensions contains map-layers, if not see Readme.md in map-layers package.
 import { MapLayersUI } from "@bentley/map-layers";
 import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
-import { PresentationUnitSystem } from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
+import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@bentley/presentation-frontend";
 import { getClassName } from "@bentley/ui-abstract";
-import { BeDragDropContext } from "@bentley/ui-components";
 import { LocalSettingsStorage, UiSettings } from "@bentley/ui-core";
 import {
-  ActionsUnion, AppNotificationManager, AppUiSettings, ConfigurableUiContent, createAction, DeepReadonly, DragDropLayerRenderer, FrameworkAccuDraw,
+  ActionsUnion, AppNotificationManager, AppUiSettings, ConfigurableUiContent, createAction, DeepReadonly, FrameworkAccuDraw,
   FrameworkReducer, FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef,
   FrontstageManager, IModelInfo, ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME,
   ThemeManager, ToolbarDragInteractionContext, UiFramework, UiSettingsProvider, UserSettingsStorage,
 } from "@bentley/ui-framework";
 import { SafeAreaInsets } from "@bentley/ui-ninezone";
+import { BeDragDropContext } from "@bentley/ui-components";
 import { getSupportedRpcs } from "../common/rpcs";
-import { TestAppConfiguration } from "../common/TestAppConfiguration";
+import { loggerCategory, TestAppConfiguration } from "../common/TestAppConfiguration";
 import { ActiveSettingsManager } from "./api/ActiveSettingsManager";
 import { BearingQuantityType } from "./api/BearingQuantityType";
 import { ErrorHandling } from "./api/ErrorHandling";
@@ -213,7 +212,14 @@ export class SampleAppIModelApp {
 
     // initialize Presentation
     await Presentation.initialize({
-      activeLocale: IModelApp.i18n.languageList()[0],
+      presentation: {
+        activeLocale: IModelApp.i18n.languageList()[0],
+      },
+      favorites: {
+        storage: createFavoritePropertiesStorage(SampleAppIModelApp.testAppConfiguration?.useLocalSettings
+          ? DefaultFavoritePropertiesStorageTypes.BrowserLocalStorage
+          : DefaultFavoritePropertiesStorageTypes.UserSettingsServiceStorage),
+      },
     });
     Presentation.selection.scopes.activeScope = "top-assembly";
 
@@ -249,7 +255,7 @@ export class SampleAppIModelApp {
 
     // default to showing imperial formatted units
     await IModelApp.quantityFormatter.setActiveUnitSystem("imperial");
-    Presentation.presentation.activeUnitSystem = PresentationUnitSystem.BritishImperial;
+    Presentation.presentation.activeUnitSystem = "imperial";
     await IModelApp.quantityFormatter.setUnitFormattingSettingsProvider(new LocalUnitFormatProvider(IModelApp.quantityFormatter, true)); // pass true to save per imodel
 
     await FrontendDevTools.initialize();
@@ -382,7 +388,7 @@ export class SampleAppIModelApp {
         Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Frontstage & ScreenViewports are ready`);
         if (false && ProcessDetector.isElectronAppFrontend) { // used for testing pop-out support
           // delay 5 seconds to see if window opens - since web browser will block pop-out if we wait. Also web browser will not allow multiple pop-outs.
-          setTimeout(() => { IModelApp.tools.run(OpenCustomPopoutTool.toolId); /* IModelApp.tools.run(OpenWidgetPopoutTool.toolId); */ }, 5000);
+          setTimeout(() => { void IModelApp.tools.run(OpenCustomPopoutTool.toolId); /* IModelApp.tools.run(OpenWidgetPopoutTool.toolId); */ }, 5000);
         }
       });
     } else {
@@ -394,7 +400,7 @@ export class SampleAppIModelApp {
     await LocalFileOpenFrontstage.open();
   }
 
-  public static async showIModelIndex(contextId: string, iModelId: string) {
+  public static async showIModelIndex(iTwinId: string, iModelId: string) {
     const currentConnection = UiFramework.getIModelConnection();
     if (!currentConnection || (currentConnection.iModelId !== iModelId)) {
       // Close the current iModelConnection
@@ -402,18 +408,18 @@ export class SampleAppIModelApp {
 
       // open the imodel
       Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
-        `showIModelIndex: projectId=${contextId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
+        `showIModelIndex: projectId=${iTwinId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
 
       let iModelConnection: IModelConnection | undefined;
       if (ProcessDetector.isMobileAppFrontend) {
-        const req = await NativeApp.requestDownloadBriefcase(contextId, iModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(), async (progress: ProgressInfo) => {
+        const req = await NativeApp.requestDownloadBriefcase(iTwinId, iModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(), async (progress: ProgressInfo) => {
           // eslint-disable-next-line no-console
           console.log(`Progress (${progress.loaded}/${progress.total}) -> ${progress.percent}%`);
         });
         await req.downloadPromise;
         iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
       } else {
-        iModelConnection = await UiFramework.iModelServices.openIModel(contextId, iModelId);
+        iModelConnection = await UiFramework.iModelServices.openIModel(iTwinId, iModelId);
       }
 
       SampleAppIModelApp.setIsIModelLocal(false, true);
@@ -437,13 +443,11 @@ export class SampleAppIModelApp {
   public static async showSignedIn() {
     SampleAppIModelApp.iModelParams = SampleAppIModelApp._usingParams();
 
-    if (Config.App.has("imjs_uitestapp_imodel_name") && Config.App.has("imjs_uitestapp_imodel_project_name")) {
-      let viewId: string | undefined;
-      if (Config.App.has("imjs_uitestapp_imodel_viewId"))
-        viewId = Config.App.get("imjs_uitestapp_imodel_viewId");
+    if (process.env.IMJS_UITESTAPP_IMODEL_NAME && process.env.IMJS_UITESTAPP_IMODEL_PROJECT_NAME) {
+      const viewId: string | undefined = process.env.IMJS_UITESTAPP_IMODEL_VIEWID;
 
-      const projectName = Config.App.getString("imjs_uitestapp_imodel_project_name");
-      const iModelName = Config.App.getString("imjs_uitestapp_imodel_name");
+      const projectName = process.env.IMJS_UITESTAPP_IMODEL_PROJECT_NAME ?? "";
+      const iModelName = process.env.IMJS_UITESTAPP_IMODEL_NAME ?? "";
 
       const requestContext = await AuthorizedFrontendRequestContext.create();
       const project = await (new ContextRegistryClient()).getProject(requestContext, {
@@ -493,11 +497,11 @@ export class SampleAppIModelApp {
   }
 
   public static isEnvVarOn(envVar: string): boolean {
-    return Config.App.has(envVar) && (Config.App.get(envVar) === "1" || Config.App.get(envVar) === "true");
+    return process.env[envVar] === "1" || process.env[envVar] === "true";
   }
 
   public static get allowWrite() {
-    return SampleAppIModelApp.isEnvVarOn("imjs_TESTAPP_ALLOW_WRITE");
+    return SampleAppIModelApp.isEnvVarOn("IMJS_TESTAPP_ALLOW_WRITE");
   }
 
   public static setTestProperty(value: string, immediateSync = false) {
@@ -634,8 +638,6 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
                 </AppFrameworkVersion>
               </AppDragInteraction>
             </SafeAreaContext.Provider>
-            {/* eslint-disable-next-line deprecation/deprecation */}
-            <DragDropLayerRenderer />
           </BeDragDropContext>
         </ThemeManager>
       </Provider >
@@ -666,8 +668,8 @@ async function main() {
   // initialize logging
   Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Warning);
-  Logger.setLevel("ui-test-app", LogLevel.Info);
-  Logger.setLevel("ui-framework.UiFramework", LogLevel.Info);
+  Logger.setLevel(loggerCategory, LogLevel.Info);
+  Logger.setLevel( "ui-framework.UiFramework", LogLevel.Info);
 
   ToolAdmin.exceptionHandler = async (err: any) => Promise.resolve(ErrorHandling.onUnexpectedError(err));
 
@@ -677,15 +679,15 @@ async function main() {
 
   // retrieve, set, and output the global configuration variable
   SampleAppIModelApp.testAppConfiguration = {};
-  const envVar = "imjs_TESTAPP_SNAPSHOT_FILEPATH";
-  SampleAppIModelApp.testAppConfiguration.snapshotPath = Config.App.has(envVar) && Config.App.get(envVar);
-  SampleAppIModelApp.testAppConfiguration.startWithSnapshots = SampleAppIModelApp.isEnvVarOn("imjs_TESTAPP_START_WITH_SNAPSHOTS");
-  SampleAppIModelApp.testAppConfiguration.reactAxeConsole = SampleAppIModelApp.isEnvVarOn("imjs_TESTAPP_REACT_AXE_CONSOLE");
-  SampleAppIModelApp.testAppConfiguration.useLocalSettings = SampleAppIModelApp.isEnvVarOn("imjs_TESTAPP_USE_LOCAL_SETTINGS");
+  const envVar = "IMJS_TESTAPP_SNAPSHOT_FILEPATH";
+  SampleAppIModelApp.testAppConfiguration.snapshotPath = process.env[envVar];
+  SampleAppIModelApp.testAppConfiguration.startWithSnapshots = SampleAppIModelApp.isEnvVarOn("IMJS_TESTAPP_START_WITH_SNAPSHOTS");
+  SampleAppIModelApp.testAppConfiguration.reactAxeConsole = SampleAppIModelApp.isEnvVarOn("IMJS_TESTAPP_REACT_AXE_CONSOLE");
+  SampleAppIModelApp.testAppConfiguration.useLocalSettings = SampleAppIModelApp.isEnvVarOn("IMJS_TESTAPP_USE_LOCAL_SETTINGS");
   Logger.logInfo("Configuration", JSON.stringify(SampleAppIModelApp.testAppConfiguration)); // eslint-disable-line no-console
 
   let rpcParams: BentleyCloudRpcParams;
-  if (process.env.imjs_gp_backend) {
+  if (process.env.IMJS_GP_BACKEND) {
     const urlClient = new UrlDiscoveryClient();
     const requestContext = new ClientRequestContext();
     const orchestratorUrl = await urlClient.discoverUrl(requestContext, "iModelJsOrchestrator.K8S", undefined);

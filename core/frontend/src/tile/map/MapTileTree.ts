@@ -111,6 +111,10 @@ export class MapTileTree extends RealityTileTree {
     this._rootTile = this.createGlobeChild({ contentId: quadId.contentId, maximumSize: 0, range }, quadId, range.corners(), globalRectangle, rootPatch, undefined);
 
   }
+
+  // If we are not depth buffering we force parents and exclusive to false to cause the map tiles to be sorted by depth so that painters algorithm will approximate correct depth display.
+  public override get parentsAndChildrenExclusive() { return this.useDepthBuffer ? this.loader.parentsAndChildrenExclusive : false; }
+
   public tileFromQuadId(quadId: QuadId): MapTile | undefined {
     return (this._rootTile as MapTile).tileFromQuadId(quadId);
   }
@@ -285,7 +289,7 @@ export class MapTileTree extends RealityTileTree {
     await this._gcsConverter!.getIModelCoordinatesFromGeoCoordinates(requestProps);
   }
 
-  private static _scratchCarto = new Cartographic();
+  private static _scratchCarto = Cartographic.createZero();
 
   // Get the corners for planar children -- This generally will resolve immediately, but may require an asynchronous request for reprojecting the corners.
   public getPlanarChildCorners(tile: MapTile, columnCount: number, rowCount: number, resolve: (childCorners: Point3d[][]) => void) {

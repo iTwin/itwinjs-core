@@ -6,7 +6,7 @@
  * @module ContextRegistry
  */
 import * as deepAssign from "deep-assign";
-import { assert, Config } from "@bentley/bentleyjs-core";
+import { assert } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, ECJsonTypeMap, RequestOptions, RequestQueryOptions, WsgClient, WsgInstance } from "@bentley/itwin-client";
 
 /** The iTwin context type.
@@ -139,7 +139,6 @@ export interface ContextRegistryRequestQueryOptions extends RequestQueryOptions 
  */
 export class ContextRegistryClient extends WsgClient {
   public static readonly searchKey: string = "CONNECTEDContextService.URL";
-  public static readonly configRelyingPartyUri = "imjs_connected_context_service_relying_party_uri";
 
   public constructor() {
     super("v2.5");
@@ -154,28 +153,12 @@ export class ContextRegistryClient extends WsgClient {
     deepAssign(options, { headers: { "content-type": "application/json" } });
   }
 
-  /** Gets theRelyingPartyUrl for the service.
-   * @returns RelyingPartyUrl for the service.
-   */
-  protected getRelyingPartyUrl(): string {
-    if (Config.App.has(ContextRegistryClient.configRelyingPartyUri))
-      return `${Config.App.get(ContextRegistryClient.configRelyingPartyUri)}/`;
-
-    if (Config.App.getBoolean(WsgClient.configUseHostRelyingPartyUriAsFallback, true)) {
-      if (Config.App.has(WsgClient.configHostRelyingPartyUri))
-        return `${Config.App.get(WsgClient.configHostRelyingPartyUri)}/`;
-    }
-
-    throw new Error(`RelyingPartyUrl not set. Set it in Config.App using key ${ContextRegistryClient.configRelyingPartyUri}`);
-  }
-
   /** Gets the iTwin project contexts that are accessible to the authorized user.
    * @param requestContext The client request context
    * @param queryOptions Query options. Use the mapped EC property names in the query strings and not the TypeScript property names.
    * @returns Resolves to an array of projects.
    */
   public async getProjects(requestContext: AuthorizedClientRequestContext, queryOptions?: ContextRegistryRequestQueryOptions): Promise<Project[]> {
-    requestContext.enter();
     return this.getInstances<Project>(requestContext, Project, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Project", queryOptions);
   }
 
@@ -185,9 +168,7 @@ export class ContextRegistryClient extends WsgClient {
    * @returns Resolves to the found project. Rejects if no projects, or more than one project is found.
    */
   public async getProject(requestContext: AuthorizedClientRequestContext, queryOptions?: ContextRegistryRequestQueryOptions): Promise<Project> {
-    requestContext.enter();
     const projects: Project[] = await this.getProjects(requestContext, queryOptions);
-    requestContext.enter();
     if (projects.length === 0)
       throw new Error("Could not find a project with the specified criteria that the user has access to");
     else if (projects.length > 1)
@@ -202,7 +183,6 @@ export class ContextRegistryClient extends WsgClient {
    * @returns Resolves to an array of invited projects.
    */
   public async getInvitedProjects(requestContext: AuthorizedClientRequestContext, queryOptions?: ContextRegistryRequestQueryOptions): Promise<Project[]> {
-    requestContext.enter();
     return this.getInstances<Project>(requestContext, Project, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Project?rbaconly=true", queryOptions);
   }
 
@@ -212,9 +192,7 @@ export class ContextRegistryClient extends WsgClient {
    * @returns Resolves to the found asset. Rejects if no assets, or more than one asset is found.
    */
   public async getAsset(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<Asset> {
-    requestContext.enter();
     const assets: Asset[] = await this.getAssets(requestContext, queryOptions);
-    requestContext.enter();
     if (assets.length === 0)
       throw new Error("Could not find an asset with the specified criteria that the user has access to");
     else if (assets.length > 1)
@@ -229,7 +207,6 @@ export class ContextRegistryClient extends WsgClient {
    * @returns Resolves to an array of assets.
    */
   public async getAssets(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<Asset[]> {
-    requestContext.enter();
     return this.getInstances<Asset>(requestContext, Asset, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Asset", queryOptions);
   }
 
@@ -238,9 +215,7 @@ export class ContextRegistryClient extends WsgClient {
    * @returns Resolves to the found team. Rejects if no team or more than one team is found.
    */
   public async getTeam(requestContext: AuthorizedClientRequestContext): Promise<Team> {
-    requestContext.enter();
     const teams = await this.getInstances<Team>(requestContext, Team, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Team?isDefault=true");
-    requestContext.enter();
 
     if (teams.length === 0)
       throw new Error("Could not find a team for the current user");

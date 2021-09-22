@@ -9,7 +9,7 @@ import * as deepAssign from "deep-assign";
 import * as https from "https";
 import { IStringifyOptions, stringify } from "qs";
 import * as sarequest from "superagent";
-import { BentleyError, ClientRequestContext, Config, GetMetaDataFunction, HttpStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { BentleyError, ClientRequestContext, GetMetaDataFunction, HttpStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
 
 const loggerCategory: string = ITwinClientLoggerCategory.Request;
@@ -154,7 +154,7 @@ export class ResponseError extends BentleyError {
   public status?: number;
   public description?: string;
   public constructor(errorNumber: number | HttpStatus, message?: string, getMetaData?: GetMetaDataFunction) {
-    super(errorNumber, message, undefined, undefined, getMetaData);
+    super(errorNumber, message, getMetaData);
   }
 
   /**
@@ -243,7 +243,7 @@ export class ResponseError extends BentleyError {
    * @internal
    */
   public log(): void {
-    Logger.logError(loggerCategory, this.logMessage(), this.getMetaData());
+    Logger.logError(loggerCategory, this.logMessage(), () => this.getMetaData());
   }
 }
 
@@ -271,23 +271,11 @@ const logRequest = (req: sarequest.SuperAgentRequest): sarequest.SuperAgentReque
  * @internal
  */
 export async function request(requestContext: ClientRequestContext, url: string, options: RequestOptions): Promise<Response> {
-  requestContext.enter();
-  let proxyUrl = "";
-  if (options.useCorsProxy === true) {
-    proxyUrl = Config.App.get("imjs_dev_cors_proxy_server", "");
-    if (proxyUrl === "")
-      proxyUrl = url;
-    else
-      proxyUrl = `${proxyUrl.replace(/\/$/, "")}/${url}`;
-  } else {
-    proxyUrl = url;
-  }
-
   if (!RequestGlobalOptions.online) {
     throw new ResponseError(503, "Service unavailable");
   }
 
-  let sareq: sarequest.SuperAgentRequest = sarequest(options.method, proxyUrl);
+  let sareq: sarequest.SuperAgentRequest = sarequest(options.method, url);
   const retries = typeof options.retries === "undefined" ? RequestGlobalOptions.maxRetries : options.retries;
   sareq = sareq.retry(retries, options.retryCallback);
 

@@ -14,6 +14,10 @@ describe("MergedPropertyValueRenderer", () => {
     await TestUtils.initializeUiComponents();
   });
 
+  after(() => {
+    TestUtils.terminateUiComponents();
+  });
+
   describe("render", () => {
     it("renders merged property as localized string '*** Varies ***'", async () => {
       const renderer = new MergedPropertyValueRenderer();

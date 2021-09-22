@@ -6,8 +6,6 @@ To log a message, call [Logger.logError]($bentleyjs-core), [Logger.logWarning]($
 
 [BentleyError]($bentleyjs-core) is integrated with logging.
 
-Logging messages will be tagged with an [ActivityId](#activityid-and-clientrequestcontext) to help you correlate frontend requests with backend operations.
-
 ## LogLevels
 
 Each of the logging output functions assigns a [LogLevel]($bentleyjs-core) to the specified message. LogLevel is like a property of a logging message. The app that produces logging messages can control output by filtering on LogLevel. And the dashboards that consume logging messages can filter and organize logging messages by LogLevels.
@@ -71,7 +69,7 @@ This approach is useful when you want to monitor the activity in a small number 
 
 ## Configuration Files
 
-A service typically initializes and configures logging in its startup logic. Configuration can be based on the configuration parameters of the service, which may be set by the deployment mechanism. The simplest way to do this is to use [LoggerLevelsConfig]($bentleyjs-core). This is normally used in conjunction with a stream config. Both are normally stored in a config file that is deployed with the service. Finally, some specific configuration parameters are normally set at runtime, based on deployment parameters using [EnvMacroSubst]($bentleyjs-core) to do macro substitution.
+A service typically initializes and configures logging in its startup logic. Configuration can be based on the configuration parameters of the service, which may be set by the deployment mechanism. The simplest way to do this is to use [LoggerLevelsConfig]($bentleyjs-core). This is normally used in conjunction with a stream config. Both are normally stored in a config file that is deployed with the service.
 
 *Example:*
 
@@ -102,9 +100,3 @@ An example of the logging-related sections of a configuration .json file that is
    }
 }
 ```
-
-## ActivityId and ClientRequestContext
-
-An [ActivityId](../../learning/RpcInterface.md#logging-and-activityids) is a globally unique Id that relates backend operations to frontend requests. The [ClientRequestContext]($bentleyjs-core) class manages the ActivityId for logging purposes. The current ActivityId is automatically associated as metadata with all logging messages.
-
-Backend code must cooperate with iTwin.js to [manage the ClientRequestContext](../RpcInterface.md#logging-and-activityIds)

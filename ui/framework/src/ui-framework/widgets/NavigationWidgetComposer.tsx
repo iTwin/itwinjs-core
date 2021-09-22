@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
-import { ViewClassFullNameChangedEventArgs, ViewportComponentEvents } from "@bentley/ui-components";
+import { ViewClassFullNameChangedEventArgs, ViewportComponentEvents } from "@bentley/ui-imodel-components";
 import { CommonProps, useProximityToMouse, useWidgetOpacityContext, WidgetElementSet, WidgetOpacityContext } from "@bentley/ui-core";
 import { NavigationArea } from "@bentley/ui-ninezone";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
@@ -37,9 +37,9 @@ function createNavigationAidControl(activeContentControl: ContentControl | undef
  * @public
  */
 export interface NavigationAidHostProps {
-  // defaults to "64px"
+  /** Navigation Aid Host minimum width. Defaults to "64px". */
   minWidth?: string;
-  // defaults to "64px"
+  /** Navigation Aid Host minimum height. Defaults to "64px". */
   minHeight?: string;
 }
 

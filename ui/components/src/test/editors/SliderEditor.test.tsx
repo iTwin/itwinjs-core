@@ -9,14 +9,12 @@ import { fireEvent, render, waitFor } from "@testing-library/react";
 import sinon from "sinon";
 import * as React from "react";
 import {
-  BasePropertyEditorParams, PropertyEditorParamTypes, PropertyRecord, PropertyValue,
-  SliderEditorParams, SpecialKey, StandardEditorNames,
+  BasePropertyEditorParams, PropertyEditorParamTypes, SliderEditorParams, SpecialKey, StandardEditorNames,
 } from "@bentley/ui-abstract";
 import { SliderEditor } from "../../ui-components/editors/SliderEditor";
-import TestUtils from "../TestUtils";
+import TestUtils, { MineDataController } from "../TestUtils";
 import { EditorContainer } from "../../ui-components/editors/EditorContainer";
-import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
-import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
 
 describe("<SliderEditor />", () => {
   before(async () => {
@@ -625,12 +623,6 @@ describe("<SliderEditor />", () => {
 
     component.unmount();
   });
-
-  class MineDataController extends DataControllerBase {
-    public override async validateValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
-      return { encounteredError: true, errorMessage: { priority: OutputMessagePriority.Error, briefMessage: "Test" } };
-    }
-  }
 
   it("should not commit if DataController fails to validate", async () => {
     PropertyEditorManager.registerDataController("myData", MineDataController);

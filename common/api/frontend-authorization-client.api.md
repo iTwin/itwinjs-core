@@ -48,7 +48,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
     checkSessionStatus(requestContext: ClientRequestContext): Promise<boolean>;
     protected createUserManager(settings: UserManagerSettings): UserManager;
     dispose(): void;
-    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+    getAccessToken(): Promise<AccessToken>;
     // (undocumented)
     protected getUserManager(requestContext: ClientRequestContext): Promise<UserManager>;
     protected getUserManagerSettings(requestContext: ClientRequestContext, basicSettings: BrowserAuthorizationClientConfiguration, advancedSettings?: UserManagerSettings): Promise<UserManagerSettings>;
@@ -92,6 +92,7 @@ export interface BrowserAuthorizationClientConfiguration extends BrowserAuthoriz
     readonly redirectUri: string;
     readonly responseType?: "code" | "id_token" | "id_token token" | "code id_token" | "code token" | "code id_token token" | string;
     readonly scope: string;
+    readonly silentRedirectUri?: string;
 }
 
 // @internal

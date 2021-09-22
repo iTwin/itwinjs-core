@@ -9,13 +9,12 @@
 const copyrightNotice = 'Copyright © 2017-2021 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
 import {
-  BeDuration, BentleyStatus, ClientRequestContext, DbResult, dispose, Guid, GuidString, Logger, SerializedClientRequestContext,
+  BeDuration, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger, SerializedClientRequestContext,
 } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelClient } from "@bentley/imodelhub-client";
 import { IModelStatus, RpcConfiguration, RpcInterfaceDefinition, RpcRequest } from "@bentley/imodeljs-common";
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
-import { IncludePrefix } from "@bentley/itwin-client";
 import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
 import { UiAdmin } from "@bentley/ui-abstract";
@@ -31,7 +30,6 @@ import { EntityState } from "./EntityState";
 import { ExtensionAdmin } from "./extension/ExtensionAdmin";
 import { FrontendHubAccess, IModelHubFrontend } from "./FrontendHubAccess";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
-import { FrontendRequestContext } from "./FrontendRequestContext";
 import * as modelselector from "./ModelSelectorState";
 import * as modelState from "./ModelState";
 import { NotificationManager } from "./NotificationManager";
@@ -321,10 +319,6 @@ export class IModelApp {
       return; // we're already initialized, do nothing.
     this._initialized = true;
 
-    // Setup a current context for all requests that originate from this frontend
-    const requestContext = new FrontendRequestContext();
-    requestContext.enter();
-
     opts = opts ?? {};
     this._securityOptions = opts.security || {};
 
@@ -398,7 +392,7 @@ export class IModelApp {
     this._accuSnap = (opts.accuSnap !== undefined) ? opts.accuSnap : new AccuSnap();
     this._locateManager = (opts.locateManager !== undefined) ? opts.locateManager : new ElementLocateManager();
     this._tentativePoint = (opts.tentativePoint !== undefined) ? opts.tentativePoint : new TentativePoint();
-    this._extensionAdmin = (opts.extensionAdmin !== undefined) ? opts.extensionAdmin : new ExtensionAdmin({});
+    this._extensionAdmin = (opts.extensionAdmin !== undefined) ? opts.extensionAdmin : new ExtensionAdmin();
     this._quantityFormatter = (opts.quantityFormatter !== undefined) ? opts.quantityFormatter : new QuantityFormatter();
     this._uiAdmin = (opts.uiAdmin !== undefined) ? opts.uiAdmin : new UiAdmin();
     this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);
@@ -524,9 +518,7 @@ export class IModelApp {
 
   private static _setupRpcRequestContext() {
     RpcConfiguration.requestContext.getId = (_request: RpcRequest): string => {
-      const id = ClientRequestContext.current.useContextForRpc ? ClientRequestContext.current.activityId : Guid.createValue(); // Use any context explicitly set for an RPC call if possible
-      ClientRequestContext.current.useContextForRpc = false; // Reset flag so it doesn't get used inadvertently for next RPC call
-      return id;
+      return Guid.createValue();
     };
 
     RpcConfiguration.requestContext.serialize = async (_request: RpcRequest): Promise<SerializedClientRequestContext> => {
@@ -537,7 +529,7 @@ export class IModelApp {
         // todo: need to subscribe to token change events to avoid getting the string equivalent and compute length
         try {
           const accessToken = await IModelApp.authorizationClient.getAccessToken();
-          authorization = accessToken.toTokenString(IncludePrefix.Yes);
+          authorization = accessToken.toTokenString();
           const userInfo = accessToken.getUserInfo();
           if (userInfo)
             userId = userInfo.id;

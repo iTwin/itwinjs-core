@@ -1,10 +1,11 @@
 sep=;
 Release Tag;API Item
 beta;AbandonedError 
-internal;addClientRequestContext: (metaData: any) => void
 public;areEqualPossiblyUndefined
 public;asInstanceOf
 public;assert(condition: boolean, msg?: string): asserts condition
+public;AsyncFunction = (...args: any) => Promise
+public;AsyncMethodsOf
 alpha;AsyncMutex
 alpha;AsyncMutexUnlockFnType = () => void
 beta;AuthStatus
@@ -35,7 +36,6 @@ public;compareWithTolerance(a: number, b: number, tolerance?: number): number
 public;CompressedId64Set = string
 public;CompressedId64Set
 public;ComputePriorityFunction
-public;Config
 public;Constructor
 public;DbOpcode
 public;DbResult
@@ -48,10 +48,9 @@ public;DisposeFunc = () => void
 public;DuplicatePolicy
 public;Entry
 public;EntryContainer
-alpha;EnvMacroSubst
 beta;ExtensionStatus
 public;GeoServiceStatus
-public;GetMetaDataFunction = () => any
+public;GetMetaDataFunction = () => object | undefined
 public;Guid
 public;GuidString = string
 beta;HttpStatus
@@ -73,6 +72,7 @@ public;LogFunction = (category: string, message: string, metaData?: GetMetaDataF
 public;Logger
 public;LoggerCategoryAndLevel
 public;LoggerLevelsConfig
+internal;LogIntercept = (level: LogLevel, category: string, message: string, metaData?: GetMetaDataFunction) => boolean
 public;LogLevel
 public;lowerBound
 public;LRUCache
@@ -80,6 +80,8 @@ public;LRUDictionary
 public;LRUMap
 public;Mutable
 public;MutableCompressedId64Set 
+public;NonFunctionPropertiesOf
+public;NonFunctionPropertyNamesOf
 public;ObservableSet
 beta;OneAtATimeAction
 public;OpenMode
@@ -92,6 +94,7 @@ public;partitionArray
 public;PerfLogger 
 public;PriorityQueue
 public;ProcessDetector
+public;PromiseReturnType
 public;ReadonlyOrderedSet
 public;ReadonlySortedArray
 beta;RepositoryStatus

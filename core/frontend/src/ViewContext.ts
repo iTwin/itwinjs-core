@@ -18,7 +18,7 @@ import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { CanvasDecoration } from "./render/CanvasDecoration";
 import { Decorations } from "./render/Decorations";
 import { GraphicBranch, GraphicBranchOptions } from "./render/GraphicBranch";
-import { GraphicBuilder, GraphicBuilderOptions, GraphicType } from "./render/GraphicBuilder";
+import { GraphicBuilder, GraphicType, ViewportGraphicBuilderOptions } from "./render/GraphicBuilder";
 import { GraphicList, RenderGraphic } from "./render/RenderGraphic";
 import { RenderPlanarClassifier } from "./render/RenderPlanarClassifier";
 import { RenderTextureDrape } from "./render/RenderSystem";
@@ -42,7 +42,7 @@ export class RenderContext {
 
   constructor(vp: Viewport, frustum?: Frustum) {
     this._viewport = vp;
-    this.viewFlags = vp.viewFlags.clone(); // viewFlags can diverge from viewport after attachment
+    this.viewFlags = vp.viewFlags;
     this.frustum = frustum ? frustum : vp.getFrustum();
     this.frustumPlanes = new FrustumPlanes(this.frustum);
   }
@@ -61,7 +61,7 @@ export class RenderContext {
   public get target(): RenderTarget { return this.viewport.target; }
 
   /** @internal */
-  protected _createGraphicBuilder(options: Omit<GraphicBuilderOptions, "viewport">): GraphicBuilder {
+  protected _createGraphicBuilder(options: Omit<ViewportGraphicBuilderOptions, "viewport">): GraphicBuilder {
     return this.target.createGraphicBuilder({ ...options, viewport: this.viewport });
   }
 
@@ -118,7 +118,7 @@ export class DynamicsContext extends RenderContext {
    * @param options Options describing how to create the builder.
    * @returns A builder that produces a [[RenderGraphic]].
    */
-  public createGraphic(options: Omit<GraphicBuilderOptions, "viewport">): GraphicBuilder {
+  public createGraphic(options: Omit<ViewportGraphicBuilderOptions, "viewport">): GraphicBuilder {
     return this._createGraphicBuilder(options);
   }
 }
@@ -159,7 +159,7 @@ export class DecorateContext extends RenderContext {
    * @param options Options describing how to create the builder.
    * @returns A builder that produces a [[RenderGraphic]].
    */
-  public createGraphic(options: Omit<GraphicBuilderOptions, "viewport">): GraphicBuilder {
+  public createGraphic(options: Omit<ViewportGraphicBuilderOptions, "viewport">): GraphicBuilder {
     return this._createGraphicBuilder(options);
   }
 

@@ -71,10 +71,10 @@ export class RealityModelContextIModelCreator {
       const region = JsonUtils.asArray(json.root.boundingVolume.region);
       if (undefined === region)
         throw new TypeError("Unable to determine GeoLocation - no root Transform or Region on root.");
-      const ecefLow = (new Cartographic(region[0], region[1], region[4])).toEcef();
-      const ecefHigh = (new Cartographic(region[2], region[3], region[5])).toEcef();
+      const ecefLow = (Cartographic.fromRadians({longitude: region[0], latitude: region[1], height: region[4]})).toEcef();
+      const ecefHigh = (Cartographic.fromRadians({longitude: region[2], latitude: region[3], height: region[5]})).toEcef();
       const ecefRange = Range3d.create(ecefLow, ecefHigh);
-      const cartoCenter = new Cartographic((region[0] + region[2]) / 2.0, (region[1] + region[3]) / 2.0, (region[4] + region[5]) / 2.0);
+      const cartoCenter = Cartographic.fromRadians({longitude: (region[0] + region[2]) / 2.0, latitude: (region[1] + region[3]) / 2.0, height: (region[4] + region[5]) / 2.0});
       const ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter);
       this.iModelDb.setEcefLocation(ecefLocation);
       const ecefToWorld = ecefLocation.getTransform().inverse()!;
@@ -159,10 +159,7 @@ export class RealityModelContextIModelCreator {
   protected insertSpatialView(viewName: string, range: AxisAlignedBox3d, realityModels: ContextRealityModelProps[], geoLocated: boolean): Id64String {
     const modelSelectorId: Id64String = ModelSelector.insert(this.iModelDb, this.definitionModelId, viewName, [this.physicalModelId]);
     const categorySelectorId: Id64String = CategorySelector.insert(this.iModelDb, this.definitionModelId, viewName, []);
-    const vf = new ViewFlags();
-    vf.backgroundMap = geoLocated;
-    vf.renderMode = RenderMode.SmoothShade;
-    vf.cameraLights = true;
+    const vf = new ViewFlags({ backgroundMap: geoLocated, renderMode: RenderMode.SmoothShade, lighting: true });
     const displayStyleId: Id64String = DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, viewName, { viewFlags: vf, contextRealityModels: realityModels });
     return OrthographicViewDefinition.insert(this.iModelDb, this.definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Iso);
   }

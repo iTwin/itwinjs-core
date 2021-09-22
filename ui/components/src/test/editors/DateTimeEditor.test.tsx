@@ -13,9 +13,8 @@ import {
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { EditorContainer /* PropertyUpdatedArgs */ } from "../../ui-components/editors/EditorContainer";
 import { DateTimeEditor } from "../../ui-components/editors/DateTimeEditor";
-import TestUtils from "../TestUtils";
-import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
-import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import TestUtils, { MineDataController } from "../TestUtils";
+import { PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
 
 function createDateProperty(propertyName: string, value: Date, option: number) {
   const v: PropertyValue = {
@@ -232,12 +231,6 @@ describe("<DateTimeEditor />", () => {
     await TestUtils.flushAsyncOperations();
     expect(spyOnCommit.notCalled);
   });
-
-  class MineDataController extends DataControllerBase {
-    public override async validateValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
-      return { encounteredError: true, errorMessage: { priority: OutputMessagePriority.Error, briefMessage: "Test" } };
-    }
-  }
 
   it("should not commit if DataController fails to validate", async () => {
     PropertyEditorManager.registerDataController("myData", MineDataController);

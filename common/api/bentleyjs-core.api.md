@@ -8,9 +8,6 @@
 export class AbandonedError extends Error {
 }
 
-// @internal
-export const addClientRequestContext: (metaData: any) => void;
-
 // @public
 export function areEqualPossiblyUndefined<T, U>(t: T | undefined, u: U | undefined, areEqual: (t: T, u: U) => boolean): boolean;
 
@@ -19,6 +16,14 @@ export function asInstanceOf<T>(obj: any, constructor: Constructor<T>): T | unde
 
 // @public
 export function assert(condition: boolean, msg?: string): asserts condition;
+
+// @public
+export type AsyncFunction = (...args: any) => Promise<any>;
+
+// @public
+export type AsyncMethodsOf<T> = {
+    [P in keyof T]: T[P] extends AsyncFunction ? P : never;
+}[keyof T];
 
 // @alpha
 export class AsyncMutex {
@@ -78,10 +83,10 @@ export class BeEventList<T extends Listener> {
 
 // @public
 export class BentleyError extends Error {
-    constructor(errorNumber: number, message?: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
+    constructor(errorNumber: number, message?: string, getMetaData?: GetMetaDataFunction);
     // (undocumented)
     errorNumber: number;
-    getMetaData(): any;
+    getMetaData(): object | undefined;
     get hasMetaData(): boolean;
     protected _initName(): string;
 }
@@ -217,12 +222,14 @@ export class ClientRequestContext {
     readonly activityId: GuidString;
     readonly applicationId: string;
     readonly applicationVersion: string;
-    static get current(): ClientRequestContext;
-    // (undocumented)
-    protected static _current: ClientRequestContext;
-    enter(): this;
     // (undocumented)
     static fromJSON(json: ClientRequestContextProps): ClientRequestContext;
+    sanitize(): {
+        activityId: string;
+        applicationId: string;
+        applicationVersion: string;
+        sessionId: string;
+    };
     readonly sessionId: GuidString;
     // @internal (undocumented)
     toJSON(): ClientRequestContextProps;
@@ -280,23 +287,6 @@ export namespace CompressedId64Set {
 
 // @public (undocumented)
 export type ComputePriorityFunction<T> = (value: T) => number;
-
-// @public
-export class Config {
-    addEnvVarsStartingWith(prefix: string): void;
-    static get App(): Config;
-    get(varName: string, defaultVal?: boolean | string | number): any;
-    getBoolean(name: string, defaultVal?: boolean): boolean;
-    getContainer(): any;
-    getNumber(name: string, defaultVal?: number): number;
-    getString(name: string, defaultVal?: string): string;
-    getVars(): string[];
-    has(varName: string): boolean;
-    merge(source: any): void;
-    query(varName: string): any;
-    remove(varName: string): void;
-    set(varName: string, value: boolean | string | number): void;
-}
 
 // @public
 export type Constructor<T> = new (...args: any[]) => T;
@@ -548,14 +538,6 @@ export interface EntryContainer<K, V> {
     readonly size: number;
 }
 
-// @alpha
-export class EnvMacroSubst {
-    static anyPropertyContainsEnvvars(obj: any, recurse: boolean): boolean;
-    static containsEnvvars(str: string): boolean;
-    static replace(str: string, defaultValues?: any): string;
-    static replaceInProperties(obj: any, recurse: boolean, defaultValues?: any): void;
-}
-
 // @beta
 export enum ExtensionStatus {
     // (undocumented)
@@ -601,7 +583,7 @@ export enum GeoServiceStatus {
 }
 
 // @public
-export type GetMetaDataFunction = () => any;
+export type GetMetaDataFunction = () => object | undefined;
 
 // @public
 export namespace Guid {
@@ -1045,14 +1027,12 @@ export type LogFunction = (category: string, message: string, metaData?: GetMeta
 // @public
 export class Logger {
     static configureLevels(cfg: LoggerLevelsConfig): void;
-    // @internal
-    static getCurrentClientRequestContext(): ClientRequestContext;
     static getLevel(category: string): LogLevel | undefined;
     static initialize(logError: LogFunction | undefined, logWarning?: LogFunction | undefined, logInfo?: LogFunction | undefined, logTrace?: LogFunction | undefined): void;
     static initializeToConsole(): void;
     static isEnabled(category: string, level: LogLevel): boolean;
     static logError(category: string, message: string, metaData?: GetMetaDataFunction): void;
-    static logException(category: string, err: Error, log?: LogFunction, metaData?: GetMetaDataFunction): void;
+    static logException(category: string, err: any, log?: LogFunction, metaData?: GetMetaDataFunction): void;
     static set logExceptionCallstacks(b: boolean);
     static get logExceptionCallstacks(): boolean;
     static logInfo(category: string, message: string, metaData?: GetMetaDataFunction): void;
@@ -1067,7 +1047,7 @@ export class Logger {
     // @beta
     static removeMetaDataSource(callback: (md: any) => void): boolean;
     // @internal
-    static setCurrentClientRequestContext(obj: any): void;
+    static setIntercept(logIntercept?: LogIntercept): void;
     static setLevel(category: string, minLevel: LogLevel): void;
     static setLevelDefault(minLevel: LogLevel): void;
     static turnOffCategories(): void;
@@ -1090,6 +1070,9 @@ export interface LoggerLevelsConfig {
     // (undocumented)
     defaultLevel?: string;
 }
+
+// @internal
+export type LogIntercept = (level: LogLevel, category: string, message: string, metaData?: GetMetaDataFunction) => boolean;
 
 // @public
 export enum LogLevel {
@@ -1162,6 +1145,14 @@ export class MutableCompressedId64Set implements OrderedId64Iterable {
     get isEmpty(): boolean;
     reset(ids?: CompressedId64Set): void;
     }
+
+// @public
+export type NonFunctionPropertiesOf<T> = Pick<T, NonFunctionPropertyNamesOf<T>>;
+
+// @public
+export type NonFunctionPropertyNamesOf<T> = {
+    [K in keyof T]: T[K] extends Function ? never : K;
+}[keyof T];
 
 // @public
 export class ObservableSet<T> extends Set<T> {
@@ -1270,6 +1261,7 @@ export class ProcessDetector {
     static get isAndroidAppFrontend(): boolean;
     static get isAndroidBrowser(): boolean;
     static get isBrowserProcess(): boolean;
+    static get isChromium(): boolean;
     static get isElectronAppBackend(): boolean;
     static get isElectronAppFrontend(): boolean;
     static get isIOSAppBackend(): boolean;
@@ -1283,6 +1275,9 @@ export class ProcessDetector {
     static get isNativeAppFrontend(): boolean;
     static get isNodeProcess(): boolean;
 }
+
+// @public
+export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any) => Promise<infer R> ? R : any;
 
 // @public
 export class ReadonlyOrderedSet<T> implements Iterable<T> {
@@ -1378,9 +1373,9 @@ export interface SerializedClientRequestContext {
 
 // @public
 export interface SessionProps {
-    applicationId: string;
-    applicationVersion: string;
-    sessionId: GuidString;
+    readonly applicationId: string;
+    readonly applicationVersion: string;
+    readonly sessionId: GuidString;
 }
 
 // @public

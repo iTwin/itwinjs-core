@@ -9,7 +9,6 @@ import { ActiveMatchInfo } from '@bentley/ui-components';
 import { CategoryDescription } from '@bentley/presentation-common';
 import { ColumnDescription } from '@bentley/ui-components';
 import { Content } from '@bentley/presentation-common';
-import { ControlledTreeProps } from '@bentley/ui-components';
 import { DelayLoadedTreeNodeItem } from '@bentley/ui-components';
 import { Descriptor } from '@bentley/presentation-common';
 import { DescriptorOverrides } from '@bentley/presentation-common';
@@ -18,10 +17,11 @@ import { DiagnosticsLoggerSeverity } from '@bentley/presentation-common';
 import { DiagnosticsOptionsWithHandler } from '@bentley/presentation-common';
 import { EditorDescription } from '@bentley/presentation-common';
 import { EnumerationInfo } from '@bentley/presentation-common';
-import { ExtendedHierarchyRequestOptions } from '@bentley/presentation-common';
 import { FavoritePropertiesScope } from '@bentley/presentation-frontend';
 import { Field } from '@bentley/presentation-common';
 import { FieldHierarchy } from '@bentley/presentation-common';
+import { FilterByTextHierarchyRequestOptions } from '@bentley/presentation-common';
+import { HierarchyRequestOptions } from '@bentley/presentation-common';
 import { HierarchyUpdateRecord } from '@bentley/presentation-common';
 import { HighlightableTreeProps } from '@bentley/ui-components';
 import { IContentVisitor } from '@bentley/presentation-common';
@@ -53,7 +53,6 @@ import { PropertyDataChangeEvent } from '@bentley/ui-components';
 import { PropertyDataFiltererBase } from '@bentley/ui-components';
 import { PropertyDataFilterResult } from '@bentley/ui-components';
 import { PropertyDescription } from '@bentley/ui-abstract';
-import { PropertyGridProps } from '@bentley/ui-components';
 import { PropertyRecord } from '@bentley/ui-abstract';
 import { PropertyValueRendererContext } from '@bentley/ui-components';
 import * as React from 'react';
@@ -80,11 +79,10 @@ import { TreeEventHandler } from '@bentley/ui-components';
 import { TreeModelChanges } from '@bentley/ui-components';
 import { TreeModelSource } from '@bentley/ui-components';
 import { TreeNodeItem } from '@bentley/ui-components';
-import { TreeProps } from '@bentley/ui-components';
 import { TreeSelectionModificationEventArgs } from '@bentley/ui-components';
 import { TreeSelectionReplacementEventArgs } from '@bentley/ui-components';
 import { TypeDescription } from '@bentley/presentation-common';
-import { ViewportProps } from '@bentley/ui-components';
+import { ViewportProps } from '@bentley/ui-imodel-components';
 import { VisibleTreeNodes } from '@bentley/ui-components';
 
 // @internal (undocumented)
@@ -106,20 +104,16 @@ export namespace CacheInvalidationProps {
 // @public
 export class ContentDataProvider implements IContentDataProvider {
     constructor(props: ContentDataProviderProps);
-    // @deprecated
-    protected configureContentDescriptor(descriptor: Readonly<Descriptor>): Descriptor;
     get displayType(): string;
     dispose(): void;
     getContent(pageOptions?: PageOptions): Promise<Content | undefined>;
     getContentDescriptor: import("micro-memoize").MicroMemoize.Memoized<() => Promise<Descriptor | undefined>>;
     getContentSetSize(): Promise<number>;
-    protected getDescriptorOverrides(): DescriptorOverrides;
+    protected getDescriptorOverrides(): Promise<DescriptorOverrides>;
     getFieldByPropertyRecord(propertyRecord: PropertyRecord): Promise<Field | undefined>;
     get imodel(): IModelConnection;
     set imodel(imodel: IModelConnection);
     protected invalidateCache(props: CacheInvalidationProps): void;
-    // @deprecated
-    protected isFieldHidden(_field: Field): boolean;
     get keys(): KeySet;
     set keys(keys: KeySet);
     get pagingSize(): number | undefined;
@@ -128,10 +122,6 @@ export class ContentDataProvider implements IContentDataProvider {
     set rulesetId(value: string);
     get selectionInfo(): SelectionInfo | undefined;
     set selectionInfo(info: SelectionInfo | undefined);
-    // @deprecated
-    protected shouldConfigureContentDescriptor(): boolean;
-    // @deprecated
-    protected shouldExcludeFromDescriptor(field: Field): boolean;
     protected shouldRequestContentForEmptyKeyset(): boolean;
 }
 
@@ -152,24 +142,6 @@ export interface ControlledPresentationTreeFilteringProps {
     // (undocumented)
     filter?: string;
     // (undocumented)
-    nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
-}
-
-// @beta @deprecated
-export type ControlledTreeFilteringProps = ControlledPresentationTreeFilteringProps;
-
-// @beta @deprecated
-export interface ControlledTreeWithFilteringSupportProps {
-    activeMatchIndex?: number;
-    filter?: string;
-    nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
-    onFilterApplied?: (filter: string) => void;
-    onMatchesCounted?: (count: number) => void;
-    onNodeLoaderChanged?: (nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider> | undefined) => void;
-}
-
-// @beta @deprecated
-export interface ControlledTreeWithVisibleNodesProps extends Omit<ControlledTreeProps, "visibleNodes"> {
     nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
 }
 
@@ -204,18 +176,6 @@ export interface DataProvidersFactoryProps {
 
 // @public
 export const DEFAULT_PROPERTY_GRID_RULESET: Ruleset;
-
-// @beta @deprecated
-export function DEPRECATED_controlledTreeWithFilteringSupport<P extends ControlledTreeWithVisibleNodesProps>(TreeComponent: React.FC<P>): React.FC<Omit<P & ControlledTreeWithFilteringSupportProps, "visibleNodes">>;
-
-// @beta @deprecated
-export function DEPRECATED_controlledTreeWithVisibleNodes<P extends ControlledTreeProps>(TreeComponent: React.FC<P>): React.FC<Omit<P & ControlledTreeWithVisibleNodesProps, "visibleNodes">>;
-
-// @public @deprecated
-export function DEPRECATED_treeWithFilteringSupport<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<P & TreeWithFilteringSupportProps>;
-
-// @public @deprecated
-export function DEPRECATED_treeWithUnifiedSelection<P extends TreeProps>(TreeComponent: React.ComponentClass<P>): React.ForwardRefExoticComponent<React.PropsWithoutRef<P & TreeWithUnifiedSelectionProps> & React.RefAttributes<React.Component<P, any, any>>>;
 
 // @public
 export interface DiagnosticsProps {
@@ -323,8 +283,6 @@ export class FilteredPresentationTreeDataProvider implements IFilteredPresentati
     getNodesCount(parent?: TreeNodeItem): Promise<number>;
     // (undocumented)
     get imodel(): IModelConnection;
-    // @alpha
-    loadHierarchy(): Promise<void>;
     nodeMatchesFilter(node: TreeNodeItem): boolean;
     // (undocumented)
     get parentDataProvider(): IPresentationTreeDataProvider;
@@ -402,8 +360,6 @@ export type IPresentationTableDataProvider = TableDataProvider & IContentDataPro
 export interface IPresentationTreeDataProvider extends ITreeDataProvider, IPresentationDataProvider {
     getFilteredNodePaths(filter: string): Promise<NodePathElement[]>;
     getNodeKey(node: TreeNodeItem): NodeKey;
-    // @alpha
-    loadHierarchy?(): Promise<void>;
 }
 
 // @internal (undocumented)
@@ -447,7 +403,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
     constructor(props: PresentationPropertyDataProviderProps);
     dispose(): void;
     getData(): Promise<PropertyData>;
-    protected getDescriptorOverrides(): DescriptorOverrides;
+    protected getDescriptorOverrides(): Promise<DescriptorOverrides>;
     protected getMemoizedData: import("micro-memoize").MicroMemoize.Memoized<() => Promise<PropertyData>>;
     // @beta
     getPropertyRecordInstanceKeys(record: PropertyRecord): Promise<InstanceKey[]>;
@@ -462,7 +418,6 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
     set isNestedPropertyCategoryGroupingEnabled(value: boolean);
     // (undocumented)
     onDataChanged: PropertyDataChangeEvent;
-    protected shouldConfigureContentDescriptor(): boolean;
     protected sortCategories(categories: CategoryDescription[]): void;
     protected sortFields: (category: CategoryDescription, fields: Field[]) => void;
 }
@@ -483,7 +438,7 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
     get filterExpression(): string | undefined;
     set filterExpression(value: string | undefined);
     getColumns: import("micro-memoize").MicroMemoize.Memoized<() => Promise<ColumnDescription[]>>;
-    protected getDescriptorOverrides(): DescriptorOverrides;
+    protected getDescriptorOverrides(): Promise<DescriptorOverrides>;
     getLoadedRow(rowIndex: number): Readonly<RowItem> | undefined;
     getRow(rowIndex: number): Promise<RowItem>;
     getRowKey(row: RowItem): InstanceKey;
@@ -494,7 +449,6 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
     onColumnsChanged: TableDataChangeEvent;
     // (undocumented)
     onRowsChanged: TableDataChangeEvent;
-    protected shouldConfigureContentDescriptor(): boolean;
     sort(columnIndex: number, sortDirection: SortDirection): Promise<void>;
     get sortColumn(): Promise<ColumnDescription | undefined>;
     get sortColumnKey(): string | undefined;
@@ -521,8 +475,6 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
     getNodes(parentNode?: TreeNodeItem, pageOptions?: PageOptions_2): Promise<DelayLoadedTreeNodeItem[]>;
     getNodesCount(parentNode?: TreeNodeItem): Promise<number>;
     get imodel(): IModelConnection;
-    // @alpha @deprecated
-    loadHierarchy(): Promise<void>;
     get pagingSize(): number | undefined;
     set pagingSize(value: number | undefined);
     get rulesetId(): string;
@@ -531,14 +483,14 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
 // @beta
 export interface PresentationTreeDataProviderDataSourceEntryPoints {
     // (undocumented)
-    getFilteredNodePaths: (requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, never>, filterText: string) => Promise<NodePathElement[]>;
+    getFilteredNodePaths: (requestOptions: FilterByTextHierarchyRequestOptions<IModelConnection>) => Promise<NodePathElement[]>;
     // (undocumented)
-    getNodesAndCount: (requestOptions: Paged<ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>>) => Promise<{
+    getNodesAndCount: (requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey>>) => Promise<{
         nodes: Node[];
         count: number;
     }>;
     // (undocumented)
-    getNodesCount: (requestOptions: ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>) => Promise<number>;
+    getNodesCount: (requestOptions: HierarchyRequestOptions<IModelConnection, NodeKey>) => Promise<number>;
 }
 
 // @public
@@ -556,8 +508,6 @@ export interface PresentationTreeNodeLoaderProps extends PresentationTreeDataPro
     // @alpha
     enableHierarchyAutoUpdate?: boolean;
     pagingSize: number;
-    // @alpha @deprecated
-    preloadingEnabled?: boolean;
 }
 
 // @public
@@ -569,17 +519,6 @@ export interface PresentationTreeNodeLoaderResult {
 
 // @public
 export interface PropertyDataProviderWithUnifiedSelectionProps {
-    dataProvider: IPresentationPropertyDataProvider;
-    requestedContentInstancesLimit?: number;
-    // @internal (undocumented)
-    selectionHandler?: SelectionHandler;
-}
-
-// @public @deprecated
-export function propertyGridWithUnifiedSelection<P extends PropertyGridProps>(PropertyGridComponent: React.ComponentType<P>): React.ComponentType<P & PropertyGridWithUnifiedSelectionProps>;
-
-// @public @deprecated
-export interface PropertyGridWithUnifiedSelectionProps {
     dataProvider: IPresentationPropertyDataProvider;
     requestedContentInstancesLimit?: number;
     // @internal (undocumented)
@@ -654,24 +593,6 @@ export interface TableWithUnifiedSelectionProps {
     selectionLevel?: number;
 }
 
-// @public @deprecated
-export interface TreeWithFilteringSupportProps {
-    activeMatchIndex?: number;
-    dataProvider: IPresentationTreeDataProvider;
-    filter?: string;
-    onFilterApplied?: (filter: string, filteredProvider: IPresentationTreeDataProvider) => void;
-    onMatchesCounted?: (count: number) => void;
-}
-
-// @public @deprecated
-export interface TreeWithUnifiedSelectionProps {
-    dataProvider: IPresentationTreeDataProvider;
-    onNodesDeselected?: (items: TreeNodeItem[]) => boolean;
-    onNodesSelected?: (items: TreeNodeItem[], replace: boolean) => boolean;
-    // @internal (undocumented)
-    selectionHandler?: SelectionHandler;
-}
-
 // @beta
 export interface UnifiedSelectionContext {
     addToSelection(keys: Keys, level?: number): void;
@@ -735,9 +656,6 @@ export function useControlledPresentationTreeFiltering(props: ControlledPresenta
     isFiltering: boolean;
     matchesCount: number | undefined;
 };
-
-// @beta @deprecated
-export const useControlledTreeFiltering: typeof useControlledPresentationTreeFiltering;
 
 // @internal (undocumented)
 export function useFilteredNodeLoader(nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>, filter: string | undefined): {

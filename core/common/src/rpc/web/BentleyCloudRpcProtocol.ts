@@ -7,8 +7,7 @@
  */
 
 import { URL } from "url";
-import { BentleyStatus, Logger, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
-import { CommonLoggerCategory } from "../../CommonLoggerCategory";
+import { BentleyStatus, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
 import { RpcConfiguration } from "../core/RpcConfiguration";
@@ -77,7 +76,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
     const operationId = `${operation.interfaceDefinition.interfaceName}-${operation.interfaceVersion}-${operation.operationName}`;
 
     let appMode: string = "";
-    let contextId: string = "";
+    let iTwinId: string = "";
     let iModelId: string = "";
     let routeChangeSetId: string | undefined;
     /* Note: The changeSetId field is omitted in the route in the case of ReadWrite connections since the connection is generally expected to be at the
@@ -88,7 +87,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
 
     if (request === undefined) {
       appMode = "{modeId}";
-      contextId = "{contextId}";
+      iTwinId = "{iTwinId}";
       iModelId = "{iModelId}";
       routeChangeSetId = "{changeSetId}";
     } else {
@@ -98,18 +97,18 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
         if (RpcConfiguration.disableRoutingValidation) {
           token = { key: "" };
         } else {
-          throw new IModelError(BentleyStatus.ERROR, "Invalid iModelToken for RPC operation request", Logger.logError, CommonLoggerCategory.RpcInterfaceFrontend);
+          throw new IModelError(BentleyStatus.ERROR, "Invalid iModelToken for RPC operation request");
         }
       }
 
-      contextId = encodeURIComponent(token.contextId || "");
+      iTwinId = encodeURIComponent(token.iTwinId || "");
       iModelId = encodeURIComponent(token.iModelId!);
 
       routeChangeSetId = token.changeset?.id || "0";
       appMode = AppMode.MilestoneReview;
     }
 
-    return `${prefix}/${appTitle}/${appVersion}/mode/${appMode}/context/${contextId}/imodel/${iModelId}${!!routeChangeSetId ? `/changeset/${routeChangeSetId}` : ""}/${operationId}`;
+    return `${prefix}/${appTitle}/${appVersion}/mode/${appMode}/context/${iTwinId}/imodel/${iModelId}${!!routeChangeSetId ? `/changeset/${routeChangeSetId}` : ""}/${operationId}`;
   }
 
   /**
@@ -121,7 +120,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
 
     const iModelKey = tokenFromBody.key;
     let iModelId = tokenFromBody.iModelId;
-    let contextId = tokenFromBody.contextId;
+    let iTwinId = tokenFromBody.iTwinId;
     const changeset = { id: tokenFromBody.changeset?.id ?? "0", index: tokenFromBody.changeset?.index };
 
     for (let i = 0; i <= urlPathComponents.length; ++i) {
@@ -130,7 +129,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
       if (key === "mode") {
         ++i;
       } else if (key === "context") {
-        contextId = value;
+        iTwinId = value;
         ++i;
       } else if (key === "imodel") {
         iModelId = value;
@@ -141,7 +140,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
       }
     }
 
-    return { key: iModelKey, contextId, iModelId, changeset };
+    return { key: iModelKey, iTwinId, iModelId, changeset };
   }
 
   /** Returns the OpenAPI-compatible URI path parameters for an RPC operation.
@@ -150,7 +149,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
   public supplyPathParametersForOperation(_operation: RpcOperation): OpenAPIParameter[] {
     return [
       { name: "modeId", in: "path", required: true, schema: { type: "string" } },
-      { name: "contextId", in: "path", required: true, schema: { type: "string" } },
+      { name: "iTwinId", in: "path", required: true, schema: { type: "string" } },
       { name: "iModelId", in: "path", required: true, schema: { type: "string" } },
       { name: "changeSetId", in: "path", required: false, schema: { type: "string" } },
     ];

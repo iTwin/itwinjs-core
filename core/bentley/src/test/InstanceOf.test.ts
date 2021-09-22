@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { asInstanceOf, isInstanceOf } from "../InstanceOf";
+import { asInstanceOf, isInstanceOf } from "../UtilityTypes";
 
 describe("InstanceOf", () => {
   it("works", () => {
