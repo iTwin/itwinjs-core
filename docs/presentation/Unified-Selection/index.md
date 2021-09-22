@@ -2,7 +2,7 @@
 
 The purpose of unified selection is to act as a single source of truth of what is selected in an iTwin.js application.
 
-> **Index**
+> **Contents**
 >
 > - [Selection Levels](#selection-levels)
 > - [Selection Handling](#selection-handling)
