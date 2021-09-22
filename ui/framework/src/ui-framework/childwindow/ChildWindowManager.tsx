@@ -163,7 +163,7 @@ export class ChildWindowManager {
     const outLocation = { ...location };
     if (0 === location.top && 0 === location.left) {
       center = center ?? true;
-      const windowTop = window.top ?? window; // @WBG comment
+      const windowTop = window.top ?? window;
 
       // Prepare position of the new window to be centered against the 'parent' window.
       if (center) {
