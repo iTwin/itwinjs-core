@@ -36,6 +36,13 @@ Performance tests on iOS have more restrictions than performance tests run on ot
 * All bim files referenced by the json configuration file must be present in the Documents directory of the iPad.
 * We cannot gather any GPU data from iOS.
 
+## Environment Variables
+
+* SVT_MAPBOX_KEY
+  * If defined, sets the MapBox key for the `MapLayerOptions` as an "access_token".
+* SVT_BING_MAPS_KEY
+  * If defined, sets a Bing Maps key within the `MapLayerOptions` as a "key" type.
+
 ## Configuration json file
 
 The default configuration file allows you to specify the following:

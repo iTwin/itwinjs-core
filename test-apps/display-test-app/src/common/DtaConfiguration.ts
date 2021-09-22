@@ -44,4 +44,6 @@ export interface DtaConfiguration {
   antialiasSamples?: number; // default 1 (No antialiasing)
   openReadWrite?: boolean; // default false
   iTwinId?: GuidString; // default is undefined, used by spatial classification to query reality data from context share
+  mapBoxKey?: string; // default undefined
+  bingMapsKey?: string; // default undefined
 }
