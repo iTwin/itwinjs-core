@@ -6,11 +6,11 @@
  * @module Core
  */
 
-import { compareStrings, Dictionary, Guid, IDisposable, OrderedComparator } from "@bentley/bentleyjs-core";
+import { compareStrings, Dictionary, Guid, IDisposable, isIDisposable, OrderedComparator } from "@bentley/bentleyjs-core";
 import { InternetConnectivityStatus } from "@bentley/imodeljs-common";
 import { AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
 import { PresentationError, PresentationStatus } from "@bentley/presentation-common";
-import { IConnectivityInformationProvider } from "../ConnectivityInformationProvider";
+import { ConnectivityInformationProvider, IConnectivityInformationProvider } from "../ConnectivityInformationProvider";
 import { FavoritePropertiesOrderInfo, PropertyFullName } from "./FavoritePropertiesManager";
 
 const IMODELJS_PRESENTATION_SETTING_NAMESPACE = "imodeljs.presentation";
@@ -47,6 +47,31 @@ export interface IFavoritePropertiesStorage {
    * @param imodelId iModel Id.
    */
   savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], iTwinId: string | undefined, imodelId: string): Promise<void>;
+}
+
+/**
+ * Available implementations of [[IFavoritePropertiesStorage]].
+ * @public
+ */
+export enum DefaultFavoritePropertiesStorageTypes {
+  /** A no-op storage that doesn't store or return anything. Used for cases when favorite properties aren't used by the application. */
+  Noop,
+  /** A storage that stores favorite properties information in a browser local storage. */
+  BrowserLocalStorage,
+  /** A storage that stores favorite properties in a user settings service (see [[IModelApp.settings]]). */
+  UserSettingsServiceStorage,
+}
+
+/**
+ * A factory method to create one of the available [[IFavoritePropertiesStorage]] implementations.
+ * @public
+ */
+export function createFavoritePropertiesStorage(type: DefaultFavoritePropertiesStorageTypes): IFavoritePropertiesStorage {
+  switch (type) {
+    case DefaultFavoritePropertiesStorageTypes.Noop: return new NoopFavoritePropertiesStorage();
+    case DefaultFavoritePropertiesStorageTypes.BrowserLocalStorage: return new BrowserLocalFavoritePropertiesStorage();
+    case DefaultFavoritePropertiesStorageTypes.UserSettingsServiceStorage: return new OfflineCachingFavoritePropertiesStorage({ impl: new IModelAppFavoritePropertiesStorage() });
+  }
 }
 
 /**
@@ -111,27 +136,30 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
 
 /** @internal */
 export interface OfflineCachingFavoritePropertiesStorageProps {
-  connectivityInfo: IConnectivityInformationProvider;
   impl: IFavoritePropertiesStorage;
+  connectivityInfo?: IConnectivityInformationProvider;
 }
 /** @internal */
 export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropertiesStorage, IDisposable {
 
   private _connectivityInfo: IConnectivityInformationProvider;
   private _impl: IFavoritePropertiesStorage;
-  private _unsubscribeFromConnectivityStatusChangedEvent: () => void;
   private _propertiesOfflineCache = new DictionaryWithReservations<ITwinAndIModelIdsKey, Set<PropertyFullName>>(iTwinAndIModelIdsKeyComparer);
   private _propertiesOrderOfflineCache = new DictionaryWithReservations<ITwinAndIModelIdsKey, FavoritePropertiesOrderInfo[]>(iTwinAndIModelIdsKeyComparer);
 
   public constructor(props: OfflineCachingFavoritePropertiesStorageProps) {
     this._impl = props.impl;
-    this._connectivityInfo = props.connectivityInfo;
-    this._unsubscribeFromConnectivityStatusChangedEvent = this._connectivityInfo.onInternetConnectivityChanged.addListener(this.onConnectivityStatusChanged);
+    // istanbul ignore next
+    this._connectivityInfo = props.connectivityInfo ?? new ConnectivityInformationProvider();
+    this._connectivityInfo.onInternetConnectivityChanged.addListener(this.onConnectivityStatusChanged);
   }
 
   public dispose() {
-    this._unsubscribeFromConnectivityStatusChangedEvent();
+    if (isIDisposable(this._connectivityInfo))
+      this._connectivityInfo.dispose();
   }
+
+  public get impl() { return this._impl; }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private onConnectivityStatusChanged = (args: { status: InternetConnectivityStatus }) => {
@@ -240,4 +268,62 @@ type ITwinAndIModelIdsKey = [string | undefined, string | undefined];
 function iTwinAndIModelIdsKeyComparer(lhs: ITwinAndIModelIdsKey, rhs: ITwinAndIModelIdsKey) {
   const iTwinIdCompare = compareStrings(lhs[0] ?? "", rhs[0] ?? "");
   return (iTwinIdCompare !== 0) ? iTwinIdCompare : compareStrings(lhs[1] ?? "", rhs[1] ?? "");
+}
+
+/** @internal */
+export class NoopFavoritePropertiesStorage implements IFavoritePropertiesStorage {
+  // istanbul ignore next
+  public async loadProperties(_iTwinId?: string, _imodelId?: string): Promise<Set<PropertyFullName> | undefined> { return undefined; }
+  // istanbul ignore next
+  public async saveProperties(_properties: Set<PropertyFullName>, _iTwinId?: string, _imodelId?: string) { }
+  // istanbul ignore next
+  public async loadPropertiesOrder(_iTwinId: string | undefined, _imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined> { return undefined; }
+  // istanbul ignore next
+  public async savePropertiesOrder(_orderInfos: FavoritePropertiesOrderInfo[], _iTwinId: string | undefined, _imodelId: string): Promise<void> { }
+}
+
+/** @internal */
+export class BrowserLocalFavoritePropertiesStorage implements IFavoritePropertiesStorage {
+  private _localStorage: Storage;
+
+  public constructor(props?: { localStorage?: Storage }) {
+    // istanbul ignore next
+    this._localStorage = props?.localStorage ?? window.localStorage;
+  }
+
+  public createFavoritesSettingItemKey(iTwinId?: string, imodelId?: string): string {
+    return `${IMODELJS_PRESENTATION_SETTING_NAMESPACE}${FAVORITE_PROPERTIES_SETTING_NAME}?iTwinId=${iTwinId}&imodelId=${imodelId}`;
+  }
+  public createOrderSettingItemKey(iTwinId?: string, imodelId?: string): string {
+    return `${IMODELJS_PRESENTATION_SETTING_NAMESPACE}${FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME}?iTwinId=${iTwinId}&imodelId=${imodelId}`;
+  }
+
+  public async loadProperties(iTwinId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined> {
+    const value = this._localStorage.getItem(this.createFavoritesSettingItemKey(iTwinId, imodelId));
+    if (!value)
+      return undefined;
+
+    const properties: PropertyFullName[] = JSON.parse(value);
+    return new Set(properties);
+  }
+
+  public async saveProperties(properties: Set<PropertyFullName>, iTwinId?: string, imodelId?: string) {
+    this._localStorage.setItem(this.createFavoritesSettingItemKey(iTwinId, imodelId), JSON.stringify([...properties]));
+  }
+
+  public async loadPropertiesOrder(iTwinId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined> {
+    const value = this._localStorage.getItem(this.createOrderSettingItemKey(iTwinId, imodelId));
+    if (!value)
+      return undefined;
+
+    const orderInfos: FavoritePropertiesOrderInfo[] = JSON.parse(value).map((json: any) => ({
+      ...json,
+      orderedTimestamp: new Date(json.orderedTimestamp),
+    }));
+    return orderInfos;
+  }
+
+  public async savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], iTwinId: string | undefined, imodelId: string): Promise<void> {
+    this._localStorage.setItem(this.createOrderSettingItemKey(iTwinId, imodelId), JSON.stringify(orderInfos));
+  }
 }

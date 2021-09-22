@@ -31,7 +31,7 @@ export class LocalhostHandler implements FileHandler {
    * @param fileSize Size of the file that's being downloaded.
    * @param progressCallback Callback for tracking progress.
    */
-  public async downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, path: string, fileSize?: number, progress?: ProgressCallback): Promise<void> {
+  public async downloadFile(_requestContext: AuthorizedClientRequestContext, downloadUrl: string, path: string, fileSize?: number, progress?: ProgressCallback): Promise<void> {
     Logger.logTrace(loggerCategory, `Downloading file from '${downloadUrl}' to '${path}'.`);
     await fs.ensureDir(pathLib.dirname(path));
     await fs.copy(url.fileURLToPath(downloadUrl), path);
@@ -52,7 +52,7 @@ export class LocalhostHandler implements FileHandler {
    * @param path Path of the file to be uploaded.
    * @param progressCallback Callback for tracking progress.
    */
-  public async uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, path: string, progress?: ProgressCallback): Promise<void> {
+  public async uploadFile(_requestContext: AuthorizedClientRequestContext, uploadUrlString: string, path: string, progress?: ProgressCallback): Promise<void> {
     Logger.logTrace(loggerCategory, `Uploading file '${path}' to '${uploadUrlString}'.`);
     const uploadPath = url.fileURLToPath(uploadUrlString);
     await fs.ensureDir(pathLib.dirname(uploadPath));

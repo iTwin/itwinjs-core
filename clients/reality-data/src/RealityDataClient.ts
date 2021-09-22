@@ -278,7 +278,6 @@ export class RealityData extends WsgInstance {
    * @returns tile data json
    */
   public async getRootDocumentJson(requestContext: AuthorizedClientRequestContext): Promise<any> {
-
     if (!this.rootDocument)
       throw new Error(`Root document not defined for reality data: ${this.id}`);
 
@@ -466,7 +465,6 @@ export class RealityDataClient extends WsgClient {
    * @returns an array of RealityData that are associated to the iTwin.
    */
   public async getRealityDataInITwin(requestContext: AuthorizedClientRequestContext, iTwinId: string, type?: string): Promise<RealityData[]> {
-
     const newQueryOptions = { iTwin: iTwinId } as RequestQueryOptions;
     newQueryOptions.$filter = this.getRealityDataTypesFilter(type);
 

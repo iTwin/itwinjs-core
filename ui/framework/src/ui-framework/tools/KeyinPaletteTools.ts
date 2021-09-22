@@ -23,12 +23,8 @@ export class ClearKeyinPaletteHistoryTool extends Tool {
   // istanbul ignore next
   public static override get maxArgs() { return 0; }
 
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     clearKeyinPaletteHistory();
     return true;
-  }
-
-  public override parseAndRun(): boolean {
-    return this.run();
   }
 }

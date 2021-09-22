@@ -32,8 +32,11 @@ class IncidentMarker extends Marker {
 
   // when someone clicks on our marker, open a message box with the severity of the incident.
   public override onMouseButton(ev: BeButtonEvent): boolean {
-    if (ev.button === BeButton.Data && ev.isDown)
-      IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, `severity = ${this.severity}`, MessageBoxIconType.Information); // eslint-disable-line @typescript-eslint/no-floating-promises
+    if (ev.button === BeButton.Data && ev.isDown) {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, `severity = ${this.severity}`, MessageBoxIconType.Information);
+    }
+
     return true;
   }
 
@@ -247,7 +250,7 @@ export class IncidentMarkerDemo {
 
 export class IncidentMarkerDemoTool extends Tool {
   public static override toolId = "ToggleIncidentMarkers";
-  public override run(_args: any[]): boolean {
+  public override async run(_args: any[]): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp && vp.view.isSpatialView())
       IncidentMarkerDemo.toggle(vp.view.iModel.projectExtents);

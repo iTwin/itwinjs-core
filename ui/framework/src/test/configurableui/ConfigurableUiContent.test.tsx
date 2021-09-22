@@ -33,7 +33,7 @@ describe("ConfigurableUiContent", () => {
       </Provider>).should.matchSnapshot();
   });
 
-  it("key presses should be handled", () => {
+  it("key presses should be handled", async () => {
     render(<Provider store={TestUtils.store} >
       <ConfigurableUiContent />
     </Provider>);
@@ -41,11 +41,11 @@ describe("ConfigurableUiContent", () => {
 
     const toolAdmin = new FrameworkToolAdmin();
     let keyEvent = new KeyboardEvent("keydown", { key: "a" });
-    expect(toolAdmin.processShortcutKey(keyEvent, true)).to.be.true;
+    expect(await toolAdmin.processShortcutKey(keyEvent, true)).to.be.true;
     keyEvent = new KeyboardEvent("keyup", { key: "a" });
-    expect(toolAdmin.processShortcutKey(keyEvent, false)).to.be.false;
+    expect(await toolAdmin.processShortcutKey(keyEvent, false)).to.be.false;
     keyEvent = new KeyboardEvent("keydown", { key: SpecialKey.Escape });
-    expect(toolAdmin.processShortcutKey(keyEvent, true)).to.be.false;
+    expect(await toolAdmin.processShortcutKey(keyEvent, true)).to.be.false;
   });
 
   it("mouse moves should be handled", () => {

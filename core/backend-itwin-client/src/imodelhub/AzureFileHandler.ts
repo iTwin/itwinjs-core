@@ -146,7 +146,7 @@ export class AzureFileHandler implements FileHandler {
     fs.mkdirSync(dirPath);
   }
 
-  private async transferFileUsingAzCopy(requestContext: AuthorizedClientRequestContext, source: string, target: string, progressCallback?: ProgressCallback): Promise<void> {
+  private async transferFileUsingAzCopy(source: string, target: string, progressCallback?: ProgressCallback): Promise<void> {
     Logger.logTrace(loggerCategory, `Using AzCopy with version ${AzCopy.getVersion()} located at ${AzCopy.execPath}`);
 
     // setup log dir so we can delete it. It seem there is no way of disable it.
@@ -182,7 +182,7 @@ export class AzureFileHandler implements FileHandler {
     }
   }
 
-  private async downloadFileUsingHttps(_requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, _fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
+  private async downloadFileUsingHttps(downloadUrl: string, downloadToPathname: string, _fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
     let lastProgressStat: ProgressData;
     const onProgress = (data: ProgressData) => {
       if (progressCallback)
@@ -261,7 +261,7 @@ export class AzureFileHandler implements FileHandler {
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if one of the arguments is undefined or empty.
    * @throws [[ResponseError]] if the file cannot be downloaded.
    */
-  public async downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
+  public async downloadFile(_requestContext: AuthorizedClientRequestContext | undefined, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
     // strip search and hash parameters from download Url for logging purpose
     const safeToLogUrl = AzureFileHandler.getSafeUrlForLogging(downloadUrl);
     Logger.logInfo(loggerCategory, `Downloading file from ${safeToLogUrl}`);
@@ -277,9 +277,9 @@ export class AzureFileHandler implements FileHandler {
     AzureFileHandler.makeDirectoryRecursive(path.dirname(downloadToPathname));
     try {
       if (this.useAzCopyForFileTransfer(fileSize)) {
-        await this.transferFileUsingAzCopy(requestContext, downloadUrl, downloadToPathname, progressCallback);
+        await this.transferFileUsingAzCopy(downloadUrl, downloadToPathname, progressCallback);
       } else {
-        await this.downloadFileUsingHttps(requestContext, downloadUrl, downloadToPathname, fileSize, progressCallback, cancelRequest);
+        await this.downloadFileUsingHttps(downloadUrl, downloadToPathname, fileSize, progressCallback, cancelRequest);
       }
     } catch (err) {
       if (fs.existsSync(downloadToPathname))
@@ -346,7 +346,7 @@ export class AzureFileHandler implements FileHandler {
 
     const fileSize = this.getFileSize(uploadFromPathname);
     if (this.useAzCopyForFileTransfer(fileSize)) {
-      await this.transferFileUsingAzCopy(requestContext, uploadFromPathname, uploadUrlString, progressCallback);
+      await this.transferFileUsingAzCopy(uploadFromPathname, uploadUrlString, progressCallback);
     } else {
       await this.uploadFileUsingHttps(requestContext, uploadUrlString, uploadFromPathname, fileSize, progressCallback);
     }

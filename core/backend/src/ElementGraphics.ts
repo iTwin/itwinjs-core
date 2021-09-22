@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, ClientRequestContext, IModelStatus } from "@bentley/bentleyjs-core";
+import { assert, IModelStatus } from "@bentley/bentleyjs-core";
 import { ElementGraphicsRequestProps, IModelError } from "@bentley/imodeljs-common";
 import { ElementGraphicsStatus } from "@bentley/imodeljs-native";
 import { IModelDb } from "./IModelDb";
@@ -15,7 +15,6 @@ import { IModelDb } from "./IModelDb";
  * @internal
  */
 export async function generateElementGraphics(request: ElementGraphicsRequestProps, iModel: IModelDb): Promise<Uint8Array | undefined> {
-  const requestContext = ClientRequestContext.current;
   const result = await iModel.nativeDb.generateElementGraphics(request);
 
   let error: string | undefined;

@@ -1202,3 +1202,96 @@ describe("PolygonClipper", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 });
+
+class OutputManager {
+  public x0: number = 0;
+  public y0: number = 0;
+  public allGeometry: GeometryQuery[] = [];
+  public drawArrow(pointA: Point3d, vector: Vector3d, headLengthFraction: number = 0.10, headWidthFraction: number = 0.05) {
+    const pointB = pointA.plus(vector);
+    const pointC = pointA.interpolatePerpendicularXY(1.0 - headLengthFraction, pointB, headWidthFraction);
+    const pointD = pointA.interpolatePerpendicularXY(1.0 - headLengthFraction, pointB, -headWidthFraction);
+    GeometryCoreTestIO.captureCloneGeometry(this.allGeometry, [pointA, pointB, pointC, pointD, pointB], this.x0, this.y0);
+  }
+
+  public drawPerpendicular(pointA: Point3d, vector: Vector3d, fractionAlong: number, leftFraction: number = -1.0, rightFraction: number = 1.0) {
+    if (!Geometry.isSameCoordinate (leftFraction, rightFraction)){
+      const pointB = pointA.plus(vector);
+      const pointC = pointA.interpolatePerpendicularXY(fractionAlong, pointB, leftFraction);
+      const pointD = pointA.interpolatePerpendicularXY(fractionAlong, pointB, rightFraction);
+      GeometryCoreTestIO.captureCloneGeometry(this.allGeometry, [pointC, pointD], this.x0, this.y0);
+}
+  }
+
+  public drawPolygon(points: GrowableXYZArray, forceClosure: boolean = false) {
+    if (forceClosure)
+      points.forceClosure();
+    GeometryCoreTestIO.createAndCaptureLoop (this.allGeometry, points, this.x0, this.y0);
+  }
+  public drawAxes(r: number = 10, arrowLength: number = 1, originX: number = 0, originY: number = 0) {
+    const f = 0.5 * arrowLength / r;
+    this.drawArrow(Point3d.create(originX - r, 0, 0), Vector3d.create(2 * r, 0, 0), f, 0.5 * f);
+    this.drawArrow(Point3d.create(0, originY - r, 0), Vector3d.create(0, 2 * r, 0), f, 0.5 * f);
+  }
+  public saveToFile(directoryName: string, fileName: string) {
+    GeometryCoreTestIO.saveGeometry(this.allGeometry, directoryName, fileName);
+    this.allGeometry = [];
+  }
+  /**
+   * Move the origin by dx,dy
+   */
+  public shift(dx: number, dy: number) {
+    this.x0 += dx;
+    this.y0 += dy;
+  }
+  public setX0(x0: number): number { const a = this.x0; this.x0 = x0; return a;}
+  public setY0(y0: number): number { const a = this.y0; this.y0 = y0; return a;}
+}
+
+describe("ClipPlaneDocs", () => {
+  it("Quadrants", () => {
+    const ck = new Checker();
+    const out = new OutputManager();
+    const a = 5.0;  // clipped polygon extent
+    const b = 7.0 * a; // step between origins of successive snips
+    const c = 3.0;    // length of arrows for planes
+    const c1 = c / 10.0;
+    const axisLength = 2.0 * a;
+    const axisArrowLength = 1.0;
+    const work = new GrowableXYZArray();
+
+    // If the normal is nonzero, add a plane to the clipper.
+    // Draw its placement arrow -- negate it for display if placementCoordinate is negative.
+    const applyConditionalPlane1 = (clipper: ConvexClipPlaneSet, plane: Plane3dByOriginAndUnitNormal | undefined) => {
+      if (plane !== undefined){
+        out.drawArrow(plane.getOriginRef(), plane.getNormalRef().scale (3.0), 0.15, 0.10);
+        out.drawPerpendicular(plane.getOriginRef(), plane.getNormalRef(), 0.0, -6.0, 6.0);
+        clipper.addPlaneToConvexSet(ClipPlane.createPlane (plane));
+      }
+    };
+
+    for (const xSign of [-1, 0, 1]) {
+      out.setX0(0);
+      for (const ySign of [-1, 0, 1]) {
+        const ay = 2 * Geometry.split3WaySign(ySign, -c, c, c);
+        const cy = Geometry.split3WaySign(ySign, -c1, c1, c1);
+          out.drawAxes(axisLength, axisArrowLength);
+        const ax = 2 * Geometry.split3WaySign(xSign, -c, c, c);
+        const cx = Geometry.split3WaySign(xSign, -c1, c1, c1);
+        const xPlane = Plane3dByOriginAndUnitNormal.createXYZUVW(cx, ay, 0, xSign, 0, 0);    // undefined is expected in 0 case!
+        const yPlane = Plane3dByOriginAndUnitNormal.createXYZUVW(ax, cy, 0, 0, ySign, 0);    // undefined is expected in 0 case!
+        const clipper = ConvexClipPlaneSet.createEmpty();
+        applyConditionalPlane1(clipper, xPlane);
+        applyConditionalPlane1(clipper, yPlane);
+        const polygonToClip = GrowableXYZArray.create(Sample.createArcStrokes(3, Point3d.create(0, 0), a, Angle.createDegrees(15),
+          Angle.createDegrees(375), true, -0.04));
+        clipper.clipConvexPolygonInPlace(polygonToClip, work);
+        out.drawPolygon(polygonToClip, true);
+        out.shift(b, 0);
+      }
+      out.shift(0, b);
+    }
+    out.saveToFile("ClipPlaneDocs", "Quadrants");
+    expect(ck.getNumErrors()).equals(0);
+  });
+});

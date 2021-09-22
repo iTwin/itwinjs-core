@@ -9,7 +9,9 @@ import { Field, KeySet } from "@bentley/presentation-common";
 import { PresentationPropertyDataProvider } from "@bentley/presentation-components";
 import { FAVORITES_CATEGORY_NAME } from "@bentley/presentation-components/lib/presentation-components/favorite-properties/DataProvider";
 import { DEFAULT_PROPERTY_GRID_RULESET } from "@bentley/presentation-components/lib/presentation-components/propertygrid/DataProvider";
-import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
+import {
+  createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, FavoritePropertiesManager, FavoritePropertiesScope, Presentation,
+} from "@bentley/presentation-frontend";
 import { SettingsResult, SettingsStatus } from "@bentley/product-settings-client";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { PropertyData } from "@bentley/ui-components";
@@ -37,6 +39,7 @@ describe("Favorite properties", () => {
 
   beforeEach(async () => {
     propertiesDataProvider = new PresentationPropertyDataProvider({ imodel, ruleset: DEFAULT_PROPERTY_GRID_RULESET });
+    propertiesDataProvider.isNestedPropertyCategoryGroupingEnabled = false;
     await Presentation.favoriteProperties.initializeConnection(imodel);
   });
 
@@ -262,11 +265,19 @@ describe("Favorite properties", () => {
 
   describe("#with-services", () => {
 
+    function setupFavoritesStorageWithSettingsService() {
+      Presentation.setFavoritePropertiesManager(new FavoritePropertiesManager({
+        storage: createFavoritePropertiesStorage(DefaultFavoritePropertiesStorageTypes.UserSettingsServiceStorage),
+      }));
+    }
+
     before(async () => {
       await imodel.close();
       await terminate();
       await initializeWithClientServices();
       await openIModel();
+      setupFavoritesStorageWithSettingsService();
+      await Presentation.favoriteProperties.initializeConnection(imodel);
     });
 
     it("favorite properties survive Presentation re-initialization", async () => {
@@ -299,7 +310,11 @@ describe("Favorite properties", () => {
       // refresh Presentation
       Presentation.terminate();
       await Presentation.initialize();
+      setupFavoritesStorageWithSettingsService();
+      await Presentation.favoriteProperties.initializeConnection(imodel);
+
       propertiesDataProvider = new PresentationPropertyDataProvider({ imodel, ruleset: DEFAULT_PROPERTY_GRID_RULESET });
+      propertiesDataProvider.isNestedPropertyCategoryGroupingEnabled = false;
       propertiesDataProvider.keys = new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]);
 
       // verify the property is still in favorites group

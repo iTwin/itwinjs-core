@@ -845,10 +845,11 @@ export interface QuantityProps extends CommonProps {
 }
 
 // @internal (undocumented)
-export function RailToolTip({ showToolTip, percent, tooltipText }: {
+export function RailMarkers({ showToolTip, percent, tooltipText, markDate }: {
     showToolTip: boolean;
     percent: number;
     tooltipText: string;
+    markDate?: DateMarkerProps;
 }): JSX.Element;
 
 // @beta
@@ -873,6 +874,8 @@ export interface ScrubberProps extends CommonProps {
     inMiniMode: boolean;
     // (undocumented)
     isPlaying: boolean;
+    // (undocumented)
+    markDate?: TimelineDateMarkerProps;
     // (undocumented)
     onChange?: (values: ReadonlyArray<number>) => void;
     // (undocumented)
@@ -948,39 +951,23 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
 
 // @public
 export interface TimelineComponentProps {
-    // (undocumented)
     alwaysMinimized?: boolean;
-    // (undocumented)
     appMenuItemOption?: TimelineMenuItemOption;
-    // (undocumented)
     appMenuItems?: TimelineMenuItemProps[];
-    // (undocumented)
     componentId?: string;
-    // (undocumented)
     endDate?: Date;
-    // (undocumented)
     includeRepeat?: boolean;
-    // (undocumented)
     initialDuration?: number;
-    // (undocumented)
+    markDate?: TimelineDateMarkerProps;
     minimized?: boolean;
-    // (undocumented)
     onChange?: (duration: number) => void;
-    // (undocumented)
     onJump?: (forward: boolean) => void;
-    // (undocumented)
     onPlayPause?: (playing: boolean) => void;
-    // (undocumented)
     onSettingsChange?: (arg: PlaybackSettings) => void;
-    // (undocumented)
     repeat?: boolean;
-    // (undocumented)
     showDuration?: boolean;
-    // (undocumented)
     startDate?: Date;
-    // (undocumented)
     timeZoneOffset?: number;
-    // (undocumented)
     totalDuration: number;
 }
 
@@ -1008,6 +995,12 @@ export interface TimelineDataProvider {
 export enum TimelineDateDisplay {
     ActualTime = 0,
     ProjectTime = 1
+}
+
+// @public
+export interface TimelineDateMarkerProps {
+    date?: Date;
+    dateMarker?: React.ReactNode;
 }
 
 // @public

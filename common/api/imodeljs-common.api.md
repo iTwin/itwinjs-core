@@ -376,7 +376,7 @@ export class B3dmHeader extends TileHeader {
 
 // @public (undocumented)
 export class BackendError extends IModelError {
-    constructor(errorNumber: number, name: string, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
+    constructor(errorNumber: number, name: string, message: string, getMetaData?: GetMetaDataFunction);
 }
 
 // @public
@@ -786,16 +786,28 @@ export interface Carto2DDegreesProps {
 }
 
 // @public
-export class Cartographic implements LatLongAndHeight {
-    constructor(longitude?: number, latitude?: number, height?: number);
+export class Cartographic implements CartographicProps {
     clone(result?: Cartographic): Cartographic;
-    equals(right: LatLongAndHeight): boolean;
-    equalsEpsilon(right: LatLongAndHeight, epsilon: number): boolean;
+    static createZero(): Cartographic;
+    equals(right: CartographicProps): boolean;
+    equalsEpsilon(right: CartographicProps, epsilon: number): boolean;
     freeze(): Readonly<this>;
-    static fromAngles(longitude: Angle, latitude: Angle, height: number, result?: Cartographic): Cartographic;
-    static fromDegrees(longitude: number, latitude: number, height: number, result?: Cartographic): Cartographic;
+    static fromAngles(args: {
+        longitude: Angle;
+        latitude: Angle;
+        height?: number;
+    }, result?: Cartographic): Cartographic;
+    static fromDegrees(args: {
+        longitude: number;
+        latitude: number;
+        height?: number;
+    }, result?: Cartographic): Cartographic;
     static fromEcef(cartesian: Point3d, result?: Cartographic): Cartographic | undefined;
-    static fromRadians(longitude: number, latitude: number, height?: number, result?: Cartographic): Cartographic;
+    static fromRadians(args: {
+        longitude: number;
+        latitude: number;
+        height?: number;
+    }, result?: Cartographic): Cartographic;
     static geocentricLatitudeFromGeodeticLatitude(geodeticLatitude: number): number;
     // (undocumented)
     height: number;
@@ -808,10 +820,16 @@ export class Cartographic implements LatLongAndHeight {
     static parametricLatitudeFromGeodeticLatitude(geodeticLatitude: number): number;
     static scalePointToGeodeticSurface(point: Point3d, result?: Point3d): Point3d | undefined;
     toEcef(result?: Point3d): Point3d;
-    // (undocumented)
-    toJSON(): LatLongAndHeight;
+    toJSON(): CartographicProps;
     toString(): string;
     }
+
+// @public
+export interface CartographicProps {
+    height: number;
+    latitude: number;
+    longitude: number;
+}
 
 // @public
 export class CartographicRange {
@@ -959,7 +977,7 @@ export enum ChangesetType {
 
 // @alpha
 export class ChannelConstraintError extends IModelError {
-    constructor(message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
+    constructor(message: string, getMetaData?: GetMetaDataFunction);
 }
 
 // @public
@@ -1725,8 +1743,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1638400,
-    Major = 25,
+    Combined = 1703936,
+    Major = 26,
     Minor = 0
 }
 
@@ -2136,7 +2154,7 @@ export class EcefLocation implements EcefLocationProps {
 
 // @public
 export interface EcefLocationProps {
-    readonly cartographicOrigin?: LatLongAndHeight;
+    readonly cartographicOrigin?: CartographicProps;
     readonly orientation: YawPitchRollProps;
     readonly origin: XYZProps;
     readonly xVector?: XYZProps;
@@ -4216,7 +4234,7 @@ export interface IModelEncryptionProps {
 
 // @public
 export class IModelError extends BentleyError {
-    constructor(errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RepositoryStatus | ChangeSetStatus | RpcInterfaceStatus | AuthStatus, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
+    constructor(errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RepositoryStatus | ChangeSetStatus | RpcInterfaceStatus | AuthStatus, message: string, getMetaData?: GetMetaDataFunction);
 }
 
 // @public
@@ -4252,19 +4270,17 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     getElementProps(_iModelToken: IModelRpcProps, _elementIds: Id64String[]): Promise<ElementProps[]>;
     // (undocumented)
-    getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelRpcProps, _props: string): Promise<GeoCoordinatesResponseProps>;
+    getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelRpcProps, _props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps>;
     // (undocumented)
     getGeometryContainment(_iModelToken: IModelRpcProps, _props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     // (undocumented)
     getGeometrySummary(_iModelToken: IModelRpcProps, _props: GeometrySummaryRequestProps): Promise<string>;
     // (undocumented)
-    getIModelCoordinatesFromGeoCoordinates(_iModelToken: IModelRpcProps, _props: string): Promise<IModelCoordinatesResponseProps>;
+    getIModelCoordinatesFromGeoCoordinates(_iModelToken: IModelRpcProps, _props: IModelCoordinatesRequestProps): Promise<IModelCoordinatesResponseProps>;
     // (undocumented)
     getMassProperties(_iModelToken: IModelRpcProps, _props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     // (undocumented)
     getModelProps(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<ModelProps[]>;
-    // (undocumented)
-    getTextureImage(_iModelToken: IModelRpcProps, _textureLoadProps: TextureLoadProps): Promise<Uint8Array | undefined>;
     // (undocumented)
     getToolTipMessage(_iModelToken: IModelRpcProps, _elementId: string): Promise<string[]>;
     // (undocumented)
@@ -4288,7 +4304,9 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     queryRows(_iModelToken: IModelRpcProps, _ecsql: string, _bindings?: any[] | object, _limit?: QueryLimit, _quota?: QueryQuota, _priority?: QueryPriority, _restartToken?: string, _abbreviateBlobs?: boolean): Promise<QueryResponse>;
     // (undocumented)
-    readFontJson(_iModelToken: IModelRpcProps): Promise<any>;
+    queryTextureData(_iModelToken: IModelRpcProps, _textureLoadProps: TextureLoadProps): Promise<TextureData | undefined>;
+    // (undocumented)
+    readFontJson(_iModelToken: IModelRpcProps): Promise<FontMapProps>;
     // (undocumented)
     requestSnap(_iModelToken: IModelRpcProps, _sessionId: string, _props: SnapRequestProps): Promise<SnapResponseProps>;
 }
@@ -4593,20 +4611,6 @@ export const iTwinChannel: (channel: string) => string;
 export interface JsonGeometryStream {
     data: GeometryStreamProps;
     format: "json";
-}
-
-// @public (undocumented)
-export interface LatAndLong {
-    // (undocumented)
-    latitude: number;
-    // (undocumented)
-    longitude: number;
-}
-
-// @public (undocumented)
-export interface LatLongAndHeight extends LatAndLong {
-    // (undocumented)
-    height: number;
 }
 
 // @internal
@@ -5994,6 +5998,7 @@ export class QParams2d {
 // @public
 export class QParams3d {
     clone(out?: QParams3d): QParams3d;
+    computeRange(out?: Range3d): Range3d;
     copyFrom(src: QParams3d): void;
     static fromNormalizedRange(rangeScale?: number): QParams3d;
     static fromOriginAndScale(origin: Point3d, scale: Point3d, out?: QParams3d): QParams3d;
@@ -6835,8 +6840,12 @@ export { RpcInterfaceStatus }
 export class RpcInvocation {
     constructor(protocol: RpcProtocol, request: SerializedRpcRequest);
     static current(rpcImpl: RpcInterface): RpcInvocation;
+    // (undocumented)
+    static currentRequest: ClientRequestContext;
     get elapsed(): number;
     readonly fulfillment: Promise<RpcRequestFulfillment>;
+    // @internal
+    static logRpcException(currentRequest: ClientRequestContext, error: any): void;
     readonly operation: RpcOperation;
     readonly protocol: RpcProtocol;
     readonly request: SerializedRpcRequest;
@@ -7393,12 +7402,12 @@ export interface SerializedRpcRequest extends SerializedClientRequestContext {
 
 // @public (undocumented)
 export class ServerError extends IModelError {
-    constructor(errorNumber: number, message: string, log?: LogFunction);
+    constructor(errorNumber: number, message: string);
 }
 
 // @public (undocumented)
 export class ServerTimeoutError extends ServerError {
-    constructor(message: string, log?: LogFunction);
+    constructor(message: string);
 }
 
 // @beta
@@ -7898,6 +7907,14 @@ export interface TextStringProps {
     underline?: boolean;
     // (undocumented)
     widthFactor?: number;
+}
+
+// @public
+export interface TextureData {
+    bytes: Uint8Array;
+    format: ImageSourceFormat;
+    height: number;
+    width: number;
 }
 
 // @public

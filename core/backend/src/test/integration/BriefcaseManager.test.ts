@@ -136,9 +136,9 @@ describe("BriefcaseManager (#integration)", () => {
 
     const iModelLatestVersion = await IModelTestUtils.openCheckpointUsingRpc({ user, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, deleteFirst: true });
     assert.isDefined(iModelLatestVersion);
-    assert.strictEqual(iModelLatestVersion.nativeDb.getParentChangeset().id, changeSets[3].id);
+    assert.strictEqual(iModelLatestVersion.nativeDb.getCurrentChangeset().id, changeSets[3].id);
 
-    assert.equal(iModelLatestVersion.nativeDb.getParentChangeset().index, changeSets[3].index);
+    assert.equal(iModelLatestVersion.nativeDb.getCurrentChangeset().index, changeSets[3].index);
 
     await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModelFirstVersion);
     await IModelTestUtils.closeAndDeleteBriefcaseDb(user, iModelLatestVersion);

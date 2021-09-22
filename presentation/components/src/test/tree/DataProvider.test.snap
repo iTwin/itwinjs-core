@@ -38,6 +38,7 @@ Array [
           "8528b854-ec02-4dd8-bfe4-a098a1d96013",
         ],
         "type": "ECInstancesNode",
+        "version": 2,
       },
       "label": Object {
         "displayValue": "Auto Loan Account",
@@ -77,6 +78,7 @@ Array [
           "845797cd-fdf3-4462-ba83-b9a1ecd911f2",
         ],
         "type": "ECInstancesNode",
+        "version": 2,
       },
       "label": Object {
         "displayValue": "Cordoba Oro",
@@ -107,6 +109,7 @@ Array [
         "d1ea9e80-e8b1-4710-a1b1-7fa1c654a1f8",
       ],
       "type": "ECInstancesNode",
+      "version": 2,
     },
     "description": "Aut et tempore voluptatum rerum unde autem nulla.",
     "hasChildren": true,
@@ -143,6 +146,7 @@ Array [
         "b8a8c076-222c-4b3c-9c60-4ee0adecf300",
       ],
       "type": "ECInstancesNode",
+      "version": 2,
     },
     "autoExpand": true,
     "description": "Quia nihil molestias delectus necessitatibus reiciendis consequatur.",

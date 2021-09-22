@@ -86,7 +86,7 @@ describe("UiFramework localStorage Wrapper", () => {
       });
       const tool = new OpenSettingsTool();
       // tabid arg
-      tool.parseAndRun(tabName);
+      await tool.parseAndRun(tabName);
       spy.calledOnce.should.true;
       spy.resetHistory();
 
@@ -94,7 +94,7 @@ describe("UiFramework localStorage Wrapper", () => {
       Object.defineProperty(SettingsModalFrontstage, "showSettingsStage", {
         get: () => handleOpenSetting2,
       });
-      tool.parseAndRun();
+      await tool.parseAndRun();
       spy.calledOnce.should.true;
       spy.resetHistory();
 

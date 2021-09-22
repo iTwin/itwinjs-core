@@ -113,6 +113,9 @@ export abstract class Client {
       } else {
         this._url = this.baseUrl;
       }
+
+      // Strip trailing '/'
+      this._url = this._url.replace(/\/$/, "");
       return this._url;
     }
 
@@ -215,7 +218,6 @@ export class UrlDiscoveryClient extends Client {
    * @returns Registered URL for the service.
    */
   public async discoverUrl(requestContext: ClientRequestContext, searchKey: string, regionId: number | undefined): Promise<string> {
-
     const urlBase: string = await this.getUrl();
     const url: string = `${urlBase}/GetUrl/`;
     const resolvedRegion = typeof regionId !== "undefined" ? regionId : process.env[UrlDiscoveryClient.configResolveUrlUsingRegion] ? Number(process.env[UrlDiscoveryClient.configResolveUrlUsingRegion]) : 0;
@@ -228,9 +230,7 @@ export class UrlDiscoveryClient extends Client {
     };
 
     await this.setupOptionDefaults(options);
-
     const response: Response = await request(requestContext, url, options);
-
     const discoveredUrl: string = response.body.result.url.replace(/\/$/, ""); // strip trailing "/" for consistency
     return discoveredUrl;
   }

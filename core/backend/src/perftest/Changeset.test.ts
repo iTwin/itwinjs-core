@@ -665,7 +665,6 @@ describe("ImodelChangesetPerformance own data", () => {
           if (undefined === spatialCategoryId)
             spatialCategoryId = SpatialCategory.insert(iModelDb, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
 
-          user.enter();
           for (let m = 0; m < dbSize; ++m) {
             const elementProps = PerfTestUtility.initElemProps(`${schemaName}:${className}`, iModelDb, newModelId, spatialCategoryId);
             const geomElement = iModelDb.elements.createElement(elementProps);

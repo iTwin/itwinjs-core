@@ -63,7 +63,7 @@ export class IModelBankFileSystemITwinClient implements ITwinManagerClient {
   }
 
   public async getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
-    const props = await this.queryContextProps(requestContext, name);
+    const props = await this.queryContextProps(requestContext, name); // SWB what does context mean here
 
     // Get first iTwin
     return props[0] as ITwin;

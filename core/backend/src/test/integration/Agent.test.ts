@@ -31,13 +31,12 @@ describe("Agent iModel Download (#integration)", () => {
     const agentConfiguration: AgentAuthorizationClientConfiguration = {
       clientId: process.env.IMJS_AGENT_TEST_CLIENT_ID ?? "",
       clientSecret: process.env.IMJS_AGENT_TEST_CLIENT_SECRET ?? "",
-      scope: "imodelhub context-registry-service:read-only",
+      scope: process.env.IMJS_AGENT_TEST_CLIENT_SCOPES ?? "",
     };
 
     const agentClient = new AgentAuthorizationClient(agentConfiguration);
     const jwt = await agentClient.getAccessToken(new ClientRequestContext());
     user = new AuthorizedBackendRequestContext(jwt);
-    user.enter();
 
     // SWB
     testProjectId = await HubUtility.getTestITwinId(user);
