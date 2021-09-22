@@ -78,7 +78,7 @@ The Viewport component is used to display graphical `BisCore.Element` *ECInstanc
 
 The rules for interacting with unified selection are:
 
-- when unified selection changes at the 0 level, we create a [hilite set](#hilite-set) for the current selection and ask the viewport to hilite it.
+- when unified selection changes at the 0th level, we create a [hilite set](#hilite-set) for the current selection and ask the viewport to hilite it.
 - when an element is selected in the viewport, we compute the selection based on [selection scope](#selection-scopes) and add that to our unified selection storage at the top level.
 
 The two key concepts - hilite set and selection scope are explained next.
