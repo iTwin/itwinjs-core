@@ -12,13 +12,14 @@ import * as i18nextBrowserLanguageDetector from "i18next-browser-languagedetecto
 import XHR, { I18NextXhrBackend } from "i18next-xhr-backend";
 import { Logger } from "@bentley/bentleyjs-core";
 
+/** @public */
+interface LocalizationInitOptions {
+  urlTemplate: string;
+}
 /** Supplies Internationalization services.
  * @note Internally, this class uses the [i18next](https://www.i18next.com/) package.
  * @public
  */
-interface LocalizationInitOptions {
-  urlTemplate: string;
-}
 export class I18N implements LocalizationClient {
   private _i18next: i18n;
   private readonly _namespaceRegistry: Map<string, Promise<void>> = new Map<string, Promise<void>>();

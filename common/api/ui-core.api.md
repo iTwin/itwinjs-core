@@ -2382,10 +2382,10 @@ export interface TreeProps extends CommonProps {
 
 // @public
 export class UiCore {
-    static get i18nNamespace(): string;
     static initialize(localizationClient: LocalizationClient): Promise<void>;
     static get initialized(): boolean;
     static get localizationClient(): LocalizationClient;
+    static get localizationNamespace(): string;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
     // @internal (undocumented)

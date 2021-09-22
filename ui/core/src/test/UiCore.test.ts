@@ -23,7 +23,7 @@ describe("UiCore", () => {
   });
 
   it("i18nNamespace should return UiCore", () => {
-    expect(UiCore.i18nNamespace).to.eq("UiCore");
+    expect(UiCore.localizationNamespace).to.eq("UiCore");
   });
 
   it("packageName should return ui-core", () => {

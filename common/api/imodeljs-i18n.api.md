@@ -8,7 +8,7 @@ import { Callback } from 'i18next';
 import { LocalizationClient } from '@bentley/imodeljs-common';
 import { TranslationOptions } from 'i18next';
 
-// @public (undocumented)
+// @public
 export class I18N implements LocalizationClient {
     constructor(nameSpaces?: string | string[], options?: LocalizationInitOptions, renderFunction?: Callback);
     // @internal
