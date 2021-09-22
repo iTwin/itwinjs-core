@@ -157,9 +157,7 @@ export interface ChildNodeRule extends NavigationRuleBase, ConditionContainer {
 }
 
 // @public
-export type ChildNodeSpecification = DEPRECATED_AllInstanceNodesSpecification | // eslint-disable-line deprecation/deprecation
-DEPRECATED_AllRelatedInstanceNodesSpecification | // eslint-disable-line deprecation/deprecation
-CustomNodeSpecification | InstanceNodesOfSpecificClassesSpecification | RelatedInstanceNodesSpecification | CustomQueryInstanceNodesSpecification;
+export type ChildNodeSpecification = CustomNodeSpecification | InstanceNodesOfSpecificClassesSpecification | RelatedInstanceNodesSpecification | CustomQueryInstanceNodesSpecification;
 
 // @public
 export interface ChildNodeSpecificationBase {
@@ -182,10 +180,6 @@ export enum ChildNodeSpecificationTypes {
     CustomNode = "CustomNode",
     // (undocumented)
     CustomQueryInstanceNodes = "CustomQueryInstanceNodes",
-    // (undocumented)
-    DEPRECATED_AllInstanceNodes = "AllInstanceNodes",
-    // (undocumented)
-    DEPRECATED_AllRelatedInstanceNodes = "AllRelatedInstanceNodes",
     // (undocumented)
     InstanceNodesOfSpecificClasses = "InstanceNodesOfSpecificClasses",
     // (undocumented)
@@ -282,8 +276,6 @@ export enum ContentFlags {
 
 // @public
 export interface ContentInstancesOfSpecificClassesSpecification extends ContentSpecificationBase {
-    // @deprecated
-    arePolymorphic?: boolean;
     classes: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
     handleInstancesPolymorphically?: boolean;
     handlePropertiesPolymorphically?: boolean;
@@ -308,20 +300,13 @@ export interface ContentModifier extends RuleBase, ContentModifiersList {
 // @public
 export interface ContentModifiersList {
     calculatedProperties?: CalculatedPropertiesSpecification[];
-    // @deprecated
-    propertiesDisplay?: DEPRECATED_PropertiesDisplaySpecification[];
     propertyCategories?: PropertyCategorySpecification[];
-    // @deprecated
-    propertyEditors?: DEPRECATED_PropertyEditorsSpecification[];
     propertyOverrides?: PropertySpecification[];
     relatedProperties?: RelatedPropertiesSpecification[];
 }
 
 // @public
-export type ContentRelatedInstancesSpecification = DEPRECATED_ContentRelatedInstancesSpecification | ContentRelatedInstancesSpecificationNew;
-
-// @public (undocumented)
-export interface ContentRelatedInstancesSpecificationNew extends ContentSpecificationBase {
+export interface ContentRelatedInstancesSpecification extends ContentSpecificationBase {
     instanceFilter?: string;
     relationshipPaths: RepeatableRelationshipPathSpecification[];
     specType: ContentSpecificationTypes.ContentRelatedInstances;
@@ -432,81 +417,6 @@ export interface DefaultGroupingPropertiesContainer {
 export interface DefaultPropertyCategoryOverride extends RuleBase {
     ruleType: RuleTypes.DefaultPropertyCategoryOverride;
     specification: PropertyCategorySpecification;
-}
-
-// @public @deprecated
-export interface DEPRECATED_AllInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
-    specType: ChildNodeSpecificationTypes.DEPRECATED_AllInstanceNodes;
-    supportedSchemas?: SchemasSpecification;
-}
-
-// @public @deprecated
-export interface DEPRECATED_AllRelatedInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
-    requiredDirection?: RelationshipDirection;
-    skipRelatedLevel?: number;
-    specType: ChildNodeSpecificationTypes.DEPRECATED_AllRelatedInstanceNodes;
-    supportedSchemas?: SchemasSpecification;
-}
-
-// @public @deprecated (undocumented)
-export interface DEPRECATED_ContentRelatedInstancesSpecification extends ContentSpecificationBase {
-    instanceFilter?: string;
-    isRecursive?: boolean;
-    relatedClasses?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
-    relationships?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
-    requiredDirection?: RelationshipDirection;
-    skipRelatedLevel?: number;
-    specType: ContentSpecificationTypes.ContentRelatedInstances;
-}
-
-// @public @deprecated
-export interface DEPRECATED_PropertiesDisplaySpecification {
-    isDisplayed?: boolean;
-    priority?: number;
-    propertyNames: string[];
-}
-
-// @public @deprecated
-export interface DEPRECATED_PropertyEditorsSpecification extends PropertyEditorSpecification {
-    propertyName: string;
-}
-
-// @public @deprecated (undocumented)
-export interface DEPRECATED_RelatedInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
-    instanceFilter?: string;
-    relatedClasses?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
-    relationships?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
-    requiredDirection?: RelationshipDirection;
-    skipRelatedLevel?: number;
-    specType: ChildNodeSpecificationTypes.RelatedInstanceNodes;
-    supportedSchemas?: string[];
-}
-
-// @public @deprecated
-export interface DEPRECATED_RelatedInstanceSpecification {
-    alias: string;
-    class: SingleSchemaClassSpecification;
-    isRequired?: boolean;
-    relationship: SingleSchemaClassSpecification;
-    requiredDirection: RelationshipDirection.Forward | RelationshipDirection.Backward;
-}
-
-// @public @deprecated
-export interface DEPRECATED_RelatedPropertiesSpecification {
-    autoExpand?: boolean;
-    handleTargetClassPolymorphically?: boolean;
-    // @deprecated
-    isPolymorphic?: boolean;
-    nestedRelatedProperties?: RelatedPropertiesSpecification[];
-    properties?: Array<string | PropertySpecification> | RelatedPropertiesSpecialValues;
-    // @deprecated
-    propertyNames?: string[] | RelatedPropertiesSpecialValues;
-    relatedClasses?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
-    relationshipMeaning?: RelationshipMeaning;
-    relationships?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
-    requiredDirection?: RelationshipDirection;
-    // @beta
-    skipIfDuplicate?: boolean;
 }
 
 // @public
@@ -1550,7 +1460,7 @@ export interface LabelGroupingNodeKeyJSON extends GroupingNodeKeyJSON {
     type: StandardNodeTypes.DisplayLabelGroupingNode;
 }
 
-// @public @deprecated
+// @public
 export interface LabelOverride extends RuleBase, ConditionContainer {
     condition?: string;
     description?: string;
@@ -2245,9 +2155,6 @@ export interface PropertyRangeGroupSpecification {
     toValue: string;
 }
 
-// @public @deprecated
-export type PropertyRendererSpecification = CustomRendererSpecification;
-
 // @public
 export interface PropertySortingRule extends SortingRuleBase {
     propertyName: string;
@@ -2294,8 +2201,6 @@ export class RegisteredRuleset implements IDisposable, Ruleset {
     get rules(): Rule[];
     // (undocumented)
     get supplementationInfo(): SupplementationInfo | undefined;
-    // (undocumented)
-    get supportedSchemas(): SchemasSpecification | undefined;
     // (undocumented)
     toJSON(): Ruleset;
     // (undocumented)
@@ -2345,20 +2250,14 @@ export interface RelatedClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
 }
 
 // @public
-export type RelatedInstanceNodesSpecification = DEPRECATED_RelatedInstanceNodesSpecification | RelatedInstanceNodesSpecificationNew;
-
-// @public (undocumented)
-export interface RelatedInstanceNodesSpecificationNew extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
+export interface RelatedInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
     instanceFilter?: string;
     relationshipPaths: RepeatableRelationshipPathSpecification[];
     specType: ChildNodeSpecificationTypes.RelatedInstanceNodes;
 }
 
 // @public
-export type RelatedInstanceSpecification = DEPRECATED_RelatedInstanceSpecification | RelatedInstanceSpecificationNew;
-
-// @public
-export interface RelatedInstanceSpecificationNew {
+export interface RelatedInstanceSpecification {
     alias: string;
     isRequired?: boolean;
     relationshipPath: RelationshipPathSpecification;
@@ -2371,12 +2270,10 @@ export enum RelatedPropertiesSpecialValues {
 }
 
 // @public
-export type RelatedPropertiesSpecification = DEPRECATED_RelatedPropertiesSpecification | RelatedPropertiesSpecificationNew;
-
-// @public
-export interface RelatedPropertiesSpecificationNew {
+export interface RelatedPropertiesSpecification {
     autoExpand?: boolean;
     handleTargetClassPolymorphically?: boolean;
+    nestedRelatedProperties?: RelatedPropertiesSpecification[];
     properties?: Array<string | PropertySpecification> | RelatedPropertiesSpecialValues;
     propertiesSource: RelationshipPathSpecification;
     relationshipMeaning?: RelationshipMeaning;
@@ -2539,8 +2436,6 @@ export interface Ruleset {
     requiredSchemas?: RequiredSchemaSpecification[];
     rules: Rule[];
     supplementationInfo?: SupplementationInfo;
-    // @deprecated
-    supportedSchemas?: SchemasSpecification;
     vars?: VariablesGroup[];
     // @beta
     version?: string;
