@@ -33,7 +33,6 @@ describe("IModelAppFavoritePropertiesStorage", () => {
     sinon.stub(IModelApp, "settings").get(() => settingsAdminMock.object);
 
     authorizationClientMock = moq.Mock.ofType<FrontendAuthorizationClient>();
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     const accessToken: AccessToken = "TestToken";
     authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(accessToken));
     IModelApp.authorizationClient = authorizationClientMock.object;
