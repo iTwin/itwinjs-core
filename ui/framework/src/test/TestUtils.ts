@@ -61,10 +61,10 @@ export class TestUtils {
   private static _rootReducer: any;
 
   public static get localizationClient(): LocalizationClient {
-    if (!this._localizationClient) {
-      this._localizationClient = new I18N();
+    if (!TestUtils._localizationClient) {
+      TestUtils._localizationClient = new I18N();
     }
-    return this._localizationClient;
+    return TestUtils._localizationClient;
   }
 
   public static async initializeUiFramework(testAlternateKey = false) {
