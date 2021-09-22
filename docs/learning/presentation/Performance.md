@@ -7,8 +7,8 @@ tips for better performance.
 
 ## Writing Presentation Rule Sets
 
-- Define `SupportedSchemas` property for both rule set and specifications
-(where applicable). That helps the library to filter-out uninteresting schemas
+- Define `RequiredSchemas` property for both rule sets and individual rules. 
+That helps the library to filter-out uninteresting schemas
 which may contain a lot of information and thus improves performance.
 - Make rule specifications as specific as possible. Most specifications require
 just part of information (e.g. the related class) and the library can find out

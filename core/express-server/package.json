@@ -15,7 +15,7 @@
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/express-server/file.json --tsIndexFile=./ExpressServer.ts --onlyJson",
     "extract-api": "betools extract-api --entry=ExpressServer",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "betools test",
+    "test": "mocha",
     "cover": "nyc npm test"
   },
   "repository": {

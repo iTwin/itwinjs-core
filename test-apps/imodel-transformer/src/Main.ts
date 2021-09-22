@@ -6,7 +6,7 @@
 import * as path from "path";
 import * as Yargs from "yargs";
 import { assert, Guid, GuidString, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { ContextRegistryClient } from "@bentley/context-registry-client";
+import { ITwinAccessClient } from "@bentley/context-registry-client";
 import { Version } from "@bentley/imodelhub-client";
 import {
   BackendRequestContext, IModelDb, IModelHost, IModelJsFs, SnapshotDb,
@@ -117,14 +117,14 @@ void (async () => {
     }
 
     let user: AuthorizedClientRequestContext | BackendRequestContext;
-    let contextRegistry: ContextRegistryClient | undefined;
+    let iTwinAccessClient: ITwinAccessClient | undefined;
     let sourceDb: IModelDb;
     let targetDb: IModelDb;
     const processChanges = args.sourceStartChangesetIndex || args.sourceStartChangesetId;
 
     if (args.sourceContextId || args.targetContextId) {
       user = await IModelHubUtils.getAuthorizedClientRequestContext();
-      contextRegistry = new ContextRegistryClient();
+      iTwinAccessClient = new ITwinAccessClient();
     } else {
       user = new BackendRequestContext();
     }
@@ -132,16 +132,12 @@ void (async () => {
     if (args.sourceContextId) {
       // source is from iModelHub
       assert(user instanceof AuthorizedClientRequestContext);
-      assert(undefined !== contextRegistry);
+      assert(undefined !== iTwinAccessClient);
       assert(undefined !== args.sourceIModelId);
       const sourceContextId = Guid.normalize(args.sourceContextId);
       const sourceIModelId = Guid.normalize(args.sourceIModelId);
       let sourceEndVersion = IModelVersion.latest();
-      const sourceContext = await contextRegistry.getProject(user, {
-        $filter: `$id+eq+'${sourceContextId}'`,
-      });
-      assert(undefined !== sourceContext);
-      Logger.logInfo(loggerCategory, `sourceContextId=${sourceContextId}, name=${sourceContext.name}`);
+      Logger.logInfo(loggerCategory, `sourceContextId=${sourceContextId}`);
       Logger.logInfo(loggerCategory, `sourceIModelId=${sourceIModelId}`);
       if (args.sourceStartChangesetIndex || args.sourceStartChangesetId) {
         assert(!(args.sourceStartChangesetIndex && args.sourceStartChangesetId), "Pick single way to specify starting changeset");

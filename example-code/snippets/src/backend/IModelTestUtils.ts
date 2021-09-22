@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import * as path from "path";
 import { OpenMode } from "@bentley/bentleyjs-core";
-import { ContextRegistryClient } from "@bentley/context-registry-client";
+import { ITwinAccessClient } from "@bentley/context-registry-client";
 import { IModelHost, IModelHostConfiguration, KnownLocations, SnapshotDb, StandaloneDb } from "@bentley/imodeljs-backend";
 import { IModelJsFs, IModelJsFsStats } from "@bentley/imodeljs-backend/lib/IModelJsFs";
 import { IModelReadRpcInterface, RpcManager } from "@bentley/imodeljs-common";
@@ -34,10 +34,10 @@ export class KnownTestLocations {
 
 export class IModelTestUtils {
 
-  private static _connectClient: ContextRegistryClient | undefined;
-  public static get connectClient(): ContextRegistryClient {
+  private static _connectClient: ITwinAccessClient | undefined;
+  public static get connectClient(): ITwinAccessClient {
     if (!IModelTestUtils._connectClient)
-      IModelTestUtils._connectClient = new ContextRegistryClient();
+      IModelTestUtils._connectClient = new ITwinAccessClient();
     return IModelTestUtils._connectClient;
   }
 

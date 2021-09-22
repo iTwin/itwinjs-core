@@ -30,7 +30,6 @@
   },
   "dependencies": {
     "@microsoft/api-extractor": "7.7.3",
-    "chai": "^4.1.2",
     "chalk": "^3.0.0",
     "cpx": "^1.5.0",
     "cross-spawn": "^7.0.1",
@@ -41,7 +40,6 @@
     "recursive-readdir": "^2.2.2",
     "rimraf": "^3.0.2",
     "tree-kill": "^1.2.0",
-    "ts-node": "^7.0.1",
     "tsconfig-paths": "^3.3.2",
     "typedoc": "^0.16.8",
     "typedoc-plugin-external-module-name": "3.0.0",

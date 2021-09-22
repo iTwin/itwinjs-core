@@ -376,7 +376,6 @@ importers:
       ws: ^7.5.3
     dependencies:
       '@azure/storage-blob': 12.8.0
-      '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/imodeljs-native': 3.0.10
       deep-assign: 2.0.0
       form-data: 2.5.1
@@ -390,6 +389,7 @@ importers:
       '@bentley/backend-itwin-client': link:../backend-itwin-client
       '@bentley/bentleyjs-core': link:../bentley
       '@bentley/build-tools': link:../../tools/build
+      '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/ecschema-metadata': link:../ecschema-metadata
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/geometry-core': link:../geometry
@@ -685,6 +685,7 @@ importers:
       '@xmldom/xmldom': ^0.7.0
       chai: ^4.1.2
       chai-as-promised: ^7
+      cpx: ^1.5.0
       eslint: ^7.11.0
       glob: ^7.1.2
       mocha: ^8.3.2
@@ -706,6 +707,7 @@ importers:
       '@xmldom/xmldom': 0.7.5
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
+      cpx: 1.5.0
       eslint: 7.32.0
       mocha: 8.4.0
       nyc: 15.1.0
@@ -912,7 +914,6 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/certa': workspace:*
-      '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/frontend-authorization-client': workspace:*
       '@bentley/geometry-core': workspace:*
@@ -950,7 +951,6 @@ importers:
       wms-capabilities: 0.4.0
       xml-js: ~1.6.11
     dependencies:
-      '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/reality-data-client': link:../../clients/reality-data
       fuse.js: 3.6.1
       semver: 5.7.1
@@ -996,7 +996,6 @@ importers:
     specifiers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
-      '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/geometry-core': workspace:*
       '@bentley/imodeljs-common': workspace:*
@@ -1012,7 +1011,6 @@ importers:
       typescript: ~4.4.0
     dependencies:
       '@bentley/bentleyjs-core': link:../bentley
-      '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/geometry-core': link:../geometry
       '@bentley/imodeljs-common': link:../common
       '@bentley/imodeljs-frontend': link:../frontend
@@ -3842,7 +3840,6 @@ importers:
       '@bentley/eslint-plugin': workspace:*
       '@microsoft/api-extractor': 7.7.3
       '@types/node': 10.14.1
-      chai: ^4.1.2
       chalk: ^3.0.0
       cpx: ^1.5.0
       cross-spawn: ^7.0.1
@@ -3854,7 +3851,6 @@ importers:
       recursive-readdir: ^2.2.2
       rimraf: ^3.0.2
       tree-kill: ^1.2.0
-      ts-node: ^7.0.1
       tsconfig-paths: ^3.3.2
       typedoc: ^0.16.8
       typedoc-plugin-external-module-name: 3.0.0
@@ -3863,7 +3859,6 @@ importers:
       yargs: ^16.0.0
     dependencies:
       '@microsoft/api-extractor': 7.7.3
-      chai: 4.3.4
       chalk: 3.0.0
       cpx: 1.5.0
       cross-spawn: 7.0.3
@@ -3874,7 +3869,6 @@ importers:
       recursive-readdir: 2.2.2
       rimraf: 3.0.2
       tree-kill: 1.2.2
-      ts-node: 7.0.1
       tsconfig-paths: 3.11.0
       typedoc: 0.16.11
       typedoc-plugin-external-module-name: 3.0.0_typedoc@0.16.11
@@ -4565,7 +4559,6 @@ importers:
     specifiers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
-      '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/frontend-authorization-client': workspace:*
       '@bentley/geometry-core': workspace:*
@@ -4648,7 +4641,6 @@ importers:
       typescript: ~4.4.0
       xmlhttprequest: ^1.8.0
     dependencies:
-      '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/icons-generic': 1.0.34
       '@bentley/icons-generic-webfont': 1.0.34
       '@bentley/presentation-components': link:../../presentation/components
@@ -9563,6 +9555,7 @@ packages:
   /arrify/1.0.1:
     resolution: {integrity: sha1-iYUI2iIm84DfkEcoRWhJwVAaSw0=}
     engines: {node: '>=0.10.0'}
+    dev: true
 
   /arrify/2.0.1:
     resolution: {integrity: sha512-3duEwti880xqi4eAMN8AyR4a0ByT90zoYdLlevfrvU43vb0YZwZVfxOgxWrLXXXpyugL0hNZc9G6BiB5B3nUug==}
@@ -21718,6 +21711,7 @@ packages:
       mkdirp: 0.5.5
       source-map-support: 0.5.20
       yn: 2.0.0
+    dev: true
 
   /ts-pnp/1.2.0_typescript@4.4.3:
     resolution: {integrity: sha512-csd+vJOb/gkzvcCHgTGSChYpy5f1/XKNsmvBGO4JXS+z1v2HobugDz4s1IeFXM3wZB44uczs+eazB5Q/ccdhQw==}
@@ -23093,6 +23087,7 @@ packages:
   /yn/2.0.0:
     resolution: {integrity: sha1-5a2ryKz0CPY4X8dklWhMiOavaJo=}
     engines: {node: '>=4'}
+    dev: true
 
   /yocto-queue/0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}

@@ -19,8 +19,8 @@
     "cover:integration": "nyc npm run test:integration",
     "extract-api": "betools extract-api --entry=imodeljs-transformer",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "betools test --offline=\"mock\" --grep=\"#integration\" --invert",
-    "test:integration": "betools test --offline=\"mock\" --grep=\"#integration\""
+    "test": "mocha --grep=\"#integration\" --invert",
+    "test:integration": "mocha --grep=\"#integration\""
   },
   "repository": {
     "type": "git",

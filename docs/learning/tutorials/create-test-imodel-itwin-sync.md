@@ -15,7 +15,7 @@ Before you create an iModel, you must first have an iTwin project that will cont
   - Any other users will also have to have a Bentley account
 - Click Submit
 
-A iTwin project containing an empty iModel will be created for you.
+An iTwin project containing an empty iModel will be created for you.
 
 ## Download iTwin synchronizer
 
