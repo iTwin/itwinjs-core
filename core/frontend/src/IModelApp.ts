@@ -329,7 +329,7 @@ export class IModelApp {
 
     // first register all the core tools. Subclasses may choose to override them.
     const namespace = "CoreTools";
-    this.localizationClient.registerNamespace(namespace);
+    await this.localizationClient.registerNamespace(namespace);
     [
       selectTool,
       idleTool,

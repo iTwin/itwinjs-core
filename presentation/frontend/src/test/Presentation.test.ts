@@ -26,7 +26,7 @@ describe("Presentation", () => {
 
   const mockI18N = () => {
     const mock = moq.Mock.ofType<I18N>();
-    mock.setup((x) => x.registerNamespace(moq.It.isAny())).returns(async () => ( Promise.resolve() ));
+    mock.setup(async (x) => x.registerNamespace(moq.It.isAny())).returns(async () => ( Promise.resolve() ));
     return mock;
   };
 
