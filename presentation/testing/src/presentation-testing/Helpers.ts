@@ -106,18 +106,18 @@ export const terminate = async (frontendApp = IModelApp) => {
     return;
 
   // store directory that needs to be cleaned-up
-  let cacheDirectory: string | undefined;
-  const cacheConfig = PresentationBackend.initProps?.cacheConfig;
-  if (cacheConfig?.mode === HierarchyCacheMode.Disk)
-    cacheDirectory = cacheConfig?.directory;
-  else if (cacheConfig?.mode === HierarchyCacheMode.Hybrid)
-    cacheDirectory = cacheConfig?.disk?.directory;
+  let hierarchiesCacheDirectory: string | undefined;
+  const hierarchiesCacheConfig = PresentationBackend.initProps?.caching?.hierarchies;
+  if (hierarchiesCacheConfig?.mode === HierarchyCacheMode.Disk)
+    hierarchiesCacheDirectory = hierarchiesCacheConfig?.directory;
+  else if (hierarchiesCacheConfig?.mode === HierarchyCacheMode.Hybrid)
+    hierarchiesCacheDirectory = hierarchiesCacheConfig?.disk?.directory;
 
   // terminate backend
   PresentationBackend.terminate();
   await IModelHost.shutdown();
-  if (cacheDirectory)
-    rimraf.sync(cacheDirectory);
+  if (hierarchiesCacheDirectory)
+    rimraf.sync(hierarchiesCacheDirectory);
 
   // terminate frontend
   PresentationFrontend.terminate();
