@@ -47,7 +47,6 @@ public;DisposeFunc = () => void
 public;DuplicatePolicy
 public;Entry
 public;EntryContainer
-beta;ExtensionStatus
 public;GeoServiceStatus
 public;GetMetaDataFunction = () => object | undefined
 public;Guid
@@ -108,4 +107,3 @@ public;TransientIdSequence
 public;using
 public;utf8ToString(utf8: Uint8Array): string | undefined
 internal;utf8ToStringPolyfill(utf8: Uint8Array): string | undefined
-beta;WSStatus
