@@ -1,6 +1,6 @@
 {
   "name": "@bentley/reality-data-client",
-  "version": "3.0.0-dev.63",
+  "version": "3.0.0-dev.64",
   "description": "iModel.js Reality Data Client",
   "main": "lib/reality-data-client.js",
   "typings": "lib/reality-data-client",
@@ -41,7 +41,7 @@
     "lodash": "^4.17.10"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.63"
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.64"
   },
   "devDependencies": {
     "@bentley/build-tools": "workspace:*",

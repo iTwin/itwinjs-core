@@ -327,7 +327,7 @@ importers:
       '@bentley/geometry-core': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/imodeljs-common': workspace:*
-      '@bentley/imodeljs-native': 3.0.9
+      '@bentley/imodeljs-native': 3.0.10
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@bentley/perf-tools': workspace:*
@@ -377,7 +377,7 @@ importers:
     dependencies:
       '@azure/storage-blob': 12.8.0
       '@bentley/context-registry-client': link:../../clients/context-registry
-      '@bentley/imodeljs-native': 3.0.9
+      '@bentley/imodeljs-native': 3.0.10
       deep-assign: 2.0.0
       form-data: 2.5.1
       fs-extra: 8.1.0
@@ -6701,8 +6701,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/3.0.9:
-    resolution: {integrity: sha512-pnx5skIBKeOlXCFSHvXdw7K1Tjqoh1xzep8UjFmawT4Dxbl6sKoxyWuD5xLGoGalfzOpJdTkvfzRgWwwl/LRLA==}
+  /@bentley/imodeljs-native/3.0.10:
+    resolution: {integrity: sha512-TJAXxqQHgn3LkWxvIElEbHwbDCnvuGdfbqQ2H/SUxWEioYgXwSeltwBib8Pr+BFyCA5UBiR+ELzW9yWt93eNQw==}
     requiresBuild: true
     dev: false
 

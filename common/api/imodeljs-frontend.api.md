@@ -5151,7 +5151,7 @@ export class MapLayerFormat {
 
 // @internal (undocumented)
 export class MapLayerFormatRegistry {
-    constructor(opts: MapLayerOptions);
+    constructor(opts?: MapLayerOptions);
     // (undocumented)
     get configOptions(): MapLayerOptions;
     // (undocumented)

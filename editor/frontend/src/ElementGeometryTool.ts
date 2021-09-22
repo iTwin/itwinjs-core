@@ -163,7 +163,7 @@ export class SubEntityData {
 
     const opts: GraphicBranchOptions = { appearanceProvider };
 
-    const range = (this.geom?.range ? Range3d.fromJSON(this.geom.range): undefined);
+    const range = (this.geom?.range ? Range3d.fromJSON(this.geom.range) : undefined);
     const pixelSize = context.viewport.getPixelSizeAtPoint(range ? range.center : undefined);
     const offsetDir = context.viewport.view.getZVector();
     offsetDir.scaleToLength(3 * pixelSize, offsetDir);
@@ -176,8 +176,10 @@ export class SubEntityData {
 /** @alpha Base class for tools that want to use the backend geometry cache. */
 export abstract class ElementGeometryCacheTool extends ElementSetTool implements FeatureOverrideProvider {
   protected _startedCmd?: string;
+  protected readonly _checkedIds = new Map<Id64String, boolean>();
   protected _graphicsProvider?: ElementGeometryGraphicsProvider;
   protected _graphicsPending?: true | undefined;
+  protected _firstResult = true;
 
   protected allowView(vp: Viewport) { return vp.view.is3d(); }
   public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && this.allowView(vp)); }
@@ -204,7 +206,7 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
     this.agenda.elements.forEach((id) => { overrides.overrideElement(id, app); });
   }
 
-  protected updateAgendaAppearanceProvider(): void {
+  protected updateAgendaAppearanceProvider(drop?: true): void {
     if (!this.wantAgendaAppearanceOverride)
       return;
 
@@ -212,31 +214,36 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
       if (!this.allowView(vp))
         continue;
 
-      if (this.agenda.isEmpty)
+      if (drop || this.agenda.isEmpty)
         vp.dropFeatureOverrideProvider(this);
       else if (!vp.addFeatureOverrideProvider(this))
         vp.setFeatureOverrideProviderChanged();
     }
   }
 
-  protected override async onAgendaModified(): Promise<void> {
-    this.updateAgendaAppearanceProvider();
-    return super.onAgendaModified();
-  }
-
   protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined { return undefined; }
 
   protected override async isElementValidForOperation(hit: HitDetail, out?: LocateResponse): Promise<boolean> {
-    // TODO: Cache accept status...
     if (!await super.isElementValidForOperation(hit, out))
       return false;
 
-    try {
-      this._startedCmd = await this.startCommand();
-      return await ElementGeometryCacheTool.callCommand("createElementGeometryCache", hit.sourceId, this.geometryCacheFilter);
-    } catch (err) {
+    if (!hit.isElementHit)
       return false;
+
+    let accept = this._checkedIds.get(hit.sourceId);
+
+    if (undefined === accept) {
+      try {
+        this._startedCmd = await this.startCommand();
+        accept = await ElementGeometryCacheTool.callCommand("createElementGeometryCache", hit.sourceId, this.geometryCacheFilter);
+      } catch (err) {
+        accept = false;
+      }
+
+      this._checkedIds.set(hit.sourceId, accept);
     }
+
+    return accept;
   }
 
   public override onDynamicFrame(_ev: BeButtonEvent, context: DynamicsContext): void {
@@ -258,8 +265,13 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
     const graphicData = await this.getGraphicData(ev);
     this._graphicsPending = undefined;
 
-    if (undefined !== graphicData)
+    if (undefined !== graphicData) {
+      if (this._firstResult) {
+        this.updateAgendaAppearanceProvider();
+        this._firstResult = false;
+      }
       return this.createGraphic(graphicData);
+    }
 
     if (undefined !== this._graphicsProvider)
       this._graphicsProvider.cleanupGraphic();
@@ -286,10 +298,28 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
     } catch (err) { }
   }
 
+  public override async onUnsuspend(): Promise<void> {
+    if (!this._firstResult)
+      this.updateAgendaAppearanceProvider();
+    return super.onUnsuspend();
+  }
+
+  public override async onSuspend(): Promise<void> {
+    if (!this._firstResult)
+      this.updateAgendaAppearanceProvider(true);
+    return super.onSuspend();
+  }
+
+  public override async onPostInstall(): Promise<void> {
+    await super.onPostInstall();
+    if (this.wantAgendaAppearanceOverride)
+      this.agenda.manageHiliteState = false;
+  }
+
   public override async onCleanup(): Promise<void> {
-    await super.onCleanup(); // Empty agenda before updateAgendaAppearanceProvider...
-    this.updateAgendaAppearanceProvider();
+    await super.onCleanup();
     await this.clearElementGeometryCache();
+    this.updateAgendaAppearanceProvider(true);
     this.clearGraphic();
   }
 }
@@ -339,7 +369,7 @@ export class OffsetFacesTool extends ElementGeometryCacheTool {
       // const boresite = AccuDrawHintBuilder.getBoresite(ev.point, ev.viewport);
       const hit = IModelApp.accuSnap.currHit;
       const boresite = AccuDrawHintBuilder.getBoresite(hit ? hit.hitPoint : ev.point, ev.viewport);
-      const info = await this.doPickSubEntities(this.agenda.elements[this.agenda.length-1], boresite);
+      const info = await this.doPickSubEntities(this.agenda.elements[this.agenda.length - 1], boresite);
 
       if (undefined === info)
         return false;
@@ -385,7 +415,7 @@ export class OffsetFacesTool extends ElementGeometryCacheTool {
       return true;
     }
 
-    if (undefined !== this._currentSubEntity && this._currentSubEntity.isSame(current.subEntity))
+    if (undefined !== this._currentSubEntity && this._currentSubEntity.hasGraphic && this._currentSubEntity.isSame(current.subEntity))
       return false;
 
     if (undefined === this._currentSubEntity)
