@@ -25,7 +25,7 @@ export class TestConfig {
         searchString: name,
         propertyName: ITwinSearchableProperty.Name,
         exactMatch: true,
-      }
+      },
     });
 
     if (iTwinList.length === 0)
