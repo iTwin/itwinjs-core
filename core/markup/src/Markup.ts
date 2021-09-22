@@ -6,7 +6,7 @@
  * @module MarkupApp
  */
 
-import { getErrorMetadata, Logger } from "@bentley/bentleyjs-core";
+import { getErrorProps, Logger } from "@bentley/bentleyjs-core";
 import { Point3d, XAndY } from "@bentley/geometry-core";
 import { ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
 import { FrontendLoggerCategory, imageElementFromImageSource, IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";

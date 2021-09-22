@@ -6,7 +6,7 @@
  * @module Telemetry
  */
 
-import { getErrorMetadata, GuidString, Logger } from "@bentley/bentleyjs-core";
+import { getErrorProps, GuidString, Logger } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TelemetryClientLoggerCategory } from "./TelemetryClientLoggerCategory";
 

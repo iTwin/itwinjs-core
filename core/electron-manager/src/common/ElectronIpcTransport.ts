@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BentleyStatus, getErrorMetadata, ProcessDetector } from "@bentley/bentleyjs-core";
+import { BentleyStatus, getErrorProps, ProcessDetector } from "@bentley/bentleyjs-core";
 import {
   IModelError, iTwinChannel, RpcPushChannel, RpcPushConnection, RpcRequestFulfillment, RpcSerializedValue, SerializedRpcRequest,
 } from "@bentley/imodeljs-common";
