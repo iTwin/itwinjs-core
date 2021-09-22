@@ -605,11 +605,15 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
     // (undocumented)
     static callCommand<T extends keyof SolidModelingCommandIpc>(method: T, ...args: Parameters<SolidModelingCommandIpc[T]>): ReturnType<SolidModelingCommandIpc[T]>;
     // (undocumented)
+    protected readonly _checkedIds: Map<string, boolean>;
+    // (undocumented)
     protected clearElementGeometryCache(): Promise<void>;
     // (undocumented)
     protected clearGraphic(): void;
     // (undocumented)
     protected createGraphic(graphicData: Uint8Array): Promise<void>;
+    // (undocumented)
+    protected _firstResult: boolean;
     // (undocumented)
     protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
     // (undocumented)
@@ -623,19 +627,23 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
     // (undocumented)
     protected isElementValidForOperation(hit: HitDetail, out?: LocateResponse): Promise<boolean>;
     // (undocumented)
-    protected onAgendaModified(): Promise<void>;
-    // (undocumented)
     onCleanup(): Promise<void>;
     // (undocumented)
     onDynamicFrame(_ev: BeButtonEvent, context: DynamicsContext): void;
     // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
+    onPostInstall(): Promise<void>;
+    // (undocumented)
+    onSuspend(): Promise<void>;
+    // (undocumented)
+    onUnsuspend(): Promise<void>;
+    // (undocumented)
     protected startCommand(): Promise<string>;
     // (undocumented)
     protected _startedCmd?: string;
     // (undocumented)
-    protected updateAgendaAppearanceProvider(): void;
+    protected updateAgendaAppearanceProvider(drop?: true): void;
     // (undocumented)
     protected updateGraphic(ev: BeButtonEvent, isDynamics: boolean): Promise<void>;
     // (undocumented)
