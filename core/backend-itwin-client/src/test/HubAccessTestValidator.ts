@@ -26,16 +26,16 @@ export class HubAccessTestValidator {
 
     const testProjectName = "iModelJsIntegrationTest";
     const testIModelName = "ReadOnlyTest";
-    const testProjectId: string = await TestConfig.queryProjectId(requestContext, testProjectName);
+    const testProjectId: string = await TestConfig.getITwinIdByName(requestContext, testProjectName);
     const testIModelId: string = await TestConfig.queryIModelId(requestContext, testIModelName, testProjectId);
 
     HubAccessTestValidator._singletonInstance = new HubAccessTestValidator(testProjectName, testProjectId, testIModelName, testIModelId);
     return HubAccessTestValidator._singletonInstance;
   }
 
-  public async validateContextRegistryAccess(accessToken?: AccessToken) {
+  public async validateITwinClientAccess(accessToken: AccessToken) {
     const requestContext = new AuthorizedClientRequestContext(accessToken);
-    const projectId = await TestConfig.queryProjectId(requestContext, this._testProjectName);
+    const projectId = await TestConfig.getITwinIdByName(requestContext, this._testProjectName);
     chai.expect(projectId).to.be.equal(this._testProjectId);
   }
 

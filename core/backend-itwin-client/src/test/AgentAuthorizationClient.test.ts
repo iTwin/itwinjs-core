@@ -69,11 +69,11 @@ describe("AgentAuthorizationClient (#integration)", () => {
     const agentClient = new AgentAuthorizationClient(agentConfiguration);
     const jwt: AccessToken = await agentClient.getAccessToken() ?? "";
 
-    await validator.validateContextRegistryAccess(jwt);
+    await validator.validateITwinClientAccess(jwt);
     await validator.validateIModelHubAccess(jwt);
 
     const refreshJwt: AccessToken = await agentClient.getAccessToken() ?? "";
-    await validator.validateContextRegistryAccess(refreshJwt);
+    await validator.validateITwinClientAccess(refreshJwt);
     await validator.validateIModelHubAccess(refreshJwt);
   });
 });

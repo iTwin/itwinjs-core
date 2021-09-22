@@ -1,6 +1,6 @@
 {
   "name": "@bentley/frontend-devtools",
-  "version": "3.0.0-dev.63",
+  "version": "3.0.0-dev.64",
   "description": "Debug menu and supporting UI widgets",
   "main": "lib/frontend-devtools.js",
   "imodeljsSharedLibrary": true,
@@ -33,7 +33,6 @@
   },
   "dependencies": {
     "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/context-registry-client": "workspace:*",
     "@bentley/geometry-core": "workspace:*",
     "@bentley/imodeljs-common": "workspace:*",
     "@bentley/imodeljs-frontend": "workspace:*",

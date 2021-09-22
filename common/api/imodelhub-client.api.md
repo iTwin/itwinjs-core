@@ -5,13 +5,10 @@
 ```ts
 
 import { AccessToken } from '@bentley/itwin-client';
-import { Asset } from '@bentley/context-registry-client';
-import { AuthorizationClient } from '@bentley/itwin-client';
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { CancelRequest } from '@bentley/itwin-client';
 import { Client } from '@bentley/itwin-client';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
-import { ContextType } from '@bentley/context-registry-client';
 import { DefaultRequestOptionsProvider } from '@bentley/itwin-client';
 import { FileHandler } from '@bentley/itwin-client';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
@@ -19,9 +16,9 @@ import { GuidString } from '@bentley/bentleyjs-core';
 import { HttpStatus } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IModelHubStatus } from '@bentley/bentleyjs-core';
+import { ITwin } from '@bentley/context-registry-client';
 import { LogFunction } from '@bentley/bentleyjs-core';
 import { ProgressCallback } from '@bentley/itwin-client';
-import { Project } from '@bentley/context-registry-client';
 import { RequestOptions } from '@bentley/itwin-client';
 import { RequestQueryOptions } from '@bentley/itwin-client';
 import { RequestTimeoutOptions } from '@bentley/itwin-client';
@@ -461,9 +458,7 @@ export type ConstructorType = new () => any;
 // @internal
 export interface ContextManagerClient {
     // (undocumented)
-    queryAssetByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<Asset>;
-    // (undocumented)
-    queryProjectByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<Project>;
+    getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin>;
 }
 
 // @internal
@@ -688,10 +683,8 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
     // (undocumented)
     deleteContext(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<void>;
     // (undocumented)
-    queryAssetByName(requestContext: AuthorizedClientRequestContext, assetName: string): Promise<Asset>;
-    // (undocumented)
-    queryProjectByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project>;
-}
+    getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin>;
+    }
 
 // @internal
 export class IModelBankHandler extends IModelBaseHandler {
@@ -880,7 +873,6 @@ export enum IModelHubEventType {
 // @internal
 export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
     contextId?: string;
-    contextTypeId?: ContextType;
     fromJson(obj: any): void;
     iModelId?: GuidString;
     projectId?: string;

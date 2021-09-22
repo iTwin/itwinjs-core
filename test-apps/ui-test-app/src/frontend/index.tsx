@@ -9,7 +9,7 @@ import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
 import { Id64String, Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
-import { ContextRegistryClient } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
@@ -432,19 +432,29 @@ export class SampleAppIModelApp {
       const iModelName = process.env.IMJS_UITESTAPP_IMODEL_NAME ?? "";
 
       const requestContext = await AuthorizedFrontendRequestContext.create();
-      const project = await (new ContextRegistryClient()).getProject(requestContext, {
-        $select: "*",
-        $filter: `Name+eq+'${projectName}'`,
+      const iTwinList: ITwin[] = await (new ITwinAccessClient()).getAll(requestContext, {
+        search: {
+          searchString: projectName,
+          propertyName: ITwinSearchableProperty.Name,
+          exactMatch: true,
+        },
       });
 
-      const iModel = (await (new IModelHubClient()).iModels.get(requestContext, project.wsgId, new IModelQuery().byName(iModelName)))[0];
+      if (iTwinList.length === 0)
+        throw new Error(`ITwin ${projectName} was not found for the user.`);
+      else if (iTwinList.length > 1)
+        throw new Error(`Multiple iTwins named ${projectName} were found for the user.`);
+
+      const project: ITwin = iTwinList[0];
+
+      const iModel = (await (new IModelHubClient()).iModels.get(requestContext, project.id, new IModelQuery().byName(iModelName)))[0];
 
       if (viewId) {
         // open directly into the iModel (view)
-        await SampleAppIModelApp.openIModelAndViews(project.wsgId, iModel.wsgId, [viewId]);
+        await SampleAppIModelApp.openIModelAndViews(project.id, iModel.wsgId, [viewId]);
       } else {
         // open to the IModelIndex frontstage
-        await SampleAppIModelApp.showIModelIndex(project.wsgId, iModel.wsgId);
+        await SampleAppIModelApp.showIModelIndex(project.id, iModel.wsgId);
       }
     } else if (SampleAppIModelApp.iModelParams) {
       if (SampleAppIModelApp.iModelParams.viewIds && SampleAppIModelApp.iModelParams.viewIds.length > 0) {

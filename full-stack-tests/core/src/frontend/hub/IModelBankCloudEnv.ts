@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Project } from "@bentley/context-registry-client";
+import { ITwin } from "@bentley/context-registry-client";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelBankClient, IModelBankFileSystemContextClient, IModelClient, IModelCloudEnvironment, WsgError, WSStatus } from "@bentley/imodelhub-client";
 import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankBasicAuthorizationClient";
@@ -28,12 +28,12 @@ export class IModelBankCloudEnv implements IModelCloudEnvironment {
   }
 
   public async bootstrapIModelBankProject(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<void> {
-    let project: Project | undefined;
+    let iTwin: ITwin | undefined;
     try {
-      project = await this.contextMgr.queryProjectByName(requestContext, projectName);
-      if (project === undefined)
+      iTwin = await this.contextMgr.getITwinByName(requestContext, projectName);
+      if (iTwin === undefined)
         throw new Error("what happened?");
-      await this.contextMgr.deleteContext(requestContext, project.ecId);
+      await this.contextMgr.deleteContext(requestContext, iTwin.id);
     } catch (err) {
       if (!(err instanceof WsgError) || (err.errorNumber !== WSStatus.InstanceNotFound)) {
         throw err;

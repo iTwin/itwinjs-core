@@ -11,10 +11,6 @@
       "allowedCategories": [ "backend" ]
     },
     {
-      "name": "@babel/core",
-      "allowedCategories": [ "tools" ]
-    },
-    {
       "name": "@bentley/backend-itwin-client",
       "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
     },
@@ -61,10 +57,6 @@
     {
       "name": "@bentley/express-server",
       "allowedCategories": [ "integration-testing", "internal" ]
-    },
-    {
-      "name": "@bentley/extension-webpack-tools",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "@bentley/frontend-authorization-client",
@@ -259,10 +251,6 @@
       "allowedCategories": [ "frontend" ]
     },
     {
-      "name": "@svgr/webpack",
-      "allowedCategories": [ "tools" ]
-    },
-    {
       "name": "@testing-library/react",
       "allowedCategories": [ "extensions", "frontend" ]
     },
@@ -319,28 +307,12 @@
       "allowedCategories": [ "backend" ]
     },
     {
-      "name": "babel-loader",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "babel-plugin-named-asset-import",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "babel-preset-react-app",
-      "allowedCategories": [ "tools" ]
-    },
-    {
       "name": "benchmark",
       "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "body-parser",
       "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "browserslist",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "cache-require-paths",
@@ -416,10 +388,6 @@
     },
     {
       "name": "cross-spawn",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "css-loader",
       "allowedCategories": [ "tools" ]
     },
     {
@@ -675,10 +643,6 @@
       "allowedCategories": [ "frontend" ]
     },
     {
-      "name": "mini-css-extract-plugin",
-      "allowedCategories": [ "tools" ]
-    },
-    {
       "name": "mkdirp",
       "allowedCategories": [ "backend" ]
     },
@@ -732,23 +696,11 @@
     },
     {
       "name": "postcss-flexbugs-fixes",
-      "allowedCategories": [ "internal", "tools" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "postcss-loader",
-      "allowedCategories": [ "internal", "tools" ]
-    },
-    {
-      "name": "postcss-normalize",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "postcss-preset-env",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "postcss-safe-parser",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "proper-lockfile",
@@ -785,10 +737,6 @@
     {
       "name": "react-data-grid",
       "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "react-dev-utils",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "react-dnd",
@@ -887,24 +835,12 @@
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "resolve-url-loader",
-      "allowedCategories": [ "tools" ]
-    },
-    {
       "name": "rimraf",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "rxjs",
       "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "sass",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "sass-loader",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "save",
@@ -947,10 +883,6 @@
       "allowedCategories": [ "backend" ]
     },
     {
-      "name": "style-loader",
-      "allowedCategories": [ "tools" ]
-    },
-    {
       "name": "superagent",
       "allowedCategories": [ "common" ]
     },
@@ -960,15 +892,11 @@
     },
     {
       "name": "svg-sprite-loader",
-      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "symlink-dir",
       "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "terser-webpack-plugin",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "tree-kill",
@@ -977,10 +905,6 @@
     {
       "name": "ts-key-enum",
       "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "ts-loader",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "ts-node",
@@ -1013,10 +937,6 @@
     {
       "name": "typescript-json-schema",
       "allowedCategories": [ "common" ]
-    },
-    {
-      "name": "url-loader",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "username",
