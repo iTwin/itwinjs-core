@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelDb } from "@itwin/core-backend";
-import { EditCommand } from "@bentley/imodeljs-editor-backend";
+import { EditCommand } from "@itwin/editor-backend";
 import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../common/TestEditCommandIpc";
 
 export abstract class TestCommand extends EditCommand implements TestCommandIpc {

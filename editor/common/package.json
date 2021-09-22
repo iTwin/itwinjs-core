@@ -1,17 +1,17 @@
 {
-  "name": "@bentley/imodeljs-editor-common",
+  "name": "@itwin/editor-common",
   "version": "3.0.0-dev.64",
   "description": "iModel.js editing properties common to frontend and backend",
-  "main": "lib/imodeljs-editor-common.js",
-  "typings": "lib/imodeljs-editor-common",
+  "main": "lib/editor-common.js",
+  "typings": "lib/editor-common",
   "imodeljsSharedLibrary": false,
   "license": "MIT",
   "scripts": {
     "compile": "npm run build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/editor/imodeljs-editor-common/file.json --tsIndexFile=./imodeljs-editor-common.ts --onlyJson",
-    "extract-api": "betools extract-api --entry=imodeljs-editor-common",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/editor/editor-common/file.json --tsIndexFile=./editor-common.ts --onlyJson",
+    "extract-api": "betools extract-api --entry=editor-common",
     "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
     "test": "",
     "cover": ""

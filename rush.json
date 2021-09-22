@@ -140,21 +140,21 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/imodeljs-editor-common",
+      "packageName": "@itwin/editor-common",
       "projectFolder": "editor/common",
       "reviewCategory": "edit",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/imodeljs-editor-backend",
+      "packageName": "@itwin/editor-backend",
       "projectFolder": "editor/backend",
       "reviewCategory": "edit",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/imodeljs-editor-frontend",
+      "packageName": "@itwin/editor-frontend",
       "projectFolder": "editor/frontend",
       "reviewCategory": "edit",
       "shouldPublish": true,

@@ -7,8 +7,8 @@ import { AsyncMethodsOf, CompressedId64Set, Id64, Id64String, OrderedId64Array, 
 import { LineSegment3d, Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import { BisCodeSpec, Code, CodeProps, GeometryStreamBuilder, PhysicalElementProps } from "@itwin/core-common";
 import { BriefcaseConnection, IModelConnection, IpcApp } from "@itwin/core-frontend";
-import { EditTools } from "@bentley/imodeljs-editor-frontend";
-import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";
+import { EditTools } from "@itwin/editor-frontend";
+import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@itwin/editor-common";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
 
 async function startCommand(imodel: BriefcaseConnection): Promise<string> {

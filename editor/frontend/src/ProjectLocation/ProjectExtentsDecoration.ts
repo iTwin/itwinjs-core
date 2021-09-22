@@ -12,7 +12,7 @@ import { BeButton, BeButtonEvent, BriefcaseConnection, CoreTools, DecorateContex
 import { ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./ProjectGeolocation";
 import { BeDuration, BeEvent } from "@itwin/core-bentley";
 import { EditTools } from "../EditTool";
-import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";
+import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@itwin/editor-common";
 
 function translateMessage(key: string) { return EditTools.translate(`ProjectLocation:Message.${key}`); }
 function translateMessageBold(key: string) { return `<b>${translateMessage(key)}:</b> `; }

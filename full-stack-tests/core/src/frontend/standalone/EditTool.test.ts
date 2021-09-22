@@ -5,7 +5,7 @@
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { ProcessDetector } from "@itwin/core-bentley";
-import { EditTools } from "@bentley/imodeljs-editor-frontend";
+import { EditTools } from "@itwin/editor-frontend";
 import { IModelApp, PrimitiveTool, SnapshotConnection, Viewport } from "@itwin/core-frontend";
 import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../../common/TestEditCommandIpc";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";

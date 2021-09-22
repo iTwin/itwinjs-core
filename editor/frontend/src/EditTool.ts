@@ -6,7 +6,7 @@
  * @module Editing
  */
 
-import { editorChannel } from "@bentley/imodeljs-editor-common";
+import { editorChannel } from "@itwin/editor-common";
 import { IModelApp, IpcApp } from "@itwin/core-frontend";
 import { DeleteElementsTool } from "./DeleteElementsTool";
 import { OffsetFacesTool } from "./ElementGeometryTool";

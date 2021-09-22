@@ -20,7 +20,7 @@ import {
   BasicManipulationCommandIpc, editorBuiltInCmdIds, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps,
   FlatBufferGeometricElementData, FlatBufferGeometryFilter, FlatBufferGeometryPartData, OffsetFacesProps, SolidModelingCommandIpc,
   SubEntityAppearanceProps, SubEntityGeometryProps, SubEntityLocationProps, SubEntityProps,
-} from "@bentley/imodeljs-editor-common";
+} from "@itwin/editor-common";
 import { EditCommand } from "./EditCommand";
 
 /** @alpha */

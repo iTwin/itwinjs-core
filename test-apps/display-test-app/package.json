@@ -58,9 +58,9 @@
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-markup": "workspace:*",
-    "@bentley/imodeljs-editor-frontend": "workspace:*",
-    "@bentley/imodeljs-editor-backend": "workspace:*",
-    "@bentley/imodeljs-editor-common": "workspace:*",
+    "@itwin/editor-frontend": "workspace:*",
+    "@itwin/editor-backend": "workspace:*",
+    "@itwin/editor-common": "workspace:*",
     "@bentley/ui-abstract": "workspace:*",
     "@itwin/webgl-compatibility": "workspace:*",
     "body-parser": "^1.18.2"

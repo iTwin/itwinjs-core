@@ -279,6 +279,18 @@
       "allowedCategories": [ "backend", "common", "integration-testing", "tools" ]
     },
     {
+      "name": "@itwin/editor-backend",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/editor-common",
+      "allowedCategories": [ "edit", "internal" ]
+    },
+    {
+      "name": "@itwin/editor-frontend",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/frontend-devtools",
       "allowedCategories": [ "internal" ]
     },

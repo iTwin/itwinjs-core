@@ -5,7 +5,7 @@
 import { IModelApp } from "@itwin/core-frontend";
 import { ToolItemDef } from "@bentley/ui-framework";
 import { PlaceBlockTool } from "./PlaceBlockTool";
-import { CreateArcTool, CreateLineStringTool, DeleteElementsTool, MoveElementsTool, RotateElementsTool } from "@bentley/imodeljs-editor-frontend";
+import { CreateArcTool, CreateLineStringTool, DeleteElementsTool, MoveElementsTool, RotateElementsTool } from "@itwin/editor-frontend";
 
 export class EditTools {
   public static get deleteElementTool() {

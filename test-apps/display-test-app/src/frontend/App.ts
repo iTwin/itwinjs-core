@@ -10,7 +10,7 @@ import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import {
   IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
-import { EditTools } from "@bentley/imodeljs-editor-frontend";
+import { EditTools } from "@itwin/editor-frontend";
 import {
   AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, IModelApp, IpcApp, LocalhostIpcApp, RenderSystem,
   SelectionTool, SnapMode, TileAdmin, Tool, ToolAdmin,

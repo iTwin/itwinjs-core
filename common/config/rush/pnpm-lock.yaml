@@ -1560,11 +1560,11 @@ importers:
     specifiers:
       '@bentley/build-tools': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/imodeljs-editor-common': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
+      '@itwin/editor-common': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/deep-assign': ^0.1.0
@@ -1583,7 +1583,7 @@ importers:
       source-map-support: ^0.5.6
       typescript: ~4.3.0
     dependencies:
-      '@bentley/imodeljs-editor-common': link:../common
+      '@itwin/editor-common': link:../common
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
@@ -1646,13 +1646,13 @@ importers:
       '@bentley/build-tools': workspace:*
       '@bentley/certa': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/imodeljs-editor-common': workspace:*
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/ui-abstract': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
+      '@itwin/editor-common': workspace:*
       '@types/chai': ^4.1.4
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
@@ -1667,10 +1667,10 @@ importers:
       source-map-loader: ^1.0.0
       typescript: ~4.3.0
     dependencies:
-      '@bentley/imodeljs-editor-common': link:../common
       '@bentley/ui-abstract': link:../../ui/abstract
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
+      '@itwin/editor-common': link:../common
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/certa': link:../../tools/certa
@@ -2012,9 +2012,6 @@ importers:
       '@bentley/frontend-authorization-client': workspace:*
       '@bentley/hypermodeling-frontend': workspace:*
       '@bentley/imodelhub-client': workspace:*
-      '@bentley/imodeljs-editor-backend': workspace:*
-      '@bentley/imodeljs-editor-common': workspace:*
-      '@bentley/imodeljs-editor-frontend': workspace:*
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
@@ -2025,6 +2022,9 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/core-markup': workspace:*
+      '@itwin/editor-backend': workspace:*
+      '@itwin/editor-common': workspace:*
+      '@itwin/editor-frontend': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
@@ -2055,9 +2055,6 @@ importers:
       '@bentley/express-server': link:../../core/express-server
       '@bentley/hypermodeling-frontend': link:../../core/hypermodeling
       '@bentley/imodelhub-client': link:../../clients/imodelhub
-      '@bentley/imodeljs-editor-backend': link:../../editor/backend
-      '@bentley/imodeljs-editor-common': link:../../editor/common
-      '@bentley/imodeljs-editor-frontend': link:../../editor/frontend
       '@bentley/imodeljs-i18n': link:../../core/i18n
       '@bentley/itwin-client': link:../../clients/itwin
       '@itwin/core-backend': link:../../core/backend
@@ -2066,6 +2063,9 @@ importers:
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-markup': link:../../core/markup
+      '@itwin/editor-backend': link:../../editor/backend
+      '@itwin/editor-common': link:../../editor/common
+      '@itwin/editor-frontend': link:../../editor/frontend
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
       electron: 11.5.0
@@ -3135,9 +3135,6 @@ importers:
       '@bentley/icons-generic': ^1.0.15
       '@bentley/icons-generic-webfont': ^1.0.15
       '@bentley/imodelhub-client': workspace:*
-      '@bentley/imodeljs-editor-backend': workspace:*
-      '@bentley/imodeljs-editor-common': workspace:*
-      '@bentley/imodeljs-editor-frontend': workspace:*
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/imodeljs-quantity': workspace:*
       '@bentley/itwin-client': workspace:*
@@ -3150,6 +3147,9 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/core-markup': workspace:*
+      '@itwin/editor-backend': workspace:*
+      '@itwin/editor-common': workspace:*
+      '@itwin/editor-frontend': workspace:*
       '@itwin/frontend-devtools': workspace:*
       '@itwin/webgl-compatibility': workspace:*
       '@types/express': ^4.16.1
@@ -3179,9 +3179,6 @@ importers:
       '@bentley/icons-generic': 1.0.34
       '@bentley/icons-generic-webfont': 1.0.34
       '@bentley/imodelhub-client': link:../../clients/imodelhub
-      '@bentley/imodeljs-editor-backend': link:../../editor/backend
-      '@bentley/imodeljs-editor-common': link:../../editor/common
-      '@bentley/imodeljs-editor-frontend': link:../../editor/frontend
       '@bentley/imodeljs-i18n': link:../../core/i18n
       '@bentley/imodeljs-quantity': link:../../core/quantity
       '@bentley/itwin-client': link:../../clients/itwin
@@ -3193,6 +3190,9 @@ importers:
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-markup': link:../../core/markup
+      '@itwin/editor-backend': link:../../editor/backend
+      '@itwin/editor-common': link:../../editor/common
+      '@itwin/editor-frontend': link:../../editor/frontend
       '@itwin/frontend-devtools': link:../../core/frontend-devtools
       '@itwin/webgl-compatibility': link:../../core/webgl-compatibility
       body-parser: 1.19.0
@@ -3606,9 +3606,6 @@ importers:
       '@bentley/icons-generic': ^1.0.15
       '@bentley/icons-generic-webfont': ^1.0.15
       '@bentley/imodelhub-client': workspace:*
-      '@bentley/imodeljs-editor-backend': workspace:*
-      '@bentley/imodeljs-editor-common': workspace:*
-      '@bentley/imodeljs-editor-frontend': workspace:*
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/imodeljs-quantity': workspace:*
       '@bentley/itwin-client': workspace:*
@@ -3631,6 +3628,9 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/core-markup': workspace:*
+      '@itwin/editor-backend': workspace:*
+      '@itwin/editor-common': workspace:*
+      '@itwin/editor-frontend': workspace:*
       '@itwin/frontend-devtools': workspace:*
       '@itwin/itwinui-css': ^0.27.0
       '@itwin/itwinui-react': ^1.16.2
@@ -3676,9 +3676,6 @@ importers:
       '@bentley/icons-generic': 1.0.34
       '@bentley/icons-generic-webfont': 1.0.34
       '@bentley/imodelhub-client': link:../../clients/imodelhub
-      '@bentley/imodeljs-editor-backend': link:../../editor/backend
-      '@bentley/imodeljs-editor-common': link:../../editor/common
-      '@bentley/imodeljs-editor-frontend': link:../../editor/frontend
       '@bentley/imodeljs-i18n': link:../../core/i18n
       '@bentley/imodeljs-quantity': link:../../core/quantity
       '@bentley/itwin-client': link:../../clients/itwin
@@ -3700,6 +3697,9 @@ importers:
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-markup': link:../../core/markup
+      '@itwin/editor-backend': link:../../editor/backend
+      '@itwin/editor-common': link:../../editor/common
+      '@itwin/editor-frontend': link:../../editor/frontend
       '@itwin/frontend-devtools': link:../../core/frontend-devtools
       '@itwin/itwinui-css': 0.27.3
       '@itwin/itwinui-react': 1.19.0_react-dom@17.0.2+react@17.0.2

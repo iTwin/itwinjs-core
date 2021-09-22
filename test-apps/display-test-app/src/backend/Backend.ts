@@ -17,8 +17,8 @@ import { AndroidHost, IOSHost, MobileHostOpts } from "@bentley/mobile-manager/li
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { FakeTileCacheService } from "./FakeTileCacheService";
-import { EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
-import * as editorBuiltInCommands from "@bentley/imodeljs-editor-backend";
+import { EditCommandAdmin } from "@itwin/editor-backend";
+import * as editorBuiltInCommands from "@itwin/editor-backend";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
