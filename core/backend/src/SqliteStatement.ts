@@ -15,7 +15,7 @@ import { IModelHost } from "./IModelHost";
  * @public
  */
 export interface RowValue {
-  [propName: string]: Uint8Array | number | string;
+  [propName: string]: Uint8Array | number | string | undefined;
 }
 
 /** parameter Index (1-based), or name of the parameter (including the initial ':', '@' or '$')
