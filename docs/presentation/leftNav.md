@@ -42,9 +42,6 @@
 
 ### [Unified Selection](./Unified-Selection/index.md)
 
-- [Content Components](./Unified-Selection/ContentComponents.md)
-- [Terminology](./Unified-Selection/Terminology.md)
-
 &nbsp;
 
 ### [Advanced](./Advanced/index.md)
