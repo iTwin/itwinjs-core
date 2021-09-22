@@ -35,7 +35,7 @@ export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: 
   return { modelId, spatialCategoryId };
 }
 
-describe("IModelWriteTest (#integration)", () => {
+describe.only("IModelWriteTest (#integration)", () => {
   let managerUser: AuthorizedBackendRequestContext;
   let superUser: AuthorizedBackendRequestContext;
   let testITwinId: string;
@@ -319,9 +319,9 @@ describe("IModelWriteTest (#integration)", () => {
     const adminRequestContext = await IModelTestUtils.getUserContext(TestUserType.SuperManager);
     const iTwinId = await HubUtility.getTestITwinId(adminRequestContext);
     const iModelName = HubUtility.generateUniqueName("changeset_size");
-    const rwIModelId = await IModelHost.hubAccess.createNewIModel({iTwinId, iModelName, description: "TestSubject" });
+    const rwIModelId = await IModelHost.hubAccess.createNewIModel({iTwinId, iModelName, description: "TestSubject", user: adminRequestContext });
     assert.isNotEmpty(rwIModelId);
-    const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({iTwinId,  iModelId: rwIModelId });
+    const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({iTwinId,  iModelId: rwIModelId , user: adminRequestContext});
     assert.equal(rwIModel.nativeDb.enableChangesetSizeStats(true), DbResult.BE_SQLITE_OK);
     const schema = `<?xml version="1.0" encoding="UTF-8"?>
     <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
@@ -336,11 +336,11 @@ describe("IModelWriteTest (#integration)", () => {
     if ("push changes") {
       // Push the changes to the hub
       const prePushChangeSetId = rwIModel.changeset.id;
-      await rwIModel.pushChanges({description: "push schema changeset"});
+      await rwIModel.pushChanges({description: "push schema changeset", user: adminRequestContext});
       const postPushChangeSetId = rwIModel.changeset.id;
       assert(!!postPushChangeSetId);
       expect(prePushChangeSetId !== postPushChangeSetId);
-      const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId});
+      const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId, user: superUser});
       assert.equal(changesets.length, 1);
     }
     const codeProps = Code.createEmpty();
@@ -385,7 +385,7 @@ describe("IModelWriteTest (#integration)", () => {
 
     rwIModel.saveChanges(JSON.stringify({ userId: "user1", description: "data" }));
     assert.equal(0, rwIModel.nativeDb.getChangesetSize());
-    await rwIModel.pushChanges({description: "schema changeset"});
+    await rwIModel.pushChanges({description: "schema changeset", user: adminRequestContext});
     rwIModel.close();
   });
   it("clear cache on schema changes", async () => {
@@ -396,11 +396,11 @@ describe("IModelWriteTest (#integration)", () => {
     const iModelName = HubUtility.generateUniqueName("SchemaChanges");
 
     // Create a new empty iModel on the Hub & obtain a briefcase
-    const rwIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName, description: "TestSubject" });
+    const rwIModelId = await IModelHost.hubAccess.createNewIModel({noLocks:true, iTwinId, iModelName, description: "TestSubject" });
     assert.isNotEmpty(rwIModelId);
-    const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId });
+    const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, user: adminRequestContext });
 
-    const rwIModel2 = await IModelTestUtils.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId });
+    const rwIModel2 = await IModelTestUtils.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, user: userRequestContext });
 
     // enable change tracking
     assert.equal(rwIModel.nativeDb.enableChangesetSizeStats(true), DbResult.BE_SQLITE_OK);
@@ -420,11 +420,11 @@ describe("IModelWriteTest (#integration)", () => {
     if ("push changes") {
       // Push the changes to the hub
       const prePushChangeSetId = rwIModel.changeset.id;
-      await rwIModel.pushChanges({description: "schema changeset"});
+      await rwIModel.pushChanges({description: "schema changeset", user: adminRequestContext});
       const postPushChangeSetId = rwIModel.changeset.id;
       assert(!!postPushChangeSetId);
       expect(prePushChangeSetId !== postPushChangeSetId);
-      const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId });
+      const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId, user: superUser });
       assert.equal(changesets.length, 1);
     }
     const codeProps = Code.createEmpty();
@@ -472,11 +472,11 @@ describe("IModelWriteTest (#integration)", () => {
     if ("push changes") {
       // Push the changes to the hub
       const prePushChangeSetId = rwIModel.changeset.id;
-      await rwIModel.pushChanges({description: "10 instances of test2dElement"});
+      await rwIModel.pushChanges({description: "10 instances of test2dElement", user: adminRequestContext});
       const postPushChangeSetId = rwIModel.changeset.id;
       assert(!!postPushChangeSetId);
       expect(prePushChangeSetId !== postPushChangeSetId);
-      const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId});
+      const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId, user: superUser});
       assert.equal(changesets.length, 2);
     }
     let rows: any[] = [];
@@ -516,7 +516,7 @@ describe("IModelWriteTest (#integration)", () => {
         return { s: `s-${n}` };
       });
       assert.equal(13, rwIModel.nativeDb.getChangesetSize());
-      rwIModel2.saveChanges(JSON.stringify({ userid: "user2", description: "data changeset" }));
+      rwIModel2.saveChanges(JSON.stringify({ userId: "user2", description: "data changeset" }));
 
       if ("push changes") {
         // Push the changes to the hub
@@ -555,7 +555,7 @@ describe("IModelWriteTest (#integration)", () => {
       const postPushChangeSetId = rwIModel.changeset.id;
       assert(!!postPushChangeSetId);
       expect(prePushChangeSetId !== postPushChangeSetId);
-      const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId, user: adminRequestContext });
+      const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId, user: superUser });
       assert.equal(changesets.length, 4);
     }
     // create some element and push those changes
@@ -581,7 +581,7 @@ describe("IModelWriteTest (#integration)", () => {
       const postPushChangeSetId = rwIModel.changeset.id;
       assert(!!postPushChangeSetId);
       expect(prePushChangeSetId !== postPushChangeSetId);
-      const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId, user: adminRequestContext });
+      const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId, user: superUser });
       assert.equal(changesets.length, 5);
     }
     rows = [];
