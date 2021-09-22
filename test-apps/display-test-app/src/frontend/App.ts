@@ -188,7 +188,7 @@ export class DisplayTestApp {
   public static get surface() { return this._surface!; }
   public static set surface(surface: Surface) { this._surface = surface; }
   private static _iTwinId?: GuidString;
-  public static get iTwinId(): GuidString | undefined { return this._iTwinId;}
+  public static get iTwinId(): GuidString | undefined { return this._iTwinId; }
 
   public static async startup(configuration: DtaConfiguration, renderSys: RenderSystem.Options): Promise<void> {
     const opts = {
@@ -205,6 +205,12 @@ export class DisplayTestApp {
           IModelTileRpcInterface,
           SnapshotIModelRpcInterface,
         ],
+        /* eslint-disable @typescript-eslint/naming-convention */
+        mapLayerOptions: {
+          MapBoxImagery: configuration.mapBoxKey ? { key: "access_token", value: configuration.mapBoxKey } : undefined,
+          BingMaps: configuration.bingMapsKey ? { key: "key", value: configuration.bingMapsKey } : undefined,
+        },
+        /* eslint-enable @typescript-eslint/naming-convention */
       },
       webViewerApp: {
         rpcParams: {
@@ -221,12 +227,7 @@ export class DisplayTestApp {
       localhostIpcApp: {
         socketPort: 3002,
       },
-      /* eslint-disable @typescript-eslint/naming-convention */
-      mapLayerOptions: {
-        MapBoxImagery: configuration.mapBoxKey ? { key: "access_token", value: configuration.mapBoxKey } : undefined,
-        BingMaps: configuration.bingMapsKey ? { key: "key", value: configuration.bingMapsKey } : undefined,
-      },
-      /* eslint-enable @typescript-eslint/naming-convention */
+
     };
 
     this._iTwinId = configuration.iTwinId;
