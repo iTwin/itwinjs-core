@@ -376,7 +376,6 @@ importers:
       ws: ^7.5.3
     dependencies:
       '@azure/storage-blob': 12.8.0
-      '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/imodeljs-native': 3.0.10
       deep-assign: 2.0.0
       form-data: 2.5.1
@@ -390,6 +389,7 @@ importers:
       '@bentley/backend-itwin-client': link:../backend-itwin-client
       '@bentley/bentleyjs-core': link:../bentley
       '@bentley/build-tools': link:../../tools/build
+      '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/ecschema-metadata': link:../ecschema-metadata
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/geometry-core': link:../geometry
@@ -912,7 +912,6 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/certa': workspace:*
-      '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/frontend-authorization-client': workspace:*
       '@bentley/geometry-core': workspace:*
@@ -950,7 +949,6 @@ importers:
       wms-capabilities: 0.4.0
       xml-js: ~1.6.11
     dependencies:
-      '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/reality-data-client': link:../../clients/reality-data
       fuse.js: 3.6.1
       semver: 5.7.1
@@ -996,7 +994,6 @@ importers:
     specifiers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
-      '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/geometry-core': workspace:*
       '@bentley/imodeljs-common': workspace:*
@@ -1012,7 +1009,6 @@ importers:
       typescript: ~4.3.0
     dependencies:
       '@bentley/bentleyjs-core': link:../bentley
-      '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/geometry-core': link:../geometry
       '@bentley/imodeljs-common': link:../common
       '@bentley/imodeljs-frontend': link:../frontend
@@ -4567,7 +4563,6 @@ importers:
     specifiers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
-      '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/frontend-authorization-client': workspace:*
       '@bentley/geometry-core': workspace:*
@@ -4650,7 +4645,6 @@ importers:
       typescript: ~4.3.0
       xmlhttprequest: ^1.8.0
     dependencies:
-      '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/icons-generic': 1.0.34
       '@bentley/icons-generic-webfont': 1.0.34
       '@bentley/presentation-components': link:../../presentation/components

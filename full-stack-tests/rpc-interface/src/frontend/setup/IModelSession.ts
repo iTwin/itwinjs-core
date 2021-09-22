@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { AuthorizedFrontendRequestContext, CheckpointConnection } from "@bentley/imodeljs-frontend";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
-import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
 import { IModelData } from "../../common/Settings";
 import { IModelVersion } from "@bentley/imodeljs-common";
 
@@ -32,12 +32,23 @@ export class IModelSession {
 
     // Turn the project name into an id
     if (iModelData.useProjectName) {
-      const client = new ContextRegistryClient();
-      const project: Project = await client.getProject(requestContext, {
-        $select: "*",
-        $filter: `Name+eq+'${iModelData.projectName}'`,
-      });
-      iTwinId = project.wsgId;
+      if (!iModelData.projectName)
+        throw new Error(`The iModel has no project name, so it cannot get the project.`);
+
+      const client = new ITwinAccessClient();
+      const iTwinList: ITwin[] = await client.getAll(requestContext, {
+        search: {
+          searchString: iModelData.projectName,
+          propertyName: ITwinSearchableProperty.Name,
+          exactMatch: true,
+        }});
+
+      if (iTwinList.length === 0)
+        throw new Error(`ITwin ${iModelData.projectName} was not found for the user.`);
+      else if (iTwinList.length > 1)
+        throw new Error(`Multiple iTwins named ${iModelData.projectName} were found for the user.`);
+
+      iTwinId = iTwinList[0].id;
     } else
       iTwinId = iModelData.projectId!;
 

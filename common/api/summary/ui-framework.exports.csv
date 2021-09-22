@@ -436,10 +436,6 @@ alpha;PositionPopup
 alpha;PositionPopupContent(props: CommonDivProps): JSX.Element
 alpha;PositionPopupProps 
 public;PresentationSelectionScope
-internal;ProjectInfo
-internal;ProjectReadStatus
-internal;ProjectScope
-internal;ProjectServices
 public;PromptField: import("react-redux").ConnectedComponent
 deprecated;PromptField: import("react-redux").ConnectedComponent
 public;PropsHelper
