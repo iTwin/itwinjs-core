@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { BentleyError, BentleyStatus, getErrorMessage, getErrorMetadata, getErrorStack, getErrorProps } from "../BentleyError";
+import { BentleyError, BentleyStatus, getErrorMessage, getErrorMetadata, getErrorProps, getErrorStack } from "../BentleyError";
 
 describe("getErrorMessage", () => {
   it("returns string values", () => {
@@ -13,7 +13,7 @@ describe("getErrorMessage", () => {
 
   it("prefers Error.toString() to message property", () => {
     class CustomError extends Error {
-      override toString() { return "CustomToString"; }
+      public override toString() { return "CustomToString"; }
     }
     expect(getErrorMessage(new Error("foo"))).to.equal("Error: foo");
     expect(getErrorMessage(new CustomError("foo"))).to.equal("CustomToString");
@@ -57,7 +57,6 @@ describe("getErrorStack", () => {
   });
 
   it("returns stack from non-Error objects", () => {
-    const err = new Error("foo");
     expect(getErrorStack({ stack: "xyz" })).to.equal("xyz");
   });
 
