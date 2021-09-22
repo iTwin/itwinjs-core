@@ -31,7 +31,6 @@ These packages provide the following functions that a frontend requires:
 - Displaying [Views](./Views.md) of iModels
 - Executing [ECSQL queries](./ExecutingECSQL.md) on iModels
 - Storing [Settings](./Settings.md) for Applications, Projects, and iModels.
-- Implementing [Extensions](./Extensions.md)
 - [Formatting Quantities](./QuantityFormatting.md)
 
 ## Web browser compatibility

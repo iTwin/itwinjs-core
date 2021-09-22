@@ -303,6 +303,15 @@
     "EditingSession": {
       "keyin": "test edit"
     },
+    "SaveContentLayoutTool": {
+      "flyover": "Save Content Layout"
+    },
+    "RestoreSavedContentLayoutTool": {
+      "flyover": "Restore Content Layout"
+    },
+    "RemoveSavedContentLayoutTool": {
+      "flyover": "Remove Saved Content Layout"
+    },
     "PlaceBlock": {
       "keyin": "test place block",
       "description": "Place Block",

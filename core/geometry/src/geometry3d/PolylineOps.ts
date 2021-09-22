@@ -6,6 +6,7 @@
  * @module CartesianGeometry
  */
 
+import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "./GrowableXYZArray";
 import { Point3d } from "./Point3dVector3d";
 import { PolylineCompressionContext } from "./PolylineCompressionByEdgeOffset";
@@ -80,6 +81,93 @@ export class PolylineOps {
       num0 = num1;
     }
     return dest.getPoint3dArray();
+  }
+  private static squaredDistanceToInterpolatedPoint(pointQ: Point3d, point0: Point3d, fraction: number, point1: Point3d): number {
+    const g = 1.0 - fraction;
+    const dx = pointQ.x - (g * point0.x + fraction * point1.x);
+    const dy = pointQ.y - (g * point0.y + fraction * point1.y);
+    const dz = pointQ.z - (g * point0.z + fraction * point1.z);
+    return dx * dx + dy * dy + dz * dz;
+  }
+  /**
+   * test if either
+   *   * points[indexA] matches pointQ
+   *   * line from points[indexA] to points[indexB] overlaps points[indexA] to pointQ
+   * @param points
+   * @param pointQ
+   * @param tolerance
+   */
+  private static isDanglerConfiguration(points: Point3d[], indexA: number, indexB: number,pointQ: Point3d, squaredDistanceTolerance: number): boolean {
+    if (indexA < 0 || indexA >= points.length)
+      return false;
+    const pointA = points[indexA];
+    // simple point match ...
+    const d2Q = pointA.distanceSquared(pointQ);
+    if (d2Q <= squaredDistanceTolerance)
+      return true;
+    if (indexB < 0 || indexB >= points.length)
+      return false;
+    const pointB = points[indexB];
+    // The expensive test .. does newPoint double back to an interior or extrapolation of the final dest segment?
+    //
+    // or pointQ
+    const dot = pointA.dotVectorsToTargets(pointB, pointQ);
+    // simple case -- pointB..pointA..pointQ continues forward
+    if (dot <= 0.0)
+      return false;
+    const d2B = pointA.distanceSquared(pointB);
+    let distanceSquared;
+    if (d2Q >= d2B) {
+    //                        pointB----------------------------------->>>>>>> pointA
+    //          pointQ<<<<---------------------------------------------------------
+      const fraction = dot / d2Q; // safe to divide because of earlier d2Q test.
+      distanceSquared = this.squaredDistanceToInterpolatedPoint(pointB, pointA, fraction, pointQ);
+    } else {
+      //           pointB----------------------------------->>>>>>> pointA
+      //                         pointQ<<<<----------------------
+      const fraction = dot / d2B;
+    distanceSquared = this.squaredDistanceToInterpolatedPoint(pointQ, pointA, fraction, pointB);
+    }
+    return distanceSquared < squaredDistanceTolerance;
+  }
+/**
+   * Return a simplified subset of given points, omitting points on "danglers" that depart and return on a single path.
+   * @param source input points
+   */
+   public static compressDanglers(source: Point3d[], closed: boolean = false, tolerance: number = Geometry.smallMetricDistance): Point3d[] {
+     let n = source.length;
+     const squaredDistanceTolerance = tolerance * tolerance;
+     if (closed)
+      while (n > 1 && source[n - 1].distanceSquared(source[0]) <= squaredDistanceTolerance)
+          n--;
+     const dest = [];
+     dest.push(source[0].clone());
+     for (let i = 1; i < n; i++){
+       const newPoint = source[i];
+       while (this.isDanglerConfiguration(dest, dest.length - 1, dest.length - 2, newPoint, squaredDistanceTolerance))
+         dest.pop();
+       dest.push(newPoint.clone());
+     }
+     if (closed) {
+       // No purge moving backwards.   Last point
+       let leftIndex = 0;
+       let rightIndex = dest.length - 1;
+       while (rightIndex > leftIndex + 2) {
+         if (this.isDanglerConfiguration(dest, leftIndex, leftIndex + 1, dest[rightIndex], squaredDistanceTolerance)) {
+           leftIndex++;
+         } else if (this.isDanglerConfiguration(dest, rightIndex, rightIndex - 1, dest[leftIndex], squaredDistanceTolerance)) {
+           rightIndex--;
+         } else {
+           break;
+         }
+       }
+       if (rightIndex + 1 < dest.length)
+         dest.length = rightIndex + 1;
+       if (leftIndex > 0) {
+         dest.splice(0, leftIndex);
+       }
+     }
+     return dest;
   }
 
 }
