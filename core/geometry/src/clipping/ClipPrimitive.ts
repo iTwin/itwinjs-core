@@ -23,6 +23,7 @@ import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets, UnionOfConvexClipPlaneSetsProps } from "./UnionOfConvexClipPlaneSets";
 import { AlternatingCCTreeNode } from "./AlternatingConvexClipTree";
 import { Point3dArray } from "../geometry3d/PointHelpers";
+import { PolylineOps } from "../geometry3d/PolylineOps";
 
 /**
  * Bit mask type for referencing subsets of 6 planes of range box.
@@ -180,9 +181,6 @@ export class ClipPrimitive {
     let inside = true;
     if (this._clipPlanes)
       inside = this._clipPlanes.isPointOnOrInside(point, onTolerance);
-    // note -- the clip planes are structured to get the mask effects. no reversal necessary.
-    if (this._invisible)
-     inside = !inside;
     return inside;
   }
 
@@ -616,6 +614,7 @@ export class ClipShape extends ClipPrimitive {
   }
   /** Given a (possibly non-convex) polygon defined as an array of points, populate the given UnionOfConvexClipPlaneSets with multiple ConvexClipPlaneSets defining the bounded region. Returns true if successful. */
   private parsePolygonPlanes(set: UnionOfConvexClipPlaneSets, polygon: Point3d[], isMask: boolean, cameraFocalLength?: number): boolean {
+    const cleanPolygon = PolylineOps.compressDanglers(polygon, true);
     const announceFace = (_graph: HalfEdgeGraph, edge: HalfEdge): boolean => {
       if (!edge.isMaskSet(HalfEdgeMask.EXTERIOR)) {
         const convexFacetPoints = edge.collectAroundFace((node: HalfEdge): any => {
@@ -630,7 +629,7 @@ export class ClipShape extends ClipPrimitive {
       return true;
     };
     if (isMask) {
-      const polygonA = Point3dArray.clonePoint3dArray ( polygon);
+      const polygonA = Point3dArray.clonePoint3dArray ( cleanPolygon);
       const hullAndInlets = AlternatingCCTreeNode.createHullAndInletsForPolygon(polygonA);
       const allLoops = hullAndInlets.extractLoops();
       if (allLoops.length === 0)
@@ -647,7 +646,7 @@ export class ClipShape extends ClipPrimitive {
       }
       return true;
     } else {
-      const triangulatedPolygon = Triangulator.createTriangulatedGraphFromSingleLoop(polygon);
+      const triangulatedPolygon = Triangulator.createTriangulatedGraphFromSingleLoop(cleanPolygon);
       if (triangulatedPolygon === undefined)
         return false;
       Triangulator.flipTriangles(triangulatedPolygon);
