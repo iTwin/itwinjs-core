@@ -15,7 +15,7 @@ The purpose of unified selection is to act as a single source of truth of what i
 
 ## Selection Levels
 
-By default, whenever a component changes unified selection, that happens at 0 (top) selection level. And similarly, whenever a component requests current selection from the storage, by default the top selection level is used. However, there are cases when we want to have multiple levels of selection.
+By default, whenever a component changes unified selection, that happens at 0th (top) selection level. And similarly, whenever a component requests current selection from the storage, by default the top selection level is used. However, there are cases when we want to have multiple levels of selection.
 
 For example, let's say there're 3 components: *A*, *B* and *C*:
 
