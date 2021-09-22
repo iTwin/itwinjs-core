@@ -8,7 +8,7 @@
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { Point3d, XAndY } from "@bentley/geometry-core";
-import { ImageSource, ImageSourceFormat, IModel } from "@bentley/imodeljs-common";
+import { ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
 import { FrontendLoggerCategory, imageElementFromImageSource, IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { adopt, create, G, Matrix, Point, Svg, SVG } from "@svgdotjs/svg.js";
 import * as redlineTool from "./RedlineTool";

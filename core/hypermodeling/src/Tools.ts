@@ -6,8 +6,7 @@
  * @module HyperModeling
  */
 
-import { SectionType } from "@bentley/imodeljs-common";
-import { LocalizationClient } from "@bentley/imodeljs-common";
+import { LocalizationClient, SectionType } from "@bentley/imodeljs-common";
 import {
   IModelApp,
   ScreenViewport,
