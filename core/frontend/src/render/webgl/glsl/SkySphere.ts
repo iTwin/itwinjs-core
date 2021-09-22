@@ -8,7 +8,7 @@
 
 import { Angle, Point3d, Vector3d } from "@itwin/core-geometry";
 import { Npc } from "@itwin/core-common";
-import { WebGLContext } from "@bentley/webgl-compatibility";
+import { WebGLContext } from "@itwin/webgl-compatibility";
 import { AttributeMap } from "../AttributeMap";
 import { SkySphereViewportQuadGeometry } from "../CachedGeometry";
 import { fromSumOf, FrustumUniformType } from "../FrustumUniforms";

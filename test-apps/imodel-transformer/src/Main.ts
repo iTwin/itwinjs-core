@@ -12,7 +12,7 @@ import {
   BackendRequestContext, IModelDb, IModelHost, IModelJsFs, SnapshotDb,
   StandaloneDb,
 } from "@itwin/core-backend";
-import { TransformerLoggerCategory } from "@bentley/imodeljs-transformer";
+import { TransformerLoggerCategory } from "@itwin/core-transformer";
 import { BriefcaseIdValue, ChangesetId, ChangesetIndex, ChangesetProps, IModelVersion } from "@itwin/core-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { ElementUtils } from "./ElementUtils";

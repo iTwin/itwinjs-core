@@ -22,7 +22,7 @@ import {
   SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps,
 } from "@itwin/core-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { IModelExporter, IModelExportHandler, IModelImporter, IModelTransformer } from "../imodeljs-transformer";
+import { IModelExporter, IModelExportHandler, IModelImporter, IModelTransformer } from "../core-transformer";
 
 export class IModelTransformerTestUtils {
   public static createTeamIModel(outputDir: string, teamName: string, teamOrigin: Point3d, teamColor: ColorDef): SnapshotDb {

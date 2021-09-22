@@ -112,7 +112,7 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/orbitgt-core",
+      "packageName": "@itwin/core-orbitgt",
       "projectFolder": "core/orbitgt",
       "reviewCategory": "common",
       "shouldPublish": true,
@@ -133,7 +133,7 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/imodeljs-transformer",
+      "packageName": "@itwin/core-transformer",
       "projectFolder": "core/transformer",
       "reviewCategory": "backend",
       "shouldPublish": true,
@@ -182,14 +182,14 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/frontend-devtools",
+      "packageName": "@itwin/frontend-devtools",
       "projectFolder": "core/frontend-devtools",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/webgl-compatibility",
+      "packageName": "@itwin/webgl-compatibility",
       "projectFolder": "core/webgl-compatibility",
       "reviewCategory": "frontend",
       "shouldPublish": true,
@@ -350,7 +350,7 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/imodeljs-markup",
+      "packageName": "@itwin/core-markup",
       "projectFolder": "core/markup",
       "reviewCategory": "frontend",
       "shouldPublish": true,

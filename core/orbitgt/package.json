@@ -1,5 +1,5 @@
 {
-  "name": "@bentley/orbitgt-core",
+  "name": "@itwin/core-orbitgt",
   "version": "3.0.0-dev.64",
   "description": "",
   "main": "lib/imodeljs-orbitgt.js",

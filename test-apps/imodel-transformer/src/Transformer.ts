@@ -9,7 +9,7 @@ import {
   IModelDb, ModelSelector, PhysicalModel, PhysicalPartition, Relationship, SpatialCategory,
   SpatialViewDefinition, SubCategory, ViewDefinition,
 } from "@itwin/core-backend";
-import { IModelTransformer, IModelTransformOptions } from "@bentley/imodeljs-transformer";
+import { IModelTransformer, IModelTransformOptions } from "@itwin/core-transformer";
 import { ElementProps, IModel } from "@itwin/core-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 

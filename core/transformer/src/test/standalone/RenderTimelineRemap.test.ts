@@ -11,7 +11,7 @@ import {
 import {
   GenericSchema, PhysicalModel, PhysicalObject, PhysicalPartition, RenderTimeline, SpatialCategory, StandaloneDb, SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
-import { IModelTransformer } from "../../imodeljs-transformer";
+import { IModelTransformer } from "../../core-transformer";
 import { IModelTestUtils } from "@itwin/core-backend/lib/test/IModelTestUtils";
 
 describe("RenderTimeline Remap", () => {

@@ -44,11 +44,11 @@
     "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.64",
     "@bentley/imodeljs-quantity": "workspace:^3.0.0-dev.64",
     "@bentley/itwin-client": "workspace:^3.0.0-dev.64",
-    "@bentley/orbitgt-core": "workspace:^3.0.0-dev.64",
+    "@itwin/core-orbitgt": "workspace:^3.0.0-dev.64",
     "@bentley/product-settings-client": "workspace:^3.0.0-dev.64",
     "@bentley/telemetry-client": "workspace:^3.0.0-dev.64",
     "@bentley/ui-abstract": "workspace:^3.0.0-dev.64",
-    "@bentley/webgl-compatibility": "workspace:^3.0.0-dev.64"
+    "@itwin/webgl-compatibility": "workspace:^3.0.0-dev.64"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -66,11 +66,11 @@
     "@bentley/imodeljs-i18n": "workspace:*",
     "@bentley/imodeljs-quantity": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/orbitgt-core": "workspace:*",
+    "@itwin/core-orbitgt": "workspace:*",
     "@bentley/product-settings-client": "workspace:*",
     "@bentley/telemetry-client": "workspace:*",
     "@bentley/ui-abstract": "workspace:*",
-    "@bentley/webgl-compatibility": "workspace:*",
+    "@itwin/webgl-compatibility": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^8.2.2",

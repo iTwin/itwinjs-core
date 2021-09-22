@@ -11,7 +11,7 @@ import { Transform, Vector2d, Vector3d } from "@itwin/core-geometry";
 import {
   Feature, PackedFeatureTable, RenderMode, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,
 } from "@itwin/core-common";
-import { DepthType, RenderType } from "@bentley/webgl-compatibility";
+import { DepthType, RenderType } from "@itwin/webgl-compatibility";
 import { IModelConnection } from "../../IModelConnection";
 import { SceneContext } from "../../ViewContext";
 import { ViewRect } from "../../ViewRect";

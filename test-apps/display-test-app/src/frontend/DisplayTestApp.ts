@@ -5,7 +5,7 @@
 import { ProcessDetector } from "@itwin/core-bentley";
 import { CloudStorageContainerUrl, CloudStorageTileCache, RpcConfiguration, TileContentIdentifier } from "@itwin/core-common";
 import { IModelApp, IModelConnection, RenderDiagnostics, RenderSystem } from "@itwin/core-frontend";
-import { WebGLExtensionName } from "@bentley/webgl-compatibility";
+import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { DisplayTestApp } from "./App";
 import { openIModel } from "./openIModel";

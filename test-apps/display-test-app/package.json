@@ -42,7 +42,7 @@
   "dependencies": {
     "@bentley/icons-generic": "^1.0.15",
     "@bentley/icons-generic-webfont": "^1.0.15",
-    "@bentley/frontend-devtools": "workspace:*",
+    "@itwin/frontend-devtools": "workspace:*",
     "@bentley/hypermodeling-frontend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@bentley/electron-manager": "workspace:*",
@@ -57,12 +57,12 @@
     "@bentley/imodeljs-quantity": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-backend": "workspace:*",
-    "@bentley/imodeljs-markup": "workspace:*",
+    "@itwin/core-markup": "workspace:*",
     "@bentley/imodeljs-editor-frontend": "workspace:*",
     "@bentley/imodeljs-editor-backend": "workspace:*",
     "@bentley/imodeljs-editor-common": "workspace:*",
     "@bentley/ui-abstract": "workspace:*",
-    "@bentley/webgl-compatibility": "workspace:*",
+    "@itwin/webgl-compatibility": "workspace:*",
     "body-parser": "^1.18.2"
   },
   "devDependencies": {

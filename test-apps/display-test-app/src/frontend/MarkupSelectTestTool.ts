@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { EventHandled, IModelApp } from "@itwin/core-frontend";
-import { SelectTool } from "@bentley/imodeljs-markup";
+import { SelectTool } from "@itwin/core-markup";
 
 async function getSvgFile(uri: string): Promise<string> {
   const xhr = new XMLHttpRequest();

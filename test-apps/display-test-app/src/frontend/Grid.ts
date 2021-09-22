@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { parseArgs } from "@bentley/frontend-devtools";
+import { parseArgs } from "@itwin/frontend-devtools";
 import { GridOrientationType } from "@itwin/core-common";
 import { IModelApp, Tool } from "@itwin/core-frontend";
 

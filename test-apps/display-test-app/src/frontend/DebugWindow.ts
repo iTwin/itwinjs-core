@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "@itwin/core-bentley";
-import { DiagnosticsPanel } from "@bentley/frontend-devtools";
+import { DiagnosticsPanel } from "@itwin/frontend-devtools";
 import { IModelApp, Viewport } from "@itwin/core-frontend";
 import { Surface } from "./Surface";
 import { Window } from "./Window";

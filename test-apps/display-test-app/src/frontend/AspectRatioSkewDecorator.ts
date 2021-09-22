@@ -7,7 +7,7 @@ import { assert } from "@itwin/core-bentley";
 import { IModelJson, Path } from "@itwin/core-geometry";
 import { ColorDef, ViewDetails } from "@itwin/core-common";
 import { DecorateContext, GraphicType, IModelApp, IModelConnection, Tool } from "@itwin/core-frontend";
-import { parseArgs } from "@bentley/frontend-devtools";
+import { parseArgs } from "@itwin/frontend-devtools";
 
 class AspectRatioSkewDecorator {
   private static _instance?: AspectRatioSkewDecorator;

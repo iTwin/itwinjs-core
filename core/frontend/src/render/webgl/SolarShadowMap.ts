@@ -10,7 +10,7 @@
 import { assert, dispose } from "@itwin/core-bentley";
 import { ClipUtilities, ConvexClipPlaneSet, Geometry, GrowableXYZArray, Map4d, Matrix3d, Matrix4d, Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { Frustum, FrustumPlanes, RenderMode, RenderTexture, SolarShadowSettings, ViewFlags } from "@itwin/core-common";
-import { RenderType } from "@bentley/webgl-compatibility";
+import { RenderType } from "@itwin/webgl-compatibility";
 import { Tile, TileDrawArgs, TileTreeReference, TileVisibility } from "../../tile/internal";
 import { SceneContext } from "../../ViewContext";
 import { RenderGraphic } from "../RenderGraphic";

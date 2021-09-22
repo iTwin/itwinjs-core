@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { KeyinField, parseArgs } from "@bentley/frontend-devtools";
+import { KeyinField, parseArgs } from "@itwin/frontend-devtools";
 import { Range3d } from "@itwin/core-geometry";
 import { Cartographic } from "@itwin/core-common";
 import { BlankConnection, BlankConnectionProps, IModelApp, Tool } from "@itwin/core-frontend";

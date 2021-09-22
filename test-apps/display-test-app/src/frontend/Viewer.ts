@@ -9,7 +9,7 @@ import {
   imageBufferToPngDataUrl, IModelApp, IModelConnection, NotifyMessageDetails, openImageDataUrlInNewWindow, OutputMessagePriority, ScreenViewport,
   Tool, Viewport, ViewState,
 } from "@itwin/core-frontend";
-import { MarkupApp, MarkupData } from "@bentley/imodeljs-markup";
+import { MarkupApp, MarkupData } from "@itwin/core-markup";
 import { ClassificationsPanel } from "./ClassificationsPanel";
 import { DebugWindow } from "./DebugWindow";
 import { FeatureOverridesPanel } from "./FeatureOverrides";

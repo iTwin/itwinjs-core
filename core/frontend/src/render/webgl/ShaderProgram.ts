@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { WebGLContext } from "@bentley/webgl-compatibility";
+import { WebGLContext } from "@itwin/webgl-compatibility";
 import { DebugShaderFile } from "../RenderSystem";
 import { AttributeDetails } from "./AttributeMap";
 import { WebGLDisposable } from "./Disposable";

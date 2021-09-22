@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { parseToggle } from "@bentley/frontend-devtools";
+import { parseToggle } from "@itwin/frontend-devtools";
 import {
   DecorateContext, GraphicBranch, GraphicType, IModelApp, RenderGraphic, RenderGraphicOwner, Target, Tool, Viewport,
 } from "@itwin/core-frontend";

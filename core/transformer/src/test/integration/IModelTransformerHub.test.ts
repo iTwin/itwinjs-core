@@ -18,7 +18,7 @@ import {
 import {
   IModelExporter,
   IModelTransformer, TransformerLoggerCategory,
-} from "../../imodeljs-transformer";
+} from "../../core-transformer";
 import { HubMock } from "@itwin/core-backend/lib/test/HubMock";
 import { ExtensiveTestScenario, IModelTestUtils, TestUserType } from "@itwin/core-backend/lib/test/IModelTestUtils";
 import { CountingIModelImporter, IModelToTextFileExporter, IModelTransformerTestUtils, TestIModelTransformer, TransformerExtensiveTestScenario as TransformerExtensiveTestScenario } from "../IModelTransformerUtils";

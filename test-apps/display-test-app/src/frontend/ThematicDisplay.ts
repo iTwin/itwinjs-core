@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "@itwin/core-bentley";
-import { ComboBox, ComboBoxEntry, createButton, createCheckBox, createComboBox, createLabeledNumericInput, createSlider, LabeledNumericInput, Slider } from "@bentley/frontend-devtools";
+import { ComboBox, ComboBoxEntry, createButton, createCheckBox, createComboBox, createLabeledNumericInput, createSlider, LabeledNumericInput, Slider } from "@itwin/frontend-devtools";
 import { Point3d, Range1d } from "@itwin/core-geometry";
 import {
   calculateSolarDirectionFromAngles, ColorByName, ColorDef, ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps,

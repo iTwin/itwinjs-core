@@ -17,7 +17,7 @@ import {
   ALong, CRSManager, Downloader, DownloaderXhr, OnlineEngine, OPCReader, OrbitGtAList, OrbitGtBlockIndex, OrbitGtBounds, OrbitGtCoordinate,
   OrbitGtDataManager, OrbitGtFrameData, OrbitGtIProjectToViewForSort, OrbitGtIViewRequest, OrbitGtLevel, OrbitGtTileIndex, OrbitGtTileLoadSorter,
   OrbitGtTransform, PageCachedFile, PointDataRaw, UrlFS,
-} from "@bentley/orbitgt-core";
+} from "@itwin/core-orbitgt";
 import { RealityDataClient } from "@bentley/reality-data-client";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
 import { HitDetail } from "../HitDetail";

@@ -22,7 +22,7 @@ import {
   AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps, ExternalSourceAspectProps,
   IModel, IModelError, PhysicalElementProps, Placement3d,
 } from "@itwin/core-common";
-import { IModelExporter, IModelExportHandler, IModelTransformer, TransformerLoggerCategory } from "../../imodeljs-transformer";
+import { IModelExporter, IModelExportHandler, IModelTransformer, TransformerLoggerCategory } from "../../core-transformer";
 import {
   ClassCounter, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator,
   RecordingIModelImporter, TestIModelTransformer, TransformerExtensiveTestScenario,

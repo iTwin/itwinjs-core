@@ -11,7 +11,7 @@ import { ClipVector, Point3d, Transform } from "@itwin/core-geometry";
 import {
   ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, IModelError, PackedFeatureTable, RenderMaterial, RenderTexture,
 } from "@itwin/core-common";
-import { Capabilities, DepthType, WebGLContext } from "@bentley/webgl-compatibility";
+import { Capabilities, DepthType, WebGLContext } from "@itwin/webgl-compatibility";
 import { SkyBox } from "../../DisplayStyleState";
 import { imageElementFromImageSource } from "../../ImageUtil";
 import { IModelApp } from "../../IModelApp";

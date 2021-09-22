@@ -5,7 +5,7 @@
 
 import {
   CheckBox, ColorInput, createButton, createCheckBox, createColorInput, createNestedMenu, createRadioBox, createSlider, RadioBox, Slider,
-} from "@bentley/frontend-devtools";
+} from "@itwin/frontend-devtools";
 import { ColorDef, RenderMode, SkyBoxProps } from "@itwin/core-common";
 import { Environment, SkyBox, SkyGradient, Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
 import { LightingEditor } from "./LightingEditor";

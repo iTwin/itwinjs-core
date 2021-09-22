@@ -11,8 +11,8 @@ import {
 import { AxisAlignedBox3d, Cartographic, ContextRealityModelProps, EcefLocation, RenderMode, ViewFlags } from "@itwin/core-common";
 import {
   ALong, CRSManager, Downloader, OnlineEngine, OPCReader, OrbitGtBounds, PageCachedFile, PointCloudReader, UrlFS,
-} from "@bentley/orbitgt-core";
-import { DownloaderNode } from "@bentley/orbitgt-core/lib/system/runtime/DownloaderNode";
+} from "@itwin/core-orbitgt";
+import { DownloaderNode } from "@itwin/core-orbitgt/lib/system/runtime/DownloaderNode";
 
 interface OrbitGtPointCloudProps {
   rdsUrl?: string;

@@ -1,9 +1,9 @@
 {
-  "name": "@bentley/imodeljs-markup",
+  "name": "@itwin/core-markup",
   "version": "3.0.0-dev.64",
   "description": "iModel.js markup package",
-  "main": "lib/imodeljs-markup.js",
-  "typings": "lib/imodeljs-markup",
+  "main": "lib/core-markup.js",
+  "typings": "lib/core-markup",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
@@ -12,8 +12,8 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:assets": "cpx \"./src/public/**/*\" ./lib/public",
     "cover": "npm test -- --cover",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-markup/file.json --tsIndexFile=./imodeljs-markup.ts --onlyJson",
-    "extract-api": "betools extract-api --entry=imodeljs-markup",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-markup/file.json --tsIndexFile=./core-markup.ts --onlyJson",
+    "extract-api": "betools extract-api --entry=core-markup",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./lib/public/locales/en-PSEUDO",
     "test": "npm run webpackTests && certa -r chrome",

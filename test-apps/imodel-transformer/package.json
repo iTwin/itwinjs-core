@@ -22,7 +22,7 @@
     "@bentley/imodelhub-client": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-backend": "workspace:*",
-    "@bentley/imodeljs-transformer": "workspace:*",
+    "@itwin/core-transformer": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "fs-extra": "^8.1.0",
     "yargs": "^16.0.0"

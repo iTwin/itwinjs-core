@@ -1,5 +1,5 @@
 {
-  "name": "@bentley/webgl-compatibility",
+  "name": "@itwin/webgl-compatibility",
   "version": "3.0.0-dev.64",
   "description": "APIs for determining the level of compatibility of a browser+device with the iModel.js rendering system.",
   "license": "MIT",

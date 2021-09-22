@@ -5,7 +5,7 @@
 import { Id64String } from "@itwin/core-bentley";
 import {
   CheckBox, ComboBox, ComboBoxEntry, createCheckBox, createColorInput, createComboBox, createNestedMenu, createNumericInput, createSlider, Slider,
-} from "@bentley/frontend-devtools";
+} from "@itwin/frontend-devtools";
 import {
   BackgroundMapProps, BackgroundMapProviderName, BackgroundMapType, ColorDef, DisplayStyle3dSettingsProps, GlobeMode, HiddenLine, LinePixels,
   MonochromeMode, RenderMode, TerrainProps, ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode,

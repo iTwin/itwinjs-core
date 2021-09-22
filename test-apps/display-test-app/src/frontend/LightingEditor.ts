@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { CheckBox, createButton, createCheckBox, createColorInput, createLabeledNumericInput, createTextBox } from "@bentley/frontend-devtools";
+import { CheckBox, createButton, createCheckBox, createColorInput, createLabeledNumericInput, createTextBox } from "@itwin/frontend-devtools";
 import { Vector3d } from "@itwin/core-geometry";
 import { ColorDef, LightSettings, LightSettingsProps, RenderMode, RgbColor, SolarShadowSettings } from "@itwin/core-common";
 import { Viewport, ViewState } from "@itwin/core-frontend";

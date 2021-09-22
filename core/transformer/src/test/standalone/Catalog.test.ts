@@ -19,7 +19,7 @@ import {
   Code, CodeScopeSpec, DefinitionElementProps, GeometricElement2dProps, GeometryStreamProps, IModel, PhysicalElementProps, Placement2d, Placement3d,
   RepositoryLinkProps, SubCategoryAppearance,
 } from "@itwin/core-common";
-import { IModelTransformer, IModelTransformOptions, TemplateModelCloner, TransformerLoggerCategory } from "../../imodeljs-transformer";
+import { IModelTransformer, IModelTransformOptions, TemplateModelCloner, TransformerLoggerCategory } from "../../core-transformer";
 
 const createClassViews = false; // can set to true to make it easier to debug the catalog structure
 

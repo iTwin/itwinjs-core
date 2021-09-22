@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { MarkupApp } from "@bentley/imodeljs-markup";
+import { MarkupApp } from "@itwin/core-markup";
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
 import { ActionItemButton, FrontstageManager, MarkupTools, ToolWidget } from "../ui-framework";
 import TestUtils, { mount } from "./TestUtils";

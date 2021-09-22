@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64Arg } from "@itwin/core-bentley";
-import { createButton, createTextBox, deserializeViewState, serializeViewState } from "@bentley/frontend-devtools";
+import { createButton, createTextBox, deserializeViewState, serializeViewState } from "@itwin/frontend-devtools";
 import { IModelConnection, Viewport, ViewState } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { Provider } from "./FeatureOverrides";

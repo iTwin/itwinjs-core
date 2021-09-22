@@ -5,7 +5,7 @@
 
 import { Matrix3d, Point3d, Transform } from "@itwin/core-geometry";
 import { IModelApp, ModelDisplayTransformProvider, Tool } from "@itwin/core-frontend";
-import { parseArgs } from "@bentley/frontend-devtools";
+import { parseArgs } from "@itwin/frontend-devtools";
 
 class DisplayScaleTransformProvider implements ModelDisplayTransformProvider {
   public constructor(private readonly _models: Set<string>, private readonly _scaleTransform: Transform) { }

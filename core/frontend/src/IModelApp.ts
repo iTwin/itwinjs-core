@@ -18,7 +18,7 @@ import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
 import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
 import { UiAdmin } from "@bentley/ui-abstract";
-import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@bentley/webgl-compatibility";
+import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@itwin/webgl-compatibility";
 import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
 import * as auxCoordState from "./AuxCoordSys";

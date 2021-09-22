@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, compareStringsOrUndefined, GuidString } from "@itwin/core-bentley";
-import { ComboBox, ComboBoxEntry, createCheckBox, createComboBox, createNestedMenu, createNumericInput, NestedMenu } from "@bentley/frontend-devtools";
+import { ComboBox, ComboBoxEntry, createCheckBox, createComboBox, createNestedMenu, createNumericInput, NestedMenu } from "@itwin/frontend-devtools";
 import {
   CartographicRange, ContextRealityModelProps, ModelProps, SpatialClassifier, SpatialClassifierFlagsProps, SpatialClassifierInsideDisplay,
   SpatialClassifierOutsideDisplay, SpatialClassifiers,

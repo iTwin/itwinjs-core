@@ -6,7 +6,7 @@
 import { dispose, Id64String, IDisposable } from "@itwin/core-bentley";
 import {
   ColorInputProps, ComboBox, ComboBoxHandler, convertHexToRgb, createButton, createCheckBox, createColorInput, createComboBox, createNumericInput,
-} from "@bentley/frontend-devtools";
+} from "@itwin/frontend-devtools";
 import { FeatureAppearance, FeatureAppearanceProps, LinePixels, RgbColor } from "@itwin/core-common";
 import { FeatureOverrideProvider, FeatureSymbology, Viewport } from "@itwin/core-frontend";
 import { ToolBarDropDown } from "./ToolBar";

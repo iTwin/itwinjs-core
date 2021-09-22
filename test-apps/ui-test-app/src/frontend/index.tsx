@@ -12,7 +12,7 @@ import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentl
 import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { FrontendDevTools } from "@bentley/frontend-devtools";
+import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@itwin/core-common";
@@ -23,7 +23,7 @@ import {
   WebViewerApp, WebViewerAppOpts,
 } from "@itwin/core-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
-import { MarkupApp } from "@bentley/imodeljs-markup";
+import { MarkupApp } from "@itwin/core-markup";
 import { AccessToken, ProgressInfo } from "@bentley/itwin-client";
 import { MapLayersUI } from "@bentley/map-layers";
 import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, compareStringsOrUndefined, Id64, Id64Arg } from "@itwin/core-bentley";
-import { CheckBox, ComboBoxEntry, createButton, createCheckBox, createComboBox, createTextBox } from "@bentley/frontend-devtools";
+import { CheckBox, ComboBoxEntry, createButton, createCheckBox, createComboBox, createTextBox } from "@itwin/frontend-devtools";
 import { GeometricModel3dProps } from "@itwin/core-common";
 import { GeometricModel3dState, ScreenViewport, SpatialViewState, ViewManip } from "@itwin/core-frontend";
 import { ToolBarDropDown } from "./ToolBar";

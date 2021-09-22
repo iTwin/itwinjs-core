@@ -19,7 +19,7 @@
     "@bentley/itwin-client": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-backend": "workspace:*",
-    "@bentley/orbitgt-core": "workspace:*",
+    "@itwin/core-orbitgt": "workspace:*",
     "yargs": "^16.0.0"
   },
   "devDependencies": {

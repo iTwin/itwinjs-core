@@ -22,7 +22,7 @@
     "@itwin/core-geometry": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
     "@itwin/core-backend": "workspace:*",
-    "@bentley/imodeljs-transformer": "workspace:*",
+    "@itwin/core-transformer": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@bentley/backend-itwin-client": "workspace:*",
     "@itwin/core-common": "workspace:*",
