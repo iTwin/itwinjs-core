@@ -5,7 +5,7 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, Guid, GuidString, Logger, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
+import { BentleyStatus, ChangeSetStatus, Guid, GuidString, Logger, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import { Briefcase, ChangeSet, ChangeSetQuery, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
 import { BriefcaseIdValue, ChangesetFileProps, ChangesetType } from "@bentley/imodeljs-common";
@@ -227,8 +227,7 @@ export class HubUtility {
     const filteredCS = changeSets.filter((obj) => obj.index >= startCS && obj.index <= endNum);
 
     Logger.logInfo(HubUtility.logCategory, "Merging all available change sets");
-    const applyOption = ChangeSetApplyOption.Merge;
-    const perfLogger = new PerfLogger(`Applying change sets for operation ${ChangeSetApplyOption[applyOption]}`);
+    const perfLogger = new PerfLogger(`Applying change sets }`);
 
     const results = [];
     // Apply change sets one by one to debug any issues
@@ -236,7 +235,7 @@ export class HubUtility {
       const startTime = new Date().getTime();
       let csResult = ChangeSetStatus.Success;
       try {
-        nativeDb.applyChangeset(changeSet, applyOption);
+        nativeDb.applyChangeset(changeSet);
       } catch (err: any) {
         csResult = err.errorNumber;
       }
@@ -245,7 +244,6 @@ export class HubUtility {
       results.push({
         csNum: changeSet.index,
         csId: changeSet.id,
-        csApplyOption: ChangeSetApplyOption[applyOption],
         csResult,
         time: elapsedTime,
       });
@@ -276,7 +274,7 @@ export class HubUtility {
     // HubUtility.dumpChangeSetsToLog(iModel, changeSets);
 
     Logger.logInfo(HubUtility.logCategory, "Merging all available change sets");
-    const status = HubUtility.applyChangeSetsToNativeDb(nativeDb, filteredChangeSets, ChangeSetApplyOption.Merge);
+    const status = HubUtility.applyChangeSetsToNativeDb(nativeDb, filteredChangeSets);
     nativeDb.closeIModel();
     assert.isTrue(status === ChangeSetStatus.Success, "Error applying change sets");
   }
@@ -302,7 +300,7 @@ export class HubUtility {
     // HubUtility.dumpChangeSetsToLog(iModel, changeSets);
 
     Logger.logInfo(HubUtility.logCategory, "Merging all available change sets");
-    status = HubUtility.applyChangeSetsToNativeDb(nativeDb, changeSets, ChangeSetApplyOption.Merge);
+    status = HubUtility.applyChangeSetsToNativeDb(nativeDb, changeSets);
 
     // Reverse changes until there's a schema change set (note that schema change sets cannot be reversed)
     const reverseChangeSets = changeSets.reverse();
@@ -310,13 +308,13 @@ export class HubUtility {
     const filteredChangeSets = reverseChangeSets.slice(0, schemaChangeIndex); // exclusive of element at schemaChangeIndex
     if (status === ChangeSetStatus.Success) {
       Logger.logInfo(HubUtility.logCategory, "Reversing all available change sets");
-      status = HubUtility.applyChangeSetsToNativeDb(nativeDb, filteredChangeSets, ChangeSetApplyOption.Reverse);      // eslint-disable-line deprecation/deprecation
+      status = HubUtility.applyChangeSetsToNativeDb(nativeDb, filteredChangeSets);
     }
 
     if (status === ChangeSetStatus.Success) {
       Logger.logInfo(HubUtility.logCategory, "Reinstating all available change sets");
       filteredChangeSets.reverse();
-      status = HubUtility.applyChangeSetsToNativeDb(nativeDb, filteredChangeSets, ChangeSetApplyOption.Merge);
+      status = HubUtility.applyChangeSetsToNativeDb(nativeDb, filteredChangeSets);
     }
 
     nativeDb.closeIModel();
@@ -515,8 +513,8 @@ export class HubUtility {
   }
 
   /** Applies change sets one by one (for debugging) */
-  public static applyChangeSetsToNativeDb(nativeDb: IModelJsNative.DgnDb, changeSets: ChangesetFileProps[], applyOption: ChangeSetApplyOption): ChangeSetStatus {
-    const perfLogger = new PerfLogger(`Applying change sets for operation ${ChangeSetApplyOption[applyOption]}`);
+  public static applyChangeSetsToNativeDb(nativeDb: IModelJsNative.DgnDb, changeSets: ChangesetFileProps[]): ChangeSetStatus {
+    const perfLogger = new PerfLogger(`Applying change sets]}`);
 
     // Apply change sets one by one to debug any issues
     let count = 0;
@@ -524,7 +522,7 @@ export class HubUtility {
       ++count;
       Logger.logInfo(HubUtility.logCategory, `Started applying change set: ${count} of ${changeSets.length} (${new Date(Date.now()).toString()})`, () => ({ ...changeSet }));
       try {
-        nativeDb.applyChangeset(changeSet, applyOption);
+        nativeDb.applyChangeset(changeSet);
         Logger.logInfo(HubUtility.logCategory, "Successfully applied ChangeSet", () => ({ ...changeSet, status }));
       } catch (err: any) {
         Logger.logError(HubUtility.logCategory, `Error applying ChangeSet ${err.errorNumber}`, () => ({ ...changeSet }));

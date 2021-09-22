@@ -10,22 +10,20 @@
 
 import * as path from "path";
 import {
-  BeDuration,
-  ChangeSetApplyOption, ChangeSetStatus, ClientRequestContext, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode,
+  BeDuration, ChangeSetStatus, ClientRequestContext, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode,
 } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseId,
-  BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps, LocalDirName,
-  LocalFileName, RequestNewBriefcaseProps,
+  BriefcaseId, BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps,
+  LocalDirName, LocalFileName, RequestNewBriefcaseProps,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TelemetryEvent } from "@bentley/telemetry-client";
+import { IModelIdArg } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { CheckpointManager, CheckpointProps, ProgressFunction } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb, UserArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
-import { IModelIdArg } from "./BackendHubAccess";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -372,12 +370,11 @@ export class BriefcaseManager {
     return status;
   }
 
-  private static async applySingleChangeset(db: IModelDb, changesetFile: ChangesetFileProps, reverse: boolean) {
+  private static async applySingleChangeset(db: IModelDb, changesetFile: ChangesetFileProps) {
     if (changesetFile.changesType === ChangesetType.Schema)
       db.clearCaches(); // for schema changesets, statement caches may become invalid. Do this *before* applying, in case db needs to be closed (open statements hold db open.)
 
-    // eslint-disable-next-line deprecation/deprecation
-    db.nativeDb.applyChangeset(changesetFile, reverse ? ChangeSetApplyOption.Reverse : ChangeSetApplyOption.Merge);
+    db.nativeDb.applyChangeset(changesetFile);
     db.changeset = db.nativeDb.getCurrentChangeset();
 
     // we're done with this changeset, delete it
@@ -410,7 +407,7 @@ export class BriefcaseManager {
       changesets.reverse();
 
     for (const changeset of changesets)
-      await this.applySingleChangeset(db, changeset, reverse);
+      await this.applySingleChangeset(db, changeset);
 
     // notify listeners
     db.notifyChangesetApplied();
