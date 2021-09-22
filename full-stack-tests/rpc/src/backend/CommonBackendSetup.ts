@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { registerBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
 import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IModelHost } from "@itwin/core-backend";

@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { WebGLContext } from "@bentley/webgl-compatibility";
 import { AttributeDetails } from "./AttributeMap";
 import { addInstancedModelMatrixRTC } from "./glsl/Instancing";

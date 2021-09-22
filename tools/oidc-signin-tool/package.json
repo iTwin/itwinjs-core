@@ -31,7 +31,7 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@bentley/certa": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
     "@bentley/itwin-client": "workspace:*",

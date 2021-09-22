@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Authentication
  */
-import { AuthStatus, BentleyError } from "@bentley/bentleyjs-core";
+import { AuthStatus, BentleyError } from "@itwin/core-bentley";
 import { UserInfo, UserInfoProps } from "./UserInfo";
 
 /**

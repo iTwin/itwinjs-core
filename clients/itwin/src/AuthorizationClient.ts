@@ -6,7 +6,7 @@
  * @module Authentication
  */
 
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
+import { ClientRequestContext } from "@itwin/core-bentley";
 import { AccessToken } from "./Token";
 
 /** Interface to provide authorization information

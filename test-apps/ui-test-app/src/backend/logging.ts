@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel } from "@itwin/core-bentley";
 import { BackendLoggerCategory, NativeLoggerCategory } from "@itwin/core-backend";
 import { BackendITwinClientLoggerCategory } from "@bentley/backend-itwin-client";
 import { PresentationBackendNativeLoggerCategory } from "@bentley/presentation-backend";

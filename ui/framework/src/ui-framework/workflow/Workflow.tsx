@@ -8,7 +8,7 @@
 
 /* eslint-disable deprecation/deprecation */
 
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { UiEvent } from "@bentley/ui-core";
 import { ItemDefBase } from "../shared/ItemDefBase";
 import { ItemProps } from "../shared/ItemProps";

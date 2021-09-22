@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Id64, Id64String, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { Angle, Point3d } from "@itwin/core-geometry";
 import { IModelJsFs, PhysicalModel, StandaloneDb } from "@itwin/core-backend";

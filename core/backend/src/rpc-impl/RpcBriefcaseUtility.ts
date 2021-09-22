@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { BeDuration, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { BeDuration, IModelStatus, Logger } from "@itwin/core-bentley";
 import {
   BriefcaseProps, IModelConnectionProps, IModelRpcOpenProps, IModelRpcProps, IModelVersion, RpcPendingResponse, SyncMode,
 } from "@itwin/core-common";

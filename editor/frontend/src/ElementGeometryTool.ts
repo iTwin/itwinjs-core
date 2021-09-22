@@ -6,7 +6,7 @@
  * @module Editing
  */
 
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Id64, Id64String } from "@itwin/core-bentley";
 import { editorBuiltInCmdIds, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps, OffsetFacesProps, SolidModelingCommandIpc, SubEntityGeometryProps, SubEntityLocationProps, SubEntityProps, SubEntityType } from "@bentley/imodeljs-editor-common";
 import { FeatureAppearance, FeatureAppearanceProvider, RgbColor } from "@itwin/core-common";
 import { Geometry, Point3d, Range3d, Ray3d, Transform, Vector3d } from "@itwin/core-geometry";
@@ -163,7 +163,7 @@ export class SubEntityData {
 
     const opts: GraphicBranchOptions = { appearanceProvider };
 
-    const range = (this.geom?.range ? Range3d.fromJSON(this.geom.range): undefined);
+    const range = (this.geom?.range ? Range3d.fromJSON(this.geom.range) : undefined);
     const pixelSize = context.viewport.getPixelSizeAtPoint(range ? range.center : undefined);
     const offsetDir = context.viewport.view.getZVector();
     offsetDir.scaleToLength(3 * pixelSize, offsetDir);
@@ -339,7 +339,7 @@ export class OffsetFacesTool extends ElementGeometryCacheTool {
       // const boresite = AccuDrawHintBuilder.getBoresite(ev.point, ev.viewport);
       const hit = IModelApp.accuSnap.currHit;
       const boresite = AccuDrawHintBuilder.getBoresite(hit ? hit.hitPoint : ev.point, ev.viewport);
-      const info = await this.doPickSubEntities(this.agenda.elements[this.agenda.length-1], boresite);
+      const info = await this.doPickSubEntities(this.agenda.elements[this.agenda.length - 1], boresite);
 
       if (undefined === info)
         return false;

@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { Point2d, Range1d, Range2d } from "@itwin/core-geometry";
 import { Cartographic } from "@itwin/core-common";
 import { getJson } from "@bentley/itwin-client";
@@ -87,10 +87,10 @@ export class ApproximateTerrainHeights {
   }
 
   private _getTileXYLevel(rectangle: Range2d): { x: number, y: number, level: number } | undefined {
-    Cartographic.fromRadians({longitude: rectangle.low.x, latitude: rectangle.high.y, height: 0.0}, this._scratchCorners[0]);
-    Cartographic.fromRadians({longitude: rectangle.high.x, latitude: rectangle.high.y, height: 0.0}, this._scratchCorners[1]);
-    Cartographic.fromRadians({longitude: rectangle.low.x, latitude: rectangle.low.y, height: 0.0}, this._scratchCorners[2]);
-    Cartographic.fromRadians({longitude: rectangle.high.x, latitude: rectangle.low.y, height: 0.0}, this._scratchCorners[3]);
+    Cartographic.fromRadians({ longitude: rectangle.low.x, latitude: rectangle.high.y, height: 0.0 }, this._scratchCorners[0]);
+    Cartographic.fromRadians({ longitude: rectangle.high.x, latitude: rectangle.high.y, height: 0.0 }, this._scratchCorners[1]);
+    Cartographic.fromRadians({ longitude: rectangle.low.x, latitude: rectangle.low.y, height: 0.0 }, this._scratchCorners[2]);
+    Cartographic.fromRadians({ longitude: rectangle.high.x, latitude: rectangle.low.y, height: 0.0 }, this._scratchCorners[3]);
 
     // Determine which tile the bounding rectangle is in
     let lastLevelX = 0, lastLevelY = 0;

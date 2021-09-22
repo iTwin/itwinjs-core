@@ -6,7 +6,7 @@
  * @module Symbology
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { Angle, AngleProps } from "@itwin/core-geometry";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { ImageBuffer, ImageBufferFormat } from "./Image";

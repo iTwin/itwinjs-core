@@ -6,7 +6,7 @@
  * @module Telemetry
  */
 
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { ClientTelemetryEvent, TelemetryClient, TelemetryEvent } from "@bentley/telemetry-client";
 import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";

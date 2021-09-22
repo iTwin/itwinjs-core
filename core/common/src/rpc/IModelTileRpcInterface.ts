@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { Id64Array } from "@bentley/bentleyjs-core";
+import { Id64Array } from "@itwin/core-bentley";
 import { CloudStorageContainerDescriptor, CloudStorageContainerUrl } from "../CloudStorage";
 import { TileContentIdentifier } from "../CloudStorageTileCache";
 import { IModelRpcProps } from "../IModel";

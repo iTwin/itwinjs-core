@@ -5,7 +5,7 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { ChangeSetApplyOption, Id64String, OpenMode } from "@bentley/bentleyjs-core";
+import { ChangeSetApplyOption, Id64String, OpenMode } from "@itwin/core-bentley";
 import { ChangesetFileProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { DictionaryModel, Element, IModelDb, IModelJsFs, SpatialCategory, StandaloneDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";

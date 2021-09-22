@@ -5,7 +5,7 @@
 
 import * as path from "path";
 import * as Yargs from "yargs";
-import { assert, Guid, GuidString, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { assert, Guid, GuidString, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { Version } from "@bentley/imodelhub-client";
 import {

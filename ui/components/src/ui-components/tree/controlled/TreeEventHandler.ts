@@ -8,7 +8,7 @@
 
 import { takeUntil } from "rxjs/internal/operators/takeUntil";
 import { Subject } from "rxjs/internal/Subject";
-import { IDisposable } from "@bentley/bentleyjs-core";
+import { IDisposable } from "@itwin/core-bentley";
 import { TreeModelMutator } from "./internal/TreeModelMutator";
 import { Subscription, toRxjsObservable } from "./Observable";
 import {

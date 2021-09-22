@@ -17,7 +17,7 @@ export interface GraphicBranchFrustum {
   };
 }
 
-import { disposeArray, IDisposable } from "@bentley/bentleyjs-core";
+import { disposeArray, IDisposable } from "@itwin/core-bentley";
 import { FeatureAppearanceProvider, HiddenLine, ViewFlagOverrides, ViewFlags } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { FeatureSymbology } from "./FeatureSymbology";
@@ -42,7 +42,7 @@ export class GraphicBranch implements IDisposable /* , RenderMemory.Consumer */ 
   /** Selectively overrides the view's [ViewFlags]($common) while drawing graphics within this branch. The default overrides nothing.
    * @see [[setViewFlagOverrides]].
    */
-  public viewFlagOverrides: ViewFlagOverrides = { };
+  public viewFlagOverrides: ViewFlagOverrides = {};
   /** Optional symbology overrides to be applied to all graphics in this branch */
   public symbologyOverrides?: FeatureSymbology.Overrides;
   /** Optional animation branch Id.

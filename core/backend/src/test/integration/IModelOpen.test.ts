@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BentleyError, GuidString } from "@bentley/bentleyjs-core";
+import { BentleyError, GuidString } from "@itwin/core-bentley";
 import { IModelVersion } from "@itwin/core-common";
 import { AccessToken } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";

@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
+import { BentleyError, BentleyStatus } from "@itwin/core-bentley";
 import { LinkElementsInfo } from "@bentley/ui-abstract";
 import { UnderlinedButton } from "@bentley/ui-core";
 

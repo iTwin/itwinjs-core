@@ -8,7 +8,7 @@
 
 import { immerable } from "immer";
 import _ from "lodash";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { CheckBoxState } from "@bentley/ui-core";
 import { DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, TreeNodeItem } from "../TreeDataProvider";

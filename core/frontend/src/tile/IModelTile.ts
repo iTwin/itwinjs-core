@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, BeTimePoint, ByteStream } from "@bentley/bentleyjs-core";
+import { assert, BeTimePoint, ByteStream } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import {
   ColorDef, computeChildTileProps, computeChildTileRanges, computeTileChordTolerance, ElementAlignedBox3d, LinePixels, TileFormat, TileProps,

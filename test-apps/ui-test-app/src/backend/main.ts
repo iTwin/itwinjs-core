@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
 import * as path from "path";
-import { Logger, ProcessDetector } from "@bentley/bentleyjs-core";
+import { Logger, ProcessDetector } from "@itwin/core-bentley";
 import { Presentation } from "@bentley/presentation-backend";
 import { initializeLogging } from "./logging";
 import { initializeWeb } from "./web/BackendServer";

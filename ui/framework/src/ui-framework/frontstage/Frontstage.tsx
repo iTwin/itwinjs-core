@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { StagePanelLocation, UiItemProviderRegisteredEventArgs, UiItemsManager, WidgetState } from "@bentley/ui-abstract";
 import { CommonProps, Rectangle } from "@bentley/ui-core";
 import {

@@ -18,7 +18,7 @@
   },
   "repository": {},
   "dependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@bentley/express-server": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-frontend": "workspace:*",

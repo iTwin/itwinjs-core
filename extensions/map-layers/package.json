@@ -31,7 +31,7 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
@@ -89,7 +89,7 @@
     "react-resize-detector": "^6.7.6"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",

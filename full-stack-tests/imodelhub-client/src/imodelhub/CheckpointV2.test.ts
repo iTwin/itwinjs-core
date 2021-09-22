@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import * as fs from "fs";
-import { GuidString } from "@bentley/bentleyjs-core";
+import { GuidString } from "@itwin/core-bentley";
 import { Briefcase, ChangeSet, CheckpointV2, CheckpointV2ErrorId, CheckpointV2Query, CheckpointV2State, IModelClient } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool";

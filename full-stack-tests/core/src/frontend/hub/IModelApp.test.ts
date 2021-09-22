@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ClientRequestContextProps } from "@bentley/bentleyjs-core";
+import { ClientRequestContextProps } from "@itwin/core-bentley";
 import { AuthorizedFrontendRequestContext, IModelApp } from "@itwin/core-frontend";
 import { AccessToken } from "@bentley/itwin-client";
 import { TestFrontendAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";

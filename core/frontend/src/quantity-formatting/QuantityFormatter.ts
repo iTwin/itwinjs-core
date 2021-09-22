@@ -6,7 +6,7 @@
  * @module QuantityFormatting
  */
 
-import { BeUiEvent } from "@bentley/bentleyjs-core";
+import { BeUiEvent } from "@itwin/core-bentley";
 import {
   Format, FormatProps, FormatterSpec, ParseError, ParserSpec, QuantityParseResult, UnitConversion, UnitProps, UnitsProvider, UnitSystemKey,
 } from "@bentley/imodeljs-quantity";

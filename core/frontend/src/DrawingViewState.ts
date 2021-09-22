@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { assert, dispose, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { assert, dispose, Id64, Id64String } from "@itwin/core-bentley";
 import {
   Constant, Range3d, Transform, TransformProps, Vector3d,
 } from "@itwin/core-geometry";

@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Notifications
  */
-import { BeDuration } from "@bentley/bentleyjs-core";
+import { BeDuration } from "@itwin/core-bentley";
 import { Point2d, XAndY } from "@itwin/core-geometry";
 import { DisplayMessageType, MessagePresenter, MessageSeverity, RelativePosition } from "@bentley/ui-abstract";
 import { IModelApp } from "./IModelApp";

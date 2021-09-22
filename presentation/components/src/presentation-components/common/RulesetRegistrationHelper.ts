@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { IDisposable } from "@bentley/bentleyjs-core";
+import { IDisposable } from "@itwin/core-bentley";
 import { RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 

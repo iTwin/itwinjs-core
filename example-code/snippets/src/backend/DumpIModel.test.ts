@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult, Id64String } from "@bentley/bentleyjs-core";
+import { DbResult, Id64String } from "@itwin/core-bentley";
 import { ECSqlStatement, Element, IModelDb, Model, SnapshotDb } from "@itwin/core-backend";
 import { IModelJsFs as fs } from "@itwin/core-backend/lib/IModelJsFs";
 import { IModelTestUtils } from "./IModelTestUtils";

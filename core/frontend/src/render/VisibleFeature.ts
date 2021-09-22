@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { assert, Id64String } from "@bentley/bentleyjs-core";
+import { assert, Id64String } from "@itwin/core-bentley";
 import { GeometryClass } from "@itwin/core-common";
 import { ViewRect } from "../ViewRect";
 import { Viewport } from "../Viewport";
@@ -120,7 +120,7 @@ class ScreenFeatures implements Iterable<VisibleFeature> {
   }
 
   public [Symbol.iterator](): Iterator<VisibleFeature> {
-    function * iterator(pixels: Pixel.Buffer, rect: ViewRect, iModel: IModelConnection) {
+    function* iterator(pixels: Pixel.Buffer, rect: ViewRect, iModel: IModelConnection) {
       for (let x = rect.left; x < rect.right; x++) {
         for (let y = rect.top; y < rect.bottom; y++) {
           const pixel = pixels.getPixel(x, y);

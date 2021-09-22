@@ -5,7 +5,7 @@
 /* eslint-disable deprecation/deprecation */
 
 import * as React from "react";
-import { BeDuration, Logger } from "@bentley/bentleyjs-core";
+import { BeDuration, Logger } from "@itwin/core-bentley";
 import moreSvg from "@bentley/icons-generic/icons/more-circular.svg?sprite";
 import moreVerticalSvg from "@bentley/icons-generic/icons/more-vertical-circular.svg?sprite";
 import { ColorByName, ColorDef } from "@itwin/core-common";

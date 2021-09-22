@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult, Guid } from "@bentley/bentleyjs-core";
+import { DbResult, Guid } from "@itwin/core-bentley";
 import { CheckpointV2 } from "@bentley/imodelhub-client";
 import { IModelTileRpcInterface, RpcInvocation, RpcManager, RpcRegistry } from "@itwin/core-common";
 import { BlobDaemon } from "@bentley/imodeljs-native";

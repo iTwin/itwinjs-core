@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { AnalysisStyleDisplacement, AnalysisStyleScalar, ThematicGradientSettings } from "@itwin/core-common";
 import { AuxChannel, AuxDisplacementChannel, AuxParamChannel } from "../../primitives/AuxChannelTable";
 import { DrawParams } from "../DrawCommand";

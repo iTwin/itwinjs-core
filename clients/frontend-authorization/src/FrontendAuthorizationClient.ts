@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Authorization
  */
-import { BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { BeEvent, ClientRequestContext } from "@itwin/core-bentley";
 import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
 
 /**

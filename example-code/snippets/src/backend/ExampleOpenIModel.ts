@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { OpenMode } from "@bentley/bentleyjs-core";
+import { OpenMode } from "@itwin/core-bentley";
 import { BriefcaseDb } from "@itwin/core-backend";
 import { IModelError, IModelStatus, OpenBriefcaseProps } from "@itwin/core-common";
 import { AccessToken } from "@bentley/itwin-client";

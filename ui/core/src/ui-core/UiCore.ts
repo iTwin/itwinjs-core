@@ -12,7 +12,7 @@ import "./colorvariables.scss";
 import "./layout-variables.scss";
 import "./classes.scss";
 
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { getClassName, UiAbstract, UiError } from "@bentley/ui-abstract";
 

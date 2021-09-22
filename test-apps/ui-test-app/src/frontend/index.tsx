@@ -8,7 +8,7 @@ import * as ReactDOM from "react-dom";
 import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
-import { Id64String, Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
+import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";

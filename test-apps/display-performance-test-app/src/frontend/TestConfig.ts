@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as path from "path";
-import { assert, Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { assert, Id64Array, Id64String } from "@itwin/core-bentley";
 import {
   BackgroundMapProps, ColorDef, Hilite, RenderMode, ViewFlags, ViewStateProps,
 } from "@itwin/core-common";

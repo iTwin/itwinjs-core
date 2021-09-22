@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { GuidString, Id64String } from "@bentley/bentleyjs-core";
+import { GuidString, Id64String } from "@itwin/core-bentley";
 import { Angle } from "@itwin/core-geometry";
 import { CartographicRange, ContextRealityModel, ContextRealityModelProps, FeatureAppearance, OrbitGtBlobProps } from "@itwin/core-common";
 import { AccessToken } from "@bentley/itwin-client";

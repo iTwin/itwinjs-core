@@ -6,7 +6,7 @@
  * @module Symbology
  */
 
-import { Id64String, IModelStatus } from "@bentley/bentleyjs-core";
+import { Id64String, IModelStatus } from "@itwin/core-bentley";
 import { FilePropertyProps, IModelError, LinePixels, LineStyleProps } from "@itwin/core-common";
 import { GeometryPart, LineStyle } from "./Element";
 import { IModelDb } from "./IModelDb";

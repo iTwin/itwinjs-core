@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { IDisposable } from "@bentley/bentleyjs-core";
+import { IDisposable } from "@itwin/core-bentley";
 import { IModelDb, IModelHost, IModelJsNative } from "@itwin/core-backend";
 import { FormatProps } from "@bentley/imodeljs-quantity";
 import {

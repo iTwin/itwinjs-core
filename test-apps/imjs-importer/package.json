@@ -24,7 +24,7 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@bentley/itwin-client": "workspace:*",

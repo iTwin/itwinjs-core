@@ -9,7 +9,7 @@
 // cSpell:ignore configurableui clientservices
 
 import { Store } from "redux";
-import { GuidString, Logger, ProcessDetector } from "@bentley/bentleyjs-core";
+import { GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection, SnapMode, ViewState } from "@itwin/core-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";

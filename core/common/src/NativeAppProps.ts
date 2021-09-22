@@ -6,7 +6,7 @@
  * @module NativeApp
  */
 
-import { ClientRequestContextProps, GuidString } from "@bentley/bentleyjs-core";
+import { ClientRequestContextProps, GuidString } from "@itwin/core-bentley";
 import { AccessTokenProps } from "@bentley/itwin-client";
 import { BriefcaseProps, LocalBriefcaseProps, RequestNewBriefcaseProps } from "./BriefcaseTypes";
 

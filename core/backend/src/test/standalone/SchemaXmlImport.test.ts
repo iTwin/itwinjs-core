@@ -7,7 +7,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { PhysicalElement, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel } from "@itwin/core-bentley";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("Schema XML Import Tests (#standalone)", () => {

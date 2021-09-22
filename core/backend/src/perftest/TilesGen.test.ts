@@ -6,7 +6,7 @@ import { assert } from "chai";
 import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
-import { Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import { IModelVersion } from "@itwin/core-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";

@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { Id64Array, Id64String } from "@itwin/core-bentley";
 import { ClipVector, ClipVectorProps } from "@itwin/core-geometry";
 
 /** JSON representation of a [[ModelClipGroup]].

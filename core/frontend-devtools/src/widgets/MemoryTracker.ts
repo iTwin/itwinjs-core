@@ -7,7 +7,7 @@
  * @module Widgets
  */
 
-import { assert, BeTimePoint } from "@bentley/bentleyjs-core";
+import { assert, BeTimePoint } from "@itwin/core-bentley";
 import {
   DisclosedTileTreeSet, IModelApp, RenderMemory, TileTree, TileTreeOwner, Viewport,
 } from "@itwin/core-frontend";

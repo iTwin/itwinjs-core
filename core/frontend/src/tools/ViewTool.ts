@@ -6,7 +6,7 @@
  * @module Tools
  */
 
-import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
+import { BeDuration, BeTimePoint } from "@itwin/core-bentley";
 import {
   Angle, AngleSweep, Arc3d, AxisOrder, ClipUtilities, Constant, CurveLocationDetail, Geometry, LineString3d, Matrix3d, Plane3dByOriginAndUnitNormal,
   Point2d, Point3d, Range2d, Range3d, Ray3d, Transform, Vector2d, Vector3d, XAndY, YawPitchRollAngles,
@@ -3314,7 +3314,7 @@ export class ViewGlobeLocationTool extends ViewTool {
       const latitude = parseFloat(args[0]);
       const longitude = parseFloat(args[1]);
       if (!Number.isNaN(latitude) || !Number.isNaN(longitude)) {
-        const center = Cartographic.fromDegrees({longitude, latitude});
+        const center = Cartographic.fromDegrees({ longitude, latitude });
         this._globalLocation = { center };
       }
     }

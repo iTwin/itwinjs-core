@@ -7,7 +7,7 @@
  */
 
 import { URL } from "url";
-import { BentleyStatus, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
+import { BentleyStatus, SerializedClientRequestContext } from "@itwin/core-bentley";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
 import { RpcConfiguration } from "../core/RpcConfiguration";

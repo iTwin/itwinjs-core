@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import { IModelRpcProps } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { DEFAULT_KEYS_BATCH_SIZE, KeySet, RpcRequestsHandler } from "@bentley/presentation-common";

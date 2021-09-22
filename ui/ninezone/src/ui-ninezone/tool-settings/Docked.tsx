@@ -10,7 +10,7 @@ import "./Docked.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, useRefs, useResizeObserver } from "@bentley/ui-core";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { DockedToolSettingsHandle } from "./Handle";
 import { DockedToolSettingsOverflow } from "./Overflow";
 import { ToolSettingsOverflowPanel } from "./Panel";

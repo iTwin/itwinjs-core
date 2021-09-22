@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { BeEvent, IDisposable, Logger, OrderedId64Iterable } from "@bentley/bentleyjs-core";
+import { BeEvent, IDisposable, Logger, OrderedId64Iterable } from "@itwin/core-bentley";
 import { IModelConnection, IpcApp } from "@itwin/core-frontend";
 import { UnitSystemKey } from "@bentley/imodeljs-quantity";
 import {

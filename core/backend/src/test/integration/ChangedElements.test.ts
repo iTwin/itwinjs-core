@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DbResult, GuidString, OpenMode } from "@bentley/bentleyjs-core";
+import { DbResult, GuidString, OpenMode } from "@itwin/core-bentley";
 import { IModelError, IModelVersion } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";

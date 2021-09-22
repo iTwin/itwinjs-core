@@ -9,7 +9,7 @@ import { mount, shallow } from "enzyme";
 import * as faker from "faker";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Id64, Id64Arg, Id64String } from "@bentley/bentleyjs-core";
+import { Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
 import { Code, ElementProps } from "@itwin/core-common";
 import { IModelApp, IModelConnection, HiliteSet as IModelHiliteSet, NoRenderApp, SelectionSet, ViewState3d } from "@itwin/core-frontend";
 import { KeySet } from "@bentley/presentation-common";

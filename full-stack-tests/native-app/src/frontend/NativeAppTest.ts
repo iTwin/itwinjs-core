@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { AsyncMethodsOf, PromiseReturnType } from "@bentley/bentleyjs-core";
+import { AsyncMethodsOf, PromiseReturnType } from "@itwin/core-bentley";
 import { IModelCloudEnvironment, IModelQuery } from "@bentley/imodelhub-client";
 import { AuthorizedFrontendRequestContext, IpcApp } from "@itwin/core-frontend";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";

@@ -6,7 +6,7 @@
 import { assert, expect } from "chai";
 import * as os from "os";
 import * as readline from "readline";
-import { BriefcaseStatus, GuidString, StopWatch } from "@bentley/bentleyjs-core";
+import { BriefcaseStatus, GuidString, StopWatch } from "@itwin/core-bentley";
 import { BriefcaseIdValue, BriefcaseProps, IModelError, IModelVersion } from "@itwin/core-common";
 import { UserCancelledError } from "@bentley/itwin-client";
 import { AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, Element, IModelHost, IModelJsFs } from "../../core-backend";

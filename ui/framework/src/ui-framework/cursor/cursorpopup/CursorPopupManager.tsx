@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { PointProps, RelativePosition } from "@bentley/ui-abstract";
 import { Point, RectangleProps, Size, SizeProps, UiEvent } from "@bentley/ui-core";
 import { UiFramework } from "../../UiFramework";

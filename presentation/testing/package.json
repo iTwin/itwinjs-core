@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "@bentley/backend-itwin-client": "workspace:*",
-    "@bentley/bentleyjs-core": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@itwin/core-backend": "workspace:*",

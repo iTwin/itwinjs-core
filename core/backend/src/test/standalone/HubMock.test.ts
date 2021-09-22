@@ -5,7 +5,7 @@
 
 import { assert, expect } from "chai";
 import { join } from "path";
-import { Guid, Mutable } from "@bentley/bentleyjs-core";
+import { Guid, Mutable } from "@itwin/core-bentley";
 import { ChangesetFileProps, ChangesetType } from "@itwin/core-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { LockProps, LockState } from "../../BackendHubAccess";

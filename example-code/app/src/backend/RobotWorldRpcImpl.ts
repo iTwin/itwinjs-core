@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 // __PUBLISH_EXTRACT_START__ RpcInterface.implementation
 import { IModelRpcProps, RpcInterface, RpcInterfaceDefinition } from "@itwin/core-common";
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import { IModelDb } from "@itwin/core-backend";
 import { RobotWorldEngine } from "./RobotWorldEngine";
 import { RobotWorldReadRpcInterface } from "../common/RobotWorldRpcInterface";

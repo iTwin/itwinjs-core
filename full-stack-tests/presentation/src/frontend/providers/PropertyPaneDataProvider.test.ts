@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { using } from "@bentley/bentleyjs-core";
+import { using } from "@itwin/core-bentley";
 import { ModelProps } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { KeySet, RuleTypes } from "@bentley/presentation-common";

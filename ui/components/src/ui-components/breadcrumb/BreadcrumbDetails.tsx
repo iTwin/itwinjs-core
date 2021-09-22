@@ -8,7 +8,7 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { using } from "@bentley/bentleyjs-core";
+import { using } from "@itwin/core-bentley";
 import { CommonProps } from "@bentley/ui-core";
 import { Table, TableProps } from "../table/component/Table";
 import { ColumnDescription, RowItem, TableDataProvider } from "../table/TableDataProvider";

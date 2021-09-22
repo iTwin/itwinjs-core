@@ -11,15 +11,15 @@ import * as React from "react";
 import { BackstageItemUtilities, ConditionalBooleanValue, IconSpecUtilities, StageUsage } from "@bentley/ui-abstract";
 import settingsIconSvg from "@bentley/icons-generic/icons/settings.svg?sprite";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { Centered, SettingsContainer } from "@bentley/ui-core";
 import { FrontstageManager, ModalFrontstageInfo, ModalFrontstageRequestedCloseEventArgs } from "./FrontstageManager";
 import { UiFramework } from "../UiFramework";
 import { SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 
-function ModalSettingsStage({initialSettingsTabId}: {initialSettingsTabId?: string}) {
-  const id=FrontstageManager.activeFrontstageDef?.id??"none";
-  const stageUsage=FrontstageManager.activeFrontstageDef?.usage??StageUsage.General;
+function ModalSettingsStage({ initialSettingsTabId }: { initialSettingsTabId?: string }) {
+  const id = FrontstageManager.activeFrontstageDef?.id ?? "none";
+  const stageUsage = FrontstageManager.activeFrontstageDef?.usage ?? StageUsage.General;
   const tabEntries = UiFramework.settingsManager.getSettingEntries(id, stageUsage);
   const noSettingsAvailableLabel = React.useRef(UiFramework.translate("settings.noSettingsAvailable"));
 
@@ -29,13 +29,13 @@ function ModalSettingsStage({initialSettingsTabId}: {initialSettingsTabId?: stri
     if (!foundTab)
       foundTab = tabEntries.find((entry) => entry.label.toLowerCase() === categoryToFind);
     return foundTab;
-  },[initialSettingsTabId, tabEntries]);
+  }, [initialSettingsTabId, tabEntries]);
 
-  React.useEffect (()=>{
-    const handleFrontstageCloseRequested = ({modalFrontstage, stageCloseFunc}: ModalFrontstageRequestedCloseEventArgs) => {
+  React.useEffect(() => {
+    const handleFrontstageCloseRequested = ({ modalFrontstage, stageCloseFunc }: ModalFrontstageRequestedCloseEventArgs) => {
       // istanbul ignore else
       if (modalFrontstage instanceof SettingsModalFrontstage && stageCloseFunc) {
-        UiFramework.settingsManager.closeSettingsContainer (stageCloseFunc);
+        UiFramework.settingsManager.closeSettingsContainer(stageCloseFunc);
       }
     };
     return FrontstageManager.onCloseModalFrontstageRequestedEvent.addListener(handleFrontstageCloseRequested);
@@ -58,7 +58,7 @@ function ModalSettingsStage({initialSettingsTabId}: {initialSettingsTabId?: stri
 export class SettingsModalFrontstage implements ModalFrontstageInfo {
   public static id = "ui-framework.modalSettingsStage";
   public title: string = UiFramework.translate("settings.settingsStageLabel");
-  constructor(public initialSettingsTabId?: string ) {}
+  constructor(public initialSettingsTabId?: string) { }
   public notifyCloseRequest = true;
   public get content(): React.ReactNode {
     return (<ModalSettingsStage initialSettingsTabId={this.initialSettingsTabId} />);
@@ -75,16 +75,16 @@ export class SettingsModalFrontstage implements ModalFrontstageInfo {
     if (UiFramework.settingsManager.providers.length) {
       // Check to see if it is already open
       // istanbul ignore else
-      if (FrontstageManager.activeModalFrontstage && FrontstageManager.activeModalFrontstage instanceof SettingsModalFrontstage){
-        if (initialSettingsTab){
+      if (FrontstageManager.activeModalFrontstage && FrontstageManager.activeModalFrontstage instanceof SettingsModalFrontstage) {
+        if (initialSettingsTab) {
           UiFramework.settingsManager.activateSettingsTab(initialSettingsTab);
           return;
         }
       }
       FrontstageManager.openModalFrontstage(new SettingsModalFrontstage(initialSettingsTab));
     } else {
-      const briefMessage =  UiFramework.translate("settings.noSettingsAvailable");
-      const detailedMessage =  UiFramework.translate("settings.noSettingsProvidersRegistered");
+      const briefMessage = UiFramework.translate("settings.noSettingsAvailable");
+      const detailedMessage = UiFramework.translate("settings.noSettingsProvidersRegistered");
       const info = new NotifyMessageDetails(OutputMessagePriority.Info, briefMessage, detailedMessage, OutputMessageType.Toast);
       IModelApp.notifications.outputMessage(info);
       Logger.logInfo(UiFramework.loggerCategory(this), detailedMessage);

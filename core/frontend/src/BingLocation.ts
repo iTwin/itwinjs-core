@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
+import { ClientRequestContext } from "@itwin/core-bentley";
 import { Cartographic } from "@itwin/core-common";
 import { request, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelApp } from "./IModelApp";
@@ -44,10 +44,10 @@ export class BingLocationProvider {
       const northLatitude = bbox[2];
       const eastLongitude = bbox[3];
       return {
-        center: Cartographic.fromDegrees({longitude: point.coordinates[1], latitude: point.coordinates[0]}),
+        center: Cartographic.fromDegrees({ longitude: point.coordinates[1], latitude: point.coordinates[0] }),
         area: {
-          southwest: Cartographic.fromDegrees({longitude: westLongitude, latitude: southLatitude}),
-          northeast: Cartographic.fromDegrees({longitude: eastLongitude, latitude: northLatitude}),
+          southwest: Cartographic.fromDegrees({ longitude: westLongitude, latitude: southLatitude }),
+          northeast: Cartographic.fromDegrees({ longitude: eastLongitude, latitude: northLatitude }),
         },
       };
     } catch (error) {

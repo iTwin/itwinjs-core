@@ -6,7 +6,7 @@
 import { assert, expect } from "chai";
 import { join } from "path";
 import { restore as sinonRestore, spy as sinonSpy } from "sinon";
-import { Guid, Id64 } from "@bentley/bentleyjs-core";
+import { Guid, Id64 } from "@itwin/core-bentley";
 import { CodeScopeSpec, CodeSpec, ElementProps, IModel } from "@itwin/core-common";
 import { ClassRegistry } from "../../ClassRegistry";
 import { ElementUniqueAspect, OnAspectIdArg, OnAspectPropsArg } from "../../ElementAspect";

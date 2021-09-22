@@ -33,10 +33,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.64"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.64"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@bentley/certa": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",

@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { assert, Id64String } from "@bentley/bentleyjs-core";
+import { assert, Id64String } from "@itwin/core-bentley";
 import {
   Matrix3d, Point2d,
   Point3d, Range1d, Transform, XAndY,

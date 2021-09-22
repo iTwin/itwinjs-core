@@ -6,7 +6,7 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { assert, BeDuration, BeTimePoint, ByteStream, ClientRequestContext, Id64String, JsonUtils, utf8ToString } from "@bentley/bentleyjs-core";
+import { assert, BeDuration, BeTimePoint, ByteStream, ClientRequestContext, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
 import { nextPoint3d64FromByteStream, OctEncodedNormal, QParams3d, QPoint2d } from "@itwin/core-common";
 import { request, RequestOptions, Response } from "@bentley/itwin-client";

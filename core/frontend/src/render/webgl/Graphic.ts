@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
+import { assert, dispose } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { ElementAlignedBox3d, FeatureAppearanceProvider, PackedFeatureTable, ThematicDisplayMode, ViewFlags } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";

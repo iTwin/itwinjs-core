@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import {
   DataGridFilterParser, FieldFilterData, FILTER_PARSER_TIMER_TIMEOUT, MultiValueFilterData, NumericExactMatchData, NumericFilterData,
   NumericFilterType, NumericGreaterThanData, NumericLessThanData, NumericRangeData, ReactDataGridFilter,
@@ -678,7 +678,7 @@ describe("DataGridFilterParser", () => {
     const multiValueData: MultiValueFilterData = {
       distinctValues: [],
       fieldValues: [
-        {fieldValue: "Multi-Value 1", operator: FilterOperator.IsEqualTo },
+        { fieldValue: "Multi-Value 1", operator: FilterOperator.IsEqualTo },
         { fieldValue: "Multi-Value 100", operator: FilterOperator.IsEqualTo },
         { fieldValue: "Multi-Value 1000", operator: FilterOperator.IsEqualTo },
       ],

@@ -11,7 +11,7 @@ import * as React from "react";
 import { Draggable, DraggableChildrenFn, Droppable, DroppableProvided, DroppableStateSnapshot } from "react-beautiful-dnd";
 import { MapLayerImageryProviderStatus, ScreenViewport } from "@itwin/core-frontend";
 import { Icon } from "@bentley/ui-core";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { ModalDialogManager } from "@bentley/ui-framework";
 import { Button } from "@itwin/itwinui-react";
 import { SubLayersPopupButton } from "./SubLayersPopupButton";

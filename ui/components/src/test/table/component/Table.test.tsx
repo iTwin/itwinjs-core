@@ -10,7 +10,7 @@ import { wrapInTestContext } from "react-dnd-test-utils";
 import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
 import * as moq from "typemoq";
-import { BeDuration } from "@bentley/bentleyjs-core";
+import { BeDuration } from "@itwin/core-bentley";
 import { PrimitiveValue, PropertyConverterInfo, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, SpecialKey } from "@bentley/ui-abstract";
 import { HorizontalAlignment, LocalSettingsStorage } from "@bentley/ui-core";
 import {

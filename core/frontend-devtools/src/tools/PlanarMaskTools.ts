@@ -7,7 +7,7 @@
  * @module Tools
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import { PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskSettings } from "@itwin/core-common";
 import {
   BeButtonEvent, ContextRealityModelState, EventHandled, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, PrimitiveTool, ScreenViewport, Tool,

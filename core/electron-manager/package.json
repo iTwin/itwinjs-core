@@ -30,7 +30,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.64",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.64",
     "@itwin/core-backend": "workspace:^3.0.0-dev.64",
     "@itwin/core-common": "workspace:^3.0.0-dev.64",
     "@itwin/core-frontend": "workspace:^3.0.0-dev.64",
@@ -39,7 +39,7 @@
     "electron": "^11.1.0"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@itwin/core-backend": "workspace:*",

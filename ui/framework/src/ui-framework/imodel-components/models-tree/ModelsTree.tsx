@@ -8,7 +8,7 @@
 
 import "./ModelsTree.scss";
 import * as React from "react";
-import { Id64Array } from "@bentley/bentleyjs-core";
+import { Id64Array } from "@itwin/core-bentley";
 import { IModelConnection, Viewport } from "@itwin/core-frontend";
 import { NodeKey, Ruleset } from "@bentley/presentation-common";
 import {

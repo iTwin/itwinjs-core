@@ -5,7 +5,7 @@
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as path from "path";
-import { BeDuration, compareStrings, DbOpcode, Guid, Id64String, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
+import { BeDuration, compareStrings, DbOpcode, Guid, Id64String, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { BatchType, ChangedEntities, ElementGeometryChange, IModelError } from "@itwin/core-common";
 import {

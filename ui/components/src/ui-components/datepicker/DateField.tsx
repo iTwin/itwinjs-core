@@ -12,7 +12,7 @@ import classnames from "classnames";
 import { AlternateDateFormats, DateFormatter, TimeDisplay } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";
 import { Input } from "@itwin/itwinui-react";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 
 /** Props for [[DateField]] Component.
  * @internal

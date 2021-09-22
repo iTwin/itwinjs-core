@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { Provider } from "react-redux";
 import { render } from "@testing-library/react";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { WidgetState } from "@bentley/ui-abstract";
 import { Size } from "@bentley/ui-core";
 import { IModelApp, MockRender, ScreenViewport, SpatialViewState } from "@itwin/core-frontend";

@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { WebGLContext } from "@bentley/webgl-compatibility";
 import { CompositeGeometry } from "../CachedGeometry";
 import { CompositeFlags, TextureUnit } from "../RenderFlags";

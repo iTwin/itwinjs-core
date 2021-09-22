@@ -6,7 +6,7 @@
  * @module Tools
  */
 
-import { AbandonedError, BeEvent, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { AbandonedError, BeEvent, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
 import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@itwin/core-geometry";
 import { Easing, GeometryStreamProps, NpcCenter } from "@itwin/core-common";
 import { DialogItemValue, DialogPropertyItem, DialogPropertySyncItem } from "@bentley/ui-abstract";

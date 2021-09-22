@@ -6,7 +6,7 @@
 import { assert } from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { ChangeSetApplyOption, GuidString, Id64, Id64String, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { ChangeSetApplyOption, GuidString, Id64, Id64String, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import { Arc3d, IModelJson as GeomJson, Point3d } from "@itwin/core-geometry";
 import {
   ChangeSet, ChangeSetQuery, ChangesType, CheckpointQuery, IModelHubClient, IModelQuery, VersionQuery,

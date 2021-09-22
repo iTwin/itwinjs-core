@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module iModels
  */
-import { Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, Base64EncodedString, ElementAspectProps, ElementProps, EntityProps, IModel, IModelError, ModelProps, PrimitiveTypeCode,
   PropertyMetaData, RelatedElement,

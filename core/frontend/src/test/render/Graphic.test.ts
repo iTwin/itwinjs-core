@@ -5,7 +5,7 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 
 import { expect } from "chai";
-import { IDisposable } from "@bentley/bentleyjs-core";
+import { IDisposable } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { ElementAlignedBox3d, PackedFeatureTable } from "@itwin/core-common";
 import { GraphicBranch, GraphicBranchOptions } from "../../render/GraphicBranch";

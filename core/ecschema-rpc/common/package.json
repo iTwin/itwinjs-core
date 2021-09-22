@@ -30,14 +30,14 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@bentley/itwin-client": "workspace:*"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",

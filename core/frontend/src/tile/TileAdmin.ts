@@ -8,7 +8,7 @@
 
 import {
   assert, BeDuration, BeEvent, BentleyStatus, BeTimePoint, Id64Array, IModelStatus, ProcessDetector,
-} from "@bentley/bentleyjs-core";
+} from "@itwin/core-bentley";
 import {
   BackendError, CloudStorageTileCache, defaultTileOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelError, IModelTileRpcInterface,
   IModelTileTreeProps, RpcOperation, RpcResponseCacheControl, ServerTimeoutError, TileContentSource, TileVersionInfo,

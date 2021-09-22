@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import { IModelConnection, ScreenViewport, ViewState } from "@itwin/core-frontend";
 import { UiEvent } from "@bentley/ui-core";
 import { ConfigurableCreateInfo, ConfigurableUiControl, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";

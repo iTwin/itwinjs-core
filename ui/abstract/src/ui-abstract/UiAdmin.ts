@@ -6,7 +6,7 @@
  * @module UiAdmin
  */
 
-import { BeUiEvent } from "@bentley/bentleyjs-core";
+import { BeUiEvent } from "@itwin/core-bentley";
 import { AbstractMenuItemProps } from "./items/AbstractMenuItemProps";
 import { AbstractToolbarProps } from "./items/AbstractToolbarProps";
 import { RelativePosition } from "./items/RelativePosition";

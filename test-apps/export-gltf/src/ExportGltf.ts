@@ -5,7 +5,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as yargs from "yargs";
-import { DbResult, Id64Array, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { DbResult, Id64Array, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
 import { Angle, Geometry, Matrix3d, Point3d } from "@itwin/core-geometry";
 import {
   ECSqlStatement, ExportGraphics, ExportGraphicsInfo, ExportGraphicsLines, ExportGraphicsMesh, ExportLinesInfo, ExportPartInfo,

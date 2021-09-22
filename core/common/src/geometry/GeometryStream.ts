@@ -6,7 +6,7 @@
  * @module Geometry
  */
 
-import { Id64, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
   Angle, AnyGeometryQuery, GeometryQuery, IModelJson as GeomJson, LowAndHighXYZ, Matrix3d, Point2d, Point3d, Range3d, Transform, TransformProps,
   Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps,

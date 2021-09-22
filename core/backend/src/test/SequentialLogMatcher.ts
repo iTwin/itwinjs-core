@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { GetMetaDataFunction, IDisposable, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { GetMetaDataFunction, IDisposable, Logger, LogLevel } from "@itwin/core-bentley";
 import { IModelHost } from "../IModelHost";
 /**
  * SequentialLogMatcher match log message in order and remove them from list. Any test using

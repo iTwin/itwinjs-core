@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { CompressedId64Set, DbOpcode, Guid, Id64String, OrderedId64Iterable, TransientIdSequence } from "@bentley/bentleyjs-core";
+import { CompressedId64Set, DbOpcode, Guid, Id64String, OrderedId64Iterable, TransientIdSequence } from "@itwin/core-bentley";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
 import { ElementGeometryChange, ModelGeometryChanges, ModelGeometryChangesProps } from "../ModelGeometryChanges";
 

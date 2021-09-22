@@ -22,7 +22,7 @@
     "cover": "npm run test"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@bentley/imodeljs-i18n": "workspace:*",
     "@bentley/itwin-client": "workspace:*",

@@ -6,7 +6,7 @@
  * @module Tools
  */
 
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64 } from "@itwin/core-bentley";
 import { ColorDef } from "@itwin/core-common";
 import { EmphasizeElements, IModelApp, QueryVisibleFeaturesOptions, ScreenViewport, Tool } from "@itwin/core-frontend";
 import { parseArgs } from "./parseArgs";

@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, PriorityQueue } from "@bentley/bentleyjs-core";
+import { assert, PriorityQueue } from "@itwin/core-bentley";
 import { TileTreeContentIds } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IpcApp } from "../IpcApp";

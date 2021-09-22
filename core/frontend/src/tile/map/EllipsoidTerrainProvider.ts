@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, Id64String } from "@bentley/bentleyjs-core";
+import { assert, Id64String } from "@itwin/core-bentley";
 import { Angle, Ellipsoid, EllipsoidPatch, Point2d, Point3d, Range1d, Range3d, Transform } from "@itwin/core-geometry";
 import { QParams3d, QPoint2d } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";

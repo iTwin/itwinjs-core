@@ -12,7 +12,7 @@ import "./PopoutToggle.scss";
 import * as React from "react";
 import { NineZoneDispatchContext, useLabel } from "../base/NineZone";
 // import { PanelStateContext } from "../widget-panels/Panel";
-// import { assert } from "@bentley/bentleyjs-core";
+// import { assert } from "@itwin/core-bentley";
 import popoutToggleSvg from "./window-popout.svg?sprite";
 import { Icon } from "@bentley/ui-core";
 import { IconSpecUtilities } from "@bentley/ui-abstract";

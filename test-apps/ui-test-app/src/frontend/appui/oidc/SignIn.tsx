@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { ClientRequestContext, ProcessDetector } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, ProcessDetector } from "@itwin/core-bentley";
 import { FrontendAuthorizationClient, isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelApp } from "@itwin/core-frontend";
 import { SignInBase } from "./SignInBase";

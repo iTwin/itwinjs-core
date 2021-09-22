@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Guid, Id64, Id64String } from "@itwin/core-bentley";
 import { Field, PropertiesField } from "./content/Fields";
 import { Item } from "./content/Item";
 import { PrimitiveTypeDescription, PropertyValueFormat } from "./content/TypeDescription";

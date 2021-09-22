@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Core
  */
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import {
   applyOptionalPrefix, EditorDescription, EnumerationInfo, Field, FieldHierarchy, IContentVisitor, Item, PropertyValueFormat as PresentationPropertyValueFormat,
   ProcessFieldHierarchiesProps, ProcessMergedValueProps, ProcessPrimitiveValueProps, RendererDescription, StartArrayProps,

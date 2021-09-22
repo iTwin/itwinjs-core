@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BeEvent, compareBooleans, compareStrings, Id64, Id64String, SortedArray } from "@bentley/bentleyjs-core";
+import { BeEvent, compareBooleans, compareStrings, Id64, Id64String, SortedArray } from "@itwin/core-bentley";
 import { ColorDef } from "@itwin/core-common";
 import { IModelConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
 

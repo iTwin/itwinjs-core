@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "typemoq";
-import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { DrawingGraphic, ECSqlStatement, ECSqlValue, Element, IModelDb, IModelHost } from "@itwin/core-backend";
 import { ElementProps, EntityMetaData, IModelError, ModelProps } from "@itwin/core-common";
 import { InstanceKey } from "@bentley/presentation-common";

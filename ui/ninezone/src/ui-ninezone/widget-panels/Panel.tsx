@@ -18,7 +18,7 @@ import { WidgetTarget } from "../widget/WidgetTarget";
 import { WidgetPanelGrip } from "./Grip";
 import { PanelTarget } from "./PanelTarget";
 import { RectangleProps, SizeProps } from "@bentley/ui-core";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { WidgetComponent } from "../widget/Widget";
 
 /** @internal */

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@itwin/core-bentley";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { AccessToken, UserInfo } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend } from "@bentley/oidc-signin-tool/lib/frontend";

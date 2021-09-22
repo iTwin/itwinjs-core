@@ -9,7 +9,7 @@
 import "./WidgetTarget.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { DraggedWidgetIdContext, useWidgetTarget } from "../base/DragManager";
 import { CursorTypeContext, DraggedTabContext } from "../base/NineZone";
 import { getCursorClassName } from "../widget-panels/CursorOverlay";

@@ -8,7 +8,7 @@
  */
 
 import { URL } from "url";
-import { Guid } from "@bentley/bentleyjs-core";
+import { Guid } from "@itwin/core-bentley";
 import { AuthorizedClientRequestContext, getArrayBuffer, getJson, RequestQueryOptions } from "@bentley/itwin-client";
 import { ECJsonTypeMap, WsgInstance } from "./wsg/ECJsonTypeMap";
 import { WsgClient } from "./wsg/WsgClient";

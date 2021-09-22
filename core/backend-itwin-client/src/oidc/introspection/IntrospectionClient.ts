@@ -6,7 +6,7 @@
  * @module Introspection
  */
 
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { AuthorizedClientRequestContext, ImsAuthorizationClient, IncludePrefix, RequestGlobalOptions } from "@bentley/itwin-client";
 import { ClientMetadata, custom, Issuer, Client as OpenIdClient } from "openid-client";
 import { BackendITwinClientLoggerCategory } from "../../BackendITwinClientLoggerCategory";

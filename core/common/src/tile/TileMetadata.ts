@@ -8,7 +8,7 @@
 
 import {
   assert, ByteStream, compareBooleans, compareBooleansOrUndefined, compareNumbers, compareNumbersOrUndefined, compareStringsOrUndefined, Id64, Id64String,
-} from "@bentley/bentleyjs-core";
+} from "@itwin/core-bentley";
 import { Range3d, Vector3d } from "@itwin/core-geometry";
 import { BatchType } from "../FeatureTable";
 import { TileProps } from "../TileProps";

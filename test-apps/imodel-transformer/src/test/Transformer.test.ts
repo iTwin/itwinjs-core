@@ -5,7 +5,7 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { DbResult, Logger, LogLevel } from "@itwin/core-bentley";
 import {
   Category, ECSqlStatement, Element, GeometricElement2d, GeometricElement3d, IModelDb, IModelHost,
   IModelJsFs, PhysicalModel, PhysicalPartition, SnapshotDb, SpatialCategory, SpatialElement,

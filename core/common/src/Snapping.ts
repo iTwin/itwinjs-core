@@ -6,7 +6,7 @@
  * @module Geometry
  */
 
-import { Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { Id64Array, Id64String } from "@itwin/core-bentley";
 import { Matrix4dProps, XYZProps } from "@itwin/core-geometry";
 import { GeometryStreamProps } from "./geometry/GeometryStream";
 import { GeometryClass } from "./GeometryParams";

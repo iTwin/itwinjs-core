@@ -17,7 +17,7 @@ import { DraggedPanelSideContext, DraggedResizeHandleContext, DraggedWidgetIdCon
 import {
   DraggedTabState, FloatingWidgetsState, NineZoneActionTypes, NineZoneState, PanelsState, TabsState, ToolSettingsState, WidgetsState,
 } from "./NineZoneState";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { WidgetTab } from "../widget/Tab";
 
 /** @internal future */

@@ -6,7 +6,7 @@
  * @module IModelConnection
  */
 
-import { assert, BeEvent, CompressedId64Set, Guid, GuidString, Id64String, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, CompressedId64Set, Guid, GuidString, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import {
   ChangesetIndex,
   ChangesetIndexAndId, IModelConnectionProps, IModelError, OpenBriefcaseProps, StandaloneOpenOptions,

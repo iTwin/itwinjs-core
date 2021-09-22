@@ -7,7 +7,7 @@ import { assert, expect } from "chai";
 import { Base64 } from "js-base64";
 import * as path from "path";
 import * as semver from "semver";
-import { DbResult, Guid, GuidString, Id64, Id64String, OpenMode, using } from "@bentley/bentleyjs-core";
+import { DbResult, Guid, GuidString, Id64, Id64String, OpenMode, using } from "@itwin/core-bentley";
 import {
   GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles,
 } from "@itwin/core-geometry";

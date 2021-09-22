@@ -7,7 +7,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 
-import { BeEvent, Logger } from "@bentley/bentleyjs-core";
+import { BeEvent, Logger } from "@itwin/core-bentley";
 import { AxisIndex, Matrix3d, Point3d, Vector3d, WritableXAndY } from "@itwin/core-geometry";
 import { Frustum, SpatialViewDefinitionProps } from "@itwin/core-common";
 import {

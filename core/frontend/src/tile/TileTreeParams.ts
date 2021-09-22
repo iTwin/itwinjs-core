@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { BeDuration, Id64String } from "@bentley/bentleyjs-core";
+import { BeDuration, Id64String } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { ElementAlignedBox3d } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";

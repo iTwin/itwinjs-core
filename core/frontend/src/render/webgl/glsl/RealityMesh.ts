@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { ColorDef } from "@itwin/core-common";
 import { AttributeMap } from "../AttributeMap";
 import { TextureUnit } from "../RenderFlags";
@@ -223,7 +223,7 @@ export default function createRealityMeshBuilder(flags: TechniqueFlags): Program
   addFeatureSymbology(builder, feat, opts);
   if (feat === FeatureMode.Overrides) {
     addShaderFlags(builder);
-    addVaryingColor(builder, "return vec4(-1.0, -1.0, -1.0, -1.0);" );
+    addVaryingColor(builder, "return vec4(-1.0, -1.0, -1.0, -1.0);");
     applyFragmentFeatureColor = mixFeatureColor;
     addColorOverrideMix(builder.frag);
   }

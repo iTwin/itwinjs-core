@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AsyncMethodsOf, GuidString, ProcessDetector, PromiseReturnType } from "@bentley/bentleyjs-core";
+import { AsyncMethodsOf, GuidString, ProcessDetector, PromiseReturnType } from "@itwin/core-bentley";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
@@ -188,7 +188,7 @@ export class DisplayTestApp {
   public static get surface() { return this._surface!; }
   public static set surface(surface: Surface) { this._surface = surface; }
   private static _iTwinId?: GuidString;
-  public static get iTwinId(): GuidString | undefined { return this._iTwinId;}
+  public static get iTwinId(): GuidString | undefined { return this._iTwinId; }
 
   public static async startup(configuration: DtaConfiguration, renderSys: RenderSystem.Options): Promise<void> {
     const opts = {

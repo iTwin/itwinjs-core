@@ -6,7 +6,7 @@
 /** @packageDocumentation
  * @module AccuDraw
  */
-import { BentleyStatus } from "@bentley/bentleyjs-core";
+import { BentleyStatus } from "@itwin/core-bentley";
 import {
   Arc3d, AxisOrder, CurveCurve, CurvePrimitive, Geometry, IModelJson as GeomJson, LineSegment3d, LineString3d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d,
   PointString3d, Ray3d, Transform, Vector3d,

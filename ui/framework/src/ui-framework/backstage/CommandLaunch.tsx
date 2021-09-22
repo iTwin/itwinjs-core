@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { CommandHandler } from "@bentley/ui-abstract";
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
 import { withSafeArea } from "../safearea/SafeAreaContext";
@@ -25,7 +25,7 @@ const BackstageItem = withSafeArea(NZ_BackstageItem);
 
 /** Properties for a [[CommandLaunchBackstageItem]] component
  * @public
- */
+ */
 export interface CommandLaunchBackstageItemProps extends BackstageItemProps, CommandHandler { // eslint-disable-line deprecation/deprecation
   /** Unique Id for this backstage item. */
   commandId: string;

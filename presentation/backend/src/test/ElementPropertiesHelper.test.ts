@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64 } from "@itwin/core-bentley";
 import { Content, PropertyValueFormat } from "@bentley/presentation-common";
 import {
   createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestSimpleContentField,

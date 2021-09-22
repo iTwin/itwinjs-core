@@ -6,7 +6,7 @@
  * @module Toolbar
  */
 
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@itwin/core-bentley";
 import { ConditionalBooleanValue } from "../items/ConditionalBooleanValue";
 import { ConditionalStringValue } from "../items/ConditionalStringValue";
 import { ActionButton, CommonToolbarItem, GroupButton, ToolbarItemId, ToolbarItemUtilities } from "./ToolbarItem";

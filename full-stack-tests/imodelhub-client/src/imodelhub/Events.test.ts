@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { Guid, GuidString, Id64, IModelHubStatus } from "@bentley/bentleyjs-core";
+import { Guid, GuidString, Id64, IModelHubStatus } from "@itwin/core-bentley";
 import {
   AllCodesDeletedEvent, AllLocksDeletedEvent, BriefcaseDeletedEvent, ChangeSetPostPushEvent, ChangeSetPrePushEvent, CheckpointCreatedEvent, CheckpointV2CreatedEvent, CodeEvent, EventSAS,
   EventSubscription, EventType, IModelClient, IModelDeletedEvent, IModelHubEvent, IModelHubEventType, LockEvent, LockLevel, LockType, VersionEvent,

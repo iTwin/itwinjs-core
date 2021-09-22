@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import faker from "faker";
 import sinon from "sinon";
-import { DbResult, Id64String } from "@bentley/bentleyjs-core";
+import { DbResult, Id64String } from "@itwin/core-bentley";
 import {
   BisCoreSchema, CodeSpecs, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, IModelDb, KnownLocations, Model, Subject,
 } from "@itwin/core-backend";

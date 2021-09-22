@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64Arg } from "@bentley/bentleyjs-core";
+import { Id64Arg } from "@itwin/core-bentley";
 import { IModelDb, IpcHandler } from "@itwin/core-backend";
 import { ElementProps } from "@itwin/core-common";
 import { PRESENTATION_TEST_APP_IPC_CHANNEL_NAME, SampleIpcInterface } from "../common/SampleIpcInterface";

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AsyncMethodsOf, PromiseReturnType } from "@bentley/bentleyjs-core";
+import { AsyncMethodsOf, PromiseReturnType } from "@itwin/core-bentley";
 import { IpcApp } from "@itwin/core-frontend";
 import {
   NodeKey, NodeKeyJSON, PRESENTATION_IPC_CHANNEL_NAME, PresentationIpcInterface, RulesetVariable, RulesetVariableJSON, SetRulesetVariableParams,

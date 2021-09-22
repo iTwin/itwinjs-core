@@ -8,7 +8,7 @@
 
 import { sort } from "fast-sort";
 import memoize from "micro-memoize";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import {
   Content, createFieldHierarchies, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, Field, FieldDescriptorType, InstanceKey, Item,

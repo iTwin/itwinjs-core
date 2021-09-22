@@ -8,7 +8,7 @@
  */
 
 import { Logger as IOidcClientLogger, Log as OidcClientLog } from "oidc-client";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel } from "@itwin/core-bentley";
 import { FrontendAuthorizationClientLoggerCategory } from "../../FrontendAuthorizationClientLoggerCategory";
 
 /**

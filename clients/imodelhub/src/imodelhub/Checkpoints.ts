@@ -7,7 +7,7 @@
  */
 
 import * as urllib from "url";
-import { GuidString, Logger, PerfLogger } from "@bentley/bentleyjs-core";
+import { GuidString, Logger, PerfLogger } from "@itwin/core-bentley";
 import { AuthorizedClientRequestContext, CancelRequest, FileHandler, ProgressCallback } from "@bentley/itwin-client";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";

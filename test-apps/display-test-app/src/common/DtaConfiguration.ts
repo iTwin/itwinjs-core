@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { GuidString } from "@bentley/bentleyjs-core";
+import { GuidString } from "@itwin/core-bentley";
 
 /** Parameters for starting display-test-app with a specified initial configuration */
 export interface DtaConfiguration {

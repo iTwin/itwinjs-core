@@ -6,7 +6,7 @@
  * @module ECDb
  */
 
-import { DbResult, IDisposable, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { DbResult, IDisposable, Logger, OpenMode } from "@itwin/core-bentley";
 import {
   Base64EncodedString, IModelError, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus,
 } from "@itwin/core-common";

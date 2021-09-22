@@ -9,7 +9,7 @@
 import "./Tabs.scss";
 import * as React from "react";
 import { useResizeObserver } from "@bentley/ui-core";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { TabsStateContext } from "../base/NineZone";
 import { getChildKey, useOverflow } from "../tool-settings/Docked";
 import { isHorizontalPanelSide, PanelSideContext } from "../widget-panels/Panel";

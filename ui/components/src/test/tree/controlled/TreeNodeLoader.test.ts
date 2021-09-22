@@ -8,7 +8,7 @@ import { Observable as RxjsObservable } from "rxjs/internal/Observable";
 import { from as rxjsFrom } from "rxjs/internal/observable/from";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@itwin/core-bentley";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { Observable } from "../../../ui-components/tree/controlled/Observable";
 import { MutableTreeModelNode, TreeModelNodeInput, TreeModelRootNode, TreeNodeItemData } from "../../../ui-components/tree/controlled/TreeModel";

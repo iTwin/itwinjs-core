@@ -7,7 +7,7 @@
  * @module Elements
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import {
   BisCodeSpec, Code, CodeScopeSpec, ExternalSourceAttachmentProps, ExternalSourceAttachmentRole, ExternalSourceProps, IModel, RelatedElement,

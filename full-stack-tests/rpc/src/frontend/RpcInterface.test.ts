@@ -5,7 +5,7 @@
 
 import { assert } from "chai";
 import * as semver from "semver";
-import { BentleyError, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
+import { BentleyError, SerializedClientRequestContext } from "@itwin/core-bentley";
 import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
 import {
   ChangesetIdWithIndex,

@@ -6,7 +6,7 @@
  * @module Utilities
  */
 
-import { BeUiEvent } from "@bentley/bentleyjs-core";
+import { BeUiEvent } from "@itwin/core-bentley";
 
 /** iModel.js UI UiEvent class is a subclass of BeEvent with argument type safety.
  * @public

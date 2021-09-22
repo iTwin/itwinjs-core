@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { assert, Mutable } from "@bentley/bentleyjs-core";
+import { assert, Mutable } from "@itwin/core-bentley";
 import {
   AuxChannelDataType, Point3d, AuxChannel as PolyfaceAuxChannel, Range1d, Range3d, Vector3d,
 } from "@itwin/core-geometry";

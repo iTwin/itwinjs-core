@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import "./ModelsTab.scss";
 import * as React from "react";
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import { ModelProps, ModelQueryParams } from "@itwin/core-common";
 import { IModelConnection, SpatialModelState } from "@itwin/core-frontend";
 import { RegisteredRuleset } from "@bentley/presentation-common";

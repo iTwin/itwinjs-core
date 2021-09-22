@@ -5,7 +5,7 @@
 
 import "./ViewportContentControl.css";
 import * as React from "react";
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { viewWithUnifiedSelection } from "@bentley/presentation-components";
 import { ViewportComponent } from "@bentley/ui-imodel-components";

@@ -6,7 +6,7 @@
  * @module Utils
  */
 
-import { ClientRequestContext, Guid } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Guid } from "@itwin/core-bentley";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelHost } from "./IModelHost";
 

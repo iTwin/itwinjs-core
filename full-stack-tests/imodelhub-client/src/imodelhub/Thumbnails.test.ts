@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { GuidString } from "@bentley/bentleyjs-core";
+import { GuidString } from "@itwin/core-bentley";
 import { IModelClient, Thumbnail, ThumbnailQuery, ThumbnailSize, Version } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool";

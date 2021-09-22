@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AsyncMethodsOf, CompressedId64Set, Id64, Id64String, OrderedId64Array, PromiseReturnType } from "@bentley/bentleyjs-core";
+import { AsyncMethodsOf, CompressedId64Set, Id64, Id64String, OrderedId64Array, PromiseReturnType } from "@itwin/core-bentley";
 import { LineSegment3d, Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import { BisCodeSpec, Code, CodeProps, GeometryStreamBuilder, PhysicalElementProps } from "@itwin/core-common";
 import { BriefcaseConnection, IModelConnection, IpcApp } from "@itwin/core-frontend";

@@ -6,7 +6,7 @@
  * @module ClientServices
  */
 
-import { GuidString, Logger } from "@bentley/bentleyjs-core";
+import { GuidString, Logger } from "@itwin/core-bentley";
 import {
   ChangeSet, ChangeSetQuery, HubIModel, HubUserInfo, IModelHubClient, IModelQuery, UserInfoQuery, Version, VersionQuery,
 } from "@bentley/imodelhub-client";

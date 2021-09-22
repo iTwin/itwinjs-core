@@ -9,7 +9,7 @@
 // cSpell:ignore DEVTOOLS
 
 import { combineReducers, createStore, ReducersMapObject, Store } from "redux";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { UiError } from "@bentley/ui-abstract";
 import { FrameworkReducer, FrameworkState } from "./FrameworkState";
 import { NameToReducerMap, ReducerRegistryInstance } from "./ReducerRegistry";

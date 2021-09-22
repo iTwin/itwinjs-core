@@ -6,7 +6,7 @@
  * @module Editing
  */
 
-import { IModelStatus } from "@bentley/bentleyjs-core";
+import { IModelStatus } from "@itwin/core-bentley";
 import { IModelDb, IpcHandler, IpcHost } from "@itwin/core-backend";
 import { IModelError } from "@itwin/core-common/lib/IModelError";
 import { EditCommandIpc, editorChannel, EditorIpc } from "@bentley/imodeljs-editor-common";

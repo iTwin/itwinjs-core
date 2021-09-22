@@ -6,7 +6,7 @@
 /** @packageDocumentation
  * @module Content
  */
-import { using } from "@bentley/bentleyjs-core";
+import { using } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import {
   Content, DefaultContentDisplayTypes, InstanceKey, KeySet, PageOptions, RegisteredRuleset, Ruleset, traverseContent,

@@ -6,7 +6,7 @@ import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment
 import { expect } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
-import { BeEvent, using } from "@bentley/bentleyjs-core";
+import { BeEvent, using } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import {

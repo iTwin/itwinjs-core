@@ -6,7 +6,7 @@
  * @module Entities
  */
 
-import { GuidString, Id64String } from "@bentley/bentleyjs-core";
+import { GuidString, Id64String } from "@itwin/core-bentley";
 import { XYProps } from "@itwin/core-geometry";
 import { CodeProps } from "./Code";
 import { RelatedElementProps } from "./ElementProps";

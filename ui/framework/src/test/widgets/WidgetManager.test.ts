@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { AbstractWidgetProps, AbstractZoneLocation, StagePanelLocation, StagePanelSection, StageUsage, UiItemsManager, UiItemsProvider, WidgetState } from "@bentley/ui-abstract";
 import { WidgetDef, WidgetManager, WidgetProvider, ZoneLocation } from "../../ui-framework";
 import { TestUtils } from "../TestUtils";

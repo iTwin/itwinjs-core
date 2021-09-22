@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Id64, Id64String } from "@itwin/core-bentley";
 import { Range1d, Transform } from "@itwin/core-geometry";
 import { RenderSchedule } from "@itwin/core-common";
 import { IModelApp } from "./IModelApp";

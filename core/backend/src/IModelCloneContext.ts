@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module iModels
  */
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Id64, Id64String } from "@itwin/core-bentley";
 import { CodeScopeSpec, CodeSpec, ElementProps, IModel, PropertyMetaData, RelatedElement } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { SubCategory } from "./Category";

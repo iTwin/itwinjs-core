@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 // cspell:words buddi urlps
 
-import { GuidString } from "@bentley/bentleyjs-core";
+import { GuidString } from "@itwin/core-bentley";
 import { ElectronAuthorizationBackend } from "@bentley/electron-manager/lib/ElectronBackend";
 import { Version } from "@bentley/imodelhub-client";
 import { BriefcaseDb, BriefcaseManager, IModelHost, IModelHubBackend, NativeHost, RequestNewBriefcaseArg } from "@itwin/core-backend";

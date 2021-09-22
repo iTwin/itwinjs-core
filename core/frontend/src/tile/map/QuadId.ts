@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, compareNumbers } from "@bentley/bentleyjs-core";
+import { assert, compareNumbers } from "@itwin/core-bentley";
 import { Angle, AngleSweep, Range2d } from "@itwin/core-geometry";
 import { Cartographic } from "@itwin/core-common";
 import { MapTilingScheme } from "../internal";

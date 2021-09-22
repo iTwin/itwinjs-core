@@ -8,7 +8,7 @@ import { AuthorizedFrontendRequestContext } from "../../FrontendRequestContext";
 import { IModelApp } from "../../IModelApp";
 import { SettingsMapResult, SettingsResult, SettingsStatus } from "@bentley/product-settings-client";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
-import { BeEvent, GuidString } from "@bentley/bentleyjs-core";
+import { BeEvent, GuidString } from "@itwin/core-bentley";
 
 /** @internal */
 export interface MapLayerSetting {

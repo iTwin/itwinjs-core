@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { join } from "path";
-import { DbResult, GuidString, Id64String, IModelHubStatus, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { DbResult, GuidString, Id64String, IModelHubStatus, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import {
   BriefcaseId, BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps,
   ChangesetRange, IModelError, LocalDirName, LocalFileName,

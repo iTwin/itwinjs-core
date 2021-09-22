@@ -17,7 +17,7 @@ import {
   PropertyDescription, PropertyEditorParamTypes, StandardEditorNames, SuppressLabelEditorParams, ToolbarItemUtilities,
 } from "@bentley/ui-abstract";
 
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import { ColorByName, ColorDef } from "@itwin/core-common";
 import { FormatterSpec } from "@bentley/imodeljs-quantity";

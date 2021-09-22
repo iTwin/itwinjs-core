@@ -6,7 +6,7 @@
  * @module MarkupTools
  */
 
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@itwin/core-bentley";
 import { Point2d, Point3d, Transform, Vector2d, XAndY } from "@itwin/core-geometry";
 import {
   BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, CoreTools, EventHandled, IModelApp, InputSource, ToolAssistance, ToolAssistanceImage,

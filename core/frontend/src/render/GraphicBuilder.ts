@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import {
   AnyCurvePrimitive, Arc3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, SolidPrimitive, Transform,
 } from "@itwin/core-geometry";
@@ -403,7 +403,7 @@ export abstract class GraphicBuilder {
         this.addLineString(curve.points);
         break;
       case "lineSegment":
-        this.addLineString([ curve.startPoint(), curve.endPoint() ]);
+        this.addLineString([curve.startPoint(), curve.endPoint()]);
         break;
       case "arc":
         this.addArc(curve, false, false);

@@ -7,7 +7,7 @@ import { assert } from "chai";
 import { ChildProcess } from "child_process";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { GuidString } from "@bentley/bentleyjs-core";
+import { GuidString } from "@itwin/core-bentley";
 import { CheckpointV2Query } from "@bentley/imodelhub-client";
 import { ChangesetProps } from "@itwin/core-common";
 import { BlobDaemon } from "@bentley/imodeljs-native";

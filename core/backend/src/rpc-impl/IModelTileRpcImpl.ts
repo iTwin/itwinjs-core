@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { assert, BeDuration, ClientRequestContext, Id64Array, Logger } from "@bentley/bentleyjs-core";
+import { assert, BeDuration, ClientRequestContext, Id64Array, Logger } from "@itwin/core-bentley";
 import {
   CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageTileCache, ElementGraphicsRequestProps, IModelRpcProps,
   IModelTileRpcInterface, IModelTileTreeProps, RpcInterface, RpcInvocation, RpcManager, RpcPendingResponse, SyncMode,

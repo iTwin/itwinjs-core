@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BeEvent, compareStringsOrUndefined } from "@bentley/bentleyjs-core";
+import { BeEvent, compareStringsOrUndefined } from "@itwin/core-bentley";
 import { MapSubLayerProps, SubLayerId } from "@itwin/core-common";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { DelayLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";

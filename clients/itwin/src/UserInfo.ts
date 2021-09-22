@@ -6,7 +6,7 @@
 /** @packageDocumentation
  * @module Authentication
  */
-import { AuthStatus, BentleyError } from "@bentley/bentleyjs-core";
+import { AuthStatus, BentleyError } from "@itwin/core-bentley";
 
 /** @beta */
 export interface UserInfoProps {

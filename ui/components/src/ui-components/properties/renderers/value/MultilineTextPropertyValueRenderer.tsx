@@ -10,7 +10,7 @@
 import * as React from "react";
 // eslint-disable-next-line no-duplicate-imports
 import { useLayoutEffect, useRef } from "react";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { PrimitiveValue, PropertyRecord, PropertyValueFormat, StandardTypeNames } from "@bentley/ui-abstract";
 import { useRerender } from "../../../common/UseRerender";
 import { TypeConverterManager } from "../../../converters/TypeConverterManager";

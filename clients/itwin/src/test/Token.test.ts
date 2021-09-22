@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { AuthStatus, BentleyError } from "@bentley/bentleyjs-core";
+import { AuthStatus, BentleyError } from "@itwin/core-bentley";
 import { AccessToken, IncludePrefix, TokenPrefix } from "../Token";
 
 @TokenPrefix("Basic")

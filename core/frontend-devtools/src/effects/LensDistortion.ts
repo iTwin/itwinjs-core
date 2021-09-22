@@ -6,7 +6,7 @@
  * @module Effects
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { ScreenSpaceEffectBuilder, Tool, UniformType, VaryingType } from "@itwin/core-frontend";
 import { AddEffectTool, refreshViewportsForEffect } from "./EffectTools";
 import { parseArgs } from "../tools/parseArgs";

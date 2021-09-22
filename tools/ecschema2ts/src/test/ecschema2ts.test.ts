@@ -818,7 +818,7 @@ describe("ecxml to typescript string", () => {
         expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
         expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
         expectedPropsImportTs: [
-          new RegExp(`import { GuidString } from "@bentley/bentleyjs-core";`),
+          new RegExp(`import { GuidString } from "@itwin/core-bentley";`),
           new RegExp(`import { (?=.*\\b(Point2d)\\b)(?=.*\\b(Point3d)\\b).* } from "@itwin/core-geometry";`),
           new RegExp(`import { StructClass } from "./RefSchemaElementProps";`),
           new RegExp(`import { PropEnum } from "./RefSchemaElements";`),

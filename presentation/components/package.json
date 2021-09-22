@@ -48,7 +48,7 @@
     "rxjs": "^6.6.2"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.64",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.64",
     "@itwin/core-common": "workspace:^3.0.0-dev.64",
     "@itwin/core-frontend": "workspace:^3.0.0-dev.64",
     "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.64",
@@ -62,7 +62,7 @@
     "react-dom": "^16.8.6 || ^17.0.0"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@itwin/core-common": "workspace:*",

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AuthStatus, BeEvent, BentleyError } from "@bentley/bentleyjs-core";
+import { AuthStatus, BeEvent, BentleyError } from "@itwin/core-bentley";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { AccessToken, IncludePrefix, TokenPrefix, UserInfo } from "@bentley/itwin-client";
 

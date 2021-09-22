@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { IndexedPolyface, Loop, Path, Point3d, Range3d, SolidPrimitive, Transform } from "@itwin/core-geometry";
 import { AnalysisStyleDisplacement } from "@itwin/core-common";
 import { GraphicBranch } from "../../GraphicBranch";

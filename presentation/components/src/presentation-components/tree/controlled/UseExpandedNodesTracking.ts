@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { useEffect, useRef } from "react";
-import { Guid } from "@bentley/bentleyjs-core";
+import { Guid } from "@itwin/core-bentley";
 import { Presentation } from "@bentley/presentation-frontend";
 import { getVisibleDescendants, isTreeModelNode, TreeModelSource, TreeNodeItem } from "@bentley/ui-components";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";

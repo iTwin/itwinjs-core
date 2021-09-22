@@ -6,7 +6,7 @@
  * @module TileTreeSupplier
  */
 
-import { BeTimePoint, compareStrings, compareStringsOrUndefined, Id64String } from "@bentley/bentleyjs-core";
+import { BeTimePoint, compareStrings, compareStringsOrUndefined, Id64String } from "@itwin/core-bentley";
 import { Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import {
   BatchType, Cartographic, ColorDef, Feature, FeatureTable, Frustum, FrustumPlanes, GeoCoordStatus, OrbitGtBlobProps, PackedFeatureTable, QParams3d,

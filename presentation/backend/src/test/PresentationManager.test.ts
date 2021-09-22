@@ -8,7 +8,7 @@ import * as faker from "faker";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { DbResult, Id64String, using } from "@bentley/bentleyjs-core";
+import { DbResult, Id64String, using } from "@itwin/core-bentley";
 import { BriefcaseDb, ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IpcHost } from "@itwin/core-backend";
 import {
   ArrayTypeDescription, CategoryDescription, Content, ContentDescriptorRequestOptions, ContentFlags, ContentJSON, ContentRequestOptions,

@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { compareStrings, Dictionary, Guid, IDisposable, isIDisposable, OrderedComparator } from "@bentley/bentleyjs-core";
+import { compareStrings, Dictionary, Guid, IDisposable, isIDisposable, OrderedComparator } from "@itwin/core-bentley";
 import { InternetConnectivityStatus } from "@itwin/core-common";
 import { AuthorizedFrontendRequestContext, IModelApp } from "@itwin/core-frontend";
 import { PresentationError, PresentationStatus } from "@bentley/presentation-common";

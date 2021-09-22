@@ -6,7 +6,7 @@
  * @module Geometry
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range2d, Range3d, Vector2d, Vector3d } from "@itwin/core-geometry";
 
 /**
@@ -137,7 +137,7 @@ export class QParams2d {
   }
 
   /** Return true if the point point is quantizable using these parameters. */
-  public isQuantizable(point: Point2d ) {
+  public isQuantizable(point: Point2d) {
     return Quantization.isQuantizable(point.x, this.origin.x, this.scale.x) && Quantization.isQuantizable(point.y, this.origin.y, this.scale.y);
   }
 }
@@ -434,7 +434,7 @@ export class QParams3d {
   }
 
   /** Return true if the point point is quantizable using these parameters. */
-  public isQuantizable(point: Point3d ) {
+  public isQuantizable(point: Point3d) {
     return Quantization.isQuantizable(point.x, this.origin.x, this.scale.x) && Quantization.isQuantizable(point.y, this.origin.y, this.scale.y) && Quantization.isQuantizable(point.z, this.origin.z, this.scale.z);
   }
 
@@ -557,7 +557,7 @@ export class QPoint3d {
    *  - Zero if this point is identical to `rhs`; or
    *  - A number less than zero if this point is ordered before `rhs`; or
    *  - A number greater than zero if this point is ordered after `rhs`.
-   * @see [OrderedComparator]($bentleyjs-core).
+   * @see [OrderedComparator]($core-bentley).
    */
   public compare(rhs: QPoint3d): number {
     let diff = this.x - rhs.x;

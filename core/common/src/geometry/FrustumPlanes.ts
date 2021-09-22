@@ -6,7 +6,7 @@
  * @module Geometry
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { ClipPlane, Point3d, Vector3d } from "@itwin/core-geometry";
 import { Frustum } from "../Frustum";
 import { BoundingSphere } from "./BoundingSphere";

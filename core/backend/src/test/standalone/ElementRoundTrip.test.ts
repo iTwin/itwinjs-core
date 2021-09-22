@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { Arc3d, Cone, IModelJson as GeomJson, Point2d, Point3d } from "@itwin/core-geometry";
 import {
   BriefcaseIdValue,

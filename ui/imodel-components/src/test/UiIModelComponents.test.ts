@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { IModelApp, MockRender } from "@itwin/core-frontend";
 import { UiIModelComponents } from "../ui-imodel-components";
 import TestUtils from "./TestUtils";

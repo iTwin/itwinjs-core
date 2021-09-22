@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@itwin/core-bentley";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { MutableTreeModel, TreeModelNodeInput } from "../../../ui-components/tree/controlled/TreeModel";
 import { TreeModelChanges, TreeModelSource } from "../../../ui-components/tree/controlled/TreeModelSource";

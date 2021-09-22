@@ -7,7 +7,7 @@
  */
 import * as rimraf from "rimraf";
 // common includes
-import { Guid } from "@bentley/bentleyjs-core";
+import { Guid } from "@itwin/core-bentley";
 // backend includes
 import { IModelHost } from "@itwin/core-backend";
 // frontend includes

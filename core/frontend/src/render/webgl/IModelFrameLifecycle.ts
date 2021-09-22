@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@itwin/core-bentley";
 import { Point3d, Vector3d } from "@itwin/core-geometry";
 import { Viewport } from "../../Viewport";
 import { FrameBuffer, FrameBufferStack } from "./FrameBuffer";

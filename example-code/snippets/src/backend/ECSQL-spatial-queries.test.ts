@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
 import { ECSqlStatement, Element, GeometricElement3d, PhysicalPartition, SnapshotDb } from "@itwin/core-backend";
 import { IModelTestUtils } from "./IModelTestUtils";

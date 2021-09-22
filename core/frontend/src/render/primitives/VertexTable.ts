@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range2d, Vector3d } from "@itwin/core-geometry";
 import {
   ColorDef, ColorIndex, FeatureIndex, FeatureIndexType, FillFlags, LinePixels, MeshEdge, OctEncodedNormalPair, PolylineData, PolylineTypeFlags,

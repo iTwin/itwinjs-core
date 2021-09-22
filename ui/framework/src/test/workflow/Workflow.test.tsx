@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { ConfigurableUiManager, TaskPropsList, Workflow, WorkflowManager, WorkflowProps, WorkflowPropsList } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 

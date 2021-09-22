@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { BeTimePoint } from "@bentley/bentleyjs-core";
+import { BeTimePoint } from "@itwin/core-bentley";
 import { ClipVector, Geometry, Map4d, Matrix4d, Point3d, Point4d, Range1d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { FeatureAppearanceProvider, FrustumPlanes, HiddenLine, ViewFlagOverrides } from "@itwin/core-common";
 import { FeatureSymbology } from "../render/FeatureSymbology";
@@ -163,7 +163,7 @@ export class TileDrawArgs {
       if (viewZ.dotProduct(toFront) < radius) {
         center = this._nearFrontCenter;
       } else {
-      // Find point on sphere closest to eye.
+        // Find point on sphere closest to eye.
         const toEye = center.unitVectorTo(this.context.viewport.view.camera.eye);
 
         if (toEye) {  // Only if tile is not already behind the eye.

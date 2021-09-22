@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { CompressedId64Set, Id64String, OrderedId64Iterable } from "@bentley/bentleyjs-core";
+import { CompressedId64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import { BackgroundMapType, GlobeMode } from "../BackgroundMapSettings";
 import { ColorByName } from "../ColorByName";
 import {
@@ -23,7 +23,7 @@ describe("DisplayStyleSettings", () => {
   describe("whiteOnWhiteReversal", () => {
     it("round-trips through JSON", () => {
       function test(props: WhiteOnWhiteReversalProps | undefined, newSettings: WhiteOnWhiteReversalSettings, expected?: WhiteOnWhiteReversalProps | "input"): void {
-        const styleProps = { styles: props ? { whiteOnWhiteReversal: props } : { } };
+        const styleProps = { styles: props ? { whiteOnWhiteReversal: props } : {} };
         const style = new DisplayStyle3dSettings(styleProps);
         style.whiteOnWhiteReversal = newSettings;
         const result = style.toJSON();
@@ -41,7 +41,7 @@ describe("DisplayStyleSettings", () => {
     });
 
     it("raises event", () => {
-      const style = new DisplayStyle3dSettings({ styles: { } });
+      const style = new DisplayStyle3dSettings({ styles: {} });
       function test(expectEvent: boolean, newSettings: WhiteOnWhiteReversalSettings): void {
         let eventRaised = false;
         const remove = style.onWhiteOnWhiteReversalChanged.addListener((s) => {
@@ -204,7 +204,7 @@ describe("DisplayStyleSettings", () => {
 
     it("initializes from JSON", () => {
       function expectMasks(json: DisplayStylePlanarClipMaskProps[] | undefined, expectedPairs: Array<[Id64String, PlanarClipMaskSettings]>): void {
-        const styleProps = json ? { styles: { planarClipOvr: json } } : { };
+        const styleProps = json ? { styles: { planarClipOvr: json } } : {};
         const style = new DisplayStyleSettings(styleProps);
         expect(Array.from(style.planarClipMasks)).to.deep.equal(expectedPairs);
       }
@@ -228,7 +228,7 @@ describe("DisplayStyleSettings", () => {
         func: (masks: Map<Id64String, PlanarClipMaskSettings>, style: DisplayStyleSettings) => void,
         expectedPairs: Array<[Id64String, PlanarClipMaskSettings]>,
         expectedProps: DisplayStylePlanarClipMaskProps[] | undefined) {
-        const styleProps = initialProps ? { styles: { planarClipOvr: initialProps } } : { };
+        const styleProps = initialProps ? { styles: { planarClipOvr: initialProps } } : {};
         const style = new DisplayStyleSettings(styleProps);
 
         func(style.planarClipMasks, style);
@@ -242,7 +242,7 @@ describe("DisplayStyleSettings", () => {
         map.set("0x1", makeSettings(1));
         map.set("0x3", makeSettings(3));
       }, [["0x2", makeSettings(2)], ["0x1", makeSettings(1)], ["0x3", makeSettings(3)]],
-      [makeProps(2, "0x2"), makeProps(1, "0x1"), makeProps(3, "0x3")]);
+        [makeProps(2, "0x2"), makeProps(1, "0x1"), makeProps(3, "0x3")]);
 
       expectMasks([makeProps(1, "0x1")], (map) => map.set("0x1", makeSettings(2)),
         [["0x1", makeSettings(2)]], [makeProps(2, "0x1")]);
@@ -251,7 +251,7 @@ describe("DisplayStyleSettings", () => {
         map.delete("0x2");
         map.delete("0x4");
       }, [["0x1", makeSettings(1)], ["0x3", makeSettings(3)]],
-      [makeProps(1, "0x1"), makeProps(3, "0x3")]);
+        [makeProps(1, "0x1"), makeProps(3, "0x3")]);
 
       expectMasks([makeProps(1, "0x1"), makeProps(2, "0x2")], (map) => map.clear(), [], undefined);
 

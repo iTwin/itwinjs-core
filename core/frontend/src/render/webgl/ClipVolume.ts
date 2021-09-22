@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import {
   ClipVector, Point3d, Transform, UnionOfConvexClipPlaneSets, Vector3d,
 } from "@itwin/core-geometry";

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
+import { BeDuration, BeTimePoint } from "@itwin/core-bentley";
 import {
   DisclosedTileTreeSet, IModelApp, IModelConnection, IModelTileTree, SnapshotConnection, Tile, TileLoadStatus,
   TileTree, TileUsageMarker, Viewport,
@@ -290,7 +290,7 @@ describe("Tile unloading", async () => {
     const parents = new Set<Tile>();
     for (const tile of tiles) {
       let parent = tile.parent;
-      while(parent) {
+      while (parent) {
         if (parents.has(parent))
           break;
 

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { BeDuration } from "@bentley/bentleyjs-core";
+import { BeDuration } from "@itwin/core-bentley";
 import { Matrix4d } from "@itwin/core-geometry";
 import { IModelHost } from "../../IModelHost";
 import { StandaloneDb } from "../../IModelDb";

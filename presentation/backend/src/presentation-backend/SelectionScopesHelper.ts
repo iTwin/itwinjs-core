@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { GeometricElement, GeometricElement3d, IModelDb } from "@itwin/core-backend";
 import {
   InstanceKey, KeySet, PresentationError, PresentationStatus, SelectionScope, SelectionScopeRequestOptions,

@@ -12,7 +12,7 @@
 import "./Frontstage.scss";
 import produce, { castDraft, Draft } from "immer";
 import * as React from "react";
-import { assert, Logger, ProcessDetector } from "@bentley/bentleyjs-core";
+import { assert, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { StagePanelLocation, UiItemsManager, WidgetState } from "@bentley/ui-abstract";
 import { Size, SizeProps, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 import {

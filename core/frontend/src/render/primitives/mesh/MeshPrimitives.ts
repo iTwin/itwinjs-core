@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { AuxChannel, AuxChannelData, Point2d, Range3d } from "@itwin/core-geometry";
 import {
   ColorIndex, EdgeArgs, Feature, FeatureIndex, FeatureIndexType, FeatureTable, FillFlags, LinePixels, MeshEdges, MeshPolyline, MeshPolylineList,

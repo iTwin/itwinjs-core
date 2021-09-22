@@ -6,7 +6,7 @@
  * @module Elements
  */
 
-import { CompressedId64Set, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array } from "@bentley/bentleyjs-core";
+import { CompressedId64Set, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array } from "@itwin/core-bentley";
 import { ClipVector, Range3d, Transform } from "@itwin/core-geometry";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementProps, EntityMetaData,

@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
+import { assert, dispose } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import { FeatureIndexType, QParams3d } from "@itwin/core-common";
 import { PointStringParams } from "../primitives/VertexTable";

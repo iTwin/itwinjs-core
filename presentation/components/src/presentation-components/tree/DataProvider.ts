@@ -7,7 +7,7 @@
  */
 
 import memoize from "micro-memoize";
-import { IDisposable, Logger } from "@bentley/bentleyjs-core";
+import { IDisposable, Logger } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import {
   DiagnosticsOptionsWithHandler, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, Node, NodeKey, NodePathElement, Paged, Ruleset,

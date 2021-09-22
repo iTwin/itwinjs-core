@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Hierarchies
  */
-import { using } from "@bentley/bentleyjs-core";
+import { using } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Omit, RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
 import { PresentationTreeDataProvider } from "@bentley/presentation-components";

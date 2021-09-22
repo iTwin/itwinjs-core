@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { BeDuration } from "@bentley/bentleyjs-core";
+import { BeDuration } from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { ServerTimeoutError } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
@@ -158,7 +158,7 @@ class TestTree extends TileTree {
   public get rootTile(): TestTile { return this._rootTile; }
   public get is3d() { return true; }
   public get maxDepth() { return undefined; }
-  public get viewFlagOverrides() { return { }; }
+  public get viewFlagOverrides() { return {}; }
   protected _selectTiles(): Tile[] { return []; }
   public draw() { }
   public prune() { }

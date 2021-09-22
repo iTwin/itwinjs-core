@@ -6,7 +6,7 @@
  * @module UiItemsProvider
  */
 
-import { BeEvent, Logger } from "@bentley/bentleyjs-core";
+import { BeEvent, Logger } from "@itwin/core-bentley";
 import { BackstageItem } from "./backstage/BackstageItem";
 import { CommonStatusBarItem } from "./statusbar/StatusBarItem";
 import { CommonToolbarItem, ToolbarOrientation, ToolbarUsage } from "./toolbars/ToolbarItem";

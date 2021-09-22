@@ -9,7 +9,7 @@
 /* eslint-disable deprecation/deprecation */
 
 import * as React from "react";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
 import { withSafeArea } from "../safearea/SafeAreaContext";
 import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";

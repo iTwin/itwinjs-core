@@ -6,7 +6,7 @@
  * @module LocatingElements
  */
 
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64 } from "@itwin/core-bentley";
 import { Point2d, Point3d } from "@itwin/core-geometry";
 import { HitDetail, HitList, HitPriority, HitSource } from "./HitDetail";
 import { IModelApp } from "./IModelApp";

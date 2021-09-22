@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContextProps } from "@bentley/bentleyjs-core";
+import { ClientRequestContextProps } from "@itwin/core-bentley";
 import { IModelBankClient } from "@bentley/imodelhub-client";
 import { IModelDb, IModelHost, IModelJsFs } from "@itwin/core-backend";
 import { V1CheckpointManager } from "@itwin/core-backend/lib/CheckpointManager";

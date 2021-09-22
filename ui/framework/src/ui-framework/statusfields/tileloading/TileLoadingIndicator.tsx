@@ -9,7 +9,7 @@
 import "./TileLoadingIndicator.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { IModelApp, ScreenViewport, Viewport } from "@itwin/core-frontend";
 import { ProgressLinear } from "@itwin/itwinui-react";
 import { UiFramework } from "../../UiFramework";

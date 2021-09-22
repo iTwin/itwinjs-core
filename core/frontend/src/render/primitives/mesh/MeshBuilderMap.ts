@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { compareBooleans, compareNumbers, Dictionary } from "@bentley/bentleyjs-core";
+import { compareBooleans, compareNumbers, Dictionary } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { Feature, FeatureTable } from "@itwin/core-common";
 import { DisplayParams } from "../DisplayParams";

@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { ProcessDetector } from "@bentley/bentleyjs-core";
+import { ProcessDetector } from "@itwin/core-bentley";
 import { Point2d } from "@itwin/core-geometry";
 import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { ViewRect } from "./ViewRect";

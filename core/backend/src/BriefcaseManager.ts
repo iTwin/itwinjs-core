@@ -12,7 +12,7 @@ import * as path from "path";
 import {
   BeDuration,
   ChangeSetApplyOption, ChangeSetStatus, ClientRequestContext, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode,
-} from "@bentley/bentleyjs-core";
+} from "@itwin/core-bentley";
 import {
   BriefcaseId,
   BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps, LocalDirName,

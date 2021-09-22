@@ -5,7 +5,7 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, Guid, GuidString, Logger, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
+import { BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, Guid, GuidString, Logger, OpenMode, PerfLogger } from "@itwin/core-bentley";
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import { Briefcase, ChangeSet, ChangeSetQuery, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
 import { BriefcaseIdValue, ChangesetFileProps, ChangesetType } from "@itwin/core-common";

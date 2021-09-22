@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, ByteStream, Id64String, utf8ToString } from "@bentley/bentleyjs-core";
+import { assert, ByteStream, Id64String, utf8ToString } from "@itwin/core-bentley";
 import { Point3d, Vector3d } from "@itwin/core-geometry";
 import { BatchType, ElementAlignedBox3d, Feature, FeatureTable, PackedFeatureTable, PntsHeader, QParams3d, Quantization } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";

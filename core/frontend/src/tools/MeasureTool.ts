@@ -6,7 +6,7 @@
  * @module Measure
  */
 
-import { Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { Id64, Id64Array, Id64String } from "@itwin/core-bentley";
 import {
   AxisOrder, IModelJson, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, PointString3d, PolygonOps, Vector3d, XAndY, XYAndZ,
 } from "@itwin/core-geometry";

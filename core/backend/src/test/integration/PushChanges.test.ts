@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext, GuidString, Id64String } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, GuidString, Id64String } from "@itwin/core-bentley";
 import { Box, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   Code, ColorDef, GeometryParams, GeometryPartProps,

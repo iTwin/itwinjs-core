@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Id64, Id64String } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { BisCoreSchema, BriefcaseDb, ClassRegistry, Element, ElementAspect, PhysicalModel, StandaloneDb } from "@itwin/core-backend";
 import { CodeScopeSpec, CodeSpec, IModel } from "@itwin/core-common";

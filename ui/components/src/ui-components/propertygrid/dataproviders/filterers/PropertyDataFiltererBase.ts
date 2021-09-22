@@ -6,7 +6,7 @@
  * @module PropertyGrid
  */
 
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@itwin/core-bentley";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { PropertyCategory } from "../../PropertyDataProvider";
 

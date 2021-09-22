@@ -10,7 +10,7 @@ const copyrightNotice = 'Copyright © 2017-2021 <a href="https://www.bentley.com
 
 import {
   BeDuration, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger, SerializedClientRequestContext,
-} from "@bentley/bentleyjs-core";
+} from "@itwin/core-bentley";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelClient } from "@bentley/imodelhub-client";
 import { IModelStatus, RpcConfiguration, RpcInterfaceDefinition, RpcRequest } from "@itwin/core-common";

@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { assert, CompressedId64Set, Constructor, Id64, Id64Set, Id64String, OrderedId64Iterable } from "@bentley/bentleyjs-core";
+import { assert, CompressedId64Set, Constructor, Id64, Id64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import {
   ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Point4d, Range1d, Transform, UnionOfConvexClipPlaneSets, Vector3d, XYAndZ,
 } from "@itwin/core-geometry";

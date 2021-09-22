@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { Id64String, IDisposable } from "@bentley/bentleyjs-core";
+import { Id64String, IDisposable } from "@itwin/core-bentley";
 import { Point2d, XAndY } from "@itwin/core-geometry";
 import { Frustum, ImageBuffer, SpatialClassifier } from "@itwin/core-common";
 import { HiliteSet } from "../SelectionSet";

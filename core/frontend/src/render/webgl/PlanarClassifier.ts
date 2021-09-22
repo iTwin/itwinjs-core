@@ -7,7 +7,7 @@
  * @module WebGL
  */
 
-import { dispose } from "@bentley/bentleyjs-core";
+import { dispose } from "@itwin/core-bentley";
 import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@itwin/core-geometry";
 import {
   ColorDef, Frustum, FrustumPlanes, RenderMode, RenderTexture, SpatialClassifier, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,

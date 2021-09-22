@@ -5,7 +5,7 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { Id64, Id64Set, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Id64, Id64Set, Logger, LogLevel } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import { GeometryPartProps, IModel } from "@itwin/core-common";
 import {

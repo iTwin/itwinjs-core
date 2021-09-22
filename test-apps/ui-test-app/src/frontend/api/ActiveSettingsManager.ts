@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BeEvent, Id64Array, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
+import { BeEvent, Id64Array, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
 import { IModelApp, SpatialViewState, ViewState, ViewState2d } from "@itwin/core-frontend";
 import { UiFramework } from "@bentley/ui-framework";

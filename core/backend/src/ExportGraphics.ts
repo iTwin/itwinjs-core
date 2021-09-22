@@ -6,7 +6,7 @@
  * @module iModels
  */
 
-import { Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { Id64Array, Id64String } from "@itwin/core-bentley";
 import { IndexedPolyface, Polyface, PolyfaceData, PolyfaceVisitor } from "@itwin/core-geometry";
 
 /** A collection of line segments, suitable for direct use with graphics APIs.

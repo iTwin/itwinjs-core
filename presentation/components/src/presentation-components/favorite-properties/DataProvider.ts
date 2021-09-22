@@ -6,7 +6,7 @@
  * @module FavoriteProperties
  */
 
-import { Id64Arg, using } from "@bentley/bentleyjs-core";
+import { Id64Arg, using } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { CategoryDescription, KeySet, Ruleset } from "@bentley/presentation-common";
 import { getScopeId, Presentation } from "@bentley/presentation-frontend";

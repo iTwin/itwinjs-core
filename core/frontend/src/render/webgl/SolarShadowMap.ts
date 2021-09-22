@@ -7,7 +7,7 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
+import { assert, dispose } from "@itwin/core-bentley";
 import { ClipUtilities, ConvexClipPlaneSet, Geometry, GrowableXYZArray, Map4d, Matrix3d, Matrix4d, Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { Frustum, FrustumPlanes, RenderMode, RenderTexture, SolarShadowSettings, ViewFlags } from "@itwin/core-common";
 import { RenderType } from "@bentley/webgl-compatibility";

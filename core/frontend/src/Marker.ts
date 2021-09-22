@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { Logger, ObservableSet } from "@bentley/bentleyjs-core";
+import { Logger, ObservableSet } from "@itwin/core-bentley";
 import { Geometry, Matrix4d, Point2d, Point3d, Range1d, Range1dProps, Vector3d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { ColorDef } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";

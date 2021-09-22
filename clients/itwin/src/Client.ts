@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module iTwinServiceClients
  */
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import * as deepAssign from "deep-assign";
 import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
 import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";

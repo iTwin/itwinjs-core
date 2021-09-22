@@ -44,7 +44,7 @@
     "@bentley/icons-generic-webfont": "^1.0.15",
     "@bentley/frontend-devtools": "workspace:*",
     "@bentley/hypermodeling-frontend": "workspace:*",
-    "@bentley/bentleyjs-core": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@bentley/electron-manager": "workspace:*",
     "@bentley/mobile-manager": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",

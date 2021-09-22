@@ -18,7 +18,7 @@ import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcManager } from "../../RpcManager";
 import { RpcRoutingToken } from "../core/RpcRoutingToken";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 
 class InitializeInterface extends RpcInterface {
   public static readonly interfaceName = "InitializeInterface";

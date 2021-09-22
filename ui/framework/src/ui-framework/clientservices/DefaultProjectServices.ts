@@ -6,7 +6,7 @@
  * @module ClientServices
  */
 
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { ContextRegistryClient, ContextRegistryRequestQueryOptions, Project } from "@bentley/context-registry-client";
 import { AuthorizedFrontendRequestContext } from "@itwin/core-frontend";
 import { UiFramework } from "../UiFramework";

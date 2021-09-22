@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import { IModelDb } from "@itwin/core-backend";
 import { IModelNotFoundResponse, IModelRpcProps } from "@itwin/core-common";
 import {

@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { Id64String, Logger } from "@bentley/bentleyjs-core";
+import { Id64String, Logger } from "@itwin/core-bentley";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import { NpcCenter } from "@itwin/core-common";
 import {

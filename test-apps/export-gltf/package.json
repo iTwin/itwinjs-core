@@ -14,7 +14,7 @@
   },
   "repository": {},
   "dependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@itwin/core-common": "workspace:*",

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { dispose, Id64String, IDisposable } from "@bentley/bentleyjs-core";
+import { dispose, Id64String, IDisposable } from "@itwin/core-bentley";
 import {
   ColorInputProps, ComboBox, ComboBoxHandler, convertHexToRgb, createButton, createCheckBox, createColorInput, createComboBox, createNumericInput,
 } from "@bentley/frontend-devtools";

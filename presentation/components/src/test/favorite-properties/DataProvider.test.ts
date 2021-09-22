@@ -6,7 +6,7 @@ import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment
 import { expect } from "chai";
 import * as faker from "faker";
 import * as path from "path";
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { KeySet, Ruleset } from "@bentley/presentation-common";

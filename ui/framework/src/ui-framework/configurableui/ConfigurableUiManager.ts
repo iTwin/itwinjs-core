@@ -6,7 +6,7 @@
  * @module ConfigurableUi
  */
 
-import { BeUiEvent } from "@bentley/bentleyjs-core";
+import { BeUiEvent } from "@itwin/core-bentley";
 import { UiError } from "@bentley/ui-abstract";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { FrontstageProvider } from "../frontstage/FrontstageProvider";

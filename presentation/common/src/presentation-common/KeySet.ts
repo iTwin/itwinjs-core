@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { Guid, GuidString, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Guid, GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import { EntityProps } from "@itwin/core-common";
 import { InstanceId, InstanceKey } from "./EC";
 import { PresentationError, PresentationStatus } from "./Error";

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { CompressedId64Set } from "@bentley/bentleyjs-core";
+import { CompressedId64Set } from "@itwin/core-bentley";
 import { Vector3d } from "@itwin/core-geometry";
 import {
   BackgroundMapType, ColorByName, DisplayStyle3dProps, DisplayStyle3dSettingsProps, PlanarClipMaskMode, PlanarClipMaskSettings,

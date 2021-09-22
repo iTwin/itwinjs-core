@@ -6,7 +6,7 @@
  * @module Telemetry
  */
 
-import { GuidString } from "@bentley/bentleyjs-core";
+import { GuidString } from "@itwin/core-bentley";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TelemetryClient, TelemetryEvent } from "./TelemetryClient";
 

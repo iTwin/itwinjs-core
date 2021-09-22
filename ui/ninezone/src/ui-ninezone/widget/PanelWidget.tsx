@@ -10,7 +10,7 @@ import "./PanelWidget.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { useRefs } from "@bentley/ui-core";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { PanelsStateContext, TabsStateContext, ToolSettingsStateContext, WidgetsStateContext } from "../base/NineZone";
 import { isHorizontalPanelState, TabsState, WidgetsState, WidgetState } from "../base/NineZoneState";
 import { isHorizontalPanelSide, PanelStateContext } from "../widget-panels/Panel";

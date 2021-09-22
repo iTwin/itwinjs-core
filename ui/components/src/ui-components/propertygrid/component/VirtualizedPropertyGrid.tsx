@@ -10,7 +10,7 @@ import "./VirtualizedPropertyGrid.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { areEqual, ListChildComponentProps, VariableSizeList } from "react-window";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { Orientation, RatioChangeResult } from "@bentley/ui-core";
 import { HighlightingComponentProps } from "../../common/HighlightingComponentProps";

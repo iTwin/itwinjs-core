@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64 } from "@itwin/core-bentley";
 import { Angle, AngleSweep, Arc3d, LineString3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { SnapshotDb } from "@itwin/core-backend";
 import { Code, GeometricElement3dProps, GeometryStreamBuilder, IModel, ModelProps, Placement3dProps } from "@itwin/core-common";

@@ -38,7 +38,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.64",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.64",
     "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.64",
     "@itwin/core-geometry": "workspace:^3.0.0-dev.64",
     "@bentley/imodelhub-client": "workspace:^3.0.0-dev.64",
@@ -51,7 +51,7 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@bentley/context-registry-client": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",

@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { PointProps, StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
 import { CommonProps, Rectangle, RectangleProps } from "@bentley/ui-core";
 import {

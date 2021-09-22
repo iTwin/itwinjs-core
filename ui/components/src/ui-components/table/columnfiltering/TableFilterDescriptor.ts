@@ -6,7 +6,7 @@
  * @module Table
  */
 
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { StandardTypeNames } from "@bentley/ui-abstract";
 import { StringOperatorProcessor } from "../../converters/StringTypeConverter";
 import { BooleanTypeConverter } from "../../converters/BooleanTypeConverter";

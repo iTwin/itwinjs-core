@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { assert, JsonUtils } from "@bentley/bentleyjs-core";
+import { assert, JsonUtils } from "@itwin/core-bentley";
 import { ViewFlagOverrides } from "./ViewFlags";
 import { RgbColor, RgbColorProps } from "./RgbColor";
 import { HiddenLine } from "./HiddenLine";
@@ -41,7 +41,7 @@ export class CutStyle {
   public static readonly defaults = new CutStyle();
 
   private constructor(viewflags?: Readonly<ViewFlagOverrides>, hiddenLine?: HiddenLine.Settings, appearance?: FeatureAppearance) {
-    this.viewflags = viewflags ?? { };
+    this.viewflags = viewflags ?? {};
     if (hiddenLine && !hiddenLine.matchesDefaults)
       this.hiddenLine = hiddenLine;
 
@@ -74,7 +74,7 @@ export class CutStyle {
     if (this.matchesDefaults)
       return undefined;
 
-    const props: CutStyleProps = { };
+    const props: CutStyleProps = {};
     if (JsonUtils.isNonEmptyObject(this.viewflags))
       props.viewflags = this.viewflags;
 
@@ -169,7 +169,7 @@ export class ClipStyle {
     if (this.matchesDefaults)
       return undefined;
 
-    const props: ClipStyleProps = { };
+    const props: ClipStyleProps = {};
     if (this.produceCutGeometry)
       props.produceCutGeometry = true;
 

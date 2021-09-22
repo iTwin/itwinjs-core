@@ -17,7 +17,7 @@ import { map } from "rxjs/internal/operators/map";
 import { publish } from "rxjs/internal/operators/publish";
 import { refCount } from "rxjs/internal/operators/refCount";
 import { toArray } from "rxjs/internal/operators/toArray";
-import { BeEvent, IDisposable } from "@bentley/bentleyjs-core";
+import { BeEvent, IDisposable } from "@itwin/core-bentley";
 import { UiError } from "@bentley/ui-abstract";
 import { scheduleSubscription, SubscriptionScheduler } from "../../common/SubscriptionScheduler";
 import { UiComponents } from "../../UiComponents";

@@ -5,7 +5,7 @@
 import { app } from "electron";
 import * as fs from "fs";
 import * as path from "path";
-import { ProcessDetector } from "@bentley/bentleyjs-core";
+import { ProcessDetector } from "@itwin/core-bentley";
 import { IModelHost, IModelJsFs } from "@itwin/core-backend";
 import { RpcManager } from "@itwin/core-common";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel } from "@itwin/core-bentley";
 import { AuthorizedFrontendRequestContext, NoRenderApp } from "@itwin/core-frontend";
 import { AccessToken } from "@bentley/itwin-client";
 import {

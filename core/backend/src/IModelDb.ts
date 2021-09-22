@@ -10,7 +10,7 @@ import { join } from "path";
 import {
   BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger,
   OpenMode,
-} from "@bentley/bentleyjs-core";
+} from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import {
   AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex,
@@ -1485,7 +1485,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * explicitly updating it is occasionally useful after modifying definition elements like line styles or materials that indirectly affect the appearance of
      * [[GeometricElement]]s that reference those definition elements in their geometry streams.
      * Cached [Tile]($frontend)s are only invalidated after the geometry guid of the model changes.
-     * @note This will throw IModelError with [IModelStatus.VersionTooOld]($bentleyjs-core) if a version of the BisCore schema older than 1.0.11 is present in the iModel.
+     * @note This will throw IModelError with [IModelStatus.VersionTooOld]($core-bentley) if a version of the BisCore schema older than 1.0.11 is present in the iModel.
      * @throws IModelError if unable to update the geometry guid.
      * @see [[TxnManager.onModelGeometryChanged]] for the event emitted in response to such a change.
      */

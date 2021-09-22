@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { DbResult, Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { DbResult, Guid, Id64, Id64String } from "@itwin/core-bentley";
 import {
   CategoryProps, Code, DefinitionElementProps, ElementProps, GeometricElement3dProps, IModel, PhysicalElementProps, PhysicalTypeProps,
   TypeDefinitionElementProps,

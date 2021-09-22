@@ -10,7 +10,7 @@ import "./Widget.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, Rectangle, SizeProps } from "@bentley/ui-core";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { useDragWidget, UseDragWidgetArgs } from "../base/DragManager";
 import { getUniqueId, MeasureContext, NineZoneDispatchContext, TabsStateContext } from "../base/NineZone";
 import { TabState, WidgetState } from "../base/NineZoneState";

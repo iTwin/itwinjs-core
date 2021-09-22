@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { CommonProps, NoChildrenProps, Orientation, ResizableContainerObserver, Size } from "@bentley/ui-core";
 import { Direction, Toolbar as NZ_Toolbar, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";

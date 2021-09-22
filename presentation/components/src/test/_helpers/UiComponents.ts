@@ -5,7 +5,7 @@
 
 import * as faker from "faker";
 import * as moq from "typemoq";
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@itwin/core-bentley";
 import { NodeKey, RegisteredRuleset, Ruleset, VariableValue } from "@bentley/presentation-common";
 import { createRandomECInstancesNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { IModelContentChangeEventArgs, IModelHierarchyChangeEventArgs, PresentationManager, RulesetManager, RulesetVariablesManager } from "@bentley/presentation-frontend";

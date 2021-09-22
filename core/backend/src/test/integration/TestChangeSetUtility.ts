@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { GuidString } from "@bentley/bentleyjs-core";
+import { GuidString } from "@itwin/core-bentley";
 import { ColorDef, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { SpatialCategory } from "../../Category";

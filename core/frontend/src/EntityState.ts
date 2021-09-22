@@ -6,7 +6,7 @@
  * @module ElementState
  */
 
-import { GuidString, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import { Code, ElementProps, EntityProps, RelatedElement } from "@itwin/core-common";
 import { IModelConnection } from "./IModelConnection";
 

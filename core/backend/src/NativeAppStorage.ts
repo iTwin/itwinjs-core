@@ -7,7 +7,7 @@
  */
 
 import { join } from "path";
-import { DbResult, IModelStatus } from "@bentley/bentleyjs-core";
+import { DbResult, IModelStatus } from "@itwin/core-bentley";
 import { IModelError, StorageValue } from "@itwin/core-common";
 import { ECDb, ECDbOpenMode } from "./ECDb";
 import { IModelHost } from "./IModelHost";

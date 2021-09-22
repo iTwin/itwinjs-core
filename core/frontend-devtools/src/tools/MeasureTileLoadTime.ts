@@ -7,7 +7,7 @@
  * @module Tools
  */
 
-import { StopWatch } from "@bentley/bentleyjs-core";
+import { StopWatch } from "@itwin/core-bentley";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@itwin/core-frontend";
 
 class TileLoadTimer {

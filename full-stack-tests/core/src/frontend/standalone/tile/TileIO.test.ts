@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ByteStream, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { ByteStream, Id64, Id64String } from "@itwin/core-bentley";
 import {
   BatchType, CurrentImdlVersion, ImdlFlags, ImdlHeader, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeId,
   iModelTileTreeIdToString, ModelProps, RelatedElementProps, RenderMode, TileContentSource, TileFormat, TileReadStatus, ViewFlags,

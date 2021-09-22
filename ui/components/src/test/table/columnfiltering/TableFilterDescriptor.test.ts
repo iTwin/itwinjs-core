@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { StandardTypeNames } from "@bentley/ui-abstract";
 import { BooleanTypeConverter } from "../../../ui-components/converters/BooleanTypeConverter";
 import { FilterOperator, OperatorValueFilterDescriptorCollection } from "../../../ui-components/table/columnfiltering/ColumnFiltering";

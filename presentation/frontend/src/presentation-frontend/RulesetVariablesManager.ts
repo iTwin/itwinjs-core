@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { assert, BeEvent, Id64, Id64String, OrderedId64Iterable } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, Id64, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import { RulesetVariable, VariableValue, VariableValueTypes } from "@bentley/presentation-common";
 import { IpcRequestsHandler } from "./IpcRequestsHandler";
 

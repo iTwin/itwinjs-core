@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module WebGL
  */
-import { dispose } from "@bentley/bentleyjs-core";
+import { dispose } from "@itwin/core-bentley";
 import { Matrix4d } from "@itwin/core-geometry";
 import { SceneContext } from "../../ViewContext";
 import { RenderMemory } from "../RenderMemory";

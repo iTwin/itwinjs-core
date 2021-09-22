@@ -5,7 +5,7 @@
 
 import { assert, expect } from "chai";
 import * as semver from "semver";
-import { DbResult, GuidString, Id64String } from "@bentley/bentleyjs-core";
+import { DbResult, GuidString, Id64String } from "@itwin/core-bentley";
 import { IModel, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance } from "@itwin/core-common";
 import {
   AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, DictionaryModel, IModelHost, IModelJsFs, SpatialCategory, SqliteStatement,

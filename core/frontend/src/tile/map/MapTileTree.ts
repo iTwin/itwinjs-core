@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, compareBooleans, compareNumbers, compareStrings, compareStringsOrUndefined, CompressedId64Set, Id64String } from "@bentley/bentleyjs-core";
+import { assert, compareBooleans, compareNumbers, compareStrings, compareStringsOrUndefined, CompressedId64Set, Id64String } from "@itwin/core-bentley";
 import {
   Angle, AngleSweep, Constant, Ellipsoid, EllipsoidPatch, Point3d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYZProps,
 } from "@itwin/core-geometry";
@@ -260,7 +260,7 @@ export class MapTileTree extends RealityTileTree {
     if (iModelCoordinates.missing)
       return undefined;
 
-    return iModelCoordinates.result.map((result) => !result || result.s ? undefined  : Point3d.fromJSON(result.p));
+    return iModelCoordinates.result.map((result) => !result || result.s ? undefined : Point3d.fromJSON(result.p));
   }
 
   // Minimize reprojection requests by requesting this corners tile and a grid that will include all points for 4 levels of descendants.

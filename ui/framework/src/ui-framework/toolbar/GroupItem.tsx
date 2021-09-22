@@ -8,7 +8,7 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { BadgeType, ConditionalStringValue, OnItemExecutedFunc, SpecialKey, StringGetter } from "@bentley/ui-abstract";
 import { BadgeUtilities, CommonProps, Icon, IconSpec, SizeProps, withOnOutsideClick } from "@bentley/ui-core";
 import {

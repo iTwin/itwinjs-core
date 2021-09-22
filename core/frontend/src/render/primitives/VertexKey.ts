@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { assert, compareWithTolerance, IndexMap } from "@bentley/bentleyjs-core";
+import { assert, compareWithTolerance, IndexMap } from "@itwin/core-bentley";
 import { Point2d } from "@itwin/core-geometry";
 import { OctEncodedNormal, QPoint3d } from "@itwin/core-common";
 

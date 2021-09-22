@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { TestRunner, TestSetsProps } from "./TestRunner";
-import { ClientRequestContext, ProcessDetector } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import {
   BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SnapshotIModelRpcInterface,

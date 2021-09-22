@@ -6,7 +6,7 @@
  * @module LinearReferencing
  */
 
-import { assert, DbResult, Id64String } from "@bentley/bentleyjs-core";
+import { assert, DbResult, Id64String } from "@itwin/core-bentley";
 import { ECSqlStatement, ElementAspect, IModelDb, PhysicalElement, SpatialLocationElement } from "@itwin/core-backend";
 import { Code, ElementProps, GeometricElement3dProps, IModelError, PhysicalElementProps, RelatedElement } from "@itwin/core-common";
 import {

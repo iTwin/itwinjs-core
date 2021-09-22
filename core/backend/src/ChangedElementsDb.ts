@@ -6,7 +6,7 @@
  * @module ChangedElementsDb
  */
 
-import { DbResult, IDisposable, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { DbResult, IDisposable, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import { ChangeData, ChangedElements, ChangedModels, IModelError } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";

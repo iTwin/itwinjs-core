@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import {
   ActionButton, CommonToolbarItem, ConditionalBooleanValue, GroupButton, ToolbarItemsManager, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
 } from "@bentley/ui-abstract";

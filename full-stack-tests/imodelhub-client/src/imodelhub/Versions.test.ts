@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { Guid, GuidString } from "@bentley/bentleyjs-core";
+import { Guid, GuidString } from "@itwin/core-bentley";
 import {
   Briefcase, ChangeSet, IModelClient, Thumbnail, ThumbnailQuery, ThumbnailSize, Version, VersionQuery,
 } from "@bentley/imodelhub-client";

@@ -7,7 +7,7 @@
  */
 
 import { enablePatches } from "immer";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { IModelApp } from "@itwin/core-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { getClassName, UiError } from "@bentley/ui-abstract";

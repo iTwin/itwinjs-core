@@ -12,7 +12,7 @@ import classnames from "classnames";
 import classnamesDedupe from "classnames/dedupe";
 import { memoize } from "lodash";
 import * as React from "react";
-import { DisposableList, Guid, GuidString } from "@bentley/bentleyjs-core";
+import { DisposableList, Guid, GuidString } from "@itwin/core-bentley";
 import { PropertyValueFormat } from "@bentley/ui-abstract";
 import {
   CommonProps, Dialog, ElementResizeObserver, isNavigationKey, ItemKeyboardNavigator, LocalSettingsStorage, Orientation, SortDirection, Timer,

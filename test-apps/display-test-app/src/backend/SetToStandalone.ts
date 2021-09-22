@@ -5,7 +5,7 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import { Guid, OpenMode } from "@bentley/bentleyjs-core";
+import { Guid, OpenMode } from "@itwin/core-bentley";
 import { IModelHost } from "@itwin/core-backend";
 import { BriefcaseIdValue } from "@itwin/core-common";
 

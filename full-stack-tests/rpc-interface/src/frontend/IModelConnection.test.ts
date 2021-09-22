@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { Id64, Id64Set } from "@bentley/bentleyjs-core";
+import { Id64, Id64Set } from "@itwin/core-bentley";
 import { Matrix4d, Point3d, XYZProps, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   EcefLocation, GeoCoordStatus, IModelReadRpcInterface, IModelVersion, MassPropertiesOperation, MassPropertiesRequestProps, ModelQueryParams,

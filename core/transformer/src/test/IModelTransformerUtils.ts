@@ -5,7 +5,7 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult, Guid, Id64, Id64Set, Id64String } from "@bentley/bentleyjs-core";
+import { DbResult, Guid, Id64, Id64Set, Id64String } from "@itwin/core-bentley";
 import { Schema } from "@itwin/ecschema-metadata";
 import { Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import {

@@ -35,7 +35,7 @@
   },
   "repository": {},
   "dependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@bentley/context-registry-client": "workspace:*",
     "@bentley/electron-manager": "workspace:*",
     "@bentley/mobile-manager": "workspace:*",

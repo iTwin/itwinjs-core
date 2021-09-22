@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { assert, compareBooleans, compareNumbers, comparePossiblyUndefined, compareStringsOrUndefined } from "@bentley/bentleyjs-core";
+import { assert, compareBooleans, compareNumbers, comparePossiblyUndefined, compareStringsOrUndefined } from "@itwin/core-bentley";
 import { ColorDef, FillFlags, Gradient, GraphicParams, LinePixels, RenderMaterial, RenderTexture, TextureMapping } from "@itwin/core-common";
 
 function compareMaterials(lhs?: RenderMaterial, rhs?: RenderMaterial): number {

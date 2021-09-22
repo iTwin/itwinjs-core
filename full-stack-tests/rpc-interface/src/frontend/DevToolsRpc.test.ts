@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { LogLevel } from "@bentley/bentleyjs-core";
+import { LogLevel } from "@itwin/core-bentley";
 import { DevTools, IModelConnection } from "@itwin/core-frontend";
 import { TestContext } from "./setup/TestContext";
 

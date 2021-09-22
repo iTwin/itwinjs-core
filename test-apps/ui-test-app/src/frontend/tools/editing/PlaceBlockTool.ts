@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 // cSpell:ignore picklist
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { AxisOrder, LinearSweep, Matrix3d, Point3d, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { Code, ColorDef, ElementGeometry, GeometryStreamBuilder, LinePixels, PhysicalElementProps } from "@itwin/core-common";
 import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";

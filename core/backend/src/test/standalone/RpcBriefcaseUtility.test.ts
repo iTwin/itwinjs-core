@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
+import { ClientRequestContext } from "@itwin/core-bentley";
 import { IModelRpcProps, SyncMode } from "@itwin/core-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { expect } from "chai";

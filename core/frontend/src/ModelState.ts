@@ -6,7 +6,7 @@
  * @module ModelState
  */
 
-import { Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
 import { Point2d, Range3d } from "@itwin/core-geometry";
 import {
   GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, ModelProps, RelatedElement, SpatialClassifiers,

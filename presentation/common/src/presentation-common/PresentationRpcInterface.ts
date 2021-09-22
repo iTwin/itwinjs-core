@@ -6,7 +6,7 @@
  * @module RPC
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import { IModelRpcProps, RpcInterface } from "@itwin/core-common";
 import { DescriptorJSON, DescriptorOverrides, SelectClassInfoJSON } from "./content/Descriptor";
 import { ItemJSON } from "./content/Item";

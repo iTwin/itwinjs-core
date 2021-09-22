@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { BentleyStatus } from "@bentley/bentleyjs-core";
+import { BentleyStatus } from "@itwin/core-bentley";
 import {
   IModelError, IpcWebSocket, RpcEndpoint, RpcProtocol, RpcPushChannel, RpcPushConnection, RpcRequest, RpcRequestFulfillment, RpcSerializedValue,
   SerializedRpcRequest,

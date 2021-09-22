@@ -10,7 +10,7 @@ import "./Grip.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, Point, Rectangle, Timer } from "@bentley/ui-core";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { useDragPanelGrip, UseDragPanelGripArgs } from "../base/DragManager";
 import { NineZoneDispatchContext, useLabel } from "../base/NineZone";
 import { isHorizontalPanelSide, PanelStateContext, WidgetPanelContext } from "./Panel";

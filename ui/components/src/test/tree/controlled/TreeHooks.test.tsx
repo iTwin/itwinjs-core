@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { BeUiEvent } from "@bentley/bentleyjs-core";
+import { BeUiEvent } from "@itwin/core-bentley";
 import { renderHook } from "@testing-library/react-hooks";
 import { TreeEventHandler, TreeEventHandlerParams } from "../../../ui-components/tree/controlled/TreeEventHandler";
 import {

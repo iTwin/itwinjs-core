@@ -7,7 +7,7 @@ import * as fs from "fs";
 import { Base64 } from "js-base64";
 import * as path from "path";
 import { HttpRequestHost } from "@bentley/backend-itwin-client";
-import { ClientRequestContext, Guid, GuidString, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Guid, GuidString, Id64, Id64String, Logger } from "@itwin/core-bentley";
 import { Asset, Project } from "@bentley/context-registry-client";
 import {
   Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, CodeState, ECJsonTypeMap, HubCode, IModelBankClient, IModelBankFileSystemContextClient,

@@ -6,7 +6,7 @@
  * @module Elements
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import { BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, RenderMaterialProps, TextureMapProps } from "@itwin/core-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";

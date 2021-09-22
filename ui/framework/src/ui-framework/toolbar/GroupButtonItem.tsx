@@ -8,7 +8,7 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import {
   ActionButton, ConditionalBooleanValue, ConditionalStringValue, GroupButton, OnItemExecutedFunc, ToolbarItemUtilities,
 } from "@bentley/ui-abstract";

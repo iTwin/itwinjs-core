@@ -6,7 +6,7 @@
  * @module ContentView
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import {
   DrawingViewState, IModelApp, IModelConnection, OrthographicViewState, ScreenViewport, SheetViewState, SpatialViewState, ViewState,
 } from "@itwin/core-frontend";

@@ -21,7 +21,7 @@
   "repository": {},
   "dependencies": {
     "@bentley/backend-itwin-client": "workspace:*",
-    "@bentley/bentleyjs-core": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@bentley/context-registry-client": "workspace:*",
     "@bentley/express-server": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",

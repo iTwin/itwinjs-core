@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
+import { assert, dispose } from "@itwin/core-bentley";
 import { Transform, Vector2d, Vector3d } from "@itwin/core-geometry";
 import {
   Feature, PackedFeatureTable, RenderMode, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,

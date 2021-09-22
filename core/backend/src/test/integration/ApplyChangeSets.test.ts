@@ -5,7 +5,7 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { GuidString } from "@bentley/bentleyjs-core";
+import { GuidString } from "@itwin/core-bentley";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { IModelHost, IModelJsFs } from "../../core-backend";

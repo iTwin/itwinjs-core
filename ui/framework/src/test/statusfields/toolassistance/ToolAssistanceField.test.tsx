@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { ReactWrapper } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { MockRender, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod } from "@itwin/core-frontend";
 import { WidgetState } from "@bentley/ui-abstract";
 import { LocalSettingsStorage } from "@bentley/ui-core";

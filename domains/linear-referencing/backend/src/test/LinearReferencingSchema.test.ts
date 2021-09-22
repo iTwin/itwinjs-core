@@ -5,7 +5,7 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Guid, Id64, Id64String } from "@itwin/core-bentley";
 import {
   ClassRegistry, IModelDb, IModelHost, IModelJsFs, PhysicalModel, PhysicalPartition, Schema, Schemas, SnapshotDb, SpatialCategory,
   SubjectOwnsPartitionElements,

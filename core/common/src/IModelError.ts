@@ -9,9 +9,9 @@
 import {
   AuthStatus, BentleyError, BentleyStatus, BriefcaseStatus, ChangeSetStatus, DbResult, GetMetaDataFunction, IModelStatus, RepositoryStatus,
   RpcInterfaceStatus,
-} from "@bentley/bentleyjs-core";
+} from "@itwin/core-bentley";
 
-export { BentleyStatus, BentleyError, IModelStatus, BriefcaseStatus, GetMetaDataFunction, LogFunction, DbResult, AuthStatus, RepositoryStatus, ChangeSetStatus, RpcInterfaceStatus } from "@bentley/bentleyjs-core";
+export { BentleyStatus, BentleyError, IModelStatus, BriefcaseStatus, GetMetaDataFunction, LogFunction, DbResult, AuthStatus, RepositoryStatus, ChangeSetStatus, RpcInterfaceStatus } from "@itwin/core-bentley";
 
 /** The error type thrown by this module. See [[IModelStatus]] for `errorNumber` values.
  * @public

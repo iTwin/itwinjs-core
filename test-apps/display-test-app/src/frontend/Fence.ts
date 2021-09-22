@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { EmphasizeElements, IModelApp, ScreenViewport, Tool } from "@itwin/core-frontend";
-import { BentleyStatus, Id64, Id64Array } from "@bentley/bentleyjs-core";
+import { BentleyStatus, Id64, Id64Array } from "@itwin/core-bentley";
 import { ClipPlaneContainment, ClipVector } from "@itwin/core-geometry";
 import { ColorDef, GeometryContainmentRequestProps } from "@itwin/core-common";
 

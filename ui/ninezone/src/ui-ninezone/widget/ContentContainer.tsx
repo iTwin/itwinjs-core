@@ -9,7 +9,7 @@
 import "./ContentContainer.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { WidgetContentManagerContext } from "./ContentManager";
 import { WidgetStateContext } from "./Widget";
 

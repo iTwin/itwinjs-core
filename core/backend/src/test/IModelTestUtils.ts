@@ -11,7 +11,7 @@ import { Base64 } from "js-base64";
 import { BackendITwinClientLoggerCategory } from "@bentley/backend-itwin-client";
 import {
   BeEvent, BentleyLoggerCategory, DbResult, Guid, GuidString, Id64, Id64String, IDisposable, IModelStatus, Logger, LogLevel, OpenMode,
-} from "@bentley/bentleyjs-core";
+} from "@itwin/core-bentley";
 import { IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
 import { Box, Cone, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {

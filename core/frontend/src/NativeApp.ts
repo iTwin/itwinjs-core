@@ -8,7 +8,7 @@
 
 import {
   AsyncMethodsOf, BeEvent, GuidString, Logger, PromiseReturnType, SessionProps,
-} from "@bentley/bentleyjs-core";
+} from "@itwin/core-bentley";
 import {
   BriefcaseDownloader, BriefcaseProps, IModelVersion, InternetConnectivityStatus, IpcSocketFrontend, LocalBriefcaseProps,
   NativeAppAuthorizationConfiguration, nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy,

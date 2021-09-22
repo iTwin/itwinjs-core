@@ -9,7 +9,7 @@
 import "./ToolAssistanceField.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import {
   IModelApp, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceInstructions, ToolAssistanceKeyboardInfo,
   ToolAssistanceSection,

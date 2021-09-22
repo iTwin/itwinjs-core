@@ -5,7 +5,7 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult, GuidString, Id64, Id64String, PerfLogger } from "@bentley/bentleyjs-core";
+import { DbResult, GuidString, Id64, Id64String, PerfLogger } from "@itwin/core-bentley";
 import { ChangedValueState, ChangeOpCode, ColorDef, IModel, IModelError, IModelVersion, SubCategoryAppearance } from "@itwin/core-common";
 import {
   AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ECSqlStatement, ElementOwnsChildElements,

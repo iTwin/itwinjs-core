@@ -6,7 +6,7 @@
  * @module Tile
  */
 
-import { GuidString } from "@bentley/bentleyjs-core";
+import { GuidString } from "@itwin/core-bentley";
 import { Range3dProps, TransformProps } from "@itwin/core-geometry";
 
 /** Wire format describing an [IModelTile]($frontend)

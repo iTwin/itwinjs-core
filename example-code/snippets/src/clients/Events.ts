@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AgentAuthorizationClient, BackendAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
-import { ClientRequestContext, Guid, GuidString, Logger } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Guid, GuidString, Logger } from "@itwin/core-bentley";
 import { EventSAS, EventSubscription, IModelHubClient, IModelHubEvent } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 

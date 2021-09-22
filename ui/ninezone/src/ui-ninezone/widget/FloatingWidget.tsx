@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { PointProps } from "@bentley/ui-abstract";
 import { CommonProps, Point, Rectangle, useRefs } from "@bentley/ui-core";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { useDragResizeHandle, UseDragResizeHandleArgs, useIsDraggedItem } from "../base/DragManager";
 import { NineZoneDispatchContext } from "../base/NineZone";
 import { FloatingWidgetState, toolSettingsTabId, WidgetState } from "../base/NineZoneState";

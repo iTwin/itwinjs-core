@@ -6,7 +6,7 @@
  * @module Geometry
  */
 
-import { BentleyStatus, Id64Array } from "@bentley/bentleyjs-core";
+import { BentleyStatus, Id64Array } from "@itwin/core-bentley";
 import { ViewFlagProps } from "./ViewFlags";
 import { ClipPlaneContainment } from "@itwin/core-geometry";
 

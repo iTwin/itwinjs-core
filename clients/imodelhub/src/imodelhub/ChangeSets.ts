@@ -6,7 +6,7 @@
  * @module iModelHubClient
  */
 
-import { GuidString, Logger } from "@bentley/bentleyjs-core";
+import { GuidString, Logger } from "@itwin/core-bentley";
 import { AuthorizedClientRequestContext, DownloadFailed, FileHandler, ProgressCallback, ProgressInfo, RequestQueryOptions, SasUrlExpired } from "@bentley/itwin-client";
 import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
 import { ChunkedQueryContext } from "../wsg/ChunkedQueryContext";

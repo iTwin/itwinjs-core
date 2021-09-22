@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
+import { ClientRequestContext } from "@itwin/core-bentley";
 import { MapSubLayerProps } from "@itwin/core-common";
 import { request, RequestBasicCredentials, RequestOptions } from "@bentley/itwin-client";
 import { MapCartoRectangle, WmsUtilities } from "../internal";

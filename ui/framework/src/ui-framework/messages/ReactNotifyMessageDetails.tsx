@@ -6,7 +6,7 @@
  * @module Notification
  */
 
-import { BeDuration } from "@bentley/bentleyjs-core";
+import { BeDuration } from "@itwin/core-bentley";
 import { Point2d, XAndY } from "@itwin/core-geometry";
 import { NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 import { RelativePosition } from "@bentley/ui-abstract";

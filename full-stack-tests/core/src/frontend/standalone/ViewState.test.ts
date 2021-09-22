@@ -13,7 +13,7 @@ import {
   StandardViewId, ViewState, ViewState3d, ViewStatus,
 } from "@itwin/core-frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
-import { Mutable } from "@bentley/bentleyjs-core";
+import { Mutable } from "@itwin/core-bentley";
 
 describe("ViewState", () => {
   let imodel: IModelConnection;

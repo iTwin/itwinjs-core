@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, DbResult, Id64, Id64Array, Id64Set, Id64String, Logger } from "@bentley/bentleyjs-core";
+import { assert, DbResult, Id64, Id64Array, Id64Set, Id64String, Logger } from "@itwin/core-bentley";
 import {
   Category, CategorySelector, DisplayStyle, DisplayStyle3d, ECSqlStatement, Element, ElementRefersToElements, GeometricModel3d, GeometryPart,
   IModelDb, ModelSelector, PhysicalModel, PhysicalPartition, Relationship, SpatialCategory,

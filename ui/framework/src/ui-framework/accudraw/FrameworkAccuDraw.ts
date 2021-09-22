@@ -6,7 +6,7 @@
  * @module AccuDraw
  */
 
-import { BeUiEvent } from "@bentley/bentleyjs-core";
+import { BeUiEvent } from "@itwin/core-bentley";
 import {
   AccuDraw, BeButtonEvent, CompassMode, IModelApp, ItemField,
   NotifyMessageDetails, OutputMessagePriority, QuantityType, RotationMode,

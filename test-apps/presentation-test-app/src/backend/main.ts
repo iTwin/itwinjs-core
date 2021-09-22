@@ -5,7 +5,7 @@
 import "./SampleRpcImpl"; // just to get the RPC implementation registered
 import { app as electron } from "electron";
 import * as path from "path";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel } from "@itwin/core-bentley";
 import { IModelHost } from "@itwin/core-backend";
 import { RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
 // __PUBLISH_EXTRACT_START__ Presentation.Backend.Initialization

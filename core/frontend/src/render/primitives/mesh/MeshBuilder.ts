@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { assert, Dictionary } from "@bentley/bentleyjs-core";
+import { assert, Dictionary } from "@itwin/core-bentley";
 import { Angle, IndexedPolyface, Point2d, Point3d, Polyface, PolyfaceVisitor, Range3d, Vector3d } from "@itwin/core-geometry";
 import { MeshEdge, MeshEdges, MeshPolyline, OctEncodedNormal, OctEncodedNormalPair, QPoint3d, QPoint3dList, TextureMapping } from "@itwin/core-common";
 import { DisplayParams } from "../DisplayParams";

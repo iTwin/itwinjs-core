@@ -4,7 +4,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64Arg } from "@bentley/bentleyjs-core";
+import { Id64Arg } from "@itwin/core-bentley";
 import { ElementProps } from "@itwin/core-common";
 
 /** @internal */

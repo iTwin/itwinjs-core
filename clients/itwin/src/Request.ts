@@ -9,7 +9,7 @@ import * as deepAssign from "deep-assign";
 import * as https from "https";
 import { IStringifyOptions, stringify } from "qs";
 import * as sarequest from "superagent";
-import { BentleyError, ClientRequestContext, GetMetaDataFunction, HttpStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { BentleyError, ClientRequestContext, GetMetaDataFunction, HttpStatus, Logger, LogLevel } from "@itwin/core-bentley";
 import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
 
 const loggerCategory: string = ITwinClientLoggerCategory.Request;

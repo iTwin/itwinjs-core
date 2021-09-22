@@ -6,7 +6,7 @@
  * @module HubAccess
  */
 
-import { GuidString, Id64String } from "@bentley/bentleyjs-core";
+import { GuidString, Id64String } from "@itwin/core-bentley";
 import {
   BriefcaseId,
   ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, CodeProps, IModelVersion,

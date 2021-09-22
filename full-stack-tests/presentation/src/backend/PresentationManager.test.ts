@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Guid, using } from "@bentley/bentleyjs-core";
+import { Guid, using } from "@itwin/core-bentley";
 import { IModelDb, SnapshotDb } from "@itwin/core-backend";
 import { UnitSystemKey } from "@bentley/imodeljs-quantity";
 import { PresentationManager, UnitSystemFormat } from "@bentley/presentation-backend";

@@ -6,7 +6,7 @@
  * @module iModels
  */
 
-import { assert, DbResult, Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { assert, DbResult, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
 import { ECVersion, Schema, SchemaKey } from "@itwin/ecschema-metadata";
 import { CodeSpec, FontProps, IModel, IModelError } from "@itwin/core-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";

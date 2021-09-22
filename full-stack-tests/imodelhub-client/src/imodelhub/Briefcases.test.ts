@@ -5,7 +5,7 @@
 import * as chai from "chai";
 import * as fs from "fs";
 import * as path from "path";
-import { GuidString, IModelHubStatus } from "@bentley/bentleyjs-core";
+import { GuidString, IModelHubStatus } from "@itwin/core-bentley";
 import { Briefcase, BriefcaseQuery, ChangeSet, IModelClient, IModelHubClient, IModelHubClientError, Lock } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool";

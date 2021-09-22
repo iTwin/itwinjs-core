@@ -6,7 +6,7 @@
  * @module RPC
  */
 
-import { Guid, Id64String, IDisposable } from "@bentley/bentleyjs-core";
+import { Guid, Id64String, IDisposable } from "@itwin/core-bentley";
 import { IModelRpcProps, RpcManager } from "@itwin/core-common";
 import { DescriptorJSON, DescriptorOverrides } from "./content/Descriptor";
 import { ItemJSON } from "./content/Item";

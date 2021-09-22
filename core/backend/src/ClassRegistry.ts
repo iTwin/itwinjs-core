@@ -6,7 +6,7 @@
  * @module Schema
  */
 
-import { IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { IModelStatus, Logger } from "@itwin/core-bentley";
 import { EntityMetaData, IModelError } from "@itwin/core-common";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";

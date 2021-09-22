@@ -5,7 +5,7 @@
 import "./index.css";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { IModelApp, IModelAppOptions, WebViewerApp } from "@itwin/core-frontend";
 // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Imports

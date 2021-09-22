@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { Constant, Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import {
   DynamicGraphicsRequest2dProps, DynamicGraphicsRequest3dProps, FlatBufferGeometryStream, IModelError, isPlacement3dProps, JsonGeometryStream,

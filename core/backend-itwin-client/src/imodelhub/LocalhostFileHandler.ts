@@ -10,7 +10,7 @@ import * as fs from "fs-extra";
 import * as https from "https";
 import * as pathLib from "path";
 import * as url from "url";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { AuthorizedClientRequestContext, FileHandler, ProgressCallback } from "@bentley/itwin-client";
 import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
 

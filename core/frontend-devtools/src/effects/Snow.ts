@@ -6,7 +6,7 @@
  * @module Effects
  */
 
-import { dispose } from "@bentley/bentleyjs-core";
+import { dispose } from "@itwin/core-bentley";
 import { Point2d, Range1d, Range2d, Vector2d } from "@itwin/core-geometry";
 import { RenderTexture } from "@itwin/core-common";
 import {

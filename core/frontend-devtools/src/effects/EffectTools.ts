@@ -6,7 +6,7 @@
  * @module Effects
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import {
   IModelApp, ScreenSpaceEffectBuilder, ScreenSpaceEffectSource, Tool,
 } from "@itwin/core-frontend";

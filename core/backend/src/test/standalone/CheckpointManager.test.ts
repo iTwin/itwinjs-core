@@ -6,7 +6,7 @@
 import { assert } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
-import { Guid, IModelHubStatus } from "@bentley/bentleyjs-core";
+import { Guid, IModelHubStatus } from "@itwin/core-bentley";
 import { AccessToken, AuthorizedClientRequestContext, ResponseError } from "@bentley/itwin-client";
 import { CheckpointManager, V1CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
 import { SnapshotDb } from "../../IModelDb";

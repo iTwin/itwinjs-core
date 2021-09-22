@@ -6,7 +6,7 @@
  * @module Table
  */
 
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@itwin/core-bentley";
 import { PropertyDescription, PropertyRecord } from "@bentley/ui-abstract";
 import { HorizontalAlignment, SortDirection } from "@bentley/ui-core";
 import { ItemColorOverrides, ItemStyle } from "../properties/ItemStyle";

@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { ByteStream, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { ByteStream, Id64String, JsonUtils } from "@itwin/core-bentley";
 import { Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { B3dmHeader, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, GltfBufferData, GltfDataType, TileReadStatus } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";

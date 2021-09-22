@@ -9,7 +9,7 @@
 // cspell:ignore BLOCKCACHE
 
 import * as path from "path";
-import { BeEvent, ChangeSetStatus, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, OpenMode } from "@bentley/bentleyjs-core";
+import { BeEvent, ChangeSetStatus, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, OpenMode } from "@itwin/core-bentley";
 import { BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, ChangesetIndexAndId, IModelError, IModelVersion, LocalDirName, LocalFileName } from "@itwin/core-common";
 import { BlobDaemon, BlobDaemonCommandArg, IModelJsNative } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";

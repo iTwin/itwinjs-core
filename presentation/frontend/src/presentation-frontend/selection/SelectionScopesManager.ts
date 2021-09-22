@@ -6,7 +6,7 @@
  * @module UnifiedSelection
  */
 
-import { Id64Arg } from "@bentley/bentleyjs-core";
+import { Id64Arg } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { DEFAULT_KEYS_BATCH_SIZE, KeySet, RpcRequestsHandler, SelectionScope } from "@bentley/presentation-common";
 

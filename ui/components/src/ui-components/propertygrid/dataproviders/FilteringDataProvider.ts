@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module PropertyGrid
  */
-import { IDisposable } from "@bentley/bentleyjs-core";
+import { IDisposable } from "@itwin/core-bentley";
 import { PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
 import { HighlightInfo } from "../../common/HighlightingComponentProps";
 import { CategoryRecordsDict } from "../internal/flat-items/MutableGridCategory";

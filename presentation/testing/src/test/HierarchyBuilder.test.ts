@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { BeEvent, Guid } from "@bentley/bentleyjs-core";
+import { BeEvent, Guid } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { HierarchyRequestOptions, LabelDefinition, Node, NodeKey, RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
 import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@bentley/presentation-frontend";

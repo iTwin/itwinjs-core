@@ -7,7 +7,7 @@
  * @module Tools
  */
 
-import { BeDuration } from "@bentley/bentleyjs-core";
+import { BeDuration } from "@itwin/core-bentley";
 import { Camera, ColorDef, Hilite } from "@itwin/core-common";
 import {
   DrawingViewState, FlashMode, FlashSettings, FlashSettingsOptions, IModelApp, TileBoundingBoxes, Tool, Viewport,

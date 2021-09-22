@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Id64String, using } from "@bentley/bentleyjs-core";
+import { Id64String, using } from "@itwin/core-bentley";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { InstanceKey, KeySet } from "@bentley/presentation-common";
 import { DataProvidersFactory, IPresentationTableDataProvider, PresentationPropertyDataProvider } from "@bentley/presentation-components";

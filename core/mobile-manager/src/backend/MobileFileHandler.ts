@@ -10,7 +10,7 @@ import * as fs from "fs";
 import * as https from "https";
 import * as path from "path";
 import * as urllib from "url";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { ArgumentCheck } from "@bentley/imodelhub-client";
 import {
   AuthorizedClientRequestContext, CancelRequest, DownloadFailed, FileHandler, ProgressCallback, ProgressInfo, request, RequestOptions, SasUrlExpired,

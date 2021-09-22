@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Guid, Id64, Id64String } from "@itwin/core-bentley";
 import { Matrix3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import { Camera, Code, ColorDef, ElementProps, IModel, IModelError, SpatialViewDefinitionProps, SubCategoryAppearance } from "@itwin/core-common";
 import { assert } from "chai";

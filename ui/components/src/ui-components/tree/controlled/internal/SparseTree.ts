@@ -7,7 +7,7 @@
  */
 
 import { immerable } from "immer";
-import { assert, compareNumbers, lowerBound } from "@bentley/bentleyjs-core";
+import { assert, compareNumbers, lowerBound } from "@itwin/core-bentley";
 
 /** @internal */
 export interface Node {

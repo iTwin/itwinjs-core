@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64 } from "@itwin/core-bentley";
 import { Feature, FeatureTable, GeometryClass, PackedFeatureTable } from "@itwin/core-common";
 import {
   HiliteSet, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
@@ -49,7 +49,7 @@ describe("FeatureOverrides", () => {
     vp = ScreenViewport.create(viewDiv, vpView);
 
     vp.target.setHiliteSet(new HiliteSet(imodel));
-    const ovr = FeatureOverrides.createFromTarget(vp.target as Target, { });
+    const ovr = FeatureOverrides.createFromTarget(vp.target as Target, {});
     const features = new FeatureTable(1);
     features.insertWithIndex(new Feature(Id64.fromString("0x1")), 0);
 
@@ -74,7 +74,7 @@ describe("FeatureOverrides", () => {
     vp = ScreenViewport.create(viewDiv, vpView);
 
     vp.target.setHiliteSet(new HiliteSet(imodel));
-    const ovr = FeatureOverrides.createFromTarget(vp.target as Target, { });
+    const ovr = FeatureOverrides.createFromTarget(vp.target as Target, {});
     const features = new FeatureTable(2);
     features.insertWithIndex(new Feature(Id64.fromString("0x1")), 0);
     features.insertWithIndex(new Feature(Id64.fromString("0x2")), 1);

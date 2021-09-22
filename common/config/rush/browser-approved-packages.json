@@ -243,6 +243,10 @@
       "allowedCategories": [ "backend", "edit", "integration-testing", "internal", "tools" ]
     },
     {
+      "name": "@itwin/core-bentley",
+      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+    },
+    {
       "name": "@itwin/core-common",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },

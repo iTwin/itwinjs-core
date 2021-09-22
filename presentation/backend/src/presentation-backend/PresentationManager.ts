@@ -8,7 +8,7 @@
 
 import * as hash from "object-hash";
 import * as path from "path";
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import { BriefcaseDb, IModelDb, IModelJsNative, IpcHost } from "@itwin/core-backend";
 import { FormatProps, UnitSystemKey } from "@bentley/imodeljs-quantity";
 import {

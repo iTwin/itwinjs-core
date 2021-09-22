@@ -6,7 +6,7 @@
  * @module HyperModeling
  */
 
-import { assert, BeEvent, Id64String } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, Id64String } from "@itwin/core-bentley";
 import { Point2d, Point3d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { IModelReadRpcInterface } from "@itwin/core-common";
 import {

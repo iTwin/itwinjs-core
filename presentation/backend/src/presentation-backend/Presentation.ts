@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { DisposeFunc, Logger } from "@bentley/bentleyjs-core";
+import { DisposeFunc, Logger } from "@itwin/core-bentley";
 import { IModelHost } from "@itwin/core-backend";
 import { RpcManager } from "@itwin/core-common";
 import { PresentationError, PresentationRpcInterface, PresentationStatus } from "@bentley/presentation-common";

@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { XAndY } from "@itwin/core-geometry";
 import {
   AbstractToolbarProps, DialogLayoutDataProvider, OnCancelFunc, OnItemExecutedFunc, OnValueCommitFunc, Primitives, PrimitiveValue,
@@ -347,7 +347,7 @@ export class PopupRenderer extends React.Component<{}, PopupRendererState> {
 
     return (
       <div className="ui-framework-popup-render-container" ref={this._handleRefSet}>
-        { this.state.parentDocument &&
+        {this.state.parentDocument &&
           this.state.popups.filter((info) => info.parentDocument === this.state.parentDocument)
             .map((popupInfo: PopupInfo) => {
               return (

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { CodeProps, SubCategoryAppearance } from "@itwin/core-common";
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 
 export const fullstackIpcChannel = "fullStackIpc";
 export interface FullStackTestIpc {

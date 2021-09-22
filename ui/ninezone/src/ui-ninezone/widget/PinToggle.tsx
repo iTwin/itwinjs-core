@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { NineZoneDispatchContext, useLabel } from "../base/NineZone";
 import { PanelSide, PanelStateContext } from "../widget-panels/Panel";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 
 /** @internal */
 export const PinToggle = React.memo(function PinToggle() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow

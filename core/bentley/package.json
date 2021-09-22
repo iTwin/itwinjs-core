@@ -1,9 +1,9 @@
 {
-  "name": "@bentley/bentleyjs-core",
+  "name": "@itwin/core-bentley",
   "version": "3.0.0-dev.64",
   "description": "Bentley JavaScript core components",
-  "main": "lib/bentleyjs-core.js",
-  "typings": "lib/bentleyjs-core",
+  "main": "lib/core-bentley.js",
+  "typings": "lib/core-bentley",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
@@ -14,9 +14,9 @@
     "compile": "npm run build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "extract-api": "betools extract-api --entry=bentleyjs-core",
+    "extract-api": "betools extract-api --entry=core-bentley",
     "test": "betools test",
-    "docs": "betools docs --json=../../generated-docs/core/bentleyjs-core/file.json --tsIndexFile=bentleyjs-core.ts --onlyJson",
+    "docs": "betools docs --json=../../generated-docs/core/core-bentley/file.json --tsIndexFile=core-bentley.ts --onlyJson",
     "cover": "nyc npm test",
     "cover:docs": "node ./node_modules/@bentley/build-tools/scripts/docscoverage.js",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2"

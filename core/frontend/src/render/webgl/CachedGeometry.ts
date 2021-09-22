@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
+import { assert, dispose } from "@itwin/core-bentley";
 import { Angle, Point2d, Point3d, Range3d, Vector2d, Vector3d } from "@itwin/core-geometry";
 import { Npc, QParams2d, QParams3d, QPoint2dList, QPoint3dList, RenderMode, RenderTexture } from "@itwin/core-common";
 import { SkyBox } from "../../DisplayStyleState";

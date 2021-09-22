@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { CompressedId64Set, Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { CompressedId64Set, Guid, Id64, Id64String } from "@itwin/core-bentley";
 import { Box, Point3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   Code, GeometryStreamBuilder, IModel, PhysicalElementProps, RenderSchedule, RenderTimelineProps,

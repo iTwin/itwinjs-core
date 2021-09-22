@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, Id64String } from "@bentley/bentleyjs-core";
+import { assert, Id64String } from "@itwin/core-bentley";
 import { Range1d } from "@itwin/core-geometry";
 import { RequestOptions } from "@bentley/itwin-client";
 import { IModelConnection } from "../../IModelConnection";

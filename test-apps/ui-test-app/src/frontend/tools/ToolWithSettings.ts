@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 // cSpell:ignore picklist
 
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import { ColorByName, ColorDef } from "@itwin/core-common";
 import {

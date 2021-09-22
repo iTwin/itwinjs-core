@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BackendAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
-import { LogLevel } from "@bentley/bentleyjs-core";
+import { LogLevel } from "@itwin/core-bentley";
 import { DevToolsRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface } from "@itwin/core-common";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool";
 import { PresentationRpcInterface } from "@bentley/presentation-common";

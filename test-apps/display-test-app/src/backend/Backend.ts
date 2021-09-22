@@ -5,7 +5,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { UrlFileHandler } from "@bentley/backend-itwin-client";
-import { Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IModelBankClient } from "@bentley/imodelhub-client";
 import { IModelHost, IModelHostConfiguration, LocalhostIpcHost } from "@itwin/core-backend";

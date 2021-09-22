@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { BeDuration, GuidString, Logger } from "@bentley/bentleyjs-core";
+import { BeDuration, GuidString, Logger } from "@itwin/core-bentley";
 import { ChangeSet, ChangeSetQuery, IModelHubClient } from "@bentley/imodelhub-client";
 import { IModelVersion } from "@itwin/core-common";
 import { AuthorizedFrontendRequestContext, CheckpointConnection, IModelApp, IModelConnection, MockRender } from "@itwin/core-frontend";

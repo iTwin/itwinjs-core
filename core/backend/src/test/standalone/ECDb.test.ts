@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult, Id64, Id64String, using } from "@bentley/bentleyjs-core";
+import { DbResult, Id64, Id64String, using } from "@itwin/core-bentley";
 import { ECDb, ECDbOpenMode, ECSqlInsertResult, ECSqlStatement, SqliteStatement, SqliteValue, SqliteValueType } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";

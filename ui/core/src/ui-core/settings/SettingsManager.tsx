@@ -6,7 +6,7 @@
  * @module Settings
  */
 
-import { BeUiEvent, Logger } from "@bentley/bentleyjs-core";
+import { BeUiEvent, Logger } from "@itwin/core-bentley";
 import { ConditionalBooleanValue } from "@bentley/ui-abstract";
 import { UiCore } from "../UiCore";
 

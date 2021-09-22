@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { ByteStream, IDisposable } from "@bentley/bentleyjs-core";
+import { ByteStream, IDisposable } from "@itwin/core-bentley";
 import { Arc3d, Point3d, Range3d } from "@itwin/core-geometry";
 import { ColorByName, ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderTexture } from "@itwin/core-common";
 import {

@@ -6,7 +6,7 @@
  * @module iModelHubClient
  */
 
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@itwin/core-bentley";
 import {
   AccessToken, AuthorizedClientRequestContext, DefaultRequestOptionsProvider, request, RequestOptions,
 } from "@bentley/itwin-client";

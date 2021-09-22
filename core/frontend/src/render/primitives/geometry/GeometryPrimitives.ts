@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import {
   CurveChain, IndexedPolyface, Loop, Path, Point3d, PolyfaceBuilder, PolyfaceQuery, Range3d, SolidPrimitive, StrokeOptions, SweepContour, Transform,
 } from "@itwin/core-geometry";

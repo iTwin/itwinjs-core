@@ -8,7 +8,7 @@
 
 import { take } from "rxjs/internal/operators/take";
 import { Subject } from "rxjs/internal/Subject";
-import { BeUiEvent } from "@bentley/bentleyjs-core";
+import { BeUiEvent } from "@itwin/core-bentley";
 import { MultiSelectionHandler, SelectionHandler, SingleSelectionHandler } from "../../../common/selection/SelectionHandler";
 import { SelectionMode } from "../../../common/selection/SelectionModes";
 import { Observable } from "../Observable";

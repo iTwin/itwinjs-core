@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { BentleyStatus } from "@bentley/bentleyjs-core";
+import { BentleyStatus } from "@itwin/core-bentley";
 import { IModelError, IpcSocket, RpcInterface, RpcInterfaceDefinition, RpcProtocol } from "@itwin/core-common";
 import { ElectronIpcTransport, initializeIpc, IpcTransportMessage } from "./ElectronIpcTransport";
 import { ElectronRpcConfiguration } from "./ElectronRpcManager";

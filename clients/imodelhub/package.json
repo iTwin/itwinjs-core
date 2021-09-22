@@ -39,12 +39,12 @@
     "lodash": "^4.17.10"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.64",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.64",
     "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.64",
     "@bentley/itwin-client": "workspace:^3.0.0-dev.64"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",

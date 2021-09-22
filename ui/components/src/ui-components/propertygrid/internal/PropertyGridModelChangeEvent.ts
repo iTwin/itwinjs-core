@@ -6,7 +6,7 @@
 /** @packageDocumentation
  * @module PropertyGrid
  */
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@itwin/core-bentley";
 
 /**
  * A signature for property grid model change listeners

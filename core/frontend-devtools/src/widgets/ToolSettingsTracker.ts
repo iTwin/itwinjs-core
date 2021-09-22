@@ -7,7 +7,7 @@
  * @module Widgets
  */
 
-import { BeDuration } from "@bentley/bentleyjs-core";
+import { BeDuration } from "@itwin/core-bentley";
 import { IModelApp, ScreenViewport, ToolSettings, Viewport } from "@itwin/core-frontend";
 import { createCheckBox } from "../ui/CheckBox";
 import { createNestedMenu } from "../ui/NestedMenu";

@@ -12,7 +12,7 @@ import { SessionStateActionId } from "../../redux/SessionState";
 import { MenuItemHelpers, MenuItemProps } from "../../shared/MenuItem";
 import { SyncUiEventArgs, SyncUiEventDispatcher } from "../../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../../UiFramework";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 
 /** State for [[CursorPopupMenu]] component
  * @alpha

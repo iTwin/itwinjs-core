@@ -6,7 +6,7 @@
  * @module NativeApp
  */
 
-import { IModelStatus, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { IModelStatus, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
   ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, IModelConnectionProps, IModelError, IModelRpcProps, IpcAppChannel, IpcAppFunctions,
   IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel, OpenBriefcaseProps, RemoveFunction, StandaloneOpenOptions,

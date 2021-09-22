@@ -7,7 +7,7 @@
  */
 import * as path from "path";
 import * as Semver from "semver";
-import { DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel } from "@itwin/core-bentley";
 import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {

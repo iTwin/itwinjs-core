@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import { BackgroundMapSettings, MapImagerySettings, MapLayerSettings } from "@itwin/core-common";
 import { Viewport } from "../../Viewport";
 import { ViewState } from "../../ViewState";
@@ -16,7 +16,7 @@ import { MapLayerImageryProvider, MapTileTreeReference, TiledGraphicsProvider, T
 export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
   public readonly backgroundMap: MapTileTreeReference;
   public readonly overlayMap: MapTileTreeReference;
-  public readonly  backgroundDrapeMap: MapTileTreeReference;
+  public readonly backgroundDrapeMap: MapTileTreeReference;
   private readonly _detachFromDisplayStyle: VoidFunction[] = [];
 
   public forEachTileTreeRef(viewport: Viewport, func: (ref: TileTreeReference) => void): void {
@@ -31,7 +31,7 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
     const mapImagery = displayStyle.settings.mapImagery;
     this.backgroundMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, displayStyle.iModel, _vp.viewportId, false, false, () => displayStyle.overrideTerrainDisplay());
     this.overlayMap = new MapTileTreeReference(mapSettings, undefined, mapImagery.overlayLayers, displayStyle.iModel, _vp.viewportId, true, false);
-    this.backgroundDrapeMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, displayStyle.iModel,  _vp.viewportId, false, true);
+    this.backgroundDrapeMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, displayStyle.iModel, _vp.viewportId, false, true);
     const removals = this._detachFromDisplayStyle;
 
     removals.push(displayStyle.settings.onBackgroundMapChanged.addListener((settings: BackgroundMapSettings) => {

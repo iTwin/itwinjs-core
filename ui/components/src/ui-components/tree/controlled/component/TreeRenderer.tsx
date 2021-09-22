@@ -12,7 +12,7 @@ import * as React from "react";
 import { areEqual, ListChildComponentProps, ListOnItemsRenderedProps, VariableSizeList } from "react-window";
 import { concat } from "rxjs/internal/observable/concat";
 import { timer } from "rxjs/internal/observable/timer";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { Tree as CoreTree, TreeNodePlaceholder } from "@bentley/ui-core";
 import { createContextWithMandatoryProvider } from "../../../common/UseContextWithMandatoryProvider";
 import { HighlightableTreeProps, HighlightingEngine } from "../../HighlightingEngine";

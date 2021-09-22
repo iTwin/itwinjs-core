@@ -8,7 +8,7 @@
 
 import { join } from "path";
 import { AzureFileHandler } from "@bentley/backend-itwin-client";
-import { BentleyError, BriefcaseStatus, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { BentleyError, BriefcaseStatus, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode } from "@itwin/core-bentley";
 import {
   BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, CheckpointQuery, CheckpointV2, CheckpointV2Query, CodeQuery, IModelBankClient, IModelClient,
   IModelHubClient, IModelQuery, Lock, LockQuery, LockType, VersionQuery,

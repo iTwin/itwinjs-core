@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { IModelStatus } from "@bentley/bentleyjs-core";
+import { IModelStatus } from "@itwin/core-bentley";
 import { Point2d } from "@itwin/core-geometry";
 import { Cartographic, MapLayerSettings, ServerError } from "@itwin/core-common";
 

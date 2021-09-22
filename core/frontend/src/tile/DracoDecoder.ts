@@ -10,7 +10,7 @@ import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import { OctEncodedNormal, QParams3d, QPoint3d, QPoint3dList } from "@itwin/core-common";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { Triangle } from "../render/primitives/Primitives";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 
 export interface DecodedPointCloud {
   qParams: QParams3d;

@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { assert, Id64String } from "@bentley/bentleyjs-core";
+import { assert, Id64String } from "@itwin/core-bentley";
 import { PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskProps, PlanarClipMaskSettings } from "@itwin/core-common";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { createMaskTreeReference, DisclosedTileTreeSet, TileTreeReference } from "./tile/internal";

@@ -7,7 +7,7 @@
  * @module Tools
  */
 
-import { Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { Id64, Id64Array, Id64String } from "@itwin/core-bentley";
 import { GeometrySummaryOptions, GeometrySummaryVerbosity, IModelReadRpcInterface } from "@itwin/core-common";
 import {
   BeButtonEvent, CoreTools, EventHandled, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, MessageBoxIconType, MessageBoxType,

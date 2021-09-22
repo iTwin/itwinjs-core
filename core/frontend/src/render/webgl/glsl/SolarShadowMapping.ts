@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module WebGL
  */
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { RenderType } from "@bentley/webgl-compatibility";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, VariableType } from "../ShaderBuilder";

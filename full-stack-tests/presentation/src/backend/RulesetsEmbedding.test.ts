@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import faker from "faker";
 import fs from "fs";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64 } from "@itwin/core-bentley";
 import { SnapshotDb } from "@itwin/core-backend";
 import { Presentation, RulesetEmbedder } from "@bentley/presentation-backend";
 import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@bentley/presentation-common";

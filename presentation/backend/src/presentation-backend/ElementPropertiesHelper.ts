@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { assert, Id64 } from "@bentley/bentleyjs-core";
+import { assert, Id64 } from "@itwin/core-bentley";
 import {
   CategoryDescription, Content, ElementProperties, ElementPropertiesItem, ElementPropertiesPrimitiveArrayPropertyItem, ElementPropertiesPropertyItem,
   ElementPropertiesStructArrayPropertyItem, IContentVisitor, ProcessFieldHierarchiesProps, ProcessMergedValueProps, ProcessPrimitiveValueProps,

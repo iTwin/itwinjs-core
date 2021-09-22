@@ -11,7 +11,7 @@
 import "./CustomNumberEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import {
   CustomFormattedNumberParams, IconEditorParams, InputEditorSizeParams, MessageSeverity, PrimitiveValue, PropertyEditorParams, PropertyEditorParamTypes,
   PropertyRecord, PropertyValue, PropertyValueFormat, SpecialKey, StandardEditorNames, StandardTypeNames, UiAbstract,

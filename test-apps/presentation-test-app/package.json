@@ -30,7 +30,7 @@
     "cover": ""
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@bentley/electron-manager": "workspace:*",
     "@bentley/express-server": "workspace:*",

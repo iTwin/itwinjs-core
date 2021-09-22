@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { BeEvent, Guid } from "@bentley/bentleyjs-core";
+import { BeEvent, Guid } from "@itwin/core-bentley";
 import { RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
 
 /**

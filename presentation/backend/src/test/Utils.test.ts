@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { DbResult } from "@bentley/bentleyjs-core";
+import { DbResult } from "@itwin/core-bentley";
 import { ECSqlStatement, ECSqlValue, IModelDb } from "@itwin/core-backend";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";

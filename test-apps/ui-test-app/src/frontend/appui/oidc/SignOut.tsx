@@ -8,7 +8,7 @@
 
 import "./SignOut.scss";
 import * as React from "react";
-import { ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Logger } from "@itwin/core-bentley";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelApp } from "@itwin/core-frontend";
 import { UserInfo } from "@bentley/itwin-client";

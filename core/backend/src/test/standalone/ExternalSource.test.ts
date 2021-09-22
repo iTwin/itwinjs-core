@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import {
   Code, ExternalSourceAttachmentProps, ExternalSourceProps, IModel, RepositoryLinkProps, SynchronizationConfigLinkProps,
 } from "@itwin/core-common";

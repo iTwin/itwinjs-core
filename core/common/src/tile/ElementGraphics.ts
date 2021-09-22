@@ -6,7 +6,7 @@
  * @module Tile
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import { TransformProps } from "@itwin/core-geometry";
 import { Placement2dProps, Placement3dProps } from "../ElementProps";
 import { ElementGeometryDataEntry } from "../geometry/ElementGeometry";

@@ -6,7 +6,7 @@
  * @module UnifiedSelection
  */
 
-import { DisposableList, IDisposable } from "@bentley/bentleyjs-core";
+import { DisposableList, IDisposable } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Keys, KeySet } from "@bentley/presentation-common";
 import { ISelectionProvider } from "./ISelectionProvider";

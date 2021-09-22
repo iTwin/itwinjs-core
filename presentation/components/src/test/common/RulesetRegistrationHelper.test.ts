@@ -5,7 +5,7 @@
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { BeDuration, using } from "@bentley/bentleyjs-core";
+import { BeDuration, using } from "@itwin/core-bentley";
 import { RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";

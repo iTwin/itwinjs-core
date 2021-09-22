@@ -6,7 +6,7 @@
  * @module Utils
  */
 
-import { AuthStatus, BentleyError, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { AuthStatus, BentleyError, ClientRequestContext } from "@itwin/core-bentley";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelApp } from "./IModelApp";
 

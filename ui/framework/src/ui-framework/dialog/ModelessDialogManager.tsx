@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { CommonProps, getCssVariableAsNumber } from "@bentley/ui-core";
 import { UiFramework } from "../UiFramework";
 import { DialogChangedEvent, DialogManagerBase, DialogRendererBase } from "./DialogManagerBase";

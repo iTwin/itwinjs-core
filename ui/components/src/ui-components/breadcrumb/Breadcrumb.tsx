@@ -9,7 +9,7 @@
 import "./Breadcrumb.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { using } from "@bentley/bentleyjs-core";
+import { using } from "@itwin/core-bentley";
 import { MessageSeverity, PropertyRecord, SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps, ContextMenu, ContextMenuItem, DialogButtonType, MessageBox, SplitButton, withOnOutsideClick } from "@bentley/ui-core";
 import { PropertyValueRendererManager } from "../properties/ValueRendererManager";

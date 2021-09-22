@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BeEvent, BriefcaseStatus } from "@bentley/bentleyjs-core";
+import { BeEvent, BriefcaseStatus } from "@itwin/core-bentley";
 import { IModelHost, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
 import {
   IModelReadRpcInterface, IModelTileRpcInterface, InternetConnectivityStatus, NativeAppAuthorizationConfiguration, RpcInterfaceDefinition,

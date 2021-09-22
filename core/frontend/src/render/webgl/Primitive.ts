@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
+import { assert, dispose } from "@itwin/core-bentley";
 import { InstancedGraphicParams } from "../InstancedGraphicParams";
 import { RenderMemory } from "../RenderMemory";
 import { PrimitiveVisibility } from "../RenderTarget";

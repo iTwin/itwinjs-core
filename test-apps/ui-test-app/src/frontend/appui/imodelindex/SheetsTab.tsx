@@ -5,7 +5,7 @@
 import "./SheetsTab.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import { ViewDefinitionProps } from "@itwin/core-common";
 import { IModelConnection, ViewState } from "@itwin/core-frontend";
 import { LoadingBar, SearchBox, Timer } from "@bentley/ui-core";

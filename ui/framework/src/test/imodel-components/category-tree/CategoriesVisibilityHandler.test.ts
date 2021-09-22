@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { BeEvent, Id64String, using } from "@bentley/bentleyjs-core";
+import { BeEvent, Id64String, using } from "@itwin/core-bentley";
 import {
   IModelConnection, PerModelCategoryVisibility, ScreenViewport, SubCategoriesCache, ViewManager, Viewport, ViewState,
 } from "@itwin/core-frontend";

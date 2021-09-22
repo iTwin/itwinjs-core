@@ -10,7 +10,7 @@
 
 import {
   assert, BeEvent, CompressedId64Set, Id64, Id64Array, Id64String, JsonUtils, MutableCompressedId64Set, OrderedId64Iterable,
-} from "@bentley/bentleyjs-core";
+} from "@itwin/core-bentley";
 import { XYZProps } from "@itwin/core-geometry";
 import { AmbientOcclusion } from "./AmbientOcclusion";
 import { AnalysisStyle, AnalysisStyleProps } from "./AnalysisStyle";

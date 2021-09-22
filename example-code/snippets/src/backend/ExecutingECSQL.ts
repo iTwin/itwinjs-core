@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, Id64String } from "@bentley/bentleyjs-core";
+import { DbResult, Id64String } from "@itwin/core-bentley";
 import { ECSqlStatement, ECSqlValue, IModelDb, SnapshotDb } from "@itwin/core-backend";
 import { NavigationValue } from "@itwin/core-common";
 

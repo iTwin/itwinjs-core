@@ -6,7 +6,7 @@
  * @module Dialog
  */
 
-import { BeUiEvent } from "@bentley/bentleyjs-core";
+import { BeUiEvent } from "@itwin/core-bentley";
 import { PropertyEditorParams, PropertyEditorParamTypes, SuppressLabelEditorParams } from "../properties/EditorParams";
 import { PropertyRecord } from "../properties/Record";
 import { PrimitiveValue, PropertyValueFormat } from "../properties/Value";

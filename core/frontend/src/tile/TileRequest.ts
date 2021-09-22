@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, base64StringToUint8Array, IModelStatus } from "@bentley/bentleyjs-core";
+import { assert, base64StringToUint8Array, IModelStatus } from "@itwin/core-bentley";
 import { ImageSource } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { Viewport } from "../Viewport";

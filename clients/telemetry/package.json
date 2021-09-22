@@ -31,7 +31,7 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "workspace:*"
+    "@itwin/core-bentley": "workspace:*"
   },
   "peerDependencies": {
     "@bentley/itwin-client": "workspace:^3.0.0-dev.64"

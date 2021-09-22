@@ -9,7 +9,7 @@
 import "./AutoSuggest.scss";
 import * as React from "react";
 import * as ReactAutosuggest from "react-autosuggest";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps } from "../utils/Props";
 import { UiCore } from "../UiCore";

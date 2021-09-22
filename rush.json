@@ -98,7 +98,7 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/bentleyjs-core",
+      "packageName": "@itwin/core-bentley",
       "projectFolder": "core/bentley",
       "reviewCategory": "common",
       "shouldPublish": true,

@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { IModelApp, IModelAppOptions, LengthDescription, MockRender } from "@itwin/core-frontend";
 import {
   AbstractToolbarProps, BadgeType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem,

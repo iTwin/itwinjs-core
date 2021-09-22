@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 // __PUBLISH_EXTRACT_START__ RpcInterface.definition
 import { IModelRpcProps, RpcInterface, RpcManager } from "@itwin/core-common";
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 
 // The RPC query interface that may be exposed by the RobotWorldEngine.
 export abstract class RobotWorldReadRpcInterface extends RpcInterface {

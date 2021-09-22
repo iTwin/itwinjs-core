@@ -6,7 +6,7 @@
  * @module Tree
  */
 
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@itwin/core-bentley";
 import { PageOptions } from "../common/PageOptions";
 import { ITreeDataProvider, TreeDataChangesListener, TreeNodeItem } from "./TreeDataProvider";
 

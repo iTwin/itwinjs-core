@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { Id64String, Logger } from "@bentley/bentleyjs-core";
+import { Id64String, Logger } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection, ViewState } from "@itwin/core-frontend";
 import { UiEvent } from "@bentley/ui-core";
 import { SupportsViewSelectorChange } from "../content/ContentControl";

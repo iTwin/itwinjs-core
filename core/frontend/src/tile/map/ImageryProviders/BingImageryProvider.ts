@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, BentleyError, IModelStatus } from "@bentley/bentleyjs-core";
+import { assert, BentleyError, IModelStatus } from "@itwin/core-bentley";
 import { Range2d } from "@itwin/core-geometry";
 import { ImageSource, MapLayerSettings } from "@itwin/core-common";
 import { request, RequestOptions, Response } from "@bentley/itwin-client";

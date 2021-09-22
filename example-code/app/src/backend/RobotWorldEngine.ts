@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { DbResult, Id64String } from "@bentley/bentleyjs-core";
+import { DbResult, Id64String } from "@itwin/core-bentley";
 import { Angle, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { BriefcaseDb, ECSqlStatement, Element, IModelDb, IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
 import {

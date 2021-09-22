@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@itwin/core-bentley";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import {
   DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, ITreeDataProvider, PageOptions, TreeDataChangesListener, TreeNodeItem,

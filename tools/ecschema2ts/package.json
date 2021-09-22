@@ -54,7 +54,7 @@
   },
   "dependencies": {
     "@bentley/backend-itwin-client": "workspace:*",
-    "@bentley/bentleyjs-core": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@itwin/ecschema-locaters": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",

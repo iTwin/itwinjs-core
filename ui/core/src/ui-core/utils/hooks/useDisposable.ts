@@ -7,7 +7,7 @@
  */
 
 import { useEffect, useMemo, useRef } from "react";
-import { IDisposable } from "@bentley/bentleyjs-core";
+import { IDisposable } from "@itwin/core-bentley";
 
 /**
  * A custom hook which creates a disposable object and manages its disposal on unmount

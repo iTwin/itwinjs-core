@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Id64String, SortedArray } from "@bentley/bentleyjs-core";
+import { Id64String, SortedArray } from "@itwin/core-bentley";
 import { ColorDef, Feature, GeometryClass } from "@itwin/core-common";
 import {
   IModelApp, IModelConnection, OffScreenViewport, Pixel, ScreenViewport, Tile, TileTreeLoadStatus, Viewport, ViewRect,

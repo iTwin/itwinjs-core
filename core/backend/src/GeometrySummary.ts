@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64Array, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
+import { Id64Array, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
   AkimaCurve3d, AnyGeometryQuery, Arc3d, BezierCurveBase, Box, BSplineCurve3d, Cone, CurveChainWithDistanceIndex, CurveCollection, CurvePrimitive, IModelJson,
   InterpolationCurve3d,

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { LogLevel } from "@bentley/bentleyjs-core";
+import { LogLevel } from "@itwin/core-bentley";
 import { IModelReadRpcInterface } from "@itwin/core-common";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool";
 import { ECSchemaRpcInterface } from "@bentley/ecschema-rpcinterface-common/lib/ECSchemaRpcInterface";

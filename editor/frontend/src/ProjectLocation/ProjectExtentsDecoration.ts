@@ -10,7 +10,7 @@ import { Angle, Arc3d, AxisIndex, AxisOrder, ClipShape, ClipVector, Constant, Ma
 import { Cartographic, ColorDef, EcefLocation, EcefLocationProps } from "@itwin/core-common";
 import { BeButton, BeButtonEvent, BriefcaseConnection, CoreTools, DecorateContext, EditManipulator, EventHandled, GraphicType, HitDetail, IModelApp, IModelConnection, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessagePriority, QuantityType, ScreenViewport, Tool, ViewClipControlArrow, ViewClipDecorationProvider, ViewClipShapeModifyTool, ViewClipTool, Viewport } from "@itwin/core-frontend";
 import { ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./ProjectGeolocation";
-import { BeDuration, BeEvent } from "@bentley/bentleyjs-core";
+import { BeDuration, BeEvent } from "@itwin/core-bentley";
 import { EditTools } from "../EditTool";
 import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";
 

@@ -10,7 +10,7 @@ import { EMPTY } from "rxjs/internal/observable/empty";
 import { from } from "rxjs/internal/observable/from";
 import { map } from "rxjs/internal/operators/map";
 import { mergeMap } from "rxjs/internal/operators/mergeMap";
-import { BeEvent, IDisposable } from "@bentley/bentleyjs-core";
+import { BeEvent, IDisposable } from "@itwin/core-bentley";
 import { NodeKey } from "@bentley/presentation-common";
 import { UnifiedSelectionTreeEventHandler, UnifiedSelectionTreeEventHandlerParams } from "@bentley/presentation-components";
 import {

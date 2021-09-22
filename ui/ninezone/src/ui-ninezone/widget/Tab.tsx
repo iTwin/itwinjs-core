@@ -10,7 +10,7 @@ import "./Tab.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, Point, Rectangle, Timer, useRefs, useResizeObserver } from "@bentley/ui-core";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { useDragTab } from "../base/DragManager";
 import { MeasureContext, NineZoneDispatchContext, TabNodeContext } from "../base/NineZone";
 import { TabState } from "../base/NineZoneState";

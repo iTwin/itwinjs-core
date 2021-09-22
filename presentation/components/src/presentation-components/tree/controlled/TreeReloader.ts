@@ -15,7 +15,7 @@ import { ignoreElements } from "rxjs/internal/operators/ignoreElements";
 import { map } from "rxjs/internal/operators/map";
 import { take } from "rxjs/internal/operators/take";
 import { tap } from "rxjs/internal/operators/tap";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import {
   isTreeModelNode, PagedTreeNodeLoader, toRxjsObservable, TreeModel, TreeModelNode, TreeModelRootNode, TreeModelSource,
   TreeNodeLoadResult,
@@ -87,7 +87,7 @@ class TreeReloader extends PagedTreeNodeLoader<IPresentationTreeDataProvider> {
             // accidentally while searching for other expanded nodes under the same parent.
             return from([
               Math.min(expandedNode.index, parentNode.numChildren - 1),
-              Math.min(Math.max(0, expandedNode.index - this.pageSize), parentNode.numChildren -1),
+              Math.min(Math.max(0, expandedNode.index - this.pageSize), parentNode.numChildren - 1),
               Math.min(expandedNode.index + this.pageSize, parentNode.numChildren - 1),
             ])
               .pipe(

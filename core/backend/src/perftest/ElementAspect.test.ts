@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import { ElementAspectProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";

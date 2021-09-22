@@ -8,7 +8,7 @@
 
 import * as path from "path";
 import { gt as versionGt, gte as versionGte, lt as versionLt } from "semver";
-import { assert, DbResult, Id64String } from "@bentley/bentleyjs-core";
+import { assert, DbResult, Id64String } from "@itwin/core-bentley";
 import {
   DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, Entity, IModelDb, KnownLocations, Model, Subject,
 } from "@itwin/core-backend";

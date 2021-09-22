@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module RpcInterface
  */
-import { ClientRequestContext, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, SerializedClientRequestContext } from "@itwin/core-bentley";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcManager } from "../../RpcManager";
 import { RpcControlChannel } from "./RpcControl";

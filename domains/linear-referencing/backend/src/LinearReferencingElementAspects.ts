@@ -6,7 +6,7 @@
  * @module LinearReferencing
  */
 
-import { Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64String, JsonUtils } from "@itwin/core-bentley";
 import { ElementMultiAspect, IModelDb } from "@itwin/core-backend";
 import { RelatedElement } from "@itwin/core-common";
 import {

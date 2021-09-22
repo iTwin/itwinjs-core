@@ -5,7 +5,7 @@
 
 import { join } from "path";
 import * as sinon from "sinon";
-import { Guid, GuidString } from "@bentley/bentleyjs-core";
+import { Guid, GuidString } from "@itwin/core-bentley";
 import {
   ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, ChangesetRange, CodeProps, IModelVersion, LocalDirName,
 } from "@itwin/core-common";

@@ -7,7 +7,7 @@
  * @module iModels
  */
 
-import { DbResult, Id64, Id64Arg, Id64String, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { DbResult, Id64, Id64Arg, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import { IModel, IModelError } from "@itwin/core-common";
 import { LockMap, LockState } from "./BackendHubAccess";
 import { BriefcaseDb, LockControl } from "./IModelDb";

@@ -7,7 +7,7 @@
  */
 
 import * as deepAssign from "deep-assign";
-import { GuidString, IModelHubStatus, Logger } from "@bentley/bentleyjs-core";
+import { GuidString, IModelHubStatus, Logger } from "@itwin/core-bentley";
 import { AuthorizedClientRequestContext, FileHandler, ProgressCallback } from "@bentley/itwin-client";
 import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";

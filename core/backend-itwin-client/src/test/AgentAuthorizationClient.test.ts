@@ -6,7 +6,7 @@
 import * as chai from "chai";
 import { Client, Issuer } from "openid-client";
 import * as path from "path";
-import { BeDuration } from "@bentley/bentleyjs-core";
+import { BeDuration } from "@itwin/core-bentley";
 import { AccessToken, IncludePrefix } from "@bentley/itwin-client";
 import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "../oidc/AgentAuthorizationClient";
 import { HubAccessTestValidator } from "./HubAccessTestValidator";

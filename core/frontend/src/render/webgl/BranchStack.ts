@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { HiddenLine, ViewFlags } from "@itwin/core-common";
 import { FeatureSymbology } from "../FeatureSymbology";

@@ -30,7 +30,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@bentley/ecschema-rpcinterface-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
@@ -40,7 +40,7 @@
     "@bentley/itwin-client": "workspace:*"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@bentley/ecschema-rpcinterface-common": "workspace:*",

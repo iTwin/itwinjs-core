@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, ByteStream, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { assert, ByteStream, Id64String, JsonUtils } from "@itwin/core-bentley";
 import { ClipVector, ClipVectorProps, Point2d, Point3d, Range2d, Range3d, Range3dProps, Transform, TransformProps, XYProps, XYZProps } from "@itwin/core-geometry";
 import {
   BatchType, ColorDef, ColorDefProps, ElementAlignedBox3d, FeatureIndexType, FeatureTableHeader, FillFlags, Gradient, ImageSource, ImdlHeader, LinePixels,
@@ -453,7 +453,7 @@ export class ImdlReader extends GltfReader {
     this._sizeMultiplier = sizeMultiplier;
     this._loadEdges = loadEdges;
     this._options = options ?? {};
-    this._patternSymbols = props.scene.patternSymbols ?? { };
+    this._patternSymbols = props.scene.patternSymbols ?? {};
   }
 
   private static skipFeatureTable(stream: ByteStream): boolean {

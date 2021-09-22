@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64 } from "@itwin/core-bentley";
 import { fireEvent, render } from "@testing-library/react";
 import { PropertyValueRendererContext } from "../../../../ui-components/properties/ValueRendererManager";
 import TestUtils from "../../../TestUtils";

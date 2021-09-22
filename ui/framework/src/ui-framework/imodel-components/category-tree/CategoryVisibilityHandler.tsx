@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@itwin/core-bentley";
 import { IModelConnection, PerModelCategoryVisibility, ViewManager, Viewport } from "@itwin/core-frontend";
 import { NodeKey } from "@bentley/presentation-common";
 import { TreeNodeItem, useAsyncValue } from "@bentley/ui-components";

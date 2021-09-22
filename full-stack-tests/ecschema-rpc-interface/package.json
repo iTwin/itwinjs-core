@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@bentley/backend-itwin-client": "workspace:*",
-    "@bentley/bentleyjs-core": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@bentley/certa": "workspace:*",
     "@bentley/context-registry-client": "workspace:*",

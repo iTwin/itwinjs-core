@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { BeEvent, Id64String, using } from "@bentley/bentleyjs-core";
+import { BeEvent, Id64String, using } from "@itwin/core-bentley";
 import { IModelConnection, PerModelCategoryVisibility, SpatialViewState, Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";

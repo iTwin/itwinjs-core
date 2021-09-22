@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { BeDuration } from "@bentley/bentleyjs-core";
+import { BeDuration } from "@itwin/core-bentley";
 import { InternetConnectivityStatus } from "@itwin/core-common";
 import { NativeApp } from "@itwin/core-frontend";
 import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";

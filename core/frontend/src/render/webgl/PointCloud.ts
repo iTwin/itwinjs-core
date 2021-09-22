@@ -7,7 +7,7 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
+import { assert, dispose } from "@itwin/core-bentley";
 import { FeatureIndexType } from "@itwin/core-common";
 import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
 import { RenderMemory } from "../RenderMemory";

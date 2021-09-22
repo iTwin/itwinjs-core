@@ -7,7 +7,7 @@
  * @module Tools
  */
 
-import { BeDuration } from "@bentley/bentleyjs-core";
+import { BeDuration } from "@itwin/core-bentley";
 import { IModelApp, Tool } from "@itwin/core-frontend";
 
 /** Changes the [IModelApp.animationInterval]($frontend). Specify the interval in integer milliseconds; or pass any string not parseable as an integer to disable the animation interval callback.

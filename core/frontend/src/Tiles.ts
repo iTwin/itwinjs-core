@@ -6,7 +6,7 @@
  * @module IModelConnection
  */
 
-import { BeTimePoint, Dictionary, dispose, Id64Array, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
+import { BeTimePoint, Dictionary, dispose, Id64Array, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeSupplier } from "./tile/internal";

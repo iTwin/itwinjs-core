@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert, dispose, Id64 } from "@bentley/bentleyjs-core";
+import { assert, dispose, Id64 } from "@itwin/core-bentley";
 import { PackedFeature, PackedFeatureTable } from "@itwin/core-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { DisplayParams } from "../primitives/DisplayParams";

@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
+import { assert, dispose } from "@itwin/core-bentley";
 import { Gradient, RenderTexture, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode } from "@itwin/core-common";
 import { WebGLDisposable } from "./Disposable";
 import { UniformHandle } from "./UniformHandle";

@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
 import { FrontstageActivatedEventArgs, FrontstageManager } from "../frontstage/FrontstageManager";
 import { withSafeArea } from "../safearea/SafeAreaContext";

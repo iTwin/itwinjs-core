@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { GetMetaDataFunction, Logger, LogLevel, PerfLogger, using } from "../bentleyjs-core";
+import { GetMetaDataFunction, Logger, LogLevel, PerfLogger, using } from "../core-bentley";
 import { ClientRequestContext } from "../ClientRequestContext";
 import { BeDuration } from "../Time";
 

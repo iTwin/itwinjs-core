@@ -6,7 +6,7 @@ import * as express from "express";
 import * as fs from "fs";
 import * as https from "https";
 import * as path from "path";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager } from "@itwin/core-common";
 import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
 

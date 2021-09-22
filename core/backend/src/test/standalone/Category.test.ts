@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Guid, Id64 } from "@bentley/bentleyjs-core";
+import { Guid, Id64 } from "@itwin/core-bentley";
 import { SubCategoryAppearance } from "@itwin/core-common";
 import {
   IModelDb, RenderMaterialElement, SpatialCategory, StandaloneDb, SubCategory,

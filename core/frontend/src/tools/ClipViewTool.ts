@@ -6,7 +6,7 @@
  * @module Tools
  */
 
-import { BeEvent, Id64, Id64Arg } from "@bentley/bentleyjs-core";
+import { BeEvent, Id64, Id64Arg } from "@itwin/core-bentley";
 import {
   AxisOrder, ClipMaskXYZRangePlanes, ClipPlane, ClipPrimitive, ClipShape, ClipUtilities, ClipVector, ConvexClipPlaneSet, FrameBuilder, Geometry, GeometryQuery,
   GrowableXYZArray, LineString3d, Loop, Matrix3d, Path, Plane3dByOriginAndUnitNormal, Point3d, PolygonOps, PolylineOps, Range1d, Range3d, Ray3d,

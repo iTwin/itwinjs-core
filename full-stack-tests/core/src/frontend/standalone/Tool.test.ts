@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Id64, Id64Arg } from "@bentley/bentleyjs-core";
+import { Id64, Id64Arg } from "@itwin/core-bentley";
 import {
   ElementAgenda, HiliteSet, IModelConnection, MockRender, ModifyElementSource, SelectionSet, SelectionSetEventType, SnapshotConnection,
 } from "@itwin/core-frontend";

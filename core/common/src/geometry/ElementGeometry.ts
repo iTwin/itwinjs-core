@@ -6,7 +6,7 @@
  * @module Geometry
  */
 import { flatbuffers } from "flatbuffers";
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Id64, Id64String } from "@itwin/core-bentley";
 import { Angle, AngleSweep, Arc3d, BentleyGeometryFlatBuffer, CurveCollection, FrameBuilder, GeometryQuery, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, Polyface, PolyfaceQuery, Range3d, SolidPrimitive, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { EGFBAccessors } from "./ElementGeometryFB";
 import { Base64EncodedString } from "../Base64EncodedString";

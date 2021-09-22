@@ -39,7 +39,7 @@
     "svg-sprite-loader": "4.2.1"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@itwin/core-common": "workspace:*",

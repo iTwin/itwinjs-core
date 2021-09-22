@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { Id64, Id64Arg, Id64String, using } from "@bentley/bentleyjs-core";
+import { Id64, Id64Arg, Id64String, using } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection, SelectionSet, SelectionSetEventType } from "@itwin/core-frontend";
 import { InstanceKey, KeySet, SelectionScope } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";

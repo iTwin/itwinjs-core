@@ -5,7 +5,7 @@
 import * as chai from "chai";
 import * as fs from "fs";
 import * as path from "path";
-import { Guid, GuidString, IModelHubStatus } from "@bentley/bentleyjs-core";
+import { Guid, GuidString, IModelHubStatus } from "@itwin/core-bentley";
 import {
   HubIModel, IModelClient, IModelHubClient, IModelHubClientError, IModelHubError, IModelQuery, IModelType, InitializationState, SeedFile, WsgError,
 } from "@bentley/imodelhub-client";

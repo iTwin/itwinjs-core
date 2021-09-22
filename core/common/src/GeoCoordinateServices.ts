@@ -6,7 +6,7 @@
  * @module iModels
  */
 
-import { GeoServiceStatus } from "@bentley/bentleyjs-core";
+import { GeoServiceStatus } from "@itwin/core-bentley";
 import { XYZProps } from "@itwin/core-geometry";
 
 /** @public */

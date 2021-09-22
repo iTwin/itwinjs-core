@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as lolex from "lolex";
 import * as sinon from "sinon";
-import { using } from "@bentley/bentleyjs-core";
+import { using } from "@itwin/core-bentley";
 import { IModelDb, IpcHost } from "@itwin/core-backend";
 import { PresentationIpcEvents, UpdateInfoJSON } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";

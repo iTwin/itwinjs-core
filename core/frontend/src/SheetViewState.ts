@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { assert, dispose, Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { assert, dispose, Id64Array, Id64String } from "@itwin/core-bentley";
 import { Angle, ClipShape, ClipVector, Constant, Matrix3d, Point2d, Point3d, PolyfaceBuilder, Range2d, Range3d, StrokeOptions, Transform } from "@itwin/core-geometry";
 import {
   AxisAlignedBox3d, ColorDef, Feature, FeatureTable, Frustum, Gradient, GraphicParams, HiddenLine, PackedFeatureTable, Placement2d, RenderMaterial, RenderTexture, SheetProps, TextureMapping, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,

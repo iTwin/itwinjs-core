@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
+import { assert, dispose } from "@itwin/core-bentley";
 import { Arc3d, ClipPlaneContainment, Matrix4d, Point2d, Point3d, Point4d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { BoundingSphere, ColorDef, ElementAlignedBox3d, Frustum, FrustumPlanes } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
@@ -91,7 +91,7 @@ export abstract class Tile {
   /** The depth of this tile within its [[TileTree]]. The root tile has a depth of zero. */
   public readonly depth: number;
   /** The bounding sphere for this tile. */
-  public  readonly boundingSphere: BoundingSphere;
+  public readonly boundingSphere: BoundingSphere;
   /** The point at the center of this tile's volume. */
   public get center(): Point3d { return this.boundingSphere.center; }
   /** The radius of a sphere fully encompassing this tile's volume - used for culling. */

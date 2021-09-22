@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { dispose } from "@bentley/bentleyjs-core";
+import { dispose } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { ElementAlignedBox3d, PackedFeatureTable } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions } from "../IModelApp";

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import "./PushPullField.scss";
 import * as React from "react";
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@itwin/core-bentley";
 import { ChangeSetPostPushEvent, ChangeSetQuery } from "@bentley/imodelhub-client";
 import {
   AuthorizedFrontendRequestContext, BriefcaseConnection, IModelApp, IModelHubFrontend, NotifyMessageDetails, OutputMessageAlert,

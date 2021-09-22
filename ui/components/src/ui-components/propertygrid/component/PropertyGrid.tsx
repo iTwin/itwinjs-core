@@ -10,7 +10,7 @@ import "./PropertyGrid.scss";
 import classnames from "classnames";
 import { produce } from "immer";
 import * as React from "react";
-import { DisposeFunc } from "@bentley/bentleyjs-core";
+import { DisposeFunc } from "@itwin/core-bentley";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { Orientation, ResizableContainerObserver } from "@bentley/ui-core";
 import { DelayedSpinner } from "../../common/DelayedSpinner";

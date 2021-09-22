@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Id64, ProcessDetector } from "@bentley/bentleyjs-core";
+import { Id64, ProcessDetector } from "@itwin/core-bentley";
 import {
   BackgroundMapSettings, ColorByName, ColorDef, GlobeMode, PlanProjectionSettings, PlanProjectionSettingsProps,
 } from "@itwin/core-common";

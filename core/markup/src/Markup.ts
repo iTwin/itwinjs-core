@@ -6,7 +6,7 @@
  * @module MarkupApp
  */
 
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { Point3d, XAndY } from "@itwin/core-geometry";
 import { ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { FrontendLoggerCategory, imageElementFromImageSource, IModelApp, ScreenViewport } from "@itwin/core-frontend";

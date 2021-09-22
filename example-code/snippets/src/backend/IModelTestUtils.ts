@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { OpenMode } from "@bentley/bentleyjs-core";
+import { OpenMode } from "@itwin/core-bentley";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { IModelHost, IModelHostConfiguration, KnownLocations, SnapshotDb, StandaloneDb } from "@itwin/core-backend";
 import { IModelJsFs, IModelJsFsStats } from "@itwin/core-backend/lib/IModelJsFs";

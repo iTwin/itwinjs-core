@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
 import { Rectangle } from "@bentley/ui-core";
 import {

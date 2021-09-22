@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { join } from "path";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
 import { BasicManipulationCommand, EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
 import { getSupportedRpcs } from "../../common/rpcs";

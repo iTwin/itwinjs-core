@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Id64, Id64String } from "@itwin/core-bentley";
 import { ECClassGroupingNodeKey, ECInstancesNodeKey, InstanceKey, StandardNodeTypes } from "@bentley/presentation-common";
 import { createRandomPropertyRecord, createRandomTreeNodeItem } from "@bentley/presentation-components/lib/test/_helpers/UiComponents";
 import { PropertyRecord } from "@bentley/ui-abstract";

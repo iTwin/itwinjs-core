@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
+import { assert, dispose } from "@itwin/core-bentley";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { InstancedGraphicParams, PatternGraphicParams } from "../InstancedGraphicParams";
 import { RenderMemory } from "../RenderMemory";

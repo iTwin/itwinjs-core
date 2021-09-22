@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import { IModelConnection, ScreenViewport, ViewState } from "@itwin/core-frontend";
 import { viewWithUnifiedSelection } from "@bentley/presentation-components";
 import { ViewportComponent, ViewStateProp } from "@bentley/ui-imodel-components";

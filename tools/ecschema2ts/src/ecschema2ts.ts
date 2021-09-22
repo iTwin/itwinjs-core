@@ -28,7 +28,7 @@ const tsBentleyModules: { [index: string]: TsBentleyModule } = {
     resolvedConflictName: "BeGeometryCore",
   },
   tsBentleyJsCore: {
-    moduleName: "@bentley/bentleyjs-core",
+    moduleName: "@itwin/core-bentley",
     resolvedConflictName: "BeBentleyJsCore",
   },
 };

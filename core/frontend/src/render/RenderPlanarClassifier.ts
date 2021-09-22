@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { Id64String, IDisposable } from "@bentley/bentleyjs-core";
+import { Id64String, IDisposable } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { PlanarClipMaskState } from "../PlanarClipMaskState";
 import { SpatialClassifierTileTreeReference, Tile } from "../tile/internal";

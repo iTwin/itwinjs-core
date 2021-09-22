@@ -6,7 +6,7 @@
  * @module Widget
  */
 
-import { BeUiEvent, Logger } from "@bentley/bentleyjs-core";
+import { BeUiEvent, Logger } from "@itwin/core-bentley";
 import { AbstractZoneLocation, StagePanelLocation, StagePanelSection, UiItemsArbiter, UiItemsManager } from "@bentley/ui-abstract";
 import { UiFramework } from "../UiFramework";
 import { getStableWidgetProps, ZoneLocation } from "../zones/Zone";

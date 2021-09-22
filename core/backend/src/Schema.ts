@@ -6,7 +6,7 @@
  * @module Schema
  */
 
-import { IModelStatus } from "@bentley/bentleyjs-core";
+import { IModelStatus } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
 import { ClassRegistry } from "./ClassRegistry";
 

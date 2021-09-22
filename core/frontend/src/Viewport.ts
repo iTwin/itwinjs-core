@@ -10,7 +10,7 @@ import {
   asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, Constructor, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, isInstanceOf,
   ProcessDetector,
   StopWatch,
-} from "@bentley/bentleyjs-core";
+} from "@itwin/core-bentley";
 import {
   Angle, AngleSweep, Arc3d, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d,
   Range3d, Ray3d, Transform, Vector3d, XAndY, XYAndZ, XYZ,
@@ -1117,7 +1117,7 @@ export abstract class Viewport implements IDisposable {
   /** This gives each Viewport a unique Id, which can be used for comparing and sorting Viewport objects inside collections.
    * @internal
    */
-  /** A unique integer Id for this viewport that can be used for comparing and sorting Viewport objects inside collections like [SortedArray]($bentleyjs-core)s. */
+  /** A unique integer Id for this viewport that can be used for comparing and sorting Viewport objects inside collections like [SortedArray]($core-bentley)s. */
   public get viewportId(): number {
     return this._viewportId;
   }
@@ -1411,7 +1411,7 @@ export abstract class Viewport implements IDisposable {
    * The "flashed" visual effect is typically applied to the object in the viewport currently under the mouse cursor, to indicate
    * it is ready to be interacted with by a tool. [[ToolAdmin]] is responsible for updating it when the mouse cursor moves.
    * The object is usually an [Element]($backend) but could also be a [Model]($backend) or pickable decoration produced by a [[Decorator]].
-   * The setter ignores any string that is not a well-formed [Id64String]($bentleyjs-core). Passing [Id64.invalid]($bentleyjs-core) to the
+   * The setter ignores any string that is not a well-formed [Id64String]($core-bentley). Passing [Id64.invalid]($core-bentley) to the
    * setter is equivalent to passing `undefined` - both mean "nothing is flashed".
    * @throws Error if an attempt is made to change this property from within an [[onFlashedIdChanged]] event callback.
    * @see [[onFlashedIdChanged]] to be notified when the flashed object changes.

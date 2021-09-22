@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64String, Logger } from "@bentley/bentleyjs-core";
+import { Id64String, Logger } from "@itwin/core-bentley";
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import { IModelQuery } from "@bentley/imodelhub-client";
 import { AuthorizedFrontendRequestContext, CheckpointConnection, IModelConnection, IModelHubFrontend } from "@itwin/core-frontend";

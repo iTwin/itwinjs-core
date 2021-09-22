@@ -10,7 +10,7 @@ import * as os from "os";
 import * as path from "path";
 import * as semver from "semver";
 import { HttpRequestHost } from "@bentley/backend-itwin-client";
-import { assert, BeEvent, ClientRequestContext, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector, SessionProps } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, ClientRequestContext, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector, SessionProps } from "@itwin/core-bentley";
 import { IModelClient } from "@bentley/imodelhub-client";
 import { BentleyStatus, IModelError, RpcConfiguration, SerializedRpcRequest } from "@itwin/core-common";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";

@@ -11,7 +11,7 @@ import { castDraft, Draft, produce } from "immer";
 import { PointProps } from "@bentley/ui-abstract";
 import { Point, Rectangle, RectangleProps, SizeProps } from "@bentley/ui-core";
 import { HorizontalPanelSide, isHorizontalPanelSide, PanelSide, panelSides, VerticalPanelSide } from "../widget-panels/Panel";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { getUniqueId } from "./NineZone";
 
 /** @internal future */

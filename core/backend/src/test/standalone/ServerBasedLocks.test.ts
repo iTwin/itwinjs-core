@@ -5,7 +5,7 @@
 
 import { assert, expect } from "chai";
 import { restore as sinonRestore, spy as sinonSpy } from "sinon";
-import { Guid, GuidString, Id64, Id64Arg } from "@bentley/bentleyjs-core";
+import { Guid, GuidString, Id64, Id64Arg } from "@itwin/core-bentley";
 import { Code, IModel, IModelError, LocalBriefcaseProps, PhysicalElementProps, RequestNewBriefcaseProps } from "@itwin/core-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { LockState } from "../../BackendHubAccess";

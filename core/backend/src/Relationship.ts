@@ -6,7 +6,7 @@
  * @module Relationships
  */
 
-import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { IModelError, IModelStatus, RelationshipProps, SourceAndTarget } from "@itwin/core-common";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";

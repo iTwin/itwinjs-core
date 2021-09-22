@@ -6,7 +6,7 @@
  * @module Editing
  */
 
-import { CompressedId64Set, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
+import { CompressedId64Set, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { Matrix3dProps, Range3dProps, TransformProps, XYZProps } from "@itwin/core-geometry";
 import { ColorDefProps, EcefLocationProps, ElementGeometryDataEntry, ElementGeometryInfo, ElementGeometryOpcode, GeometricElementProps, GeometryPartProps } from "@itwin/core-common";
 import { EditCommandIpc } from "./EditorIpc";

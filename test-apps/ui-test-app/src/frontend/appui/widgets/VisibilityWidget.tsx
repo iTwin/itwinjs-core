@@ -5,7 +5,7 @@
 import "./VisibilityWidget.scss";
 import * as React from "react";
 import { useResizeDetector } from "react-resize-detector";
-import { BeEvent, Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { BeEvent, Id64Array, Id64String } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@itwin/core-frontend";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import { FilteringInput, FilteringInputStatus, SelectableContent, SelectionMode } from "@bentley/ui-components";
@@ -346,7 +346,7 @@ export class CancelFilterHierarchyByVisibleElementIdsTool extends Tool {
       iconSpec: `svg:${cancelFilterIconSvg}`,
       commandId: "CancelFilterHierarchyByVisibleElementIds",
       label: "Cancel filter tree by visible elements",
-      execute: async () => {await IModelApp.tools.run(CancelFilterHierarchyByVisibleElementIdsTool.toolId); },
+      execute: async () => { await IModelApp.tools.run(CancelFilterHierarchyByVisibleElementIdsTool.toolId); },
     });
   }
 }

@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Views
  */
-import { assert, BeEvent, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
 import { Angle, Range1d, Vector3d } from "@itwin/core-geometry";
 import {
   BackgroundMapProps, BackgroundMapSettings, BaseLayerSettings, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
@@ -585,12 +585,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     return undefined !== this.iModel.ecefLocation && (this.viewFlags.backgroundMap || this.anyMapLayersVisible(false));
   }
   /** @internal */
-  public get backgroundMapElevationBias(): number | undefined{
+  public get backgroundMapElevationBias(): number | undefined {
     if (this.backgroundMapSettings.applyTerrain) {
       const terrainSettings = this.backgroundMapSettings.terrainSettings;
       switch (terrainSettings.heightOriginMode) {
         case TerrainHeightOriginMode.Ground:
-          return (undefined ===  this.iModel.projectCenterAltitude) ? undefined : terrainSettings.heightOrigin + terrainSettings.exaggeration * this.iModel.projectCenterAltitude;
+          return (undefined === this.iModel.projectCenterAltitude) ? undefined : terrainSettings.heightOrigin + terrainSettings.exaggeration * this.iModel.projectCenterAltitude;
 
         case TerrainHeightOriginMode.Geodetic:
           return terrainSettings.heightOrigin;

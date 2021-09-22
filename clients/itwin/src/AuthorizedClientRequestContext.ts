@@ -6,7 +6,7 @@
  * @module Authentication
  */
 
-import { ClientRequestContext, ClientRequestContextProps, Guid, GuidString, SessionProps } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, ClientRequestContextProps, Guid, GuidString, SessionProps } from "@itwin/core-bentley";
 import { AccessToken, AccessTokenProps } from "./Token";
 
 /** The properties of AuthorizedSession.

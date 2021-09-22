@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, OpenMode } from "@itwin/core-bentley";
 import { Angle, Arc3d, GeometryQuery, LineString3d, Loop, Range3d, StandardViewIndex } from "@itwin/core-geometry";
 import {
   CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotDb, SpatialCategory,
@@ -84,7 +84,7 @@ export class GeoJsonImporter {
       const featureMin = Cartographic.createZero(), featureMax = Cartographic.createZero();
       if (!this.getFeatureRange(featureMin, featureMax))
         return;
-      const featureCenter = Cartographic.fromRadians({longitude: (featureMin.longitude + featureMax.longitude) / 2, latitude: (featureMin.latitude + featureMax.latitude) / 2});
+      const featureCenter = Cartographic.fromRadians({ longitude: (featureMin.longitude + featureMax.longitude) / 2, latitude: (featureMin.latitude + featureMax.latitude) / 2 });
 
       this.iModelDb.setEcefLocation(EcefLocation.createFromCartographicOrigin(featureCenter));
       this.convertFeatureCollection();

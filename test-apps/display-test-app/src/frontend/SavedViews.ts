@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64Arg } from "@bentley/bentleyjs-core";
+import { Id64Arg } from "@itwin/core-bentley";
 import { createButton, createTextBox, deserializeViewState, serializeViewState } from "@bentley/frontend-devtools";
 import { IModelConnection, Viewport, ViewState } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";

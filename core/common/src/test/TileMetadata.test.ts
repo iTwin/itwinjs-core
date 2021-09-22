@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import { Point3d, Range3d } from "@itwin/core-geometry";
 import { expect } from "chai";
 import { BatchType } from "../FeatureTable";

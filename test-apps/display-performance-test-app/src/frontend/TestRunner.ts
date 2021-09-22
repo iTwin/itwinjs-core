@@ -6,7 +6,7 @@
 import * as path from "path";
 import {
   assert, BeDuration, Dictionary, Id64, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch,
-} from "@bentley/bentleyjs-core";
+} from "@itwin/core-bentley";
 import {
   BackgroundMapType, DisplayStyleProps, FeatureAppearance, Hilite, RenderMode, ViewStateProps,
 } from "@itwin/core-common";

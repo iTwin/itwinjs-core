@@ -11,7 +11,7 @@ import { IdleTool } from "../tools/IdleTool";
 import { SelectionTool } from "../tools/SelectTool";
 import { Tool } from "../tools/Tool";
 import { PanViewTool, RotateViewTool } from "../tools/ViewTool";
-import { BentleyStatus, DbResult, IModelStatus } from "@bentley/bentleyjs-core";
+import { BentleyStatus, DbResult, IModelStatus } from "@itwin/core-bentley";
 
 /** class to simulate overriding the default AccuDraw */
 class TestAccuDraw extends AccuDraw { }

@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { Point3d, Range1d, Range2d, Vector3d } from "@itwin/core-geometry";
 import { OctEncodedNormal, QParams2d, QParams3d, QPoint2d, QPoint3d, Quantization } from "@itwin/core-common";
 import { RenderMemory } from "../../RenderMemory";

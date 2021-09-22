@@ -11,7 +11,7 @@
 // cSpell:ignore openid appauth signin Pkce Signout
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import { assert, AuthStatus, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
+import { assert, AuthStatus, BentleyError, ClientRequestContext, Logger } from "@itwin/core-bentley";
 import { IModelHost, NativeAppAuthorizationBackend, NativeHost } from "@itwin/core-backend";
 import { NativeAppAuthorizationConfiguration } from "@itwin/core-common";
 import { AccessToken, request as httpRequest, RequestOptions } from "@bentley/itwin-client";

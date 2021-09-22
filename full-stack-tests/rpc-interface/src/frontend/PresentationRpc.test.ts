@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64 } from "@itwin/core-bentley";
 import { CheckpointConnection, IModelApp, IModelConnection } from "@itwin/core-frontend";
 import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
 import { InstanceKey, KeySet, Ruleset } from "@bentley/presentation-common";

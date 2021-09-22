@@ -6,7 +6,7 @@
  * @module RPC
  */
 
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { IModelDb, IpcHandler } from "@itwin/core-backend";
 import {
   NodeKeyJSON, PRESENTATION_IPC_CHANNEL_NAME, PresentationIpcInterface, RulesetVariableJSON, SetRulesetVariableParams, UnsetRulesetVariableParams,

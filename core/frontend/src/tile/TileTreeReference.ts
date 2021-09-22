@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { BeTimePoint } from "@bentley/bentleyjs-core";
+import { BeTimePoint } from "@itwin/core-bentley";
 import { Matrix4d, Range1d, Range3d, Transform } from "@itwin/core-geometry";
 import { ElementAlignedBox3d, FeatureAppearanceProvider, FrustumPlanes, HiddenLine, PlanarClipMaskPriority, ViewFlagOverrides } from "@itwin/core-common";
 import { HitDetail } from "../HitDetail";

@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import {
   BackstageActionItem, BackstageItem, BackstageStageLauncher, ConditionalBooleanValue, ConditionalStringValue, isStageLauncher,
 } from "@bentley/ui-abstract";

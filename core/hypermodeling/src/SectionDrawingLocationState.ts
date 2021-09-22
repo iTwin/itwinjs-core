@@ -6,7 +6,7 @@
  * @module HyperModeling
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import {
   ClipVector, Transform, XYZProps,
 } from "@itwin/core-geometry";

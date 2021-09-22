@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Logger } from "@itwin/core-bentley";
 import { Angle, Point2d, Point3d, Range2d, XYAndZ } from "@itwin/core-geometry";
 import { Cartographic } from "@itwin/core-common";
 import {

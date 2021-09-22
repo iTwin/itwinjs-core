@@ -6,7 +6,7 @@
  * @module Categories
  */
 
-import { Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
 import {
   BisCodeSpec, CategoryProps, Code, CodeScopeProps, CodeSpec, ElementProps, Rank, SubCategoryAppearance, SubCategoryProps,
 } from "@itwin/core-common";

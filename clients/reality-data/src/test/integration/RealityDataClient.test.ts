@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { Guid, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Guid, GuidString, Logger, LogLevel } from "@itwin/core-bentley";
 import { Angle, Range2d } from "@itwin/core-geometry";
 import { AuthorizedClientRequestContext, ImsAuthorizationClient } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";

@@ -6,7 +6,7 @@
  * @module RPC
  */
 
-import { Id64String, Logger } from "@bentley/bentleyjs-core";
+import { Id64String, Logger } from "@itwin/core-bentley";
 import { IModelDb } from "@itwin/core-backend";
 import { IModelRpcProps } from "@itwin/core-common";
 import {

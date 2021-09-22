@@ -35,7 +35,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.64",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.64",
     "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.64",
     "@bentley/ui-abstract": "workspace:^3.0.0-dev.64",
     "react": "^16.8.6 || ^17.0.0",
@@ -46,7 +46,7 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@bentley/imodeljs-i18n": "workspace:*",

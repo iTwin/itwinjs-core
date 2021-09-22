@@ -13,7 +13,7 @@ import {
   MapLayerSources, NotifyMessageDetails, OutputMessagePriority, ScreenViewport, TileTreeOwner, Viewport,
 } from "@itwin/core-frontend";
 import { ToggleSwitch } from "@itwin/itwinui-react";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import * as React from "react";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { MapLayerOptions, MapTypesOptions, StyleMapLayerSettings } from "../Interfaces";

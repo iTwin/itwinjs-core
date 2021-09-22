@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as yargs from "yargs";
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { IModelHost } from "@itwin/core-backend";
 import { RealityModelContextIModelCreator } from "./RealityModelContextIModelCreator";
 

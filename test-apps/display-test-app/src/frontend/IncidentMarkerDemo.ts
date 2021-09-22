@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@itwin/core-bentley";
 import { AngleSweep, Arc3d, Point2d, Point3d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { AxisAlignedBox3d, ColorByName, ColorDef } from "@itwin/core-common";
 import {

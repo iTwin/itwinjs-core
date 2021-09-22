@@ -35,7 +35,7 @@ import { Tool1 } from "../tools/Tool1";
 import { Tool2 } from "../tools/Tool2";
 import { ToolWithSettings } from "./ToolWithSettings";
 import { Radio } from "@itwin/itwinui-react";
-import { BeDuration } from "@bentley/bentleyjs-core";
+import { BeDuration } from "@itwin/core-bentley";
 import { RestoreSavedContentLayoutTool, SaveContentLayoutTool } from "./UiProviderTool";
 
 // cSpell:ignore appui appuiprovider

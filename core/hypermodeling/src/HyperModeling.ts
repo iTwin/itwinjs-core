@@ -6,7 +6,7 @@
  * @module HyperModeling
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { SectionType } from "@itwin/core-common";
 import { IModelApp, IModelConnection, ScreenViewport, tryImageElementFromUrl, ViewManip } from "@itwin/core-frontend";

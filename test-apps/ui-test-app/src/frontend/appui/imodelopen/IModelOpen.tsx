@@ -13,7 +13,7 @@ import { IModelList } from "./IModelList";
 import { NavigationItem, NavigationList } from "./Navigation";
 import { ProjectDropdown } from "./ProjectDropdown";
 import { ActivityMessageDetails, ActivityMessageEndReason, IModelApp } from "@itwin/core-frontend";
-import { BeDuration } from "@bentley/bentleyjs-core";
+import { BeDuration } from "@itwin/core-bentley";
 import { Button } from "@itwin/itwinui-react";
 
 /** Properties for the [[IModelOpen]] component */

@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@itwin/core-bentley";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { InternetConnectivityStatus } from "@itwin/core-common";
 import { AuthorizedFrontendRequestContext, IModelApp } from "@itwin/core-frontend";

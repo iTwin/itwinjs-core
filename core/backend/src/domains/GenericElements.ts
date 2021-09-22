@@ -6,7 +6,7 @@
  * @module Elements
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import {
   CalloutProps, DefinitionElementProps, ElementProps, GeometricElement2dProps, GeometricElement3dProps, GeometricModel3dProps, IModel,
   InformationPartitionElementProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, TypeDefinitionElementProps, ViewAttachmentLabelProps,

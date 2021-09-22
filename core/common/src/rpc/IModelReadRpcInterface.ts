@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { GuidString, Id64String } from "@bentley/bentleyjs-core";
+import { GuidString, Id64String } from "@itwin/core-bentley";
 import { Range3dProps } from "@itwin/core-geometry";
 import { CodeProps } from "../Code";
 import { ElementLoadOptions, ElementProps } from "../ElementProps";

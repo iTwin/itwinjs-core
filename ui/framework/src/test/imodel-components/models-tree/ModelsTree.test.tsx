@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as React from "react";
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent } from "@itwin/core-bentley";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { KeySet, LabelDefinition, Node, NodeKey, NodePathElement } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
@@ -283,7 +283,7 @@ describe("ModelsTree", () => {
           const predicate = (_key: NodeKey, type: ModelsTreeNodeType) => (type === ModelsTreeNodeType.Grouping);
 
           const result = render(<ModelsTree {...sizeProps} iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} selectionMode={SelectionMode.Extended} selectionPredicate={predicate} />);
-          await  result.findByText("grouping");
+          await result.findByText("grouping");
 
           const renderedNode = result.getByTestId("tree-node");
           fireEvent.click(renderedNode);

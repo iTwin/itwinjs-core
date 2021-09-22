@@ -6,7 +6,7 @@
  * @module LinearReferencing
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import { ElementRefersToElements } from "@itwin/core-backend";
 import { RelatedElement } from "@itwin/core-common";
 

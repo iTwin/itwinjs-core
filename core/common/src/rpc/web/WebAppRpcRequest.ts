@@ -7,7 +7,7 @@
  */
 
 import "@ungap/url-search-params/index";
-import { BentleyStatus, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
+import { BentleyStatus, SerializedClientRequestContext } from "@itwin/core-bentley";
 import { IModelError, ServerError, ServerTimeoutError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcContentType, RpcProtocolEvent, RpcRequestStatus, RpcResponseCacheControl, WEB_RPC_CONSTANTS } from "../core/RpcConstants";

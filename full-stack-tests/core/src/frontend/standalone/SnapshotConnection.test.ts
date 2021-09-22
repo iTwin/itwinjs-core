@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Guid } from "@bentley/bentleyjs-core";
+import { Guid } from "@itwin/core-bentley";
 import { IModel } from "@itwin/core-common";
 import { IModelApp, SnapshotConnection } from "@itwin/core-frontend";
 

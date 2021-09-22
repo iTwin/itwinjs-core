@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { BeEvent, Id64String } from "@bentley/bentleyjs-core";
+import { BeEvent, Id64String } from "@itwin/core-bentley";
 import { IModelConnection, ScreenViewport, SpatialViewState, SubCategoriesCache, ViewManager, Viewport } from "@itwin/core-frontend";
 import { ECInstancesNodeKey, KeySet, LabelDefinition, Node, NodePathElement, StandardNodeTypes } from "@bentley/presentation-common";
 import { IPresentationTreeDataProvider, PresentationTreeDataProvider } from "@bentley/presentation-components";

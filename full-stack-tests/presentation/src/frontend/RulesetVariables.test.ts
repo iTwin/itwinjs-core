@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { Guid, Id64 } from "@bentley/bentleyjs-core";
+import { Guid, Id64 } from "@itwin/core-bentley";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { ChildNodeSpecificationTypes, ContentSpecificationTypes, KeySet, Ruleset, RuleTypes } from "@bentley/presentation-common";
 import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";

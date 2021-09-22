@@ -6,7 +6,7 @@
  * @module IModelConnection
  */
 
-import { assert, BeEvent, compareStrings, DbOpcode, DuplicatePolicy, GuidString, Id64String, SortedArray } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, compareStrings, DbOpcode, DuplicatePolicy, GuidString, Id64String, SortedArray } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import {
   EditingScopeNotifications, ElementGeometryChange, IpcAppChannel, ModelGeometryChanges, ModelGeometryChangesProps, RemoveFunction,
