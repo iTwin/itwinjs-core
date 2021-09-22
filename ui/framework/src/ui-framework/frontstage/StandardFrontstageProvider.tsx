@@ -21,15 +21,16 @@ import { StatusBarWidgetComposerControl } from "../widgets/StatusBarWidgetCompos
 import { StagePanelState } from "../stagepanels/StagePanelDef";
 
 /** Properties of a [[WidgetPanelProps]] component
- * @beta
+ * @public
  */
 export type WidgetPanelProps = Omit<StagePanelProps, "widgets" | "runtimeProps" | "header" | "allowedZones" | "panelZones">;
 
 /**
- * @beta
+ * Props for [[StandardFrontstageProvider]]
+ * @public
  */
 export interface StandardFrontstageProps {
-  /* unique stage id */
+  /* unique stage id. To ensure uniqueness it is common practice to format id like `appName:stageId` */
   id: string;
   /* version id that is used to store state of stage */
   version?: number;
@@ -67,7 +68,9 @@ export interface StandardFrontstageProps {
 }
 
 /**
- * @beta
+ * FrontstageProvider that provides an "empty" stage. All tool buttons, statusbar items, and widgets must
+ * be provided by one or more item providers, see [UiItemsProvider]($ui-abstract).
+ * @public
  */
 export class StandardFrontstageProvider extends FrontstageProvider {
   constructor(private props: StandardFrontstageProps) {

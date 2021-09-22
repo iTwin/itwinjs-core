@@ -10,8 +10,10 @@ import { CommonToolbarItem, StageUsage, ToolbarOrientation, ToolbarUsage, UiItem
 import { ToolbarHelper } from "../toolbar/ToolbarHelper";
 import { CoreTools } from "../tools/CoreToolDefinitions";
 
-/** Defines what tools to include
- * @beta
+/**
+ * Defines what tools to include from the provider. If any tools in the horizontal or vertical group are
+ * specified then only those tools will be provided to stage.
+ * @public
  */
 export interface DefaultNavigationTools {
   horizontal?: {
@@ -27,13 +29,21 @@ export interface DefaultNavigationTools {
   };
 }
 
-/** Provide standard tools for the ViewNavigationWidgetComposer
- * @beta
+/**
+ * Provide standard tools for the ViewNavigationWidgetComposer.
+ * @public
  */
 export class StandardNavigationToolsProvider implements UiItemsProvider {
   public static providerId = "uifw:StandardNavigationToolsProvider";
   public readonly id = StandardNavigationToolsProvider.providerId;
 
+  /**
+   * static function to register the StandardContentToolsProvider
+   * @param defaultNavigationTools - if undefined all available tools are provided to stage. If defined only those
+   * specific tool buttons are shown.
+   * @param isSupportedStage - optional function that will be called to determine if tools should be added to current stage. If not set and
+   * the current stage's `usage` is set to `StageUsage.General` then the provider will add items to frontstage.
+   */
   public static register(defaultNavigationTools?: DefaultNavigationTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean) {
     UiItemsManager.register(new StandardNavigationToolsProvider(defaultNavigationTools, isSupportedStage));
   }
