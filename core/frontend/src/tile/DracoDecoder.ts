@@ -6,7 +6,7 @@
  * @module Tiles
  */
 import { createDecoderModule } from "draco3d";
-import { Point2d, Point3d, Range3d } from "@bentley/geometry-core";
+import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import { OctEncodedNormal, QParams3d, QPoint3d, QPoint3dList } from "@itwin/core-common";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { Triangle } from "../render/primitives/Primitives";

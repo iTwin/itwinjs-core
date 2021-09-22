@@ -7,7 +7,7 @@
  */
 
 import { assert, BeTimePoint, GuidString, Id64Array, Id64String } from "@bentley/bentleyjs-core";
-import { Range3d, Transform } from "@bentley/geometry-core";
+import { Range3d, Transform } from "@itwin/core-geometry";
 import {
   BatchType, ContentIdProvider, ElementAlignedBox3d, ElementGeometryChange, FeatureAppearanceProvider,
   IModelTileTreeId, IModelTileTreeProps, ModelGeometryChanges, TileProps,

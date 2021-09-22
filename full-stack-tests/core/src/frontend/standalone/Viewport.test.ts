@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Point3d } from "@bentley/geometry-core";
+import { Point3d } from "@itwin/core-geometry";
 import { BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, ColorDef, FontMap, FontType } from "@itwin/core-common";
 import {
   CompassMode, createRenderPlanFromViewport, IModelApp, IModelConnection, MockRender, PanViewTool,

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { ByteStream, IDisposable } from "@bentley/bentleyjs-core";
-import { Arc3d, Point3d, Range3d } from "@bentley/geometry-core";
+import { Arc3d, Point3d, Range3d } from "@itwin/core-geometry";
 import { ColorByName, ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderTexture } from "@itwin/core-common";
 import {
   Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, OffScreenViewport, PlanarClassifierMap, PlanarClassifierTarget,

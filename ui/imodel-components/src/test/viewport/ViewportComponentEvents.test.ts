@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
-import { Matrix3d, Point3d } from "@bentley/geometry-core";
+import { Matrix3d, Point3d } from "@itwin/core-geometry";
 import { IModelApp, SelectedViewportChangedArgs, StandardViewId, ViewManager, Viewport } from "@itwin/core-frontend";
 import { ViewportComponentEvents } from "../../ui-imodel-components/viewport/ViewportComponentEvents";
 import { TestUtils } from "../TestUtils";

@@ -48,7 +48,7 @@
     "@bentley/electron-manager": "workspace:*",
     "@bentley/mobile-manager": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@bentley/backend-itwin-client": "workspace:*",

@@ -11,7 +11,7 @@ import {
   Angle, AxisOrder, ClipVector, Constant, Geometry, LongitudeLatitudeNumber, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d,
   Plane3dByOriginAndUnitNormal, Point2d, Point3d, PolyfaceBuilder, Range2d, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY,
   XYAndZ, XYZ, YawPitchRollAngles,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import {
   AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef, FeatureAppearance, Frustum, GlobeMode, GraphicParams, GridOrientationType,
   ModelClipGroups, Npc, RenderMaterial, RenderSchedule, SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps,

@@ -6,7 +6,7 @@
  * @module Tools
  */
 
-import { AxisOrder, Matrix3d, Point3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { AxisOrder, Matrix3d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { ColorDef } from "@itwin/core-common";
 import { AccuDrawHintBuilder } from "../AccuDraw";
 import { HitDetail } from "../HitDetail";

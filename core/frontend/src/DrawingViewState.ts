@@ -9,7 +9,7 @@
 import { assert, dispose, Id64, Id64String } from "@bentley/bentleyjs-core";
 import {
   Constant, Range3d, Transform, TransformProps, Vector3d,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import {
   AxisAlignedBox3d, Frustum, SectionDrawingViewProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
 } from "@itwin/core-common";

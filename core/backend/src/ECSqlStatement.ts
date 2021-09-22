@@ -7,7 +7,7 @@
  */
 
 import { DbResult, GuidString, Id64String, IDisposable, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
-import { LowAndHighXYZ, Range3d, XAndY, XYAndZ, XYZ } from "@bentley/geometry-core";
+import { LowAndHighXYZ, Range3d, XAndY, XYAndZ, XYZ } from "@itwin/core-geometry";
 import { ECJsNames, ECSqlValueType, IModelError, NavigationBindingValue, NavigationValue } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { ECDb } from "./ECDb";
@@ -609,9 +609,9 @@ export class ECSqlValue {
   public getInteger(): number { return this._val.getInt64(); }
   /** Get the value as a string value */
   public getString(): string { return this._val.getString(); }
-  /** Get the value as [XAndY]($geometry-core) */
+  /** Get the value as [XAndY]($core-geometry) */
   public getXAndY(): XAndY { return this._val.getPoint2d(); }
-  /** Get the value as [XYAndZ]($geometry-core) */
+  /** Get the value as [XYAndZ]($core-geometry) */
   public getXYAndZ(): XYAndZ { return this._val.getPoint3d(); }
   /** Get the value as ECEnumeration value
    *  Note: This method is optional. Using [[ECSqlValue.getInteger]] for integral enums and

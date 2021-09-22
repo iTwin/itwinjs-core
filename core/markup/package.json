@@ -41,7 +41,7 @@
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.64",
-    "@bentley/geometry-core": "workspace:^3.0.0-dev.64",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.64",
     "@itwin/core-common": "workspace:^3.0.0-dev.64",
     "@itwin/core-frontend": "workspace:^3.0.0-dev.64",
     "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.64"
@@ -51,7 +51,7 @@
     "@bentley/build-tools": "workspace:*",
     "@bentley/certa": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@bentley/imodeljs-i18n": "workspace:*",

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import { Guid, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { Angle, Range2d } from "@bentley/geometry-core";
+import { Angle, Range2d } from "@itwin/core-geometry";
 import { AuthorizedClientRequestContext, ImsAuthorizationClient } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import { RealityData, RealityDataClient, RealityDataRelationship } from "../../RealityDataClient";

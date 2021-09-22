@@ -8,7 +8,7 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { XAndY } from "@bentley/geometry-core";
+import { XAndY } from "@itwin/core-geometry";
 import { ToolTipOptions } from "@itwin/core-frontend";
 import { PointProps } from "@bentley/ui-abstract";
 import { CommonProps, Point, Rectangle, SizeProps, UiEvent } from "@bentley/ui-core";

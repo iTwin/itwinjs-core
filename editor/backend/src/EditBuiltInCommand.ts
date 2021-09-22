@@ -9,7 +9,7 @@
 import { BentleyStatus, CompressedId64Set, DbResult, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
 import {
   Matrix3d, Matrix3dProps, Point3d, PointString3d, Range3d, Range3dProps, Transform, TransformProps, XYZProps, YawPitchRollAngles,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import { GeometricElement, IModelDb } from "@itwin/core-backend";
 import {
   BRepEntity, ColorDefProps, DynamicGraphicsRequest3dProps, EcefLocation, EcefLocationProps, ElementGeometry, ElementGeometryDataEntry,

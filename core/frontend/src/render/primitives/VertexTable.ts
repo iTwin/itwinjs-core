@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Range2d, Vector3d } from "@bentley/geometry-core";
+import { Point2d, Point3d, Range2d, Vector3d } from "@itwin/core-geometry";
 import {
   ColorDef, ColorIndex, FeatureIndex, FeatureIndexType, FillFlags, LinePixels, MeshEdge, OctEncodedNormalPair, PolylineData, PolylineTypeFlags,
   QParams2d, QParams3d, QPoint2d, QPoint3dList, RenderMaterial, RenderTexture,

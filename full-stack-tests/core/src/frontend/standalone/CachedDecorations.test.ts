@@ -7,7 +7,7 @@ import {
   CachedDecoration, CanvasDecoration, DecorateContext, DecorationsCache, Decorator, GraphicType, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection,
 } from "@itwin/core-frontend";
 import { ScreenTestViewport, testOnScreenViewport } from "../TestViewport";
-import { Point3d } from "@bentley/geometry-core";
+import { Point3d } from "@itwin/core-geometry";
 import { Graphic, GraphicOwner } from "@itwin/core-frontend/lib/webgl";
 
 describe("Cached decorations", () => {

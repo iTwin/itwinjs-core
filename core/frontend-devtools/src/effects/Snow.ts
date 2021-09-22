@@ -7,7 +7,7 @@
  */
 
 import { dispose } from "@bentley/bentleyjs-core";
-import { Point2d, Range1d, Range2d, Vector2d } from "@bentley/geometry-core";
+import { Point2d, Range1d, Range2d, Vector2d } from "@itwin/core-geometry";
 import { RenderTexture } from "@itwin/core-common";
 import {
   DecorateContext, Decorator, GraphicType, imageElementFromUrl, IModelApp, ParticleCollectionBuilder, ParticleProps, Tool, Viewport,

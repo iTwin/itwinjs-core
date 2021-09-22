@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@bentley/imodeljs-i18n": "workspace:*",

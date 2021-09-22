@@ -7,7 +7,7 @@
  */
 
 import { GuidString, Id64String, IModelStatus, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
-import { Range3dProps, XYZProps } from "@bentley/geometry-core";
+import { Range3dProps, XYZProps } from "@itwin/core-geometry";
 import { OpenBriefcaseProps } from "./BriefcaseTypes";
 import { ChangedEntities } from "./ChangedEntities";
 import { ChangesetIndex, ChangesetIndexAndId } from "./ChangesetProps";

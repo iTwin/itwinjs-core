@@ -6,7 +6,7 @@
 import { assert, expect } from "chai";
 import { Logger } from "@bentley/bentleyjs-core";
 import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
-import { ECClass, EntityClass, PrimitiveProperty, PrimitiveType, Schema, SchemaContext } from "@bentley/ecschema-metadata";
+import { ECClass, EntityClass, PrimitiveProperty, PrimitiveType, Schema, SchemaContext } from "@itwin/ecschema-metadata";
 import { MutableClass } from "../../Editing/Mutable/MutableClass";
 import { AnyDiagnostic, createPropertyDiagnosticClass, DiagnosticCategory } from "../../Validation/Diagnostic";
 import { LoggingDiagnosticReporter } from "../../Validation/LoggingDiagnosticReporter";

@@ -7,7 +7,7 @@
  */
 
 import { Id64, Id64Arg } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Range2d } from "@bentley/geometry-core";
+import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
 import { ColorDef } from "@itwin/core-common";
 import {
   ButtonGroupEditorParams, DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription, PropertyEditorParamTypes,

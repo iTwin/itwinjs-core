@@ -1,7 +1,7 @@
 {
   "name": "@itwin/core-frontend",
   "version": "3.0.0-dev.64",
-  "description": "iModel.js frontend components",
+  "description": "iTwin.js frontend components",
   "main": "lib/core-frontend.js",
   "typings": "lib/core-frontend",
   "imodeljsSharedLibrary": true,
@@ -38,7 +38,7 @@
   "peerDependencies": {
     "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.64",
     "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.64",
-    "@bentley/geometry-core": "workspace:^3.0.0-dev.64",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.64",
     "@bentley/imodelhub-client": "workspace:^3.0.0-dev.64",
     "@itwin/core-common": "workspace:^3.0.0-dev.64",
     "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.64",
@@ -60,7 +60,7 @@
     "@bentley/certa": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@bentley/imodeljs-i18n": "workspace:*",

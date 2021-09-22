@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { KeyinField, parseArgs } from "@bentley/frontend-devtools";
-import { Range3d } from "@bentley/geometry-core";
+import { Range3d } from "@itwin/core-geometry";
 import { Cartographic } from "@itwin/core-common";
 import { BlankConnection, BlankConnectionProps, IModelApp, Tool } from "@itwin/core-frontend";
 import { DisplayTestApp } from "./App";

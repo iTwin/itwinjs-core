@@ -9,7 +9,7 @@
 import { Id64String } from "@bentley/bentleyjs-core";
 import {
   ClipVector, Transform, XYZProps,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import {
   Placement3d, SectionType,
 } from "@itwin/core-common";

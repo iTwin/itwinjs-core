@@ -9,7 +9,7 @@ import {
   LocateFilterStatus, LocateResponse, PrimitiveTool,
   SelectionMethod, SelectionMode,
 } from "@itwin/core-frontend";
-import { Point3d } from "@bentley/geometry-core";
+import { Point3d } from "@itwin/core-geometry";
 import { UiFramework } from "@bentley/ui-framework";
 import { ToolbarItemUtilities } from "@bentley/ui-abstract";
 import genericToolSvg from "./generic-tool.svg?sprite";

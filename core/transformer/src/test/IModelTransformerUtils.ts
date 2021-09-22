@@ -6,8 +6,8 @@
 import { assert } from "chai";
 import * as path from "path";
 import { DbResult, Guid, Id64, Id64Set, Id64String } from "@bentley/bentleyjs-core";
-import { Schema } from "@bentley/ecschema-metadata";
-import { Point3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Schema } from "@itwin/ecschema-metadata";
+import { Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   AuxCoordSystem, AuxCoordSystem2d, CategorySelector, DefinitionModel, DisplayStyle3d, DrawingCategory, DrawingGraphicRepresentsElement,
   ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, FunctionalSchema,

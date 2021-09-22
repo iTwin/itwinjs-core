@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { Transform } from "@bentley/geometry-core";
+import { Transform } from "@itwin/core-geometry";
 import {
   BatchType, FeatureAppearance, FeatureAppearanceProvider, GeometryClass, HiddenLine, RenderMode, ViewFlags,
 } from "@itwin/core-common";

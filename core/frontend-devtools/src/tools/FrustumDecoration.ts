@@ -7,7 +7,7 @@
  * @module Tools
  */
 
-import { Map4d, Point3d } from "@bentley/geometry-core";
+import { Map4d, Point3d } from "@itwin/core-geometry";
 import { ColorByName, ColorDef, Frustum, LinePixels, Npc } from "@itwin/core-common";
 import {
   CoordSystem, DecorateContext, Decorator, GraphicBuilder, GraphicType, IModelApp, Tool, Viewport, ViewState, ViewState3d,

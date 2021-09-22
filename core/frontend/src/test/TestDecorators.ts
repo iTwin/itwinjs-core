@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ColorDef } from "@itwin/core-common";
-import { Point3d, Sphere, Transform } from "@bentley/geometry-core";
+import { Point3d, Sphere, Transform } from "@itwin/core-geometry";
 import { IModelApp } from "../IModelApp";
 import { DecorateContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";

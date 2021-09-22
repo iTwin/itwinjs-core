@@ -224,9 +224,9 @@ importers:
       '@bentley/certa': workspace:*
       '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
+      '@itwin/core-geometry': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/deep-assign': ^0.1.0
@@ -257,9 +257,9 @@ importers:
       '@bentley/certa': link:../../tools/certa
       '@bentley/context-registry-client': link:../context-registry
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/geometry-core': link:../../core/geometry
       '@bentley/itwin-client': link:../itwin
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
+      '@itwin/core-geometry': link:../../core/geometry
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
       '@types/deep-assign': 0.1.1
@@ -322,9 +322,7 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/context-registry-client': workspace:*
-      '@bentley/ecschema-metadata': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/imodeljs-native': 3.0.9
       '@bentley/itwin-client': workspace:*
@@ -332,6 +330,8 @@ importers:
       '@bentley/perf-tools': workspace:*
       '@bentley/telemetry-client': workspace:*
       '@itwin/core-common': workspace:*
+      '@itwin/core-geometry': workspace:*
+      '@itwin/ecschema-metadata': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/deep-assign': ^0.1.0
@@ -390,15 +390,15 @@ importers:
       '@bentley/backend-itwin-client': link:../backend-itwin-client
       '@bentley/bentleyjs-core': link:../bentley
       '@bentley/build-tools': link:../../tools/build
-      '@bentley/ecschema-metadata': link:../ecschema-metadata
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/geometry-core': link:../geometry
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@bentley/perf-tools': link:../../tools/perf-tools
       '@bentley/telemetry-client': link:../../clients/telemetry
       '@itwin/core-common': link:../common
+      '@itwin/core-geometry': link:../geometry
+      '@itwin/ecschema-metadata': link:../ecschema-metadata
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
       '@types/deep-assign': 0.1.1
@@ -441,12 +441,12 @@ importers:
       '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/frontend-authorization-client': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@bentley/telemetry-client': workspace:*
       '@itwin/core-common': workspace:*
+      '@itwin/core-geometry': workspace:*
       '@types/chai': ^4.1.4
       '@types/deep-assign': ^0.1.0
       '@types/fs-extra': ^4.0.7
@@ -502,12 +502,12 @@ importers:
       '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
-      '@bentley/geometry-core': link:../geometry
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@bentley/telemetry-client': link:../../clients/telemetry
       '@itwin/core-common': link:../common
+      '@itwin/core-geometry': link:../geometry
       '@types/chai': 4.2.22
       '@types/deep-assign': 0.1.1
       '@types/fs-extra': 4.0.12
@@ -568,9 +568,9 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
+      '@itwin/core-geometry': workspace:*
       '@types/chai': ^4.1.4
       '@types/flatbuffers': ~1.10.0
       '@types/mocha': ^8.2.2
@@ -594,9 +594,9 @@ importers:
       '@bentley/bentleyjs-core': link:../bentley
       '@bentley/build-tools': link:../../tools/build
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/geometry-core': link:../geometry
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
+      '@itwin/core-geometry': link:../geometry
       '@types/chai': 4.2.22
       '@types/flatbuffers': 1.10.0
       '@types/mocha': 8.2.3
@@ -614,10 +614,10 @@ importers:
     specifiers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
-      '@bentley/ecschema-metadata': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/units-schema': ^1.0.5
+      '@itwin/ecschema-metadata': workspace:*
       '@types/almost-equal': 1.1.0
       '@types/benchmark': ^2.1.0
       '@types/chai': ^4.1.4
@@ -645,10 +645,10 @@ importers:
     devDependencies:
       '@bentley/bentleyjs-core': link:../bentley
       '@bentley/build-tools': link:../../tools/build
-      '@bentley/ecschema-metadata': link:../ecschema-metadata
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/imodeljs-i18n': link:../i18n
       '@bentley/units-schema': 1.0.7
+      '@itwin/ecschema-metadata': link:../ecschema-metadata
       '@types/almost-equal': 1.1.0
       '@types/benchmark': 2.1.1
       '@types/chai': 4.2.22
@@ -674,8 +674,8 @@ importers:
   ../../core/ecschema-locaters:
     specifiers:
       '@bentley/build-tools': workspace:*
-      '@bentley/ecschema-metadata': workspace:*
       '@bentley/eslint-plugin': workspace:*
+      '@itwin/ecschema-metadata': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/glob': ^5.0.35
@@ -695,8 +695,8 @@ importers:
       glob: 7.1.7
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
-      '@bentley/ecschema-metadata': link:../ecschema-metadata
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
+      '@itwin/ecschema-metadata': link:../ecschema-metadata
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
       '@types/glob': 5.0.37
@@ -775,22 +775,22 @@ importers:
     specifiers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
-      '@bentley/ecschema-metadata': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/itwin-client': workspace:*
       '@itwin/core-common': workspace:*
+      '@itwin/core-geometry': workspace:*
+      '@itwin/ecschema-metadata': workspace:*
       eslint: ^7.11.0
       rimraf: ^3.0.2
       typescript: ~4.3.0
     devDependencies:
       '@bentley/bentleyjs-core': link:../../bentley
       '@bentley/build-tools': link:../../../tools/build
-      '@bentley/ecschema-metadata': link:../../ecschema-metadata
       '@bentley/eslint-plugin': link:../../../tools/eslint-plugin
-      '@bentley/geometry-core': link:../../geometry
       '@bentley/itwin-client': link:../../../clients/itwin
       '@itwin/core-common': link:../../common
+      '@itwin/core-geometry': link:../../geometry
+      '@itwin/ecschema-metadata': link:../../ecschema-metadata
       eslint: 7.32.0
       rimraf: 3.0.2
       typescript: 4.3.5
@@ -799,28 +799,28 @@ importers:
     specifiers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
-      '@bentley/ecschema-metadata': workspace:*
       '@bentley/ecschema-rpcinterface-common': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-common': workspace:*
+      '@itwin/core-geometry': workspace:*
+      '@itwin/ecschema-metadata': workspace:*
       eslint: ^7.11.0
       rimraf: ^3.0.2
       typescript: ~4.3.0
     devDependencies:
       '@bentley/bentleyjs-core': link:../../bentley
       '@bentley/build-tools': link:../../../tools/build
-      '@bentley/ecschema-metadata': link:../../ecschema-metadata
       '@bentley/ecschema-rpcinterface-common': link:../common
       '@bentley/eslint-plugin': link:../../../tools/eslint-plugin
-      '@bentley/geometry-core': link:../../geometry
       '@bentley/imodelhub-client': link:../../../clients/imodelhub
       '@bentley/itwin-client': link:../../../clients/itwin
       '@itwin/core-backend': link:../../backend
       '@itwin/core-common': link:../../common
+      '@itwin/core-geometry': link:../../geometry
+      '@itwin/ecschema-metadata': link:../../ecschema-metadata
       eslint: 7.32.0
       rimraf: 3.0.2
       typescript: 4.3.5
@@ -915,7 +915,6 @@ importers:
       '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/frontend-authorization-client': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/imodeljs-quantity': workspace:*
@@ -927,6 +926,7 @@ importers:
       '@bentley/ui-abstract': workspace:*
       '@bentley/webgl-compatibility': workspace:*
       '@itwin/core-common': workspace:*
+      '@itwin/core-geometry': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
@@ -962,7 +962,6 @@ importers:
       '@bentley/certa': link:../../tools/certa
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
-      '@bentley/geometry-core': link:../geometry
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/imodeljs-i18n': link:../i18n
       '@bentley/imodeljs-quantity': link:../quantity
@@ -973,6 +972,7 @@ importers:
       '@bentley/ui-abstract': link:../../ui/abstract
       '@bentley/webgl-compatibility': link:../webgl-compatibility
       '@itwin/core-common': link:../common
+      '@itwin/core-geometry': link:../geometry
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
       '@types/mocha': 8.2.3
@@ -998,11 +998,11 @@ importers:
       '@bentley/build-tools': workspace:*
       '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/itwin-client': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
+      '@itwin/core-geometry': workspace:*
       '@types/file-saver': ^2.0.1
       '@types/node': 10.14.1
       cpx: ^1.5.0
@@ -1013,11 +1013,11 @@ importers:
     dependencies:
       '@bentley/bentleyjs-core': link:../bentley
       '@bentley/context-registry-client': link:../../clients/context-registry
-      '@bentley/geometry-core': link:../geometry
       '@bentley/imodeljs-i18n': link:../i18n
       '@bentley/itwin-client': link:../../clients/itwin
       '@itwin/core-common': link:../common
       '@itwin/core-frontend': link:../frontend
+      '@itwin/core-geometry': link:../geometry
       file-saver: 2.0.5
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
@@ -1072,11 +1072,11 @@ importers:
       '@bentley/build-tools': workspace:*
       '@bentley/certa': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/ui-abstract': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
+      '@itwin/core-geometry': workspace:*
       '@types/chai': ^4.1.4
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
@@ -1095,11 +1095,11 @@ importers:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/certa': link:../../tools/certa
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/geometry-core': link:../geometry
       '@bentley/imodeljs-i18n': link:../i18n
       '@bentley/ui-abstract': link:../../ui/abstract
       '@itwin/core-common': link:../common
       '@itwin/core-frontend': link:../frontend
+      '@itwin/core-geometry': link:../geometry
       '@types/chai': 4.2.22
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
@@ -1149,10 +1149,10 @@ importers:
       '@bentley/build-tools': workspace:*
       '@bentley/certa': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/imodeljs-i18n': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
+      '@itwin/core-geometry': workspace:*
       '@svgdotjs/svg.js': 3.0.13
       '@types/chai': ^4.1.4
       '@types/mocha': ^8.2.2
@@ -1174,10 +1174,10 @@ importers:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/certa': link:../../tools/certa
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/geometry-core': link:../geometry
       '@bentley/imodeljs-i18n': link:../i18n
       '@itwin/core-common': link:../common
       '@itwin/core-frontend': link:../frontend
+      '@itwin/core-geometry': link:../geometry
       '@types/chai': 4.2.22
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
@@ -1324,12 +1324,12 @@ importers:
     specifiers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
-      '@bentley/ecschema-metadata': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/itwin-client': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-common': workspace:*
+      '@itwin/core-geometry': workspace:*
+      '@itwin/ecschema-metadata': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
@@ -1352,12 +1352,12 @@ importers:
     devDependencies:
       '@bentley/bentleyjs-core': link:../bentley
       '@bentley/build-tools': link:../../tools/build
-      '@bentley/ecschema-metadata': link:../ecschema-metadata
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/geometry-core': link:../geometry
       '@bentley/itwin-client': link:../../clients/itwin
       '@itwin/core-backend': link:../backend
       '@itwin/core-common': link:../common
+      '@itwin/core-geometry': link:../geometry
+      '@itwin/ecschema-metadata': link:../ecschema-metadata
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
       '@types/mocha': 8.2.3
@@ -1561,10 +1561,10 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/imodeljs-editor-common': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-common': workspace:*
+      '@itwin/core-geometry': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/deep-assign': ^0.1.0
@@ -1588,9 +1588,9 @@ importers:
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/build-tools': link:../../tools/build
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/geometry-core': link:../../core/geometry
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-common': link:../../core/common
+      '@itwin/core-geometry': link:../../core/geometry
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
       '@types/deep-assign': 0.1.1
@@ -1614,8 +1614,8 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@itwin/core-common': workspace:*
+      '@itwin/core-geometry': workspace:*
       '@types/chai': ^4.1.4
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
@@ -1629,8 +1629,8 @@ importers:
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/build-tools': link:../../tools/build
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/geometry-core': link:../../core/geometry
       '@itwin/core-common': link:../../core/common
+      '@itwin/core-geometry': link:../../core/geometry
       '@types/chai': 4.2.22
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
@@ -1647,12 +1647,12 @@ importers:
       '@bentley/build-tools': workspace:*
       '@bentley/certa': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/imodeljs-editor-common': workspace:*
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/ui-abstract': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
+      '@itwin/core-geometry': workspace:*
       '@types/chai': ^4.1.4
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
@@ -1667,10 +1667,10 @@ importers:
       source-map-loader: ^1.0.0
       typescript: ~4.3.0
     dependencies:
-      '@bentley/geometry-core': link:../../core/geometry
       '@bentley/imodeljs-editor-common': link:../common
       '@bentley/ui-abstract': link:../../ui/abstract
       '@itwin/core-frontend': link:../../core/frontend
+      '@itwin/core-geometry': link:../../core/geometry
     devDependencies:
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/build-tools': link:../../tools/build
@@ -1699,13 +1699,13 @@ importers:
       '@bentley/context-registry-client': workspace:*
       '@bentley/electron-manager': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
+      '@itwin/core-geometry': workspace:*
       '@types/body-parser': ^1.17.0
       '@types/chai': ^4.1.4
       '@types/express': ^4.16.1
@@ -1735,12 +1735,12 @@ importers:
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/electron-manager': link:../../core/electron-manager
-      '@bentley/geometry-core': link:../../core/geometry
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
+      '@itwin/core-geometry': link:../../core/geometry
       body-parser: 1.19.0
       chai: 4.3.4
       electron: 11.5.0
@@ -1778,7 +1778,6 @@ importers:
       '@bentley/build-tools': workspace:*
       '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/imodeljs-transformer': workspace:*
       '@bentley/itwin-client': workspace:*
@@ -1786,6 +1785,7 @@ importers:
       '@itwin/core-backend': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
+      '@itwin/core-geometry': workspace:*
       '@types/body-parser': ^1.17.0
       '@types/chai': ^4.1.4
       '@types/express': ^4.16.1
@@ -1815,13 +1815,13 @@ importers:
       '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/context-registry-client': link:../../clients/context-registry
-      '@bentley/geometry-core': link:../../core/geometry
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/imodeljs-transformer': link:../../core/transformer
       '@bentley/itwin-client': link:../../clients/itwin
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
+      '@itwin/core-geometry': link:../../core/geometry
       body-parser: 1.19.0
       chai: 4.3.4
       electron: 11.5.0
@@ -1857,12 +1857,12 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/imodeljs-quantity': workspace:*
       '@bentley/itwin-client': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
+      '@itwin/core-geometry': workspace:*
       '@types/node': 10.14.1
       cpx: ^1.5.0
       eslint: ^7.11.0
@@ -1871,12 +1871,12 @@ importers:
       typescript: ~4.3.0
     dependencies:
       '@bentley/bentleyjs-core': link:../../core/bentley
-      '@bentley/geometry-core': link:../../core/geometry
       '@bentley/imodeljs-i18n': link:../../core/i18n
       '@bentley/imodeljs-quantity': link:../../core/quantity
       '@bentley/itwin-client': link:../../clients/itwin
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
+      '@itwin/core-geometry': link:../../core/geometry
       svg-sprite-loader: 4.2.1
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
@@ -1892,7 +1892,6 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/imodeljs-quantity': workspace:*
       '@bentley/itwin-client': workspace:*
@@ -1906,6 +1905,7 @@ importers:
       '@bentley/ui-ninezone': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
+      '@itwin/core-geometry': workspace:*
       '@itwin/itwinui-css': ^0.27.0
       '@itwin/itwinui-react': ^1.16.2
       '@testing-library/react': ^12.0.0
@@ -1952,7 +1952,6 @@ importers:
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/build-tools': link:../../tools/build
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/geometry-core': link:../../core/geometry
       '@bentley/imodeljs-i18n': link:../../core/i18n
       '@bentley/imodeljs-quantity': link:../../core/quantity
       '@bentley/itwin-client': link:../../clients/itwin
@@ -1966,6 +1965,7 @@ importers:
       '@bentley/ui-ninezone': link:../../ui/ninezone
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
+      '@itwin/core-geometry': link:../../core/geometry
       '@itwin/itwinui-css': 0.27.3
       '@itwin/itwinui-react': 1.19.0_react@17.0.2
       '@testing-library/react': 12.1.0_react@17.0.2
@@ -2011,7 +2011,6 @@ importers:
       '@bentley/eslint-plugin': workspace:*
       '@bentley/express-server': workspace:*
       '@bentley/frontend-authorization-client': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/hypermodeling-frontend': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/imodeljs-editor-backend': workspace:*
@@ -2025,6 +2024,7 @@ importers:
       '@itwin/core-backend': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
+      '@itwin/core-geometry': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
@@ -2054,7 +2054,6 @@ importers:
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/electron-manager': link:../../core/electron-manager
       '@bentley/express-server': link:../../core/express-server
-      '@bentley/geometry-core': link:../../core/geometry
       '@bentley/hypermodeling-frontend': link:../../core/hypermodeling
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/imodeljs-editor-backend': link:../../editor/backend
@@ -2066,6 +2065,7 @@ importers:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
+      '@itwin/core-geometry': link:../../core/geometry
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
       electron: 11.5.0
@@ -2106,11 +2106,9 @@ importers:
       '@bentley/build-tools': workspace:*
       '@bentley/certa': workspace:*
       '@bentley/context-registry-client': workspace:*
-      '@bentley/ecschema-metadata': workspace:*
       '@bentley/ecschema-rpcinterface-common': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/express-server': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/imodeljs-quantity': workspace:*
@@ -2121,6 +2119,8 @@ importers:
       '@itwin/core-backend': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
+      '@itwin/core-geometry': workspace:*
+      '@itwin/ecschema-metadata': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
@@ -2149,9 +2149,7 @@ importers:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/certa': link:../../tools/certa
       '@bentley/context-registry-client': link:../../clients/context-registry
-      '@bentley/ecschema-metadata': link:../../core/ecschema-metadata
       '@bentley/ecschema-rpcinterface-common': link:../../core/ecschema-rpc/common
-      '@bentley/geometry-core': link:../../core/geometry
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/imodeljs-i18n': link:../../core/i18n
       '@bentley/imodeljs-quantity': link:../../core/quantity
@@ -2161,6 +2159,8 @@ importers:
       '@bentley/presentation-frontend': link:../../presentation/frontend
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
+      '@itwin/core-geometry': link:../../core/geometry
+      '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
       dotenv: 10.0.0
@@ -2260,7 +2260,6 @@ importers:
       '@bentley/eslint-plugin': workspace:*
       '@bentley/express-server': workspace:*
       '@bentley/frontend-authorization-client': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/imodeljs-markup': workspace:*
@@ -2269,6 +2268,7 @@ importers:
       '@itwin/core-backend': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
+      '@itwin/core-geometry': workspace:*
       '@types/chai': ^4.1.4
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
@@ -2296,7 +2296,6 @@ importers:
       '@bentley/electron-manager': link:../../core/electron-manager
       '@bentley/express-server': link:../../core/express-server
       '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
-      '@bentley/geometry-core': link:../../core/geometry
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/imodeljs-i18n': link:../../core/i18n
       '@bentley/imodeljs-markup': link:../../core/markup
@@ -2304,6 +2303,7 @@ importers:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
+      '@itwin/core-geometry': link:../../core/geometry
       chai: 4.3.4
       electron: 11.5.0
       fs-extra: 8.1.0
@@ -2335,7 +2335,6 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/imodeljs-quantity': workspace:*
       '@bentley/itwin-client': workspace:*
@@ -2352,6 +2351,7 @@ importers:
       '@itwin/core-backend': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
+      '@itwin/core-geometry': workspace:*
       '@testing-library/react-hooks': ^3.2.1
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
@@ -2396,7 +2396,6 @@ importers:
       xmlhttprequest: ^1.8.0
     dependencies:
       '@bentley/bentleyjs-core': link:../../core/bentley
-      '@bentley/geometry-core': link:../../core/geometry
       '@bentley/imodeljs-i18n': link:../../core/i18n
       '@bentley/imodeljs-quantity': link:../../core/quantity
       '@bentley/itwin-client': link:../../clients/itwin
@@ -2413,6 +2412,7 @@ importers:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
+      '@itwin/core-geometry': link:../../core/geometry
       '@testing-library/react-hooks': 3.7.0_509016fd322278d497c1e58f6164ce1d
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
@@ -2531,7 +2531,6 @@ importers:
       '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/express-server': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/imodeljs-quantity': workspace:*
@@ -2544,6 +2543,7 @@ importers:
       '@itwin/core-backend': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
+      '@itwin/core-geometry': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
@@ -2573,7 +2573,6 @@ importers:
       '@bentley/certa': link:../../tools/certa
       '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/geometry-core': link:../../core/geometry
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/imodeljs-i18n': link:../../core/i18n
       '@bentley/imodeljs-quantity': link:../../core/quantity
@@ -2584,6 +2583,7 @@ importers:
       '@bentley/telemetry-client': link:../../clients/telemetry
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
+      '@itwin/core-geometry': link:../../core/geometry
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
       dotenv: 10.0.0
@@ -3051,7 +3051,6 @@ importers:
       '@bentley/electron-manager': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/frontend-authorization-client': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/hypermodeling-frontend': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/imodeljs-i18n': workspace:*
@@ -3064,6 +3063,7 @@ importers:
       '@itwin/core-backend': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
+      '@itwin/core-geometry': workspace:*
       '@types/body-parser': ^1.17.0
       '@types/express': ^4.16.1
       '@types/node': 10.14.1
@@ -3088,7 +3088,6 @@ importers:
       '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/electron-manager': link:../../core/electron-manager
       '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
-      '@bentley/geometry-core': link:../../core/geometry
       '@bentley/hypermodeling-frontend': link:../../core/hypermodeling
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/imodeljs-i18n': link:../../core/i18n
@@ -3099,6 +3098,7 @@ importers:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
+      '@itwin/core-geometry': link:../../core/geometry
       body-parser: 1.19.0
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
@@ -3133,7 +3133,6 @@ importers:
       '@bentley/eslint-plugin': workspace:*
       '@bentley/frontend-authorization-client': workspace:*
       '@bentley/frontend-devtools': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/hypermodeling-frontend': workspace:*
       '@bentley/icons-generic': ^1.0.15
       '@bentley/icons-generic-webfont': ^1.0.15
@@ -3152,6 +3151,7 @@ importers:
       '@itwin/core-backend': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
+      '@itwin/core-geometry': workspace:*
       '@types/express': ^4.16.1
       '@types/fs-extra': ^4.0.7
       body-parser: ^1.18.2
@@ -3177,7 +3177,6 @@ importers:
       '@bentley/electron-manager': link:../../core/electron-manager
       '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/frontend-devtools': link:../../core/frontend-devtools
-      '@bentley/geometry-core': link:../../core/geometry
       '@bentley/hypermodeling-frontend': link:../../core/hypermodeling
       '@bentley/icons-generic': 1.0.34
       '@bentley/icons-generic-webfont': 1.0.34
@@ -3195,6 +3194,7 @@ importers:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
+      '@itwin/core-geometry': link:../../core/geometry
       body-parser: 1.19.0
     devDependencies:
       '@bentley/backend-webpack-tools': link:../../tools/backend-webpack
@@ -3225,10 +3225,10 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/itwin-client': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-common': workspace:*
+      '@itwin/core-geometry': workspace:*
       '@types/node': 10.14.1
       '@types/yargs': ^12.0.5
       eslint: ^7.11.0
@@ -3237,10 +3237,10 @@ importers:
       yargs: ^16.0.0
     dependencies:
       '@bentley/bentleyjs-core': link:../../core/bentley
-      '@bentley/geometry-core': link:../../core/geometry
       '@bentley/itwin-client': link:../../clients/itwin
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-common': link:../../core/common
+      '@itwin/core-geometry': link:../../core/geometry
       yargs: 16.2.0
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
@@ -3257,11 +3257,11 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/itwin-client': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-common': workspace:*
+      '@itwin/core-geometry': workspace:*
       '@types/chai': ^4.1.4
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
@@ -3275,11 +3275,11 @@ importers:
     dependencies:
       '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/bentleyjs-core': link:../../core/bentley
-      '@bentley/geometry-core': link:../../core/geometry
       '@bentley/imodeljs-i18n': link:../../core/i18n
       '@bentley/itwin-client': link:../../clients/itwin
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-common': link:../../core/common
+      '@itwin/core-geometry': link:../../core/geometry
       chai: 4.3.4
       yargs: 16.2.0
     devDependencies:
@@ -3299,10 +3299,10 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/itwin-client': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-common': workspace:*
+      '@itwin/core-geometry': workspace:*
       '@types/fs-extra': ^4.0.7
       '@types/lodash': ^4.14.0
       '@types/node': 10.14.1
@@ -3314,10 +3314,10 @@ importers:
       yargs: ^16.0.0
     dependencies:
       '@bentley/bentleyjs-core': link:../../core/bentley
-      '@bentley/geometry-core': link:../../core/geometry
       '@bentley/itwin-client': link:../../clients/itwin
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-common': link:../../core/common
+      '@itwin/core-geometry': link:../../core/geometry
       fs-extra: 8.1.0
       yargs: 16.2.0
     devDependencies:
@@ -3336,11 +3336,11 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/orbitgt-core': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-common': workspace:*
+      '@itwin/core-geometry': workspace:*
       '@types/fs-extra': ^4.0.7
       '@types/node': 10.14.1
       '@types/yargs': ^12.0.5
@@ -3350,11 +3350,11 @@ importers:
       yargs: ^16.0.0
     dependencies:
       '@bentley/bentleyjs-core': link:../../core/bentley
-      '@bentley/geometry-core': link:../../core/geometry
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/orbitgt-core': link:../../core/orbitgt
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-common': link:../../core/common
+      '@itwin/core-geometry': link:../../core/geometry
       yargs: 16.2.0
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
@@ -3371,10 +3371,10 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/itwin-client': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-common': workspace:*
+      '@itwin/core-geometry': workspace:*
       '@types/fs-extra': ^4.0.7
       '@types/lodash': ^4.14.0
       '@types/node': 10.14.1
@@ -3386,10 +3386,10 @@ importers:
       yargs: ^16.0.0
     dependencies:
       '@bentley/bentleyjs-core': link:../../core/bentley
-      '@bentley/geometry-core': link:../../core/geometry
       '@bentley/itwin-client': link:../../clients/itwin
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-common': link:../../core/common
+      '@itwin/core-geometry': link:../../core/geometry
       fs-extra: 8.1.0
       yargs: 16.2.0
     devDependencies:
@@ -3410,12 +3410,12 @@ importers:
       '@bentley/context-registry-client': workspace:*
       '@bentley/electron-manager': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/imodeljs-transformer': workspace:*
       '@bentley/itwin-client': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-common': workspace:*
+      '@itwin/core-geometry': workspace:*
       '@types/chai': ^4.1.4
       '@types/fs-extra': ^4.0.7
       '@types/lodash': ^4.14.0
@@ -3432,12 +3432,12 @@ importers:
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/electron-manager': link:../../core/electron-manager
-      '@bentley/geometry-core': link:../../core/geometry
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/imodeljs-transformer': link:../../core/transformer
       '@bentley/itwin-client': link:../../clients/itwin
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-common': link:../../core/common
+      '@itwin/core-geometry': link:../../core/geometry
       fs-extra: 8.1.0
       yargs: 16.2.0
     devDependencies:
@@ -3504,7 +3504,6 @@ importers:
       '@bentley/electron-manager': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/express-server': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/icons-generic-webfont': ^1.0.15
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/imodeljs-quantity': workspace:*
@@ -3520,6 +3519,7 @@ importers:
       '@itwin/core-backend': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
+      '@itwin/core-geometry': workspace:*
       '@itwin/itwinui-css': ^0.27.0
       '@itwin/itwinui-react': ^1.16.2
       '@types/bunyan': ^1.8.4
@@ -3548,7 +3548,6 @@ importers:
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/electron-manager': link:../../core/electron-manager
       '@bentley/express-server': link:../../core/express-server
-      '@bentley/geometry-core': link:../../core/geometry
       '@bentley/icons-generic-webfont': 1.0.34
       '@bentley/imodeljs-i18n': link:../../core/i18n
       '@bentley/imodeljs-quantity': link:../../core/quantity
@@ -3563,6 +3562,7 @@ importers:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
+      '@itwin/core-geometry': link:../../core/geometry
       '@itwin/itwinui-css': 0.27.3
       '@itwin/itwinui-react': 1.19.0_react-dom@17.0.2+react@17.0.2
       react: 17.0.2
@@ -3604,7 +3604,6 @@ importers:
       '@bentley/express-server': workspace:*
       '@bentley/frontend-authorization-client': workspace:*
       '@bentley/frontend-devtools': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/hypermodeling-frontend': workspace:*
       '@bentley/icons-generic': ^1.0.15
       '@bentley/icons-generic-webfont': ^1.0.15
@@ -3632,6 +3631,7 @@ importers:
       '@itwin/core-backend': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
+      '@itwin/core-geometry': workspace:*
       '@itwin/itwinui-css': ^0.27.0
       '@itwin/itwinui-react': ^1.16.2
       '@types/lorem-ipsum': ^1.0.2
@@ -3674,7 +3674,6 @@ importers:
       '@bentley/express-server': link:../../core/express-server
       '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/frontend-devtools': link:../../core/frontend-devtools
-      '@bentley/geometry-core': link:../../core/geometry
       '@bentley/hypermodeling-frontend': link:../../core/hypermodeling
       '@bentley/icons-generic': 1.0.34
       '@bentley/icons-generic-webfont': 1.0.34
@@ -3701,6 +3700,7 @@ importers:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
+      '@itwin/core-geometry': link:../../core/geometry
       '@itwin/itwinui-css': 0.27.3
       '@itwin/itwinui-react': 1.19.0_react-dom@17.0.2+react@17.0.2
       classnames: 2.3.1
@@ -3746,7 +3746,6 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/imodeljs-quantity': workspace:*
       '@bentley/itwin-client': workspace:*
@@ -3761,6 +3760,7 @@ importers:
       '@bentley/ui-ninezone': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
+      '@itwin/core-geometry': workspace:*
       '@types/react': ^17.0.0
       '@types/react-select': 3.0.26
       classnames: ^2.3.1
@@ -3774,7 +3774,6 @@ importers:
       typescript: ~4.3.0
     dependencies:
       '@bentley/bentleyjs-core': link:../../core/bentley
-      '@bentley/geometry-core': link:../../core/geometry
       '@bentley/imodeljs-i18n': link:../../core/i18n
       '@bentley/imodeljs-quantity': link:../../core/quantity
       '@bentley/itwin-client': link:../../clients/itwin
@@ -3788,6 +3787,7 @@ importers:
       '@bentley/ui-ninezone': link:../../ui/ninezone
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
+      '@itwin/core-geometry': link:../../core/geometry
       classnames: 2.3.1
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
@@ -3946,15 +3946,15 @@ importers:
       '@bentley/backend-itwin-client': workspace:*
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
-      '@bentley/ecschema-locaters': workspace:*
-      '@bentley/ecschema-metadata': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/frontend-authorization-client': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-common': workspace:*
+      '@itwin/core-geometry': workspace:*
+      '@itwin/ecschema-locaters': workspace:*
+      '@itwin/ecschema-metadata': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-string': ^1.4.1
       '@types/fs-extra': ^4.0.7
@@ -3976,14 +3976,14 @@ importers:
     dependencies:
       '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/bentleyjs-core': link:../../core/bentley
-      '@bentley/ecschema-locaters': link:../../core/ecschema-locaters
-      '@bentley/ecschema-metadata': link:../../core/ecschema-metadata
       '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
-      '@bentley/geometry-core': link:../../core/geometry
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-common': link:../../core/common
+      '@itwin/core-geometry': link:../../core/geometry
+      '@itwin/ecschema-locaters': link:../../core/ecschema-locaters
+      '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       '@xmldom/xmldom': 0.7.5
       chai-string: 1.5.0_chai@4.3.4
       chalk: 3.0.0
@@ -4568,7 +4568,6 @@ importers:
       '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/frontend-authorization-client': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/icons-generic': ^1.0.15
       '@bentley/icons-generic-webfont': ^1.0.15
       '@bentley/imodelhub-client': workspace:*
@@ -4590,6 +4589,7 @@ importers:
       '@bentley/ui-ninezone': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
+      '@itwin/core-geometry': workspace:*
       '@itwin/itwinui-css': ^0.27.0
       '@itwin/itwinui-react': ^1.16.2
       '@testing-library/react': ^12.0.0
@@ -4667,7 +4667,6 @@ importers:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
-      '@bentley/geometry-core': link:../../core/geometry
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/imodeljs-i18n': link:../../core/i18n
       '@bentley/imodeljs-markup': link:../../core/markup
@@ -4686,6 +4685,7 @@ importers:
       '@bentley/ui-ninezone': link:../ninezone
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
+      '@itwin/core-geometry': link:../../core/geometry
       '@testing-library/react': 12.1.0_react-dom@17.0.2+react@17.0.2
       '@testing-library/react-hooks': 3.7.0_509016fd322278d497c1e58f6164ce1d
       '@types/chai': 4.2.22
@@ -4739,7 +4739,6 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/icons-generic-webfont': ^1.0.15
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/imodeljs-quantity': workspace:*
@@ -4748,6 +4747,7 @@ importers:
       '@bentley/ui-core': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
+      '@itwin/core-geometry': workspace:*
       '@itwin/itwinui-css': ^0.27.0
       '@itwin/itwinui-react': ^1.16.2
       '@testing-library/react': ^12.0.0
@@ -4814,7 +4814,6 @@ importers:
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/build-tools': link:../../tools/build
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/geometry-core': link:../../core/geometry
       '@bentley/imodeljs-i18n': link:../../core/i18n
       '@bentley/imodeljs-quantity': link:../../core/quantity
       '@bentley/ui-abstract': link:../abstract
@@ -4822,6 +4821,7 @@ importers:
       '@bentley/ui-core': link:../core
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
+      '@itwin/core-geometry': link:../../core/geometry
       '@testing-library/react': 12.1.0_react-dom@17.0.2+react@17.0.2
       '@testing-library/react-hooks': 3.7.0_509016fd322278d497c1e58f6164ce1d
       '@testing-library/user-event': 13.2.1

@@ -55,10 +55,10 @@
   "dependencies": {
     "@bentley/backend-itwin-client": "workspace:*",
     "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/ecschema-locaters": "workspace:*",
-    "@bentley/ecschema-metadata": "workspace:*",
+    "@itwin/ecschema-locaters": "workspace:*",
+    "@itwin/ecschema-metadata": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-common": "workspace:*",

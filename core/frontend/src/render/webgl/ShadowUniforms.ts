@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { Matrix4d } from "@bentley/geometry-core";
+import { Matrix4d } from "@itwin/core-geometry";
 import { ColorDef, RgbColor } from "@itwin/core-common";
 import { FloatRgba } from "./FloatRGBA";
 import { UniformHandle } from "./UniformHandle";

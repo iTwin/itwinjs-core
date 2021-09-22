@@ -33,14 +33,14 @@
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.64",
-    "@bentley/geometry-core": "workspace:^3.0.0-dev.64",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.64",
     "@itwin/core-common": "workspace:^3.0.0-dev.64"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^8.2.2",

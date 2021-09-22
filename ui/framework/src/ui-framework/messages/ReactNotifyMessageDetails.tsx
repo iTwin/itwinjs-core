@@ -7,7 +7,7 @@
  */
 
 import { BeDuration } from "@bentley/bentleyjs-core";
-import { Point2d, XAndY } from "@bentley/geometry-core";
+import { Point2d, XAndY } from "@itwin/core-geometry";
 import { NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { MessageType } from "@bentley/ui-core";

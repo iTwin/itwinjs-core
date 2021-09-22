@@ -9,7 +9,7 @@
 import {
   assert, BeTimePoint, ByteStream, compareStrings, DbOpcode, Id64, Id64Array, Id64String, partitionArray, SortedArray,
 } from "@bentley/bentleyjs-core";
-import { Range3d, Transform } from "@bentley/geometry-core";
+import { Range3d, Transform } from "@itwin/core-geometry";
 import {
   BatchType, ElementGeometryChange, ElementGraphicsRequestProps, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, TileFormat,
 } from "@itwin/core-common";

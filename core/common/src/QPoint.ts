@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Range2d, Range3d, Vector2d, Vector3d } from "@bentley/geometry-core";
+import { Point2d, Point3d, Range2d, Range3d, Vector2d, Vector3d } from "@itwin/core-geometry";
 
 /**
  * Provides facilities for quantizing floating point values within a specified range into 16-bit unsigned integers.
@@ -59,7 +59,7 @@ export namespace Quantization {
 }
 
 /** Parameters used for [[Quantization]] of 2d points such that the `x` and `y` components are each quantized to 16-bit unsigned integers.
- * @see [[QPoint2d]] for the quantized representation of a [Point2d]($geometry-core).
+ * @see [[QPoint2d]] for the quantized representation of a [Point2d]($core-geometry).
  * @see [[QPoint2dList]] for a list of [[QPoint2d]]s quantized using a [[QParams2d]].
  * @public
  */
@@ -142,7 +142,7 @@ export class QParams2d {
   }
 }
 
-/** Represents a [Point2d]($geometry-core) compressed such that each component `x` and `y` is quantized to the 16-bit integer range [0, 0xffff].
+/** Represents a [Point2d]($core-geometry) compressed such that each component `x` and `y` is quantized to the 16-bit integer range [0, 0xffff].
  * These are primarily used to reduce the space required for coordinates used by [RenderGraphic]($frontend)s.
  * @see [[QParams2d]] to define quantization parameters for a range of points.
  * @see [[QPoint2dList]] for a list of points all quantized to the same range.
@@ -332,7 +332,7 @@ export class QPoint2dList {
 }
 
 /** Parameters used for [[Quantization]] of 3d points such that the `x`, `y`, and `z` components are each quantized to 16-bit unsigned integers.
- * @see [[QPoint3d]] for the quantized representation of a [Point3d]($geometry-core).
+ * @see [[QPoint3d]] for the quantized representation of a [Point3d]($core-geometry).
  * @see [[QPoint3dList]] for a list of [[QPoint3d]]s quantized using a [[QParams3d]].
  * @public
  */
@@ -447,7 +447,7 @@ export class QParams3d {
   }
 }
 
-/** Represents a [Point3d]($geometry-core) compressed such that each component `x`, `y`, and `z` is quantized to the 16-bit integer range [0, 0xffff].
+/** Represents a [Point3d]($core-geometry) compressed such that each component `x`, `y`, and `z` is quantized to the 16-bit integer range [0, 0xffff].
  * These are primarily used to reduce the space required for coordinates used by [RenderGraphic]($frontend)s.
  * @see [[QParams3d]] to define quantization parameters for a range of points.
  * @see [[QPoint3dList]] for a list of points all quantized to the same range.

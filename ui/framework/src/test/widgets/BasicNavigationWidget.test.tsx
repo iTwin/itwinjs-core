@@ -6,7 +6,7 @@ import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { Matrix3d } from "@bentley/geometry-core";
+import { Matrix3d } from "@itwin/core-geometry";
 import { MockRender, OrthographicViewState, ScreenViewport } from "@itwin/core-frontend";
 import { BasicNavigationWidget, CommandItemDef, ConfigurableUiManager, ContentViewManager, ToolbarHelper, ViewportContentControl } from "../../ui-framework";
 import TestUtils, { mount } from "../TestUtils";

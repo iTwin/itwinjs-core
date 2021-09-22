@@ -31,17 +31,17 @@
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/ecschema-metadata": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
+    "@itwin/ecschema-metadata": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@bentley/itwin-client": "workspace:*"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "workspace:*",
     "@bentley/build-tools": "workspace:*",
-    "@bentley/ecschema-metadata": "workspace:*",
+    "@itwin/ecschema-metadata": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "eslint": "^7.11.0",

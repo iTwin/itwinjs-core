@@ -40,7 +40,7 @@
   "peerDependencies": {
     "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.64",
     "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.64",
-    "@bentley/geometry-core": "workspace:^3.0.0-dev.64",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.64",
     "@bentley/imodelhub-client": "workspace:^3.0.0-dev.64",
     "@itwin/core-common": "workspace:^3.0.0-dev.64",
     "@bentley/itwin-client": "workspace:^3.0.0-dev.64",
@@ -56,7 +56,7 @@
     "@bentley/context-registry-client": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@bentley/itwin-client": "workspace:*",

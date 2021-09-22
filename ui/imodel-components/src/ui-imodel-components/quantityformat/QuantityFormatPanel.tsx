@@ -15,7 +15,7 @@ import { FormatProps, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantit
 import { CommonProps, Select } from "@bentley/ui-core";
 import { Checkbox, Input } from "@itwin/itwinui-react";
 import { FormatPanel } from "./FormatPanel";
-import { DeepCompare } from "@bentley/geometry-core";
+import { DeepCompare } from "@itwin/core-geometry";
 
 function createTextInputFormatPropEditor(key: string, label: string, inProps: FormatProps,
   getString: (props: FormatProps) => string, setString: (props: FormatProps, value: string) => FormatProps, fireFormatChange: (newProps: FormatProps) => void) {

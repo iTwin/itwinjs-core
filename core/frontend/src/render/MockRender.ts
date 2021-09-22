@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { dispose } from "@bentley/bentleyjs-core";
-import { Transform } from "@bentley/geometry-core";
+import { Transform } from "@itwin/core-geometry";
 import { ElementAlignedBox3d, PackedFeatureTable } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";

@@ -7,7 +7,7 @@
  */
 
 import { compareBooleans, compareNumbers, Dictionary } from "@bentley/bentleyjs-core";
-import { Range3d } from "@bentley/geometry-core";
+import { Range3d } from "@itwin/core-geometry";
 import { Feature, FeatureTable } from "@itwin/core-common";
 import { DisplayParams } from "../DisplayParams";
 import { GeometryList } from "../geometry/GeometryList";

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 // cSpell:ignore picklist
 
-import { Point3d } from "@bentley/geometry-core";
+import { Point3d } from "@itwin/core-geometry";
 import {
   BeButtonEvent, EventHandled, IModelApp, PrimitiveTool,
   ToolAssistance, ToolAssistanceImage,

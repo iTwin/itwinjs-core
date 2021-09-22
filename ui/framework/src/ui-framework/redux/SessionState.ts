@@ -7,7 +7,7 @@
  */
 
 // The following definitions are causing extract-api issues on linux so for now just using any until we can figure out the issue.
-import { XAndY } from "@bentley/geometry-core";
+import { XAndY } from "@itwin/core-geometry";
 // import { IModelConnection, ViewState } from "@itwin/core-frontend";
 import { UserInfo } from "@bentley/itwin-client";
 import { MenuItemProps } from "../shared/MenuItem";

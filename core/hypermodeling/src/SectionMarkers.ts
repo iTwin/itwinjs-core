@@ -7,7 +7,7 @@
  */
 
 import { assert, BeEvent, Id64String } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, XAndY, XYAndZ } from "@bentley/geometry-core";
+import { Point2d, Point3d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { IModelReadRpcInterface } from "@itwin/core-common";
 import {
   BeButton, BeButtonEvent, Cluster, DecorateContext, IModelApp, InputSource, Marker, MarkerImage, MarkerSet, ScreenViewport, ViewClipTool,

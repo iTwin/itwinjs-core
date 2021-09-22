@@ -39,7 +39,7 @@ describe("ecjson properties to ts", () => {
           </ECSchema>`,
         expectedPropsImportTs: [
           new RegExp(`import { EntityProps } from "@itwin/core-common";`),
-          new RegExp(`import { (?=.*\\b(Point3d)\\b).* } from "@bentley/geometry-core";`),
+          new RegExp(`import { (?=.*\\b(Point3d)\\b).* } from "@itwin/core-geometry";`),
         ],
         expectedPropsTs: [utils.dedent`
           export interface TestClassProps extends EntityProps {
@@ -60,7 +60,7 @@ describe("ecjson properties to ts", () => {
           </ECSchema>`,
         expectedPropsImportTs: [
           new RegExp(`import { EntityProps } from "@itwin/core-common";`),
-          new RegExp(`import { (?=.*\\b(Point2d)\\b).* } from "@bentley/geometry-core";`),
+          new RegExp(`import { (?=.*\\b(Point2d)\\b).* } from "@itwin/core-geometry";`),
         ],
         expectedPropsTs: [utils.dedent`
           export interface TestClassProps extends EntityProps {
@@ -299,7 +299,7 @@ describe("ecjson properties to ts", () => {
           </ECSchema>`,
         expectedPropsImportTs: [
           new RegExp(`import { EntityProps } from "@itwin/core-common";`),
-          new RegExp(`import { (?=.*\\b(Point2d)\\b)(?=.*\\b(Point3d)\\b).* } from "@bentley/geometry-core";`),
+          new RegExp(`import { (?=.*\\b(Point2d)\\b)(?=.*\\b(Point3d)\\b).* } from "@itwin/core-geometry";`),
         ],
         expectedPropsTs: [utils.dedent`
           export interface TestClassProps extends EntityProps {

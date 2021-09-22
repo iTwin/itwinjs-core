@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { ClipVector, Point3d, Vector3d } from "@bentley/geometry-core";
+import { ClipVector, Point3d, Vector3d } from "@itwin/core-geometry";
 import {
   AmbientOcclusion, AnalysisStyle, ClipStyle, ColorDef, Frustum, GlobeMode, HiddenLine, Hilite, LightSettings, MonochromeMode, Npc, RenderTexture,
   ThematicDisplay, ViewFlags, WhiteOnWhiteReversalSettings,

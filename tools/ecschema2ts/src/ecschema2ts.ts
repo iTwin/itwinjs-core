@@ -5,7 +5,7 @@
 
 import {
   ECClass, ECClassModifier, EntityClass, Enumeration, EnumerationProperty, Mixin, PrimitiveProperty, PrimitiveType, Schema, SchemaItem, SchemaItemType, StructClass, StructProperty,
-} from "@bentley/ecschema-metadata";
+} from "@itwin/ecschema-metadata";
 
 interface TsBentleyModule {
   moduleName: string;
@@ -24,7 +24,7 @@ const tsBentleyModules: { [index: string]: TsBentleyModule } = {
     resolvedConflictName: "BeIModelJsBackend",
   },
   tsGeometryCore: {
-    moduleName: "@bentley/geometry-core",
+    moduleName: "@itwin/core-geometry",
     resolvedConflictName: "BeGeometryCore",
   },
   tsBentleyJsCore: {

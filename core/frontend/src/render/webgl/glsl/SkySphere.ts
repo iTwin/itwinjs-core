@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { Angle, Point3d, Vector3d } from "@bentley/geometry-core";
+import { Angle, Point3d, Vector3d } from "@itwin/core-geometry";
 import { Npc } from "@itwin/core-common";
 import { WebGLContext } from "@bentley/webgl-compatibility";
 import { AttributeMap } from "../AttributeMap";

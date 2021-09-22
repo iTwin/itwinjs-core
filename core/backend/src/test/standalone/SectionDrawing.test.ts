@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { Transform } from "@bentley/geometry-core";
+import { Transform } from "@itwin/core-geometry";
 import { RelatedElement, SectionDrawingProps, SectionType } from "@itwin/core-common";
 import { Drawing, SectionDrawing } from "../../Element";
 import { DocumentListModel, DrawingModel } from "../../Model";

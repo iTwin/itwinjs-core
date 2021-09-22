@@ -7,7 +7,7 @@
  */
 
 import { JsonUtils } from "@bentley/bentleyjs-core";
-import { Vector3d, XYZProps } from "@bentley/geometry-core";
+import { Vector3d, XYZProps } from "@itwin/core-geometry";
 import { RgbColor, RgbColorProps } from "./RgbColor";
 
 function extractIntensity(value: number | undefined, defaultValue: number) {

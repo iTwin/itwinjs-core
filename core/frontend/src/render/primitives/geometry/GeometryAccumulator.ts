@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { IndexedPolyface, Loop, Path, Point3d, Range3d, SolidPrimitive, Transform } from "@bentley/geometry-core";
+import { IndexedPolyface, Loop, Path, Point3d, Range3d, SolidPrimitive, Transform } from "@itwin/core-geometry";
 import { AnalysisStyleDisplacement } from "@itwin/core-common";
 import { GraphicBranch } from "../../GraphicBranch";
 import { RenderGraphic } from "../../RenderGraphic";

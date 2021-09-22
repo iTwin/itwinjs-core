@@ -8,7 +8,7 @@
 
 // cSpell:ignore configurableui
 
-import { Point3d } from "@bentley/geometry-core";
+import { Point3d } from "@itwin/core-geometry";
 import { BeButtonEvent, EventHandled, IModelApp, PrimitiveTool, Viewport } from "@itwin/core-frontend";
 import { ConfigurableUiManager } from "@bentley/ui-framework";
 import { AnalysisAnimationToolSettingsProvider } from "./AnalysisAnimationToolSettings";

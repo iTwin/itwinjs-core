@@ -6,7 +6,7 @@
  * @module Notification
  */
 
-import { XAndY } from "@bentley/geometry-core";
+import { XAndY } from "@itwin/core-geometry";
 import {
   ActivityMessageDetails, ActivityMessageEndReason, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotificationManager, NotifyMessageDetails,
   ToolAssistance, ToolAssistanceInstructions, ToolTipOptions,

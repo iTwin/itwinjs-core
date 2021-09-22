@@ -7,7 +7,7 @@ import { assert } from "chai";
 import { join } from "path";
 import * as semver from "semver";
 import { DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { Code, ColorDef, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {

@@ -9,7 +9,7 @@
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import {
   Angle, AngleProps, Geometry, Matrix3d, Point2d, Point3d, Transform, XYProps, XYZProps, YawPitchRollAngles, YawPitchRollProps,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import { ColorDef, ColorDefProps } from "../ColorDef";
 
 /** @public */

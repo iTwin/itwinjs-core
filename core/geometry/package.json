@@ -1,9 +1,9 @@
 {
-  "name": "@bentley/geometry-core",
+  "name": "@itwin/core-geometry",
   "version": "3.0.0-dev.64",
-  "description": "Bentley Core Geometry library",
-  "main": "lib/geometry-core.js",
-  "typings": "lib/geometry-core",
+  "description": "iTwin.js Core Geometry library",
+  "main": "lib/core-geometry.js",
+  "typings": "lib/core-geometry",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
@@ -12,9 +12,9 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json ./src/test/output",
     "watch": "tsc --watch",
     "test": "betools test",
-    "extract-api": "betools extract-api --entry=geometry-core",
-    "extract-api-test": "betools extract-api --entry=geometry-core",
-    "docs": "betools docs --tsIndexFile=./geometry-core.ts --json=../../generated-docs/core/geometry-core/file.json --onlyJson",
+    "extract-api": "betools extract-api --entry=core-geometry",
+    "extract-api-test": "betools extract-api --entry=core-geometry",
+    "docs": "betools docs --tsIndexFile=./core-geometry.ts --json=../../generated-docs/core/core-geometry/file.json --onlyJson",
     "cover": "nyc npm test",
     "cover:docs": "node ./node_modules/@bentley/build-tools/scripts/docscoverage.js",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2"

@@ -5,7 +5,7 @@
 
 import { CanvasDecoration, DecorateContext, GraphicType, HitDetail, IModelApp, Tool } from "@itwin/core-frontend";
 import { AxisAlignedBox3d, GeometryStreamProps } from "@itwin/core-common";
-import { AngleSweep, Arc3d, Path, Range1d, Range3d } from "@bentley/geometry-core";
+import { AngleSweep, Arc3d, Path, Range1d, Range3d } from "@itwin/core-geometry";
 
 class PathCanvasDecoration implements CanvasDecoration {
   public drawDecoration(ctx: CanvasRenderingContext2D) {

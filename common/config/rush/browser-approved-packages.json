@@ -251,6 +251,18 @@
       "allowedCategories": [ "backend", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
+      "name": "@itwin/core-geometry",
+      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+    },
+    {
+      "name": "@itwin/ecschema-locaters",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "@itwin/ecschema-metadata",
+      "allowedCategories": [ "backend", "common", "integration-testing", "tools" ]
+    },
+    {
       "name": "@itwin/itwinui-css",
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },

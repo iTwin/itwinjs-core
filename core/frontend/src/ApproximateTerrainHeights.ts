@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { Point2d, Range1d, Range2d } from "@bentley/geometry-core";
+import { Point2d, Range1d, Range2d } from "@itwin/core-geometry";
 import { Cartographic } from "@itwin/core-common";
 import { getJson } from "@bentley/itwin-client";
 import { FrontendRequestContext } from "./FrontendRequestContext";

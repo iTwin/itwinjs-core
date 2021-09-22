@@ -21,7 +21,7 @@
     "@bentley/bentleyjs-core": "workspace:*",
     "@bentley/context-registry-client": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@itwin/core-common": "workspace:*",

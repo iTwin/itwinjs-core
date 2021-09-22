@@ -7,7 +7,7 @@
  */
 
 import { assert, BentleyError, IModelStatus } from "@bentley/bentleyjs-core";
-import { Range2d } from "@bentley/geometry-core";
+import { Range2d } from "@itwin/core-geometry";
 import { ImageSource, MapLayerSettings } from "@itwin/core-common";
 import { request, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelApp } from "../../../IModelApp";

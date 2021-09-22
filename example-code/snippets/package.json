@@ -19,7 +19,7 @@
   "dependencies": {
     "@bentley/bentleyjs-core": "workspace:*",
     "@bentley/context-registry-client": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@bentley/imodeljs-transformer": "workspace:*",

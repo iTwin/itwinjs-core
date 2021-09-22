@@ -9,7 +9,7 @@
 import { Id64String } from "@bentley/bentleyjs-core";
 import {
   AnyCurvePrimitive, Arc3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, SolidPrimitive, Transform,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import { AnalysisStyle, ColorDef, Frustum, GraphicParams, LinePixels, Npc } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
@@ -396,7 +396,7 @@ export abstract class GraphicBuilder {
   /** Append a 3d planar region to the builder. */
   public abstract addLoop(loop: Loop): void;
 
-  /** Append a [CurvePrimitive]($geometry-core) to the builder. */
+  /** Append a [CurvePrimitive]($core-geometry) to the builder. */
   public addCurvePrimitive(curve: AnyCurvePrimitive): void {
     switch (curve.curvePrimitiveType) {
       case "lineString":

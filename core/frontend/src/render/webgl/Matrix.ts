@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { Matrix3d, Matrix4d, Point3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { Matrix3d, Matrix4d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 
 /** @internal */
 export class Matrix3 {

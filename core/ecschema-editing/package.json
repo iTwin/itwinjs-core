@@ -1,5 +1,5 @@
 {
-  "name": "@bentley/ecschema-editing",
+  "name": "@itwin/ecschema-editing",
   "version": "3.0.0-dev.64",
   "description": "ECSchema editing and validation API",
   "license": "MIT",
@@ -37,7 +37,7 @@
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@bentley/imodeljs-i18n": "workspace:*",
-    "@bentley/ecschema-metadata": "workspace:*",
+    "@itwin/ecschema-metadata": "workspace:*",
     "@bentley/units-schema": "^1.0.5",
     "@types/almost-equal": "1.1.0",
     "@types/benchmark": "^2.1.0",
@@ -64,7 +64,7 @@
   "peerDependencies": {
     "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.64",
     "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.64",
-    "@bentley/ecschema-metadata": "workspace:^3.0.0-dev.64"
+    "@itwin/ecschema-metadata": "workspace:^3.0.0-dev.64"
   },
   "dependencies": {
     "almost-equal": "^1.1.0"

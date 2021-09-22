@@ -5,7 +5,7 @@
 
 import { assert } from "chai";
 import { Id64String, OpenMode } from "@bentley/bentleyjs-core";
-import { Angle, Point3d } from "@bentley/geometry-core";
+import { Angle, Point3d } from "@itwin/core-geometry";
 import { IModelJsFs, PhysicalModel, StandaloneDb } from "@itwin/core-backend";
 import { IModel } from "@itwin/core-common";
 import { Barrier } from "../BarrierElement";

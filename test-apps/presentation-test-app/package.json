@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
     "@bentley/electron-manager": "workspace:*",
     "@bentley/express-server": "workspace:*",
     "@bentley/icons-generic-webfont": "^1.0.15",

@@ -77,7 +77,7 @@
     "@bentley/mobile-manager": "workspace:*",
     "@bentley/express-server": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
     "@bentley/icons-generic-webfont": "^1.0.15",
     "@bentley/icons-generic": "^1.0.15",
     "@bentley/imodelhub-client": "workspace:*",

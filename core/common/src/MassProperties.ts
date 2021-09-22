@@ -7,7 +7,7 @@
  */
 
 import { BentleyStatus, Id64Array } from "@bentley/bentleyjs-core";
-import { XYZProps } from "@bentley/geometry-core";
+import { XYZProps } from "@itwin/core-geometry";
 
 /** Specify whether to accumulate volumes, areas, or lengths for the supplied elements.
  * @public

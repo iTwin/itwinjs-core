@@ -7,7 +7,7 @@
  */
 
 import { Id64Array, Id64String } from "@bentley/bentleyjs-core";
-import { IndexedPolyface, Polyface, PolyfaceData, PolyfaceVisitor } from "@bentley/geometry-core";
+import { IndexedPolyface, Polyface, PolyfaceData, PolyfaceVisitor } from "@itwin/core-geometry";
 
 /** A collection of line segments, suitable for direct use with graphics APIs.
  * The structure of this data matches GL_LINES in OpenGL.
@@ -133,11 +133,11 @@ export interface ExportGraphicsOptions {
    * will not be supplied via onGraphics. See [IModelDb.exportPartGraphics]($core-backend)
    */
   partInstanceArray?: ExportPartInstanceInfo[];
-  /** Max distance from a face to the original geometry, see [StrokeOptions]($geometry-core) */
+  /** Max distance from a face to the original geometry, see [StrokeOptions]($core-geometry) */
   chordTol?: number;
-  /** Max angle difference in radians for approximated face, see [StrokeOptions]($geometry-core) */
+  /** Max angle difference in radians for approximated face, see [StrokeOptions]($core-geometry) */
   angleTol?: number;
-  /** Max length of any edge in generated faces, see [StrokeOptions]($geometry-core) */
+  /** Max length of any edge in generated faces, see [StrokeOptions]($core-geometry) */
   maxEdgeLength?: number;
   /** The longest dimension of a line style's largest component must be at least this size in order for
    * exportGraphics to evaluate and generate its graphics. If undefined, this defaults to 0.1.
@@ -212,11 +212,11 @@ export interface ExportPartGraphicsOptions {
   onPartGraphics: ExportPartFunction;
   /** An optional function to call if line graphics are desired. */
   onPartLineGraphics?: ExportPartLinesFunction;
-  /** Max distance from a face to the original geometry, see [StrokeOptions]($geometry-core) */
+  /** Max distance from a face to the original geometry, see [StrokeOptions]($core-geometry) */
   chordTol?: number;
-  /** Max angle difference in radians for approximated face, see [StrokeOptions]($geometry-core) */
+  /** Max angle difference in radians for approximated face, see [StrokeOptions]($core-geometry) */
   angleTol?: number;
-  /** Max length of any edge in generated faces, see [StrokeOptions]($geometry-core) */
+  /** Max length of any edge in generated faces, see [StrokeOptions]($core-geometry) */
   maxEdgeLength?: number;
   /** The longest dimension of a line style's largest component must be at least this size in order for
    * exportGraphics to evaluate and generate its graphics. If undefined, this defaults to 0.1.
@@ -257,7 +257,7 @@ export namespace ExportGraphics {
 
   /**
    * Convert an ExportGraphicsMesh to an IndexedPolyface usable by the geometry API.
-   * @note The resulting IndexedPolyface may have duplicate points, normals and params. If problematic, call [PolyfaceData.compress]($geometry-core)
+   * @note The resulting IndexedPolyface may have duplicate points, normals and params. If problematic, call [PolyfaceData.compress]($core-geometry)
    * @public
    */
   export function convertToIndexedPolyface(mesh: ExportGraphicsMesh): IndexedPolyface {

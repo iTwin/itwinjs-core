@@ -9,7 +9,7 @@
 import "./Pointer.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { XAndY } from "@bentley/geometry-core";
+import { XAndY } from "@itwin/core-geometry";
 import { OutputMessagePriority } from "@itwin/core-frontend";
 import { MessageSeverity, PointProps, RelativePosition } from "@bentley/ui-abstract";
 import { CommonProps, MessageContainer, Point, Rectangle, SizeProps, UiEvent } from "@bentley/ui-core";

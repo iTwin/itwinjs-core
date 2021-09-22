@@ -10,7 +10,7 @@ import "./DrawingNavigationAid.scss";
 import classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { Constant, Geometry, Matrix3d, Point2d, Point3d, Point4d, Vector3d } from "@bentley/geometry-core";
+import { Constant, Geometry, Matrix3d, Point2d, Point3d, Point4d, Vector3d } from "@itwin/core-geometry";
 import { IModelApp, IModelConnection, ScreenViewport, ViewManager, Viewport, ViewState } from "@itwin/core-frontend";
 import { SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";

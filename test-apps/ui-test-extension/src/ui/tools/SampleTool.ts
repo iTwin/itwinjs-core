@@ -18,7 +18,7 @@ import {
 } from "@bentley/ui-abstract";
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { Point3d } from "@bentley/geometry-core";
+import { Point3d } from "@itwin/core-geometry";
 import { ColorByName, ColorDef } from "@itwin/core-common";
 import { FormatterSpec } from "@bentley/imodeljs-quantity";
 import { CursorInformation, MenuItemProps, UiFramework } from "@bentley/ui-framework";

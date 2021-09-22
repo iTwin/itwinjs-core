@@ -7,7 +7,7 @@
  */
 
 import { assert, DbResult, Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import { ECVersion, Schema, SchemaKey } from "@bentley/ecschema-metadata";
+import { ECVersion, Schema, SchemaKey } from "@itwin/ecschema-metadata";
 import { CodeSpec, FontProps, IModel, IModelError } from "@itwin/core-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";

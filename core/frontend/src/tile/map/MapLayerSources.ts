@@ -5,7 +5,7 @@
 /** @module Views */
 
 import { compareStrings } from "@bentley/bentleyjs-core";
-import { Point2d } from "@bentley/geometry-core";
+import { Point2d } from "@itwin/core-geometry";
 import { BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { getJson, RequestBasicCredentials } from "@bentley/itwin-client";
 import { FrontendRequestContext } from "../../FrontendRequestContext";

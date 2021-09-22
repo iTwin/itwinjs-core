@@ -7,7 +7,7 @@
  */
 
 import { assert, compareWithTolerance, IndexMap } from "@bentley/bentleyjs-core";
-import { Point2d } from "@bentley/geometry-core";
+import { Point2d } from "@itwin/core-geometry";
 import { OctEncodedNormal, QPoint3d } from "@itwin/core-common";
 
 /** @internal */

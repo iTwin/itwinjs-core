@@ -6,7 +6,7 @@
  * @module HyperModeling
  */
 
-import { Transform, XAndY } from "@bentley/geometry-core";
+import { Transform, XAndY } from "@itwin/core-geometry";
 import { AbstractToolbarProps } from "@bentley/ui-abstract";
 import {
   ChangeFlags, DecorateContext, Decorator, IModelApp, IModelConnection, ScreenViewport, SpatialViewState, TiledGraphicsProvider, ViewClipTool,

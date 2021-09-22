@@ -7,7 +7,7 @@
  */
 
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Transform, Vector2d, XAndY } from "@bentley/geometry-core";
+import { Point2d, Point3d, Transform, Vector2d, XAndY } from "@itwin/core-geometry";
 import {
   BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, CoreTools, EventHandled, IModelApp, InputSource, ToolAssistance, ToolAssistanceImage,
   ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection,

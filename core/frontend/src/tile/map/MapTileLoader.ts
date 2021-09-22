@@ -7,7 +7,7 @@
  */
 
 import { assert, ClientRequestContext, Id64String } from "@bentley/bentleyjs-core";
-import { Range1d } from "@bentley/geometry-core";
+import { Range1d } from "@itwin/core-geometry";
 import { Feature, FeatureTable } from "@itwin/core-common";
 import { request } from "@bentley/itwin-client";
 import { IModelConnection } from "../../IModelConnection";

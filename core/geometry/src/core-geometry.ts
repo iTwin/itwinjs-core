@@ -16,7 +16,7 @@
 
 /**
  * @docs-package-description
- * The geometry-core package contains classes for working with geometry:  points, vectors, curves, surfaces, and analytic solids
+ * The core-geometry package contains classes for working with geometry:  points, vectors, curves, surfaces, and analytic solids
  */
 /**
  * @docs-group-description CartesianGeometry

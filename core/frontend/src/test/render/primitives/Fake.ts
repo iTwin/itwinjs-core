@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ColorDef } from "@itwin/core-common";
-import { Range3d, Transform } from "@bentley/geometry-core";
+import { Range3d, Transform } from "@itwin/core-geometry";
 import { DisplayParams } from "../../../render/primitives/DisplayParams";
 import { Geometry } from "../../../render/primitives/geometry/GeometryPrimitives";
 

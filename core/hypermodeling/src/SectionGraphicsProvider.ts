@@ -7,7 +7,7 @@
  */
 
 import { assert, compareBooleans, compareStrings, Id64 } from "@bentley/bentleyjs-core";
-import { ClipShape, ClipVector, Point3d, Range3d, Transform } from "@bentley/geometry-core";
+import { ClipShape, ClipVector, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, Placement2d, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides } from "@itwin/core-common";
 import {
   CategorySelectorState, DisclosedTileTreeSet, DisplayStyle2dState, DrawingViewState,

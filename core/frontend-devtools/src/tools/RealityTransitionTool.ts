@@ -7,7 +7,7 @@
  * @module Tools
  */
 
-import { Vector3d } from "@bentley/geometry-core";
+import { Vector3d } from "@itwin/core-geometry";
 import { RenderSchedule } from "@itwin/core-common";
 import { IModelApp, RenderScheduleState, Tool } from "@itwin/core-frontend";
 

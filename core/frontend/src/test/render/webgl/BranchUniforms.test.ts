@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { dispose } from "@bentley/bentleyjs-core";
-import { ClipVector, Point3d, Transform } from "@bentley/geometry-core";
+import { ClipVector, Point3d, Transform } from "@itwin/core-geometry";
 import { IModelApp } from "../../../IModelApp";
 import { ViewRect } from "../../../ViewRect";
 import { createEmptyRenderPlan } from "../../../render/RenderPlan";

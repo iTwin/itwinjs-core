@@ -105,7 +105,7 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/geometry-core",
+      "packageName": "@itwin/core-geometry",
       "projectFolder": "core/geometry",
       "reviewCategory": "common",
       "shouldPublish": true,
@@ -308,14 +308,14 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/ecschema-metadata",
+      "packageName": "@itwin/ecschema-metadata",
       "projectFolder": "core/ecschema-metadata",
       "reviewCategory": "common",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/ecschema-locaters",
+      "packageName": "@itwin/ecschema-locaters",
       "projectFolder": "core/ecschema-locaters",
       "reviewCategory": "backend",
       "shouldPublish": true,
@@ -329,7 +329,7 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/ecschema-editing",
+      "packageName": "@itwin/ecschema-editing",
       "projectFolder": "core/ecschema-editing",
       "reviewCategory": "backend",
       "shouldPublish": true,

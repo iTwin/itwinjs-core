@@ -68,7 +68,7 @@ describe("convert schema xml string to ts", () => {
       expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
       expectedPropsImportTs: [
         new RegExp(`import { EntityProps } from "@itwin/core-common";`),
-        new RegExp(`import { (?=.*\\b(Point2d)\\b)(?=.*\\b(Point3d)\\b).* } from "@bentley/geometry-core";`),
+        new RegExp(`import { (?=.*\\b(Point2d)\\b)(?=.*\\b(Point3d)\\b).* } from "@itwin/core-geometry";`),
       ],
       expectedPropsTs: [utils.dedent`
         export interface EntityTestProps extends EntityProps {
@@ -113,7 +113,7 @@ describe("convert schema xml string to ts", () => {
         </ECSchema>`,
       expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
       expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
-      expectedPropsImportTs: [ new RegExp(`import { (?=.*\\b(Point2d)\\b)(?=.*\\b(Point3d)\\b).* } from "@bentley/geometry-core";`) ],
+      expectedPropsImportTs: [ new RegExp(`import { (?=.*\\b(Point2d)\\b)(?=.*\\b(Point3d)\\b).* } from "@itwin/core-geometry";`) ],
       expectedPropsTs: [utils.dedent`
         export interface StructTest {
           booleanProps?: boolean;
@@ -269,7 +269,7 @@ describe("convert schema xml string to ts", () => {
       expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
       expectedPropsImportTs: [
         new RegExp(`import { (?=.*\\b(EntityProps)\\b).* } from "@itwin/core-common";`),
-        new RegExp(`import { (?=.*\\b(Point2d)\\b)(?=.*\\b(Point3d)\\b).* } from "@bentley/geometry-core";`),
+        new RegExp(`import { (?=.*\\b(Point2d)\\b)(?=.*\\b(Point3d)\\b).* } from "@itwin/core-geometry";`),
         new RegExp(`import { (?=.*\\b(IntEnumeration)\\b)(?=.*\\b(StringEnumeration)\\b).* } from "./TestSchemaElements";`),
       ],
       expectedPropsTs: [utils.dedent`
@@ -470,7 +470,7 @@ describe("convert schema xml string to ts", () => {
       expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
       expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
       expectedPropsImportTs: [
-        new RegExp(`import { (?=.*\\b(Point2d)\\b)(?=.*\\b(Point3d)\\b).* } from "@bentley/geometry-core";`),
+        new RegExp(`import { (?=.*\\b(Point2d)\\b)(?=.*\\b(Point3d)\\b).* } from "@itwin/core-geometry";`),
       ],
       expectedPropsTs: [utils.dedent`
         export interface StructTest {

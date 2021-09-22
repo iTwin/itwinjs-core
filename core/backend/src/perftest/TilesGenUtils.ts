@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ByteStream, GuidString, Id64String, Logger, StopWatch } from "@bentley/bentleyjs-core";
-import { Range3d } from "@bentley/geometry-core";
+import { Range3d } from "@itwin/core-geometry";
 import {
   BatchType, computeChildTileProps, ContentIdProvider, CurrentImdlVersion, iModelTileTreeIdToString, TileMetadata, TileMetadataReader, TileProps,
 } from "@itwin/core-common";

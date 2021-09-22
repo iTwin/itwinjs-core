@@ -5,8 +5,8 @@
 import { ECSchemaToTs } from "../ecschema2ts";
 import { assert } from "chai";
 import * as utils from "./utilities/utils";
-import { SchemaContext } from "@bentley/ecschema-metadata";
-import { SchemaXmlFileLocater } from "@bentley/ecschema-locaters";
+import { SchemaContext } from "@itwin/ecschema-metadata";
+import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
 
 describe("Convert schema xml string to typescript string", () => {
   let ecschema2ts: ECSchemaToTs;
@@ -102,7 +102,7 @@ describe("Convert schema xml string to typescript string", () => {
       }\n\n`;
 
     const expectedPropTsString = utils.dedent`import { EntityProps } from "@itwin/core-common";
-      import { Point2d, Point3d } from "@bentley/geometry-core";
+      import { Point2d, Point3d } from "@itwin/core-geometry";
 
       export interface TestEntityProps extends EntityProps {
         primPropString?: string;
@@ -819,7 +819,7 @@ describe("ecxml to typescript string", () => {
         expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
         expectedPropsImportTs: [
           new RegExp(`import { GuidString } from "@bentley/bentleyjs-core";`),
-          new RegExp(`import { (?=.*\\b(Point2d)\\b)(?=.*\\b(Point3d)\\b).* } from "@bentley/geometry-core";`),
+          new RegExp(`import { (?=.*\\b(Point2d)\\b)(?=.*\\b(Point3d)\\b).* } from "@itwin/core-geometry";`),
           new RegExp(`import { StructClass } from "./RefSchemaElementProps";`),
           new RegExp(`import { PropEnum } from "./RefSchemaElements";`),
         ],

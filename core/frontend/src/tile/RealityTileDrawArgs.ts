@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { Map4d } from "@bentley/geometry-core";
+import { Map4d } from "@itwin/core-geometry";
 import { FrustumPlanes } from "@itwin/core-common";
 import { TileDrawArgs } from "./internal";
 

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { Matrix3d } from "@bentley/geometry-core";
+import { Matrix3d } from "@itwin/core-geometry";
 import { Cube, CubeFace, Face } from "../../ui-imodel-components/navigationaids/Cube";
 
 describe("Cube", () => {

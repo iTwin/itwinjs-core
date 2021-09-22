@@ -9,7 +9,7 @@
 import classnames from "classnames";
 import * as _ from "lodash";
 import * as React from "react";
-import { XAndY } from "@bentley/geometry-core";
+import { XAndY } from "@itwin/core-geometry";
 import {
   ActivityMessageDetails, IModelApp, MessageBoxIconType, MessageBoxType, MessageBoxValue, OutputMessageAlert, OutputMessagePriority,
   OutputMessageType, ToolAssistanceInstructions, ToolTipOptions,

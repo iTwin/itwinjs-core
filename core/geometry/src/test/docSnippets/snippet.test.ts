@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 /* eslint-disable no-duplicate-imports */
-import * as geometry from "../../geometry-core";
+import * as geometry from "../../core-geometry";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";

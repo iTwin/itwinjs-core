@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { DbResult, Guid, GuidString, Id64, Id64String, using } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Range3d, XAndY, XYAndZ } from "@bentley/geometry-core";
+import { Point2d, Point3d, Range3d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { NavigationValue, QueryResponseStatus } from "@itwin/core-common";
 import { ECDb, ECEnumValue, ECSqlInsertResult, ECSqlStatement, ECSqlValue, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";

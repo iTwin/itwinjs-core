@@ -9,7 +9,7 @@
 import { assert } from "@bentley/bentleyjs-core";
 import {
   ClipVector, Point3d, Transform, UnionOfConvexClipPlaneSets, Vector3d,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import { RenderClipVolume } from "../RenderClipVolume";
 import { System } from "./System";
 

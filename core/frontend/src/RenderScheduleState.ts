@@ -7,7 +7,7 @@
  */
 
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Range1d, Transform } from "@bentley/geometry-core";
+import { Range1d, Transform } from "@itwin/core-geometry";
 import { RenderSchedule } from "@itwin/core-common";
 import { IModelApp } from "./IModelApp";
 import { FeatureSymbology } from "./render/FeatureSymbology";

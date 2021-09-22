@@ -9,7 +9,7 @@
 import { assert, Mutable } from "@bentley/bentleyjs-core";
 import {
   AuxChannelDataType, Point3d, AuxChannel as PolyfaceAuxChannel, Range1d, Range3d, Vector3d,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import { OctEncodedNormal, QParams3d, QPoint3d, Quantization } from "@itwin/core-common";
 import { computeDimensions } from "./VertexTable";
 

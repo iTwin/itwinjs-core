@@ -7,7 +7,7 @@
  */
 
 import { assert, dispose } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, Transform } from "@bentley/geometry-core";
+import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { ThematicDisplaySensor, ThematicDisplaySensorSettings } from "@itwin/core-common";
 import { WebGLDisposable } from "./Disposable";
 import { GL } from "./GL";

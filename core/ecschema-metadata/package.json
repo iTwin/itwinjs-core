@@ -1,5 +1,5 @@
 {
-  "name": "@bentley/ecschema-metadata",
+  "name": "@itwin/ecschema-metadata",
   "version": "3.0.0-dev.64",
   "description": "ECObjects core concepts in typescript",
   "license": "MIT",

@@ -8,7 +8,7 @@ import * as path from "path";
 import * as Semver from "semver";
 import * as sinon from "sinon";
 import { DbResult, Guid, Id64, Id64String, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Point3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   CategorySelector, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element,
   ElementMultiAspect, ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial,

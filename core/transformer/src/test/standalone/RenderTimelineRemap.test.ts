@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { CompressedId64Set, Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Box, Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Box, Point3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   Code, GeometryStreamBuilder, IModel, PhysicalElementProps, RenderSchedule, RenderTimelineProps,
 } from "@itwin/core-common";

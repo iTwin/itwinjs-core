@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { Angle, Geometry, Matrix3d, Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { Angle, Geometry, Matrix3d, Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { Tweens } from "@itwin/core-common";
 import { Animator, ViewAnimationOptions } from "./ViewAnimation";
 import { ScreenViewport } from "./Viewport";

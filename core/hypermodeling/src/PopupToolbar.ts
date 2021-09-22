@@ -6,7 +6,7 @@
  * @module HyperModeling
  */
 
-import { XAndY } from "@bentley/geometry-core";
+import { XAndY } from "@itwin/core-geometry";
 import { AbstractToolbarProps } from "@bentley/ui-abstract";
 import { IModelApp } from "@itwin/core-frontend";
 

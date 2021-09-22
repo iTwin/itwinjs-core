@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { Angle, Point2d, Point3d, Range2d, XYAndZ } from "@bentley/geometry-core";
+import { Angle, Point2d, Point3d, Range2d, XYAndZ } from "@itwin/core-geometry";
 import { Cartographic } from "@itwin/core-common";
 import {
   BeButton, BeButtonEvent, Cluster, DecorateContext, imageElementFromUrl, IModelApp, InputSource, Marker, MarkerSet, NotifyMessageDetails,

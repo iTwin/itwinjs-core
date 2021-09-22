@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
-import { Constant, Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { Constant, Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import {
   DynamicGraphicsRequest2dProps, DynamicGraphicsRequest3dProps, FlatBufferGeometryStream, IModelError, isPlacement3dProps, JsonGeometryStream,
   PlacementProps,

@@ -7,7 +7,7 @@
  */
 
 import { assert, CompressedId64Set, DbOpcode, GuidString, Id64String } from "@bentley/bentleyjs-core";
-import { Range3d, Range3dProps } from "@bentley/geometry-core";
+import { Range3d, Range3dProps } from "@itwin/core-geometry";
 
 /** Compact wire format representing geometric changes to a set of elements as part of a [[ModelGeometryChangesProps]].
  * All of the elements belong to the same model.

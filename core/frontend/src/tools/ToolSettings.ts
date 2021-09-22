@@ -7,7 +7,7 @@
  */
 
 import { BeDuration } from "@bentley/bentleyjs-core";
-import { Angle, Constant } from "@bentley/geometry-core";
+import { Angle, Constant } from "@itwin/core-geometry";
 
 /** Settings that control the behavior of built-in tools. Applications may modify these values.
  * @public

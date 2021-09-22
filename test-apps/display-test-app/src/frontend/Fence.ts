@@ -5,7 +5,7 @@
 
 import { EmphasizeElements, IModelApp, ScreenViewport, Tool } from "@itwin/core-frontend";
 import { BentleyStatus, Id64, Id64Array } from "@bentley/bentleyjs-core";
-import { ClipPlaneContainment, ClipVector } from "@bentley/geometry-core";
+import { ClipPlaneContainment, ClipVector } from "@itwin/core-geometry";
 import { ColorDef, GeometryContainmentRequestProps } from "@itwin/core-common";
 
 /** Color code current selection set based on containment with current view clip.

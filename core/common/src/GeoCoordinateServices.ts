@@ -7,7 +7,7 @@
  */
 
 import { GeoServiceStatus } from "@bentley/bentleyjs-core";
-import { XYZProps } from "@bentley/geometry-core";
+import { XYZProps } from "@itwin/core-geometry";
 
 /** @public */
 export enum GeoCoordStatus {

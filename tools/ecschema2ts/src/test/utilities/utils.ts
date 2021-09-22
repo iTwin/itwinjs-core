@@ -5,10 +5,10 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import { DOMParser } from "@xmldom/xmldom";
-import { Schema, SchemaContext } from "@bentley/ecschema-metadata";
-import { SchemaXmlFileLocater } from "@bentley/ecschema-locaters";
-import { SchemaReadHelper } from "@bentley/ecschema-metadata/lib/Deserialization/Helper";
-import { XmlParser } from "@bentley/ecschema-metadata/lib/Deserialization/XmlParser";
+import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
+import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
+import { SchemaReadHelper } from "@itwin/ecschema-metadata/lib/Deserialization/Helper";
+import { XmlParser } from "@itwin/ecschema-metadata/lib/Deserialization/XmlParser";
 import { ECSchemaToTs } from "../../ecschema2ts";
 import { expect } from "chai";
 

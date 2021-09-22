@@ -5,7 +5,7 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import { ComboBox, ComboBoxEntry, createButton, createCheckBox, createComboBox, createLabeledNumericInput, createSlider, LabeledNumericInput, Slider } from "@bentley/frontend-devtools";
-import { Point3d, Range1d } from "@bentley/geometry-core";
+import { Point3d, Range1d } from "@itwin/core-geometry";
 import {
   calculateSolarDirectionFromAngles, ColorByName, ColorDef, ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps,
   ThematicDisplaySensorProps, ThematicGradientColorScheme, ThematicGradientMode, ViewFlags,

@@ -7,7 +7,7 @@
  */
 
 import { assert, Id64String } from "@bentley/bentleyjs-core";
-import { Angle, Ellipsoid, EllipsoidPatch, Point2d, Point3d, Range1d, Range3d, Transform } from "@bentley/geometry-core";
+import { Angle, Ellipsoid, EllipsoidPatch, Point2d, Point3d, Range1d, Range3d, Transform } from "@itwin/core-geometry";
 import { QParams3d, QPoint2d } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";

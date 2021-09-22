@@ -9,7 +9,7 @@ import {
   InterpolationCurve3d,
   LinearSweep, LineSegment3d, LineString3d, Loop, Path, Range3d, RotationalSweep, RuledSweep, SolidPrimitive, Sphere, TorusPipe, Transform,
   TransitionSpiral3d, UVSelect,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import {
   BRepEntity, GeometricElement3dProps, GeometryParams, GeometryStreamIterator, GeometrySummaryRequestProps, GeometrySummaryVerbosity, ImagePrimitive,
   IModelError, TextStringPrimitive,

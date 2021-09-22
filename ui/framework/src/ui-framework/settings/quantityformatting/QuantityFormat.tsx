@@ -8,7 +8,7 @@
 
 import "./QuantityFormat.scss";
 import * as React from "react";
-import { DeepCompare } from "@bentley/geometry-core";
+import { DeepCompare } from "@itwin/core-geometry";
 import {
   getQuantityTypeKey, IModelApp, QuantityFormatsChangedArgs, QuantityType, QuantityTypeArg, QuantityTypeKey,
 } from "@itwin/core-frontend";

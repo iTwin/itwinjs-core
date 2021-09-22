@@ -8,7 +8,7 @@
 
 // cspell:ignore rtmp stmp
 
-import { Point3d, Vector3d } from "@bentley/geometry-core";
+import { Point3d, Vector3d } from "@itwin/core-geometry";
 import {
   BeButtonEvent, CoordinateLockOverrides, CoreTools, EventHandled, IModelApp, QuantityType, ToolAssistance, ToolAssistanceImage,
   ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection,

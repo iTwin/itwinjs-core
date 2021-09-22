@@ -7,7 +7,7 @@
  */
 
 import { GuidString, Id64String } from "@bentley/bentleyjs-core";
-import { XYProps } from "@bentley/geometry-core";
+import { XYProps } from "@itwin/core-geometry";
 import { CodeProps } from "./Code";
 import { RelatedElementProps } from "./ElementProps";
 import { EntityProps, EntityQueryParams } from "./EntityProps";

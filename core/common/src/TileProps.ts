@@ -7,7 +7,7 @@
  */
 
 import { GuidString } from "@bentley/bentleyjs-core";
-import { Range3dProps, TransformProps } from "@bentley/geometry-core";
+import { Range3dProps, TransformProps } from "@itwin/core-geometry";
 
 /** Wire format describing an [IModelTile]($frontend)
  * @internal

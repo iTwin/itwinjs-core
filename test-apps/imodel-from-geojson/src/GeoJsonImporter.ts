@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
-import { Angle, Arc3d, GeometryQuery, LineString3d, Loop, Range3d, StandardViewIndex } from "@bentley/geometry-core";
+import { Angle, Arc3d, GeometryQuery, LineString3d, Loop, Range3d, StandardViewIndex } from "@itwin/core-geometry";
 import {
   CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotDb, SpatialCategory,
   SpatialModel, StandaloneDb, ViewDefinition,
@@ -240,7 +240,7 @@ export class GeoJsonImporter {
 
   }
 
-  /** Convert a GeoJSON LineString into an @bentley/geometry-core lineString */
+  /** Convert a GeoJSON LineString into an @itwin/core-geometry lineString */
   private convertLinestring(inLinestring: GeoJson.LineString): LineString3d | undefined {
     if (!Array.isArray(inLinestring))
       return undefined;
@@ -275,7 +275,7 @@ export class GeoJsonImporter {
   }
   private static _scratchCartographic = Cartographic.createZero();
 
-  /** Convert a GeoJSON LineString into an @bentley/geometry-core Loop */
+  /** Convert a GeoJSON LineString into an @itwin/core-geometry Loop */
   private convertLoop(inLoop: GeoJson.LineString): Loop | undefined {
     const lineString = this.convertLinestring(inLoop);
     return lineString ? Loop.create(lineString) : undefined;

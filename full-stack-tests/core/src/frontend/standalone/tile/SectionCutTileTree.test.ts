@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ClipPrimitive, ClipVector, ConvexClipPlaneSet } from "@bentley/geometry-core";
+import { ClipPrimitive, ClipVector, ConvexClipPlaneSet } from "@itwin/core-geometry";
 import { ClipStyle } from "@itwin/core-common";
 import {
   IModelApp, IModelConnection, SnapshotConnection, SpatialViewState, ViewState,

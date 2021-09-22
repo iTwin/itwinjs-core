@@ -17,7 +17,7 @@ export abstract class RobotWorldReadRpcInterface extends RpcInterface {
 }
 // __PUBLISH_EXTRACT_END__
 
-import { AngleProps, XYZProps } from "@bentley/geometry-core";
+import { AngleProps, XYZProps } from "@itwin/core-geometry";
 
 // The RPC write interface that may be exposed by the RobotWorldEngine.
 export abstract class RobotWorldWriteRpcInterface extends RpcInterface {

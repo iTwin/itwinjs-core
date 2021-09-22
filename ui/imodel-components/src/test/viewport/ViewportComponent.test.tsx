@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 
 import { BeEvent, Logger } from "@bentley/bentleyjs-core";
-import { AxisIndex, Matrix3d, Point3d, Vector3d, WritableXAndY } from "@bentley/geometry-core";
+import { AxisIndex, Matrix3d, Point3d, Vector3d, WritableXAndY } from "@itwin/core-geometry";
 import { Frustum, SpatialViewDefinitionProps } from "@itwin/core-common";
 import {
   CategorySelectorState, DisplayStyle3dState, EntityState, IModelConnection, MockRender, ModelSelectorState, OrthographicViewState, ScreenViewport,

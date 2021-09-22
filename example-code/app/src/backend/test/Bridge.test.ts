@@ -8,7 +8,7 @@ import * as path from "path";
 // __PUBLISH_EXTRACT_START__ Bridge.imports.example-code
 import { GuidString, Id64String } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
-import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@bentley/geometry-core";
+import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@itwin/core-geometry";
 import {
   BriefcaseDb, BriefcaseManager, CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, ModelSelector,
   OrthographicViewDefinition, PhysicalModel, SpatialCategory, Subject,

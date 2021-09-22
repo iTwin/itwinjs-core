@@ -5,8 +5,8 @@
 import { ECSchemaToTs } from "../ecschema2ts";
 import { assert } from "chai";
 import * as utils from "./utilities/utils";
-import { SchemaContext } from "@bentley/ecschema-metadata";
-import { SchemaXmlFileLocater } from "@bentley/ecschema-locaters";
+import { SchemaContext } from "@itwin/ecschema-metadata";
+import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
 
 describe("BisCore Cache test", () => {
   it("For ECEntity class with BaseClass in BisCore, find the correct BisCore props interface to extend", () => {

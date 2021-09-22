@@ -6,7 +6,7 @@
  * @module Editing
  */
 
-import { DelayedPromiseWithProps, Phenomenon, SchemaItemKey, SchemaItemType, SchemaKey, UnitProps, UnitSystem } from "@bentley/ecschema-metadata";
+import { DelayedPromiseWithProps, Phenomenon, SchemaItemKey, SchemaItemType, SchemaKey, UnitProps, UnitSystem } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { MutableUnit } from "./Mutable/MutableUnit";
 

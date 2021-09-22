@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { Point2d, Range2d } from "@bentley/geometry-core";
+import { Point2d, Range2d } from "@itwin/core-geometry";
 import { request, RequestBasicCredentials, RequestOptions } from "@bentley/itwin-client";
 import { xml2json } from "xml-js";
 import { MapCartoRectangle, WmsUtilities  } from "../internal"; // WmsUtilities needed for getBaseUrl

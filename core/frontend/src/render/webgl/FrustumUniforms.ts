@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { InverseMatrixState, Matrix4d, Point3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { InverseMatrixState, Matrix4d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { Frustum, Npc } from "@itwin/core-common";
 import { UniformHandle } from "./UniformHandle";
 import { IModelFrameLifecycle } from "./IModelFrameLifecycle";

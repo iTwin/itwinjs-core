@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { Angle, Matrix3d, Point2d, Point3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { Angle, Matrix3d, Point2d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { Cartographic } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { MapCartoRectangle } from "../internal";

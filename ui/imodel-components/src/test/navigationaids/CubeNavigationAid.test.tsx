@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { AxisIndex, Matrix3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { AxisIndex, Matrix3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { DrawingViewState, IModelConnection, ScreenViewport } from "@itwin/core-frontend";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { TestUtils } from "../TestUtils";

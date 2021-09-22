@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { Point3d, Range3d } from "@bentley/geometry-core";
+import { Point3d, Range3d } from "@itwin/core-geometry";
 import { Cartographic, GlobeMode } from "@itwin/core-common";
 import { BingElevationProvider } from "./tile/internal";
 import { ScreenViewport } from "./Viewport";

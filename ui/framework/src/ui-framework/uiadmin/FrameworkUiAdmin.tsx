@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { XAndY } from "@bentley/geometry-core";
+import { XAndY } from "@itwin/core-geometry";
 import { IModelApp } from "@itwin/core-frontend";
 import {
   AbstractMenuItemProps, AbstractToolbarProps, DialogLayoutDataProvider, DialogProps, IMatch,

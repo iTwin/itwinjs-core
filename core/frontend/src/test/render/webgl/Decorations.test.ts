@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Point3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { ColorDef, RenderMode } from "@itwin/core-common";
 import { IModelConnection } from "../../../IModelConnection";
 import { ScreenViewport } from "../../../Viewport";

@@ -5,7 +5,7 @@
 import { assert, Id64String } from "@bentley/bentleyjs-core";
 import {
   IModelJson, LineString3d, Point3d, Sphere, Vector3d, YawPitchRollAngles,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import {
   Code, ColorDef, ElementGeometry, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps, IModel, PhysicalElementProps,
 } from "@itwin/core-common";

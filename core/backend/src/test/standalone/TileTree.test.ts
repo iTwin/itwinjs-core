@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Box, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Box, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   BatchType, Code, ColorDef, defaultTileOptions, GeometryStreamBuilder, IModel, iModelTileTreeIdToString, PhysicalElementProps, PrimaryTileTreeId,
   RenderSchedule,

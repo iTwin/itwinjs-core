@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { EntityClass, PrimitiveProperty, RelationshipClass, RelationshipConstraint, RelationshipEnd,
   Schema, SchemaContext,
-} from "@bentley/ecschema-metadata";
+} from "@itwin/ecschema-metadata";
 import * as Diagnostics from "../../Validation/Diagnostic";
 
 describe("Diagnostics tests", () => {

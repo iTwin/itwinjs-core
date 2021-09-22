@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { CheckBox, createButton, createCheckBox, createColorInput, createLabeledNumericInput, createTextBox } from "@bentley/frontend-devtools";
-import { Vector3d } from "@bentley/geometry-core";
+import { Vector3d } from "@itwin/core-geometry";
 import { ColorDef, LightSettings, LightSettingsProps, RenderMode, RgbColor, SolarShadowSettings } from "@itwin/core-common";
 import { Viewport, ViewState } from "@itwin/core-frontend";
 

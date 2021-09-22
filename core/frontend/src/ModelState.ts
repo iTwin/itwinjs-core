@@ -7,7 +7,7 @@
  */
 
 import { Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { Point2d, Range3d } from "@bentley/geometry-core";
+import { Point2d, Range3d } from "@itwin/core-geometry";
 import {
   GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, ModelProps, RelatedElement, SpatialClassifiers,
 } from "@itwin/core-common";

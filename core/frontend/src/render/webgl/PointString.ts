@@ -7,7 +7,7 @@
  */
 
 import { assert, dispose } from "@bentley/bentleyjs-core";
-import { Point3d } from "@bentley/geometry-core";
+import { Point3d } from "@itwin/core-geometry";
 import { FeatureIndexType, QParams3d } from "@itwin/core-common";
 import { PointStringParams } from "../primitives/VertexTable";
 import { RenderMemory } from "../RenderMemory";

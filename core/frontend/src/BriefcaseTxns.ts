@@ -7,7 +7,7 @@
  */
 
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, Range3dProps, XYZProps } from "@bentley/geometry-core";
+import { Point3d, Range3d, Range3dProps, XYZProps } from "@itwin/core-geometry";
 import {
   ChangedEntities, ChangesetIndexAndId, EcefLocation, EcefLocationProps, GeographicCRS, GeographicCRSProps, IModelStatus, IpcAppChannel, ModelIdAndGeometryGuid,
   RemoveFunction, RootSubjectProps, TxnNotifications,

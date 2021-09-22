@@ -7,7 +7,7 @@
  */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { Point3d, Range1d, Vector3d } from "@bentley/geometry-core";
+import { Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
 import { RenderTexture } from "@itwin/core-common";
 import {
   DecorateContext, GraphicType, HitDetail, imageElementFromUrl, IModelApp, IModelConnection, ParticleCollectionBuilder, ParticleProps, Tool,

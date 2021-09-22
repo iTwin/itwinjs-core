@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Matrix3d, Point3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Matrix3d, Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import { IModelApp, Tool } from "@itwin/core-frontend";
 import { parseArgs } from "@bentley/frontend-devtools";
 

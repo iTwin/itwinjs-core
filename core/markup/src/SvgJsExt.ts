@@ -6,7 +6,7 @@
  * @module MarkupApp
  */
 
-import { Transform } from "@bentley/geometry-core";
+import { Transform } from "@itwin/core-geometry";
 import { Box, extend, G, Element as MarkupElement, Matrix, nodeOrNew, Rect, register, Svg, Text } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 

@@ -7,7 +7,7 @@
  */
 
 import { CompressedId64Set, Id64, Id64Arg, Id64Array, Id64String, OrderedId64Array } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Range2d } from "@bentley/geometry-core";
+import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
 import { ColorDef } from "@itwin/core-common";
 import { AccuDrawHintBuilder } from "../AccuDraw";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";

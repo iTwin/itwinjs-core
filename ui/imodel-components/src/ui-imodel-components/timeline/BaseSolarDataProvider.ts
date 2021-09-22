@@ -6,7 +6,7 @@
  * @module Timeline
  */
 
-import { Point3d } from "@bentley/geometry-core";
+import { Point3d } from "@itwin/core-geometry";
 import { calculateSunriseOrSunset, Cartographic, ColorByName, ColorDef } from "@itwin/core-common";
 import { IModelConnection, ScreenViewport } from "@itwin/core-frontend";
 import { SolarDataProvider } from "./interfaces";

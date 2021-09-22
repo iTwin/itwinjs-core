@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "@bentley/bentleyjs-core";
-import { Angle, AuxChannel, AuxChannelData, AuxChannelDataType, IModelJson, Point3d, Polyface, PolyfaceAuxData, PolyfaceBuilder, StrokeOptions, Transform } from "@bentley/geometry-core";
+import { Angle, AuxChannel, AuxChannelData, AuxChannelDataType, IModelJson, Point3d, Polyface, PolyfaceAuxData, PolyfaceBuilder, StrokeOptions, Transform } from "@itwin/core-geometry";
 import {
   AnalysisStyle, AnalysisStyleProps, ColorByName, ColorDef, RenderMode, ThematicGradientColorScheme, ThematicGradientMode, ThematicGradientSettingsProps,
 } from "@itwin/core-common";

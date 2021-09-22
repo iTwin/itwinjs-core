@@ -5,7 +5,7 @@
 
 import {
   XAndY,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import {
   AbstractToolbarProps,
   ActionButton,

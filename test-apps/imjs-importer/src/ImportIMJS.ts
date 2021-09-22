@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { GeometryQuery, IModelJson, Point3d, Range3d, StandardViewIndex, Transform } from "@bentley/geometry-core";
+import { GeometryQuery, IModelJson, Point3d, Range3d, StandardViewIndex, Transform } from "@itwin/core-geometry";
 import {
   CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, SnapshotDb,
   SpatialCategory, SpatialModel,

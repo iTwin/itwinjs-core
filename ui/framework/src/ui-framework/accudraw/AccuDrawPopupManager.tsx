@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { XAndY } from "@bentley/geometry-core";
+import { XAndY } from "@itwin/core-geometry";
 import { AngleDescription, LengthDescription } from "@itwin/core-frontend";
 import { AbstractMenuItemProps, IconSpecUtilities, OnCancelFunc, OnNumberCommitFunc, OnValueCommitFunc } from "@bentley/ui-abstract";
 

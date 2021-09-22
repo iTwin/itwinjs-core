@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
-import { XAndY } from "@bentley/geometry-core";
+import { XAndY } from "@itwin/core-geometry";
 import {
   AbstractToolbarProps, DialogLayoutDataProvider, OnCancelFunc, OnItemExecutedFunc, OnValueCommitFunc, Primitives, PrimitiveValue,
   PropertyDescription, PropertyRecord, PropertyValueFormat, RelativePosition,

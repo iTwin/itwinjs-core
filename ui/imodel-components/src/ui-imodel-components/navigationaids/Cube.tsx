@@ -9,7 +9,7 @@
 import "./Cube.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { Matrix3d } from "@bentley/geometry-core";
+import { Matrix3d } from "@itwin/core-geometry";
 import { CommonProps } from "@bentley/ui-core";
 
 /** Cube Face enumeration

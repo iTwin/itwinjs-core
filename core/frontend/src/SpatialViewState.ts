@@ -7,7 +7,7 @@
  */
 
 import { BeEvent, Id64String } from "@bentley/bentleyjs-core";
-import { Constant, Matrix3d, Range3d, XYAndZ } from "@bentley/geometry-core";
+import { Constant, Matrix3d, Range3d, XYAndZ } from "@itwin/core-geometry";
 import { AxisAlignedBox3d, SpatialViewDefinitionProps, ViewStateProps } from "@itwin/core-common";
 import { AuxCoordSystemSpatialState, AuxCoordSystemState } from "./AuxCoordSys";
 import { ModelSelectorState } from "./ModelSelectorState";

@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, PolygonOps, XAndY } from "@bentley/geometry-core";
+import { Point2d, Point3d, PolygonOps, XAndY } from "@itwin/core-geometry";
 import { GeometryStreamProps, IModelError } from "@itwin/core-common";
 import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
 import { DialogItem, DialogPropertySyncItem } from "@bentley/ui-abstract";

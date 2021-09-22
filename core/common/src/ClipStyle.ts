@@ -12,7 +12,7 @@ import { RgbColor, RgbColorProps } from "./RgbColor";
 import { HiddenLine } from "./HiddenLine";
 import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
 
-/** Wire format describing a [[CutStyle]] applied to section-cut geometry produced at intersections with a view's [ClipVector]($geometry-core).
+/** Wire format describing a [[CutStyle]] applied to section-cut geometry produced at intersections with a view's [ClipVector]($core-geometry).
  * @see [[ClipStyleProps.cutStyle]].
  * @public
  */
@@ -115,7 +115,7 @@ export interface ClipStyleProps {
   outsideColor?: RgbColorProps;
 }
 
-/** Describes symbology and behavior applied to a [ClipVector]($geometry-core) when applied to a [ViewState]($frontend) or [[ModelClipGroup]].
+/** Describes symbology and behavior applied to a [ClipVector]($core-geometry) when applied to a [ViewState]($frontend) or [[ModelClipGroup]].
  * @see [[DisplayStyleSettings.clipStyle]].
  * @public
  */

@@ -9,7 +9,7 @@
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { editorBuiltInCmdIds, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps, OffsetFacesProps, SolidModelingCommandIpc, SubEntityGeometryProps, SubEntityLocationProps, SubEntityProps, SubEntityType } from "@bentley/imodeljs-editor-common";
 import { FeatureAppearance, FeatureAppearanceProvider, RgbColor } from "@itwin/core-common";
-import { Geometry, Point3d, Range3d, Ray3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { Geometry, Point3d, Range3d, Ray3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { AccuDrawHintBuilder, BeButtonEvent, DecorateContext, DynamicsContext, ElementSetTool, EventHandled, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, HitDetail, IModelApp, IModelConnection, LocateResponse, readElementGraphics, RenderGraphicOwner, Viewport } from "@itwin/core-frontend";
 import { computeChordToleranceFromPoint } from "./CreateElementTool";
 import { EditTools } from "./EditTool";

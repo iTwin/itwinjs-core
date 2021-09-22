@@ -6,7 +6,7 @@
 import { assert } from "chai";
 import * as path from "path";
 import { DbResult, Id64, Id64Set, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { Angle, Point2d, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Angle, Point2d, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel, DocumentListModel, Drawing, DrawingCategory,
   DrawingGraphic, DrawingModel, ECSqlStatement, Element, ElementOwnsChildElements, EntityClassType, IModelDb, IModelJsFs, LinkElement,

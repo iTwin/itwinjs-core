@@ -7,7 +7,7 @@
  */
 
 import { Id64 } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d } from "@bentley/geometry-core";
+import { Point2d, Point3d } from "@itwin/core-geometry";
 import { HitDetail, HitList, HitPriority, HitSource } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { Pixel } from "./render/Pixel";

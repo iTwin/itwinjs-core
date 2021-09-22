@@ -7,7 +7,7 @@
  */
 
 import { GuidString, Id64String } from "@bentley/bentleyjs-core";
-import { Range3dProps } from "@bentley/geometry-core";
+import { Range3dProps } from "@itwin/core-geometry";
 import { CodeProps } from "../Code";
 import { ElementLoadOptions, ElementProps } from "../ElementProps";
 import { EntityQueryParams } from "../EntityProps";

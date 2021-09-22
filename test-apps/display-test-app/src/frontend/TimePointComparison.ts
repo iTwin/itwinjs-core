@@ -5,7 +5,7 @@
 
 import {
   ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point3d, Transform, Vector3d,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import {
   AccuDrawHintBuilder,
   FeatureSymbology, GraphicBranch, IModelApp, RenderClipVolume, SceneContext, ScreenViewport, TileTreeReference, Tool,

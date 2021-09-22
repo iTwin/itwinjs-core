@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import * as path from "path";
 import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Arc3d, IModelJson as GeomJson, Point3d } from "@bentley/geometry-core";
+import { Arc3d, IModelJson as GeomJson, Point3d } from "@itwin/core-geometry";
 import {
   BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance,
 } from "@itwin/core-common";

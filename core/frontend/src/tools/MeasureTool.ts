@@ -9,7 +9,7 @@
 import { Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
 import {
   AxisOrder, IModelJson, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, PointString3d, PolygonOps, Vector3d, XAndY, XYAndZ,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import {
   BentleyStatus, ColorDef, GeometryStreamProps, LinePixels, MassPropertiesOperation, MassPropertiesRequestProps, MassPropertiesResponseProps,
 } from "@itwin/core-common";

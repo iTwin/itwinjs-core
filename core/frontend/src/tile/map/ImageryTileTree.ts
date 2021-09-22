@@ -7,7 +7,7 @@
  */
 
 import { assert, compareBooleans, compareNumbers, compareStrings, compareStringsOrUndefined, dispose } from "@bentley/bentleyjs-core";
-import { Angle, Range3d, Transform } from "@bentley/geometry-core";
+import { Angle, Range3d, Transform } from "@itwin/core-geometry";
 import { Cartographic, ImageSource, ImageSourceFormat, MapLayerSettings, RenderTexture, ViewFlagOverrides } from "@itwin/core-common";
 import { imageElementFromImageSource } from "../../ImageUtil";
 import { IModelApp } from "../../IModelApp";

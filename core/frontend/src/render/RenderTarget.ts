@@ -7,7 +7,7 @@
  */
 
 import { Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { Point2d, XAndY } from "@bentley/geometry-core";
+import { Point2d, XAndY } from "@itwin/core-geometry";
 import { Frustum, ImageBuffer, SpatialClassifier } from "@itwin/core-common";
 import { HiliteSet } from "../SelectionSet";
 import { SceneContext } from "../ViewContext";

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AsyncMethodsOf, CompressedId64Set, Id64, Id64String, OrderedId64Array, PromiseReturnType } from "@bentley/bentleyjs-core";
-import { LineSegment3d, Point3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
+import { LineSegment3d, Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import { BisCodeSpec, Code, CodeProps, GeometryStreamBuilder, PhysicalElementProps } from "@itwin/core-common";
 import { BriefcaseConnection, IModelConnection, IpcApp } from "@itwin/core-frontend";
 import { EditTools } from "@bentley/imodeljs-editor-frontend";
