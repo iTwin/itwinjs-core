@@ -18,9 +18,12 @@ import { TemporaryStorage } from "./TemporaryStorage";
 const defaultRequestTimeout: number = 90000;
 
 /**
- * @public @deprecated
+ * Props for initializing the [[Presentation]] library for using multiple [[PresentationManager]]
+ * instances, one for each frontend.
+ *
+ * @public
  */
-export interface PresentationPropsDeprecated extends PresentationManagerProps {
+export interface MultiManagerPresentationProps extends PresentationManagerProps {
   /**
    * Factory method for creating separate managers for each client
    * @internal
@@ -40,9 +43,12 @@ export interface PresentationPropsDeprecated extends PresentationManagerProps {
 }
 
 /**
+ * Props for initializing the [[Presentation]] library with ability to use a single
+ * [[PresentationManager]] instance for handling all requests.
+ *
  * @public
  */
-export interface PresentationPropsNew extends PresentationManagerProps {
+export interface SingleManagerPresentationProps extends PresentationManagerProps {
   /**
    * How much time should an unused client manager be stored in memory
    * before it's disposed.
@@ -51,7 +57,7 @@ export interface PresentationPropsNew extends PresentationManagerProps {
 
   /**
    * Specifies to use single manager for all clients.
-   * @internal
+   * @alpha
    */
   useSingleManager?: boolean;
 }
@@ -60,7 +66,7 @@ export interface PresentationPropsNew extends PresentationManagerProps {
  * Properties that can be used to configure [[Presentation]] API
  * @public
  */
-export type PresentationProps = PresentationPropsDeprecated | PresentationPropsNew; // eslint-disable-line deprecation/deprecation
+export type PresentationProps = MultiManagerPresentationProps | SingleManagerPresentationProps;
 
 interface ClientStoreItem {
   manager: PresentationManager;
@@ -101,7 +107,7 @@ export class Presentation {
    *
    * **Important:** The method should be called after a call to [IModelHost.startup]($core-backend)
    *
-   * @param props Optional properties for PresentationManager
+   * @param props Optional properties for [[PresentationManager]]
    */
   public static initialize(props?: PresentationProps): void {
     try {
@@ -194,6 +200,6 @@ export class Presentation {
   }
 }
 
-function isSingleManagerProps(props: PresentationProps): props is PresentationPropsNew {
-  return !!(props as PresentationPropsNew).useSingleManager;
+function isSingleManagerProps(props: PresentationProps): props is SingleManagerPresentationProps {
+  return !!(props as SingleManagerPresentationProps).useSingleManager;
 }

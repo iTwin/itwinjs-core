@@ -355,7 +355,12 @@ describe("ModelsTree", () => {
     beforeEach(async () => {
       await initializePresentationTesting({
         backendProps: {
-          cacheConfig: { mode: HierarchyCacheMode.Disk, directory: path.join("lib", "test", "cache") },
+          caching: {
+            hierarchies: {
+              mode: HierarchyCacheMode.Disk,
+              directory: path.join("lib", "test", "cache"),
+            },
+          },
         },
       });
       imodel = await SnapshotConnection.openFile(testIModelPath);

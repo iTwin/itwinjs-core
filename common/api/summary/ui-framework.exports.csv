@@ -184,15 +184,15 @@ public;CustomItemProps
 public;DeepReadonly
 public;DeepReadonlyArray
 public;DeepReadonlyObject
-beta;DefaultContentTools
-beta;DefaultContentToolsAppData
+public;DefaultContentTools
+public;DefaultContentToolsAppData
 beta;DefaultDialogGridContainer({ componentGenerator, isToolSettings }:
 beta;DefaultNavigationProps
 deprecated;DefaultNavigationProps
-beta;DefaultNavigationTools
+public;DefaultNavigationTools
 beta;DefaultNavigationWidget 
 deprecated;DefaultNavigationWidget 
-beta;DefaultStatusbarItems
+public;DefaultStatusbarItems
 internal;DefaultToolSettingsProvider 
 public;DefaultViewOverlay({ viewport, onPlayPause, featureOptions }: ViewOverlayProps): JSX.Element | null
 public;DialogChangedEvent 
@@ -523,15 +523,15 @@ internal;StagePanelZoneDefKeys = keyof Pick
 public;StagePanelZoneProps
 internal;StagePanelZonesDef
 public;StagePanelZonesProps
-beta;StandardContentToolsProvider 
-beta;StandardFrontstageProps
-beta;StandardFrontstageProvider 
+public;StandardContentToolsProvider 
+public;StandardFrontstageProps
+public;StandardFrontstageProvider 
 public;StandardMessageBox 
 public;StandardMessageBoxProps 
-beta;StandardNavigationToolsProvider 
+public;StandardNavigationToolsProvider 
 alpha;StandardRotationNavigationAid 
 alpha;StandardRotationNavigationAidControl 
-beta;StandardStatusbarItemsProvider 
+public;StandardStatusbarItemsProvider 
 public;StateManager
 public;StateType
 public;StatusBar 
@@ -729,7 +729,7 @@ internal;WidgetEventArgs
 public;WidgetHost
 internal;WidgetInfo
 beta;WidgetManager
-beta;WidgetPanelProps = Omit
+public;WidgetPanelProps = Omit
 internal;WidgetPanelsFrontstage: React.NamedExoticComponent
 internal;WidgetPanelsFrontstageContent(): JSX.Element | null
 internal;WidgetPanelsFrontstageState

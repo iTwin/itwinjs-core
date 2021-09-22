@@ -9,7 +9,6 @@ import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelHost } from "@itwin/core-backend";
 import { RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
 // __PUBLISH_EXTRACT_START__ Presentation.Backend.Initialization
-import { RequestPriority } from "@bentley/presentation-common";
 import { Presentation, PresentationManagerMode } from "@bentley/presentation-backend";
 import rpcs from "../common/Rpcs";
 // __PUBLISH_EXTRACT_END__
@@ -50,9 +49,7 @@ function loadEnv(envFile: string) {
     rulesetDirectories: [path.join("assets", "presentation_rules")],
     localeDirectories: [path.join("assets", "locales")],
     mode: PresentationManagerMode.ReadWrite,
-    taskAllocationsMap: {
-      [RequestPriority.Max]: 1,
-    },
+    workerThreadsCount: 1,
     useMmap: true,
     updatesPollInterval: 20,
   });

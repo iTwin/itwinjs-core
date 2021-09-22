@@ -87,7 +87,7 @@ describe("PresentationManager", () => {
     });
 
     async function getAreaDisplayValue(unitSystem: UnitSystemKey, defaultFormats?: { [phenomenon: string]: UnitSystemFormat }): Promise<DisplayValue> {
-      return using(new PresentationManager({ defaultFormats, activeLocale: "en-PSEUDO" }), async (manager) => {
+      return using(new PresentationManager({ defaultFormats, defaultLocale: "en-PSEUDO" }), async (manager) => {
         const descriptor = await manager.getContentDescriptor({
           imodel,
           rulesetOrId: ruleset,
