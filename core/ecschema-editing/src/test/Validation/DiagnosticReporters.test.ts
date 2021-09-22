@@ -137,7 +137,7 @@ describe("DiagnosticReporters tests", () => {
       const i18n = new I18N();
       const i18nMock = sinon.mock(i18n);
       const registerNamespace = i18nMock.expects("registerNamespace");
-      registerNamespace.resolves(Promise.resolve()); // (new LocalizationNamespace("ECSchemaMetaData", Promise.resolve()));
+      registerNamespace.resolves(Promise.resolve());
       const translate = i18nMock.expects("getLocalizedString");
       translate.returns("Translated text");
       const logMessage = sinon.stub(Logger, "logError");

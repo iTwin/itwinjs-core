@@ -325,7 +325,7 @@ export class Tool {
    * The value is the name of an icon WebFont entry, or if specifying an SVG symbol, use `svg:` prefix.
    */
   public static iconSpec = "";
-  /** The ($localizationNamespace) that provides localized strings for this Tool. Subclasses should override this. */
+  /** The namespace that provides localized strings for this Tool. Subclasses should override this. */
   public static namespace: string;
 
   /** The internationalization services instance used to translate strings from the namespace. */
