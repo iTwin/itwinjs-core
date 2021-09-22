@@ -11,15 +11,15 @@ import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
 import * as moq from "typemoq";
 import { BeDuration } from "@itwin/core-bentley";
-import { PrimitiveValue, PropertyConverterInfo, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, SpecialKey } from "@bentley/ui-abstract";
-import { HorizontalAlignment, LocalSettingsStorage } from "@bentley/ui-core";
+import { PrimitiveValue, PropertyConverterInfo, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, SpecialKey } from "@itwin/appui-abstract";
+import { HorizontalAlignment, LocalSettingsStorage } from "@itwin/ui-core-react";
 import {
   CellItem, ColumnDescription, PropertyUpdatedArgs, PropertyValueRendererManager, RowItem, SelectionMode, Table, TableDataChangeEvent,
   TableDataChangesListener, TableDataProvider, TableProps, TableSelectionTarget,
-} from "../../../ui-components";
-import { DragDropHeaderWrapper } from "../../../ui-components/table/component/DragDropHeaderCell";
-import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTableDataProvider";
-import { FilterRenderer } from "../../../ui-components/table/TableDataProvider";
+} from "../../../ui-components-react";
+import { DragDropHeaderWrapper } from "../../../ui-components-react/table/component/DragDropHeaderCell";
+import { SimpleTableDataProvider } from "../../../ui-components-react/table/SimpleTableDataProvider";
+import { FilterRenderer } from "../../../ui-components-react/table/TableDataProvider";
 import { ResolvablePromise, waitForSpy } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
 import { createDOMRect } from "../../Utils";

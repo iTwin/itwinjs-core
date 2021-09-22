@@ -14,7 +14,7 @@ import {
   OnItemExecutedFunc,
   RelativePosition,
   UiAdmin,
-} from "@bentley/ui-abstract";
+} from "@itwin/appui-abstract";
 import {
   IModelApp,
 } from "@itwin/core-frontend";

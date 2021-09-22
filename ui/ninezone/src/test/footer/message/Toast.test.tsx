@@ -6,8 +6,8 @@ import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import * as timerModule from "@bentley/ui-core/lib/ui-core/utils/Timer";
-import { Toast } from "../../../ui-ninezone";
+import * as timerModule from "@itwin/ui-core-react/lib/ui-core-react/utils/Timer";
+import { Toast } from "../../../appui-layout-react";
 import { createBoundingClientRect, mount } from "../../Utils";
 
 describe("<Toast />", () => {

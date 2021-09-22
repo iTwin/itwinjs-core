@@ -6,9 +6,9 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { MessageBoxIconType, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
-import { MessageSeverity } from "@bentley/ui-abstract";
-import { UnderlinedButton } from "@bentley/ui-core";
-import { MessageManager, ReactNotifyMessageDetails } from "../../ui-framework";
+import { MessageSeverity } from "@itwin/appui-abstract";
+import { UnderlinedButton } from "@itwin/ui-core-react";
+import { MessageManager, ReactNotifyMessageDetails } from "../../appui-react";
 import TestUtils from "../TestUtils";
 
 describe("MessageManager", () => {

@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
-import { Dialog, Icon } from "@bentley/ui-core";
-import { Calculator, ModalDialogManager } from "@bentley/ui-framework";
+import { Dialog, Icon } from "@itwin/ui-core-react";
+import { Calculator, ModalDialogManager } from "@itwin/appui-react";
 
 export interface CalculatorDialogProps {
   opened: boolean;

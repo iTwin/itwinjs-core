@@ -7,7 +7,7 @@
  */
 import { BeDuration } from "@itwin/core-bentley";
 import { Point2d, XAndY } from "@itwin/core-geometry";
-import { DisplayMessageType, MessagePresenter, MessageSeverity, RelativePosition } from "@bentley/ui-abstract";
+import { DisplayMessageType, MessagePresenter, MessageSeverity, RelativePosition } from "@itwin/appui-abstract";
 import { IModelApp } from "./IModelApp";
 import { ToolAssistanceInstructions } from "./tools/ToolAssistance";
 

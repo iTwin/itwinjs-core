@@ -14,7 +14,7 @@ import {
   IModelConnection, IpcApp, NotifyMessageDetails, OutputMessagePriority, readElementGraphics, RenderGraphic, RenderGraphicOwner,
   ToolAssistanceInstruction,
 } from "@itwin/core-frontend";
-import { DialogItem, DialogProperty, DialogPropertySyncItem, EnumerationChoice, PropertyDescriptionHelper } from "@bentley/ui-abstract";
+import { DialogItem, DialogProperty, DialogPropertySyncItem, EnumerationChoice, PropertyDescriptionHelper } from "@itwin/appui-abstract";
 import { EditTools } from "./EditTool";
 
 /** @alpha */
@@ -602,7 +602,7 @@ export class RotateElementsTool extends TransformElementsTool {
     if (!await super.onInstall())
       return false;
 
-    // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o ui-framework...
+    // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o appui-react...
     const rotateMethod = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, this.methodProperty.name);
     if (undefined !== rotateMethod)
       this.methodProperty.dialogItemValue = rotateMethod;

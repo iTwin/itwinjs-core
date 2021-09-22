@@ -9,17 +9,17 @@ import { render } from "@testing-library/react";
 import {
   ActivityMessageDetails, ActivityMessageEndReason, NotifyMessageDetails, OutputMessagePriority, OutputMessageType,
 } from "@itwin/core-frontend";
-import { MessageSeverity, WidgetState } from "@bentley/ui-abstract";
-import { MessageHyperlink, MessageLayout, MessageProgress, Toast } from "@bentley/ui-ninezone";
+import { MessageSeverity, WidgetState } from "@itwin/appui-abstract";
+import { MessageHyperlink, MessageLayout, MessageProgress, Toast } from "@itwin/appui-layout-react";
 import { IconButton } from "@itwin/itwinui-react";
 import { ToastPresentation } from "@itwin/itwinui-react/cjs/core/Toast/Toast";
 import {
   AppNotificationManager, ConfigurableCreateInfo, ConfigurableUiControlType, MessageCenterField, StatusBar, StatusBarCenterSection,
   StatusBarLeftSection, StatusBarRightSection, StatusBarSpaceBetween, StatusBarWidgetControl, StatusBarWidgetControlArgs, WidgetDef,
-} from "../../ui-framework";
+} from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
-import { MessageManager } from "../../ui-framework/messages/MessageManager";
-import { StatusMessagesContainer } from "../../ui-framework/messages/StatusMessagesContainer";
+import { MessageManager } from "../../appui-react/messages/MessageManager";
+import { StatusMessagesContainer } from "../../appui-react/messages/StatusMessagesContainer";
 import { createDOMRect } from "../Utils";
 
 describe("StatusBar", () => {

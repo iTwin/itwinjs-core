@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { MessageRenderer } from "../../ui-core/notification/MessageRenderer";
-import { UnderlinedButton } from "../../ui-core/button/UnderlinedButton";
+import { MessageRenderer } from "../../ui-core-react/notification/MessageRenderer";
+import { UnderlinedButton } from "../../ui-core-react/button/UnderlinedButton";
 
 describe("MessageRenderer", () => {
 

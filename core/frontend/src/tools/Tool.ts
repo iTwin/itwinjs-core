@@ -10,7 +10,7 @@ import { assert } from "@itwin/core-bentley";
 import { Point2d, Point3d, PolygonOps, XAndY } from "@itwin/core-geometry";
 import { GeometryStreamProps, IModelError } from "@itwin/core-common";
 import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
-import { DialogItem, DialogPropertySyncItem } from "@bentley/ui-abstract";
+import { DialogItem, DialogPropertySyncItem } from "@itwin/appui-abstract";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
 import { HitDetail } from "../HitDetail";

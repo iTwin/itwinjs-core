@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { getBestBWContrastColor } from "../../ui-core";
+import { getBestBWContrastColor } from "../../ui-core-react";
 
 const COLORS = [
   "#6ab9ec",

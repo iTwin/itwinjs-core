@@ -1,0 +1,56 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "../z-index";
+@import "../style/themecolors";
+@import "../icons/variables";
+@import "~@itwin/itwinui-css/scss/style/typography";
+
+.core-radial-menu {
+  visibility: hidden;
+
+  &.opened {
+    visibility: inherit;
+  }
+
+  position: fixed;
+  @include uicore-z-index(dialog);
+
+  > .core-radial-menu-container {
+    margin-left: -50%;
+    margin-top: -50%;
+
+    .core-radial-menu-sector {
+      stroke: $buic-background-panel-stroke;
+      fill: $buic-background-control;
+      stroke-width: 1px;
+
+      &.selected {
+        fill: $buic-row-selection;
+      }
+    }
+
+    .core-radial-menu-button-svg {
+      .core-radial-menu-button-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        .core-radial-menu-button-icon {
+          height: $uicore-icons-small;
+          width: $uicore-icons-small;
+          line-height: $uicore-icons-small;
+          color: $buic-icon-color;
+        }
+
+        .core-radial-menu-button-content {
+          cursor: default;
+          color: $buic-text-color;
+          font-size: $iui-font-size-small;
+          user-select: none;
+        }
+      }
+    }
+  }
+}

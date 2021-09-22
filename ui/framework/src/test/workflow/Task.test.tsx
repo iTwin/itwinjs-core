@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import {
   ConfigurableUiManager, CoreTools, Frontstage, FrontstageActivatedEventArgs, FrontstageManager, FrontstageProps, FrontstageProvider, TaskPropsList,
   WorkflowManager, WorkflowPropsList,
-} from "../../ui-framework";
+} from "../../appui-react";
 import TestUtils from "../TestUtils";
 
 /* eslint-disable deprecation/deprecation */

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { LoadingStatus } from "../../ui-core";
+import { LoadingStatus } from "../../ui-core-react";
 
 describe("<LoadingStatus />", () => {
   it("should render", () => {

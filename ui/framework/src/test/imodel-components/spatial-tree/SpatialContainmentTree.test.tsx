@@ -11,9 +11,9 @@ import { ECInstancesNodeKey, KeySet, StandardNodeTypes } from "@itwin/presentati
 import { PresentationTreeDataProvider } from "@itwin/presentation-components";
 import { mockPresentationManager } from "@itwin/presentation-components/lib/test/_helpers/UiComponents";
 import { Presentation, PresentationManager, SelectionChangeEvent, SelectionManager } from "@itwin/presentation-frontend";
-import { PropertyRecord } from "@bentley/ui-abstract";
+import { PropertyRecord } from "@itwin/appui-abstract";
 import { render, waitFor } from "@testing-library/react";
-import { SpatialContainmentTree } from "../../../ui-framework";
+import { SpatialContainmentTree } from "../../../appui-react";
 import TestUtils from "../../TestUtils";
 
 describe("SpatialContainmentTree", () => {
@@ -45,7 +45,7 @@ describe("SpatialContainmentTree", () => {
     };
 
     beforeEach(() => {
-      sinon.stub(PresentationTreeDataProvider.prototype, "imodel").get(() =>imodelMock.object);
+      sinon.stub(PresentationTreeDataProvider.prototype, "imodel").get(() => imodelMock.object);
       sinon.stub(PresentationTreeDataProvider.prototype, "rulesetId").get(() => "");
       sinon.stub(PresentationTreeDataProvider.prototype, "dispose");
       sinon.stub(PresentationTreeDataProvider.prototype, "getFilteredNodePaths").resolves([]);

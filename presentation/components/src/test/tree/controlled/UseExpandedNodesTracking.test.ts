@@ -10,7 +10,7 @@ import { IModelConnection } from "@itwin/core-frontend";
 import { NodeKey } from "@itwin/presentation-common";
 import { createRandomECInstancesNodeKey } from "@itwin/presentation-common/lib/test/_helpers/random";
 import { Presentation, StateTracker } from "@itwin/presentation-frontend";
-import { TreeModelNodeInput, TreeModelSource, TreeNodeItem } from "@bentley/ui-components";
+import { TreeModelNodeInput, TreeModelSource, TreeNodeItem } from "@itwin/ui-components-react";
 import { cleanup, renderHook } from "@testing-library/react-hooks";
 import { IPresentationTreeDataProvider } from "../../../presentation-components";
 import { createLabelRecord } from "../../../presentation-components/common/Utils";

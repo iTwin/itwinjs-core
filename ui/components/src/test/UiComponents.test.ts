@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
-import { UiComponents } from "../ui-components";
+import { UiComponents } from "../ui-components-react";
 import TestUtils from "./TestUtils";
 
 describe("UiComponents", () => {
@@ -22,8 +22,8 @@ describe("UiComponents", () => {
     expect(UiComponents.i18nNamespace).to.eq("UiComponents");
   });
 
-  it("packageName should return ui-components", () => {
-    expect(UiComponents.packageName).to.eq("ui-components");
+  it("packageName should return ui-components-react", () => {
+    expect(UiComponents.packageName).to.eq("ui-components-react");
   });
 
   it("translate should return the key (in test environment)", async () => {

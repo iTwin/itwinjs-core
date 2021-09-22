@@ -5,7 +5,7 @@
 import * as React from "react";
 import { Id64String } from "@itwin/core-bentley";
 import { IModelApp } from "@itwin/core-frontend";
-import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@bentley/ui-framework";
+import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@itwin/appui-react";
 import { ActiveSettingsManager, iModelInfoAvailableEvent } from "../../../api/ActiveSettingsManager";
 
 interface ActiveSettingsComponentState {

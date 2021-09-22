@@ -9,8 +9,8 @@ import * as sinon from "sinon";
 import * as ReactAutosuggest from "react-autosuggest";
 import { fireEvent, render } from "@testing-library/react";
 import { Logger } from "@itwin/core-bentley";
-import { SpecialKey } from "@bentley/ui-abstract";
-import { AutoSuggest, AutoSuggestData } from "../../ui-core";
+import { SpecialKey } from "@itwin/appui-abstract";
+import { AutoSuggest, AutoSuggestData } from "../../ui-core-react";
 import TestUtils from "../TestUtils";
 
 describe("AutoSuggest", () => {

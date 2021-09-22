@@ -7,7 +7,7 @@ import "./FindSimilarWidget.css";
 import * as React from "react";
 import { IModelApp } from "@itwin/core-frontend";
 import { IPresentationTableDataProvider, tableWithUnifiedSelection } from "@itwin/presentation-components";
-import { SelectionMode, Table } from "@bentley/ui-components";
+import { SelectionMode, Table } from "@itwin/ui-components-react";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const SampleTable = tableWithUnifiedSelection(Table);

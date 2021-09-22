@@ -9,9 +9,9 @@ import {
   ImageCheckBoxParams, MessagePresenter, MessageSeverity, ParseResults,
   Primitives, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
   StandardEditorNames, StandardTypeNames, StructValue, UiAbstract,
-} from "@bentley/ui-abstract";
-import { AsyncValueProcessingResult, ColumnDescription, CompositeFilterDescriptorCollection, DataControllerBase, FilterableTable, TableFilterDescriptorCollection } from "@bentley/ui-components";
-import { UiIModelComponents } from "../ui-imodel-components/UiIModelComponents";
+} from "@itwin/appui-abstract";
+import { AsyncValueProcessingResult, ColumnDescription, CompositeFilterDescriptorCollection, DataControllerBase, FilterableTable, TableFilterDescriptorCollection } from "@itwin/ui-components-react";
+import { UiIModelComponents } from "../ui-imodel-components-react/UiIModelComponents";
 
 // cSpell:ignore buttongroup
 

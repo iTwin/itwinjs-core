@@ -9,12 +9,12 @@ import sinon from "sinon";
 import {
   AlternateDateFormats, PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat,
   SpecialKey, StandardTypeNames, TimeDisplay,
-} from "@bentley/ui-abstract";
+} from "@itwin/appui-abstract";
 import { fireEvent, render, waitFor } from "@testing-library/react";
-import { EditorContainer /* PropertyUpdatedArgs */ } from "../../ui-components/editors/EditorContainer";
-import { DateTimeEditor } from "../../ui-components/editors/DateTimeEditor";
+import { EditorContainer /* PropertyUpdatedArgs */ } from "../../ui-components-react/editors/EditorContainer";
+import { DateTimeEditor } from "../../ui-components-react/editors/DateTimeEditor";
 import TestUtils, { MineDataController } from "../TestUtils";
-import { PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
+import { PropertyEditorManager } from "../../ui-components-react/editors/PropertyEditorManager";
 
 function createDateProperty(propertyName: string, value: Date, option: number) {
   const v: PropertyValue = {

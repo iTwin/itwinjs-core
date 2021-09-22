@@ -6,15 +6,15 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
-import { StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
-import { Rectangle } from "@bentley/ui-core";
+import { StagePanelLocation, WidgetState } from "@itwin/appui-abstract";
+import { Rectangle } from "@itwin/ui-core-react";
 import {
   getDefaultNineZoneStagePanelsManagerProps, getDefaultZonesManagerProps, NineZoneManagerProps, StagePanelsManager,
-} from "@bentley/ui-ninezone";
+} from "@itwin/appui-layout-react";
 import {
   FrontstageComposer, FrontstageManager, getNestedStagePanelKey, isCollapsedToPanelState,
   ModalFrontstageInfo, StagePanelDef, StagePanelState,
-} from "../../ui-framework";
+} from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 import { TestFrontstage } from "./FrontstageTestUtils";
 

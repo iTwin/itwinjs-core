@@ -21,8 +21,8 @@ import { createTestECClassInfo, createTestECInstanceKey, createTestPropertyInfo 
 import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomId } from "@itwin/presentation-common/lib/test/_helpers/random";
 import { FavoritePropertiesManager, FavoritePropertiesScope, Presentation, PresentationManager } from "@itwin/presentation-frontend";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { PropertyCategory } from "@bentley/ui-components";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { PropertyCategory } from "@itwin/ui-components-react";
 import { CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";
 import { initializeLocalization } from "../../presentation-components/common/Utils";
 import { FAVORITES_CATEGORY_NAME } from "../../presentation-components/favorite-properties/DataProvider";

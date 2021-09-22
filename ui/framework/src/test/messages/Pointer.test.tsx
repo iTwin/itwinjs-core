@@ -7,8 +7,8 @@ import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
-import { RelativePosition } from "@bentley/ui-abstract";
-import { AppNotificationManager, PointerMessage } from "../../ui-framework";
+import { RelativePosition } from "@itwin/appui-abstract";
+import { AppNotificationManager, PointerMessage } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("PointerMessage", () => {

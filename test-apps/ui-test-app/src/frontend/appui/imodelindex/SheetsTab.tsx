@@ -8,8 +8,8 @@ import * as React from "react";
 import { Id64String } from "@itwin/core-bentley";
 import { ViewDefinitionProps } from "@itwin/core-common";
 import { IModelConnection, ViewState } from "@itwin/core-frontend";
-import { LoadingBar, SearchBox, Timer } from "@bentley/ui-core";
-import { UiFramework } from "@bentley/ui-framework";
+import { LoadingBar, SearchBox, Timer } from "@itwin/ui-core-react";
+import { UiFramework } from "@itwin/appui-react";
 import { ViewsList } from "./ViewsList";
 import { Button } from "@itwin/itwinui-react";
 

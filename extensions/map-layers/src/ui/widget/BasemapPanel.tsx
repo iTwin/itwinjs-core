@@ -7,10 +7,10 @@
 import * as React from "react";
 import { ColorByName, ColorDef, MapLayerProps, MapLayerSettings } from "@itwin/core-common";
 import { DisplayStyleState } from "@itwin/core-frontend";
-import { ColorPickerDialog, ColorSwatch } from "@bentley/ui-imodel-components";
-import { OptionType, ThemedSelect, WebFontIcon } from "@bentley/ui-core";
+import { ColorPickerDialog, ColorSwatch } from "@itwin/ui-imodel-components-react";
+import { OptionType, ThemedSelect, WebFontIcon } from "@itwin/ui-core-react";
 import { ActionMeta, ValueType } from "react-select/src/types";
-import { ModalDialogManager } from "@bentley/ui-framework";
+import { ModalDialogManager } from "@itwin/appui-react";
 import { TransparencyPopupButton } from "./TransparencyPopupButton";
 import { useSourceMapContext } from "./MapLayerManager";
 import "./BasemapPanel.scss";

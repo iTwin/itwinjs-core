@@ -6,7 +6,7 @@
 import { useEffect, useRef } from "react";
 import { Guid } from "@itwin/core-bentley";
 import { Presentation } from "@itwin/presentation-frontend";
-import { getVisibleDescendants, isTreeModelNode, TreeModelSource, TreeNodeItem } from "@bentley/ui-components";
+import { getVisibleDescendants, isTreeModelNode, TreeModelSource, TreeNodeItem } from "@itwin/ui-components-react";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
 
 /** @internal */

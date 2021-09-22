@@ -8,8 +8,8 @@ import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { InstanceKey, KeySet } from "@itwin/presentation-common";
 import { DataProvidersFactory, IPresentationTableDataProvider, PresentationPropertyDataProvider } from "@itwin/presentation-components";
 import { DEFAULT_PROPERTY_GRID_RULESET } from "@itwin/presentation-components/lib/presentation-components/propertygrid/DataProvider";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { PropertyData, RowItem } from "@bentley/ui-components";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { PropertyData, RowItem } from "@itwin/ui-components-react";
 import { initialize, terminate } from "../IntegrationTests";
 
 describe("Find Similar", () => {

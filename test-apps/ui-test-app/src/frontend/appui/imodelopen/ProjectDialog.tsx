@@ -6,8 +6,8 @@ import "./Common.scss";
 import "./ProjectDialog.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { SearchBox } from "@bentley/ui-core";
-import { ProjectInfo, ProjectScope, UiFramework } from "@bentley/ui-framework";
+import { SearchBox } from "@itwin/ui-core-react";
+import { ProjectInfo, ProjectScope, UiFramework } from "@itwin/appui-react";
 import { ProgressRadial } from "@itwin/itwinui-react";
 import { ProjectTab, ProjectTabs } from "./ProjectTabs";
 

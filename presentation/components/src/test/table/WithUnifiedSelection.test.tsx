@@ -17,7 +17,7 @@ import {
   ISelectionProvider, Presentation, PresentationManager, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler,
   SelectionManager,
 } from "@itwin/presentation-frontend";
-import { ColumnDescription, RowItem, Table, TableDataChangeEvent, TableProps } from "@bentley/ui-components";
+import { ColumnDescription, RowItem, Table, TableDataChangeEvent, TableProps } from "@itwin/ui-components-react";
 import { IUnifiedSelectionComponent, PresentationTableDataProvider, tableWithUnifiedSelection } from "../../presentation-components";
 import { PresentationTableDataProviderProps } from "../../presentation-components/table/DataProvider";
 

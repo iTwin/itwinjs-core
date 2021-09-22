@@ -10,7 +10,7 @@ import { AccuDrawHintBuilder, AccuDrawShortcuts, AngleDescription, BeButtonEvent
 import { Angle, Matrix3d, Point3d, Ray3d, Vector3d, XYAndZ } from "@itwin/core-geometry";
 import { Cartographic, ColorDef, LinePixels } from "@itwin/core-common";
 import { ProjectExtentsClipDecoration } from "./ProjectExtentsDecoration";
-import { DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription } from "@bentley/ui-abstract";
+import { DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription } from "@itwin/appui-abstract";
 import { EditTools } from "../EditTool";
 
 function translatePrompt(key: string) { return EditTools.translate(`ProjectLocation:Prompts.${key}`); }

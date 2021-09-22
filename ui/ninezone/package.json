@@ -1,9 +1,9 @@
 {
-  "name": "@bentley/ui-ninezone",
+  "name": "@itwin/appui-layout-react",
   "version": "3.0.0-dev.64",
   "description": "iModel.js Nine-zone React UI components",
-  "main": "lib/ui-ninezone.js",
-  "typings": "lib/ui-ninezone",
+  "main": "lib/appui-layout-react.js",
+  "typings": "lib/appui-layout-react",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
@@ -17,8 +17,8 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm test",
     "docs": "npm run docs:typedoc",
-    "docs:typedoc": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-ninezone/file.json --tsIndexFile=./ui-ninezone.ts --onlyJson",
-    "extract-api": "betools extract-api --entry=ui-ninezone",
+    "docs:typedoc": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/ui/appui-layout-react/file.json --tsIndexFile=./appui-layout-react.ts --onlyJson",
+    "extract-api": "betools extract-api --entry=appui-layout-react",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
     "test": "mocha --config ../.mocharc.json \"./lib/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
@@ -34,8 +34,8 @@
   },
   "peerDependencies": {
     "@itwin/core-bentley": "workspace:^3.0.0-dev.64",
-    "@bentley/ui-abstract": "workspace:^3.0.0-dev.64",
-    "@bentley/ui-core": "workspace:^3.0.0-dev.64",
+    "@itwin/appui-abstract": "workspace:^3.0.0-dev.64",
+    "@itwin/ui-core-react": "workspace:^3.0.0-dev.64",
     "react": "^16.8.6 || ^17.0.0",
     "react-dom": "^16.8.6 || ^17.0.0"
   },
@@ -48,8 +48,8 @@
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@bentley/react-scripts": "4.0.3",
-    "@bentley/ui-abstract": "workspace:*",
-    "@bentley/ui-core": "workspace:*",
+    "@itwin/appui-abstract": "workspace:*",
+    "@itwin/ui-core-react": "workspace:*",
     "@testing-library/react": "^12.0.0",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/chai": "^4.1.4",

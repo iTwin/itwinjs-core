@@ -8,7 +8,7 @@ import { ColorDef } from "@itwin/core-common";
 import {
   BeButtonEvent, EventHandled, IModelApp, NotifyMessageDetails, OutputMessagePriority, PrimitiveTool, ToolAssistance, ToolAssistanceImage,
 } from "@itwin/core-frontend";
-import { DialogItemValue, DialogPropertySyncItem } from "@bentley/ui-abstract";
+import { DialogItemValue, DialogPropertySyncItem } from "@itwin/appui-abstract";
 
 export class Tool1 extends PrimitiveTool {
   public static override toolId = "Tool1";

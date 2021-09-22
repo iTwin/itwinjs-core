@@ -7,9 +7,9 @@ import {
   AbstractStatusBarItemUtilities, AbstractWidgetProps, AbstractZoneLocation, BackstageItem, BackstageItemUtilities,
   CommonStatusBarItem, CommonToolbarItem, StagePanelLocation, StagePanelSection,
   StageUsage, StatusBarSection, ToolbarOrientation, ToolbarUsage, UiItemsProvider, WidgetState,
-} from "@bentley/ui-abstract";
+} from "@itwin/appui-abstract";
 import { I18N } from "@bentley/imodeljs-i18n";
-import { UiFramework } from "@bentley/ui-framework";
+import { UiFramework } from "@itwin/appui-react";
 import { IModelApp } from "@itwin/core-frontend";
 import statusBarButtonSvg from "./StatusField.svg?sprite"; // use once svg are working again.
 import { UnitsPopupUiDataProvider } from "./UnitsPopup";

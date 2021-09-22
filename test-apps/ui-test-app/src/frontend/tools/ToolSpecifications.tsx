@@ -18,14 +18,14 @@ import { Presentation } from "@itwin/presentation-frontend";
 import {
   BackstageItem, BackstageItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue, DialogButtonType,
   MessageSeverity, StandardContentLayouts, StatusBarSection, UiItemsManager, UiItemsProvider, WidgetState,
-} from "@bentley/ui-abstract";
-import { Dialog, ReactMessage, SvgPath, SvgSprite, UnderlinedButton } from "@bentley/ui-core";
+} from "@itwin/appui-abstract";
+import { Dialog, ReactMessage, SvgPath, SvgSprite, UnderlinedButton } from "@itwin/ui-core-react";
 import {
   Backstage, CommandItemDef, ContentGroup, ContentGroupProps, ContentLayoutManager, ContentProps, ContentViewManager,
   FrontstageManager, IModelViewportControl, MessageManager, ModalDialogManager, ReactNotifyMessageDetails,
   StatusBarItemUtilities, SyncUiEventDispatcher, SyncUiEventId, ToolItemDef, withStatusFieldProps,
-} from "@bentley/ui-framework";
-import { FooterSeparator } from "@bentley/ui-ninezone";
+} from "@itwin/appui-react";
+import { FooterSeparator } from "@itwin/appui-layout-react";
 import { SampleAppIModelApp } from "../";
 import { AppUi } from "../appui/AppUi";
 import { TestMessageBox } from "../appui/dialogs/TestMessageBox";

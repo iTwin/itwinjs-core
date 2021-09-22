@@ -1,9 +1,9 @@
 {
-  "name": "@bentley/ui-core",
+  "name": "@itwin/ui-core-react",
   "version": "3.0.0-dev.64",
   "description": "iModel.js UI core components",
-  "main": "lib/ui-core.js",
-  "typings": "lib/ui-core",
+  "main": "lib/ui-core-react.js",
+  "typings": "lib/ui-core-react",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
@@ -17,9 +17,9 @@
     "build": "npm run copy:assets && npm run pseudolocalize && tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm test",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-core/file.json --tsIndexFile=./ui-core.ts --onlyJson",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-core-react/file.json --tsIndexFile=./ui-core-react.ts --onlyJson",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
-    "extract-api": "betools extract-api --entry=ui-core",
+    "extract-api": "betools extract-api --entry=ui-core-react",
     "test": "mocha --config ../.mocharc.json \"./lib/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
   },
@@ -37,7 +37,7 @@
   "peerDependencies": {
     "@itwin/core-bentley": "workspace:^3.0.0-dev.64",
     "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.64",
-    "@bentley/ui-abstract": "workspace:^3.0.0-dev.64",
+    "@itwin/appui-abstract": "workspace:^3.0.0-dev.64",
     "react": "^16.8.6 || ^17.0.0",
     "react-dom": "^16.8.6 || ^17.0.0"
   },
@@ -51,7 +51,7 @@
     "@bentley/eslint-plugin": "workspace:*",
     "@bentley/imodeljs-i18n": "workspace:*",
     "@bentley/react-scripts": "4.0.3",
-    "@bentley/ui-abstract": "workspace:*",
+    "@itwin/appui-abstract": "workspace:*",
     "@testing-library/react": "^12.0.0",
     "@testing-library/react-hooks": "^3.2.1",
     "@testing-library/user-event": "^13.2.1",

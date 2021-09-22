@@ -5,10 +5,10 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import { FlatGridTestUtils } from "./flat-items/FlatGridTestUtils";
-import { MutablePropertyGridModel } from "../../../../ui-components/propertygrid/internal/PropertyGridModel";
-import { PropertyGridEventHandler } from "../../../../ui-components/propertygrid/internal/PropertyGridEventHandler";
-import { PropertyGridModelChangeEvent } from "../../../../ui-components/propertygrid/internal/PropertyGridModelChangeEvent";
-import { PropertyGridModelSource } from "../../../../ui-components/propertygrid/internal/PropertyGridModelSource";
+import { MutablePropertyGridModel } from "../../../../ui-components-react/propertygrid/internal/PropertyGridModel";
+import { PropertyGridEventHandler } from "../../../../ui-components-react/propertygrid/internal/PropertyGridEventHandler";
+import { PropertyGridModelChangeEvent } from "../../../../ui-components-react/propertygrid/internal/PropertyGridModelChangeEvent";
+import { PropertyGridModelSource } from "../../../../ui-components-react/propertygrid/internal/PropertyGridModelSource";
 
 describe("PropertyGridEventHandler", () => {
   describe("onExpansionToggledFactory", () => {

@@ -6,9 +6,9 @@ import { expect } from "chai";
 import * as React from "react";
 import { BeDuration } from "@itwin/core-bentley";
 import { OutputMessagePriority } from "@itwin/core-frontend";
-import { RelativePosition } from "@bentley/ui-abstract";
-import { isReactNotifyMessageDetails, ReactNotifyMessageDetails } from "../../ui-framework";
-import { isReactMessage } from "@bentley/ui-core";
+import { RelativePosition } from "@itwin/appui-abstract";
+import { isReactNotifyMessageDetails, ReactNotifyMessageDetails } from "../../appui-react";
+import { isReactMessage } from "@itwin/ui-core-react";
 
 describe("ReactNotifyMessageDetails", () => {
 

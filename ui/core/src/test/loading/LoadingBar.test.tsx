@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { LoadingBar } from "../../ui-core";
+import { LoadingBar } from "../../ui-core-react";
 
 describe("<LoadingBar />", () => {
   it("should render", () => {

@@ -7,7 +7,7 @@ import * as React from "react";
 import * as moq from "typemoq";
 import { BeEvent } from "@itwin/core-bentley";
 import { IModelApp, MockRender, ScreenViewport, Viewport } from "@itwin/core-frontend";
-import { TileLoadingIndicator } from "../../../ui-framework";
+import { TileLoadingIndicator } from "../../../appui-react";
 import TestUtils, { mount } from "../../TestUtils";
 
 describe("TileLoadingIndicator", () => {

@@ -6,8 +6,8 @@ import * as React from "react";
 import { useResizeDetector } from "react-resize-detector";
 import { IModelApp, IModelConnection } from "@itwin/core-frontend";
 import { usePresentationTreeNodeLoader, useUnifiedSelectionTreeEventHandler } from "@itwin/presentation-components";
-import { ControlledTree, SelectionMode, useTreeModel } from "@bentley/ui-components";
-import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@bentley/ui-framework";
+import { ControlledTree, SelectionMode, useTreeModel } from "@itwin/ui-components-react";
+import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@itwin/appui-react";
 import { Input } from "@itwin/itwinui-react";
 
 export class NavigationTreeWidgetControl extends WidgetControl {

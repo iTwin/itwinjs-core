@@ -921,7 +921,7 @@ importers:
       '@bentley/product-settings-client': workspace:*
       '@bentley/reality-data-client': workspace:*
       '@bentley/telemetry-client': workspace:*
-      '@bentley/ui-abstract': workspace:*
+      '@itwin/appui-abstract': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
@@ -967,7 +967,7 @@ importers:
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/product-settings-client': link:../../clients/product-settings
       '@bentley/telemetry-client': link:../../clients/telemetry
-      '@bentley/ui-abstract': link:../../ui/abstract
+      '@itwin/appui-abstract': link:../../ui/abstract
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-common': link:../common
       '@itwin/core-geometry': link:../geometry
@@ -1072,7 +1072,7 @@ importers:
       '@bentley/certa': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/imodeljs-i18n': workspace:*
-      '@bentley/ui-abstract': workspace:*
+      '@itwin/appui-abstract': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
@@ -1095,7 +1095,7 @@ importers:
       '@bentley/certa': link:../../tools/certa
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/imodeljs-i18n': link:../i18n
-      '@bentley/ui-abstract': link:../../ui/abstract
+      '@itwin/appui-abstract': link:../../ui/abstract
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-common': link:../common
       '@itwin/core-frontend': link:../frontend
@@ -1647,7 +1647,7 @@ importers:
       '@bentley/certa': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/imodeljs-i18n': workspace:*
-      '@bentley/ui-abstract': workspace:*
+      '@itwin/appui-abstract': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
@@ -1667,7 +1667,7 @@ importers:
       source-map-loader: ^1.0.0
       typescript: ~4.3.0
     dependencies:
-      '@bentley/ui-abstract': link:../../ui/abstract
+      '@itwin/appui-abstract': link:../../ui/abstract
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/editor-common': link:../common
@@ -1895,12 +1895,9 @@ importers:
       '@bentley/imodeljs-quantity': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/react-scripts': 4.0.3
-      '@bentley/ui-abstract': workspace:*
-      '@bentley/ui-components': workspace:*
-      '@bentley/ui-core': workspace:*
-      '@bentley/ui-framework': workspace:*
-      '@bentley/ui-imodel-components': workspace:*
-      '@bentley/ui-ninezone': workspace:*
+      '@itwin/appui-abstract': workspace:*
+      '@itwin/appui-layout-react': workspace:*
+      '@itwin/appui-react': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
@@ -1908,6 +1905,9 @@ importers:
       '@itwin/itwinui-css': ^0.27.0
       '@itwin/itwinui-react': ^1.16.2
       '@itwin/presentation-common': workspace:*
+      '@itwin/ui-components-react': workspace:*
+      '@itwin/ui-core-react': workspace:*
+      '@itwin/ui-imodel-components-react': workspace:*
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^3.2.1
       '@types/chai': ^4.1.4
@@ -1955,12 +1955,9 @@ importers:
       '@bentley/imodeljs-quantity': link:../../core/quantity
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/react-scripts': 4.0.3_react@17.0.2+typescript@4.3.5
-      '@bentley/ui-abstract': link:../../ui/abstract
-      '@bentley/ui-components': link:../../ui/components
-      '@bentley/ui-core': link:../../ui/core
-      '@bentley/ui-framework': link:../../ui/framework
-      '@bentley/ui-imodel-components': link:../../ui/imodel-components
-      '@bentley/ui-ninezone': link:../../ui/ninezone
+      '@itwin/appui-abstract': link:../../ui/abstract
+      '@itwin/appui-layout-react': link:../../ui/ninezone
+      '@itwin/appui-react': link:../../ui/framework
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
@@ -1968,6 +1965,9 @@ importers:
       '@itwin/itwinui-css': 0.27.3
       '@itwin/itwinui-react': 1.19.0_react@17.0.2
       '@itwin/presentation-common': link:../../presentation/common
+      '@itwin/ui-components-react': link:../../ui/components
+      '@itwin/ui-core-react': link:../../ui/core
+      '@itwin/ui-imodel-components-react': link:../../ui/imodel-components
       '@testing-library/react': 12.1.0_react@17.0.2
       '@testing-library/react-hooks': 3.7.0_react@17.0.2
       '@types/chai': 4.2.22
@@ -2339,9 +2339,7 @@ importers:
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@bentley/product-settings-client': workspace:*
-      '@bentley/ui-abstract': workspace:*
-      '@bentley/ui-components': workspace:*
-      '@bentley/ui-core': workspace:*
+      '@itwin/appui-abstract': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
@@ -2352,6 +2350,8 @@ importers:
       '@itwin/presentation-components': workspace:*
       '@itwin/presentation-frontend': workspace:*
       '@itwin/presentation-testing': workspace:*
+      '@itwin/ui-components-react': workspace:*
+      '@itwin/ui-core-react': workspace:*
       '@testing-library/react-hooks': ^3.2.1
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
@@ -2400,9 +2400,7 @@ importers:
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@bentley/product-settings-client': link:../../clients/product-settings
-      '@bentley/ui-abstract': link:../../ui/abstract
-      '@bentley/ui-components': link:../../ui/components
-      '@bentley/ui-core': link:../../ui/core
+      '@itwin/appui-abstract': link:../../ui/abstract
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -2413,6 +2411,8 @@ importers:
       '@itwin/presentation-components': link:../../presentation/components
       '@itwin/presentation-frontend': link:../../presentation/frontend
       '@itwin/presentation-testing': link:../../presentation/testing
+      '@itwin/ui-components-react': link:../../ui/components
+      '@itwin/ui-core-react': link:../../ui/core
       '@testing-library/react-hooks': 3.7.0_509016fd322278d497c1e58f6164ce1d
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
@@ -2771,15 +2771,15 @@ importers:
       '@bentley/build-tools': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/imodeljs-i18n': workspace:*
-      '@bentley/ui-abstract': workspace:*
-      '@bentley/ui-components': workspace:*
-      '@bentley/ui-core': workspace:*
-      '@bentley/ui-imodel-components': workspace:*
+      '@itwin/appui-abstract': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
+      '@itwin/ui-components-react': workspace:*
+      '@itwin/ui-core-react': workspace:*
+      '@itwin/ui-imodel-components-react': workspace:*
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^3.2.1
       '@types/chai': ^4.1.4
@@ -2831,15 +2831,15 @@ importers:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/imodeljs-i18n': link:../../core/i18n
-      '@bentley/ui-abstract': link:../../ui/abstract
-      '@bentley/ui-components': link:../../ui/components
-      '@bentley/ui-core': link:../../ui/core
-      '@bentley/ui-imodel-components': link:../../ui/imodel-components
+      '@itwin/appui-abstract': link:../../ui/abstract
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/presentation-common': link:../common
       '@itwin/presentation-frontend': link:../frontend
+      '@itwin/ui-components-react': link:../../ui/components
+      '@itwin/ui-core-react': link:../../ui/core
+      '@itwin/ui-imodel-components-react': link:../../ui/imodel-components
       '@testing-library/react': 12.1.0_react-dom@17.0.2+react@17.0.2
       '@testing-library/react-hooks': 3.7.0_509016fd322278d497c1e58f6164ce1d
       '@types/chai': 4.2.22
@@ -2963,8 +2963,7 @@ importers:
       '@bentley/build-tools': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/itwin-client': workspace:*
-      '@bentley/ui-abstract': workspace:*
-      '@bentley/ui-components': workspace:*
+      '@itwin/appui-abstract': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
@@ -2973,6 +2972,7 @@ importers:
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
       '@itwin/presentation-frontend': workspace:*
+      '@itwin/ui-components-react': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.0
@@ -3004,8 +3004,7 @@ importers:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/ui-abstract': link:../../ui/abstract
-      '@bentley/ui-components': link:../../ui/components
+      '@itwin/appui-abstract': link:../../ui/abstract
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -3014,6 +3013,7 @@ importers:
       '@itwin/presentation-common': link:../common
       '@itwin/presentation-components': link:../components
       '@itwin/presentation-frontend': link:../frontend
+      '@itwin/ui-components-react': link:../../ui/components
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
       '@types/chai-jest-snapshot': 1.3.6
@@ -3058,7 +3058,7 @@ importers:
       '@bentley/mobile-manager': workspace:*
       '@bentley/perf-tools': workspace:*
       '@bentley/react-scripts': 4.0.3
-      '@bentley/ui-abstract': workspace:*
+      '@itwin/appui-abstract': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
@@ -3093,7 +3093,7 @@ importers:
       '@bentley/imodeljs-quantity': link:../../core/quantity
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/mobile-manager': link:../../core/mobile-manager
-      '@bentley/ui-abstract': link:../../ui/abstract
+      '@itwin/appui-abstract': link:../../ui/abstract
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -3139,7 +3139,7 @@ importers:
       '@bentley/itwin-client': workspace:*
       '@bentley/mobile-manager': workspace:*
       '@bentley/react-scripts': 4.0.3
-      '@bentley/ui-abstract': workspace:*
+      '@itwin/appui-abstract': workspace:*
       '@itwin/backend-webpack-tools': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
@@ -3183,7 +3183,7 @@ importers:
       '@bentley/imodeljs-quantity': link:../../core/quantity
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/mobile-manager': link:../../core/mobile-manager
-      '@bentley/ui-abstract': link:../../ui/abstract
+      '@itwin/appui-abstract': link:../../ui/abstract
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -3460,10 +3460,10 @@ importers:
       '@bentley/eslint-plugin': workspace:*
       '@bentley/icons-generic-webfont': ^1.0.15
       '@bentley/react-scripts': 4.0.3
-      '@bentley/ui-abstract': workspace:*
-      '@bentley/ui-components': workspace:*
-      '@bentley/ui-core': workspace:*
-      '@bentley/ui-ninezone': workspace:*
+      '@itwin/appui-abstract': workspace:*
+      '@itwin/appui-layout-react': workspace:*
+      '@itwin/ui-components-react': workspace:*
+      '@itwin/ui-core-react': workspace:*
       '@types/react': ^17.0.0
       '@types/react-dom': ^17.0.0
       '@types/react-router-dom': ^5.1.7
@@ -3477,10 +3477,10 @@ importers:
       typescript: ~4.3.0
     dependencies:
       '@bentley/icons-generic-webfont': 1.0.34
-      '@bentley/ui-abstract': link:../../ui/abstract
-      '@bentley/ui-components': link:../../ui/components
-      '@bentley/ui-core': link:../../ui/core
-      '@bentley/ui-ninezone': link:../../ui/ninezone
+      '@itwin/appui-abstract': link:../../ui/abstract
+      '@itwin/appui-layout-react': link:../../ui/ninezone
+      '@itwin/ui-components-react': link:../../ui/components
+      '@itwin/ui-core-react': link:../../ui/core
       classnames: 2.3.1
       highlight.js: 10.6.0
       raf-schd: 4.0.3
@@ -3507,10 +3507,7 @@ importers:
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/imodeljs-quantity': workspace:*
       '@bentley/react-scripts': 4.0.3
-      '@bentley/ui-abstract': workspace:*
-      '@bentley/ui-components': workspace:*
-      '@bentley/ui-core': workspace:*
-      '@bentley/ui-imodel-components': workspace:*
+      '@itwin/appui-abstract': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
@@ -3522,6 +3519,9 @@ importers:
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
       '@itwin/presentation-frontend': workspace:*
+      '@itwin/ui-components-react': workspace:*
+      '@itwin/ui-core-react': workspace:*
+      '@itwin/ui-imodel-components-react': workspace:*
       '@types/bunyan': ^1.8.4
       '@types/react': ^17.0.0
       '@types/react-dom': ^17.0.0
@@ -3550,10 +3550,7 @@ importers:
       '@bentley/icons-generic-webfont': 1.0.34
       '@bentley/imodeljs-i18n': link:../../core/i18n
       '@bentley/imodeljs-quantity': link:../../core/quantity
-      '@bentley/ui-abstract': link:../../ui/abstract
-      '@bentley/ui-components': link:../../ui/components
-      '@bentley/ui-core': link:../../ui/core
-      '@bentley/ui-imodel-components': link:../../ui/imodel-components
+      '@itwin/appui-abstract': link:../../ui/abstract
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -3565,6 +3562,9 @@ importers:
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-components': link:../../presentation/components
       '@itwin/presentation-frontend': link:../../presentation/frontend
+      '@itwin/ui-components-react': link:../../ui/components
+      '@itwin/ui-core-react': link:../../ui/core
+      '@itwin/ui-imodel-components-react': link:../../ui/imodel-components
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
       react-resize-detector: 6.7.6_react-dom@17.0.2+react@17.0.2
@@ -3612,12 +3612,9 @@ importers:
       '@bentley/map-layers': workspace:*
       '@bentley/mobile-manager': workspace:*
       '@bentley/react-scripts': 4.0.3
-      '@bentley/ui-abstract': workspace:*
-      '@bentley/ui-components': workspace:*
-      '@bentley/ui-core': workspace:*
-      '@bentley/ui-framework': workspace:*
-      '@bentley/ui-imodel-components': workspace:*
-      '@bentley/ui-ninezone': workspace:*
+      '@itwin/appui-abstract': workspace:*
+      '@itwin/appui-layout-react': workspace:*
+      '@itwin/appui-react': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
@@ -3634,6 +3631,9 @@ importers:
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
       '@itwin/presentation-frontend': workspace:*
+      '@itwin/ui-components-react': workspace:*
+      '@itwin/ui-core-react': workspace:*
+      '@itwin/ui-imodel-components-react': workspace:*
       '@types/lorem-ipsum': ^1.0.2
       '@types/node': 10.14.1
       '@types/react': ^17.0.0
@@ -3681,12 +3681,9 @@ importers:
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/map-layers': link:../../extensions/map-layers
       '@bentley/mobile-manager': link:../../core/mobile-manager
-      '@bentley/ui-abstract': link:../../ui/abstract
-      '@bentley/ui-components': link:../../ui/components
-      '@bentley/ui-core': link:../../ui/core
-      '@bentley/ui-framework': link:../../ui/framework
-      '@bentley/ui-imodel-components': link:../../ui/imodel-components
-      '@bentley/ui-ninezone': link:../../ui/ninezone
+      '@itwin/appui-abstract': link:../../ui/abstract
+      '@itwin/appui-layout-react': link:../../ui/ninezone
+      '@itwin/appui-react': link:../../ui/framework
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -3703,6 +3700,9 @@ importers:
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-components': link:../../presentation/components
       '@itwin/presentation-frontend': link:../../presentation/frontend
+      '@itwin/ui-components-react': link:../../ui/components
+      '@itwin/ui-core-react': link:../../ui/core
+      '@itwin/ui-imodel-components-react': link:../../ui/imodel-components
       classnames: 2.3.1
       lorem-ipsum: 2.0.3
       react: 17.0.2
@@ -3749,11 +3749,9 @@ importers:
       '@bentley/imodeljs-quantity': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/react-scripts': 4.0.3
-      '@bentley/ui-abstract': workspace:*
-      '@bentley/ui-components': workspace:*
-      '@bentley/ui-core': workspace:*
-      '@bentley/ui-framework': workspace:*
-      '@bentley/ui-ninezone': workspace:*
+      '@itwin/appui-abstract': workspace:*
+      '@itwin/appui-layout-react': workspace:*
+      '@itwin/appui-react': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
@@ -3761,6 +3759,8 @@ importers:
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
       '@itwin/presentation-frontend': workspace:*
+      '@itwin/ui-components-react': workspace:*
+      '@itwin/ui-core-react': workspace:*
       '@types/react': ^17.0.0
       '@types/react-select': 3.0.26
       classnames: ^2.3.1
@@ -3776,11 +3776,9 @@ importers:
       '@bentley/imodeljs-i18n': link:../../core/i18n
       '@bentley/imodeljs-quantity': link:../../core/quantity
       '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/ui-abstract': link:../../ui/abstract
-      '@bentley/ui-components': link:../../ui/components
-      '@bentley/ui-core': link:../../ui/core
-      '@bentley/ui-framework': link:../../ui/framework
-      '@bentley/ui-ninezone': link:../../ui/ninezone
+      '@itwin/appui-abstract': link:../../ui/abstract
+      '@itwin/appui-layout-react': link:../../ui/ninezone
+      '@itwin/appui-react': link:../../ui/framework
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
@@ -3788,6 +3786,8 @@ importers:
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-components': link:../../presentation/components
       '@itwin/presentation-frontend': link:../../presentation/frontend
+      '@itwin/ui-components-react': link:../../ui/components
+      '@itwin/ui-core-react': link:../../ui/core
       classnames: 2.3.1
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
@@ -4271,11 +4271,11 @@ importers:
       '@bentley/eslint-plugin': workspace:*
       '@bentley/icons-generic-webfont': ^1.0.15
       '@bentley/imodeljs-i18n': workspace:*
-      '@bentley/ui-abstract': workspace:*
-      '@bentley/ui-core': workspace:*
+      '@itwin/appui-abstract': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/itwinui-css': ^0.27.0
       '@itwin/itwinui-react': ^1.16.2
+      '@itwin/ui-core-react': workspace:*
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^3.2.1
       '@testing-library/user-event': ^13.2.1
@@ -4375,9 +4375,9 @@ importers:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/imodeljs-i18n': link:../../core/i18n
-      '@bentley/ui-abstract': link:../abstract
-      '@bentley/ui-core': link:../core
+      '@itwin/appui-abstract': link:../abstract
       '@itwin/core-bentley': link:../../core/bentley
+      '@itwin/ui-core-react': link:../core
       '@testing-library/react': 12.1.0_react-dom@17.0.2+react@17.0.2
       '@testing-library/react-hooks': 3.7.0_react@17.0.2
       '@testing-library/user-event': 13.2.1
@@ -4439,7 +4439,7 @@ importers:
       '@bentley/icons-generic-webfont': ^1.0.15
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/react-scripts': 4.0.3
-      '@bentley/ui-abstract': workspace:*
+      '@itwin/appui-abstract': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/itwinui-css': ^0.27.0
       '@itwin/itwinui-react': ^1.16.2
@@ -4512,7 +4512,7 @@ importers:
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/imodeljs-i18n': link:../../core/i18n
       '@bentley/react-scripts': 4.0.3_428b90cc0d849ebb6ccbdf38609f3b43
-      '@bentley/ui-abstract': link:../abstract
+      '@itwin/appui-abstract': link:../abstract
       '@itwin/core-bentley': link:../../core/bentley
       '@testing-library/react': 12.1.0_react-dom@17.0.2+react@17.0.2
       '@testing-library/react-hooks': 3.7.0_509016fd322278d497c1e58f6164ce1d
@@ -4576,11 +4576,8 @@ importers:
       '@bentley/product-settings-client': workspace:*
       '@bentley/react-scripts': 4.0.3
       '@bentley/telemetry-client': workspace:*
-      '@bentley/ui-abstract': workspace:*
-      '@bentley/ui-components': workspace:*
-      '@bentley/ui-core': workspace:*
-      '@bentley/ui-imodel-components': workspace:*
-      '@bentley/ui-ninezone': workspace:*
+      '@itwin/appui-abstract': workspace:*
+      '@itwin/appui-layout-react': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
@@ -4592,6 +4589,9 @@ importers:
       '@itwin/presentation-components': workspace:*
       '@itwin/presentation-frontend': workspace:*
       '@itwin/presentation-testing': workspace:*
+      '@itwin/ui-components-react': workspace:*
+      '@itwin/ui-core-react': workspace:*
+      '@itwin/ui-imodel-components-react': workspace:*
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^3.2.1
       '@types/chai': ^4.1.4
@@ -4673,11 +4673,8 @@ importers:
       '@bentley/product-settings-client': link:../../clients/product-settings
       '@bentley/react-scripts': 4.0.3_428b90cc0d849ebb6ccbdf38609f3b43
       '@bentley/telemetry-client': link:../../clients/telemetry
-      '@bentley/ui-abstract': link:../abstract
-      '@bentley/ui-components': link:../components
-      '@bentley/ui-core': link:../core
-      '@bentley/ui-imodel-components': link:../imodel-components
-      '@bentley/ui-ninezone': link:../ninezone
+      '@itwin/appui-abstract': link:../abstract
+      '@itwin/appui-layout-react': link:../ninezone
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
@@ -4686,6 +4683,9 @@ importers:
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-frontend': link:../../presentation/frontend
       '@itwin/presentation-testing': link:../../presentation/testing
+      '@itwin/ui-components-react': link:../components
+      '@itwin/ui-core-react': link:../core
+      '@itwin/ui-imodel-components-react': link:../imodel-components
       '@testing-library/react': 12.1.0_react-dom@17.0.2+react@17.0.2
       '@testing-library/react-hooks': 3.7.0_509016fd322278d497c1e58f6164ce1d
       '@types/chai': 4.2.22
@@ -4741,15 +4741,15 @@ importers:
       '@bentley/icons-generic-webfont': ^1.0.15
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/imodeljs-quantity': workspace:*
-      '@bentley/ui-abstract': workspace:*
-      '@bentley/ui-components': workspace:*
-      '@bentley/ui-core': workspace:*
+      '@itwin/appui-abstract': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/itwinui-css': ^0.27.0
       '@itwin/itwinui-react': ^1.16.2
+      '@itwin/ui-components-react': workspace:*
+      '@itwin/ui-core-react': workspace:*
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^3.2.1
       '@testing-library/user-event': ^13.2.1
@@ -4815,13 +4815,13 @@ importers:
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/imodeljs-i18n': link:../../core/i18n
       '@bentley/imodeljs-quantity': link:../../core/quantity
-      '@bentley/ui-abstract': link:../abstract
-      '@bentley/ui-components': link:../components
-      '@bentley/ui-core': link:../core
+      '@itwin/appui-abstract': link:../abstract
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
+      '@itwin/ui-components-react': link:../components
+      '@itwin/ui-core-react': link:../core
       '@testing-library/react': 12.1.0_react-dom@17.0.2+react@17.0.2
       '@testing-library/react-hooks': 3.7.0_509016fd322278d497c1e58f6164ce1d
       '@testing-library/user-event': 13.2.1
@@ -4872,11 +4872,11 @@ importers:
       '@bentley/build-tools': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/react-scripts': 4.0.3
-      '@bentley/ui-abstract': workspace:*
-      '@bentley/ui-core': workspace:*
+      '@itwin/appui-abstract': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/itwinui-css': ^0.27.0
       '@itwin/itwinui-react': ^1.16.2
+      '@itwin/ui-core-react': workspace:*
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^3.2.1
       '@types/chai': ^4.1.4
@@ -4928,9 +4928,9 @@ importers:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/react-scripts': 4.0.3_428b90cc0d849ebb6ccbdf38609f3b43
-      '@bentley/ui-abstract': link:../abstract
-      '@bentley/ui-core': link:../core
+      '@itwin/appui-abstract': link:../abstract
       '@itwin/core-bentley': link:../../core/bentley
+      '@itwin/ui-core-react': link:../core
       '@testing-library/react': 12.1.0_react-dom@17.0.2+react@17.0.2
       '@testing-library/react-hooks': 3.7.0_react@17.0.2
       '@types/chai': 4.2.22

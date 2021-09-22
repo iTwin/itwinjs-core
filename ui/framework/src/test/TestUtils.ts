@@ -10,13 +10,13 @@ import { expect } from "chai";
 
 import { I18N } from "@bentley/imodeljs-i18n";
 import { UserInfo } from "@bentley/itwin-client";
-import { ContentLayoutProps, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValueFormat, StandardContentLayouts, StandardTypeNames } from "@bentley/ui-abstract";
-import { UiSettings, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
+import { ContentLayoutProps, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValueFormat, StandardContentLayouts, StandardTypeNames } from "@itwin/appui-abstract";
+import { UiSettings, UiSettingsResult, UiSettingsStatus } from "@itwin/ui-core-react";
 
 import {
   ActionsUnion, combineReducers, ContentGroup, createAction, DeepReadonly, FrameworkReducer,
   FrameworkState, SyncUiEventDispatcher, ToolSettingsManager, UiFramework,
-} from "../ui-framework";
+} from "../appui-react";
 import { TestContentControl } from "./frontstage/FrontstageTestUtils";
 
 interface SampleAppState {

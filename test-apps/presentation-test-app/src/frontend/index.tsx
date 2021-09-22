@@ -11,7 +11,7 @@ import { IModelApp, IModelAppOptions, WebViewerApp } from "@itwin/core-frontend"
 // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Imports
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@itwin/presentation-frontend";
 // __PUBLISH_EXTRACT_END__
-import { UiComponents } from "@bentley/ui-components";
+import { UiComponents } from "@itwin/ui-components-react";
 import rpcs from "../common/Rpcs";
 import { MyAppFrontend } from "./api/MyAppFrontend";
 import App from "./components/app/App";

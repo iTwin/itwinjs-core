@@ -5,9 +5,9 @@
 import "./ProjectDropdown.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { RelativePosition } from "@bentley/ui-abstract";
-import { Popup } from "@bentley/ui-core";
-import { ProjectInfo } from "@bentley/ui-framework";
+import { RelativePosition } from "@itwin/appui-abstract";
+import { Popup } from "@itwin/ui-core-react";
+import { ProjectInfo } from "@itwin/appui-react";
 import { ProjectDialog } from "./ProjectDialog";
 
 /** Properties for the [[ProjectDropdown]] component */

@@ -13,13 +13,13 @@ import { Presentation, SelectionManager, SelectionScopesManager, SelectionScopes
 import {
   ContentControlActivatedEventArgs, ContentLayoutActivatedEventArgs, NavigationAidActivatedEventArgs, SyncUiEventArgs, SyncUiEventDispatcher,
   UiFramework, WidgetStateChangedEventArgs,
-} from "../../ui-framework";
-import { Backstage, BackstageEventArgs } from "../../ui-framework/backstage/Backstage";
-import { ActiveContentChangedEventArgs, ContentViewManager } from "../../ui-framework/content/ContentViewManager";
+} from "../../appui-react";
+import { Backstage, BackstageEventArgs } from "../../appui-react/backstage/Backstage";
+import { ActiveContentChangedEventArgs, ContentViewManager } from "../../appui-react/content/ContentViewManager";
 import {
   FrontstageActivatedEventArgs, FrontstageManager, FrontstageReadyEventArgs, ModalFrontstageChangedEventArgs, ToolActivatedEventArgs,
-} from "../../ui-framework/frontstage/FrontstageManager";
-import { TaskActivatedEventArgs, WorkflowActivatedEventArgs, WorkflowManager } from "../../ui-framework/workflow/Workflow";
+} from "../../appui-react/frontstage/FrontstageManager";
+import { TaskActivatedEventArgs, WorkflowActivatedEventArgs, WorkflowManager } from "../../appui-react/workflow/Workflow";
 import TestUtils from "../TestUtils";
 
 const timeToWaitForUiSyncCallback = 60;

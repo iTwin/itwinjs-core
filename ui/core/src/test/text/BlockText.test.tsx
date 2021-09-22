@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { BlockText } from "../../ui-core";
+import { BlockText } from "../../ui-core-react";
 
 describe("<BlockText />", () => {
   it("should render", () => {

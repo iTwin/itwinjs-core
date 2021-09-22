@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { Textarea } from "../../ui-core";
+import { Textarea } from "../../ui-core-react";
 import { render } from "@testing-library/react";
 import { expect } from "chai";
 

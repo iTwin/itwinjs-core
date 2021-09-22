@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import React from "react";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { Orientation } from "@bentley/ui-core";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { Orientation } from "@itwin/ui-core-react";
 import { render } from "@testing-library/react";
-import { HighlightingComponentProps } from "../../../ui-components/common/HighlightingComponentProps";
-import { CommonPropertyRenderer } from "../../../ui-components/properties/renderers/CommonPropertyRenderer";
+import { HighlightingComponentProps } from "../../../ui-components-react/common/HighlightingComponentProps";
+import { CommonPropertyRenderer } from "../../../ui-components-react/properties/renderers/CommonPropertyRenderer";
 
 describe("CommonPropertyRenderer", () => {
   describe("createNewDisplayValue", () => {

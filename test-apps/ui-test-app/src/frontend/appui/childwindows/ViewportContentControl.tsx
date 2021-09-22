@@ -8,7 +8,7 @@ import * as React from "react";
 import { Id64String } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { viewWithUnifiedSelection } from "@itwin/presentation-components";
-import { ViewportComponent } from "@bentley/ui-imodel-components";
+import { ViewportComponent } from "@itwin/ui-imodel-components-react";
 import ViewDefinitionSelector, { getViewDefinitions } from "./ViewDefinitionSelector";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention

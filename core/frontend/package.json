@@ -47,7 +47,7 @@
     "@itwin/core-orbitgt": "workspace:^3.0.0-dev.64",
     "@bentley/product-settings-client": "workspace:^3.0.0-dev.64",
     "@bentley/telemetry-client": "workspace:^3.0.0-dev.64",
-    "@bentley/ui-abstract": "workspace:^3.0.0-dev.64",
+    "@itwin/appui-abstract": "workspace:^3.0.0-dev.64",
     "@itwin/webgl-compatibility": "workspace:^3.0.0-dev.64"
   },
   "//devDependencies": [
@@ -69,7 +69,7 @@
     "@itwin/core-orbitgt": "workspace:*",
     "@bentley/product-settings-client": "workspace:*",
     "@bentley/telemetry-client": "workspace:*",
-    "@bentley/ui-abstract": "workspace:*",
+    "@itwin/appui-abstract": "workspace:*",
     "@itwin/webgl-compatibility": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",

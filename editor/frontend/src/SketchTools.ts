@@ -9,7 +9,7 @@ import { AccuDrawHintBuilder, AngleDescription, BeButton, BeButtonEvent, BeModif
 import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@itwin/editor-common";
 import { computeChordToleranceFromPoint, CreateElementTool, DynamicGraphicsProvider } from "./CreateElementTool";
 import { EditTools } from "./EditTool";
-import { DialogItem, DialogProperty, DialogPropertySyncItem, EnumerationChoice, PropertyDescriptionHelper, PropertyEditorParamTypes, RangeEditorParams } from "@bentley/ui-abstract";
+import { DialogItem, DialogProperty, DialogPropertySyncItem, EnumerationChoice, PropertyDescriptionHelper, PropertyEditorParamTypes, RangeEditorParams } from "@itwin/appui-abstract";
 
 /** @alpha Values for [[CreateOrContinueTool.createCurvePhase] to support join and closure. */
 export enum CreateCurvePhase {
@@ -1271,7 +1271,7 @@ export class CreateArcTool extends CreateOrContinuePathTool {
     if (!await super.onInstall())
       return false;
 
-    // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o ui-framework...
+    // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o appui-react...
     const methodValue = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, this.methodProperty.name);
     if (undefined !== methodValue)
       this.methodProperty.dialogItemValue = methodValue;
@@ -1603,7 +1603,7 @@ export class CreateCircleTool extends CreateOrContinuePathTool {
     if (!await super.onInstall())
       return false;
 
-    // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o ui-framework...
+    // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o appui-react...
     const methodValue = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, this.methodProperty.name);
     if (undefined !== methodValue)
       this.methodProperty.dialogItemValue = methodValue;
@@ -1905,7 +1905,7 @@ export class CreateRectangleTool extends CreateOrContinuePathTool {
     if (!await super.onInstall())
       return false;
 
-    // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o ui-framework...
+    // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o appui-react...
     const radiusValue = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, this.radiusProperty.name);
     if (undefined !== radiusValue)
       this.radiusProperty.dialogItemValue = radiusValue;
@@ -2130,7 +2130,7 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
     if (!await super.onInstall())
       return false;
 
-    // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o ui-framework...
+    // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o appui-react...
     const methodValue = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, this.methodProperty.name);
     if (undefined !== methodValue)
       this.methodProperty.dialogItemValue = methodValue;

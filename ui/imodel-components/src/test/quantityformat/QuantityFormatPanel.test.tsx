@@ -10,10 +10,10 @@ import userEvent from "@testing-library/user-event";
 import { IModelApp, MockRender, QuantityType } from "@itwin/core-frontend";
 import { FormatProps, FormatType, ShowSignOption } from "@bentley/imodeljs-quantity";
 import { BearingQuantityType } from "./BearingQuantityType";
-import { SpecialKey } from "@bentley/ui-abstract";
+import { SpecialKey } from "@itwin/appui-abstract";
 import { TestUtils } from "../TestUtils";
 import { handleError, selectChangeValueByIndex, selectChangeValueByText, stubScrollIntoView } from "../test-helpers/misc";
-import { QuantityFormatPanel } from "../../ui-imodel-components/quantityformat/QuantityFormatPanel";
+import { QuantityFormatPanel } from "../../ui-imodel-components-react/quantityformat/QuantityFormatPanel";
 
 describe("QuantityInput", () => {
   const rnaDescriptorToRestore = Object.getOwnPropertyDescriptor(IModelApp, "requestNextAnimation")!;

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { IModelApp } from "@itwin/core-frontend";
-import { AbstractMenuItemProps } from "@bentley/ui-abstract";
+import { AbstractMenuItemProps } from "@itwin/appui-abstract";
 
 export class SampleContextMenu {
   private static _myMenuItems: AbstractMenuItemProps[] = [

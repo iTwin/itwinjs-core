@@ -10,17 +10,17 @@ import { IModelConnection } from "@itwin/core-frontend";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { OpenDialogOptions } from "electron";
 
-import { FillCentered } from "@bentley/ui-core";
+import { FillCentered } from "@itwin/ui-core-react";
 import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageManager,
   FrontstageProps, FrontstageProvider, ToolWidget, UiFramework, Widget, Zone,
-} from "@bentley/ui-framework";
+} from "@itwin/appui-react";
 import { SampleAppIModelApp } from "../..";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { IModelViewPicker } from "../imodelopen/IModelViewPicker";
 import { LocalFileSupport } from "../LocalFileSupport";
 import { Button, Headline } from "@itwin/itwinui-react";
-import { StageUsage, StandardContentLayouts } from "@bentley/ui-abstract";
+import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
 import { hasSavedViewLayoutProps } from "../../tools/UiProviderTool";
 import { ViewsFrontstage } from "./ViewsFrontstage";
 

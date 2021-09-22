@@ -8,7 +8,7 @@ import placeholderSvg from "@bentley/icons-generic/icons/placeholder.svg?sprite"
 import {
   BeButtonEvent, EventHandled, IModelApp, PrimitiveTool, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod,
 } from "@itwin/core-frontend";
-import { IconSpecUtilities } from "@bentley/ui-abstract";
+import { IconSpecUtilities } from "@itwin/appui-abstract";
 
 export class Tool2 extends PrimitiveTool {
   public static override toolId = "Tool2";

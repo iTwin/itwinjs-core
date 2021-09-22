@@ -10,9 +10,9 @@
 import * as React from "react";
 import { Draggable, DraggableChildrenFn, Droppable, DroppableProvided, DroppableStateSnapshot } from "react-beautiful-dnd";
 import { MapLayerImageryProviderStatus, ScreenViewport } from "@itwin/core-frontend";
-import { Icon } from "@bentley/ui-core";
+import { Icon } from "@itwin/ui-core-react";
 import { assert } from "@itwin/core-bentley";
-import { ModalDialogManager } from "@bentley/ui-framework";
+import { ModalDialogManager } from "@itwin/appui-react";
 import { Button } from "@itwin/itwinui-react";
 import { SubLayersPopupButton } from "./SubLayersPopupButton";
 import { AttachLayerButtonType, AttachLayerPopupButton } from "./AttachLayerPopupButton";

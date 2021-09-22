@@ -239,6 +239,18 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "@itwin/appui-abstract",
+      "allowedCategories": [ "edit", "extensions", "frontend", "internal", "tools" ]
+    },
+    {
+      "name": "@itwin/appui-layout-react",
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
+    },
+    {
+      "name": "@itwin/appui-react",
+      "allowedCategories": [ "extensions", "internal" ]
+    },
+    {
       "name": "@itwin/backend-webpack-tools",
       "allowedCategories": [ "internal" ]
     },
@@ -333,6 +345,18 @@
     {
       "name": "@itwin/presentation-testing",
       "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "@itwin/ui-components-react",
+      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
+    },
+    {
+      "name": "@itwin/ui-core-react",
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
+    },
+    {
+      "name": "@itwin/ui-imodel-components-react",
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "@itwin/webgl-compatibility",

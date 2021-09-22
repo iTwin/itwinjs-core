@@ -8,10 +8,10 @@
 
 import * as React from "react";
 import { IModelApp } from "@itwin/core-frontend";
-import { FillCentered } from "@bentley/ui-core";
-import { Indicator, StatusBarFieldId, StatusFieldProps } from "@bentley/ui-framework";
-import { Dialog, FooterPopup, TitleBar } from "@bentley/ui-ninezone";
-import { ColorPickerPopup } from "@bentley/ui-imodel-components";
+import { FillCentered } from "@itwin/ui-core-react";
+import { Indicator, StatusBarFieldId, StatusFieldProps } from "@itwin/appui-react";
+import { Dialog, FooterPopup, TitleBar } from "@itwin/appui-layout-react";
+import { ColorPickerPopup } from "@itwin/ui-imodel-components-react";
 import { ColorDef } from "@itwin/core-common";
 import { Button } from "@itwin/itwinui-react";
 

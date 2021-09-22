@@ -10,12 +10,12 @@ import {
 } from "@itwin/core-frontend";
 import { ECInstancesNodeKey, StandardNodeTypes } from "@itwin/presentation-common";
 import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import * as UiComponents from "@bentley/ui-components";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import * as UiComponents from "@itwin/ui-components-react";
 import { renderHook } from "@testing-library/react-hooks";
 import {
   Category, CategoryVisibilityHandler, CategoryVisibilityHandlerParams, useCategories,
-} from "../../../ui-framework/imodel-components/category-tree/CategoryVisibilityHandler";
+} from "../../../appui-react/imodel-components/category-tree/CategoryVisibilityHandler";
 
 const createKey = (id: Id64String): ECInstancesNodeKey => {
   return {

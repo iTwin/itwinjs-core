@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelApp } from "@itwin/core-frontend";
-import { Dialog, FillCentered, LoadingSpinner, Spinner, SpinnerSize } from "@bentley/ui-core";
+import { Dialog, FillCentered, LoadingSpinner, Spinner, SpinnerSize } from "@itwin/ui-core-react";
 
 export interface SpinnerTestDialogProps {
   opened: boolean;

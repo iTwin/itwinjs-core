@@ -7,7 +7,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
 import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
-import { ActiveContentChangedEventArgs, ContentViewManager, useActiveViewport } from "../../ui-framework";
+import { ActiveContentChangedEventArgs, ContentViewManager, useActiveViewport } from "../../appui-react";
 import { mount } from "../TestUtils";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention

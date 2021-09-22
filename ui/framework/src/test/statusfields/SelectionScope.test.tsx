@@ -8,12 +8,12 @@ import { Provider } from "react-redux";
 import { IModelApp } from "@itwin/core-frontend";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@itwin/presentation-testing";
-import { WidgetState } from "@bentley/ui-abstract";
+import { WidgetState } from "@itwin/appui-abstract";
 import { render } from "@testing-library/react";
 import {
   ConfigurableCreateInfo, ConfigurableUiControlType, PresentationSelectionScope, SelectionScopeField, SessionStateActionId, StatusBar,
   StatusBarWidgetControl, StatusBarWidgetControlArgs, UiFramework, WidgetDef,
-} from "../../ui-framework";
+} from "../../appui-react";
 import TestUtils, { handleError, selectChangeValueByText, stubScrollIntoView } from "../TestUtils";
 
 class AppStatusBarWidgetControl extends StatusBarWidgetControl {

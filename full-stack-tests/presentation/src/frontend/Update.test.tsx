@@ -10,11 +10,11 @@ import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { ChildNodeSpecificationTypes, RuleTypes } from "@itwin/presentation-common";
 import { IPresentationTreeDataProvider, PresentationTreeNodeLoaderProps, usePresentationTreeNodeLoader } from "@itwin/presentation-components";
 import { Presentation } from "@itwin/presentation-frontend";
-import { PrimitiveValue } from "@bentley/ui-abstract";
+import { PrimitiveValue } from "@itwin/appui-abstract";
 import {
   AbstractTreeNodeLoader, DelayLoadedTreeNodeItem, MutableTreeModelNode, PagedTreeNodeLoader, Subscription, TreeModelNode, TreeModelRootNode,
   TreeModelSource,
-} from "@bentley/ui-components";
+} from "@itwin/ui-components-react";
 import { renderHook } from "@testing-library/react-hooks";
 import { initialize, terminate } from "../IntegrationTests";
 

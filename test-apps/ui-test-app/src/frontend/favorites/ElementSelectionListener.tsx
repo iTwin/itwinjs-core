@@ -7,12 +7,12 @@ import { IModelApp } from "@itwin/core-frontend";
 import { KeySet } from "@itwin/presentation-common";
 import { FavoritePropertiesDataProvider } from "@itwin/presentation-components";
 import { ISelectionProvider, Presentation, SelectionChangeEventArgs } from "@itwin/presentation-frontend";
-import { AbstractToolbarProps, CommonToolbarItem, RelativePosition, WidgetState } from "@bentley/ui-abstract";
-import { FavoritePropertiesRenderer, FavoritePropertyList } from "@bentley/ui-components";
+import { AbstractToolbarProps, CommonToolbarItem, RelativePosition, WidgetState } from "@itwin/appui-abstract";
+import { FavoritePropertiesRenderer, FavoritePropertyList } from "@itwin/ui-components-react";
 import {
   ActionButtonItemDef, CommandItemDef, CoreTools, ElementTooltip,
   FrameworkUiAdmin, FrontstageManager, SelectionContextToolDefinitions, ToolbarHelper,
-} from "@bentley/ui-framework";
+} from "@itwin/appui-react";
 import { ViewsFrontstage } from "../appui/frontstages/ViewsFrontstage";
 import { appendContent } from "./appendContent";
 

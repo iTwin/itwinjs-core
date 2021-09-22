@@ -13,8 +13,8 @@ import {
   ToolbarOrientation,
   ToolbarUsage,
   UiItemsProvider,
-} from "@bentley/ui-abstract";
-import { SyncUiEventDispatcher } from "@bentley/ui-framework";
+} from "@itwin/appui-abstract";
+import { SyncUiEventDispatcher } from "@itwin/appui-react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 
 import upstreamIcon from "./icons/upstream-query.svg?sprite";

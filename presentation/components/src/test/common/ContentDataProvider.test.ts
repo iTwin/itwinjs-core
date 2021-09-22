@@ -18,7 +18,7 @@ import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
 import { PromiseContainer, ResolvablePromise } from "@itwin/presentation-common/lib/test/_helpers/Promises";
 import { createRandomECInstanceKey, createRandomRuleset } from "@itwin/presentation-common/lib/test/_helpers/random";
 import { Presentation, PresentationManager, RulesetManager } from "@itwin/presentation-frontend";
-import { PrimitiveValue, PropertyDescription, PropertyRecord } from "@bentley/ui-abstract";
+import { PrimitiveValue, PropertyDescription, PropertyRecord } from "@itwin/appui-abstract";
 import { CacheInvalidationProps, ContentDataProvider, ContentDataProviderProps } from "../../presentation-components/common/ContentDataProvider";
 import { mockPresentationManager } from "../_helpers/UiComponents";
 

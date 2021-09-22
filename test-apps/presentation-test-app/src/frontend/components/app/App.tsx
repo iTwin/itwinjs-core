@@ -13,8 +13,8 @@ import {
   DataProvidersFactory, IPresentationPropertyDataProvider, IPresentationTableDataProvider, UnifiedSelectionContextProvider,
 } from "@itwin/presentation-components";
 import { Presentation, SelectionChangeEventArgs } from "@itwin/presentation-frontend";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { ElementSeparator, Orientation, RatioChangeResult } from "@bentley/ui-core";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { ElementSeparator, Orientation, RatioChangeResult } from "@itwin/ui-core-react";
 import { ToggleSwitch } from "@itwin/itwinui-react";
 import { MyAppFrontend, MyAppSettings } from "../../api/MyAppFrontend";
 import FindSimilarWidget from "../find-similar-widget/FindSimilarWidget";

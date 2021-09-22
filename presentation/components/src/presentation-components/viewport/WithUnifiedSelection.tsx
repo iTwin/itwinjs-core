@@ -11,7 +11,7 @@ import { IDisposable, using } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { AsyncTasksTracker, KeySet, SelectionInfo } from "@itwin/presentation-common";
 import { ISelectionProvider, Presentation, SelectionChangeEventArgs, SelectionHandler } from "@itwin/presentation-frontend";
-import { ViewportProps } from "@bentley/ui-imodel-components";
+import { ViewportProps } from "@itwin/ui-imodel-components-react";
 import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent";
 import { getDisplayName } from "../common/Utils";
 

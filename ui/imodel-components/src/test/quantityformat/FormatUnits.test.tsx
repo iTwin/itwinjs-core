@@ -9,7 +9,7 @@ import { IModelApp, MockRender } from "@itwin/core-frontend";
 import { FormatProps } from "@bentley/imodeljs-quantity";
 import { TestUtils } from "../TestUtils";
 import { handleError, selectChangeValueByText, stubScrollIntoView } from "../test-helpers/misc";
-import { FormatUnits } from "../../ui-imodel-components/quantityformat/FormatUnits";
+import { FormatUnits } from "../../ui-imodel-components-react/quantityformat/FormatUnits";
 
 describe("FormatUnits", () => {
   const rnaDescriptorToRestore = Object.getOwnPropertyDescriptor(IModelApp, "requestNextAnimation")!;

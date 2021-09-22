@@ -9,16 +9,16 @@ import { from as rxjsFrom } from "rxjs/internal/observable/from";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import { BeEvent } from "@itwin/core-bentley";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { Observable } from "../../../ui-components/tree/controlled/Observable";
-import { MutableTreeModelNode, TreeModelNodeInput, TreeModelRootNode, TreeNodeItemData } from "../../../ui-components/tree/controlled/TreeModel";
-import { TreeModelSource } from "../../../ui-components/tree/controlled/TreeModelSource";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { Observable } from "../../../ui-components-react/tree/controlled/Observable";
+import { MutableTreeModelNode, TreeModelNodeInput, TreeModelRootNode, TreeNodeItemData } from "../../../ui-components-react/tree/controlled/TreeModel";
+import { TreeModelSource } from "../../../ui-components-react/tree/controlled/TreeModelSource";
 import {
   handleLoadedNodeHierarchy, LoadedNodeHierarchy, PagedTreeNodeLoader, TreeDataSource, TreeNodeLoader, TreeNodeLoadResult,
-} from "../../../ui-components/tree/controlled/TreeNodeLoader";
+} from "../../../ui-components-react/tree/controlled/TreeNodeLoader";
 import {
   ImmediatelyLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener, TreeDataProvider, TreeDataProviderRaw, TreeNodeItem,
-} from "../../../ui-components/tree/TreeDataProvider";
+} from "../../../ui-components-react/tree/TreeDataProvider";
 import { extractSequence } from "../../common/ObservableTestHelpers";
 import { ResolvablePromise } from "../../test-helpers/misc";
 import { createRandomMutableTreeModelNode, createRandomTreeNodeItem, createRandomTreeNodeItems } from "./RandomTreeNodesHelpers";

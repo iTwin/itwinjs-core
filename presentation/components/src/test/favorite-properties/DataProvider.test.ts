@@ -14,8 +14,8 @@ import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
 import {
   FavoritePropertiesManager, Presentation, PresentationManager, RulesetManager, SelectionManager, SelectionScopesManager,
 } from "@itwin/presentation-frontend";
-import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-import { PropertyData } from "@bentley/ui-components";
+import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
+import { PropertyData } from "@itwin/ui-components-react";
 import { FavoritePropertiesDataProvider, getFavoritesCategory } from "../../presentation-components/favorite-properties/DataProvider";
 import { PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
 

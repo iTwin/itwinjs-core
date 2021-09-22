@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
 import { IModelApp, MockRender } from "@itwin/core-frontend";
-import { UiIModelComponents } from "../ui-imodel-components";
+import { UiIModelComponents } from "../ui-imodel-components-react";
 import TestUtils from "./TestUtils";
 
 describe("UiIModelComponents", () => {
@@ -23,8 +23,8 @@ describe("UiIModelComponents", () => {
     expect(UiIModelComponents.i18nNamespace).to.eq("UiIModelComponents");
   });
 
-  it("packageName should return 'ui-imodel-components'", () => {
-    expect(UiIModelComponents.packageName).to.eq("ui-imodel-components");
+  it("packageName should return 'ui-imodel-components-react'", () => {
+    expect(UiIModelComponents.packageName).to.eq("ui-imodel-components-react");
   });
 
   it("translate should return the key (in test environment)", async () => {

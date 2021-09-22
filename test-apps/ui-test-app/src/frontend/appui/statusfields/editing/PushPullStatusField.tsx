@@ -10,9 +10,9 @@ import {
   AuthorizedFrontendRequestContext, BriefcaseConnection, IModelApp, IModelHubFrontend, NotifyMessageDetails, OutputMessageAlert,
   OutputMessagePriority, OutputMessageType,
 } from "@itwin/core-frontend";
-import { Icon } from "@bentley/ui-core";
-import { StatusFieldProps, UiFramework } from "@bentley/ui-framework";
-import { FooterIndicator } from "@bentley/ui-ninezone";
+import { Icon } from "@itwin/ui-core-react";
+import { StatusFieldProps, UiFramework } from "@itwin/appui-react";
+import { FooterIndicator } from "@itwin/appui-layout-react";
 import { ProgressRadial } from "@itwin/itwinui-react";
 import { ErrorHandling } from "../../../api/ErrorHandling";
 

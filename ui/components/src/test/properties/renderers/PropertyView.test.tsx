@@ -6,9 +6,9 @@ import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
 import sinon from "sinon";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { ElementSeparator, Orientation } from "@bentley/ui-core";
-import { PropertyView } from "../../../ui-components";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { ElementSeparator, Orientation } from "@itwin/ui-core-react";
+import { PropertyView } from "../../../ui-components-react";
 import TestUtils from "../../TestUtils";
 
 describe("PropertyView", () => {

@@ -12,7 +12,7 @@ import { initialize as initializePresentationTesting, terminate as terminatePres
 import { IModelConnection, MockRender, SelectionSet } from "@itwin/core-frontend";
 import { render } from "@testing-library/react";
 import { IModelRpcProps } from "@itwin/core-common";
-import { SyncUiEventDispatcher, UiFramework, useActiveIModelConnection } from "../../ui-framework";
+import { SyncUiEventDispatcher, UiFramework, useActiveIModelConnection } from "../../appui-react";
 import TestUtils from "../TestUtils";
 
 describe("useActiveIModelConnection", () => {

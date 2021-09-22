@@ -5,10 +5,10 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
-import { UiAbstract } from "../ui-abstract/UiAbstract";
+import { UiAbstract } from "../appui-abstract/UiAbstract";
 import TestUtils from "./TestUtils";
-import { DisplayMessageType, MessagePresenter } from "../ui-abstract/notification/MessagePresenter";
-import { MessageSeverity } from "../ui-abstract/notification/MessageSeverity";
+import { DisplayMessageType, MessagePresenter } from "../appui-abstract/notification/MessagePresenter";
+import { MessageSeverity } from "../appui-abstract/notification/MessageSeverity";
 
 describe("UiAbstract", () => {
 
@@ -28,8 +28,8 @@ describe("UiAbstract", () => {
     expect(UiAbstract.i18nNamespace).to.eq("UiAbstract");
   });
 
-  it("packageName should return ui-abstract", () => {
-    expect(UiAbstract.packageName).to.eq("ui-abstract");
+  it("packageName should return appui-abstract", () => {
+    expect(UiAbstract.packageName).to.eq("appui-abstract");
   });
 
   it("translate should return the key (in test environment)", async () => {
@@ -38,8 +38,8 @@ describe("UiAbstract", () => {
     TestUtils.terminateUiAbstract();
   });
 
-  it("loggerCategory passed null should return 'ui-abstract'", () => {
-    expect(UiAbstract.loggerCategory(null)).to.eq("ui-abstract");
+  it("loggerCategory passed null should return 'appui-abstract'", () => {
+    expect(UiAbstract.loggerCategory(null)).to.eq("appui-abstract");
   });
 
   it("calling initialize twice should log", async () => {

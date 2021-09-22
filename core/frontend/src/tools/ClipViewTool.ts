@@ -13,7 +13,7 @@ import {
   Transform, Vector3d,
 } from "@itwin/core-geometry";
 import { ClipStyle, ColorDef, LinePixels, Placement2d } from "@itwin/core-common";
-import { DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription } from "@bentley/ui-abstract";
+import { DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription } from "@itwin/appui-abstract";
 import { AccuDrawHintBuilder, ContextRotationId } from "../AccuDraw";
 import { CoordSystem } from "../CoordSystem";
 import { LocateResponse } from "../ElementLocateManager";

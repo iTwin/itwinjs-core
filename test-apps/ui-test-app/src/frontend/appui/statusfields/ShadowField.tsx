@@ -11,8 +11,8 @@ import classnames from "classnames";
 import * as React from "react";
 import { RenderMode } from "@itwin/core-common";
 import { ScreenViewport } from "@itwin/core-frontend";
-import { ContentControl, ContentControlActivatedEventArgs, ContentViewManager, FrontstageManager, StatusFieldProps } from "@bentley/ui-framework";
-import { FooterIndicator } from "@bentley/ui-ninezone";
+import { ContentControl, ContentControlActivatedEventArgs, ContentViewManager, FrontstageManager, StatusFieldProps } from "@itwin/appui-react";
+import { FooterIndicator } from "@itwin/appui-layout-react";
 import { Checkbox } from "@itwin/itwinui-react";
 
 // cspell:ignore statusfield

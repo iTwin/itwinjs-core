@@ -11,7 +11,7 @@ import { KeySet, RuleTypes } from "@itwin/presentation-common";
 import { PresentationPropertyDataProvider } from "@itwin/presentation-components";
 import { DEFAULT_PROPERTY_GRID_RULESET } from "@itwin/presentation-components/lib/presentation-components/propertygrid/DataProvider";
 import { Presentation } from "@itwin/presentation-frontend";
-import { PropertyCategory } from "@bentley/ui-components";
+import { PropertyCategory } from "@itwin/ui-components-react";
 import { initialize, terminate } from "../../IntegrationTests";
 
 describe("PropertyDataProvider", async () => {

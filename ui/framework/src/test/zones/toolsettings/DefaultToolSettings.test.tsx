@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import {
   ButtonGroupEditorParams, DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription, PropertyEditorParamTypes,
-} from "@bentley/ui-abstract";
+} from "@itwin/appui-abstract";
 
 /** @internal */
 export enum SelectOptions {

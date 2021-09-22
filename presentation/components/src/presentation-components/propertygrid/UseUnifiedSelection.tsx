@@ -9,7 +9,7 @@
 import * as React from "react";
 import { KeySet } from "@itwin/presentation-common";
 import { Presentation, SelectionChangeEventArgs, SelectionHandler } from "@itwin/presentation-frontend";
-import { useDisposable } from "@bentley/ui-core";
+import { useDisposable } from "@itwin/ui-core-react";
 import { IPresentationPropertyDataProvider } from "./DataProvider";
 
 const DEFAULT_REQUESTED_CONTENT_INSTANCES_LIMIT = 100;

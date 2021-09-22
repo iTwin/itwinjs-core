@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { SvgSprite } from "../../ui-core";
+import { SvgSprite } from "../../ui-core-react";
 
 describe("<SvgSprite />", () => {
   it("should render", () => {

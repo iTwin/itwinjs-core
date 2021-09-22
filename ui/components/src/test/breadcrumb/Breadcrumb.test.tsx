@@ -5,11 +5,11 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { PropertyRecord, SpecialKey } from "@bentley/ui-abstract";
+import { PropertyRecord, SpecialKey } from "@itwin/appui-abstract";
 import { fireEvent, render, RenderResult, waitFor } from "@testing-library/react";
-import { Breadcrumb, BreadcrumbMode, BreadcrumbPath } from "../../ui-components";
-import { BreadcrumbNode, BreadcrumbNodeProps } from "../../ui-components/breadcrumb/Breadcrumb";
-import { TreeNodeItem } from "../../ui-components/tree/TreeDataProvider";
+import { Breadcrumb, BreadcrumbMode, BreadcrumbPath } from "../../ui-components-react";
+import { BreadcrumbNode, BreadcrumbNodeProps } from "../../ui-components-react/breadcrumb/Breadcrumb";
+import { TreeNodeItem } from "../../ui-components-react/tree/TreeDataProvider";
 import { waitForUpdate } from "../test-helpers/misc";
 import TestUtils from "../TestUtils";
 import {

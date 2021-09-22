@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { Matrix3d } from "@itwin/core-geometry";
 import { MockRender, OrthographicViewState, ScreenViewport } from "@itwin/core-frontend";
-import { BasicNavigationWidget, CommandItemDef, ConfigurableUiManager, ContentViewManager, ToolbarHelper, ViewportContentControl } from "../../ui-framework";
+import { BasicNavigationWidget, CommandItemDef, ConfigurableUiManager, ContentViewManager, ToolbarHelper, ViewportContentControl } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("BasicNavigationWidget", () => {

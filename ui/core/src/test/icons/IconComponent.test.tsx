@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { Icon } from "../../ui-core/icons/IconComponent";
+import { Icon } from "../../ui-core-react/icons/IconComponent";
 
 describe("IconComponent", () => {
 

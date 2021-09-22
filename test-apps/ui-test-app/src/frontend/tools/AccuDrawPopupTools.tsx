@@ -5,8 +5,8 @@
 import {
   FitViewTool, IModelApp, NotifyMessageDetails, OutputMessagePriority, PanViewTool, RotateViewTool, SelectionTool, WindowAreaTool, ZoomViewTool,
 } from "@itwin/core-frontend";
-import { AbstractMenuItemProps, AbstractToolbarProps, BadgeType, Primitives, PropertyDescription, RelativePosition } from "@bentley/ui-abstract";
-import { ActionButtonItemDef, CommandItemDef } from "@bentley/ui-framework";
+import { AbstractMenuItemProps, AbstractToolbarProps, BadgeType, Primitives, PropertyDescription, RelativePosition } from "@itwin/appui-abstract";
+import { ActionButtonItemDef, CommandItemDef } from "@itwin/appui-react";
 
 export class AccuDrawPopupTools {
 

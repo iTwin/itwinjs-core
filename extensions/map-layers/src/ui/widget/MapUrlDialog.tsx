@@ -6,8 +6,8 @@
 
 import * as React from "react";
 import { Input, LabeledInput, ProgressLinear, Radio, Select, SelectOption } from "@itwin/itwinui-react";
-import { Dialog, Icon, InputStatus } from "@bentley/ui-core";
-import { ModalDialogManager } from "@bentley/ui-framework";
+import { Dialog, Icon, InputStatus } from "@itwin/ui-core-react";
+import { ModalDialogManager } from "@itwin/appui-react";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { MapTypesOptions } from "../Interfaces";
 import {
@@ -16,7 +16,7 @@ import {
 } from "@itwin/core-frontend";
 import { MapLayerProps } from "@itwin/core-common";
 import "./MapUrlDialog.scss";
-import { DialogButtonType, SpecialKey } from "@bentley/ui-abstract";
+import { DialogButtonType, SpecialKey } from "@itwin/appui-abstract";
 
 export const MAP_TYPES = {
   wms: "WMS",

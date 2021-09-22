@@ -6,10 +6,10 @@ import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import { BeEvent } from "@itwin/core-bentley";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { MutableTreeModel, TreeModelNodeInput } from "../../../ui-components/tree/controlled/TreeModel";
-import { TreeModelChanges, TreeModelSource } from "../../../ui-components/tree/controlled/TreeModelSource";
-import { ITreeDataProvider, TreeDataChangesListener } from "../../../ui-components/tree/TreeDataProvider";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { MutableTreeModel, TreeModelNodeInput } from "../../../ui-components-react/tree/controlled/TreeModel";
+import { TreeModelChanges, TreeModelSource } from "../../../ui-components-react/tree/controlled/TreeModelSource";
+import { ITreeDataProvider, TreeDataChangesListener } from "../../../ui-components-react/tree/TreeDataProvider";
 import TestUtils from "../../TestUtils";
 
 describe("TreeModelSource", () => {

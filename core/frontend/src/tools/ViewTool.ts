@@ -14,7 +14,7 @@ import {
 import { Cartographic, ColorDef, Frustum, LinePixels, NpcCenter } from "@itwin/core-common";
 import {
   DialogItem, DialogProperty, DialogPropertySyncItem, PropertyDescriptionHelper,
-} from "@bentley/ui-abstract";
+} from "@itwin/appui-abstract";
 import { AccuDraw, AccuDrawHintBuilder } from "../AccuDraw";
 import { TentativeOrAccuSnap } from "../AccuSnap";
 import { BingLocationProvider } from "../BingLocation";

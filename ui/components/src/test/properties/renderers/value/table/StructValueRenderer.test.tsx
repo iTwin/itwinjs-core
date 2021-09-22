@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { Orientation } from "@bentley/ui-core";
+import { Orientation } from "@itwin/ui-core-react";
 import { render } from "@testing-library/react";
-import { TableStructValueRenderer } from "../../../../../ui-components/properties/renderers/value/table/StructValueRenderer";
+import { TableStructValueRenderer } from "../../../../../ui-components-react/properties/renderers/value/table/StructValueRenderer";
 import TestUtils from "../../../../TestUtils";
 
 describe("StructValueRenderer", () => {

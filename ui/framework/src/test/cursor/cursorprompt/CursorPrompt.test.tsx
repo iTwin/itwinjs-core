@@ -6,12 +6,12 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { ToolAssistance } from "@itwin/core-frontend";
-import { RelativePosition } from "@bentley/ui-abstract";
-import { Point } from "@bentley/ui-core";
-import { CursorInformation } from "../../../ui-framework/cursor/CursorInformation";
-import { CursorPopup } from "../../../ui-framework/cursor/cursorpopup/CursorPopup";
-import { CursorPopupManager, CursorPopupRenderer } from "../../../ui-framework/cursor/cursorpopup/CursorPopupManager";
-import { CursorPrompt } from "../../../ui-framework/cursor/cursorprompt/CursorPrompt";
+import { RelativePosition } from "@itwin/appui-abstract";
+import { Point } from "@itwin/ui-core-react";
+import { CursorInformation } from "../../../appui-react/cursor/CursorInformation";
+import { CursorPopup } from "../../../appui-react/cursor/cursorpopup/CursorPopup";
+import { CursorPopupManager, CursorPopupRenderer } from "../../../appui-react/cursor/cursorpopup/CursorPopupManager";
+import { CursorPrompt } from "../../../appui-react/cursor/cursorprompt/CursorPrompt";
 import TestUtils, { mount } from "../../TestUtils";
 
 describe("CursorPrompt", () => {

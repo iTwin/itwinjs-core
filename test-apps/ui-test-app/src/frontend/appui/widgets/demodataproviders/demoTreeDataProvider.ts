@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BeEvent } from "@itwin/core-bentley";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { DelayLoadedTreeNodeItem, MutableTreeDataProvider, PageOptions, TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { DelayLoadedTreeNodeItem, MutableTreeDataProvider, PageOptions, TreeDataChangesListener, TreeNodeItem } from "@itwin/ui-components-react";
 
 export enum TreeDragTypes {
   Parent = "parent",

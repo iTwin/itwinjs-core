@@ -6,7 +6,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { render } from "@testing-library/react";
 import { UnitSystemKey } from "@bentley/imodeljs-quantity";
-import { UnitSystemSelector } from "../../ui-framework/settings/quantityformatting/UnitSystemSelector";
+import { UnitSystemSelector } from "../../appui-react/settings/quantityformatting/UnitSystemSelector";
 import TestUtils, { handleError, selectChangeValueByText, selectTestOptionCount, stubScrollIntoView } from "../TestUtils";
 
 describe("UnitSystemSelector", () => {

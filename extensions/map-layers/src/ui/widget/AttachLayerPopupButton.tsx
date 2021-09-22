@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelApp, MapLayerSettingsService, MapLayerSource, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
-import { RelativePosition } from "@bentley/ui-abstract";
-import * as UiCore from "@bentley/ui-core";
-import { ModalDialogManager } from "@bentley/ui-framework";
+import { RelativePosition } from "@itwin/appui-abstract";
+import * as UiCore from "@itwin/ui-core-react";
+import { ModalDialogManager } from "@itwin/appui-react";
 import { useSourceMapContext } from "./MapLayerManager";
 import { MapUrlDialog } from "./MapUrlDialog";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";

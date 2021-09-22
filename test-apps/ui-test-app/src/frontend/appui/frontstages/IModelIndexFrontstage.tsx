@@ -7,10 +7,10 @@ import { Id64String } from "@itwin/core-bentley";
 import { IModelApp } from "@itwin/core-frontend";
 import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, UiFramework,
-} from "@bentley/ui-framework";
+} from "@itwin/appui-react";
 import { SampleAppIModelApp } from "../../index";
 import { IModelIndex } from "../imodelindex/IModelIndex";
-import { StageUsage, StandardContentLayouts } from "@bentley/ui-abstract";
+import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
 
 class IModelIndexControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {

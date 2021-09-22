@@ -5,10 +5,10 @@
 import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
-import { Orientation } from "@bentley/ui-core";
-import { PrimitivePropertyLabelRenderer } from "../../../ui-components";
-import { PrimitivePropertyRenderer } from "../../../ui-components/properties/renderers/PrimitivePropertyRenderer";
-import { PropertyView } from "../../../ui-components/properties/renderers/PropertyView";
+import { Orientation } from "@itwin/ui-core-react";
+import { PrimitivePropertyLabelRenderer } from "../../../ui-components-react";
+import { PrimitivePropertyRenderer } from "../../../ui-components-react/properties/renderers/PrimitivePropertyRenderer";
+import { PropertyView } from "../../../ui-components-react/properties/renderers/PropertyView";
 import TestUtils from "../../TestUtils";
 
 describe("PrimitivePropertyRenderer", () => {

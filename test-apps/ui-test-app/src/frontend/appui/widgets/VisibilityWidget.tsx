@@ -8,12 +8,12 @@ import { useResizeDetector } from "react-resize-detector";
 import { BeEvent, Id64Array, Id64String } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@itwin/core-frontend";
 import { IPresentationTreeDataProvider } from "@itwin/presentation-components";
-import { FilteringInput, FilteringInputStatus, SelectableContent, SelectionMode } from "@bentley/ui-components";
-import { Icon, WebFontIcon } from "@bentley/ui-core";
+import { FilteringInput, FilteringInputStatus, SelectableContent, SelectionMode } from "@itwin/ui-components-react";
+import { Icon, WebFontIcon } from "@itwin/ui-core-react";
 import {
   CategoryTree, ClassGroupingOption, CommandItemDef, ConfigurableCreateInfo, ModelsTree, ModelsTreeSelectionPredicate, toggleAllCategories,
   WidgetControl,
-} from "@bentley/ui-framework";
+} from "@itwin/appui-react";
 import { Button } from "@itwin/itwinui-react";
 import { SampleAppIModelApp } from "../..";
 import cancelFilterIconSvg from "../icons/filter-outlined.svg?sprite";

@@ -5,9 +5,9 @@
 import * as React from "react";
 import { IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
 import { PresentationTableDataProvider, tableWithUnifiedSelection } from "@itwin/presentation-components";
-import { Table, TableCellContextMenuArgs } from "@bentley/ui-components";
-import { ContextMenuItem, GlobalContextMenu } from "@bentley/ui-core";
-import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@bentley/ui-framework";
+import { Table, TableCellContextMenuArgs } from "@itwin/ui-components-react";
+import { ContextMenuItem, GlobalContextMenu } from "@itwin/ui-core-react";
+import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@itwin/appui-react";
 import { ContextMenuItemInfo } from "./UnifiedSelectionPropertyGridWidget";
 
 // create a HOC property grid component that supports unified selection

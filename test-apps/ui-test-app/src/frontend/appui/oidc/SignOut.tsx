@@ -12,9 +12,9 @@ import { ClientRequestContext, Logger } from "@itwin/core-bentley";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelApp } from "@itwin/core-frontend";
 import { UserInfo } from "@bentley/itwin-client";
-import { getUserColor } from "@bentley/ui-core";
+import { getUserColor } from "@itwin/ui-core-react";
 import { Button } from "@itwin/itwinui-react";
-import { FrontstageManager, ModalFrontstageInfo, UiFramework } from "@bentley/ui-framework";
+import { FrontstageManager, ModalFrontstageInfo, UiFramework } from "@itwin/appui-react";
 
 // cSpell:Ignore userprofile signoutprompt
 

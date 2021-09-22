@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { DockedToolSettings, ToolSettingsStateContext } from "@bentley/ui-ninezone";
+import { DockedToolSettings, ToolSettingsStateContext } from "@itwin/appui-layout-react";
 import { ToolSetting, ToolSettingProps } from "./ToolSetting";
 
 export interface ToolSettingsProps {

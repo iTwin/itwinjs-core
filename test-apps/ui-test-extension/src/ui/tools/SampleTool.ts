@@ -15,13 +15,13 @@ import {
   ColorEditorParams, DialogItem, DialogItemValue, DialogPropertySyncItem,
   InputEditorSizeParams,
   PropertyDescription, PropertyEditorParamTypes, StandardEditorNames, SuppressLabelEditorParams, ToolbarItemUtilities,
-} from "@bentley/ui-abstract";
+} from "@itwin/appui-abstract";
 
 import { Logger } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import { ColorByName, ColorDef } from "@itwin/core-common";
 import { FormatterSpec } from "@bentley/imodeljs-quantity";
-import { CursorInformation, MenuItemProps, UiFramework } from "@bentley/ui-framework";
+import { CursorInformation, MenuItemProps, UiFramework } from "@itwin/appui-react";
 import sampleToolSvg from "./SampleTool.svg?sprite";
 
 enum ToolOptions {

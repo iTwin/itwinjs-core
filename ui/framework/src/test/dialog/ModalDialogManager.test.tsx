@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { MessageBoxIconType, MessageBoxType } from "@itwin/core-frontend";
-import { DialogChangedEventArgs, ModalDialogManager, ModalDialogRenderer, StandardMessageBox } from "../../ui-framework";
+import { DialogChangedEventArgs, ModalDialogManager, ModalDialogRenderer, StandardMessageBox } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("ModalDialogManager", () => {

@@ -7,18 +7,18 @@ import * as React from "react";
 import { VariableSizeList } from "react-window";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { CheckBoxState } from "@bentley/ui-core";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { CheckBoxState } from "@itwin/ui-core-react";
 import { render } from "@testing-library/react";
-import { SelectionMode } from "../../../../ui-components/common/selection/SelectionModes";
-import { ControlledTree, ControlledTreeProps } from "../../../../ui-components/tree/controlled/component/ControlledTree";
-import { from } from "../../../../ui-components/tree/controlled/Observable";
-import { TreeEvents } from "../../../../ui-components/tree/controlled/TreeEvents";
-import { MutableTreeModelNode, TreeModel } from "../../../../ui-components/tree/controlled/TreeModel";
-import { ITreeNodeLoader } from "../../../../ui-components/tree/controlled/TreeNodeLoader";
-import { HighlightableTreeProps, HighlightingEngine } from "../../../../ui-components/tree/HighlightingEngine";
+import { SelectionMode } from "../../../../ui-components-react/common/selection/SelectionModes";
+import { ControlledTree, ControlledTreeProps } from "../../../../ui-components-react/tree/controlled/component/ControlledTree";
+import { from } from "../../../../ui-components-react/tree/controlled/Observable";
+import { TreeEvents } from "../../../../ui-components-react/tree/controlled/TreeEvents";
+import { MutableTreeModelNode, TreeModel } from "../../../../ui-components-react/tree/controlled/TreeModel";
+import { ITreeNodeLoader } from "../../../../ui-components-react/tree/controlled/TreeNodeLoader";
+import { HighlightableTreeProps, HighlightingEngine } from "../../../../ui-components-react/tree/HighlightingEngine";
 import TestUtils from "../../../TestUtils";
-import { SparseArray } from "../../../../ui-components/tree/controlled/internal/SparseTree";
+import { SparseArray } from "../../../../ui-components-react/tree/controlled/internal/SparseTree";
 
 describe("ControlledTree", () => {
   const nodeLoaderMock = moq.Mock.ofType<ITreeNodeLoader>();

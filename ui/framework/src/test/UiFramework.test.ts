@@ -14,12 +14,12 @@ import { Id64String, Logger } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection, MockRender, SelectionSet, ViewState } from "@itwin/core-frontend";
 import { Presentation, SelectionManager, SelectionScopesManager, SelectionScopesManagerProps } from "@itwin/presentation-frontend";
 import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@itwin/presentation-testing";
-import { ColorTheme, CursorMenuData, SettingsModalFrontstage, UiFramework, UserSettingsProvider } from "../ui-framework";
-import { DefaultIModelServices } from "../ui-framework/clientservices/DefaultIModelServices";
-import { DefaultProjectServices } from "../ui-framework/clientservices/DefaultProjectServices";
+import { ColorTheme, CursorMenuData, SettingsModalFrontstage, UiFramework, UserSettingsProvider } from "../appui-react";
+import { DefaultIModelServices } from "../appui-react/clientservices/DefaultIModelServices";
+import { DefaultProjectServices } from "../appui-react/clientservices/DefaultProjectServices";
 import TestUtils, { mockUserInfo, storageMock } from "./TestUtils";
-import { LocalSettingsStorage, UiSettingsStorage } from "@bentley/ui-core";
-import { OpenSettingsTool } from "../ui-framework/tools/OpenSettingsTool";
+import { LocalSettingsStorage, UiSettingsStorage } from "@itwin/ui-core-react";
+import { OpenSettingsTool } from "../appui-react/tools/OpenSettingsTool";
 
 describe("UiFramework localStorage Wrapper", () => {
 
@@ -58,8 +58,8 @@ describe("UiFramework localStorage Wrapper", () => {
       expect(UiFramework.i18nNamespace).to.eq("UiFramework");
     });
 
-    it("packageName should return ui-framework", () => {
-      expect(UiFramework.packageName).to.eq("ui-framework");
+    it("packageName should return appui-react", () => {
+      expect(UiFramework.packageName).to.eq("appui-react");
     });
 
     it("translate should return the key (in test environment)", async () => {

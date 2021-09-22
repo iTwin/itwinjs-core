@@ -8,7 +8,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { ViewDefinitionProps, ViewQueryParams } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
-import { IModelInfo, UiFramework } from "@bentley/ui-framework";
+import { IModelInfo, UiFramework } from "@itwin/appui-react";
 import { Button, ProgressRadial } from "@itwin/itwinui-react";
 
 interface ViewCardProps {

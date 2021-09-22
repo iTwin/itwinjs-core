@@ -7,10 +7,10 @@ import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-c
 import { IModelApp } from "@itwin/core-frontend";
 import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
-} from "@bentley/ui-framework";
+} from "@itwin/appui-react";
 import { SignIn } from "../oidc/SignIn";
 import { SampleAppIModelApp } from "../../index";
-import { StageUsage, StandardContentLayouts } from "@bentley/ui-abstract";
+import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
 
 class SignInControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {

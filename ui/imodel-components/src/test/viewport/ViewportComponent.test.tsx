@@ -15,10 +15,10 @@ import {
   SpatialViewState, StandardViewId, TentativePoint, ViewManager, Viewport, ViewRect, ViewState,
 } from "@itwin/core-frontend";
 import { fireEvent, render } from "@testing-library/react";
-import { ViewportComponentEvents } from "../../ui-imodel-components/viewport/ViewportComponentEvents";
+import { ViewportComponentEvents } from "../../ui-imodel-components-react/viewport/ViewportComponentEvents";
 import { TestUtils } from "../TestUtils";
-import { ViewportComponent } from "../../ui-imodel-components/viewport/ViewportComponent";
-import { Face } from "../../ui-imodel-components/navigationaids/Cube";
+import { ViewportComponent } from "../../ui-imodel-components-react/viewport/ViewportComponent";
+import { Face } from "../../ui-imodel-components-react/navigationaids/Cube";
 
 describe("ViewportComponent", () => {
   // set up descriptors to restore SpatialViewState behavior after testing is complete

@@ -9,10 +9,10 @@ import { IModelConnection } from "@itwin/core-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { Node, RegisteredRuleset, RulesetVariable, StandardNodeTypes, VariableValueTypes } from "@itwin/presentation-common";
 import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
-import { PrimitiveValue } from "@bentley/ui-abstract";
+import { PrimitiveValue } from "@itwin/appui-abstract";
 import {
   computeVisibleNodes, MutableTreeModel, TreeModel, TreeModelNode, TreeModelNodeEditingInfo, TreeModelNodeInput, UiComponents,
-} from "@bentley/ui-components";
+} from "@itwin/ui-components-react";
 import { act, cleanup, renderHook } from "@testing-library/react-hooks";
 import { IPresentationTreeDataProvider } from "../../../presentation-components";
 import {

@@ -7,11 +7,11 @@ import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
 import { fireEvent, render, waitFor } from "@testing-library/react";
-import { PrimitiveValue, SpecialKey } from "@bentley/ui-abstract";
-import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
-import { EnumButtonGroupEditor } from "../../ui-components/editors/EnumButtonGroupEditor";
+import { PrimitiveValue, SpecialKey } from "@itwin/appui-abstract";
+import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components-react/editors/EditorContainer";
+import { EnumButtonGroupEditor } from "../../ui-components-react/editors/EnumButtonGroupEditor";
 import TestUtils, { MineDataController } from "../TestUtils";
-import { PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
+import { PropertyEditorManager } from "../../ui-components-react/editors/PropertyEditorManager";
 
 // cSpell:ignore enumbuttongroup
 

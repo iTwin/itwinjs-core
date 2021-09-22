@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { Icon } from "@bentley/ui-core";
+import { Icon } from "@itwin/ui-core-react";
 import { Button, Checkbox, Input, LabeledInput, ProgressLinear, ProgressRadial, Radio, Select, Slider, ToggleSwitch } from "@itwin/itwinui-react";
 import { ComponentExampleCategory } from "./ComponentExamples";
 import { createComponentExample } from "./ComponentExamplesProvider";

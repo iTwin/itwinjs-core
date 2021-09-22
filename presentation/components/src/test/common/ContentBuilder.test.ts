@@ -9,7 +9,7 @@ import {
   createTestSimpleContentField,
 } from "@itwin/presentation-common/lib/test/_helpers/Content";
 import { createTestECInstanceKey, createTestPropertyInfo } from "@itwin/presentation-common/lib/test/_helpers/EC";
-import { ArrayValue, PropertyRecord, StructValue } from "@bentley/ui-abstract";
+import { ArrayValue, PropertyRecord, StructValue } from "@itwin/appui-abstract";
 import { FieldHierarchyRecord, IPropertiesAppender, PropertyRecordsBuilder } from "../../presentation-components/common/ContentBuilder";
 
 class TestPropertyRecordsBuilder extends PropertyRecordsBuilder {

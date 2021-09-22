@@ -5,9 +5,9 @@
 
 import { expect } from "chai";
 import sinon from "sinon";
-import { MutableCustomGridCategory } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableCustomGridCategory";
-import { MutableGridItemFactory } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableGridItemFactory";
-import { PropertyCategory } from "../../../../../ui-components/propertygrid/PropertyDataProvider";
+import { MutableCustomGridCategory } from "../../../../../ui-components-react/propertygrid/internal/flat-items/MutableCustomGridCategory";
+import { MutableGridItemFactory } from "../../../../../ui-components-react/propertygrid/internal/flat-items/MutableGridItemFactory";
+import { PropertyCategory } from "../../../../../ui-components-react/propertygrid/PropertyDataProvider";
 import { FlatGridTestUtils } from "./FlatGridTestUtils";
 
 describe("MutableCustomGridCategory", () => {

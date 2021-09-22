@@ -8,7 +8,7 @@ import * as moq from "typemoq";
 import { IModelConnection } from "@itwin/core-frontend";
 import { NodePathElement } from "@itwin/presentation-common";
 import { ResolvablePromise } from "@itwin/presentation-common/lib/test/_helpers/Promises";
-import { AbstractTreeNodeLoaderWithProvider, TreeModelNode, TreeModelSource } from "@bentley/ui-components";
+import { AbstractTreeNodeLoaderWithProvider, TreeModelNode, TreeModelSource } from "@itwin/ui-components-react";
 import { renderHook } from "@testing-library/react-hooks";
 import {
   ControlledPresentationTreeFilteringProps, IPresentationTreeDataProvider, useControlledPresentationTreeFiltering,

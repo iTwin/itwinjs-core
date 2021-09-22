@@ -7,7 +7,7 @@ import { IModelApp, LengthDescription, NotifyMessageDetails, OutputMessagePriori
 import {
   ColorEditorParams, DialogButtonDef, DialogButtonType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertySyncItem, InputEditorSizeParams, PropertyDescription,
   PropertyEditorParamTypes, StandardEditorNames, StandardTypeNames, SuppressLabelEditorParams,
-} from "@bentley/ui-abstract";
+} from "@itwin/appui-abstract";
 
 enum ColorOptions {
   Red,

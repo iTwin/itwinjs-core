@@ -2,8 +2,8 @@
   "name": "@itwin/core-orbitgt",
   "version": "3.0.0-dev.64",
   "description": "",
-  "main": "lib/imodeljs-orbitgt.js",
-  "typings": "lib/imodeljs-orbitgt",
+  "main": "lib/core-orbitgt.js",
+  "typings": "lib/core-orbitgt",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
@@ -11,8 +11,8 @@
     "build": "tsc 1>&2 && npm run copy:test-assets",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-orbitgt/file.json --tsIndexFile=./imodeljs-orbitgt.ts --onlyJson",
-    "extract-api": "betools extract-api --entry=imodeljs-orbitgt",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-orbitgt/file.json --tsIndexFile=./core-orbitgt.ts --onlyJson",
+    "extract-api": "betools extract-api --entry=core-orbitgt",
     "lint": "",
     "test": "betools test",
     "cover": "nyc npm test"

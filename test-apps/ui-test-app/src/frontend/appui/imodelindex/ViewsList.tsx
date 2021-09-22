@@ -8,7 +8,7 @@ import * as React from "react";
 import { BeEvent } from "@itwin/core-bentley";
 import { IModelReadRpcInterface, ViewDefinitionProps, ViewQueryParams } from "@itwin/core-common";
 import { IModelConnection, ViewState } from "@itwin/core-frontend";
-import { CommonProps, LoadingSpinner } from "@bentley/ui-core";
+import { CommonProps, LoadingSpinner } from "@itwin/ui-core-react";
 import ViewItem, { ViewItemProps } from "./ViewItem";
 
 /** Properties for [[ViewsList]] component

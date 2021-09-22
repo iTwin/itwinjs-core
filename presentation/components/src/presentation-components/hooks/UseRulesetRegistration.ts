@@ -8,7 +8,7 @@
 
 import { useCallback } from "react";
 import { Ruleset } from "@itwin/presentation-common";
-import { useDisposable } from "@bentley/ui-core";
+import { useDisposable } from "@itwin/ui-core-react";
 import { RulesetRegistrationHelper } from "../common/RulesetRegistrationHelper";
 
 /**

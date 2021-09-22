@@ -7,7 +7,7 @@
  */
 
 import { FormatterSpec, Parser, ParserSpec } from "@bentley/imodeljs-quantity";
-import { BaseQuantityDescription, ParseResults } from "@bentley/ui-abstract";
+import { BaseQuantityDescription, ParseResults } from "@itwin/appui-abstract";
 import { IModelApp } from "../IModelApp";
 import { QuantityType } from "../quantity-formatting/QuantityFormatter";
 

@@ -12,8 +12,8 @@ import {
 } from "@itwin/presentation-common";
 import { PresentationTableDataProvider } from "@itwin/presentation-components";
 import { Presentation } from "@itwin/presentation-frontend";
-import { PropertyRecord, PropertyValueFormat, StructValue } from "@bentley/ui-abstract";
-import { SortDirection } from "@bentley/ui-core";
+import { PropertyRecord, PropertyValueFormat, StructValue } from "@itwin/appui-abstract";
+import { SortDirection } from "@itwin/ui-core-react";
 import { initialize, terminate } from "../../IntegrationTests";
 
 const RULESET: Ruleset = {

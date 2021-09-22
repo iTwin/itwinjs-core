@@ -5,8 +5,8 @@
 import "./CubeContent.scss";
 import * as React from "react";
 import { Matrix3d } from "@itwin/core-geometry";
-import { Cube, CubeRotationChangeEventArgs, ViewportComponentEvents } from "@bentley/ui-imodel-components";
-import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl } from "@bentley/ui-framework";
+import { Cube, CubeRotationChangeEventArgs, ViewportComponentEvents } from "@itwin/ui-imodel-components-react";
+import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl } from "@itwin/appui-react";
 
 class CubeContentControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {

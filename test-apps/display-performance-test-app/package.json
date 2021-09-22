@@ -49,7 +49,7 @@
     "@bentley/imodeljs-quantity": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-backend": "workspace:*",
-    "@bentley/ui-abstract": "workspace:*",
+    "@itwin/appui-abstract": "workspace:*",
     "@bentley/hypermodeling-frontend": "workspace:*",
     "body-parser": "^1.18.2"
   },

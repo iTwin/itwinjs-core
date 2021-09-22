@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { ScreenViewport } from "@itwin/core-frontend";
-import { ContextMenu, ContextMenuItem } from "@bentley/ui-core";
+import { ContextMenu, ContextMenuItem } from "@itwin/ui-core-react";
 import { Slider } from "@itwin/itwinui-react";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import "./MapLayerManager.scss";

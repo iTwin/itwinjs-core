@@ -11,7 +11,7 @@ import { createTestContentDescriptor, createTestSimpleContentField } from "@itwi
 import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomRuleset } from "@itwin/presentation-common/lib/test/_helpers/random";
 import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
-import { TypeConverter, TypeConverterManager } from "@bentley/ui-components";
+import { TypeConverter, TypeConverterManager } from "@itwin/ui-components-react";
 import {
   DataProvidersFactory, DataProvidersFactoryProps, IPresentationPropertyDataProvider, PresentationTableDataProvider,
 } from "../presentation-components";

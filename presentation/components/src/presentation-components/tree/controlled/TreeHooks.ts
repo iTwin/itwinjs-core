@@ -13,7 +13,7 @@ import { IModelHierarchyChangeEventArgs, Presentation } from "@itwin/presentatio
 import {
   computeVisibleNodes, isTreeModelNode, isTreeModelNodePlaceholder, MutableTreeModel, MutableTreeModelNode, PagedTreeNodeLoader, RenderedItemsRange,
   TreeModelNode, TreeModelNodeInput, TreeModelSource, TreeNodeItem, usePagedTreeNodeLoader, VisibleTreeNodes,
-} from "@bentley/ui-components";
+} from "@itwin/ui-components-react";
 import { RulesetRegistrationHelper } from "../../common/RulesetRegistrationHelper";
 import { PresentationTreeDataProvider, PresentationTreeDataProviderProps } from "../DataProvider";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
@@ -53,7 +53,7 @@ export interface PresentationTreeNodeLoaderResult {
 
   /**
    * Callback for when rendered tree node item range changes. This property should be passed to
-   * [ControlledTree]($ui-components) when property `enableHierarchyAutoUpdate` is `true`.
+   * [ControlledTree]($ui-components-react) when property `enableHierarchyAutoUpdate` is `true`.
    * @alpha
    */
   onItemsRendered: (items: RenderedItemsRange) => void;

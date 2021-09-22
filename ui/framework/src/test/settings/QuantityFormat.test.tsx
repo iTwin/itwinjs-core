@@ -12,10 +12,10 @@ import TestUtils, { getButtonWithText, handleError, selectChangeValueByText, stu
 import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
 import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
 import { mockPresentationManager } from "@itwin/presentation-components/lib/test/_helpers/UiComponents";
-import { getQuantityFormatsSettingsManagerEntry } from "../../ui-framework/settings/quantityformatting/QuantityFormat";
-import { ModalDialogRenderer } from "../../ui-framework/dialog/ModalDialogManager";
+import { getQuantityFormatsSettingsManagerEntry } from "../../appui-react/settings/quantityformatting/QuantityFormat";
+import { ModalDialogRenderer } from "../../appui-react/dialog/ModalDialogManager";
 import { FormatProps, UnitSystemKey } from "@bentley/imodeljs-quantity";
-import { UiFramework } from "../../ui-framework/UiFramework";
+import { UiFramework } from "../../appui-react/UiFramework";
 
 describe("QuantityFormatSettingsPage", () => {
 

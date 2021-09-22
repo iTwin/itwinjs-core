@@ -10,9 +10,9 @@ import { IModelApp, MockRender } from "@itwin/core-frontend";
 import { Format, FormatProps, FormatterSpec, FormatTraits, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
 import { Checkbox } from "@itwin/itwinui-react";
 import { TestUtils } from "../TestUtils";
-import { FormatPanel } from "../../ui-imodel-components/quantityformat/FormatPanel";
-import { FormatSample } from "../../ui-imodel-components/quantityformat/FormatSample";
-import { FormatPrecision } from "../../ui-imodel-components/quantityformat/FormatPrecision";
+import { FormatPanel } from "../../ui-imodel-components-react/quantityformat/FormatPanel";
+import { FormatSample } from "../../ui-imodel-components-react/quantityformat/FormatSample";
+import { FormatPrecision } from "../../ui-imodel-components-react/quantityformat/FormatPrecision";
 
 function setFormatTrait(formatProps: FormatProps, trait: FormatTraits, setActive: boolean) {
   const traitStr = Format.getTraitString(trait);

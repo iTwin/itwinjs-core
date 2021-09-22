@@ -6,7 +6,7 @@ import "highlight.js/styles/vs2015.css";
 import * as React from "react";
 import Markdown from "react-markdown";
 import CodeBlock from "./CodeBlock";
-import readmeFilePath from "@bentley/ui-ninezone/README.md";
+import readmeFilePath from "@itwin/appui-layout-react/README.md";
 
 const readmeResource = createResource((async function () {
   const response = await fetch(readmeFilePath);

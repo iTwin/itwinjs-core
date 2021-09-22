@@ -10,7 +10,7 @@ import {
   AbstractStatusBarItemUtilities, AbstractWidgetProps, BackstageItem, BackstageItemUtilities, CommonStatusBarItem, CommonToolbarItem,
   StagePanelLocation, StagePanelSection, StageUsage, StatusBarSection, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage, UiItemsApplication,
   UiItemsApplicationAction, UiItemsArbiter, UiItemsManager, UiItemsProvider,
-} from "../ui-abstract";
+} from "../appui-abstract";
 
 describe("UiItemsArbiter", () => {
   const onSpy = sinon.spy();

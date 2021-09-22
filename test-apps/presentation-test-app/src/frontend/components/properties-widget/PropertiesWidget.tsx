@@ -13,14 +13,14 @@ import {
   usePropertyDataProviderWithUnifiedSelection,
 } from "@itwin/presentation-components";
 import { FavoritePropertiesScope, Presentation } from "@itwin/presentation-frontend";
-import { PropertyRecord } from "@bentley/ui-abstract";
+import { PropertyRecord } from "@itwin/appui-abstract";
 import {
   ActionButtonRendererProps, CompositeFilterType, CompositePropertyDataFilterer, DisplayValuePropertyDataFilterer, FilteredPropertyData,
   FilteringInput, FilteringInputStatus, FilteringPropertyDataProvider, LabelPropertyDataFilterer, PropertyCategory, PropertyCategoryLabelFilterer,
   PropertyData, PropertyGridContextMenuArgs, useAsyncValue, useDebouncedAsyncValue, VirtualizedPropertyGridWithDataProvider,
-} from "@bentley/ui-components";
-import { HighlightInfo } from "@bentley/ui-components/lib/ui-components/common/HighlightingComponentProps";
-import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Orientation, useDisposable } from "@bentley/ui-core";
+} from "@itwin/ui-components-react";
+import { HighlightInfo } from "@itwin/ui-components-react/lib/ui-components-react/common/HighlightingComponentProps";
+import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Orientation, useDisposable } from "@itwin/ui-core-react";
 import { ToggleSwitch } from "@itwin/itwinui-react";
 import { DiagnosticsSelector } from "../diagnostics-selector/DiagnosticsSelector";
 

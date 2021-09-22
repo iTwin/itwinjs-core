@@ -13,8 +13,8 @@ import {
   createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, FavoritePropertiesManager, FavoritePropertiesScope, Presentation,
 } from "@itwin/presentation-frontend";
 import { SettingsResult, SettingsStatus } from "@bentley/product-settings-client";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { PropertyData } from "@bentley/ui-components";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { PropertyData } from "@itwin/ui-components-react";
 import { initialize, initializeWithClientServices, terminate } from "../IntegrationTests";
 
 describe("Favorite properties", () => {

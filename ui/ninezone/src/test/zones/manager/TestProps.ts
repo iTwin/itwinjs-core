@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { getDefaultWidgetManagerProps, getDefaultZonesManagerProps, HorizontalAnchor, WidgetZoneId, ZonesManagerProps } from "../../../ui-ninezone";
+import { getDefaultWidgetManagerProps, getDefaultZonesManagerProps, HorizontalAnchor, WidgetZoneId, ZonesManagerProps } from "../../../appui-layout-react";
 
 export namespace TestProps {
   export const defaultProps = getDefaultZonesManagerProps();

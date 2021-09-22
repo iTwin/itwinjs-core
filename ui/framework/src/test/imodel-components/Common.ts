@@ -6,9 +6,9 @@
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { ECClassGroupingNodeKey, ECInstancesNodeKey, InstanceKey, StandardNodeTypes } from "@itwin/presentation-common";
 import { createRandomPropertyRecord, createRandomTreeNodeItem } from "@itwin/presentation-components/lib/test/_helpers/UiComponents";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { TreeModelNode } from "@bentley/ui-components";
-import { CheckBoxState } from "@bentley/ui-core";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { TreeModelNode } from "@itwin/ui-components-react";
+import { CheckBoxState } from "@itwin/ui-core-react";
 
 /** @internal */
 export const createSimpleTreeModelNode = (id?: string): TreeModelNode => {

@@ -13,7 +13,7 @@ import {
 } from "@itwin/presentation-common";
 import {
   ArrayValue, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, StructValue, PropertyValueFormat as UiPropertyValueFormat,
-} from "@bentley/ui-abstract";
+} from "@itwin/appui-abstract";
 
 /** @internal */
 export interface FieldRecord {

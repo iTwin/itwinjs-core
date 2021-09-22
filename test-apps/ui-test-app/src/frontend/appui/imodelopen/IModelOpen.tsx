@@ -6,7 +6,7 @@ import "./IModelOpen.scss";
 import "./Common.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ActivityMessagePopup, IModelInfo, ProjectInfo, ProjectScope, UiFramework } from "@bentley/ui-framework";
+import { ActivityMessagePopup, IModelInfo, ProjectInfo, ProjectScope, UiFramework } from "@itwin/appui-react";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { BlockingPrompt } from "./BlockingPrompt";
 import { IModelList } from "./IModelList";

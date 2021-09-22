@@ -5,7 +5,7 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { PointerCaptor, ResizeDirection, ResizeDirectionHelpers, ResizeGrip, ResizeGripResizeArgs } from "../../../ui-ninezone";
+import { PointerCaptor, ResizeDirection, ResizeDirectionHelpers, ResizeGrip, ResizeGripResizeArgs } from "../../../appui-layout-react";
 import { createBoundingClientRect, createPointerEvent, mount } from "../../Utils";
 
 describe("<ResizeGrip />", () => {

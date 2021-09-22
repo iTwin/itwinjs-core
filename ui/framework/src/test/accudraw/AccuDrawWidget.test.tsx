@@ -6,12 +6,12 @@ import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
 import { IModelAppOptions, MockRender } from "@itwin/core-frontend";
-import { ConfigurableUiControlType } from "../../ui-framework/configurableui/ConfigurableUiControl";
-import { WidgetProps } from "../../ui-framework/widgets/WidgetProps";
-import { WidgetDef } from "../../ui-framework/widgets/WidgetDef";
-import { FrameworkAccuDraw } from "../../ui-framework/accudraw/FrameworkAccuDraw";
-import { AccuDrawWidget, AccuDrawWidgetControl } from "../../ui-framework/accudraw/AccuDrawWidget";
-import { AccuDrawFieldContainer } from "../../ui-framework/accudraw/AccuDrawFieldContainer";
+import { ConfigurableUiControlType } from "../../appui-react/configurableui/ConfigurableUiControl";
+import { WidgetProps } from "../../appui-react/widgets/WidgetProps";
+import { WidgetDef } from "../../appui-react/widgets/WidgetDef";
+import { FrameworkAccuDraw } from "../../appui-react/accudraw/FrameworkAccuDraw";
+import { AccuDrawWidget, AccuDrawWidgetControl } from "../../appui-react/accudraw/AccuDrawWidget";
+import { AccuDrawFieldContainer } from "../../appui-react/accudraw/AccuDrawFieldContainer";
 import { TestUtils } from "../TestUtils";
 
 describe("AccuDrawWidget", () => {

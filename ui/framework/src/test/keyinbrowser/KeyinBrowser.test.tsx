@@ -6,10 +6,10 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { IModelApp, MockRender } from "@itwin/core-frontend";
-import { AutoSuggest } from "@bentley/ui-core";
+import { AutoSuggest } from "@itwin/ui-core-react";
 import { Button, LabeledInput } from "@itwin/itwinui-react";
 import { fireEvent, render } from "@testing-library/react";
-import { KeyinBrowser } from "../../ui-framework";
+import { KeyinBrowser } from "../../appui-react";
 import TestUtils, { mount, storageMock } from "../TestUtils";
 
 const myLocalStorage = storageMock();

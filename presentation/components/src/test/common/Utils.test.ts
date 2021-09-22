@@ -15,7 +15,7 @@ import {
 import { createTestPropertyInfo } from "@itwin/presentation-common/lib/test/_helpers/EC";
 import { createRandomLabelCompositeValue, createRandomLabelDefinition } from "@itwin/presentation-common/lib/test/_helpers/random";
 import { Presentation } from "@itwin/presentation-frontend";
-import { Primitives, PrimitiveValue } from "@bentley/ui-abstract";
+import { Primitives, PrimitiveValue } from "@itwin/appui-abstract";
 import * as utils from "../../presentation-components/common/Utils";
 
 class TestComponent extends React.Component {

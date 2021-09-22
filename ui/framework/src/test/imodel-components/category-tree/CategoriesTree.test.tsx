@@ -12,12 +12,12 @@ import { ECInstancesNodeKey, KeySet, LabelDefinition, Node, NodePathElement, Sta
 import { IPresentationTreeDataProvider, PresentationTreeDataProvider } from "@itwin/presentation-components";
 import { mockPresentationManager } from "@itwin/presentation-components/lib/test/_helpers/UiComponents";
 import { Presentation, PresentationManager, RulesetVariablesManager, SelectionChangeEvent, SelectionManager } from "@itwin/presentation-frontend";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { TreeDataChangesListener, TreeNodeItem } from "@itwin/ui-components-react";
 import { fireEvent, render, waitFor } from "@testing-library/react";
-import { CategoryTree, toggleAllCategories } from "../../../ui-framework/imodel-components/category-tree/CategoriesTree";
-import { CategoryVisibilityHandler } from "../../../ui-framework/imodel-components/category-tree/CategoryVisibilityHandler";
-import { VisibilityChangeListener } from "../../../ui-framework/imodel-components/VisibilityTreeEventHandler";
+import { CategoryTree, toggleAllCategories } from "../../../appui-react/imodel-components/category-tree/CategoriesTree";
+import { CategoryVisibilityHandler } from "../../../appui-react/imodel-components/category-tree/CategoryVisibilityHandler";
+import { VisibilityChangeListener } from "../../../appui-react/imodel-components/VisibilityTreeEventHandler";
 import TestUtils from "../../TestUtils";
 
 describe("CategoryTree", () => {

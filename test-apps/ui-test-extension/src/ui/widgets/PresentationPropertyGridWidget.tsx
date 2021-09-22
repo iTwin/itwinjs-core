@@ -12,9 +12,9 @@ import { FavoritePropertiesScope, Presentation } from "@itwin/presentation-front
 import {
   ActionButtonRendererProps, PropertyGridContextMenuArgs, useAsyncValue, VirtualizedPropertyGridWithDataProvider,
   VirtualizedPropertyGridWithDataProviderProps,
-} from "@bentley/ui-components";
-import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Icon, Orientation, ResizableContainerObserver } from "@bentley/ui-core";
-import { ConfigurableCreateInfo, useActiveIModelConnection, useFrameworkVersion, WidgetControl } from "@bentley/ui-framework";
+} from "@itwin/ui-components-react";
+import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Icon, Orientation, ResizableContainerObserver } from "@itwin/ui-core-react";
+import { ConfigurableCreateInfo, useActiveIModelConnection, useFrameworkVersion, WidgetControl } from "@itwin/appui-react";
 import { ExtensionUiItemsProvider } from "../ExtensionUiItemsProvider";
 
 export type ContextMenuItemInfo = ContextMenuItemProps & React.Attributes & { label: string };

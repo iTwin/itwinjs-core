@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import * as React from "react";
 
 import { Logger } from "@itwin/core-bentley";
-import { focusIntoContainer, FocusTrap } from "../../ui-core/focustrap/FocusTrap";
+import { focusIntoContainer, FocusTrap } from "../../ui-core-react/focustrap/FocusTrap";
 
 // cspell:ignore focustrap
 

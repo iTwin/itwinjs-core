@@ -7,8 +7,8 @@ import "./GridWidget.css";
 import * as React from "react";
 import { IModelApp, IModelConnection } from "@itwin/core-frontend";
 import { DiagnosticsProps, PresentationTableDataProvider, tableWithUnifiedSelection } from "@itwin/presentation-components";
-import { Table } from "@bentley/ui-components";
-import { useDisposable } from "@bentley/ui-core";
+import { Table } from "@itwin/ui-components-react";
+import { useDisposable } from "@itwin/ui-core-react";
 import { DiagnosticsSelector } from "../diagnostics-selector/DiagnosticsSelector";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention

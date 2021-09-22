@@ -9,8 +9,8 @@
 import * as React from "react";
 import { Descriptor, Field, FIELD_NAMES_SEPARATOR, LabelCompositeValue, LabelDefinition } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { Primitives, PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-import { IPropertyValueRenderer, PropertyValueRendererManager } from "@bentley/ui-components";
+import { Primitives, PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
+import { IPropertyValueRenderer, PropertyValueRendererManager } from "@itwin/ui-components-react";
 import { InstanceKeyValueRenderer } from "../properties/InstanceKeyValueRenderer";
 
 const localizationNamespaceName = "PresentationComponents";

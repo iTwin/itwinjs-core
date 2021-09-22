@@ -5,9 +5,9 @@
 import { expect } from "chai";
 import { MockRender, ScreenViewport, Viewport } from "@itwin/core-frontend";
 import * as moq from "typemoq";
-import { HideIsolateEmphasizeActionHandler } from "../../ui-framework/selection/HideIsolateEmphasizeManager";
+import { HideIsolateEmphasizeActionHandler } from "../../appui-react/selection/HideIsolateEmphasizeManager";
 import TestUtils from "../TestUtils";
-import { UiFramework } from "../../ui-framework/UiFramework";
+import { UiFramework } from "../../appui-react/UiFramework";
 
 class TestHideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandler {
   public featureOverridesActive = false;

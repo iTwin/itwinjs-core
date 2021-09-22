@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
-@import "~@bentley/ui-ninezone/lib/ui-ninezone/widget/tool-settings/variables";
+@import "~@itwin/ui-core-react/lib/ui-core-react/style/themecolors";
+@import "~@itwin/appui-layout-react/lib/appui-layout-react/widget/tool-settings/variables";
 
 .nzdemo-success {
   color: $buic-foreground-success;
@@ -28,10 +28,10 @@
 .nzdemo-tool-settings-content {
   padding: unset;
 
-  > .nz-container {
+  >.nz-container {
     display: inline-block;
 
-    > .nzdemo-zone-measurer {
+    >.nzdemo-zone-measurer {
       position: absolute;
       left: 0;
       top: 0;
@@ -40,18 +40,18 @@
       visibility: hidden;
     }
 
-    > .nzdemo-measurer {
+    >.nzdemo-measurer {
       height: 100%;
       width: 100%;
     }
 
-    > .nzdemo-expander {
+    >.nzdemo-expander {
       width: 9999px;
       height: 9999px;
     }
 
     &:not(.nzdemo-measure) {
-      > .nzdemo-expander {
+      >.nzdemo-expander {
         display: none;
       }
     }
@@ -64,13 +64,13 @@
   }
 
   &.nzdemo-title-bar {
-    > .nz-container {
+    >.nz-container {
       padding: $nz-tool-settings-content-padding;
     }
   }
 
   &.nzdemo-tab {
-    > .nz-container {
+    >.nz-container {
       padding: 10px $nz-tool-settings-content-padding;
     }
   }

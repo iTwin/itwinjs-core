@@ -8,7 +8,7 @@ import userEvent from "@testing-library/user-event";
 import * as React from "react";
 import * as sinon from "sinon";
 import { expect } from "chai";
-import { HorizontalTabs, Orientation, Tabs, VerticalTabs } from "../../ui-core";
+import { HorizontalTabs, Orientation, Tabs, VerticalTabs } from "../../ui-core-react";
 import { findInstance } from "../ReactInstance";
 
 describe("<Tabs />", () => {

@@ -9,7 +9,7 @@ import sinon from "sinon";
 import { HSVColor } from "@itwin/core-common";
 import { fireEvent, render } from "@testing-library/react";
 import { TestUtils } from "../TestUtils";
-import { SaturationPicker } from "../../ui-imodel-components/color/SaturationPicker";
+import { SaturationPicker } from "../../ui-imodel-components-react/color/SaturationPicker";
 
 describe("<SaturationPicker />", () => {
   const hsv = new HSVColor(30, 30, 30);

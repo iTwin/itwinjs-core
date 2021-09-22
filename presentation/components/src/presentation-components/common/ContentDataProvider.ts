@@ -14,7 +14,7 @@ import {
   RequestOptionsWithRuleset, Ruleset, RulesetVariable, SelectionInfo,
 } from "@itwin/presentation-common";
 import { IModelContentChangeEventArgs, Presentation } from "@itwin/presentation-frontend";
-import { PropertyRecord } from "@bentley/ui-abstract";
+import { PropertyRecord } from "@itwin/appui-abstract";
 import { PresentationComponentsLoggerCategory } from "../ComponentsLoggerCategory";
 import { createDiagnosticsOptions, DiagnosticsProps } from "./Diagnostics";
 import { IPresentationDataProvider } from "./IPresentationDataProvider";

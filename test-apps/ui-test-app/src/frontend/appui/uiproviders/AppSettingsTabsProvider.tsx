@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { getQuantityFormatsSettingsManagerEntry, getUiSettingsManagerEntry, UiFramework } from "@bentley/ui-framework";
-import { SettingsTabEntry, SettingsTabsProvider } from "@bentley/ui-core";
+import { getQuantityFormatsSettingsManagerEntry, getUiSettingsManagerEntry, UiFramework } from "@itwin/appui-react";
+import { SettingsTabEntry, SettingsTabsProvider } from "@itwin/ui-core-react";
 import { AccudrawSettingsPageComponent } from "../frontstages/Settings";
 
 // Sample settings provider that dynamically adds settings into the setting stage

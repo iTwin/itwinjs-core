@@ -7,7 +7,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { act, fireEvent } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
-import { PointerCaptor, usePointerCaptor } from "../../ui-ninezone";
+import { PointerCaptor, usePointerCaptor } from "../../appui-layout-react";
 import { DragManagerProvider } from "../Providers";
 import { mount } from "../Utils";
 

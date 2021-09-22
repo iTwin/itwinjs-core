@@ -11,8 +11,8 @@ import { ClientRequestContext, ProcessDetector } from "@itwin/core-bentley";
 import { FrontendAuthorizationClient, isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelApp } from "@itwin/core-frontend";
 import { SignInBase } from "./SignInBase";
-import { CommonProps } from "@bentley/ui-core";
-import { UiFramework } from "@bentley/ui-framework";
+import { CommonProps } from "@itwin/ui-core-react";
+import { UiFramework } from "@itwin/appui-react";
 
 /** Properties for the [[SignIn]] component
  * @public

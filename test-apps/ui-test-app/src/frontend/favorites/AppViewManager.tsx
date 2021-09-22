@@ -5,7 +5,7 @@
 import * as React from "react";
 import ReactDOM from "react-dom";
 import { HitDetail, ViewManager } from "@itwin/core-frontend";
-import { FavoritePropertiesRenderer, PropertyValueRendererManager } from "@bentley/ui-components";
+import { FavoritePropertiesRenderer, PropertyValueRendererManager } from "@itwin/ui-components-react";
 import { FavoritePropertiesDataProvider } from "@itwin/presentation-components";
 import { Leading } from "@itwin/itwinui-react";
 import { appendContent } from "./appendContent";

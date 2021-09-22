@@ -12,9 +12,9 @@ import { MapLayersWidgetControl } from "@bentley/map-layers"; // used to test ma
 import { NodeKey } from "@itwin/presentation-common";
 import {
   BadgeType, CommonToolbarItem, ConditionalBooleanValue, ContentLayoutProps, RelativePosition, SpecialKey, StageUsage, ToolbarItemUtilities, WidgetState,
-} from "@bentley/ui-abstract";
-import { CustomToolbarItem, SelectionMode, useToolbarPopupContext } from "@bentley/ui-components";
-import { Point, ScrollView } from "@bentley/ui-core";
+} from "@itwin/appui-abstract";
+import { CustomToolbarItem, SelectionMode, useToolbarPopupContext } from "@itwin/ui-components-react";
+import { Point, ScrollView } from "@itwin/ui-core-react";
 import {
   BasicNavigationWidget, BasicToolWidget, CommandItemDef, ConfigurableUiManager, ContentGroup, ContentGroupProps,
   ContentGroupProvider, ContentProps, ContentViewManager, CoreTools, CursorInformation,
@@ -24,11 +24,11 @@ import {
   HideIsolateEmphasizeManager, IModelConnectedViewSelector, MessageManager,
   ModalDialogManager, ModelessDialogManager, ModelsTreeNodeType, StagePanel,
   SyncUiEventId, ToolbarHelper, UiFramework, Widget, WIDGET_OPACITY_DEFAULT, Zone, ZoneLocation, ZoneState,
-} from "@bentley/ui-framework";
+} from "@itwin/appui-react";
 import { Button, Slider } from "@itwin/itwinui-react";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../../../frontend/index";
 // SVG Support - SvgPath or SvgSprite
-// import { SvgPath } from "@bentley/ui-core";
+// import { SvgPath } from "@itwin/ui-core-react";
 import { AccuDrawPopupTools } from "../../tools/AccuDrawPopupTools";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { ToolWithDynamicSettings } from "../../tools/ToolWithDynamicSettings";

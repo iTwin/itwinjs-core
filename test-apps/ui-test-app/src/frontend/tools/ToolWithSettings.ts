@@ -16,8 +16,8 @@ import {
   DialogItem, DialogLayoutDataProvider, DialogProperty, DialogPropertyItem, DialogPropertySyncItem,
   EnumerationChoice, InputEditorSizeParams, PropertyChangeResult, PropertyChangeStatus,
   PropertyDescriptionHelper, PropertyEditorParamTypes, RangeEditorParams, RelativePosition, SuppressLabelEditorParams, SyncPropertiesChangeEvent,
-} from "@bentley/ui-abstract";
-import { CursorInformation, MenuItemProps, UiFramework } from "@bentley/ui-framework";
+} from "@itwin/appui-abstract";
+import { CursorInformation, MenuItemProps, UiFramework } from "@itwin/appui-react";
 
 enum ToolOptions {
   Red = 1,

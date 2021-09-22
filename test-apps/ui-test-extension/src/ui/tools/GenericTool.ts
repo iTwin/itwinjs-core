@@ -10,8 +10,8 @@ import {
   SelectionMethod, SelectionMode,
 } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
-import { UiFramework } from "@bentley/ui-framework";
-import { ToolbarItemUtilities } from "@bentley/ui-abstract";
+import { UiFramework } from "@itwin/appui-react";
+import { ToolbarItemUtilities } from "@itwin/appui-abstract";
 import genericToolSvg from "./generic-tool.svg?sprite";
 
 export class GenericTool extends PrimitiveTool {

@@ -8,10 +8,10 @@ import classnames from "classnames";
 import rafSchedule, { ScheduleFn } from "raf-schd";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { PointProps } from "@bentley/ui-abstract";
+import { PointProps } from "@itwin/appui-abstract";
 import {
   Button, ButtonProps, ButtonType, Omit, Point, Rectangle, RectangleProps, Size, SizeProps, withOnOutsideClick, withTimeout,
-} from "@bentley/ui-core";
+} from "@itwin/ui-core-react";
 import {
   Backstage,
   BackstageItem,
@@ -107,7 +107,7 @@ import {
   StagePanelTarget,
   Zone,
   Zones,
-} from "@bentley/ui-ninezone";
+} from "@itwin/appui-layout-react";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const TooltipWithTimeout = withTimeout(Tooltip);

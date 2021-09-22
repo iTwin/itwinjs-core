@@ -11,8 +11,8 @@ import { AxisIndex, Matrix3d, Point3d, Vector3d } from "@itwin/core-geometry";
 import { DrawingViewState, IModelConnection, ScreenViewport, ViewManager, ViewState, ViewState3d } from "@itwin/core-frontend";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { TestUtils } from "../TestUtils";
-import { DrawingNavigationAid, DrawingNavigationCanvas, MapMode } from "../../ui-imodel-components/navigationaids/DrawingNavigationAid";
-import { ViewportComponentEvents } from "../../ui-imodel-components/viewport/ViewportComponentEvents";
+import { DrawingNavigationAid, DrawingNavigationCanvas, MapMode } from "../../ui-imodel-components-react/navigationaids/DrawingNavigationAid";
+import { ViewportComponentEvents } from "../../ui-imodel-components-react/viewport/ViewportComponentEvents";
 
 // cspell:ignore unrotate
 

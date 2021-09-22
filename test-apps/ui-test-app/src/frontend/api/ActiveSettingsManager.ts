@@ -5,7 +5,7 @@
 import { BeEvent, Id64Array, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
 import { IModelApp, SpatialViewState, ViewState, ViewState2d } from "@itwin/core-frontend";
-import { UiFramework } from "@bentley/ui-framework";
+import { UiFramework } from "@itwin/appui-react";
 import { ErrorHandling } from "./ErrorHandling";
 
 export const iModelInfoAvailableEvent = new BeEvent();

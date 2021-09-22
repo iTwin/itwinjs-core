@@ -7,7 +7,7 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import { findInstance } from "../ReactInstance";
 import * as sinon from "sinon";
-import { SearchBox } from "../../ui-core";
+import { SearchBox } from "../../ui-core-react";
 import TestUtils from "../TestUtils";
 import { fireEvent, render } from "@testing-library/react";
 

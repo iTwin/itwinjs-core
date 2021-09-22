@@ -20,7 +20,7 @@ import { createRandomECInstanceKey, createRandomId } from "@itwin/presentation-c
 import {
   HiliteSet, Presentation, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionManager, SelectionScopesManager,
 } from "@itwin/presentation-frontend";
-import { ViewportComponent } from "@bentley/ui-imodel-components";
+import { ViewportComponent } from "@itwin/ui-imodel-components-react";
 import { IUnifiedSelectionComponent, viewWithUnifiedSelection } from "../../presentation-components";
 import { ViewportSelectionHandler } from "../../presentation-components/viewport/WithUnifiedSelection";
 

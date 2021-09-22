@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
-import { Dialog, FieldDefinitions, FieldValues, Form } from "@bentley/ui-core";
-import { ModalDialogManager } from "@bentley/ui-framework";
+import { Dialog, FieldDefinitions, FieldValues, Form } from "@itwin/ui-core-react";
+import { ModalDialogManager } from "@itwin/appui-react";
 
 export class ExampleForm extends React.Component {
   private _title = "Example Form";

@@ -5,12 +5,12 @@
 import * as React from "react";
 import { ColorDef } from "@itwin/core-common";
 import { IModelApp } from "@itwin/core-frontend";
-import { DialogPropertySyncItem } from "@bentley/ui-abstract";
-import { ColorPickerButton, ColorSwatch, WeightPickerButton } from "@bentley/ui-imodel-components";
+import { DialogPropertySyncItem } from "@itwin/appui-abstract";
+import { ColorPickerButton, ColorSwatch, WeightPickerButton } from "@itwin/ui-imodel-components-react";
 import {
   ConfigurableCreateInfo, ConfigurableUiManager, SyncToolSettingsPropertiesEventArgs, ToolSettingsEntry, ToolSettingsGrid, ToolSettingsManager,
   ToolUiProvider,
-} from "@bentley/ui-framework";
+} from "@itwin/appui-react";
 import { Tool1 } from "../../tools/Tool1";
 
 function Tool1Weight() {

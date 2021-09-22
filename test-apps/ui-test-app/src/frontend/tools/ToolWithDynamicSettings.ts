@@ -13,8 +13,8 @@ import {
   DialogItem, DialogItemValue, DialogPropertySyncItem,
   EnumerationChoice,
   PropertyDescription,
-} from "@bentley/ui-abstract";
-import { ToolItemDef } from "@bentley/ui-framework";
+} from "@itwin/appui-abstract";
+import { ToolItemDef } from "@itwin/appui-react";
 
 interface MajorCities {
   state: number;

@@ -5,9 +5,9 @@
 import "./SampleTimelineComponent.scss";
 import * as React from "react";
 import starSvg from "@bentley/icons-generic/icons/star.svg?sprite";
-import { TimelineComponent, TimelineDateMarkerProps, TimelineMenuItemProps } from "@bentley/ui-imodel-components";
-import { IconSpecUtilities } from "@bentley/ui-abstract";
-import { Icon } from "@bentley/ui-core";
+import { TimelineComponent, TimelineDateMarkerProps, TimelineMenuItemProps } from "@itwin/ui-imodel-components-react";
+import { IconSpecUtilities } from "@itwin/appui-abstract";
+import { Icon } from "@itwin/ui-core-react";
 export function ItemsAppendedSampleTimeline() {
   const duration = 8 * 1000;
   const startDate = new Date(2014, 6, 6);

@@ -13,7 +13,7 @@ import {
 } from "@itwin/presentation-common";
 import { ContentDataProvider, FieldHierarchyRecord, PropertyRecordsBuilder } from "@itwin/presentation-components";
 import { Presentation } from "@itwin/presentation-frontend";
-import { PropertyRecord } from "@bentley/ui-abstract";
+import { PropertyRecord } from "@itwin/appui-abstract";
 
 /**
  * Interface for a data provider, which is used by ContentBuilder.

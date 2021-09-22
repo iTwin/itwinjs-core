@@ -7,9 +7,9 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { fireEvent, render, waitFor } from "@testing-library/react";
-import { PropertyValueRendererManager } from "../../../ui-components/properties/ValueRendererManager";
-import { TableCell, TableCellContent, TableIconCellContent } from "../../../ui-components/table/component/TableCell";
-import { CellItem } from "../../../ui-components/table/TableDataProvider";
+import { PropertyValueRendererManager } from "../../../ui-components-react/properties/ValueRendererManager";
+import { TableCell, TableCellContent, TableIconCellContent } from "../../../ui-components-react/table/component/TableCell";
+import { CellItem } from "../../../ui-components-react/table/TableDataProvider";
 import TestUtils from "../../TestUtils";
 
 describe("TableCell", () => {

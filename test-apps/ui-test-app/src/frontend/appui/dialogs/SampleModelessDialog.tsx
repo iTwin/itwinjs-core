@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelApp } from "@itwin/core-frontend";
-import { ModelessDialog, ModelessDialogManager } from "@bentley/ui-framework";
+import { ModelessDialog, ModelessDialogManager } from "@itwin/appui-react";
 
 export interface SampleModelessDialogProps {
   opened: boolean;

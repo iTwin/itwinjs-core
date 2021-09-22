@@ -9,7 +9,7 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { fireEvent, render } from "@testing-library/react";
 import { IModelConnection, MockRender } from "@itwin/core-frontend";
-import { CardContainer, CardInfo, FrontstageManager, SheetCard, SheetData, SheetsModalFrontstage } from "../../ui-framework";
+import { CardContainer, CardInfo, FrontstageManager, SheetCard, SheetData, SheetsModalFrontstage } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("SheetsModalFrontstage", () => {
@@ -73,8 +73,8 @@ describe("SheetsModalFrontstage", () => {
       const wrapper = render(content as React.ReactElement<any>);
       const onChange = sinon.spy();
       const removeListener = FrontstageManager.onModalFrontstageChangedEvent.addListener(onChange);
-      const input = wrapper.container.querySelector ("input");
-      expect (input).not.to.be.null;
+      const input = wrapper.container.querySelector("input");
+      expect(input).not.to.be.null;
       fireEvent.change(input!, { target: { value: "search value" } });
       await fakeTimers.tickAsync(500);
       expect(onChange.called).to.be.true;

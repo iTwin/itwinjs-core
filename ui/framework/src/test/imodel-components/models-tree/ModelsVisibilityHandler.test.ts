@@ -10,9 +10,9 @@ import { IModelConnection, PerModelCategoryVisibility, SpatialViewState, Viewpor
 import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomId } from "@itwin/presentation-common/lib/test/_helpers/random";
 import { FilteredPresentationTreeDataProvider } from "@itwin/presentation-components/lib/presentation-components/tree/FilteredDataProvider";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { isPromiseLike } from "@bentley/ui-core";
-import { ModelsVisibilityHandler, ModelsVisibilityHandlerProps } from "../../../ui-framework/imodel-components/models-tree/ModelsVisibilityHandler";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { isPromiseLike } from "@itwin/ui-core-react";
+import { ModelsVisibilityHandler, ModelsVisibilityHandlerProps } from "../../../appui-react/imodel-components/models-tree/ModelsVisibilityHandler";
 import { TestUtils } from "../../TestUtils";
 import { createCategoryNode, createElementClassGroupingNode, createElementNode, createModelNode, createSubjectNode } from "../Common";
 import { IModelHierarchyChangeEventArgs, Presentation, PresentationManager } from "@itwin/presentation-frontend";

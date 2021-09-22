@@ -6,9 +6,9 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { render } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
-import { Rectangle } from "@bentley/ui-core";
-import * as ResizeObserverModule from "@bentley/ui-core/lib/ui-core/utils/hooks/ResizeObserverPolyfill";
-import { createNineZoneState, handleToCursorType, MeasureContext, NineZone, NineZoneDispatch, NineZoneLabels, NineZoneLabelsContext, sideToCursorType, useLabel } from "../../ui-ninezone";
+import { Rectangle } from "@itwin/ui-core-react";
+import * as ResizeObserverModule from "@itwin/ui-core-react/lib/ui-core-react/utils/hooks/ResizeObserverPolyfill";
+import { createNineZoneState, handleToCursorType, MeasureContext, NineZone, NineZoneDispatch, NineZoneLabels, NineZoneLabelsContext, sideToCursorType, useLabel } from "../../appui-layout-react";
 import { NineZoneProvider } from "../Providers";
 import { createBoundingClientRect, createDOMRect, flushAsyncOperations, ResizeObserverMock } from "../Utils";
 

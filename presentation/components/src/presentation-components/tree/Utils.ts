@@ -7,9 +7,9 @@
  */
 
 import { LabelDefinition, Node, NodeKey, PartialNode, PageOptions as PresentationPageOptions } from "@itwin/presentation-common";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { DelayLoadedTreeNodeItem, ItemColorOverrides, ItemStyle, PageOptions as UiPageOptions } from "@bentley/ui-components";
-import { CheckBoxState } from "@bentley/ui-core";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { DelayLoadedTreeNodeItem, ItemColorOverrides, ItemStyle, PageOptions as UiPageOptions } from "@itwin/ui-components-react";
+import { CheckBoxState } from "@itwin/ui-core-react";
 import { StyleHelper } from "../common/StyleHelper";
 import { createLabelRecord } from "../common/Utils";
 

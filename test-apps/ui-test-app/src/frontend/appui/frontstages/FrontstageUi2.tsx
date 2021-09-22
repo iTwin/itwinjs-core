@@ -10,8 +10,8 @@ import {
   StandardStatusbarItemsProvider,
   SyncUiEventArgs, SyncUiEventDispatcher,
   UiFramework,
-} from "@bentley/ui-framework";
-import { StageUsage, StandardContentLayouts } from "@bentley/ui-abstract";
+} from "@itwin/appui-react";
+import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
 import { ScreenViewport } from "@itwin/core-frontend";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
 import { AppUi2StageItemsProvider } from "../../tools/AppUi2StageItemsProvider";

@@ -9,8 +9,8 @@ import { BeEvent } from "@itwin/core-bentley";
 import { NodeKey, RegisteredRuleset, Ruleset, VariableValue } from "@itwin/presentation-common";
 import { createRandomECInstancesNodeKey } from "@itwin/presentation-common/lib/test/_helpers/random";
 import { IModelContentChangeEventArgs, IModelHierarchyChangeEventArgs, PresentationManager, RulesetManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
-import { PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-import { DelayLoadedTreeNodeItem } from "@bentley/ui-components";
+import { PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
+import { DelayLoadedTreeNodeItem } from "@itwin/ui-components-react";
 import { PRESENTATION_TREE_NODE_KEY } from "../../presentation-components/tree/Utils";
 
 export const createRandomTreeNodeItem = (key?: NodeKey, parentId?: string): DelayLoadedTreeNodeItem => {

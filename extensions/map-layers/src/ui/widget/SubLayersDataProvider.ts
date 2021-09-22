@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { BeEvent, compareStringsOrUndefined } from "@itwin/core-bentley";
 import { MapSubLayerProps, SubLayerId } from "@itwin/core-common";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { DelayLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
-import { CheckBoxState } from "@bentley/ui-core";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { DelayLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener, TreeNodeItem } from "@itwin/ui-components-react";
+import { CheckBoxState } from "@itwin/ui-core-react";
 import { StyleMapLayerSettings } from "../Interfaces";
 
 /**

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelApp } from "@itwin/core-frontend";
-import { Select } from "@bentley/ui-core";
+import { Select } from "@itwin/ui-core-react";
 import { MyAppFrontend } from "../../api/MyAppFrontend";
 
 export interface RulesetSelectorProps {

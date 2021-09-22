@@ -7,10 +7,10 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { Id64 } from "@itwin/core-bentley";
 import { render } from "@testing-library/react";
-import { NavigationPropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/NavigationPropertyValueRenderer";
-import { PropertyValueRendererContext } from "../../../../ui-components/properties/ValueRendererManager";
+import { NavigationPropertyValueRenderer } from "../../../../ui-components-react/properties/renderers/value/NavigationPropertyValueRenderer";
+import { PropertyValueRendererContext } from "../../../../ui-components-react/properties/ValueRendererManager";
 import TestUtils from "../../../TestUtils";
-import { PropertyConverterInfo } from "@bentley/ui-abstract";
+import { PropertyConverterInfo } from "@itwin/appui-abstract";
 
 describe("NavigationPropertyValueRenderer", () => {
   const instanceKey = { className: "", id: Id64.fromUint32Pair(1, 0) };
