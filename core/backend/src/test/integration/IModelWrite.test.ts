@@ -35,7 +35,7 @@ export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: 
   return { modelId, spatialCategoryId };
 }
 
-describe.only("IModelWriteTest (#integration)", () => {
+describe("IModelWriteTest (#integration)", () => {
   let managerUser: AuthorizedBackendRequestContext;
   let superUser: AuthorizedBackendRequestContext;
   let testITwinId: string;
@@ -319,9 +319,9 @@ describe.only("IModelWriteTest (#integration)", () => {
     const adminRequestContext = await IModelTestUtils.getUserContext(TestUserType.SuperManager);
     const iTwinId = await HubUtility.getTestITwinId(adminRequestContext);
     const iModelName = HubUtility.generateUniqueName("changeset_size");
-    const rwIModelId = await IModelHost.hubAccess.createNewIModel({iTwinId, iModelName, description: "TestSubject", user: adminRequestContext });
+    const rwIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName, description: "TestSubject", user: adminRequestContext });
     assert.isNotEmpty(rwIModelId);
-    const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({iTwinId,  iModelId: rwIModelId , user: adminRequestContext});
+    const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, user: adminRequestContext });
     assert.equal(rwIModel.nativeDb.enableChangesetSizeStats(true), DbResult.BE_SQLITE_OK);
     const schema = `<?xml version="1.0" encoding="UTF-8"?>
     <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
@@ -336,11 +336,11 @@ describe.only("IModelWriteTest (#integration)", () => {
     if ("push changes") {
       // Push the changes to the hub
       const prePushChangeSetId = rwIModel.changeset.id;
-      await rwIModel.pushChanges({description: "push schema changeset", user: adminRequestContext});
+      await rwIModel.pushChanges({ description: "push schema changeset", user: adminRequestContext });
       const postPushChangeSetId = rwIModel.changeset.id;
       assert(!!postPushChangeSetId);
       expect(prePushChangeSetId !== postPushChangeSetId);
-      const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId, user: superUser});
+      const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId, user: superUser });
       assert.equal(changesets.length, 1);
     }
     const codeProps = Code.createEmpty();
@@ -385,7 +385,7 @@ describe.only("IModelWriteTest (#integration)", () => {
 
     rwIModel.saveChanges(JSON.stringify({ userId: "user1", description: "data" }));
     assert.equal(0, rwIModel.nativeDb.getChangesetSize());
-    await rwIModel.pushChanges({description: "schema changeset", user: adminRequestContext});
+    await rwIModel.pushChanges({ description: "schema changeset", user: adminRequestContext });
     rwIModel.close();
   });
   it("clear cache on schema changes", async () => {
@@ -396,7 +396,7 @@ describe.only("IModelWriteTest (#integration)", () => {
     const iModelName = HubUtility.generateUniqueName("SchemaChanges");
 
     // Create a new empty iModel on the Hub & obtain a briefcase
-    const rwIModelId = await IModelHost.hubAccess.createNewIModel({noLocks:true, iTwinId, iModelName, description: "TestSubject" });
+    const rwIModelId = await IModelHost.hubAccess.createNewIModel({ noLocks: true, iTwinId, iModelName, description: "TestSubject" });
     assert.isNotEmpty(rwIModelId);
     const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, user: adminRequestContext });
 
@@ -420,7 +420,7 @@ describe.only("IModelWriteTest (#integration)", () => {
     if ("push changes") {
       // Push the changes to the hub
       const prePushChangeSetId = rwIModel.changeset.id;
-      await rwIModel.pushChanges({description: "schema changeset", user: adminRequestContext});
+      await rwIModel.pushChanges({ description: "schema changeset", user: adminRequestContext });
       const postPushChangeSetId = rwIModel.changeset.id;
       assert(!!postPushChangeSetId);
       expect(prePushChangeSetId !== postPushChangeSetId);
@@ -472,11 +472,11 @@ describe.only("IModelWriteTest (#integration)", () => {
     if ("push changes") {
       // Push the changes to the hub
       const prePushChangeSetId = rwIModel.changeset.id;
-      await rwIModel.pushChanges({description: "10 instances of test2dElement", user: adminRequestContext});
+      await rwIModel.pushChanges({ description: "10 instances of test2dElement", user: adminRequestContext });
       const postPushChangeSetId = rwIModel.changeset.id;
       assert(!!postPushChangeSetId);
       expect(prePushChangeSetId !== postPushChangeSetId);
-      const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId, user: superUser});
+      const changesets = await IModelHost.hubAccess.queryChangesets({ iModelId: rwIModelId, user: superUser });
       assert.equal(changesets.length, 2);
     }
     let rows: any[] = [];
@@ -496,7 +496,7 @@ describe.only("IModelWriteTest (#integration)", () => {
     // ====================================================================================================
     if ("user pull/merge") {
       // pull and merge changes
-      await rwIModel2.pullChanges({user: userRequestContext});
+      await rwIModel2.pullChanges({ user: userRequestContext });
       rows = [];
       rwIModel2.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement", (stmt: ECSqlStatement) => {
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -521,7 +521,7 @@ describe.only("IModelWriteTest (#integration)", () => {
       if ("push changes") {
         // Push the changes to the hub
         const prePushChangeSetId = rwIModel2.changeset.id;
-        await rwIModel2.pushChanges({user: userRequestContext, description: "10 instances of test2dElement"});
+        await rwIModel2.pushChanges({ user: userRequestContext, description: "10 instances of test2dElement" });
         const postPushChangeSetId = rwIModel2.changeset.id;
         assert(!!postPushChangeSetId);
         expect(prePushChangeSetId !== postPushChangeSetId);
@@ -529,7 +529,7 @@ describe.only("IModelWriteTest (#integration)", () => {
         assert.equal(changesets.length, 3);
       }
     }
-    await rwIModel.pullChanges({user:adminRequestContext});
+    await rwIModel.pullChanges({ user: adminRequestContext });
     // second schema import ==============================================================
     const schemaV2 = `<?xml version="1.0" encoding="UTF-8"?>
     <ECSchema schemaName="TestDomain" alias="ts" version="01.01" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
@@ -551,7 +551,7 @@ describe.only("IModelWriteTest (#integration)", () => {
     if ("push changes") {
       // Push the changes to the hub
       const prePushChangeSetId = rwIModel.changeset.id;
-      await rwIModel.pushChanges({user: adminRequestContext, description: "schema changeset"});
+      await rwIModel.pushChanges({ user: adminRequestContext, description: "schema changeset" });
       const postPushChangeSetId = rwIModel.changeset.id;
       assert(!!postPushChangeSetId);
       expect(prePushChangeSetId !== postPushChangeSetId);
@@ -577,7 +577,7 @@ describe.only("IModelWriteTest (#integration)", () => {
     if ("push changes") {
       // Push the changes to the hub
       const prePushChangeSetId = rwIModel.changeset.id;
-      await rwIModel.pushChanges({user: adminRequestContext, description: "10 instances of test2dElement"});
+      await rwIModel.pushChanges({ user: adminRequestContext, description: "10 instances of test2dElement" });
       const postPushChangeSetId = rwIModel.changeset.id;
       assert(!!postPushChangeSetId);
       expect(prePushChangeSetId !== postPushChangeSetId);
@@ -621,7 +621,7 @@ describe.only("IModelWriteTest (#integration)", () => {
     // ====================================================================================================
     if ("user pull/merge") {
       // pull and merge changes
-      await rwIModel2.pullChanges({user: userRequestContext});
+      await rwIModel2.pullChanges({ user: userRequestContext });
       rows = [];
       // Following fail without the fix in briefcase manager where we clear statement cache on schema changeset apply
       rwIModel2.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement", (stmt: ECSqlStatement) => {
