@@ -52,14 +52,3 @@ Similar to the backend, the frontend initialization consists of 2 steps:
    [[include:Presentation.Frontend.Imports]]
    [[include:Presentation.Frontend.Initialization]]
    ```
-
-## Next Steps
-
-After initializing the Presentation library on both backend and frontend, the library is ready to use. Check out the following for examples:
-
-- Blogs
-  - [Demystifying Unified Selection and Selection Scopes](https://medium.com/itwinjs/demystifying-unified-selection-and-selection-scopes-88b9418c57f3)
-  - [Hooking 3rd Party Component into Unified Selection](https://medium.com/itwinjs/hooking-3rd-party-component-into-unified-selection-c4daec69789d)
-- Samples
-  - [A simple Presentation-driven hierarchy](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=presetation-tree-sample)
-  - [Retrieving properties](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=property-formatting-sample)

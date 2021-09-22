@@ -33,3 +33,8 @@ Content modifiers allow modifying content by hiding or showing properties, inclu
 - [Property overrides](./PropertySpecification.md) allow customizing display of specific properties - hiding them, changing label, category, renderer, editor.
 
 Modifiers can be specified as part of [content specifications](#specifications) or [content modifiers](./ContentModifier.md).
+
+## External Resources
+
+- [Retrieving properties in different ways](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=property-formatting-sample)
+- [Using element properties API to display properties in custom component](https://www.itwinjs.org/sandboxes/grigas/Element%20Properties%20Loader)

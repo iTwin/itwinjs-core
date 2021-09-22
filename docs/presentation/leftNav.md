@@ -17,6 +17,7 @@
 - [Property Categorization](./Content/PropertyCategorization.md)
 - [ECExpressions](./Content/ECExpressions.md)
 - [Terminology](./Content/Terminology.md)
+- [External Resources](./Content/index.md#external-resources)
 
 &nbsp;
 
@@ -28,6 +29,7 @@
 - [Infinite hierarchies prevention](./Hierarchies/InfiniteHierarchiesPrevention.md)
 - [ECExpressions](./Hierarchies/ECExpressions.md)
 - [Terminology](./Hierarchies/Terminology.md)
+- [External Resources](./Hierarchies/index.md#external-resources)
 
 &nbsp;
 
@@ -41,6 +43,8 @@
 &nbsp;
 
 ### [Unified Selection](./Unified-Selection/index.md)
+
+- [External Resources](./Unified-Selection/index.md#external-resources)
 
 &nbsp;
 

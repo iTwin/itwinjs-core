@@ -42,3 +42,7 @@ All [general use customization rules](../Customization/index.md#rules) can be ap
 - [Infinite hierarchies prevention](./InfiniteHierarchiesPrevention.md)
 - [ECExpressions](./ECExpressions.md)
 - [Terminology](./Terminology.md)
+
+## External Resources
+
+- [A simple Presentation-driven hierarchy](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=presetation-tree-sample)
