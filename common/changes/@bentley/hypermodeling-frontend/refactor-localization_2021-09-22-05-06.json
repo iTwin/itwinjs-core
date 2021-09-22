@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/hypermodeling-frontend",
+      "comment": "\"Replaced usage of I18N with LocalizationClient.\"",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/hypermodeling-frontend"
+}

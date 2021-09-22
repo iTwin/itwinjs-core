@@ -29,7 +29,7 @@ import { immerable } from 'immer';
 import * as Inspire from 'inspire-tree';
 import { Interaction } from 'scheduler/tracing';
 import { LinkElementsInfo } from '@bentley/ui-abstract';
-import { LocalizationClient } from '@bentley/imodeljs-i18n';
+import { LocalizationClient } from '@bentley/imodeljs-common';
 import { MessageSeverity } from '@bentley/ui-abstract';
 import { NoChildrenProps } from '@bentley/ui-core';
 import { NodeCheckboxRenderer } from '@bentley/ui-core';

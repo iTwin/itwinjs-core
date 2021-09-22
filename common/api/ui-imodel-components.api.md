@@ -14,7 +14,7 @@ import { HSVColor } from '@bentley/imodeljs-common';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { InputProps } from '@itwin/itwinui-react';
-import { LocalizationClient } from '@bentley/imodeljs-i18n';
+import { LocalizationClient } from '@bentley/imodeljs-common';
 import { Matrix3d } from '@bentley/geometry-core';
 import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';

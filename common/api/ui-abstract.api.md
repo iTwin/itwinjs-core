@@ -9,7 +9,7 @@ import { BentleyError } from '@bentley/bentleyjs-core';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
-import { LocalizationClient } from '@bentley/imodeljs-i18n';
+import { LocalizationClient } from '@bentley/imodeljs-common';
 
 // @public
 export interface AbstractActionItemProps extends CommonItemProps, CommandHandler {

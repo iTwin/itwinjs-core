@@ -35,7 +35,7 @@ import { Key } from '@bentley/presentation-common';
 import { Keys } from '@bentley/presentation-common';
 import { KeySet } from '@bentley/presentation-common';
 import { LabelDefinition } from '@bentley/presentation-common';
-import { LocalizationClient } from '@bentley/imodeljs-i18n';
+import { LocalizationClient } from '@bentley/imodeljs-common';
 import { Node } from '@bentley/presentation-common';
 import { NodeKey } from '@bentley/presentation-common';
 import { NodePathElement } from '@bentley/presentation-common';

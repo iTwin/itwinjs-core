@@ -23,7 +23,7 @@ import { InputActionMeta } from 'react-select/src/types';
 import { InputProps as InputProps_2 } from '@itwin/itwinui-react';
 import { Interaction } from 'scheduler/tracing';
 import { KeyboardEventHandler } from 'react-select/src/types';
-import { LocalizationClient } from '@bentley/imodeljs-i18n';
+import { LocalizationClient } from '@bentley/imodeljs-common';
 import { MessageSeverity as MessageSeverity_2 } from '@bentley/ui-abstract';
 import { PointProps as PointProps_2 } from '@bentley/ui-abstract';
 import { ProgressRadialProps } from '@itwin/itwinui-react';

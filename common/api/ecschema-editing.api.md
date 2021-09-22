@@ -29,7 +29,7 @@ import { InvertedUnitProps } from '@bentley/ecschema-metadata';
 import { ISchemaPartVisitor } from '@bentley/ecschema-metadata';
 import { KindOfQuantity } from '@bentley/ecschema-metadata';
 import { KindOfQuantityProps } from '@bentley/ecschema-metadata';
-import { LocalizationClient } from '@bentley/imodeljs-i18n';
+import { LocalizationClient } from '@bentley/imodeljs-common';
 import { Mixin } from '@bentley/ecschema-metadata';
 import { MixinProps } from '@bentley/ecschema-metadata';
 import { OverrideFormat } from '@bentley/ecschema-metadata';
