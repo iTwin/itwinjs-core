@@ -21,7 +21,6 @@ const specialDefaultValues = new Map<string, any>([
   ["schemaNames", []],
   ["sortingValue", PropertyGroupingValue.DisplayLabel],
   ["sortAscending", true],
-  ["supportedSchemas", {}],
   ["vars", []],
 ]);
 

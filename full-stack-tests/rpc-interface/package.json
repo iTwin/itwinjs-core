@@ -5,10 +5,9 @@
   "license": "MIT",
   "scripts": {
     "compile": "npm run build",
-    "build": "npm run copy:files && tsc 1>&2 && npm run webpack:frontend",
+    "build": "tsc 1>&2 && npm run webpack:frontend",
     "clean": "rimraf lib .rush/temp/package-deps*.json integration_test_results",
     "copy:config": "internal-tools copy-config",
-    "copy:files": "cpx \"./rulesets/**/*\" ./lib/rulesets/",
     "cover": "",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
