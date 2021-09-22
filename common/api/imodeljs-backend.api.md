@@ -3464,7 +3464,7 @@ export class RoleModel extends Model {
 // @public
 export interface RowValue {
     // (undocumented)
-    [propName: string]: Uint8Array | number | string;
+    [propName: string]: Uint8Array | number | string | undefined;
 }
 
 // @public
