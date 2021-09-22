@@ -17,7 +17,7 @@ import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { LockStatusExclusive, LockStatusShared } from "../LocalHub";
 
-describe.only("HubMock", () => {
+describe("HubMock", () => {
   const tmpDir = join(KnownTestLocations.outputDir, "HubMockTest");
   const iTwinId = Guid.createValue();
   const revision0 = IModelTestUtils.resolveAssetFile("test.bim");
@@ -173,7 +173,6 @@ describe.only("HubMock", () => {
     };
     // get a new briefcaseId for some locks
     assert.equal(6, localHub.acquireNewBriefcaseId("user5", "alias for 5"));
-
 
     localHub.acquireLock(lock1, { briefcaseId: 3, changeset: cs1 });
     assert.equal(localHub.countSharedLocks(), 1);
