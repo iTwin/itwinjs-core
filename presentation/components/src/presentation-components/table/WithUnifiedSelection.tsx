@@ -9,7 +9,7 @@
 import * as React from "react";
 import { InstanceKey, KeySet } from "@bentley/presentation-common";
 import { Presentation, SelectionChangeEventArgs, SelectionHandler } from "@bentley/presentation-frontend";
-import { RowItem, Table as BaseTable, TableProps } from "@bentley/ui-components";
+import { Table as BaseTable, RowItem, TableProps } from "@bentley/ui-components";
 import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent";
 import { getDisplayName } from "../common/Utils";
 import { IPresentationTableDataProvider } from "./DataProvider";
