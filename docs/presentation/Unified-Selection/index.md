@@ -39,7 +39,7 @@ With that in mind, the above components *A*, *B* and *C* can be configured as fo
 
 ## Selection Handling
 
-The `@bentley/presentation-components` package delivers helper APIs for hooking four primary components into unified selection: [Tree]($ui-components), [Table]($ui-components), [Property Grid]($ui-components:PropertyGrid) and [Viewport]($ui-imodel-components). Each of those components handle unified selection differently and that behavior is explained in the below sections.
+The `@bentley/presentation-components` package delivers helper APIs for hooking four primary components into unified selection: [ControlledTree]($ui-components), [Table]($ui-components), [Property Grid]($ui-components:PropertyGrid) and [ViewportComponent]($ui-imodel-components). Each of those components handle unified selection differently and that behavior is explained in the below sections.
 
 ### Tree
 
