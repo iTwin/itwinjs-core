@@ -489,8 +489,8 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
         <div className="scrubber">
           <PlayButton className="play-button" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause} />
           <div className="start-time-container">
-            {hasDates && <span data-testid="test-start-date" className="start-date">{toDateString(startDate!, timeZoneOffset)}</span>}
-            {hasDates && !showDuration && <span data-testid="test-start-time" className="start-time">{toTimeString(startDate!, timeZoneOffset)}</span>}
+            {hasDates && <span data-testid="test-start-date" className="start-date">{toDateString(startDate, timeZoneOffset)}</span>}
+            {hasDates && !showDuration && <span data-testid="test-start-time" className="start-time">{toTimeString(startDate, timeZoneOffset)}</span>}
             {showDuration && <span className="duration-start-time">{durationString}</span>}
           </div>
           <Scrubber
@@ -508,8 +508,8 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
             markDate={this.props.markDate}
           />
           <div className="end-time-container">
-            {hasDates && <span className="end-date">{toDateString(endDate!, timeZoneOffset)}</span>}
-            {hasDates && !showDuration && <span className="end-time">{toTimeString(endDate!, timeZoneOffset)}</span>}
+            {hasDates && <span className="end-date">{toDateString(endDate, timeZoneOffset)}</span>}
+            {hasDates && !showDuration && <span className="end-time">{toTimeString(endDate, timeZoneOffset)}</span>}
             {showDuration && <InlineEdit className="duration-end-time" defaultValue={totalDurationString} onChange={this._onTotalDurationChange} />}
           </div>
           {minimized && this._renderSettings()}

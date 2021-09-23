@@ -30,8 +30,7 @@ export async function selectFileName(selector: BrowserFileSelector | undefined):
     return null !== filename ? filename : undefined;
   }
 
-  const evt = document.createEvent("MouseEvents");
-  evt.initEvent("click", true, false);
+  const evt = new MouseEvent("click", { bubbles: true, cancelable: false });
   selector.input.dispatchEvent(evt);
 
   return new Promise((resolve, reject) => {

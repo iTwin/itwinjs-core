@@ -17,6 +17,7 @@ public;CategoryDescriptionJSON
 public;CategoryIdentifier = ParentCategoryIdentifier | RootCategoryIdentifier | IdCategoryIdentifier
 public;CheckBoxRule 
 public;ChildNodeRule 
+public;ChildNodeSpecification = CustomNodeSpecification | InstanceNodesOfSpecificClassesSpecification | RelatedInstanceNodesSpecification | CustomQueryInstanceNodesSpecification
 public;ChildNodeSpecificationBase
 public;ChildNodeSpecificationTypes
 public;ClassGroup 
@@ -36,8 +37,7 @@ public;ContentInstancesOfSpecificClassesSpecification
 public;ContentJSON
 public;ContentModifier 
 public;ContentModifiersList
-public;ContentRelatedInstancesSpecification = DEPRECATED_ContentRelatedInstancesSpecification | ContentRelatedInstancesSpecificationNew
-public;ContentRelatedInstancesSpecificationNew 
+public;ContentRelatedInstancesSpecification 
 public;ContentRequestOptions
 public;ContentRpcRequestOptions = PresentationRpcRequestOptions
 public;ContentRule 
@@ -56,22 +56,6 @@ public;DEFAULT_KEYS_BATCH_SIZE = 5000
 public;DefaultContentDisplayTypes
 public;DefaultGroupingPropertiesContainer
 public;DefaultPropertyCategoryOverride 
-public;DEPRECATED_AllInstanceNodesSpecification 
-deprecated;DEPRECATED_AllInstanceNodesSpecification 
-public;DEPRECATED_AllRelatedInstanceNodesSpecification 
-deprecated;DEPRECATED_AllRelatedInstanceNodesSpecification 
-public;DEPRECATED_ContentRelatedInstancesSpecification 
-deprecated;DEPRECATED_ContentRelatedInstancesSpecification 
-public;DEPRECATED_PropertiesDisplaySpecification
-deprecated;DEPRECATED_PropertiesDisplaySpecification
-public;DEPRECATED_PropertyEditorsSpecification 
-deprecated;DEPRECATED_PropertyEditorsSpecification 
-public;DEPRECATED_RelatedInstanceNodesSpecification 
-deprecated;DEPRECATED_RelatedInstanceNodesSpecification 
-public;DEPRECATED_RelatedInstanceSpecification
-deprecated;DEPRECATED_RelatedInstanceSpecification
-public;DEPRECATED_RelatedPropertiesSpecification
-deprecated;DEPRECATED_RelatedPropertiesSpecification
 public;Descriptor 
 public;DescriptorJSON
 public;DescriptorOverrides
@@ -211,7 +195,6 @@ public;LabelDefinitionJSON
 public;LabelGroupingNodeKey 
 public;LabelGroupingNodeKeyJSON 
 public;LabelOverride 
-deprecated;LabelOverride 
 public;LabelRawValue = string | number | boolean | LabelCompositeValue
 public;LabelRawValueJSON = string | number | boolean | LabelCompositeValueJSON
 public;MultiSchemaClassesSpecification
@@ -272,6 +255,7 @@ public;PresentationRpcRequestOptions
 public;PresentationStatus
 public;PrimitivePropertyValue = string | number | boolean | Point | InstanceKey | undefined
 public;PrimitiveTypeDescription 
+public;Prioritized
 alpha;ProcessFieldHierarchiesProps
 alpha;ProcessMergedValueProps
 alpha;ProcessPrimitiveValueProps
@@ -299,8 +283,6 @@ public;PropertyInfoJSON
 public;PropertyJSON
 public;PropertyOverrides
 public;PropertyRangeGroupSpecification
-public;PropertyRendererSpecification = CustomRendererSpecification
-deprecated;PropertyRendererSpecification = CustomRendererSpecification
 public;PropertySortingRule 
 public;PropertySpecification 
 public;PropertyValueFormat
@@ -311,13 +293,10 @@ public;RegisteredRuleset
 public;RelatedClassInfo
 public;RelatedClassInfo
 public;RelatedClassInfoJSON
-public;RelatedInstanceNodesSpecification = DEPRECATED_RelatedInstanceNodesSpecification | RelatedInstanceNodesSpecificationNew
-public;RelatedInstanceNodesSpecificationNew 
-public;RelatedInstanceSpecification = DEPRECATED_RelatedInstanceSpecification | RelatedInstanceSpecificationNew
-public;RelatedInstanceSpecificationNew
+public;RelatedInstanceNodesSpecification 
+public;RelatedInstanceSpecification
 public;RelatedPropertiesSpecialValues
-public;RelatedPropertiesSpecification = DEPRECATED_RelatedPropertiesSpecification | RelatedPropertiesSpecificationNew
-public;RelatedPropertiesSpecificationNew
+public;RelatedPropertiesSpecification
 public;RelationshipDirection
 public;RelationshipMeaning
 public;RelationshipPath = RelatedClassInfo[]
@@ -330,7 +309,6 @@ public;RepeatableRelationshipPathSpecification = RepeatableRelationshipStepSpeci
 public;RepeatableRelationshipStepSpecification 
 public;RequestOptions
 public;RequestOptionsWithRuleset
-public;RequestPriority
 beta;RequiredSchemaSpecification
 public;RootCategoryIdentifier
 public;RootNodeRule 

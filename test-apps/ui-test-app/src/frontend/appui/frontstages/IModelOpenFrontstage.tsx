@@ -10,20 +10,26 @@ import {
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../../index";
 import { IModelOpen } from "../imodelopen/IModelOpen";
+import { AccessToken } from "@bentley/itwin-client";
 
 class IModelOpenControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
     if (IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized)
-      this.reactNode = <IModelOpen onIModelSelected={this._onOpenIModel} />;
-    else
-      this.reactNode = null;
+      this.reactNode = <IModelOpen getAccessToken={this._getAccessToken} onIModelSelected={this._onOpenIModel} />;
   }
 
   // called when an imodel has been selected on the IModelOpen
   private _onOpenIModel = async (iModelInfo: IModelInfo) => {
-    await SampleAppIModelApp.showIModelIndex(iModelInfo.projectInfo.wsgId, iModelInfo.wsgId);
+    await SampleAppIModelApp.showIModelIndex(iModelInfo.iTwinId, iModelInfo.wsgId);
+  };
+
+  private _getAccessToken = async (): Promise<AccessToken | undefined> => {
+    if (IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized)
+      return IModelApp.authorizationClient.getAccessToken();
+
+    return undefined;
   };
 }
 

@@ -23,8 +23,6 @@ Returns content for instances of specific ECClasses.
 | `showImages`                      | No        | `boolean`                                                              | `false` | Should image IDs be calculated for the returned instances. When `true`, [ImageIdOverride](../customization/ImageIdOverride.md) rules get applied when creating content.                                                                                     |
 | *Misc.*                           |
 | `relatedInstances`                | No        | `RelatedInstanceSpecification[]`                                       | `[]`    | Specifications of [related instances](../RelatedInstanceSpecification.md) that can be used in content creation.                                                                                                                                             |
-| *Deprecated*                      |
-| `arePolymorphic`                  | No        | `boolean`                                                              | `false` | Same as `handleInstancesPolymorphically`.                                                                                                                                                                                                                   |
 
 ## Example
 
