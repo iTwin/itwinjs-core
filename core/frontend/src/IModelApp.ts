@@ -33,6 +33,7 @@ import * as modelselector from "./ModelSelectorState";
 import * as modelState from "./ModelState";
 import { NotificationManager } from "./NotificationManager";
 import { QuantityFormatter } from "./quantity-formatting/QuantityFormatter";
+import { RealityDataServiceClient } from "./RealityDataAccessProps";
 import { RenderSystem } from "./render/RenderSystem";
 import { System } from "./render/webgl/System";
 import * as sheetState from "./SheetViewState";
@@ -185,6 +186,7 @@ export class IModelApp {
   private static _securityOptions: FrontendSecurityOptions;
   private static _mapLayerFormatRegistry: MapLayerFormatRegistry;
   private static _hubAccess: FrontendHubAccess;
+  private static _realityDataServiceClient: RealityDataServiceClient;
 
   // No instances of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   protected constructor() { }
@@ -239,6 +241,10 @@ export class IModelApp {
    * @internal
    */
   public static get hubAccess(): FrontendHubAccess { return this._hubAccess; }
+  /** Provides access to the RealityData service implementation for this IModelApp
+   * @internal // SWB What should this be?
+   */
+  public static get realityDataServiceClient(): RealityDataServiceClient { return this._realityDataServiceClient; }
 
   /** @internal */
   public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid; }
