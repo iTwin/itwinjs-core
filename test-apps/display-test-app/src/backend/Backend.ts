@@ -53,7 +53,8 @@ class DisplayTestAppRpc extends DtaRpcInterface {
 
   public override async writeExternalSavedViews(bimFileName: string, namedViews: string): Promise<void> {
     if (ProcessDetector.isMobileAppBackend && process.env.DOCS) {
-      const docPath = process.env.DOCS;  // What is DOCS?
+      // Used to set a writeable directory on an iOS or Android device.
+      const docPath = process.env.DOCS;
       bimFileName = path.join(docPath, bimFileName);
     }
 

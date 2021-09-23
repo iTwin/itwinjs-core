@@ -17,7 +17,6 @@ import { Dock } from "./Window";
 
 const configuration: DtaConfiguration = {};
 const getFrontendConfig = () => {
-  // Why???
   if (ProcessDetector.isMobileAppFrontend) {
     if (window) {
       const urlParams = new URLSearchParams(window.location.hash);
