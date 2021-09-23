@@ -23,8 +23,8 @@ export interface ColorPickerPanelProps {
   activeColor: ColorDef;
   onColorChange: (selectedColor: ColorDef) => void;
   colorPresets?: ColorDef[];
-  /** If true, show RGB values and allow them to be set */
-  showRbgValues?: boolean;
+  /** If set show either HSL or RGB input values. If undefined no input value is shown */
+  colorInputType?: "HSL" | "RGB";
 }
 
 /**
@@ -32,7 +32,7 @@ export interface ColorPickerPanelProps {
  * @beta
  */
 // istanbul ignore next
-export function ColorPickerPanel({ activeColor, onColorChange, colorPresets, showRbgValues }: ColorPickerPanelProps) {
+export function ColorPickerPanel({ activeColor, onColorChange, colorPresets, colorInputType }: ColorPickerPanelProps) {
 
   const handlePresetColorPick = React.useCallback((newColor: ColorDef, e: React.MouseEvent<Element, MouseEvent>) => {
     e.preventDefault();
@@ -60,8 +60,36 @@ export function ColorPickerPanel({ activeColor, onColorChange, colorPresets, sho
     }
   }, [onColorChange]);
 
+  const currentHsl = React.useMemo(() => activeColor.toHSL(), [activeColor]);
   const currentHsv = React.useMemo(() => activeColor.toHSV(), [activeColor]);
   const color = React.useMemo(() => activeColor.colors, [activeColor]);
+
+  const handleLightnessValueChange = React.useCallback((value: number | undefined, _stringValue: string) => {
+    const newHsl = currentHsl.clone(undefined, undefined, (value ?? 0) / 100);
+
+    if (onColorChange) {
+      const newColorDef = newHsl.toColorDef();
+      onColorChange(newColorDef);
+    }
+  }, [currentHsl, onColorChange]);
+
+  const handleHueValueChange = React.useCallback((value: number | undefined, _stringValue: string) => {
+    const newHsl = currentHsl.clone((value ?? 0) / 360, undefined, undefined);
+
+    if (onColorChange) {
+      const newColorDef = newHsl.toColorDef();
+      onColorChange(newColorDef);
+    }
+  }, [currentHsl, onColorChange]);
+
+  const handleSaturationValueChange = React.useCallback((value: number | undefined, _stringValue: string) => {
+    const newHsl = currentHsl.clone(undefined, (value ?? 0) / 100, undefined);
+
+    if (onColorChange) {
+      const newColorDef = newHsl.toColorDef();
+      onColorChange(newColorDef);
+    }
+  }, [currentHsl, onColorChange]);
 
   const handleRedChange = React.useCallback((value: number | undefined, _stringValue: string) => {
     if (undefined !== value) {
@@ -100,21 +128,37 @@ export function ColorPickerPanel({ activeColor, onColorChange, colorPresets, sho
           <HueSlider hsv={currentHsv} onHueChange={handleHueChange} isHorizontal={false} />
         </div>
       </div>
-      {showRbgValues &&
-        <div data-testid="components-colorpicker-rgb-panel" className="components-colorpicker-rgb-panel">
-          <div className="components-colorpicker-rgb-value-wrapper">
+      {(colorInputType === "RGB") &&
+        <div data-testid="components-colorpicker-input-panel" className="components-colorpicker-input-panel">
+          <div className="components-colorpicker-input-value-wrapper">
             <span className="uicore-inputs-labeled-input">R</span>
-            <NumberInput data-testid="components-colorpicker-rgb-value-red" value={color.r} onChange={handleRedChange} min={0} max={255} />
+            <NumberInput data-testid="components-colorpicker-input-value-red" value={color.r} onChange={handleRedChange} min={0} max={255} />
           </div>
-          <div className="components-colorpicker-rgb-value-wrapper">
+          <div className="components-colorpicker-input-value-wrapper">
             <span className="uicore-inputs-labeled-input">G</span>
-            <NumberInput data-testid="components-colorpicker-rgb-value-green" value={color.g} onChange={handleGreenChange} min={0} max={255} />
+            <NumberInput data-testid="components-colorpicker-input-value-green" value={color.g} onChange={handleGreenChange} min={0} max={255} />
           </div>
-          <div className="components-colorpicker-rgb-value-wrapper">
+          <div className="components-colorpicker-input-value-wrapper">
             <span className="uicore-inputs-labeled-input">B</span>
-            <NumberInput data-testid="components-colorpicker-rgb-value-blue" value={color.b} onChange={handleBlueChange} min={0} max={255} />
+            <NumberInput data-testid="components-colorpicker-input-value-blue" value={color.b} onChange={handleBlueChange} min={0} max={255} />
           </div>
         </div>}
+      {(colorInputType === "HSL") &&
+        <div data-testid="components-colorpicker-input-panel" className="components-colorpicker-input-panel">
+          <div className="components-colorpicker-input-value-wrapper">
+            <span className="uicore-inputs-labeled-input">H</span>
+            <NumberInput data-testid="components-colorpicker-input-value-hue" value={Math.round(currentHsl.h * 360)} onChange={handleHueValueChange} min={0} max={360} />
+          </div>
+          <div className="components-colorpicker-input-value-wrapper">
+            <span className="uicore-inputs-labeled-input">S</span>
+            <NumberInput data-testid="components-colorpicker-input-value-saturation" value={Math.round(currentHsl.s * 100)} onChange={handleSaturationValueChange} min={0} max={100} />
+          </div>
+          <div className="components-colorpicker-input-value-wrapper">
+            <span className="uicore-inputs-labeled-input">L</span>
+            <NumberInput data-testid="components-colorpicker-input-value-lightness" value={Math.round(currentHsl.l * 100)} onChange={handleLightnessValueChange} min={0} max={100} />
+          </div>
+        </div>}
+
       {
         colorPresets && colorPresets.length &&
         <div className="components-colorpicker-panel-presets">

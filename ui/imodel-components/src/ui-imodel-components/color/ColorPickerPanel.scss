@@ -69,13 +69,13 @@ $saturation-hue-height: 150px;
     }
 }
 
-.components-colorpicker-rgb-panel{
+.components-colorpicker-input-panel{
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-evenly;
 
-  .components-colorpicker-rgb-value-wrapper {
+  .components-colorpicker-input-value-wrapper {
     align-items: center;
     display: flex;
     flex-direction: row;

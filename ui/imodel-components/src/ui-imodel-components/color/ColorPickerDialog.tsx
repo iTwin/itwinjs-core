@@ -23,15 +23,15 @@ export interface ColorPickerDialogProps {
   onOkResult: (selectedColor: ColorDef) => void;
   onCancelResult: () => void;
   colorPresets?: ColorDef[];
-  /** If true, show RGB values and allow them to be set */
-  showRbgValues?: boolean;
+  /** If set show either HSL or RGB input values. If undefined no input value is shown */
+  colorInputType?: "HSL" | "RGB";
 }
 
 /**
  * Color Picker Dialog to use as modal dialog.
  * @beta
  */
-export function ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets, showRbgValues }: ColorPickerDialogProps) {
+export function ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets, colorInputType }: ColorPickerDialogProps) {
   const [activeColor, setActiveColor] = React.useState(color);
   const dialogContainer = React.useRef<HTMLDivElement>(null);
 
@@ -67,7 +67,7 @@ export function ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResu
         minHeight={340}
         maxWidth={400}
       >
-        <ColorPickerPanel showRbgValues={showRbgValues} activeColor={activeColor} colorPresets={colorPresets} onColorChange={handleColorChange} />
+        <ColorPickerPanel colorInputType={colorInputType} activeColor={activeColor} colorPresets={colorPresets} onColorChange={handleColorChange} />
       </Dialog>
     </div >
   );

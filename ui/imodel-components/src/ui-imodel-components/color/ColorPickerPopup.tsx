@@ -44,8 +44,8 @@ export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLBu
   captureClicks?: boolean;
   /** If true, don't show close button at top */
   hideCloseButton?: boolean;
-  /** If true, show RGB values and allow them to be set */
-  showRbgValues?: boolean;
+  /** If set show either HSL or RGB input values */
+  colorInputType?: "HSL" | "RGB";
 }
 
 // Defined using following pattern (const ColorPickerPopup at bottom) to ensure useful API documentation is extracted
@@ -146,7 +146,7 @@ const ForwardRefColorPickerPopup = React.forwardRef<HTMLButtonElement, ColorPick
                 data-testid="core-dialog-close"
                 onClick={togglePopup}
               />}
-            <ColorPickerPanel showRbgValues={props.showRbgValues} activeColor={colorDef} colorPresets={colorOptions} onColorChange={handleColorChanged} />
+            <ColorPickerPanel colorInputType={props.colorInputType} activeColor={colorDef} colorPresets={colorOptions} onColorChange={handleColorChanged} />
           </div>
         </Popup>
       </div>
