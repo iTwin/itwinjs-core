@@ -14,7 +14,7 @@ import { ContentSpecificationBase, ContentSpecificationTypes } from "./ContentSp
  *
  * **Note:** Use [[ContentRule.condition]] to apply specification on correct selection.
  *
- * @see [More details]($docs/learning/presentation/Content/ContentRelatedInstances.md)
+ * @see [More details]($docs/presentation/Content/ContentRelatedInstances.md)
  * @public
  */
 export interface ContentRelatedInstancesSpecification extends ContentSpecificationBase {
@@ -29,7 +29,7 @@ export interface ContentRelatedInstancesSpecification extends ContentSpecificati
   /**
    * Condition for filtering instances targeted by specified relationship paths.
    *
-   * **See:** [ECExpressions available in instance filter]($docs/learning/presentation/Content/ECExpressions.md#instance-filter)
+   * **See:** [ECExpressions available in instance filter]($docs/presentation/Content/ECExpressions.md#instance-filter)
    */
   instanceFilter?: string;
 }

@@ -49,7 +49,7 @@ export enum RelatedPropertiesSpecialValues {
 /**
  * Sub-specification to include additional related instance properties.
  *
- * @see [More details]($docs/learning/presentation/Content/RelatedPropertiesSpecification.md)
+ * @see [More details]($docs/presentation/Content/RelatedPropertiesSpecification.md)
  * @public
  */
 export interface RelatedPropertiesSpecification {
@@ -82,7 +82,7 @@ export interface RelatedPropertiesSpecification {
 
   /**
    * Meaning of the relationship which tells how to categorize the related properties. Defaults to [[RelationshipMeaning.RelatedInstance]].
-   * @see [label]($docs/learning/presentation/Content/RelatedPropertiesSpecification.md#relationship-meaning-attribute)
+   * @see [More details]($docs/presentation/Content/RelatedPropertiesSpecification.md#relationship-meaning-attribute)
    */
   relationshipMeaning?: RelationshipMeaning;
 

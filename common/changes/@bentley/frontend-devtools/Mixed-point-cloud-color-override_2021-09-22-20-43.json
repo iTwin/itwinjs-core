@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/frontend-devtools",
+      "comment": "Support -1 to modify all reality models.  Fix messages",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/frontend-devtools"
+}
