@@ -9,6 +9,46 @@ The following dependencies of iTwin.js have been updated;
 
 - `openid-client` updated to from `^3.15.3` -> `^4.7.4`,
 
+## Package name changes
+
+A number of packages have been renamed to use the @itwin scope rather than the @bentley scope, and we have modified a few package names to move towards a more consistent naming pattern. The full list of changed packages are listed in the table below.
+| Old                             | New                               |
+|-------------------------------------|-----------------------------------|
+| @bentley/imodeljs-backend           | @itwin/core-backend               |
+| @bentley/imodeljs-common            | @itwin/core-common                |
+| @bentley/imodeljs-frontend          | @itwin/core-frontend              |
+| @bentley/geometry-core              | @itwin/core-geometry              |
+| @bentley/bentleyjs-core             | @itwin/core-bentley               |
+| @bentley/orbitgt-core               | @itwin/core-orbitgt               |
+| @bentley/imodeljs-transformer       | @itwin/core-transformer           |
+| @bentley/imodeljs-markup            | @itwin/core-markup                |
+| @bentley/ecschema-metadata          | @itwin/ecschema-metadata          |
+| @bentley/ecschema-locaters          | @itwin/ecschema-locaters          |
+| @bentley/ecschema-editing           | @itwin/ecschema-editing           |
+| @bentley/frontend-devtools          | @itwin/frontend-devtools          |
+| @bentley/webgl-compatibility        | @itwin/webgl-compatibility        |
+| @bentley/imodeljs-editor-common     | @itwin/editor-common              |
+| @bentley/imodeljs-editor-backend    | @itwin/editor-backend             |
+| @bentley/imodeljs-editor-frontend   | @itwin/editor-frontend            |
+| @bentley/analytical-backend         | @itwin/analytical-backend         |
+| @bentley/linear-referencing-backend | @itwin/linear-referencing-backend |
+| @bentley/linear-referencing-common  | @itwin/linear-referencing-common  |
+| @bentley/physical-material-backend  | @itwin/physical-material-backend  |
+| @bentley/presentation-backend       | @itwin/presentation-backend       |
+| @bentley/presentation-common        | @itwin/presentation-common        |
+| @bentley/presentation-frontend      | @itwin/presentation-frontend      |
+| @bentley/presentation-components    | @itwin/presentation-components    |
+| @bentley/presentation-testing       | @itwin/presentation-testing       |
+| @bentley/ui-abstract                | @itwin/appui-abstract             |
+| @bentley/ui-components              | @itwin/ui-components-react        |
+| @bentley/ui-core                    | @itwin/ui-core-react              |
+| @bentley/ui-imodel-components       | @itwin/ui-imodel-components-react |
+| @bentley/ui-ninezone                | @itwin/appui-layout-react         |
+| @bentley/ui-framework               | @itwin/appui-react                |
+| @bentley/ecschema2ts                | @itwin/ecschema2ts                |
+| @bentley/webpack-tools-core         | @itwin/core-webpack-tools         |
+| @bentley/backend-webpack-tools      | @itwin/backend-webpack-tools      |
+
 ## Build tools changes
 
 - Removed `test` and `test-tsnode` scripts from `@bentley/build-tools`.  Please use mocha directly instead.
