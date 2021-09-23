@@ -13,7 +13,7 @@
     "extract": "betools extract --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "docs": "npm run extract && npm run extract-assets",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "npm run copy:test-backend-assets && npm run copy:backend-assets && betools test --defineWindow --testDir=\"./lib/backend/test\"",
+    "test": "npm run copy:test-backend-assets && npm run copy:backend-assets && mocha --no-config",
     "cover": "npm test"
   },
   "repository": {},
@@ -56,8 +56,23 @@
     "eslint": "^7.11.0",
     "mocha": "^8.3.2",
     "rimraf": "^3.0.2",
-    "typescript": "~4.3.0",
+    "typescript": "~4.4.0",
     "xmlhttprequest": "^1.8.0"
+  },
+  "mocha": {
+    "exit": true,
+    "colors": true,
+    "check-leaks": true,
+    "spec": [
+      "lib/backend/test/**/*.test.js"
+    ],
+    "require": [
+      "source-map-support/register",
+      "jsdom-global/register"
+    ],
+    "reporter": "node_modules/@bentley/build-tools/mocha-reporter",
+    "reporter-options": "mochaFile=lib/test/junit_results.xml",
+    "timeout": 999999
   },
   "eslintConfig": {
     "plugins": [

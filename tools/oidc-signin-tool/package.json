@@ -15,7 +15,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "",
-    "test:integration": "betools test",
+    "test:integration": "mocha",
     "copy:config": "internal-tools copy-config",
     "docs": "",
     "cover": ""
@@ -54,7 +54,7 @@
     "internal-tools": "workspace:*",
     "mocha": "^8.3.2",
     "rimraf": "^3.0.2",
-    "typescript": "~4.3.0"
+    "typescript": "~4.4.0"
   },
   "eslintConfig": {
     "plugins": [

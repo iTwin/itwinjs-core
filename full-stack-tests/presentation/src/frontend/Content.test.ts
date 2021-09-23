@@ -495,9 +495,9 @@ describe("Content", () => {
                   label: "Model",
                 },
                 targetClassInfo: {
-                  id: "0x77",
-                  name: "BisCore:Drawing",
-                  label: "Drawing",
+                  id: "0x44",
+                  name: "BisCore:ISubModeledElement",
+                  label: "Modellable Element",
                 },
                 isPolymorphicTargetClass: true,
                 relationshipInfo: {
@@ -510,71 +510,9 @@ describe("Content", () => {
               },
               {
                 sourceClassInfo: {
-                  id: "0x77",
-                  name: "BisCore:Drawing",
-                  label: "Drawing",
-                },
-                targetClassInfo: {
-                  id: "0xa9",
-                  name: "BisCore:RepositoryLink",
-                  label: "Repository Link",
-                },
-                isPolymorphicTargetClass: true,
-                relationshipInfo: {
-                  id: "0x83",
-                  name: "BisCore:ElementHasLinks",
-                  label: "ElementHasLinks",
-                },
-                isPolymorphicRelationship: true,
-                isForwardRelationship: true,
-              },
-            ],
-            [
-              {
-                sourceClassInfo: {
-                  id: "0x1a0",
-                  name: "PCJ_TestSchema:TestClass",
-                  label: "TestClass",
-                },
-                targetClassInfo: {
-                  id: "0x41",
-                  name: "BisCore:Model",
-                  label: "Model",
-                },
-                isPolymorphicTargetClass: true,
-                relationshipInfo: {
-                  id: "0x40",
-                  name: "BisCore:ModelContainsElements",
-                  label: "ModelContainsElements",
-                },
-                isPolymorphicRelationship: true,
-                isForwardRelationship: false,
-              },
-              {
-                sourceClassInfo: {
-                  id: "0x41",
-                  name: "BisCore:Model",
-                  label: "Model",
-                },
-                targetClassInfo: {
-                  id: "0xb4",
-                  name: "BisCore:PhysicalPartition",
-                  label: "Physical Partition",
-                },
-                isPolymorphicTargetClass: true,
-                relationshipInfo: {
-                  id: "0x43",
-                  name: "BisCore:ModelModelsElement",
-                  label: "ModelModelsElement",
-                },
-                isPolymorphicRelationship: true,
-                isForwardRelationship: true,
-              },
-              {
-                sourceClassInfo: {
-                  id: "0xb4",
-                  name: "BisCore:PhysicalPartition",
-                  label: "Physical Partition",
+                  id: "0x44",
+                  name: "BisCore:ISubModeledElement",
+                  label: "Modellable Element",
                 },
                 targetClassInfo: {
                   id: "0xa9",

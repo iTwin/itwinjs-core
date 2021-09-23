@@ -53,7 +53,7 @@ async function tryCopyDirectoryContents(source: string, target: string) {
     } else {
       await fs.copy(source, target, copyOptions);
     }
-  } catch (err) {
+  } catch (err: any) {
     console.log(`Error trying to copy '${source}' to '${target}': ${err.toString()}`);
   }
 }
@@ -78,7 +78,7 @@ export class CopyBentleyStaticResourcesPlugin extends AbstractAsyncStartupPlugin
     let subDirectoryNames: string[];
     try {
       subDirectoryNames = await fs.readdir(bentleyDir);
-    } catch (err) {
+    } catch (err: any) {
       this.logger.error(`Can't locate ${err.path}`);
       return;
     }

@@ -13,8 +13,7 @@ describe("<WidgetTarget />", () => {
   function target(widgetTarget: ReactWrapper) {
     const targetElement = widgetTarget.find(".nz-zones-target-target");
     sinon.stub(targetElement.getDOMNode(), "contains").returns(true);
-    const pointerMove = document.createEvent("HTMLEvents");
-    pointerMove.initEvent("pointermove");
+    const pointerMove = new PointerEvent("pointermove");
     document.dispatchEvent(pointerMove);
     widgetTarget.setProps({});
   }

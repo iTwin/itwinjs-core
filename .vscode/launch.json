@@ -1878,7 +1878,8 @@
       "description": "Select client library to debug",
       "type": "pickString",
       "options": [
-        "product-settings"
+        "product-settings",
+        "context-registry"
       ]
     }
   ]

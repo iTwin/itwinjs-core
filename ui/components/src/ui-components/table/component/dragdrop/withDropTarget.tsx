@@ -57,7 +57,7 @@ export const withDropTarget = <ComponentProps extends {}, DragDropObject = any>(
     drop(props, monitor, component) {
       const dragSourceArgs = monitor.getItem() as DragSourceArguments<DragDropObject>; // eslint-disable-line deprecation/deprecation
       if (monitor.isOver({ shallow: props.shallow || false })) {
-        let dropRect: ClientRect = {} as ClientRect;
+        let dropRect: DOMRect = new DOMRect();
         const componentElement = component.rootElement;
         if (componentElement) {
           dropRect = componentElement.getBoundingClientRect();
@@ -86,7 +86,7 @@ export const withDropTarget = <ComponentProps extends {}, DragDropObject = any>(
     hover(props, monitor, component) {
       if (monitor.isOver({ shallow: props.shallow || false }) && props.dropProps.onDropTargetOver) {
         const dragSourceArgs = monitor.getItem() as DragSourceArguments<DragDropObject>; // eslint-disable-line deprecation/deprecation
-        let dropRect: ClientRect = {} as ClientRect;
+        let dropRect: DOMRect = new DOMRect();
         const componentElement = component.rootElement;
         if (componentElement) {
           dropRect = componentElement.getBoundingClientRect();

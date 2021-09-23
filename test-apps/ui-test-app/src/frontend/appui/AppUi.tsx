@@ -26,11 +26,9 @@ import { IModelApp } from "@bentley/imodeljs-frontend";
 import {
   AccuDrawCommandItems,
   AccuDrawKeyboardShortcuts,
-  AccuDrawUiSettings,
   CommandItemDef,
   ConfigurableUiManager,
   ContentGroupProps,
-  FrameworkAccuDraw,
   FrontstageManager,
   KeyboardShortcutManager,
   KeyboardShortcutProps,
@@ -50,12 +48,11 @@ import { ScheduleAnimationFrontstage } from "./frontstages/ScheduleAnimationFron
 import { SignInFrontstage } from "./frontstages/SignInFrontstage";
 import { AccuDrawPopupTools } from "../tools/AccuDrawPopupTools";
 import { AppTools } from "../tools/ToolSpecifications";
-import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import { FrontstageUi2 } from "./frontstages/FrontstageUi2";
 
 // cSpell:ignore uitestapp
 
-/** Example Ui Configuration for an iModelJS App
+/** Example Ui Configuration for an iTwin.js App
  */
 export class AppUi {
 
@@ -67,8 +64,6 @@ export class AppUi {
     // TODO: should this be removed in 3.0 and just use UiItemsProvider for consistent approach???
     // use to test WidgetProvider API - Note: this is different from UiItemsProvider
     AppUi.defineDynamicWidgets();
-
-    // AppUi.setAccuDrawUiSettings();
   }
 
   /** Define Frontstages
@@ -296,23 +291,5 @@ export class AppUi {
       },
     };
     UiFramework.widgetManager.addWidgetProvider(provider);
-  }
-
-  private static setAccuDrawUiSettings() {
-    const iconTest = "icon-placeholder";
-
-    const appSettings: AccuDrawUiSettings = {
-      xBackgroundColor: "var(--buic-background-control)",
-      xForegroundColor: "var(--buic-foreground-body)",
-      xLabel: "-X-",
-      xIcon: iconTest,
-    };
-
-    const userSettings: AccuDrawUiSettings = {
-      yBackgroundColor: ColorDef.create(ColorByName.darkBrown),
-      yLabel: "-Y-",
-    };
-
-    FrameworkAccuDraw.uiSettings = { ...appSettings, ...userSettings };
   }
 }

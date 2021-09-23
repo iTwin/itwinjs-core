@@ -9,7 +9,7 @@ import { AuthorizedClientRequestContext, ImsAuthorizationClient } from "@bentley
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import { RealityData, RealityDataClient, RealityDataRelationship } from "../../RealityDataClient";
 import { TestConfig } from "../TestConfig";
-import { query } from "jsonpath";
+import * as jsonpath from "jsonpath";
 chai.should();
 
 const LOG_CATEGORY: string = "RealityDataClient.Test";
@@ -31,7 +31,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
   before(async () => {
     requestContext = await TestConfig.getAuthorizedClientRequestContext();
     Logger.logInfo(LOG_CATEGORY, `ActivityId: ${requestContext.activityId}`);
-    projectId = (await TestConfig.queryProject(requestContext, TestConfig.projectName)).wsgId;
+    projectId = (await TestConfig.getITwinByName(requestContext, TestConfig.iTwinName)).id;
     chai.assert.isDefined(projectId);
   });
 
@@ -127,7 +127,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
     const rootData: any = await realityData.getRootDocumentJson(requestContext);
     chai.assert(rootData);
 
-    const jsonName = query(rootData.root.children, "$..url").find((u) => u.endsWith(".json"));
+    const jsonName = jsonpath.query(rootData.root.children, "$..url").find((u) => u.endsWith(".json"));
 
     chai.assert(jsonName);
     const jsonData: any = await realityData.getTileJson(requestContext, jsonName);
@@ -142,7 +142,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
     const rootData: any = await realityData.getRootDocumentJson(requestContext);
     chai.assert(rootData);
 
-    const modelName = query(rootData.root.children, "$..url").find((u) => u.endsWith(".b3dm"));
+    const modelName = jsonpath.query(rootData.root.children, "$..url").find((u) => u.endsWith(".b3dm"));
     chai.assert(modelName);
 
     const modelData: any = await realityData.getTileContent(requestContext, modelName);

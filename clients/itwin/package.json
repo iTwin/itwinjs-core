@@ -13,7 +13,7 @@
     "extract-api": "betools extract-api --entry=itwin-client",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/itwin-client/file.json --tsIndexFile=itwin-client.ts --onlyJson",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "betools test --offline=\"mock\"",
+    "test": "mocha",
     "cover": "nyc npm test"
   },
   "repository": {
@@ -55,7 +55,7 @@
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "source-map-loader": "^1.0.0",
-    "typescript": "~4.3.0",
+    "typescript": "~4.4.0",
     "webpack": "4.42.0"
   },
   "dependencies": {

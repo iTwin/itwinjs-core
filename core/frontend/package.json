@@ -87,7 +87,7 @@
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",
     "source-map-loader": "^1.0.0",
-    "typescript": "~4.3.0",
+    "typescript": "~4.4.0",
     "webpack": "4.42.0"
   },
   "//dependencies": [
@@ -95,7 +95,6 @@
     "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@bentley/context-registry-client": "workspace:*",
     "@bentley/reality-data-client": "workspace:*",
     "fuse.js": "^3.3.0",
     "semver": "^5.5.0",
