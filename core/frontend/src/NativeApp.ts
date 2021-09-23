@@ -124,16 +124,7 @@ export class NativeAppAuthorization implements AuthorizationClient {
  * @public
  */
 export interface NativeAppOpts extends IpcAppOptions {
-  nativeApp?: {
-    /** if present, [[IModelApp.authorizationClient]] will be set to an instance of NativeAppAuthorization and will be initialized.
-     * @deprecated Initialize authorization for native applications at the backend
-     */
-    authConfig?: NativeAppAuthorizationConfiguration;
-    /** if true, do not attempt to initialize AuthorizationClient
-     * @deprecated Initialize authorization for native applications at the backend
-     */
-    noInitializeAuthClient?: boolean;
-  };
+  nativeApp?: {}
 }
 
 /**
@@ -202,10 +193,10 @@ export class NativeApp {
       await this.setConnectivity(OverriddenBy.Browser, window.navigator.onLine ? InternetConnectivityStatus.Online : InternetConnectivityStatus.Offline);
     }
 
-    const auth = new NativeAppAuthorization(opts?.nativeApp?.authConfig); // eslint-disable-line deprecation/deprecation
+    const auth = new NativeAppAuthorization();
     IModelApp.authorizationClient = auth;
     const connStatus = await NativeApp.checkInternetConnectivity();
-    if (opts?.nativeApp?.authConfig && true !== opts?.nativeApp?.noInitializeAuthClient && connStatus === InternetConnectivityStatus.Online) { // eslint-disable-line deprecation/deprecation
+    if (connStatus === InternetConnectivityStatus.Online) {
       await auth.initialize({ applicationId: IModelApp.applicationId, applicationVersion: IModelApp.applicationVersion, sessionId: IModelApp.sessionId });
     }
   }

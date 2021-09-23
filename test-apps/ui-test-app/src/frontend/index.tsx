@@ -11,11 +11,11 @@ import reactAxe from "@axe-core/react";
 import { Id64String, Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
-import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient, isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
-import { IModelVersion, RpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
 import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import {
   AccuSnap, AuthorizedFrontendRequestContext, BriefcaseConnection, IModelApp, IModelConnection,
@@ -61,6 +61,7 @@ import {
   OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool,
   RemoveSavedContentLayoutTool, RestoreSavedContentLayoutTool, SaveContentLayoutTool, UiProviderTool,
 } from "./tools/UiProviderTool";
+import { ItemsPrefixedSampleTimeline } from "./appui/frontstages/component-examples/SampleTimelineComponent";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -180,8 +181,17 @@ export class SampleAppIModelApp {
       NativeAppLogger.initialize();
     } else if (ProcessDetector.isIOSAppFrontend) {
       await IOSApp.startup(opts);
-    } else if (ProcessDetector.isAndroidAppFrontend)
+    } else if (ProcessDetector.isAndroidAppFrontend) {
       await AndroidApp.startup(opts);
+    } else {
+      const rpcParams: BentleyCloudRpcParams =
+        undefined !== process.env.IMJS_GP_BACKEND ?
+          { info: { title: "general-purpose-imodeljs-backend", version: "v2.0" }, uriPrefix: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com` }
+          : { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3000" };
+      BentleyCloudRpcManager.initializeClient(rpcParams, opts!.iModelApp!.rpcInterfaces!);
+
+      await IModelApp.startup(opts.iModelApp);
+    }
 
     window.onerror = function (error) {
       // eslint-disable-next-line no-console
@@ -574,17 +584,37 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
     super(props);
 
     AppUi.initialize();
+    this._initializeSignin(); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     const authorized = !!IModelApp.authorizationClient;
-    this._initializeSignin(authorized); // eslint-disable-line @typescript-eslint/no-floating-promises
-
     this.state = {
       authorized,
       uiSettingsStorage: SampleAppIModelApp.getUiSettingsStorage(),
     };
   }
 
-  private _initializeSignin = async (authorized: boolean): Promise<void> => {
+  private _initializeSignin = async (): Promise<void> => {
+    const redirectUri = "http://localhost:3000/signin-callback";
+    const urlObj = new URL(redirectUri);
+    if (urlObj.pathname === window.location.pathname) {
+      await BrowserAuthorizationCallbackHandler.handleSigninCallback(redirectUri);
+      return;
+    }
+
+    let authorized = !!IModelApp.authorizationClient;
+    if (!authorized) {
+      const auth = new BrowserAuthorizationClient({
+        clientId: "imodeljs-spa-test",
+        redirectUri,
+        scope: baseOidcScopes.join(" "),
+        responseType: "code",
+      });
+      try {
+        await auth.signInSilent();
+      } catch (err) { }
+
+      authorized = auth.isAuthorized
+    }
     return authorized ? SampleAppIModelApp.showSignedIn() : SampleAppIModelApp.showSignedOut();
   };
 
@@ -593,7 +623,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
     const uiSettingsStorage = SampleAppIModelApp.getUiSettingsStorage();
     await UiFramework.setUiSettingsStorage(uiSettingsStorage);
     this.setState({ authorized, uiSettingsStorage });
-    this._initializeSignin(authorized); // eslint-disable-line @typescript-eslint/no-floating-promises
+    this._initializeSignin(); // eslint-disable-line @typescript-eslint/no-floating-promises
   };
 
   private _handleFrontstageDeactivatedEvent = (args: FrontstageDeactivatedEventArgs): void => {
@@ -687,13 +717,6 @@ async function main() {
       viewManager: new AppViewManager(true),  // Favorite Properties Support
       renderSys: { displaySolarShadows: true },
       rpcInterfaces: getSupportedRpcs(),
-    },
-    nativeApp: {
-      authConfig: {
-        clientId: "imodeljs-spa-test",
-        redirectUri: "http://localhost:3000/signin-callback",
-        scope: baseOidcScopes.join(" "),
-      },
     },
   };
 
