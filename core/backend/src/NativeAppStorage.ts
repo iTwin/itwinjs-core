@@ -14,6 +14,8 @@ import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { NativeHost } from "./NativeHost";
 
+// cspell:ignore ecdb
+
 /**
  * A local file stored in the [[NativeHost.appSettingsCacheDir]] for storing key/value pairs.
  * @public
@@ -27,19 +29,23 @@ export class NativeAppStorage {
   /** Set the value for a key */
   public setData(key: string, value: StorageValue): void {
     const rc = this._ecdb.withPreparedSqliteStatement("INSERT INTO app_setting(key,type,val)VALUES(?,?,?) ON CONFLICT(key) DO UPDATE SET type=excluded.type,val=excluded.val", (stmt) => {
-      let type: string | undefined = value === null ? "null" : typeof value;
-      if (type === "object") {
-        if (value instanceof Uint8Array) {
-          type = "Uint8Array";
-        } else {
-          type = undefined;
-        }
+      let valType = (value === undefined || value === null) ? "null" : typeof value;
+      if (valType === "object" && (value instanceof Uint8Array))
+        valType = "Uint8Array";
+
+      switch (valType) {
+        case "null":
+        case "number":
+        case "string":
+        case "boolean":
+        case "Uint8Array":
+          break;
+        default:
+          throw new IModelError(DbResult.BE_SQLITE_ERROR, `Unsupported type ${valType} for value for key='${key}`);
       }
-      if (!type) {
-        throw new IModelError(DbResult.BE_SQLITE_ERROR, `Unsupported type for value for key='${key}'`);
-      }
+
       stmt.bindValue(1, key);
-      stmt.bindValue(2, type);
+      stmt.bindValue(2, valType);
       stmt.bindValue(3, value);
       return stmt.step();
     });
@@ -49,13 +55,14 @@ export class NativeAppStorage {
     this._ecdb.saveChanges();
   }
 
-  /** Get the value for a key from this Storage. If key is not present, return undefined. */
-  public getData(key: string): StorageValue | undefined {
+  /** Get the value for a key from this Storage. If key is not present or is null, return undefined. */
+  public getData(key: string): StorageValue {
     return this._ecdb.withPreparedSqliteStatement("SELECT type,val FROM app_setting WHERE key=?", (stmt) => {
       stmt.bindValue(1, key);
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
         return undefined;
-      switch (stmt.getValue(0).getString()) {
+      const valType = stmt.getValue(0).getString();
+      switch (valType) {
         case "number":
           return stmt.getValue(1).getDouble();
         case "string":
@@ -65,9 +72,9 @@ export class NativeAppStorage {
         case "Uint8Array":
           return stmt.getValue(1).getBlob();
         case "null":
-          return null;
+          return undefined;
       }
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Unsupported type in cache");
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Unsupported type in cache ${valType}`);
     });
   }
 

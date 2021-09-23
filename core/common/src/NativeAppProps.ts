@@ -19,7 +19,7 @@ export const nativeAppNotify = "nativeApp-notify";
  * Type of value for storage values
  * @beta
  */
-export type StorageValue = string | number | boolean | null | Uint8Array;
+export type StorageValue = string | number | boolean | undefined | Uint8Array;
 
 /** Indicates whether or not the computer is currently connected to the internet.
  * @beta

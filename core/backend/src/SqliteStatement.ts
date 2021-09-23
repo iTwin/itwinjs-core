@@ -26,7 +26,7 @@ export type BindParameter = number | string;
 /** A value that can be bound with [[SqliteStatement.bindValue]] or [[SqliteStatement.bindValues]]
  * @public
  */
-export type ParameterValue = undefined | null | number | boolean | string | Uint8Array | { id?: Id64String, guid?: GuidString };
+export type ParameterValue = undefined | number | boolean | string | Uint8Array | { id: Id64String, guid?: never } | { guid: GuidString, id?: never };
 
 /** Executes SQLite SQL statements.
  *

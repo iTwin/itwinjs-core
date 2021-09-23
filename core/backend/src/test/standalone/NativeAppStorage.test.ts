@@ -7,7 +7,7 @@ import { IModelJsFs } from "../../IModelJsFs";
 import { NativeHost } from "../../NativeHost";
 import { NativeAppStorage } from "../../NativeAppStorage";
 
-describe("NativeApp storage backend", () => {
+describe.only("NativeApp storage backend", () => {
   before(async () => {
     IModelJsFs.purgeDirSync(NativeHost.appSettingsCacheDir);
   });
@@ -20,7 +20,7 @@ describe("NativeApp storage backend", () => {
       { key: "b", value: 11.22 },
       { key: "c", value: "Hello World" },
       { key: "d", value: Uint8Array.from([1, 2, 3, 4, 5, 6, 7, 8, 9, 0]) },
-      { key: "e", value: null },
+      { key: "e", value: undefined },
     ];
 
     for (const item of dataset) {
@@ -63,8 +63,8 @@ describe("NativeApp storage backend", () => {
   it("should override and type check", () => {
     const test1 = NativeAppStorage.open("backend_test_2");
     test1.removeAll();
-    test1.setData("key1", null);
-    assert.isNull(test1.getData("key1"));
+    test1.setData("key1", undefined);
+    assert.isUndefined(test1.getData("key1"));
 
     test1.setData("key1", 2222);
     assert.isNumber(test1.getData("key1"));
