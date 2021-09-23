@@ -7707,7 +7707,7 @@ export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
 export type StandaloneOpenOptions = OpenDbKey;
 
 // @beta
-export type StorageValue = string | number | boolean | null | Uint8Array;
+export type StorageValue = string | number | boolean | undefined | Uint8Array;
 
 // @public
 export class SubCategoryAppearance {
