@@ -169,12 +169,13 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
 export const ColorPickerButton: (props: ColorPickerProps) => JSX.Element | null;
 
 // @beta
-export function ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets, showRbgValues }: ColorPickerDialogProps): JSX.Element;
+export function ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets, colorInputType }: ColorPickerDialogProps): JSX.Element;
 
 // @beta
 export interface ColorPickerDialogProps {
     // (undocumented)
     color: ColorDef;
+    colorInputType?: "HSL" | "RGB";
     // (undocumented)
     colorPresets?: ColorDef[];
     // (undocumented)
@@ -183,21 +184,20 @@ export interface ColorPickerDialogProps {
     onCancelResult: () => void;
     // (undocumented)
     onOkResult: (selectedColor: ColorDef) => void;
-    showRbgValues?: boolean;
 }
 
 // @beta
-export function ColorPickerPanel({ activeColor, onColorChange, colorPresets, showRbgValues }: ColorPickerPanelProps): JSX.Element;
+export function ColorPickerPanel({ activeColor, onColorChange, colorPresets, colorInputType }: ColorPickerPanelProps): JSX.Element;
 
 // @beta
 export interface ColorPickerPanelProps {
     // (undocumented)
     activeColor: ColorDef;
+    colorInputType?: "HSL" | "RGB";
     // (undocumented)
     colorPresets?: ColorDef[];
     // (undocumented)
     onColorChange: (selectedColor: ColorDef) => void;
-    showRbgValues?: boolean;
 }
 
 // @beta
@@ -207,6 +207,7 @@ export const ColorPickerPopup: (props: ColorPickerPopupProps) => JSX.Element | n
 export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
     captureClicks?: boolean;
     colorDefs?: ColorDef[];
+    colorInputType?: "HSL" | "RGB";
     disabled?: boolean;
     hideCloseButton?: boolean;
     initialColor: ColorDef;
@@ -216,7 +217,6 @@ export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLBu
     readonly?: boolean;
     ref?: React.Ref<HTMLButtonElement>;
     showCaret?: boolean;
-    showRbgValues?: boolean;
 }
 
 // @beta
