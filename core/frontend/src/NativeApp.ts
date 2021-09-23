@@ -301,8 +301,13 @@ export class NativeApp {
 export class Storage {
   constructor(public readonly id: string) { }
 
+  /** get the type of a value for a key, or undefined if not present. */
+  public async getValueType(key: string): Promise<"number" | "string" | "boolean" | "Uint8Array" | "null" | undefined> {
+    return NativeApp.callNativeHost("storageGetValueType", this.id, key);
+  }
+
   /** Get the value for a key */
-  public async getData(key: string): Promise<StorageValue | undefined> {
+  public async getData(key: string): Promise<StorageValue> {
     return NativeApp.callNativeHost("storageGet", this.id, key);
   }
 

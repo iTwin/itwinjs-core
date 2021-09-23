@@ -599,7 +599,7 @@ public;SpatialClassifiers
 public;SpatialClassifiersContainer
 public;SpatialViewDefinitionProps 
 public;StandaloneOpenOptions = OpenDbKey
-beta;StorageValue = string | number | boolean | null | Uint8Array
+beta;StorageValue = string | number | boolean | undefined | Uint8Array
 public;SubCategoryAppearance
 public;SubCategoryAppearance
 public;SubCategoryOverride

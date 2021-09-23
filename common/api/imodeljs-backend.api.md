@@ -2122,6 +2122,7 @@ export abstract class IModelDb extends IModel {
     acquireSchemaLock(): Promise<void>;
     // @internal
     protected beforeClose(): void;
+    // @internal
     cancelSnap(sessionId: string): void;
     // @internal
     get classMetaDataRegistry(): MetaDataRegistry;
@@ -2227,7 +2228,7 @@ export abstract class IModelDb extends IModel {
     // @internal (undocumented)
     reinstateTxn(): IModelStatus;
     get relationships(): Relationships;
-    // (undocumented)
+    // @internal (undocumented)
     requestSnap(sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps>;
     restartQuery(token: string, ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
     // @internal (undocumented)
@@ -2897,7 +2898,7 @@ export class LockConflict extends IModelError {
     readonly briefcaseId: BriefcaseId;
 }
 
-// @beta (undocumented)
+// @beta
 export interface LockControl {
     acquireExclusiveLock(ids: Id64Arg): Promise<void>;
     acquireSharedLock(ids: Id64Arg): Promise<void>;
@@ -3047,13 +3048,15 @@ export class NativeAppStorage {
     static closeAll(): void;
     static find(name: string): NativeAppStorage;
     getBoolean(key: string): boolean | undefined;
-    getData(key: string): StorageValue | undefined;
+    getData(key: string): StorageValue;
     getKeys(): string[];
     getNumber(key: string): number | undefined;
     // @internal (undocumented)
     static getStorageNames(): string[];
     getString(key: string): string | undefined;
     getUint8Array(key: string): Uint8Array | undefined;
+    getValueType(key: string): "number" | "string" | "boolean" | "Uint8Array" | "null" | undefined;
+    hasNullValue(key: string): boolean;
     // (undocumented)
     readonly id: string;
     static open(name: string): NativeAppStorage;
@@ -3185,6 +3188,15 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex): Id64String;
     setRange(range: Range3d): void;
 }
+
+// @public
+export type ParameterValue = undefined | number | boolean | string | Uint8Array | {
+    id: Id64String;
+    guid?: never;
+} | {
+    guid: GuidString;
+    id?: never;
+};
 
 // @public
 export abstract class PhysicalElement extends SpatialElement {
@@ -3463,6 +3475,12 @@ export class RoleModel extends Model {
 }
 
 // @public
+export interface RowValue {
+    // (undocumented)
+    [propName: string]: Uint8Array | number | string | undefined;
+}
+
+// @public
 export class Schema {
     // @internal
     protected constructor();
@@ -3719,8 +3737,8 @@ export class SQLiteDb implements IDisposable {
 }
 
 // @public
-export class SqliteStatement implements IterableIterator<any>, IDisposable {
-    [Symbol.iterator](): IterableIterator<any>;
+export class SqliteStatement implements IterableIterator<RowValue>, IDisposable {
+    [Symbol.iterator](): IterableIterator<RowValue>;
     constructor(_sql: string);
     bindBlob(parameter: BindParameter, blob: Uint8Array): void;
     bindDouble(parameter: BindParameter, val: number): void;
@@ -3728,12 +3746,14 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     bindId(parameter: BindParameter, id: Id64String): void;
     bindInteger(parameter: BindParameter, val: number): void;
     bindString(parameter: BindParameter, val: string): void;
-    bindValue(parameter: BindParameter, value: any): void;
-    bindValues(values: any[] | object): void;
+    bindValue(parameter: BindParameter, value: ParameterValue): void;
+    bindValues(values: ParameterValue[] | {
+        [propName: string]: ParameterValue;
+    }): void;
     clearBindings(): void;
     dispose(): void;
     getColumnCount(): number;
-    getRow(): any;
+    getRow(): RowValue;
     getValue(columnIx: number): SqliteValue;
     getValueBlob(colIndex: number): Uint8Array;
     getValueDouble(colIndex: number): number;
@@ -3743,7 +3763,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     getValueString(colIndex: number): string;
     get isPrepared(): boolean;
     get isReadonly(): boolean;
-    next(): IteratorResult<any>;
+    next(): IteratorResult<RowValue>;
     prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb | IModelJsNative.SQLiteDb, logErrors?: boolean): void;
     reset(): void;
     // (undocumented)
@@ -3765,7 +3785,7 @@ export class SqliteValue {
     getString(): string;
     get isNull(): boolean;
     get type(): SqliteValueType;
-    get value(): any;
+    get value(): Uint8Array | number | string | undefined;
 }
 
 // @public
@@ -3808,14 +3828,6 @@ export class StatementCache<Stmt extends Statement> {
     findAndRemove(sql: string): Stmt | undefined;
     // (undocumented)
     get size(): number;
-}
-
-// @internal
-export interface StringParam {
-    // (undocumented)
-    guid?: GuidString;
-    // (undocumented)
-    id?: Id64String;
 }
 
 // @public
