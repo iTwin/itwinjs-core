@@ -6,7 +6,7 @@
  * @module MarkupApp
  */
 
-import { Logger } from "@bentley/bentleyjs-core";
+import { getErrorProps, Logger } from "@bentley/bentleyjs-core";
 import { Point3d, XAndY } from "@bentley/geometry-core";
 import { ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
 import { FrontendLoggerCategory, imageElementFromImageSource, IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
@@ -325,8 +325,8 @@ export class MarkupApp {
 
       // return the markup data to be saved by the application.
       image = (!result.imageFormat ? undefined : canvas.toDataURL(result.imageFormat));
-    } catch (e: any) {
-      Logger.logError(`${FrontendLoggerCategory.Package}.markup`, "Error creating image from svg", () => ({ message: e.message }));
+    } catch (e) {
+      Logger.logError(`${FrontendLoggerCategory.Package}.markup`, "Error creating image from svg", () => getErrorProps(e));
     }
     return { rect: { width: canvas.width, height: canvas.height }, svg, image };
   }

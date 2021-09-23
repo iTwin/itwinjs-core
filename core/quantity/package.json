@@ -16,7 +16,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json .nyc_output",
     "extract-api": "betools extract-api --entry=imodeljs-quantity",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "betools test",
+    "test": "mocha",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-quantity/file.json --tsIndexFile=./imodeljs-quantity.ts --onlyJson",
     "cover": "nyc npm test",
     "start": "npm run lint && npm run clean && npm run build && npm run test & npm run cover & npm run docs"
@@ -47,7 +47,7 @@
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",
-    "typescript": "~4.3.0"
+    "typescript": "~4.4.0"
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.64"

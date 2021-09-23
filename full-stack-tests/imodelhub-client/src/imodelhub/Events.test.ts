@@ -133,7 +133,7 @@ describe("iModelHub EventHandler", () => {
     try {
       const mockRequestContext = new AuthorizedClientRequestContext("");
       await imodelHubClient.events.getSASToken(mockRequestContext, imodelId);
-    } catch (err) {
+    } catch (err: any) {
       error = err;
     }
     chai.assert(error);
@@ -151,7 +151,7 @@ describe("iModelHub EventHandler", () => {
     let error;
     try {
       await imodelHubClient.events.getEvent(requestContext, "InvalidSASToken", sasToken.baseAddress!, subscription.wsgId);
-    } catch (err) {
+    } catch (err: any) {
       error = err;
     }
     chai.assert(error);
@@ -163,7 +163,7 @@ describe("iModelHub EventHandler", () => {
     let error;
     try {
       await imodelHubClient.events.getEvent(requestContext, sasToken.sasToken!, sasToken.baseAddress!, "");
-    } catch (err) {
+    } catch (err: any) {
       error = err;
     }
     chai.assert(error);
@@ -189,7 +189,7 @@ describe("iModelHub EventHandler", () => {
     let error;
     try {
       await imodelHubClient.events.getEvent(requestContext, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId, 1);
-    } catch (err) {
+    } catch (err: any) {
       error = err;
     }
     chai.assert(error);

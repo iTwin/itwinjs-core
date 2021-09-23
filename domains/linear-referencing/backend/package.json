@@ -16,7 +16,7 @@
     "docs": "betools docs --includes=../../../generated-docs/extract --json=../../../generated-docs/domains/linear-referencing-backend/file.json --tsIndexFile=./linear-referencing-backend.ts --onlyJson",
     "extract-api": "betools extract-api --entry=linear-referencing-backend",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "betools test"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -58,7 +58,7 @@
     "mocha": "^8.3.2",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "typescript": "~4.3.0"
+    "typescript": "~4.4.0"
   },
   "TODO-dependencies": {
     "@bentley/linear-referencing-schema": "~1.0.1"

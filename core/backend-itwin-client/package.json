@@ -22,8 +22,8 @@
     "extract-api": "betools extract-api --entry=backend-itwin-client",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "pretest": "npm run copy:test-assets",
-    "test": "betools test --grep=\"#integration\" --invert",
-    "test:integration": "npm run pretest && betools test --grep=\"#integration\"",
+    "test": "mocha --grep=\"#integration\" --invert",
+    "test:integration": "npm run pretest && mocha --grep=\"#integration\"",
     "copy:config": "internal-tools copy-config"
   },
   "repository": {
@@ -85,7 +85,7 @@
     "sinon": "^9.0.2",
     "source-map-support": "^0.5.6",
     "stream-buffers": "~3.0.2",
-    "typescript": "~4.3.0"
+    "typescript": "~4.4.0"
   },
   "dependencies": {
     "applicationinsights": "^1.7.5",
