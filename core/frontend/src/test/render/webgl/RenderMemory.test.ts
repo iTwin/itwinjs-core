@@ -3,7 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { Point2d, Point3d, Range3d } from "@bentley/geometry-core";
+import { ColorDef, ImageBuffer, ImageBufferFormat, MeshEdge, QParams3d, QPoint3dList, RenderTexture } from "@bentley/imodeljs-common";
+import { IModelApp } from "../../../IModelApp";
+import { IModelConnection } from "../../../IModelConnection";
 import { RenderMemory } from "../../../render/RenderMemory";
+import { RenderGeometry } from "../../../render/RenderSystem";
+import { MeshArgs } from "../../../render/primitives/mesh/MeshPrimitives";
+import { MeshParams } from "../../../render/primitives/VertexTable";
+import { Texture } from "../../../render/webgl/Texture";
+import { createBlankConnection } from "../../createBlankConnection";
 
 function expectMemory(consumer: RenderMemory.Consumers, total: number, max: number, count: number) {
   expect(consumer.totalBytes).to.equal(total);
@@ -11,7 +20,74 @@ function expectMemory(consumer: RenderMemory.Consumers, total: number, max: numb
   expect(consumer.count).to.equal(count);
 }
 
+function createMeshGeometry(opts: { texture?: RenderTexture, includeEdges?: boolean }): RenderGeometry {
+  const args = new MeshArgs();
+  args.colors.initUniform(ColorDef.from(255, 0, 0, 0));
+
+  if (opts.texture) {
+    args.texture = opts.texture;
+    args.textureUv = [ new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0) ];
+  }
+
+  const points = [ new Point3d(0, 0, 0), new Point3d(1, 0, 0), new Point3d(0, 1, 0), new Point3d(1, 1, 0) ];
+  args.points = new QPoint3dList(QParams3d.fromRange(Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1)));
+  for (const point of points)
+    args.points.add(point);
+
+  args.vertIndices = [0, 1, 2, 2, 1, 3];
+  args.isPlanar = true;
+
+  if (opts.includeEdges) {
+    args.edges.edges.edges = [];
+    for (const indexPair of [[0, 1], [1, 3], [3, 2], [2, 0]])
+      args.edges.edges.edges.push(new MeshEdge(indexPair[0], indexPair[1]));
+  }
+
+  const params = MeshParams.create(args);
+  const geom = IModelApp.renderSystem.createMeshGeometry(params);
+  expect(geom).not.to.be.undefined;
+  return geom!;
+}
+
+function createTexture(imodel: IModelConnection): RenderTexture {
+  const img = ImageBuffer.create(new Uint8Array([255, 255, 255, 255]), ImageBufferFormat.Rgba, 1);
+  const tex = IModelApp.renderSystem.createTextureFromImageBuffer(img, imodel, new RenderTexture.Params(imodel.transientIds.next))!;
+  expect(tex).not.to.be.undefined;
+  return tex!;
+}
+
+function getStats(consumer: RenderMemory.Consumer): RenderMemory.Statistics {
+  const stats = new RenderMemory.Statistics();
+  consumer.collectStatistics(stats);
+  return stats;
+}
+
+function getBytesUsed(consumer: RenderMemory.Consumer | RenderTexture): number {
+  if (consumer instanceof RenderTexture) {
+    expect(consumer instanceof Texture);
+    return (consumer as Texture).bytesUsed;
+  }
+
+  return getStats(consumer).totalBytes;
+}
+
+function expectBytesUsed(expected: number, consumer: RenderMemory.Consumer | RenderTexture): void {
+  expect(getBytesUsed(consumer)).to.equal(expected);
+}
+
 describe("RenderMemory", () => {
+  let imodel: IModelConnection;
+
+  before(async () => {
+    await IModelApp.startup();
+    imodel = createBlankConnection();
+  });
+
+  after(async () => {
+    await imodel.close();
+    await IModelApp.shutdown();
+  });
+
   it("should accumulate correctly", () => {
     const stats = new RenderMemory.Statistics();
 
@@ -44,5 +120,31 @@ describe("RenderMemory", () => {
     expectMemory(stats.buffers.surfaces, 0, 0, 0);
     expectMemory(stats.buffers.polylines, 0, 0, 0);
     expectMemory(stats.buffers.pointStrings, 0, 0, 0);
+  });
+
+  it("should collect memory used by a texture", () => {
+    const  tex = createTexture(imodel);
+    expectBytesUsed(4, tex);
+  });
+
+  it("should collect memory used by a mesh without edges", () => {
+  });
+
+  it("should collect memory used by a mesh and its edges", () => {
+  });
+
+  it("should collect memory used by a textured mesh", () => {
+  });
+
+  it("should collect memory used by instanced geometry", () => {
+  });
+
+  it("should collect memory used by patterned geometry", () => {
+  });
+
+  it("counts each set of instances exactly once", () => {
+  });
+
+  it("counts each instanced representation exactly once", () => {
   });
 });

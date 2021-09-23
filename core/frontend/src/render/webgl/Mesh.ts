@@ -139,8 +139,21 @@ export class MeshRenderGeometry {
     return data ? new this(data, params) : undefined;
   }
 
-  public dispose() { }
-  public collectStatistics() { }
+  public dispose() {
+    dispose(this.data);
+    dispose(this.surface);
+    dispose(this.segmentEdges);
+    dispose(this.silhouetteEdges);
+    dispose(this.polylineEdges);
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics) {
+    this.data.collectStatistics(stats);
+    this.surface?.collectStatistics(stats);
+    this.segmentEdges?.collectStatistics(stats);
+    this.silhouetteEdges?.collectStatistics(stats);
+    this.polylineEdges?.collectStatistics(stats);
+  }
 }
 
 /** @internal */
