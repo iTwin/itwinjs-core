@@ -6524,10 +6524,7 @@ export class NativeAppLogger {
 // @public
 export interface NativeAppOpts extends IpcAppOptions {
     // (undocumented)
-    nativeApp?: {
-        authConfig?: NativeAppAuthorizationConfiguration;
-        noInitializeAuthClient?: boolean;
-    };
+    nativeApp?: {};
 }
 
 // @internal

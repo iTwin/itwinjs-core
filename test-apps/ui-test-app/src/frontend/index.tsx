@@ -61,7 +61,6 @@ import {
   OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool,
   RemoveSavedContentLayoutTool, RestoreSavedContentLayoutTool, SaveContentLayoutTool, UiProviderTool,
 } from "./tools/UiProviderTool";
-import { ItemsPrefixedSampleTimeline } from "./appui/frontstages/component-examples/SampleTimelineComponent";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -188,7 +187,7 @@ export class SampleAppIModelApp {
         undefined !== process.env.IMJS_GP_BACKEND ?
           { info: { title: "general-purpose-imodeljs-backend", version: "v2.0" }, uriPrefix: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com` }
           : { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3000" };
-      BentleyCloudRpcManager.initializeClient(rpcParams, opts!.iModelApp!.rpcInterfaces!);
+      BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp!.rpcInterfaces!);
 
       await IModelApp.startup(opts.iModelApp);
     }
@@ -613,7 +612,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
         await auth.signInSilent();
       } catch (err) { }
 
-      authorized = auth.isAuthorized
+      authorized = auth.isAuthorized;
     }
     return authorized ? SampleAppIModelApp.showSignedIn() : SampleAppIModelApp.showSignedOut();
   };
