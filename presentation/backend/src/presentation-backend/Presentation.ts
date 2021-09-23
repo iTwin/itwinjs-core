@@ -94,11 +94,7 @@ export class Presentation {
   /**
    * Initializes Presentation library for the backend.
    *
-   * Example:
-   * ``` ts
-   * [[include:Presentation.Backend.Initialization]]
-   * [[include:Presentation.Backend.Initialization2]]
-   * ```
+   * See [this]($docs/learning/presentation/Setup/index.md#backend) for an example.
    *
    * **Important:** The method should be called after a call to [IModelHost.startup]($imodeljs-backend)
    *

@@ -1,57 +1,54 @@
 # Setting Up iTwin.js Presentation Library
 
-In addition to setting up *imodeljs-core* there are some steps that API
-consumers must do before the library can be used.
+Before the Presentation library can be used, it needs to be properly initialized. Because of the nature of [iTwin.js architecture](../../SoftwareArchitecture.md), the library needs to be initialized on the backend and each frontend that is in use — just like the iTwin.js framework itself.
 
 ## Backend
 
-1. Initialize the library:
+There are 2 main steps to enable Presentation library usage:
 
-  ```ts
-  [[include:Presentation.Backend.Initialization]]
-  [[include:Presentation.Backend.Initialization2]]
-  ```
+1. Register `PresentationRpcInterface` when initializing `IModelHost`. The way it's done depends on [IModelHost specialization](../../backend/IModelHost.md#imodelhost-specializations), but in any case that's similar to how any other `RpcInterface` is registered. A couple of examples:
+   - For a **web app**, `IModelHost` has to be initialized first and required RPC interfaces need to be passed to `BentleyCloudRpcManager.initializeImpl`:
 
-2. Register `PresentationRpcInterface` (amongst other RPC interfaces):
+      ```ts
+      [[include:Presentation.Common.RpcInterface.Imports]]
+      [[include:Presentation.Common.RpcInterface]]
+      [[include:Presentation.Backend.WebApp.RpcInterface]]
+      ```
 
-  ```ts
-  [[include:Presentation.Common.Imports]]
-  ```
+   - For an **Electron app**, required RPC interfaces are passed straight into `ElectronHost.startup`:
 
-  ```ts
-  [[include:Presentation.Common.RpcInterface]]
-  ```
+      ```ts
+      [[include:Presentation.Common.RpcInterface.Imports]]
+      [[include:Presentation.Common.RpcInterface]]
+      [[include:Presentation.Backend.Electron.RpcInterface]]
+      ```
 
-  ```ts
-  [[include:Presentation.Backend.RpcInterface]]
-  ```
+2. Initialize Presentation backend:
+
+   ```ts
+   [[include:Presentation.Backend.Initialization.Imports]]
+   [[include:Presentation.Backend.Initialization.Props]]
+   [[include:Presentation.Backend.Initialization]]
+   ```
 
 ## Frontend
 
-1. Initialize the library:
+Similar to the backend, the frontend initialization consists of 2 steps:
 
-  ``` ts
-  [[include:Presentation.Frontend.Imports]]
-  ```
+1. Register `PresentationRpcInterface` when initializing `IModelApp`. That's done by making sure the interface is included into the list of `rpcInterfaces` when calling `startup` on `IModelApp` or one of [its specializations](../../frontend/IModelApp.md#imodelapp-specializations).
 
-  ``` ts
-  [[include:Presentation.Frontend.Initialization]]
-  ```
+   ``` ts
+   [[include:Presentation.Common.RpcInterface.Imports]]
+   [[include:Presentation.Common.RpcInterface]]
+   [[include:Presentation.Frontend.RpcInterface.Options]]
+   [[include:Presentation.Frontend.IModelAppStartup]]
+   ```
 
-2. Register `PresentationRpcInterface` (amongst other RPC interfaces):
+   **Note:** The above example uses `ElectronApp`, but it's similar with other specializations like `WebViewerApp`.
 
-  ``` ts
-  [[include:Presentation.Common.Imports]]
-  ```
+2. Initialize Presentation frontend:
 
-  ``` ts
-  [[include:Presentation.Common.RpcInterface]]
-  ```
-
-  ``` ts
-  [[include:Presentation.Frontend.RpcInterface_1]]
-  ```
-
-  ``` ts
-  [[include:Presentation.Frontend.RpcInterface_2]]
-  ```
+   ``` ts
+   [[include:Presentation.Frontend.Imports]]
+   [[include:Presentation.Frontend.Initialization]]
+   ```

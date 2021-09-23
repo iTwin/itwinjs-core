@@ -148,7 +148,7 @@ Generally, if an application uses unified selection, it should be interacting wi
 - adding a (non-graphical) element to selection doesn't select it in other components
 - etc.
 
-## Examples
+## External Resources
 
 - [Hooking a tree into unified selection](https://www.itwinjs.org/sandboxes/grigas/Unified%20Selection%20Tree)
 - [Hooking a table into unified selection](https://www.itwinjs.org/sandboxes/grigas/Unified%20Selection%20Table)
