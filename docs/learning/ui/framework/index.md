@@ -23,7 +23,7 @@ The following constructs are defined using these components and classes:
 - [Dialogs](./Dialogs.md)
 - [UI Settings](./UiSettings.md)
 - [AccuDraw UI](./AccuDraw.md)
-- [KeyboardShortcuts]($ui-framework:KeyboardShortcut) - A keystroke or combination of keystrokes used to launch a command or tool.
+- [KeyboardShortcuts]($appui-react:KeyboardShortcut) - A keystroke or combination of keystrokes used to launch a command or tool.
 
 ## Other Topics
 

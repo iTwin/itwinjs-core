@@ -1,12 +1,12 @@
 # Form
 
-A [Form]($ui-core) React component is used to collect data from the user and submit the collected data to an async processing method.
-The Form component supports one ore more fields that implement the [FieldDef]($ui-core) interface.
-The [FieldDefinitions]($ui-core) interface contains key/value pairs for all the field definitions to be displayed in a Form.
+A [Form]($ui-core-react) React component is used to collect data from the user and submit the collected data to an async processing method.
+The Form component supports one ore more fields that implement the [FieldDef]($ui-core-react) interface.
+The [FieldDefinitions]($ui-core-react) interface contains key/value pairs for all the field definitions to be displayed in a Form.
 
 ## Form Properties
 
-The Form properties, as defined in [FormProps]($ui-core), include
+The Form properties, as defined in [FormProps]($ui-core-react), include
 `handleFormSubmit`, which is the callback to be called when the Submit button is pressed,
 and `fields`, which are the definitions used to create each Field in the Form.
 
@@ -90,4 +90,4 @@ export class ExampleForm extends React.Component {
 
 ## API Reference
 
-- [Form]($ui-core:Form)
+- [Form]($ui-core-react:Form)

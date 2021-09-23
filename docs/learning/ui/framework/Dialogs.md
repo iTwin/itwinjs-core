@@ -3,11 +3,11 @@
 A **Dialog** is a small temporary window of options presented to the user.
 The `@bentley/ui-framework` and `@bentley/ui-core` packages contain several classes and components for displaying modal and modeless dialogs.
 
-* [ModalDialogManager]($ui-framework) - displays and manages multiple modal dialogs
-* [ModelessDialogManager]($ui-framework) - displays and manages multiple modeless dialogs
-* [ModelessDialog]($ui-framework) - Modeless Dialog React component uses the Dialog component with a modal={false} prop.
+* [ModalDialogManager]($appui-react) - displays and manages multiple modal dialogs
+* [ModelessDialogManager]($appui-react) - displays and manages multiple modeless dialogs
+* [ModelessDialog]($appui-react) - Modeless Dialog React component uses the Dialog component with a modal={false} prop.
 It controls the z-index to keep the focused dialog above others.
-* [Dialog]($ui-core) - Dialog React component with optional resizing and moving functionality.
+* [Dialog]($ui-core-react) - Dialog React component with optional resizing and moving functionality.
 Supports modal and modeless dialogs and supports a button cluster in the lower-right.
 
 ## Sample Modal Dialog
@@ -16,7 +16,7 @@ The following sample shows a modal dialog with OK/Cancel buttons.
 
 ### SampleModalDialog React component
 
-This sample React component uses the [Dialog]($ui-core) component and sets up the buttons and necessary handlers to
+This sample React component uses the [Dialog]($ui-core-react) component and sets up the buttons and necessary handlers to
 close the dialog properly.
 
 ```tsx
@@ -112,7 +112,7 @@ The `ModalDialogManager.closeDialog` function is called to close a modal dialog.
 
 ## Sample Modeless Dialog
 
-This sample React component uses the [ModelessDialog]($ui-framework) component and sets up the necessary handlers to
+This sample React component uses the [ModelessDialog]($appui-react) component and sets up the necessary handlers to
 close the dialog properly.
 
 ```tsx
@@ -205,4 +205,4 @@ The `ModelessDialogManager.closeDialog` function is called to close a modeless d
 
 ## API Reference
 
-- [Dialog]($ui-framework:Dialog)
+- [Dialog]($appui-react:Dialog)

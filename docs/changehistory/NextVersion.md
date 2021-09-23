@@ -57,13 +57,13 @@ A number of packages have been renamed to use the @itwin scope rather than the @
 
 ## BentleyError constructor no longer logs
 
-In V2, the constructor of the base exception class [BentleyError]($bentleyjs-core) accepted 5 arguments, the last 3 being optional. Arguments 3 and 4 were for logging the exception in the constructor itself. That is a bad idea, since exceptions are often handled and recovered in `catch` statements, so there is no actual "problem" to report. In that case the message in the log is either misleading or just plain wrong. Also, code in `catch` statements always has more "context" about *why* the error may have happened than the lower level code that threw (e.g. "invalid Id" vs. "invalid MyHashClass Id") so log messages from callers can be more helpful than from callees. Since every thrown exception must be caught *somewhere*, logging should be done when exceptions are caught, not when they're thrown.
+In V2, the constructor of the base exception class [BentleyError]($core-bentley) accepted 5 arguments, the last 3 being optional. Arguments 3 and 4 were for logging the exception in the constructor itself. That is a bad idea, since exceptions are often handled and recovered in `catch` statements, so there is no actual "problem" to report. In that case the message in the log is either misleading or just plain wrong. Also, code in `catch` statements always has more "context" about *why* the error may have happened than the lower level code that threw (e.g. "invalid Id" vs. "invalid MyHashClass Id") so log messages from callers can be more helpful than from callees. Since every thrown exception must be caught *somewhere*, logging should be done when exceptions are caught, not when they're thrown.
 
-The [BentleyError]($bentleyjs-core) constructor now accepts 3 arguments, the last argument (`getMetaData`) is optional. The previous `log` and `category` arguments were removed. If your code passed 5 arguments, remove the 3rd and 4th. If you previously passed 3 or 4 arguments, just leave the first two.
+The [BentleyError]($core-bentley) constructor now accepts 3 arguments, the last argument (`getMetaData`) is optional. The previous `log` and `category` arguments were removed. If your code passed 5 arguments, remove the 3rd and 4th. If you previously passed 3 or 4 arguments, just leave the first two.
 
 ## ClientRequestContext.current has been removed
 
-The class [ClientRequestContext]($bentleyjs-core) exists to identify RPC requests between a web frontend and a cloud backend. In V2, had a static (i.e. global) member called `current` whose purpose was to identify the *current request* for logging from the backend. The members of `ClientRequestContext` called `sessionId` and `activityId` were "magically" appended in log messages without the need for passing the current request context as an argument. That originally seemed like a good idea, but became hopelessly complicated as asynchronous code was introduced. That's because when async methods run, there can be many request contexts extant simultaneously. So, it became the job of all code that awaited an async function to accept an argument with a request context and call `.enter()` on it, to set the very global variable whose existence was solely to avoid having to have the argument in the first place! Needless to say, global variables and `async`s don't mix and the whole concept has been removed.
+The class [ClientRequestContext]($core-bentley) exists to identify RPC requests between a web frontend and a cloud backend. In V2, had a static (i.e. global) member called `current` whose purpose was to identify the *current request* for logging from the backend. The members of `ClientRequestContext` called `sessionId` and `activityId` were "magically" appended in log messages without the need for passing the current request context as an argument. That originally seemed like a good idea, but became hopelessly complicated as asynchronous code was introduced. That's because when async methods run, there can be many request contexts extant simultaneously. So, it became the job of all code that awaited an async function to accept an argument with a request context and call `.enter()` on it, to set the very global variable whose existence was solely to avoid having to have the argument in the first place! Needless to say, global variables and `async`s don't mix and the whole concept has been removed.
 
 If you have code that has something like this:
 
@@ -71,7 +71,7 @@ If you have code that has something like this:
 requestContext.enter();
 ```
 
-you can simply delete it. If your function accepts a [ClientRequestContext]($bentleyjs-core) merely to call `enter` on it, consider refactoring your code to remove the argument.
+you can simply delete it. If your function accepts a [ClientRequestContext]($core-bentley) merely to call `enter` on it, consider refactoring your code to remove the argument.
 
 This change mostly affects backend code. For backend [RPC]($docs/learning/RpcInterface.md) implementations, all *unhandled* exceptions will automatically be logged along the appropriate `ClientRequestContext`. For this reason, it often preferable to throw an exception rather than logging an error and returning a status in code that may or may not be called from RPC.
 
@@ -263,7 +263,7 @@ Upgrade instructions:
 
 ## Moved utility types
 
-The [AsyncFunction]($bentleyjs-core), [AsyncMethodsOf]($bentleyjs-core), and [PromiseReturnType]($bentleyjs-core) types have moved to the @bentley/bentleyjs-core package. The ones in @bentley/imodeljs-frontend have been deprecated.
+The [AsyncFunction]($core-bentley), [AsyncMethodsOf]($core-bentley), and [PromiseReturnType]($core-bentley) types have moved to the @bentley/bentleyjs-core package. The ones in @bentley/imodeljs-frontend have been deprecated.
 
 ## Removed default Bing Maps and MapBox keys
 
@@ -435,7 +435,7 @@ It is no longer necessary to supply a [Viewport]($frontend) when creating a [Gra
 
 ## Changed return types
 
-The backend methods [IModelDb.saveFileProperty]($backend) and [IModelDb.deleteFileProperty]($backend) used to return a [DbResult]($bentleyjs-core). They now are `void`, and throw an exception if an error occurred. The error value can be retrieved in the `errorNumber` member of the exception object, if desired.
+The backend methods [IModelDb.saveFileProperty]($backend) and [IModelDb.deleteFileProperty]($backend) used to return a [DbResult]($core-bentley). They now are `void`, and throw an exception if an error occurred. The error value can be retrieved in the `errorNumber` member of the exception object, if desired.
 
 ## Signature change to backend Geocoordinate methods
 
@@ -508,10 +508,10 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | Removed                                       | Replacement                                                        |
 | --------------------------------------------- | ------------------------------------------------------------------ |
 | `AppearanceOverrideProps`                     | [AppearanceOverrideProps]($common)                                 |
-| `AsyncMethodsOf`                              | [AsyncMethodsOf]($bentleyjs-core)                                  |
-| `AsyncFunction`                               | [AsyncFunction]($bentleyjs-core)                                   |
+| `AsyncMethodsOf`                              | [AsyncMethodsOf]($core-bentley)                                  |
+| `AsyncFunction`                               | [AsyncFunction]($core-bentley)                                   |
 | `EmphasizeElementsProps`                      | [EmphasizeElementsProps]($common)                                  |
-| `PromiseReturnType`                           | [PromiseReturnType]($bentleyjs-core)                               |
+| `PromiseReturnType`                           | [PromiseReturnType]($core-bentley)                               |
 | `CheckpointConnection.open`                   | `CheckpointConnection.openRemote`                                  |
 | `DecorateContext.screenViewport`              | `DecorateContext.viewport`                                         |
 | `FeatureOverrideType`                         | [FeatureOverrideType]($common)                                     |
@@ -808,18 +808,18 @@ For migration purposes, React 16 is included in the peerDependencies for the pac
 
 | Class/Component                                        | Description                                                                                        |
 | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------|
-| [StandardFrontstageProvider]($ui-framework)            | Frontstage provider that provides an 'empty' stage that is to be populated via UiItemsProviders.   |
-| [StandardContentToolsProvider]($ui-framework)          | UiItemsProvider that will add common tool entries to Tool Widget.                                  |
-| [StandardNavigationToolsProvider]($ui-framework)       | UiItemsProvider that will add common view tool entries to Navigation Widget.                       |
-| [StandardStatusbarItemsProvider]($ui-framework)        | UiItemsProvider that will add common statusbar items.                                              |
-| [ContentToolWidgetComposer]($ui-framework)             | Provides an empty Tool Widget that is to be populate via UiItemsProviders.                         |
-| [ViewToolWidgetComposer]($ui-framework)                | Provides an empty Navigation Widget that is to be populate via UiItemsProviders.                   |
-| [StandardContentLayouts]($ui-abstract)                 | Provides standard view layouts that can be used when defining a ContentGroup.                      |
-| [ContentGroupProvider]($ui-framework)                  | Class that generates a ContentGroup at runtime when the frontstageDef is being constructed.        |
+| [StandardFrontstageProvider]($appui-react)            | Frontstage provider that provides an 'empty' stage that is to be populated via UiItemsProviders.   |
+| [StandardContentToolsProvider]($appui-react)          | UiItemsProvider that will add common tool entries to Tool Widget.                                  |
+| [StandardNavigationToolsProvider]($appui-react)       | UiItemsProvider that will add common view tool entries to Navigation Widget.                       |
+| [StandardStatusbarItemsProvider]($appui-react)        | UiItemsProvider that will add common statusbar items.                                              |
+| [ContentToolWidgetComposer]($appui-react)             | Provides an empty Tool Widget that is to be populate via UiItemsProviders.                         |
+| [ViewToolWidgetComposer]($appui-react)                | Provides an empty Navigation Widget that is to be populate via UiItemsProviders.                   |
+| [StandardContentLayouts]($appui-abstract)                 | Provides standard view layouts that can be used when defining a ContentGroup.                      |
+| [ContentGroupProvider]($appui-react)                  | Class that generates a ContentGroup at runtime when the frontstageDef is being constructed.        |
 
 ### New Timeline Date Marker
 
-The [TimelineComponent]($ui-imodel-components) react component now accepts a property to mark a specific date in a date-based timeline. If the timeline has a defined start date and end date, a date between them can be marked in the timeline by specifying an instance of [TimelineDateMarkerProps]($ui-imodel-components) in the new markDate member of [TimelineComponentProps]($ui-imodel-components). If the date member is left undefined, today's date will be used. The default marker is a short vertical bar, but a ReactNode can be specified in the dateMarker prop to customize the marker's appearance.
+The [TimelineComponent]($ui-imodel-components-react) react component now accepts a property to mark a specific date in a date-based timeline. If the timeline has a defined start date and end date, a date between them can be marked in the timeline by specifying an instance of [TimelineDateMarkerProps]($ui-imodel-components-react) in the new markDate member of [TimelineComponentProps]($ui-imodel-components-react). If the date member is left undefined, today's date will be used. The default marker is a short vertical bar, but a ReactNode can be specified in the dateMarker prop to customize the marker's appearance.
 
 ### New Floating Widget Capabilities
 
@@ -946,7 +946,7 @@ Developers should use equivalent components in @itwin/itwinui-react instead.
 
 #### Slider
 
-The deprecated [Slider]($ui-core) was a wrapper around the react-compound-slider that does not work properly in popout windows. To eliminate this issue, the deprecated `Slider`will now wrap the  `Slider` component from @itwin/itwinui-react. This result is a couple prop changes. The `onSlideStart` or `onSlideEnd` props are ignored, use `onUpdate` and `onChange` props if needed. The only two `modes` that remain supported are 1 and 2.
+The deprecated [Slider]($ui-core-react) was a wrapper around the react-compound-slider that does not work properly in popout windows. To eliminate this issue, the deprecated `Slider`will now wrap the  `Slider` component from @itwin/itwinui-react. This result is a couple prop changes. The `onSlideStart` or `onSlideEnd` props are ignored, use `onUpdate` and `onChange` props if needed. The only two `modes` that remain supported are 1 and 2.
 
 ### Deprecated with alternatives elsewhere
 

@@ -1,20 +1,20 @@
 # ContextMenu
 
-The [ContextMenu]($ui-core) React component displays a context menu populated with [ContextMenuItem]($ui-core) components.
-Items can be nested using the [ContextSubMenu]($ui-core) component.
-The [ContextMenuDivider]($ui-core) component shows a divider line between items.
+The [ContextMenu]($ui-core-react) React component displays a context menu populated with [ContextMenuItem]($ui-core-react) components.
+Items can be nested using the [ContextSubMenu]($ui-core-react) component.
+The [ContextMenuDivider]($ui-core-react) component shows a divider line between items.
 
-The [GlobalContextMenu]($ui-core) React component is used to display a ContextMenu at the cursor.
+The [GlobalContextMenu]($ui-core-react) React component is used to display a ContextMenu at the cursor.
 
-The [PopupContextMenu]($ui-core) React component displays a ContextMenu within a Popup component, allowing the target element to be specified.
+The [PopupContextMenu]($ui-core-react) React component displays a ContextMenu within a Popup component, allowing the target element to be specified.
 
 ## UiAdmin.showContextMenu Example
 
 These lower level components can be used to display a context menu.
 However, there is an easier API to use: IModelApp.uiAdmin.showContextMenu.
 UiAdmin.showContextMenu will show a context menu at a particular location.
-[UiAdmin]($ui-abstract) controls various UI components and is callable from IModelApp.uiAdmin in the imodeljs-frontend package.
-UiAdmin.showContextMenu uses the [ContextMenu]($ui-core:ContextMenu) components to display the context menu.
+[UiAdmin]($appui-abstract) controls various UI components and is callable from IModelApp.uiAdmin in the imodeljs-frontend package.
+UiAdmin.showContextMenu uses the [ContextMenu]($ui-core-react:ContextMenu) components to display the context menu.
 
 ### Menu Items
 
@@ -103,4 +103,4 @@ export function SamplePopupContextMenu() {
 
 ## API Reference
 
-- [ContextMenu]($ui-core:ContextMenu)
+- [ContextMenu]($ui-core-react:ContextMenu)

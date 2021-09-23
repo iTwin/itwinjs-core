@@ -1,7 +1,7 @@
 # Expandable
 
-The [ExpandableList]($ui-core) React component is a container for one or more ExpandableBlock components.
-The [ExpandableBlock]($ui-core) React component is a container that shows and hides child content.
+The [ExpandableList]($ui-core-react) React component is a container for one or more ExpandableBlock components.
+The [ExpandableBlock]($ui-core-react) React component is a container that shows and hides child content.
 
 ## Examples
 
@@ -69,4 +69,4 @@ and that prop is used in this example.
 
 ## API Reference
 
-- [Expandable]($ui-core:Expandable)
+- [Expandable]($ui-core-react:Expandable)

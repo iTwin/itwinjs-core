@@ -1,15 +1,15 @@
 # Color
 
-The [Color]($ui-imodel-components:Color) category in the `@bentley/ui-imodel-components` package includes
+The [Color]($ui-imodel-components-react:Color) category in the `@bentley/ui-imodel-components` package includes
 classes and components for working with and picking a Color.
 
 |Component|Description
 |-----|-----
-|[AlphaSlider]($ui-imodel-components)|used to set the alpha value for a color
-|[ColorPickerButton]($ui-imodel-components)|used to pick a color from an array of available colors
-|[HueSlider]($ui-imodel-components)|used to set the hue value for a color
-|[SaturationPicker]($ui-imodel-components)|used to set the saturation value for a color
-|[ColorSwatch]($ui-imodel-components)|displays a color swatch in a button
+|[AlphaSlider]($ui-imodel-components-react)|used to set the alpha value for a color
+|[ColorPickerButton]($ui-imodel-components-react)|used to pick a color from an array of available colors
+|[HueSlider]($ui-imodel-components-react)|used to set the hue value for a color
+|[SaturationPicker]($ui-imodel-components-react)|used to set the saturation value for a color
+|[ColorSwatch]($ui-imodel-components-react)|displays a color swatch in a button
 
 ## Samples
 
@@ -136,8 +136,8 @@ private _handleColorChange = (value: ColorDef) => {
 
 ![ColorPickerButton](./images/ColorPickerButton.png "ColorPickerButton Component")
 
-**Note:** The properties for the ColorPickerButton are defined in the [ColorPickerProps]($ui-imodel-components) interface. The optional `colorDefs` prop may be used to provide the available colors.
+**Note:** The properties for the ColorPickerButton are defined in the [ColorPickerProps]($ui-imodel-components-react) interface. The optional `colorDefs` prop may be used to provide the available colors.
 
 ## API Reference
 
-- [Color]($ui-imodel-components:Color)
+- [Color]($ui-imodel-components-react:Color)

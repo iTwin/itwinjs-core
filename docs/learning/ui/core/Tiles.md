@@ -1,10 +1,10 @@
 # Tiles
 
-The [Tiles]($ui-core:Tabs) category in the `@bentley/ui-core` package includes
-the [Tile]($ui-core), [FeaturedTile]($ui-core), [MinimalTile]($ui-core) and [MinimalFeaturedTile]($ui-core) components.
+The [Tiles]($ui-core-react:Tabs) category in the `@bentley/ui-core` package includes
+the [Tile]($ui-core-react), [FeaturedTile]($ui-core-react), [MinimalTile]($ui-core-react) and [MinimalFeaturedTile]($ui-core-react) components.
 Tiles are components for a container rendering elements that can be grouped together.
 
-The [TileProps]($ui-core) interface specifies the properties for all of the
+The [TileProps]($ui-core-react) interface specifies the properties for all of the
 Tile components.
 
 ## Examples
@@ -70,4 +70,4 @@ The `stepNum` prop circulates through 16 pre-defined background colors that are 
 
 ## API Reference
 
-- [Tiles]($ui-core:Tiles)
+- [Tiles]($ui-core-react:Tiles)

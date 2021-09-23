@@ -1,12 +1,12 @@
 # CheckListBox
 
-The [CheckListBox]($ui-core) React component shows a list of Checkbox items.
-The [CheckListBoxItem]($ui-core) component is the item with a Checkbox added to a CheckListBox.
-The [CheckListBoxSeparator]($ui-core) component is the separator item for the CheckListBox.
+The [CheckListBox]($ui-core-react) React component shows a list of Checkbox items.
+The [CheckListBoxItem]($ui-core-react) component is the item with a Checkbox added to a CheckListBox.
+The [CheckListBoxSeparator]($ui-core-react) component is the separator item for the CheckListBox.
 
 ## Properties
 
-The [CheckListBoxItemProps]($ui-core) interface contains the properties for the CheckListBoxItem component.
+The [CheckListBoxItemProps]($ui-core-react) interface contains the properties for the CheckListBoxItem component.
 The `label` prop is mandatory and is the label shown for the Checkbox.
 The `checked` props indicates whether the item is checked.
 The `disabled` prop indicates whether the item is disabled.
@@ -33,4 +33,4 @@ The CheckListBoxSeparator component is used for a separator item.
 
 ## API Reference
 
-- [CheckListBox]($ui-core:CheckListBox)
+- [CheckListBox]($ui-core-react:CheckListBox)

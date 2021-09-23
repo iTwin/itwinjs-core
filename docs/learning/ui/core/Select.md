@@ -1,11 +1,11 @@
 # Select
 
-The [Select]($ui-core:Select) category in the `@bentley/ui-core` package includes the
-[Select]($ui-core), [LabeledSelect]($ui-core) and [ThemedSelect]($ui-core) components.
+The [Select]($ui-core-react:Select) category in the `@bentley/ui-core` package includes the
+[Select]($ui-core-react), [LabeledSelect]($ui-core-react) and [ThemedSelect]($ui-core-react) components.
 
 ## Select
 
-The [Select]($ui-core) React component is a wrapper for the `<select>` HTML element.
+The [Select]($ui-core-react) React component is a wrapper for the `<select>` HTML element.
 The Select component is meant to allow the user to select an option from a list.
 The list of options popup below the component, or above if there isn't enough room below.
 
@@ -45,4 +45,4 @@ ThemedSelect is a wrapper for [react-select](https://www.npmjs.com/package/react
 
 ## API Reference
 
-- [Select]($ui-core:Select)
+- [Select]($ui-core-react:Select)

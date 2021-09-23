@@ -39,7 +39,7 @@ With that in mind, the above components *A*, *B* and *C* can be configured as fo
 
 ## Selection Handling
 
-The `@bentley/presentation-components` package delivers helper APIs for hooking four primary components into unified selection: [ControlledTree]($ui-components), [Table]($ui-components), [Property Grid]($ui-components:PropertyGrid) and [ViewportComponent]($ui-imodel-components). Each of those components handle unified selection differently and that behavior is explained in the below sections.
+The `@bentley/presentation-components` package delivers helper APIs for hooking four primary components into unified selection: [ControlledTree]($ui-components-react), [Table]($ui-components-react), [Property Grid]($ui-components-react:PropertyGrid) and [ViewportComponent]($ui-imodel-components-react). Each of those components handle unified selection differently and that behavior is explained in the below sections.
 
 ### Tree
 
@@ -121,28 +121,28 @@ The key unified selection APIs are defined in [@bentley/presentation-frontend]($
 For each type of component described in [selection handling section](#selection-handling), the `@bentley/presentation-component` package delivers a set of React-based helper APIs:
 
 - Tree
-  - [useUnifiedSelectionTreeEventHandler]($presentation-components) hook returns a [TreeEventHandler]($ui-components) that can be passed straight to [ControlledTree]($ui-components) component as an [ControlledTreeProps.eventsHandler]($ui-components) prop and takes care of syncing selection between the tree and unified selection storage.
+  - [useUnifiedSelectionTreeEventHandler]($presentation-components) hook returns a [TreeEventHandler]($ui-components-react) that can be passed straight to [ControlledTree]($ui-components-react) component as an [ControlledTreeProps.eventsHandler]($ui-components-react) prop and takes care of syncing selection between the tree and unified selection storage.
 
 - Table
-  - [tableWithUnifiedSelection]($presentation-components) HOC takes a [Table]($ui-components) component as input and returns a component with injected handling for unified selection as described in [this section](#table).
+  - [tableWithUnifiedSelection]($presentation-components) HOC takes a [Table]($ui-components-react) component as input and returns a component with injected handling for unified selection as described in [this section](#table).
 
 - Property Grid
   - [usePropertyDataProviderWithUnifiedSelection]($presentation-components) hook takes an [IPresentationPropertyDataProvider]($presentation-components) as an input and ensures the provider is updated with current selection as soon as there are changes in unified selection storage. It also returns some cues about the selection that help the component with various edge cases, like nothing being selected or overly large number of selected elements.
 
 - Viewport
-  - [viewWithUnifiedSelection]($presentation-components) HOC takes a [ViewportComponent]($ui-imodel-components) as input and returns a component with injected handling for unified selection as described in [this section](#viewport).
+  - [viewWithUnifiedSelection]($presentation-components) HOC takes a [ViewportComponent]($ui-imodel-components-react) as input and returns a component with injected handling for unified selection as described in [this section](#viewport).
 
 ## Caveats
 
-There are two selection-related APIs named very similarly: [SelectionSet]($imodeljs-frontend) (accessed through `IModelConnection.selectionSet`) and [SelectionManager]($presentation-frontend) (accessed through `Presentation.selection`). Not only they're named similarly, but also work very similarly as well. And to make matters worse, they're somewhat synchronized.
+There are two selection-related APIs named very similarly: [SelectionSet]($core-frontend) (accessed through `IModelConnection.selectionSet`) and [SelectionManager]($presentation-frontend) (accessed through `Presentation.selection`). Not only they're named similarly, but also work very similarly as well. And to make matters worse, they're somewhat synchronized.
 
 The [SelectionManager]($presentation-frontend), is a single global storage of what's currently selected in the application. It allows selecting any ECInstance (model, category, graphical element or even an ECClass!) and can be used without a viewport.
 
-The [SelectionSet]($imodeljs-frontend), on the other hand, is what the tools (the ones used in the viewport) think is selected. It's like a viewport-specific selection which doesn't necessarily have to match the global selection, similar how the tree component maintains it's list of selected nodes. It only maintains graphical elements and only makes sense in a context of a viewport (or multiple of them, since [SelectionSets]($imodeljs-frontend:SelectionSet) are shared across all viewports associated with the same [IModelConnection]($imodeljs-frontend)).
+The [SelectionSet]($core-frontend), on the other hand, is what the tools (the ones used in the viewport) think is selected. It's like a viewport-specific selection which doesn't necessarily have to match the global selection, similar how the tree component maintains it's list of selected nodes. It only maintains graphical elements and only makes sense in a context of a viewport (or multiple of them, since [SelectionSets]($core-frontend:SelectionSet) are shared across all viewports associated with the same [IModelConnection]($core-frontend)).
 
-When unified selection is enabled on a viewport component, we start synchronizing the two sets so picking an element in the viewport puts it into global selection (after going through all the [selection scopes](#selection-scopes) processing) and putting something into unified selection gets selected in the [SelectionSet]($imodeljs-frontend) so it can be used by tools in the viewport.
+When unified selection is enabled on a viewport component, we start synchronizing the two sets so picking an element in the viewport puts it into global selection (after going through all the [selection scopes](#selection-scopes) processing) and putting something into unified selection gets selected in the [SelectionSet]($core-frontend) so it can be used by tools in the viewport.
 
-Generally, if an application uses unified selection, it should be interacting with [SelectionManager]($presentation-frontend) API. Here're a few example issues that may arise due to interacting with [SelectionSet]($imodeljs-frontend):
+Generally, if an application uses unified selection, it should be interacting with [SelectionManager]($presentation-frontend) API. Here're a few example issues that may arise due to interacting with [SelectionSet]($core-frontend):
 
 - selection works fine with a viewport, but stops working if a viewport is not created
 - adding a (non-graphical) element to selection doesn't select it in other components

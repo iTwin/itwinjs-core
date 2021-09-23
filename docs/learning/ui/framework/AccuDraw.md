@@ -10,14 +10,14 @@ AccuDraw UI classes and components include:
 
 | Class or Component | Description
 | ----------- | ------------
-| [AccuDrawCommandItems]($ui-framework) | Contains [ToolItemDef]($ui-framework) instances for AccuDraw tools
-| [AccuDrawDialog]($ui-framework) | Dialog that displays an [AccuDrawFieldContainer]($ui-framework) component
-| [AccuDrawFieldContainer]($ui-framework) | Displays an [AccuDrawInputField]($ui-framework) component for each field
-| [AccuDrawInputField]($ui-framework) | Displays an Input component and a Lock icon along with an optional field icon
-| [AccuDrawKeyboardShortcuts]($ui-framework) | Defines default AccuDraw Keyboard Shortcuts using [ToolItemDef]($ui-framework)s from [AccuDrawCommandItems]($ui-framework)
-| [AccuDrawUiSettings]($ui-framework) | User Interface Settings for each field, including CSS styles, colors, labels & icons
-| [AccuDrawWidget]($ui-framework) | Widget that displays an [AccuDrawFieldContainer]($ui-framework) component
-| [FrameworkAccuDraw]($ui-framework) | Subclass of the AccuDraw core class that overrides methods, emits events for value and status changes, and processes field input
+| [AccuDrawCommandItems]($appui-react) | Contains [ToolItemDef]($appui-react) instances for AccuDraw tools
+| [AccuDrawDialog]($appui-react) | Dialog that displays an [AccuDrawFieldContainer]($appui-react) component
+| [AccuDrawFieldContainer]($appui-react) | Displays an [AccuDrawInputField]($appui-react) component for each field
+| [AccuDrawInputField]($appui-react) | Displays an Input component and a Lock icon along with an optional field icon
+| [AccuDrawKeyboardShortcuts]($appui-react) | Defines default AccuDraw Keyboard Shortcuts using [ToolItemDef]($appui-react)s from [AccuDrawCommandItems]($appui-react)
+| [AccuDrawUiSettings]($appui-react) | User Interface Settings for each field, including CSS styles, colors, labels & icons
+| [AccuDrawWidget]($appui-react) | Widget that displays an [AccuDrawFieldContainer]($appui-react) component
+| [FrameworkAccuDraw]($appui-react) | Subclass of the AccuDraw core class that overrides methods, emits events for value and status changes, and processes field input
 
 ## FrameworkAccuDraw Setup in IModelApp
 
@@ -39,4 +39,4 @@ import { FrameworkAccuDraw } from "@bentley/ui-framework";
 
 ## API Reference
 
-- [AccuDraw]($ui-framework:AccuDraw)
+- [AccuDraw]($appui-react:AccuDraw)

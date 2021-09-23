@@ -1,10 +1,10 @@
 # Button
 
-The [Button]($ui-core:Button) category in the `@bentley/ui-core` package includes various Button components.
+The [Button]($ui-core-react:Button) category in the `@bentley/ui-core` package includes various Button components.
 
 ## Button
 
-The [Button]($ui-core) component is a wrapper for the `<button>` HTML element and has support for the Light and Dark themes.
+The [Button]($ui-core-react) component is a wrapper for the `<button>` HTML element and has support for the Light and Dark themes.
 
 ### Properties
 
@@ -71,7 +71,7 @@ When using a `size` prop of `ButtonSize.Large`, the Button has a larger size.
 
 ## UnderlinedButton
 
-The [UnderlinedButton]($ui-core) component makes text clickable and underlined.
+The [UnderlinedButton]($ui-core-react) component makes text clickable and underlined.
 
 ### Properties
 
@@ -95,4 +95,4 @@ The `onClick` event handler is run when the Button is clicked or touched.
 
 ## API Reference
 
-- [Button]($ui-core:Button)
+- [Button]($ui-core-react:Button)

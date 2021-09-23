@@ -1,7 +1,7 @@
 # RadialMenu
 
-The [RadialMenu]($ui-core) React component is a context menu arranged in a radial layout.
-The [RadialButton]($ui-core) React component is the button for use within a RadialMenu.
+The [RadialMenu]($ui-core-react) React component is a context menu arranged in a radial layout.
+The [RadialButton]($ui-core-react) React component is the button for use within a RadialMenu.
 
 ## Example
 
@@ -101,4 +101,4 @@ export class TestRadialMenu extends React.Component<TestRadialMenuProps, TestRad
 
 ## API Reference
 
-- [RadialMenu]($ui-core:RadialMenu)
+- [RadialMenu]($ui-core-react:RadialMenu)
