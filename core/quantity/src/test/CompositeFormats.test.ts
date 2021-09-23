@@ -39,10 +39,8 @@ describe("Composite Formats tests:", () => {
       await format.fromJSON(unitsProvider, formatData).catch(() => { });
       assert.isTrue(format.hasUnits);
 
-      // SWB What does context mean here?
       const testEntry = { magnitude: 12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12:6 1/2" };
 
-      // SWB What does context mean here?
       const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
 
@@ -83,11 +81,9 @@ describe("Composite Formats tests:", () => {
       assert.isTrue(format.hasUnits);
 
       const testEntry = {
-        // SWB What does context mean here?
         magnitude: 12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12:6 1/2",
       };
 
-      // SWB What does context mean here?
       const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
 
@@ -125,21 +121,14 @@ describe("Composite Formats tests:", () => {
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
-      // SWB What does context mean here?
       { magnitude: -12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "-12.5417'" },
-      // SWB What does context mean here?
       { magnitude: 12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12.5417'" },
-      // SWB What does context mean here?
       { magnitude: 1.05000, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "1.05'" },
-      // SWB What does context mean here?
       { magnitude: 12345789, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12345789'" },
-      // SWB What does context mean here?
       { magnitude: 0.00000, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "0'" },
-      // SWB What does context mean here?
     ];
 
     for (const testEntry of testQuantityData) {
-      // SWB What does context mean here?
       const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
 
@@ -180,7 +169,6 @@ describe("Composite Formats tests:", () => {
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
-      // SWB What does context mean here?
       { magnitude: -12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "-12'-6 1/2\"" },
       { magnitude: 12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12'-6 1/2\"" },
       { magnitude: 1.05000, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "1'-0 5/8\"" },
@@ -190,7 +178,6 @@ describe("Composite Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      // SWB What does context mean here?
       const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
 
@@ -231,7 +218,6 @@ describe("Composite Formats tests:", () => {
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
-      // SWB What does context mean here?
       { magnitude: -12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "-12:6 1/2" },
       { magnitude: 12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12:6 1/2" },
       { magnitude: 1.05000, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "1:0 5/8" },
@@ -241,7 +227,6 @@ describe("Composite Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      // SWB What does context mean here?
       const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
 
@@ -278,7 +263,6 @@ describe("Composite Formats tests:", () => {
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
-      // SWB What does context mean here?
       { magnitude: -12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "-150 1/2\"" },
       { magnitude: 12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "150 1/2\"" },
       { magnitude: 1.05000, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12 5/8\"" },
@@ -288,7 +272,6 @@ describe("Composite Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      // SWB What does context mean here?
       const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
 
@@ -324,7 +307,6 @@ describe("Composite Formats tests:", () => {
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
-      // SWB What does context mean here?
       { magnitude: -12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "-150 1/2 in" },
       { magnitude: 12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "150 1/2 in" },
       { magnitude: 1.05000, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12 5/8 in" },
@@ -334,7 +316,6 @@ describe("Composite Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      // SWB What does context mean here?
       const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
@@ -370,7 +351,6 @@ describe("Composite Formats tests:", () => {
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
-      // SWB What does context mean here?
       { magnitude: -12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "-150.5\"" },
       { magnitude: 12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "150.5\"" },
       { magnitude: 1.05000, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12.6\"" },
@@ -380,7 +360,6 @@ describe("Composite Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      // SWB What does context mean here?
       const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
@@ -419,7 +398,6 @@ describe("Composite Formats tests:", () => {
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
-      // SWB What does context mean here?
       { magnitude: -1.0, unit: { name: "Units.M", label: "m", contextId: "Units.LENGTH" }, result: "-3'-3 3/8\"" },
       { magnitude: 1.0, unit: { name: "Units.M", label: "m", contextId: "Units.LENGTH" }, result: "3'-3 3/8\"" },
       { magnitude: 0.0254, unit: { name: "Units.M", label: "m", contextId: "Units.LENGTH" }, result: "0'-1\"" },
@@ -428,7 +406,6 @@ describe("Composite Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      // SWB What does context mean here?
       const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
@@ -468,7 +445,6 @@ describe("Composite Formats tests:", () => {
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
-      // SWB What does context mean here?
       { magnitude: -1.0, unit: { name: "Units.M", label: "m", contextId: "Units.LENGTH" }, result: "-3'-3.37\"" },
       { magnitude: 1.0, unit: { name: "Units.M", label: "m", contextId: "Units.LENGTH" }, result: "3'-3.37\"" },
       { magnitude: 0.0254, unit: { name: "Units.M", label: "m", contextId: "Units.LENGTH" }, result: "0'-1\"" },
@@ -477,7 +453,6 @@ describe("Composite Formats tests:", () => {
     ];
 
     for (const testEntry of testQuantityData) {
-      // SWB What does context mean here?
       const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
@@ -513,13 +488,11 @@ describe("Composite Formats tests:", () => {
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
-      // SWB What does context mean here?
       { magnitude: 0.5283367223037165, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "30.27146435�" },
       { magnitude: 2.6722689691318213, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "153.10973366�" },
     ];
 
     for (const testEntry of testQuantityData) {
-      // SWB What does context mean here?
       const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
@@ -555,13 +528,11 @@ describe("Composite Formats tests:", () => {
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
-      // SWB What does context mean here?
       { magnitude: 0.5283367223037165, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "30.0�" },
       { magnitude: 2.6722689691318213, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "153.0�" },
     ];
 
     for (const testEntry of testQuantityData) {
-      // SWB What does context mean here?
       const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
@@ -605,13 +576,11 @@ describe("Composite Formats tests:", () => {
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
-      // SWB What does context mean here?
       { magnitude: 0.5283367223037165, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "30�16'17.27166\"" },
       { magnitude: 2.6722689691318213, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "153�6'35.041176\"" },
     ];
 
     for (const testEntry of testQuantityData) {
-      // SWB What does context mean here?
       const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
@@ -654,7 +623,6 @@ describe("Composite Formats tests:", () => {
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
-      // SWB What does context mean here?
       { magnitude: 0.5283367223037165, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "30�16'17.272\"" },
       { magnitude: 2.6722689691318213, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "153�6'35.041\"" },
       { magnitude: Math.PI, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "180�0'0\"" },
