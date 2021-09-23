@@ -9,6 +9,7 @@ import { IModelApp } from "../../../IModelApp";
 import { IModelConnection } from "../../../IModelConnection";
 import { RenderMemory } from "../../../render/RenderMemory";
 import { RenderGeometry } from "../../../render/RenderSystem";
+import { RenderGraphic } from "../../../render/RenderGraphic";
 import { MeshArgs } from "../../../render/primitives/mesh/MeshPrimitives";
 import { MeshParams } from "../../../render/primitives/VertexTable";
 import { Texture } from "../../../render/webgl/Texture";
@@ -20,11 +21,11 @@ function expectMemory(consumer: RenderMemory.Consumers, total: number, max: numb
   expect(consumer.count).to.equal(count);
 }
 
-function createMeshGeometry(opts: { texture?: RenderTexture, includeEdges?: boolean }): RenderGeometry {
+function createMeshGeometry(opts?: { texture?: RenderTexture, includeEdges?: boolean }): RenderGeometry {
   const args = new MeshArgs();
   args.colors.initUniform(ColorDef.from(255, 0, 0, 0));
 
-  if (opts.texture) {
+  if (opts?.texture) {
     args.texture = opts.texture;
     args.textureUv = [ new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0) ];
   }
@@ -37,7 +38,7 @@ function createMeshGeometry(opts: { texture?: RenderTexture, includeEdges?: bool
   args.vertIndices = [0, 1, 2, 2, 1, 3];
   args.isPlanar = true;
 
-  if (opts.includeEdges) {
+  if (opts?.includeEdges) {
     args.edges.edges.edges = [];
     for (const indexPair of [[0, 1], [1, 3], [3, 2], [2, 0]])
       args.edges.edges.edges.push(new MeshEdge(indexPair[0], indexPair[1]));
@@ -49,9 +50,16 @@ function createMeshGeometry(opts: { texture?: RenderTexture, includeEdges?: bool
   return geom!;
 }
 
-function createTexture(imodel: IModelConnection): RenderTexture {
+function createGraphic(geom: RenderGeometry): RenderGraphic {
+  const graphic = IModelApp.renderSystem.createRenderGraphic(geom);
+  expect(graphic).not.to.be.undefined;
+  return graphic!;
+}
+
+function createTexture(imodel: IModelConnection, persistent: boolean): RenderTexture {
   const img = ImageBuffer.create(new Uint8Array([255, 255, 255, 255]), ImageBufferFormat.Rgba, 1);
-  const tex = IModelApp.renderSystem.createTextureFromImageBuffer(img, imodel, new RenderTexture.Params(imodel.transientIds.next))!;
+  const id = persistent ? imodel.transientIds.next : undefined;
+  const tex = IModelApp.renderSystem.createTextureFromImageBuffer(img, imodel, new RenderTexture.Params(id))!;
   expect(tex).not.to.be.undefined;
   return tex!;
 }
@@ -123,17 +131,41 @@ describe("RenderMemory", () => {
   });
 
   it("should collect memory used by a texture", () => {
-    const  tex = createTexture(imodel);
-    expectBytesUsed(4, tex);
+    expectBytesUsed(4, createTexture(imodel, true));
+    expectBytesUsed(4, createTexture(imodel, false));
   });
 
-  it("should collect memory used by a mesh without edges", () => {
+  it("should collect memory used by a mesh", () => {
+    const mesh = createMeshGeometry();
+    const numBytes = getBytesUsed(mesh);
+    expect(numBytes).greaterThan(0);
+    expectBytesUsed(numBytes, createGraphic(mesh));
   });
 
   it("should collect memory used by a mesh and its edges", () => {
+    const numBytesNoEdges = getBytesUsed(createMeshGeometry());
+    const mesh = createMeshGeometry({ includeEdges: true });
+    const numBytes = getBytesUsed(mesh);
+    expect(numBytes).greaterThan(numBytesNoEdges);
+    expectBytesUsed(numBytes, createGraphic(mesh));
   });
 
-  it("should collect memory used by a textured mesh", () => {
+  // The number of bytes allocated by a textured mesh, including its UV coords but not the texture itself.
+  const sizeOfTexturedMesh = 82;
+
+  it("should collect memory used by a mesh that owns its texture", () => {
+    const texture = createTexture(imodel, false);
+    const mesh = createMeshGeometry({ texture });
+    const numBytes = getBytesUsed(texture) + sizeOfTexturedMesh;
+    expectBytesUsed(numBytes, mesh);
+    expectBytesUsed(numBytes, createGraphic(mesh));
+  });
+
+  it("should not count memory used by a texture not owned by the mesh", () => {
+    const texture = createTexture(imodel, true);
+    const mesh = createMeshGeometry({ texture });
+    expectBytesUsed(sizeOfTexturedMesh, mesh);
+    expectBytesUsed(sizeOfTexturedMesh, createGraphic(mesh));
   });
 
   it("should collect memory used by instanced geometry", () => {
