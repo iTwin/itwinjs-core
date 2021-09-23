@@ -4,14 +4,14 @@
 
 ```ts
 
-import { BentleyError } from '@bentley/bentleyjs-core';
-import { ClientRequestContext } from '@bentley/bentleyjs-core';
-import { ClientRequestContextProps } from '@bentley/bentleyjs-core';
-import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
-import { GuidString } from '@bentley/bentleyjs-core';
+import { BentleyError } from '@itwin/core-bentley';
+import { ClientRequestContext } from '@itwin/core-bentley';
+import { ClientRequestContextProps } from '@itwin/core-bentley';
+import { GetMetaDataFunction } from '@itwin/core-bentley';
+import { GuidString } from '@itwin/core-bentley';
 import * as https from 'https';
-import { HttpStatus } from '@bentley/bentleyjs-core';
-import { SessionProps } from '@bentley/bentleyjs-core';
+import { HttpStatus } from '@itwin/core-bentley';
+import { SessionProps } from '@itwin/core-bentley';
 
 // @beta
 export class AccessToken {

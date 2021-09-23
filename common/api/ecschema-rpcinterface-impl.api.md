@@ -5,9 +5,9 @@
 ```ts
 
 import { ECSchemaRpcInterface } from '@bentley/ecschema-rpcinterface-common';
-import { IModelRpcProps } from '@bentley/imodeljs-common';
-import { SchemaKeyProps } from '@bentley/ecschema-metadata';
-import { SchemaProps } from '@bentley/ecschema-metadata';
+import { IModelRpcProps } from '@itwin/core-common';
+import { SchemaKeyProps } from '@itwin/ecschema-metadata';
+import { SchemaProps } from '@itwin/ecschema-metadata';
 
 // @internal
 export class ECSchemaRpcImpl extends ECSchemaRpcInterface {

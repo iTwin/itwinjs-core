@@ -4,30 +4,30 @@
 
 ```ts
 
-import { AbstractToolbarProps } from '@bentley/ui-abstract';
-import { BeButtonEvent } from '@bentley/imodeljs-frontend';
-import { BeEvent } from '@bentley/bentleyjs-core';
-import { ClipVector } from '@bentley/geometry-core';
-import { Cluster } from '@bentley/imodeljs-frontend';
-import { DecorateContext } from '@bentley/imodeljs-frontend';
-import { Decorator } from '@bentley/imodeljs-frontend';
-import { DrawingViewState } from '@bentley/imodeljs-frontend';
+import { AbstractToolbarProps } from '@itwin/appui-abstract';
+import { BeButtonEvent } from '@itwin/core-frontend';
+import { BeEvent } from '@itwin/core-bentley';
+import { ClipVector } from '@itwin/core-geometry';
+import { Cluster } from '@itwin/core-frontend';
+import { DecorateContext } from '@itwin/core-frontend';
+import { Decorator } from '@itwin/core-frontend';
+import { DrawingViewState } from '@itwin/core-frontend';
 import { I18NNamespace } from '@bentley/imodeljs-i18n';
-import { Id64String } from '@bentley/bentleyjs-core';
-import { IModelConnection } from '@bentley/imodeljs-frontend';
-import { Marker } from '@bentley/imodeljs-frontend';
-import { MarkerImage } from '@bentley/imodeljs-frontend';
-import { MarkerSet } from '@bentley/imodeljs-frontend';
-import { Placement3d } from '@bentley/imodeljs-common';
-import { ScreenViewport } from '@bentley/imodeljs-frontend';
-import { SectionType } from '@bentley/imodeljs-common';
-import { SheetViewState } from '@bentley/imodeljs-frontend';
-import { SpatialViewState } from '@bentley/imodeljs-frontend';
-import { TiledGraphicsProvider } from '@bentley/imodeljs-frontend';
-import { Transform } from '@bentley/geometry-core';
-import { XAndY } from '@bentley/geometry-core';
-import { XYAndZ } from '@bentley/geometry-core';
-import { XYZProps } from '@bentley/geometry-core';
+import { Id64String } from '@itwin/core-bentley';
+import { IModelConnection } from '@itwin/core-frontend';
+import { Marker } from '@itwin/core-frontend';
+import { MarkerImage } from '@itwin/core-frontend';
+import { MarkerSet } from '@itwin/core-frontend';
+import { Placement3d } from '@itwin/core-common';
+import { ScreenViewport } from '@itwin/core-frontend';
+import { SectionType } from '@itwin/core-common';
+import { SheetViewState } from '@itwin/core-frontend';
+import { SpatialViewState } from '@itwin/core-frontend';
+import { TiledGraphicsProvider } from '@itwin/core-frontend';
+import { Transform } from '@itwin/core-geometry';
+import { XAndY } from '@itwin/core-geometry';
+import { XYAndZ } from '@itwin/core-geometry';
+import { XYZProps } from '@itwin/core-geometry';
 
 // @public
 export function createSectionGraphicsProvider(state: SectionDrawingLocationState): Promise<TiledGraphicsProvider>;

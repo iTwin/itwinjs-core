@@ -4,7 +4,7 @@
 
 ```ts
 
-import { BentleyError } from '@bentley/bentleyjs-core';
+import { BentleyError } from '@itwin/core-bentley';
 
 // @beta
 export class BadUnit implements UnitProps {

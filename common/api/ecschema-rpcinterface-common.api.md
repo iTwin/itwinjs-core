@@ -4,15 +4,15 @@
 
 ```ts
 
-import { IModelRpcProps } from '@bentley/imodeljs-common';
-import { ISchemaLocater } from '@bentley/ecschema-metadata';
-import { RpcInterface } from '@bentley/imodeljs-common';
-import { Schema } from '@bentley/ecschema-metadata';
-import { SchemaContext } from '@bentley/ecschema-metadata';
-import { SchemaKey } from '@bentley/ecschema-metadata';
-import { SchemaKeyProps } from '@bentley/ecschema-metadata';
-import { SchemaMatchType } from '@bentley/ecschema-metadata';
-import { SchemaProps } from '@bentley/ecschema-metadata';
+import { IModelRpcProps } from '@itwin/core-common';
+import { ISchemaLocater } from '@itwin/ecschema-metadata';
+import { RpcInterface } from '@itwin/core-common';
+import { Schema } from '@itwin/ecschema-metadata';
+import { SchemaContext } from '@itwin/ecschema-metadata';
+import { SchemaKey } from '@itwin/ecschema-metadata';
+import { SchemaKeyProps } from '@itwin/ecschema-metadata';
+import { SchemaMatchType } from '@itwin/ecschema-metadata';
+import { SchemaProps } from '@itwin/ecschema-metadata';
 
 // @internal
 export abstract class ECSchemaRpcInterface extends RpcInterface {

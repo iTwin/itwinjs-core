@@ -4,9 +4,9 @@
 
 ```ts
 
-import { RpcConfiguration } from '@bentley/imodeljs-common';
+import { RpcConfiguration } from '@itwin/core-common';
 import { Server } from 'http';
-import { WebAppRpcProtocol } from '@bentley/imodeljs-common';
+import { WebAppRpcProtocol } from '@itwin/core-common';
 
 // @public
 export class IModelJsExpressServer {

@@ -5,17 +5,17 @@
 ```ts
 
 import { AccessToken } from '@bentley/itwin-client';
-import { AsyncMethodsOf } from '@bentley/bentleyjs-core';
+import { AsyncMethodsOf } from '@itwin/core-bentley';
 import { BrowserWindow } from 'electron';
 import { BrowserWindowConstructorOptions } from 'electron';
-import { IpcHandler } from '@bentley/imodeljs-backend';
-import { NativeAppAuthorizationBackend } from '@bentley/imodeljs-backend';
-import { NativeAppAuthorizationConfiguration } from '@bentley/imodeljs-common';
-import { NativeAppOpts } from '@bentley/imodeljs-frontend';
-import { NativeHostOpts } from '@bentley/imodeljs-backend';
-import { PromiseReturnType } from '@bentley/bentleyjs-core';
-import { RpcConfiguration } from '@bentley/imodeljs-common';
-import { RpcInterfaceDefinition } from '@bentley/imodeljs-common';
+import { IpcHandler } from '@itwin/core-backend';
+import { NativeAppAuthorizationBackend } from '@itwin/core-backend';
+import { NativeAppAuthorizationConfiguration } from '@itwin/core-common';
+import { NativeAppOpts } from '@itwin/core-frontend';
+import { NativeHostOpts } from '@itwin/core-backend';
+import { PromiseReturnType } from '@itwin/core-bentley';
+import { RpcConfiguration } from '@itwin/core-common';
+import { RpcInterfaceDefinition } from '@itwin/core-common';
 import { TokenResponse } from '@openid/appauth';
 
 // @beta
