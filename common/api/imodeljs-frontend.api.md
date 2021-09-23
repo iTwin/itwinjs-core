@@ -8532,7 +8532,7 @@ export class ScreenViewport extends Viewport {
     doUndo(animationTime?: BeDuration): void;
     // @internal (undocumented)
     drawLocateCursor(context: DecorateContext, viewPt: Point3d, aperture: number, isLocateCircleOn: boolean, hit?: HitDetail): void;
-    getClientRect(): ClientRect;
+    getClientRect(): DOMRect;
     invalidateCachedDecorations(decorator: ViewportDecorator): void;
     // @internal (undocumented)
     invalidateScene(): void;
