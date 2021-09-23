@@ -3050,7 +3050,7 @@ export class NativeAppStorage {
     static closeAll(): void;
     static find(name: string): NativeAppStorage;
     getBoolean(key: string): boolean | undefined;
-    getData(key: string): StorageValue | undefined;
+    getData(key: string): StorageValue;
     getKeys(): string[];
     getNumber(key: string): number | undefined;
     // @internal (undocumented)
@@ -3190,9 +3190,12 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
 }
 
 // @public
-export type ParameterValue = undefined | null | number | boolean | string | Uint8Array | {
-    id?: Id64String;
-    guid?: GuidString;
+export type ParameterValue = undefined | number | boolean | string | Uint8Array | {
+    id: Id64String;
+    guid?: never;
+} | {
+    guid: GuidString;
+    id?: never;
 };
 
 // @public

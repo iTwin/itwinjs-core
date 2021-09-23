@@ -239,7 +239,7 @@ beta;OnSubModelIdArg
 beta;OnSubModelPropsArg 
 public;OpenBriefcaseArgs = OpenBriefcaseProps & UserArg
 public;OrthographicViewDefinition 
-public;ParameterValue = undefined | null | number | boolean | string | Uint8Array |
+public;ParameterValue = undefined | number | boolean | string | Uint8Array |
 public;class PhysicalElement 
 public;PhysicalElementAssemblesElements 
 public;PhysicalElementFulfillsFunction 
