@@ -178,7 +178,7 @@ export class HitDetail {
   public get isExternalIModelHit(): boolean { return this.iModel !== this.viewport.iModel; }
 }
 
-/** A SnapDetail is generated from the result of [IModelDb.requestSnap]($backend) call. In addition to the HitDetail about the reason the element was *picked*,
+/** A SnapDetail is generated from the result of a snap request. In addition to the HitDetail about the reason the element was *picked*,
  * it holds the *exact* point on the element from the snapping logic, plus additional information that varies with the type of element and snap mode.
  * @public
  */
