@@ -99,6 +99,7 @@ export namespace RenderMemory {
   /** @internal */
   export class Statistics {
     private _totalBytes = 0;
+    private readonly _instanceSources = new Set<Consumer>();
     public readonly consumers: Consumers[];
     public readonly buffers = new Buffers();
 
@@ -132,6 +133,7 @@ export namespace RenderMemory {
     public clear(): void {
       this._totalBytes = 0;
       this.buffers.clear();
+      this._instanceSources.clear();
       for (const consumer of this.consumers)
         consumer.clear();
     }
@@ -159,7 +161,13 @@ export namespace RenderMemory {
     public addRealityMesh(numBytes: number) {
       this.addBuffer(BufferType.RealityMesh, numBytes);
     }
-    public addInstances(numBytes: number) { this.addBuffer(BufferType.Instances, numBytes); }
+    public addInstances(source: Consumer, numBytes: number) {
+      if (this._instanceSources.has(source))
+        return;
+
+      this._instanceSources.add(source);
+      this.addBuffer(BufferType.Instances, numBytes);
+    }
   }
 
   /** @internal */

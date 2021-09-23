@@ -156,7 +156,7 @@ export class MeshGraphic extends Graphic {
         buffers = instances;
       } else {
         const instancesRange = InstanceBuffers.computeRange(geometry.range, instances.transforms, instances.transformCenter);
-        buffers = InstanceBuffers.create(instances, true, instancesRange);
+        buffers = InstanceBuffers.create(instances, instancesRange);
         if (!buffers)
           return undefined;
       }
@@ -200,10 +200,7 @@ export class MeshGraphic extends Graphic {
   public collectStatistics(stats: RenderMemory.Statistics): void {
     this.meshData.collectStatistics(stats);
     this._primitives.forEach((prim) => prim.collectStatistics(stats));
-
-    // Only count the shared instance buffers once...
-    if (undefined !== this._instances)
-      this._instances.collectStatistics(stats);
+    this._instances?.collectStatistics(stats);
   }
 
   public addCommands(cmds: RenderCommands): void { this._primitives.forEach((prim) => prim.addCommands(cmds)); }

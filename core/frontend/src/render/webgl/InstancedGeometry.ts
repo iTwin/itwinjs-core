@@ -25,7 +25,6 @@ export function isInstancedGraphicParams(params: any): params is InstancedGraphi
 }
 
 class InstanceData {
-  public readonly shared: boolean;
   public readonly numInstances: number;
   public readonly range: Range3d;
   // A transform including only rtcCenter.
@@ -35,9 +34,8 @@ class InstanceData {
   // The model matrix from which _rtcModelTransform was previously computed. If it changes, _rtcModelTransform must be recomputed.
   private readonly _modelMatrix = Transform.createIdentity();
 
-  protected constructor(numInstances: number, shared: boolean, rtcCenter: Point3d, range: Range3d) {
+  protected constructor(numInstances: number, rtcCenter: Point3d, range: Range3d) {
     this.numInstances = numInstances;
-    this.shared = shared;
     this.range = range;
     this._rtcOnlyTransform = Transform.createTranslation(rtcCenter);
     this._rtcModelTransform = this._rtcOnlyTransform.clone();
@@ -82,8 +80,8 @@ export class InstanceBuffers extends InstanceData {
   public readonly patternTransforms = undefined;
   public readonly viewIndependentOrigin = undefined;
 
-  private constructor(shared: boolean, count: number, transforms: BufferHandle, rtcCenter: Point3d, range: Range3d, symbology?: BufferHandle, featureIds?: BufferHandle) {
-    super(count, shared, rtcCenter, range);
+  private constructor(count: number, transforms: BufferHandle, rtcCenter: Point3d, range: Range3d, symbology?: BufferHandle, featureIds?: BufferHandle) {
+    super(count, rtcCenter, range);
     this.transforms = transforms;
     this.featureIds = featureIds;
     this.hasFeatures = undefined !== featureIds;
@@ -118,7 +116,7 @@ export class InstanceBuffers extends InstanceData {
     return params;
   }
 
-  public static create(params: InstancedGraphicParams, shared: boolean, range: Range3d): InstanceBuffers | undefined {
+  public static create(params: InstancedGraphicParams, range: Range3d): InstanceBuffers | undefined {
     const { count, featureIds, symbologyOverrides, transforms } = params;
 
     assert(count > 0 && Math.floor(count) === count);
@@ -135,7 +133,7 @@ export class InstanceBuffers extends InstanceData {
       return undefined;
 
     const tfBuf = BufferHandle.createArrayBuffer(transforms);
-    return undefined !== tfBuf ? new InstanceBuffers(shared, count, tfBuf, params.transformCenter, range, symBuf, idBuf) : undefined;
+    return undefined !== tfBuf ? new InstanceBuffers(count, tfBuf, params.transformCenter, range, symBuf, idBuf) : undefined;
   }
 
   public get isDisposed(): boolean {
@@ -155,7 +153,7 @@ export class InstanceBuffers extends InstanceData {
     const symBytes = undefined !== this.symbology ? this.symbology.bytesUsed : 0;
 
     const bytesUsed = this.transforms.bytesUsed + symBytes + featureBytes;
-    stats.addInstances(bytesUsed);
+    stats.addInstances(this, bytesUsed);
   }
 
   public static computeRange(reprRange: Range3d, tfs: Float32Array, rtcCenter: Point3d, out?: Range3d): Range3d {
@@ -194,7 +192,6 @@ export class PatternBuffers extends InstanceData {
 
   private constructor(
     count: number,
-    shared: boolean,
     rtcCenter: Point3d,
     range: Range3d,
     public readonly patternParams: Float32Array, // [ isAreaPattern, spacingX, spacingY, scale ]
@@ -206,7 +203,7 @@ export class PatternBuffers extends InstanceData {
     featureId: number | undefined,
     public readonly viewIndependentOrigin: Point3d | undefined
   ) {
-    super(count, shared, rtcCenter, range);
+    super(count, rtcCenter, range);
     this.patternTransforms = this;
     if (undefined !== featureId) {
       this._featureId = new Float32Array([
@@ -217,7 +214,7 @@ export class PatternBuffers extends InstanceData {
     }
   }
 
-  public static create(params: PatternGraphicParams, shared: boolean): PatternBuffers | undefined {
+  public static create(params: PatternGraphicParams): PatternBuffers | undefined {
     const count = params.xyOffsets.byteLength / 2;
     assert(Math.floor(count) === count);
 
@@ -227,7 +224,6 @@ export class PatternBuffers extends InstanceData {
 
     return new PatternBuffers(
       count,
-      shared,
       new Point3d(),
       params.range,
       new Float32Array([1, params.spacing.x, params.spacing.y, params.scale]),
@@ -260,7 +256,7 @@ export class PatternBuffers extends InstanceData {
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    stats.addInstances(this.offsets.bytesUsed);
+    stats.addInstances(this, this.offsets.bytesUsed);
   }
 }
 
@@ -380,8 +376,7 @@ export class InstancedGeometry extends CachedGeometry {
 
   public collectStatistics(stats: RenderMemory.Statistics) {
     this._repr.collectStatistics(stats);
-    if (!this._buffers.shared)
-      this._buffers.collectStatistics(stats);
+    this._buffers.collectStatistics(stats);
   }
 
   public get patternParams(): Float32Array { return this._buffers.patternParams; }
