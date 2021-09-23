@@ -13,7 +13,6 @@ module.exports = {
     path: path.resolve(__dirname, "lib/dist"),
     filename: "bundled-tests.js",
     devtoolModuleFilenameTemplate: "file:///[absolute-resource-path]",
-    libraryTarget: 'umd',
     globalObject: "this",
   },
   devtool: "nosources-source-map",
@@ -49,15 +48,7 @@ module.exports = {
     mainFields: ['module', 'main']
   },
   externals: {
-    "electron": "commonjs electron",
-    "fs": "fs",
-    "process": "process",
-    "child_process": "child_process",
-    "ws": "ws",
-    "dns": "dns",
-    "http2": "http2",
-    "tls": "tls",
-    "module": "module"
+    electron: "commonjs electron",
   },
   node: {
     net: 'empty'

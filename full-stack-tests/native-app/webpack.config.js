@@ -61,12 +61,6 @@ function createConfig(shouldInstrument) {
     },
     externals: {
       electron: "commonjs electron",
-      "fs": "fs",
-      "dns": "dns",
-      "http2": "http2",
-      "net": "net",
-      "tls": "tls",
-      "ws": "ws",
     },
     plugins: [
       // Makes some environment variables available to the JS code, for example:
@@ -92,14 +86,7 @@ function createConfig(shouldInstrument) {
         path.join(__dirname, "../../core/backend"),
         path.join(__dirname, "../../core/frontend"),
       ],
-      // exclude: "/node_modules/",
       loader: require.resolve("istanbul-instrumenter-loader"),
-      // query: {
-      //   esModules: true
-      // },
-      // options: {
-      //   debug: true
-      // },
       enforce: "post",
     });
   }

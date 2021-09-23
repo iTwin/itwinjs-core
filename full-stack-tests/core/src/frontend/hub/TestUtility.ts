@@ -8,7 +8,7 @@ import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-cli
 import { Briefcase as HubBriefcase, BriefcaseQuery, IModelCloudEnvironment, IModelQuery } from "@bentley/imodelhub-client";
 import { AuthorizedFrontendRequestContext, IModelHubFrontend, NativeApp, NativeAppAuthorization } from "@bentley/imodeljs-frontend";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { getAccessTokenFromBackend, TestUserCredentials } from "@bentley/oidc-signin-tool";
+import { getAccessTokenFromBackend, TestUserCredentials } from "@bentley/oidc-signin-tool/lib/cjs/frontend";
 import { assert } from "chai";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { IModelBankCloudEnv } from "./IModelBankCloudEnv";

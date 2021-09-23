@@ -8,7 +8,7 @@ import {
 import {
   CheckpointConnection, DisplayStyle3dState, IModelApp, IModelConnection, SpatialViewState, ViewState
 } from "@bentley/imodeljs-frontend";
-import { TestUsers } from "@bentley/oidc-signin-tool";
+import { TestUsers } from "@bentley/oidc-signin-tool/lib/cjs/frontend";
 import { expect } from "chai";
 import { TestUtility } from "./TestUtility";
 

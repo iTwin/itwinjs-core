@@ -41,12 +41,6 @@ module.exports = {
   },
   externals: {
     electron: "commonjs electron",
-    "fs": "fs",
-    "dns": "dns",
-    "http2": "http2",
-    "net": "net",
-    "tls": "tls",
-    "ws": "ws",
   },
   node: {
     process: false

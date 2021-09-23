@@ -3,7 +3,7 @@
   "version": "3.0.0-dev.49",
   "description": "Tools for collecting and reporting performance data",
   "main": "lib/cjs/index.js",
-  "typings": "lib/types/index",
+  "typings": "lib/cjs/index",
   "license": "MIT",
   "repository": {
     "type": "git",

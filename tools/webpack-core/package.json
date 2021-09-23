@@ -12,7 +12,7 @@
     "url": "http://www.bentley.com"
   },
   "main": "lib/cjs/plugins/index.js",
-  "typings": "lib/types/plugins/index",
+  "typings": "lib/cjs/plugins/index",
   "scripts": {
     "compile": "npm run build",
     "build": "npm run build:cjs",

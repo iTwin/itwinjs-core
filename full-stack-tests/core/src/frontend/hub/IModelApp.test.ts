@@ -5,7 +5,7 @@
 import { ClientRequestContext, ClientRequestContextProps } from "@bentley/bentleyjs-core";
 import { AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { TestFrontendAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool";
+import { TestFrontendAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/cjs/frontend";
 import { assert } from "chai";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { TestUtility } from "./TestUtility";

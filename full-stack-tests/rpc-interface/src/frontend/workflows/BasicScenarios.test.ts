@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { CheckpointConnection, IModelApp } from "@bentley/imodeljs-frontend";
-import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool";
+import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/cjs/frontend";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { TestContext } from "../setup/TestContext";

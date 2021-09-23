@@ -4,7 +4,7 @@
   "description": "iModel.js Reality Data Client",
   "main": "lib/cjs/reality-data-client.js",
   "module": "lib/esm/reality-data-client.js",
-  "typings": "lib/types/reality-data-client",
+  "typings": "lib/cjs/reality-data-client",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
@@ -14,8 +14,8 @@
   "scripts": {
     "compile": "npm run build",
     "build": "npm run build:cjs && npm run build:esm",
-    "build:cjs": "tsc 1>&2 --outDir lib/cjs --declaration false --declarationMap false",
-    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm --declarationDir lib/types",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "extract-api": "betools extract-api --entry=reality-data-client",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/reality-data-client/file.json --tsIndexFile=reality-data-client.ts --onlyJson",

@@ -4,7 +4,7 @@
   "description": "Frontend of iModel.js Presentation library",
   "main": "lib/cjs/presentation-frontend.js",
   "module": "lib/esm/presentation-frontend.js",
-  "typings": "lib/types/presentation-frontend",
+  "typings": "lib/cjs/presentation-frontend",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
@@ -25,8 +25,8 @@
   "scripts": {
     "compile": "npm run build",
     "build": "npm run build:cjs && npm run build:esm && npm run extract ",
-    "build:cjs": "tsc 1>&2 --outDir lib/cjs --declaration false --declarationMap false && npm run copy:cjs",
-    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm --declarationDir lib/types && npm run copy:esm",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs && npm run copy:cjs",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm && npm run copy:esm",
     "copy:cjs": "cpx \"../common/assets/**/*.json\" ./lib/cjs/public && cpx \"./src/**/*.json\" ./lib/cjs",
     "copy:esm": "cpx \"../common/assets/**/*.json\" ./lib/esm/public && cpx \"./src/**/*.json\" ./lib/esm",
     "build:watch": "tsc -w",

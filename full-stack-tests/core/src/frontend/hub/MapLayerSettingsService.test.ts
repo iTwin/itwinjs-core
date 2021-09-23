@@ -5,7 +5,7 @@
 import { Guid, GuidString } from "@bentley/bentleyjs-core";
 import { IModelApp, IModelAppOptions, MapLayerSettingsService, MapLayerSource } from "@bentley/imodeljs-frontend";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { TestFrontendAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool";
+import { TestFrontendAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/cjs/frontend";
 import { SettingsResult, SettingsStatus } from "@bentley/product-settings-client";
 import * as chai from "chai";
 import { TestUtility } from "./TestUtility";

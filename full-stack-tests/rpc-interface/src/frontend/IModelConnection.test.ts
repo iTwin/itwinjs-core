@@ -10,7 +10,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { CheckpointConnection, IModelApp, IModelConnection, SpatialModelState, ViewState } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/itwin-client";
-import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool";
+import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/cjs/frontend";
 import * as chai from "chai";
 import { TestContext } from "./setup/TestContext";
 

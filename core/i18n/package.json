@@ -4,7 +4,7 @@
   "description": "iModel.js localization code",
   "main": "lib/cjs/imodeljs-i18n.js",
   "module": "lib/esm/imodeljs-i18n.js",
-  "typings": "lib/types/imodeljs-i18n",
+  "typings": "lib/cjs/imodeljs-i18n",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
@@ -14,8 +14,8 @@
   "scripts": {
     "compile": "npm run build",
     "build": "npm run build:cjs && npm run build:esm",
-    "build:cjs": "tsc 1>&2 --outDir lib/cjs --declaration false --declarationMap false",
-    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm --declarationDir lib/types",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-i18n/file.json --tsIndexFile=./imodeljs-i18n.ts --onlyJson",
     "extract-api": "betools extract-api --entry=imodeljs-i18n",
