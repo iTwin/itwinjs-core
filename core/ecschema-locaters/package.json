@@ -39,7 +39,7 @@
     "@types/chai-as-promised": "^7",
     "@types/glob": "^5.0.35",
     "@types/mocha": "^8.2.2",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "@types/sinon": "^9.0.0",
     "@xmldom/xmldom": "^0.7.0",
     "chai": "^4.1.2",

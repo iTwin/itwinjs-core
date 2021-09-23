@@ -6,7 +6,7 @@
   "typings": "lib/imodeljs-editor-backend",
   "license": "MIT",
   "engines": {
-    "node": ">=10.17.0 <15.0"
+    "node": ">=12.22.0 < 14.0 || >=14.17.0 <17.0"
   },
   "scripts": {
     "compile": "npm run build",
@@ -54,7 +54,7 @@
     "@types/chai-as-promised": "^7",
     "@types/deep-assign": "^0.1.0",
     "@types/mocha": "^8.2.2",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "@types/semver": "^5.5.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",

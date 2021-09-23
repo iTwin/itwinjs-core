@@ -4,9 +4,6 @@
   "main": "lib/linear-referencing-common.js",
   "typings": "lib/linear-referencing-common",
   "license": "MIT",
-  "engines": {
-    "node": ">=10.17.0 <15.0"
-  },
   "scripts": {
     "compile": "npm run build",
     "build": "tsc 1>&2",

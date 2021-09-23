@@ -1131,7 +1131,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     // (undocumented)
     uintToString(uintArray: any): {
         type: "Buffer";
-        data: any[];
+        data: number[];
     };
 }
 

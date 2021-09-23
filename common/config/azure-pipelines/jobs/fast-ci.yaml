@@ -1,4 +1,4 @@
-# iModel.js CI Build
+# iTwin.js Core CI Build
 
 trigger:
   - master
