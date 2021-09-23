@@ -57,7 +57,7 @@ describe("<WeightPickerButton/>", () => {
     const spyOnWeightPick = sinon.spy();
 
     function buildIdForWeight(weight: number): string {
-      return `ui-core-react-lineweight-${weight}`;
+      return `ui-core-lineweight-${weight}`;
     }
 
     function handleWeightPick(weight: number): void {

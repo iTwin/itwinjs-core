@@ -40,10 +40,10 @@ chai.use(chaiSubset);
 
 loadEnv(path.join(__dirname, "..", ".env"));
 
-const copyBentleyBackendAssets = (outputDir: string) => {
-  const bentleyPackagesPath = "node_modules/@bentley";
-  fs.readdirSync(bentleyPackagesPath).map((packageName) => {
-    const packagePath = path.resolve(bentleyPackagesPath, packageName);
+const copyITwinBackendAssets = (outputDir: string) => {
+  const iTwinPackagesPath = "node_modules/@itwin";
+  fs.readdirSync(iTwinPackagesPath).map((packageName) => {
+    const packagePath = path.resolve(iTwinPackagesPath, packageName);
     return path.join(packagePath, "lib", "assets");
   }).filter((assetsPath) => {
     return fs.existsSync(assetsPath);
@@ -52,10 +52,10 @@ const copyBentleyBackendAssets = (outputDir: string) => {
   });
 };
 
-const copyBentleyFrontendAssets = (outputDir: string) => {
-  const bentleyPackagesPath = "node_modules/@bentley";
-  fs.readdirSync(bentleyPackagesPath).map((packageName) => {
-    const packagePath = path.resolve(bentleyPackagesPath, packageName);
+const copyITwinFrontendAssets = (outputDir: string) => {
+  const iTwinPackagesPath = "node_modules/@itwin";
+  fs.readdirSync(iTwinPackagesPath).map((packageName) => {
+    const packagePath = path.resolve(iTwinPackagesPath, packageName);
     return path.join(packagePath, "lib", "public");
   }).filter((assetsPath) => {
     return fs.existsSync(assetsPath);
@@ -73,8 +73,8 @@ class IntegrationTestsApp extends NoRenderApp {
   public static override async startup(opts?: IModelAppOptions): Promise<void> {
     await NoRenderApp.startup({ ...opts, i18n: this.supplyI18NOptions() });
     cpx.copySync(`assets/**/*`, "lib/assets");
-    copyBentleyBackendAssets("lib/assets");
-    copyBentleyFrontendAssets("lib/public");
+    copyITwinBackendAssets("lib/assets");
+    copyITwinFrontendAssets("lib/public");
   }
 }
 

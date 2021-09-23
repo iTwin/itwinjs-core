@@ -93,7 +93,7 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
   }
 
   private buildIdForWeight(weight: number): string {
-    return `ui-core-react-lineweight-${weight}`;
+    return `ui-core-lineweight-${weight}`;
   }
 
   private moveFocusInPopup(moveUp: boolean, event: React.KeyboardEvent<any>) {

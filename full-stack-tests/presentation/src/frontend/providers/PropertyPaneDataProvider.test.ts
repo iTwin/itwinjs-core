@@ -173,5 +173,4 @@ describe("PropertyDataProvider", async () => {
     // repeat request
     await checkDataProvider();
   });
-
 });
