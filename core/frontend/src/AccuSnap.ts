@@ -297,10 +297,10 @@ export class AccuSnap implements Decorator {
     const sameElem = (undefined !== newHit && newHit.isSameHit(this.currHit));
     const sameHit = (sameElem && !newSnap);
     const sameSnap = (sameElem && undefined !== newSnap && undefined !== currSnap);
-    const samePt = (sameHit || (sameSnap && newSnap!.snapPoint.isAlmostEqual(currSnap!.snapPoint)));
-    const sameHot = (sameHit || (sameSnap && (this.isHot === newSnap!.isHot)));
+    const samePt = (sameHit || (sameSnap && newSnap.snapPoint.isAlmostEqual(currSnap.snapPoint)));
+    const sameHot = (sameHit || (sameSnap && (this.isHot === newSnap.isHot)));
     const sameBaseSnapMode = (!newSnap || !currSnap || newSnap.snapMode === currSnap.snapMode);
-    const sameType = (sameHot && (!currSnap || (currSnap.getHitType() === newHit!.getHitType())));
+    const sameType = (sameHot && (!currSnap || (currSnap.getHitType() === newHit.getHitType())));
 
     // see if it is the same point on the same element, the hot flags are the same multiple snaps, and the snap modes are the same
     if (samePt && sameType && sameBaseSnapMode) {

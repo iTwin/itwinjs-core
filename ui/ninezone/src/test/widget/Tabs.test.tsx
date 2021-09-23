@@ -8,7 +8,6 @@ import { render } from "@testing-library/react";
 import {
   addPanelWidget, addTab, createNineZoneState, PanelSideContext, WidgetIdContext, WidgetStateContext, WidgetTabs,
 } from "../../ui-ninezone";
-import { createDOMRect } from "../Utils";
 import { NineZoneProvider } from "../Providers";
 
 describe("WidgetTabs", () => {
@@ -38,7 +37,7 @@ describe("WidgetTabs", () => {
     nineZone = addTab(nineZone, "t1");
     nineZone = addTab(nineZone, "t2");
     nineZone = addTab(nineZone, "t3");
-    sinon.stub(Element.prototype, "getBoundingClientRect").returns(createDOMRect({ width: 100 }));
+    sinon.stub(Element.prototype, "getBoundingClientRect").returns(DOMRect.fromRect({ width: 100 }));
     const { container } = render(
       <NineZoneProvider
         state={nineZone}

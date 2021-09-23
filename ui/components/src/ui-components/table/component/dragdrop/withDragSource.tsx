@@ -82,7 +82,7 @@ export const withDragSource = <ComponentProps extends {}, DragDropObject = any>(
       } else if (component.state.altKey) {
         dropEffect = props.altDropEffect || DropEffects.Link; // eslint-disable-line deprecation/deprecation
       }
-      let dragRect: ClientRect = { left: 0, top: 0 } as ClientRect;
+      let dragRect: DOMRect = new DOMRect();
       const componentElement = component.rootElement;
       if (componentElement) {
         dragRect = componentElement.getBoundingClientRect();
@@ -100,7 +100,7 @@ export const withDragSource = <ComponentProps extends {}, DragDropObject = any>(
       return obj;
     },
     endDrag(props, monitor, component) {
-      let dragRect: ClientRect = { left: 0, top: 0 } as ClientRect;
+      let dragRect: DOMRect = new DOMRect();
       const componentElement = component && component.rootElement;
       if (componentElement) {
         dragRect = componentElement.getBoundingClientRect();

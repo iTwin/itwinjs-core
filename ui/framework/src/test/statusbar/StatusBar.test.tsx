@@ -20,7 +20,6 @@ import {
 import TestUtils, { mount } from "../TestUtils";
 import { MessageManager } from "../../ui-framework/messages/MessageManager";
 import { StatusMessagesContainer } from "../../ui-framework/messages/StatusMessagesContainer";
-import { createDOMRect } from "../Utils";
 
 describe("StatusBar", () => {
 
@@ -299,9 +298,9 @@ describe("StatusBar", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("uifw-statusbar-messages-container")) {
-          return createDOMRect({ width: 200, height: 200 });
+          return DOMRect.fromRect({ width: 200, height: 200 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
 
       const renderedComponent = render(<StatusMessagesContainer
@@ -322,9 +321,9 @@ describe("StatusBar", () => {
       // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("uifw-statusbar-messages-container")) {
-          return createDOMRect({ width: 200, height: 300 });
+          return DOMRect.fromRect({ width: 200, height: 300 });
         }
-        return createDOMRect();
+        return new DOMRect();
       });
 
       const renderedComponent = render(<StatusMessagesContainer

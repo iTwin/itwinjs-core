@@ -110,7 +110,7 @@ describe("iModelHub CodeHandler", () => {
     let receivedError: Error | undefined;
     try {
       await iModelClient.codes.update(requestContext, imodelId, [code2, code3, code4], { codesPerRequest: 1 });
-    } catch (error) {
+    } catch (error: any) {
       receivedError = error;
     }
     chai.assert(receivedError);
@@ -142,7 +142,7 @@ describe("iModelHub CodeHandler", () => {
     try {
       await iModelClient.codes.update(requestContext, imodelId, [code2, code3, code4],
         { deniedCodes: true, codesPerRequest: 1, continueOnConflict: true });
-    } catch (error) {
+    } catch (error: any) {
       chai.expect(error).to.be.instanceof(ConflictingCodesError);
       receivedError = error;
     }
