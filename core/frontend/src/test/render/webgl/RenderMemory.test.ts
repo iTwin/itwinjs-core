@@ -168,6 +168,13 @@ describe("RenderMemory", () => {
     expectBytesUsed(sizeOfTexturedMesh, createGraphic(mesh));
   });
 
+  it("reports zero memory after disposal", () => {
+    const mesh = createGraphic(createMeshGeometry());
+    expect(getBytesUsed(mesh)).greaterThan(0);
+    mesh.dispose();
+    expectBytesUsed(0, mesh);
+  });
+
   it("should collect memory used by instanced geometry", () => {
   });
 
