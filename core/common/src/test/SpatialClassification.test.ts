@@ -185,7 +185,7 @@ describe("SpatialClassifiers", () => {
     const set = new SpatialClassifiers({
       classifiers: [
         makeClassifier("0x1", "1").toJSON(), makeClassifierProps(makeClassifier("0x2", "2"), true), makeClassifier("0x3", "3").toJSON(),
-      ]
+      ],
     });
     expect(set.active!.name).to.equal("2");
 
@@ -217,7 +217,7 @@ describe("SpatialClassifiers", () => {
     const set = new SpatialClassifiers({
       classifiers: [
         makeClassifierProps(makeClassifier("0x1", "1"), true), makeClassifier("0x2", "2").toJSON(),
-      ]
+      ],
     });
     expect(set.active).not.to.be.undefined;
     set.clear();
