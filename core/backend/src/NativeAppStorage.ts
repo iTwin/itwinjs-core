@@ -61,20 +61,29 @@ export class NativeAppStorage {
       stmt.bindValue(1, key);
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
         return undefined;
-      const valType = stmt.getValue(0).getString();
+      const valType = stmt.getValueString(0);
       switch (valType) {
         case "number":
-          return stmt.getValue(1).getDouble();
+          return stmt.getValueDouble(1);
         case "string":
-          return stmt.getValue(1).getString();
+          return stmt.getValueString(1);
         case "boolean":
-          return Boolean(stmt.getValue(1).getInteger());
+          return Boolean(stmt.getValueInteger(1));
         case "Uint8Array":
-          return stmt.getValue(1).getBlob();
+          return stmt.getValueBlob(1);
         case "null":
           return undefined;
       }
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Unsupported type in cache ${valType}`);
+    });
+  }
+
+  /** return `true` if the key is present, but has a null value. */
+  public hasNullValue(key: string): boolean {
+    return this._ecdb.withSqliteStatement("SELECT type FROM app_setting WHERE key=?", (stmt) => {
+      stmt.bindValue(1, key);
+      stmt.step();
+      return stmt.getValueString(0) === "null";
     });
   }
 

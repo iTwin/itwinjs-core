@@ -65,6 +65,7 @@ describe("NativeApp storage backend", () => {
     test1.removeAll();
     test1.setData("key1", undefined);
     assert.isUndefined(test1.getData("key1"));
+    assert.isTrue(test1.hasNullValue("key1"));
 
     test1.setData("key1", 2222);
     assert.isNumber(test1.getData("key1"));
@@ -103,6 +104,7 @@ describe("NativeApp storage backend", () => {
     assert.equal(test1.getString("key1"), undefined);
     assert.equal(test1.getNumber("key1"), undefined);
     test1.removeAll();
+    assert.isFalse(test1.hasNullValue("key1"));
     assert.equal(test1.getKeys().length, 0);
     test1.close(true);
   });
