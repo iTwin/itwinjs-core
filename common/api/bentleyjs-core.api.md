@@ -556,6 +556,18 @@ export enum GeoServiceStatus {
 }
 
 // @public
+export function getErrorMessage(error: unknown): string;
+
+// @public
+export function getErrorMetadata(error: unknown): object | undefined;
+
+// @public
+export function getErrorProps(error: unknown): ErrorProps;
+
+// @public
+export function getErrorStack(error: unknown): string | undefined;
+
+// @public
 export type GetMetaDataFunction = () => object | undefined;
 
 // @public

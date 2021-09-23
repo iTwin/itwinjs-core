@@ -96,14 +96,14 @@ export interface DragDropArguments<DragDropObject = any> {
   sourceClientOffset?: { x: number, y: number };
   /** Position of top left corner of current dragSource, measured at beginning of drag. */
   initialSourceClientOffset?: { x: number, y: number };
-  /** ClientRect object of dragSource.
+  /** DOMRect object of dragSource.
    * Not available in canDropTargetDrop.
    */
-  dragRect?: ClientRect;
-  /** ClientRect object of current dropTarget, if available.
+  dragRect?: DOMRect;
+  /** DOMRect object of current dropTarget, if available.
    * Not available in canDropTargetDrop.
    */
-  dropRect?: ClientRect;
+  dropRect?: DOMRect;
   /** determines whether item is dropped on same structure as the drag source, or a different structure.
    * Passed from OnDropTargetDrop for use in OnDragSourceEnd
    * Used primarily for cases where the dataProvider object needs to differentiate a moveItem method with a subsequent removeItem then addItem.

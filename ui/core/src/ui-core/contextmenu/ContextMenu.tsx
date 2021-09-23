@@ -95,7 +95,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
   }
 
   /** @internal */
-  public static autoFlip = (dir: ContextMenuDirection, rect: ClientRect, windowWidth: number, windowHeight: number): ContextMenuDirection => {
+  public static autoFlip = (dir: ContextMenuDirection, rect: DOMRectReadOnly, windowWidth: number, windowHeight: number): ContextMenuDirection => {
     if (rect.right > windowWidth) {
       switch (dir) {
         case ContextMenuDirection.TopRight:
@@ -350,8 +350,8 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
       this._menuElement.blur();
   };
 
-  public getRect = (): ClientRect => {
-    let clientRect: ClientRect = { top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0 };
+  public getRect = (): DOMRect => {
+    let clientRect = DOMRect.fromRect({ x: 0, y: 0, width: 0, height: 0});
 
     // istanbul ignore else
     if (this._menuElement) {
