@@ -658,9 +658,7 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
     if (this._it.moveNext())
       return { done: false, value: new ECSqlValue(this._it.getCurrent()) };
 
-    // seems issue in IteratorResult definition if strict type checking is on. Requires
-    // me to set value in the result but it cannot be undefined. Workaround cast to any
-    return { done: true } as any as IteratorResult<ECSqlValue>;
+    return { done: true, value: undefined };
   }
 
   public [Symbol.iterator](): IterableIterator<ECSqlValue> { return this; }
