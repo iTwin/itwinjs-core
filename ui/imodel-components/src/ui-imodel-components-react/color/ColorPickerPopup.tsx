@@ -19,7 +19,7 @@ import "./ColorPickerPopup.scss";
 import { getCSSColorFromDef } from "./getCSSColorFromDef";
 
 /** Properties for the [[ColorPickerPopup]] React component
- * @beta
+ * @public
  */
 export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
   /** Current color */
@@ -42,6 +42,10 @@ export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLBu
   showCaret?: boolean;
   /** If true, don't propagate clicks out of the ColorPicker */
   captureClicks?: boolean;
+  /** If true, don't show close button at top */
+  hideCloseButton?: boolean;
+  /** If set show either HSL or RGB input values */
+  colorInputType?: "HSL" | "RGB";
 }
 
 // Defined using following pattern (const ColorPickerPopup at bottom) to ensure useful API documentation is extracted
@@ -52,6 +56,14 @@ const ForwardRefColorPickerPopup = React.forwardRef<HTMLButtonElement, ColorPick
     const refs = useRefs(target, ref);  // combine ref needed for target with the forwardRef needed by the Parent when parent is a Type Editor.
     const [showPopup, setShowPopup] = React.useState(false);
     const [colorDef, setColorDef] = React.useState(props.initialColor);
+    const initialColorRef = React.useRef(props.initialColor);
+
+    React.useEffect(() => {
+      if (props.initialColor !== initialColorRef.current) {
+        initialColorRef.current = props.initialColor;
+        setColorDef(props.initialColor);
+      }
+    }, [props.initialColor]);
 
     const defaultColors = React.useRef(
       [
@@ -128,7 +140,13 @@ const ForwardRefColorPickerPopup = React.forwardRef<HTMLButtonElement, ColorPick
           closeOnNestedPopupOutsideClick
         >
           <div className="components-colorpicker-popup-panel-padding">
-            <ColorPickerPanel activeColor={colorDef} colorPresets={colorOptions} onColorChange={handleColorChanged} />
+            {!props.hideCloseButton &&
+              <button
+                className={"core-focus-trap-ignore-initial core-dialog-close icon icon-close"}
+                data-testid="core-dialog-close"
+                onClick={togglePopup}
+              />}
+            <ColorPickerPanel colorInputType={props.colorInputType} activeColor={colorDef} colorPresets={colorOptions} onColorChange={handleColorChanged} />
           </div>
         </Popup>
       </div>
@@ -136,8 +154,9 @@ const ForwardRefColorPickerPopup = React.forwardRef<HTMLButtonElement, ColorPick
   }
 );
 
-/** ColorPickerButton component
+/**
+ * ColorPickerButton component that allows user to select a color from a set of color swatches or to define a new color.
  * @note Using forwardRef so the ColorEditor (Type Editor) can access the ref of the button element inside this component.
- * @beta
+ * @public
  */
 export const ColorPickerPopup: (props: ColorPickerPopupProps) => JSX.Element | null = ForwardRefColorPickerPopup;

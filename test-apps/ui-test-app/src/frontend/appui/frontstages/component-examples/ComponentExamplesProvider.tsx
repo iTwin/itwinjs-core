@@ -45,6 +45,22 @@ import { ExpandableBlock } from "@itwin/itwinui-react";
 import { TableExampleContent } from "../../contentviews/TableExampleContent";
 import { CurrentDateMarkedCustomIconSampleTimeline, CurrentDateMarkedSampleTimeline, ItemsAppendedSampleTimeline, ItemsPrefixedSampleTimeline, ItemsReplacedSampleTimeline, LocalizedTimeSampleTimeline, NoLocalizedTimeSampleTimeline, NoRepeatSampleTimeline } from "./SampleTimelineComponent";
 
+function DualColorPickers() {
+  const [colorDef, setColorDef] = React.useState(ColorDef.green);
+  const onPopupClose = (color: ColorDef) => {
+    setColorDef(color);
+    const msg = `popup color value: ${color.toRgbaString()}`;
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+  };
+
+  return (
+    <div style={{ display: "flex", gap: "4px" }}>
+      <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} colorInputType="RGB" />
+      <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} colorInputType="HSL" showCaret />
+    </div>
+  );
+}
+
 function MySettingsPage() {
   const tabs: SettingsTabEntry[] = [
     {
@@ -410,7 +426,8 @@ export function ColorPickerToggle() {
   const handleBgColorClick = React.useCallback((newColor: ColorDef, e: React.MouseEvent<Element, MouseEvent>) => {
     e.preventDefault();
     ModalDialogManager.openDialog(<ColorPickerDialog dialogTitle={colorDialogTitle} color={newColor} colorPresets={presetColors.current}
-      onOkResult={handleBackgroundColorDialogOk} onCancelResult={handleBackgroundColorDialogCancel} />);
+      onOkResult={handleBackgroundColorDialogOk} onCancelResult={handleBackgroundColorDialogCancel}
+      colorInputType="RGB" />);
   }, [presetColors, handleBackgroundColorDialogOk, colorDialogTitle, handleBackgroundColorDialogCancel]);
 
   return (
@@ -521,9 +538,10 @@ export class ComponentExamplesProvider {
   }
 
   private static get colorSamples(): ComponentExampleCategory {
-    const colorDef = ColorDef.blue;
+    let colorDef = ColorDef.blue;
     const handleColorPick = (color: ColorDef) => {
       console.log(`color picked: ${color.toRgbaString()}`);
+      colorDef = color;
     };
 
     const onPopupClose = (color: ColorDef) => {
@@ -549,6 +567,7 @@ export class ComponentExamplesProvider {
         createComponentExample("Color Picker Popup", undefined, <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} />),
         createComponentExample("Color Picker Popup", "with Caret", <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} showCaret />),
         createComponentExample("Color Picker Popup", "disabled with Caret", <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} disabled showCaret />),
+        createComponentExample("Dual Color Pickers", "test update initialColor", <DualColorPickers />),
       ],
     };
   }
