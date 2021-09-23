@@ -169,7 +169,7 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
 export const ColorPickerButton: (props: ColorPickerProps) => JSX.Element | null;
 
 // @beta
-export function ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets }: ColorPickerDialogProps): JSX.Element;
+export function ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets, showRbgValues }: ColorPickerDialogProps): JSX.Element;
 
 // @beta
 export interface ColorPickerDialogProps {
@@ -183,10 +183,11 @@ export interface ColorPickerDialogProps {
     onCancelResult: () => void;
     // (undocumented)
     onOkResult: (selectedColor: ColorDef) => void;
+    showRbgValues?: boolean;
 }
 
 // @beta
-export function ColorPickerPanel({ activeColor, onColorChange, colorPresets }: ColorPickerPanelProps): JSX.Element;
+export function ColorPickerPanel({ activeColor, onColorChange, colorPresets, showRbgValues }: ColorPickerPanelProps): JSX.Element;
 
 // @beta
 export interface ColorPickerPanelProps {
@@ -196,6 +197,7 @@ export interface ColorPickerPanelProps {
     colorPresets?: ColorDef[];
     // (undocumented)
     onColorChange: (selectedColor: ColorDef) => void;
+    showRbgValues?: boolean;
 }
 
 // @beta
@@ -206,6 +208,7 @@ export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLBu
     captureClicks?: boolean;
     colorDefs?: ColorDef[];
     disabled?: boolean;
+    hideCloseButton?: boolean;
     initialColor: ColorDef;
     onClose?: ((colorValue: ColorDef) => void) | undefined;
     onColorChange?: ((newColor: ColorDef) => void) | undefined;
@@ -213,6 +216,7 @@ export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLBu
     readonly?: boolean;
     ref?: React.Ref<HTMLButtonElement>;
     showCaret?: boolean;
+    showRbgValues?: boolean;
 }
 
 // @beta

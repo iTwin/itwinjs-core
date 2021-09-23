@@ -42,6 +42,10 @@ export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLBu
   showCaret?: boolean;
   /** If true, don't propagate clicks out of the ColorPicker */
   captureClicks?: boolean;
+  /** If true, don't show close button at top */
+  hideCloseButton?: boolean;
+  /** If true, show RGB values and allow them to be set */
+  showRbgValues?: boolean;
 }
 
 // Defined using following pattern (const ColorPickerPopup at bottom) to ensure useful API documentation is extracted
@@ -52,6 +56,14 @@ const ForwardRefColorPickerPopup = React.forwardRef<HTMLButtonElement, ColorPick
     const refs = useRefs(target, ref);  // combine ref needed for target with the forwardRef needed by the Parent when parent is a Type Editor.
     const [showPopup, setShowPopup] = React.useState(false);
     const [colorDef, setColorDef] = React.useState(props.initialColor);
+    const initialColorRef = React.useRef(props.initialColor);
+
+    React.useEffect(() => {
+      if (props.initialColor !== initialColorRef.current) {
+        initialColorRef.current = props.initialColor;
+        setColorDef(props.initialColor);
+      }
+    }, [props.initialColor]);
 
     const defaultColors = React.useRef(
       [
@@ -128,7 +140,13 @@ const ForwardRefColorPickerPopup = React.forwardRef<HTMLButtonElement, ColorPick
           closeOnNestedPopupOutsideClick
         >
           <div className="components-colorpicker-popup-panel-padding">
-            <ColorPickerPanel activeColor={colorDef} colorPresets={colorOptions} onColorChange={handleColorChanged} />
+            {!props.hideCloseButton &&
+              <button
+                className={"core-focus-trap-ignore-initial core-dialog-close icon icon-close"}
+                data-testid="core-dialog-close"
+                onClick={togglePopup}
+              />}
+            <ColorPickerPanel showRbgValues={props.showRbgValues} activeColor={colorDef} colorPresets={colorOptions} onColorChange={handleColorChanged} />
           </div>
         </Popup>
       </div>

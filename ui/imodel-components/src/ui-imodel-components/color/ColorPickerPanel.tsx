@@ -14,6 +14,7 @@ import { ColorSwatch } from "./Swatch";
 import { HueSlider } from "./HueSlider";
 import { SaturationPicker } from "./SaturationPicker";
 import "./ColorPickerPanel.scss";
+import { NumberInput } from "@bentley/ui-core";
 
 /** Properties for the [[ColorPickerPanel]] React component
  * @beta
@@ -22,6 +23,8 @@ export interface ColorPickerPanelProps {
   activeColor: ColorDef;
   onColorChange: (selectedColor: ColorDef) => void;
   colorPresets?: ColorDef[];
+  /** If true, show RGB values and allow them to be set */
+  showRbgValues?: boolean;
 }
 
 /**
@@ -29,7 +32,7 @@ export interface ColorPickerPanelProps {
  * @beta
  */
 // istanbul ignore next
-export function ColorPickerPanel({ activeColor, onColorChange, colorPresets }: ColorPickerPanelProps) {
+export function ColorPickerPanel({ activeColor, onColorChange, colorPresets, showRbgValues }: ColorPickerPanelProps) {
 
   const handlePresetColorPick = React.useCallback((newColor: ColorDef, e: React.MouseEvent<Element, MouseEvent>) => {
     e.preventDefault();
@@ -58,6 +61,34 @@ export function ColorPickerPanel({ activeColor, onColorChange, colorPresets }: C
   }, [onColorChange]);
 
   const currentHsv = React.useMemo(() => activeColor.toHSV(), [activeColor]);
+  const color = React.useMemo(() => activeColor.colors, [activeColor]);
+
+  const handleRedChange = React.useCallback((value: number | undefined, _stringValue: string) => {
+    if (undefined !== value) {
+      const newColorDef = ColorDef.from(value, color.g, color.b);
+      if (onColorChange) {
+        onColorChange(newColorDef);
+      }
+    }
+  }, [color, onColorChange]);
+
+  const handleGreenChange = React.useCallback((value: number | undefined, _stringValue: string) => {
+    if (undefined !== value) {
+      const newColorDef = ColorDef.from(color.r, value, color.b);
+      if (onColorChange) {
+        onColorChange(newColorDef);
+      }
+    }
+  }, [color, onColorChange]);
+
+  const handleBlueChange = React.useCallback((value: number | undefined, _stringValue: string) => {
+    if (undefined !== value) {
+      const newColorDef = ColorDef.from(color.r, color.g, value);
+      if (onColorChange) {
+        onColorChange(newColorDef);
+      }
+    }
+  }, [color, onColorChange]);
 
   return (
     <div data-testid="components-colorpicker-panel" className="components-colorpicker-panel">
@@ -69,6 +100,21 @@ export function ColorPickerPanel({ activeColor, onColorChange, colorPresets }: C
           <HueSlider hsv={currentHsv} onHueChange={handleHueChange} isHorizontal={false} />
         </div>
       </div>
+      {showRbgValues &&
+        <div data-testid="components-colorpicker-rgb-panel" className="components-colorpicker-rgb-panel">
+          <div className="components-colorpicker-rgb-value-wrapper">
+            <span className="uicore-inputs-labeled-input">R</span>
+            <NumberInput data-testid="components-colorpicker-rgb-value-red" value={color.r} onChange={handleRedChange} min={0} max={255} />
+          </div>
+          <div className="components-colorpicker-rgb-value-wrapper">
+            <span className="uicore-inputs-labeled-input">G</span>
+            <NumberInput data-testid="components-colorpicker-rgb-value-green" value={color.g} onChange={handleGreenChange} min={0} max={255} />
+          </div>
+          <div className="components-colorpicker-rgb-value-wrapper">
+            <span className="uicore-inputs-labeled-input">B</span>
+            <NumberInput data-testid="components-colorpicker-rgb-value-blue" value={color.b} onChange={handleBlueChange} min={0} max={255} />
+          </div>
+        </div>}
       {
         colorPresets && colorPresets.length &&
         <div className="components-colorpicker-panel-presets">
