@@ -10,30 +10,9 @@ import { Tree } from "../../ui-core";
 
 /* eslint-disable @typescript-eslint/unbound-method */
 
-// Note: Cannot instantiate DOMRect yet since it's experimental and not available in all browsers (Nov. 2019)
-class Rect {
-  public constructor(public left: number, public top: number, public right: number, public bottom: number) { }
-  public get x(): number { return this.left; }
-  public get y(): number { return this.top; }
-  public get width(): number { return Math.abs(this.right - this.left); }
-  public get height(): number { return Math.abs(this.bottom - this.top); }
-  public toJSON(): any {
-    return {
-      x: this.x,
-      y: this.y,
-      top: this.top,
-      bottom: this.bottom,
-      left: this.left,
-      right: this.right,
-      width: this.width,
-      height: this.height,
-    };
-  }
-}
-
 describe("<Tree />", () => {
 
-  const createRect = (x0: number, y0: number, x1: number, y1: number): DOMRect => new Rect(x0, y0, x1, y1);
+  const createRect = (x0: number, y0: number, x1: number, y1: number): DOMRect => new DOMRect(x0, y0, x1 - x0, y1 - y0);
   const createRandomRect = () => createRect(1, 2, 3, 4);
 
   it("should render", () => {

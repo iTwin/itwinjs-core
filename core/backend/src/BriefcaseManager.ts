@@ -25,7 +25,7 @@ import { CheckpointManager, CheckpointProps, ProgressFunction } from "./Checkpoi
 import { BriefcaseDb, IModelDb, UserArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
-import { IModelIdArg } from "./BackendHubAccess";
+import { AcquireNewBriefcaseIdArg } from "./BackendHubAccess";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -174,10 +174,10 @@ export class BriefcaseManager {
   }
 
   /** Acquire a new briefcaseId from iModelHub for the supplied iModelId
-   * @note usually there should only be one briefcase per iModel per user.
-   * @throws IModelError if a new briefcaseId could not be acquired.
+   * @note usually there should only be one briefcase per iModel per user. If a single user acquires more than one briefcaseId,
+   * it's a good idea to supply different aliases for each of them.
    */
-  public static async acquireNewBriefcaseId(arg: IModelIdArg): Promise<BriefcaseId> {
+  public static async acquireNewBriefcaseId(arg: AcquireNewBriefcaseIdArg): Promise<BriefcaseId> {
     return IModelHost.hubAccess.acquireNewBriefcaseId(arg);
   }
 
