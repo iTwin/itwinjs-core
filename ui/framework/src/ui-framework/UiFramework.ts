@@ -21,9 +21,7 @@ import { LocalSettingsStorage, SettingsManager, UiEvent, UiSettingsStorage } fro
 import { UiIModelComponents } from "@bentley/ui-imodel-components";
 import { BackstageManager } from "./backstage/BackstageManager";
 import { DefaultIModelServices } from "./clientservices/DefaultIModelServices";
-import { DefaultProjectServices } from "./clientservices/DefaultProjectServices";
 import { IModelServices } from "./clientservices/IModelServices";
-import { ProjectServices } from "./clientservices/ProjectServices";
 import { ConfigurableUiManager } from "./configurableui/ConfigurableUiManager";
 import { ConfigurableUiActionId } from "./configurableui/state";
 import { FrameworkState } from "./redux/FrameworkState";
@@ -91,7 +89,6 @@ export interface TrackingTime {
  */
 export class UiFramework {
   private static _initialized = false;
-  private static _projectServices?: ProjectServices;
   private static _iModelServices?: IModelServices;
   private static _i18n?: I18N;
   private static _store?: Store<any>;
@@ -150,12 +147,11 @@ export class UiFramework {
    * @param store The single Redux store created by the host application. If this is `undefined` then it is assumed that the [[StateManager]] is being used to provide the Redux store.
    * @param i18n The internationalization service created by the application. Defaults to IModelApp.i18n.
    * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed. This value is ignored if [[StateManager]] is being used. The StateManager use "frameworkState".
-   * @param projectServices Optional app defined projectServices. If not specified DefaultProjectServices will be used.
    * @param iModelServices Optional app defined iModelServices. If not specified DefaultIModelServices will be used.
    *
    * @internal
    */
-  public static async initializeEx(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<void> {
+  public static async initializeEx(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string, iModelServices?: IModelServices): Promise<void> {
     if (UiFramework._initialized) {
       Logger.logInfo(UiFramework.loggerCategory(UiFramework), `UiFramework.initialize already called`);
       return;
@@ -179,7 +175,6 @@ export class UiFramework {
 
     const readFinishedPromise = frameworkNamespace.readFinished;
 
-    UiFramework._projectServices = projectServices ? /* istanbul ignore next */ projectServices : new DefaultProjectServices();
     UiFramework._iModelServices = iModelServices ? /* istanbul ignore next */ iModelServices : new DefaultIModelServices();
     UiFramework._backstageManager = new BackstageManager();
     UiFramework._hideIsolateEmphasizeActionHandler = new HideIsolateEmphasizeManager();  // this allows user to override the default HideIsolateEmphasizeManager implementation.
@@ -226,7 +221,6 @@ export class UiFramework {
     if (UiFramework._i18n)
       UiFramework._i18n.unregisterNamespace(UiFramework.i18nNamespace);
     UiFramework._i18n = undefined;
-    UiFramework._projectServices = undefined;
     UiFramework._iModelServices = undefined;
     UiFramework._backstageManager = undefined;
     UiFramework._widgetManager = undefined;
@@ -342,13 +336,6 @@ export class UiFramework {
     const className = getClassName(obj);
     const category = UiFramework.packageName + (className ? `.${className}` : "");
     return category;
-  }
-
-  /** @internal */
-  public static get projectServices(): ProjectServices {
-    if (!UiFramework._projectServices)
-      throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
-    return UiFramework._projectServices;
   }
 
   /** @internal */

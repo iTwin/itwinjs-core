@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-transformer",
-  "version": "3.0.0-dev.64",
+  "version": "3.0.0-dev.65",
   "description": "API for exporting an iModel's parts and also importing them into another iModel",
   "main": "lib/imodeljs-transformer.js",
   "typings": "lib/imodeljs-transformer",
@@ -19,8 +19,8 @@
     "cover:integration": "nyc npm run test:integration",
     "extract-api": "betools extract-api --entry=imodeljs-transformer",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "betools test --offline=\"mock\" --grep=\"#integration\" --invert",
-    "test:integration": "betools test --offline=\"mock\" --grep=\"#integration\""
+    "test": "mocha --grep=\"#integration\" --invert",
+    "test:integration": "mocha --grep=\"#integration\""
   },
   "repository": {
     "type": "git",
@@ -38,12 +38,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.64",
-    "@bentley/ecschema-metadata": "workspace:^3.0.0-dev.64",
-    "@bentley/geometry-core": "workspace:^3.0.0-dev.64",
-    "@bentley/imodeljs-backend": "workspace:^3.0.0-dev.64",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.64",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.64"
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.65",
+    "@bentley/ecschema-metadata": "workspace:^3.0.0-dev.65",
+    "@bentley/geometry-core": "workspace:^3.0.0-dev.65",
+    "@bentley/imodeljs-backend": "workspace:^3.0.0-dev.65",
+    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.65",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.65"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -73,7 +73,7 @@
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",
-    "typescript": "~4.3.0"
+    "typescript": "~4.4.0"
   },
   "dependencies": {
     "semver": "^5.5.0"

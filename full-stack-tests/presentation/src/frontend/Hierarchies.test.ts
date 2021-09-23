@@ -108,26 +108,34 @@ describe("Hierarchies", () => {
               ruleType: RuleTypes.ChildNodes,
               specifications: [{
                 specType: ChildNodeSpecificationTypes.RelatedInstanceNodes,
-                relatedClasses: {
-                  schemaName: "BisCore",
-                  classNames: ["Subject"],
-                },
-                relationships: {
-                  schemaName: "BisCore",
-                  classNames: ["ModelContainsElements"],
-                },
-                requiredDirection: RelationshipDirection.Forward,
+                relationshipPaths: [
+                  {
+                    relationship: {
+                      schemaName: "BisCore",
+                      className: "ModelContainsElements",
+                    },
+                    targetClass: {
+                      schemaName: "BisCore",
+                      className: "Subject",
+                    },
+                    direction: RelationshipDirection.Forward,
+                  },
+                ],
                 groupByClass: false,
                 groupByLabel: false,
                 nestedRules: [{
                   ruleType: RuleTypes.ChildNodes,
                   specifications: [{
                     specType: ChildNodeSpecificationTypes.RelatedInstanceNodes,
-                    relationships: {
-                      schemaName: "BisCore",
-                      classNames: ["ElementOwnsChildElements"],
-                    },
-                    requiredDirection: RelationshipDirection.Forward,
+                    relationshipPaths: [
+                      {
+                        relationship: {
+                          schemaName: "BisCore",
+                          className: "ElementOwnsChildElements",
+                        },
+                        direction: RelationshipDirection.Forward,
+                      },
+                    ],
                     groupByClass: true,
                     groupByLabel: false,
                   }],

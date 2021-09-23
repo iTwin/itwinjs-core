@@ -163,13 +163,14 @@ export class ChildWindowManager {
     const outLocation = { ...location };
     if (0 === location.top && 0 === location.left) {
       center = center ?? true;
+      const windowTop = window.top ?? window;
 
       // Prepare position of the new window to be centered against the 'parent' window.
       if (center) {
         outLocation.left =
-          window.top.outerWidth / 2 + window.top.screenX - location.width / 2;
+          windowTop.outerWidth / 2 + windowTop.screenX - location.width / 2;
         outLocation.top =
-          window.top.outerHeight / 2 + window.top.screenY - location.height / 2;
+          windowTop.outerHeight / 2 + windowTop.screenY - location.height / 2;
       } else {
         if (undefined !== window.screenLeft && undefined !== window.screenTop) {
           outLocation.top = window.screenTop + location.top;

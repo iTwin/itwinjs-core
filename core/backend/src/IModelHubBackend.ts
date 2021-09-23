@@ -213,14 +213,14 @@ export class IModelHubBackend {
 
   public static async queryChangeset(arg: ChangesetArg): Promise<ChangesetProps> {
     const hasIndex = (undefined !== arg.changeset.index);
-    if ((hasIndex && arg.changeset.index! <= 0) || arg.changeset.id === "")
+    if ((hasIndex && arg.changeset.index <= 0) || arg.changeset.id === "")
       return this.changeSet0;
 
     const query = new ChangeSetQuery();
     if (hasIndex)
       query.filter(`Index+eq+${arg.changeset.index}`);
     else
-      query.byId(arg.changeset.id!);
+      query.byId(arg.changeset.id);
 
     const user = arg.user ?? await AuthorizedBackendRequestContext.create();
     const changeSets = await this.iModelClient.changeSets.get(user, arg.iModelId, query);

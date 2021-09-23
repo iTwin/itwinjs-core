@@ -12,7 +12,7 @@ Decoration graphics can now be produced from [SolidPrimitive]($geometry-core)s -
 
 ## Presentation changes
 
-Added [RelatedPropertiesSpecificationNew.skipIfDuplicate]($presentation-common) attribute to allow specification to be overriden by specifications from higher priority content modifiers. Set this attribute to all related properties' specifications in the default BisCore ruleset.
+Added `RelatedPropertiesSpecificationNew.skipIfDuplicate` attribute to allow specification to be overriden by specifications from higher priority content modifiers. Set this attribute to all related properties' specifications in the default BisCore ruleset.
 
 ## Dictionary enhancements
 
