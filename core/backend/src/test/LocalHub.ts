@@ -9,7 +9,7 @@ import {
   BriefcaseId, BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps,
   ChangesetRange, IModelError, LocalDirName, LocalFileName,
 } from "@bentley/imodeljs-common";
-import { LockMap, LockProps, LockState } from "../BackendHubAccess";
+import { LockConflict, LockMap, LockProps, LockState } from "../BackendHubAccess";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { BriefcaseLocalValue, IModelDb, SnapshotDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
@@ -20,8 +20,10 @@ import { SQLiteDb } from "../SQLiteDb";
 
 /** @internal */
 interface MockBriefcaseIdProps {
-  id: number;
+  id: BriefcaseId;
   user: string;
+  alias: string;
+  assigned: boolean;
 }
 
 /** @internal */
@@ -32,6 +34,13 @@ interface LocalHubProps {
   readonly description?: string;
   readonly revision0?: string;
   readonly noLocks?: true;
+}
+
+interface LocksEntry {
+  id: Id64String;
+  level: LockState;
+  lastCsIndex?: ChangesetIndex;
+  briefcaseId?: BriefcaseId;
 }
 
 interface LockStatusNone {
@@ -85,12 +94,13 @@ export class LocalHub {
 
     const db = this._hubDb = new SQLiteDb();
     db.createDb(this.mockDbName);
-    db.executeSQL("CREATE TABLE briefcases(id INTEGER PRIMARY KEY NOT NULL,user TEXT NOT NULL)");
-    db.executeSQL("CREATE TABLE timeline(csIndex INTEGER PRIMARY KEY NOT NULL,csId TEXT NOT NULL UNIQUE,description TEXT,user TEXT,size BIGINT,type INTEGER,pushDate TEXT,briefcaseId INTEGER)");
+    db.executeSQL("CREATE TABLE briefcases(id INTEGER PRIMARY KEY NOT NULL,user TEXT NOT NULL,alias TEXT NOT NULL,assigned INTEGER DEFAULT 1)");
+    db.executeSQL("CREATE TABLE timeline(csIndex INTEGER PRIMARY KEY NOT NULL,csId TEXT NOT NULL UNIQUE,description TEXT,user TEXT,size BIGINT,type INTEGER,pushDate TEXT,briefcaseId INTEGER,\
+                   FOREIGN KEY(briefcaseId) REFERENCES briefcases(id))");
     db.executeSQL("CREATE TABLE checkpoints(csIndex INTEGER PRIMARY KEY NOT NULL)");
     db.executeSQL("CREATE TABLE versions(name TEXT PRIMARY KEY NOT NULL,csIndex TEXT,FOREIGN KEY(csIndex) REFERENCES timeline(csIndex))");
-    db.executeSQL("CREATE TABLE locks(id INTEGER PRIMARY KEY NOT NULL,level INTEGER NOT NULL,lastCSetIndex INTEGER,briefcaseId INTEGER,FOREIGN KEY(lastCSetIndex) REFERENCES timeline(csIndex))");
-    db.executeSQL("CREATE TABLE sharedLocks(lockId TEXT NOT NULL,briefcaseId INTEGER NOT NULL,PRIMARY KEY(lockId,briefcaseId))");
+    db.executeSQL("CREATE TABLE locks(id INTEGER PRIMARY KEY NOT NULL,level INTEGER NOT NULL,lastCSetIndex INTEGER,briefcaseId INTEGER)");
+    db.executeSQL("CREATE TABLE sharedLocks(lockId INTEGER NOT NULL,briefcaseId INTEGER NOT NULL,PRIMARY KEY(lockId,briefcaseId))");
     db.executeSQL("CREATE INDEX LockIdx ON locks(briefcaseId)");
     db.executeSQL("CREATE INDEX SharedLockIdx ON sharedLocks(briefcaseId)");
     db.saveChanges();
@@ -128,12 +138,14 @@ export class LocalHub {
   public get mockDbName() { return join(this.rootDir, "localHub.db"); }
 
   /** Acquire the next available briefcaseId and assign it to the supplied user */
-  public acquireNewBriefcaseId(user: string): number {
+  public acquireNewBriefcaseId(user: string, alias?: string): BriefcaseId {
     const db = this.db;
     const newId = this._nextBriefcaseId++;
-    db.withSqliteStatement("INSERT INTO briefcases(id,user) VALUES (?,?)", (stmt) => {
+    alias = alias ?? `${user} (${newId})`;
+    db.withSqliteStatement("INSERT INTO briefcases(id,user,alias) VALUES (?,?,?)", (stmt) => {
       stmt.bindInteger(1, newId);
       stmt.bindString(2, user);
+      stmt.bindString(3, alias!);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_DONE !== rc)
         throw new IModelError(rc, "can't insert briefcaseId in mock database");
@@ -143,9 +155,10 @@ export class LocalHub {
   }
 
   /** Release a briefcaseId */
-  public releaseBriefcaseId(id: number) {
+  public releaseBriefcaseId(id: BriefcaseId) {
     const db = this.db;
-    db.withSqliteStatement("DELETE FROM briefcases WHERE id=?", (stmt) => {
+    this.releaseAllLocks({ briefcaseId: id, changesetIndex: 0 });
+    db.withSqliteStatement("UPDATE briefcases SET assigned=0 WHERE id=?", (stmt) => {
       stmt.bindInteger(1, id);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_DONE !== rc)
@@ -155,13 +168,19 @@ export class LocalHub {
   }
 
   /** Get an array of all of the currently assigned Briefcases */
-  public getBriefcases(): MockBriefcaseIdProps[] {
+  public getBriefcases(onlyAssigned = true): MockBriefcaseIdProps[] {
     const briefcases: MockBriefcaseIdProps[] = [];
-    this.db.withSqliteStatement("SELECT id,user FROM briefcases", (stmt) => {
+    let sql = "SELECT id,user,alias,assigned FROM briefcases";
+    if (onlyAssigned)
+      sql += " WHERE assigned=1";
+
+    this.db.withSqliteStatement(sql, (stmt) => {
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
         briefcases.push({
           id: stmt.getValueInteger(0),
           user: stmt.getValueString(1),
+          alias: stmt.getValueString(2),
+          assigned: stmt.getValueInteger(3) !== 0,
         });
       }
     });
@@ -169,9 +188,9 @@ export class LocalHub {
   }
 
   /** Get an array of all of the currently assigned BriefcaseIds for a user */
-  public getBriefcaseIds(user: string): number[] {
-    const briefcases: number[] = [];
-    this.db.withSqliteStatement("SELECT id FROM briefcases WHERE user=?", (stmt) => {
+  public getBriefcaseIds(user: string): BriefcaseId[] {
+    const briefcases: BriefcaseId[] = [];
+    this.db.withSqliteStatement("SELECT id FROM briefcases WHERE user=? AND assigned=1", (stmt) => {
       stmt.bindString(1, user);
       while (DbResult.BE_SQLITE_ROW === stmt.step())
         briefcases.push(stmt.getValueInteger(0));
@@ -179,7 +198,16 @@ export class LocalHub {
     return briefcases;
   }
 
-  private getChangesetFileName(index: number) {
+  public getBriefcase(id: BriefcaseId): MockBriefcaseIdProps {
+    return this.db.withSqliteStatement("SELECT user,alias,assigned FROM briefcases WHERE id=?", (stmt) => {
+      stmt.bindInteger(1, id);
+      if (DbResult.BE_SQLITE_ROW !== stmt.step())
+        throw new IModelError(IModelStatus.NotFound, "no briefcase with that id");
+      return { id, user: stmt.getValueString(0), alias: stmt.getValueString(1), assigned: stmt.getValueInteger(2) !== 0 };
+    });
+  }
+
+  private getChangesetFileName(index: ChangesetIndex) {
     return join(this.changesetDir, `changeset-${index}`);
   }
 
@@ -195,6 +223,7 @@ export class LocalHub {
     if (parentIndex !== this.latestChangesetIndex)
       throw new IModelError(IModelStatus.InvalidParent, "changeset parent is not latest changeset");
 
+    this.getBriefcase(changeset.briefcaseId); // throws if invalid id
     const db = this.db;
     changeset.index = this._latestChangesetIndex + 1;
     db.withSqliteStatement("INSERT INTO timeline(csIndex,csId,description,size,type,pushDate,user,briefcaseId) VALUES (?,?,?,?,?,?,?,?)", (stmt) => {
@@ -216,12 +245,12 @@ export class LocalHub {
     return changeset.index;
   }
 
-  public getIndexFromChangeset(changeset: ChangesetIndexOrId): number {
+  public getIndexFromChangeset(changeset: ChangesetIndexOrId): ChangesetIndex {
     return changeset.index ?? this.getChangesetIndex(changeset.id);
   }
 
   /** Get the index of a changeset by its Id */
-  public getChangesetIndex(id: ChangesetId): number {
+  public getChangesetIndex(id: ChangesetId): ChangesetIndex {
     if (id === "")
       return 0;
 
@@ -263,7 +292,7 @@ export class LocalHub {
   }
 
   /** Get the properties of a changeset by its index */
-  public getChangesetByIndex(index: number): ChangesetProps {
+  public getChangesetByIndex(index: ChangesetIndex): ChangesetProps {
     if (index <= 0)
       return { id: "", changesType: 0, description: "revision0", parentId: "", briefcaseId: 0, pushDate: "", userCreated: "", index: 0 };
 
@@ -436,17 +465,18 @@ export class LocalHub {
     });
   }
 
-  public queryAllLocks(briefcaseId: number) {
+  public queryAllLocks(briefcaseId: BriefcaseId) {
+    this.getBriefcase(briefcaseId); // throws if briefcaseId invalid.
     const locks: LockProps[] = [];
     this.db.withPreparedSqliteStatement("SELECT id FROM locks WHERE briefcaseId=?", (stmt) => {
       stmt.bindInteger(1, briefcaseId);
       while (DbResult.BE_SQLITE_ROW === stmt.step())
-        locks.push({ id: stmt.getValueString(0), state: LockState.Exclusive });
+        locks.push({ id: stmt.getValueId(0), state: LockState.Exclusive });
     });
     this.db.withPreparedSqliteStatement("SELECT lockId FROM sharedLocks WHERE briefcaseId=?", (stmt) => {
       stmt.bindInteger(1, briefcaseId);
       while (DbResult.BE_SQLITE_ROW === stmt.step())
-        locks.push({ id: stmt.getValueString(0), state: LockState.Shared });
+        locks.push({ id: stmt.getValueId(0), state: LockState.Shared });
     });
     return locks;
   }
@@ -489,7 +519,7 @@ export class LocalHub {
       stmt.bindValue(3, wantShared ? undefined : briefcase.briefcaseId);
       const rc = stmt.step();
       if (rc !== DbResult.BE_SQLITE_DONE)
-        throw new Error("cannot insert lock");
+        throw new IModelError(rc, "cannot insert lock");
     });
 
     if (wantShared) {
@@ -498,7 +528,7 @@ export class LocalHub {
         stmt.bindInteger(2, briefcase.briefcaseId);
         const rc = stmt.step();
         if (rc !== DbResult.BE_SQLITE_DONE)
-          throw new Error("cannot insert shared lock");
+          throw new IModelError(rc, "cannot insert shared lock");
       });
     }
   }
@@ -508,7 +538,7 @@ export class LocalHub {
       stmt.bindId(1, id);
       const rc = stmt.step();
       if (rc !== DbResult.BE_SQLITE_DONE)
-        throw new Error("can't release lock");
+        throw new IModelError(rc, "can't release lock");
     });
   }
 
@@ -516,18 +546,20 @@ export class LocalHub {
     if (index <= 0)
       return;
 
-    this.db.withPreparedSqliteStatement("UPDATE locks SET lastCSetIndex=?1 WHERE id=?2", (stmt) => {
+    this.db.withPreparedSqliteStatement("UPDATE locks SET lastCSetIndex=? WHERE id=?", (stmt) => {
       stmt.bindInteger(1, index);
       stmt.bindId(2, id);
       const rc = stmt.step();
       if (rc !== DbResult.BE_SQLITE_DONE)
-        throw new Error("can't update lock changeSetId");
+        throw new IModelError(rc, "can't update lock changeSetId");
     });
   }
 
   private requestLock(props: LockProps, briefcase: BriefcaseIdAndChangeset) {
     if (props.state === LockState.None)
       throw new Error("cannot request lock for LockState.None");
+
+    this.getBriefcase(briefcase.briefcaseId); // throws if briefcaseId invalid.
 
     const lockStatus = this.queryLockStatus(props.id);
     switch (lockStatus.state) {
@@ -540,20 +572,32 @@ export class LocalHub {
             this.reserveLock(lockStatus, props, briefcase);
         } else {
           // if requester is the only one holding a shared lock, "upgrade" the lock from shared to exclusive
-          if (lockStatus.sharedBy.size > 1 || !lockStatus.sharedBy.has(briefcase.briefcaseId))
-            throw new IModelError(IModelHubStatus.LockOwnedByAnotherBriefcase, "element is locked with shared access, cannot obtain exclusive lock");
-          this.releaseLock(props, briefcase);
+          if (lockStatus.sharedBy.size > 1 || !lockStatus.sharedBy.has(briefcase.briefcaseId)) {
+            const id = lockStatus.sharedBy.values().next().value;
+            throw new LockConflict(id, this.getBriefcase(id).alias, "shared lock is held");
+          }
+          this.removeSharedLock(props.id, briefcase.briefcaseId);
           this.reserveLock(this.queryLockStatus(props.id), props, briefcase);
         }
         return;
 
       case LockState.Exclusive:
         if (lockStatus.briefcaseId !== briefcase.briefcaseId)
-          throw new IModelError(IModelHubStatus.LockOwnedByAnotherBriefcase, "lock is already held by another user");
+          throw new LockConflict(lockStatus.briefcaseId, this.getBriefcase(lockStatus.briefcaseId).alias, "exclusive lock is already held");
     }
   }
 
-  private releaseLock(props: LockProps, briefcase: { briefcaseId: BriefcaseId, changeset: ChangesetIdWithIndex }) {
+  private removeSharedLock(lockId: Id64String, briefcaseId: BriefcaseId) {
+    this.db.withPreparedSqliteStatement("DELETE FROM sharedLocks WHERE lockId=? AND briefcaseId=?", (stmt) => {
+      stmt.bindId(1, lockId);
+      stmt.bindInteger(2, briefcaseId);
+      const rc = stmt.step();
+      if (rc !== DbResult.BE_SQLITE_DONE)
+        throw new IModelError(rc, "can't remove shared lock");
+    });
+  }
+
+  private releaseLock(props: LockProps, arg: { briefcaseId: BriefcaseId, changesetIndex: ChangesetIndex }) {
     const lockId = props.id;
     const lockStatus = this.queryLockStatus(lockId);
     switch (lockStatus.state) {
@@ -561,23 +605,16 @@ export class LocalHub {
         throw new IModelError(IModelHubStatus.LockDoesNotExist, "lock not held");
 
       case LockState.Exclusive:
-        if (lockStatus.briefcaseId !== briefcase.briefcaseId)
+        if (lockStatus.briefcaseId !== arg.briefcaseId)
           throw new IModelError(IModelHubStatus.LockOwnedByAnotherBriefcase, "lock not held by this briefcase");
-        this.updateLockChangeset(lockId, this.getIndexFromChangeset(briefcase.changeset));
+        this.updateLockChangeset(lockId, arg.changesetIndex);
         this.clearLock(lockId);
         break;
 
       case LockState.Shared:
-        if (!lockStatus.sharedBy.has(briefcase.briefcaseId))
+        if (!lockStatus.sharedBy.has(arg.briefcaseId))
           throw new IModelError(IModelHubStatus.LockDoesNotExist, "shared lock not held by this briefcase");
-
-        this.db.withPreparedSqliteStatement("DELETE FROM sharedLocks WHERE lockId=? AND briefcaseId=?", (stmt) => {
-          stmt.bindId(1, lockId);
-          stmt.bindInteger(2, briefcase.briefcaseId);
-          const rc = stmt.step();
-          if (rc !== DbResult.BE_SQLITE_DONE)
-            throw new Error("can't remove shared lock");
-        });
+        this.removeSharedLock(lockId, arg.briefcaseId);
         if (lockStatus.sharedBy.size === 1)
           this.clearLock(lockId);
     }
@@ -601,10 +638,52 @@ export class LocalHub {
     this.acquireLocks(locks, briefcase);
   }
 
-  public releaseLocks(locks: LockProps[], briefcase: { briefcaseId: BriefcaseId, changeset: ChangesetIdWithIndex }) {
+  public releaseLocks(locks: LockProps[], arg: { briefcaseId: BriefcaseId, changesetIndex: ChangesetIndex }) {
     for (const props of locks)
-      this.releaseLock(props, briefcase);
+      this.releaseLock(props, arg);
     this.db.saveChanges();
+  }
+
+  public releaseAllLocks(arg: { briefcaseId: BriefcaseId, changesetIndex: ChangesetIndex }) {
+    const locks = this.queryAllLocks(arg.briefcaseId);
+    this.releaseLocks(locks, arg);
+  }
+
+  private countTable(tableName: string): number {
+    return this.db.withSqliteStatement(`SELECT count(*) from ${tableName}`, (stmt) => {
+      stmt.step();
+      return stmt.getValueInteger(0);
+    });
+  }
+
+  // for debugging
+  public countSharedLocks(): number { return this.countTable("sharedLocks"); }
+  // for debugging
+  public countLocks(): number { return this.countTable("locks"); }
+
+  // for debugging
+  public queryAllSharedLocks(): { id: Id64String, briefcaseId: BriefcaseId }[] {
+    const locks: { id: Id64String, briefcaseId: BriefcaseId }[] = [];
+    this.db.withPreparedSqliteStatement("SELECT lockId,briefcaseId FROM sharedLocks", (stmt) => {
+      while (DbResult.BE_SQLITE_ROW === stmt.step())
+        locks.push({ id: stmt.getValueId(0), briefcaseId: stmt.getValueInteger(1) });
+    });
+    return locks;
+  }
+
+  // for debugging
+  public queryLocks(): LocksEntry[] {
+    const locks: LocksEntry[] = [];
+    this.db.withPreparedSqliteStatement("SELECT id,level,lastCSetIndex,briefcaseId FROM locks", (stmt) => {
+      while (DbResult.BE_SQLITE_ROW === stmt.step())
+        locks.push({
+          id: stmt.getValueId(0),
+          level: stmt.getValueInteger(1),
+          lastCsIndex: stmt.getValue(2).isNull ? undefined : stmt.getValueInteger(2),
+          briefcaseId: stmt.getValue(3).isNull ? undefined : stmt.getValueInteger(3),
+        });
+    });
+    return locks;
   }
 
   public removeDir(dirName: string) {
