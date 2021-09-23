@@ -90,7 +90,7 @@ describe("QuantityInput", () => {
     const spyOnChange = sinon.spy();
 
     // set active unit system to be metric and wait to make sure quantity format cache is set
-    IModelApp.quantityFormatter.useImperialFormats = false; // eslint-disable-line deprecation/deprecation
+    await IModelApp.quantityFormatter.setActiveUnitSystem("metric");
     await TestUtils.flushAsyncOperations();
 
     const wrapper = render(<QuantityInput initialValue={initialLength} quantityType={QuantityType.Length} onQuantityChange={spyOnChange} />);
@@ -108,7 +108,7 @@ describe("QuantityInput", () => {
     expect(input.value).to.eq("3.5 m");
 
     // set active unit system to be imperial and wait to make sure quantity format cache is set
-    IModelApp.quantityFormatter.useImperialFormats = true; // eslint-disable-line deprecation/deprecation
+    await IModelApp.quantityFormatter.setActiveUnitSystem("imperial");
     await TestUtils.flushAsyncOperations();
     expect(input.value).to.eq("3'-3 3/8\"");
 

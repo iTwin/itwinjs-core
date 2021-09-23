@@ -35,7 +35,7 @@ exchange of some performance penalty. When possible, it's advised to use
 
 ## Known Issues
 
-The rule is deprecated in favor of [InstanceLabelOverride](./InstanceLabelOverride) and has several known issues:
+The rule should be avoided in favor of [InstanceLabelOverride](./InstanceLabelOverride) due to:
 
 - `InstanceLabelOverride` rules **always** take precedence over `LabelOverride`, no matter what their priorities are.
 A possible workaround is to avoid having `InstanceLabelOverride` rules for the class targeted by specific
@@ -48,7 +48,7 @@ option to add such an `InstanceLabelOverride` to reset overrides in supplemental
     "priority": 9999,
     "class": { "schemaName": "MySchema", "className": "MyClass" },
     "values": []
-  },
+  }
   ```
 
 - Nested `LabelOverride` rules (specified anywhere else other than at the root rules level) have no effect.

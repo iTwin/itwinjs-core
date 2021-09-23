@@ -80,14 +80,14 @@ export class Notifications extends NotificationManager {
 
     const promise = new Promise<MessageBoxValue>((resolve, _rej) => {
       button.addEventListener("click", () => {
-        dialog.close();
+        (dialog as any).close();
         rootDiv.removeChild(dialog);
         resolve(MessageBoxValue.Ok);
       });
     });
 
     // add the dialog to the root div element and show it.
-    dialog.showModal();
+    (dialog as any).showModal();
     return promise;
   }
 

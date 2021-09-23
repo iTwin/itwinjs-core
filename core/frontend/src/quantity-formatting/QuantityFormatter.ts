@@ -310,13 +310,6 @@ export class QuantityFormatter implements UnitsProvider {
   }
 
   /** Called after the active unit system is changed.
-   * The useImperial argument should not be relied on now that multiple systems are supported. It will
-   * only return true if unit system is explicitly set to "imperial"
-   * @deprecated use onActiveFormattingUnitSystemChanged event for multiple unit system support.
-   */
-  public readonly onActiveUnitSystemChanged = new BeUiEvent<{ useImperial: boolean }>();
-
-  /** Called after the active unit system is changed.
   * The system will report the UnitSystemKey/name of the the system that was activated.
   */
   public readonly onActiveFormattingUnitSystemChanged = new BeUiEvent<FormattingUnitSystemChangedArgs>();
@@ -568,24 +561,16 @@ export class QuantityFormatter implements UnitsProvider {
 
     this._activeUnitSystem = systemType;
     await this.loadFormatAndParsingMapsForSystem(systemType);
-    // fire deprecated event
-    this.onActiveUnitSystemChanged.emit({ useImperial: systemType === "imperial" }); // eslint-disable-line deprecation/deprecation
     // allow settings provider to store the change
     this._unitFormattingSettingsProvider && this._unitFormattingSettingsProvider.storeUnitSystemSetting({ system: systemType });
     // fire current event
     this.onActiveFormattingUnitSystemChanged.emit({ system: systemType });
     if (IModelApp.toolAdmin && restartActiveTool)
-      IModelApp.toolAdmin.startDefaultTool();
+      return IModelApp.toolAdmin.startDefaultTool();
   }
 
   /** True if tool quantity values should be displayed in imperial units; false for metric. Changing this flag triggers an asynchronous request to refresh the cached formats. */
   public get activeUnitSystem(): UnitSystemKey { return this._activeUnitSystem; }
-
-  /** @deprecated use setActiveUnitSystem method and activeUnitSystem property */
-  public get useImperialFormats(): boolean { return this._activeUnitSystem === "imperial"; }
-  public set useImperialFormats(useImperial: boolean) {
-    this.setActiveUnitSystem(useImperial ? "imperial" : "metric", true); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }
 
   public async clearOverrideFormats(type: QuantityTypeArg) {
     await this.clearOverrideFormatsByQuantityTypeKey(this.getQuantityTypeKey(type));
@@ -662,7 +647,8 @@ export class QuantityFormatter implements UnitsProvider {
 
   /** Asynchronous Call to get a FormatterSpec of a QuantityType.
    * @param type        One of the built-in quantity types supported.
-   * @param system  deprecated argument that should not be used - use setActiveUnitSystem to set unit system.
+   * @param system      Requested unit system key. Note it is more efficient to use setActiveUnitSystem to set up formatters for all
+   * quantity types of a unit system.
    * @return A FormatterSpec Promise.
    */
   public async getFormatterSpecByQuantityTypeAndSystem(type: QuantityTypeArg, system?: UnitSystemKey): Promise<FormatterSpec | undefined> {

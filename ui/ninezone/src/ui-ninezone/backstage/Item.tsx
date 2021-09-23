@@ -49,6 +49,8 @@ export class BackstageItem extends React.PureComponent<BackstageItemProps> {
     return (
       // eslint-disable-next-line jsx-a11y/click-events-have-key-events
       <li
+        data-item-id={this.props.itemId}
+        data-item-type="backstage-item"
         className={className}
         onClick={this.props.onClick}
         style={this.props.style}

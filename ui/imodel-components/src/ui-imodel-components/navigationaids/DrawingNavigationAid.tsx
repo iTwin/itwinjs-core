@@ -96,7 +96,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
   private _rootElement = React.createRef<HTMLDivElement>();
   private _viewContainerElement = React.createRef<HTMLDivElement>();
   private _viewElement = React.createRef<HTMLDivElement>();
-  private _rootOffset: ClientRect = { left: 0, right: 0, width: 0, top: 0, bottom: 0, height: 0 };
+  private _rootOffset: DOMRect = DOMRect.fromRect({ x: 0, y: 0, width: 0, height: 0 });
   private _viewport: Viewport | undefined;
   private _animationFrame: any;
   private _mounted: boolean = false;
@@ -748,7 +748,7 @@ export class DrawingNavigationCanvas extends React.Component<DrawingNavigationCa
       this._vp = screenViewport.create(this._canvasElement.current, this.props.view);
       this.customizeViewport(this._vp);
       viewManager.addViewport(this._vp);
-      viewManager.setSelectedView(previousView); // switch to original viewport
+      void viewManager.setSelectedView(previousView); // switch to original viewport
       this._update();
     }
   }
@@ -791,7 +791,7 @@ export class DrawingNavigationCanvas extends React.Component<DrawingNavigationCa
           this._vp = screenViewport.create(this._canvasElement.current, this.props.view.clone());
           this.customizeViewport(this._vp);
           viewManager.addViewport(this._vp);
-          viewManager.setSelectedView(previousView); // switch to original viewport
+          void viewManager.setSelectedView(previousView); // switch to original viewport
           this._update();
         }
       } else if (!this.props.origin.isExactEqual(oldProps.origin) || !this.props.extents.isExactEqual(oldProps.extents) || this.props.zoom !== oldProps.zoom || !this.props.rotation.isExactEqual(oldProps.rotation)) {

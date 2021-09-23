@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/product-settings-client",
+      "comment": "Replaced ContextRegistry with generalized ITwinAccess interface",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/product-settings-client"
+}

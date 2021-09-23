@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ClientRequestContext, DbResult, Guid } from "@bentley/bentleyjs-core";
-import { IModelTileRpcInterface, RpcManager, RpcRegistry } from "@bentley/imodeljs-common";
-import { SnapshotDb } from "../../IModelDb";
-import { IModelHost, IModelHostConfiguration } from "../../imodeljs-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
 import * as path from "path";
-import { IModelJsFs } from "../../IModelJsFs";
-import { IModelHubBackend } from "../../IModelHubBackend";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { BlobDaemon } from "@bentley/imodeljs-native";
-import { getTileProps } from "../integration/TileUpload.test";
+import { DbResult, Guid } from "@bentley/bentleyjs-core";
 import { CheckpointV2 } from "@bentley/imodelhub-client";
+import { IModelTileRpcInterface, RpcInvocation, RpcManager, RpcRegistry } from "@bentley/imodeljs-common";
+import { BlobDaemon } from "@bentley/imodeljs-native";
+import { SnapshotDb } from "../../IModelDb";
+import { IModelHubBackend } from "../../IModelHubBackend";
+import { AuthorizedBackendRequestContext, BackendRequestContext, IModelHost, IModelHostConfiguration } from "../../imodeljs-backend";
+import { IModelJsFs } from "../../IModelJsFs";
+import { IModelTestUtils } from "../IModelTestUtils";
+import { getTileProps } from "../integration/TileUpload.test";
+
 import sinon = require("sinon");
 
 describe("TileCache open v1", () => {
@@ -29,12 +29,10 @@ describe("TileCache open v1", () => {
 
     const iModel = SnapshotDb.openFile(dbPath);
     assert.isDefined(iModel);
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     // Generate tile
-    // eslint-disable-next-line deprecation/deprecation
-    const tileProps = await getTileProps(iModel, requestContext);
+    const tileProps = await getTileProps(iModel);
     assert.isDefined(tileProps);
-    await tileRpcInterface.requestTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, undefined, tileProps!.guid); // eslint-disable-line deprecation/deprecation
+    await tileRpcInterface.generateTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid);
 
     const tilesCache = `${iModel.pathName}.Tiles`;
     assert.isTrue(IModelJsFs.existsSync(tilesCache));
@@ -69,13 +67,13 @@ describe("TileCache open v1", () => {
 });
 
 describe("TileCache, open v2", async () => {
-  it("should place .Tiles in cacheDir", async () => {
+  it("should place .Tiles in tempFileBase for V2 checkpoints", async () => {
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim");
     const snapshot = IModelTestUtils.createSnapshotFromSeed(dbPath, IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
-    const iModelId = snapshot.getGuid();
+    const iModelId = snapshot.iModelId;
     const iTwinId = Guid.createValue();
     const changeset = IModelTestUtils.generateChangeSetId();
-    snapshot.nativeDb.saveProjectGuid(Guid.normalize(iTwinId));
+    snapshot.nativeDb.setITwinId(iTwinId);
     snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id); // even fake checkpoints need a changeSetId!
     snapshot.saveChanges();
     snapshot.close();
@@ -102,15 +100,15 @@ describe("TileCache, open v2", async () => {
     sinon.stub(BlobDaemon, "getDbFileName").callsFake(() => dbPath);
 
     process.env.BLOCKCACHE_DIR = "/foo/";
-    const user = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const user = new BackendRequestContext() as AuthorizedBackendRequestContext;
     const checkpointProps = { user, iTwinId, iModelId, changeset };
     const checkpoint = await SnapshotDb.openCheckpointV2(checkpointProps);
 
     // Generate tile
-    // eslint-disable-next-line deprecation/deprecation
-    const tileProps = await getTileProps(checkpoint, user);
+    const tileProps = await getTileProps(checkpoint);
     assert.isDefined(tileProps);
-    await tileRpcInterface.requestTileContent(checkpoint.getRpcProps(), tileProps!.treeId, tileProps!.contentId, undefined, tileProps!.guid); // eslint-disable-line deprecation/deprecation
+    RpcInvocation.currentRequest = user; // we're simulating an RPC call - set up the current invocation request that would normally come from PRC call
+    await tileRpcInterface.generateTileContent(checkpoint.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid);
 
     // Make sure .Tiles exists in the cacheDir. This was enforced by opening it as a V2 Checkpoint which passes as part of its open params a tempFileBasename.
     const tempFileBase = path.join(IModelHost.cacheDir, `${checkpointProps.iModelId}\$${checkpointProps.changeset.id}`);

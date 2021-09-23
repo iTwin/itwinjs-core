@@ -369,7 +369,7 @@ describe("iModelHub BriefcaseHandler", () => {
     let error;
     try {
       (await iModelClient.briefcases.get(requestContext, imodelId));
-    } catch (err) {
+    } catch (err: any) {
       error = err;
     }
     chai.assert(error);
@@ -383,7 +383,7 @@ describe("iModelHub BriefcaseHandler", () => {
     let error;
     try {
       (await iModelClient.briefcases.get(requestContext, imodelId));
-    } catch (err) {
+    } catch (err: any) {
       error = err;
     }
     chai.assert(error);

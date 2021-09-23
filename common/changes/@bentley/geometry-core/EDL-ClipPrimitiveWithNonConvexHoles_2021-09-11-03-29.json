@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/geometry-core",
+      "comment": "Correct implementation of \"mask\" ClipPrimitive",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core"
+}

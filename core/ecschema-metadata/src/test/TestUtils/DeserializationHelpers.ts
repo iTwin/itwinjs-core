@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DOMParser } from "xmldom";
+import { DOMParser } from "@xmldom/xmldom";
 import { ISchemaLocater, SchemaContext } from "../../Context";
 import { SchemaReadHelper } from "../../Deserialization/Helper";
 import { XmlParser } from "../../Deserialization/XmlParser";

@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { GuidString, Logger } from "@bentley/bentleyjs-core";
-import { Project } from "@bentley/context-registry-client";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { BriefcaseQuery, Briefcase as HubBriefcase, IModelCloudEnvironment, IModelQuery } from "@bentley/imodelhub-client";
 import { AuthorizedFrontendRequestContext, IModelHubFrontend, NativeApp, NativeAppAuthorization } from "@bentley/imodeljs-frontend";
@@ -13,6 +12,7 @@ import { getAccessTokenFromBackend, TestUserCredentials } from "@bentley/oidc-si
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { IModelBankCloudEnv } from "./IModelBankCloudEnv";
 import { IModelHubCloudEnv } from "./IModelHubCloudEnv";
+import { ITwin } from "@bentley/context-registry-client";
 
 export class TestUtility {
   public static testContextName = "iModelJsIntegrationTest";
@@ -37,8 +37,7 @@ export class TestUtility {
 
   private static iTwinId: GuidString | undefined = undefined;
   /** Returns the ContextId if a Context with the name exists. Otherwise, returns undefined. */
-  public static async getTestContextId(requestContext: AuthorizedClientRequestContext): Promise<GuidString> {
-    requestContext.enter();
+  public static async getTestContextId(): Promise<GuidString> {
     if (undefined !== TestUtility.iTwinId)
       return TestUtility.iTwinId;
     return TestUtility.queryContextIdByName(TestUtility.testContextName);
@@ -77,9 +76,9 @@ export class TestUtility {
 
   public static async queryContextIdByName(contextName: string): Promise<string> {
     const requestContext = await AuthorizedFrontendRequestContext.create();
-    const project: Project = await this.imodelCloudEnv.contextMgr.queryProjectByName(requestContext, contextName);
-    assert(project && project.wsgId);
-    return project.wsgId;
+    const iTwin: ITwin = await this.imodelCloudEnv.contextMgr.getITwinByName(requestContext, contextName);
+    assert(iTwin && iTwin.id);
+    return iTwin.id;
   }
 
   public static async queryIModelIdbyName(iTwinId: string, iModelName: string): Promise<string> {

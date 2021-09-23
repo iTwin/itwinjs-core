@@ -6,16 +6,17 @@
  * @module iModelHub
  */
 
-import got from "got";
+import { HttpsAgent } from "agentkeepalive";
+import * as crypto from "crypto";
 import * as fs from "fs";
+import got from "got";
+import * as path from "path";
+import { checkSync, lockSync } from "proper-lockfile";
 import * as stream from "stream";
 import * as util from "util";
-import * as crypto from "crypto";
-import * as path from "path";
-import { HttpsAgent } from "agentkeepalive";
+import { AsyncMutex, BeEvent, BriefcaseStatus, getErrorMessage } from "@bentley/bentleyjs-core";
 import { CancelRequest, UserCancelledError } from "@bentley/itwin-client";
-import { checkSync, lockSync } from "proper-lockfile";
-import { AsyncMutex, BeEvent, BriefcaseStatus, Logger } from "@bentley/bentleyjs-core";
+
 /** Configure download task
  * @internal
  */
@@ -391,7 +392,7 @@ export class BlobDownloader {
     } catch (err) {
       session.bytesDownloaded -= localDataBytes;
       this.markFailed(session, blockId);
-      session.lastError = err;
+      session.lastError = err instanceof Error ? err : new Error(getErrorMessage(err));
       session.failedBocks++;
       if (session.failedBocks > 10) {
         throw new Error("failed to download");
@@ -473,7 +474,7 @@ export class BlobDownloader {
   }
   private static checkDownloadCancelled(session: SessionData) {
     if (session.cancelled)
-      throw new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download", Logger.logWarning);
+      throw new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download");
   }
   private static async checkAnotherProcessIsDownloadingSameFile(session: SessionData): Promise<boolean> {
     // some other process is downloading

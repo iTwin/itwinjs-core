@@ -31,6 +31,8 @@ exports[`WidgetTabs should render 1`] = `
   />
   <div
     class="nz-widget-tab nz-active nz-first nz-last"
+    data-item-id="t1"
+    data-item-type="widget-tab"
     role="tab"
     title=""
   >
@@ -65,6 +67,8 @@ exports[`WidgetTabs should render overflow panel 1`] = `
   />
   <div
     class="nz-widget-tab nz-active nz-first nz-last-not-overflown"
+    data-item-id="t1"
+    data-item-type="widget-tab"
     role="tab"
     title=""
   >

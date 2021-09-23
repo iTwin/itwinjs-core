@@ -9,7 +9,6 @@ import { AuthorizationClient } from '@bentley/itwin-client';
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { CancelRequest } from '@bentley/itwin-client';
 import { Client } from 'openid-client';
-import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ClientTelemetryEvent } from '@bentley/telemetry-client';
 import { FileHandler } from '@bentley/itwin-client';
 import * as https from 'https';
@@ -25,14 +24,14 @@ import { TransformCallback } from 'stream';
 // @beta
 export class AgentAuthorizationClient extends BackendAuthorizationClient implements AuthorizationClient {
     constructor(agentConfiguration: AgentAuthorizationClientConfiguration);
-    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+    getAccessToken(): Promise<AccessToken>;
     // @deprecated
-    getToken(requestContext: ClientRequestContext): Promise<AccessToken>;
+    getToken(): Promise<AccessToken>;
     get hasExpired(): boolean;
     get hasSignedIn(): boolean;
     get isAuthorized(): boolean;
     // @deprecated
-    refreshToken(requestContext: ClientRequestContext, jwt: AccessToken): Promise<AccessToken>;
+    refreshToken(jwt: AccessToken): Promise<AccessToken>;
 }
 
 // @beta
@@ -44,7 +43,7 @@ export class AzureFileHandler implements FileHandler {
     // (undocumented)
     agent?: https.Agent;
     basename(filePath: string): string;
-    downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
+    downloadFile(_requestContext: AuthorizedClientRequestContext | undefined, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
     exists(filePath: string): boolean;
     getFileSize(filePath: string): number;
     isDirectory(filePath: string): boolean;
@@ -59,16 +58,17 @@ export abstract class BackendAuthorizationClient extends ImsAuthorizationClient 
     constructor(configuration: BackendAuthorizationClientConfiguration);
     // (undocumented)
     protected _configuration: BackendAuthorizationClientConfiguration;
-    discoverEndpoints(requestContext: ClientRequestContext): Promise<Issuer<Client>>;
+    discoverEndpoints(): Promise<Issuer<Client>>;
     // (undocumented)
-    protected getClient(requestContext: ClientRequestContext): Promise<Client>;
+    protected getClient(): Promise<Client>;
     }
 
 // @beta
 export interface BackendAuthorizationClientConfiguration {
-    clientId: string;
-    clientSecret: string;
-    scope: string;
+    readonly authority?: string;
+    readonly clientId: string;
+    readonly clientSecret: string;
+    readonly scope: string;
 }
 
 // @public
@@ -169,7 +169,7 @@ export interface ConfigData {
 // @beta
 export class DelegationAuthorizationClient extends BackendAuthorizationClient {
     constructor(configuration: DelegationAuthorizationClientConfiguration);
-    getJwtFromJwt(requestContext: ClientRequestContext, accessToken: AccessToken): Promise<AccessToken>;
+    getJwtFromJwt(accessToken: AccessToken): Promise<AccessToken>;
 }
 
 // @beta
@@ -236,7 +236,7 @@ export class IntrospectionClient {
     // (undocumented)
     protected readonly _clientSecret: string;
     // (undocumented)
-    protected getIssuerUrl(requestContext: AuthorizedClientRequestContext): Promise<string>;
+    protected getIssuerUrl(): Promise<string>;
     // (undocumented)
     introspect(requestContext: AuthorizedClientRequestContext): Promise<IntrospectionResponse>;
     // (undocumented)
@@ -266,13 +266,13 @@ export class LocalhostHandler implements FileHandler {
     // (undocumented)
     agent?: https.Agent;
     basename(filePath: string): string;
-    downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, path: string, fileSize?: number, progress?: ProgressCallback): Promise<void>;
+    downloadFile(_requestContext: AuthorizedClientRequestContext, downloadUrl: string, path: string, fileSize?: number, progress?: ProgressCallback): Promise<void>;
     exists(filePath: string): boolean;
     getFileSize(filePath: string): number;
     isDirectory(filePath: string): boolean;
     join(...paths: string[]): string;
     unlink(filePath: string): void;
-    uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, path: string, progress?: ProgressCallback): Promise<void>;
+    uploadFile(_requestContext: AuthorizedClientRequestContext, uploadUrlString: string, path: string, progress?: ProgressCallback): Promise<void>;
 }
 
 // @alpha (undocumented)
@@ -317,7 +317,7 @@ export class UrlFileHandler implements FileHandler {
     agent?: https.Agent;
     basename(filePath: string): string;
     // (undocumented)
-    downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
+    downloadFile(_requestContext: AuthorizedClientRequestContext | undefined, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
     exists(filePath: string): boolean;
     getFileSize(filePath: string): number;
     isDirectory(filePath: string): boolean;

@@ -102,6 +102,7 @@ export function DockedToolSettings(props: DockedToolSettingsProps) {
   );
   return (
     <div
+      data-toolsettings-provider={props.itemId}
       className={className}
       ref={refs}
       style={props.style}

@@ -4,20 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import {
-  Breadcrumb, BreadcrumbDetails, BreadcrumbDetailsProps, BreadcrumbMode, BreadcrumbPath, BreadcrumbProps, withBreadcrumbDetailsDragDrop,
-  withBreadcrumbDragDrop,
-} from "@bentley/ui-components";
-import { ConfigurableCreateInfo, ConfigurableUiManager, DragDropLayerManager, UiFramework, WidgetControl } from "@bentley/ui-framework";
-import { TableDragTypes } from "./demodataproviders/demoTableDataProvider";
-import {
-  demoMutableTreeDataProvider, DemoTreeDragDropType, treeDragProps, TreeDragTypes, treeDropProps,
-} from "./demodataproviders/demoTreeDataProvider";
-import { ChildDragLayer } from "./draglayers/ChildDragLayer";
-import { ParentDragLayer } from "./draglayers/ParentDragLayer";
-
-const DragDropBreadcrumb = withBreadcrumbDragDrop<BreadcrumbProps, DemoTreeDragDropType>(Breadcrumb); // eslint-disable-line deprecation/deprecation
-const DragDropBreadcrumbDetails = withBreadcrumbDetailsDragDrop<BreadcrumbDetailsProps, DemoTreeDragDropType>(BreadcrumbDetails); // eslint-disable-line deprecation/deprecation
+import { Breadcrumb, BreadcrumbDetails, BreadcrumbMode, BreadcrumbPath } from "@bentley/ui-components";
+import { ConfigurableCreateInfo, ConfigurableUiManager, UiFramework, WidgetControl } from "@bentley/ui-framework";
+import { demoMutableTreeDataProvider } from "./demodataproviders/demoTreeDataProvider";
 
 export class BreadcrumbDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -45,25 +34,6 @@ class BreadcrumbDemoWidget extends React.Component<Props, State> {
   public override render() {
     const path = new BreadcrumbPath(demoMutableTreeDataProvider); // eslint-disable-line deprecation/deprecation
 
-    DragDropLayerManager.registerTypeLayer(TreeDragTypes.Parent, ParentDragLayer); // eslint-disable-line deprecation/deprecation
-    DragDropLayerManager.registerTypeLayer(TreeDragTypes.Child, ChildDragLayer); // eslint-disable-line deprecation/deprecation
-
-    let objectTypes: Array<string | symbol> = [];
-    if (treeDropProps.objectTypes) {
-      if (typeof treeDropProps.objectTypes !== "function")
-        objectTypes = treeDropProps.objectTypes;
-      else
-        objectTypes = treeDropProps.objectTypes();
-    }
-    if (this.state.checked)
-      objectTypes.push(TableDragTypes.Row);
-
-    const dragProps = treeDragProps;
-    const dropProps = {
-      ...treeDropProps,
-      objectTypes,
-    };
-
     return (
       <div style={{ height: "100%" }}>
         <label htmlFor="receives_row">Can accept rows: </label>
@@ -72,10 +42,9 @@ class BreadcrumbDemoWidget extends React.Component<Props, State> {
         }} />
         <div style={{ height: "calc(100% - 22px)" }}>
           {/* eslint-disable-next-line deprecation/deprecation */}
-          <DragDropBreadcrumb path={path} dataProvider={demoMutableTreeDataProvider} initialBreadcrumbMode={BreadcrumbMode.Input} delimiter={"\\"}
-            dragProps={dragProps} dropProps={dropProps} />
-          <DragDropBreadcrumbDetails path={path}
-            dragProps={dragProps} dropProps={dropProps} />
+          <Breadcrumb path={path} dataProvider={demoMutableTreeDataProvider} initialBreadcrumbMode={BreadcrumbMode.Input} delimiter={"\\"} />
+          {/* eslint-disable-next-line deprecation/deprecation */}
+          <BreadcrumbDetails path={path} />
         </div>
       </div>
     );

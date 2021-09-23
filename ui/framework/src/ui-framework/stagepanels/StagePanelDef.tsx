@@ -219,11 +219,11 @@ export class StagePanelDef extends WidgetHost {
 
   /** @internal */
   public override updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, _section: StagePanelSection | undefined,
-    widgetDefs: WidgetDef[],
+    widgetDefs: WidgetDef[], frontstageApplicationData?: any,
   ): void {
-    this.panelZones.start.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.Start, widgetDefs);
-    this.panelZones.middle.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.Middle, widgetDefs);
-    this.panelZones.end.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.End, widgetDefs);
+    this.panelZones.start.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.Start, widgetDefs, frontstageApplicationData);
+    this.panelZones.middle.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.Middle, widgetDefs, frontstageApplicationData);
+    this.panelZones.end.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.End, widgetDefs, frontstageApplicationData);
   }
 }
 

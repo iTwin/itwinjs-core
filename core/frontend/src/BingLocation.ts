@@ -7,7 +7,6 @@
  */
 
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { Angle } from "@bentley/geometry-core";
 import { Cartographic } from "@bentley/imodeljs-common";
 import { request, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelApp } from "./IModelApp";
@@ -45,10 +44,10 @@ export class BingLocationProvider {
       const northLatitude = bbox[2];
       const eastLongitude = bbox[3];
       return {
-        center: Cartographic.fromRadians(Angle.degreesToRadians(point.coordinates[1]), Angle.degreesToRadians(point.coordinates[0])),
+        center: Cartographic.fromDegrees({longitude: point.coordinates[1], latitude: point.coordinates[0]}),
         area: {
-          southwest: Cartographic.fromRadians(Angle.degreesToRadians(westLongitude), Angle.degreesToRadians(southLatitude)),
-          northeast: Cartographic.fromRadians(Angle.degreesToRadians(eastLongitude), Angle.degreesToRadians(northLatitude)),
+          southwest: Cartographic.fromDegrees({longitude: westLongitude, latitude: southLatitude}),
+          northeast: Cartographic.fromDegrees({longitude: eastLongitude, latitude: northLatitude}),
         },
       };
     } catch (error) {

@@ -8,7 +8,10 @@ import { BasicManipulationCommandIpc } from '@bentley/imodeljs-editor-common';
 import { CompressedId64Set } from '@bentley/bentleyjs-core';
 import { EcefLocationProps } from '@bentley/imodeljs-common';
 import { EditCommandIpc } from '@bentley/imodeljs-editor-common';
+import { ElementGeometryCacheFilter } from '@bentley/imodeljs-editor-common';
 import { ElementGeometryInfo } from '@bentley/imodeljs-common';
+import { ElementGeometryResultOptions } from '@bentley/imodeljs-editor-common';
+import { ElementGeometryResultProps } from '@bentley/imodeljs-editor-common';
 import { FlatBufferGeometricElementData } from '@bentley/imodeljs-editor-common';
 import { FlatBufferGeometryFilter } from '@bentley/imodeljs-editor-common';
 import { FlatBufferGeometryPartData } from '@bentley/imodeljs-editor-common';
@@ -18,8 +21,14 @@ import { Id64String } from '@bentley/bentleyjs-core';
 import { IModelDb } from '@bentley/imodeljs-backend';
 import { IModelStatus } from '@bentley/bentleyjs-core';
 import { Matrix3dProps } from '@bentley/geometry-core';
+import { OffsetFacesProps } from '@bentley/imodeljs-editor-common';
 import { Range3dProps } from '@bentley/geometry-core';
+import { SolidModelingCommandIpc } from '@bentley/imodeljs-editor-common';
+import { SubEntityGeometryProps } from '@bentley/imodeljs-editor-common';
+import { SubEntityLocationProps } from '@bentley/imodeljs-editor-common';
+import { SubEntityProps } from '@bentley/imodeljs-editor-common';
 import { TransformProps } from '@bentley/geometry-core';
+import { XYZProps } from '@bentley/geometry-core';
 
 // @alpha (undocumented)
 export class BasicManipulationCommand extends EditCommand implements BasicManipulationCommandIpc {
@@ -86,6 +95,22 @@ export class EditCommandAdmin {
 
 // @alpha (undocumented)
 export type EditCommandType = typeof EditCommand;
+
+// @alpha (undocumented)
+export class SolidModelingCommand extends BasicManipulationCommand implements SolidModelingCommandIpc {
+    // (undocumented)
+    clearElementGeometryCache(): Promise<void>;
+    // (undocumented)
+    static commandId: string;
+    // (undocumented)
+    createElementGeometryCache(id: Id64String, filter?: ElementGeometryCacheFilter): Promise<boolean>;
+    // (undocumented)
+    getClosestFace(id: Id64String, point: XYZProps, direction?: XYZProps): Promise<SubEntityLocationProps | undefined>;
+    // (undocumented)
+    getSubEntityGeometry(id: Id64String, subEntity: SubEntityProps, opts: Omit<ElementGeometryResultOptions, "writeChanges" | "insertProps">): Promise<SubEntityGeometryProps | undefined>;
+    // (undocumented)
+    offsetFaces(id: Id64String, params: OffsetFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+    }
 
 
 // (No @packageDocumentation comment for this package)

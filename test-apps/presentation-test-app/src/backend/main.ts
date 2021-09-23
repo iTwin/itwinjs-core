@@ -8,7 +8,6 @@ import * as fs from "fs";
 import * as path from "path";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { RpcInterfaceDefinition } from "@bentley/imodeljs-common";
-import { RequestPriority } from "@bentley/presentation-common";
 // __PUBLISH_EXTRACT_START__ Presentation.Backend.Initialization.Imports
 import { Presentation, PresentationProps } from "@bentley/presentation-backend";
 // __PUBLISH_EXTRACT_END__
@@ -46,9 +45,7 @@ import rpcs from "../common/Rpcs";
 
   // props that we don't want to show in documentation set up example
   presentationBackendProps.mode = PresentationManagerMode.ReadWrite;
-  presentationBackendProps.taskAllocationsMap = {
-    [RequestPriority.Max]: 1,
-  };
+  presentationBackendProps.workerThreadsCount = 1;
   presentationBackendProps.useMmap = true;
   presentationBackendProps.updatesPollInterval = 20;
 

@@ -147,7 +147,7 @@ export class TileAvailability {
     return this.findMaxLevelFromNode(undefined, node, position);
   }
 
-  private _cartographicScratch = new Cartographic();
+  private _cartographicScratch = Cartographic.createZero();
 
   /**
    * Determines if a particular tile is available.

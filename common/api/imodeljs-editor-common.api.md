@@ -4,6 +4,7 @@
 
 ```ts
 
+import { ColorDefProps } from '@bentley/imodeljs-common';
 import { CompressedId64Set } from '@bentley/bentleyjs-core';
 import { EcefLocationProps } from '@bentley/imodeljs-common';
 import { ElementGeometryDataEntry } from '@bentley/imodeljs-common';
@@ -16,21 +17,22 @@ import { IModelStatus } from '@bentley/bentleyjs-core';
 import { Matrix3dProps } from '@bentley/geometry-core';
 import { Range3dProps } from '@bentley/geometry-core';
 import { TransformProps } from '@bentley/geometry-core';
+import { XYZProps } from '@bentley/geometry-core';
 
 // @alpha (undocumented)
 export interface BasicManipulationCommandIpc extends EditCommandIpc {
     // (undocumented)
-    deleteElements: (ids: CompressedId64Set) => Promise<IModelStatus>;
+    deleteElements(ids: CompressedId64Set): Promise<IModelStatus>;
     insertGeometricElement(props: GeometricElementProps, data?: FlatBufferGeometricElementData): Promise<Id64String>;
     insertGeometryPart(props: GeometryPartProps, data?: FlatBufferGeometryPartData): Promise<Id64String>;
     requestElementGeometry(id: Id64String, filter?: FlatBufferGeometryFilter): Promise<ElementGeometryInfo | undefined>;
     // (undocumented)
-    rotatePlacement: (ids: CompressedId64Set, matrix: Matrix3dProps, aboutCenter: boolean) => Promise<IModelStatus>;
+    rotatePlacement(ids: CompressedId64Set, matrix: Matrix3dProps, aboutCenter: boolean): Promise<IModelStatus>;
     // (undocumented)
-    transformPlacement: (ids: CompressedId64Set, transform: TransformProps) => Promise<IModelStatus>;
-    updateEcefLocation: (ecefLocation: EcefLocationProps) => Promise<void>;
+    transformPlacement(ids: CompressedId64Set, transform: TransformProps): Promise<IModelStatus>;
+    updateEcefLocation(ecefLocation: EcefLocationProps): Promise<void>;
     updateGeometricElement(propsOrId: GeometricElementProps | Id64String, data?: FlatBufferGeometricElementData): Promise<void>;
-    updateProjectExtents: (extents: Range3dProps) => Promise<void>;
+    updateProjectExtents(extents: Range3dProps): Promise<void>;
 }
 
 // @alpha (undocumented)
@@ -46,6 +48,7 @@ export interface EditCommandIpc {
 // @alpha (undocumented)
 export const editorBuiltInCmdIds: {
     cmdBasicManipulation: string;
+    cmdSolidModeling: string;
 };
 
 // @internal (undocumented)
@@ -57,6 +60,38 @@ export interface EditorIpc {
     callMethod: (name: string, ...args: any[]) => Promise<any>;
     // (undocumented)
     startCommand: (commandId: string, iModelKey: string, ...args: any[]) => Promise<any>;
+}
+
+// @alpha (undocumented)
+export interface ElementGeometryCacheFilter {
+    curves: boolean;
+    maxGeom?: number;
+    minGeom?: number;
+    other: boolean;
+    parts: boolean;
+    solids: boolean;
+    surfaces: boolean;
+}
+
+// @alpha (undocumented)
+export interface ElementGeometryResultOptions {
+    chordTolerance?: number;
+    insertProps?: GeometricElementProps;
+    requestId?: string;
+    wantAppearance?: true | undefined;
+    wantGeometry?: true | undefined;
+    wantGraphic?: true | undefined;
+    wantRange?: true | undefined;
+    writeChanges?: true | undefined;
+}
+
+// @alpha (undocumented)
+export interface ElementGeometryResultProps {
+    categoryId?: Id64String;
+    elementId?: Id64String;
+    geometry?: ElementGeometryInfo;
+    graphic?: Uint8Array;
+    range?: Range3dProps;
 }
 
 // @alpha (undocumented)
@@ -82,6 +117,67 @@ export interface FlatBufferGeometryFilter {
 export interface FlatBufferGeometryPartData {
     entryArray: ElementGeometryDataEntry[];
     is2dPart?: boolean;
+}
+
+// @alpha (undocumented)
+export interface OffsetFacesProps {
+    distances: number | number[];
+    faces: SubEntityProps | SubEntityProps[];
+}
+
+// @alpha (undocumented)
+export interface SolidModelingCommandIpc extends EditCommandIpc {
+    // (undocumented)
+    clearElementGeometryCache(): Promise<void>;
+    // (undocumented)
+    createElementGeometryCache(id: Id64String, filter?: ElementGeometryCacheFilter): Promise<boolean>;
+    // (undocumented)
+    getClosestFace(id: Id64String, testPoint: XYZProps, preferredDirection?: XYZProps): Promise<SubEntityLocationProps | undefined>;
+    // (undocumented)
+    getSubEntityGeometry(id: Id64String, subEntity: SubEntityProps, opts: Omit<ElementGeometryResultOptions, "writeChanges" | "insertProps">): Promise<SubEntityGeometryProps | undefined>;
+    // (undocumented)
+    offsetFaces(id: Id64String, params: OffsetFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+}
+
+// @alpha (undocumented)
+export interface SubEntityAppearanceProps {
+    category: Id64String;
+    color?: ColorDefProps;
+    material?: Id64String;
+    subCategory?: Id64String;
+    transparency?: number;
+    weight?: number;
+}
+
+// @alpha (undocumented)
+export interface SubEntityGeometryProps {
+    appearance?: SubEntityAppearanceProps;
+    geometry?: ElementGeometryDataEntry;
+    graphic?: Uint8Array;
+    range?: Range3dProps;
+}
+
+// @alpha (undocumented)
+export interface SubEntityLocationProps {
+    normal?: XYZProps;
+    point?: XYZProps;
+    subEntity: SubEntityProps;
+    uParam?: number;
+    vParam?: number;
+}
+
+// @alpha (undocumented)
+export interface SubEntityProps {
+    id: number;
+    index?: number;
+    type: SubEntityType;
+}
+
+// @alpha (undocumented)
+export enum SubEntityType {
+    Edge = 1,
+    Face = 0,
+    Vertex = 2
 }
 
 

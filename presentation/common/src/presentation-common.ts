@@ -76,8 +76,6 @@ export * from "./presentation-common/hierarchy/NodePathElement";
  * @docs-group-description PresentationRules
  * Types for defining the presentation ruleset.
  */
-export * from "./presentation-common/rules/hierarchy/AllInstanceNodesSpecification";
-export * from "./presentation-common/rules/hierarchy/AllRelatedInstanceNodesSpecification";
 export * from "./presentation-common/rules/hierarchy/ChildNodeRule";
 export * from "./presentation-common/rules/hierarchy/ChildNodeSpecification";
 export * from "./presentation-common/rules/hierarchy/CustomNodeSpecification";
@@ -106,7 +104,6 @@ export * from "./presentation-common/rules/content/SelectedNodeInstancesSpecific
 export * from "./presentation-common/rules/content/DefaultPropertyCategoryOverride";
 export * from "./presentation-common/rules/content/modifiers/CalculatedPropertiesSpecification";
 export * from "./presentation-common/rules/content/modifiers/ContentModifier";
-export * from "./presentation-common/rules/content/modifiers/PropertiesDisplaySpecification";
 export * from "./presentation-common/rules/content/modifiers/PropertyCategorySpecification";
 export * from "./presentation-common/rules/content/modifiers/PropertyEditorsSpecification";
 export * from "./presentation-common/rules/content/modifiers/CustomRendererSpecification";

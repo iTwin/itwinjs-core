@@ -90,8 +90,7 @@ describe("RadialMenu", () => {
       render(<RadialMenu opened={true} left={100} top={100} innerRadius={10} outerRadius={100} onBlur={spyMethod} />);
       await TestUtils.flushAsyncOperations();
 
-      const mouseUp = document.createEvent("HTMLEvents");
-      mouseUp.initEvent("mouseup");
+      const mouseUp = new MouseEvent("mouseup");
       sinon.stub(mouseUp, "target").get(() => document.createElement("div"));
       window.dispatchEvent(mouseUp);
 

@@ -10,7 +10,6 @@ import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { Id64String } from '@bentley/bentleyjs-core';
-import { LogFunction } from '@bentley/bentleyjs-core';
 
 // @public
 export interface AbstractActionItemProps extends CommonItemProps, CommandHandler {
@@ -873,6 +872,12 @@ export class ConditionalStringValue {
     get value(): string;
     }
 
+// @public
+export interface ContentLayoutProps extends LayoutFragmentProps {
+    description?: string;
+    id: string;
+}
+
 // @internal (undocumented)
 export function convertSimple2RegExpPattern(pattern: string): string;
 
@@ -1250,6 +1255,35 @@ export const isSuppressLabelEditorParams: (item: BasePropertyEditorParams) => it
 
 // @internal (undocumented)
 export function isUpperAsciiLetter(code: number): boolean;
+
+// @public
+export interface LayoutFragmentProps {
+    horizontalSplit?: LayoutHorizontalSplitProps;
+    verticalSplit?: LayoutVerticalSplitProps;
+}
+
+// @public
+export interface LayoutHorizontalSplitProps extends LayoutSplitPropsBase {
+    bottom: LayoutFragmentProps | number;
+    minSizeBottom?: number;
+    minSizeTop?: number;
+    top: LayoutFragmentProps | number;
+}
+
+// @public
+export interface LayoutSplitPropsBase {
+    id: string;
+    lock?: boolean;
+    percentage: number;
+}
+
+// @public
+export interface LayoutVerticalSplitProps extends LayoutSplitPropsBase {
+    left: LayoutFragmentProps | number;
+    minSizeLeft?: number;
+    minSizeRight?: number;
+    right: LayoutFragmentProps | number;
+}
 
 // @public
 export interface LinkElementsInfo {
@@ -1680,6 +1714,28 @@ export enum StageUsage {
     ViewOnly = "ViewOnly"
 }
 
+// @public
+export class StandardContentLayouts {
+    // (undocumented)
+    static readonly availableLayouts: ContentLayoutProps[];
+    // (undocumented)
+    static readonly fourQuadrants: ContentLayoutProps;
+    // (undocumented)
+    static readonly singleView: ContentLayoutProps;
+    // (undocumented)
+    static readonly threeViewsTwoOnBottom: ContentLayoutProps;
+    // (undocumented)
+    static readonly threeViewsTwoOnLeft: ContentLayoutProps;
+    // (undocumented)
+    static readonly threeViewsTwoOnRight: ContentLayoutProps;
+    // (undocumented)
+    static readonly threeViewsTwoOnTop: ContentLayoutProps;
+    // (undocumented)
+    static readonly twoHorizontalSplit: ContentLayoutProps;
+    // (undocumented)
+    static readonly twoVerticalSplit: ContentLayoutProps;
+}
+
 // @beta
 export enum StandardEditorNames {
     // (undocumented)
@@ -1984,7 +2040,9 @@ export abstract class UiDataProvider {
 
 // @public
 export class UiError extends BentleyError {
-    constructor(category: string, message: string, errorNumber?: number, log?: LogFunction, getMetaData?: GetMetaDataFunction | undefined);
+    constructor(category: string, message: string, errorNumber?: number, getMetaData?: GetMetaDataFunction);
+    // (undocumented)
+    category: string;
 }
 
 // @public
@@ -2044,10 +2102,10 @@ export class UiItemsArbiter {
 // @public
 export class UiItemsManager {
     static getBackstageItems(): BackstageItem[];
-    static getStatusBarItems(stageId: string, stageUsage: string): CommonStatusBarItem[];
-    static getToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[];
+    static getStatusBarItems(stageId: string, stageUsage: string, stageAppData?: any): CommonStatusBarItem[];
+    static getToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[];
     static getUiItemsProvider(providerId: string): UiItemsProvider | undefined;
-    static getWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, zoneLocation?: AbstractZoneLocation): ReadonlyArray<AbstractWidgetProps>;
+    static getWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, zoneLocation?: AbstractZoneLocation, stageAppData?: any): ReadonlyArray<AbstractWidgetProps>;
     static get hasRegisteredProviders(): boolean;
     static readonly onUiProviderRegisteredEvent: BeEvent<(ev: UiItemProviderRegisteredEventArgs) => void>;
     static register(uiProvider: UiItemsProvider): void;
@@ -2063,9 +2121,9 @@ export interface UiItemsProvider {
     onToolbarButtonItemArbiterChange?: (item: CommonToolbarItem, action: UiItemsApplicationAction) => void;
     onWidgetArbiterChange?: (widget: AbstractWidgetProps, action: UiItemsApplicationAction) => void;
     provideBackstageItems?: () => BackstageItem[];
-    provideStatusBarItems?: (stageId: string, stageUsage: string) => CommonStatusBarItem[];
-    provideToolbarButtonItems?: (stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => CommonToolbarItem[];
-    provideWidgets?: (stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, zoneLocation?: AbstractZoneLocation) => ReadonlyArray<AbstractWidgetProps>;
+    provideStatusBarItems?: (stageId: string, stageUsage: string, stageAppData?: any) => CommonStatusBarItem[];
+    provideToolbarButtonItems?: (stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any) => CommonToolbarItem[];
+    provideWidgets?: (stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, zoneLocation?: AbstractZoneLocation, stageAppData?: any) => ReadonlyArray<AbstractWidgetProps>;
 }
 
 // @public (undocumented)

@@ -10,21 +10,16 @@ export class EditingScopeTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 0; }
 
-  public override run(): boolean {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this._run();
-    return true;
-  }
-
-  private async _run(): Promise<void> {
+  public override async run(): Promise<boolean> {
     const imodel = IModelApp.viewManager.selectedView?.iModel;
     if (!imodel || !imodel.isBriefcaseConnection())
-      return;
+      return false;
 
     const scope = imodel.editingScope;
     if (scope)
       await scope.exit();
     else
       await imodel.enterEditingScope();
+    return true;
   }
 }
