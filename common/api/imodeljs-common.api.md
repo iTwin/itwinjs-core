@@ -5118,37 +5118,38 @@ export const nativeAppChannel = "nativeApp";
 
 // @internal
 export interface NativeAppFunctions {
-    acquireNewBriefcaseId: (_iModelId: GuidString) => Promise<number>;
-    checkInternetConnectivity: () => Promise<InternetConnectivityStatus>;
-    deleteBriefcaseFiles: (_fileName: string) => Promise<void>;
-    downloadBriefcase: (_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean, _interval?: number) => Promise<LocalBriefcaseProps>;
+    acquireNewBriefcaseId(_iModelId: GuidString): Promise<number>;
+    checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
+    deleteBriefcaseFiles(_fileName: string): Promise<void>;
+    downloadBriefcase(_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean, _interval?: number): Promise<LocalBriefcaseProps>;
     // (undocumented)
-    getAccessTokenProps: () => Promise<AccessTokenProps>;
-    getBriefcaseFileName: (_props: BriefcaseProps) => Promise<string>;
-    getCachedBriefcases: (_iModelId?: GuidString) => Promise<LocalBriefcaseProps[]>;
-    initializeAuth: (props: ClientRequestContextProps, config?: NativeAppAuthorizationConfiguration) => Promise<number>;
-    overrideInternetConnectivity: (_overriddenBy: OverriddenBy, _status: InternetConnectivityStatus) => Promise<void>;
-    requestCancelDownloadBriefcase: (_fileName: string) => Promise<boolean>;
+    getAccessTokenProps(): Promise<AccessTokenProps>;
+    getBriefcaseFileName(_props: BriefcaseProps): Promise<string>;
+    getCachedBriefcases(_iModelId?: GuidString): Promise<LocalBriefcaseProps[]>;
+    initializeAuth(props: ClientRequestContextProps, config?: NativeAppAuthorizationConfiguration): Promise<number>;
+    overrideInternetConnectivity(_overriddenBy: OverriddenBy, _status: InternetConnectivityStatus): Promise<void>;
+    requestCancelDownloadBriefcase(_fileName: string): Promise<boolean>;
     // (undocumented)
-    setAccessTokenProps: (token: AccessTokenProps) => Promise<void>;
-    signIn: () => Promise<void>;
-    signOut: () => Promise<void>;
-    storageGet: (_storageId: string, _key: string) => Promise<StorageValue | undefined>;
-    storageKeys: (_storageId: string) => Promise<string[]>;
-    storageMgrClose: (_storageId: string, _deleteOnClose: boolean) => Promise<void>;
-    storageMgrNames: () => Promise<string[]>;
-    storageMgrOpen: (_storageId: string) => Promise<string>;
-    storageRemove: (_storageId: string, _key: string) => Promise<void>;
-    storageRemoveAll: (_storageId: string) => Promise<void>;
-    storageSet: (_storageId: string, _key: string, _value: StorageValue) => Promise<void>;
+    setAccessTokenProps(token: AccessTokenProps): Promise<void>;
+    signIn(): Promise<void>;
+    signOut(): Promise<void>;
+    storageGet(_storageId: string, _key: string): Promise<StorageValue | undefined>;
+    storageGetValueType(_storageId: string, _key: string): Promise<"number" | "string" | "boolean" | "Uint8Array" | "null" | undefined>;
+    storageKeys(_storageId: string): Promise<string[]>;
+    storageMgrClose(_storageId: string, _deleteOnClose: boolean): Promise<void>;
+    storageMgrNames(): Promise<string[]>;
+    storageMgrOpen(_storageId: string): Promise<string>;
+    storageRemove(_storageId: string, _key: string): Promise<void>;
+    storageRemoveAll(_storageId: string): Promise<void>;
+    storageSet(_storageId: string, _key: string, _value: StorageValue): Promise<void>;
 }
 
 // @internal
 export interface NativeAppNotifications {
     // (undocumented)
-    notifyInternetConnectivityChanged: (status: InternetConnectivityStatus) => void;
+    notifyInternetConnectivityChanged(status: InternetConnectivityStatus): void;
     // (undocumented)
-    notifyUserStateChanged: (accessToken?: AccessTokenProps) => void;
+    notifyUserStateChanged(accessToken?: AccessTokenProps): void;
 }
 
 // @internal (undocumented)

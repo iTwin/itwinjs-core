@@ -7,6 +7,7 @@ import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { NativeApp } from "@bentley/imodeljs-frontend";
 import { NativeAppTest } from "../NativeAppTest";
 import { usingOfflineScope } from "../HttpRequestHook";
+import { assetsPath } from "../../backend/IModelBankBackendCloudEnv";
 
 describe("NativeApp startup", () => {
   before(async () => ElectronApp.startup());
@@ -53,13 +54,15 @@ describe("NativeApp Storage", () => {
     await NativeApp.closeStorage(test1, true);
   });
 
-  it("Override and type check", async () => {
+  it.only("Override and type check", async () => {
     const test1 = await NativeApp.openStorage("fronted_test_2");
     await test1.setData("key1", undefined);
     assert.isUndefined(await test1.getData("key1"));
+    assert.equal(await test1.getValueType("key1"), "null");
 
     await test1.removeData("key1");
     assert.isUndefined(await test1.getData("key1"));
+    assert.equal(await test1.getValueType("key1"), undefined);
 
     await test1.setData("key1", 2222);
     assert.isNumber(await test1.getData("key1"));
