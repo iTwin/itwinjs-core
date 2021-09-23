@@ -238,7 +238,7 @@ export class TileAdmin {
       this.maximumLevelsToSkip = 1;
 
     const minSpatialTol = options.minimumSpatialTolerance;
-    this.minimumSpatialTolerance = minSpatialTol ? Math.max(minSpatialTol, 0) : 0.001;
+    this.minimumSpatialTolerance = undefined !== minSpatialTol ? Math.max(minSpatialTol, 0) : 0.001;
 
     const clamp = (seconds: number, min: number, max: number): BeDuration => {
       seconds = Math.min(seconds, max);
