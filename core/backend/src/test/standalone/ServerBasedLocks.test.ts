@@ -85,7 +85,7 @@ describe("Server-based locks", () => {
     const modelProps = bc1.elements.getElementProps(modelId);
     const subjectId = modelProps.parent!.id;
 
-    const sharedLockError = "element is locked with shared";
+    const sharedLockError = "shared lock is held";
     const exclusiveLockError = "lock is already held";
 
     await bc1.acquireSchemaLock();

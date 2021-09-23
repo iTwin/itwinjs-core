@@ -657,6 +657,14 @@ const applyFeatureColor = `
   return vec4(rgb, alpha);
 `;
 
+// feature_rgb.r = -1.0 if rgb color not overridden for feature, else mix based on u_overrrideColorMix.
+// feature_alpha = -1.0 if alpha not overridden for feature.
+export const mixFeatureColor = `
+  vec3 rgb = mix(baseColor.rgb, mix(baseColor.rgb, feature_rgb.rgb, u_overrideColorMix), step(0.0, feature_rgb.r));
+  float alpha = mix(baseColor.a, feature_alpha, step(0.0, feature_alpha));
+  return vec4(rgb, alpha);
+  `;
+
 const applyFlash = `
   float flashHilite = floor(v_feature_emphasis + 0.5);
   return doApplyFlash(flashHilite, baseColor);

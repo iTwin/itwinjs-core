@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ui-imodel-components-react",
-  "version": "3.0.0-dev.64",
+  "version": "3.0.0-dev.65",
   "description": "iModel.js UI IModel Components",
   "main": "lib/ui-imodel-components-react.js",
   "typings": "lib/ui-imodel-components-react",
@@ -33,15 +33,15 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.64",
-    "@itwin/core-geometry": "workspace:^3.0.0-dev.64",
-    "@itwin/core-common": "workspace:^3.0.0-dev.64",
-    "@itwin/core-frontend": "workspace:^3.0.0-dev.64",
-    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.64",
-    "@bentley/imodeljs-quantity": "workspace:^3.0.0-dev.64",
-    "@itwin/appui-abstract": "workspace:^3.0.0-dev.64",
-    "@itwin/ui-core-react": "workspace:^3.0.0-dev.64",
-    "@itwin/ui-components-react": "workspace:^3.0.0-dev.64",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.65",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.65",
+    "@itwin/core-common": "workspace:^3.0.0-dev.65",
+    "@itwin/core-frontend": "workspace:^3.0.0-dev.65",
+    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.65",
+    "@bentley/imodeljs-quantity": "workspace:^3.0.0-dev.65",
+    "@itwin/appui-abstract": "workspace:^3.0.0-dev.65",
+    "@itwin/ui-core-react": "workspace:^3.0.0-dev.65",
+    "@itwin/ui-components-react": "workspace:^3.0.0-dev.65",
     "react": "^16.8.6 || ^17.0.0",
     "react-dom": "^16.8.6 || ^17.0.0"
   },
@@ -89,7 +89,7 @@
     "eslint": "^7.11.0",
     "faker": "^4.1.0",
     "ignore-styles": "^5.0.1",
-    "jsdom": "^16.7.0",
+    "typescript": "^17.0.0",
     "jsdom-global": "3.0.2",
     "mocha": "^8.3.2",
     "nyc": "^15.1.0",
@@ -103,7 +103,7 @@
     "ts-node": "^7.0.1",
     "tsconfig-paths": "^3.3.2",
     "typemoq": "^2.1.0",
-    "typescript": "~4.3.0",
+    "typescript": "~4.4.0",
     "xmlhttprequest": "^1.8.0"
   },
   "//dependencies": [

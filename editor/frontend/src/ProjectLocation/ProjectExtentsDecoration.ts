@@ -10,7 +10,7 @@ import { Angle, Arc3d, AxisIndex, AxisOrder, ClipShape, ClipVector, Constant, Ma
 import { Cartographic, ColorDef, EcefLocation, EcefLocationProps } from "@itwin/core-common";
 import { BeButton, BeButtonEvent, BriefcaseConnection, CoreTools, DecorateContext, EditManipulator, EventHandled, GraphicType, HitDetail, IModelApp, IModelConnection, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessagePriority, QuantityType, ScreenViewport, Tool, ViewClipControlArrow, ViewClipDecorationProvider, ViewClipShapeModifyTool, ViewClipTool, Viewport } from "@itwin/core-frontend";
 import { ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./ProjectGeolocation";
-import { BeDuration, BeEvent } from "@itwin/core-bentley";
+import { BeDuration, BeEvent, getErrorMessage } from "@itwin/core-bentley";
 import { EditTools } from "../EditTool";
 import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@itwin/editor-common";
 
@@ -959,8 +959,8 @@ export class ProjectLocationSaveTool extends Tool {
 
       await deco.iModel.saveChanges(this.toolId);
       await deco.iModel.txns.restartTxnSession();
-    } catch (err: any) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
+    } catch (err) {
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, getErrorMessage(err) || "An unknown error occurred."));
     }
 
     deco.onChanged.raiseEvent(deco.iModel, ProjectLocationChanged.Save);

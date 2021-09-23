@@ -626,7 +626,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
     const addNext = (undefined !== hit && !this.agenda.has(hit.sourceId));
     this.agenda.popGroup();
 
-    if (!addNext || !await this.buildLocateAgenda(hit!))
+    if (!addNext || !await this.buildLocateAgenda(hit))
       await this.onAgendaModified(); // only change was popGroup...
 
     return true;

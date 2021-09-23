@@ -137,7 +137,7 @@ class ModelClipTool {
 }
 
 export interface DividingLineProps {
-  bounds: ClientRect;
+  bounds: DOMRect;
   onDragged?: (leftPanelWidth: number, rightPanelWidth: number) => void;
   buffer?: number;
   sideL?: number;
@@ -154,7 +154,7 @@ export class TwoPanelDivider {
   }
 
   private _buffer: number;
-  private _bounds: ClientRect;
+  private _bounds: DOMRect;
   private _oldPosition: number = 0;
 
   public dividerElem: HTMLElement;
@@ -164,7 +164,7 @@ export class TwoPanelDivider {
     this.dividerElem.style.left = `${left}px`;
   }
 
-  public updateBounds(rect: ClientRect): void {
+  public updateBounds(rect: DOMRect): void {
     this.dividerElem.style.top = `${rect.top}px`;
     this.dividerElem.style.height = `${rect.height}px`;
   }

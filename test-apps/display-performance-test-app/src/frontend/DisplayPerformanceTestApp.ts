@@ -100,7 +100,7 @@ async function main() {
 
     const runner = new TestRunner(props);
     await runner.run();
-  } catch (err) {
+  } catch (err: any) {
     alert(err.toString());
   }
 

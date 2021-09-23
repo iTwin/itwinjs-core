@@ -100,8 +100,7 @@ describe("WidgetPanelGrip", () => {
     fireEvent.mouseDown(handle);
     fakeTimers.tick(300);
 
-    const event = document.createEvent("MouseEvent");
-    event.initEvent("mousemove");
+    const event = new MouseEvent("mousemove");
     sinon.stub(event, "clientX").get(() => 220);
     fireEvent(document, event);
 

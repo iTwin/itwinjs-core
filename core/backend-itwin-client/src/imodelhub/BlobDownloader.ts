@@ -14,7 +14,7 @@ import * as path from "path";
 import { checkSync, lockSync } from "proper-lockfile";
 import * as stream from "stream";
 import * as util from "util";
-import { AsyncMutex, BeEvent, BriefcaseStatus } from "@itwin/core-bentley";
+import { AsyncMutex, BeEvent, BriefcaseStatus, getErrorMessage } from "@itwin/core-bentley";
 import { CancelRequest, UserCancelledError } from "@bentley/itwin-client";
 
 /** Configure download task
@@ -389,10 +389,10 @@ export class BlobDownloader {
       });
       await this.pipeline(downloadStream, fs.createWriteStream(targetFile, { flags: "r+", start: startByte }));
       this.markCompleted(session, blockId);
-    } catch (err: any) {
+    } catch (err) {
       session.bytesDownloaded -= localDataBytes;
       this.markFailed(session, blockId);
-      session.lastError = err;
+      session.lastError = err instanceof Error ? err : new Error(getErrorMessage(err));
       session.failedBocks++;
       if (session.failedBocks > 10) {
         throw new Error("failed to download");

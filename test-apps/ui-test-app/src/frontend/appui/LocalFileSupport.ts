@@ -37,7 +37,7 @@ export class LocalFileSupport {
       Logger.logInfo(SampleAppIModelApp.loggerCategory(LocalFileSupport), `openLocalFile: Opening standalone. path=${filePath} writable=${writable}`);
       try {
         iModelConnection = await BriefcaseConnection.openStandalone(filePath, writable ? OpenMode.ReadWrite : OpenMode.Readonly, { key: filePath });
-      } catch (err) {
+      } catch (err: any) {
         Logger.logError(SampleAppIModelApp.loggerCategory(LocalFileSupport), `openLocalFile: BriefcaseConnection.openStandalone failed.`);
 
         if (writable && err instanceof IModelError && err.errorNumber === IModelStatus.ReadOnly) {
@@ -53,7 +53,7 @@ export class LocalFileSupport {
       Logger.logInfo(SampleAppIModelApp.loggerCategory(LocalFileSupport), `openLocalFile: Opening snapshot. path=${filePath}`);
       try {
         iModelConnection = await SnapshotConnection.openFile(filePath);
-      } catch (err) {
+      } catch (err: any) {
         alert(err.message);
         iModelConnection = undefined;
       }

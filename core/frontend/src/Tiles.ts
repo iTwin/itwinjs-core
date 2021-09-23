@@ -54,7 +54,7 @@ class TreeOwner implements TileTreeOwner {
     try {
       tree = await this._supplier.createTileTree(this.id, this._iModel);
       newStatus = undefined !== tree && !tree.rootTile.contentRange.isNull ? TileTreeLoadStatus.Loaded : TileTreeLoadStatus.NotFound;
-    } catch (err) {
+    } catch (err: any) {
       newStatus = (err.errorNumber && err.errorNumber === IModelStatus.ServerTimeout) ? TileTreeLoadStatus.NotLoaded : TileTreeLoadStatus.NotFound;
     }
 

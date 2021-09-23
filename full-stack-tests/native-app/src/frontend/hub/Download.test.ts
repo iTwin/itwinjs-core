@@ -76,7 +76,7 @@ describe("NativeApp Download (#integration)", () => {
 
     try {
       await downloader.downloadPromise;
-    } catch (err) {
+    } catch (err: any) {
       assert.isTrue(err.message.includes("cancelled"));
       downloadAborted = true;
     }

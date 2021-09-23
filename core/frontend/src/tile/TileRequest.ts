@@ -84,7 +84,7 @@ export class TileRequest {
 
       // Set this now, so our `isCanceled` check can see it.
       this._state = TileRequest.State.Loading;
-    } catch (err) {
+    } catch (err: any) {
       if (err.errorNumber && err.errorNumber === IModelStatus.ServerTimeout) {
         // Invalidate scene - if tile is re-selected, it will be re-requested.
         this.notifyAndClear();

@@ -28,7 +28,7 @@ function createChangeset(imodel: IModelDb): ChangesetFileProps {
 function applyOneChangeSet(imodel: IModelDb, csToken: ChangesetFileProps) {
   try {
     imodel.nativeDb.applyChangeset(csToken, ChangeSetApplyOption.Merge);
-  } catch (err) {
+  } catch (err: any) {
     assert.isTrue(false, `apply failed, err=${err.errorNumber}`);
   }
 }

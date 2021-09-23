@@ -148,7 +148,7 @@ describe("Techniques", () => {
         let ex: Error | undefined;
         try {
           compiled = prog.compile() === CompileStatus.Success;
-        } catch (err) {
+        } catch (err: any) {
           ex = err;
         }
 
@@ -175,7 +175,7 @@ describe("Techniques", () => {
         let ex: Error | undefined;
         try {
           compiled = program.compile() === CompileStatus.Success;
-        } catch (err) {
+        } catch (err: any) {
           ex = err;
         }
 

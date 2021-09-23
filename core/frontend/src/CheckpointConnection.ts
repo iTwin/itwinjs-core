@@ -6,7 +6,7 @@
  * @module IModelConnection
  */
 
-import { BentleyStatus, GuidString, Logger } from "@itwin/core-bentley";
+import { BentleyStatus, getErrorMessage, GuidString, Logger } from "@itwin/core-bentley";
 import {
   IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelVersion, RpcManager, RpcNotFoundResponse, RpcOperation,
   RpcRequest, RpcRequestEvent,
@@ -127,8 +127,8 @@ export class CheckpointConnection extends IModelConnection {
       this._fileKey = openResponse.key;
       this.changeset = openResponse.changeset!;
 
-    } catch (error: any) {
-      reject(error.message);
+    } catch (error) {
+      reject(getErrorMessage(error));
     } finally {
     }
 

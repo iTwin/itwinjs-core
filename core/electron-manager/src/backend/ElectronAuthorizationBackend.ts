@@ -11,7 +11,7 @@
 // cSpell:ignore openid appauth signin Pkce Signout
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import { assert, AuthStatus, BentleyError, ClientRequestContext, Logger } from "@itwin/core-bentley";
+import { assert, AuthStatus, BentleyError, ClientRequestContext, getErrorProps, Logger } from "@itwin/core-bentley";
 import { IModelHost, NativeAppAuthorizationBackend, NativeHost } from "@itwin/core-backend";
 import { NativeAppAuthorizationConfiguration } from "@itwin/core-common";
 import { AccessToken, request as httpRequest, RequestOptions } from "@bentley/itwin-client";
@@ -80,7 +80,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
     try {
       return await this.refreshAccessToken(tokenResponse.refreshToken);
     } catch (err) {
-      Logger.logError(loggerCategory, `Error refreshing access token`, () => err);
+      Logger.logError(loggerCategory, `Error refreshing access token`, () => getErrorProps(err));
       return undefined;
     }
   }

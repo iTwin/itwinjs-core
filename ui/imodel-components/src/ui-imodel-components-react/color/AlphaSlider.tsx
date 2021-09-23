@@ -67,8 +67,8 @@ export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
     if (undefined === y)
       return undefined;
 
-    const left = x - (container.getBoundingClientRect().left + window.pageXOffset);
-    const top = y - (container.getBoundingClientRect().top + window.pageYOffset);
+    const left = x - (container.getBoundingClientRect().left + window.scrollX);
+    const top = y - (container.getBoundingClientRect().top + window.scrollY);
 
     let t = 0;
 

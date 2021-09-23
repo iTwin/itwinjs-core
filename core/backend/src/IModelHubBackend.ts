@@ -14,19 +14,19 @@ import {
   IModelHubClient, IModelQuery, Lock, LockQuery, LockType, VersionQuery,
 } from "@bentley/imodelhub-client";
 import {
-  BriefcaseIdValue,
-  ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, CodeProps, IModelError, IModelVersion, LocalDirName,
+  BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, CodeProps, IModelError, IModelVersion, LocalDirName,
 } from "@itwin/core-common";
 import { ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 import {
-  BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckPointArg, CreateNewIModelProps, IModelIdArg, IModelNameArg, ITwinIdArg, LockProps, V2CheckpointAccessProps,
+  AcquireNewBriefcaseIdArg, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckPointArg, CreateNewIModelProps, IModelIdArg,
+  IModelNameArg, ITwinIdArg, LockProps, V2CheckpointAccessProps,
 } from "./BackendHubAccess";
 import { AuthorizedBackendRequestContext } from "./BackendRequestContext";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { CheckpointProps } from "./CheckpointManager";
+import { BriefcaseLocalValue, IModelDb, SnapshotDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
-import { BriefcaseLocalValue, IModelDb, SnapshotDb } from "./IModelDb";
 
 /** @internal */
 export class IModelHubBackend {
@@ -175,7 +175,7 @@ export class IModelHubBackend {
     return myBriefcaseIds;
   }
 
-  public static async acquireNewBriefcaseId(arg: IModelIdArg): Promise<number> {
+  public static async acquireNewBriefcaseId(arg: AcquireNewBriefcaseIdArg): Promise<number> {
     const user = arg.user ?? await AuthorizedBackendRequestContext.create();
     const briefcase = await this.iModelClient.briefcases.create(user, arg.iModelId);
 
@@ -213,14 +213,14 @@ export class IModelHubBackend {
 
   public static async queryChangeset(arg: ChangesetArg): Promise<ChangesetProps> {
     const hasIndex = (undefined !== arg.changeset.index);
-    if ((hasIndex && arg.changeset.index! <= 0) || arg.changeset.id === "")
+    if ((hasIndex && arg.changeset.index <= 0) || arg.changeset.id === "")
       return this.changeSet0;
 
     const query = new ChangeSetQuery();
     if (hasIndex)
       query.filter(`Index+eq+${arg.changeset.index}`);
     else
-      query.byId(arg.changeset.id!);
+      query.byId(arg.changeset.id);
 
     const user = arg.user ?? await AuthorizedBackendRequestContext.create();
     const changeSets = await this.iModelClient.changeSets.get(user, arg.iModelId, query);

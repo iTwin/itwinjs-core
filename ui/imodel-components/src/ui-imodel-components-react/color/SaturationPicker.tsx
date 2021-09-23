@@ -42,8 +42,8 @@ function calculateChange(e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<
   if (undefined === y)
     return hsv;
 
-  let left = x - (containerLeft + window.pageXOffset);
-  let top = y - (containerTop + window.pageYOffset);
+  let left = x - (containerLeft + window.scrollX);
+  let top = y - (containerTop + window.scrollY);
 
   // istanbul ignore next
   if (left < 0) {

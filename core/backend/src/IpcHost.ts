@@ -6,7 +6,7 @@
  * @module NativeApp
  */
 
-import { IModelStatus, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { getErrorMessage, getErrorStack, IModelStatus, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
   ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, IModelConnectionProps, IModelError, IModelRpcProps, IpcAppChannel, IpcAppFunctions,
   IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel, OpenBriefcaseProps, RemoveFunction, StandaloneOpenOptions,
@@ -158,10 +158,16 @@ export abstract class IpcHandler {
           throw new IModelError(IModelStatus.FunctionNotFound, `Method "${impl.constructor.name}.${funcName}" not found on IpcHandler registered for channel: ${impl.channelName}`);
 
         return { result: await func.call(impl, ...args) };
-      } catch (err: any) {
-        const ret: IpcInvokeReturn = { error: { name: err.constructor.name, message: err.message ?? "", errorNumber: err.errorNumber ?? 0 } };
+      } catch (err) {
+        const ret: IpcInvokeReturn = {
+          error: {
+            name: (err && typeof (err) === "object") ? err.constructor.name : "Unknown Error",
+            message: getErrorMessage(err),
+            errorNumber: (err as any).errorNumber ?? 0,
+          },
+        };
         if (!IpcHost.noStack)
-          ret.error.stack = err.stack ?? "";
+          ret.error.stack = getErrorStack(err);
         return ret;
       }
     });

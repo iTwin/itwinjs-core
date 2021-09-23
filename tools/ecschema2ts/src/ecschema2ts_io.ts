@@ -253,7 +253,7 @@ class SchemaDeserializer {
     let schemaJson: any;
     try {
       schemaJson = JSON.parse(schemaString);
-    } catch (e) {
+    } catch (e: any) {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, e.message);
     }
     return Schema.fromJsonSync(schemaJson, context);

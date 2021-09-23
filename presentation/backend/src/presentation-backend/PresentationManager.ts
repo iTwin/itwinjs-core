@@ -355,7 +355,7 @@ export class PresentationManager {
       if (isChangeTrackingEnabled) {
         this._updatesTracker = UpdatesTracker.create({
           nativePlatformGetter: this.getNativePlatform,
-          pollInterval: props!.updatesPollInterval!,
+          pollInterval: props.updatesPollInterval!,
         });
       }
       this._disposeIpcHandler = PresentationIpcHandler.register();

@@ -369,7 +369,7 @@ export class TestRunner {
             await decorator.toggleAttachment(marker, true);
           }
         }
-      } catch (err) {
+      } catch (err: any) {
         await this.logError(err.toString());
       }
     }
@@ -576,7 +576,7 @@ export class TestRunner {
     let iModel;
     try {
       iModel = await SnapshotConnection.openFile(path.join(filepath));
-    } catch (err) {
+    } catch (err: any) {
       await this.logError(`openSnapshot failed: ${err.toString()}`);
       return undefined;
     }

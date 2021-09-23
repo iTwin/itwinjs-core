@@ -7,6 +7,7 @@
  * @module Tools
  */
 
+import { getErrorMessage } from "@itwin/core-bentley";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool } from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
@@ -43,8 +44,8 @@ export abstract class SourceAspectIdTool extends Tool {
     try {
       for await (const row of imodel.query(this.getECSql(queryId), undefined, 1))
         resultId = row.resultId;
-    } catch (ex: any) {
-      resultId = ex.toString();
+    } catch (ex) {
+      resultId = getErrorMessage(ex);
     }
 
     if (typeof resultId !== "string")

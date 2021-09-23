@@ -358,8 +358,8 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       return point;
 
     // relative position
-    const scrollY = (activeWindow.scrollY !== undefined) ? activeWindow.scrollY : /* istanbul ignore next */ activeWindow.pageYOffset;
-    const scrollX = (activeWindow.scrollX !== undefined) ? activeWindow.scrollX : /* istanbul ignore next */ activeWindow.pageXOffset;
+    const scrollY = activeWindow.scrollY;
+    const scrollX = activeWindow.scrollX;
 
     const targetRect = target.getBoundingClientRect();
 

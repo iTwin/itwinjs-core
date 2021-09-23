@@ -119,7 +119,7 @@ export abstract class MapLayerImageryProvider {
       }
 
       return this.getImageFromTileResponse(tileResponse, zoomLevel);
-    } catch (error) {
+    } catch (error: any) {
       if (error?.status === 401) {
         this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
 

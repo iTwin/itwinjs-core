@@ -2966,8 +2966,8 @@ export class ScreenViewport extends Viewport {
   /** @internal */
   public pickCanvasDecoration(pt: XAndY) { return this.target.pickOverlayDecoration(pt); }
 
-  /** Get the ClientRect of the canvas for this Viewport. */
-  public getClientRect(): ClientRect { return this.canvas.getBoundingClientRect(); }
+  /** Get the DOMRect of the canvas for this Viewport. */
+  public getClientRect(): DOMRect { return this.canvas.getBoundingClientRect(); }
 
   /** The ViewRect for this ScreenViewport. Left and top will be 0, right will be the width, and bottom will be the height. */
   public get viewRect(): ViewRect { this._viewRange.init(0, 0, this.canvas.clientWidth, this.canvas.clientHeight); return this._viewRange; }

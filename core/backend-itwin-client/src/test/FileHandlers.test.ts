@@ -75,7 +75,7 @@ describe("AzureFileHandler", async () => {
     assert.isTrue(signal.cancel());
     try {
       await promise;
-    } catch (error) {
+    } catch (error: any) {
       assert.equal(error.name, "User cancelled operation");
       assert.equal(error.message, "User cancelled download");
       assert.isFalse(fs.existsSync(targetFile), "Should not have written anything to disk after failure!");
@@ -133,7 +133,7 @@ describe("AzureFileHandler", async () => {
     assert.isTrue(signal.cancel());
     try {
       await promise;
-    } catch (error) {
+    } catch (error: any) {
       assert.equal(error.name, "User cancelled operation");
       assert.equal(error.message, "User cancelled download");
       assert.isTrue(progressArgs.length >= lastProgressLength);
@@ -184,7 +184,7 @@ describe("AzureFileHandler", async () => {
     const handler = new AzureFileHandler();
     try {
       await handler.downloadFile(undefined, testErrorUrl, targetFile, blobSizeInBytes);
-    } catch (error) {
+    } catch (error: any) {
       assert.equal(error.name, "HTTPError");
       assert.equal(error.message, "Response code 503 (Service Unavailable)");
       assert.isFalse(fs.existsSync(targetFile), "Should not have written anything to disk after failure!");
@@ -200,7 +200,7 @@ describe("AzureFileHandler", async () => {
     const handler = new AzureFileHandler();
     try {
       await handler.downloadFile(undefined, testErrorUrl, targetFile, blobSizeInBytes);
-    } catch (error) {
+    } catch (error: any) {
       assert.equal(error.name, "HTTPError");
       assert.equal(error.message, "Response code 403 (Forbidden)");
       assert.isFalse(fs.existsSync(targetFile), "Should not have written anything to disk after failure!");
@@ -244,7 +244,7 @@ describe("AzureFileHandler", async () => {
     const promise = handler.downloadFile(undefined, testErrorUrl, targetFile, blobSizeInBytes);
     try {
       await promise;
-    } catch (error) {
+    } catch (error: any) {
       assert.equal(error.code, "ECONNRESET");
       assert.equal(error.message, "socket hang up");
       assert.isFalse(fs.existsSync(targetFile), "Should not have written anything to disk after failure!");
@@ -262,7 +262,7 @@ describe("AzureFileHandler", async () => {
 
     try {
       await promise;
-    } catch (error) {
+    } catch (error: any) {
       assert.oneOf(error.code, ["EPERM", "ENOENT"]);
       assert.isFalse(fs.existsSync(targetFile), "Should not have written anything to disk after failure!");
       return;
@@ -278,7 +278,7 @@ describe("AzureFileHandler", async () => {
     fs.emptyDirSync(testOutputDir);
     try {
       await promise;
-    } catch (error) {
+    } catch (error: any) {
       assert.equal(error.name, "ENOENT");
       assert.isFalse(fs.existsSync(targetFile), "Should not have written anything to disk after failure!");
       assert.isFalse(signal.cancel());
@@ -294,7 +294,7 @@ describe("AzureFileHandler", async () => {
     const promise = handler.downloadFile(undefined, testErrorUrl, targetFile, blobSizeInBytes, undefined, signal);
     try {
       await promise;
-    } catch (error) {
+    } catch (error: any) {
       assert.equal(error.code, "ECONNRESET");
       assert.equal(error.message, "socket hang up");
       assert.isFalse(fs.existsSync(targetFile), "Should not have written anything to disk after failure!");

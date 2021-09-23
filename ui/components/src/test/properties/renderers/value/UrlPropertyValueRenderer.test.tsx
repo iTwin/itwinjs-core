@@ -65,7 +65,7 @@ describe("UrlPropertyValueRenderer", () => {
 
     describe("onClick", () => {
       const locationMockRef: moq.IMock<Location> = moq.Mock.ofInstance(location);
-      let spy: sinon.SinonStub<[(string | undefined)?, (string | undefined)?, (string | undefined)?, (boolean | undefined)?], Window | null>;
+      let spy: sinon.SinonStub<[(string | URL | undefined)?, (string | undefined)?, (string | undefined)?, (boolean | undefined)?], Window | null>;
 
       before(() => {
         location = locationMockRef.object;

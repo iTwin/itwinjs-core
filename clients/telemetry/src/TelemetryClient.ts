@@ -6,7 +6,7 @@
  * @module Telemetry
  */
 
-import { GuidString, Logger } from "@itwin/core-bentley";
+import { getErrorProps, GuidString, Logger } from "@itwin/core-bentley";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TelemetryClientLoggerCategory } from "./TelemetryClientLoggerCategory";
 
@@ -72,7 +72,7 @@ export class TelemetryManager {
       try {
         await subClient.postTelemetry(requestContext, telemetryEvent);
       } catch (err) {
-        Logger.logError(TelemetryClientLoggerCategory.Telemetry, `Failed to post telemetry via subclient`, () => err);
+        Logger.logError(TelemetryClientLoggerCategory.Telemetry, `Failed to post telemetry via subclient`, () => getErrorProps(err));
       }
     };
 

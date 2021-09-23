@@ -18,7 +18,7 @@ describe("PropertyGridEventHandler", () => {
     beforeEach(() => {
       modelStub = sinon.createStubInstance(MutablePropertyGridModel);
       modelSourceStub = sinon.createStubInstance(PropertyGridModelSource, {
-        modifyModel: sinon.stub().callsArgWith(0, modelStub),
+        modifyModel: sinon.stub<Parameters<PropertyGridModelSource["modifyModel"]>>().callsArgWith(0, modelStub),
       });
       modelSourceStub.onModelChanged = new PropertyGridModelChangeEvent();
 

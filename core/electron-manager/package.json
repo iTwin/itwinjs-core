@@ -1,6 +1,6 @@
 {
   "name": "@bentley/electron-manager",
-  "version": "3.0.0-dev.64",
+  "version": "3.0.0-dev.65",
   "description": "iTwin.js ElectronHost and ElectronApp",
   "license": "MIT",
   "engines": {
@@ -30,12 +30,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.64",
-    "@itwin/core-backend": "workspace:^3.0.0-dev.64",
-    "@itwin/core-common": "workspace:^3.0.0-dev.64",
-    "@itwin/core-frontend": "workspace:^3.0.0-dev.64",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.64",
-    "@itwin/presentation-common": "workspace:^3.0.0-dev.64",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.65",
+    "@itwin/core-backend": "workspace:^3.0.0-dev.65",
+    "@itwin/core-common": "workspace:^3.0.0-dev.65",
+    "@itwin/core-frontend": "workspace:^3.0.0-dev.65",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.65",
+    "@itwin/presentation-common": "workspace:^3.0.0-dev.65",
     "electron": "^11.1.0"
   },
   "devDependencies": {
@@ -51,7 +51,7 @@
     "electron": "^11.1.0",
     "eslint": "^7.11.0",
     "rimraf": "^3.0.2",
-    "typescript": "~4.3.0"
+    "typescript": "~4.4.0"
   },
   "dependencies": {
     "@openid/appauth": "^1.2.6",

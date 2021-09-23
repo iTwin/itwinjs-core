@@ -111,7 +111,7 @@ function launchLocalOrchestrator(): IModelCloudEnvironment {
     do {
       try {
         await pingServerOnce(url, attempt * pauseBeforePingMillis);
-      } catch (err) {
+      } catch (err: any) {
         if (err.errno === "ECONNREFUSED") {
           continue;
         } else {

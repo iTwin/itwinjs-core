@@ -118,7 +118,7 @@ export class BrowserAuthorizationCallbackHandler extends BrowserAuthorizationBas
     try {
       await callbackHandler.handleSigninCallbackInternal();
       return;
-    } catch (err) {
+    } catch (err: any) {
       errorMessage += `${err.message}\n`;
     }
 
@@ -126,7 +126,7 @@ export class BrowserAuthorizationCallbackHandler extends BrowserAuthorizationBas
     try {
       await callbackHandler.handleSigninCallbackInternal();
       return;
-    } catch (err) {
+    } catch (err: any) {
       errorMessage += `${err.message}\n`;
     }
 

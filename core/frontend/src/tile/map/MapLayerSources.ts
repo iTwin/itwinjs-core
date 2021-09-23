@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { compareStrings } from "@itwin/core-bentley";
+import { compareStrings, getErrorMessage } from "@itwin/core-bentley";
 import { Point2d } from "@itwin/core-geometry";
 import { BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { getJson, RequestBasicCredentials } from "@bentley/itwin-client";
@@ -228,7 +228,7 @@ export class MapLayerSources {
       try {
         (await MapLayerSettingsService.getSourcesFromSettingsService(iModel.iTwinId, iModel.iModelId)).forEach((source) => addSource(source));
       } catch (err) {
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.i18n.translate("mapLayers:CustomAttach.ErrorLoadingLayers"), err.toString()));
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.i18n.translate("mapLayers:CustomAttach.ErrorLoadingLayers"), getErrorMessage(err)));
       }
     }
 
