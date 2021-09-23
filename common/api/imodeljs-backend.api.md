@@ -3057,6 +3057,7 @@ export class NativeAppStorage {
     static getStorageNames(): string[];
     getString(key: string): string | undefined;
     getUint8Array(key: string): Uint8Array | undefined;
+    getValueType(key: string): "number" | "string" | "boolean" | "Uint8Array" | "null" | undefined;
     hasNullValue(key: string): boolean;
     // (undocumented)
     readonly id: string;

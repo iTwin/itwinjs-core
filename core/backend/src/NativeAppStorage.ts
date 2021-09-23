@@ -78,13 +78,17 @@ export class NativeAppStorage {
     });
   }
 
-  /** return `true` if the key is present, but has a null value. */
-  public hasNullValue(key: string): boolean {
+  /** return the type of the value for a key, or undefined if not present. */
+  public getValueType(key: string): "number" | "string" | "boolean" | "Uint8Array" | "null" | undefined {
     return this._ecdb.withSqliteStatement("SELECT type FROM app_setting WHERE key=?", (stmt) => {
       stmt.bindValue(1, key);
-      stmt.step();
-      return stmt.getValueString(0) === "null";
+      return stmt.step() === DbResult.BE_SQLITE_ROW ? stmt.getValueString(0) as any : undefined;
     });
+  }
+
+  /** return `true` if the key is present, but has a null value. */
+  public hasNullValue(key: string): boolean {
+    return this.getValueType(key) === "null";
   }
 
   /** Get the value for a key as a string. If it is not present, or not of type string, return undefined */
@@ -116,7 +120,7 @@ export class NativeAppStorage {
     const keys = new Array<string>();
     this._ecdb.withPreparedSqliteStatement("SELECT key FROM app_setting", (stmt) => {
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
-        keys.push(stmt.getValue(0).getString());
+        keys.push(stmt.getValueString(0));
       }
     });
     return keys;

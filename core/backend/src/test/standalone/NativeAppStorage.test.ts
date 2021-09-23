@@ -69,6 +69,7 @@ describe("NativeApp storage backend", () => {
 
     test1.setData("key1", 2222);
     assert.isNumber(test1.getData("key1"));
+    assert.equal(test1.getValueType("key1"), "number");
     assert.equal(test1.getData("key1"), 2222);
     assert.equal(test1.getNumber("key1"), 2222);
     assert.equal(test1.getString("key1"), undefined);
