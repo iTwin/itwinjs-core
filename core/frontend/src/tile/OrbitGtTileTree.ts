@@ -18,7 +18,6 @@ import {
   OrbitGtDataManager, OrbitGtFrameData, OrbitGtIProjectToViewForSort, OrbitGtIViewRequest, OrbitGtLevel, OrbitGtTileIndex, OrbitGtTileLoadSorter,
   OrbitGtTransform, PageCachedFile, PointDataRaw, UrlFS,
 } from "@bentley/orbitgt-core";
-import { RealityDataClient } from "@bentley/reality-data-client";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
@@ -434,8 +433,7 @@ export namespace OrbitGtTileTree {
 
     // If there's no rdsUrl, request one from RealityDataClient
     if (!props.rdsUrl) {
-      const rdClient: RealityDataClient = new RealityDataClient();
-      props.rdsUrl = await rdClient.getRealityDataUrl(iModel.iTwinId, props.containerName);
+      props.rdsUrl = await IModelApp.realityDataServiceClient.getRealityDataUrl(iModel.iTwinId, props.containerName);
     }
 
     // If props are now valid, return OK
