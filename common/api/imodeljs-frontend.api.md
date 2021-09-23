@@ -9339,7 +9339,6 @@ export class Storage {
     constructor(id: string);
     getData(key: string): Promise<StorageValue>;
     getKeys(): Promise<string[]>;
-    // (undocumented)
     getValueType(key: string): Promise<"number" | "string" | "boolean" | "Uint8Array" | "null" | undefined>;
     // (undocumented)
     readonly id: string;
