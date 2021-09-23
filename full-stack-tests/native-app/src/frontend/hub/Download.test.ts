@@ -12,8 +12,7 @@ import { usingOfflineScope } from "../HttpRequestHook";
 import { NativeAppTest } from "../NativeAppTest";
 
 describe("NativeApp Download (#integration)", () => {
-  // SWB
-  let testProjectId: GuidString;
+  let testiTwinId: GuidString;
 
   before(async () => {
     await ElectronApp.startup({
@@ -24,7 +23,7 @@ describe("NativeApp Download (#integration)", () => {
       },
     });
 
-    testProjectId = await NativeAppTest.initializeTestProject();
+    testiTwinId = await NativeAppTest.initializeTestiTwin();
   });
 
   after(async () => ElectronApp.shutdown());
@@ -33,8 +32,8 @@ describe("NativeApp Download (#integration)", () => {
     let events = 0;
     let loaded = 0;
     let total = 0;
-    const iModelId = await NativeAppTest.getTestIModelId(testProjectId, "CodesPushTest");
-    const downloader = await NativeApp.requestDownloadBriefcase(testProjectId, iModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(),
+    const iModelId = await NativeAppTest.getTestIModelId(testiTwinId, "CodesPushTest");
+    const downloader = await NativeApp.requestDownloadBriefcase(testiTwinId, iModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(),
       (progress: ProgressInfo) => {
         assert.isNumber(progress.loaded);
         assert.isNumber(progress.total);
@@ -61,12 +60,12 @@ describe("NativeApp Download (#integration)", () => {
   });
 
   it("Should be able to cancel download (#integration)", async () => {
-    const iModelId = await NativeAppTest.getTestIModelId(testProjectId, "Stadium Dataset 1");
+    const iModelId = await NativeAppTest.getTestIModelId(testiTwinId, "Stadium Dataset 1");
     let downloadAborted = false;
     const fileName = await NativeApp.getBriefcaseFileName({ iModelId, briefcaseId: 0 });
     await NativeApp.deleteBriefcase(fileName);
 
-    const downloader = await NativeApp.requestDownloadBriefcase(testProjectId, iModelId, { fileName, syncMode: SyncMode.PullOnly }, IModelVersion.latest(),
+    const downloader = await NativeApp.requestDownloadBriefcase(testiTwinId, iModelId, { fileName, syncMode: SyncMode.PullOnly }, IModelVersion.latest(),
       (progress: ProgressInfo) => {
         assert.isNumber(progress.loaded);
         assert.isNumber(progress.total);

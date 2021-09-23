@@ -17,14 +17,12 @@ export class ViewportWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    // SWB
-    this.reactNode = <ViewportWidget projectName={options.projectName} imodelName={options.imodelName} />;
+    this.reactNode = <ViewportWidget iTwinName={options.projectName} imodelName={options.imodelName} />;
   }
 }
 
 export interface ViewportWidgetProps {
-  // SWB
-  projectName: string;
+  iTwinName: string;
   imodelName: string;
 }
 
@@ -44,8 +42,7 @@ export class ViewportWidget extends React.Component<ViewportWidgetProps, Viewpor
   };
 
   public override async componentDidMount() {
-    // SWB
-    const externalIModel = new ExternalIModel(this.props.projectName, this.props.imodelName);
+    const externalIModel = new ExternalIModel(this.props.iTwinName, this.props.imodelName);
     await externalIModel.openIModel();
 
     if (externalIModel.viewId && externalIModel.iModelConnection) {
@@ -104,8 +101,7 @@ export class IModelViewport extends React.Component<ViewportWidgetProps, Viewpor
   };
 
   public override async componentDidMount() {
-    // SWB
-    const externalIModel = new ExternalIModel(this.props.projectName, this.props.imodelName);
+    const externalIModel = new ExternalIModel(this.props.iTwinName, this.props.imodelName);
     await externalIModel.openIModel();
 
     if (externalIModel.viewId && externalIModel.iModelConnection) {

@@ -68,7 +68,7 @@ export class IModelBankFileSystemITwinClient implements ITwinManagerClient {
     return props[0] as ITwin;
   }
 
-  public async createContext(requestContext: AuthorizedClientRequestContext, name: string): Promise<void> {
+  public async createiTwin(requestContext: AuthorizedClientRequestContext, name: string): Promise<void> {
     const url: string = `${this.baseUri}/sv1.0/Repositories/Global--main/GlobalScope/Context`;
 
     Logger.logInfo(loggerCategory, `Sending POST request to ${url}`);
@@ -84,7 +84,7 @@ export class IModelBankFileSystemITwinClient implements ITwinManagerClient {
     await request(requestContext, url, options);
   }
 
-  public async deleteContext(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<void> {
+  public async deleteiTwin(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<void> {
     const url: string = `${this.baseUri}/sv1.0/Repositories/Global--main/GlobalScope/Context/${contextId}`;
     Logger.logInfo(loggerCategory, `Sending DELETE request to ${url}`);
 

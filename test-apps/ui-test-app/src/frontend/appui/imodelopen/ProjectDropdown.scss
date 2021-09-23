@@ -26,7 +26,6 @@ $pp-max-dropdown-width: 450px;
   user-select: none;
 }
 
-   // SWB
 /* project picker */
 .pp {
   outline: none;
@@ -54,8 +53,7 @@ $pp-max-dropdown-width: 450px;
   }
 }
 
-   // SWB
-/* current project + splitter container */
+/* current itwin + splitter container */
 .pp-content {
   flex: 1;
   padding: 0 .7em;
@@ -70,8 +68,7 @@ $pp-max-dropdown-width: 450px;
     color: $uicore-blue;
   }
 
-   // SWB
-  /* current project number & name */
+  /* current itwin number & name */
   > div {
     font-size: $iui-font-size-leading;
     display: flex;
@@ -80,14 +77,12 @@ $pp-max-dropdown-width: 450px;
     flex: 1;
     overflow: hidden;
 
-   // SWB
-    /* project number */
+    /* itwin number */
     .number {
       @extend .text-clip;
     }
 
-   // SWB
-    /* project name font is smaller (and add some spacing between number and name) */
+    /* itwin name font is smaller (and add some spacing between number and name) */
     .name {
       @extend .text-clip;
       font-size: $iui-font-size;
@@ -101,8 +96,7 @@ $pp-max-dropdown-width: 450px;
   transform: rotate(-180deg);
 }
 
-   // SWB
-/* highlight bar below the project picker */
+/* highlight bar below the itwin picker */
 .pp-highlight {
   flex: initial;
   height: $pp-highlight-size;
@@ -119,8 +113,7 @@ $pp-max-dropdown-width: 450px;
   transition: transform .5s ease;
 }
 
-   // SWB
-/* dropdown (list of projects) */
+/* dropdown (list of itwins) */
 .pp-dropdown {
   color: #444;
   background: #fff;
@@ -139,8 +132,7 @@ $pp-max-dropdown-width: 450px;
     @include uicore-touch-scrolling;
     @include uicore-scrollbar();
 
-   // SWB
-    /* line for each project */
+    /* line for each itwin */
     li {
       display: flex;
       justify-content: flex-start;
@@ -153,8 +145,7 @@ $pp-max-dropdown-width: 450px;
       border-bottom: 1px solid $separator-background;
       box-sizing: border-box;
 
-   // SWB
-      /* project number & name */
+      /* itwin number & name */
       .pp-details{
         flex: 1;
         display: flex;
@@ -189,8 +180,7 @@ $pp-max-dropdown-width: 450px;
   }
 }
 
-   // SWB
-/* no project MRU's */
+/* no itwin MRU's */
 .pp-no-mru {
   display: block;
   color: $uicore-gray;
@@ -220,14 +210,8 @@ $pp-max-dropdown-width: 450px;
   }
 }
 
-   // SWB
-/* project icon */
+/* itwin icon */
 .pp-icon {
   font-size: 22px;
   margin-right: .75em;
 }
-
-/*
- .content:hover + .highlight, .highlight:hover {
-  background-color: $uicore-gray;}
-*/

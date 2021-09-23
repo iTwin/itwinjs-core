@@ -6,9 +6,7 @@ import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwi
 import { ITwinManagerClient } from "@bentley/imodelhub-client";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
-// SWB
-/** An implementation of IModelProjectAbstraction backed by an iTwin project */
-// SWB
+/** An implementation of TestITwin backed by an iTwin */
 export class ITwinRegistryClientWrapper implements ITwinManagerClient {
   public async getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
     const client = new ITwinAccessClient();

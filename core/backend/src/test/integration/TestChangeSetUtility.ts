@@ -15,8 +15,7 @@ import { HubUtility } from "./HubUtility";
 export class TestChangeSetUtility {
   private readonly _iModelName: string;
 
-  // SWB
-  public projectId!: GuidString;
+  public iTwinId!: GuidString;
   public iModelId!: GuidString;
   private _iModel!: BriefcaseDb;
   private _requestContext: AuthorizedClientRequestContext;
@@ -30,7 +29,7 @@ export class TestChangeSetUtility {
   }
 
   private async addTestModel(): Promise<void> {
-    this._iModel = await IModelTestUtils.downloadAndOpenBriefcase({ user: this._requestContext, iTwinId: this.projectId, iModelId: this.iModelId });
+    this._iModel = await IModelTestUtils.downloadAndOpenBriefcase({ user: this._requestContext, iTwinId: this.iTwinId, iModelId: this.iModelId });
     [, this._modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(this._iModel, IModelTestUtils.getUniqueModelCode(this._iModel, "TestPhysicalModel"), true);
     this._iModel.saveChanges("Added test model");
   }
@@ -47,11 +46,10 @@ export class TestChangeSetUtility {
   }
 
   public async createTestIModel(): Promise<BriefcaseDb> {
-    // SWB
-    this.projectId = await HubUtility.getTestITwinId(this._requestContext);
+    this.iTwinId = await HubUtility.getTestITwinId(this._requestContext);
 
     // Re-create iModel on iModelHub
-    this.iModelId = await HubUtility.recreateIModel({ user: this._requestContext, iTwinId: this.projectId, iModelName: this._iModelName, noLocks: true });
+    this.iModelId = await HubUtility.recreateIModel({ user: this._requestContext, iTwinId: this.iTwinId, iModelName: this._iModelName, noLocks: true });
 
     // Populate sample data
     await this.addTestModel();
@@ -74,6 +72,6 @@ export class TestChangeSetUtility {
     if (!this._iModel)
       throw new Error("Must first call createTestIModel");
     await IModelTestUtils.closeAndDeleteBriefcaseDb(this._requestContext, this._iModel);
-    await IModelHost.hubAccess.deleteIModel({ user: this._requestContext, iTwinId: this.projectId, iModelId: this.iModelId });
+    await IModelHost.hubAccess.deleteIModel({ user: this._requestContext, iTwinId: this.iTwinId, iModelId: this.iModelId });
   }
 }

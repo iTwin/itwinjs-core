@@ -34,16 +34,14 @@ describe("IModelConnection (#integration)", () => {
     Logger.initializeToConsole();
     Logger.setLevel("imodeljs-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
 
-    // SWB
-    const authorizationClient = await TestUtility.initializeTestProject(TestUtility.testContextName, TestUsers.regular);
+    const authorizationClient = await TestUtility.initializeTestiTwin(TestUtility.testiTwinName, TestUsers.regular);
     IModelApp.authorizationClient = authorizationClient;
 
     // Setup a model with a large number of change sets
-    // SWB
-    const testProjectId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
-    const testIModelId = await TestUtility.queryIModelIdbyName(testProjectId, TestUtility.testIModelNames.connectionRead);
+    const testiTwinId = await TestUtility.queryiTwinIdByName(TestUtility.testiTwinName);
+    const testIModelId = await TestUtility.queryIModelIdbyName(testiTwinId, TestUtility.testIModelNames.connectionRead);
 
-    iModel = await CheckpointConnection.openRemote(testProjectId, testIModelId);
+    iModel = await CheckpointConnection.openRemote(testiTwinId, testIModelId);
   });
 
   after(async () => {
@@ -137,31 +135,29 @@ describe("IModelConnection (#integration)", () => {
   });
 
   it("should be able to open an IModel with no versions", async () => {
-    // SWB
-    const projectId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
-    const iModelId = await TestUtility.queryIModelIdbyName(projectId, TestUtility.testIModelNames.noVersions);
-    const noVersionsIModel = await CheckpointConnection.openRemote(projectId, iModelId);
+    const iTwinId = await TestUtility.queryiTwinIdByName(TestUtility.testiTwinName);
+    const iModelId = await TestUtility.queryIModelIdbyName(iTwinId, TestUtility.testIModelNames.noVersions);
+    const noVersionsIModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
     assert.isNotNull(noVersionsIModel);
 
-    const noVersionsIModel2 = await CheckpointConnection.openRemote(projectId, iModelId);
+    const noVersionsIModel2 = await CheckpointConnection.openRemote(iTwinId, iModelId);
     assert.isNotNull(noVersionsIModel2);
 
-    const noVersionsIModel3 = await CheckpointConnection.openRemote(projectId, iModelId, IModelVersion.asOfChangeSet(""));
+    const noVersionsIModel3 = await CheckpointConnection.openRemote(iTwinId, iModelId, IModelVersion.asOfChangeSet(""));
     assert.isNotNull(noVersionsIModel3);
   });
 
   it("should be able to open the same IModel many times", async () => {
-    // SWB
-    const projectId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
-    const iModelId = await TestUtility.queryIModelIdbyName(projectId, "ReadOnlyTest");
+    const iTwinId = await TestUtility.queryiTwinIdByName(TestUtility.testiTwinName);
+    const iModelId = await TestUtility.queryIModelIdbyName(iTwinId, "ReadOnlyTest");
 
-    const readOnlyTest = await CheckpointConnection.openRemote(projectId, iModelId, IModelVersion.latest());
+    const readOnlyTest = await CheckpointConnection.openRemote(iTwinId, iModelId, IModelVersion.latest());
     assert.isNotNull(readOnlyTest);
 
     const promises = new Array<Promise<void>>();
     let n = 0;
     while (++n < 25) {
-      const promise = CheckpointConnection.openRemote(projectId, iModelId)
+      const promise = CheckpointConnection.openRemote(iTwinId, iModelId)
         .then((readOnlyTest2: IModelConnection) => {
           assert.isNotNull(readOnlyTest2);
           assert.isTrue(readOnlyTest.key === readOnlyTest2.key);
@@ -174,7 +170,7 @@ describe("IModelConnection (#integration)", () => {
 
   it("should be able to request tiles from an IModelConnection", async () => {
     // SWB
-    const testProjectId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
+    const testProjectId = await TestUtility.queryiTwinIdByName(TestUtility.testiTwinName);
     const testIModelId = await TestUtility.queryIModelIdbyName(testProjectId, "ConnectionReadTest");
     iModel = await CheckpointConnection.openRemote(testProjectId, testIModelId);
 

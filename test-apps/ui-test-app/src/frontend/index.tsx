@@ -138,8 +138,7 @@ export interface RootState extends FrameworkRootState {
 }
 
 interface SampleIModelParams {
-  // SWB
-  projectId: string;
+  iTwinId: string;
   iModelId: string;
   viewIds?: string[];
   stageId?: string;
@@ -293,26 +292,24 @@ export class SampleAppIModelApp {
     return category;
   }
 
-  // SWB
-  public static async openIModelAndViews(projectId: string, iModelId: string, viewIdsSelected: Id64String[]) {
+  public static async openIModelAndViews(iTwinId: string, iModelId: string, viewIdsSelected: Id64String[]) {
     // Close the current iModelConnection
     await SampleAppIModelApp.closeCurrentIModel();
 
     // open the imodel
     Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
-    // SWB
-      `openIModelAndViews: projectId=${projectId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
+      `openIModelAndViews: iTwinId=${iTwinId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
 
     let iModelConnection: IModelConnection | undefined;
     if (ProcessDetector.isMobileAppFrontend) {
-      const req = await NativeApp.requestDownloadBriefcase(projectId, iModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(), async (progress: ProgressInfo) => {
+      const req = await NativeApp.requestDownloadBriefcase(iTwinId, iModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(), async (progress: ProgressInfo) => {
         // eslint-disable-next-line no-console
         console.log(`Progress (${progress.loaded}/${progress.total}) -> ${progress.percent}%`);
       });
       await req.downloadPromise;
       iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
     } else {
-      iModelConnection = await UiFramework.iModelServices.openIModel(projectId, iModelId);
+      iModelConnection = await UiFramework.iModelServices.openIModel(iTwinId, iModelId);
     }
 
     SampleAppIModelApp.setIsIModelLocal(false, true);
@@ -411,8 +408,7 @@ export class SampleAppIModelApp {
 
       // open the imodel
       Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
-      // SWB
-        `showIModelIndex: projectId=${iTwinId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
+        `showIModelIndex: iTwinId=${iTwinId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
 
       let iModelConnection: IModelConnection | undefined;
       if (ProcessDetector.isMobileAppFrontend) {
@@ -447,49 +443,44 @@ export class SampleAppIModelApp {
   public static async showSignedIn() {
     SampleAppIModelApp.iModelParams = SampleAppIModelApp._usingParams();
 
-    // SWB
-    if (process.env.IMJS_UITESTAPP_IMODEL_NAME && process.env.IMJS_UITESTAPP_IMODEL_PROJECT_NAME) {
+    if (process.env.IMJS_UITESTAPP_IMODEL_NAME && process.env.IMJS_UITESTAPP_IMODEL_ITWIN_NAME) {
       const viewId: string | undefined = process.env.IMJS_UITESTAPP_IMODEL_VIEWID;
 
-      // SWB
-      const projectName = process.env.IMJS_UITESTAPP_IMODEL_PROJECT_NAME ?? "";
+      const iTwinName = process.env.IMJS_UITESTAPP_IMODEL_ITWIN_NAME ?? "";
       const iModelName = process.env.IMJS_UITESTAPP_IMODEL_NAME ?? "";
 
       const requestContext = await AuthorizedFrontendRequestContext.create();
       const iTwinList: ITwin[] = await (new ITwinAccessClient()).getAll(requestContext, {
         search: {
-          searchString: projectName,
+          searchString: iTwinName,
           propertyName: ITwinSearchableProperty.Name,
           exactMatch: true,
         },
       });
 
       if (iTwinList.length === 0)
-        throw new Error(`ITwin ${projectName} was not found for the user.`);
+        throw new Error(`ITwin ${iTwinName} was not found for the user.`);
       else if (iTwinList.length > 1)
-        throw new Error(`Multiple iTwins named ${projectName} were found for the user.`);
+        throw new Error(`Multiple iTwins named ${iTwinName} were found for the user.`);
 
-      // SWB
-      const project: ITwin = iTwinList[0];
+      const iTwin: ITwin = iTwinList[0];
 
-      const iModel = (await (new IModelHubClient()).iModels.get(requestContext, project.id, new IModelQuery().byName(iModelName)))[0];
+      const iModel = (await (new IModelHubClient()).iModels.get(requestContext, iTwin.id, new IModelQuery().byName(iModelName)))[0];
 
       if (viewId) {
         // open directly into the iModel (view)
-        await SampleAppIModelApp.openIModelAndViews(project.id, iModel.wsgId, [viewId]);
+        await SampleAppIModelApp.openIModelAndViews(iTwin.id, iModel.wsgId, [viewId]);
       } else {
         // open to the IModelIndex frontstage
-        await SampleAppIModelApp.showIModelIndex(project.id, iModel.wsgId);
+        await SampleAppIModelApp.showIModelIndex(iTwin.id, iModel.wsgId);
       }
     } else if (SampleAppIModelApp.iModelParams) {
       if (SampleAppIModelApp.iModelParams.viewIds && SampleAppIModelApp.iModelParams.viewIds.length > 0) {
         // open directly into the iModel (view)
-        // SWB
-        await SampleAppIModelApp.openIModelAndViews(SampleAppIModelApp.iModelParams.projectId, SampleAppIModelApp.iModelParams.iModelId, SampleAppIModelApp.iModelParams.viewIds);
+        await SampleAppIModelApp.openIModelAndViews(SampleAppIModelApp.iModelParams.iTwinId, SampleAppIModelApp.iModelParams.iModelId, SampleAppIModelApp.iModelParams.viewIds);
       } else {
         // open to the IModelIndex frontstage
-        // SWB
-        await SampleAppIModelApp.showIModelIndex(SampleAppIModelApp.iModelParams.projectId, SampleAppIModelApp.iModelParams.iModelId);
+        await SampleAppIModelApp.showIModelIndex(SampleAppIModelApp.iModelParams.iTwinId, SampleAppIModelApp.iModelParams.iModelId);
       }
     } else if (SampleAppIModelApp.testAppConfiguration?.startWithSnapshots) {
       // open to the Local File frontstage
@@ -502,15 +493,14 @@ export class SampleAppIModelApp {
 
   private static _usingParams(): SampleIModelParams | undefined {
     const urlParams = new URLSearchParams(window.location.search);
-    // SWB
-    const projectId = urlParams.get("projectId");
+    const iTwinId = urlParams.get("iTwinId");
     const iModelId = urlParams.get("iModelId");
 
-    if (projectId && iModelId) {
+    if (iTwinId && iModelId) {
       const viewIds = urlParams.getAll("viewId");
       const stageId = urlParams.get("stageId") || undefined;
 
-      return { projectId, iModelId, viewIds, stageId };
+      return { iTwinId, iModelId, viewIds, stageId };
     }
 
     return undefined;

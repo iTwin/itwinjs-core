@@ -110,11 +110,9 @@ export class IModelViewPicker extends React.Component<ViewsProps, ViewsState> {
 
   private async startRetrieveViews() {
     if (this.props.iModelInfo) {
-      // SWB
       const iTwinInfo = this.props.iModelInfo.iTwinInfo;
       const iModelWsgId = this.props.iModelInfo.wsgId;
 
-      // this.setState({ waitingForViews: true });
       this._iModelConnection = await UiFramework.iModelServices.openIModel(iTwinInfo.id, iModelWsgId);
     } else if (this.props.iModelConnection) {
       this._iModelConnection = this.props.iModelConnection;

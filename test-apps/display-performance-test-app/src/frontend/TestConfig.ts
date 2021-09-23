@@ -115,8 +115,7 @@ export interface TestConfigProps {
    * Default: "*"
    */
   iModelName?: string;
-  // SWB
-  /** The name of the iModelHub project from which to obtain iModels. Currently not supported.
+  /** The name of the iTwin from which to obtain iModels. Currently not supported.
    * Default: "iModel Testing"
    */
   // SWB
@@ -172,8 +171,7 @@ export class TestConfig {
   public readonly outputName: string;
   public readonly outputPath: string;
   public iModelName: string;
-  // SWB
-  public readonly iModelHubProject: string;
+  public readonly iTwin: string;
   public viewName: string;
   public readonly testType: TestType;
   public readonly csvFormat: string;
@@ -208,7 +206,7 @@ export class TestConfig {
     this.iModelLocation = prevConfig?.iModelLocation ?? "";
     this.iModelName = props.iModelName ?? prevConfig?.iModelName ?? "*";
     // SWB
-    this.iModelHubProject = props.iModelHubProject ?? prevConfig?.iModelHubProject ?? "iModel Testing";
+    this.iTwin = props.iModelHubProject ?? prevConfig?.iTwin ?? "iModel Testing";
     this.csvFormat = props.csvFormat ?? prevConfig?.csvFormat ?? "original";
     this.viewName = props.viewName ?? prevConfig?.viewName ?? "*";
     this.extViewName = props.extViewName;

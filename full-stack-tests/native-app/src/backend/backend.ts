@@ -19,8 +19,7 @@ import { IModelRpcProps, RpcConfiguration } from "@bentley/imodeljs-common";
 import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
 import { TestUtility } from "@bentley/oidc-signin-tool";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool/lib/TestUsers";
-// SWB
-import { testIpcChannel, TestIpcInterface, TestProjectProps } from "../common/IpcInterfaces";
+import { testIpcChannel, TestIpcInterface, TestiTwinProps } from "../common/IpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 
 /** Loads the provided `.env` file into process.env */
@@ -58,21 +57,19 @@ export function setupDebugLogLevels() {
 class TestIpcHandler extends IpcHandler implements TestIpcInterface {
   public get channelName() { return testIpcChannel; }
 
-  // SWB
-  public async getTestProjectProps(user: TestUserCredentials): Promise<TestProjectProps> {
+  public async getTestiTwinProps(user: TestUserCredentials): Promise<TestiTwinProps> {
     // first, perform silent login
     NativeHost.authorization.setAccessToken(await TestUtility.getAccessToken(user));
 
-    // SWB
-    const projectName = process.env.IMJS_TEST_PROJECT_NAME ?? "";
+    const iTwinName = process.env.IMJS_TEST_PROJECT_NAME ?? "";
 
     if (CloudEnv.cloudEnv.isIModelHub) {
       const region = process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION || "0";
-      return { projectName, iModelHub: { region } };
+      return { iTwinName, iModelHub: { region } };
     }
     const requestContext = await AuthorizedBackendRequestContext.create();
     const url = await (CloudEnv.cloudEnv.imodelClient as IModelBankClient).getUrl(requestContext);
-    return { projectName, iModelBank: { url } };
+    return { iTwinName, iModelBank: { url } };
   }
 
   public async purgeStorageCache(): Promise<void> {

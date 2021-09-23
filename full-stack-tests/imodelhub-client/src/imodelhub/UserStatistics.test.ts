@@ -56,8 +56,7 @@ function sortStatistics(value: UserStatistics[]) {
 
 describe("iModelHubClient UserStatisticsHandler", () => {
   const requestContexts: AuthorizedClientRequestContext[] = [];
-  // SWB
-  let contextId: string;
+  let iTwinId: string;
   let imodelId: GuidString;
 
   let imodelHubClient: IModelClient;
@@ -76,10 +75,9 @@ describe("iModelHubClient UserStatisticsHandler", () => {
     requestContexts.push(new AuthorizedClientRequestContext(superAccessToken));
     requestContexts.push(new AuthorizedClientRequestContext(managerAccessToken));
 
-    // SWB
-    contextId = await utils.getProjectId(requestContexts[0]);
-    await utils.createIModel(requestContexts[0], utils.sharedimodelName, contextId, true, true);
-    imodelId = await utils.getIModelId(requestContexts[0], utils.sharedimodelName, contextId);
+    iTwinId = await utils.getiTwinId(requestContexts[0]);
+    await utils.createIModel(requestContexts[0], utils.sharedimodelName, iTwinId, true, true);
+    imodelId = await utils.getIModelId(requestContexts[0], utils.sharedimodelName, iTwinId);
     imodelHubClient = utils.getDefaultClient();
 
     if (!TestConfig.enableMocks) {
@@ -101,7 +99,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
 
   after(async () => {
     if (TestConfig.enableIModelBank) {
-      await utils.deleteIModelByName(requestContexts[0], contextId, utils.sharedimodelName);
+      await utils.deleteIModelByName(requestContexts[0], iTwinId, utils.sharedimodelName);
     }
   });
 

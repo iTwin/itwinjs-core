@@ -27,24 +27,24 @@ export class IModelSession {
     let imodelId;
 
     // Turn the iTwin name into an id
-    if (iModelData.useProjectName && iModelData.projectName) {
+    if (iModelData.useiTwinName && iModelData.iTwinName) {
       const client = new ITwinAccessClient();
       const iTwinList: ITwin[] = await client.getAll(requestContext, {
         search: {
-          searchString: iModelData.projectName,
+          searchString: iModelData.iTwinName,
           propertyName: ITwinSearchableProperty.Name,
           exactMatch: true,
         },
       });
 
       if (iTwinList.length === 0)
-        throw new Error(`ITwin ${iModelData.projectName} was not found for the user.`);
+        throw new Error(`ITwin ${iModelData.iTwinName} was not found for the user.`);
       else if (iTwinList.length > 1)
-        throw new Error(`Multiple iTwins named ${iModelData.projectName} were found for the user.`);
+        throw new Error(`Multiple iTwins named ${iModelData.iTwinName} were found for the user.`);
 
       contextId = iTwinList[0].id;
     } else
-      contextId = iModelData.projectId!;
+      contextId = iModelData.iTwinId!;
 
     if (iModelData.useName) {
       const imodelClient = new IModelHubClient();
@@ -55,7 +55,7 @@ export class IModelSession {
     } else
       imodelId = iModelData.id!;
 
-    console.log(`Using iModel { name:${iModelData.name}, id:${iModelData.id}, projectId:${iModelData.projectId}, changesetId:${iModelData.changeSetId} }`); // eslint-disable-line no-console
+    console.log(`Using iModel { name:${iModelData.name}, id:${iModelData.id}, projectId:${iModelData.iTwinId}, changesetId:${iModelData.changeSetId} }`); // eslint-disable-line no-console
 
     return new IModelSession(contextId, imodelId, iModelData.changeSetId);
   }

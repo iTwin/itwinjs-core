@@ -19,31 +19,26 @@ export class NativeAppTest {
     return IpcApp.callIpcChannel(testIpcChannel, methodName, ...args) as PromiseReturnType<TestIpcInterface[T]>;
   }
 
-  // SWB
-  public static async initializeTestProject(): Promise<string> {
+  public static async initializeTestiTwin(): Promise<string> {
     const user = TestUsers.regular;
-    // SWB
-    const props = await NativeAppTest.callBackend("getTestProjectProps", user);
+    const props = await NativeAppTest.callBackend("getTestiTwinProps", user);
     if (props.iModelBank) {
       const bank = new IModelBankCloudEnv(props.iModelBank.url, false);
       const authorizationClient = bank.getAuthorizationClient(undefined, user);
-      // SWB
-      await bank.bootstrapIModelBankProject(new AuthorizedClientRequestContext(await authorizationClient.getAccessToken()), props.projectName);
+      await bank.bootstrapiTwin(new AuthorizedClientRequestContext(await authorizationClient.getAccessToken()), props.iTwinName);
       this.imodelCloudEnv = bank;
     } else {
       this.imodelCloudEnv = new IModelHubCloudEnv();
     }
 
-    // SWB
-    const project = await this.imodelCloudEnv.iTwinMgr.getITwinByName(await AuthorizedFrontendRequestContext.create(), props.projectName);
-    assert(project && project.id);
-    return project.id;
+    const iTwin = await this.imodelCloudEnv.iTwinMgr.getITwinByName(await AuthorizedFrontendRequestContext.create(), props.iTwinName);
+    assert(iTwin && iTwin.id);
+    return iTwin.id;
   }
 
-  // SWB
-  public static async getTestIModelId(projectId: string, iModelName: string): Promise<string> {
+  public static async getTestIModelId(iTwinId: string, iModelName: string): Promise<string> {
     const requestContext = await AuthorizedFrontendRequestContext.create();
-    const iModels = await this.imodelCloudEnv.imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
+    const iModels = await this.imodelCloudEnv.imodelClient.iModels.get(requestContext, iTwinId, new IModelQuery().byName(iModelName));
     assert(iModels.length > 0);
     assert(iModels[0].wsgId);
 

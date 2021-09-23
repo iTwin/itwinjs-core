@@ -116,8 +116,7 @@ function mockGetGlobalEventSASToken() {
 describe("iModelHub GlobalEventHandler (#unit)", () => {
   let globalEventSubscription: GlobalEventSubscription;
   let globalEventSas: GlobalEventSAS;
-  // SWB
-  let projectId: string;
+  let iTwinId: string;
   const imodelName = "imodeljs-clients GlobalEvents test";
   let imodelHubClient: IModelClient;
   let requestContext: AuthorizedClientRequestContext;
@@ -127,8 +126,7 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
   before(async () => {
     const accessToken: AccessToken = await utils.login();
     requestContext = new AuthorizedClientRequestContext(accessToken);
-    // SWB
-    projectId = await utils.getProjectId(requestContext);
+    iTwinId = await utils.getiTwinId(requestContext);
 
     imodelHubClient = utils.getDefaultClient();
 
@@ -139,7 +137,7 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
     const serviceAccountAccessToken = await utils.login(serviceAccount1);
     serviceAccountRequestContext = new AuthorizedClientRequestContext(serviceAccountAccessToken);
 
-    await utils.deleteIModelByName(requestContext, projectId, imodelName);
+    await utils.deleteIModelByName(requestContext, iTwinId, imodelName);
   });
 
   afterEach(() => {
@@ -164,17 +162,17 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
   });
 
   it("should receive Global Event iModelCreatedEvent", async () => {
-    await utils.createIModel(requestContext, imodelName, projectId);
+    await utils.createIModel(requestContext, imodelName, iTwinId);
 
     // SWB How should this be handled?
-    const eventBody = `{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","ProjectId":"${projectId}","ITwinId":"${projectId}","iModelId":"${Guid.createValue()}"}`;
+    const eventBody = `{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","ProjectId":"${iTwinId}","ITwinId":"${iTwinId}","iModelId":"${Guid.createValue()}"}`;
     mockGetGlobalEvent(globalEventSubscription.wsgId, JSON.parse(eventBody), "iModelCreatedEvent");
     const event = await imodelHubClient.globalEvents.getEvent(requestContext, globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId);
 
     chai.expect(event).to.be.instanceof(IModelCreatedEvent);
     chai.assert(!!event!.iModelId);
     // SWB
-    chai.expect(event!.iTwinId).to.be.eq(projectId);
+    chai.expect(event!.iTwinId).to.be.eq(iTwinId);
   });
 
   it("should update Global Event subscription", async () => {
@@ -205,7 +203,7 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
         receivedEventsCount++;
     });
 
-    await utils.deleteIModelByName(requestContext, projectId, imodelName);
+    await utils.deleteIModelByName(requestContext, iTwinId, imodelName);
 
     let timeoutCounter = 0;
     for (; timeoutCounter < 100; ++timeoutCounter) {
@@ -219,7 +217,7 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
 
   it("should receive Global Event with Peek-lock (#unit)", async () => {
     // SWB How should this be handled?
-    const eventBody = `{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","ProjectId":"${projectId}","iModelId":"${Guid.createValue()}"}`;
+    const eventBody = `{"EventTopic":"iModelHubGlobalEvents","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","ProjectId":"${iTwinId}","iModelId":"${Guid.createValue()}"}`;
     mockPeekLockGlobalEvent(globalEventSubscription.wsgId, JSON.parse(eventBody), "iModelCreatedEvent");
     const lockedEvent = await imodelHubClient.globalEvents.getEvent(requestContext, globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId, undefined, GetEventOperationType.Peek);
 

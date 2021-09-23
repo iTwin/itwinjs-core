@@ -73,35 +73,31 @@
   justify-content: flex-start;
   align-items: flex-start;
   flex-wrap: wrap;
-  // overflow-y: hidden;
-  // overflow-x: hidden;
-  //-webkit-overflow-scrolling: touch;
 }
 
 .cards-empty {
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   font-size: 1.25em;
-	color: #616161;
+  color: #616161;
 
-	> div {
+  > div {
     height: 75%;
-		display: flex;
+    display: flex;
     align-items: center;
     justify-content: center;
-		flex-direction: column;
+    flex-direction: column;
 
-		> button {
-			margin-top: 1em;
-		}
-	}
+    > button {
+      margin-top: 1em;
+    }
+  }
 }
 
-   // SWB
-/* no projects prompt */
+/* no iTwins prompt */
 .cards-noresults {
   position: absolute;
   top: 40%;
@@ -121,7 +117,6 @@
 /* table */
 .cards-content table {
   width: 100%;
-  //margin-top: 1em;
   font-family: arial, sans-serif;
   border-collapse: collapse;
 

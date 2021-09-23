@@ -37,12 +37,12 @@ describe("external texture requests (#integration)", () => {
   before(async () => {
     await IModelApp.startup({
       // SWB
-      authorizationClient: await TestUtility.initializeTestProject(TestUtility.testContextName, TestUsers.regular),
+      authorizationClient: await TestUtility.initializeTestiTwin(TestUtility.testiTwinName, TestUsers.regular),
       imodelClient: TestUtility.imodelCloudEnv.imodelClient,
       applicationVersion: "1.2.1.1",
     });
     // SWB
-    const contextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
+    const contextId = await TestUtility.queryiTwinIdByName(TestUtility.testiTwinName);
     const iModelId = await TestUtility.queryIModelIdbyName(contextId, TestUtility.testIModelNames.smallTex);
     imodel = await CheckpointConnection.openRemote(contextId, iModelId);
   });

@@ -30,8 +30,7 @@ function mockGetiModelPermissions(imodelId: string, webView: boolean, read: bool
 }
 
 describe("iModelHub PermissionsManager", () => {
-  // SWB
-  let projectId: string;
+  let iTwinId: string;
   let imodelId: GuidString;
   let imodelClient: IModelClient;
   let requestContext: AuthorizedClientRequestContext;
@@ -42,11 +41,10 @@ describe("iModelHub PermissionsManager", () => {
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
     (requestContext as any).activityId = "iModelHub PermissionHandler";
-    // SWB
-    projectId = await utils.getProjectId(requestContext, "iModelJsTest");
+    iTwinId = await utils.getiTwinId(requestContext, "iModelJsTest");
 
-    await utils.createIModel(requestContext, utils.sharedimodelName, projectId);
-    imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, projectId);
+    await utils.createIModel(requestContext, utils.sharedimodelName, iTwinId);
+    imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, iTwinId);
     imodelClient = utils.getIModelHubClient();
 
     if (!fs.existsSync(workDir)) {
@@ -60,7 +58,7 @@ describe("iModelHub PermissionsManager", () => {
 
   after(async () => {
     if (TestConfig.enableIModelBank) {
-      await utils.deleteIModelByName(requestContext, projectId, utils.sharedimodelName);
+      await utils.deleteIModelByName(requestContext, iTwinId, utils.sharedimodelName);
     }
   });
 

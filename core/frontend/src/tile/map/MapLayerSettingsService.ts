@@ -176,41 +176,38 @@ export class MapLayerSettingsService {
     return savedMapLayer;
   }
   /**
-  // SWB
-   * Grabs any MapLayerSources in the user's settings, the shared settings on the iModel, and the shared settings on the project.
-  // SWB
-   * @param projectId id of the project
+   * Grabs any MapLayerSources in the user's settings, the shared settings on the iModel, and the shared settings on the iTwin.
+   * @param iTwinId id of the iTwin
    * @param iModelId id of the iModel
    * @throws error if any of the calls to grab settings fail.
    */
-  // SWB
-  public static async getSourcesFromSettingsService(projectId: GuidString, iModelId: GuidString): Promise<MapLayerSource[]> {
+  public static async getSourcesFromSettingsService(iTwinId: GuidString, iModelId: GuidString): Promise<MapLayerSource[]> {
     const requestContext = await AuthorizedFrontendRequestContext.create();
     // SWB
     const userResultByProjectPromise = IModelApp.settings.getUserSettingsByNamespace(
       requestContext,
       MapLayerSettingsService.SourceNamespace,
       true,
-      projectId,
+      iTwinId,
       undefined,
     );
     const userResultByImodelPromise = IModelApp.settings.getUserSettingsByNamespace(
       requestContext,
       MapLayerSettingsService.SourceNamespace,
       true,
-      projectId,
+      iTwinId,
       iModelId,
     );
     const sharedResultByImodelPromise = IModelApp.settings.getSharedSettingsByNamespace(requestContext,
       MapLayerSettingsService.SourceNamespace,
       true,
-      projectId,
+      iTwinId,
       iModelId);
     // SWB
     const sharedResultByProjectPromise = IModelApp.settings.getSharedSettingsByNamespace(requestContext,
       MapLayerSettingsService.SourceNamespace,
       true,
-      projectId,
+      iTwinId,
       undefined);
     const settingsMapArray: SettingsMapResult[] = await Promise.all([userResultByProjectPromise, userResultByImodelPromise, sharedResultByImodelPromise, sharedResultByProjectPromise]);
     // SWB

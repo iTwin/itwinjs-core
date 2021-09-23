@@ -453,8 +453,7 @@ describe("ChangeSummary (#integration)", () => {
     await testUtility.createTestIModel();
 
     // User2 opens the iModel
-    // SWB
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ user: userContext2, iTwinId: testUtility.projectId, iModelId: testUtility.iModelId });
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ user: userContext2, iTwinId: testUtility.iTwinId, iModelId: testUtility.iModelId });
 
     // Attach change cache
     ChangeSummaryManager.attachChangeCache(iModel);
