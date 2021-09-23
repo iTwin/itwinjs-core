@@ -124,7 +124,7 @@ export class NativeAppAuthorization implements AuthorizationClient {
  * @public
  */
 export interface NativeAppOpts extends IpcAppOptions {
-  nativeApp?: {}
+  nativeApp?: {};
 }
 
 /**
