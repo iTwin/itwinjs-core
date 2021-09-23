@@ -35,8 +35,7 @@ describe("<WithDragInteraction />", () => {
     div.getDOMNode().releasePointerCapture = () => { };
     div.simulate("pointerDown");
 
-    const pointerMove = document.createEvent("MouseEvent");
-    pointerMove.initEvent("pointermove");
+    const pointerMove = new MouseEvent("pointermove");
     sinon.stub(pointerMove, "clientX").get(() => 30);
     document.dispatchEvent(pointerMove);
 
@@ -50,8 +49,7 @@ describe("<WithDragInteraction />", () => {
       onOpenPanel={spy}
     />);
 
-    const pointerMove = document.createEvent("MouseEvent");
-    pointerMove.initEvent("pointermove");
+    const pointerMove = new MouseEvent("pointermove");
     sinon.stub(pointerMove, "clientX").get(() => 30);
     document.dispatchEvent(pointerMove);
 
@@ -68,8 +66,7 @@ describe("<WithDragInteraction />", () => {
     div.getDOMNode().releasePointerCapture = () => { };
     div.simulate("pointerDown");
 
-    const pointerMove = document.createEvent("MouseEvent");
-    pointerMove.initEvent("pointermove");
+    const pointerMove = new MouseEvent("pointermove");
     sinon.stub(pointerMove, "clientX").get(() => 19);
     document.dispatchEvent(pointerMove);
 
@@ -86,12 +83,10 @@ describe("<WithDragInteraction />", () => {
     div.getDOMNode().releasePointerCapture = () => { };
     div.simulate("pointerDown");
 
-    const pointerUp = document.createEvent("MouseEvent");
-    pointerUp.initEvent("pointerup");
+    const pointerUp = new MouseEvent("pointerup");
     document.dispatchEvent(pointerUp);
 
-    const pointerMove = document.createEvent("MouseEvent");
-    pointerMove.initEvent("pointermove");
+    const pointerMove = new MouseEvent("pointermove");
     sinon.stub(pointerMove, "clientX").get(() => 30);
     document.dispatchEvent(pointerMove);
 
@@ -134,8 +129,7 @@ describe("<WithDragInteraction />", () => {
     div.getDOMNode().releasePointerCapture = () => { };
     div.simulate("pointerDown");
 
-    const pointerMove = document.createEvent("MouseEvent");
-    pointerMove.initEvent("pointermove");
+    const pointerMove = new MouseEvent("pointermove");
     sinon.stub(pointerMove, "clientX").get(() => 30);
     document.dispatchEvent(pointerMove);
 
@@ -171,8 +165,7 @@ describe("<WithDragInteraction />", () => {
     div.getDOMNode().releasePointerCapture = () => { };
     div.simulate("pointerDown");
 
-    const pointerMove = document.createEvent("MouseEvent");
-    pointerMove.initEvent("pointermove");
+    const pointerMove = new MouseEvent("pointermove");
     sinon.stub(pointerMove, "clientX").get(() => 2);
     document.dispatchEvent(pointerMove);
 

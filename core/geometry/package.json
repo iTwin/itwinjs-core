@@ -1,6 +1,6 @@
 {
   "name": "@bentley/geometry-core",
-  "version": "3.0.0-dev.63",
+  "version": "3.0.0-dev.65",
   "description": "Bentley Core Geometry library",
   "main": "lib/geometry-core.js",
   "typings": "lib/geometry-core",
@@ -11,12 +11,11 @@
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json ./src/test/output",
     "watch": "tsc --watch",
-    "test": "betools test",
+    "test": "mocha",
     "extract-api": "betools extract-api --entry=geometry-core",
     "extract-api-test": "betools extract-api --entry=geometry-core",
     "docs": "betools docs --tsIndexFile=./geometry-core.ts --json=../../generated-docs/core/geometry-core/file.json --onlyJson",
     "cover": "nyc npm test",
-    "cover:docs": "node ./node_modules/@bentley/build-tools/scripts/docscoverage.js",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2"
   },
   "repository": {
@@ -32,7 +31,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.63"
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.65"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "workspace:*",
@@ -49,7 +48,7 @@
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "semver": "^5.5.0",
-    "typescript": "~4.3.0"
+    "typescript": "~4.4.0"
   },
   "dependencies": {
     "flatbuffers": "~1.12.0"

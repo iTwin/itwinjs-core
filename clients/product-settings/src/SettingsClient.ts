@@ -161,7 +161,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     try {
       await request(requestContext, url, options);
       return new SettingsResult(SettingsStatus.Success);
-    } catch (response) {
+    } catch (response: any) {
       if ((response.status < 200) || (response.status > 299))
         return this.formErrorResponse(response);
       return new SettingsResult(SettingsStatus.UnknownError, `Unexpected Status ${JSON.stringify(response)}`);
@@ -188,7 +188,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
       if (Array.isArray(response.body) && (response.body.length > 0))
         return new SettingsResult(SettingsStatus.Success, undefined, response.body[0].properties);
       return new SettingsResult(SettingsStatus.SettingNotFound);
-    } catch (response) {
+    } catch (response: any) {
       if ((response.status < 200) || (response.status > 299))
         return this.formErrorResponse(response);
       return new SettingsResult(SettingsStatus.UnknownError, `Unexpected Status ${JSON.stringify(response)}`);
@@ -230,7 +230,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
 
         // Update the continuation token for the next iteration
         options.headers.continuationtoken = response.header.continuationtoken;
-      } catch (errResponse) {
+      } catch (errResponse: any) {
         if ((errResponse.status < 200) || (errResponse.status > 299))
           return this.formErrorResponse(errResponse);
         else
@@ -257,7 +257,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     try {
       await request(requestContext, url, options);
       return new SettingsResult(SettingsStatus.Success);
-    } catch (response) {
+    } catch (response: any) {
       if ((response.status < 200) || (response.status > 299))
         return this.formErrorResponse(response);
       else

@@ -207,7 +207,7 @@ describe("ECSqlStatement", () => {
             }
             successful++;
             resolve();
-          } catch (err) {
+          } catch (err: any) {
             // we expect query to be cancelled
             if (err.errorNumber === DbResult.BE_SQLITE_INTERRUPT) {
               cancelled++;

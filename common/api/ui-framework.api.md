@@ -1737,7 +1737,7 @@ export type DeepReadonlyObject<T> = {
     readonly [P in keyof T]: DeepReadonly<T[P]>;
 };
 
-// @beta
+// @public
 export interface DefaultContentTools {
     // (undocumented)
     horizontal?: {
@@ -1755,7 +1755,7 @@ export interface DefaultContentTools {
     };
 }
 
-// @beta
+// @public
 export interface DefaultContentToolsAppData {
     // (undocumented)
     defaultContentTools?: {
@@ -1785,7 +1785,7 @@ export interface DefaultNavigationProps {
     suffixVerticalItems?: ItemList;
 }
 
-// @beta
+// @public
 export interface DefaultNavigationTools {
     // (undocumented)
     horizontal?: {
@@ -1808,7 +1808,7 @@ export class DefaultNavigationWidget extends React.Component<DefaultNavigationPr
     render(): JSX.Element;
     }
 
-// @beta
+// @public
 export interface DefaultStatusbarItems {
     // (undocumented)
     accuSnapModePicker?: boolean;
@@ -3099,9 +3099,9 @@ export interface IModelInfo {
     // (undocumented)
     description: string;
     // (undocumented)
-    name: string;
+    iTwinId: GuidString;
     // (undocumented)
-    projectInfo: ProjectInfo;
+    name: string;
     // (undocumented)
     status: string;
     // (undocumented)
@@ -3123,7 +3123,7 @@ export enum IModelScope {
 // @internal
 export interface IModelServices {
     getChangeSets(iModelId: string): Promise<ChangeSetInfo[]>;
-    getIModels(projectInfo: ProjectInfo, top: number, skip: number): Promise<IModelInfo[]>;
+    getIModels(iTwinId: GuidString, top: number, skip: number): Promise<IModelInfo[]>;
     getThumbnail(projectId: string, iModelId: string): Promise<string | undefined>;
     getUser(iModelId: string, userId: string): Promise<IModelUserInfo[]>;
     getUsers(iModelId: string): Promise<IModelUserInfo[]>;
@@ -4395,45 +4395,6 @@ export interface PresentationSelectionScope {
     id: string;
     // (undocumented)
     label: string;
-}
-
-// @internal
-export interface ProjectInfo {
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    projectNumber: string;
-    // (undocumented)
-    readStatus: ProjectReadStatus;
-    // (undocumented)
-    wsgId: string;
-}
-
-// @internal
-export enum ProjectReadStatus {
-    // (undocumented)
-    DoneReading = 2,
-    // (undocumented)
-    NotRead = 0,
-    // (undocumented)
-    Reading = 1
-}
-
-// @internal
-export enum ProjectScope {
-    // (undocumented)
-    All = 3,
-    // (undocumented)
-    Favorites = 0,
-    // (undocumented)
-    Invited = 2,
-    // (undocumented)
-    MostRecentlyUsed = 1
-}
-
-// @internal
-export interface ProjectServices {
-    getProjects(projectScope: ProjectScope, top: number, skip: number, filter?: string): Promise<ProjectInfo[]>;
 }
 
 // @public @deprecated
@@ -5709,7 +5670,7 @@ export interface StagePanelZonesProps {
     start?: StagePanelZoneProps;
 }
 
-// @beta
+// @public
 export class StandardContentToolsProvider implements UiItemsProvider {
     constructor(defaultContextTools?: DefaultContentTools | undefined, isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any) => boolean) | undefined);
     // (undocumented)
@@ -5720,13 +5681,12 @@ export class StandardContentToolsProvider implements UiItemsProvider {
     provideStatusBarItems(stageId: string, stageUsage: string, stageAppData?: any): CommonStatusBarItem[];
     // (undocumented)
     provideToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[];
-    // (undocumented)
     static register(defaultContextTools?: DefaultContentTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): void;
     // (undocumented)
     static unregister(): void;
 }
 
-// @beta (undocumented)
+// @public
 export interface StandardFrontstageProps {
     applicationData?: any;
     bottomPanelProps?: WidgetPanelProps;
@@ -5745,7 +5705,7 @@ export interface StandardFrontstageProps {
     version?: number;
 }
 
-// @beta (undocumented)
+// @public
 export class StandardFrontstageProvider extends FrontstageProvider {
     constructor(props: StandardFrontstageProps);
     // (undocumented)
@@ -5772,7 +5732,7 @@ export interface StandardMessageBoxProps extends CommonProps {
     title: string;
 }
 
-// @beta
+// @public
 export class StandardNavigationToolsProvider implements UiItemsProvider {
     constructor(defaultNavigationTools?: DefaultNavigationTools | undefined, isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any) => boolean) | undefined);
     // (undocumented)
@@ -5781,7 +5741,6 @@ export class StandardNavigationToolsProvider implements UiItemsProvider {
     static providerId: string;
     // (undocumented)
     provideToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[];
-    // (undocumented)
     static register(defaultNavigationTools?: DefaultNavigationTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): void;
     // (undocumented)
     static unregister(): void;
@@ -5803,7 +5762,7 @@ export class StandardRotationNavigationAidControl extends NavigationAidControl {
     static navigationAidId: string;
 }
 
-// @beta
+// @public
 export class StandardStatusbarItemsProvider implements UiItemsProvider {
     constructor(_defaultItems?: DefaultStatusbarItems | undefined, _isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any) => boolean) | undefined);
     // (undocumented)
@@ -5812,7 +5771,6 @@ export class StandardStatusbarItemsProvider implements UiItemsProvider {
     static providerId: string;
     // (undocumented)
     provideStatusBarItems(stageId: string, stageUsage: string, stageAppData?: any): CommonStatusBarItem[];
-    // (undocumented)
     static register(defaultItems?: DefaultStatusbarItems, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): void;
     // (undocumented)
     static unregister(): void;
@@ -6680,7 +6638,7 @@ export class UiFramework {
     static initialize(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string): Promise<void>;
     static get initialized(): boolean;
     // @internal
-    static initializeEx(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<void>;
+    static initializeEx(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string, iModelServices?: IModelServices): Promise<void>;
     // @alpha
     static get isContextMenuOpen(): boolean;
     // (undocumented)
@@ -6698,8 +6656,6 @@ export class UiFramework {
     static postTelemetry(eventName: string, eventId?: GuidString, iTwinId?: GuidString, iModeId?: GuidString, changeSetId?: string, time?: TrackingTime, additionalProperties?: {
         [key: string]: any;
     }): Promise<void>;
-    // @internal (undocumented)
-    static get projectServices(): ProjectServices;
     // @alpha
     static registerUserSettingsProvider(entry: UserSettingsProvider): boolean;
     // (undocumented)
@@ -7383,7 +7339,7 @@ export class WidgetManager {
     set widgets(w: ReadonlyArray<WidgetInfo>);
     }
 
-// @beta
+// @public
 export type WidgetPanelProps = Omit<StagePanelProps, "widgets" | "runtimeProps" | "header" | "allowedZones" | "panelZones">;
 
 // @internal (undocumented)
@@ -7652,7 +7608,7 @@ export enum WidgetType {
 }
 
 // @public
-export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: React.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "targetRef" | "onOpenWidget">>) => JSX.Element;
+export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: React.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget" | "targetRef">>) => JSX.Element;
 
 // @public
 export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: React.JSXElementConstructor<P> & C) => {

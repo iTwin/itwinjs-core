@@ -5151,7 +5151,7 @@ export class MapLayerFormat {
 
 // @internal (undocumented)
 export class MapLayerFormatRegistry {
-    constructor(opts: MapLayerOptions);
+    constructor(opts?: MapLayerOptions);
     // (undocumented)
     get configOptions(): MapLayerOptions;
     // (undocumented)
@@ -8534,7 +8534,7 @@ export class ScreenViewport extends Viewport {
     doUndo(animationTime?: BeDuration): void;
     // @internal (undocumented)
     drawLocateCursor(context: DecorateContext, viewPt: Point3d, aperture: number, isLocateCircleOn: boolean, hit?: HitDetail): void;
-    getClientRect(): ClientRect;
+    getClientRect(): DOMRect;
     invalidateCachedDecorations(decorator: ViewportDecorator): void;
     // @internal (undocumented)
     invalidateScene(): void;
@@ -9337,8 +9337,9 @@ export enum StartOrResume {
 // @public
 export class Storage {
     constructor(id: string);
-    getData(key: string): Promise<StorageValue | undefined>;
+    getData(key: string): Promise<StorageValue>;
     getKeys(): Promise<string[]>;
+    getValueType(key: string): Promise<"number" | "string" | "boolean" | "Uint8Array" | "null" | undefined>;
     // (undocumented)
     readonly id: string;
     removeAll(): Promise<void>;

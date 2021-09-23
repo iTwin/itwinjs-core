@@ -31,7 +31,7 @@ export class ECClasses {
     let mutableClass: MutableClass;
     try {
       mutableClass = await this.getClass(classKey, name);
-    } catch (e) {
+    } catch (e: any) {
       return { errorMessage: e.message };
     }
 
@@ -43,7 +43,7 @@ export class ECClasses {
     let mutableClass: MutableClass;
     try {
       mutableClass = await this.getClass(classKey, name);
-    } catch (e) {
+    } catch (e: any) {
       return { errorMessage: e.message };
     }
 
@@ -56,7 +56,7 @@ export class ECClasses {
     let mutableClass: MutableClass;
     try {
       mutableClass = await this.getClass(classKey, name);
-    } catch (e) {
+    } catch (e: any) {
       return { errorMessage: e.message };
     }
 
@@ -70,7 +70,7 @@ export class ECClasses {
     let mutableClass: MutableClass;
     try {
       mutableClass = await this.getClass(classKey, name);
-    } catch (e) {
+    } catch (e: any) {
       return { errorMessage: e.message };
     }
 
@@ -82,7 +82,7 @@ export class ECClasses {
     let mutableClass: MutableClass;
     try {
       mutableClass = await this.getClass(classKey, name);
-    } catch (e) {
+    } catch (e: any) {
       return { errorMessage: e.message };
     }
 
@@ -94,7 +94,7 @@ export class ECClasses {
     let mutableClass: MutableClass;
     try {
       mutableClass = await this.getClass(classKey, name);
-    } catch (e) {
+    } catch (e: any) {
       return { errorMessage: e.message };
     }
 
@@ -107,7 +107,7 @@ export class ECClasses {
     let mutableClass: MutableClass;
     try {
       mutableClass = await this.getClass(classKey, name);
-    } catch (e) {
+    } catch (e: any) {
       return { errorMessage: e.message };
     }
 
@@ -119,7 +119,7 @@ export class ECClasses {
     let mutableClass: MutableClass;
     try {
       mutableClass = await this.getClass(classKey, name);
-    } catch (e) {
+    } catch (e: any) {
       return { errorMessage: e.message };
     }
 
@@ -132,7 +132,7 @@ export class ECClasses {
     let mutableClass: MutableClass;
     try {
       mutableClass = await this.getClass(classKey, name);
-    } catch (e) {
+    } catch (e: any) {
       return { errorMessage: e.message };
     }
 
@@ -144,7 +144,7 @@ export class ECClasses {
     let mutableClass: MutableClass;
     try {
       mutableClass = await this.getClass(classKey, name);
-    } catch (e) {
+    } catch (e: any) {
       return { errorMessage: e.message };
     }
 
@@ -157,7 +157,7 @@ export class ECClasses {
     let mutableClass: MutableClass;
     try {
       mutableClass = await this.getClass(classKey, name);
-    } catch (e) {
+    } catch (e: any) {
       return { errorMessage: e.message };
     }
 
