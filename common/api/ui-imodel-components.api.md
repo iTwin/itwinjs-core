@@ -186,10 +186,10 @@ export interface ColorPickerDialogProps {
     onOkResult: (selectedColor: ColorDef) => void;
 }
 
-// @beta
+// @public
 export function ColorPickerPanel({ activeColor, onColorChange, colorPresets, colorInputType }: ColorPickerPanelProps): JSX.Element;
 
-// @beta
+// @public
 export interface ColorPickerPanelProps {
     // (undocumented)
     activeColor: ColorDef;
@@ -200,10 +200,10 @@ export interface ColorPickerPanelProps {
     onColorChange: (selectedColor: ColorDef) => void;
 }
 
-// @beta
+// @public
 export const ColorPickerPopup: (props: ColorPickerPopupProps) => JSX.Element | null;
 
-// @beta
+// @public
 export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
     captureClicks?: boolean;
     colorDefs?: ColorDef[];

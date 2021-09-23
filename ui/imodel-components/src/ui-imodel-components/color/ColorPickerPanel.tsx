@@ -17,7 +17,7 @@ import "./ColorPickerPanel.scss";
 import { NumberInput } from "@bentley/ui-core";
 
 /** Properties for the [[ColorPickerPanel]] React component
- * @beta
+ * @public
  */
 export interface ColorPickerPanelProps {
   activeColor: ColorDef;
@@ -29,7 +29,7 @@ export interface ColorPickerPanelProps {
 
 /**
  * Color Picker Dialog to use as modal dialog.
- * @beta
+ * @public
  */
 // istanbul ignore next
 export function ColorPickerPanel({ activeColor, onColorChange, colorPresets, colorInputType }: ColorPickerPanelProps) {

@@ -19,7 +19,7 @@ import "./ColorPickerPopup.scss";
 import { getCSSColorFromDef } from "./getCSSColorFromDef";
 
 /** Properties for the [[ColorPickerPopup]] React component
- * @beta
+ * @public
  */
 export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
   /** Current color */
@@ -154,8 +154,9 @@ const ForwardRefColorPickerPopup = React.forwardRef<HTMLButtonElement, ColorPick
   }
 );
 
-/** ColorPickerButton component
+/**
+ * ColorPickerButton component that allows user to select a color from a set of color swatches or to define a new color.
  * @note Using forwardRef so the ColorEditor (Type Editor) can access the ref of the button element inside this component.
- * @beta
+ * @public
  */
 export const ColorPickerPopup: (props: ColorPickerPopupProps) => JSX.Element | null = ForwardRefColorPickerPopup;
