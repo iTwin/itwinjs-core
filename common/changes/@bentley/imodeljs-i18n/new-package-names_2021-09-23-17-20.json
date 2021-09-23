@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-i18n",
+      "comment": "use new @itwin package names",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-i18n"
+}

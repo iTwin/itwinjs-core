@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/electron-manager",
+      "comment": "use new @itwin package names",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/electron-manager"
+}
