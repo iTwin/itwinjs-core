@@ -238,7 +238,7 @@ export class TileAdmin {
       this.maximumLevelsToSkip = 1;
 
     const minSpatialTol = options.minimumSpatialTolerance;
-    this.minimumSpatialTolerance = minSpatialTol ? Math.max(minSpatialTol, 0) : 0;
+    this.minimumSpatialTolerance = minSpatialTol ? Math.max(minSpatialTol, 0) : 0.001;
 
     const clamp = (seconds: number, min: number, max: number): BeDuration => {
       seconds = Math.min(seconds, max);
@@ -1082,7 +1082,7 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
     /** If defined and greater than zero, specifies the minimum chord tolerance in meters of a tile. A tile with chord tolerance less than this minimum will not be refined.
      * Applies only to spatial models, which model real-world assets on real-world scales.
      * A reasonable value is on the order of millimeters.
-     * Default value: undefined
+     * Default value: 0.001 (1 millimeter).
      * @public
      */
     minimumSpatialTolerance?: number;
