@@ -1,6 +1,6 @@
 {
   "name": "@bentley/map-layers",
-  "version": "3.0.0-dev.64",
+  "version": "3.0.0-dev.65",
   "description": "Extension that adds a Map Layers Widget",
   "main": "lib/map-layers.js",
   "typings": "lib/map-layers",
@@ -71,7 +71,7 @@
     "@wojtekmaj/enzyme-adapter-react-17": "^0.6.3",
     "enzyme-to-json": "^3.3.4",
     "eslint": "^7.11.0",
-    "jsdom": "^16.7.0",
+    "jsdom": "^17.0.0",
     "jsdom-global": "3.0.2",
     "mocha": "^8.3.2",
     "nyc": "^15.1.0",
@@ -79,7 +79,7 @@
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",
     "sinon-chai": "^3.2.0",
-    "typescript": "~4.3.0",
+    "typescript": "~4.4.0",
     "xmlhttprequest": "^1.8.0"
   },
   "dependencies": {

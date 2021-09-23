@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Asset, ContextRegistryClient, Project } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
 import { ContextManagerClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
 import { AuthorizedClientRequestContext, UserInfo } from "@bentley/itwin-client";
 
@@ -12,20 +12,21 @@ import { TestIModelHubOidcAuthorizationClient } from "../TestIModelHubOidcAuthor
 
 /** An implementation of IModelProjectAbstraction backed by a iModelHub/iTwin project */
 class TestContextManagerClient implements ContextManagerClient {
-  public async queryProjectByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<Project> {
-    const client = new ContextRegistryClient();
-    return client.getProject(requestContext, {
-      $select: "*",
-      $filter: `Name+eq+'${name}'`,
-    });
-  }
+  public async getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
+    const client = new ITwinAccessClient();
+    const iTwinList: ITwin[] = await client.getAll(requestContext, {
+      search: {
+        searchString: name,
+        propertyName: ITwinSearchableProperty.Name,
+        exactMatch: true,
+      }});
 
-  public async queryAssetByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<Asset> {
-    const client = new ContextRegistryClient();
-    return client.getAsset(requestContext, {
-      $select: "*",
-      $filter: `Name+eq+'${name}'`,
-    });
+    if (iTwinList.length === 0)
+      throw new Error(`ITwin ${name} was not found for the user.`);
+    else if (iTwinList.length > 1)
+      throw new Error(`Multiple iTwins named ${name} were found for the user.`);
+
+    return iTwinList[0];
   }
 }
 

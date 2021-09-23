@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecschema-editing",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ecschema-editing"
+}

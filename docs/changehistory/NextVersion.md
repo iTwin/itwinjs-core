@@ -11,8 +11,9 @@ The following dependencies of iTwin.js have been updated;
 
 ## Build tools changes
 
-Removed TSLint support from `@bentley/build-tools`. If you're still using it, please switch to ESLint.
-Also removed legacy `.eslintrc.js` file from the same package. Instead, use `@bentley/eslint-plugin` and the `imodeljs-recommended` config included in it.
+- Removed `test` and `test-tsnode` scripts from `@bentley/build-tools`.  Please use mocha directly instead.
+- Removed TSLint support from `@bentley/build-tools`. If you're still using it, please switch to ESLint.
+- Removed legacy `.eslintrc.js` file from the same package. Instead, use `@bentley/eslint-plugin` and the `imodeljs-recommended` config included in it.
 
 ## BentleyError constructor no longer logs
 
@@ -605,46 +606,68 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @bentley/presentation-common
 
-| Removed                                               | Replacement                                                                                                                                                    |
-| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CompressedDescriptorJSON`                            | `DescriptorJSON`                                                                                                                                               |
-| `Descriptor.toCompressedJSON`                         | `Descriptor.toJSON`                                                                                                                                            |
-| `DescriptorOverrides.hiddenFieldNames`                | `DescriptorOverrides.fieldsSelector`                                                                                                                           |
-| `DescriptorOverrides.sortDirection`                   | `DescriptorOverrides.sorting.direction`                                                                                                                        |
-| `DescriptorOverrides.sortingFieldName`                | `DescriptorOverrides.sorting.field`                                                                                                                            |
-| `ECPropertyGroupingNodeKey.groupingValue`             | `ECPropertyGroupingNodeKey.groupingValues`                                                                                                                     |
-| `ExtendedContentRequestOptions`                       | `ContentRequestOptions`                                                                                                                                        |
-| `ExtendedContentRpcRequestOptions`                    | `ContentRpcRequestOptions`                                                                                                                                     |
-| `ExtendedHierarchyRequestOptions`                     | `HierarchyRequestOptions`                                                                                                                                      |
-| `ExtendedHierarchyRpcRequestOptions`                  | `HierarchyRpcRequestOptions`                                                                                                                                   |
-| `Field.fromJSON`                                      | `Field.fromCompressedJSON`                                                                                                                                     |
-| `HierarchyCompareRpcOptions`                          | *eliminated*                                                                                                                                                   |
-| `LabelRequestOptions`                                 | `DisplayLabelRequestOptions`                                                                                                                                   |
-| `LabelRpcRequestOptions`                              | `DisplayLabelRpcRequestOptions`                                                                                                                                |
-| `LoggingNamespaces`                                   | `PresentationBackendLoggerCategory`, `PresentationBackendNativeLoggerCategory`, `PresentationFrontendLoggerCategory` or `PresentationComponentsLoggerCategory` |
-| `NodeDeletionInfo.target`                             | `NodeDeletionInfo.parent` and `NodeDeletionInfo.position`                                                                                                      |
-| `NodeDeletionInfoJSON.target`                         | `NodeDeletionInfoJSON.parent` and `NodeDeletionInfoJSON.position`                                                                                              |
-| `PresentationDataCompareOptions`                      | *eliminated*                                                                                                                                                   |
-| `PresentationRpcInterface.compareHierarchies`         | *eliminated*                                                                                                                                                   |
-| `PresentationRpcInterface.compareHierarchiesPaged`    | *eliminated*                                                                                                                                                   |
-| `PresentationRpcInterface.getContent`                 | `PresentationRpcInterface.getPagedContent` and `getPagedContentSet`                                                                                            |
-| `PresentationRpcInterface.getContentAndSize`          | `PresentationRpcInterface.getPagedContent` and `getPagedContentSet`                                                                                            |
-| `PresentationRpcInterface.getDisplayLabelDefinitions` | `PresentationRpcInterface.getPagedDisplayLabelDefinitions`                                                                                                     |
-| `PresentationRpcInterface.getDistinctValues`          | `PresentationRpcInterface.getPagedDistinctValues`                                                                                                              |
-| `PresentationRpcInterface.getNodes`                   | `PresentationRpcInterface.getPagedNodes`                                                                                                                       |
-| `PresentationRpcInterface.getNodesAndCount`           | `PresentationRpcInterface.getPagedNodes`                                                                                                                       |
-| `PresentationRpcInterface.loadHierarchy`              | *eliminated*                                                                                                                                                   |
-| `PresentationUnitSystem`                              | `UnitSystemKey` in `@bentley/imodeljs-quantity`                                                                                                                |
-| `PropertiesFieldDescriptor.propertyClass`             | `PropertiesFieldDescriptor.properties.class`                                                                                                                   |
-| `PropertiesFieldDescriptor.propertyName`              | `PropertiesFieldDescriptor.properties.name`                                                                                                                    |
-| `Property.relatedClassPath`                           | `NestedContentField.pathToPrimaryClass`                                                                                                                        |
-| `PropertyJSON.relatedClassPath`                       | `NestedContentFieldJSON.pathToPrimaryClass`                                                                                                                    |
-| `RequestPriority`                                     | *eliminated*                                                                                                                                                   |
-| `RequestOptions<TIModel>.priority`                    | *eliminated*                                                                                                                                                   |
-| `SelectClassInfo.pathToPrimaryClass`                  | `SelectClassInfo.pathFromInputToSelectClass`                                                                                                                   |
-| `SelectClassInfo.relatedInstanceClasses`              | `SelectClassInfo.relatedInstancePaths`                                                                                                                         |
-| `SelectClassInfoJSON.pathToPrimaryClass`              | `SelectClassInfoJSON.pathFromInputToSelectClass`                                                                                                               |
-| `SelectClassInfoJSON.relatedInstanceClasses`          | `SelectClassInfoJSON.relatedInstancePaths`                                                                                                                     |
+| Removed                                                           | Replacement                                                                                                                                                    |
+| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CompressedDescriptorJSON`                                        | `DescriptorJSON`                                                                                                                                               |
+| `ContentInstancesOfSpecificClassesSpecification.arePolymorphic`   | `ContentInstancesOfSpecificClassesSpecification.handleInstancesPolymorphically`                                                                                |
+| `ContentModifiersList.propertiesDisplay`                          | `ContentModifiersList.propertyOverrides`                                                                                                                       |
+| `ContentModifiersList.propertyEditors`                            | `ContentModifiersList.propertyOverrides`                                                                                                                       |
+| `ContentRelatedInstancesSpecification.isRecursive`                | *eliminated*                                                                                                                                                   |
+| `ContentRelatedInstancesSpecification.relatedClasses`             | `ContentRelatedInstancesSpecification.relationshipPaths.targetClass`                                                                                           |
+| `ContentRelatedInstancesSpecification.relationships`              | `ContentRelatedInstancesSpecification.relationshipPaths.relationship`                                                                                          |
+| `ContentRelatedInstancesSpecification.requiredDirection`          | `ContentRelatedInstancesSpecification.relationshipPaths.direction`                                                                                             |
+| `ContentRelatedInstancesSpecification.skipRelatedLevel`           | *eliminated*                                                                                                                                                   |
+| `Descriptor.toCompressedJSON`                                     | `Descriptor.toJSON`                                                                                                                                            |
+| `DescriptorOverrides.hiddenFieldNames`                            | `DescriptorOverrides.fieldsSelector`                                                                                                                           |
+| `DescriptorOverrides.sortDirection`                               | `DescriptorOverrides.sorting.direction`                                                                                                                        |
+| `DescriptorOverrides.sortingFieldName`                            | `DescriptorOverrides.sorting.field`                                                                                                                            |
+| `ECPropertyGroupingNodeKey.groupingValue`                         | `ECPropertyGroupingNodeKey.groupingValues`                                                                                                                     |
+| `ExtendedContentRequestOptions`                                   | `ContentRequestOptions`                                                                                                                                        |
+| `ExtendedContentRpcRequestOptions`                                | `ContentRpcRequestOptions`                                                                                                                                     |
+| `ExtendedHierarchyRequestOptions`                                 | `HierarchyRequestOptions`                                                                                                                                      |
+| `ExtendedHierarchyRpcRequestOptions`                              | `HierarchyRpcRequestOptions`                                                                                                                                   |
+| `Field.fromJSON`                                                  | `Field.fromCompressedJSON`                                                                                                                                     |
+| `HierarchyCompareRpcOptions`                                      | *eliminated*                                                                                                                                                   |
+| `LabelRequestOptions`                                             | `DisplayLabelRequestOptions`                                                                                                                                   |
+| `LabelRpcRequestOptions`                                          | `DisplayLabelRpcRequestOptions`                                                                                                                                |
+| `LoggingNamespaces`                                               | `PresentationBackendLoggerCategory`, `PresentationBackendNativeLoggerCategory`, `PresentationFrontendLoggerCategory` or `PresentationComponentsLoggerCategory` |
+| `NodeDeletionInfo.target`                                         | `NodeDeletionInfo.parent` and `NodeDeletionInfo.position`                                                                                                      |
+| `NodeDeletionInfoJSON.target`                                     | `NodeDeletionInfoJSON.parent` and `NodeDeletionInfoJSON.position`                                                                                              |
+| `PresentationDataCompareOptions`                                  | *eliminated*                                                                                                                                                   |
+| `PresentationRpcInterface.compareHierarchies`                     | *eliminated*                                                                                                                                                   |
+| `PresentationRpcInterface.compareHierarchiesPaged`                | *eliminated*                                                                                                                                                   |
+| `PresentationRpcInterface.getContent`                             | `PresentationRpcInterface.getPagedContent` and `getPagedContentSet`                                                                                            |
+| `PresentationRpcInterface.getContentAndSize`                      | `PresentationRpcInterface.getPagedContent` and `getPagedContentSet`                                                                                            |
+| `PresentationRpcInterface.getDisplayLabelDefinitions`             | `PresentationRpcInterface.getPagedDisplayLabelDefinitions`                                                                                                     |
+| `PresentationRpcInterface.getDistinctValues`                      | `PresentationRpcInterface.getPagedDistinctValues`                                                                                                              |
+| `PresentationRpcInterface.getNodes`                               | `PresentationRpcInterface.getPagedNodes`                                                                                                                       |
+| `PresentationRpcInterface.getNodesAndCount`                       | `PresentationRpcInterface.getPagedNodes`                                                                                                                       |
+| `PresentationRpcInterface.loadHierarchy`                          | *eliminated*                                                                                                                                                   |
+| `PresentationUnitSystem`                                          | `UnitSystemKey` in `@bentley/imodeljs-quantity`                                                                                                                |
+| `PropertiesFieldDescriptor.propertyClass`                         | `PropertiesFieldDescriptor.properties.class`                                                                                                                   |
+| `PropertiesFieldDescriptor.propertyName`                          | `PropertiesFieldDescriptor.properties.name`                                                                                                                    |
+| `Property.relatedClassPath`                                       | `NestedContentField.pathToPrimaryClass`                                                                                                                        |
+| `PropertyJSON.relatedClassPath`                                   | `NestedContentFieldJSON.pathToPrimaryClass`                                                                                                                    |
+| `RelatedInstanceNodesSpecification.relatedClasses`                | `RelatedInstanceNodesSpecification.relationshipPaths.targetClass`                                                                                              |
+| `RelatedInstanceNodesSpecification.relationships`                 | `RelatedInstanceNodesSpecification.relationshipPaths.relationship`                                                                                             |
+| `RelatedInstanceNodesSpecification.requiredDirection`             | `RelatedInstanceNodesSpecification.relationshipPaths.direction`                                                                                                |
+| `RelatedInstanceNodesSpecification.skipRelatedLevel`              | *eliminated*                                                                                                                                                   |
+| `RelatedInstanceNodesSpecification.supportedSchemas`              | *eliminated*                                                                                                                                                   |
+| `RelatedInstanceSpecification.class`                              | `RelatedInstanceSpecification.relationshipPath.targetClass`                                                                                                    |
+| `RelatedInstanceSpecification.relationship`                       | `RelatedInstanceSpecification.relationshipPath.relationship`                                                                                                   |
+| `RelatedInstanceSpecification.requiredDirection`                  | `RelatedInstanceSpecification.relationshipPath.direction`                                                                                                      |
+| `RelatedPropertiesSpecification.isPolymorphic`                    | `RelatedPropertiesSpecification.handleTargetClassPolymorphically`                                                                                              |
+| `RelatedPropertiesSpecification.propertyNames`                    | `RelatedPropertiesSpecification.properties`                                                                                                                    |
+| `RelatedPropertiesSpecification.relatedClasses`                   | `RelatedPropertiesSpecification.propertiesSource.targetClass`                                                                                                  |
+| `RelatedPropertiesSpecification.relationships`                    | `RelatedPropertiesSpecification.propertiesSource.relationship`                                                                                                 |
+| `RelatedPropertiesSpecification.requiredDirection`                | `RelatedPropertiesSpecification.propertiesSource.direction`                                                                                                    |
+| `Ruleset.supportedSchemas`                                        | `Ruleset.requiredSchemas`                                                                                                                                      |
+| `RequestPriority`                                                 | *eliminated*                                                                                                                                                   |
+| `RequestOptions<TIModel>.priority`                                | *eliminated*                                                                                                                                                   |
+| `SelectClassInfo.pathToPrimaryClass`                              | `SelectClassInfo.pathFromInputToSelectClass`                                                                                                                   |
+| `SelectClassInfo.relatedInstanceClasses`                          | `SelectClassInfo.relatedInstancePaths`                                                                                                                         |
+| `SelectClassInfoJSON.pathToPrimaryClass`                          | `SelectClassInfoJSON.pathFromInputToSelectClass`                                                                                                               |
+| `SelectClassInfoJSON.relatedInstanceClasses`                      | `SelectClassInfoJSON.relatedInstancePaths`                                                                                                                     |
 
 ### @bentley/presentation-backend
 

@@ -7,7 +7,7 @@
  */
 
 import { BeEvent } from "./BeEvent";
-import { BentleyError, GetMetaDataFunction, IModelStatus } from "./BentleyError";
+import { BentleyError, getErrorMessage, getErrorMetadata, getErrorStack, GetMetaDataFunction, IModelStatus } from "./BentleyError";
 import { BentleyLoggerCategory } from "./BentleyLoggerCategory";
 import { IDisposable } from "./Disposable";
 
@@ -291,11 +291,9 @@ export class Logger {
       Logger._logError(category, message, metaData);
   }
 
-  private static getExceptionMessage(err: Error): string {
-    let msg = err.toString();
-    if (Logger.logExceptionCallstacks && err.stack)
-      msg += `\n${err.stack}`;
-    return msg;
+  private static getExceptionMessage(err: unknown): string {
+    const stack = Logger.logExceptionCallstacks ? `\n${getErrorStack(err)}` : "";
+    return getErrorMessage(err) + stack;
   }
 
   /** Log the specified exception. The special "ExceptionType" property will be added as metadata,
@@ -308,7 +306,7 @@ export class Logger {
    */
   public static logException(category: string, err: any, log: LogFunction = Logger.logError, metaData?: GetMetaDataFunction): void {
     log(category, Logger.getExceptionMessage(err), () => {
-      return { ...err.getMetaData?.(), ...metaData?.(), exceptionType: err.constructor.name };
+      return { ...getErrorMetadata(err), ...metaData?.(), exceptionType: err.constructor.name };
     });
   }
 

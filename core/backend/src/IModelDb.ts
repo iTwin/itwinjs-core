@@ -1047,7 +1047,7 @@ export abstract class IModelDb extends IModel {
   public getJsClass<T extends typeof Entity>(classFullName: string): T {
     try {
       return ClassRegistry.getClass(classFullName, this) as T;
-    } catch (err: any) {
+    } catch (err) {
       if (!ClassRegistry.isNotFoundError(err)) {
         throw err;
       }
@@ -2089,12 +2089,12 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       });
     }
 
-    private pollTileContent(resolve: (arg0: IModelJsNative.TileContent) => void, reject: (err: Error) => void, treeId: string, tileId: string) {
+    private pollTileContent(resolve: (arg0: IModelJsNative.TileContent) => void, reject: (err: unknown) => void, treeId: string, tileId: string) {
 
       let ret;
       try {
         ret = this._iModel.nativeDb.pollTileContent(treeId, tileId);
-      } catch (err: any) {
+      } catch (err) {
         // Typically "imodel not open".
         reject(err);
         return;
