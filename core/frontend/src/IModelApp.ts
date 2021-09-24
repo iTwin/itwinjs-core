@@ -122,7 +122,7 @@ export interface IModelAppOptions {
   uiAdmin?: UiAdmin;
   rpcInterfaces?: RpcInterfaceDefinition[];
   /** @beta */
-  realityDataAccessClient?: RealityDataAccess;
+  realityDataAccess?: RealityDataAccess;
 }
 
 /** Options for [[IModelApp.makeModalDiv]]
@@ -189,7 +189,7 @@ export class IModelApp {
   private static _securityOptions: FrontendSecurityOptions;
   private static _mapLayerFormatRegistry: MapLayerFormatRegistry;
   private static _hubAccess: FrontendHubAccess;
-  private static _realityDataAccessClient: RealityDataAccess;
+  private static _realityDataAccess: RealityDataAccess;
 
   // No instances of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   protected constructor() { }
@@ -247,7 +247,7 @@ export class IModelApp {
   /** Provides access to the RealityData service implementation for this IModelApp
    * @beta
    */
-  public static get realityDataAccessClient(): RealityDataAccess { return this._realityDataAccessClient; }
+  public static get realityDataAccess(): RealityDataAccess { return this._realityDataAccess; }
 
   /** @internal */
   public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid; }
@@ -376,7 +376,7 @@ export class IModelApp {
     this._uiAdmin = (opts.uiAdmin !== undefined) ? opts.uiAdmin : new UiAdmin();
     this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);
     // TEMP: Using soon-to-be deprecated RealityDataClient as a default implementation
-    this._realityDataAccessClient = (opts.realityDataAccessClient !== undefined) ? opts.realityDataAccessClient : new RealityDataAccessClient();
+    this._realityDataAccess = (opts.realityDataAccess !== undefined) ? opts.realityDataAccess : new RealityDataAccessClient();
 
     [
       this.renderSystem,

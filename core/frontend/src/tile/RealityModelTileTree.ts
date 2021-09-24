@@ -856,7 +856,7 @@ export class RealityModelTileClient {
       if (!this._realityData) {
         // TODO Temporary fix ... the root document may not be located at the root. We need to set the base URL even for RD stored on server
         // though this base URL is only the part relative to the root of the blob containing the data.
-        this._realityData = await IModelApp.realityDataAccessClient.getRealityData(requestContext, this.rdsProps.projectId, this.rdsProps.tilesId);
+        this._realityData = await IModelApp.realityDataAccess.getRealityData(requestContext, this.rdsProps.projectId, this.rdsProps.tilesId);
 
         // A reality data that has not root document set should not be considered.
         const rootDocument: string = (this._realityData.rootDocument ? this._realityData.rootDocument : "");
