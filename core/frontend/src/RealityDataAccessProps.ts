@@ -27,7 +27,7 @@ export enum RealityDataType {
  * an Azure blob URL, the token may be required to obtain this Azure blob URL or refresh it.
  * The Azure blob URL is considered valid for an hour and is refreshed after 50 minutes.
  * In addition to the reality data properties, and Azure blob URL and internal states, a reality data also contains
- * the identification of the iTwin project to identify the context(used for access permissions resolution)
+ * the identification of the iTwin to identify the context(used for access permissions resolution)
  * @internal
  */
 export interface RealityData {
@@ -43,9 +43,7 @@ export interface RealityData {
 /**
  * Client wrapper to Reality Data Service.
  * An instance of this class is used to extract reality data from the ProjectWise Context Share (Reality Data Service)
- * Most important methods enable to obtain a specific reality data, fetch all reality data associated to a project and
- * all reality data of a project within a provided spatial extent.
- * This class also implements extraction of the Azure blob address.
+ * This class implements obtaining a specific reality data and extraction of the Azure blob address.
  * @internal
  */
 export interface RealityDataAccess {
