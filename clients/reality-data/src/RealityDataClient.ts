@@ -84,7 +84,7 @@ export class RealityData extends WsgInstance {
   public streamed?: boolean;
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Type")
-  public type?: string;
+  public type?: RealityDataType;
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ReferenceElevation")
   public referenceElevation?: number;
@@ -163,7 +163,6 @@ export class RealityData extends WsgInstance {
   private _blobRooDocumentPath: undefined | string; // Path relative to blob root of root document. It is slash terminated if not empty
 
   // Link to client to fetch the blob url
-  public client: undefined | RealityDataClient;
   public client: undefined | RealityDataAccessClient;
 
   // project id used when using the client. If defined must contain the GUID of the iTwin

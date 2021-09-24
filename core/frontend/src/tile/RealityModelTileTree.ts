@@ -826,7 +826,7 @@ export class RealityModelTileClient {
   private getInitializedRealityData(): RealityData {
     if (!this._realityData)
       new Error("No reality data found. Must call the initialize method first.");
-    return this._realityData;
+    return this._realityData!;
   }
 
   // ###TODO we should be able to pass the projectId / tileId directly, instead of parsing the url

@@ -7,7 +7,7 @@ import { Guid, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Angle, Range2d } from "@bentley/geometry-core";
 import { AuthorizedClientRequestContext, ImsAuthorizationClient } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
-import { RealityData, RealityDataAccessClient, RealityDataRelationship } from "../../RealityDataClient";
+import { RealityData, RealityDataAccessClient, RealityDataRelationship, RealityDataType } from "../../RealityDataClient";
 import { TestConfig } from "../TestConfig";
 import * as jsonpath from "jsonpath";
 chai.should();
@@ -64,7 +64,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
     const realityData: RealityData[] = await realityDataServiceClient.getRealityDataInProject(requestContext, projectId);
 
     realityData.forEach((value) => {
-      chai.assert(value.type === "RealityMesh3DTiles"); // iModelJS only supports this type
+      chai.assert(value.type === RealityDataType.REALITYMESH3DTILES); // iModelJS only supports this type
       chai.assert(value.rootDocument && value.rootDocument !== ""); // All such type require a root document to work correctly
       chai.assert(value.projectId === projectId);
       chai.assert(value.id);
@@ -83,7 +83,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
 
     chai.expect(realityData).that.is.not.empty;
     realityData.forEach((value) => {
-      chai.assert(value.type === "RealityMesh3DTiles"); // iModelJS only supports this type
+      chai.assert(value.type === RealityDataType.REALITYMESH3DTILES); // iModelJS only supports this type
       chai.assert(value.rootDocument && value.rootDocument !== ""); // All such type require a root document to work correctly
       chai.assert(value.projectId === projectId);
       chai.assert(value.id);
@@ -166,7 +166,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
     realityData.rootDocument = "RootDocumentFile.txt";
     realityData.classification = "Undefined";
     realityData.streamed = false;
-    realityData.type = "Undefined";
+    realityData.type = undefined;
     realityData.approximateFootprint = true;
     realityData.copyright = "Bentley Systems inc. (c) 2019";
     realityData.termsOfUse = "Free for testing purposes only";
@@ -246,7 +246,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
     realityData.rootDocument = "RootDocumentFile.txt";
     realityData.classification = "Undefined";
     realityData.streamed = false;
-    realityData.type = "Undefined";
+    realityData.type = undefined;
     realityData.approximateFootprint = true;
     realityData.copyright = "Bentley Systems inc. (c) 2019";
     realityData.termsOfUse = "Free for testing purposes only";
@@ -327,7 +327,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
     realityData.rootDocument = "RootDocumentFile.txt";
     realityData.classification = "Undefined";
     realityData.streamed = false;
-    realityData.type = "Undefined";
+    realityData.type = undefined;
     realityData.approximateFootprint = true;
     realityData.copyright = "Bentley Systems inc. (c) 2019";
     realityData.termsOfUse = "Free for testing purposes only";
@@ -469,7 +469,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
     realityData.rootDocument = "RootDocumentFile.txt";
     realityData.classification = "Undefined";
     realityData.streamed = false;
-    realityData.type = "Undefined";
+    realityData.type = undefined;
     realityData.approximateFootprint = true;
     realityData.copyright = "Bentley Systems inc. (c) 2019";
     realityData.termsOfUse = "Free for testing purposes only";
@@ -528,7 +528,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
     realityDataAdded1.rootDocument = "RootDocumentFile-modified.txt";
     realityDataAdded1.classification = "Imagery";
     realityDataAdded1.streamed = true;
-    realityDataAdded1.type = "DummyType";
+    realityDataAdded1.type = RealityDataType.TERRAIN3DTILE;
     realityDataAdded1.approximateFootprint = false;
     realityDataAdded1.copyright = "Bentley Systems inc. (c) 2019 - modified";
     realityDataAdded1.termsOfUse = "Free for testing purposes only - modified";
@@ -598,6 +598,8 @@ describe("RealityServicesClient Normal (#integration)", () => {
   it("should be able to get model data content with root doc not at blob root (root doc path)", async () => {
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesIdWithRootDocPath);
 
+    chai.assert(realityData.type !== undefined);
+
     // The root document of this reality should not be at the root of the blob
     const rootParts = realityData.rootDocument!.split("/");
     chai.assert(rootParts.length >= 2);
@@ -662,7 +664,7 @@ describe("RealityServicesClient Admin (#integration)", () => {
     realityData.rootDocument = "RootDocumentFile.txt";
     realityData.classification = "Undefined";
     realityData.streamed = false;
-    realityData.type = "Undefined";
+    realityData.type = undefined;
     realityData.approximateFootprint = true;
     realityData.copyright = "Bentley Systems inc. (c) 2019";
     realityData.termsOfUse = "Free for testing purposes only";
