@@ -235,6 +235,7 @@ import { Range3d } from '@bentley/geometry-core';
 import { Range3dProps } from '@bentley/geometry-core';
 import { Ray3d } from '@bentley/geometry-core';
 import { ReadonlySortedArray } from '@bentley/bentleyjs-core';
+import { RealityDataType as RealityDataType_2 } from '@bentley/reality-data-client';
 import { RelatedElement } from '@bentley/imodeljs-common';
 import { RelativePosition } from '@bentley/ui-abstract';
 import { RemoveFunction } from '@bentley/imodeljs-common';
@@ -4312,8 +4313,8 @@ export class IModelApp {
     // @alpha
     static get quantityFormatter(): QuantityFormatter;
     static queryRenderCompatibility(): WebGLRenderCompatibilityInfo;
-    // @internal
-    static get realityDataAccessClient(): RealityDataAccess;
+    // @beta
+    static get realityDataAccess(): RealityDataAccess;
     // @internal
     static registerEntityState(classFullName: string, classType: typeof EntityState): void;
     // @internal
@@ -4360,8 +4361,8 @@ export interface IModelAppOptions {
     notifications?: NotificationManager;
     // @internal (undocumented)
     quantityFormatter?: QuantityFormatter;
-    // @internal
-    realityDataAccessClient?: RealityDataAccess;
+    // @beta (undocumented)
+    realityDataAccess?: RealityDataAccess;
     // @internal (undocumented)
     renderSys?: RenderSystem | RenderSystem.Options;
     // (undocumented)
@@ -7412,18 +7413,11 @@ export interface RealityDataQueryCriteria {
 }
 
 // @internal
-export enum RealityDataType {
-    // (undocumented)
-    CESIUM_3DTILE = "Cesium3DTiles",
-    // (undocumented)
-    OMR = "OMR",
-    // (undocumented)
-    OPC = "OPC",
-    // (undocumented)
-    REALITYMESH3DTILES = "RealityMesh3DTiles",
-    // (undocumented)
-    TERRAIN3DTILE = "Terrain3DTiles"
-}
+export type RealityDataType = "RealityMesh3DTiles" | // Web Ready Scalable Mesh
+"OPC" | // Orbit Point Cloud
+"Terrain3DTiles" | // Terrain3DTiles
+"OMR" | // Mapping Resource,
+"Cesium3DTiles";
 
 // @internal (undocumented)
 export type RealityModelSource = ViewState | DisplayStyleState;
@@ -7433,7 +7427,7 @@ export class RealityModelTileClient {
     constructor(url: string, iTwinId?: string);
     // (undocumented)
     getBlobAccessData(): Promise<URL | undefined>;
-    getRealityDataType(): Promise<string | undefined>;
+    getRealityDataType(): Promise<RealityDataType_2 | undefined>;
     // (undocumented)
     getRootDocument(url: string): Promise<any>;
     getTileContent(url: string): Promise<any>;

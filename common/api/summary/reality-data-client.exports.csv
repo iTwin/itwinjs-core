@@ -6,4 +6,3 @@ internal;RealityData
 internal;RealityDataAccessClient 
 internal;RealityDataRelationship 
 internal;RealityDataRequestQueryOptions 
-internal;RealityDataType

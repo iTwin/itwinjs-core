@@ -427,7 +427,6 @@ internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection,
 internal;RealityData
 internal;RealityDataAccess
 public;RealityDataQueryCriteria
-internal;RealityDataType
 internal;RealityModelSource = ViewState | DisplayStyleState
 internal;RealityModelTileClient
 internal;RealityModelTileTree 

@@ -164,18 +164,11 @@ export interface RealityDataRequestQueryOptions extends RequestQueryOptions {
 }
 
 // @internal
-export enum RealityDataType {
-    // (undocumented)
-    CESIUM_3DTILE = "Cesium3DTiles",
-    // (undocumented)
-    OMR = "OMR",
-    // (undocumented)
-    OPC = "OPC",
-    // (undocumented)
-    REALITYMESH3DTILES = "RealityMesh3DTiles",
-    // (undocumented)
-    TERRAIN3DTILE = "Terrain3DTiles"
-}
+export type RealityDataType = "RealityMesh3DTiles" | // Web Ready Scalable Mesh
+"OPC" | // Orbit Point Cloud
+"Terrain3DTiles" | // Terrain3DTiles
+"OMR" | // Mapping Resource,
+"Cesium3DTiles";
 
 
 // (No @packageDocumentation comment for this package)
