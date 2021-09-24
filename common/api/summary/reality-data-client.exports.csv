@@ -3,7 +3,7 @@ Release Tag;API Item
 internal;DataLocation 
 internal;FileAccessKey 
 internal;RealityData 
-internal;RealityDataClient 
+internal;RealityDataAccessClient 
 internal;RealityDataRelationship 
 internal;RealityDataRequestQueryOptions 
 internal;RealityDataType

@@ -42,7 +42,7 @@ export class RealityData extends WsgInstance {
     // (undocumented)
     classification?: string;
     // (undocumented)
-    client: undefined | RealityDataClient;
+    client: undefined | RealityDataAccessClient;
     containerName?: string;
     // (undocumented)
     copyright?: string;
@@ -112,7 +112,7 @@ export class RealityData extends WsgInstance {
     // (undocumented)
     thumbnailDocument?: string;
     // (undocumented)
-    type?: string;
+    type?: RealityDataType;
     // (undocumented)
     ultimateId?: string;
     // (undocumented)
@@ -124,7 +124,7 @@ export class RealityData extends WsgInstance {
 }
 
 // @internal
-export class RealityDataClient extends WsgClient {
+export class RealityDataAccessClient extends WsgClient {
     constructor();
     createRealityData(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, realityData: RealityData): Promise<RealityData>;
     createRealityDataRelationship(requestContext: AuthorizedClientRequestContext, projectId: string, relationship: RealityDataRelationship): Promise<RealityDataRelationship>;

@@ -4313,6 +4313,8 @@ export class IModelApp {
     static get quantityFormatter(): QuantityFormatter;
     static queryRenderCompatibility(): WebGLRenderCompatibilityInfo;
     // @internal
+    static get realityDataAccessClient(): RealityDataAccess;
+    // @internal
     static registerEntityState(classFullName: string, classType: typeof EntityState): void;
     // @internal
     static registerModuleEntities(moduleObj: any): void;
@@ -4358,6 +4360,8 @@ export interface IModelAppOptions {
     notifications?: NotificationManager;
     // @internal (undocumented)
     quantityFormatter?: QuantityFormatter;
+    // @internal
+    realityDataAccessClient?: RealityDataAccess;
     // @internal (undocumented)
     renderSys?: RenderSystem | RenderSystem.Options;
     // (undocumented)
@@ -7376,11 +7380,49 @@ export function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection,
 // @internal
 export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined;
 
+// @internal
+export interface RealityData {
+    // (undocumented)
+    getBlobUrl: (requestContext: AuthorizedClientRequestContext) => Promise<URL>;
+    // (undocumented)
+    getRootDocumentJson: (requestContext: AuthorizedClientRequestContext) => Promise<any>;
+    // (undocumented)
+    getTileContent: (requestContext: AuthorizedClientRequestContext, name: string) => Promise<any>;
+    // (undocumented)
+    getTileJson: (requestContext: AuthorizedClientRequestContext, name: string) => Promise<any>;
+    // (undocumented)
+    rootDocument?: string;
+    // (undocumented)
+    type?: RealityDataType;
+}
+
+// @internal
+export interface RealityDataAccess {
+    // (undocumented)
+    getRealityData: (requestContext: AuthorizedClientRequestContext, iTwinId: string | undefined, tileId: string) => Promise<RealityData>;
+    // (undocumented)
+    getRealityDataUrl: (iTwinId: string | undefined, tileId: string) => Promise<string>;
+}
+
 // @public
 export interface RealityDataQueryCriteria {
     filterIModel?: IModelConnection;
     iTwinId: GuidString;
     range?: CartographicRange;
+}
+
+// @internal
+export enum RealityDataType {
+    // (undocumented)
+    CESIUM_3DTILE = "Cesium3DTiles",
+    // (undocumented)
+    OMR = "OMR",
+    // (undocumented)
+    OPC = "OPC",
+    // (undocumented)
+    REALITYMESH3DTILES = "RealityMesh3DTiles",
+    // (undocumented)
+    TERRAIN3DTILE = "Terrain3DTiles"
 }
 
 // @internal (undocumented)
