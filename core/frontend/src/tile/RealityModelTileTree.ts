@@ -15,6 +15,7 @@ import {
   SpatialClassifiers, ViewFlagOverrides,
 } from "@bentley/imodeljs-common";
 import { AccessToken, request, RequestOptions } from "@bentley/itwin-client";
+import { RealityDataType } from "@bentley/reality-data-client";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
 import { DisplayStyleState } from "../DisplayStyleState";
 import { AuthorizedFrontendRequestContext, FrontendRequestContext } from "../FrontendRequestContext";
@@ -751,13 +752,13 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     // If a type is specified, display it
     if (type !== undefined) {
       switch (type.toUpperCase()) {
-        case "REALITYMESH3DTILES":
+        case RealityDataType.RealityMesh3DTile:
           strings.push(IModelApp.i18n.translate("iModelJs:RealityModelTypes.RealityMesh3DTiles"));
           break;
-        case "TERRAIN3DTILES":
+        case RealityDataType.Terrain3DTile:
           strings.push(IModelApp.i18n.translate("iModelJs:RealityModelTypes.Terrain3DTiles"));
           break;
-        case "CESIUM3DTILES":
+        case RealityDataType.Cesium3DTile:
           strings.push(IModelApp.i18n.translate("iModelJs:RealityModelTypes.Cesium3DTiles"));
           break;
       }

@@ -17,11 +17,11 @@ import { WsgClient } from "./wsg/WsgClient";
  * @internal
  */
 export enum RealityDataType {
-  REALITYMESH3DTILES = "RealityMesh3DTiles", // Web Ready Scalable Mesh
+  RealityMesh3DTile = "RealityMesh3DTiles", // Web Ready Scalable Mesh
   OPC = "OPC", // Orbit Point Cloud
-  TERRAIN3DTILE = "Terrain3DTiles", // Terrain3DTiles
+  Terrain3DTile = "Terrain3DTiles", // Terrain3DTiles
   OMR = "OMR", // Mapping Resource,
-  CESIUM_3DTILE = "Cesium3DTiles" // Cesium 3dTiles
+  Cesium3DTile = "Cesium3DTiles" // Cesium 3dTiles
 }
 
 /** RealityData
