@@ -598,8 +598,6 @@ describe("RealityServicesClient Normal (#integration)", () => {
   it("should be able to get model data content with root doc not at blob root (root doc path)", async () => {
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesIdWithRootDocPath);
 
-    chai.assert(realityData.type !== undefined);
-
     // The root document of this reality should not be at the root of the blob
     const rootParts = realityData.rootDocument!.split("/");
     chai.assert(rootParts.length >= 2);
