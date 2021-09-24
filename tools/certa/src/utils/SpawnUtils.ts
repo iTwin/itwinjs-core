@@ -22,8 +22,8 @@ export function spawnChildProcess(command: string, args: ReadonlyArray<string>, 
   const childProcess = spawn(command, args, { stdio, cwd: process.cwd(), env: childEnv });
   // For some reason, spawning using `stdio: "inherit"` results in some garbled output (for example, "✓" is printed as "ΓêÜ").
   // Using `stdio: "pipe"` and manually redirecting the output here seems to work though.
-  childProcess.stdout.on("data", (data: any) => process.stdout.write(data));
-  childProcess.stderr.on("data", (data: any) => process.stderr.write(data));
+  childProcess.stdout!.on("data", (data: any) => process.stdout.write(data));
+  childProcess.stderr!.on("data", (data: any) => process.stderr.write(data));
   return childProcess;
 }
 

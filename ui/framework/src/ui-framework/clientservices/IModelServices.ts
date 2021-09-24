@@ -7,7 +7,7 @@
  */
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { ProjectInfo } from "./ProjectServices";
+import { GuidString } from "@bentley/bentleyjs-core";
 
 /** Enumeration for iModel scope
  * @internal
@@ -27,7 +27,7 @@ export interface IModelInfo {
   wsgId: string;
   createdDate: Date;
   thumbnail?: string;
-  projectInfo: ProjectInfo;
+  iTwinId: GuidString;
   status: string;
 }
 
@@ -73,7 +73,7 @@ export interface IModelUserInfo {
 export interface IModelServices {
 
   /** Get the iModels in a project. */
-  getIModels(projectInfo: ProjectInfo, top: number, skip: number): Promise<IModelInfo[]>;
+  getIModels(iTwinId: GuidString, top: number, skip: number): Promise<IModelInfo[]>;
 
   /** Open the specified version of the IModel */
   openIModel(iTwinId: string, iModelId: string, changeSetId?: string): Promise<IModelConnection>;

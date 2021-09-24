@@ -9,7 +9,7 @@
 /** @internal */
 export class MobileEventLoop {
   private static _activeTasks = 0;
-  private static _idleCallback: number | null = null;
+  private static _idleCallback: NodeJS.Timer | null = null;
 
   public static addTask() {
     ++this._activeTasks;
@@ -28,7 +28,5 @@ export class MobileEventLoop {
     }
   }
 
-  private static _idleHandler() {
-
-  }
+  private static _idleHandler() { }
 }

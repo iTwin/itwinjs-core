@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecschema-metadata",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ecschema-metadata"
+}

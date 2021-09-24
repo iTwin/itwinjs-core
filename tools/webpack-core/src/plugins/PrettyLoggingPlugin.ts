@@ -140,7 +140,7 @@ export class PrettyLoggingPlugin {
       let isSuccessful;
       try {
         isSuccessful = this.handleWarningsAndErrors(elapsed, jsonStats);
-      } catch (err) {
+      } catch (err: any) {
         if (!this.isInteractive)
           this.printHeading("Failed to compile", "red", elapsed);
         isSuccessful = false;

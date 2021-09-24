@@ -157,6 +157,10 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
     return NativeAppStorage.getStorageNames();
   }
 
+  public async storageGetValueType(storageId: string, key: string): Promise<"number" | "string" | "boolean" | "Uint8Array" | "null" | undefined> {
+    return NativeAppStorage.find(storageId).getValueType(key);
+  }
+
   public async storageGet(storageId: string, key: string): Promise<StorageValue | undefined> {
     return NativeAppStorage.find(storageId).getData(key);
   }

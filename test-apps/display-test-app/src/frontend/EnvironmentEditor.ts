@@ -331,7 +331,7 @@ export class EnvironmentEditor {
       const visible = view.is3d();
       elems.div.style.display = visible ? "block" : "none";
       if (visible) {
-        const view3d = view as ViewState3d;
+        const view3d = view;
         const style = view3d.getDisplayStyle3d();
         elems.checkbox.checked = style.environment[aspect].display;
       }

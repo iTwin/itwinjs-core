@@ -10,16 +10,14 @@ import { GuidString, Logger } from "@bentley/bentleyjs-core";
 import {
   ChangeSet, ChangeSetQuery, HubIModel, HubUserInfo, IModelHubClient, IModelQuery, UserInfoQuery, Version, VersionQuery,
 } from "@bentley/imodelhub-client";
-// import GatewayProxyApi from "./gatewayProxy";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedFrontendRequestContext, CheckpointConnection, IModelConnection } from "@bentley/imodeljs-frontend";
 import { UiFramework } from "../UiFramework";
 import { ChangeSetInfo, IModelInfo, IModelServices, IModelUserInfo, VersionInfo } from "./IModelServices";
-import { ProjectInfo } from "./ProjectServices";
 
 // istanbul ignore next
 class IModelInfoImpl implements IModelInfo {
-  constructor(public name: string, public description: string, public wsgId: string, public createdDate: Date, public projectInfo: ProjectInfo, public status: string = "", public thumbnail: string | undefined) {
+  constructor(public name: string, public description: string, public wsgId: string, public createdDate: Date, public iTwinId: GuidString, public status: string = "", public thumbnail: string | undefined) {
   }
 }
 
@@ -55,14 +53,14 @@ export class DefaultIModelServices implements IModelServices {
   }
 
   /** Get all iModels in a project */
-  public async getIModels(projectInfo: ProjectInfo, top: number, skip: number): Promise<IModelInfo[]> {
+  public async getIModels(iTwinId: GuidString, top: number, skip: number): Promise<IModelInfo[]> {
     const requestContext = await AuthorizedFrontendRequestContext.create();
 
     const iModelInfos: IModelInfo[] = [];
     const queryOptions = new IModelQuery();
     queryOptions.select("*").top(top).skip(skip);
     try {
-      const iModels: HubIModel[] = await this._hubClient.iModels.get(requestContext, projectInfo.wsgId, queryOptions);
+      const iModels: HubIModel[] = await this._hubClient.iModels.get(requestContext, iTwinId, queryOptions);
       for (const imodel of iModels) {
         const versions: Version[] = await this._hubClient.versions.get(requestContext, imodel.id!, new VersionQuery().select("Name,ChangeSetId").top(1));
         if (versions.length > 0) {
@@ -71,7 +69,7 @@ export class DefaultIModelServices implements IModelServices {
         }
       }
       for (const thisIModel of iModels) {
-        iModelInfos.push(this.createIModelInfo(thisIModel, projectInfo));
+        iModelInfos.push(this.createIModelInfo(thisIModel, iTwinId));
       }
     } catch (e) {
       alert(JSON.stringify(e));
@@ -167,10 +165,10 @@ export class DefaultIModelServices implements IModelServices {
     return userInfos;
   }
 
-  private createIModelInfo(thisIModel: HubIModel, thisProjectInfo: ProjectInfo): IModelInfo {
+  private createIModelInfo(thisIModel: HubIModel, iTwinId: GuidString): IModelInfo {
     const createDate: Date = new Date(thisIModel.createdDate!);
     Logger.logTrace(UiFramework.loggerCategory(this), `Working on iModel '${thisIModel.name}'`);
-    const thisIModelInfo: IModelInfo = new IModelInfoImpl(thisIModel.name!, thisIModel.description!, thisIModel.wsgId, createDate, thisProjectInfo, "", thisIModel.thumbnail);
+    const thisIModelInfo: IModelInfo = new IModelInfoImpl(thisIModel.name!, thisIModel.description!, thisIModel.wsgId, createDate, iTwinId, "", thisIModel.thumbnail);
     return thisIModelInfo;
   }
 

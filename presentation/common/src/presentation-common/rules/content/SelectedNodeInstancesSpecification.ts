@@ -13,7 +13,7 @@ import { ContentSpecificationBase, ContentSpecificationTypes } from "./ContentSp
  *
  * **Note:** No data is returned for selected custom nodes.
  *
- * @see [More details]($docs/learning/presentation/Content/SelectedNodeInstances.md)
+ * @see [More details]($docs/presentation/Content/SelectedNodeInstances.md)
  * @public
  */
 export interface SelectedNodeInstancesSpecification extends ContentSpecificationBase {
