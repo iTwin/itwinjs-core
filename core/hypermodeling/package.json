@@ -1,5 +1,5 @@
 {
-  "name": "@bentley/hypermodeling-frontend",
+  "name": "@itwin/hypermodeling-frontend",
   "version": "3.0.0-dev.66",
   "description": "iModel.js hypermodeling package",
   "main": "lib/hypermodeling-frontend.js",

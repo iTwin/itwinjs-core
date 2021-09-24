@@ -16,7 +16,7 @@
       "--no-sandbox"
     ],
     "publicDirs": [
-      "./node_modules/@bentley/hypermodeling-frontend/lib/public/"
+      "./node_modules/@itwin/hypermodeling-frontend/lib/public/"
     ]
   },
   "mochaOptions": {

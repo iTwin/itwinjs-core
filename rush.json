@@ -357,7 +357,7 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/hypermodeling-frontend",
+      "packageName": "@itwin/hypermodeling-frontend",
       "projectFolder": "core/hypermodeling",
       "reviewCategory": "frontend",
       "shouldPublish": true,

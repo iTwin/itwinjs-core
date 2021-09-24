@@ -87,7 +87,7 @@
     "@itwin/core-i18n": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/frontend-devtools": "workspace:*",
-    "@bentley/hypermodeling-frontend": "workspace:*",
+    "@itwin/hypermodeling-frontend": "workspace:*",
     "@itwin/core-markup": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/core-backend": "workspace:*",

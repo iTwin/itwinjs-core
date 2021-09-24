@@ -6,7 +6,7 @@
 import { AsyncMethodsOf, GuidString, ProcessDetector, PromiseReturnType } from "@itwin/core-bentley";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
-import { HyperModeling } from "@bentley/hypermodeling-frontend";
+import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import {
   IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface,
 } from "@itwin/core-common";

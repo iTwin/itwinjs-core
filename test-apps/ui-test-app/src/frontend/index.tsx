@@ -13,7 +13,7 @@ import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/cont
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
-import { HyperModeling } from "@bentley/hypermodeling-frontend";
+import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@itwin/core-common";
 import { EditTools } from "@itwin/editor-frontend";

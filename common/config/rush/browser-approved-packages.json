@@ -71,7 +71,7 @@
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
-      "name": "@bentley/hypermodeling-frontend",
+      "name": "@itwin/hypermodeling-frontend",
       "allowedCategories": [ "internal" ]
     },
     {
