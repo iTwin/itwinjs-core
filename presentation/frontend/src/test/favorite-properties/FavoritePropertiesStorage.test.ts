@@ -94,7 +94,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
 
     it("throws when not signed in", async () => {
       authorizationClientMock.reset();
-      authorizationClientMock.setup((x) => x.hasSignedIn).returns(() => false);
+      authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(undefined));
       await expect(storage.loadProperties()).to.eventually.be.rejected;
     });
 
@@ -114,7 +114,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
 
     it("throws when not signed in", async () => {
       authorizationClientMock.reset();
-      authorizationClientMock.setup((x) => x.hasSignedIn).returns(() => false);
+      authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(undefined));
       await expect(storage.saveProperties(new Set())).to.eventually.be.rejected;
     });
 
@@ -180,7 +180,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
 
     it("throws when not signed in", async () => {
       authorizationClientMock.reset();
-      authorizationClientMock.setup((x) => x.hasSignedIn).returns(() => false);
+      authorizationClientMock.setup(async (x) => x.getAccessToken()).returns(async () => Promise.resolve(undefined));
       await expect(storage.savePropertiesOrder([], "projectId", "imodelId")).to.eventually.be.rejected;
     });
 

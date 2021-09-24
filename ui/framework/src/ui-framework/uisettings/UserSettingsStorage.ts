@@ -18,6 +18,8 @@ import { UiSettingsResult, UiSettingsStatus, UiSettingsStorage } from "@bentley/
 export class UserSettingsStorage implements UiSettingsStorage {
   public async getSetting(namespace: string, name: string): Promise<UiSettingsResult> {
     let requestContext;
+    if (!(await this.isSignedIn()))
+      return { status: UiSettingsStatus.AuthorizationError };
     try {
       requestContext = await AuthorizedFrontendRequestContext.create();
     } catch (err: unknown) {
@@ -35,6 +37,8 @@ export class UserSettingsStorage implements UiSettingsStorage {
 
   public async saveSetting(namespace: string, name: string, setting: any): Promise<UiSettingsResult> {
     let requestContext;
+    if (!(await this.isSignedIn()))
+      return { status: UiSettingsStatus.AuthorizationError };
     try {
       requestContext = await AuthorizedFrontendRequestContext.create();
     } catch (err: unknown) {
@@ -52,6 +56,8 @@ export class UserSettingsStorage implements UiSettingsStorage {
 
   public async deleteSetting(namespace: string, name: string): Promise<UiSettingsResult> {
     let requestContext;
+    if (!(await this.isSignedIn()))
+      return { status: UiSettingsStatus.AuthorizationError };
     try {
       requestContext = await AuthorizedFrontendRequestContext.create();
     } catch (err: unknown) {
@@ -65,6 +71,10 @@ export class UserSettingsStorage implements UiSettingsStorage {
       status,
       setting: result.setting,
     };
+  }
+
+  private async isSignedIn(): Promise<boolean> {
+    return !!IModelApp.authorizationClient && !!(await IModelApp.authorizationClient.getAccessToken());
   }
 }
 

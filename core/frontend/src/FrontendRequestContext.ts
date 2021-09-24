@@ -33,7 +33,7 @@ export class AuthorizedFrontendRequestContext extends AuthorizedClientRequestCon
    * @see [[IModelApp.authorizationClient]] to setup authorization for the frontend application.
    */
   public static async create(activityId?: string): Promise<AuthorizedFrontendRequestContext> {
-    if (!IModelApp.authorizationClient)
+    if (!IModelApp.authorizationClient || !(await IModelApp.authorizationClient.getAccessToken()))
       throw new BentleyError(AuthStatus.Error, "authorizationClient not initialized");
 
     const accessToken = await IModelApp.authorizationClient.getAccessToken();
