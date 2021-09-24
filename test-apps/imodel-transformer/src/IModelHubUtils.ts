@@ -26,7 +26,7 @@ export namespace IModelHubUtils {
       scope: "openid email profile organization itwinjs",
     });
     return new Promise<AccessToken>((resolve, reject) => {
-      ElectronAuthorizationBackend.onUserStateChanged.addListener((token) => {
+      NativeHost.onUserStateChanged.addListener((token) => {
         if (token !== undefined) {
           resolve(token);
         } else {
