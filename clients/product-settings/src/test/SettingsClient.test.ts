@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Guid, GuidString } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { TestUsers } from "@bentley/oidc-signin-tool";
+import { TestUsers } from "@bentley/oidc-signin-tool/lib/cjs/frontend";
 import * as chai from "chai";
 import { SettingsMapResult, SettingsResult, SettingsStatus } from "../SettingsAdmin";
 import { ConnectSettingsClient } from "../SettingsClient";

@@ -5,7 +5,7 @@
 import { Guid, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Angle, Range2d } from "@bentley/geometry-core";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { TestUsers } from "@bentley/oidc-signin-tool";
+import { TestUsers } from "@bentley/oidc-signin-tool/lib/cjs/frontend";
 import * as chai from "chai";
 import { query } from "jsonpath";
 import { RealityData, RealityDataClient, RealityDataRelationship } from "../../RealityDataClient";

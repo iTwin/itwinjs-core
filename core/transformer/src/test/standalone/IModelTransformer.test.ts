@@ -2,28 +2,28 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert, expect } from "chai";
+import * as path from "path";
+import * as sinon from "sinon";
 import { DbResult, Guid, Id64, Id64String, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
+import {
+  AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps, ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d,
+} from "@bentley/imodeljs-common";
 import {
   BackendRequestContext, CategorySelector, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element, ElementMultiAspect,
   ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial, IModelCloneContext, IModelDb,
   IModelHost, IModelJsFs, IModelSchemaLoader, InformationRecordModel, InformationRecordPartition, LinkElement, Model, ModelSelector,
   OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, Schema, SnapshotDb,
-  SpatialCategory, StandaloneDb, Subject
+  SpatialCategory, StandaloneDb, Subject,
 } from "@bentley/imodeljs-backend";
-import { ExtensiveTestScenario, IModelTestUtils, KnownTestLocations } from "@bentley/imodeljs-backend/lib/cjs/test";
-import {
-  AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps, ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d
-} from "@bentley/imodeljs-common";
-import { assert, expect } from "chai";
-import * as path from "path";
-import * as Semver from "semver";
-import * as sinon from "sinon";
-import { IModelExporter, IModelExportHandler, IModelTransformer, TransformerLoggerCategory } from "../../imodeljs-transformer";
+import {IModelExporter, IModelExportHandler, IModelTransformer, TransformerLoggerCategory } from "../../imodeljs-transformer";
 import {
   ClassCounter, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator,
-  RecordingIModelImporter, TestIModelTransformer, TransformerExtensiveTestScenario
+  RecordingIModelImporter, TestIModelTransformer, TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
+import { ExtensiveTestScenario, IModelTestUtils, KnownTestLocations } from "@bentley/imodeljs-backend/lib/cjs/test";
+import * as Semver from "semver";
 
 describe("IModelTransformer", () => {
   const outputDir: string = path.join(KnownTestLocations.outputDir, "IModelTransformer");
@@ -1022,7 +1022,7 @@ describe("IModelTransformer", () => {
     const _physicalMaterialId = sourceDb.elements.insertElement({
       classFullName: GenericPhysicalMaterial.classFullName,
       model: IModel.dictionaryId,
-      code: new Code({ spec: myCodeSpecId, scope: drawingId, value: "physical material" }),
+      code: new Code({spec: myCodeSpecId, scope: drawingId, value: "physical material"}),
     } as DefinitionElementProps);
 
     sourceDb.saveChanges();
@@ -1039,7 +1039,7 @@ describe("IModelTransformer", () => {
     const drawingIdTarget = targetDb.elements.queryElementIdByCode(Drawing.createCode(targetDb, documentListModelId, "Drawing"));
     expect(drawingIdTarget).to.not.be.undefined;
     expect(Id64.isValidId64((drawingIdTarget as string))).to.be.true;
-    const physicalMaterialIdTarget = targetDb.elements.queryElementIdByCode(new Code({ spec: myCodeSpecId, scope: drawingId, value: "physical material" }));
+    const physicalMaterialIdTarget = targetDb.elements.queryElementIdByCode(new Code({spec: myCodeSpecId, scope: drawingId, value: "physical material"}));
     expect(physicalMaterialIdTarget).to.not.be.undefined;
     expect(Id64.isValidId64((physicalMaterialIdTarget as string))).to.be.true;
 
@@ -1089,14 +1089,14 @@ describe("IModelTransformer", () => {
     const drawingGraphic2Id = new DrawingGraphic({
       classFullName: DrawingGraphic.classFullName,
       model: drawingModel2Id,
-      code: new Code({ spec: modelCodeSpec, scope: drawingModel2Id, value: "drawing graphic 2" }),
+      code: new Code({spec: modelCodeSpec, scope: drawingModel2Id, value: "drawing graphic 2"}),
       category: categoryId,
     }, sourceDb).insert();
 
     const _drawingGraphic1Id = new DrawingGraphic({
       classFullName: DrawingGraphic.classFullName,
       model: drawingModel1Id,
-      code: new Code({ spec: relatedCodeSpecId, scope: drawingGraphic2Id, value: "drawing graphic 1" }),
+      code: new Code({spec: relatedCodeSpecId, scope: drawingGraphic2Id, value: "drawing graphic 1"}),
       category: categoryId,
     }, sourceDb).insert();
 
@@ -1139,7 +1139,7 @@ describe("IModelTransformer", () => {
     nativeDb.saveChanges(); // save change to ProjectId
     nativeDb.deleteAllTxns(); // necessary before resetting briefcaseId
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned); // standalone iModels should always have BriefcaseId unassigned
-    nativeDb.saveLocalValue("StandaloneEdit", JSON.stringify({ txns: true }));
+    nativeDb.saveLocalValue("StandaloneEdit", JSON.stringify({txns: true}));
     nativeDb.saveChanges(); // save change to briefcaseId
     nativeDb.closeIModel();
   }

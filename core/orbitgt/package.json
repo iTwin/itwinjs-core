@@ -4,6 +4,7 @@
   "description": "",
   "main": "lib/cjs/imodeljs-orbitgt.js",
   "module": "lib/esm/imodeljs-orbitgt.js",
+  "typings": "lib/cjs/imodeljs-orbitgt",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {

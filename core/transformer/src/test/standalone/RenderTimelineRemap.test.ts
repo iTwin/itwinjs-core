@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
 import { CompressedId64Set, Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Box, Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  GenericSchema, PhysicalModel, PhysicalObject, PhysicalPartition, RenderTimeline, SpatialCategory, StandaloneDb, SubjectOwnsPartitionElements
-} from "@bentley/imodeljs-backend";
-import { IModelTestUtils } from "@bentley/imodeljs-backend/lib/cjs/test";
-import {
-  Code, GeometryStreamBuilder, IModel, PhysicalElementProps, RenderSchedule, RenderTimelineProps
+  Code, GeometryStreamBuilder, IModel, PhysicalElementProps, RenderSchedule, RenderTimelineProps,
 } from "@bentley/imodeljs-common";
-import { expect } from "chai";
+import {
+  GenericSchema, PhysicalModel, PhysicalObject, PhysicalPartition, RenderTimeline, SpatialCategory, StandaloneDb, SubjectOwnsPartitionElements,
+} from "@bentley/imodeljs-backend";
 import { IModelTransformer } from "../../imodeljs-transformer";
+import { IModelTestUtils } from "@bentley/imodeljs-backend/lib/cjs/test";
 
 describe("RenderTimeline Remap", () => {
   before(() => {

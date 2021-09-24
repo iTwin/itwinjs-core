@@ -3,23 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import {
-  BisCoreSchema, BriefcaseDb, BriefcaseManager, ConcurrencyControl, ECSqlStatement, Element, ElementRefersToElements,
-  ExternalSourceAspect, GenericSchema, IModelDb, IModelHost, IModelJsFs, IModelJsNative, NativeLoggerCategory,
-  PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory
-} from "@bentley/imodeljs-backend";
-import { ExtensiveTestScenario, HubMock, HubUtility, IModelTestUtils, KnownTestLocations, TestUserType } from "@bentley/imodeljs-backend/lib/cjs/test";
-import { ChangesetType, Code, ColorDef, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { assert } from "chai";
 import { join } from "path";
 import * as semver from "semver";
+import { DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { ChangesetType, Code, ColorDef, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import {
+  BisCoreSchema, BriefcaseDb, BriefcaseManager, ConcurrencyControl, ECSqlStatement, Element, ElementRefersToElements,
+  ExternalSourceAspect, GenericSchema, IModelDb, IModelHost, IModelJsFs, IModelJsNative, NativeLoggerCategory,
+  PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
+} from "@bentley/imodeljs-backend";
 import {
   IModelExporter,
-  IModelTransformer, TransformerLoggerCategory
+  IModelTransformer, TransformerLoggerCategory,
 } from "../../imodeljs-transformer";
+import { ExtensiveTestScenario, HubMock, HubUtility, IModelTestUtils, KnownTestLocations, TestUserType } from "@bentley/imodeljs-backend/lib/cjs/test";
 import { CountingIModelImporter, IModelToTextFileExporter, IModelTransformerTestUtils, TestIModelTransformer, TransformerExtensiveTestScenario as TransformerExtensiveTestScenario } from "../IModelTransformerUtils";
 
 describe("IModelTransformerHub (#integration)", () => {
