@@ -35,7 +35,7 @@
   "dependencies": {
     "@bentley/backend-itwin-client": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
     "@bentley/certa": "workspace:*",
     "@bentley/context-registry-client": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",

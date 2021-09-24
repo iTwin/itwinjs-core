@@ -19,7 +19,7 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/build-tools": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@bentley/react-scripts": "4.0.3",
     "@types/react": "^17.0.0",

@@ -32,7 +32,7 @@
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
@@ -53,7 +53,7 @@
     "@itwin/core-bentley": "workspace:^3.0.0-dev.66"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [

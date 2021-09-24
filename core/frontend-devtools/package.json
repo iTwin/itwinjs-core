@@ -41,7 +41,7 @@
     "file-saver": "^2.0.2"
   },
   "devDependencies": {
-    "@bentley/build-tools": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@types/file-saver": "^2.0.1",
     "@types/node": "14.14.31",

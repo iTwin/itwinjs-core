@@ -56,7 +56,7 @@
   ],
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
     "@bentley/certa": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
@@ -102,7 +102,7 @@
     "xml-js": "~1.6.11"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [

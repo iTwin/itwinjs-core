@@ -52,7 +52,7 @@
   ],
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
     "@bentley/context-registry-client": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
@@ -102,7 +102,7 @@
     "proper-lockfile": "^4.1.2"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [

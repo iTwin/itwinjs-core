@@ -41,7 +41,7 @@
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@bentley/ecschema-rpcinterface-common": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",

@@ -41,7 +41,7 @@
   ],
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-common": "workspace:*",
@@ -61,7 +61,7 @@
     "@bentley/physicalmaterial-schema": "~1.0.1"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [

@@ -46,7 +46,7 @@
   ],
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@itwin/core-i18n": "workspace:*",
     "@itwin/appui-abstract": "workspace:*",
@@ -134,7 +134,7 @@
     "ts-key-enum": "^2.0.0"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc",
+    "extends": "./node_modules/@itwin/build-tools/.nycrc",
     "require": [
       "ignore-styles",
       "jsdom-global/register",

@@ -72,7 +72,7 @@
     "xmlhttprequest": "^1.8.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
@@ -106,7 +106,7 @@
       "lib/setup.js"
     ],
     "reporter": [
-      "node_modules/@bentley/build-tools/mocha-reporter"
+      "node_modules/@itwin/build-tools/mocha-reporter"
     ],
     "reporterOptions": [
       "mochaFile=lib/test/junit_results.xml"

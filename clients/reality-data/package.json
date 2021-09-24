@@ -44,7 +44,7 @@
     "@bentley/itwin-client": "workspace:^3.0.0-dev.66"
   },
   "devDependencies": {
-    "@bentley/build-tools": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
     "@bentley/certa": "workspace:*",
     "@bentley/context-registry-client": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",

@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
     "@bentley/certa": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@types/chai": "^4.1.4",

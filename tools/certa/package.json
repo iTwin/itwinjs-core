@@ -42,7 +42,7 @@
     "yargs": "^16.0.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/detect-port": "~1.1.0",

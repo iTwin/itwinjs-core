@@ -56,7 +56,7 @@
   },
   "devDependencies": {
     "@bentley/perf-tools": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@bentley/react-scripts": "4.0.3",
     "@types/body-parser": "^1.17.0",

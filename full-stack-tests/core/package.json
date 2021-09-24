@@ -44,7 +44,7 @@
     "electron": "^11.1.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@bentley/certa": "workspace:*",
     "@bentley/context-registry-client": "workspace:*",
@@ -74,7 +74,7 @@
     "serve-handler": "^6.1.2"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [

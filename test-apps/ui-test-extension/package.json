@@ -27,7 +27,7 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "@bentley/build-tools": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@types/react": "^17.0.0",
     "@types/react-select": "3.0.26",

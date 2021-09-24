@@ -42,7 +42,7 @@
   ],
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@itwin/core-i18n": "workspace:*",
     "@types/chai": "^4.1.4",
@@ -81,7 +81,7 @@
     "@bentley/icons-generic-webfont": "^1.0.15"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc",
+    "extends": "./node_modules/@itwin/build-tools/.nycrc",
     "require": [
       "ignore-styles",
       "jsdom-global/register",

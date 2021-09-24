@@ -40,7 +40,7 @@
     "webpack": "4.42.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@bentley/oidc-signin-tool": "workspace:*",
     "@types/body-parser": "^1.17.0",
@@ -70,7 +70,7 @@
       "source-map-support/register",
       "jsdom-global/register"
     ],
-    "reporter": "node_modules/@bentley/build-tools/mocha-reporter",
+    "reporter": "node_modules/@itwin/build-tools/mocha-reporter",
     "reporter-options": "mochaFile=lib/test/junit_results.xml",
     "timeout": 999999
   },

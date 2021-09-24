@@ -44,7 +44,7 @@
   ],
   "devDependencies": {
     "@axe-core/react": "^4.1.1",
-    "@bentley/build-tools": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@bentley/react-scripts": "4.0.3",
     "@types/lorem-ipsum": "^1.0.2",

@@ -32,7 +32,7 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/build-tools": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@types/body-parser": "^1.17.0",
@@ -62,6 +62,6 @@
     "extends": "plugin:@bentley/imodeljs-recommended"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   }
 }

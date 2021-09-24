@@ -406,7 +406,7 @@ $npm install  @bentley/itwin-client
 $npm install  @bentley/rbac-client
 $npm install  @bentley/telemetry-client
 
-$npm install  --save-dev @bentley/build-tools
+$npm install  --save-dev @itwin/build-tools
 $npm install  --save-dev @bentley/config-loader
 $npm install  --save-dev @bentley/eslint-plugin
 $npm install  --save-dev @bentley/oidc-signin-tool

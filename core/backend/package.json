@@ -71,7 +71,7 @@
   "devDependencies": {
     "@bentley/backend-itwin-client": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
     "@bentley/context-registry-client": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
@@ -130,7 +130,7 @@
     "ws": "^7.5.3"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [

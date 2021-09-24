@@ -1,6 +1,7 @@
 ---
 publish: false
 ---
+
 # NextVersion
 
 ## Update minimum requirements
@@ -16,58 +17,58 @@ The following dependencies of iTwin.js have been updated;
 ## Package name changes
 
 A number of packages have been renamed to use the @itwin scope rather than the @bentley scope, and we have modified a few package names to move towards a more consistent naming pattern. The full list of changed packages are listed in the table below.
-| Old                             | New                               |
+| Old | New |
 |-------------------------------------|-----------------------------------|
-| @bentley/imodeljs-backend           | @itwin/core-backend               |
-| @bentley/imodeljs-common            | @itwin/core-common                |
-| @bentley/imodeljs-frontend          | @itwin/core-frontend              |
-| @bentley/geometry-core              | @itwin/core-geometry              |
-| @bentley/bentleyjs-core             | @itwin/core-bentley               |
-| @bentley/orbitgt-core               | @itwin/core-orbitgt               |
-| @bentley/imodeljs-transformer       | @itwin/core-transformer           |
-| @bentley/imodeljs-markup            | @itwin/core-markup                |
-| @bentley/ecschema-metadata          | @itwin/ecschema-metadata          |
-| @bentley/ecschema-locaters          | @itwin/ecschema-locaters          |
-| @bentley/ecschema-editing           | @itwin/ecschema-editing           |
-| @bentley/frontend-devtools          | @itwin/frontend-devtools          |
-| @bentley/webgl-compatibility        | @itwin/webgl-compatibility        |
-| @bentley/imodeljs-editor-common     | @itwin/editor-common              |
-| @bentley/imodeljs-editor-backend    | @itwin/editor-backend             |
-| @bentley/imodeljs-editor-frontend   | @itwin/editor-frontend            |
-| @bentley/analytical-backend         | @itwin/analytical-backend         |
+| @bentley/imodeljs-backend | @itwin/core-backend |
+| @bentley/imodeljs-common | @itwin/core-common |
+| @bentley/imodeljs-frontend | @itwin/core-frontend |
+| @bentley/geometry-core | @itwin/core-geometry |
+| @bentley/bentleyjs-core | @itwin/core-bentley |
+| @bentley/orbitgt-core | @itwin/core-orbitgt |
+| @bentley/imodeljs-transformer | @itwin/core-transformer |
+| @bentley/imodeljs-markup | @itwin/core-markup |
+| @bentley/ecschema-metadata | @itwin/ecschema-metadata |
+| @bentley/ecschema-locaters | @itwin/ecschema-locaters |
+| @bentley/ecschema-editing | @itwin/ecschema-editing |
+| @bentley/frontend-devtools | @itwin/frontend-devtools |
+| @bentley/webgl-compatibility | @itwin/webgl-compatibility |
+| @bentley/imodeljs-editor-common | @itwin/editor-common |
+| @bentley/imodeljs-editor-backend | @itwin/editor-backend |
+| @bentley/imodeljs-editor-frontend | @itwin/editor-frontend |
+| @bentley/analytical-backend | @itwin/analytical-backend |
 | @bentley/linear-referencing-backend | @itwin/linear-referencing-backend |
-| @bentley/linear-referencing-common  | @itwin/linear-referencing-common  |
-| @bentley/physical-material-backend  | @itwin/physical-material-backend  |
-| @bentley/presentation-backend       | @itwin/presentation-backend       |
-| @bentley/presentation-common        | @itwin/presentation-common        |
-| @bentley/presentation-frontend      | @itwin/presentation-frontend      |
-| @bentley/presentation-components    | @itwin/presentation-components    |
-| @bentley/presentation-testing       | @itwin/presentation-testing       |
-| @bentley/ui-abstract                | @itwin/appui-abstract             |
-| @bentley/ui-components              | @itwin/ui-components-react        |
-| @bentley/ui-core                    | @itwin/ui-core-react              |
-| @bentley/ui-imodel-components       | @itwin/ui-imodel-components-react |
-| @bentley/ui-ninezone                | @itwin/appui-layout-react         |
-| @bentley/ui-framework               | @itwin/appui-react                |
-| @bentley/ecschema2ts                | @itwin/ecschema2ts                |
-| @bentley/webpack-tools-core         | @itwin/core-webpack-tools         |
-| @bentley/backend-webpack-tools      | @itwin/backend-webpack-tools      |
+| @bentley/linear-referencing-common | @itwin/linear-referencing-common |
+| @bentley/physical-material-backend | @itwin/physical-material-backend |
+| @bentley/presentation-backend | @itwin/presentation-backend |
+| @bentley/presentation-common | @itwin/presentation-common |
+| @bentley/presentation-frontend | @itwin/presentation-frontend |
+| @bentley/presentation-components | @itwin/presentation-components |
+| @bentley/presentation-testing | @itwin/presentation-testing |
+| @bentley/ui-abstract | @itwin/appui-abstract |
+| @bentley/ui-components | @itwin/ui-components-react |
+| @bentley/ui-core | @itwin/ui-core-react |
+| @bentley/ui-imodel-components | @itwin/ui-imodel-components-react |
+| @bentley/ui-ninezone | @itwin/appui-layout-react |
+| @bentley/ui-framework | @itwin/appui-react |
+| @bentley/ecschema2ts | @itwin/ecschema2ts |
+| @bentley/webpack-tools-core | @itwin/core-webpack-tools |
+| @bentley/backend-webpack-tools | @itwin/backend-webpack-tools |
 
 ## Build tools changes
 
-- Removed `test` and `test-tsnode` scripts from `@bentley/build-tools`.  Please use mocha directly instead.
-- Removed TSLint support from `@bentley/build-tools`. If you're still using it, please switch to ESLint.
+- Removed `test` and `test-tsnode` scripts from `@itwin/build-tools`. Please use mocha directly instead.
+- Removed TSLint support from `@itwin/build-tools`. If you're still using it, please switch to ESLint.
 - Removed legacy `.eslintrc.js` file from the same package. Instead, use `@bentley/eslint-plugin` and the `imodeljs-recommended` config included in it.
 
 ## BentleyError constructor no longer logs
 
-In V2, the constructor of the base exception class [BentleyError]($core-bentley) accepted 5 arguments, the last 3 being optional. Arguments 3 and 4 were for logging the exception in the constructor itself. That is a bad idea, since exceptions are often handled and recovered in `catch` statements, so there is no actual "problem" to report. In that case the message in the log is either misleading or just plain wrong. Also, code in `catch` statements always has more "context" about *why* the error may have happened than the lower level code that threw (e.g. "invalid Id" vs. "invalid MyHashClass Id") so log messages from callers can be more helpful than from callees. Since every thrown exception must be caught *somewhere*, logging should be done when exceptions are caught, not when they're thrown.
+In V2, the constructor of the base exception class [BentleyError]($core-bentley) accepted 5 arguments, the last 3 being optional. Arguments 3 and 4 were for logging the exception in the constructor itself. That is a bad idea, since exceptions are often handled and recovered in `catch` statements, so there is no actual "problem" to report. In that case the message in the log is either misleading or just plain wrong. Also, code in `catch` statements always has more "context" about _why_ the error may have happened than the lower level code that threw (e.g. "invalid Id" vs. "invalid MyHashClass Id") so log messages from callers can be more helpful than from callees. Since every thrown exception must be caught _somewhere_, logging should be done when exceptions are caught, not when they're thrown.
 
 The [BentleyError]($core-bentley) constructor now accepts 3 arguments, the last argument (`getMetaData`) is optional. The previous `log` and `category` arguments were removed. If your code passed 5 arguments, remove the 3rd and 4th. If you previously passed 3 or 4 arguments, just leave the first two.
 
 ## ClientRequestContext.current has been removed
 
-The class [ClientRequestContext]($core-bentley) exists to identify RPC requests between a web frontend and a cloud backend. In V2, had a static (i.e. global) member called `current` whose purpose was to identify the *current request* for logging from the backend. The members of `ClientRequestContext` called `sessionId` and `activityId` were "magically" appended in log messages without the need for passing the current request context as an argument. That originally seemed like a good idea, but became hopelessly complicated as asynchronous code was introduced. That's because when async methods run, there can be many request contexts extant simultaneously. So, it became the job of all code that awaited an async function to accept an argument with a request context and call `.enter()` on it, to set the very global variable whose existence was solely to avoid having to have the argument in the first place! Needless to say, global variables and `async`s don't mix and the whole concept has been removed.
+The class [ClientRequestContext]($core-bentley) exists to identify RPC requests between a web frontend and a cloud backend. In V2, had a static (i.e. global) member called `current` whose purpose was to identify the _current request_ for logging from the backend. The members of `ClientRequestContext` called `sessionId` and `activityId` were "magically" appended in log messages without the need for passing the current request context as an argument. That originally seemed like a good idea, but became hopelessly complicated as asynchronous code was introduced. That's because when async methods run, there can be many request contexts extant simultaneously. So, it became the job of all code that awaited an async function to accept an argument with a request context and call `.enter()` on it, to set the very global variable whose existence was solely to avoid having to have the argument in the first place! Needless to say, global variables and `async`s don't mix and the whole concept has been removed.
 
 If you have code that has something like this:
 
@@ -77,7 +78,7 @@ requestContext.enter();
 
 you can simply delete it. If your function accepts a [ClientRequestContext]($core-bentley) merely to call `enter` on it, consider refactoring your code to remove the argument.
 
-This change mostly affects backend code. For backend [RPC]($docs/learning/RpcInterface.md) implementations, all *unhandled* exceptions will automatically be logged along the appropriate `ClientRequestContext`. For this reason, it often preferable to throw an exception rather than logging an error and returning a status in code that may or may not be called from RPC.
+This change mostly affects backend code. For backend [RPC]($docs/learning/RpcInterface.md) implementations, all _unhandled_ exceptions will automatically be logged along the appropriate `ClientRequestContext`. For this reason, it often preferable to throw an exception rather than logging an error and returning a status in code that may or may not be called from RPC.
 
 ## Viewport.zoomToElements improvements
 
@@ -107,26 +108,54 @@ Each of these interfaces originally had only a member `changeSetId: string`, In 
 This is a breaking change, so you may need to modify your code and replace the previous arguments with a single object with the appropriate names. For example,:
 
 ```ts
-  viewState.lookAt(eye, target, upVector, newExtents, undefined, backDistance, opts);
+viewState.lookAt(
+  eye,
+  target,
+  upVector,
+  newExtents,
+  undefined,
+  backDistance,
+  opts
+);
 ```
 
 can become:
 
 ```ts
-  viewState.lookAt( {eyePoint: eye, targetPoint: target , upVector, newExtents, backDistance, opts} );
+viewState.lookAt({
+  eyePoint: eye,
+  targetPoint: target,
+  upVector,
+  newExtents,
+  backDistance,
+  opts,
+});
 ```
 
 likewise
 
 ```ts
-    viewState.lookAtUsingLensAngle(eye, target, up, lens, frontDistance, backDistance);
+viewState.lookAtUsingLensAngle(
+  eye,
+  target,
+  up,
+  lens,
+  frontDistance,
+  backDistance
+);
 ```
 
 can become:
 
 ```ts
-  viewState.lookAt( {eyePoint: eye, targetPoint: target , upVector: up, lensAngle: lens, frontDistance, backDistance} );
-
+viewState.lookAt({
+  eyePoint: eye,
+  targetPoint: target,
+  upVector: up,
+  lensAngle: lens,
+  frontDistance,
+  backDistance,
+});
 ```
 
 ### OnViewExtentsError and MarginOptions Separated from ViewChangeOptions
@@ -142,29 +171,29 @@ There is now a separate interface [OnViewExtentsError]($frontend) that `ViewStat
 [ViewFlags]($common) has long been a common source of surprising behavior. Consider the following code:
 
 ```ts
-  function turnOnShadows(vp: Viewport) {
-    vp.viewFlags.shadows = true;
-  }
+function turnOnShadows(vp: Viewport) {
+  vp.viewFlags.shadows = true;
+}
 ```
 
 You could be forgiven for expecting the image displayed in the Viewport to include shadows after calling this function, but that will not be the case. Instead, you must write the function as follows:
 
 ```ts
-  function turnOnShadows(vp: Viewport) {
-    const vf = vp.viewFlags.clone();
-    vf.shadows = true;
-    vp.viewFlags = vf;
-  }
+function turnOnShadows(vp: Viewport) {
+  const vf = vp.viewFlags.clone();
+  vf.shadows = true;
+  vp.viewFlags = vf;
+}
 ```
 
 To rectify this, and to eliminate various other pitfalls associated with mutable state, ViewFlags has been converted to an immutable type - all of its properties are read-only and the only way to change a property is to create a copy. The function above can now be written as:
 
 ```ts
-  function turnOnShadows(vp: Viewport) {
-    vp.viewFlags = vp.viewFlags.with("shadows", true);
-    // or, equivalently, but less efficiently in this case:
-    vp.viewFlags = vp.viewFlags.copy({ shadows: true });
-  }
+function turnOnShadows(vp: Viewport) {
+  vp.viewFlags = vp.viewFlags.with("shadows", true);
+  // or, equivalently, but less efficiently in this case:
+  vp.viewFlags = vp.viewFlags.copy({ shadows: true });
+}
 ```
 
 Methods that mutate a ViewFlags object have been removed.
@@ -175,29 +204,29 @@ Methods that mutate a ViewFlags object have been removed.
 If your code used to modify a single property, change it to use [ViewFlags.with]($common) or [ViewFlags.withRenderMode]($common):
 
 ```ts
-  // Replace this...
-  viewport.viewFlags.clipVolume = true;
-  // ...with this:
-  viewport.viewFlags = viewFlags.with("clipVolume", true);
+// Replace this...
+viewport.viewFlags.clipVolume = true;
+// ...with this:
+viewport.viewFlags = viewFlags.with("clipVolume", true);
 ```
 
 If your code used to modify multiple properties, change it to use [ViewFlags.copy]($common):
 
 ```ts
-  // Replace this...
-  viewport.viewFlags.shadows = viewport.viewFlags.lighting = true;
-  // ...with this:
-  viewport.viewFlags = viewport.viewFlags.copy({ shadows: true, lighting: true });
+// Replace this...
+viewport.viewFlags.shadows = viewport.viewFlags.lighting = true;
+// ...with this:
+viewport.viewFlags = viewport.viewFlags.copy({ shadows: true, lighting: true });
 ```
 
 If your code used to create a new ViewFlags and then modify its properties, pass the initial properties to [ViewFlags.create]($common) instead:
 
 ```ts
-  // Replace this...
-  const vf = new ViewFlags();
-  vf.shadows = vf.lighting = true;
-  // ...with this:
-  const vf = ViewFlags.create({ shadows: true, lighting: true });
+// Replace this...
+const vf = new ViewFlags();
+vf.shadows = vf.lighting = true;
+// ...with this:
+const vf = ViewFlags.create({ shadows: true, lighting: true });
 ```
 
 ### Removal of unused properties
@@ -219,50 +248,52 @@ This cumbersome, inefficient class has been replaced with the identically-named 
 Upgrade instructions:
 
 ```ts
-  let ovrs = new ViewFlagOverrides(); // Old code - nothing overridden.
-  let ovrs = { }; // New code
+let ovrs = new ViewFlagOverrides(); // Old code - nothing overridden.
+let ovrs = {}; // New code
 
-  let ovrs = new ViewFlagOverrides(viewFlags); // Old code - override everything according to a ViewFlags
-  let ovrs = { ...viewFlags }; // New code
+let ovrs = new ViewFlagOverrides(viewFlags); // Old code - override everything according to a ViewFlags
+let ovrs = { ...viewFlags }; // New code
 
-  ovrs.overrideAll(viewFlags); // Old code - override everything according to a ViewFlags
-  ovrs = { ...viewFlags }; // New code.
+ovrs.overrideAll(viewFlags); // Old code - override everything according to a ViewFlags
+ovrs = { ...viewFlags }; // New code.
 
-  ovrs.setThematicDisplay(true); // Old code - override thematic display to be true.
-  ovrs.thematicDisplay = true; // New code
+ovrs.setThematicDisplay(true); // Old code - override thematic display to be true.
+ovrs.thematicDisplay = true; // New code
 
-  ovrs.clone(other); // Old code - make other be a copy of ovrs
-  other = { ...other }; // New code
+ovrs.clone(other); // Old code - make other be a copy of ovrs
+other = { ...other }; // New code
 
-  ovrs.copyFrom(other); // Old code - make ovrs be a copy of other
-  ovrs = { ...other }; // New code
+ovrs.copyFrom(other); // Old code - make ovrs be a copy of other
+ovrs = { ...other }; // New code
 
-  if (ovrs.isPresent(ViewFlagPresence.ThematicDisplay)) // Old code
-  if (undefined !== ovrs.thematicDisplay) // New code
+if (ovrs.isPresent(ViewFlagPresence.ThematicDisplay))
+  if (undefined !== ovrs.thematicDisplay)
+    // Old code
+    // New code
 
-  ovrs.setPresent(ViewFlagPresence.ThematicDisplay) // Old code
-  ovrs.thematicDisplay = value; // New code, where "value" is whatever value thematicDisplay was set to in the old code
+    ovrs.setPresent(ViewFlagPresence.ThematicDisplay); // Old code
+ovrs.thematicDisplay = value; // New code, where "value" is whatever value thematicDisplay was set to in the old code
 
-  ovrs.clearPresent(ViewFlagPresence.ThematicDisplay) // Old code
-  ovrs.thematicDisplay = undefined; // New code
+ovrs.clearPresent(ViewFlagPresence.ThematicDisplay); // Old code
+ovrs.thematicDisplay = undefined; // New code
 
-  if (ovrs.anyOverridden()); // Old code - determine if any flags are overridden
-  if (JsonUtils.isNonEmptyObject(ovrs)); // New code
+if (ovrs.anyOverridden()); // Old code - determine if any flags are overridden
+if (JsonUtils.isNonEmptyObject(ovrs)); // New code
 
-  ovrs.clear(); // Old code - mark all flags as not overridden
-  ovrs = { }; // New code
+ovrs.clear(); // Old code - mark all flags as not overridden
+ovrs = {}; // New code
 
-  ovrs.clearClipVolume(); // Old code - mark clip volume as not overridden
-  ovrs.clipVolume = undefined; // New code
+ovrs.clearClipVolume(); // Old code - mark clip volume as not overridden
+ovrs.clipVolume = undefined; // New code
 
-  const vf = ovrs.apply(viewFlags); // Old code - create a ViewFlags by applying the overrides to the input ViewFlags
-  const vf = viewFlags.override(ovrs); // New code
+const vf = ovrs.apply(viewFlags); // Old code - create a ViewFlags by applying the overrides to the input ViewFlags
+const vf = viewFlags.override(ovrs); // New code
 
-  const props = ovrs.toJSON(); // Old code - obtain JSON representation
-  const props = ovrs; // New code
+const props = ovrs.toJSON(); // Old code - obtain JSON representation
+const props = ovrs; // New code
 
-  let ovrs = ViewFlagOverrides.fromJSON(props); // Old code - create from JSON representation
-  let ovrs = { ...props }; // New code
+let ovrs = ViewFlagOverrides.fromJSON(props); // Old code - create from JSON representation
+let ovrs = { ...props }; // New code
 ```
 
 ## Moved utility types
@@ -271,7 +302,7 @@ The [AsyncFunction]($core-bentley), [AsyncMethodsOf]($core-bentley), and [Promis
 
 ## Removed default Bing Maps and MapBox keys
 
-Previous versions of `@itwin/core-frontend` included API keys for Bing Maps and MapBox Imagery that would be used for _all_ iTwin.js applications.  These common keys are no longer supported and will soon be disabled.  All applications will now need to provide their own keys.
+Previous versions of `@itwin/core-frontend` included API keys for Bing Maps and MapBox Imagery that would be used for _all_ iTwin.js applications. These common keys are no longer supported and will soon be disabled. All applications will now need to provide their own keys.
 
 In order to configure a key for Bing Maps, or any other map layers, use the [[IModelAppOptions.mapLayerOptions]] configuration to supply the necessary information.
 
@@ -280,10 +311,10 @@ const appOptions = {
   maplayerOptions: {
     BingMaps: {
       key: "some key",
-      value: "key"
-    }
-  }
-}
+      value: "key",
+    },
+  },
+};
 ```
 
 ## Concurrency Control
@@ -300,7 +331,7 @@ See the [ConcurrencyControl]($docs/learning/backend/ConcurrencyControl.md) learn
 
 ## ITwinId
 
-Several api's in **iTwin.js** refer to the "context" for an iModel, meaning the *project or asset* to which the iModel belongs, as its `contextId`. That is very confusing, as the term "context" is very overloaded in computer science in general, and in iTwin.js in particular. That is resolved in iTwin.js V3.0 by recognizing that every iModel exists within an **iTwin**, and every iTwin has a GUID called its `iTwinId`. All instances of `contextId` in public apis that mean *the iTwin for this iModel* are now replaced by `iTwinId`.
+Several api's in **iTwin.js** refer to the "context" for an iModel, meaning the _project or asset_ to which the iModel belongs, as its `contextId`. That is very confusing, as the term "context" is very overloaded in computer science in general, and in iTwin.js in particular. That is resolved in iTwin.js V3.0 by recognizing that every iModel exists within an **iTwin**, and every iTwin has a GUID called its `iTwinId`. All instances of `contextId` in public apis that mean _the iTwin for this iModel_ are now replaced by `iTwinId`.
 
 This is a breaking change for places like `IModel.contextId`. However, it should be a straightforward search-and-replace `contextId` -> `iTwinId` anywhere you get compilation errors in your code.
 
@@ -365,8 +396,8 @@ In `3.0` changes have been made that changed the way this attribute is calculate
 
     // removed in favor of `workerThreadsCount`
     taskAllocationsMap: {
-        [RequestPriority.Preload]: 1,
-        [RequestPriority.Max]: 2,
+      [RequestPriority.Preload]: 1,
+      [RequestPriority.Max]: 2,
     },
   });
   ```
@@ -430,7 +461,9 @@ In `3.0` changes have been made that changed the way this attribute is calculate
   await Presentation.initialize({
     favorites: {
       // by default the no-op storage is used, but we can choose another option (or provide our own implementation)
-      storage: createFavoritePropertiesStorage(DefaultFavoritePropertiesStorageTypes.UserSettingsServiceStorage),
+      storage: createFavoritePropertiesStorage(
+        DefaultFavoritePropertiesStorageTypes.UserSettingsServiceStorage
+      ),
     },
   });
   ```
@@ -446,6 +479,7 @@ The backend methods [IModelDb.saveFileProperty]($backend) and [IModelDb.deleteFi
 [TileAdmin.Props.minimumSpatialTolerance]($frontend) specifies the minimum level of detail to produce for views of spatial models. Previously, the default was `undefined`, indicating no minimum. The default has been changed to 1 millimeter. This means that when zooming in extremely closely, geometry that contains details on the order of 1mm or smaller will not refine further. This prevents the display system from requesting extraordinarily detailed graphics, improving performance.
 
 To change the minimum, supply a different value at startup. For example, the following code sets the minimum to 1 centimeter:
+
 ```ts
 await IModelApp.startup({
   tileAdmin: { minimumSpatialTolerance: 0.01 },
@@ -464,28 +498,28 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 
 | Removed                                                      | Replacement                                    |
 | ------------------------------------------------------------ | ---------------------------------------------- |
-| `AutoPush`                                                   | *eliminated*                                   |
+| `AutoPush`                                                   | _eliminated_                                   |
 | `BriefcaseDb.reinstateChanges`                               | `BriefcaseDb.pullChanges`                      |
 | `BriefcaseDb.reverseChanges`                                 | `BriefcaseDb.pullChanges`                      |
-| `BriefcaseIdValue`                                           | `BriefcaseIdValue` in @itwin/core-common |
-| `BriefcaseManager.getCompatibilityFileName`                  | *eliminated*                                   |
-| `BriefcaseManager.getCompatibilityPath`                      | *eliminated*                                   |
+| `BriefcaseIdValue`                                           | `BriefcaseIdValue` in @itwin/core-common       |
+| `BriefcaseManager.getCompatibilityFileName`                  | _eliminated_                                   |
+| `BriefcaseManager.getCompatibilityPath`                      | _eliminated_                                   |
 | `BriefcaseManager.isStandaloneBriefcaseId`                   | use `id === BriefcaseIdValue.Unassigned`       |
-| `compatibilityDir` argument of `BriefcaseManager.initialize` | *eliminated*                                   |
-| `DocumentCarrier`                                            | *eliminated*                                   |
+| `compatibilityDir` argument of `BriefcaseManager.initialize` | _eliminated_                                   |
+| `DocumentCarrier`                                            | _eliminated_                                   |
 | `IModelDb.clearSqliteStatementCache`                         | `IModelDb.clearCaches`                         |
 | `IModelDb.clearStatementCache`                               | `IModelDb.clearCaches`                         |
 | `IModelHost.iModelClient`                                    | `IModelHubBackend.iModelClient`                |
 | `IModelHostConfiguration.briefcaseCacheDir`                  | `IModelHostConfiguration.cacheDir`             |
-| `InformationCarrierElement`                                  | *eliminated*                                   |
+| `InformationCarrierElement`                                  | _eliminated_                                   |
 | `Platform.isDesktop`                                         | `ProcessDetector.isElectronAppBackend`         |
 | `Platform.isElectron`                                        | `ProcessDetector.isElectronAppBackend`         |
 | `Platform.isMobile`                                          | `ProcessDetector.isMobileAppBackend`           |
 | `Platform.isNodeJs`                                          | `ProcessDetector.isNodeProcess`                |
 | `SnapshotDb.filePath`                                        | `SnapshotDb.pathName`                          |
 | `StandaloneDb.filePath`                                      | `StandaloneDb.pathName`                        |
-| `Texture.width, height, flags`                               | *eliminated*                                   |
-| `TxnAction`                                                  | `TxnAction` in @itwin/core-common        |
+| `Texture.width, height, flags`                               | _eliminated_                                   |
+| `TxnAction`                                                  | `TxnAction` in @itwin/core-common              |
 | `TxnChangedEntities.inserted, deleted, updated`              | `TxnChangedEntities.inserts, deletes, updates` |
 
 ### @itwin/core-common
@@ -503,18 +537,18 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `IModelVersion.getChangeSetFromNamedVersion` | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
 | `IModelVersion.getLatestChangeSetId`         | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
 | `IModelWriteRpcInterface`                    | Use IPC for writing to iModels                                 |
-| `LatAndLong`                                 | *eliminated*                                                   |
+| `LatAndLong`                                 | _eliminated_                                                   |
 | `LatLongAndHeight`                           | [CartographicProps]($common)                                   |
 | `TerrainSettings.locatable`                  | `BackgroundMapSettings.locatable`                              |
 | `TerrainSettingsProps.nonLocatable`          | `BackgroundMapProps.nonLocatable`                              |
 | `ViewFlagOverrides` class                    | [ViewFlagOverrides]($common) type                              |
-| `ViewFlagProps.edgeMask`                     | *eliminated*                                                   |
-| `ViewFlagProps.hlMatColors`                  | *eliminated*                                                   |
+| `ViewFlagProps.edgeMask`                     | _eliminated_                                                   |
+| `ViewFlagProps.hlMatColors`                  | _eliminated_                                                   |
 | `ViewFlags.clone`                            | [ViewFlags.copy]($common)                                      |
-| `ViewFlags.edgeMask`                         | *eliminated*                                                   |
-| `ViewFlags.hLineMaterialColors`              | *eliminated*                                                   |
+| `ViewFlags.edgeMask`                         | _eliminated_                                                   |
+| `ViewFlags.hLineMaterialColors`              | _eliminated_                                                   |
 | `ViewFlags.noCameraLights`                   | [ViewFlags.lighting]($common)                                  |
-| `ViewFlags.noGeometryMap`                    | *eliminated*                                                   |
+| `ViewFlags.noGeometryMap`                    | _eliminated_                                                   |
 | `ViewFlags.noSolarLight`                     | [ViewFlags.lighting]($common)                                  |
 | `ViewFlags.noSourceLights`                   | [ViewFlags.lighting]($common)                                  |
 
@@ -523,10 +557,10 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | Removed                                       | Replacement                                                        |
 | --------------------------------------------- | ------------------------------------------------------------------ |
 | `AppearanceOverrideProps`                     | [AppearanceOverrideProps]($common)                                 |
-| `AsyncMethodsOf`                              | [AsyncMethodsOf]($core-bentley)                                  |
-| `AsyncFunction`                               | [AsyncFunction]($core-bentley)                                   |
+| `AsyncMethodsOf`                              | [AsyncMethodsOf]($core-bentley)                                    |
+| `AsyncFunction`                               | [AsyncFunction]($core-bentley)                                     |
 | `EmphasizeElementsProps`                      | [EmphasizeElementsProps]($common)                                  |
-| `PromiseReturnType`                           | [PromiseReturnType]($core-bentley)                               |
+| `PromiseReturnType`                           | [PromiseReturnType]($core-bentley)                                 |
 | `CheckpointConnection.open`                   | `CheckpointConnection.openRemote`                                  |
 | `DecorateContext.screenViewport`              | `DecorateContext.viewport`                                         |
 | `FeatureOverrideType`                         | [FeatureOverrideType]($common)                                     |
@@ -575,14 +609,14 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @itwin/appui-abstract
 
-| Removed                             | Replacement                                  |
-| ----------------------------------- | -------------------------------------------- |
-| `ContentLayoutProps.priority`       | *eliminated*                                 |
+| Removed                       | Replacement  |
+| ----------------------------- | ------------ |
+| `ContentLayoutProps.priority` | _eliminated_ |
 
 ### @itwin/ui-core-react
 
-| Removed                              | Replacement                                            |
-| ------------------------------------ | ------------------------------------------------------ |
+| Removed                              | Replacement                                                |
+| ------------------------------------ | ---------------------------------------------------------- |
 | `LoadingPromptProps.isDeterministic` | `LoadingPromptProps.isDeterminate` in @itwin/ui-core-react |
 | `NumericInput` component             | `NumberInput` component in @itwin/ui-core-react            |
 | `TabsProps.onClickLabel`             | `TabsProps.onActivateTab` in @itwin/ui-core-react          |
@@ -591,17 +625,17 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 | Removed                                                    | Replacement                                                                                                                   |
 | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `hasFlag`                                                  | `hasSelectionModeFlag` in @itwin/ui-components-react                                                                              |
-| `StandardEditorNames`                                      | `StandardEditorNames` in @itwin/appui-abstract                                                                                 |
-| `StandardTypeConverterTypeNames`                           | `StandardTypeNames` in @itwin/appui-abstract                                                                                   |
-| `StandardTypeNames`                                        | `StandardTypeNames` in @itwin/appui-abstract                                                                                   |
-| `Timeline`                                                 | `TimelineComponent` in @itwin/ui-components-react                                                                                 |
+| `hasFlag`                                                  | `hasSelectionModeFlag` in @itwin/ui-components-react                                                                          |
+| `StandardEditorNames`                                      | `StandardEditorNames` in @itwin/appui-abstract                                                                                |
+| `StandardTypeConverterTypeNames`                           | `StandardTypeNames` in @itwin/appui-abstract                                                                                  |
+| `StandardTypeNames`                                        | `StandardTypeNames` in @itwin/appui-abstract                                                                                  |
+| `Timeline`                                                 | `TimelineComponent` in @itwin/ui-components-react                                                                             |
 | `ControlledTreeProps.treeEvents`                           | `ControlledTreeProps.eventsHandler`                                                                                           |
 | `ControlledTreeProps.visibleNodes`                         | `ControlledTreeProps.model`                                                                                                   |
-| `MutableTreeModel.computeVisibleNodes`                     | `computeVisibleNodes` in @itwin/ui-components-react                                                                               |
+| `MutableTreeModel.computeVisibleNodes`                     | `computeVisibleNodes` in @itwin/ui-components-react                                                                           |
 | `TreeModelSource.getVisibleNodes`                          | memoized result of `computeVisibleNodes`                                                                                      |
 | `useVisibleTreeNodes`                                      | `useTreeModel` and `computeVisibleNodes`                                                                                      |
-| `SignIn`                                                   | *eliminated*                                                                                                                  |
+| `SignIn`                                                   | _eliminated_                                                                                                                  |
 | All drag & drop related APIs                               | Third party components. E.g. see this [example](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=drag-and-drop) |
 | `DEPRECATED_Tree`, `BeInspireTree` and related APIs        | `ControlledTree`                                                                                                              |
 | `PropertyValueRendererContext.decoratedTextElement`        | `IPropertyValueRenderer` that can properly render a `PropertyRecord`                                                          |
@@ -614,115 +648,115 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @itwin/appui-react
 
-| Removed                                   | Replacement                                                                                                                   |
-| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `COLOR_THEME_DEFAULT`                     | `SYSTEM_PREFERRED_COLOR_THEME` in @itwin/appui-react is used as default color theme                                        |
-| `FunctionKey`                             | `FunctionKey` in @itwin/appui-abstract                                                                                         |
-| `IModelAppUiSettings`                     | `UserSettingsStorage` in @itwin/appui-react
-| `ConfigurableUiManager.findFrontstageDef` | `FrontstageManager.findFrontstageDef`
-| `ConfigurableUiManager.loadContentGroup`  | *eliminated*
-| `ConfigurableUiManager.loadContentGroups` | *eliminated*
-| `ConfigurableUiManager.loadContentLayout` | *eliminated*
-| `ConfigurableUiManager.loadContentLayouts`| *eliminated*
-| `ContentGroupManager`                     | *eliminated*
-| `Frontstage.initializeFrontstageDef`      | `FrontstageManager.getFrontstageDef` (async method)
-| `Frontstage.findFrontstageDef`            | `FrontstageManager.getFrontstageDef` (async method)
-| `Frontstage.initializeFromProvider`       | `Frontstage.create` (async method)
-| `FrontstageProps.defaultLayout`           | `ContentGroup` now holds the layout information.
-| `FrontstageProvider.initializeDef`        | *eliminated*
-| `FrontstageProvider.frontstageDef`        | `FrontstageManager.getFrontstageDef` (async method)
-| `reactElement` in ContentControl          | `ContentControl.reactNode`                                                                                                    |
-| `reactElement` in NavigationAidControl    | `NavigationAidControl.reactNode`                                                                                              |
-| `reactElement` in NavigationWidgetDef     | `NavigationWidgetDef.reactNode`                                                                                               |
-| `reactElement` in ToolWidgetDef           | `ToolWidgetDef.reactNode`                                                                                                     |
-| `reactElement` in WidgetControl           | `WidgetControl.reactNode`                                                                                                     |
-| `reactElement` in WidgetDef               | `WidgetDef.reactNode`                                                                                                         |
-| `ReactMessage`                            | `ReactMessage` in @itwin/ui-core-react                                                                                            |
-| `SpecialKey`                              | `SpecialKey` in @itwin/appui-abstract                                                                                          |
-| `WidgetState`                             | `WidgetState` in @itwin/appui-abstract                                                                                         |
-| `UserProfileBackstageItem`                | *eliminated*                                                                                                                  |
-| `SignIn`                                  | *eliminated*                                                                                                                  |
-| `SignOutModalFrontstage`                  | *eliminated*                                                                                                                  |
-| `IModelConnectedCategoryTree`             | *eliminated*                                                                                                                  |
-| `IModelConnectedModelsTree`               | *eliminated*                                                                                                                  |
-| `IModelConnectedSpatialContainmentTree`   | *eliminated*                                                                                                                  |
-| `CategoryTreeWithSearchBox`               | *eliminated*                                                                                                                  |
-| `VisibilityComponent`                     | `TreeWidgetComponent` in @bentley/tree-widget-react                                                                           |
-| `VisibilityWidget`                        | `TreeWidgetControl` in @bentley/tree-widget-react
-| `ContentLayoutProps`                      | `ContentLayoutProps` in @itwin/appui-abstract                                                                               |
-| All drag & drop related APIs              | Third party components. E.g. see this [example](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=drag-and-drop) |
+| Removed                                    | Replacement                                                                                                                   |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| `COLOR_THEME_DEFAULT`                      | `SYSTEM_PREFERRED_COLOR_THEME` in @itwin/appui-react is used as default color theme                                           |
+| `FunctionKey`                              | `FunctionKey` in @itwin/appui-abstract                                                                                        |
+| `IModelAppUiSettings`                      | `UserSettingsStorage` in @itwin/appui-react                                                                                   |
+| `ConfigurableUiManager.findFrontstageDef`  | `FrontstageManager.findFrontstageDef`                                                                                         |
+| `ConfigurableUiManager.loadContentGroup`   | _eliminated_                                                                                                                  |
+| `ConfigurableUiManager.loadContentGroups`  | _eliminated_                                                                                                                  |
+| `ConfigurableUiManager.loadContentLayout`  | _eliminated_                                                                                                                  |
+| `ConfigurableUiManager.loadContentLayouts` | _eliminated_                                                                                                                  |
+| `ContentGroupManager`                      | _eliminated_                                                                                                                  |
+| `Frontstage.initializeFrontstageDef`       | `FrontstageManager.getFrontstageDef` (async method)                                                                           |
+| `Frontstage.findFrontstageDef`             | `FrontstageManager.getFrontstageDef` (async method)                                                                           |
+| `Frontstage.initializeFromProvider`        | `Frontstage.create` (async method)                                                                                            |
+| `FrontstageProps.defaultLayout`            | `ContentGroup` now holds the layout information.                                                                              |
+| `FrontstageProvider.initializeDef`         | _eliminated_                                                                                                                  |
+| `FrontstageProvider.frontstageDef`         | `FrontstageManager.getFrontstageDef` (async method)                                                                           |
+| `reactElement` in ContentControl           | `ContentControl.reactNode`                                                                                                    |
+| `reactElement` in NavigationAidControl     | `NavigationAidControl.reactNode`                                                                                              |
+| `reactElement` in NavigationWidgetDef      | `NavigationWidgetDef.reactNode`                                                                                               |
+| `reactElement` in ToolWidgetDef            | `ToolWidgetDef.reactNode`                                                                                                     |
+| `reactElement` in WidgetControl            | `WidgetControl.reactNode`                                                                                                     |
+| `reactElement` in WidgetDef                | `WidgetDef.reactNode`                                                                                                         |
+| `ReactMessage`                             | `ReactMessage` in @itwin/ui-core-react                                                                                        |
+| `SpecialKey`                               | `SpecialKey` in @itwin/appui-abstract                                                                                         |
+| `WidgetState`                              | `WidgetState` in @itwin/appui-abstract                                                                                        |
+| `UserProfileBackstageItem`                 | _eliminated_                                                                                                                  |
+| `SignIn`                                   | _eliminated_                                                                                                                  |
+| `SignOutModalFrontstage`                   | _eliminated_                                                                                                                  |
+| `IModelConnectedCategoryTree`              | _eliminated_                                                                                                                  |
+| `IModelConnectedModelsTree`                | _eliminated_                                                                                                                  |
+| `IModelConnectedSpatialContainmentTree`    | _eliminated_                                                                                                                  |
+| `CategoryTreeWithSearchBox`                | _eliminated_                                                                                                                  |
+| `VisibilityComponent`                      | `TreeWidgetComponent` in @bentley/tree-widget-react                                                                           |
+| `VisibilityWidget`                         | `TreeWidgetControl` in @bentley/tree-widget-react                                                                             |
+| `ContentLayoutProps`                       | `ContentLayoutProps` in @itwin/appui-abstract                                                                                 |
+| All drag & drop related APIs               | Third party components. E.g. see this [example](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=drag-and-drop) |
 
 ### @itwin/core-bentley
 
 | Removed         | Replacement                                                |
 | --------------- | ---------------------------------------------------------- |
 | `Config`        | Use `process.env` to access environment variables directly |
-| `EnvMacroSubst` | *eliminated*                                               |
+| `EnvMacroSubst` | _eliminated_                                               |
 
 ### @itwin/presentation-common
 
-| Removed                                                           | Replacement                                                                                                                                                    |
-| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CompressedDescriptorJSON`                                        | `DescriptorJSON`                                                                                                                                               |
-| `ContentInstancesOfSpecificClassesSpecification.arePolymorphic`   | `ContentInstancesOfSpecificClassesSpecification.handleInstancesPolymorphically`                                                                                |
-| `ContentModifiersList.propertiesDisplay`                          | `ContentModifiersList.propertyOverrides`                                                                                                                       |
-| `ContentModifiersList.propertyEditors`                            | `ContentModifiersList.propertyOverrides`                                                                                                                       |
-| `ContentRelatedInstancesSpecification.isRecursive`                | *eliminated*                                                                                                                                                   |
-| `ContentRelatedInstancesSpecification.relatedClasses`             | `ContentRelatedInstancesSpecification.relationshipPaths.targetClass`                                                                                           |
-| `ContentRelatedInstancesSpecification.relationships`              | `ContentRelatedInstancesSpecification.relationshipPaths.relationship`                                                                                          |
-| `ContentRelatedInstancesSpecification.requiredDirection`          | `ContentRelatedInstancesSpecification.relationshipPaths.direction`                                                                                             |
-| `ContentRelatedInstancesSpecification.skipRelatedLevel`           | *eliminated*                                                                                                                                                   |
-| `Descriptor.toCompressedJSON`                                     | `Descriptor.toJSON`                                                                                                                                            |
-| `DescriptorOverrides.hiddenFieldNames`                            | `DescriptorOverrides.fieldsSelector`                                                                                                                           |
-| `DescriptorOverrides.sortDirection`                               | `DescriptorOverrides.sorting.direction`                                                                                                                        |
-| `DescriptorOverrides.sortingFieldName`                            | `DescriptorOverrides.sorting.field`                                                                                                                            |
-| `ECPropertyGroupingNodeKey.groupingValue`                         | `ECPropertyGroupingNodeKey.groupingValues`                                                                                                                     |
-| `ExtendedContentRequestOptions`                                   | `ContentRequestOptions`                                                                                                                                        |
-| `ExtendedContentRpcRequestOptions`                                | `ContentRpcRequestOptions`                                                                                                                                     |
-| `ExtendedHierarchyRequestOptions`                                 | `HierarchyRequestOptions`                                                                                                                                      |
-| `ExtendedHierarchyRpcRequestOptions`                              | `HierarchyRpcRequestOptions`                                                                                                                                   |
-| `Field.fromJSON`                                                  | `Field.fromCompressedJSON`                                                                                                                                     |
-| `HierarchyCompareRpcOptions`                                      | *eliminated*                                                                                                                                                   |
-| `LabelRequestOptions`                                             | `DisplayLabelRequestOptions`                                                                                                                                   |
-| `LabelRpcRequestOptions`                                          | `DisplayLabelRpcRequestOptions`                                                                                                                                |
-| `LoggingNamespaces`                                               | `PresentationBackendLoggerCategory`, `PresentationBackendNativeLoggerCategory`, `PresentationFrontendLoggerCategory` or `PresentationComponentsLoggerCategory` |
-| `NodeDeletionInfo.target`                                         | `NodeDeletionInfo.parent` and `NodeDeletionInfo.position`                                                                                                      |
-| `NodeDeletionInfoJSON.target`                                     | `NodeDeletionInfoJSON.parent` and `NodeDeletionInfoJSON.position`                                                                                              |
-| `PresentationDataCompareOptions`                                  | *eliminated*                                                                                                                                                   |
-| `PresentationRpcInterface.compareHierarchies`                     | *eliminated*                                                                                                                                                   |
-| `PresentationRpcInterface.compareHierarchiesPaged`                | *eliminated*                                                                                                                                                   |
-| `PresentationRpcInterface.getContent`                             | `PresentationRpcInterface.getPagedContent` and `getPagedContentSet`                                                                                            |
-| `PresentationRpcInterface.getContentAndSize`                      | `PresentationRpcInterface.getPagedContent` and `getPagedContentSet`                                                                                            |
-| `PresentationRpcInterface.getDisplayLabelDefinitions`             | `PresentationRpcInterface.getPagedDisplayLabelDefinitions`                                                                                                     |
-| `PresentationRpcInterface.getDistinctValues`                      | `PresentationRpcInterface.getPagedDistinctValues`                                                                                                              |
-| `PresentationRpcInterface.getNodes`                               | `PresentationRpcInterface.getPagedNodes`                                                                                                                       |
-| `PresentationRpcInterface.getNodesAndCount`                       | `PresentationRpcInterface.getPagedNodes`                                                                                                                       |
-| `PresentationRpcInterface.loadHierarchy`                          | *eliminated*                                                                                                                                                   |
-| `PresentationUnitSystem`                                          | `UnitSystemKey` in `@bentley/imodeljs-quantity`                                                                                                                |
-| `PropertiesFieldDescriptor.propertyClass`                         | `PropertiesFieldDescriptor.properties.class`                                                                                                                   |
-| `PropertiesFieldDescriptor.propertyName`                          | `PropertiesFieldDescriptor.properties.name`                                                                                                                    |
-| `Property.relatedClassPath`                                       | `NestedContentField.pathToPrimaryClass`                                                                                                                        |
-| `PropertyJSON.relatedClassPath`                                   | `NestedContentFieldJSON.pathToPrimaryClass`                                                                                                                    |
-| `RelatedInstanceNodesSpecification.relatedClasses`                | `RelatedInstanceNodesSpecification.relationshipPaths.targetClass`                                                                                              |
-| `RelatedInstanceNodesSpecification.relationships`                 | `RelatedInstanceNodesSpecification.relationshipPaths.relationship`                                                                                             |
-| `RelatedInstanceNodesSpecification.requiredDirection`             | `RelatedInstanceNodesSpecification.relationshipPaths.direction`                                                                                                |
-| `RelatedInstanceNodesSpecification.skipRelatedLevel`              | *eliminated*                                                                                                                                                   |
-| `RelatedInstanceNodesSpecification.supportedSchemas`              | *eliminated*                                                                                                                                                   |
-| `RelatedInstanceSpecification.class`                              | `RelatedInstanceSpecification.relationshipPath.targetClass`                                                                                                    |
-| `RelatedInstanceSpecification.relationship`                       | `RelatedInstanceSpecification.relationshipPath.relationship`                                                                                                   |
-| `RelatedInstanceSpecification.requiredDirection`                  | `RelatedInstanceSpecification.relationshipPath.direction`                                                                                                      |
-| `RelatedPropertiesSpecification.isPolymorphic`                    | `RelatedPropertiesSpecification.handleTargetClassPolymorphically`                                                                                              |
-| `RelatedPropertiesSpecification.propertyNames`                    | `RelatedPropertiesSpecification.properties`                                                                                                                    |
-| `RelatedPropertiesSpecification.relatedClasses`                   | `RelatedPropertiesSpecification.propertiesSource.targetClass`                                                                                                  |
-| `RelatedPropertiesSpecification.relationships`                    | `RelatedPropertiesSpecification.propertiesSource.relationship`                                                                                                 |
-| `RelatedPropertiesSpecification.requiredDirection`                | `RelatedPropertiesSpecification.propertiesSource.direction`                                                                                                    |
-| `Ruleset.supportedSchemas`                                        | `Ruleset.requiredSchemas`                                                                                                                                      |
-| `RequestPriority`                                                 | *eliminated*                                                                                                                                                   |
-| `RequestOptions<TIModel>.priority`                                | *eliminated*                                                                                                                                                   |
-| `SelectClassInfo.pathToPrimaryClass`                              | `SelectClassInfo.pathFromInputToSelectClass`                                                                                                                   |
-| `SelectClassInfo.relatedInstanceClasses`                          | `SelectClassInfo.relatedInstancePaths`                                                                                                                         |
-| `SelectClassInfoJSON.pathToPrimaryClass`                          | `SelectClassInfoJSON.pathFromInputToSelectClass`                                                                                                               |
-| `SelectClassInfoJSON.relatedInstanceClasses`                      | `SelectClassInfoJSON.relatedInstancePaths`                                                                                                                     |
+| Removed                                                         | Replacement                                                                                                                                                    |
+| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CompressedDescriptorJSON`                                      | `DescriptorJSON`                                                                                                                                               |
+| `ContentInstancesOfSpecificClassesSpecification.arePolymorphic` | `ContentInstancesOfSpecificClassesSpecification.handleInstancesPolymorphically`                                                                                |
+| `ContentModifiersList.propertiesDisplay`                        | `ContentModifiersList.propertyOverrides`                                                                                                                       |
+| `ContentModifiersList.propertyEditors`                          | `ContentModifiersList.propertyOverrides`                                                                                                                       |
+| `ContentRelatedInstancesSpecification.isRecursive`              | _eliminated_                                                                                                                                                   |
+| `ContentRelatedInstancesSpecification.relatedClasses`           | `ContentRelatedInstancesSpecification.relationshipPaths.targetClass`                                                                                           |
+| `ContentRelatedInstancesSpecification.relationships`            | `ContentRelatedInstancesSpecification.relationshipPaths.relationship`                                                                                          |
+| `ContentRelatedInstancesSpecification.requiredDirection`        | `ContentRelatedInstancesSpecification.relationshipPaths.direction`                                                                                             |
+| `ContentRelatedInstancesSpecification.skipRelatedLevel`         | _eliminated_                                                                                                                                                   |
+| `Descriptor.toCompressedJSON`                                   | `Descriptor.toJSON`                                                                                                                                            |
+| `DescriptorOverrides.hiddenFieldNames`                          | `DescriptorOverrides.fieldsSelector`                                                                                                                           |
+| `DescriptorOverrides.sortDirection`                             | `DescriptorOverrides.sorting.direction`                                                                                                                        |
+| `DescriptorOverrides.sortingFieldName`                          | `DescriptorOverrides.sorting.field`                                                                                                                            |
+| `ECPropertyGroupingNodeKey.groupingValue`                       | `ECPropertyGroupingNodeKey.groupingValues`                                                                                                                     |
+| `ExtendedContentRequestOptions`                                 | `ContentRequestOptions`                                                                                                                                        |
+| `ExtendedContentRpcRequestOptions`                              | `ContentRpcRequestOptions`                                                                                                                                     |
+| `ExtendedHierarchyRequestOptions`                               | `HierarchyRequestOptions`                                                                                                                                      |
+| `ExtendedHierarchyRpcRequestOptions`                            | `HierarchyRpcRequestOptions`                                                                                                                                   |
+| `Field.fromJSON`                                                | `Field.fromCompressedJSON`                                                                                                                                     |
+| `HierarchyCompareRpcOptions`                                    | _eliminated_                                                                                                                                                   |
+| `LabelRequestOptions`                                           | `DisplayLabelRequestOptions`                                                                                                                                   |
+| `LabelRpcRequestOptions`                                        | `DisplayLabelRpcRequestOptions`                                                                                                                                |
+| `LoggingNamespaces`                                             | `PresentationBackendLoggerCategory`, `PresentationBackendNativeLoggerCategory`, `PresentationFrontendLoggerCategory` or `PresentationComponentsLoggerCategory` |
+| `NodeDeletionInfo.target`                                       | `NodeDeletionInfo.parent` and `NodeDeletionInfo.position`                                                                                                      |
+| `NodeDeletionInfoJSON.target`                                   | `NodeDeletionInfoJSON.parent` and `NodeDeletionInfoJSON.position`                                                                                              |
+| `PresentationDataCompareOptions`                                | _eliminated_                                                                                                                                                   |
+| `PresentationRpcInterface.compareHierarchies`                   | _eliminated_                                                                                                                                                   |
+| `PresentationRpcInterface.compareHierarchiesPaged`              | _eliminated_                                                                                                                                                   |
+| `PresentationRpcInterface.getContent`                           | `PresentationRpcInterface.getPagedContent` and `getPagedContentSet`                                                                                            |
+| `PresentationRpcInterface.getContentAndSize`                    | `PresentationRpcInterface.getPagedContent` and `getPagedContentSet`                                                                                            |
+| `PresentationRpcInterface.getDisplayLabelDefinitions`           | `PresentationRpcInterface.getPagedDisplayLabelDefinitions`                                                                                                     |
+| `PresentationRpcInterface.getDistinctValues`                    | `PresentationRpcInterface.getPagedDistinctValues`                                                                                                              |
+| `PresentationRpcInterface.getNodes`                             | `PresentationRpcInterface.getPagedNodes`                                                                                                                       |
+| `PresentationRpcInterface.getNodesAndCount`                     | `PresentationRpcInterface.getPagedNodes`                                                                                                                       |
+| `PresentationRpcInterface.loadHierarchy`                        | _eliminated_                                                                                                                                                   |
+| `PresentationUnitSystem`                                        | `UnitSystemKey` in `@bentley/imodeljs-quantity`                                                                                                                |
+| `PropertiesFieldDescriptor.propertyClass`                       | `PropertiesFieldDescriptor.properties.class`                                                                                                                   |
+| `PropertiesFieldDescriptor.propertyName`                        | `PropertiesFieldDescriptor.properties.name`                                                                                                                    |
+| `Property.relatedClassPath`                                     | `NestedContentField.pathToPrimaryClass`                                                                                                                        |
+| `PropertyJSON.relatedClassPath`                                 | `NestedContentFieldJSON.pathToPrimaryClass`                                                                                                                    |
+| `RelatedInstanceNodesSpecification.relatedClasses`              | `RelatedInstanceNodesSpecification.relationshipPaths.targetClass`                                                                                              |
+| `RelatedInstanceNodesSpecification.relationships`               | `RelatedInstanceNodesSpecification.relationshipPaths.relationship`                                                                                             |
+| `RelatedInstanceNodesSpecification.requiredDirection`           | `RelatedInstanceNodesSpecification.relationshipPaths.direction`                                                                                                |
+| `RelatedInstanceNodesSpecification.skipRelatedLevel`            | _eliminated_                                                                                                                                                   |
+| `RelatedInstanceNodesSpecification.supportedSchemas`            | _eliminated_                                                                                                                                                   |
+| `RelatedInstanceSpecification.class`                            | `RelatedInstanceSpecification.relationshipPath.targetClass`                                                                                                    |
+| `RelatedInstanceSpecification.relationship`                     | `RelatedInstanceSpecification.relationshipPath.relationship`                                                                                                   |
+| `RelatedInstanceSpecification.requiredDirection`                | `RelatedInstanceSpecification.relationshipPath.direction`                                                                                                      |
+| `RelatedPropertiesSpecification.isPolymorphic`                  | `RelatedPropertiesSpecification.handleTargetClassPolymorphically`                                                                                              |
+| `RelatedPropertiesSpecification.propertyNames`                  | `RelatedPropertiesSpecification.properties`                                                                                                                    |
+| `RelatedPropertiesSpecification.relatedClasses`                 | `RelatedPropertiesSpecification.propertiesSource.targetClass`                                                                                                  |
+| `RelatedPropertiesSpecification.relationships`                  | `RelatedPropertiesSpecification.propertiesSource.relationship`                                                                                                 |
+| `RelatedPropertiesSpecification.requiredDirection`              | `RelatedPropertiesSpecification.propertiesSource.direction`                                                                                                    |
+| `Ruleset.supportedSchemas`                                      | `Ruleset.requiredSchemas`                                                                                                                                      |
+| `RequestPriority`                                               | _eliminated_                                                                                                                                                   |
+| `RequestOptions<TIModel>.priority`                              | _eliminated_                                                                                                                                                   |
+| `SelectClassInfo.pathToPrimaryClass`                            | `SelectClassInfo.pathFromInputToSelectClass`                                                                                                                   |
+| `SelectClassInfo.relatedInstanceClasses`                        | `SelectClassInfo.relatedInstancePaths`                                                                                                                         |
+| `SelectClassInfoJSON.pathToPrimaryClass`                        | `SelectClassInfoJSON.pathFromInputToSelectClass`                                                                                                               |
+| `SelectClassInfoJSON.relatedInstanceClasses`                    | `SelectClassInfoJSON.relatedInstancePaths`                                                                                                                     |
 
 ### @itwin/presentation-backend
 
@@ -733,23 +767,23 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `PresentationManager.getContentAndSize`       | `PresentationManager.getContent` and `getContentSetSize`                                                                  |
 | `PresentationManager.getDistinctValues`       | `PresentationManager.getPagedDistinctValues`                                                                              |
 | `PresentationManager.getNodesAndCount`        | `PresentationManager.getNodes` and `getNodesCount`                                                                        |
-| `PresentationManager.loadHierarchy`           | *eliminated*                                                                                                              |
+| `PresentationManager.loadHierarchy`           | _eliminated_                                                                                                              |
 | `PresentationManagerProps.activeLocale`       | `PresentationManagerProps.defaultLocale`                                                                                  |
 | `PresentationManagerProps.activeUnitSystem`   | Renamed to `PresentationManagerProps.defaultUnitSystem` and changed type from `PresentationUnitSystem` to `UnitSystemKey` |
 | `PresentationManagerProps.cacheConfig`        | `PresentationManagerProps.caching.hierarchies`                                                                            |
 | `PresentationManagerProps.contentCacheSize`   | `PresentationManagerProps.caching.content.size`                                                                           |
 | `PresentationManagerProps.taskAllocationsMap` | `PresentationManagerProps.workerThreadsCount`                                                                             |
 | `UnitSystemFormat.unitSystems`                | Changed type from `PresentationUnitSystem[]` to `UnitSystemKey[]`                                                         |
-| `WithClientRequestContext<T>`                 | *eliminated*                                                                                                              |
+| `WithClientRequestContext<T>`                 | _eliminated_                                                                                                              |
 
 ### @itwin/presentation-frontend
 
 | Removed                                     | Replacement                                                   |
 | ------------------------------------------- | ------------------------------------------------------------- |
 | `PresentationManager.activeUnitSystem`      | Changed type from `PresentationUnitSystem` to `UnitSystemKey` |
-| `PresentationManager.compareHierarchies`    | *eliminated*                                                  |
+| `PresentationManager.compareHierarchies`    | _eliminated_                                                  |
 | `PresentationManager.getDistinctValues`     | `PresentationManager.getPagedDistinctValues`                  |
-| `PresentationManager.loadHierarchy`         | *eliminated*                                                  |
+| `PresentationManager.loadHierarchy`         | _eliminated_                                                  |
 | `PresentationManagerProps.activeUnitSystem` | Changed type from `PresentationUnitSystem` to `UnitSystemKey` |
 
 ### @itwin/presentation-components
@@ -758,17 +792,17 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | ------------------------------------------------------ | ----------------------------------------------- |
 | `ContentDataProvider.configureContentDescriptor`       | `ContentDataProvider.getDescriptorOverrides`    |
 | `ContentDataProvider.isFieldHidden`                    | `ContentDataProvider.getDescriptorOverrides`    |
-| `ContentDataProvider.shouldConfigureContentDescriptor` | *eliminated*                                    |
+| `ContentDataProvider.shouldConfigureContentDescriptor` | _eliminated_                                    |
 | `ContentDataProvider.shouldExcludeFromDescriptor`      | `ContentDataProvider.getDescriptorOverrides`    |
 | `ControlledTreeFilteringProps`                         | `ControlledPresentationTreeFilteringProps`      |
-| `DEPRECATED_controlledTreeWithFilteringSupport`        | *eliminated*                                    |
-| `DEPRECATED_controlledTreeWithVisibleNodes`            | *eliminated*                                    |
+| `DEPRECATED_controlledTreeWithFilteringSupport`        | _eliminated_                                    |
+| `DEPRECATED_controlledTreeWithVisibleNodes`            | _eliminated_                                    |
 | `DEPRECATED_treeWithFilteringSupport`                  | `useControlledPresentationTreeFiltering`        |
 | `DEPRECATED_treeWithUnifiedSelection`                  | `useUnifiedSelectionTreeEventHandler`           |
-| `FilteredPresentationTreeDataProvider.loadHierarchy`   | *eliminated*                                    |
-| `IPresentationTreeDataProvider.loadHierarchy`          | *eliminated*                                    |
-| `PresentationTreeDataProvider.loadHierarchy`           | *eliminated*                                    |
-| `PresentationTreeNodeLoaderProps.preloadingEnabled`    | *eliminated*                                    |
+| `FilteredPresentationTreeDataProvider.loadHierarchy`   | _eliminated_                                    |
+| `IPresentationTreeDataProvider.loadHierarchy`          | _eliminated_                                    |
+| `PresentationTreeDataProvider.loadHierarchy`           | _eliminated_                                    |
+| `PresentationTreeNodeLoaderProps.preloadingEnabled`    | _eliminated_                                    |
 | `propertyGridWithUnifiedSelection`                     | `usePropertyDataProviderWithUnifiedSelection`   |
 | `PropertyGridWithUnifiedSelectionProps`                | `PropertyDataProviderWithUnifiedSelectionProps` |
 | `TreeWithFilteringSupportProps`                        | `ControlledPresentationTreeFilteringProps`      |
@@ -777,8 +811,8 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @itwin/ecschema-metadata
 
-| Removed                                  | Replacement                                                  |
-| -----------------------------------------| ------------------------------------------------------------ |
+| Removed                                  | Replacement                                                |
+| ---------------------------------------- | ---------------------------------------------------------- |
 | `IDiagnostic`                            | `IDiagnostic` in @itwin/ecschema-editing                   |
 | `BaseDiagnostic`                         | `BaseDiagnostic` in @itwin/ecschema-editing                |
 | `DiagnosticType`                         | `DiagnosticType` in @itwin/ecschema-editing                |
@@ -800,9 +834,9 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `SchemaCompareDiagnostics`               | `SchemaCompareDiagnostics` in @itwin/ecschema-editing      |
 | `SchemaValidater`                        | `SchemaValidater` in @itwin/ecschema-editing               |
 | `SchemaValidationVisitor`                | `SchemaValidationVisitor` in @itwin/ecschema-editing       |
-| `RelationshipConstraint.deserialize`     | `RelationshipConstraint.fromJSON`                   |
-| `RelationshipConstraint.deserializeSync` | `RelationshipConstraint.fromJSONSync`               |
-| `RelationshipConstraint.toJson`          | `RelationshipConstraint.toJSON`                     |
+| `RelationshipConstraint.deserialize`     | `RelationshipConstraint.fromJSON`                          |
+| `RelationshipConstraint.deserializeSync` | `RelationshipConstraint.fromJSONSync`                      |
+| `RelationshipConstraint.toJson`          | `RelationshipConstraint.toJSON`                            |
 
 <!---
 User Interface Changes - section to comment below
@@ -821,16 +855,16 @@ For migration purposes, React 16 is included in the peerDependencies for the pac
 
 ### New options for defining Frontstages
 
-| Class/Component                                        | Description                                                                                        |
-| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------|
-| [StandardFrontstageProvider]($appui-react)            | Frontstage provider that provides an 'empty' stage that is to be populated via UiItemsProviders.   |
-| [StandardContentToolsProvider]($appui-react)          | UiItemsProvider that will add common tool entries to Tool Widget.                                  |
-| [StandardNavigationToolsProvider]($appui-react)       | UiItemsProvider that will add common view tool entries to Navigation Widget.                       |
-| [StandardStatusbarItemsProvider]($appui-react)        | UiItemsProvider that will add common statusbar items.                                              |
-| [ContentToolWidgetComposer]($appui-react)             | Provides an empty Tool Widget that is to be populate via UiItemsProviders.                         |
-| [ViewToolWidgetComposer]($appui-react)                | Provides an empty Navigation Widget that is to be populate via UiItemsProviders.                   |
-| [StandardContentLayouts]($appui-abstract)                 | Provides standard view layouts that can be used when defining a ContentGroup.                      |
-| [ContentGroupProvider]($appui-react)                  | Class that generates a ContentGroup at runtime when the frontstageDef is being constructed.        |
+| Class/Component                                 | Description                                                                                      |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| [StandardFrontstageProvider]($appui-react)      | Frontstage provider that provides an 'empty' stage that is to be populated via UiItemsProviders. |
+| [StandardContentToolsProvider]($appui-react)    | UiItemsProvider that will add common tool entries to Tool Widget.                                |
+| [StandardNavigationToolsProvider]($appui-react) | UiItemsProvider that will add common view tool entries to Navigation Widget.                     |
+| [StandardStatusbarItemsProvider]($appui-react)  | UiItemsProvider that will add common statusbar items.                                            |
+| [ContentToolWidgetComposer]($appui-react)       | Provides an empty Tool Widget that is to be populate via UiItemsProviders.                       |
+| [ViewToolWidgetComposer]($appui-react)          | Provides an empty Navigation Widget that is to be populate via UiItemsProviders.                 |
+| [StandardContentLayouts]($appui-abstract)       | Provides standard view layouts that can be used when defining a ContentGroup.                    |
+| [ContentGroupProvider]($appui-react)            | Class that generates a ContentGroup at runtime when the frontstageDef is being constructed.      |
 
 ### New Timeline Date Marker
 
@@ -923,45 +957,45 @@ Several UI components in the @itwin/ui-core-react and @itwin/ui-components-react
 Developers should use equivalent components in @itwin/itwinui-react instead.
 
 | Deprecated in @itwin/ui-core-react | Use from @itwin/itwinui-react instead          |
-| ------------------------------ | ---------------------------------------------- |
-| Button                         | Button                                         |
-| ButtonSize                     | `size` prop for itwinui-react Button           |
-| ButtonType                     | `styleType` prop for itwinui-react Button      |
-| Checkbox                       | Checkbox                                       |
-| ExpandableBlock                | ExpandableBlock                                |
-| Headline                       | Headline                                       |
-| HorizontalTabs                 | HorizontalTabs                                 |
-| Input                          | Input                                          |
-| LabeledInput                   | LabeledInput                                   |
-| LabeledSelect                  | LabeledSelect                                  |
-| LabeledTextarea                | LabeledTextarea                                |
-| LabeledToggle                  | ToggleSwitch with `labelPosition="right"` prop |
-| LeadingText                    | Leading                                        |
-| ProgressBar                    | ProgressLinear                                 |
-| ProgressSpinner                | ProgressRadial                                 |
-| Radio                          | Radio                                          |
-| Select                         | Select                                         |
-| SelectOption                   | SelectOption                                   |
-| Slider                         | Slider                                         |
-| SmallText                      | Small                                          |
-| Spinner                        | ProgressRadial with `indeterminate` prop       |
-| SpinnerSize                    | `size` prop in ProgressRadialProps             |
-| SplitButton                    | SplitButton                                    |
-| Subheading                     | Subheading                                     |
-| Textarea                       | Textarea                                       |
-| Tile                           | Tile                                           |
-| Title                          | Title                                          |
-| Toggle                         | ToggleSwitch                                   |
-| Tooltip                        | Tooltip                                        |
-| TooltipPlacement               | Placement                                      |
+| ---------------------------------- | ---------------------------------------------- |
+| Button                             | Button                                         |
+| ButtonSize                         | `size` prop for itwinui-react Button           |
+| ButtonType                         | `styleType` prop for itwinui-react Button      |
+| Checkbox                           | Checkbox                                       |
+| ExpandableBlock                    | ExpandableBlock                                |
+| Headline                           | Headline                                       |
+| HorizontalTabs                     | HorizontalTabs                                 |
+| Input                              | Input                                          |
+| LabeledInput                       | LabeledInput                                   |
+| LabeledSelect                      | LabeledSelect                                  |
+| LabeledTextarea                    | LabeledTextarea                                |
+| LabeledToggle                      | ToggleSwitch with `labelPosition="right"` prop |
+| LeadingText                        | Leading                                        |
+| ProgressBar                        | ProgressLinear                                 |
+| ProgressSpinner                    | ProgressRadial                                 |
+| Radio                              | Radio                                          |
+| Select                             | Select                                         |
+| SelectOption                       | SelectOption                                   |
+| Slider                             | Slider                                         |
+| SmallText                          | Small                                          |
+| Spinner                            | ProgressRadial with `indeterminate` prop       |
+| SpinnerSize                        | `size` prop in ProgressRadialProps             |
+| SplitButton                        | SplitButton                                    |
+| Subheading                         | Subheading                                     |
+| Textarea                           | Textarea                                       |
+| Tile                               | Tile                                           |
+| Title                              | Title                                          |
+| Toggle                             | ToggleSwitch                                   |
+| Tooltip                            | Tooltip                                        |
+| TooltipPlacement                   | Placement                                      |
 
 | Deprecated in @itwin/ui-components-react | Use from @itwin/itwinui-react instead |
-| ------------------------------------ | ------------------------------------- |
-| Breadcrumb                           | Breadcrumbs                           |
+| ---------------------------------------- | ------------------------------------- |
+| Breadcrumb                               | Breadcrumbs                           |
 
 #### Slider
 
-The deprecated [Slider]($ui-core-react) was a wrapper around the react-compound-slider that does not work properly in popout windows. To eliminate this issue, the deprecated `Slider`will now wrap the  `Slider` component from @itwin/itwinui-react. This result is a couple prop changes. The `onSlideStart` or `onSlideEnd` props are ignored, use `onUpdate` and `onChange` props if needed. The only two `modes` that remain supported are 1 and 2.
+The deprecated [Slider]($ui-core-react) was a wrapper around the react-compound-slider that does not work properly in popout windows. To eliminate this issue, the deprecated `Slider`will now wrap the `Slider` component from @itwin/itwinui-react. This result is a couple prop changes. The `onSlideStart` or `onSlideEnd` props are ignored, use `onUpdate` and `onChange` props if needed. The only two `modes` that remain supported are 1 and 2.
 
 ### Deprecated with alternatives elsewhere
 
@@ -969,11 +1003,11 @@ A few constructs were deprecated in @itwin/ui-core-react package.
 Some were copied to the @itwin/appui-abstract package.
 Some have replacements within the @itwin/ui-core-react package.
 
-| Deprecated                            | Replacement                                |
-| ------------------------------------- | ------------------------------------------ |
-| DialogButtonDef in @itwin/ui-core-react   | DialogButtonDef in @itwin/appui-abstract    |
-| DialogButtonStyle in @itwin/ui-core-react | DialogButtonStyle in @itwin/appui-abstract  |
-| DialogButtonType in @itwin/ui-core-react  | DialogButtonType in @itwin/appui-abstract   |
+| Deprecated                                | Replacement                                    |
+| ----------------------------------------- | ---------------------------------------------- |
+| DialogButtonDef in @itwin/ui-core-react   | DialogButtonDef in @itwin/appui-abstract       |
+| DialogButtonStyle in @itwin/ui-core-react | DialogButtonStyle in @itwin/appui-abstract     |
+| DialogButtonType in @itwin/ui-core-react  | DialogButtonType in @itwin/appui-abstract      |
 | LocalUiSettings in @itwin/ui-core-react   | LocalSettingsStorage in @itwin/ui-core-react   |
 | SessionUiSettings in @itwin/ui-core-react | SessionSettingsStorage in @itwin/ui-core-react |
 

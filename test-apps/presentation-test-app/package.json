@@ -57,7 +57,7 @@
     "semver": "^5.5.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@bentley/react-scripts": "4.0.3",
     "@types/bunyan": "^1.8.4",

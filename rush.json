@@ -35,7 +35,7 @@
   },
   "projects": [
     {
-      "packageName": "@bentley/build-tools",
+      "packageName": "@itwin/build-tools",
       "projectFolder": "tools/build",
       "reviewCategory": "tools",
       "shouldPublish": true,

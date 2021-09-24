@@ -32,7 +32,7 @@
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",
-    "@bentley/build-tools": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-common": "workspace:*",
@@ -106,7 +106,7 @@
     "react-dom": "^17.0.0"
   },
   "nyc": {
-    "extends": "./node_modules/@bentley/build-tools/.nycrc",
+    "extends": "./node_modules/@itwin/build-tools/.nycrc",
     "check-coverage": false
   },
   "eslintConfig": {
@@ -132,7 +132,7 @@
       "lib/test/coverage/**/*"
     ],
     "reporter": [
-      "node_modules/@bentley/build-tools/mocha-reporter"
+      "node_modules/@itwin/build-tools/mocha-reporter"
     ],
     "reporterOptions": [
       "mochaFile=lib/test/junit_results.xml"
