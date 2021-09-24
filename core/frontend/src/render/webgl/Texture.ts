@@ -348,6 +348,7 @@ export abstract class TextureHandle implements WebGLDisposable {
     if (!this.isDisposed) {
       System.instance.disposeTexture(this._glTexture!);
       this._glTexture = undefined;
+      this.bytesUsed = 0;
     }
   }
 

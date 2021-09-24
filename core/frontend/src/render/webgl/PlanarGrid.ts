@@ -30,7 +30,7 @@ class PlanarGridGeometryParams extends IndexedGeometryParams {
     super(positions, indices, numIndices);
     const attrParams = AttributeMap.findAttribute("a_uvParam", TechniqueId.PlanarGrid, false);
     assert(attrParams !== undefined);
-    this.buffers.addBuffer(uvParams, [BufferParameters.create(attrParams!.location, 2, GL.DataType.UnsignedShort, false, 0, 0, false)]);
+    this.buffers.addBuffer(uvParams, [BufferParameters.create(attrParams.location, 2, GL.DataType.UnsignedShort, false, 0, 0, false)]);
     this.uvParams = uvParams;
   }
 }

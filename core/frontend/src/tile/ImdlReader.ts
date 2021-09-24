@@ -496,7 +496,7 @@ export class ImdlReader extends GltfReader {
     if (!pattern)
       return undefined;
 
-    const branch = new GraphicBranch();
+    const branch = new GraphicBranch(true);
     for (const geom of geometry) {
       const graphic = this._system.createRenderGraphic(geom, pattern);
       if (graphic)

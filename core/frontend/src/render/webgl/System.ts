@@ -549,10 +549,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
   public override createAreaPattern(params: PatternGraphicParams): PatternBuffers | undefined {
-    // ###TODO? The "shared" flag on PatternBuffers is always true, because the buffers can be shared amongst any number of RenderGraphics
-    // Unless we can figure out how to track those references we'll have to rely on garbage collection to dispose of it, and
-    // we won't be able to accurately report GPU memory usage (we can either report none for patterns, or count each occurrence of each pattern).
-    return PatternBuffers.create(params, true);
+    return PatternBuffers.create(params);
   }
 
   public override createRenderGraphic(geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined {

@@ -3,6 +3,10 @@ publish: false
 ---
 # NextVersion
 
+## Update minimum requirements
+
+Support for Node 10 has been dropped. The new minimum Node version is 12.22.0. The recommended version is the latest LTS version of Node. Please visit our [Supported Platforms](../learning/supportedplatforms) documentation for a full breakdown of compatibility.
+
 ## Dependency Updates
 
 The following dependencies of iTwin.js have been updated;
@@ -436,6 +440,17 @@ It is no longer necessary to supply a [Viewport]($frontend) when creating a [Gra
 ## Changed return types
 
 The backend methods [IModelDb.saveFileProperty]($backend) and [IModelDb.deleteFileProperty]($backend) used to return a [DbResult]($core-bentley). They now are `void`, and throw an exception if an error occurred. The error value can be retrieved in the `errorNumber` member of the exception object, if desired.
+
+## Default minimum level of detail for spatial views
+
+[TileAdmin.Props.minimumSpatialTolerance]($frontend) specifies the minimum level of detail to produce for views of spatial models. Previously, the default was `undefined`, indicating no minimum. The default has been changed to 1 millimeter. This means that when zooming in extremely closely, geometry that contains details on the order of 1mm or smaller will not refine further. This prevents the display system from requesting extraordinarily detailed graphics, improving performance.
+
+To change the minimum, supply a different value at startup. For example, the following code sets the minimum to 1 centimeter:
+```ts
+await IModelApp.startup({
+  tileAdmin: { minimumSpatialTolerance: 0.01 },
+});
+```
 
 ## Signature change to backend Geocoordinate methods
 

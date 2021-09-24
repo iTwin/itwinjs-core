@@ -53,7 +53,7 @@ export class LoopbackWebServer {
       return;
 
     LoopbackWebServer._httpServer = Http.createServer(LoopbackWebServer.onBrowserRequest);
-    const urlParts: Url.UrlWithStringQuery = Url.parse(clientConfiguration.redirectUri ?? ElectronAuthorizationBackend.defaultRedirectUri);
+    const urlParts: URL = new URL(clientConfiguration.redirectUri ?? ElectronAuthorizationBackend.defaultRedirectUri);
     LoopbackWebServer._httpServer.listen(urlParts.port);
   }
 
@@ -76,8 +76,8 @@ export class LoopbackWebServer {
       return;
 
     // Parse the request URL to determine the authorization code, state and errors if any
-    const urlParts: Url.UrlWithStringQuery = Url.parse(httpRequest.url);
-    const searchParams = new Url.URLSearchParams(urlParts.query || "");
+    const urlParts: URL = new URL(httpRequest.url);
+    const searchParams = new Url.URLSearchParams(urlParts.search || "");
 
     const state = searchParams.get("state") || undefined;
     const code = searchParams.get("code");

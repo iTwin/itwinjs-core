@@ -78,7 +78,7 @@ export class ImportIMJS {
     this._viewFlags = new ViewFlags({ renderMode: RenderMode.SmoothShade, lighting: true });
   }
   public static create(databasePath: string, rootSubject: string): ImportIMJS | undefined {
-    fs.unlink(databasePath, (_err: NodeJS.ErrnoException) => { });
+    fs.unlink(databasePath, (_err) => { });
     const db = SnapshotDb.createEmpty(databasePath, { rootSubject: { name: rootSubject } });
     if (db)
       return new ImportIMJS(db);

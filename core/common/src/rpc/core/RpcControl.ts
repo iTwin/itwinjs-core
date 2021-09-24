@@ -105,8 +105,8 @@ export class RpcControlChannel {
     this._configuration.interfaces().forEach((definition) => interfaces.push(`${definition.interfaceName}@${definition.interfaceVersion}`));
     const id = interfaces.sort().join(",");
 
-    if (typeof (btoa) !== "undefined")
-      return btoa(id);
+    if (typeof (btoa) !== "undefined") // eslint-disable-line deprecation/deprecation
+      return btoa(id); // eslint-disable-line deprecation/deprecation
     else if (typeof (Buffer) !== "undefined")
       return Buffer.from(id, "binary").toString("base64");
     else

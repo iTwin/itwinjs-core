@@ -40,7 +40,7 @@ export class Primitive extends Graphic {
       } else {
         assert(isInstancedGraphicParams(instances));
         const range = InstanceBuffers.computeRange(geom.computeRange(), instances.transforms, instances.transformCenter);
-        const instanceBuffers = InstanceBuffers.create(instances, false, range);
+        const instanceBuffers = InstanceBuffers.create(instances, range);
         if (!instanceBuffers)
           return undefined;
 
@@ -58,9 +58,9 @@ export class Primitive extends Graphic {
     if (instances) {
       assert(geom instanceof LUTGeometry, "Invalid geometry type for instancing");
       if (instances instanceof InstanceBuffers)
-        geom = InstancedGeometry.create(geom, true, instances);
+        geom = InstancedGeometry.create(geom, false, instances);
       else
-        geom = InstancedGeometry.createPattern(geom, true, instances);
+        geom = InstancedGeometry.createPattern(geom, false, instances);
     }
 
     return new this(geom);

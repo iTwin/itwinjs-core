@@ -47,9 +47,11 @@ class InitializeInterface extends RpcInterface {
  * @public
  */
 export interface HttpServerRequest extends Readable {
+  aborted: boolean;
   httpVersion: string;
   httpVersionMajor: number;
   httpVersionMinor: number;
+  complete: boolean;
   connection: any;
   headers: { [header: string]: string | string[] | undefined };
   rawHeaders: string[];

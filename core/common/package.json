@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-common",
-  "version": "3.0.0-dev.65",
+  "version": "3.0.0-dev.66",
   "description": "iTwin.js components common to frontend and backend",
   "main": "lib/core-common.js",
   "typings": "lib/core-common",
@@ -37,10 +37,10 @@
     "semver": "^5.5.0"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.65",
-    "@itwin/core-geometry": "workspace:^3.0.0-dev.65",
-    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.65",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.65"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.66",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.66",
+    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.66",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.66"
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",
@@ -52,7 +52,7 @@
     "@types/chai": "^4.1.4",
     "@types/flatbuffers": "~1.10.0",
     "@types/mocha": "^8.2.2",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "@types/semver": "^5.5.0",
     "chai": "^4.1.2",
     "eslint": "^7.11.0",

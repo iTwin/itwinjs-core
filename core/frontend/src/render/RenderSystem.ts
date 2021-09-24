@@ -337,7 +337,7 @@ export abstract class RenderSystem implements IDisposable {
   /** Create a RenderGraphic from a RenderGeometry produced by this RenderSystem.
    * @internal
    */
-  public abstract createRenderGraphic(_geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern, instancesOwnGeometry?: boolean): RenderGraphic | undefined;
+  public abstract createRenderGraphic(_geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined;
 
   private createGraphicFromGeometry(
     createGeometry: (viewIndependentOrigin?: Point3d) => RenderGeometry | undefined,
@@ -350,7 +350,7 @@ export abstract class RenderSystem implements IDisposable {
       instances = instancesOrOrigin;
 
     const geom = createGeometry(viOrigin);
-    return geom ? this.createRenderGraphic(geom, instances, true) : undefined;
+    return geom ? this.createRenderGraphic(geom, instances) : undefined;
   }
 
   /** @internal */

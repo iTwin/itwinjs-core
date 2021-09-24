@@ -25,7 +25,6 @@ export function isInstancedGraphicParams(params: any): params is InstancedGraphi
 }
 
 class InstanceData {
-  public readonly shared: boolean;
   public readonly numInstances: number;
   public readonly range: Range3d;
   // A transform including only rtcCenter.
@@ -35,9 +34,8 @@ class InstanceData {
   // The model matrix from which _rtcModelTransform was previously computed. If it changes, _rtcModelTransform must be recomputed.
   private readonly _modelMatrix = Transform.createIdentity();
 
-  protected constructor(numInstances: number, shared: boolean, rtcCenter: Point3d, range: Range3d) {
+  protected constructor(numInstances: number, rtcCenter: Point3d, range: Range3d) {
     this.numInstances = numInstances;
-    this.shared = shared;
     this.range = range;
     this._rtcOnlyTransform = Transform.createTranslation(rtcCenter);
     this._rtcModelTransform = this._rtcOnlyTransform.clone();
@@ -82,8 +80,8 @@ export class InstanceBuffers extends InstanceData {
   public readonly patternTransforms = undefined;
   public readonly viewIndependentOrigin = undefined;
 
-  private constructor(shared: boolean, count: number, transforms: BufferHandle, rtcCenter: Point3d, range: Range3d, symbology?: BufferHandle, featureIds?: BufferHandle) {
-    super(count, shared, rtcCenter, range);
+  private constructor(count: number, transforms: BufferHandle, rtcCenter: Point3d, range: Range3d, symbology?: BufferHandle, featureIds?: BufferHandle) {
+    super(count, rtcCenter, range);
     this.transforms = transforms;
     this.featureIds = featureIds;
     this.hasFeatures = undefined !== featureIds;
@@ -118,7 +116,7 @@ export class InstanceBuffers extends InstanceData {
     return params;
   }
 
-  public static create(params: InstancedGraphicParams, shared: boolean, range: Range3d): InstanceBuffers | undefined {
+  public static create(params: InstancedGraphicParams, range: Range3d): InstanceBuffers | undefined {
     const { count, featureIds, symbologyOverrides, transforms } = params;
 
     assert(count > 0 && Math.floor(count) === count);
@@ -135,7 +133,7 @@ export class InstanceBuffers extends InstanceData {
       return undefined;
 
     const tfBuf = BufferHandle.createArrayBuffer(transforms);
-    return undefined !== tfBuf ? new InstanceBuffers(shared, count, tfBuf, params.transformCenter, range, symBuf, idBuf) : undefined;
+    return undefined !== tfBuf ? new InstanceBuffers(count, tfBuf, params.transformCenter, range, symBuf, idBuf) : undefined;
   }
 
   public get isDisposed(): boolean {
@@ -194,7 +192,6 @@ export class PatternBuffers extends InstanceData {
 
   private constructor(
     count: number,
-    shared: boolean,
     rtcCenter: Point3d,
     range: Range3d,
     public readonly patternParams: Float32Array, // [ isAreaPattern, spacingX, spacingY, scale ]
@@ -206,7 +203,7 @@ export class PatternBuffers extends InstanceData {
     featureId: number | undefined,
     public readonly viewIndependentOrigin: Point3d | undefined
   ) {
-    super(count, shared, rtcCenter, range);
+    super(count, rtcCenter, range);
     this.patternTransforms = this;
     if (undefined !== featureId) {
       this._featureId = new Float32Array([
@@ -217,7 +214,7 @@ export class PatternBuffers extends InstanceData {
     }
   }
 
-  public static create(params: PatternGraphicParams, shared: boolean): PatternBuffers | undefined {
+  public static create(params: PatternGraphicParams): PatternBuffers | undefined {
     const count = params.xyOffsets.byteLength / 2;
     assert(Math.floor(count) === count);
 
@@ -227,7 +224,6 @@ export class PatternBuffers extends InstanceData {
 
     return new PatternBuffers(
       count,
-      shared,
       new Point3d(),
       params.range,
       new Float32Array([1, params.spacing.x, params.spacing.y, params.scale]),
@@ -269,7 +265,7 @@ export class InstancedGeometry extends CachedGeometry {
   private readonly _buffersContainer: BuffersContainer;
   private readonly _buffers: InstanceBuffers | PatternBuffers;
   private readonly _repr: LUTGeometry;
-  private readonly _ownsRepr: boolean;
+  private readonly _ownsBuffers: boolean;
 
   public getRtcModelTransform(modelMatrix: Transform) { return this._buffers.getRtcModelTransform(modelMatrix); }
   public getRtcOnlyTransform() { return this._buffers.getRtcOnlyTransform(); }
@@ -302,7 +298,7 @@ export class InstancedGeometry extends CachedGeometry {
   public override getLineWeight(params: ShaderProgramParams) { return this._repr.getLineWeight(params); }
   public override wantMonochrome(target: Target) { return this._repr.wantMonochrome(target); }
 
-  public static create(repr: LUTGeometry, ownsRepr: boolean, buffers: InstanceBuffers): InstancedGeometry {
+  public static create(repr: LUTGeometry, ownsBuffers: boolean, buffers: InstanceBuffers): InstancedGeometry {
     const techId = repr.techniqueId;
     const container = BuffersContainer.create();
     container.appendLinkages(repr.lutBuffers.linkages);
@@ -325,10 +321,10 @@ export class InstancedGeometry extends CachedGeometry {
       container.addBuffer(buffers.featureIds, [BufferParameters.create(attrFeatureId.location, 3, GL.DataType.UnsignedByte, false, 0, 0, true)]);
     }
 
-    return new this(repr, ownsRepr, buffers, container);
+    return new this(repr, ownsBuffers, buffers, container);
   }
 
-  public static createPattern(repr: LUTGeometry, ownsRepr: boolean, buffers: PatternBuffers): InstancedGeometry {
+  public static createPattern(repr: LUTGeometry, ownsBuffers: boolean, buffers: PatternBuffers): InstancedGeometry {
     const techId = repr.techniqueId;
     const container = BuffersContainer.create();
     container.appendLinkages(repr.lutBuffers.linkages);
@@ -341,28 +337,28 @@ export class InstancedGeometry extends CachedGeometry {
       BufferParameters.create(attrY.location, 1, GL.DataType.Float, false, 8, 4, true),
     ]);
 
-    return new this(repr, ownsRepr, buffers, container);
+    return new this(repr, ownsBuffers, buffers, container);
   }
 
-  private constructor(repr: LUTGeometry, ownsRepr: boolean, buffers: InstanceBuffers | PatternBuffers, container: BuffersContainer) {
+  private constructor(repr: LUTGeometry, ownsBuffers: boolean, buffers: InstanceBuffers | PatternBuffers, container: BuffersContainer) {
     super();
     this._repr = repr;
-    this._ownsRepr = ownsRepr;
+    this._ownsBuffers = ownsBuffers;
     this._buffers = buffers;
     this._buffersContainer = container;
   }
 
   public get isDisposed(): boolean {
-    let isReprDisposed = true;
-    if (this._ownsRepr)
-      isReprDisposed = this._repr.isDisposed;
-    return this._buffers.isDisposed && isReprDisposed;
+    if (!this._repr.isDisposed)
+      return false;
+
+    return !this._ownsBuffers || this._buffers.isDisposed;
   }
 
   public dispose() {
-    dispose(this._buffers);
-    if (this._ownsRepr)
-      this._repr.dispose();
+    this._repr.dispose();
+    if (this._ownsBuffers)
+      dispose(this._buffers);
   }
 
   protected _wantWoWReversal(_target: Target) {
@@ -380,7 +376,7 @@ export class InstancedGeometry extends CachedGeometry {
 
   public collectStatistics(stats: RenderMemory.Statistics) {
     this._repr.collectStatistics(stats);
-    if (!this._buffers.shared)
+    if (this._ownsBuffers)
       this._buffers.collectStatistics(stats);
   }
 
