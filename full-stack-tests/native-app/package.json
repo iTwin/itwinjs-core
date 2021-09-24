@@ -46,7 +46,7 @@
     "@types/chai": "^4.1.4",
     "@types/fs-extra": "^4.0.7",
     "@types/mocha": "^8.2.2",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "chai": "^4.1.2",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",

@@ -583,14 +583,6 @@ describe("PresentationManager", () => {
       expect(manager.getRulesetId(ruleset)).to.contain(ruleset.id);
     });
 
-    it("returns correct id when input is a ruleset and in one-backend-one-frontend mode", async () => {
-      sinon.stub(IpcHost, "isValid").get(() => true);
-      sinon.stub(IpcHost, "handle");
-      manager = new PresentationManager({ addon: moq.Mock.ofType<NativePlatformDefinition>().object });
-      const ruleset = await createRandomRuleset();
-      expect(manager.getRulesetId(ruleset)).to.eq(ruleset.id);
-    });
-
   });
 
   describe("handling options", () => {

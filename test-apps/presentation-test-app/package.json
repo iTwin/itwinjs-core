@@ -8,7 +8,7 @@
   },
   "version": "0.0.0",
   "engines": {
-    "node": ">=10.17.0 <15.0"
+    "node": ">=12.22.0 < 14.0 || >=14.17.0 <17.0"
   },
   "private": true,
   "scripts": {
@@ -22,7 +22,7 @@
     "extract": "betools extract --fileExt=ts,tsx --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "lint": "eslint -f visualstudio --config package.json --no-eslintrc \"./src/**/*.{ts,tsx}\" 1>&2",
     "electron": "run-p start:webserver start:electron",
-    "start:electron": "electron ./lib/backend/main.js",
+    "start:electron": "cross-env NODE_ENV=development electron ./lib/backend/main.js",
     "start:webserver": "cross-env DISABLE_NEW_JSX_TRANSFORM=true SKIP_PREFLIGHT_CHECK=true DISABLE_NEW_ASSET_COPY=true BROWSER=none USE_FULL_SOURCEMAP=true DISABLE_ESLINT=true TRANSPILE_DEPS=false USE_FAST_SASS=true react-scripts start",
     "start:backend": "node --inspect --max-http-header-size=16000 lib/backend/main.js",
     "start:servers": "run-p start:webserver start:backend",

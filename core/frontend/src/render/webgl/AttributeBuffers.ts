@@ -372,6 +372,7 @@ export class BufferHandle implements WebGLDisposable {
     if (!this.isDisposed) {
       System.instance.context.deleteBuffer(this._glBuffer!);
       this._glBuffer = undefined;
+      this._bytesUsed = 0;
     }
   }
 

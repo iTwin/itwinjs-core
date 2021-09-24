@@ -11,7 +11,6 @@ import * as https from "https";
 import * as os from "os";
 import * as path from "path";
 import { Transform, TransformCallback } from "stream";
-import * as urllib from "url";
 import { Logger } from "@bentley/bentleyjs-core";
 import { ArgumentCheck } from "@bentley/imodelhub-client";
 import {
@@ -208,12 +207,12 @@ export class AzureFileHandler implements FileHandler {
    * @param url input url that will be strip of search and query parameters and replace them by ... for security reason
    */
   private static getSafeUrlForLogging(url: string): string {
-    const safeToLogDownloadUrl = urllib.parse(url);
+    const safeToLogDownloadUrl = new URL(url);
     if (safeToLogDownloadUrl.search && safeToLogDownloadUrl.search.length > 0)
       safeToLogDownloadUrl.search = "...";
     if (safeToLogDownloadUrl.hash && safeToLogDownloadUrl.hash.length > 0)
       safeToLogDownloadUrl.hash = "...";
-    return urllib.format(safeToLogDownloadUrl);
+    return safeToLogDownloadUrl.toString();
   }
 
   /**
