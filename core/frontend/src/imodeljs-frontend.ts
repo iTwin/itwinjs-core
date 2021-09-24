@@ -23,7 +23,6 @@ export * from "./EntityState";
 export * from "./FeatureOverrideProvider";
 export * from "./FlashSettings";
 export * from "./FrontendLoggerCategory";
-export * from "./FrontendRequestContext";
 export * from "./FrontendHubAccess";
 export * from "./Frustum2d";
 export * from "./FrustumAnimator";

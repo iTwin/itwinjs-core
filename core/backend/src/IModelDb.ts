@@ -8,6 +8,8 @@
 
 import { join } from "path";
 import {
+  AccessToken,
+  AuthorizedRpcActivity,
   BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger,
   OpenMode,
 } from "@bentley/bentleyjs-core";
@@ -25,7 +27,6 @@ import {
   ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager, PullChangesArgs, PushChangesArgs } from "./BriefcaseManager";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
@@ -281,7 +282,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal */
-  public async reattachDaemon(_user: AuthorizedClientRequestContext): Promise<void> { }
+  public async reattachDaemon(_user: AccessToken): Promise<void> { }
 
   /** Event called when the iModel is about to be closed. */
   public readonly onBeforeClose = new BeEvent<() => void>();
@@ -2157,14 +2158,14 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
  */
 export interface UserArg {
   /** If present, the user's access token for the requested operation. If not present, use [[IModelHost.getAccessToken]] */
-  readonly user?: AuthorizedClientRequestContext;
+  readonly user?: AccessToken;
 }
 
 /**
  * Arguments to open a BriefcaseDb
  * @public
  */
-export type OpenBriefcaseArgs = OpenBriefcaseProps & UserArg;
+export type OpenBriefcaseArgs = OpenBriefcaseProps & { rpcActivity?: AuthorizedRpcActivity };
 
 /**
  * A local copy of an iModel from iModelHub that can pull and potentially push changesets.
@@ -2282,7 +2283,7 @@ export class BriefcaseDb extends IModelDb {
     const nativeDb = this.openDgnDb(file, openMode);
     const briefcaseDb = new BriefcaseDb({ nativeDb, key: file.key ?? Guid.createValue(), openMode, briefcaseId: nativeDb.getBriefcaseId() });
 
-    BriefcaseManager.logUsage(args.user, briefcaseDb);
+    BriefcaseManager.logUsage(briefcaseDb);
     this.onOpened.raiseEvent(briefcaseDb, args);
     return briefcaseDb;
   }
@@ -2471,7 +2472,7 @@ export class SnapshotDb extends IModelDb {
    * @throws [[IModelError]] If the db is not a checkpoint.
    * @internal
    */
-  public override async reattachDaemon(user?: AuthorizedClientRequestContext): Promise<void> {
+  public override async reattachDaemon(user: AccessToken): Promise<void> {
     if (undefined !== this._reattachDueTimestamp && this._reattachDueTimestamp <= Date.now()) {
       const { expiryTimestamp } = await V2CheckpointManager.attach({ user, iTwinId: this.iTwinId!, iModelId: this.iModelId, changeset: this.changeset });
       this.setReattachDueTimestamp(expiryTimestamp);

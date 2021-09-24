@@ -5,21 +5,22 @@
 
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
 import { ContextManagerClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 import { getIModelHubClient } from "./TestUtils";
 import { TestIModelHubOidcAuthorizationClient } from "../TestIModelHubOidcAuthorizationClient";
+import { AccessToken } from "@bentley/bentleyjs-core";
 
 /** An implementation of IModelProjectAbstraction backed by a iModelHub/iTwin project */
 class TestContextManagerClient implements ContextManagerClient {
-  public async getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
+  public async getITwinByName(accessToken: AccessToken, name: string): Promise<ITwin> {
     const client = new ITwinAccessClient();
-    const iTwinList: ITwin[] = await client.getAll(requestContext, {
+    const iTwinList: ITwin[] = await client.getAll(accessToken, {
       search: {
         searchString: name,
         propertyName: ITwinSearchableProperty.Name,
         exactMatch: true,
-      }});
+      }
+    });
 
     if (iTwinList.length === 0)
       throw new Error(`ITwin ${name} was not found for the user.`);

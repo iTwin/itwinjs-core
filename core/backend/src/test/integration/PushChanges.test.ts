@@ -2,14 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext, GuidString, Id64String } from "@bentley/bentleyjs-core";
+import { AccessToken, GuidString, Id64String } from "@bentley/bentleyjs-core";
 import { Box, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
   Code, ColorDef, GeometryParams, GeometryPartProps,
   GeometryStreamBuilder, GeometryStreamProps, IModel, PhysicalElementProps, SubCategoryAppearance,
 } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext} from "@bentley/itwin-client";
-import { assert } from "chai";
 import { IModelHost } from "../../IModelHost";
 import { BriefcaseDb, BriefcaseManager, DefinitionModel, GeometryPart, IModelDb, PhysicalModel, PhysicalObject, RenderMaterialElement, SpatialCategory, SubCategory, Subject } from "../../imodeljs-backend";
 import { HubMock } from "../HubMock";
@@ -78,17 +76,17 @@ class TestIModelWriter {
 
 describe("PushChangesTest (#integration)", () => {
   let iTwinId: GuidString;
-  let user: AuthorizedClientRequestContext;
+  let user: AccessToken;
 
   before(async () => {
     // IModelTestUtils.setupDebugLogLevels();
     HubMock.startup("PushChangesTest");
 
-    user = await IModelTestUtils.getUserContext(TestUserType.Manager);
+    user = await IModelTestUtils.getAccessToken(TestUserType.Manager);
     iTwinId = await HubUtility.getTestITwinId(user);
 
     IModelHost.authorizationClient = {
-      getAccessToken: async (_requestContext?: ClientRequestContext) => user.accessToken,
+      getAccessToken: async () => user,
     };
   });
 
@@ -103,7 +101,7 @@ describe("PushChangesTest (#integration)", () => {
     const briefcaseProps = await BriefcaseManager.downloadBriefcase({ user, iTwinId, iModelId });
     let iModel: BriefcaseDb | undefined;
     try {
-      iModel = await BriefcaseDb.open({ user, fileName: briefcaseProps.fileName });
+      iModel = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
 
       // Initialize project extents
       const projectExtents = new Range3d(-1000, -1000, -1000, 1000, 1000, 1000);
@@ -125,16 +123,10 @@ describe("PushChangesTest (#integration)", () => {
 
       iModel.saveChanges();
 
-      // Set the token
-      const jwt = user.accessToken;
-      const expiringContext = new AuthorizedClientRequestContext(jwt);
-
       // Push changes
-      await iModel.pushChanges({ user: expiringContext, description: "Some changes" });
+      await iModel.pushChanges({ description: "Some changes" });
 
       // Validate that the token did refresh before the push
-      assert.notStrictEqual(expiringContext.accessToken, jwt);
-      assert.strictEqual(expiringContext.accessToken, user.accessToken);
     } finally {
       if (iModel !== undefined)
         iModel.close();

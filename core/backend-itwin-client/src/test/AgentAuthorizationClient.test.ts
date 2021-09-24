@@ -6,11 +6,11 @@
 import * as chai from "chai";
 import { Client, Issuer } from "openid-client";
 import * as path from "path";
-import { AccessToken } from "@bentley/itwin-client";
 import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "../oidc/AgentAuthorizationClient";
 import { HubAccessTestValidator } from "./HubAccessTestValidator";
 
 import * as fs from "fs";
+import { AccessToken } from "@bentley/bentleyjs-core";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {

@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { TestConfig } from "./TestConfig";
+import { AccessToken } from "@bentley/bentleyjs-core";
 
 chai.should();
 
@@ -21,27 +21,24 @@ export class HubAccessTestValidator {
     if (HubAccessTestValidator._singletonInstance)
       return HubAccessTestValidator._singletonInstance;
 
-    const accessToken: AccessToken | undefined = await TestUtility.getAccessToken(TestUsers.regular);
-    const requestContext = new AuthorizedClientRequestContext(accessToken);
+    const accessToken = await TestUtility.getAccessToken(TestUsers.regular);
 
     const testProjectName = "iModelJsIntegrationTest";
     const testIModelName = "ReadOnlyTest";
-    const testProjectId: string = await TestConfig.getITwinIdByName(requestContext, testProjectName);
-    const testIModelId: string = await TestConfig.queryIModelId(requestContext, testIModelName, testProjectId);
+    const testProjectId: string = await TestConfig.getITwinIdByName(accessToken, testProjectName);
+    const testIModelId: string = await TestConfig.queryIModelId(accessToken, testIModelName, testProjectId);
 
     HubAccessTestValidator._singletonInstance = new HubAccessTestValidator(testProjectName, testProjectId, testIModelName, testIModelId);
     return HubAccessTestValidator._singletonInstance;
   }
 
   public async validateITwinClientAccess(accessToken: AccessToken) {
-    const requestContext = new AuthorizedClientRequestContext(accessToken);
-    const projectId = await TestConfig.getITwinIdByName(requestContext, this._testProjectName);
+    const projectId = await TestConfig.getITwinIdByName(accessToken, this._testProjectName);
     chai.expect(projectId).to.be.equal(this._testProjectId);
   }
 
-  public async validateIModelHubAccess(accessToken?: AccessToken) {
-    const requestContext = new AuthorizedClientRequestContext(accessToken);
-    const iModelId = await TestConfig.queryIModelId(requestContext, this._testIModelName, this._testProjectId);
+  public async validateIModelHubAccess(accessToken: AccessToken) {
+    const iModelId = await TestConfig.queryIModelId(accessToken, this._testIModelName, this._testProjectId);
     chai.expect(iModelId).to.be.equal(this._testIModelId);
   }
 }

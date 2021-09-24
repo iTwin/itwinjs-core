@@ -10,10 +10,10 @@ import * as fs from "fs";
 import * as https from "https";
 import * as path from "path";
 import * as urllib from "url";
-import { Logger } from "@bentley/bentleyjs-core";
+import { AccessToken, Logger } from "@bentley/bentleyjs-core";
 import { ArgumentCheck } from "@bentley/imodelhub-client";
 import {
-  AuthorizedClientRequestContext, CancelRequest, DownloadFailed, FileHandler, ProgressCallback, ProgressInfo, request, RequestOptions, SasUrlExpired,
+  CancelRequest, DownloadFailed, FileHandler, ProgressCallback, ProgressInfo, request, RequestOptions, SasUrlExpired,
   UserCancelledError,
 } from "@bentley/itwin-client";
 import { MobileHost } from "./MobileHost";
@@ -86,7 +86,7 @@ export class MobileFileHandler implements FileHandler {
    * @param progressCallback Callback for tracking progress.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if one of the arguments is undefined or empty.
    */
-  public async downloadFile(_requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
+  public async downloadFile(_requestContext: AccessToken, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
     // strip search and hash parameters from download Url for logging purpose
     const safeToLogUrl = MobileFileHandler.getSafeUrlForLogging(downloadUrl);
     Logger.logInfo(loggerCategory, `Downloading file from ${safeToLogUrl}`);
@@ -124,7 +124,7 @@ export class MobileFileHandler implements FileHandler {
     return Base64.encode(blockId.toString(16).padStart(5, "0"));
   }
 
-  private async uploadChunk(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, fileDescriptor: number, blockId: number, callback?: ProgressCallback) {
+  private async uploadChunk(_requestContext: AccessToken, uploadUrlString: string, fileDescriptor: number, blockId: number, callback?: ProgressCallback) {
     const chunkSize = 4 * 1024 * 1024;
     let buffer = Buffer.alloc(chunkSize);
     const bytesRead = fs.readSync(fileDescriptor, buffer, 0, chunkSize, chunkSize * blockId);
@@ -147,7 +147,7 @@ export class MobileFileHandler implements FileHandler {
     };
 
     const uploadUrl = `${uploadUrlString}&comp=block&blockid=${this.getBlockId(blockId)}`;
-    await request(requestContext, uploadUrl, options);
+    await request(uploadUrl, options);
   }
 
   /**
@@ -158,7 +158,7 @@ export class MobileFileHandler implements FileHandler {
    * @param progressCallback Callback for tracking progress.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if one of the arguments is undefined or empty.
    */
-  public async uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void> {
+  public async uploadFile(requestContext: AccessToken, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void> {
     const safeToLogUrl = MobileFileHandler.getSafeUrlForLogging(uploadUrlString);
     Logger.logTrace(loggerCategory, `Uploading file to ${safeToLogUrl}`);
     ArgumentCheck.defined("uploadUrlString", uploadUrlString);
@@ -196,7 +196,7 @@ export class MobileFileHandler implements FileHandler {
       };
 
       const uploadUrl = `${uploadUrlString}&comp=blocklist`;
-      await request(requestContext, uploadUrl, options);
+      await request(uploadUrl, options);
     } finally {
       fs.closeSync(file);
     }

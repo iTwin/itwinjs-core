@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { BentleyStatus, ClientRequestContext, IModelStatus, Logger, RpcInterfaceStatus } from "@bentley/bentleyjs-core";
+import { AuthorizedRpcActivity, BentleyStatus, IModelStatus, Logger, RpcActivity, RpcInterfaceStatus, sanitizeRpcActivity } from "@bentley/bentleyjs-core";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
@@ -30,7 +30,7 @@ export type RpcInvocationCallback_T = (invocation: RpcInvocation) => void;
  * @public
  */
 export class RpcInvocation {
-  public static currentRequest: ClientRequestContext;
+  public static currentRequest: AuthorizedRpcActivity;
   private _threw: boolean = false;
   private _pending: boolean = false;
   private _notFound: boolean = false;
@@ -121,19 +121,19 @@ export class RpcInvocation {
   /** When processing an RPC request that throws an unhandled exception, log it with sanitized requestContext.
    * @internal
    */
-  public static logRpcException(currentRequest: ClientRequestContext, error: any) {
+  public static logRpcException(currentRequest: RpcActivity, error: any) {
     let msg = error.toString();
     const errMeta = error.getMetaData?.();
     if (errMeta)
       msg += ` [${JSON.stringify(errMeta)}]`;
 
-    Logger.logError(CommonLoggerCategory.RpcInterfaceBackend, msg, () => currentRequest.sanitize());
+    Logger.logError(CommonLoggerCategory.RpcInterfaceBackend, msg, () => sanitizeRpcActivity(currentRequest));
   }
 
   private async resolve(): Promise<any> {
-    let currentRequest: ClientRequestContext | undefined;
+    let currentRequest: AuthorizedRpcActivity | undefined;
     try {
-      currentRequest = await RpcConfiguration.requestContext.deserialize(this.request);
+      currentRequest = RpcConfiguration.requestContext.deserialize(this.request);
       this.protocol.events.raiseEvent(RpcProtocolEvent.RequestReceived, this);
 
       const parameters = RpcMarshaling.deserialize(this.protocol, this.request.parameters);
@@ -237,7 +237,7 @@ export class RpcInvocation {
   }
 
   private fulfill(result: RpcSerializedValue, rawResult: any): RpcRequestFulfillment {
-    const fulfillment = {
+    const fulfillment: RpcRequestFulfillment = {
       result,
       rawResult,
       status: this.protocol.getCode(this.status),

@@ -7,6 +7,7 @@
  */
 
 import {
+  AccessToken,
   AsyncMethodsOf, BeEvent, GuidString, Logger, PromiseReturnType, SessionProps,
 } from "@bentley/bentleyjs-core";
 import {
@@ -14,7 +15,7 @@ import {
   NativeAppAuthorizationConfiguration, nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy,
   RequestNewBriefcaseProps, StorageValue, SyncMode,
 } from "@bentley/imodeljs-common";
-import { AccessToken, AuthorizationClient, ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
+import { AuthorizationClient, ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IModelApp } from "./IModelApp";
 import { IpcApp, IpcAppOptions, NotificationHandler } from "./IpcApp";
@@ -115,6 +116,7 @@ export class NativeAppAuthorization implements AuthorizationClient {
       this._refreshingToken = false;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     return this._cachedToken!;
   }
 }

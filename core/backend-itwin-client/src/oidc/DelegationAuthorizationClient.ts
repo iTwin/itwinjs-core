@@ -6,7 +6,8 @@
  * @module Authentication
  */
 
-import { AccessToken, removeAccessTokenPrefix } from "@bentley/itwin-client";
+import { AccessToken } from "@bentley/bentleyjs-core";
+import { removeAccessTokenPrefix } from "@bentley/itwin-client";
 import { GrantBody, TokenSet } from "openid-client";
 import { BackendAuthorizationClient, BackendAuthorizationClientConfiguration } from "./BackendAuthorizationClient";
 

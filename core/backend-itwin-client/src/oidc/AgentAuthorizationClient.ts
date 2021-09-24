@@ -7,8 +7,8 @@
  */
 
 import { GrantBody, TokenSet } from "openid-client";
-import { AuthStatus, BentleyError } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
+import { AccessToken, AuthStatus, BentleyError } from "@bentley/bentleyjs-core";
+import { AuthorizationClient } from "@bentley/itwin-client";
 import { BackendAuthorizationClient, BackendAuthorizationClientConfiguration } from "./BackendAuthorizationClient";
 
 /**

@@ -7,7 +7,7 @@
  */
 
 import "@ungap/url-search-params/index";
-import { BentleyStatus, RpcActivity } from "@bentley/bentleyjs-core";
+import { BentleyStatus, SerializedRpcActivity } from "@bentley/bentleyjs-core";
 import { IModelError, ServerError, ServerTimeoutError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcContentType, RpcProtocolEvent, RpcRequestStatus, RpcResponseCacheControl, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
@@ -45,14 +45,14 @@ export class WebAppRpcRequest extends RpcRequest {
   public metadata = { status: 0, message: "" };
 
   /** Parse headers */
-  private static parseHeaders(protocol: WebAppRpcProtocol, req: HttpServerRequest): RpcActivity {
-    const headerNames: RpcActivity = protocol.serializedClientRequestContextHeaderNames;
-    const parsedHeaders: RpcActivity = {
-      activityId: req.header(headerNames.activityId) || "",
+  private static parseHeaders(protocol: WebAppRpcProtocol, req: HttpServerRequest): SerializedRpcActivity {
+    const headerNames: SerializedRpcActivity = protocol.serializedClientRequestContextHeaderNames;
+    const parsedHeaders: SerializedRpcActivity = {
+      id: req.header(headerNames.id) || "",
       applicationId: req.header(headerNames.applicationId) || "",
       applicationVersion: req.header(headerNames.applicationVersion) || "",
       sessionId: req.header(headerNames.sessionId) || "",
-      accessToken: headerNames.accessToken ? req.header(headerNames.accessToken) : undefined,
+      authorization: (headerNames.authorization ? req.header(headerNames.authorization) : "") ?? "",
     };
     return parsedHeaders;
   }
@@ -76,7 +76,7 @@ export class WebAppRpcRequest extends RpcRequest {
       caching: operation.encodedRequest ? RpcResponseCacheControl.Immutable : RpcResponseCacheControl.None,
     };
 
-    request.activityId = req.ip;
+    request.ip = req.ip;
 
     request.protocolVersion = 0;
 
@@ -87,7 +87,7 @@ export class WebAppRpcRequest extends RpcRequest {
       }
     }
 
-    if (!request.activityId) {
+    if (!request.id) {
       throw new IModelError(BentleyStatus.ERROR, `Invalid request.`);
     }
 

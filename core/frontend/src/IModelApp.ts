@@ -9,12 +9,13 @@
 const copyrightNotice = 'Copyright © 2017-2021 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
 import {
-  BeDuration, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger, SerializedClientRequestContext,
+  AccessToken,
+  BeDuration, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger, SerializedRpcActivity,
 } from "@bentley/bentleyjs-core";
 import { IModelClient } from "@bentley/imodelhub-client";
 import { IModelStatus, RpcConfiguration, RpcInterfaceDefinition, RpcRequest } from "@bentley/imodeljs-common";
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
-import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
+import { AuthorizationClient } from "@bentley/itwin-client";
 import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
 import { UiAdmin } from "@bentley/ui-abstract";
@@ -490,10 +491,9 @@ export class IModelApp {
       return Guid.createValue();
     };
 
-    RpcConfiguration.requestContext.serialize = async (_request: RpcRequest): Promise<SerializedClientRequestContext> => {
+    RpcConfiguration.requestContext.serialize = async (_request: RpcRequest): Promise<SerializedRpcActivity> => {
       const id = _request.id;
       let authorization: AccessToken | undefined;
-      let userId: string | undefined;
       if (IModelApp.authorizationClient) {
         // todo: need to subscribe to token change events to avoid getting the string equivalent and compute length
         try {
@@ -502,13 +502,12 @@ export class IModelApp {
           // The application may go offline
         }
       }
-      const serialized: SerializedClientRequestContext = {
+      const serialized: SerializedRpcActivity = {
         id,
         applicationId: this.applicationId,
         applicationVersion: this.applicationVersion,
         sessionId: this.sessionId,
-        authorization,
-        userId,
+        authorization: authorization ?? "",
       };
 
       const csrf = IModelApp.securityOptions.csrfProtection;

@@ -2,13 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { AccessToken, BeEvent } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { InternetConnectivityStatus } from "@bentley/imodeljs-common";
-import { AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp } from "@bentley/imodeljs-frontend";
 import { configureForPromiseResult } from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
 import { SettingsAdmin, SettingsStatus } from "@bentley/product-settings-client";
@@ -18,7 +19,6 @@ import {
   BrowserLocalFavoritePropertiesStorage, createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, IModelAppFavoritePropertiesStorage,
   NoopFavoritePropertiesStorage, OfflineCachingFavoritePropertiesStorage,
 } from "../../presentation-frontend/favorite-properties/FavoritePropertiesStorage";
-import { AccessToken } from "@bentley/itwin-client";
 
 describe("IModelAppFavoritePropertiesStorage", () => {
 
@@ -27,9 +27,8 @@ describe("IModelAppFavoritePropertiesStorage", () => {
   let authorizationClientMock: moq.IMock<FrontendAuthorizationClient>;
 
   beforeEach(async () => {
-    const requestConextMock = moq.Mock.ofType<AuthorizedFrontendRequestContext>();
+    const requestConextMock = moq.Mock.ofType<AccessToken>();
     configureForPromiseResult(requestConextMock);
-    sinon.stub(AuthorizedFrontendRequestContext, "create").resolves(requestConextMock.object);
     sinon.stub(IModelApp, "settings").get(() => settingsAdminMock.object);
 
     authorizationClientMock = moq.Mock.ofType<FrontendAuthorizationClient>();

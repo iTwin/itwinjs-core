@@ -6,20 +6,19 @@
  * @module RpcInterface
  */
 
-import { assert, BeDuration, ClientRequestContext, Id64Array, Logger } from "@bentley/bentleyjs-core";
+import { assert, AuthorizedRpcActivity, BeDuration, Id64Array, Logger } from "@bentley/bentleyjs-core";
 import {
   CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageTileCache, ElementGraphicsRequestProps, IModelRpcProps,
   IModelTileRpcInterface, IModelTileTreeProps, RpcInterface, RpcInvocation, RpcManager, RpcPendingResponse, SyncMode,
   TileContentIdentifier, TileContentSource, TileTreeContentIds, TileVersionInfo,
 } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelHost } from "../IModelHost";
 import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
 import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
 
 interface TileRequestProps {
-  requestContext: ClientRequestContext;
+  requestContext: AuthorizedRpcActivity;
   tokenProps: IModelRpcProps;
   treeId: string;
 }
@@ -93,7 +92,7 @@ abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> exten
 }
 
 async function getTileTreeProps(props: TileRequestProps): Promise<IModelTileTreeProps> {
-  const db = await RpcBriefcaseUtility.findOrOpen(props.requestContext as AuthorizedClientRequestContext, props.tokenProps, SyncMode.FixedVersion);
+  const db = await RpcBriefcaseUtility.findOrOpen(props.requestContext, props.tokenProps, SyncMode.FixedVersion);
   return db.tiles.requestTileTreeProps(props.treeId);
 }
 
@@ -125,7 +124,7 @@ interface TileContentRequestProps extends TileRequestProps {
 }
 
 async function getTileContent(props: TileContentRequestProps): Promise<TileContentSource> {
-  const db = await RpcBriefcaseUtility.findOrOpen(props.requestContext as AuthorizedClientRequestContext, props.tokenProps, SyncMode.FixedVersion);
+  const db = await RpcBriefcaseUtility.findOrOpen(props.requestContext, props.tokenProps, SyncMode.FixedVersion);
   const tile = await db.tiles.requestTileContent(props.treeId, props.contentId);
 
   // ###TODO: Verify the guid supplied by the front-end matches the guid stored in the model?
@@ -178,12 +177,12 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
   public static register() { RpcManager.registerImpl(IModelTileRpcInterface, IModelTileRpcImpl); }
 
   public async requestTileTreeProps(tokenProps: IModelRpcProps, treeId: string): Promise<IModelTileTreeProps> {
-    const requestContext = RpcInvocation.currentRequest as AuthorizedClientRequestContext;
+    const requestContext = RpcInvocation.currentRequest;
     return RequestTileTreePropsMemoizer.perform({ requestContext, tokenProps, treeId });
   }
 
   public async purgeTileTrees(tokenProps: IModelRpcProps, modelIds: Id64Array | undefined): Promise<void> {
-    const user = RpcInvocation.currentRequest as AuthorizedClientRequestContext;
+    const user = RpcInvocation.currentRequest;
     // `undefined` gets forwarded as `null`...
     if (null === modelIds)
       modelIds = undefined;
@@ -193,12 +192,12 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
   }
 
   public async generateTileContent(tokenProps: IModelRpcProps, treeId: string, contentId: string, guid: string | undefined): Promise<TileContentSource> {
-    const requestContext = RpcInvocation.currentRequest as AuthorizedClientRequestContext;
+    const requestContext = RpcInvocation.currentRequest;
     return RequestTileContentMemoizer.perform({ requestContext, tokenProps, treeId, contentId, guid });
   }
 
   public async retrieveTileContent(tokenProps: IModelRpcProps, key: TileContentIdentifier): Promise<Uint8Array> {
-    const requestContext = RpcInvocation.currentRequest as AuthorizedClientRequestContext;
+    const requestContext = RpcInvocation.currentRequest;
     const db = await RpcBriefcaseUtility.findOrOpen(requestContext, tokenProps, SyncMode.FixedVersion);
     return db.tiles.getTileContent(key.treeId, key.contentId);
   }
@@ -225,7 +224,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
 
   /** @internal */
   public async requestElementGraphics(rpcProps: IModelRpcProps, request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
-    const user = RpcInvocation.currentRequest as AuthorizedClientRequestContext;
+    const user = RpcInvocation.currentRequest;
     const iModel = await RpcBriefcaseUtility.findOrOpen(user, rpcProps, SyncMode.FixedVersion);
     return iModel.generateElementGraphics(request);
   }
@@ -233,7 +232,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
 
 /** @internal */
 export async function cancelTileContentRequests(tokenProps: IModelRpcProps, contentIds: TileTreeContentIds[]): Promise<void> {
-  const requestContext = RpcInvocation.currentRequest as AuthorizedClientRequestContext;
+  const requestContext = RpcInvocation.currentRequest;
   const iModel = await RpcBriefcaseUtility.findOrOpen(requestContext, tokenProps, SyncMode.FixedVersion);
 
   const props: TileContentRequestProps = {

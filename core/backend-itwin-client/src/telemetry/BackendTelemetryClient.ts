@@ -6,8 +6,7 @@
  * @module Telemetry
  */
 
-import { getErrorProps, Logger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AuthorizedRpcActivity, getErrorProps, Logger, RpcActivity } from "@bentley/bentleyjs-core";
 import { ClientTelemetryEvent, TelemetryClient, TelemetryEvent } from "@bentley/telemetry-client";
 import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
 import { ClientAuthDetail, ClientAuthIntrospectionManager } from "./ClientAuthIntrospectionManager";
@@ -20,7 +19,7 @@ import { ClientAuthDetail, ClientAuthIntrospectionManager } from "./ClientAuthIn
 export class BackendTelemetryEvent extends ClientTelemetryEvent {
   public constructor(
     telemetryEvent: TelemetryEvent,
-    requestContext: AuthorizedClientRequestContext,
+    rpcActivity: RpcActivity,
     public backendMachineName?: string,
     /** Application ID from the backend configuration */
     public backendApplicationId?: string,
@@ -29,7 +28,7 @@ export class BackendTelemetryEvent extends ClientTelemetryEvent {
     /** Data obtained via introspection of the client's auth token */
     public clientAuth?: ClientAuthDetail,
   ) {
-    super(telemetryEvent, requestContext);
+    super(telemetryEvent, rpcActivity);
   }
 
   /**
@@ -60,7 +59,7 @@ export abstract class BackendTelemetryClient implements TelemetryClient {
   ) {
   }
 
-  public async postTelemetry(requestContext: AuthorizedClientRequestContext, telemetryEvent: TelemetryEvent): Promise<void> {
+  public async postTelemetry(requestContext: AuthorizedRpcActivity, telemetryEvent: TelemetryEvent): Promise<void> {
     let clientAuth: ClientAuthDetail | undefined;
     try {
       clientAuth = this._clientAuthManager
@@ -74,5 +73,5 @@ export abstract class BackendTelemetryClient implements TelemetryClient {
     await this._postTelemetry(requestContext, backendTelemetryEvent);
   }
 
-  protected abstract _postTelemetry(requestContext: AuthorizedClientRequestContext, telemetryEvent: BackendTelemetryEvent): Promise<void>;
+  protected abstract _postTelemetry(requestContext: RpcActivity, telemetryEvent: BackendTelemetryEvent): Promise<void>;
 }

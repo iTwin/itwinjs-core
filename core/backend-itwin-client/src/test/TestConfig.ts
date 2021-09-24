@@ -3,10 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { GuidString } from "@bentley/bentleyjs-core";
+import { AccessToken, GuidString } from "@bentley/bentleyjs-core";
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
 import { HubIModel, IModelClient, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import * as fs from "fs";
 
 /** Loads the provided `.env` file into process.env */
@@ -30,14 +29,15 @@ loadEnv(path.join(__dirname, "..", "..", ".env"));
  */
 export class TestConfig {
   /** Query for the specified iTwin */
-  public static async getITwinIdByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<string> {
+  public static async getITwinIdByName(accessToken: AccessToken, name: string): Promise<string> {
     const iTwinAccessClient = new ITwinAccessClient();
-    const iTwinList: ITwin[] = await iTwinAccessClient.getAll(requestContext, {
+    const iTwinList: ITwin[] = await iTwinAccessClient.getAll(accessToken, {
       search: {
         searchString: name,
         propertyName: ITwinSearchableProperty.Name,
         exactMatch: true,
-      }});
+      },
+    });
 
     if (iTwinList.length === 0) {
       throw new Error(`ITwin ${name} not found for user.`);
@@ -49,9 +49,9 @@ export class TestConfig {
   }
 
   /** Query for the specified iModel */
-  public static async queryIModelId(requestContext: AuthorizedClientRequestContext, iModelName: string, projectId: GuidString): Promise<string> {
+  public static async queryIModelId(accessToken: AccessToken, iModelName: string, projectId: GuidString): Promise<string> {
     const imodelHubClient: IModelClient = new IModelHubClient();
-    const iModel: HubIModel = (await imodelHubClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName)))[0];
+    const iModel: HubIModel = (await imodelHubClient.iModels.get(accessToken, projectId, new IModelQuery().byName(iModelName)))[0];
     if (!iModel || !iModel.wsgId || iModel.name !== iModelName) {
       throw new Error(`iModel ${iModelName} not found for project ${projectId} for user.`);
     }

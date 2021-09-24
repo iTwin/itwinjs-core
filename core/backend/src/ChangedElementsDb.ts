@@ -6,10 +6,9 @@
  * @module ChangedElementsDb
  */
 
-import { DbResult, IDisposable, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { AccessToken, DbResult, IDisposable, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { ChangeData, ChangedElements, ChangedModels, IModelError } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDbOpenMode } from "./ECDb";
 import { IModelDb } from "./IModelDb";
@@ -99,7 +98,7 @@ export class ChangedElementsDb implements IDisposable {
    * @param briefcase iModel briefcase to use
    * @param options Options for processing
    */
-  public async processChangesets(user: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult> {
+  public async processChangesets(user: AccessToken, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult> {
     const iModelId = briefcase.iModelId;
     const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.startChangesetId }, user })).index;
     const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.endChangesetId }, user })).index;
@@ -128,7 +127,7 @@ export class ChangedElementsDb implements IDisposable {
    * @param briefcase iModel briefcase to use
    * @param options options for processing
    */
-  public async processChangesetsAndRoll(user: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult> {
+  public async processChangesetsAndRoll(user: AccessToken, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult> {
     const iModelId = briefcase.iModelId;
     const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.startChangesetId }, user })).index;
     const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.endChangesetId }, user })).index;
