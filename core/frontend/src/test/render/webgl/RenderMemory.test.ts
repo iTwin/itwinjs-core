@@ -8,12 +8,13 @@ import { ColorDef, ImageBuffer, ImageBufferFormat, MeshEdge, QParams3d, QPoint3d
 import { IModelApp } from "../../../IModelApp";
 import { IModelConnection } from "../../../IModelConnection";
 import { RenderMemory } from "../../../render/RenderMemory";
-import { RenderGeometry } from "../../../render/RenderSystem";
+import { RenderAreaPattern, RenderGeometry } from "../../../render/RenderSystem";
 import { RenderGraphic } from "../../../render/RenderGraphic";
 import { MeshArgs } from "../../../render/primitives/mesh/MeshPrimitives";
 import { MeshParams } from "../../../render/primitives/VertexTable";
 import { Texture } from "../../../render/webgl/Texture";
 import { createBlankConnection } from "../../createBlankConnection";
+import { InstancedGraphicParams } from "../../../imodeljs-frontend";
 
 function expectMemory(consumer: RenderMemory.Consumers, total: number, max: number, count: number) {
   expect(consumer.totalBytes).to.equal(total);
@@ -50,8 +51,8 @@ function createMeshGeometry(opts?: { texture?: RenderTexture, includeEdges?: boo
   return geom!;
 }
 
-function createGraphic(geom: RenderGeometry): RenderGraphic {
-  const graphic = IModelApp.renderSystem.createRenderGraphic(geom);
+function createGraphic(geom: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic {
+  const graphic = IModelApp.renderSystem.createRenderGraphic(geom, instances);
   expect(graphic).not.to.be.undefined;
   return graphic!;
 }
@@ -83,7 +84,7 @@ function expectBytesUsed(expected: number, consumer: RenderMemory.Consumer | Ren
   expect(getBytesUsed(consumer)).to.equal(expected);
 }
 
-describe("RenderMemory", () => {
+describe.only("RenderMemory", () => {
   let imodel: IModelConnection;
 
   before(async () => {
