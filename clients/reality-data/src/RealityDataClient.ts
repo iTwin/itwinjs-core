@@ -23,6 +23,14 @@ export type RealityDataType =
   "OMR" | // Mapping Resource,
   "Cesium3DTiles"; // Cesium 3dTiles
 
+// TEMPORARY FIX: Continued support of type filtering
+const supportedTypes = [
+  "RealityMesh3DTiles",
+  "OPC",
+  "Terrain3DTiles",
+  "OMR",
+  "Cesium3DTiles"];
+
 /** RealityData
  * This class implements a Reality Data stored in ProjectWise Context Share (Reality Data Service)
  * Data is accessed directly through methods of the reality data instance.
@@ -411,19 +419,16 @@ export class RealityDataAccessClient extends WsgClient {
   */
   private getRealityDataTypesFilter(type?: string): string {
     let filter: string = "";
+
     if (!type) {
-      // ref: https://www.petermorlion.com/iterating-a-typescript-enum/
-      function enumKeys<O extends object, K extends keyof O = keyof O>(obj: O): K[] {
-        return Object.keys(obj).filter((k) => Number.isNaN(+k)) as K[];
-      }
       // If type not specified, add all supported known types
       let isFirst = true;
-      for (const rdType of enumKeys(RealityDataType)) {
+      for (const rdType of supportedTypes) {
         if (isFirst)
           isFirst = false;
         else
           filter += `+or+`;
-        filter += `Type+eq+'${RealityDataType[rdType]}'`;
+        filter += `Type+eq+'${rdType}'`;
       }
     } else {
       filter = `Type+eq+'${type}'`;
