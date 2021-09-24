@@ -10,7 +10,7 @@ import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 /**
  * All of the currently supported ProjectWise ContextShare reality data types
- * @internal
+ * @beta
  */
 export type RealityDataType =
   "RealityMesh3DTiles" | // Web Ready Scalable Mesh
@@ -27,7 +27,7 @@ export type RealityDataType =
  * The Azure blob URL is considered valid for an hour and is refreshed after 50 minutes.
  * In addition to the reality data properties, and Azure blob URL and internal states, a reality data also contains
  * the identification of the iTwin to identify the context(used for access permissions resolution)
- * @internal
+ * @beta
  */
 export interface RealityData {
   rootDocument?: string;
@@ -43,7 +43,7 @@ export interface RealityData {
  * Client wrapper to Reality Data Service.
  * An instance of this class is used to extract reality data from the ProjectWise Context Share (Reality Data Service)
  * This class implements obtaining a specific reality data and extraction of the Azure blob address.
- * @internal
+ * @beta
  */
 export interface RealityDataAccess {
   getRealityData: (requestContext: AuthorizedClientRequestContext, iTwinId: string | undefined, tileId: string) => Promise<RealityData>;

@@ -7381,7 +7381,7 @@ export function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection,
 // @internal
 export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined;
 
-// @internal
+// @beta
 export interface RealityData {
     // (undocumented)
     getBlobUrl: (requestContext: AuthorizedClientRequestContext) => Promise<URL>;
@@ -7397,7 +7397,7 @@ export interface RealityData {
     type?: RealityDataType;
 }
 
-// @internal
+// @beta
 export interface RealityDataAccess {
     // (undocumented)
     getRealityData: (requestContext: AuthorizedClientRequestContext, iTwinId: string | undefined, tileId: string) => Promise<RealityData>;
@@ -7412,7 +7412,7 @@ export interface RealityDataQueryCriteria {
     range?: CartographicRange;
 }
 
-// @internal
+// @beta
 export type RealityDataType = "RealityMesh3DTiles" | // Web Ready Scalable Mesh
 "OPC" | // Orbit Point Cloud
 "Terrain3DTiles" | // Terrain3DTiles

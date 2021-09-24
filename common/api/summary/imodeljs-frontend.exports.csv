@@ -424,8 +424,8 @@ beta;QueryVisibleFeaturesOptions = QueryScreenFeaturesOptions | QueryTileFeature
 internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined
 public;readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions | false): Promise
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
-internal;RealityData
-internal;RealityDataAccess
+beta;RealityData
+beta;RealityDataAccess
 public;RealityDataQueryCriteria
 internal;RealityModelSource = ViewState | DisplayStyleState
 internal;RealityModelTileClient
