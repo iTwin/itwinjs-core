@@ -5,15 +5,17 @@
 /** @packageDocumentation
  * @module iModelHubClient
  */
-import { AuthorizationClient, AuthorizedClientRequestContext} from "@bentley/itwin-client";
+
+import { AccessToken } from "@bentley/bentleyjs-core";
 import { ITwin } from "@bentley/context-registry-client";
+import { AuthorizationClient } from "@bentley/itwin-client";
 import { IModelClient } from "./IModelClient";
 
 /** How to discover "contexts". A context corresponds to an iTwin "project" or "asset".
  * @internal
  */
 export interface ContextManagerClient {
-  getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin>;
+  getITwinByName(accessToken: AccessToken, name: string): Promise<ITwin>;
 }
 
 /** All of the services that a frontend or other client app needs to find and access iModels.

@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizationClient, ImsAuthorizationClient } from "@bentley/itwin-client";
+import { AccessToken, assert, BeEvent } from "@bentley/bentleyjs-core";
+import { AuthorizationClient, ImsAuthorizationClient } from "@bentley/itwin-client";
 import { AuthorizationParameters, Client, custom, generators, Issuer, OpenIDCallbackChecks } from "openid-client";
 import * as os from "os";
 import * as puppeteer from "puppeteer";
@@ -94,7 +94,7 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
    * The token is refreshed if necessary and possible.
    * @throws [[BentleyError]] If the client was not used to authorize, or there was an authorization error.
    */
-  public async getAccessToken(_requestContext?: ClientRequestContext): Promise<AccessToken | undefined> {
+  public async getAccessToken(): Promise<AccessToken | undefined> {
     if (this.isAuthorized)
       return this._accessToken;
 

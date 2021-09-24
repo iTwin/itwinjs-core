@@ -6,10 +6,8 @@
  * @module iModelHubClient
  */
 
-import { BeEvent } from "@bentley/bentleyjs-core";
-import {
-  AccessToken, AuthorizedClientRequestContext, DefaultRequestOptionsProvider, request, RequestOptions,
-} from "@bentley/itwin-client";
+import { AccessToken, BeEvent } from "@bentley/bentleyjs-core";
+import { DefaultRequestOptionsProvider, request, RequestOptions } from "@bentley/itwin-client";
 import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
 import { IModelBaseHandler } from "./BaseHandler";
 
@@ -71,10 +69,10 @@ export abstract class IModelHubBaseEvent {
    * Remove a single event from queue.
    * @returns true if operation succeeded, false otherwise.
    */
-  public async delete(requestContext: AuthorizedClientRequestContext): Promise<boolean> {
+  public async delete(): Promise<boolean> {
     if (this._handler && this._lockUrl && this._sasToken) {
       const options = await getEventBaseOperationRequestOptions(this._handler, ModifyEventOperationToRequestType.Delete, this._sasToken);
-      const result = await request(requestContext, this._lockUrl, options);
+      const result = await request(this._lockUrl, options);
 
       if (result.status === 200)
         return true;
@@ -179,7 +177,7 @@ export class ListenerSubscription {
   public listeners: BeEvent<(event: IModelHubBaseEvent) => void>;
   public authenticationCallback: () => Promise<AccessToken | undefined>;
   public getEvent: (token: string, baseAddress: string, subscriptionId: string, timeout?: number) => Promise<IModelHubBaseEvent | undefined>;
-  public getSASToken: (requestContext: AuthorizedClientRequestContext) => Promise<BaseEventSAS>;
+  public getSASToken: (accessToken: AccessToken) => Promise<BaseEventSAS>;
   public id: string;
 }
 
@@ -222,8 +220,7 @@ export class EventListener {
     mainLoop:
     while (subscription.listeners.numberOfListeners > 0) {
       try {
-        const requestContext = new AuthorizedClientRequestContext(accessToken);
-        eventSAS = (await subscription.getSASToken(requestContext));
+        eventSAS = (await subscription.getSASToken(accessToken!));
       } catch (err: any) {
         if (err.status === 401) {
           try {

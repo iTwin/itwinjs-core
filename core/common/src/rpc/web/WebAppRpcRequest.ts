@@ -7,7 +7,7 @@
  */
 
 import "@ungap/url-search-params/index";
-import { BentleyStatus, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
+import { BentleyStatus, RpcActivity } from "@bentley/bentleyjs-core";
 import { IModelError, ServerError, ServerTimeoutError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcContentType, RpcProtocolEvent, RpcRequestStatus, RpcResponseCacheControl, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
@@ -45,15 +45,14 @@ export class WebAppRpcRequest extends RpcRequest {
   public metadata = { status: 0, message: "" };
 
   /** Parse headers */
-  private static parseHeaders(protocol: WebAppRpcProtocol, req: HttpServerRequest): SerializedClientRequestContext {
-    const headerNames: SerializedClientRequestContext = protocol.serializedClientRequestContextHeaderNames;
-    const parsedHeaders: SerializedClientRequestContext = {
-      id: req.header(headerNames.id) || "",
+  private static parseHeaders(protocol: WebAppRpcProtocol, req: HttpServerRequest): RpcActivity {
+    const headerNames: RpcActivity = protocol.serializedClientRequestContextHeaderNames;
+    const parsedHeaders: RpcActivity = {
+      activityId: req.header(headerNames.activityId) || "",
       applicationId: req.header(headerNames.applicationId) || "",
       applicationVersion: req.header(headerNames.applicationVersion) || "",
       sessionId: req.header(headerNames.sessionId) || "",
-      authorization: headerNames.authorization ? req.header(headerNames.authorization) : undefined,
-      userId: headerNames.userId ? req.header(headerNames.userId) : undefined,
+      accessToken: headerNames.accessToken ? req.header(headerNames.accessToken) : undefined,
     };
     return parsedHeaders;
   }
@@ -77,7 +76,7 @@ export class WebAppRpcRequest extends RpcRequest {
       caching: operation.encodedRequest ? RpcResponseCacheControl.Immutable : RpcResponseCacheControl.None,
     };
 
-    request.ip = req.ip;
+    request.activityId = req.ip;
 
     request.protocolVersion = 0;
 
@@ -88,7 +87,7 @@ export class WebAppRpcRequest extends RpcRequest {
       }
     }
 
-    if (!request.id) {
+    if (!request.activityId) {
       throw new IModelError(BentleyStatus.ERROR, `Invalid request.`);
     }
 

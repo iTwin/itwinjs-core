@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { AccessToken } from "@bentley/bentleyjs-core";
 import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
-import { AccessToken } from "@bentley/itwin-client";
 import { TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from "../TestUsers";
 
 // Shared by both the frontend and backend side of the tests

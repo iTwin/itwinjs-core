@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 export * from "./AuthorizationClient";
-export * from "./AuthorizedClientRequestContext";
 export * from "./Client";
 export * from "./ITwinClientLoggerCategory";
 export * from "./FileHandler";

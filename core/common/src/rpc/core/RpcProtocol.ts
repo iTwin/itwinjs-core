@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { BeEvent, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
+import { BeEvent, RpcActivity } from "@bentley/bentleyjs-core";
 import { IModelRpcProps } from "../../IModel";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcConfiguration } from "./RpcConfiguration";
@@ -35,7 +35,7 @@ export interface SerializedRpcRequest extends SerializedClientRequestContext {
   path: string;
   parameters: RpcSerializedValue;
   caching: RpcResponseCacheControl;
-  ip?: string;
+  activityId?: string;
   protocolVersion?: number;
 }
 
