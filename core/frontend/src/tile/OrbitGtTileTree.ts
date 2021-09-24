@@ -431,7 +431,7 @@ export namespace OrbitGtTileTree {
     if (!accessToken)
       return false;
 
-    // If there's no rdsUrl, request one from RealityDataClient
+    // If there's no rdsUrl, request one from RealityDataAccessClient
     if (!props.rdsUrl) {
       props.rdsUrl = await IModelApp.realityDataAccessClient.getRealityDataUrl(iModel.iTwinId, props.containerName);
     }

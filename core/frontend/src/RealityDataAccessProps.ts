@@ -10,9 +10,9 @@ import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 /**
  * All of the currently supported ProjectWise ContextShare reality data types
+ * @internal
  */
-enum RealityDataType {
-  // !! TODO: Check what these enum value pairs should be, this was just a direct copy
+export enum RealityDataType {
   REALITYMESH3DTILES = "RealityMesh3DTiles", // Web Ready Scalable Mesh
   OPC = "OPC", // Orbit Point Cloud
   TERRAIN3DTILE = "Terrain3DTiles", // Terrain3DTiles
@@ -27,10 +27,10 @@ enum RealityDataType {
  * an Azure blob URL, the token may be required to obtain this Azure blob URL or refresh it.
  * The Azure blob URL is considered valid for an hour and is refreshed after 50 minutes.
  * In addition to the reality data properties, and Azure blob URL and internal states, a reality data also contains
- * the identification of the iTwin project to identify the context(used for access permissions resolution) and
- * may contain a RealityDataClient to obtain the WSG client specialization to communicate with ProjectWise Context Share (to obtain the Azure blob URL).
+ * the identification of the iTwin project to identify the context(used for access permissions resolution)
+ * @internal
  */
-interface RealityData {
+export interface RealityData {
   rootDocument?: string;
   type?: RealityDataType;
 
@@ -46,9 +46,9 @@ interface RealityData {
  * Most important methods enable to obtain a specific reality data, fetch all reality data associated to a project and
  * all reality data of a project within a provided spatial extent.
  * This class also implements extraction of the Azure blob address.
+ * @internal
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-interface RealityDataAccess {
+export interface RealityDataAccess {
   getRealityData: (requestContext: AuthorizedClientRequestContext, iTwinId: string | undefined, tileId: string) => Promise<RealityData>;
   getRealityDataUrl: (iTwinId: string | undefined, tileId: string) => Promise<string>;
 }

@@ -52,6 +52,7 @@ export * from "./quantity-formatting/QuantityFormatter";
 export * from "./quantity-formatting/BaseUnitFormattingSettingsProvider";
 export * from "./quantity-formatting/LocalUnitFormatProvider";
 export * from "./RenderScheduleState";
+export * from "./RealityDataAccessProps";
 export * from "./CheckpointConnection";
 export * from "./SelectionSet";
 export * from "./SheetViewState";
