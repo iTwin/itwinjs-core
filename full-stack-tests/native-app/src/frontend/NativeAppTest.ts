@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AsyncMethodsOf } from "@bentley/bentleyjs-core";
+import { AsyncMethodsOf, PromiseReturnType } from "@bentley/bentleyjs-core";
 import { IModelCloudEnvironment, IModelQuery } from "@bentley/imodelhub-client";
 import { AuthorizedFrontendRequestContext, IpcApp } from "@bentley/imodeljs-frontend";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { TestUsers } from "@bentley/oidc-signin-tool";
+import { TestUsers } from "@bentley/oidc-signin-tool/lib/cjs/frontend";
 import { assert } from "chai";
 import { testIpcChannel, TestIpcInterface } from "../common/IpcInterfaces";
 import { IModelBankCloudEnv } from "./hub/IModelBankCloudEnv";
@@ -16,7 +16,7 @@ export class NativeAppTest {
   public static imodelCloudEnv: IModelCloudEnvironment;
 
   public static async callBackend<T extends AsyncMethodsOf<TestIpcInterface>>(methodName: T, ...args: Parameters<TestIpcInterface[T]>) {
-    return IpcApp.callIpcChannel(testIpcChannel, methodName, ...args);
+    return IpcApp.callIpcChannel(testIpcChannel, methodName, ...args) as PromiseReturnType<TestIpcInterface[T]>;
   }
 
   public static async initializeTestProject(): Promise<string> {

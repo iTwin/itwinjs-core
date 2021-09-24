@@ -48,7 +48,11 @@ module.exports = {
     mainFields: ['module', 'main']
   },
   externals: {
-    electron: "commonjs electron",
+    "electron": "commonjs electron",
+    "fs": "fs",
+    "process": "process",
+    "child_process": "child_process",
+    "ws": "commonjs ws",
   },
   node: {
     net: 'empty'

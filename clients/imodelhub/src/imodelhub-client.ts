@@ -24,9 +24,7 @@ export * from "./imodelhub/Versions";
 export * from "./imodelhub/Thumbnails";
 export * from "./imodelhub/Permissions";
 
-export * from "./imodelbank/IModelBankBasicAuthorizationClient";
 export * from "./imodelbank/IModelBankClient";
-export * from "./imodelbank/IModelBankDummyAuthorizationClient";
 export * from "./imodelbank/IModelBankFileSystemContextClient";
 export * from "./imodelbank/IModelBankHandler";
 
