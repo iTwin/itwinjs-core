@@ -437,14 +437,6 @@ export class PresentationManager {
 
   private getRulesetIdObject(rulesetOrId: Ruleset | string): { uniqueId: string, parts: { id: string, hash?: string } } {
     if (typeof rulesetOrId === "object") {
-      if (this._isOneFrontendPerBackend) {
-        // in case of native apps we don't have to enforce ruleset id uniqueness, since there's ony one
-        // frontend and it's up to the frontend to make sure rulesets are unique
-        return {
-          uniqueId: rulesetOrId.id,
-          parts: { id: rulesetOrId.id },
-        };
-      }
       const hashedId = hash.MD5(rulesetOrId);
       return {
         uniqueId: `${rulesetOrId.id}-${hashedId}`,
