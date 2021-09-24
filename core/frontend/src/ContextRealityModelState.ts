@@ -6,13 +6,11 @@
  * @module Views
  */
 
-import { GuidString, Id64String } from "@bentley/bentleyjs-core";
+import { AccessToken, GuidString, Id64String } from "@bentley/bentleyjs-core";
 import { Angle } from "@bentley/geometry-core";
 import { CartographicRange, ContextRealityModel, ContextRealityModelProps, FeatureAppearance, OrbitGtBlobProps } from "@bentley/imodeljs-common";
-import { AccessToken } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
 import { DisplayStyleState } from "./DisplayStyleState";
-import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { SpatialModelState } from "./ModelState";
@@ -109,19 +107,17 @@ export async function queryRealityData(criteria: RealityDataQueryCriteria): Prom
   if (!accessToken)
     return availableRealityModels;
 
-  const requestContext = new AuthorizedFrontendRequestContext(accessToken);
-
   const client = new RealityDataClient();
 
   let realityData: RealityData[];
   if (criteria.range) {
     const iModelRange = criteria.range.getLongitudeLatitudeBoundingBox();
-    realityData = await client.getRealityDataInProjectOverlapping(requestContext, iTwinId, Angle.radiansToDegrees(iModelRange.low.x),
+    realityData = await client.getRealityDataInProjectOverlapping(accessToken, iTwinId, Angle.radiansToDegrees(iModelRange.low.x),
       Angle.radiansToDegrees(iModelRange.high.x),
       Angle.radiansToDegrees(iModelRange.low.y),
       Angle.radiansToDegrees(iModelRange.high.y));
   } else {
-    realityData = await client.getRealityDataInProject(requestContext, iTwinId);
+    realityData = await client.getRealityDataInProject(accessToken, iTwinId);
   }
 
   // Get set of URLs that are directly attached to the model.
@@ -158,7 +154,7 @@ export async function queryRealityData(criteria: RealityDataQueryCriteria): Prom
       let opcConfig: OrbitGtBlobProps | undefined;
 
       if (currentRealityData.type && (currentRealityData.type.toUpperCase() === "OPC") && currentRealityData.rootDocument !== undefined) {
-        const rootDocUrl: string = await currentRealityData.getBlobStringUrl(requestContext, currentRealityData.rootDocument);
+        const rootDocUrl: string = await currentRealityData.getBlobStringUrl(accessToken, currentRealityData.rootDocument);
         opcConfig = {
           rdsUrl: "",
           containerName: "",

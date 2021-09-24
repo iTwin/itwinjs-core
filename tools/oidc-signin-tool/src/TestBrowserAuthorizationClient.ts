@@ -94,9 +94,9 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
    * The token is refreshed if necessary and possible.
    * @throws [[BentleyError]] If the client was not used to authorize, or there was an authorization error.
    */
-  public async getAccessToken(): Promise<AccessToken | undefined> {
+  public async getAccessToken(): Promise<AccessToken> {
     if (this.isAuthorized)
-      return this._accessToken;
+      return this._accessToken!;
 
     // Add retry logic to help avoid flaky issues on CI machines.
     let numRetries = 0;
@@ -115,7 +115,7 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
       break;
     }
 
-    return this._accessToken;
+    return this._accessToken!;
   }
 
   public async signIn(): Promise<void> {

@@ -10,7 +10,7 @@ import { IModelTileRpcInterface, RpcInvocation, RpcManager, RpcRegistry } from "
 import { BlobDaemon } from "@bentley/imodeljs-native";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelHubBackend } from "../../IModelHubBackend";
-import { AuthorizedBackendRequestContext, BackendRequestContext, IModelHost, IModelHostConfiguration } from "../../imodeljs-backend";
+import { IModelHost, IModelHostConfiguration } from "../../imodeljs-backend";
 import { IModelJsFs } from "../../IModelJsFs";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { getTileProps } from "../integration/TileUpload.test";
@@ -100,14 +100,19 @@ describe("TileCache, open v2", async () => {
     sinon.stub(BlobDaemon, "getDbFileName").callsFake(() => dbPath);
 
     process.env.BLOCKCACHE_DIR = "/foo/";
-    const user = new BackendRequestContext() as AuthorizedBackendRequestContext;
-    const checkpointProps = { user, iTwinId, iModelId, changeset };
+    const checkpointProps = { iTwinId, iModelId, changeset };
     const checkpoint = await SnapshotDb.openCheckpointV2(checkpointProps);
 
     // Generate tile
     const tileProps = await getTileProps(checkpoint);
     assert.isDefined(tileProps);
-    RpcInvocation.currentRequest = user; // we're simulating an RPC call - set up the current invocation request that would normally come from PRC call
+    RpcInvocation.currentRequest = {
+      activityId: "",
+      applicationId: "",
+      applicationVersion: "",
+      sessionId: "",
+      accessToken: (await IModelHost.getAccessToken()) ?? "",
+    };
     await tileRpcInterface.generateTileContent(checkpoint.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid);
 
     // Make sure .Tiles exists in the cacheDir. This was enforced by opening it as a V2 Checkpoint which passes as part of its open params a tempFileBasename.

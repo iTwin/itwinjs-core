@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
+
+import { AccessToken, AuthorizedRpcActivity } from "@bentley/bentleyjs-core";
 import { IModelRpcProps, SyncMode } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { IModelDb } from "../../IModelDb";
@@ -16,16 +16,22 @@ describe("RpcBriefcaseUtility.findOrOpen", () => {
   });
 
   it("should return open SnapshotDb and call reattachDaemon", async () => {
-    const reattachStub = sinon.stub<[AuthorizedClientRequestContext], Promise<void>>();
+    const reattachStub = sinon.stub<[AccessToken], Promise<void>>();
     const fakeIModel: IModelDb = { reattachDaemon: reattachStub } as any;
     sinon.stub(IModelDb, "tryFindByKey").returns(fakeIModel);
+    const fakeRpc: AuthorizedRpcActivity = {
+      accessToken: "fake",
+      activityId: "",
+      applicationId: "",
+      applicationVersion: "",
+      sessionId: "",
+    };
 
-    const fakeRequestContext = new ClientRequestContext();
-    const result = await RpcBriefcaseUtility.findOrOpen(fakeRequestContext as any, {} as any, SyncMode.FixedVersion) as any;
+    const result = await RpcBriefcaseUtility.findOrOpen(fakeRpc, {} as any, SyncMode.FixedVersion) as any;
 
     expect(result).to.equal(fakeIModel);
     expect(reattachStub.calledOnce).to.be.true;
-    expect(reattachStub.firstCall.firstArg).to.equal(fakeRequestContext);
+    expect(reattachStub.firstCall.firstArg).to.equal(fakeRpc);
   });
 
   it("should open BriefcaseDb if not already open", async () => {

@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { AuthorizedFrontendRequestContext, CheckpointConnection } from "@bentley/imodeljs-frontend";
+import { CheckpointConnection } from "@bentley/imodeljs-frontend";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
 import { IModelData } from "../../common/Settings";
 import { IModelVersion } from "@bentley/imodeljs-common";
+import { AccessToken } from "@bentley/bentleyjs-core";
 
 export class IModelSession {
 
@@ -26,7 +27,7 @@ export class IModelSession {
     this._imodelVersion = changesetId ? IModelVersion.asOfChangeSet(changesetId) : IModelVersion.latest();
   }
 
-  public static async create(requestContext: AuthorizedFrontendRequestContext, iModelData: IModelData): Promise<IModelSession> {
+  public static async create(requestContext: AccessToken, iModelData: IModelData): Promise<IModelSession> {
     let iTwinId;
     let imodelId;
 
@@ -41,7 +42,8 @@ export class IModelSession {
           searchString: iModelData.projectName,
           propertyName: ITwinSearchableProperty.Name,
           exactMatch: true,
-        }});
+        },
+      });
 
       if (iTwinList.length === 0)
         throw new Error(`ITwin ${iModelData.projectName} was not found for the user.`);

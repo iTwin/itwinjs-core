@@ -39,8 +39,6 @@ export interface RpcActivity extends SessionProps {
 
   /** access token for authorization  */
   readonly accessToken?: AccessToken;
-
-  readonly csrfToken?: { headerName: string, headerValue: string };
 }
 
 export interface AuthorizedRpcActivity extends Omit<RpcActivity, "accessToken"> {
@@ -59,3 +57,14 @@ export function sanitizeRpcActivity(activity: RpcActivity) {
   };
 }
 
+/** Serialized format for sending the request across the RPC layer
+ * @public
+ */
+export interface SerializedRpcActivity {
+  id: string;
+  applicationId: string;
+  applicationVersion: string;
+  sessionId: string;
+  authorization: string;
+  csrfToken?: { headerName: string, headerValue: string };
+}
