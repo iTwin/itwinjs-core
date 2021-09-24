@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/build-tools",
+      "comment": "Support for Node 16",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/build-tools"
+}

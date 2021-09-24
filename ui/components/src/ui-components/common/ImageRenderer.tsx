@@ -22,7 +22,7 @@ export class ImageRenderer {
     if (!match)
       return "";
 
-    return btoa(match.map((a) => {
+    return btoa(match.map((a) => { // eslint-disable-line deprecation/deprecation
       return String.fromCharCode(parseInt(a, 16));
     }).join(""));
   }

@@ -3,6 +3,10 @@ publish: false
 ---
 # NextVersion
 
+## Update minimum requirements
+
+Support for Node 10 has been dropped. The new minimum Node version is 12.22.0. The recommended version is the latest LTS version of Node. Please visit our [Supported Platforms](../learning/supportedplatforms) documentation for a full breakdown of compatibility.
+
 ## Dependency Updates
 
 The following dependencies of iTwin.js have been updated;

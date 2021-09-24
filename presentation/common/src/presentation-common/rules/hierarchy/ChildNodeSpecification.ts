@@ -63,7 +63,7 @@ export interface ChildNodeSpecificationBase {
   hideIfNoChildren?: boolean;
 
   /**
-   * An [ECExpression]($docs/learning/presentation/Hierarchies/ECExpressions.md#specification) which
+   * An [ECExpression]($docs/presentation/Hierarchies/ECExpressions.md#specification) which
    * indicates whether a node should be hidden or not.
    *
    * @note While the attribute provides much flexibility, it also has performance implications - it's
@@ -94,7 +94,7 @@ export interface ChildNodeSpecificationBase {
   /** Specifications of related instances that can be used in nodes' creation. */
   relatedInstances?: RelatedInstanceSpecification[];
 
-  /** [Nested rule]($docs/learning/presentation/Hierarchies/Terminology.md#nested-rules) specifications. */
+  /** [Nested rule]($docs/presentation/Hierarchies/Terminology.md#nested-rule) specifications. */
   nestedRules?: ChildNodeRule[];
 }
 
