@@ -8,7 +8,7 @@ import { ColorDef, ImageBuffer, ImageBufferFormat, MeshEdge, QParams3d, QPoint3d
 import { IModelApp } from "../../../IModelApp";
 import { IModelConnection } from "../../../IModelConnection";
 import { RenderMemory } from "../../../render/RenderMemory";
-import { RenderAreaPattern, RenderGeometry } from "../../../render/RenderSystem";
+import { RenderGeometry } from "../../../render/RenderSystem";
 import { RenderGraphic } from "../../../render/RenderGraphic";
 import { MeshArgs } from "../../../render/primitives/mesh/MeshPrimitives";
 import { MeshParams } from "../../../render/primitives/VertexTable";
@@ -51,7 +51,7 @@ function createMeshGeometry(opts?: { texture?: RenderTexture, includeEdges?: boo
   return geom!;
 }
 
-function createGraphic(geom: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic {
+function createGraphic(geom: RenderGeometry, instances?: InstancedGraphicParams): RenderGraphic {
   const graphic = IModelApp.renderSystem.createRenderGraphic(geom, instances);
   expect(graphic).not.to.be.undefined;
   return graphic!;
@@ -62,7 +62,7 @@ function createTexture(imodel: IModelConnection, persistent: boolean): RenderTex
   const id = persistent ? imodel.transientIds.next : undefined;
   const tex = IModelApp.renderSystem.createTextureFromImageBuffer(img, imodel, new RenderTexture.Params(id))!;
   expect(tex).not.to.be.undefined;
-  return tex!;
+  return tex;
 }
 
 function createInstanceParams(count: number): InstancedGraphicParams {

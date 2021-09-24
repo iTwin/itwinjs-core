@@ -8131,7 +8131,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     createRealityMeshGraphic(_terrainGeometry: RenderRealityMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string | undefined, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined;
     // @internal
-    abstract createRenderGraphic(_geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern, instancesOwnGeometry?: boolean): RenderGraphic | undefined;
+    abstract createRenderGraphic(_geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined;
     createScreenSpaceEffectBuilder(_params: ScreenSpaceEffectBuilderParams): ScreenSpaceEffectBuilder | undefined;
     createSkyBox(_params: SkyBox.CreateParams): RenderGraphic | undefined;
     // @internal (undocumented)
