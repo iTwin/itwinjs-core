@@ -9,10 +9,10 @@ import * as fs from "fs";
 import * as nock from "nock";
 import * as path from "path";
 import { BentleyLoggerCategory, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { ElectronAuthorizationBackend, ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
+import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IModelBankClient, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
 import {
-  AuthorizedBackendRequestContext, BackendLoggerCategory, BriefcaseDb, BriefcaseManager, ChangeSummaryManager, IModelHost, IModelHostConfiguration, IModelJsFs,
+  AuthorizedBackendRequestContext, BackendLoggerCategory, BriefcaseDb, BriefcaseManager, ChangeSummaryManager, IModelHostConfiguration, IModelJsFs,
   IpcHandler, NativeHost, NativeLoggerCategory,
 } from "@bentley/imodeljs-backend";
 import { IModelRpcProps, RpcConfiguration } from "@bentley/imodeljs-common";

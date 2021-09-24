@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { ProcessDetector } from "@bentley/bentleyjs-core";
-import { ElectronAuthorizationBackend, ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
+import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
@@ -38,8 +38,8 @@ export async function initializeBackend() {
           clientId: "imodeljs-electron-test",
           redirectUri: "http://localhost:3000/signin-callback",
           scope: "openid email profile organization itwinjs",
-        }
-      }
+        },
+      },
     });
 
     // TODO: Use this setup once the ElectronAuth is split out.
