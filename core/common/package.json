@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-common",
-  "version": "3.0.0-dev.65",
+  "version": "3.0.0-dev.66",
   "description": "iModel.js components common to frontend and backend",
   "main": "lib/cjs/imodeljs-common.js",
   "module": "lib/esm/imodeljs-common.js",
@@ -40,10 +40,10 @@
     "semver": "^5.5.0"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.65",
-    "@bentley/geometry-core": "workspace:^3.0.0-dev.65",
-    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.65",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.65"
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.66",
+    "@bentley/geometry-core": "workspace:^3.0.0-dev.66",
+    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.66",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.66"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "workspace:*",

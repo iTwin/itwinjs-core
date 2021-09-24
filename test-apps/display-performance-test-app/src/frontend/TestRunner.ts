@@ -132,6 +132,12 @@ export class TestRunner {
   }
 
   public constructor(props: TestSetsProps) {
+    // NB: The default minimum spatial chord tolerance was changed from "no minimum" to 1mm. To preserve prior behavior,
+    // override it to zero.
+    // Subsequently pushed configs can override this if desired.
+    const defaultTileProps: TileAdmin.Props = { minimumSpatialTolerance: 0 };
+    props.tileProps = props.tileProps ? { ...defaultTileProps, ...props.tileProps } : defaultTileProps;
+
     this._config = new TestConfigStack(new TestConfig(props));
     this._testSets = props.testSet;
     this._minimizeOutput = true === props.minimize;

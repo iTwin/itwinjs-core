@@ -1,6 +1,6 @@
 {
   "name": "@bentley/geometry-core",
-  "version": "3.0.0-dev.65",
+  "version": "3.0.0-dev.66",
   "description": "Bentley Core Geometry library",
   "main": "lib/cjs/geometry-core.js",
   "build": "lib/esm/geometry-core.js",
@@ -34,7 +34,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.65"
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.66"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "workspace:*",
