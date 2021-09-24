@@ -531,20 +531,24 @@ export class MapTileTreeReference extends TileTreeReference {
     this._iModel = iModel;
     let tree;
     if (!isOverlay && this._baseLayerSettings !== undefined) {
-      if (this._baseLayerSettings.content instanceof MapLayerSettings) {
-        tree = IModelApp.mapLayerFormatRegistry.createImageryMapLayerTree(this._baseLayerSettings.content, 0, this._iModel);
-        this._baseColor = undefined;
-        this._baseTransparent = this._baseLayerSettings.content.transparency > 0;
-      } else if (this._baseLayerSettings.content instanceof BackgroundMapProvider) {
+      let mapSettings: MapLayerSettings|undefined;
+      let baseTransparent = false;
+      if (this._baseLayerSettings instanceof MapLayerSettings) {
+        mapSettings = this._baseLayerSettings;
+        baseTransparent = this._baseLayerSettings.transparency > 0;
+      } else if (this._baseLayerSettings instanceof BackgroundMapProvider) {
         // Convert BackgroundMapProvider to MapSettings object, then initialize the tree
-        let mapSettings = this._baseLayerSettings.content.toMapSettings();
-        mapSettings = mapSettings.clone({transparency: this._baseLayerSettings.displaySettings.transparency !== false ? this._baseLayerSettings.displaySettings.transparency: undefined});
+        mapSettings = this._baseLayerSettings.toMapSettings();
+        baseTransparent = mapSettings.transparency > 0;
+      }
+
+      if (mapSettings) {
         tree = IModelApp.mapLayerFormatRegistry.createImageryMapLayerTree(mapSettings, 0, this._iModel);
         this._baseColor = undefined;
-        this._baseTransparent = mapSettings.transparency > 0;
-      } else {
-        this._baseColor = this._baseLayerSettings.content;
-        this._baseTransparent = this._baseColor.getTransparency() > 0;
+        this._baseTransparent = baseTransparent;
+      } else if (this._baseLayerSettings instanceof ColorDef) {
+        this._baseColor = this._baseLayerSettings;
+        this._baseTransparent = this._baseColor?.getTransparency() > 0;
       }
     }
 
@@ -575,19 +579,22 @@ export class MapTileTreeReference extends TileTreeReference {
     let tree;
     this._baseLayerSettings = baseLayerSettings;
 
-    if (baseLayerSettings.content instanceof MapLayerSettings) {
-      tree = IModelApp.mapLayerFormatRegistry.createImageryMapLayerTree(baseLayerSettings.content, 0, this._iModel);
-      this._baseColor = undefined;
-      this._baseTransparent = baseLayerSettings.content.transparency > 0;
-    } else if (baseLayerSettings.content instanceof BackgroundMapProvider) {
+    let mapSettings: MapLayerSettings|undefined;
+    let baseTransparent = false;
+    if (this._baseLayerSettings instanceof MapLayerSettings) {
+      mapSettings = this._baseLayerSettings;
+      baseTransparent = this._baseLayerSettings.transparency > 0;
+    } else if (this._baseLayerSettings instanceof BackgroundMapProvider) {
       // Convert BackgroundMapProvider to MapSettings object, then initialize the tree
-      let mapSettings = baseLayerSettings.content.toMapSettings();
-      mapSettings = mapSettings.clone({transparency: baseLayerSettings.displaySettings.transparency !== false ? baseLayerSettings.displaySettings.transparency: undefined});
+      mapSettings = this._baseLayerSettings.toMapSettings();
+    }
+
+    if (mapSettings) {
       tree = IModelApp.mapLayerFormatRegistry.createImageryMapLayerTree(mapSettings, 0, this._iModel);
       this._baseColor = undefined;
-      this._baseTransparent = mapSettings.transparency > 0;
-    } else {
-      this._baseColor = baseLayerSettings.content;
+      this._baseTransparent = baseTransparent;
+    }  else if (this._baseLayerSettings instanceof ColorDef) {
+      this._baseColor = this._baseLayerSettings;
       this._baseTransparent = this._baseColor.getTransparency() > 0;
     }
 

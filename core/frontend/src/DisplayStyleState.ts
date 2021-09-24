@@ -8,7 +8,7 @@
 import { assert, BeEvent, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Angle, Range1d, Vector3d } from "@bentley/geometry-core";
 import {
-  BackgroundMapProps, BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapSettings, BaseLayerContentProps, BaseLayerSettings, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
+  BackgroundMapProps, BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapSettings, BaseLayerSettings, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
   DisplayStyleProps, DisplayStyleSettings, EnvironmentProps, FeatureAppearance, GlobeMode, GroundPlane, LightSettings, MapLayerProps,
   MapLayerSettings, MapSubLayerProps, RenderSchedule, RenderTexture, RenderTimelineProps, SkyBoxImageType, SkyBoxProps,
   SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, TerrainHeightOriginMode, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
@@ -391,30 +391,29 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     return (index < 0 || index >= layers.length) ? undefined : layers[index];
   }
 
-  /** @internal */
-  public changeBaseMapContentProps(props: BaseLayerContentProps) {
+  /** @beta */
+  public changeBaseMapProps(props: ColorDef | MapLayerProps | BackgroundMapProviderProps) {
     if (props instanceof ColorDef) {
       let transparency = 0;
-      if (this.settings.mapImagery.backgroundBase.content instanceof ColorDef)
-        transparency = this.settings.mapImagery.backgroundBase.content.getTransparency();
-      this.settings.mapImagery.backgroundBase.content = props.withTransparency(transparency);
+      if (this.settings.mapImagery.backgroundBase instanceof ColorDef)
+        transparency = this.settings.mapImagery.backgroundBase.getTransparency();
+      this.settings.mapImagery.backgroundBase = props.withTransparency(transparency);
     } else if (BackgroundMapProvider.isMatchingProps(props)) {
-      // BackgroundMapProvider
-      // if (BackgroundMapProvider.isMatchingProps(this.settings.mapImagery.backgroundBase) {
+      // props is BackgroundMapProviderProps
       if (this.settings.mapImagery.backgroundBase instanceof BackgroundMapProvider) {
-        const mapProvider = this.settings.mapImagery.backgroundBase.content as BackgroundMapProvider;
-        this.settings.mapImagery.backgroundBase.content = mapProvider.clone(props as BackgroundMapProviderProps);
+        const mapProvider = this.settings.mapImagery.backgroundBase;
+        this.settings.mapImagery.backgroundBase = mapProvider.clone(props as BackgroundMapProviderProps);
       } else {
-        this.settings.mapImagery.backgroundBase.content = BackgroundMapProvider.fromJSON(props as BackgroundMapProviderProps);
+        this.settings.mapImagery.backgroundBase = BackgroundMapProvider.fromJSON(props as BackgroundMapProviderProps);
       }
     } else {
-      // TODO: Review the case when MapLayersProps is passed (i.e. {visible:false} and source is a ColorDef)
-      if (this.settings.mapImagery.backgroundBase.content instanceof MapLayerSettings)
-        this.settings.mapImagery.backgroundBase.content = this.settings.mapImagery.backgroundBase.content.clone(props as MapLayerSettings);
+      // props is MapLayerProps
+      if (this.settings.mapImagery.backgroundBase instanceof MapLayerSettings)
+        this.settings.mapImagery.backgroundBase = this.settings.mapImagery.backgroundBase.clone(props as MapLayerSettings);
       else {
         const backgroundLayerSettings = MapLayerSettings.fromJSON(props as MapLayerSettings);
         if (backgroundLayerSettings)
-          this.settings.mapImagery.backgroundBase.content = backgroundLayerSettings;
+          this.settings.mapImagery.backgroundBase = backgroundLayerSettings;
       }
     }
     this._synchBackgroundMapImagery();
@@ -427,13 +426,27 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     return this.settings.mapImagery.baseTransparency;
   }
 
-  /** @internal  */
+  /** @beta  */
   public changeBaseMapTransparency(transparency: number) {
     if (this.settings.mapImagery.backgroundBase instanceof ColorDef) {
-      this.settings.mapImagery.backgroundBase.content = this.settings.mapImagery.backgroundBase.withTransparency(transparency * 255);
+      this.settings.mapImagery.backgroundBase = this.settings.mapImagery.backgroundBase.withTransparency(transparency * 255);
+      this._synchBackgroundMapImagery();
+    } else if (this.settings.mapImagery.backgroundBase instanceof BackgroundMapProvider) {
+      this.settings.mapImagery.backgroundBase = this.settings.mapImagery.backgroundBase.clone({providerData: {transparency}});
       this._synchBackgroundMapImagery();
     } else {
-      this.changeBaseMapContentProps({ transparency });
+      this.changeBaseMapProps({ transparency });
+    }
+  }
+
+  /** @beta  */
+  public changeBaseMapVisible(visible: boolean) {
+    // TODO: There is no way actually to change the visibility of the base map when its sets to a ColorDef.
+    if (this.settings.mapImagery.backgroundBase instanceof BackgroundMapProvider) {
+      this.settings.mapImagery.backgroundBase =this.settings.mapImagery.backgroundBase.clone({providerData: {visible}});
+      this._synchBackgroundMapImagery();
+    } else {
+      this.changeBaseMapProps({ visible });
     }
   }
 

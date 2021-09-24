@@ -6,7 +6,7 @@
 
 import { compareStrings } from "@bentley/bentleyjs-core";
 import { Point2d } from "@bentley/geometry-core";
-import { BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, MapLayerSettings, MapSubLayerProps } from "@bentley/imodeljs-common";
+import { BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapType, MapLayerSettings, MapSubLayerProps } from "@bentley/imodeljs-common";
 import { getJson, RequestBasicCredentials } from "@bentley/itwin-client";
 import { FrontendRequestContext } from "../../FrontendRequestContext";
 import { IModelApp } from "../../IModelApp";
@@ -79,18 +79,6 @@ export class MapLayerSource  {
   public async validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
     return IModelApp.mapLayerFormatRegistry.validateSource(this.formatId, this.url, this.getCredentials(), ignoreCache);
   }
-  // public static fromBackgroundMapProps(props: BackgroundMapProps) {
-  //   const settings = BackgroundMapSettings.fromJSON(props);
-  //   if (undefined !== settings) {
-  //     const layerSettings = MapLayerSettings.fromMapSettings(settings);
-  //     if (undefined !== layerSettings) {
-  //       const source = MapLayerSource.fromJSON(layerSettings);
-  //       source!.baseMap = true;
-  //       return source;
-  //     }
-  //   }
-  //   return undefined;
-  // }
   public toJSON() {
     return { url: this.url, name: this.name, formatId: this.formatId, transparentBackground: this.transparentBackground };
   }
@@ -150,23 +138,6 @@ export class MapLayerSources {
     (await ArcGisUtilities.getServiceDirectorySources("https://elevation.nationalmap.gov/arcgis/rest/services")).forEach((source) => mapLayerSources.push(source));
     return mapLayerSources;
   }
-
-  private static getBingMapLayerSource(): MapLayerSource[] {
-    const mapLayerSources: MapLayerSource[] = [];
-    // mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Street } })!);
-    // mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Aerial } })!);
-    // mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid } })!);
-    return mapLayerSources;
-  }
-
-  private static getMapBoxLayerSource(): MapLayerSource[] {
-    const mapLayerSources: MapLayerSource[] = [];
-    // mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street } })!);
-    // mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Aerial } })!);
-    // mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Hybrid } })!);
-    return mapLayerSources;
-  }
-
   /**
  *  This function fetch the Disco map layer sources. Those sources are for Europe but not very reliable.
  *  Needs to validate the location of the user before fetching it.
@@ -177,7 +148,7 @@ export class MapLayerSources {
     return mapLayerSources;
   }
 
-  public static async create(iModel?: IModelConnection, queryForPublicSources = false, addMapBoxSources = false): Promise<MapLayerSources> {
+  public static async create(iModel?: IModelConnection, queryForPublicSources = false): Promise<MapLayerSources> {
     if (!queryForPublicSources && MapLayerSources._instance)
       return MapLayerSources._instance;
 
@@ -201,16 +172,6 @@ export class MapLayerSources {
         urlSet.add(source.url);
       }
     });
-
-    this.getBingMapLayerSource().forEach((source) => {
-      addSource(source);
-    });
-
-    if (addMapBoxSources) {
-      this.getMapBoxLayerSource().forEach((source) => {
-        addSource(source);
-      });
-    }
 
     if (queryForPublicSources) {
       const requestContext = new FrontendRequestContext();

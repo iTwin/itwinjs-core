@@ -5,8 +5,8 @@
 // cSpell:ignore droppable Sublayer Basemap
 
 import * as React from "react";
-import { BaseLayerContentProps, ColorByName, ColorDef, MapLayerProps, MapLayerSettings } from "@bentley/imodeljs-common";
-import { DisplayStyleState, MapLayerImageryProvider } from "@bentley/imodeljs-frontend";
+import { BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapType, BaseLayerProps, ColorByName, ColorDef, MapLayerProps, MapLayerSettings } from "@bentley/imodeljs-common";
+import { DisplayStyleState } from "@bentley/imodeljs-frontend";
 import { ColorPickerDialog, ColorSwatch } from "@bentley/ui-imodel-components";
 import { OptionType, ThemedSelect, WebFontIcon } from "@bentley/ui-core";
 import { ActionMeta, ValueType } from "react-select/src/types";
@@ -20,7 +20,7 @@ function getBaseMapFromStyle(displayStyle: DisplayStyleState | undefined) {
   if (!displayStyle)
     return undefined;
 
-  return displayStyle.settings.mapImagery.backgroundBase.content.toJSON();
+  return displayStyle.settings.mapImagery.backgroundBase.toJSON();
 }
 
 interface BaseOption extends OptionType {
@@ -47,15 +47,26 @@ export function BasemapPanel() {
     }
   }, [activeViewport]);
 
+  const [presetBackgroundMapProviders] = React.useState([
+    BackgroundMapProvider.fromJSON({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Street }}),
+    BackgroundMapProvider.fromJSON({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Aerial }}),
+    BackgroundMapProvider.fromJSON({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid }}),
+  ]);
+
   const baseMapOptions = React.useMemo<BaseOption[]>(() => {
     const baseOptions: BaseOption[] = [];
+
+    for (const bgMapProvider of presetBackgroundMapProviders) {
+      const label = bgMapProvider.label();
+      baseOptions.push({ value: label, label });
+    }
 
     baseOptions.push({ value: useColorLabel, label: useColorLabel });
 
     if (bases)
       baseOptions.push(...bases.map((value) => ({ value: value.name, label: value.name })));
     return baseOptions;
-  }, [bases, useColorLabel]);
+  }, [bases, presetBackgroundMapProviders, useColorLabel]);
 
   const [presetColors] = React.useState([
     ColorDef.create(ColorByName.grey),
@@ -68,9 +79,10 @@ export function BasemapPanel() {
     ColorDef.create(ColorByName.darkBrown),
   ]);
 
-  const [selectedBaseMap, setSelectedBaseMap] = React.useState<BaseLayerContentProps | undefined>(getBaseMapFromStyle(activeViewport?.displayStyle));
+  const [selectedBaseMap, setSelectedBaseMap] = React.useState<BaseLayerProps | undefined>(getBaseMapFromStyle(activeViewport?.displayStyle));
   const baseIsColor = React.useMemo(() => typeof selectedBaseMap === "number", [selectedBaseMap]);
-  const baseIsMap = React.useMemo(() => !baseIsColor && (selectedBaseMap !== undefined), [baseIsColor, selectedBaseMap]);
+  const baseIsBackgroundMapProvider = React.useMemo(() => BackgroundMapProvider.isMatchingProps(selectedBaseMap), [selectedBaseMap]);
+  const baseIsMap = React.useMemo(() => !baseIsColor && !baseIsBackgroundMapProvider && (selectedBaseMap !== undefined), [baseIsColor, selectedBaseMap]);
   const bgColor = React.useMemo(() => baseIsColor ? selectedBaseMap as number : presetColors[0].toJSON(), [baseIsColor, selectedBaseMap, presetColors]);
   const [colorDialogTitle] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:ColorDialog.Title"));
   const selectedBaseMapValue = React.useMemo(() => {
@@ -79,14 +91,23 @@ export function BasemapPanel() {
       const foundItem = baseMapOptions.find((value) => value.label === mapName);
       if (foundItem)
         return foundItem;
+    } else if (baseIsBackgroundMapProvider) {
+      if (selectedBaseMap) {
+        const provider = BackgroundMapProvider.fromJSON(selectedBaseMap as BackgroundMapProviderProps);
+        const providerLabel = provider?.label();
+        const foundItem = baseMapOptions.find((value) => value.label === providerLabel);
+        if (foundItem)
+          return foundItem;
+      }
+
     }
-    return baseMapOptions[0];
-  }, [selectedBaseMap, baseMapOptions, baseIsMap]);
+    return baseMapOptions[0];  // default to color
+  }, [selectedBaseMap, baseMapOptions, baseIsMap, baseIsBackgroundMapProvider]);
 
   const handleBackgroundColorDialogOk = React.useCallback((bgColorDef: ColorDef) => {
     ModalDialogManager.closeDialog();
     if (activeViewport) {
-      activeViewport.displayStyle.changeBaseMapContentProps(bgColorDef);
+      activeViewport.displayStyle.changeBaseMapProps(bgColorDef);
       activeViewport.invalidateRenderPlan();
       setSelectedBaseMap(bgColorDef.toJSON());
     }
@@ -104,23 +125,36 @@ export function BasemapPanel() {
 
   const handleBaseMapSelection = React.useCallback((value: ValueType<BaseOption>, action: ActionMeta<BaseOption>) => {
     if (bases && activeViewport && action.action === "select-option" && value) {
-      const baseMap = bases.find((map) => map.name === (value as BaseOption).label);
-      if (baseMap) {
-        const baseProps: MapLayerProps = baseMap.toJSON();
-        activeViewport.displayStyle.changeBaseMapContentProps(baseProps);
+      const presetBgMap = presetBackgroundMapProviders.find((bg) => bg.label() === (value as BaseOption).label);
+
+      if (presetBgMap) {
+        const bgMapsProps = presetBgMap.toJSON();
+        // visible/transparency are set to undefined to preserve previously set values
+        bgMapsProps.providerData = {...bgMapsProps.providerData, visible: undefined, transparency: undefined};
+        activeViewport.displayStyle.changeBaseMapProps(bgMapsProps);
         activeViewport.invalidateRenderPlan();
-        setSelectedBaseMap(baseProps);
+        setSelectedBaseMap(bgMapsProps);
       } else {
-        const bgColorDef = ColorDef.fromJSON(bgColor);
-        activeViewport.displayStyle.changeBaseMapContentProps(bgColorDef);
-        activeViewport.invalidateRenderPlan();
-        setSelectedBaseMap(bgColorDef.toJSON());
+        const baseMap = bases.find((map) => map.name === (value as BaseOption).label);
+        if (baseMap) {
+          const baseProps = baseMap.toJSON();
+          activeViewport.displayStyle.changeBaseMapProps(baseProps);
+          activeViewport.invalidateRenderPlan();
+          setSelectedBaseMap(baseProps);
+        } else {
+          const bgColorDef = ColorDef.fromJSON(bgColor);
+          activeViewport.displayStyle.changeBaseMapProps(bgColorDef);
+          activeViewport.invalidateRenderPlan();
+          setSelectedBaseMap(bgColorDef.toJSON());
+        }
       }
+
     }
-  }, [bases, activeViewport, bgColor]);
+  }, [bases, activeViewport, presetBackgroundMapProviders, bgColor]);
 
   const [baseMapVisible, setBaseMapVisible] = React.useState(() => {
-    if (activeViewport && activeViewport.displayStyle.backgroundMapBase instanceof MapLayerSettings) {
+    if (activeViewport &&
+      (activeViewport.displayStyle.backgroundMapBase instanceof MapLayerSettings || activeViewport.displayStyle.backgroundMapBase instanceof BackgroundMapProvider)) {
       return activeViewport.displayStyle.backgroundMapBase.visible;
     }
     return false;
@@ -129,7 +163,7 @@ export function BasemapPanel() {
   const handleVisibilityChange = React.useCallback(() => {
     if (activeViewport) {
       const newState = !baseMapVisible;
-      activeViewport.displayStyle.changeBaseMapContentProps({ visible: newState });
+      activeViewport.displayStyle.changeBaseMapVisible(newState);
       activeViewport.invalidateRenderPlan();
       setBaseMapVisible(newState);
     }
