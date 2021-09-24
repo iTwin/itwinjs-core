@@ -752,13 +752,13 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     // If a type is specified, display it
     if (type !== undefined) {
       switch (type.toUpperCase()) {
-        case RealityDataType.RealityMesh3DTile:
+        case "RealityMesh3DTiles":
           strings.push(IModelApp.i18n.translate("iModelJs:RealityModelTypes.RealityMesh3DTiles"));
           break;
-        case RealityDataType.Terrain3DTile:
+        case "Terrain3DTiles":
           strings.push(IModelApp.i18n.translate("iModelJs:RealityModelTypes.Terrain3DTiles"));
           break;
-        case RealityDataType.Cesium3DTile:
+        case "Cesium3DTiles":
           strings.push(IModelApp.i18n.translate("iModelJs:RealityModelTypes.Cesium3DTiles"));
           break;
       }
@@ -988,7 +988,7 @@ export class RealityModelTileClient {
   /**
    * Returns Reality Data type if available
    */
-  public async getRealityDataType(): Promise<string | undefined> {
+  public async getRealityDataType(): Promise<RealityDataType | undefined> {
     const token = await this.getAccessToken();
     if (this.rdsProps && token) {
       const authRequestContext = new AuthorizedFrontendRequestContext(token);

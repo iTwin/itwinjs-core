@@ -121,7 +121,7 @@ export interface IModelAppOptions {
   /** If present, supplies the [[UiAdmin]] for this session. */
   uiAdmin?: UiAdmin;
   rpcInterfaces?: RpcInterfaceDefinition[];
-  /** @internal // SWB What should this be? */
+  /** @beta */
   realityDataAccessClient?: RealityDataAccess;
 }
 
@@ -245,7 +245,7 @@ export class IModelApp {
    */
   public static get hubAccess(): FrontendHubAccess { return this._hubAccess; }
   /** Provides access to the RealityData service implementation for this IModelApp
-   * @internal // SWB What should this be?
+   * @beta
    */
   public static get realityDataAccessClient(): RealityDataAccess { return this._realityDataAccessClient; }
 

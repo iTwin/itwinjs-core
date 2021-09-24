@@ -12,13 +12,12 @@ import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
  * All of the currently supported ProjectWise ContextShare reality data types
  * @internal
  */
-export enum RealityDataType {
-  RealityMesh3DTile = "RealityMesh3DTiles", // Web Ready Scalable Mesh
-  OPC = "OPC", // Orbit Point Cloud
-  Terrain3DTile = "Terrain3DTiles", // Terrain3DTiles
-  OMR = "OMR", // Mapping Resource,
-  Cesium3DTile = "Cesium3DTiles" // Cesium 3dTiles
-}
+export type RealityDataType =
+  "RealityMesh3DTiles" | // Web Ready Scalable Mesh
+  "OPC" | // Orbit Point Cloud
+  "Terrain3DTiles" | // Terrain3DTiles
+  "OMR" | // Mapping Resource,
+  "Cesium3DTiles"; // Cesium 3dTiles
 
 /** RealityData
  * This class implements a Reality Data stored in ProjectWise Context Share (Reality Data Service)
