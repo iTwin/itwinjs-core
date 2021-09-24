@@ -826,7 +826,7 @@ export class RealityModelTileClient {
   private getInitializedRealityData(): RealityData {
     if (!this._realityData)
       new Error("No reality data found. Must call the initialize method first.");
-    return this._realityData!;
+    return this._realityData;
   }
 
   // ###TODO we should be able to pass the projectId / tileId directly, instead of parsing the url
@@ -855,7 +855,7 @@ export class RealityModelTileClient {
       if (!this._realityData) {
         // TODO Temporary fix ... the root document may not be located at the root. We need to set the base URL even for RD stored on server
         // though this base URL is only the part relative to the root of the blob containing the data.
-        this._realityData = await IModelApp.realityDataServiceClient.getRealityData(requestContext, this.rdsProps.projectId, this.rdsProps.tilesId);
+        this._realityData = await IModelApp.realityDataAccessClient.getRealityData(requestContext, this.rdsProps.projectId, this.rdsProps.tilesId);
 
         // A reality data that has not root document set should not be considered.
         const rootDocument: string = (this._realityData.rootDocument ? this._realityData.rootDocument : "");
@@ -866,7 +866,6 @@ export class RealityModelTileClient {
 
   // ###TODO temporary means of extracting the tileId and projectId from the given url
   // This is the method that determines if the url refers to Reality Data stored on PW Context Share. If not then undefined is returned.
-  // ###TODO This method should be replaced by realityDataServiceClient.getRealityDataIdFromUrl()
   // We obtain the projectId from URL but it should be used normally. The iModel context should be used everywhere: verify!
   private parseUrl(url: string): RDSClientProps | undefined {
     // We have URLs with incorrect slashes that must be supported. The ~2F are WSG encoded slashes and may prevent parsing out the reality data id.

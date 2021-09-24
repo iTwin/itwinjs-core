@@ -48,7 +48,7 @@ interface RealityData {
  * This class also implements extraction of the Azure blob address.
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-interface RealityDataServiceClient {
+interface RealityDataAccess {
   getRealityData: (requestContext: AuthorizedClientRequestContext, iTwinId: string | undefined, tileId: string) => Promise<RealityData>;
   getRealityDataUrl: (iTwinId: string | undefined, tileId: string) => Promise<string>;
 }

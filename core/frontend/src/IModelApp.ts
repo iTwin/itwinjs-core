@@ -34,7 +34,7 @@ import * as modelselector from "./ModelSelectorState";
 import * as modelState from "./ModelState";
 import { NotificationManager } from "./NotificationManager";
 import { QuantityFormatter } from "./quantity-formatting/QuantityFormatter";
-import { RealityDataServiceClient } from "./RealityDataAccessProps";
+import { RealityDataAccess } from "./RealityDataAccessProps";
 import { RenderSystem } from "./render/RenderSystem";
 import { System } from "./render/webgl/System";
 import * as sheetState from "./SheetViewState";
@@ -122,7 +122,7 @@ export interface IModelAppOptions {
   uiAdmin?: UiAdmin;
   rpcInterfaces?: RpcInterfaceDefinition[];
   /** @internal // SWB What should this be? */
-  realityDataServiceClient?: RealityDataServiceClient;
+  realityDataAccessClient?: RealityDataAccess;
 }
 
 /** Options for [[IModelApp.makeModalDiv]]
@@ -189,7 +189,7 @@ export class IModelApp {
   private static _securityOptions: FrontendSecurityOptions;
   private static _mapLayerFormatRegistry: MapLayerFormatRegistry;
   private static _hubAccess: FrontendHubAccess;
-  private static _realityDataServiceClient: RealityDataServiceClient;
+  private static _realityDataAccessClient: RealityDataAccess;
 
   // No instances of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   protected constructor() { }
@@ -247,7 +247,7 @@ export class IModelApp {
   /** Provides access to the RealityData service implementation for this IModelApp
    * @internal // SWB What should this be?
    */
-  public static get realityDataServiceClient(): RealityDataServiceClient { return this._realityDataServiceClient; }
+  public static get realityDataAccessClient(): RealityDataAccess { return this._realityDataAccessClient; }
 
   /** @internal */
   public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid; }
@@ -376,7 +376,7 @@ export class IModelApp {
     this._uiAdmin = (opts.uiAdmin !== undefined) ? opts.uiAdmin : new UiAdmin();
     this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);
     // TEMP: Using soon-to-be deprecated RealityDataClient as a default implementation
-    this._realityDataServiceClient = (opts.realityDataServiceClient !== undefined) ? opts.realityDataServiceClient : new RealityDataClient();
+    this._realityDataAccessClient = (opts.realityDataAccessClient !== undefined) ? opts.realityDataAccessClient : new RealityDataClient();
 
     [
       this.renderSystem,
