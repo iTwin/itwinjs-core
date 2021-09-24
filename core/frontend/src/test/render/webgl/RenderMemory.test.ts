@@ -94,7 +94,7 @@ function expectBytesUsed(expected: number, consumer: RenderMemory.Consumer | Ren
   expect(getBytesUsed(consumer)).to.equal(expected);
 }
 
-describe.only("RenderMemory", () => {
+describe("RenderMemory", () => {
   let imodel: IModelConnection;
 
   before(async () => {
@@ -190,9 +190,10 @@ describe.only("RenderMemory", () => {
     expectBytesUsed(0, texture);
   });
 
+  const numBytesPerInstance = 12 * 4 + 3 + 8; // 12 floats per transform, 3 bytes per feature Id, 8 bytes per symbology override.
+
   it("should collect memory used by instanced mesh", () => {
     const params = createInstanceParams(5);
-    const numBytesPerInstance = 12 * 4 + 3 + 8; // 12 floats per transform, 3 bytes per feature Id, 8 bytes per symbology override.
     const numInstanceBytes = params.count * numBytesPerInstance;
 
     const mesh = createMeshGeometry();
@@ -206,7 +207,6 @@ describe.only("RenderMemory", () => {
 
   it("should collect memory used by instanced mesh and its edges", () => {
     const params = createInstanceParams(5);
-    const numBytesPerInstance = 12 * 4 + 3 + 8; // 12 floats per transform, 3 bytes per feature Id, 8 bytes per symbology override.
     const numInstanceBytes = params.count * numBytesPerInstance;
 
     const mesh = createMeshGeometry({ includeEdges: true });
@@ -216,11 +216,5 @@ describe.only("RenderMemory", () => {
     graphic.dispose();
     expectBytesUsed(0, mesh);
     expectBytesUsed(0, graphic);
-  });
-
-  it("should collect memory used by instanced point string", () => {
-  });
-
-  it("should collect memory used by patterned geometry", () => {
   });
 });
