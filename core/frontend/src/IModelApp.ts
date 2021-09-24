@@ -16,6 +16,7 @@ import { IModelClient } from "@bentley/imodelhub-client";
 import { IModelStatus, RpcConfiguration, RpcInterfaceDefinition, RpcRequest } from "@bentley/imodeljs-common";
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
 import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
+import { RealityDataClient } from "@bentley/reality-data-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
 import { UiAdmin } from "@bentley/ui-abstract";
 import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@bentley/webgl-compatibility";
@@ -120,6 +121,8 @@ export interface IModelAppOptions {
   /** If present, supplies the [[UiAdmin]] for this session. */
   uiAdmin?: UiAdmin;
   rpcInterfaces?: RpcInterfaceDefinition[];
+  /** @internal // SWB What should this be? */
+  realityDataServiceClient?: RealityDataServiceClient;
 }
 
 /** Options for [[IModelApp.makeModalDiv]]
@@ -372,6 +375,8 @@ export class IModelApp {
     this._quantityFormatter = (opts.quantityFormatter !== undefined) ? opts.quantityFormatter : new QuantityFormatter();
     this._uiAdmin = (opts.uiAdmin !== undefined) ? opts.uiAdmin : new UiAdmin();
     this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);
+    // TEMP: Using soon-to-be deprecated RealityDataClient as a default implementation
+    this._realityDataServiceClient = (opts.realityDataServiceClient !== undefined) ? opts.realityDataServiceClient : new RealityDataClient();
 
     [
       this.renderSystem,
