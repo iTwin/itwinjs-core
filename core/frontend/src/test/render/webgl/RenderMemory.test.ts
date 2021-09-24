@@ -218,6 +218,9 @@ describe.only("RenderMemory", () => {
     expectBytesUsed(0, graphic);
   });
 
+  it("should collect memory used by instanced point string", () => {
+  });
+
   it("should collect memory used by patterned geometry", () => {
   });
 });

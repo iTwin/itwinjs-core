@@ -203,10 +203,11 @@ export class MeshGraphic extends Graphic {
   public get isPickable() { return false; }
 
   public dispose() {
-    dispose(this.meshData);
     for (const primitive of this._primitives)
       dispose(primitive);
 
+    dispose(this.meshData);
+    dispose(this._instances);
     this._primitives.length = 0;
   }
 

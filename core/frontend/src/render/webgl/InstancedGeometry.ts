@@ -265,7 +265,7 @@ export class InstancedGeometry extends CachedGeometry {
   private readonly _buffersContainer: BuffersContainer;
   private readonly _buffers: InstanceBuffers | PatternBuffers;
   private readonly _repr: LUTGeometry;
-  private readonly _ownsRepr: boolean;
+  private readonly _ownsBuffers: boolean;
 
   public getRtcModelTransform(modelMatrix: Transform) { return this._buffers.getRtcModelTransform(modelMatrix); }
   public getRtcOnlyTransform() { return this._buffers.getRtcOnlyTransform(); }
@@ -298,7 +298,7 @@ export class InstancedGeometry extends CachedGeometry {
   public override getLineWeight(params: ShaderProgramParams) { return this._repr.getLineWeight(params); }
   public override wantMonochrome(target: Target) { return this._repr.wantMonochrome(target); }
 
-  public static create(repr: LUTGeometry, ownsRepr: boolean, buffers: InstanceBuffers): InstancedGeometry {
+  public static create(repr: LUTGeometry, ownsBuffers: boolean, buffers: InstanceBuffers): InstancedGeometry {
     const techId = repr.techniqueId;
     const container = BuffersContainer.create();
     container.appendLinkages(repr.lutBuffers.linkages);
@@ -321,10 +321,10 @@ export class InstancedGeometry extends CachedGeometry {
       container.addBuffer(buffers.featureIds, [BufferParameters.create(attrFeatureId.location, 3, GL.DataType.UnsignedByte, false, 0, 0, true)]);
     }
 
-    return new this(repr, ownsRepr, buffers, container);
+    return new this(repr, ownsBuffers, buffers, container);
   }
 
-  public static createPattern(repr: LUTGeometry, ownsRepr: boolean, buffers: PatternBuffers): InstancedGeometry {
+  public static createPattern(repr: LUTGeometry, ownsBuffers: boolean, buffers: PatternBuffers): InstancedGeometry {
     const techId = repr.techniqueId;
     const container = BuffersContainer.create();
     container.appendLinkages(repr.lutBuffers.linkages);
@@ -337,28 +337,28 @@ export class InstancedGeometry extends CachedGeometry {
       BufferParameters.create(attrY.location, 1, GL.DataType.Float, false, 8, 4, true),
     ]);
 
-    return new this(repr, ownsRepr, buffers, container);
+    return new this(repr, ownsBuffers, buffers, container);
   }
 
-  private constructor(repr: LUTGeometry, ownsRepr: boolean, buffers: InstanceBuffers | PatternBuffers, container: BuffersContainer) {
+  private constructor(repr: LUTGeometry, ownsBuffers: boolean, buffers: InstanceBuffers | PatternBuffers, container: BuffersContainer) {
     super();
     this._repr = repr;
-    this._ownsRepr = ownsRepr;
+    this._ownsBuffers = ownsBuffers;
     this._buffers = buffers;
     this._buffersContainer = container;
   }
 
   public get isDisposed(): boolean {
-    let isReprDisposed = true;
-    if (this._ownsRepr)
-      isReprDisposed = this._repr.isDisposed;
-    return this._buffers.isDisposed && isReprDisposed;
+    if (!this._repr.isDisposed)
+      return false;
+
+    return !this._ownsBuffers || this._buffers.isDisposed;
   }
 
   public dispose() {
-    dispose(this._buffers);
-    if (this._ownsRepr)
-      this._repr.dispose();
+    this._repr.dispose();
+    if (this._ownsBuffers)
+      dispose(this._buffers);
   }
 
   protected _wantWoWReversal(_target: Target) {
@@ -376,7 +376,7 @@ export class InstancedGeometry extends CachedGeometry {
 
   public collectStatistics(stats: RenderMemory.Statistics) {
     this._repr.collectStatistics(stats);
-    if (this._ownsRepr)
+    if (this._ownsBuffers)
       this._buffers.collectStatistics(stats);
   }
 
