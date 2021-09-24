@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { createRandomRuleset, RegisteredRuleset, Rule, Ruleset, RuleTypes } from "@bentley/presentation-common";
+import { RegisteredRuleset, Rule, Ruleset, RuleTypes } from "@bentley/presentation-common";
+import { createRandomRuleset } from "@bentley/presentation-common/lib/cjs/test";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";

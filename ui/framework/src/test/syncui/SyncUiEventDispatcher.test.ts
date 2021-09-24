@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelRpcProps } from "@bentley/imodeljs-common";
 import { IModelApp, IModelConnection, MockRender, ScreenViewport, SelectionSet } from "@bentley/imodeljs-frontend";
-import { createRandomECInstanceKey, createRandomId, createRandomSelectionScope, InstanceKey, RpcRequestsHandler } from "@bentley/presentation-common";
+import { InstanceKey, RpcRequestsHandler } from "@bentley/presentation-common";
+import { createRandomECInstanceKey, createRandomId, createRandomSelectionScope } from "@bentley/presentation-common/lib/cjs/test";
 import { Presentation, SelectionManager, SelectionScopesManager, SelectionScopesManagerProps } from "@bentley/presentation-frontend";
 import { expect } from "chai";
 import * as sinon from "sinon";

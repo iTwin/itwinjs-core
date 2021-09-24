@@ -9,6 +9,8 @@ import { IModelApp, IModelAppOptions, WebViewerApp } from "@bentley/imodeljs-fro
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@bentley/presentation-frontend";
 // __PUBLISH_EXTRACT_END__
 import { UiComponents } from "@bentley/ui-components";
+import * as React from "react";
+import * as ReactDOM from "react-dom";
 import rpcInterfaces from "../common/Rpcs";
 import App from "./components/app/App";
 import "./index.css";

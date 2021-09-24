@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { createRandomECInstancesNodeKey, NodeKey } from "@bentley/presentation-common";
+import { NodeKey } from "@bentley/presentation-common";
+import { createRandomECInstancesNodeKey } from "@bentley/presentation-common/lib/cjs/test";
 import * as moq from "typemoq";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
 import { NodeIdentifier, StateTracker } from "../presentation-frontend/StateTracker";

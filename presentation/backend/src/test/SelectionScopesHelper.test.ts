@@ -5,7 +5,8 @@
 import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { DrawingGraphic, ECSqlStatement, ECSqlValue, Element, IModelDb, IModelHost } from "@bentley/imodeljs-backend";
 import { ElementProps, EntityMetaData, IModelError, ModelProps } from "@bentley/imodeljs-common";
-import { createRandomECInstanceKey, createRandomId, InstanceKey } from "@bentley/presentation-common";
+import { InstanceKey } from "@bentley/presentation-common";
+import { createRandomECInstanceKey, createRandomId } from "@bentley/presentation-common/lib/cjs/test";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "typemoq";

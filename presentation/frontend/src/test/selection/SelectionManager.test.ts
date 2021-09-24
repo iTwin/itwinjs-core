@@ -5,7 +5,8 @@
 
 import { Id64, Id64Arg, Id64String, using } from "@bentley/bentleyjs-core";
 import { IModelApp, IModelConnection, SelectionSet, SelectionSetEventType } from "@bentley/imodeljs-frontend";
-import { createRandomECInstanceKey, createRandomId, createRandomSelectionScope, createRandomTransientId, InstanceKey, KeySet, SelectionScope, waitForPendingAsyncs } from "@bentley/presentation-common";
+import { InstanceKey, KeySet, SelectionScope } from "@bentley/presentation-common";
+import { createRandomECInstanceKey, createRandomId, createRandomSelectionScope, createRandomTransientId, waitForPendingAsyncs } from "@bentley/presentation-common/lib/cjs/test";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";

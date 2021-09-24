@@ -5,9 +5,6 @@ package-lock.json
 # build output
 .nyc_output
 lib
-cjs
-esm
-types
 build
 /**/test/output
 /generated-docs

@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { createRandomECInstancesNodeKey, createRandomNodePathElement, LabelDefinition, NodePathElement } from "@bentley/presentation-common";
+import { LabelDefinition, NodePathElement } from "@bentley/presentation-common";
+import { createRandomECInstancesNodeKey, createRandomNodePathElement } from "@bentley/presentation-common/lib/cjs/test";
 import { PageOptions } from "@bentley/ui-components";
 import { expect } from "chai";
 import * as faker from "faker";

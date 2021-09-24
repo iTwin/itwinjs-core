@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { createRandomECInstanceKey, InstanceKey, isKeySet, KeySet } from "@bentley/presentation-common";
+import { InstanceKey, KeySet } from "@bentley/presentation-common";
+import { createRandomECInstanceKey, isKeySet } from "@bentley/presentation-common/lib/cjs/test";
 import {
   ISelectionProvider, Presentation, PresentationManager, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler,
   SelectionManager

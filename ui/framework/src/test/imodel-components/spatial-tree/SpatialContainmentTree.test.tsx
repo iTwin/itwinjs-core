@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { ECInstancesNodeKey, KeySet, StandardNodeTypes } from "@bentley/presentation-common";
-import { mockPresentationManager, PresentationTreeDataProvider } from "@bentley/presentation-components";
+import { PresentationTreeDataProvider } from "@bentley/presentation-components";
+import { mockPresentationManager } from "@bentley/presentation-components/lib/cjs/test";
 import { Presentation, PresentationManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { render, waitFor } from "@testing-library/react";

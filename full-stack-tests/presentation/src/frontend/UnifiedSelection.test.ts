@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import { createRandomId, createRandomTransientId, KeySet, waitForAllAsyncs } from "@bentley/presentation-common";
+import { KeySet } from "@bentley/presentation-common";
+import { createRandomId, createRandomTransientId, waitForAllAsyncs } from "@bentley/presentation-common/lib/cjs/test";
 import { ViewportSelectionHandler } from "@bentley/presentation-components";
 import { Presentation, TRANSIENT_ELEMENT_CLASSNAME } from "@bentley/presentation-frontend";
 import { expect } from "chai";

@@ -4,8 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import { createRandomId, deepEquals, KeySet, LabelDefinition, Node, NodeKey, NodePathElement } from "@bentley/presentation-common";
-import { mockPresentationManager, PresentationTreeDataProvider } from "@bentley/presentation-components";
+import { KeySet, LabelDefinition, Node, NodeKey, NodePathElement } from "@bentley/presentation-common";
+import { createRandomId, deepEquals } from "@bentley/presentation-common/lib/cjs/test";
+import { PresentationTreeDataProvider } from "@bentley/presentation-components";
+import { mockPresentationManager } from "@bentley/presentation-components/lib/cjs/test";
 import { Presentation, PresentationManager, RulesetVariablesManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
 import {
   HierarchyBuilder, HierarchyCacheMode, initialize as initializePresentationTesting, terminate as terminatePresentationTesting

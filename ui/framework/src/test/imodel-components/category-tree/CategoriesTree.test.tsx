@@ -5,7 +5,8 @@
 import { BeEvent, Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection, ScreenViewport, SpatialViewState, SubCategoriesCache, ViewManager, Viewport } from "@bentley/imodeljs-frontend";
 import { ECInstancesNodeKey, KeySet, LabelDefinition, Node, NodePathElement, StandardNodeTypes } from "@bentley/presentation-common";
-import { IPresentationTreeDataProvider, mockPresentationManager, PresentationTreeDataProvider } from "@bentley/presentation-components";
+import { IPresentationTreeDataProvider, PresentationTreeDataProvider } from "@bentley/presentation-components";
+import { mockPresentationManager } from "@bentley/presentation-components/lib/cjs/test";
 import { Presentation, PresentationManager, RulesetVariablesManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";

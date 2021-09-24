@@ -6,7 +6,7 @@ import { BeEvent } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { InternetConnectivityStatus } from "@bentley/imodeljs-common";
 import { AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
-import { configureForPromiseResult, ResolvablePromise } from "@bentley/presentation-common";
+import { configureForPromiseResult, ResolvablePromise } from "@bentley/presentation-common/lib/cjs/test";
 import { SettingsAdmin, SettingsStatus } from "@bentley/product-settings-client";
 import { expect } from "chai";
 import sinon from "sinon";

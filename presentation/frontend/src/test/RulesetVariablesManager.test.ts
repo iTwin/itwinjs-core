@@ -5,7 +5,8 @@
 
 import { Id64 } from "@bentley/bentleyjs-core";
 import { IpcApp } from "@bentley/imodeljs-frontend";
-import { createRandomId, RulesetVariable, VariableValueTypes } from "@bentley/presentation-common";
+import { RulesetVariable, VariableValueTypes } from "@bentley/presentation-common";
+import { createRandomId } from "@bentley/presentation-common/lib/cjs/test";
 import { expect } from "chai";
 import * as faker from "faker";
 import sinon from "sinon";

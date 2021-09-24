@@ -5,7 +5,8 @@
 import { Id64 } from "@bentley/bentleyjs-core";
 import { SnapshotDb } from "@bentley/imodeljs-backend";
 import { Presentation, RulesetEmbedder } from "@bentley/presentation-backend";
-import { ChildNodeSpecificationTypes, createRandomRuleset, Ruleset, RuleTypes } from "@bentley/presentation-common";
+import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@bentley/presentation-common";
+import { createRandomRuleset } from "@bentley/presentation-common/lib/cjs/test";
 import { expect } from "chai";
 import faker from "faker";
 import fs from "fs";

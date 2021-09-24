@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { createRandomECInstancesNodeKey, createRandomGroupingNodeKey, Keys, KeySet, NodeKey, ResolvablePromise } from "@bentley/presentation-common";
+import { Keys, KeySet, NodeKey } from "@bentley/presentation-common";
+import { createRandomECInstancesNodeKey, createRandomGroupingNodeKey, ResolvablePromise } from "@bentley/presentation-common/lib/cjs/test";
 import {
   ISelectionProvider, Presentation, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler, SelectionHelper, SelectionManager
 } from "@bentley/presentation-frontend";

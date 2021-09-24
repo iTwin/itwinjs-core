@@ -5,8 +5,9 @@
 
 import { Id64, Id64Arg, Id64String } from "@bentley/bentleyjs-core";
 import { Code, ElementProps } from "@bentley/imodeljs-common";
-import { HiliteSet as IModelHiliteSet, IModelApp, IModelConnection, NoRenderApp, SelectionSet, ViewState3d } from "@bentley/imodeljs-frontend";
-import { createRandomECInstanceKey, createRandomId, KeySet, ResolvablePromise, waitForAllAsyncs } from "@bentley/presentation-common";
+import { IModelApp, IModelConnection, HiliteSet as IModelHiliteSet, NoRenderApp, SelectionSet, ViewState3d } from "@bentley/imodeljs-frontend";
+import { KeySet } from "@bentley/presentation-common";
+import { createRandomECInstanceKey, createRandomId, ResolvablePromise, waitForAllAsyncs } from "@bentley/presentation-common/lib/cjs/test";
 import {
   HiliteSet, Presentation, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionManager, SelectionScopesManager
 } from "@bentley/presentation-frontend";

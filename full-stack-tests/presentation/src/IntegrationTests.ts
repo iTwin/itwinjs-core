@@ -9,8 +9,8 @@ import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import {
   HierarchyCacheMode, Presentation as PresentationBackend, PresentationBackendNativeLoggerCategory, PresentationProps as PresentationBackendProps,
 } from "@bentley/presentation-backend";
-import { PresentationManagerProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
-import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
+import { PresentationProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
+import "@bentley/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import { initialize as initializeTesting, PresentationTestingInitProps, terminate as terminateTesting } from "@bentley/presentation-testing";
 import * as chai from "chai";
 import chaiSubset from "chai-subset";

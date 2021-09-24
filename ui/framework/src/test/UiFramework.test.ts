@@ -7,7 +7,8 @@
 import { Id64String, Logger } from "@bentley/bentleyjs-core";
 import { IModelRpcProps } from "@bentley/imodeljs-common";
 import { IModelApp, IModelConnection, MockRender, SelectionSet, ViewState } from "@bentley/imodeljs-frontend";
-import { createRandomSelectionScope, RpcRequestsHandler } from "@bentley/presentation-common";
+import { RpcRequestsHandler } from "@bentley/presentation-common";
+import { createRandomSelectionScope } from "@bentley/presentation-common/lib/cjs/test";
 import { Presentation, SelectionManager, SelectionScopesManager, SelectionScopesManagerProps } from "@bentley/presentation-frontend";
 import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@bentley/presentation-testing";
 import { LocalSettingsStorage, UiSettingsStorage } from "@bentley/ui-core";

@@ -20,7 +20,7 @@ import {
 } from "@bentley/presentation-common";
 import { createTestContentDescriptor, createTestSelectClassInfo, ResolvablePromise, createRandomECInstanceKey, createRandomECInstancesNode,
   createRandomECInstancesNodeKey, createRandomId, createRandomLabelDefinitionJSON,  createRandomNodePathElement, createRandomSelectionScope,
-} from "@bentley/presentation-common/lib/test/_helpers/Content";
+} from "@bentley/presentation-common/lib/cjs/test";
 import * as moq from "typemoq";
 import { Presentation } from "../presentation-backend/Presentation";
 import { PresentationManager } from "../presentation-backend/PresentationManager";

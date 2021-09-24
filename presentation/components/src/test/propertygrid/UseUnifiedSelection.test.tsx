@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { createRandomECInstanceKey, isKeySet, KeySet } from "@bentley/presentation-common";
+import { KeySet } from "@bentley/presentation-common";
+import { createRandomECInstanceKey, isKeySet } from "@bentley/presentation-common/lib/cjs/test";
 import { ISelectionProvider, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler } from "@bentley/presentation-frontend";
 import { renderHook } from "@testing-library/react-hooks";
 import { expect } from "chai";

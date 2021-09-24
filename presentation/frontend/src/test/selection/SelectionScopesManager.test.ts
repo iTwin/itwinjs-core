@@ -6,7 +6,8 @@
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelRpcProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { createRandomECInstanceKey, createRandomId, createRandomSelectionScope, DEFAULT_KEYS_BATCH_SIZE, KeySet, RpcRequestsHandler } from "@bentley/presentation-common";
+import { DEFAULT_KEYS_BATCH_SIZE, KeySet, RpcRequestsHandler } from "@bentley/presentation-common";
+import { createRandomECInstanceKey, createRandomId, createRandomSelectionScope } from "@bentley/presentation-common/lib/cjs/test";
 import { expect } from "chai";
 import * as moq from "typemoq";
 import { SelectionScopesManager, SelectionScopesManagerProps } from "../../presentation-frontend/selection/SelectionScopesManager";

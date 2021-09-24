@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { createRandomECInstanceKey, DEFAULT_KEYS_BATCH_SIZE } from "@bentley/presentation-common";
+import { DEFAULT_KEYS_BATCH_SIZE } from "@bentley/presentation-common";
+import { createRandomECInstanceKey } from "@bentley/presentation-common/lib/cjs/test";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import "@bentley/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";

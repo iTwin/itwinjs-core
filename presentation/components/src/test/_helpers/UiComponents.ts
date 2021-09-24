@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { createRandomECInstancesNodeKey, NodeKey, RegisteredRuleset, Ruleset, VariableValue } from "@bentley/presentation-common";
+import { NodeKey, RegisteredRuleset, Ruleset, VariableValue } from "@bentley/presentation-common";
+import { createRandomECInstancesNodeKey } from "@bentley/presentation-common/lib/cjs/test";
 import { IModelContentChangeEventArgs, IModelHierarchyChangeEventArgs, PresentationManager, RulesetManager, RulesetVariablesManager } from "@bentley/presentation-frontend";
 import { PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { DelayLoadedTreeNodeItem } from "@bentley/ui-components";

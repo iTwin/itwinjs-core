@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64String, OrderedId64Iterable } from "@bentley/bentleyjs-core";
-import { createRandomId, VariableValueTypes } from "@bentley/presentation-common";
+import { VariableValueTypes } from "@bentley/presentation-common";
+import { createRandomId } from "@bentley/presentation-common/lib/cjs/test";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "typemoq";

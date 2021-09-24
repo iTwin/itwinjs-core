@@ -6,10 +6,13 @@ import { BeEvent, using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import {
-  applyOptionalPrefix, ArrayTypeDescription, CategoryDescription, Content, ContentFlags, createRandomId, createTestCategoryDescription, createTestContentDescriptor, createTestContentItem,
-  createTestECClassInfo, createTestECInstanceKey, createTestNestedContentField, createTestPropertiesContentField, createTestPropertyInfo, createTestSimpleContentField, Field, Item, Property, PropertyValueFormat,
-  RelationshipMeaning, StructFieldMemberDescription, StructTypeDescription, TypeDescription, ValuesDictionary
+  applyOptionalPrefix, ArrayTypeDescription, CategoryDescription, Content, ContentFlags, Field, Item, Property, PropertyValueFormat,
+  RelationshipMeaning, StructFieldMemberDescription, StructTypeDescription, TypeDescription, ValuesDictionary,
 } from "@bentley/presentation-common";
+import {
+  createRandomId, createTestCategoryDescription, createTestContentDescriptor, createTestContentItem,
+  createTestECClassInfo, createTestECInstanceKey, createTestNestedContentField, createTestPropertiesContentField, createTestPropertyInfo, createTestSimpleContentField,
+} from "@bentley/presentation-common/lib/cjs/test";
 import { FavoritePropertiesManager, FavoritePropertiesScope, Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import "@bentley/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import { PropertyRecord } from "@bentley/ui-abstract";

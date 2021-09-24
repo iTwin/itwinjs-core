@@ -2,7 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { RegisteredRuleset, ResolvablePromise, Ruleset } from "@bentley/presentation-common";
+import { RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
+import { ResolvablePromise } from "@bentley/presentation-common/lib/cjs/test";
 import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
 import { renderHook } from "@testing-library/react-hooks";
 import * as moq from "typemoq";

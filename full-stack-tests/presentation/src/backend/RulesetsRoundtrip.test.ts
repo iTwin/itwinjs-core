@@ -5,7 +5,8 @@
 import { using } from "@bentley/bentleyjs-core";
 import { PresentationManagerMode, RulesetManagerImpl } from "@bentley/presentation-backend";
 import { createDefaultNativePlatform, NativePlatformDefinition } from "@bentley/presentation-backend/lib/cjs/presentation-backend/NativePlatform";
-import { createRandomRuleset, Ruleset } from "@bentley/presentation-common";
+import { Ruleset } from "@bentley/presentation-common";
+import { createRandomRuleset } from "@bentley/presentation-common/lib/cjs/test";
 import { expect } from "chai";
 import { initialize, terminate } from "../IntegrationTests";
 import { tweakRuleset } from "./Helpers";

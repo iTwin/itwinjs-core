@@ -69,6 +69,7 @@ export * from "./presentation-components/table/WithUnifiedSelection";
  * Presentation features for [Tree]($ui-components:Tree) component.
  */
 export * from "./presentation-components/tree/DataProvider";
+export * from "./presentation-components/tree/IPresentationTreeDataProvider";
 export * from "./presentation-components/tree/FilteredDataProvider";
 export * from "./presentation-components/tree/controlled/UseUnifiedSelection";
 export * from "./presentation-components/tree/controlled/UseControlledTreeFiltering";
@@ -97,9 +98,6 @@ export * from "./presentation-components/labels/LabelsProvider";
  * Utilities for working with [Unified Selection]($docs/presentation/Unified-Selection/index.md) within [React](https://reactjs.org/) components.
  */
 export * from "./presentation-components/unified-selection/UnifiedSelectionContext";
-
-export * from "./test/_helpers/Properties";
-export * from "./test/_helpers/UiComponents";
 
 Presentation.registerInitializationHandler(initializeLocalization);
 Presentation.registerInitializationHandler(initializePropertyValueRenderers);

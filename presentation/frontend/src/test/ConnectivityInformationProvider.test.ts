@@ -6,7 +6,7 @@
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { InternetConnectivityStatus } from "@bentley/imodeljs-common";
 import { NativeApp } from "@bentley/imodeljs-frontend";
-import { ResolvablePromise } from "@bentley/presentation-common";
+import { ResolvablePromise } from "@bentley/presentation-common/lib/cjs/test";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { ConnectivityInformationProvider } from "../presentation-frontend/ConnectivityInformationProvider";

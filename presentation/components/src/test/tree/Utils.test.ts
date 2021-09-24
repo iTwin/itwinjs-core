@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { createRandomECInstancesNode, createRandomGroupingNodeKey, GroupingNodeKey, LabelDefinition, Node } from "@bentley/presentation-common";
+import { GroupingNodeKey, LabelDefinition, Node } from "@bentley/presentation-common";
+import { createRandomECInstancesNode, createRandomGroupingNodeKey } from "@bentley/presentation-common/lib/cjs/test";
 import { PageOptions } from "@bentley/ui-components";
 import { expect } from "chai";
 import * as faker from "faker";
