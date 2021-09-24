@@ -81,10 +81,8 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private async isSignedIn(): Promise<boolean> {
-    // note: these checks are also done when creating `AuthorizedFrontendRequestContext` but instead of just
-    // throwing it also logs error messages which we want to avoid
-
-    return !!IModelApp.authorizationClient && await IModelApp.authorizationClient.getAccessToken() !== undefined;
+    // If the authorization client is provided, it should give a valid response to getAccessToken
+    return !!IModelApp.authorizationClient;
   }
 
   public async loadProperties(projectId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined> {

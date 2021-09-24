@@ -183,6 +183,13 @@ export class SampleAppIModelApp {
     } else if (ProcessDetector.isAndroidAppFrontend) {
       await AndroidApp.startup(opts);
     } else {
+      const redirectUri = "http://localhost:3000/signin-callback";
+      const urlObj = new URL(redirectUri);
+      if (urlObj.pathname === window.location.pathname) {
+        await BrowserAuthorizationCallbackHandler.handleSigninCallback(redirectUri);
+        return;
+      }
+
       const rpcParams: BentleyCloudRpcParams =
         undefined !== process.env.IMJS_GP_BACKEND ?
           { info: { title: "general-purpose-imodeljs-backend", version: "v2.0" }, uriPrefix: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com` }
@@ -593,18 +600,11 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
   }
 
   private _initializeSignin = async (): Promise<void> => {
-    const redirectUri = "http://localhost:3000/signin-callback";
-    const urlObj = new URL(redirectUri);
-    if (urlObj.pathname === window.location.pathname) {
-      await BrowserAuthorizationCallbackHandler.handleSigninCallback(redirectUri);
-      return;
-    }
-
     let authorized = !!IModelApp.authorizationClient;
     if (!authorized) {
       const auth = new BrowserAuthorizationClient({
         clientId: "imodeljs-spa-test",
-        redirectUri,
+        redirectUri: "http://localhost:3000/signin-callback",
         scope: baseOidcScopes.join(" "),
         responseType: "code",
       });

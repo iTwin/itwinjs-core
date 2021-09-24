@@ -169,7 +169,6 @@ export class HubMock {
   public static async acquireNewBriefcaseId(arg: AcquireNewBriefcaseIdArg): Promise<number> {
     const user = arg.user ?? await AuthorizedBackendRequestContext.create();
     return this.findLocalHub(arg.iModelId).acquireNewBriefcaseId(user.accessToken ?? "", arg.briefcaseAlias);
-
   }
 
   /** Release a briefcaseId. After this call it is illegal to generate changesets for the released briefcaseId. */

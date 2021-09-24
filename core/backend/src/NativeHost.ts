@@ -20,7 +20,7 @@ import { IpcHandler, IpcHost, IpcHostOpts } from "./IpcHost";
 import { NativeAppStorage } from "./NativeAppStorage";
 
 /** @internal */
-export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClient implements AuthorizationClient{
+export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClient implements AuthorizationClient {
   protected _accessToken?: AccessToken;
   public abstract signIn(): Promise<void>;
   public abstract signOut(): Promise<void>;

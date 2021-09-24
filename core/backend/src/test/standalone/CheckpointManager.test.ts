@@ -21,7 +21,6 @@ describe("V1 Checkpoint Manager", () => {
       iTwinId: "",
       iModelId: "",
       changeset: { id: "" },
-      requestContext: new AuthorizedClientRequestContext(""),
     };
     assert.equal(V1CheckpointManager.getFileName(props), path.join(IModelHost.cacheDir, "imodels", "checkpoints", "first.bim"));
   });
@@ -31,7 +30,6 @@ describe("V1 Checkpoint Manager", () => {
       iTwinId: "",
       iModelId: "",
       changeset: { id: "1234" },
-      requestContext: new AuthorizedClientRequestContext(""),
     };
     assert.equal(V1CheckpointManager.getFileName(props), path.join(IModelHost.cacheDir, "imodels", "checkpoints", "1234.bim"));
   });
@@ -41,7 +39,6 @@ describe("V1 Checkpoint Manager", () => {
       iTwinId: "5678",
       iModelId: "",
       changeset: { id: "1234" },
-      requestContext: new AuthorizedClientRequestContext(""),
     };
     assert.equal(V1CheckpointManager.getFileName(props), path.join(IModelHost.cacheDir, "imodels", "checkpoints", "1234.bim"));
   });
@@ -51,7 +48,6 @@ describe("V1 Checkpoint Manager", () => {
       iTwinId: "5678",
       iModelId: "910",
       changeset: { id: "1234" },
-      requestContext: new AuthorizedClientRequestContext(""),
     };
     assert.equal(V1CheckpointManager.getFileName(props), path.join(IModelHost.cacheDir, "imodels", "910", "checkpoints", "1234.bim"));
   });
@@ -100,7 +96,6 @@ describe("Checkpoint Manager", () => {
       iTwinId: "5678",
       iModelId: "910",
       changeset: { id: "1234" },
-      requestContext: new AuthorizedClientRequestContext(""),
     };
     const request = {
       localFile: V1CheckpointManager.getFileName(checkpoint),
@@ -115,7 +110,6 @@ describe("Checkpoint Manager", () => {
       iTwinId: "5678",
       iModelId: "910",
       changeset: { id: "1234" },
-      requestContext: new AuthorizedClientRequestContext(""),  // Why is this on CheckpointProps rather than DownloadRequest
     };
 
     // Setup a local file

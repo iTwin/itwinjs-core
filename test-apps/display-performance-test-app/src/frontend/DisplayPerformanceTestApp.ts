@@ -2,17 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { TestRunner, TestSetsProps } from "./TestRunner";
-import { ClientRequestContext, ProcessDetector } from "@bentley/bentleyjs-core";
+
+import { ProcessDetector } from "@bentley/bentleyjs-core";
+import { NativeAppAuthorization } from "@bentley/imodeljs-backend";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
+import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@bentley/hypermodeling-frontend";
 import {
   BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SnapshotIModelRpcInterface,
 } from "@bentley/imodeljs-common";
-import { FrontendRequestContext, IModelApp, IModelAppOptions, NativeAppAuthorization } from "@bentley/imodeljs-frontend";
-import { BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
+import { IModelApp, IModelAppOptions } from "@bentley/imodeljs-frontend";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
-import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@bentley/hypermodeling-frontend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
+import { TestRunner, TestSetsProps } from "./TestRunner";
 
 /** Prevents the hypermodeling markers from displaying in the viewport and obscuring the image. */
 class MarkerHandler extends SectionMarkerHandler {
@@ -45,8 +47,8 @@ export class DisplayPerfTestApp {
   }
 }
 
-async function createOidcClient(requestContext: ClientRequestContext): Promise<NativeAppAuthorization | BrowserAuthorizationClient> {
-  const scope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party";
+async function createOidcClient(): Promise<NativeAppAuthorization | BrowserAuthorizationClient> {
+  const scope = "openid email profile organization itwinjs";
 
   if (ProcessDetector.isElectronAppFrontend) {
     const clientId = "imodeljs-electron-test";
@@ -77,7 +79,7 @@ async function signIn(): Promise<boolean> {
   const oidcClient = await createOidcClient(requestContext);
 
   IModelApp.authorizationClient = oidcClient;
-  if (oidcClient.isAuthorized)
+  if ((await oidcClient.getAccessToken()) !== undefined)
     return true;
 
   const retPromise = new Promise<boolean>((resolve, _reject) => {

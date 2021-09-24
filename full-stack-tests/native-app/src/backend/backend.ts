@@ -9,15 +9,14 @@ import * as fs from "fs";
 import * as nock from "nock";
 import * as path from "path";
 import { BentleyLoggerCategory, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
+import { ElectronAuthorizationBackend, ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IModelBankClient, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
 import {
-  AuthorizedBackendRequestContext, BackendLoggerCategory, BriefcaseDb, BriefcaseManager, ChangeSummaryManager, IModelHostConfiguration, IModelJsFs,
+  AuthorizedBackendRequestContext, BackendLoggerCategory, BriefcaseDb, BriefcaseManager, ChangeSummaryManager, IModelHost, IModelHostConfiguration, IModelJsFs,
   IpcHandler, NativeHost, NativeLoggerCategory,
 } from "@bentley/imodeljs-backend";
 import { IModelRpcProps, RpcConfiguration } from "@bentley/imodeljs-common";
 import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
-import { TestUtility } from "@bentley/oidc-signin-tool";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { testIpcChannel, TestIpcInterface, TestProjectProps } from "../common/IpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
@@ -57,10 +56,7 @@ export function setupDebugLogLevels() {
 class TestIpcHandler extends IpcHandler implements TestIpcInterface {
   public get channelName() { return testIpcChannel; }
 
-  public async getTestProjectProps(user: TestUserCredentials): Promise<TestProjectProps> {
-    // first, perform silent login
-    NativeHost.authorization.setAccessToken(await TestUtility.getAccessToken(user));
-
+  public async getTestProjectProps(_user: TestUserCredentials): Promise<TestProjectProps> {
     const projectName = process.env.IMJS_TEST_PROJECT_NAME ?? "";
 
     if (CloudEnv.cloudEnv.isIModelHub) {
@@ -129,6 +125,14 @@ async function init() {
     },
     iModelHost,
   });
+
+  // TODO: Use this setup once the ElectronAuth is split out.
+  // await ElectronHost.startup({ electronHost: { ipcHandlers: [TestIpcHandler] }, iModelHost });
+  // IModelHost.authorizationClient = new ElectronAuthorizationBackend({
+  //   clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
+  //   redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
+  //   scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
+  // });
 }
 
 module.exports = init();

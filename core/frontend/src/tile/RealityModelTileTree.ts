@@ -834,7 +834,7 @@ export class RealityModelTileClient {
 
   private async getAccessToken(): Promise<AccessToken | undefined> {
     if (!IModelApp.authorizationClient)
-      return undefined; // Not signed in
+      return undefined;
     let accessToken: AccessToken | undefined;
     try {
       accessToken = await IModelApp.authorizationClient.getAccessToken();

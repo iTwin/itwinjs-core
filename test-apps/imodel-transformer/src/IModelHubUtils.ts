@@ -23,10 +23,10 @@ export namespace IModelHubUtils {
     await client.initialize({
       clientId: "imodeljs-electron-test",
       redirectUri: "http://localhost:3000/signin-callback",
-      scope: "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party imodel-extension-service-api offline_access",
+      scope: "openid email profile organization itwinjs",
     });
     return new Promise<AccessToken>((resolve, reject) => {
-      NativeHost.onUserStateChanged.addListener((token) => {
+      ElectronAuthorizationBackend.onUserStateChanged.addListener((token) => {
         if (token !== undefined) {
           resolve(token);
         } else {
@@ -38,13 +38,7 @@ export namespace IModelHubUtils {
   }
 
   export function setHubEnvironment(arg?: string): void {
-    let value = "0";
-    if ("qa" === arg) {
-      value = "102";
-    } else if ("dev" === arg) {
-      value = "103";
-    }
-    process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION = String(value);
+    process.env.IMJS_URL_PREFOX = `${"prod" === arg ? "" : arg}-`;
   }
 
   export async function queryIModelId(user: AuthorizedClientRequestContext, iTwinId: GuidString, iModelName: string): Promise<GuidString | undefined> {

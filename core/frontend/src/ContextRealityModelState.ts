@@ -21,7 +21,7 @@ import { createOrbitGtTileTreeReference, createRealityTileTreeReference, Reality
 
 async function getAccessToken(): Promise<AccessToken | undefined> {
   if (!IModelApp.authorizationClient)
-    return undefined; // Not signed in
+    return undefined;
 
   try {
     return await IModelApp.authorizationClient.getAccessToken();
@@ -109,7 +109,7 @@ export async function queryRealityData(criteria: RealityDataQueryCriteria): Prom
   if (!accessToken)
     return availableRealityModels;
 
-  const requestContext = await AuthorizedFrontendRequestContext.create();
+  const requestContext = new AuthorizedFrontendRequestContext(accessToken);
 
   const client = new RealityDataClient();
 

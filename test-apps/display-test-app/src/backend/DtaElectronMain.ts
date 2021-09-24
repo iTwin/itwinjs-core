@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { assert } from "@bentley/bentleyjs-core";
-import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronBackend";
+import { ElectronAuthorizationBackend, ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronBackend";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
-import { IpcHandler } from "@bentley/imodeljs-backend";
+import { IModelHost, IpcHandler } from "@bentley/imodeljs-backend";
 
 const mainWindowName = "mainWindow";
 const getWindowSize = () => {
@@ -49,13 +49,14 @@ const dtaElectronMain = async () => {
     rpcInterfaces: getRpcInterfaces(),
     ipcHandlers: [DtaHandler],
     developmentServer: process.env.NODE_ENV === "development",
-    authConfig: {
-      clientId: "imodeljs-electron-test",
-      scope: "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party imodel-extension-service-api offline_access",
-    },
   };
 
   await initializeDtaBackend(opts);
+
+  IModelHost.authorizationClient = new ElectronAuthorizationBackend({
+    clientId: "imodeljs-electron-test",
+    scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "openid email profile organization itwinjs",
+  });
 
   // Restore previous window size, position and maximized state
   const sizeAndPosition = getWindowSize();

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { ProcessDetector } from "@bentley/bentleyjs-core";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { ElectronApp, ElectronAppAuthorization } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { BentleyCloudRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 
@@ -13,7 +13,7 @@ RpcConfiguration.disableRoutingValidation = true;
 
 if (ProcessDetector.isElectronAppFrontend) {
   before(async () => {
-    await ElectronApp.startup({ iModelApp: { rpcInterfaces } });
+    await ElectronApp.startup({ iModelApp: { rpcInterfaces, authorizationClient: new ElectronAppAuthorization() } });
   });
 } else {
   const config = BentleyCloudRpcManager.initializeClient({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);

@@ -6,8 +6,8 @@ import { assert } from "chai";
 import { GuidString, Logger } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { BriefcaseQuery, Briefcase as HubBriefcase, IModelCloudEnvironment, IModelQuery } from "@bentley/imodelhub-client";
-import { AuthorizedFrontendRequestContext, IModelHubFrontend, NativeApp, NativeAppAuthorization } from "@bentley/imodeljs-frontend";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AuthorizedFrontendRequestContext, IModelHubFrontend } from "@bentley/imodeljs-frontend";
+import { AuthorizationClient, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend, TestUserCredentials } from "@bentley/oidc-signin-tool/lib/frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { IModelBankCloudEnv } from "./IModelBankCloudEnv";
@@ -50,7 +50,7 @@ export class TestUtility {
     return new AuthorizedClientRequestContext(accessToken);
   }
 
-  public static async initializeTestProject(testContextName: string, user: TestUserCredentials): Promise<FrontendAuthorizationClient> {
+  public static async initializeTestProject(testContextName: string, user: TestUserCredentials): Promise<AuthorizationClient> {
     const cloudParams = await TestRpcInterface.getClient().getCloudEnv();
     if (cloudParams.iModelBank) {
       this.imodelCloudEnv = new IModelBankCloudEnv(cloudParams.iModelBank.url, false);
@@ -58,15 +58,8 @@ export class TestUtility {
       this.imodelCloudEnv = new IModelHubCloudEnv();
     }
 
-    let authorizationClient: FrontendAuthorizationClient;
-    if (NativeApp.isValid) {
-      authorizationClient = new NativeAppAuthorization({ clientId: "testapp", redirectUri: "", scope: "" });
-      const token = await getAccessTokenFromBackend(user) ?? "";
-      await NativeApp.callNativeHost("setAccessToken", token);
-    } else {
-      authorizationClient = this.imodelCloudEnv.getAuthorizationClient(user) as FrontendAuthorizationClient;
-      await authorizationClient.signIn();
-    }
+    const authorizationClient = this.imodelCloudEnv.getAuthorizationClient(user) as FrontendAuthorizationClient;
+    await authorizationClient.signIn();
     const accessToken = await authorizationClient.getAccessToken();
     if (this.imodelCloudEnv instanceof IModelBankCloudEnv) {
       await this.imodelCloudEnv.bootstrapIModelBankProject(new AuthorizedClientRequestContext(accessToken), testContextName);

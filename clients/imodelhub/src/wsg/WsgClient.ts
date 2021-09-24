@@ -444,7 +444,7 @@ export abstract class WsgClient extends Client {
     };
 
     options.headers = {
-      authorization: requestContext.accessToken,
+      authorization: requestContext.accessToken ?? "",
     };
 
     this.applyUserConfiguredHttpRequestOptions(options, httpRequestOptions);
