@@ -7,12 +7,12 @@ alpha;BaseSolarDataProvider
 alpha;BaseTimelineDataProvider 
 beta;ColorEditor 
 beta;ColorPickerButton: (props: ColorPickerProps) => JSX.Element | null
-beta;ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets }: ColorPickerDialogProps): JSX.Element
+beta;ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets, colorInputType }: ColorPickerDialogProps): JSX.Element
 beta;ColorPickerDialogProps
-beta;ColorPickerPanel({ activeColor, onColorChange, colorPresets }: ColorPickerPanelProps): JSX.Element
-beta;ColorPickerPanelProps
-beta;ColorPickerPopup: (props: ColorPickerPopupProps) => JSX.Element | null
-beta;ColorPickerPopupProps 
+public;ColorPickerPanel({ activeColor, onColorChange, colorPresets, colorInputType }: ColorPickerPanelProps): JSX.Element
+public;ColorPickerPanelProps
+public;ColorPickerPopup: (props: ColorPickerPopupProps) => JSX.Element | null
+public;ColorPickerPopupProps 
 beta;ColorPickerProps 
 beta;ColorPropertyEditor 
 beta;ColorSwatch(props: ColorSwatchProps): JSX.Element
@@ -91,7 +91,7 @@ beta;QuantityInput({ initialValue, quantityType, readonly, className, style, onQ
 beta;QuantityNumberInput: (props: QuantityNumberInputProps) => JSX.Element | null
 beta;QuantityNumberInputProps 
 beta;QuantityProps 
-internal;RailToolTip({ showToolTip, percent, tooltipText }:
+internal;RailMarkers({ showToolTip, percent, tooltipText, markDate }:
 beta;SaturationPicker({ onSaturationChange, hsv, className, style }: SaturationPickerProps): JSX.Element
 beta;SaturationPickerProps 
 internal;Scrubber(props: ScrubberProps): JSX.Element
@@ -106,6 +106,7 @@ public;TimelineComponent
 public;TimelineComponentProps
 public;TimelineDataProvider
 public;TimelineDateDisplay
+public;TimelineDateMarkerProps
 public;TimelineMenuItemOption = "replace" | "append" | "prefix"
 public;TimelineMenuItemProps
 public;TimelinePausePlayAction

@@ -16,6 +16,7 @@ build
 coverage
 full_stack_test_results
 integration_test_results
+ecschema-rpcinterface-tests-result
 imjs_plugins
 imjs_extensions
 !tools/build

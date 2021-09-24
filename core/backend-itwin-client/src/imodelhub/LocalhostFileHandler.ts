@@ -31,13 +31,10 @@ export class LocalhostHandler implements FileHandler {
    * @param fileSize Size of the file that's being downloaded.
    * @param progressCallback Callback for tracking progress.
    */
-  public async downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, path: string, fileSize?: number, progress?: ProgressCallback): Promise<void> {
-    requestContext.enter();
+  public async downloadFile(_requestContext: AuthorizedClientRequestContext, downloadUrl: string, path: string, fileSize?: number, progress?: ProgressCallback): Promise<void> {
     Logger.logTrace(loggerCategory, `Downloading file from '${downloadUrl}' to '${path}'.`);
     await fs.ensureDir(pathLib.dirname(path));
-    requestContext.enter();
     await fs.copy(url.fileURLToPath(downloadUrl), path);
-    requestContext.enter();
     if (progress) {
       const size = fileSize || this.getFileSize(path);
       progress({
@@ -55,14 +52,11 @@ export class LocalhostHandler implements FileHandler {
    * @param path Path of the file to be uploaded.
    * @param progressCallback Callback for tracking progress.
    */
-  public async uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, path: string, progress?: ProgressCallback): Promise<void> {
-    requestContext.enter();
+  public async uploadFile(_requestContext: AuthorizedClientRequestContext, uploadUrlString: string, path: string, progress?: ProgressCallback): Promise<void> {
     Logger.logTrace(loggerCategory, `Uploading file '${path}' to '${uploadUrlString}'.`);
     const uploadPath = url.fileURLToPath(uploadUrlString);
     await fs.ensureDir(pathLib.dirname(uploadPath));
-    requestContext.enter();
     await fs.copy(path, uploadPath);
-    requestContext.enter();
     if (progress) {
       const fileSize = this.getFileSize(path);
       progress({

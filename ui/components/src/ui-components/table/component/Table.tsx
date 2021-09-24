@@ -9,8 +9,8 @@
 import { DisposableList, Guid, GuidString } from "@bentley/bentleyjs-core";
 import { PropertyValueFormat } from "@bentley/ui-abstract";
 import {
-  CommonProps, Dialog, ElementResizeObserver, isNavigationKey, ItemKeyboardNavigator, LocalSettingsStorage,
-  Orientation, SortDirection, Timer, UiSettings, UiSettingsStatus, UiSettingsStorage
+  CommonProps, Dialog, ElementResizeObserver, isNavigationKey, ItemKeyboardNavigator, LocalSettingsStorage, Orientation, SortDirection, Timer,
+  UiSettings, UiSettingsStatus, UiSettingsStorage,
 } from "@bentley/ui-core";
 import classnames from "classnames";
 import classnamesDedupe from "classnames/dedupe";

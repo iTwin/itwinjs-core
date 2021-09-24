@@ -19,6 +19,7 @@ import {
 import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Orientation, useDisposable } from "@bentley/ui-core";
 import { ToggleSwitch } from "@itwin/itwinui-react";
 import * as React from "react";
+import { useResizeDetector } from "react-resize-detector";
 import { DiagnosticsSelector } from "../diagnostics-selector/DiagnosticsSelector";
 import "./PropertiesWidget.css";
 
@@ -58,6 +59,8 @@ export function PropertiesWidget(props: Props) {
       setActiveHighlight(newFilteringResult.getMatchByIndex(activeMatchIndex));
   }, [activeMatchIndex]);
 
+  const { width, height, ref } = useResizeDetector();
+
   return (
     <div className="PropertiesWidget">
       <h3>{IModelApp.i18n.translate("Sample:controls.properties.widget-label")}</h3>
@@ -78,9 +81,11 @@ export function PropertiesWidget(props: Props) {
           />
         </div>)
         : null}
-      <div className="ContentContainer">
-        {rulesetId
+      <div ref={ref} className="ContentContainer">
+        {rulesetId && width && height
           ? <PropertyGrid
+            width={width}
+            height={height}
             imodel={imodel}
             rulesetId={rulesetId}
             filtering={{ filter: filterText, onlyFavorites: isFavoritesFilterActive, activeHighlight, onFilteringStateChanged }}
@@ -105,9 +110,11 @@ interface PropertyGridProps {
     onFilteringStateChanged: (result: FilteredPropertyData | undefined) => void;
   };
   onFindSimilar?: (propertiesProvider: IPresentationPropertyDataProvider, record: PropertyRecord) => void;
+  width: number;
+  height: number;
 }
 function PropertyGrid(props: PropertyGridProps) {
-  const { imodel, rulesetId, diagnostics, filtering, onFindSimilar: onFindSimilarProp } = props;
+  const { imodel, rulesetId, diagnostics, filtering, onFindSimilar: onFindSimilarProp, width, height } = props;
 
   const dataProvider = useDisposable(React.useCallback(
     () => {
@@ -169,6 +176,8 @@ function PropertyGrid(props: PropertyGridProps) {
 
   return <>
     <VirtualizedPropertyGridWithDataProvider
+      width={width}
+      height={height}
       dataProvider={filteringDataProvider}
       isPropertyHoverEnabled={true}
       onPropertyContextMenu={onPropertyContextMenu}

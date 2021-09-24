@@ -15,10 +15,10 @@ const Spec = require("mocha/lib/reporters/spec");
 const MochaJUnitReporter = require("mocha-junit-reporter");
 
 function withStdErr(callback: () => void) {
-  const originalConsoleLog = console.log;
-  console.log = console.error;
+  const originalConsoleLog = Base.consoleLog;
+  Base.consoleLog = console.error;
   callback();
-  console.log = originalConsoleLog;
+  Base.consoleLog = originalConsoleLog;
 }
 
 declare const mocha: any;
@@ -30,7 +30,7 @@ if (isCI) {
   if (typeof (mocha) !== "undefined")
     mocha.forbidOnly();
   else
-    require.cache[require.resolve("mocha/lib/mocharc.json", { paths: require.main?.paths ?? module.paths })].exports.forbidOnly = true;
+    require.cache[require.resolve("mocha/lib/mocharc.json", { paths: require.main?.paths ?? module.paths })]!.exports.forbidOnly = true;
 }
 
 // This is necessary to enable colored output when running in rush test:

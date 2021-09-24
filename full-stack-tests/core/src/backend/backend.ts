@@ -16,7 +16,6 @@ import { BasicManipulationCommand, EditCommandAdmin } from "@bentley/imodeljs-ed
 // Sets up certa to allow a method on the frontend to get an access token
 import "@bentley/oidc-signin-tool/lib/cjs/certa/certaBackend";
 import * as fs from "fs";
-import * as http from "http";
 import * as path from "path";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
 import { rpcInterfaces } from "../common/RpcInterfaces";
@@ -24,7 +23,6 @@ import { CloudEnv } from "./cloudEnv";
 import "./RpcImpl";
 import * as testCommands from "./TestEditCommands";
 
-import serveHandler = require("serve-handler");
 /* eslint-disable no-console */
 
 /** Loads the provided `.env` file into process.env */
@@ -99,15 +97,6 @@ async function init() {
     await server.initialize(port);
     console.log(`Web backend for full-stack-tests listening on port ${port}`);
 
-    await new Promise((resolve) => {
-      http.createServer(async (request, response) => {
-        return serveHandler(request, response, {
-          cleanUrls: false,
-          public: "lib",
-          headers: [{ source: "*", headers: [{ key: "Access-Control-Allow-Origin", value: "*" }] }],
-        });
-      }).listen(Number(process.env.CERTA_PORT ?? 3011) + 4000, undefined, undefined, resolve);
-    });
     await IModelHost.startup(iModelHost);
   }
 
@@ -118,7 +107,6 @@ async function init() {
   Logger.setLevel("imodeljs-backend.IModelReadRpcImpl", LogLevel.Error);  // Change to trace to debug
   Logger.setLevel("imodeljs-backend.IModelDb", LogLevel.Error);  // Change to trace to debug
   Logger.setLevel("Performance", LogLevel.Error);  // Change to Info to capture
-  Logger.setLevel("imodeljs-backend.ConcurrencyControl", LogLevel.Error);
 }
 
 /** A FileNameResolver for resolving test iModel files from core/backend */

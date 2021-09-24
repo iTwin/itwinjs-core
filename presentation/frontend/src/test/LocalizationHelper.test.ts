@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { I18N } from "@bentley/imodeljs-i18n";
-import { Content, createRandomDescriptor, createRandomECInstancesNode, createRandomLabelCompositeValue, createRandomLabelDefinition, Item, LabelDefinition } from "@bentley/presentation-common";
+import { Content, Item, LabelDefinition } from "@bentley/presentation-common";
+import { createRandomECInstancesNode, createRandomLabelCompositeValue, createRandomLabelDefinition, createTestContentDescriptor } from "@bentley/presentation-common/lib/cjs/test";
 import { expect } from "chai";
 import * as moq from "typemoq";
 import { LocalizationHelper } from "../presentation-frontend/LocalizationHelper";
@@ -69,7 +70,7 @@ describe("LocalizationHelper", () => {
     it("translates contentItem labelDefinitions", () => {
       const contentItem = new Item([], createRandomLabelDefinition(), "", undefined, {}, {}, []);
       contentItem.label.rawValue = "@namespace:NotLocalized@";
-      const content = new Content(createRandomDescriptor(), [contentItem]);
+      const content = new Content(createTestContentDescriptor({ fields: [] }), [contentItem]);
       i18nMock.setup((x) => x.translate("namespace:NotLocalized", moq.It.isAny())).returns(() => "LocalizedValue");
       localizationHelper.getLocalizedContent(content);
       expect(content.contentSet[0]!.label.rawValue).to.be.eq("LocalizedValue");

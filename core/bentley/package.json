@@ -1,6 +1,6 @@
 {
   "name": "@bentley/bentleyjs-core",
-  "version": "3.0.0-dev.49",
+  "version": "3.0.0-dev.65",
   "description": "Bentley JavaScript core components",
   "main": "lib/cjs/bentleyjs-core.js",
   "module": "lib/esm/bentleyjs-core.js",
@@ -18,10 +18,9 @@
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "extract-api": "betools extract-api --entry=bentleyjs-core",
-    "test": "betools test",
+    "test": "mocha",
     "docs": "betools docs --json=../../generated-docs/core/bentleyjs-core/file.json --tsIndexFile=bentleyjs-core.ts --onlyJson",
     "cover": "nyc npm test",
-    "cover:docs": "node ./node_modules/@bentley/build-tools/scripts/docscoverage.js",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2"
   },
   "keywords": [
@@ -40,14 +39,14 @@
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^8.2.2",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "eslint": "^7.11.0",
     "mocha": "^8.3.2",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "typescript": "~4.3.0"
+    "typescript": "~4.4.0"
   },
   "nyc": {
     "extends": "./node_modules/@bentley/build-tools/.nycrc"

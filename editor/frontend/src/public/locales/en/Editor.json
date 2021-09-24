@@ -98,6 +98,10 @@
         "CornerRadius": "Corner Radius"
       }
     },
+    "OffsetFaces": {
+      "keyin": "editor offset faces",
+      "flyover": "Offset faces of surfaces and solids"
+    },
     "UndoAll": {
       "keyin": "editor undo all",
       "flyover": "Undo All"

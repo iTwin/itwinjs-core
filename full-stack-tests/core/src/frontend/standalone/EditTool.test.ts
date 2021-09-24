@@ -23,7 +23,7 @@ let cmdStr: string;
 class TestEditTool1 extends PrimitiveTool {
   public static override toolId = "TestEditTool1";
   public override isCompatibleViewport(_vp: Viewport | undefined, _isSelectedViewChange: boolean): boolean { return true; }
-  public onRestartTool() { this.exitTool(); }
+  public async onRestartTool() { return this.exitTool(); }
   public static callCommand<T extends keyof TestCommandIpc>(method: T, ...args: Parameters<TestCommandIpc[T]>): ReturnType<TestCommandIpc[T]> {
     return EditTools.callCommand(method, ...args) as ReturnType<TestCommandIpc[T]>;
   }
@@ -51,7 +51,7 @@ if (ProcessDetector.isElectronAppFrontend) {
     });
 
     it("should start edit commands", async () => {
-      expect(IModelApp.tools.run("TestEditTool1")).to.be.true;
+      expect(await IModelApp.tools.run("TestEditTool1")).to.be.true;
       const tool = IModelApp.toolAdmin.currentTool as TestEditTool1;
       assert.isTrue(tool instanceof TestEditTool1);
       const str1 = "abc";

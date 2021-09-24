@@ -11,7 +11,8 @@ import {
   IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager,
   SnapshotIModelRpcInterface
 } from "@bentley/imodeljs-common";
-import { BasicManipulationCommand, EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
+import { EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
+import * as editorBuiltInCommands from "@bentley/imodeljs-editor-backend";
 import { AndroidHost, IOSHost, MobileHostOpts } from "@bentley/mobile-manager/lib/cjs/MobileBackend";
 import * as fs from "fs";
 import * as path from "path";
@@ -157,6 +158,12 @@ const setupStandaloneConfiguration = () => {
   if (undefined !== process.env.SVT_DEBUG_SHADERS)
     configuration.debugShaders = true;
 
+  if (undefined !== process.env.IMJS_BING_MAPS_KEY)
+    configuration.bingMapsKey = process.env.IMJS_BING_MAPS_KEY;
+
+  if (undefined !== process.env.IMJS_MAPBOX_KEY)
+    configuration.mapBoxKey = process.env.IMJS_MAPBOX_KEY;
+
   configuration.useProjectExtents = undefined === process.env.SVT_NO_USE_PROJECT_EXTENTS;
 
   const parseSeconds = (key: string) => {
@@ -231,6 +238,8 @@ const setupStandaloneConfiguration = () => {
   configuration.alwaysLoadEdges = undefined !== process.env.SVT_ALWAYS_LOAD_EDGES;
   configuration.alwaysSubdivideIncompleteTiles = undefined !== process.env.SVT_SUBDIVIDE_INCOMPLETE;
 
+  configuration.iTwinId = process.env.SVT_ITWIN_ID;
+
   const configPathname = path.normalize(path.join(__dirname, "..", "..", "build", "configuration.json"));
   try { fs.writeFileSync(configPathname, JSON.stringify(configuration), "utf8"); } catch { }
 
@@ -272,7 +281,7 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   RpcManager.registerImpl(DtaRpcInterface, DisplayTestAppRpc);
   if (ProcessDetector.isElectronAppBackend) {
     await ElectronHost.startup(opts);
-    EditCommandAdmin.register(BasicManipulationCommand);
+    EditCommandAdmin.registerModule(editorBuiltInCommands);
   } else if (ProcessDetector.isIOSAppBackend) {
     await IOSHost.startup(opts);
   } else if (ProcessDetector.isAndroidAppBackend) {

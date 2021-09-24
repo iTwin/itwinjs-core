@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { DbResult, Id64 } from "@bentley/bentleyjs-core";
-import { IModelDb, SnapshotDb } from "../../imodeljs-backend";
+import { IModelDb, IModelHost, SnapshotDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { SequentialLogMatcher } from "../SequentialLogMatcher";
 
 // cspell:ignore mirukuru ibim
 
@@ -41,7 +42,7 @@ describe("ECSql Query", () => {
   });
 
   // new new addon build
-  it("ECSQL with BLOB", async () => {
+  it("ecsql with blob", async () => {
     let rows = await executeQuery(imodel1, "SELECT ECInstanceId,GeometryStream FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1");
     assert.equal(rows.length, 1);
     const row: any = rows[0];
@@ -60,8 +61,33 @@ describe("ECSql Query", () => {
     assert.isTrue(Id64.isValidId64(rows[0].id));
     assert.isDefined(rows[0].geometryStream);
   });
+  it("check prepare logErrors flag", () => {
+    const ecdb = imodel1;
+    // expect log message when statement fails
+    let slm = new SequentialLogMatcher();
+    slm.append().error().category("BeSQLite").message("Error \"no such table: def (BE_SQLITE_ERROR)\" preparing SQL: SELECT abc FROM def");
+    assert.throw(() => ecdb.withSqliteStatement("SELECT abc FROM def", () => { }), "no such table: def (BE_SQLITE_ERROR)");
+    assert.isTrue(slm.finishAndDispose(), "logMatcher should detect log");
 
-  it("Restart query", async () => {
+    // now pass suppress log error which mean we should not get the error
+    slm = new SequentialLogMatcher();
+    slm.append().error().category("BeSQLite").message("Error \"no such table: def (BE_SQLITE_ERROR)\" preparing SQL: SELECT abc FROM def");
+    assert.throw(() => ecdb.withSqliteStatement("SELECT abc FROM def", () => { }, /* logErrors = */ false), "no such table: def (BE_SQLITE_ERROR)");
+    assert.isFalse(slm.finishAndDispose(), "logMatcher should not detect log");
+
+    // expect log message when statement fails
+    slm = new SequentialLogMatcher();
+    slm.append().error().category("ECDb").message("ECClass 'abc.def' does not exist or could not be loaded.");
+    assert.throw(() => ecdb.withPreparedStatement("SELECT abc FROM abc.def", () => { }), "ECClass 'abc.def' does not exist or could not be loaded.");
+    assert.isTrue(slm.finishAndDispose(), "logMatcher should detect log");
+
+    // now pass suppress log error which mean we should not get the error
+    slm = new SequentialLogMatcher();
+    slm.append().error().category("ECDb").message("ECClass 'abc.def' does not exist or could not be loaded.");
+    assert.throw(() => ecdb.withPreparedStatement("SELECT abc FROM abc.def", () => { }, /* logErrors = */ false), "");
+    assert.isFalse(slm.finishAndDispose(), "logMatcher should not detect log");
+  });
+  it("restart query", async () => {
     let cancelled = 0;
     let successful = 0;
     let rowCount = 0;
@@ -74,7 +100,7 @@ describe("ECSql Query", () => {
           }
           successful++;
           resolve();
-        } catch (err) {
+        } catch (err: any) {
           // we expect query to be cancelled
           if (err.errorNumber === DbResult.BE_SQLITE_INTERRUPT) {
             cancelled++;
@@ -97,7 +123,7 @@ describe("ECSql Query", () => {
     assert.isAtLeast(rowCount, 1);
   });
 
-  it("Paging Results", async () => {
+  it("paging results", async () => {
     const getRowPerPage = (nPageSize: number, nRowCount: number) => {
       const nRowPerPage = nRowCount / nPageSize;
       const nPages = Math.ceil(nRowPerPage);
@@ -128,7 +154,7 @@ describe("ECSql Query", () => {
       const i = dbs.indexOf(db);
       const rowPerPage = getRowPerPage(pageSize, expected[i]);
       for (let k = 0; k < rowPerPage.length; k++) {
-        const rs = await db.queryRows(query, undefined, { maxRowAllowed: pageSize, startRowOffset: k * pageSize });
+        const rs = await db.queryRows(IModelHost.sessionId, query, undefined, { maxRowAllowed: pageSize, startRowOffset: k * pageSize });
         assert.equal(rs.rows.length, rowPerPage[k]);
       }
     }

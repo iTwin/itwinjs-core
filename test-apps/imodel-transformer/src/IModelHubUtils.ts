@@ -47,27 +47,27 @@ export namespace IModelHubUtils {
     process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION = String(value);
   }
 
-  export async function queryIModelId(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string): Promise<GuidString | undefined> {
-    return IModelHost.hubAccess.queryIModelByName({ requestContext, contextId, iModelName });
+  export async function queryIModelId(user: AuthorizedClientRequestContext, iTwinId: GuidString, iModelName: string): Promise<GuidString | undefined> {
+    return IModelHost.hubAccess.queryIModelByName({ user, iTwinId, iModelName });
   }
 
   /** Temporarily needed to convert from the now preferred ChangesetIndex to the legacy ChangesetId.
    * @note This function should be removed when full support for ChangesetIndex is in place.
    */
-  export async function queryChangesetId(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changesetIndex: ChangesetIndex): Promise<ChangesetId> {
-    return (await IModelHost.hubAccess.queryChangeset({ requestContext, iModelId, changeset: { index: changesetIndex } })).id;
+  export async function queryChangesetId(user: AuthorizedClientRequestContext, iModelId: GuidString, changesetIndex: ChangesetIndex): Promise<ChangesetId> {
+    return (await IModelHost.hubAccess.queryChangeset({ user, iModelId, changeset: { index: changesetIndex } })).id;
   }
 
   /** Temporarily needed to convert from the legacy ChangesetId to the now preferred ChangeSetIndex.
    * @note This function should be removed when full support for ChangesetIndex is in place.
    */
-  export async function queryChangesetIndex(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changesetId: ChangesetId): Promise<ChangesetIndex> {
-    return (await IModelHost.hubAccess.queryChangeset({ requestContext, iModelId, changeset: { id: changesetId } })).index;
+  export async function queryChangesetIndex(user: AuthorizedClientRequestContext, iModelId: GuidString, changesetId: ChangesetId): Promise<ChangesetIndex> {
+    return (await IModelHost.hubAccess.queryChangeset({ user, iModelId, changeset: { id: changesetId } })).index;
   }
 
   /** Call the specified function for each changeset of the specified iModel. */
-  export async function forEachChangeset(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, func: (c: ChangesetProps) => void): Promise<void> {
-    const changesets = await IModelHost.hubAccess.queryChangesets({ requestContext, iModelId });
+  export async function forEachChangeset(user: AuthorizedClientRequestContext, iModelId: GuidString, func: (c: ChangesetProps) => void): Promise<void> {
+    const changesets = await IModelHost.hubAccess.queryChangesets({ user, iModelId });
     for (const changeset of changesets) {
       func(changeset);
     }
@@ -81,9 +81,9 @@ export namespace IModelHubUtils {
     }
   }
 
-  export async function downloadAndOpenBriefcase(requestContext: AuthorizedClientRequestContext, briefcaseArg: RequestNewBriefcaseArg): Promise<BriefcaseDb> {
-    const briefcaseProps = await BriefcaseManager.downloadBriefcase(requestContext, briefcaseArg);
-    return BriefcaseDb.open(requestContext, {
+  export async function downloadAndOpenBriefcase(briefcaseArg: RequestNewBriefcaseArg): Promise<BriefcaseDb> {
+    const briefcaseProps = await BriefcaseManager.downloadBriefcase(briefcaseArg);
+    return BriefcaseDb.open({
       fileName: briefcaseProps.fileName,
       readonly: briefcaseArg.briefcaseId ? briefcaseArg.briefcaseId === BriefcaseIdValue.Unassigned : false,
     });

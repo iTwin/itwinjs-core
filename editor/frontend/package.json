@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-editor-frontend",
-  "version": "3.0.0-dev.49",
+  "version": "3.0.0-dev.65",
   "description": "iModel.js frontend components",
   "main": "lib/cjs/imodeljs-editor-frontend.js",
   "module": "lib/esm/imodeljs-editor-frontend.js",
@@ -38,9 +38,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.49",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.49",
-    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.49"
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.65",
+    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.65",
+    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.65"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -55,7 +55,7 @@
     "@bentley/imodeljs-i18n": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^8.2.2",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "@types/semver": "^5.5.0",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
@@ -65,7 +65,7 @@
     "mocha": "^8.3.2",
     "rimraf": "^3.0.2",
     "source-map-loader": "^1.0.0",
-    "typescript": "~4.3.0"
+    "typescript": "~4.4.0"
   },
   "//dependencies": [
     "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",

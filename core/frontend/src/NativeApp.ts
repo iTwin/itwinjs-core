@@ -215,7 +215,7 @@ export class NativeApp {
     this._isValid = false;
   }
 
-  public static async requestDownloadBriefcase(contextId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions,
+  public static async requestDownloadBriefcase(iTwinId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions,
     asOf: IModelVersion = IModelVersion.latest(), progress?: ProgressCallback): Promise<BriefcaseDownloader> {
 
     let stopProgressEvents = () => { };
@@ -229,7 +229,7 @@ export class NativeApp {
       (downloadOptions.syncMode === SyncMode.PullOnly ? 0 : await this.callNativeHost("acquireNewBriefcaseId", iModelId));
 
     const fileName = downloadOptions.fileName ?? await this.getBriefcaseFileName({ briefcaseId, iModelId });
-    const requestProps: RequestNewBriefcaseProps = { iModelId, briefcaseId, contextId, asOf: asOf.toJSON(), fileName };
+    const requestProps: RequestNewBriefcaseProps = { iModelId, briefcaseId, iTwinId, asOf: asOf.toJSON(), fileName };
 
     const doDownload = async (): Promise<void> => {
       try {
@@ -307,8 +307,13 @@ export class NativeApp {
 export class Storage {
   constructor(public readonly id: string) { }
 
+  /** get the type of a value for a key, or undefined if not present. */
+  public async getValueType(key: string): Promise<"number" | "string" | "boolean" | "Uint8Array" | "null" | undefined> {
+    return NativeApp.callNativeHost("storageGetValueType", this.id, key);
+  }
+
   /** Get the value for a key */
-  public async getData(key: string): Promise<StorageValue | undefined> {
+  public async getData(key: string): Promise<StorageValue> {
     return NativeApp.callNativeHost("storageGet", this.id, key);
   }
 

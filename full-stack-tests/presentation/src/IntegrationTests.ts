@@ -7,10 +7,8 @@ import { IModelAppOptions, NoRenderApp } from "@bentley/imodeljs-frontend";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import {
-  HierarchyCacheMode, Presentation as PresentationBackend, PresentationBackendNativeLoggerCategory,
-  PresentationProps as PresentationBackendProps
+  HierarchyCacheMode, Presentation as PresentationBackend, PresentationBackendNativeLoggerCategory, PresentationProps as PresentationBackendProps,
 } from "@bentley/presentation-backend";
-import { RequestPriority } from "@bentley/presentation-common";
 import { PresentationManagerProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { initialize as initializeTesting, PresentationTestingInitProps, terminate as terminateTesting } from "@bentley/presentation-testing";
@@ -90,14 +88,19 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
     requestTimeout: props.backendTimeout ?? 0,
     rulesetDirectories: [path.join(libDir, "assets", "rulesets")],
     localeDirectories: [path.join(libDir, "assets", "locales")],
-    activeLocale: "en-PSEUDO",
-    taskAllocationsMap: {
-      [RequestPriority.Max]: 1,
+    defaultLocale: "en-PSEUDO",
+    workerThreadsCount: 1,
+    caching: {
+      hierarchies: {
+        mode: HierarchyCacheMode.Disk,
+        directory: path.join(libDir, "cache"),
+      },
     },
-    cacheConfig: { mode: HierarchyCacheMode.Disk, directory: path.join(libDir, "cache") },
   };
   const frontendInitProps: PresentationFrontendProps = {
-    activeLocale: "en-PSEUDO",
+    presentation: {
+      activeLocale: "en-PSEUDO",
+    },
   };
 
   const frontendAppOptions: IModelAppOptions = {

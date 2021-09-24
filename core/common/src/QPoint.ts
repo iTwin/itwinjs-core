@@ -425,11 +425,25 @@ export class QParams3d {
   }
 
   /** @internal */
-  public get rangeDiagonal(): Vector3d { return Vector3d.createFrom({ x: this.scale.x === 0 ? 0 : Quantization.rangeScale16 / this.scale.x, y: this.scale.y === 0 ? 0 : Quantization.rangeScale16 / this.scale.y, z: this.scale.z === 0 ? 0 : Quantization.rangeScale16 / this.scale.z }); }
+  public get rangeDiagonal(): Vector3d {
+    return Vector3d.createFrom({
+      x: this.scale.x === 0 ? 0 : Quantization.rangeScale16 / this.scale.x,
+      y: this.scale.y === 0 ? 0 : Quantization.rangeScale16 / this.scale.y,
+      z: this.scale.z === 0 ? 0 : Quantization.rangeScale16 / this.scale.z,
+    });
+  }
 
   /** Return true if the point point is quantizable using these parameters. */
   public isQuantizable(point: Point3d ) {
     return Quantization.isQuantizable(point.x, this.origin.x, this.scale.x) && Quantization.isQuantizable(point.y, this.origin.y, this.scale.y) && Quantization.isQuantizable(point.z, this.origin.z, this.scale.z);
+  }
+
+  /** Compute the range to which these parameters quantize. */
+  public computeRange(out?: Range3d): Range3d {
+    const range = Range3d.createNull(out);
+    range.extendPoint(this.origin);
+    range.extendPoint(this.origin.plus(this.rangeDiagonal));
+    return range;
   }
 }
 

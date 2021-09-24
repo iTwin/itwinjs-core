@@ -37,12 +37,6 @@ export interface PresentationTreeNodeLoaderProps extends PresentationTreeDataPro
   pagingSize: number;
 
   /**
-   * Should node loader initiate loading of the whole hierarchy as soon as it's created.
-   * @alpha @deprecated Will be removed on 3.0.
-   */
-  preloadingEnabled?: boolean;
-
-  /**
    * Auto-update the hierarchy when ruleset, ruleset variables or data in the iModel changes.
    * @alpha
    */

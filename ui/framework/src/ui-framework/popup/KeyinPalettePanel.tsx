@@ -91,7 +91,7 @@ export function KeyinPalettePanel({ keyins, onKeyinExecuted, historyLength: allo
     let detailedMessage: string | undefined;
     let message: string | undefined;
     try {
-      switch (IModelApp.tools.parseAndRun(value)) {
+      switch (await IModelApp.tools.parseAndRun(value)) {
         case ParseAndRunResult.ToolNotFound:
           message = `UiFramework.translate("keyinbrowser.couldNotFindTool")} ${value}`;
           break;

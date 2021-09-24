@@ -44,7 +44,7 @@ describe("StateTracker", () => {
       ipcHandlerMock.setup(async (x) => x.updateHierarchyState(moq.It.isObjectWith({
         imodelKey: "imodel-key",
         changeType: "nodesExpanded",
-        nodeKeys: nodes.map((n) => NodeKey.toJSON(n.key)),
+        nodeKeys: nodes.map((n) => n.key),
         rulesetId: testRulesetId,
       }))).verifiable(moq.Times.once());
       await tracker.onExpandedNodesChanged(imodelMock.object, testRulesetId, testSourceId, nodes);
@@ -66,7 +66,7 @@ describe("StateTracker", () => {
         imodelKey: "imodel-key",
         rulesetId: testRulesetId,
         changeType: "nodesCollapsed",
-        nodeKeys: nodes.map((n) => NodeKey.toJSON(n.key)),
+        nodeKeys: nodes.map((n) => n.key),
       }))).verifiable(moq.Times.once());
       await tracker.onExpandedNodesChanged(imodelMock.object, testRulesetId, testSourceId, []);
       ipcHandlerMock.verifyAll();
@@ -103,7 +103,7 @@ describe("StateTracker", () => {
       ipcHandlerMock.setup(async (x) => x.updateHierarchyState(moq.It.isObjectWith({
         imodelKey: "imodel-key",
         changeType: "nodesCollapsed",
-        nodeKeys: nodes.map((n) => NodeKey.toJSON(n.key)),
+        nodeKeys: nodes.map((n) => n.key),
         rulesetId: testRulesetId,
       }))).verifiable(moq.Times.once());
       await tracker.onHierarchyClosed(imodelMock.object, testRulesetId, testSourceId);
@@ -127,7 +127,7 @@ describe("StateTracker", () => {
       ipcHandlerMock.setup(async (x) => x.updateHierarchyState(moq.It.isObjectWith({
         imodelKey: "imodel-key",
         changeType: "nodesCollapsed",
-        nodeKeys: [NodeKey.toJSON(nodes[1].key)],
+        nodeKeys: [nodes[1].key],
         rulesetId: testRulesetId,
       }))).verifiable(moq.Times.once());
       await tracker.onHierarchyClosed(imodelMock.object, testRulesetId, "other-source-id");

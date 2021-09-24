@@ -9,7 +9,7 @@ import { Reporter } from "@bentley/perf-tools";
 import { assert } from "chai";
 import * as path from "path";
 import {
-  BackendRequestContext, DrawingCategory, ECSqlStatement, Element, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory
+  DrawingCategory, ECSqlStatement, Element, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory
 } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
@@ -133,7 +133,7 @@ describe("PerformanceElementsTests", () => {
 
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", fileName), { rootSubject: { name: "PerfTest" } });
         const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
-        await seedIModel.importSchemas(new BackendRequestContext(), [testSchemaName]);
+        await seedIModel.importSchemas([testSchemaName]);
         seedIModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
         assert.isDefined(seedIModel.getMetaData(`PerfTestDomain:${name}`), `${name}is present in iModel.`);
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
@@ -340,7 +340,7 @@ describe("PerformanceElementsTests2d", () => {
 
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ElementCRUDPerformance2d", fileName), { rootSubject: { name: "PerfTest" } });
         const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
-        await seedIModel.importSchemas(new BackendRequestContext(), [testSchemaName]);
+        await seedIModel.importSchemas([testSchemaName]);
         seedIModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
         assert.isDefined(seedIModel.getMetaData(`PerfTestDomain:${name}`), `${name}is present in iModel.`);
 

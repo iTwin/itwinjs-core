@@ -296,6 +296,7 @@ export interface CommonDivProps extends React.AllHTMLAttributes<HTMLDivElement>,
 
 // @public
 export interface CommonProps extends ClassNameProps {
+    itemId?: string;
     style?: React.CSSProperties;
 }
 
@@ -303,7 +304,7 @@ export interface CommonProps extends ClassNameProps {
 export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMenuState> {
     constructor(props: ContextMenuProps);
     // @internal (undocumented)
-    static autoFlip: (dir: ContextMenuDirection, rect: ClientRect, windowWidth: number, windowHeight: number) => ContextMenuDirection;
+    static autoFlip: (dir: ContextMenuDirection, rect: DOMRectReadOnly, windowWidth: number, windowHeight: number) => ContextMenuDirection;
     // (undocumented)
     blur: () => void;
     // @internal (undocumented)
@@ -319,7 +320,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
     // @internal (undocumented)
     static getCSSClassNameFromDirection: (direction?: ContextMenuDirection | undefined) => string;
     // (undocumented)
-    getRect: () => ClientRect;
+    getRect: () => DOMRect;
     // (undocumented)
     render(): JSX.Element;
     // @internal (undocumented)
@@ -1241,6 +1242,8 @@ export class LocalSettingsStorage implements UiSettingsStorage {
     // (undocumented)
     getSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
     // (undocumented)
+    hasSetting(settingNamespace: string, settingName: string): Promise<boolean>;
+    // (undocumented)
     saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult>;
     // (undocumented)
     w: Window;
@@ -1806,6 +1809,8 @@ export class SessionSettingsStorage implements UiSettingsStorage {
     deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
     // (undocumented)
     getSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
+    // (undocumented)
+    hasSetting(settingNamespace: string, settingName: string): Promise<boolean>;
     // (undocumented)
     saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult>;
     // (undocumented)

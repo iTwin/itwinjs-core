@@ -8,14 +8,14 @@
 
 import { BentleyStatus, Id64Array } from "@bentley/bentleyjs-core";
 import { ViewFlagProps } from "./ViewFlags";
-import { ClipPlaneContainment } from "@bentley/geometry-core";
+import { ClipPlaneContainment, ClipVectorProps } from "@bentley/geometry-core";
 
 /** Information required to request clip containment status for elements from the front end to the back end.
  * @public
  */
 export interface GeometryContainmentRequestProps {
   candidates: Id64Array;
-  clip: any; // json representing a ClipVector
+  clip: ClipVectorProps;
   allowOverlaps?: boolean;
   viewFlags?: ViewFlagProps;
   offSubCategories?: Id64Array;

@@ -8,7 +8,10 @@
 
 import * as deepAssign from "deep-assign";
 import { GuidString, Id64String, IModelHubStatus, Logger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ECJsonTypeMap, ResponseError, WsgInstance, WsgQuery, WsgRequestOptions } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, ResponseError } from "@bentley/itwin-client";
+import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
+import { WsgQuery } from "../wsg/WsgQuery";
+import { WsgRequestOptions } from "../wsg/WsgClient";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { IModelBaseHandler } from "./BaseHandler";
 import { AggregateResponseError, ArgumentCheck, IModelHubClientError, IModelHubError } from "./Errors";
@@ -373,13 +376,11 @@ export class CodeSequenceHandler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, sequence: CodeSequence): Promise<string> {
-    requestContext.enter();
     Logger.logInfo(loggerCategory, "Querying code sequence for iModel", () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
 
     const result = await this._handler.postInstance<CodeSequence>(requestContext, CodeSequence, this.getRelativeUrl(iModelId), sequence);
-    requestContext.enter();
     Logger.logTrace(loggerCategory, "Queried code sequence for iModel", () => ({ iModelId }));
 
     return result.value!;
@@ -470,7 +471,6 @@ export class CodeHandler {
 
   /** Send partial request for code updates */
   private async updateInternal(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, codes: HubCode[], updateOptions?: CodeUpdateOptions): Promise<HubCode[]> {
-    requestContext.enter();
     let requestOptions: WsgRequestOptions | undefined;
     if (updateOptions) {
       requestOptions = {};
@@ -507,7 +507,6 @@ export class CodeHandler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async update(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, codes: HubCode[], updateOptions?: CodeUpdateOptions): Promise<HubCode[]> {
-    requestContext.enter();
     Logger.logInfo(loggerCategory, "Requesting codes for iModel", () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
@@ -524,9 +523,7 @@ export class CodeHandler {
       const chunk = codes.slice(i, i + updateOptions.codesPerRequest!);
       try {
         result.push(...await this.updateInternal(requestContext, iModelId, chunk, updateOptions));
-        requestContext.enter();
       } catch (error) {
-        requestContext.enter();
         if (error instanceof ResponseError) {
           if (updateOptions && updateOptions.deniedCodes && error instanceof IModelHubError && (
             error.errorNumber === IModelHubStatus.CodeReservedByAnotherBriefcase ||
@@ -567,7 +564,6 @@ export class CodeHandler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: CodeQuery = new CodeQuery()): Promise<HubCode[]> {
-    requestContext.enter();
     Logger.logInfo(loggerCategory, "Querying codes for iModel", () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
@@ -575,11 +571,9 @@ export class CodeHandler {
     let codes: HubCode[];
     if (query.isMultiCodeQuery) {
       const multiCodes = await this._handler.getInstances<MultiCode>(requestContext, MultiCode, this.getRelativeUrl(iModelId), query.getQueryOptions());
-      requestContext.enter();
       codes = CodeHandler.convertMultiCodesToCodes(multiCodes);
     } else {
       codes = await this._handler.postQuery<HubCode>(requestContext, HubCode, this.getRelativeUrl(iModelId, false), query.getQueryOptions());
-      requestContext.enter();
     }
 
     Logger.logTrace(loggerCategory, `Queried ${codes.length} codes for iModel`, () => ({ iModelId }));
@@ -595,7 +589,6 @@ export class CodeHandler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
   public async deleteAll(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, briefcaseId: number): Promise<void> {
-    requestContext.enter();
     Logger.logInfo(loggerCategory, "Deleting all codes from briefcase", () => ({ briefcaseId, iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);

@@ -43,7 +43,7 @@ import { initializeWeb } from "./web/BackendServer";
       enableSchemasPreload: true,
       updatesPollInterval: 100,
     });
-  } catch (error) {
+  } catch (error: any) {
     Logger.logError(loggerCategory, error);
     process.exitCode = 1;
   }

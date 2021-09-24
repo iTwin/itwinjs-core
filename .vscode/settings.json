@@ -23,7 +23,6 @@
     "common/temp": false
   },
   "files.trimTrailingWhitespace": true,
-  "typescript.tsdk": "node_modules\\typescript\\lib",
   "files.associations": {
     "*.snap": "javascript",
     ".nycrc": "json",

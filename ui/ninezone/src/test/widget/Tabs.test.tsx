@@ -9,7 +9,6 @@ import {
   addPanelWidget, addTab, createNineZoneState, PanelSideContext, WidgetIdContext, WidgetStateContext, WidgetTabs
 } from "../../ui-ninezone";
 import { TestNineZoneProvider } from "../Providers";
-import { createDOMRect } from "../Utils";
 
 describe("WidgetTabs", () => {
   it("should render", () => {
@@ -38,7 +37,7 @@ describe("WidgetTabs", () => {
     nineZone = addTab(nineZone, "t1");
     nineZone = addTab(nineZone, "t2");
     nineZone = addTab(nineZone, "t3");
-    sinon.stub(Element.prototype, "getBoundingClientRect").returns(createDOMRect({ width: 100 }));
+    sinon.stub(Element.prototype, "getBoundingClientRect").returns(DOMRect.fromRect({ width: 100 }));
     const { container } = render(
       <TestNineZoneProvider
         state={nineZone}

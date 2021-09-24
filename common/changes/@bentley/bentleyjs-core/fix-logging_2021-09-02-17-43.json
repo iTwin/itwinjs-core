@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/bentleyjs-core",
+      "comment": "allow intercept log and filter it",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/bentleyjs-core"
+}

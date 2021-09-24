@@ -182,14 +182,7 @@ Assistants for Tools to find existing geometry and for creating new geometry:
 - ✔️️ [Tentative Point](./frontend/primitivetools.md#snapping) performs finds element in response to a *tentative button* press
 - ✔️️ [AccuDraw](./frontend/primitivetools.md#accudraw) defines a work plane to aide entering coordinates
 
-## Extensions
-
-Load new functionality to a running instance of an application in a web browser.
-
-- 👷 Load registered [Extension](./frontend/Extensions.md)
-- 🎫 Register and upload your own Extensions
-
-## Bridging data into iModels
+## Synchronizing data into iModels
 
 Create iModels from data from external BIM/CAD/GIS/etc. applications.
 

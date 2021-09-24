@@ -3,13 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { GuidString, Id64, Logger } from "@bentley/bentleyjs-core";
-import { Briefcase, CodeQuery, CodeState, HubCode, IModelClient, Lock, LockLevel, LockQuery, LockType } from "@bentley/imodelhub-client";
-import { AccessToken, AuthenticationError, AuthorizedClientRequestContext, ResponseError } from "@bentley/itwin-client";
-import * as utils from "./TestUtils";
+import {
+  AuthenticationError, Briefcase, CodeQuery, CodeState, HubCode, IModelClient, Lock, LockLevel, LockQuery, LockType,
+} from "@bentley/imodelhub-client";
+import { AccessToken, AuthorizedClientRequestContext, ResponseError } from "@bentley/itwin-client";
 import { TestConfig } from "../TestConfig";
+import * as utils from "./TestUtils";
 
 describe.skip("iModelHub Performance tests", () => {
-  let contextId: string;
+  let iTwinId: string;
   let imodelId: GuidString;
   let briefcase1: Briefcase;
   let briefcase2: Briefcase;
@@ -20,9 +22,9 @@ describe.skip("iModelHub Performance tests", () => {
     const accessToken: AccessToken = await utils.login();
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
-    contextId = await utils.getProjectId(requestContext);
-    await utils.createIModel(requestContext, utils.sharedimodelName, contextId, true, recreate);
-    imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);
+    iTwinId = await utils.getProjectId(requestContext);
+    await utils.createIModel(requestContext, utils.sharedimodelName, iTwinId, true, recreate);
+    imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, iTwinId);
     imodelHubClient = utils.getDefaultClient();
     const briefcases = await utils.getBriefcases(requestContext, imodelId, 2);
     briefcase1 = briefcases[0];
@@ -35,7 +37,7 @@ describe.skip("iModelHub Performance tests", () => {
 
   after(async () => {
     if (TestConfig.enableIModelBank) {
-      await utils.deleteIModelByName(requestContext, contextId, utils.sharedimodelName);
+      await utils.deleteIModelByName(requestContext, iTwinId, utils.sharedimodelName);
     }
   });
 

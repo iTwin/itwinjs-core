@@ -6,22 +6,22 @@ import * as chai from "chai";
 import * as fs from "fs";
 import { Base64 } from "js-base64";
 import * as path from "path";
-import { ClientRequestContext, Guid, GuidString, Id64, Id64String, Logger, WSStatus } from "@bentley/bentleyjs-core";
-import { Asset, Project } from "@bentley/context-registry-client";
+import { HttpRequestHost } from "@bentley/backend-itwin-client";
+import { ClientRequestContext, Guid, GuidString, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
+import { ITwin } from "@bentley/context-registry-client";
 import {
-  Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, CodeState, HubCode, IModelBankClient, IModelBankFileSystemContextClient,
+  Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, CodeState, ECJsonTypeMap, HubCode, IModelBankClient, IModelBankFileSystemContextClient,
   IModelCloudEnvironment, IModelHubClient, IModelQuery, LargeThumbnail, Lock, LockLevel, LockType, MultiCode, MultiLock, SmallThumbnail, Thumbnail,
-  Version, VersionQuery,
+  Version, VersionQuery, WsgError, WSStatus,
 } from "@bentley/imodelhub-client";
-import { AccessToken, AuthorizedClientRequestContext, ECJsonTypeMap, ProgressInfo, UserInfo, WsgError } from "@bentley/itwin-client";
+import { AccessToken, AuthorizedClientRequestContext, ProgressInfo, UserInfo } from "@bentley/itwin-client";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool";
 import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
+import { createFileHandler } from "./FileHandler";
 import { getIModelBankCloudEnv } from "./IModelBankCloudEnv";
 import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
 import { assetsPath } from "./TestConstants";
-import { createFileHandler } from "./FileHandler";
-import { HttpRequestHost } from "@bentley/backend-itwin-client";
 
 const loggingCategory = "backend-itwin-client.TestUtils";
 
@@ -221,17 +221,17 @@ export async function bootstrapBankProject(requestContext: AuthorizedClientReque
     return;
 
   const bankContext = getCloudEnv().contextMgr as IModelBankFileSystemContextClient;
-  let project: Project | undefined;
+  let iTwin: ITwin | undefined;
   try {
-    project = await bankContext.queryProjectByName(requestContext, projectName);
+    iTwin = await bankContext.getITwinByName(requestContext, projectName);
   } catch (err) {
     if (err instanceof WsgError && err.errorNumber === WSStatus.InstanceNotFound) {
-      project = undefined;
+      iTwin = undefined;
     } else {
       throw err;
     }
   }
-  if (!project)
+  if (!iTwin)
     await bankContext.createContext(requestContext, projectName);
 
   bankProjects.push(projectName);
@@ -245,12 +245,12 @@ export async function getAssetId(requestContext: AuthorizedClientRequestContext,
 
   await bootstrapBankProject(requestContext, assetName);
 
-  const asset: Asset = await getCloudEnv().contextMgr.queryAssetByName(requestContext, assetName);
+  const iTwin: ITwin = await getCloudEnv().contextMgr.getITwinByName(requestContext, assetName);
 
-  if (!asset || !asset.wsgId)
+  if (!iTwin || !iTwin.id)
     throw new Error(`Asset with name ${assetName} doesn't exist.`);
 
-  return asset.wsgId;
+  return iTwin.id;
 }
 
 export async function getProjectId(requestContext: AuthorizedClientRequestContext, projectName?: string): Promise<string> {
@@ -261,12 +261,12 @@ export async function getProjectId(requestContext: AuthorizedClientRequestContex
 
   await bootstrapBankProject(requestContext, projectName);
 
-  const project: Project = await getCloudEnv().contextMgr.queryProjectByName(requestContext, projectName);
+  const iTwin: ITwin = await getCloudEnv().contextMgr.getITwinByName(requestContext, projectName);
 
-  if (!project || !project.wsgId)
+  if (!iTwin || !iTwin.id)
     throw new Error(`Project with name ${TestConfig.projectName} doesn't exist.`);
 
-  return project.wsgId;
+  return iTwin.id;
 }
 
 /** iModels */

@@ -87,7 +87,7 @@ export namespace EditManipulator {
      * and return control to suspended PrimitiveTool.
      */
     protected async onComplete(_ev: BeButtonEvent, event: EventType): Promise<EventHandled> {
-      this.exitTool();
+      await this.exitTool();
       this.manipulator.onManipulatorEvent(event);
 
       return EventHandled.Yes;
@@ -111,8 +111,8 @@ export namespace EditManipulator {
     public override async onTouchComplete(ev: BeTouchEvent): Promise<void> { return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev); }
     public override async onTouchCancel(ev: BeTouchEvent): Promise<void> { return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset); }
 
-    public override onPostInstall(): void {
-      super.onPostInstall();
+    public override async onPostInstall() {
+      await super.onPostInstall();
       this.init();
     }
   }
@@ -213,7 +213,7 @@ export namespace EditManipulator {
      * @return true if a tool was successfully run.
      * @see [[EditManipulator.HandleTool]]
     */
-    protected abstract modifyControls(_hit: HitDetail, _ev: BeButtonEvent): boolean;
+    protected abstract modifyControls(_hit: HitDetail, _ev: BeButtonEvent): Promise<boolean>;
 
     /* Create, update, or clear based on the current selection. */
     protected async updateControls(): Promise<void> {
@@ -262,7 +262,7 @@ export namespace EditManipulator {
       if (ev.isDown && !ev.isDragging)
         return EventHandled.No; // Select controls on up event or down event only after drag started...
 
-      if (!this.modifyControls(hit, ev))
+      if (!await this.modifyControls(hit, ev))
         return EventHandled.No;
 
       // In case InputCollector was installed for handle modification, don't wait for motion to show dynamic frame adjusted for AccuDraw hints...

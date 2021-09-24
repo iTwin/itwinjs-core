@@ -100,6 +100,7 @@ export const createKey = (type: "subject" | "model" | "category" | "element", id
 
   return {
     type: StandardNodeTypes.ECInstancesNode,
+    version: 0,
     instanceKeys,
     pathFromRoot: [],
   };
@@ -109,6 +110,7 @@ export const createKey = (type: "subject" | "model" | "category" | "element", id
 export const createClassGroupingKey = (ids: Id64String[]): ECClassGroupingNodeKey => {
   return {
     type: StandardNodeTypes.ECClassGroupingNode,
+    version: 0,
     className: "MyDomain:SomeElementType",
     groupedInstancesCount: Array.isArray(ids) ? ids.length : 1,
     pathFromRoot: [],

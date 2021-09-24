@@ -23,7 +23,7 @@ export class RealityTransitionTool extends Tool {
   /** This method runs the tool, applying a transition in X, Y, Z, or transparency.
    * @param fadeMode whether to apply the transition in X, Y, Z, or transparency
    */
-  public override run(fadeMode: FadeMode = FadeMode.X): boolean {
+  public override async run(fadeMode: FadeMode = FadeMode.X): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp)
       return true;
@@ -95,7 +95,7 @@ export class RealityTransitionTool extends Tool {
    * @param args the first entry of this array contains either "x", "y", "z", or "transparent", indicating the type of transition to apply.
    * @see [[run]]
    */
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const transitionNames = [
       "x",
       "y",

@@ -59,7 +59,7 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
       throw new IModelError(AuthStatus.Error, "Must specify a valid configuration when initializing authorization");
     if (this.config.expiryBuffer)
       this.expireSafety = this.config.expiryBuffer;
-    this.issuerUrl = this.config.issuerUrl ?? await this.getUrl(this.getClientRequestContext());
+    this.issuerUrl = this.config.issuerUrl ?? await this.getUrl();
   }
 }
 
@@ -96,7 +96,7 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
     NativeHost.overrideInternetConnectivity(by, status);
   }
   public async acquireNewBriefcaseId(iModelId: GuidString): Promise<number> {
-    return BriefcaseManager.acquireNewBriefcaseId(await IModelHost.getAuthorizedContext(), iModelId);
+    return BriefcaseManager.acquireNewBriefcaseId({ iModelId });
   }
   public async getBriefcaseFileName(props: BriefcaseProps): Promise<string> {
     return BriefcaseManager.getFileName(props);
@@ -120,7 +120,7 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
       };
     }
 
-    const downloadPromise = BriefcaseManager.downloadBriefcase(await IModelHost.getAuthorizedContext(), args);
+    const downloadPromise = BriefcaseManager.downloadBriefcase(args);
     const checkAbort = () => {
       const job = Downloads.isInProgress(args.fileName!);
       return (job && (job.request as any).abort === 1) ? 1 : 0;
@@ -153,6 +153,10 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
 
   public async storageMgrNames(): Promise<string[]> {
     return NativeAppStorage.getStorageNames();
+  }
+
+  public async storageGetValueType(storageId: string, key: string): Promise<"number" | "string" | "boolean" | "Uint8Array" | "null" | undefined> {
+    return NativeAppStorage.find(storageId).getValueType(key);
   }
 
   public async storageGet(storageId: string, key: string): Promise<StorageValue | undefined> {

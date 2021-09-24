@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { SchemaXmlFileLocater } from "@bentley/ecschema-locaters";
 import { Schema, SchemaContext, SchemaReadHelper, XmlParser } from "@bentley/ecschema-metadata";
+import { DOMParser } from "@xmldom/xmldom";
 import { expect } from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { DOMParser } from "xmldom";
 import { ECSchemaToTs } from "../../ecschema2ts";
 
 declare const __dirname: string; // eslint-disable-line @typescript-eslint/naming-convention

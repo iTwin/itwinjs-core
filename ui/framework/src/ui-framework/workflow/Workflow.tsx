@@ -6,6 +6,8 @@
  * @module WorkflowTask
  */
 
+/* eslint-disable deprecation/deprecation */
+
 import { Logger } from "@bentley/bentleyjs-core";
 import { UiEvent } from "@bentley/ui-core";
 import { ItemDefBase } from "../shared/ItemDefBase";
@@ -14,8 +16,9 @@ import { UiFramework } from "../UiFramework";
 import { Task, TaskManager } from "./Task";
 
 /** Properties for a [[Workflow]].
- * @public
- */
+ * @internal
+ * @deprecated
+ */
 export interface WorkflowProps extends ItemProps {
   id: string;
   defaultTaskId: string;
@@ -24,8 +27,9 @@ export interface WorkflowProps extends ItemProps {
 }
 
 /** Workflow Properties List definition.
- * @public
- */
+ * @internal
+ * @deprecated
+ */
 export interface WorkflowPropsList {
   defaultWorkflowId: string;
   workflows: WorkflowProps[];
@@ -33,8 +37,9 @@ export interface WorkflowPropsList {
 
 /** Workflow class.
  * A Workflow is a defined sequence of tasks used to accomplish a goal.
- * @public
- */
+ * @internal
+ * @deprecated
+ */
 export class Workflow extends ItemDefBase {
   /** Id of the Workflow */
   public workflowId: string;
@@ -112,9 +117,9 @@ export class Workflow extends ItemDefBase {
   /** Sets a Task as active.
    * @param task  The Task to set as active
    */
-  public setActiveTask(task: Task) {
+  public async setActiveTask(task: Task) {
     this.activeTaskId = task.taskId;
-    task.onActivated(); // eslint-disable-line @typescript-eslint/no-floating-promises
+    await task.onActivated();
     WorkflowManager.onTaskActivatedEvent.emit({ task, taskId: task.id, workflow: this, workflowId: this.id });
   }
 
@@ -135,25 +140,27 @@ export class Workflow extends ItemDefBase {
 
     return sortedTasks;
   }
-
 }
 
 /** Workflow Activated Event Args class.
- * @public
- */
+ * @internal
+ * @deprecated
+ */
 export interface WorkflowActivatedEventArgs {
   workflowId?: string;
   workflow?: Workflow;
 }
 
 /** Workflow Activated Event class.
- * @public
- */
+ * @internal
+ * @deprecated
+ */
 export class WorkflowActivatedEvent extends UiEvent<WorkflowActivatedEventArgs> { }
 
 /** Task Activated Event Args class.
- * @public
- */
+ * @internal
+ * @deprecated
+ */
 export interface TaskActivatedEventArgs {
   taskId?: string;
   task?: Task;
@@ -163,13 +170,15 @@ export interface TaskActivatedEventArgs {
 }
 
 /** Task Activated Event class.
- * @public
- */
+ * @internal
+ * @deprecated
+ */
 export class TaskActivatedEvent extends UiEvent<TaskActivatedEventArgs> { }
 
 /** Workflow Manager class.
- * @public
- */
+ * @internal
+ * @deprecated
+ */
 export class WorkflowManager {
   private static _workflows: Map<string, Workflow> = new Map<string, Workflow>();
   private static _activeWorkflow: Workflow | undefined;
@@ -237,7 +246,7 @@ export class WorkflowManager {
 
     // istanbul ignore else
     if (!task.isActive)
-      workflow.setActiveTask(task);
+      await workflow.setActiveTask(task);
   }
 
   /** Gets the active Workflow */

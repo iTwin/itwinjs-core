@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext, Id64 } from "@bentley/bentleyjs-core";
+import { Id64 } from "@bentley/bentleyjs-core";
 import { SnapshotDb } from "@bentley/imodeljs-backend";
-import { DuplicateRulesetHandlingStrategy, Presentation, RulesetEmbedder } from "@bentley/presentation-backend";
+import { Presentation, RulesetEmbedder } from "@bentley/presentation-backend";
 import { ChildNodeSpecificationTypes, createRandomRuleset, Ruleset, RuleTypes } from "@bentley/presentation-common";
 import { expect } from "chai";
 import faker from "faker";
@@ -19,18 +19,6 @@ const RULESET_1: Ruleset = {
       specType: ChildNodeSpecificationTypes.CustomNode,
       type: "test 1",
       label: "label 1",
-    }],
-  }],
-};
-
-const RULESET_2: Ruleset = {
-  id: "ruleset_2",
-  rules: [{
-    ruleType: RuleTypes.RootNodes,
-    specifications: [{
-      specType: ChildNodeSpecificationTypes.CustomNode,
-      type: "test 2",
-      label: "label 2",
     }],
   }],
 };
@@ -116,7 +104,7 @@ describe("RulesEmbedding", () => {
     expect(Id64.isValid(insertId)).true;
 
     // Try getting root node to confirm embedded ruleset is being located
-    const rootNodes = await Presentation.getManager().getNodes({ requestContext: ClientRequestContext.current, imodel, rulesetOrId: RULESET_1.id });
+    const rootNodes = await Presentation.getManager().getNodes({ imodel, rulesetOrId: RULESET_1.id });
     expect(rootNodes.length).to.be.equal(1);
   });
 
@@ -126,14 +114,14 @@ describe("RulesEmbedding", () => {
     expect(Id64.isValid(insertId)).true;
 
     // Try getting root node to confirm embedded ruleset is being located
-    let rootNodes = await Presentation.getManager().getNodes({ requestContext: ClientRequestContext.current, imodel, rulesetOrId: RULESET_1.id });
+    let rootNodes = await Presentation.getManager().getNodes({ imodel, rulesetOrId: RULESET_1.id });
     expect(rootNodes.length).to.be.equal(1);
 
     const rulesetElement = imodel.elements.getElement(insertId);
     rulesetElement.setJsonProperty("id", faker.random.uuid());
     imodel.elements.updateElement(rulesetElement);
 
-    rootNodes = await Presentation.getManager().getNodes({ requestContext: ClientRequestContext.current, imodel, rulesetOrId: RULESET_1.id });
+    rootNodes = await Presentation.getManager().getNodes({ imodel, rulesetOrId: RULESET_1.id });
     expect(rootNodes.length).to.be.equal(1);
   });
 
@@ -147,26 +135,6 @@ describe("RulesEmbedding", () => {
     const rulesets: Ruleset[] = await embedder.getRulesets();
     expect(rulesets.length).equals(1);
   });
-
-  /* eslint-disable deprecation/deprecation */
-  it("[deprecated] skips inserting duplicate ruleset", async () => {
-    const insertId1 = await embedder.insertRuleset(ruleset, DuplicateRulesetHandlingStrategy.Skip);
-    expect(Id64.isValid(insertId1)).true;
-
-    const rulesetChanged = { ...RULESET_2, id: ruleset.id };
-    expect(ruleset).to.not.deep.eq(rulesetChanged);
-    expect(ruleset.id).to.be.equal(rulesetChanged.id);
-
-    const insertId2 = await embedder.insertRuleset(rulesetChanged, DuplicateRulesetHandlingStrategy.Skip);
-    expect(insertId1).to.be.equal(insertId2);
-
-    const rulesets: Ruleset[] = await embedder.getRulesets();
-    expect(rulesets.length).equals(1);
-
-    expect(ruleset).to.deep.eq(rulesets[0]);
-    expect(rulesetChanged).to.not.deep.eq(rulesets[0]);
-  });
-  /* eslint-enable deprecation/deprecation */
 
   it("skips inserting duplicate ruleset with same id", async () => {
     const ruleset1: Ruleset = { id: "test", version: "1.2.3", rules: [] };
@@ -210,26 +178,6 @@ describe("RulesEmbedding", () => {
     expect(rulesets[0]).to.deep.eq(ruleset1);
     expect(rulesets[1]).to.deep.eq(ruleset2);
   });
-
-  /* eslint-disable deprecation/deprecation */
-  it("[deprecated] replaces when inserting duplicate ruleset", async () => {
-    const insertId1 = await embedder.insertRuleset(ruleset, DuplicateRulesetHandlingStrategy.Replace);
-    expect(Id64.isValid(insertId1)).true;
-
-    const rulesetChanged = { ...RULESET_2, id: ruleset.id };
-    expect(ruleset).to.not.deep.eq(rulesetChanged);
-    expect(ruleset.id).to.be.equal(rulesetChanged.id);
-
-    const insertId2 = await embedder.insertRuleset(rulesetChanged, DuplicateRulesetHandlingStrategy.Replace);
-    expect(insertId1).to.be.equal(insertId2);
-
-    const rulesets: Ruleset[] = await embedder.getRulesets();
-    expect(rulesets.length).equals(1);
-
-    expect(rulesetChanged).to.deep.eq(rulesets[0]);
-    expect(ruleset).to.not.deep.eq(rulesets[0]);
-  });
-  /* eslint-enable deprecation/deprecation */
 
   it("replaces all rulesets with same id", async () => {
     const ruleset1: Ruleset = { id: "test", version: "1.0.0", rules: [] };

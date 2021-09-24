@@ -32,6 +32,8 @@ export class Capabilities {
     // (undocumented)
     get maxRenderType(): RenderType;
     // (undocumented)
+    get maxTexSizeAllow(): number;
+    // (undocumented)
     get maxTextureSize(): number;
     // (undocumented)
     get maxVaryingVectors(): number;
@@ -52,6 +54,8 @@ export class Capabilities {
     get supports32BitElementIndex(): boolean;
     // (undocumented)
     get supportsAntiAliasing(): boolean;
+    // (undocumented)
+    get supportsCreateImageBitmap(): boolean;
     // (undocumented)
     get supportsDisjointTimerQuery(): boolean;
     // (undocumented)

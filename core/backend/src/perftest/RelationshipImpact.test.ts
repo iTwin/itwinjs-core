@@ -10,7 +10,6 @@ import {
 import { Reporter } from "@bentley/perf-tools";
 import { assert } from "chai";
 import * as path from "path";
-import { BackendRequestContext } from "../BackendRequestContext";
 import { SpatialCategory } from "../Category";
 import { ECSqlStatement } from "../ECSqlStatement";
 import { IModelDb, SnapshotDb } from "../IModelDb";
@@ -154,7 +153,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     const seedName = path.join(outDir, "relationship.bim");
     if (!IModelJsFs.existsSync(seedName)) {
       const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("RelationshipPerformance", "relationship.bim"), { rootSubject: { name: "PerfTest" } });
-      await seedIModel.importSchemas(new BackendRequestContext(), [st]);
+      await seedIModel.importSchemas([st]);
       seedIModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
       // first create Elements and then Relationship
       const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);

@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AsyncMutex, BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, CancelRequest, ProgressInfo } from "@bentley/itwin-client";
+import { AsyncMutex, BeEvent } from "@bentley/bentleyjs-core";
+import { CancelRequest, ProgressInfo } from "@bentley/itwin-client";
 import { assert } from "chai";
 import * as crypto from "crypto";
 import * as fs from "fs-extra";
@@ -27,7 +27,6 @@ function createHandler() {
   return new AzureFileHandler(undefined, undefined, { blockSize, simultaneousDownloads: 1, progressReportAfter: 100, checkMD5AfterDownload: enableMd5 });
 }
 describe("AzureFileHandler", async () => {
-  const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
   const createCancellation = (): CancelRequest => ({ cancel: () => false });
 
   const randomBuffer = crypto.randomBytes(blobSizeInBytes);
@@ -64,19 +63,19 @@ describe("AzureFileHandler", async () => {
 
   it("downloads a file", async () => {
     const handler = new AzureFileHandler();
-    await handler.downloadFile(ctx, testValidUrl, targetFile, blobSizeInBytes);
+    await handler.downloadFile(undefined, testValidUrl, targetFile, blobSizeInBytes);
     assert(fs.readFileSync(targetFile).compare(randomBuffer) === 0, "Downloaded file contents do not match expected contents.");
   });
 
   it("supports canceling a file", async () => {
     const handler = createHandler();
     const signal = createCancellation();
-    const promise = handler.downloadFile(ctx, testValidUrl, targetFile, blobSizeInBytes, undefined, signal);
+    const promise = handler.downloadFile(undefined, testValidUrl, targetFile, blobSizeInBytes, undefined, signal);
     await onDataReceived();
     assert.isTrue(signal.cancel());
     try {
       await promise;
-    } catch (error) {
+    } catch (error: any) {
       assert.equal(error.name, "User cancelled operation");
       assert.equal(error.message, "User cancelled download");
       assert.isFalse(fs.existsSync(targetFile), "Should not have written anything to disk after failure!");
@@ -95,7 +94,7 @@ describe("AzureFileHandler", async () => {
     const handler = createHandler();
     const progressArgs: ProgressInfo[] = [];
     const progressCb = (arg: any) => progressArgs.push(arg);
-    const promise = handler.downloadFile(ctx, testValidUrl, targetFile, blobSizeInBytes, progressCb);
+    const promise = handler.downloadFile(undefined, testValidUrl, targetFile, blobSizeInBytes, progressCb);
     assert.isEmpty(progressArgs);
     while (progressArgs.length === 0)
       await onDataReceived();
@@ -124,7 +123,7 @@ describe("AzureFileHandler", async () => {
         unlock();
       }
     };
-    const promise = handler.downloadFile(ctx, testValidUrl, targetFile, blobSizeInBytes, progressCb, signal);
+    const promise = handler.downloadFile(undefined, testValidUrl, targetFile, blobSizeInBytes, progressCb, signal);
     assert.isEmpty(progressArgs);
     (await firstEvent.lock())();
 
@@ -134,7 +133,7 @@ describe("AzureFileHandler", async () => {
     assert.isTrue(signal.cancel());
     try {
       await promise;
-    } catch (error) {
+    } catch (error: any) {
       assert.equal(error.name, "User cancelled operation");
       assert.equal(error.message, "User cancelled download");
       assert.isTrue(progressArgs.length >= lastProgressLength);
@@ -146,7 +145,7 @@ describe("AzureFileHandler", async () => {
   it("should return false for cancel request after download is complete", async () => {
     const handler = new AzureFileHandler();
     const signal = createCancellation();
-    await handler.downloadFile(ctx, testValidUrl, targetFile, blobSizeInBytes, undefined, signal);
+    await handler.downloadFile(undefined, testValidUrl, targetFile, blobSizeInBytes, undefined, signal);
     assert.isFalse(signal.cancel());
     assert(fs.readFileSync(targetFile).compare(randomBuffer) === 0, "Downloaded file contents do not match expected contents.");
   });
@@ -174,7 +173,7 @@ describe("AzureFileHandler", async () => {
     nock(testErrorUrl).head("/").reply(200, undefined, header);
 
     const handler = new AzureFileHandler(undefined, undefined, { blockSize });
-    await handler.downloadFile(ctx, testErrorUrl, targetFile, blobSizeInBytes);
+    await handler.downloadFile(undefined, testErrorUrl, targetFile, blobSizeInBytes);
     assert.isTrue(nock.isDone());
     assert(fs.readFileSync(targetFile).compare(randomBuffer) === 0, "Downloaded file contents do not match expected contents.");
   });
@@ -184,8 +183,8 @@ describe("AzureFileHandler", async () => {
     nock(testErrorUrl).persist().head("/").reply(503, "Service Unavailable");
     const handler = new AzureFileHandler();
     try {
-      await handler.downloadFile(ctx, testErrorUrl, targetFile, blobSizeInBytes);
-    } catch (error) {
+      await handler.downloadFile(undefined, testErrorUrl, targetFile, blobSizeInBytes);
+    } catch (error: any) {
       assert.equal(error.name, "HTTPError");
       assert.equal(error.message, "Response code 503 (Service Unavailable)");
       assert.isFalse(fs.existsSync(targetFile), "Should not have written anything to disk after failure!");
@@ -200,8 +199,8 @@ describe("AzureFileHandler", async () => {
 
     const handler = new AzureFileHandler();
     try {
-      await handler.downloadFile(ctx, testErrorUrl, targetFile, blobSizeInBytes);
-    } catch (error) {
+      await handler.downloadFile(undefined, testErrorUrl, targetFile, blobSizeInBytes);
+    } catch (error: any) {
       assert.equal(error.name, "HTTPError");
       assert.equal(error.message, "Response code 403 (Forbidden)");
       assert.isFalse(fs.existsSync(targetFile), "Should not have written anything to disk after failure!");
@@ -233,7 +232,7 @@ describe("AzureFileHandler", async () => {
     nock(testErrorUrl).head("/").reply(200, undefined, header);
 
     const handler = new AzureFileHandler();
-    await handler.downloadFile(ctx, testErrorUrl, targetFile, blobSizeInBytes);
+    await handler.downloadFile(undefined, testErrorUrl, targetFile, blobSizeInBytes);
     assert.isTrue(nock.isDone());
     assert(fs.readFileSync(targetFile).compare(randomBuffer) === 0, "Downloaded file contents do not match expected contents.");
   });
@@ -242,10 +241,10 @@ describe("AzureFileHandler", async () => {
     nock.cleanAll();
     nock(testErrorUrl).persist().head("/").replyWithError(ECONNRESET);
     const handler = new AzureFileHandler();
-    const promise = handler.downloadFile(ctx, testErrorUrl, targetFile, blobSizeInBytes);
+    const promise = handler.downloadFile(undefined, testErrorUrl, targetFile, blobSizeInBytes);
     try {
       await promise;
-    } catch (error) {
+    } catch (error: any) {
       assert.equal(error.code, "ECONNRESET");
       assert.equal(error.message, "socket hang up");
       assert.isFalse(fs.existsSync(targetFile), "Should not have written anything to disk after failure!");
@@ -257,13 +256,13 @@ describe("AzureFileHandler", async () => {
   // ###TODO khanaffan This tends to hang on linux.
   it.skip("should throw when tempfile is deleted", async () => {
     const handler = new AzureFileHandler();
-    const promise = handler.downloadFile(ctx, testValidUrl, targetFile, blobSizeInBytes);
+    const promise = handler.downloadFile(undefined, testValidUrl, targetFile, blobSizeInBytes);
     await onDataReceived();
     fs.emptyDirSync(testOutputDir);
 
     try {
       await promise;
-    } catch (error) {
+    } catch (error: any) {
       assert.oneOf(error.code, ["EPERM", "ENOENT"]);
       assert.isFalse(fs.existsSync(targetFile), "Should not have written anything to disk after failure!");
       return;
@@ -274,12 +273,12 @@ describe("AzureFileHandler", async () => {
   it.skip("should return false for cancel request after disk error", async () => {
     const handler = new AzureFileHandler();
     const signal = createCancellation();
-    const promise = handler.downloadFile(ctx, testValidUrl, targetFile, blobSizeInBytes, undefined, signal);
+    const promise = handler.downloadFile(undefined, testValidUrl, targetFile, blobSizeInBytes, undefined, signal);
     await onDataReceived();
     fs.emptyDirSync(testOutputDir);
     try {
       await promise;
-    } catch (error) {
+    } catch (error: any) {
       assert.equal(error.name, "ENOENT");
       assert.isFalse(fs.existsSync(targetFile), "Should not have written anything to disk after failure!");
       assert.isFalse(signal.cancel());
@@ -292,10 +291,10 @@ describe("AzureFileHandler", async () => {
     nock(testErrorUrl).persist().head("/").replyWithError(ECONNRESET);
     const handler = new AzureFileHandler();
     const signal = createCancellation();
-    const promise = handler.downloadFile(ctx, testErrorUrl, targetFile, blobSizeInBytes, undefined, signal);
+    const promise = handler.downloadFile(undefined, testErrorUrl, targetFile, blobSizeInBytes, undefined, signal);
     try {
       await promise;
-    } catch (error) {
+    } catch (error: any) {
       assert.equal(error.code, "ECONNRESET");
       assert.equal(error.message, "socket hang up");
       assert.isFalse(fs.existsSync(targetFile), "Should not have written anything to disk after failure!");

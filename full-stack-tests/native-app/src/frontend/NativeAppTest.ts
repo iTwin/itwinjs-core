@@ -31,9 +31,9 @@ export class NativeAppTest {
       this.imodelCloudEnv = new IModelHubCloudEnv();
     }
 
-    const project = await this.imodelCloudEnv.contextMgr.queryProjectByName(await AuthorizedFrontendRequestContext.create(), props.projectName);
-    assert(project && project.wsgId);
-    return project.wsgId;
+    const project = await this.imodelCloudEnv.contextMgr.getITwinByName(await AuthorizedFrontendRequestContext.create(), props.projectName);
+    assert(project && project.id);
+    return project.id;
   }
 
   public static async getTestIModelId(projectId: string, iModelName: string): Promise<string> {

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BentleyError, BentleyStatus, ClientRequestContext, Id64String } from "@bentley/bentleyjs-core";
+import { BentleyError, BentleyStatus, Id64String } from "@bentley/bentleyjs-core";
 import {
   IModelRpcProps, NoContentError, RpcInterface, RpcInvocation, RpcManager, RpcOperationsProfile, RpcPendingResponse, RpcRequest,
 } from "@bentley/imodeljs-common";
@@ -124,7 +124,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   }
 
   public async op15(): Promise<void> {
-    if (ClientRequestContext.current.applicationVersion !== "testbed1") {
+    if (RpcInvocation.currentRequest.applicationVersion !== "testbed1") {
       throw new Error("Wrong app version code.");
     }
 
@@ -133,7 +133,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
 
   public async op16(token: IModelRpcProps, values: TokenValues): Promise<boolean> {
     return token.key === values.key &&
-      token.contextId === values.contextId &&
+      token.iTwinId === values.iTwinId &&
       token.iModelId === values.iModelId &&
       token.changeset?.id === values.changeset?.id;
   }

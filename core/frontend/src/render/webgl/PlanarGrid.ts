@@ -34,6 +34,7 @@ class PlanarGridGeometryParams extends IndexedGeometryParams {
     this.uvParams = uvParams;
   }
 }
+
 export class PlanarGridGeometry extends IndexedGeometry {
   public get techniqueId(): TechniqueId { return TechniqueId.PlanarGrid; }
   public getRenderPass(_target: Target): RenderPass { return RenderPass.Translucent; }
@@ -99,7 +100,7 @@ export class PlanarGridGeometry extends IndexedGeometry {
       return undefined;
 
     const geom = new PlanarGridGeometry(geomParams);
-    let graphic: RenderGraphic | undefined = Primitive.create(() => geom);
+    let graphic: RenderGraphic | undefined = Primitive.create(geom);
 
     if (transform && graphic) {
       const branch = new GraphicBranch(true);

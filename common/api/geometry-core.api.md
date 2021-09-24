@@ -768,8 +768,6 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     // (undocumented)
     static createFromAkimaCurve3dOptions(options: AkimaCurve3dOptions): BSplineCurve3d | undefined;
     static createFromInterpolationCurve3dOptions(options: InterpolationCurve3dOptions): BSplineCurve3d | undefined;
-    // @deprecated (undocumented)
-    static createThroughPoints(points: IndexedXYZCollection | Point3d[], order: number): BSplineCurve3d | undefined;
     static createUniformKnots(poles: Point3d[] | Float64Array | GrowableXYZArray, order: number): BSplineCurve3d | undefined;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     emitStrokableParts(handler: IStrokeHandler, options?: StrokeOptions): void;
@@ -2283,6 +2281,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     fillLocalXYTriangleFrame(originIndex: number, targetAIndex: number, targetBIndex: number, result?: Transform): Transform | undefined;
     float64Data(): Float64Array;
     get float64Length(): number;
+    forceClosure(tolerance?: number): void;
     front(result?: Point3d): Point3d | undefined;
     getPoint2dAtCheckedPointIndex(pointIndex: number, result?: Point2d): Point2d | undefined;
     getPoint2dAtUncheckedPointIndex(pointIndex: number, result?: Point2d): Point2d;
@@ -2648,14 +2647,8 @@ export namespace IModelJson {
     }
     export interface TransitionSpiralProps extends AxesProps {
         activeFractionInterval?: number[];
-        // @deprecated
-        curveLength?: number;
         endBearing?: AngleProps;
         endRadius?: number;
-        // @deprecated
-        fractionInterval?: number[];
-        // @deprecated
-        intervalFractions?: [number, number];
         length?: number;
         origin: XYZProps;
         startBearing?: AngleProps;
@@ -2956,8 +2949,6 @@ export class InterpolationCurve3dOptions {
     set fitPoints(val: Point3d[]);
     get isChordLenKnots(): number;
     set isChordLenKnots(val: number);
-    // @deprecated (undocumented)
-    get isChordLenTangent(): number;
     get isChordLenTangents(): number;
     set isChordLenTangents(val: number);
     get isColinearTangents(): number;
@@ -3999,7 +3990,7 @@ export class Point3d extends XYZ {
 
 // @public
 export class Point3dArray {
-    static centroid(points: IndexedXYZCollection, result?: Point3d): Point3d;
+    static centroid(points: IndexedXYZCollection | Point3d[], result?: Point3d): Point3d;
     static cloneDeepJSONNumberArrays(data: MultiLineStringDataVariant): number[][];
     static cloneDeepXYZPoint3dArrays(data: MultiLineStringDataVariant): any[];
     static clonePoint2dArray(data: XYAndZ[]): Point2d[];
@@ -4009,8 +4000,6 @@ export class Point3dArray {
     static cloneXYZPropsAsNumberArray(data: XYZProps[]): number[][];
     static closestPointIndex(data: XYAndZ[], spacePoint: XYAndZ): number;
     static computeConvexHullXY(points: Point3d[], hullPoints: Point3d[], insidePoints: Point3d[], addClosurePoint?: boolean): void;
-    // @deprecated
-    static createRange(data: MultiLineStringDataVariant): Range3d;
     static distanceIndexedPointBToSegmentAC(points: Point3d[], indexA: number, indexB: number, indexC: number, extrapolate: boolean): number;
     static evaluateTrilinearDerivativeTransform(points: Point3d[], u: number, v: number, w: number, result?: Transform): Transform;
     static evaluateTrilinearPoint(points: Point3d[], u: number, v: number, w: number, result?: Point3d): Point3d;
@@ -4465,10 +4454,11 @@ export class PolygonWireOffsetContext {
 export class PolylineOps {
     static compressByChordError(source: Point3d[], chordTolerance: number): Point3d[];
     static compressByPerpendicularDistance(source: Point3d[], maxDistance: number, numPass?: number): Point3d[];
+    static compressDanglers(source: Point3d[], closed?: boolean, tolerance?: number): Point3d[];
     static compressShortEdges(source: Point3d[], maxEdgeLength: number): Point3d[];
     static compressSmallTriangles(source: Point3d[], maxTriangleArea: number): Point3d[];
     static edgeLengthRange(points: Point3d[]): Range1d;
-}
+    }
 
 // @internal
 export class PowerPolynomial {
@@ -5017,7 +5007,7 @@ export class Sample {
     static createAnnulusPolyline(edgesPerQuadrant: number, center: Point3d, r0: number, r1: number, theta0: Angle, theta1: Angle, addClosure: boolean): Point3d[];
     static createArcRegions(): Loop[];
     static createArcs(radiusRatio?: number, sweep?: AngleSweep): Arc3d[];
-    static createArcStrokes(edgesPerQuadrant: number, center: Point3d, r0: number, theta0: Angle, theta1: Angle, addClosure?: boolean): Point3d[];
+    static createArcStrokes(edgesPerQuadrant: number, center: Point3d, r0: number, theta0: Angle, theta1: Angle, addClosure?: boolean, z?: number): Point3d[];
     static createBagOfCurves(): BagOfCurves[];
     static createBidirectionalSawtooth(origin: Point3d, dxLow: number, riseX: number, riseY: number, dxHigh: number, numPhaseOutbound: number, dyFinal: number, dxLowReturn: number, riseXReturn: number, riseYReturn: number, dxHighReturn: number): Point3d[];
     static createBoxes(capped?: boolean): Box[];

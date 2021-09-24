@@ -37,9 +37,9 @@ if (ProcessDetector.isElectronAppFrontend) { // BriefcaseConnection tests only r
       assert.isFalse(connection.isSnapshot);
       assert.isFalse(connection.isBlank);
 
-      assert.equal(connection.contextId, Guid.empty, "standalone imodels have empty contextId");
+      assert.equal(connection.iTwinId, Guid.empty, "standalone imodels have empty iTwinId");
       await expect(connection.pushChanges("bad")).to.eventually.be.rejectedWith(IModelError); // standalone imodels can't push changes
-      await expect(connection.pullAndMergeChanges()).to.eventually.be.rejectedWith(IModelError);// standalone imodels can't pull changes
+      await expect(connection.pullChanges()).to.eventually.be.rejectedWith(IModelError);// standalone imodels can't pull changes
 
       const elementProps = await connection.elements.getProps(IModel.rootSubjectId);
       assert.equal(1, elementProps.length);

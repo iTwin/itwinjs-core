@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ChangeState, ECInstance, ECJsonTypeMap, WsgInstance } from "@bentley/itwin-client";
+import { ChangeState, ECInstance, ECJsonTypeMap, WsgInstance } from "@bentley/imodelhub-client";
 import nock from "nock";
 
 export enum RequestType {

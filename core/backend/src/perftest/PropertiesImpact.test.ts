@@ -94,7 +94,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
       const seedName = path.join(outDir, `props_${pCount}.bim`);
       if (!IModelJsFs.existsSync(seedName)) {
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("PropPerformance", `props_${pCount}.bim`), { rootSubject: { name: "PerfTest" } });
-        await seedIModel.importSchemas(new BackendRequestContext(), [st]);
+        await seedIModel.importSchemas([st]);
         seedIModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
         assert.isDefined(seedIModel.getMetaData("TestPropsSchema:PropElement"), "PropsClass is present in iModel.");
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
@@ -345,7 +345,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const seedName = path.join(outDir, `index_${iCount}.bim`);
       if (!IModelJsFs.existsSync(seedName)) {
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IndexPerformance", `index_${iCount}.bim`), { rootSubject: { name: "PerfTest" } });
-        await seedIModel.importSchemas(new BackendRequestContext(), [st]);
+        await seedIModel.importSchemas([st]);
         seedIModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
         assert.isDefined(seedIModel.getMetaData("TestIndexSchema:PropElement"), "PropsClass is present in iModel.");
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
@@ -372,7 +372,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const seedName = path.join(outDir, `index_perclass_${iCount}.bim`);
       if (!IModelJsFs.existsSync(seedName)) {
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IndexPerformance", `index_perclass_${iCount}.bim`), { rootSubject: { name: "PerfTest" } });
-        await seedIModel.importSchemas(new BackendRequestContext(), [st]);
+        await seedIModel.importSchemas([st]);
         seedIModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
         assert.isDefined(seedIModel.getMetaData("TestIndexSchema:PropElement0"), "PropsClass is present in iModel.");
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);

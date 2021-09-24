@@ -21,8 +21,8 @@ describe("ApplyChangesets (#integration)", () => {
     IModelJsFs.purgeDirSync(iModelDir);
   };
 
-  const testOpen = async (requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: string) => {
-    const iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: projectId, iModelId });
+  const testOpen = async (user: AuthorizedClientRequestContext, projectId: string, iModelId: string) => {
+    const iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ user, iTwinId: projectId, iModelId });
     assert.isDefined(iModelDb);
     iModelDb.close();
   };
@@ -35,7 +35,7 @@ describe("ApplyChangesets (#integration)", () => {
   it("should test all changeset operations after downloading iModel from the hub (#integration)", async () => {
     const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
 
-    const projectId = await HubUtility.getTestContextId(requestContext);
+    const projectId = await HubUtility.getTestITwinId(requestContext);
     let iModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.readOnly);
     await testAllOperations(requestContext, projectId, iModelId);
 

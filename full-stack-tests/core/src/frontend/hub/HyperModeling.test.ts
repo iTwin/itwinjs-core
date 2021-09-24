@@ -219,18 +219,18 @@ describe("HyperModeling (#integration)", () => {
       const dec = (await HyperModeling.startOrStop(vp, true))!;
       expect(dec).not.to.be.undefined;
 
-      const test = (keyin: string, config: SectionMarkerConfig) => {
-        expect(IModelApp.tools.parseAndRun(keyin)).to.equal(ParseAndRunResult.Success);
+      const test = async (keyin: string, config: SectionMarkerConfig) => {
+        expect(await IModelApp.tools.parseAndRun(keyin)).to.equal(ParseAndRunResult.Success);
         expectMarkerConfig(dec.config, config);
       };
 
-      test("hypermodeling marker config model=0", { ignoreModelSelector: true });
-      test("hypermodeling marker config cat=0", { ignoreModelSelector: true, ignoreCategorySelector: true });
-      test("hypermodeling marker config m=1 c=1", { ignoreModelSelector: false, ignoreCategorySelector: false });
-      test("hypermodeling marker config", {});
-      test("hypermodeling marker config hidden=pe", { hiddenSectionTypes: [SectionType.Plan, SectionType.Elevation] });
-      test("hypermodeling marker config h=abc123s#@!zyx", { hiddenSectionTypes: [SectionType.Section] });
-      test("hypermodeling marker config", {});
+      await test("hypermodeling marker config model=0", { ignoreModelSelector: true });
+      await test("hypermodeling marker config cat=0", { ignoreModelSelector: true, ignoreCategorySelector: true });
+      await test("hypermodeling marker config m=1 c=1", { ignoreModelSelector: false, ignoreCategorySelector: false });
+      await test("hypermodeling marker config", {});
+      await test("hypermodeling marker config hidden=pe", { hiddenSectionTypes: [SectionType.Plan, SectionType.Elevation] });
+      await test("hypermodeling marker config h=abc123s#@!zyx", { hiddenSectionTypes: [SectionType.Section] });
+      await test("hypermodeling marker config", {});
     });
   });
 

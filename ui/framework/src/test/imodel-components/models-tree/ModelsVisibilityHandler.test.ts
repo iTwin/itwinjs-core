@@ -158,6 +158,7 @@ describe("ModelsVisibilityHandler", () => {
       const node = {
         __key: {
           type: "custom",
+          version: 0,
           pathFromRoot: [],
         },
         id: "custom",
@@ -924,6 +925,7 @@ describe("ModelsVisibilityHandler", () => {
       const node = {
         __key: {
           type: "custom",
+          version: 0,
           pathFromRoot: [],
         },
         id: "custom",

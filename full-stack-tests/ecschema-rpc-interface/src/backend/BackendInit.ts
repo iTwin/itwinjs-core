@@ -6,7 +6,6 @@
 import "@bentley/oidc-signin-tool/lib/cjs/certa/certaBackend";
 import * as fs from "fs";
 import * as path from "path";
-import { Settings } from "../common/Settings";
 import { exposeBackendCallbacks } from "../common/SideChannels";
 
 /** Loads the provided `.env` file into process.env */
@@ -26,11 +25,5 @@ function loadEnv(envFile: string) {
 
 module.exports = (async () => {
   loadEnv(path.join(__dirname, "..", "..", ".env"));
-
-  // Need to create a new one on the backend to properly setup dotenv
-  const settings = new Settings(process.env);
-
-  process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION = String(settings.env);
-
   exposeBackendCallbacks();
 })();

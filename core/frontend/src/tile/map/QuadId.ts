@@ -11,8 +11,8 @@ import { Angle, AngleSweep, Range2d } from "@bentley/geometry-core";
 import { Cartographic } from "@bentley/imodeljs-common";
 import { MapTilingScheme } from "../internal";
 
-const scratchCartographic1 = new Cartographic();
-const scratchCartographic2 = new Cartographic();
+const scratchCartographic1 = Cartographic.createZero();
+const scratchCartographic2 = Cartographic.createZero();
 
 /** @internal */
 export class QuadId {

@@ -5,84 +5,64 @@
 ```ts
 
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
+import { Client } from '@bentley/itwin-client';
 import { RequestOptions } from '@bentley/itwin-client';
 import { RequestQueryOptions } from '@bentley/itwin-client';
-import { WsgClient } from '@bentley/itwin-client';
-import { WsgInstance } from '@bentley/itwin-client';
+import { RequestTimeoutOptions } from '@bentley/itwin-client';
 
 // @beta
-export class Asset extends CommonAssetProjectContext {
+export interface ITwin {
     // (undocumented)
-    assetType?: string;
-}
-
-// @beta
-export class Context extends WsgInstance {
+    code?: string;
     // (undocumented)
-    allowExternalTeamMembers?: boolean;
-    // (undocumented)
-    contextTypeId?: ContextType;
-    // (undocumented)
-    dataLocationId?: string;
+    id: string;
     // (undocumented)
     name?: string;
-    // (undocumented)
-    number?: string;
-    // (undocumented)
-    status?: number;
-    // (undocumented)
-    teamId?: string;
-    // (undocumented)
-    ultimateRefId?: string;
 }
 
 // @beta
-export class ContextRegistryClient extends WsgClient {
+export interface ITwinAccess {
+    getAll: (requestContext: AuthorizedClientRequestContext, arg?: ITwinQueryArg) => Promise<ITwin[]>;
+}
+
+// @beta
+export class ITwinAccessClient extends WsgClient implements ITwinAccess {
     constructor();
-    getAsset(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<Asset>;
-    getAssets(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<Asset[]>;
-    getInvitedProjects(requestContext: AuthorizedClientRequestContext, queryOptions?: ContextRegistryRequestQueryOptions): Promise<Project[]>;
-    getProject(requestContext: AuthorizedClientRequestContext, queryOptions?: ContextRegistryRequestQueryOptions): Promise<Project>;
-    getProjects(requestContext: AuthorizedClientRequestContext, queryOptions?: ContextRegistryRequestQueryOptions): Promise<Project[]>;
-    getTeam(requestContext: AuthorizedClientRequestContext): Promise<Team>;
-    // @internal (undocumented)
-    protected getUrlSearchKey(): string;
-    // (undocumented)
-    static readonly searchKey: string;
+    getAll(requestContext: AuthorizedClientRequestContext, arg?: ITwinQueryArg): Promise<ITwin[]>;
     // (undocumented)
     protected setupOptionDefaults(options: RequestOptions): Promise<void>;
 }
 
 // @beta
-export interface ContextRegistryRequestQueryOptions extends RequestQueryOptions {
-    isFavorite?: boolean;
-    isMRU?: boolean;
+export interface ITwinPaginationArg {
+    // (undocumented)
+    skip?: number;
+    // (undocumented)
+    top?: number;
 }
 
 // @beta
-export enum ContextType {
+export interface ITwinQueryArg {
     // (undocumented)
-    Asset = 2,
+    pagination?: ITwinPaginationArg;
     // (undocumented)
-    Project = 3,
-    // (undocumented)
-    Team = 1,
-    // (undocumented)
-    Unknown = 0
+    search?: ITwinSearchArg;
 }
 
 // @beta
-export class Project extends CommonAssetProjectContext {
+export enum ITwinSearchableProperty {
     // (undocumented)
-    assetId?: string;
-    // (undocumented)
-    isRbacEnabled?: boolean;
-    // (undocumented)
-    type?: string;
+    Name = "name"
 }
 
 // @beta
-export class Team extends CommonContext {
+export interface ITwinSearchArg {
+    // (undocumented)
+    exactMatch: boolean;
+    // (undocumented)
+    propertyName: ITwinSearchableProperty;
+    // (undocumented)
+    searchString: string;
 }
 
 

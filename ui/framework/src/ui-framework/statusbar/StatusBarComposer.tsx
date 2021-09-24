@@ -69,6 +69,8 @@ export function DockedStatusBarItem(props: StatusBarItemProps) {
   );
   return (
     <div
+      data-item-id={props.itemId}
+      data-item-type="status-bar-item"
       className={className}
       ref={ref}
       style={props.style}
@@ -216,7 +218,8 @@ export interface StatusBarComposerProps extends CommonProps {
  * @public
  */
 export function StatusBarComposer(props: StatusBarComposerProps) {
-  const [defaultItemsManager, setDefaultItemsManager] = React.useState(new StatusBarItemsManager(props.items));
+  const { className, style, items, mainClassName, leftClassName, centerClassName, rightClassName } = props;
+  const [defaultItemsManager, setDefaultItemsManager] = React.useState(() => new StatusBarItemsManager(items));
   const [isOverflowPanelOpen, setIsOverflowPanelOpen] = React.useState(false);
   const containerWidth = React.useRef<number | undefined>(undefined);
 
@@ -225,9 +228,9 @@ export function StatusBarComposer(props: StatusBarComposerProps) {
     if (isInitialMount.current)
       isInitialMount.current = false;
     else {
-      setDefaultItemsManager(new StatusBarItemsManager(props.items));
+      setDefaultItemsManager(new StatusBarItemsManager(items));
     }
-  }, [props.items]);
+  }, [items]);
   const defaultItems = useDefaultStatusBarItems(defaultItemsManager);
   const syncIdsOfInterest = React.useMemo(() => StatusBarItemsManager.getSyncIdsOfInterest(defaultItems), [defaultItems]);
   useStatusBarItemSyncEffect(defaultItemsManager, syncIdsOfInterest);
@@ -285,7 +288,7 @@ export function StatusBarComposer(props: StatusBarComposerProps) {
         entryKey={key}
         getOnResize={handleEntryResize}
       >
-        <DockedStatusBarItem key={key}>
+        <DockedStatusBarItem key={key} itemId={item.id} >
           {isStatusBarItem(item) && item.reactNode}
           {isAbstractStatusBarActionItem(item) && generateActionStatusBarItem(item, statusBarContext.isInFooterMode)}
           {isAbstractStatusBarLabelItem(item) && generateActionStatusLabelItem(item, statusBarContext.isInFooterMode)}
@@ -344,27 +347,27 @@ export function StatusBarComposer(props: StatusBarComposerProps) {
   const contextItems = React.useMemo(() => getSectionItems(StatusBarSection.Context), [getSectionItems]);
   const overflowItems = React.useMemo(() => getOverflowItems(), [getOverflowItems]);
 
-  const className = classnames(
+  const containerClassName = classnames(
     "uifw-statusbar-docked",
-    props.className,
+    className,
   );
 
   return (
     <div
-      className={className}
+      className={containerClassName}
       ref={refs}
-      style={props.style}
+      style={style}
       role="presentation"
     >
-      <StatusBarSpaceBetween className={props.mainClassName}>
-        <StatusBarLeftSection className={props.leftClassName}>
+      <StatusBarSpaceBetween className={mainClassName}>
+        <StatusBarLeftSection className={leftClassName}>
           {leftItems}
         </StatusBarLeftSection>
-        <StatusBarCenterSection className={props.centerClassName}>
+        <StatusBarCenterSection className={centerClassName}>
           {centerItems}
           {contextItems}
         </StatusBarCenterSection>
-        <StatusBarRightSection className={props.rightClassName}>
+        <StatusBarRightSection className={rightClassName}>
           {rightItems}
           {(!overflown || overflown.length > 0) && (
             <>

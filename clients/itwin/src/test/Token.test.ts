@@ -3,11 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { AuthStatus, BentleyError, Logger } from "@bentley/bentleyjs-core";
-import { ITwinClientLoggerCategory } from "../ITwinClientLoggerCategory";
+import { AuthStatus, BentleyError } from "@bentley/bentleyjs-core";
 import { AccessToken, IncludePrefix, TokenPrefix } from "../Token";
 
-const loggerCategory = ITwinClientLoggerCategory.Authorization;
 @TokenPrefix("Basic")
 class BasicAccessToken extends AccessToken {
 
@@ -42,7 +40,7 @@ class BasicAccessToken extends AccessToken {
    */
   public override initFromTokenString(tokenStr: string): void {
     if (!tokenStr.startsWith(this._prefix)) {
-      throw new BentleyError(AuthStatus.Error, "Invalid access token", Logger.logError, loggerCategory, () => ({ tokenStr }));
+      throw new BentleyError(AuthStatus.Error, "Invalid access token");
     }
     const userPass = tokenStr.substr(this._prefix.length + 1);
     this._tokenString = userPass;

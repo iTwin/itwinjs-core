@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
@@ -19,8 +18,6 @@ import * as path from "path";
 import * as moq from "typemoq";
 import { FavoritePropertiesDataProvider, getFavoritesCategory } from "../../presentation-components/favorite-properties/DataProvider";
 import { PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
-
-/* eslint-disable @typescript-eslint/promise-function-async */
 
 describe("FavoritePropertiesDataProvider", () => {
 
@@ -76,12 +73,12 @@ describe("FavoritePropertiesDataProvider", () => {
 
     beforeEach(() => {
       const selectionScopesManager = moq.Mock.ofType<SelectionScopesManager>();
-      selectionScopesManager.setup((x) => x.computeSelection(moq.It.isAny(), elementId, moq.It.isAny())).returns(async () => new KeySet());
+      selectionScopesManager.setup(async (x) => x.computeSelection(moq.It.isAny(), elementId, moq.It.isAny())).returns(async () => new KeySet());
       selectionManagerMock.setup((x) => x.scopes).returns(() => selectionScopesManager.object);
     });
 
     it("passes `customRulesetId` to PropertyDataProvider if set", async () => {
-      presentationPropertyDataProviderMock.setup((x) => x.getData()).returns(async () => ({
+      presentationPropertyDataProviderMock.setup(async (x) => x.getData()).returns(async () => ({
         label: PropertyRecord.fromString(faker.random.word()),
         categories: [],
         records: {},
@@ -106,7 +103,7 @@ describe("FavoritePropertiesDataProvider", () => {
           ],
         },
       };
-      presentationPropertyDataProviderMock.setup((x) => x.getData()).returns(async () => dataToReturn);
+      presentationPropertyDataProviderMock.setup(async (x) => x.getData()).returns(async () => dataToReturn);
 
       const data = await provider.getData(imodelMock.object, elementId);
       expect(data.categories.length).to.eq(0);
@@ -134,7 +131,7 @@ describe("FavoritePropertiesDataProvider", () => {
           ],
         },
       };
-      presentationPropertyDataProviderMock.setup((x) => x.getData()).returns(async () => dataToReturn);
+      presentationPropertyDataProviderMock.setup(async (x) => x.getData()).returns(async () => dataToReturn);
 
       const data = await provider.getData(imodelMock.object, elementId);
       expect(data.categories.length).to.eq(1);

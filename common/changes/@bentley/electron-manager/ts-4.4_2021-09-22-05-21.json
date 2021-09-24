@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/electron-manager",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/electron-manager"
+}

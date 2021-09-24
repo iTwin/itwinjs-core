@@ -32,7 +32,7 @@ const Sections = withStatusFieldProps(SectionsStatusField);
 const SelectionInfo = withStatusFieldProps(SelectionInfoField);
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const SelectionScope = withStatusFieldProps(SelectionScopeField);
-// eslint-disable-next-line @typescript-eslint/naming-convention
+// eslint-disable-next-line
 const ClearEmphasis = withStatusFieldProps(ClearEmphasisStatusField);
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const TileLoadIndicator = withStatusFieldProps(TileLoadingIndicator);

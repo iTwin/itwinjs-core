@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { OpenMode } from "@bentley/bentleyjs-core";
-import { ContextRegistryClient } from "@bentley/context-registry-client";
+import { ITwinAccessClient } from "@bentley/context-registry-client";
 import { IModelHost, IModelHostConfiguration, IModelJsFs, IModelJsFsStats, KnownLocations, SnapshotDb, StandaloneDb } from "@bentley/imodeljs-backend";
 import { IModelReadRpcInterface, RpcManager } from "@bentley/imodeljs-common";
 import { assert } from "chai";
@@ -33,10 +33,10 @@ export class KnownTestLocations {
 
 export class IModelTestUtils {
 
-  private static _connectClient: ContextRegistryClient | undefined;
-  public static get connectClient(): ContextRegistryClient {
+  private static _connectClient: ITwinAccessClient | undefined;
+  public static get connectClient(): ITwinAccessClient {
     if (!IModelTestUtils._connectClient)
-      IModelTestUtils._connectClient = new ContextRegistryClient();
+      IModelTestUtils._connectClient = new ITwinAccessClient();
     return IModelTestUtils._connectClient;
   }
 

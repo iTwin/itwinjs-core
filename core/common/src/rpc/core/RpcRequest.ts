@@ -6,8 +6,7 @@
  * @module RpcInterface
  */
 
-import { BeEvent, BentleyStatus, Guid, Logger, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
-import { CommonLoggerCategory } from "../../CommonLoggerCategory";
+import { BeEvent, BentleyStatus, Guid, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelRpcProps } from "../../IModel";
 import { BackendError, IModelError, NoContentError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
@@ -413,7 +412,7 @@ export abstract class RpcRequest<TResponse = any> {
       const name = hasInfo ? error.name : "";
       const message = hasInfo ? error.message : "";
       const errorNumber = (hasInfo && error.hasOwnProperty("errorNumber")) ? error.errorNumber : BentleyStatus.ERROR;
-      return this.reject(new BackendError(errorNumber, name, message, Logger.logError, CommonLoggerCategory.RpcInterfaceFrontend, () => error));
+      return this.reject(new BackendError(errorNumber, name, message, () => error));
     } catch (err) {
       return this.reject(err);
     }

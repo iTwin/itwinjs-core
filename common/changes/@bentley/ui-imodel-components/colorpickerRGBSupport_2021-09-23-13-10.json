@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-imodel-components",
+      "comment": "Update colorpicker to support RGB input",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-imodel-components"
+}

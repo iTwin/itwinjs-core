@@ -1,6 +1,6 @@
 {
   "name": "@bentley/perf-tools",
-  "version": "3.0.0-dev.49",
+  "version": "3.0.0-dev.65",
   "description": "Tools for collecting and reporting performance data",
   "main": "lib/cjs/index.js",
   "typings": "lib/cjs/index",
@@ -39,7 +39,7 @@
     "@types/fs-extra": "^4.0.7",
     "eslint": "^7.11.0",
     "rimraf": "^3.0.2",
-    "typescript": "~4.3.0"
+    "typescript": "~4.4.0"
   },
   "eslintConfig": {
     "plugins": [

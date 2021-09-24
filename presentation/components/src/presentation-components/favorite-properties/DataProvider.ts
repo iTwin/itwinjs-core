@@ -82,9 +82,13 @@ export class FavoritePropertiesDataProvider implements IFavoritePropertiesDataPr
     this.includeFieldsWithNoValues = true;
     this.includeFieldsWithCompositeValues = true;
     this._customRuleset = /* istanbul ignore next */ props?.ruleset;
-    this._propertyDataProviderFactory = props && props.propertyDataProviderFactory ?
-      props.propertyDataProviderFactory : /* istanbul ignore next */
-      (imodel: IModelConnection, ruleset?: Ruleset | string) => new PresentationPropertyDataProvider({ imodel, ruleset });
+    this._propertyDataProviderFactory = props && props.propertyDataProviderFactory
+      ? props.propertyDataProviderFactory
+      : /* istanbul ignore next */ (imodel: IModelConnection, ruleset?: Ruleset | string) => {
+        const provider = new PresentationPropertyDataProvider({ imodel, ruleset });
+        provider.isNestedPropertyCategoryGroupingEnabled = false;
+        return provider;
+      };
   }
 
   /**

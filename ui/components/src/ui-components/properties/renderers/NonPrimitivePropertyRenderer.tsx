@@ -9,11 +9,11 @@
 import "./NonPrimitivePropertyRenderer.scss";
 import * as React from "react";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
+import { CommonPropertyRenderer } from "./CommonPropertyRenderer";
 import { NonPrimitivePropertyLabelRenderer } from "./label/NonPrimitivePropertyLabelRenderer";
 import { PrimitiveRendererProps } from "./PrimitivePropertyRenderer";
 import { PropertyRenderer } from "./PropertyRenderer";
 import { PropertyView } from "./PropertyView";
-import { CommonPropertyRenderer } from "./CommonPropertyRenderer";
 
 /** Properties of [[NonPrimitivePropertyRenderer]] React component
  * @public
@@ -55,7 +55,9 @@ export class NonPrimitivePropertyRenderer extends React.Component<NonPrimitivePr
 
   private getLabel(props: NonPrimitivePropertyRendererProps, state: NonPrimitivePropertyRendererState): React.ReactNode {
     const { orientation, indentation, width, columnRatio, columnInfo } = props;
-    const offset = CommonPropertyRenderer.getLabelOffset(indentation, orientation, width, columnRatio, columnInfo?.minLabelWidth);
+    // istanbul ignore next
+    const minLabelWidth = columnInfo?.minLabelWidth;
+    const offset = CommonPropertyRenderer.getLabelOffset(indentation, orientation, width, columnRatio, minLabelWidth);
 
     let displayLabel = props.propertyRecord.property.displayLabel;
     if (this.props.propertyRecord.value.valueFormat === PropertyValueFormat.Array)

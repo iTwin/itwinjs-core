@@ -16,7 +16,7 @@ import { RuleBase, RuleTypes } from "../Rule";
  * **Important:** Prefer this rule over [[LabelOverride]] when possible as it
  * has better performance.
  *
- * @see [More details]($docs/learning/presentation/Customization/InstanceLabelOverride.md)
+ * @see [More details]($docs/presentation/Customization/InstanceLabelOverride.md)
  * @public
  */
 export interface InstanceLabelOverride extends RuleBase {
