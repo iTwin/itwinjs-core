@@ -232,3 +232,7 @@ export * from "./LocalhostIpcApp";
  * @docs-group-description HubAccess
  * APIs for working with IModelHub
  */
+/**
+ * @docs-group-description RealityData
+ * APIs for working with ProjectWise Context Share
+ */
