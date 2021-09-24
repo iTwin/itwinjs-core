@@ -3,9 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AuthStatus, BeEvent, BentleyError } from "@bentley/bentleyjs-core";
+import { AccessToken, AuthStatus, BeEvent, BentleyError } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { AccessToken } from "@bentley/itwin-client";
 
 /**
  * Basic FrontendAuthorizationClient to use with an already created access token.

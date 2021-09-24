@@ -6,8 +6,7 @@
  * @module Telemetry
  */
 
-import { GuidString } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { GuidString, RpcActivity } from "@bentley/bentleyjs-core";
 import { TelemetryClient, TelemetryEvent } from "./TelemetryClient";
 
 /**
@@ -26,7 +25,7 @@ export class ClientTelemetryEvent extends TelemetryEvent {
   /** Application version configured for the client application. */
   public readonly clientApplicationVersion?: string;
 
-  public constructor(telemetryEvent: TelemetryEvent, requestContext: AuthorizedClientRequestContext) {
+  public constructor(telemetryEvent: TelemetryEvent, requestContext: RpcActivity) {
     super(telemetryEvent.eventName, telemetryEvent.eventId, telemetryEvent.contextId, telemetryEvent.iModelId, telemetryEvent.changeSetId, telemetryEvent.time, telemetryEvent.additionalProperties);
 
     this.activityId = requestContext.activityId;
@@ -55,10 +54,10 @@ export abstract class FrontendTelemetryClient implements TelemetryClient {
   protected constructor() {
   }
 
-  public async postTelemetry(requestContext: AuthorizedClientRequestContext, telemetryEvent: TelemetryEvent): Promise<void> {
+  public async postTelemetry(requestContext: RpcActivity, telemetryEvent: TelemetryEvent): Promise<void> {
     const frontendTelemetryEvent = new ClientTelemetryEvent(telemetryEvent, requestContext);
     await this._postTelemetry(requestContext, frontendTelemetryEvent);
   }
 
-  protected abstract _postTelemetry(requestContext: AuthorizedClientRequestContext, telemetryEvent: ClientTelemetryEvent): Promise<void>;
+  protected abstract _postTelemetry(requestContext: RpcActivity, telemetryEvent: ClientTelemetryEvent): Promise<void>;
 }

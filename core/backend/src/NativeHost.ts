@@ -7,12 +7,12 @@
  */
 
 import { join } from "path";
-import { AuthStatus, BeEvent, ClientRequestContext, GuidString, SessionProps } from "@bentley/bentleyjs-core";
+import { AccessToken, AuthStatus, BeEvent, GuidString, SessionProps } from "@bentley/bentleyjs-core";
 import {
   BriefcaseProps, IModelError, InternetConnectivityStatus, LocalBriefcaseProps, NativeAppAuthorizationConfiguration, nativeAppChannel, NativeAppFunctions,
   NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, StorageValue,
 } from "@bentley/imodeljs-common";
-import { AccessToken, AuthorizationClient, ImsAuthorizationClient, RequestGlobalOptions } from "@bentley/itwin-client";
+import { AuthorizationClient, ImsAuthorizationClient, RequestGlobalOptions } from "@bentley/itwin-client";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { Downloads } from "./CheckpointManager";
 import { IModelHost } from "./IModelHost";
@@ -46,8 +46,6 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
       this.setAccessToken(await this.refreshToken());
     return this._accessToken;
   }
-
-  public getClientRequestContext() { return ClientRequestContext.fromJSON(IModelHost.session); }
 
   public async initialize(config?: NativeAppAuthorizationConfiguration) {
     this.config = config ?? this.config;

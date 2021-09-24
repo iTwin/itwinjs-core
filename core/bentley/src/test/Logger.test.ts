@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { GetMetaDataFunction, Logger, LogLevel, PerfLogger, using } from "../bentleyjs-core";
-import { ClientRequestContext } from "../ClientRequestContext";
 import { BeDuration } from "../Time";
 
 let outerr: any[];
@@ -441,27 +440,6 @@ describe("Logger", () => {
     const myInstance = { foo: "foo" };
     Logger.logError("testcat", "some message", () => myInstance);
     assert.equal(Object.keys(myInstance).length, 1);
-  });
-
-  it("log should capture ActivityId", () => {
-    Logger.initialize(
-      (c, m, d) => outerr = [c, m, d ? d() : {}],
-      (c, m, d) => outwarn = [c, m, d ? d() : {}],
-      (c, m, d) => outinfo = [c, m, d ? d() : {}],
-      (c, m, d) => outtrace = [c, m, d ? d() : {}]);
-    Logger.setLevel("testcat", LogLevel.Error);
-
-    const lctx1 = new ClientRequestContext("activity1");
-    clearOutlets();
-    Logger.logError("testcat", "message1");
-    checkOutlets(["testcat", "message1", { ActivityId: lctx1.activityId }], [], [], []);
-
-    const lctx2 = new ClientRequestContext("activity2");
-    clearOutlets();
-    Logger.logError("testcat", "message2");
-    checkOutlets(["testcat", "message2", { ActivityId: lctx2.activityId }], [], [], []);
-
-    clearOutlets();
   });
 
 });

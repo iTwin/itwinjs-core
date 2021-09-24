@@ -6,8 +6,7 @@
  * @module NativeApp
  */
 
-import { ClientRequestContextProps, GuidString } from "@bentley/bentleyjs-core";
-import { AccessToken } from "@bentley/itwin-client";
+import { AccessToken, GuidString, SessionProps } from "@bentley/bentleyjs-core";
 import { BriefcaseProps, LocalBriefcaseProps, RequestNewBriefcaseProps } from "./BriefcaseTypes";
 
 /** @internal */
@@ -85,7 +84,7 @@ export interface NativeAppFunctions {
   setAccessToken(token: AccessToken): Promise<void>;
 
   /** returns expirySafety, in seconds */
-  initializeAuth(props: ClientRequestContextProps, config?: NativeAppAuthorizationConfiguration): Promise<number>;
+  initializeAuth(props: SessionProps, config?: NativeAppAuthorizationConfiguration): Promise<number>;
 
   /** Called to start the sign-in process. Subscribe to onUserStateChanged to be notified when sign-in completes */
   signIn(): Promise<void>;

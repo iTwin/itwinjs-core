@@ -6,6 +6,8 @@
  * @module Authentication
  */
 
+import { AccessToken } from "@bentley/bentleyjs-core";
+
 /**
  * Function to remove any prefix from an access token string.
  * @param accessToken Access token string
@@ -14,9 +16,3 @@
 export function removeAccessTokenPrefix(accessToken: AccessToken | undefined): AccessToken | undefined {
   return accessToken ? accessToken.substr(accessToken.indexOf(" ") + 1) : undefined;
 }
-
-/**
- * A string that contains an access token.
- * @beta
- */
-export type AccessToken = string;
