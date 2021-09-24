@@ -441,7 +441,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
   public diagonalFractionToPoint(fraction: number, result?: Point3d): Point3d { return this.low.interpolate(fraction, this.high, result); }
 
   /**  Return a point given by fractional positions on the XYZ axes. This is done with no check for isNull !!! */
-  public fractionToPoint(fractionX: number, fractionY: number, fractionZ: number, result?: Point3d): Point3d {
+  public fractionToPoint(fractionX: number, fractionY: number, fractionZ: number = 0, result?: Point3d): Point3d {
     return this.low.interpolateXYZ(fractionX, fractionY, fractionZ, this.high, result);
   }
 

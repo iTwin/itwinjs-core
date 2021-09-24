@@ -192,7 +192,7 @@ export class Sample {
       Range3d.createXYZ(1, 2, 3),
       Range3d.createXYZXYZ(-2, -3, 1, 200, 301, 8)];
   }
-  /** Create 5 points of a (axis aligned) rectangle with corners (x0,y0) and (x1,y1) */
+  /** Create 5 points of a (axis aligned) rectangle with corners (x0,y0) and (x0+ax, y0 + ay) */
   public static createRectangleXY(x0: number, y0: number, ax: number, ay: number, z: number = 0): Point3d[] {
     return [
       Point3d.create(x0, y0, z),
@@ -201,6 +201,11 @@ export class Sample {
       Point3d.create(x0, y0 + ay, z),
       Point3d.create(x0, y0, z),
     ];
+  }
+
+  /** Create 5 points of a (axis aligned) rectangle with corners (cx-ax,cy-ay) and (cx+ax,cy+ay) */
+  public static createCenteredRectangleXY(cx: number, cy: number, ax: number, ay: number, z: number = 0): Point3d[] {
+    return this.createRectangleXY(cx - ax, cy - ay, 2 * ax, 2 * ay, z);
   }
 
   /** Access the last point in the array. push another shifted by dx,dy,dz.

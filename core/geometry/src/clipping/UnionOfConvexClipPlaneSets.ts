@@ -98,9 +98,12 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
       result._convexSets.push(convexSet.clone());
     return result;
   }
-  /** Append `toAdd` to the array of `ConvexClipPlaneSet` */
-  public addConvexSet(toAdd: ConvexClipPlaneSet) {
-    this._convexSets.push(toAdd);
+  /** Append `toAdd` to the array of `ConvexClipPlaneSet`.
+   * * undefined toAdd is ignored.
+   */
+  public addConvexSet(toAdd: ConvexClipPlaneSet | undefined) {
+    if (toAdd)
+      this._convexSets.push(toAdd);
   }
 
   /** Test if there is any intersection with a ray defined by origin and direction.
