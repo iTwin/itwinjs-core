@@ -16,7 +16,7 @@ import { IModelClient } from "@bentley/imodelhub-client";
 import { IModelStatus, RpcConfiguration, RpcInterfaceDefinition, RpcRequest } from "@bentley/imodeljs-common";
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
 import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
-import { RealityDataClient } from "@bentley/reality-data-client";
+import { RealityDataAccessClient } from "@bentley/reality-data-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
 import { UiAdmin } from "@bentley/ui-abstract";
 import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@bentley/webgl-compatibility";
@@ -376,7 +376,7 @@ export class IModelApp {
     this._uiAdmin = (opts.uiAdmin !== undefined) ? opts.uiAdmin : new UiAdmin();
     this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);
     // TEMP: Using soon-to-be deprecated RealityDataClient as a default implementation
-    this._realityDataAccessClient = (opts.realityDataAccessClient !== undefined) ? opts.realityDataAccessClient : new RealityDataClient();
+    this._realityDataAccessClient = (opts.realityDataAccessClient !== undefined) ? opts.realityDataAccessClient : new RealityDataAccessClient();
 
     [
       this.renderSystem,

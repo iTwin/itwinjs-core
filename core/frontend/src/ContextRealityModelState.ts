@@ -10,7 +10,7 @@ import { GuidString, Id64String } from "@bentley/bentleyjs-core";
 import { Angle } from "@bentley/geometry-core";
 import { CartographicRange, ContextRealityModel, ContextRealityModelProps, FeatureAppearance, OrbitGtBlobProps } from "@bentley/imodeljs-common";
 import { AccessToken } from "@bentley/itwin-client";
-import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
+import { RealityData, RealityDataAccessClient } from "@bentley/reality-data-client";
 import { DisplayStyleState } from "./DisplayStyleState";
 import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 import { IModelApp } from "./IModelApp";
@@ -111,7 +111,7 @@ export async function queryRealityData(criteria: RealityDataQueryCriteria): Prom
 
   const requestContext = await AuthorizedFrontendRequestContext.create();
 
-  const client = new RealityDataClient();
+  const client = new RealityDataAccessClient();
 
   let realityData: RealityData[];
   if (criteria.range) {

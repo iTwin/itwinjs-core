@@ -164,6 +164,7 @@ export class RealityData extends WsgInstance {
 
   // Link to client to fetch the blob url
   public client: undefined | RealityDataClient;
+  public client: undefined | RealityDataAccessClient;
 
   // project id used when using the client. If defined must contain the GUID of the iTwin
   // project or "Server" to indicate access is performed out of context (for accessing PUBLIC or ENTERPRISE data).
@@ -201,7 +202,7 @@ export class RealityData extends WsgInstance {
     // Normally the client is set when the reality data is extracted for the client but it could be undefined
     // if the reality data instance is created manually.
     if (!this.client)
-      this.client = new RealityDataClient();
+      this.client = new RealityDataAccessClient();
 
     if (!this.projectId)
       this.projectId = "Server";
@@ -357,7 +358,7 @@ export class DataLocation extends WsgInstance {
  * This class also implements extraction of the Azure blob address.
  * @internal
  */
-export class RealityDataClient extends WsgClient {
+export class RealityDataAccessClient extends WsgClient {
 
   /**
    * Creates an instance of RealityDataServicesClient.

@@ -7,7 +7,7 @@ import { Guid, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Angle, Range2d } from "@bentley/geometry-core";
 import { AuthorizedClientRequestContext, ImsAuthorizationClient } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
-import { RealityData, RealityDataClient, RealityDataRelationship } from "../../RealityDataClient";
+import { RealityData, RealityDataAccessClient, RealityDataRelationship } from "../../RealityDataClient";
 import { TestConfig } from "../TestConfig";
 import * as jsonpath from "jsonpath";
 chai.should();
@@ -18,7 +18,7 @@ Logger.initializeToConsole();
 Logger.setLevel(LOG_CATEGORY, LogLevel.Info);
 
 describe("RealityServicesClient Normal (#integration)", () => {
-  const realityDataServiceClient: RealityDataClient = new RealityDataClient();
+  const realityDataServiceClient: RealityDataAccessClient = new RealityDataAccessClient();
   const imsClient: ImsAuthorizationClient = new ImsAuthorizationClient();
 
   let projectId: GuidString;
@@ -635,7 +635,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
 });
 
 describe("RealityServicesClient Admin (#integration)", () => {
-  const realityDataServiceClient: RealityDataClient = new RealityDataClient();
+  const realityDataServiceClient: RealityDataAccessClient = new RealityDataAccessClient();
   const imsClient: ImsAuthorizationClient = new ImsAuthorizationClient();
   let requestContext: AuthorizedClientRequestContext;
 
