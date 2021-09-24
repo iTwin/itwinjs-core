@@ -12,7 +12,7 @@ import { BentleyLoggerCategory, Logger, LogLevel } from "@bentley/bentleyjs-core
 import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IModelBankClient, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
 import {
-  AuthorizedBackendRequestContext, BackendLoggerCategory, BriefcaseDb, BriefcaseManager, ChangeSummaryManager, IModelHostConfiguration, IModelJsFs,
+  BackendLoggerCategory, BriefcaseDb, BriefcaseManager, ChangeSummaryManager, IModelHost, IModelHostConfiguration, IModelJsFs,
   IpcHandler, NativeHost, NativeLoggerCategory,
 } from "@bentley/imodeljs-backend";
 import { IModelRpcProps, RpcConfiguration } from "@bentley/imodeljs-common";
@@ -88,8 +88,8 @@ class TestIpcHandler extends IpcHandler implements TestIpcInterface {
   }
 
   public async createChangeSummary(iModelRpcProps: IModelRpcProps): Promise<string> {
-    const requestContext = await AuthorizedBackendRequestContext.create();
-    return ChangeSummaryManager.createChangeSummary(requestContext, BriefcaseDb.findByKey(iModelRpcProps.key));
+    const accessToken = (await IModelHost.getAccessToken())!;
+    return ChangeSummaryManager.createChangeSummary(accessToken, BriefcaseDb.findByKey(iModelRpcProps.key));
   }
 
   public async deleteChangeCache(tokenProps: IModelRpcProps): Promise<void> {

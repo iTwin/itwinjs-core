@@ -4,10 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { AccessToken, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { BentleyCloudRpcManager, OpenAPIInfo } from "@bentley/imodeljs-common";
-import { AuthorizedFrontendRequestContext, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { AccessToken } from "@bentley/itwin-client";
+import { NoRenderApp } from "@bentley/imodeljs-frontend";
 import {
   getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials,
 } from "@bentley/oidc-signin-tool/lib/frontend";
@@ -86,11 +85,10 @@ export class TestContext {
       authorizationClient: new TestFrontendAuthorizationClient(this.adminUserAccessToken),
     });
 
-    const requestContext = new AuthorizedFrontendRequestContext(this.adminUserAccessToken);
-    this.iModelWithChangesets = await IModelSession.create(requestContext, this.settings.iModel);
+    this.iModelWithChangesets = await IModelSession.create(this.adminUserAccessToken, this.settings.iModel);
     this.iTwinId = this.iModelWithChangesets.iTwinId;
     if (this.settings.runiModelWriteRpcTests)
-      this.iModelForWrite = await IModelSession.create(requestContext, this.settings.writeIModel);
+      this.iModelForWrite = await IModelSession.create(this.adminUserAccessToken, this.settings.writeIModel);
 
     console.log("TestSetup: Done");
   }

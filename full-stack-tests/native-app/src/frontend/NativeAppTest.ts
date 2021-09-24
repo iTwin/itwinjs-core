@@ -5,8 +5,7 @@
 import { assert } from "chai";
 import { AsyncMethodsOf, PromiseReturnType } from "@bentley/bentleyjs-core";
 import { IModelCloudEnvironment, IModelQuery } from "@bentley/imodelhub-client";
-import { AuthorizedFrontendRequestContext, IpcApp } from "@bentley/imodeljs-frontend";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { IModelApp, IpcApp } from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import { testIpcChannel, TestIpcInterface } from "../common/IpcInterfaces";
 import { IModelBankCloudEnv } from "./hub/IModelBankCloudEnv";
@@ -25,20 +24,21 @@ export class NativeAppTest {
     if (props.iModelBank) {
       const bank = new IModelBankCloudEnv(props.iModelBank.url, false);
       const authorizationClient = bank.getAuthorizationClient(user);
-      await bank.bootstrapIModelBankProject(new AuthorizedClientRequestContext(await authorizationClient.getAccessToken()), props.projectName);
+      await bank.bootstrapIModelBankProject((await authorizationClient.getAccessToken())!, props.projectName);
       this.imodelCloudEnv = bank;
     } else {
       this.imodelCloudEnv = new IModelHubCloudEnv();
     }
 
-    const project = await this.imodelCloudEnv.contextMgr.getITwinByName(await AuthorizedFrontendRequestContext.create(), props.projectName);
+    const accessToken = (await IModelApp.authorizationClient?.getAccessToken())!;
+    const project = await this.imodelCloudEnv.contextMgr.getITwinByName(accessToken, props.projectName);
     assert(project && project.id);
     return project.id;
   }
 
   public static async getTestIModelId(projectId: string, iModelName: string): Promise<string> {
-    const requestContext = await AuthorizedFrontendRequestContext.create();
-    const iModels = await this.imodelCloudEnv.imodelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
+    const accessToken = (await IModelApp.authorizationClient?.getAccessToken())!;
+    const iModels = await this.imodelCloudEnv.imodelClient.iModels.get(accessToken, projectId, new IModelQuery().byName(iModelName));
     assert(iModels.length > 0);
     assert(iModels[0].wsgId);
 

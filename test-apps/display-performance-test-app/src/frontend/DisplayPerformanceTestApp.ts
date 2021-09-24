@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { TestRunner, TestSetsProps } from "./TestRunner";
-import { ClientRequestContext, ProcessDetector } from "@bentley/bentleyjs-core";
+import { ProcessDetector, SessionProps } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import {
   BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SnapshotIModelRpcInterface,
 } from "@bentley/imodeljs-common";
-import { FrontendRequestContext, IModelApp, IModelAppOptions, NativeAppAuthorization } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelAppOptions, NativeAppAuthorization } from "@bentley/imodeljs-frontend";
 import { BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
 import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@bentley/hypermodeling-frontend";
@@ -45,7 +45,7 @@ export class DisplayPerfTestApp {
   }
 }
 
-async function createOidcClient(requestContext: ClientRequestContext): Promise<NativeAppAuthorization | BrowserAuthorizationClient> {
+async function createOidcClient(requestContext: SessionProps): Promise<NativeAppAuthorization | BrowserAuthorizationClient> {
   const scope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party";
 
   if (ProcessDetector.isElectronAppFrontend) {
@@ -73,7 +73,6 @@ async function createOidcClient(requestContext: ClientRequestContext): Promise<N
 // - promise wraps around a registered call back and resolves to true when the sign in is complete
 // @return Promise that resolves to true only after signIn is complete. Resolves to false until then.
 async function signIn(): Promise<boolean> {
-  const requestContext = new FrontendRequestContext();
   const oidcClient = await createOidcClient(requestContext);
 
   IModelApp.authorizationClient = oidcClient;

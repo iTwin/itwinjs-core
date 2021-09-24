@@ -6,8 +6,8 @@ import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-cli
 import { IModelBankClient, IModelBankFileSystemContextClient, IModelClient, IModelCloudEnvironment, WsgError, WSStatus } from "@bentley/imodelhub-client";
 import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankBasicAuthorizationClient";
 import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankDummyAuthorizationClient";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { ITwin } from "@bentley/context-registry-client";
+import { AccessToken } from "@bentley/bentleyjs-core";
 
 export class IModelBankCloudEnv implements IModelCloudEnvironment {
   public get isIModelHub(): boolean { return false; }
@@ -27,7 +27,7 @@ export class IModelBankCloudEnv implements IModelCloudEnvironment {
       : new IModelBankDummyAuthorizationClient(userCredentials);
   }
 
-  public async bootstrapIModelBankProject(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<void> {
+  public async bootstrapIModelBankProject(requestContext: AccessToken, projectName: string): Promise<void> {
     let iTwin: ITwin | undefined;
     try {
       iTwin = await this.contextMgr.getITwinByName(requestContext, projectName);
