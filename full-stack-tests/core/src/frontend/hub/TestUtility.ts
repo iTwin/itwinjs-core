@@ -3,11 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { GuidString, Logger } from "@bentley/bentleyjs-core";
+import { AccessToken, GuidString, Logger } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { BriefcaseQuery, Briefcase as HubBriefcase, IModelCloudEnvironment, IModelQuery } from "@bentley/imodelhub-client";
-import { AuthorizedFrontendRequestContext, IModelHubFrontend } from "@bentley/imodeljs-frontend";
-import { AuthorizationClient, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { IModelApp, IModelHubFrontend, NativeApp, NativeAppAuthorization } from "@bentley/imodeljs-frontend";
 import { getAccessTokenFromBackend, TestUserCredentials } from "@bentley/oidc-signin-tool/lib/frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { IModelBankCloudEnv } from "./IModelBankCloudEnv";
@@ -45,9 +44,8 @@ export class TestUtility {
 
   public static imodelCloudEnv: IModelCloudEnvironment;
 
-  public static async getAuthorizedClientRequestContext(user: TestUserCredentials): Promise<AuthorizedClientRequestContext> {
-    const accessToken = await getAccessTokenFromBackend(user);
-    return new AuthorizedClientRequestContext(accessToken);
+  public static async getAccessToken(user: TestUserCredentials): Promise<AccessToken> {
+    return getAccessTokenFromBackend(user);
   }
 
   public static async initializeTestProject(testContextName: string, user: TestUserCredentials): Promise<AuthorizationClient> {
@@ -60,24 +58,24 @@ export class TestUtility {
 
     const authorizationClient = this.imodelCloudEnv.getAuthorizationClient(user) as FrontendAuthorizationClient;
     await authorizationClient.signIn();
-    const accessToken = await authorizationClient.getAccessToken();
+    const accessToken = (await authorizationClient.getAccessToken())!;
     if (this.imodelCloudEnv instanceof IModelBankCloudEnv) {
-      await this.imodelCloudEnv.bootstrapIModelBankProject(new AuthorizedClientRequestContext(accessToken), testContextName);
+      await this.imodelCloudEnv.bootstrapIModelBankProject(accessToken, testContextName);
     }
 
     return authorizationClient;
   }
 
   public static async queryContextIdByName(contextName: string): Promise<string> {
-    const requestContext = await AuthorizedFrontendRequestContext.create();
-    const iTwin: ITwin = await this.imodelCloudEnv.contextMgr.getITwinByName(requestContext, contextName);
+    const accessToken = (await IModelApp.authorizationClient?.getAccessToken())!;
+    const iTwin: ITwin = await this.imodelCloudEnv.contextMgr.getITwinByName(accessToken, contextName);
     assert(iTwin && iTwin.id);
     return iTwin.id;
   }
 
   public static async queryIModelIdbyName(iTwinId: string, iModelName: string): Promise<string> {
-    const requestContext = await AuthorizedFrontendRequestContext.create();
-    const iModels = await this.imodelCloudEnv.imodelClient.iModels.get(requestContext, iTwinId, new IModelQuery().byName(iModelName));
+    const accessToken = (await IModelApp.authorizationClient?.getAccessToken())!;
+    const iModels = await this.imodelCloudEnv.imodelClient.iModels.get(accessToken, iTwinId, new IModelQuery().byName(iModelName));
     assert(iModels.length > 0);
     assert(iModels[0].wsgId);
 
@@ -86,14 +84,14 @@ export class TestUtility {
 
   /** Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded */
   public static async purgeAcquiredBriefcases(iModelId: string, acquireThreshold: number = 16): Promise<void> {
-    const requestContext = await AuthorizedFrontendRequestContext.create();
-    const briefcases: HubBriefcase[] = await IModelHubFrontend.iModelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().ownedByMe());
+    const accessToken = (await IModelApp.authorizationClient?.getAccessToken())!;
+    const briefcases: HubBriefcase[] = await IModelHubFrontend.iModelClient.briefcases.get(accessToken, iModelId, new BriefcaseQuery().ownedByMe());
     if (briefcases.length > acquireThreshold) {
       Logger.logInfo("TestUtility", `Reached limit of maximum number of briefcases for ${iModelId}. Purging all briefcases.`);
 
       const promises = new Array<Promise<void>>();
       briefcases.forEach((briefcase: HubBriefcase) => {
-        promises.push(IModelHubFrontend.iModelClient.briefcases.delete(requestContext, iModelId, briefcase.briefcaseId!));
+        promises.push(IModelHubFrontend.iModelClient.briefcases.delete(accessToken, iModelId, briefcase.briefcaseId!));
       });
       await Promise.all(promises);
     }

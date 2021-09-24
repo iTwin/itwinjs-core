@@ -9,11 +9,10 @@
 // cSpell:ignore configurableui clientservices
 
 import { Store } from "redux";
-import { GuidString, Logger, ProcessDetector } from "@bentley/bentleyjs-core";
+import { AccessToken, GuidString, Logger, ProcessDetector, RpcActivity } from "@bentley/bentleyjs-core";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection, SnapMode, ViewState } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, SnapMode, ViewState } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
-import { AccessToken } from "@bentley/itwin-client";
 import { UserInfo } from "./UserInfo";
 import { Presentation } from "@bentley/presentation-frontend";
 import { TelemetryEvent } from "@bentley/telemetry-client";
@@ -541,9 +540,15 @@ export class UiFramework {
   public static async postTelemetry(eventName: string, eventId?: GuidString, iTwinId?: GuidString, iModeId?: GuidString, changeSetId?: string, time?: TrackingTime, additionalProperties?: { [key: string]: any }): Promise<void> {
     if (!IModelApp.authorizationClient)
       return;
-    const requestContext = await AuthorizedFrontendRequestContext.create();
+    const activity: RpcActivity = {
+      sessionId: IModelApp.sessionId,
+      activityId: "",
+      applicationId: IModelApp.applicationId,
+      applicationVersion: IModelApp.applicationVersion,
+      accessToken: await IModelApp.authorizationClient.getAccessToken(),
+    };
     const telemetryEvent = new TelemetryEvent(eventName, eventId, iTwinId, iModeId, changeSetId, time, additionalProperties);
-    await IModelApp.telemetry.postTelemetry(requestContext, telemetryEvent);
+    await IModelApp.telemetry.postTelemetry(activity, telemetryEvent);
   }
   private static _handleFrameworkVersionChangedEvent = (args: FrameworkVersionChangedEventArgs) => {
     // Log Ui Version used

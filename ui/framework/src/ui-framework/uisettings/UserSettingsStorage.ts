@@ -6,8 +6,7 @@
  * @module UiSettings
  */
 
-import { AuthStatus, BentleyError } from "@bentley/bentleyjs-core";
-import { AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp } from "@bentley/imodeljs-frontend";
 import { SettingsStatus } from "@bentley/product-settings-client";
 import { UiSettingsResult, UiSettingsStatus, UiSettingsStorage } from "@bentley/ui-core";
 
@@ -17,17 +16,10 @@ import { UiSettingsResult, UiSettingsStatus, UiSettingsStorage } from "@bentley/
  */
 export class UserSettingsStorage implements UiSettingsStorage {
   public async getSetting(namespace: string, name: string): Promise<UiSettingsResult> {
-    let requestContext;
     if (!(await this.isSignedIn()))
       return { status: UiSettingsStatus.AuthorizationError };
-    try {
-      requestContext = await AuthorizedFrontendRequestContext.create();
-    } catch (err: unknown) {
-      if (err instanceof BentleyError && err.errorNumber === AuthStatus.Error)
-        return { status: UiSettingsStatus.AuthorizationError };
-      throw err;
-    }
-    const result = await IModelApp.settings.getUserSetting(requestContext, namespace, name, true);
+    const accessToken = (await IModelApp.authorizationClient?.getAccessToken())!;
+    const result = await IModelApp.settings.getUserSetting(accessToken, namespace, name, true);
     const status = settingsStatusToUiSettingsStatus(result.status);
     return {
       status,
@@ -36,17 +28,10 @@ export class UserSettingsStorage implements UiSettingsStorage {
   }
 
   public async saveSetting(namespace: string, name: string, setting: any): Promise<UiSettingsResult> {
-    let requestContext;
     if (!(await this.isSignedIn()))
       return { status: UiSettingsStatus.AuthorizationError };
-    try {
-      requestContext = await AuthorizedFrontendRequestContext.create();
-    } catch (err: unknown) {
-      if (err instanceof BentleyError && err.errorNumber === AuthStatus.Error)
-        return { status: UiSettingsStatus.AuthorizationError };
-      throw err;
-    }
-    const result = await IModelApp.settings.saveUserSetting(requestContext, setting, namespace, name, true);
+    const accessToken = (await IModelApp.authorizationClient?.getAccessToken())!;
+    const result = await IModelApp.settings.saveUserSetting(accessToken, setting, namespace, name, true);
     const status = settingsStatusToUiSettingsStatus(result.status);
     return {
       status,
@@ -55,17 +40,10 @@ export class UserSettingsStorage implements UiSettingsStorage {
   }
 
   public async deleteSetting(namespace: string, name: string): Promise<UiSettingsResult> {
-    let requestContext;
     if (!(await this.isSignedIn()))
       return { status: UiSettingsStatus.AuthorizationError };
-    try {
-      requestContext = await AuthorizedFrontendRequestContext.create();
-    } catch (err: unknown) {
-      if (err instanceof BentleyError && err.errorNumber === AuthStatus.Error)
-        return { status: UiSettingsStatus.AuthorizationError };
-      throw err;
-    }
-    const result = await IModelApp.settings.deleteUserSetting(requestContext, namespace, name, true);
+    const accessToken = (await IModelApp.authorizationClient?.getAccessToken())!;
+    const result = await IModelApp.settings.deleteUserSetting(accessToken, namespace, name, true);
     const status = settingsStatusToUiSettingsStatus(result.status);
     return {
       status,
@@ -74,7 +52,7 @@ export class UserSettingsStorage implements UiSettingsStorage {
   }
 
   private async isSignedIn(): Promise<boolean> {
-    return !!IModelApp.authorizationClient && !!(await IModelApp.authorizationClient.getAccessToken());
+    return await IModelApp.authorizationClient?.getAccessToken() !== undefined;
   }
 }
 
