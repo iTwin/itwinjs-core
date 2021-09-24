@@ -65,6 +65,16 @@ function createTexture(imodel: IModelConnection, persistent: boolean): RenderTex
   return tex!;
 }
 
+function createInstanceParams(count: number): InstancedGraphicParams {
+  return {
+    count,
+    transforms: new Float32Array(count * 12),
+    transformCenter: new Point3d(),
+    featureIds: new Uint8Array(count * 3),
+    symbologyOverrides: new Uint8Array(count * 8),
+  };
+}
+
 function getStats(consumer: RenderMemory.Consumer): RenderMemory.Statistics {
   const stats = new RenderMemory.Statistics();
   consumer.collectStatistics(stats);
@@ -174,17 +184,40 @@ describe.only("RenderMemory", () => {
     expect(getBytesUsed(mesh)).greaterThan(0);
     mesh.dispose();
     expectBytesUsed(0, mesh);
+
+    const texture = createTexture(imodel, false);
+    texture.dispose();
+    expectBytesUsed(0, texture);
   });
 
-  it("should collect memory used by instanced geometry", () => {
+  it("should collect memory used by instanced mesh", () => {
+    const params = createInstanceParams(5);
+    const numBytesPerInstance = 12 * 4 + 3 + 8; // 12 floats per transform, 3 bytes per feature Id, 8 bytes per symbology override.
+    const numInstanceBytes = params.count * numBytesPerInstance;
+
+    const mesh = createMeshGeometry();
+    const graphic = createGraphic(mesh, params);
+    expectBytesUsed(getBytesUsed(mesh) + numInstanceBytes, graphic);
+
+    graphic.dispose();
+    expectBytesUsed(0, mesh);
+    expectBytesUsed(0, graphic);
+  });
+
+  it("should collect memory used by instanced mesh and its edges", () => {
+    const params = createInstanceParams(5);
+    const numBytesPerInstance = 12 * 4 + 3 + 8; // 12 floats per transform, 3 bytes per feature Id, 8 bytes per symbology override.
+    const numInstanceBytes = params.count * numBytesPerInstance;
+
+    const mesh = createMeshGeometry({ includeEdges: true });
+    const graphic = createGraphic(mesh, params);
+    expectBytesUsed(getBytesUsed(mesh) + numInstanceBytes, graphic);
+
+    graphic.dispose();
+    expectBytesUsed(0, mesh);
+    expectBytesUsed(0, graphic);
   });
 
   it("should collect memory used by patterned geometry", () => {
-  });
-
-  it("counts each set of instances exactly once", () => {
-  });
-
-  it("counts each instanced representation exactly once", () => {
   });
 });

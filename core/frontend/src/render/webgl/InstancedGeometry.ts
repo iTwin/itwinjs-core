@@ -153,7 +153,7 @@ export class InstanceBuffers extends InstanceData {
     const symBytes = undefined !== this.symbology ? this.symbology.bytesUsed : 0;
 
     const bytesUsed = this.transforms.bytesUsed + symBytes + featureBytes;
-    stats.addInstances(this, bytesUsed);
+    stats.addInstances(bytesUsed);
   }
 
   public static computeRange(reprRange: Range3d, tfs: Float32Array, rtcCenter: Point3d, out?: Range3d): Range3d {
@@ -256,7 +256,7 @@ export class PatternBuffers extends InstanceData {
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    stats.addInstances(this, this.offsets.bytesUsed);
+    stats.addInstances(this.offsets.bytesUsed);
   }
 }
 
@@ -376,7 +376,8 @@ export class InstancedGeometry extends CachedGeometry {
 
   public collectStatistics(stats: RenderMemory.Statistics) {
     this._repr.collectStatistics(stats);
-    this._buffers.collectStatistics(stats);
+    if (this._ownsRepr)
+      this._buffers.collectStatistics(stats);
   }
 
   public get patternParams(): Float32Array { return this._buffers.patternParams; }
