@@ -11,7 +11,7 @@ import {
   CustomFormatPropEditorSpec, getQuantityTypeKey, IModelApp, isCheckboxFormatPropEditorSpec, isCustomQuantityTypeDefinition,
   isTextInputFormatPropEditorSpec, isTextSelectFormatPropEditorSpec, QuantityTypeArg,
 } from "@itwin/core-frontend";
-import { FormatProps, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
+import { FormatProps, UnitProps, UnitsProvider } from "@itwin/core-quantity";
 import { CommonProps, Select } from "@itwin/ui-core-react";
 import { Checkbox, Input } from "@itwin/itwinui-react";
 import { FormatPanel } from "./FormatPanel";

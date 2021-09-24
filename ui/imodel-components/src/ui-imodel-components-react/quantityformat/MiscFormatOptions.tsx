@@ -11,7 +11,7 @@ import * as React from "react";
 import { SpecialKey } from "@itwin/appui-abstract";
 import { CommonProps } from "@itwin/ui-core-react";
 import { Checkbox } from "@itwin/itwinui-react";
-import { Format, FormatProps, FormatTraits, FormatType, ScientificType, ShowSignOption } from "@bentley/imodeljs-quantity";
+import { Format, FormatProps, FormatTraits, FormatType, ScientificType, ShowSignOption } from "@itwin/core-quantity";
 import { SignOptionSelector } from "./misc/SignOption";
 import { ThousandsSeparator } from "./misc/ThousandsSeparator";
 import { DecimalSeparatorSelector } from "./misc/DecimalSeparator";

@@ -43,8 +43,8 @@
     "@itwin/core-bentley": "workspace:^3.0.0-dev.66",
     "@itwin/core-common": "workspace:^3.0.0-dev.66",
     "@itwin/core-frontend": "workspace:^3.0.0-dev.66",
-    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.66",
-    "@bentley/imodeljs-quantity": "workspace:^3.0.0-dev.66",
+    "@itwin/core-i18n": "workspace:^3.0.0-dev.66",
+    "@itwin/core-quantity": "workspace:^3.0.0-dev.66",
     "@itwin/presentation-common": "workspace:^3.0.0-dev.66"
   },
   "devDependencies": {
@@ -54,8 +54,8 @@
     "@bentley/frontend-authorization-client": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
-    "@bentley/imodeljs-i18n": "workspace:*",
-    "@bentley/imodeljs-quantity": "workspace:*",
+    "@itwin/core-i18n": "workspace:*",
+    "@itwin/core-quantity": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@itwin/presentation-common": "workspace:*",
     "@bentley/product-settings-client": "workspace:*",

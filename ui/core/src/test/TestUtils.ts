@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { fireEvent } from "@testing-library/react";
 import { expect } from "chai";
-import { I18N } from "@bentley/imodeljs-i18n";
+import { I18N } from "@itwin/core-i18n";
 import { UiCore } from "../ui-core-react/UiCore";
 
 /** @internal */

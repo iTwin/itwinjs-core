@@ -8,7 +8,7 @@
 
 import { BeEvent, IDisposable, Logger, OrderedId64Iterable } from "@itwin/core-bentley";
 import { IModelConnection, IpcApp } from "@itwin/core-frontend";
-import { UnitSystemKey } from "@bentley/imodeljs-quantity";
+import { UnitSystemKey } from "@itwin/core-quantity";
 import {
   Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides,
   DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties,

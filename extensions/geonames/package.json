@@ -38,8 +38,8 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
-    "@bentley/imodeljs-i18n": "workspace:*",
-    "@bentley/imodeljs-quantity": "workspace:*",
+    "@itwin/core-i18n": "workspace:*",
+    "@itwin/core-quantity": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "svg-sprite-loader": "4.2.1"
   },

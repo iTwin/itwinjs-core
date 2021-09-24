@@ -5,7 +5,7 @@
 import { AsyncMethodsOf, Guid, Id64Arg, Logger, OpenMode, PromiseReturnType } from "@itwin/core-bentley";
 import { ElementProps, IModelError, ViewQueryParams } from "@itwin/core-common";
 import { BriefcaseConnection, IModelConnection, IpcApp, SnapshotConnection } from "@itwin/core-frontend";
-import { UnitSystemKey } from "@bentley/imodeljs-quantity";
+import { UnitSystemKey } from "@itwin/core-quantity";
 import { PRESENTATION_TEST_APP_IPC_CHANNEL_NAME, SampleIpcInterface } from "../../common/SampleIpcInterface";
 import SampleRpcInterface from "../../common/SampleRpcInterface";
 

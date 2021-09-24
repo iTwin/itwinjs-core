@@ -8,7 +8,7 @@ import * as faker from "faker";
 import * as path from "path";
 import { Id64String } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
-import { I18N } from "@bentley/imodeljs-i18n";
+import { I18N } from "@itwin/core-i18n";
 import { KeySet, Ruleset } from "@itwin/presentation-common";
 import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
 import {

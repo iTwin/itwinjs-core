@@ -30,7 +30,7 @@
     "@bentley/itwin-client": "workspace:*",
     "@bentley/backend-itwin-client": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "@bentley/imodeljs-i18n": "workspace:*",
+    "@itwin/core-i18n": "workspace:*",
     "chai": "^4.1.2",
     "yargs": "^16.0.0"
   },

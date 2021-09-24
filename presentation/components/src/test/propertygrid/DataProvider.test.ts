@@ -8,7 +8,7 @@ import * as path from "path";
 import * as sinon from "sinon";
 import { BeEvent, using } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
-import { I18N } from "@bentley/imodeljs-i18n";
+import { I18N } from "@itwin/core-i18n";
 import {
   applyOptionalPrefix, ArrayTypeDescription, CategoryDescription, Content, ContentFlags, Field, Item, Property, PropertyValueFormat,
   RelationshipMeaning, StructFieldMemberDescription, StructTypeDescription, TypeDescription, ValuesDictionary,

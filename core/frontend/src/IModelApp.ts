@@ -14,7 +14,7 @@ import {
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelClient } from "@bentley/imodelhub-client";
 import { IModelStatus, RpcConfiguration, RpcInterfaceDefinition, RpcRequest } from "@itwin/core-common";
-import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
+import { I18N, I18NOptions } from "@itwin/core-i18n";
 import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
 import { UiAdmin } from "@itwin/appui-abstract";

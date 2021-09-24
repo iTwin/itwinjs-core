@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { CommonProps } from "@itwin/ui-core-react";
-import { Format, FormatProps, FormatType } from "@bentley/imodeljs-quantity";
+import { Format, FormatProps, FormatType } from "@itwin/core-quantity";
 import { DecimalPrecisionSelector } from "./misc/DecimalPrecision";
 import { FractionPrecisionSelector } from "./misc/FractionPrecision";
 import { UiIModelComponents } from "../UiIModelComponents";

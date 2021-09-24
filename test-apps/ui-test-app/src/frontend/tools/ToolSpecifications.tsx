@@ -13,7 +13,7 @@ import {
   IModelApp, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType,
   QuantityType, SelectionTool, SnapMode,
 } from "@itwin/core-frontend";
-import { UnitSystemKey } from "@bentley/imodeljs-quantity";
+import { UnitSystemKey } from "@itwin/core-quantity";
 import { Presentation } from "@itwin/presentation-frontend";
 import {
   BackstageItem, BackstageItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue, DialogButtonType,

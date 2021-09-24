@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { CommonProps } from "@itwin/ui-core-react";
-import { FormatProps, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
+import { FormatProps, UnitProps, UnitsProvider } from "@itwin/core-quantity";
 import { Input } from "@itwin/itwinui-react";
 import { UnitDescr } from "./misc/UnitDescr";
 import { UiIModelComponents } from "../UiIModelComponents";

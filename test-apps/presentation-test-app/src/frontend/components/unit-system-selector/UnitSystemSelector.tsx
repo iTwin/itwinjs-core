@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelApp } from "@itwin/core-frontend";
-import { UnitSystemKey } from "@bentley/imodeljs-quantity";
+import { UnitSystemKey } from "@itwin/core-quantity";
 import { Select } from "@itwin/ui-core-react";
 
 export interface UnitSystemSelectorProps {

@@ -267,12 +267,20 @@
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
+      "name": "@itwin/core-i18n",
+      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal" ]
+    },
+    {
       "name": "@itwin/core-markup",
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@itwin/core-orbitgt",
       "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "@itwin/core-quantity",
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/core-transformer",

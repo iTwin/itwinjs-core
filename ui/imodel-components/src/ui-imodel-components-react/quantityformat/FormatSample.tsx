@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { FormatterSpec } from "@bentley/imodeljs-quantity";
+import { FormatterSpec } from "@itwin/core-quantity";
 import { SpecialKey } from "@itwin/appui-abstract";
 import { CommonProps, WebFontIcon } from "@itwin/ui-core-react";
 import { Input } from "@itwin/itwinui-react";

@@ -36,7 +36,7 @@
     "@itwin/core-bentley": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/imodeljs-i18n": "workspace:*",
+    "@itwin/core-i18n": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@bentley/units-schema": "^1.0.5",
     "@types/almost-equal": "1.1.0",
@@ -63,7 +63,7 @@
   },
   "peerDependencies": {
     "@itwin/core-bentley": "workspace:^3.0.0-dev.66",
-    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.66",
+    "@itwin/core-i18n": "workspace:^3.0.0-dev.66",
     "@itwin/ecschema-metadata": "workspace:^3.0.0-dev.66"
   },
   "dependencies": {

@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
+import { UnitProps, UnitsProvider } from "@itwin/core-quantity";
 import { CommonProps } from "@itwin/ui-core-react";
 import { Input, Select, SelectOption } from "@itwin/itwinui-react";
 

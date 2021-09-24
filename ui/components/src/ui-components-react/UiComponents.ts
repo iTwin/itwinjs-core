@@ -8,7 +8,7 @@
 
 import { enablePatches } from "immer";
 import { Logger } from "@itwin/core-bentley";
-import { I18N } from "@bentley/imodeljs-i18n";
+import { I18N } from "@itwin/core-i18n";
 import { getClassName, UiError } from "@itwin/appui-abstract";
 import { UiCore } from "@itwin/ui-core-react";
 

@@ -9,7 +9,7 @@
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@itwin/ui-core-react";
-import { Format, FormatProps, FormatTraits } from "@bentley/imodeljs-quantity";
+import { Format, FormatProps, FormatTraits } from "@itwin/core-quantity";
 import { Checkbox } from "@itwin/itwinui-react";
 import { ThousandsSelector } from "./ThousandsSelector";
 import { UiIModelComponents } from "../../UiIModelComponents";

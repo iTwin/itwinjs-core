@@ -14,7 +14,7 @@ import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
 import { mockPresentationManager } from "@itwin/presentation-components/lib/test/_helpers/UiComponents";
 import { getQuantityFormatsSettingsManagerEntry } from "../../appui-react/settings/quantityformatting/QuantityFormat";
 import { ModalDialogRenderer } from "../../appui-react/dialog/ModalDialogManager";
-import { FormatProps, UnitSystemKey } from "@bentley/imodeljs-quantity";
+import { FormatProps, UnitSystemKey } from "@itwin/core-quantity";
 import { UiFramework } from "../../appui-react/UiFramework";
 
 describe("QuantityFormatSettingsPage", () => {

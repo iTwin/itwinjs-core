@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { I18N } from "@bentley/imodeljs-i18n";
+import { I18N } from "@itwin/core-i18n";
 import { Content, Item, LabelDefinition } from "@itwin/presentation-common";
 import { createTestContentDescriptor } from "@itwin/presentation-common/lib/test/_helpers/Content";
 import {

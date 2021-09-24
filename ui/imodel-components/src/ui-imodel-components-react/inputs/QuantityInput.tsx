@@ -9,7 +9,7 @@
 import classnames from "classnames";
 import * as React from "react";
 import { IModelApp, QuantityFormatsChangedArgs, QuantityTypeArg } from "@itwin/core-frontend";
-import { Parser } from "@bentley/imodeljs-quantity";
+import { Parser } from "@itwin/core-quantity";
 import { ParseResults } from "@itwin/appui-abstract";
 import { CommonProps } from "@itwin/ui-core-react";
 import { UiIModelComponents } from "../UiIModelComponents";

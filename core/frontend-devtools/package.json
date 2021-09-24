@@ -36,7 +36,7 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
-    "@bentley/imodeljs-i18n": "workspace:*",
+    "@itwin/core-i18n": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "file-saver": "^2.0.2"
   },

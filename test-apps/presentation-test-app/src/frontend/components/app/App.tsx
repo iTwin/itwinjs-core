@@ -7,7 +7,7 @@ import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 import * as React from "react";
 import { Geometry } from "@itwin/core-geometry";
 import { IModelApp, IModelConnection } from "@itwin/core-frontend";
-import { UnitSystemKey } from "@bentley/imodeljs-quantity";
+import { UnitSystemKey } from "@itwin/core-quantity";
 import { DefaultContentDisplayTypes } from "@itwin/presentation-common";
 import {
   DataProvidersFactory, IPresentationPropertyDataProvider, IPresentationTableDataProvider, UnifiedSelectionContextProvider,

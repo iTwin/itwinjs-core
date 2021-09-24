@@ -35,7 +35,7 @@
     "@itwin/editor-frontend": "workspace:*",
     "@itwin/editor-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
-    "@bentley/imodeljs-i18n": "workspace:*",
+    "@itwin/core-i18n": "workspace:*",
     "@itwin/core-markup": "workspace:*",
     "@bentley/electron-manager": "workspace:*",
     "chai": "^4.1.2",

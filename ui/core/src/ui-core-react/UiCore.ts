@@ -13,7 +13,7 @@ import "./layout-variables.scss";
 import "./classes.scss";
 
 import { Logger } from "@itwin/core-bentley";
-import { I18N } from "@bentley/imodeljs-i18n";
+import { I18N } from "@itwin/core-i18n";
 import { getClassName, UiAbstract, UiError } from "@itwin/appui-abstract";
 
 // cSpell:ignore colorthemes colorvariables

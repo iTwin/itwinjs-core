@@ -39,7 +39,7 @@
     "@itwin/core-geometry": "workspace:^3.0.0-dev.66",
     "@itwin/core-common": "workspace:^3.0.0-dev.66",
     "@itwin/core-frontend": "workspace:^3.0.0-dev.66",
-    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.66",
+    "@itwin/core-i18n": "workspace:^3.0.0-dev.66",
     "@itwin/appui-abstract": "workspace:^3.0.0-dev.66"
   },
   "devDependencies": {
@@ -50,7 +50,7 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
-    "@bentley/imodeljs-i18n": "workspace:*",
+    "@itwin/core-i18n": "workspace:*",
     "@itwin/appui-abstract": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^8.2.2",

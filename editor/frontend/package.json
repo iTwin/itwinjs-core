@@ -36,7 +36,7 @@
   "peerDependencies": {
     "@itwin/core-bentley": "workspace:^3.0.0-dev.66",
     "@itwin/core-common": "workspace:^3.0.0-dev.66",
-    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.66"
+    "@itwin/core-i18n": "workspace:^3.0.0-dev.66"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -48,7 +48,7 @@
     "@bentley/certa": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "@bentley/imodeljs-i18n": "workspace:*",
+    "@itwin/core-i18n": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^8.2.2",
     "@types/node": "14.14.31",

@@ -20,7 +20,7 @@ import {
 import { Logger } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import { ColorByName, ColorDef } from "@itwin/core-common";
-import { FormatterSpec } from "@bentley/imodeljs-quantity";
+import { FormatterSpec } from "@itwin/core-quantity";
 import { CursorInformation, MenuItemProps, UiFramework } from "@itwin/appui-react";
 import sampleToolSvg from "./SampleTool.svg?sprite";
 

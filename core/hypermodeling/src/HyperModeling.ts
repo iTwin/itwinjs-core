@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { I18NNamespace } from "@bentley/imodeljs-i18n";
+import { I18NNamespace } from "@itwin/core-i18n";
 import { SectionType } from "@itwin/core-common";
 import { IModelApp, IModelConnection, ScreenViewport, tryImageElementFromUrl, ViewManip } from "@itwin/core-frontend";
 import { registerTools } from "./Tools";

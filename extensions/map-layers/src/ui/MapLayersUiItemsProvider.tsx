@@ -5,7 +5,7 @@
 
 import * as React from "react";
 import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, StageUsage, UiItemsProvider } from "@itwin/appui-abstract";
-import { I18N } from "@bentley/imodeljs-i18n";
+import { I18N } from "@itwin/core-i18n";
 import { MapLayersWidget } from "./widget/MapLayersWidget";
 import { ConfigurableCreateInfo, WidgetControl } from "@itwin/appui-react";
 import { IModelApp } from "@itwin/core-frontend";

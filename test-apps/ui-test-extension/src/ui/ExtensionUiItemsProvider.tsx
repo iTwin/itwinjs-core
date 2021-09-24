@@ -8,7 +8,7 @@ import {
   CommonStatusBarItem, CommonToolbarItem, StagePanelLocation, StagePanelSection,
   StageUsage, StatusBarSection, ToolbarOrientation, ToolbarUsage, UiItemsProvider, WidgetState,
 } from "@itwin/appui-abstract";
-import { I18N } from "@bentley/imodeljs-i18n";
+import { I18N } from "@itwin/core-i18n";
 import { UiFramework } from "@itwin/appui-react";
 import { IModelApp } from "@itwin/core-frontend";
 import statusBarButtonSvg from "./StatusField.svg?sprite"; // use once svg are working again.

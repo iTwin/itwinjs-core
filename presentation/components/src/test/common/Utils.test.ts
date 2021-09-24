@@ -7,7 +7,7 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as React from "react";
 import * as moq from "typemoq";
-import { I18N } from "@bentley/imodeljs-i18n";
+import { I18N } from "@itwin/core-i18n";
 import { applyOptionalPrefix, LabelCompositeValue, LabelDefinition } from "@itwin/presentation-common";
 import {
   createTestContentDescriptor, createTestNestedContentField, createTestPropertiesContentField, createTestSimpleContentField,

@@ -10,7 +10,7 @@ import { SectionType } from "@itwin/core-common";
 import {
   I18N,
   I18NNamespace,
-} from "@bentley/imodeljs-i18n";
+} from "@itwin/core-i18n";
 import {
   IModelApp,
   ScreenViewport,

@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { FormatProps } from "@bentley/imodeljs-quantity";
+import { FormatProps } from "@itwin/core-quantity";
 import { RelativePosition, SpecialKey } from "@itwin/appui-abstract";
 import { Popup, WebFontIcon } from "@itwin/ui-core-react";
 import { FormatPanel, FormatPanelProps, UiIModelComponents } from "@itwin/ui-imodel-components-react";

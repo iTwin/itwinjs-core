@@ -8,7 +8,7 @@
 
 import { IDisposable } from "@itwin/core-bentley";
 import { IModelDb, IModelHost, IModelJsNative } from "@itwin/core-backend";
-import { FormatProps } from "@bentley/imodeljs-quantity";
+import { FormatProps } from "@itwin/core-quantity";
 import {
   DiagnosticsScopeLogs, PresentationError, PresentationStatus, UpdateInfoJSON, VariableValue, VariableValueJSON, VariableValueTypes,
 } from "@itwin/presentation-common";

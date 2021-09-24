@@ -7,7 +7,7 @@
  */
 
 import { Logger } from "@itwin/core-bentley";
-import { I18N } from "@bentley/imodeljs-i18n";
+import { I18N } from "@itwin/core-i18n";
 import { MessagePresenter } from "./notification/MessagePresenter";
 import { getClassName } from "./utils/getClassName";
 import { UiError } from "./utils/UiError";

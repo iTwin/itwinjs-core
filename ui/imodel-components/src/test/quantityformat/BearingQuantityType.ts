@@ -11,7 +11,7 @@ import {
 import {
   CustomFormatProps, Format, FormatProps, FormatterSpec, Parser, ParserSpec, QuantityParseResult, UnitConversionSpec, UnitProps, UnitsProvider,
   UnitSystemKey,
-} from "@bentley/imodeljs-quantity";
+} from "@itwin/core-quantity";
 
 /* Interface that defines custom properties used to format and parse Bearing values. */
 interface BearingFormatProps extends CustomFormatProps {

@@ -10,7 +10,7 @@ import {
 } from "@itwin/core-common";
 import { FrontendRequestContext, IModelApp, IModelAppOptions, NativeAppAuthorization } from "@itwin/core-frontend";
 import { BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
-import { I18NOptions } from "@bentley/imodeljs-i18n";
+import { I18NOptions } from "@itwin/core-i18n";
 import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@bentley/hypermodeling-frontend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 

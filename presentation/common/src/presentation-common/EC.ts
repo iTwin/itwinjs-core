@@ -7,7 +7,7 @@
  */
 
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { FormatProps } from "@bentley/imodeljs-quantity";
+import { FormatProps } from "@itwin/core-quantity";
 
 /**
  * Type of an ECClass ID.

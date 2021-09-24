@@ -12,7 +12,7 @@ import { DeepCompare } from "@itwin/core-geometry";
 import {
   getQuantityTypeKey, IModelApp, QuantityFormatsChangedArgs, QuantityType, QuantityTypeArg, QuantityTypeKey,
 } from "@itwin/core-frontend";
-import { FormatProps, FormatterSpec, UnitSystemKey } from "@bentley/imodeljs-quantity";
+import { FormatProps, FormatterSpec, UnitSystemKey } from "@itwin/core-quantity";
 import { DialogButtonType } from "@itwin/appui-abstract";
 import { FormatSample, QuantityFormatPanel } from "@itwin/ui-imodel-components-react";
 import {

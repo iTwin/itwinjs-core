@@ -8,7 +8,7 @@
 
 import "./FormatPanel.scss";
 import * as React from "react";
-import { Format, FormatProps, FormatterSpec, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
+import { Format, FormatProps, FormatterSpec, UnitProps, UnitsProvider } from "@itwin/core-quantity";
 import { CommonProps } from "@itwin/ui-core-react";
 import { FormatPrecision } from "./FormatPrecision";
 import { FormatSample } from "./FormatSample";

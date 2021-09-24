@@ -34,7 +34,7 @@
   },
   "peerDependencies": {
     "@itwin/core-bentley": "workspace:^3.0.0-dev.66",
-    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.66",
+    "@itwin/core-i18n": "workspace:^3.0.0-dev.66",
     "@itwin/appui-abstract": "workspace:^3.0.0-dev.66",
     "@itwin/ui-core-react": "workspace:^3.0.0-dev.66",
     "react": "^16.8.6 || ^17.0.0",
@@ -48,7 +48,7 @@
     "@itwin/core-bentley": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/imodeljs-i18n": "workspace:*",
+    "@itwin/core-i18n": "workspace:*",
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/ui-core-react": "workspace:*",
     "@testing-library/react": "^12.0.0",

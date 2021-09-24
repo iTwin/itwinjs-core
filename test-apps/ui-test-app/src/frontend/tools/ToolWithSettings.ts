@@ -11,7 +11,7 @@ import {
   AngleDescription, BeButtonEvent, EventHandled, IModelApp, LengthDescription, NotifyMessageDetails, OutputMessagePriority, PrimitiveTool,
   QuantityType, SurveyLengthDescription, ToolAssistance, ToolAssistanceImage,
 } from "@itwin/core-frontend";
-import { FormatterSpec } from "@bentley/imodeljs-quantity";
+import { FormatterSpec } from "@itwin/core-quantity";
 import {
   DialogItem, DialogLayoutDataProvider, DialogProperty, DialogPropertyItem, DialogPropertySyncItem,
   EnumerationChoice, InputEditorSizeParams, PropertyChangeResult, PropertyChangeStatus,

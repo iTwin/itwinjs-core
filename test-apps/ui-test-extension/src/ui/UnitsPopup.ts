@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelApp } from "@itwin/core-frontend";
-import { I18N } from "@bentley/imodeljs-i18n";
-import { UnitSystemKey } from "@bentley/imodeljs-quantity";
+import { I18N } from "@itwin/core-i18n";
+import { UnitSystemKey } from "@itwin/core-quantity";
 import { Presentation } from "@itwin/presentation-frontend";
 import {
   DialogButtonDef, DialogButtonType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertySyncItem, PropertyDescription,

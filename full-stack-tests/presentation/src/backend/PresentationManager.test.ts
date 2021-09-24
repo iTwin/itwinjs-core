@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { Guid, using } from "@itwin/core-bentley";
 import { IModelDb, SnapshotDb } from "@itwin/core-backend";
-import { UnitSystemKey } from "@bentley/imodeljs-quantity";
+import { UnitSystemKey } from "@itwin/core-quantity";
 import { PresentationManager, UnitSystemFormat } from "@itwin/presentation-backend";
 import {
   ContentSpecificationTypes, DisplayValue, DisplayValuesArray, DisplayValuesMap, KeySet, Ruleset, RuleTypes,

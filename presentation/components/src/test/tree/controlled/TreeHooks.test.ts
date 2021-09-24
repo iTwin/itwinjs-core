@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { it } from "mocha";
 import * as moq from "typemoq";
 import { IModelConnection } from "@itwin/core-frontend";
-import { I18N } from "@bentley/imodeljs-i18n";
+import { I18N } from "@itwin/core-i18n";
 import { Node, RegisteredRuleset, RulesetVariable, StandardNodeTypes, VariableValueTypes } from "@itwin/presentation-common";
 import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
 import { PrimitiveValue } from "@itwin/appui-abstract";

@@ -9,7 +9,7 @@
 import * as React from "react";
 import { CommonProps } from "@itwin/ui-core-react";
 import { UiIModelComponents } from "../../UiIModelComponents";
-import { ScientificType } from "@bentley/imodeljs-quantity";
+import { ScientificType } from "@itwin/core-quantity";
 import { Select, SelectOption } from "@itwin/itwinui-react";
 
 /** Properties of [[ScientificTypeSelector]] component.

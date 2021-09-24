@@ -7,7 +7,7 @@ import "./_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
-import { I18N } from "@bentley/imodeljs-i18n";
+import { I18N } from "@itwin/core-i18n";
 import { PresentationError } from "@itwin/presentation-common";
 import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
 import { Presentation, SelectionManager } from "../presentation-frontend";

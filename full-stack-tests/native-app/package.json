@@ -30,7 +30,7 @@
     "@itwin/core-backend": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "@bentley/imodeljs-i18n": "workspace:*",
+    "@itwin/core-i18n": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-markup": "workspace:*",
     "@bentley/electron-manager": "workspace:*",

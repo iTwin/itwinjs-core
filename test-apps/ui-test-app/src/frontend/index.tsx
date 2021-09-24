@@ -22,7 +22,7 @@ import {
   LocalUnitFormatProvider, NativeApp, NativeAppLogger, NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
   WebViewerApp, WebViewerAppOpts,
 } from "@itwin/core-frontend";
-import { I18NNamespace } from "@bentley/imodeljs-i18n";
+import { I18NNamespace } from "@itwin/core-i18n";
 import { MarkupApp } from "@itwin/core-markup";
 import { AccessToken, ProgressInfo } from "@bentley/itwin-client";
 import { MapLayersUI } from "@bentley/map-layers";

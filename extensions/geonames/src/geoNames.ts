@@ -10,7 +10,7 @@ import {
   BeButton, BeButtonEvent, Cluster, DecorateContext, imageElementFromUrl, IModelApp, InputSource, Marker, MarkerSet, NotifyMessageDetails,
   OutputMessagePriority, ScreenViewport, Tool, ViewState3d,
 } from "@itwin/core-frontend";
-import { I18N } from "@bentley/imodeljs-i18n";
+import { I18N } from "@itwin/core-i18n";
 import { request, RequestOptions, Response } from "@bentley/itwin-client";
 
 /*-----------------------------------------------------------------------
