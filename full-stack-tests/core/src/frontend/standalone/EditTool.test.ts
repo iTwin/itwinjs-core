@@ -8,7 +8,7 @@ import { ProcessDetector } from "@itwin/core-bentley";
 import { EditTools } from "@itwin/editor-frontend";
 import { IModelApp, PrimitiveTool, SnapshotConnection, Viewport } from "@itwin/core-frontend";
 import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../../common/TestEditCommandIpc";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { ElectronApp } from "@itwin/electron-manager/lib/ElectronFrontend";
 
 const expect = chai.expect;
 const assert = chai.assert;

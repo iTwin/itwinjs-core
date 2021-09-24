@@ -1693,7 +1693,6 @@ importers:
   ../../example-code/app:
     specifiers:
       '@bentley/context-registry-client': workspace:*
-      '@bentley/electron-manager': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
@@ -1704,6 +1703,7 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
+      '@itwin/electron-manager': workspace:*
       '@types/body-parser': ^1.17.0
       '@types/chai': ^4.1.4
       '@types/express': ^4.16.1
@@ -1731,7 +1731,6 @@ importers:
       xmlhttprequest: ^1.8.0
     dependencies:
       '@bentley/context-registry-client': link:../../clients/context-registry
-      '@bentley/electron-manager': link:../../core/electron-manager
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
       '@itwin/core-backend': link:../../core/backend
@@ -1739,6 +1738,7 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
+      '@itwin/electron-manager': link:../../core/electron-manager
       body-parser: 1.19.0
       chai: 4.3.4
       electron: 11.5.0
@@ -2003,7 +2003,6 @@ importers:
       '@bentley/backend-itwin-client': workspace:*
       '@bentley/certa': workspace:*
       '@bentley/context-registry-client': workspace:*
-      '@bentley/electron-manager': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/express-server': workspace:*
       '@bentley/frontend-authorization-client': workspace:*
@@ -2022,6 +2021,7 @@ importers:
       '@itwin/editor-backend': workspace:*
       '@itwin/editor-common': workspace:*
       '@itwin/editor-frontend': workspace:*
+      '@itwin/electron-manager': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
@@ -2049,7 +2049,6 @@ importers:
       webpack-core: 0.6.9
     dependencies:
       '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
-      '@bentley/electron-manager': link:../../core/electron-manager
       '@bentley/express-server': link:../../core/express-server
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
@@ -2063,6 +2062,7 @@ importers:
       '@itwin/editor-backend': link:../../editor/backend
       '@itwin/editor-common': link:../../editor/common
       '@itwin/editor-frontend': link:../../editor/frontend
+      '@itwin/electron-manager': link:../../core/electron-manager
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
@@ -2252,7 +2252,6 @@ importers:
       '@bentley/backend-itwin-client': workspace:*
       '@bentley/certa': workspace:*
       '@bentley/context-registry-client': workspace:*
-      '@bentley/electron-manager': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/express-server': workspace:*
       '@bentley/frontend-authorization-client': workspace:*
@@ -2267,6 +2266,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/core-i18n': workspace:*
       '@itwin/core-markup': workspace:*
+      '@itwin/electron-manager': workspace:*
       '@types/chai': ^4.1.4
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
@@ -2290,7 +2290,6 @@ importers:
     dependencies:
       '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/context-registry-client': link:../../clients/context-registry
-      '@bentley/electron-manager': link:../../core/electron-manager
       '@bentley/express-server': link:../../core/express-server
       '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/imodelhub-client': link:../../clients/imodelhub
@@ -2302,6 +2301,7 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-i18n': link:../../core/i18n
       '@itwin/core-markup': link:../../core/markup
+      '@itwin/electron-manager': link:../../core/electron-manager
       chai: 4.3.4
       electron: 11.5.0
       fs-extra: 8.1.0
@@ -2460,7 +2460,6 @@ importers:
   ../../full-stack-tests/rpc:
     specifiers:
       '@bentley/certa': workspace:*
-      '@bentley/electron-manager': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/express-server': workspace:*
       '@bentley/itwin-client': workspace:*
@@ -2470,6 +2469,7 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
+      '@itwin/electron-manager': workspace:*
       '@types/chai': ^4.1.4
       '@types/express': ^4.16.1
       '@types/mocha': ^8.2.2
@@ -2489,7 +2489,6 @@ importers:
       typescript: ~4.4.0
       webpack: 4.42.0
     dependencies:
-      '@bentley/electron-manager': link:../../core/electron-manager
       '@bentley/express-server': link:../../core/express-server
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/mobile-manager': link:../../core/mobile-manager
@@ -2497,6 +2496,7 @@ importers:
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
+      '@itwin/electron-manager': link:../../core/electron-manager
       chai: 4.3.4
       electron: 11.5.0
       express: 4.17.1
@@ -3044,7 +3044,6 @@ importers:
     specifiers:
       '@bentley/backend-itwin-client': workspace:*
       '@bentley/context-registry-client': workspace:*
-      '@bentley/electron-manager': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/frontend-authorization-client': workspace:*
       '@bentley/imodelhub-client': workspace:*
@@ -3061,6 +3060,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/core-i18n': workspace:*
       '@itwin/core-quantity': workspace:*
+      '@itwin/electron-manager': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
       '@types/body-parser': ^1.17.0
       '@types/express': ^4.16.1
@@ -3084,7 +3084,6 @@ importers:
     dependencies:
       '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/context-registry-client': link:../../clients/context-registry
-      '@bentley/electron-manager': link:../../core/electron-manager
       '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
@@ -3097,6 +3096,7 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-i18n': link:../../core/i18n
       '@itwin/core-quantity': link:../../core/quantity
+      '@itwin/electron-manager': link:../../core/electron-manager
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
       body-parser: 1.19.0
     devDependencies:
@@ -3126,7 +3126,6 @@ importers:
   ../../test-apps/display-test-app:
     specifiers:
       '@bentley/backend-itwin-client': workspace:*
-      '@bentley/electron-manager': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/frontend-authorization-client': workspace:*
       '@bentley/icons-generic': ^1.0.15
@@ -3149,6 +3148,7 @@ importers:
       '@itwin/editor-backend': workspace:*
       '@itwin/editor-common': workspace:*
       '@itwin/editor-frontend': workspace:*
+      '@itwin/electron-manager': workspace:*
       '@itwin/frontend-devtools': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
       '@itwin/webgl-compatibility': workspace:*
@@ -3173,7 +3173,6 @@ importers:
       webpack: 4.42.0
     dependencies:
       '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
-      '@bentley/electron-manager': link:../../core/electron-manager
       '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/icons-generic': 1.0.34
       '@bentley/icons-generic-webfont': 1.0.34
@@ -3192,6 +3191,7 @@ importers:
       '@itwin/editor-backend': link:../../editor/backend
       '@itwin/editor-common': link:../../editor/common
       '@itwin/editor-frontend': link:../../editor/frontend
+      '@itwin/electron-manager': link:../../core/electron-manager
       '@itwin/frontend-devtools': link:../../core/frontend-devtools
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
       '@itwin/webgl-compatibility': link:../../core/webgl-compatibility
@@ -3406,7 +3406,6 @@ importers:
   ../../test-apps/imodel-transformer:
     specifiers:
       '@bentley/context-registry-client': workspace:*
-      '@bentley/electron-manager': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
@@ -3416,6 +3415,7 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/core-transformer': workspace:*
+      '@itwin/electron-manager': workspace:*
       '@types/chai': ^4.1.4
       '@types/fs-extra': ^4.0.7
       '@types/lodash': ^4.14.0
@@ -3430,7 +3430,6 @@ importers:
       yargs: ^16.0.0
     dependencies:
       '@bentley/context-registry-client': link:../../clients/context-registry
-      '@bentley/electron-manager': link:../../core/electron-manager
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
       '@itwin/core-backend': link:../../core/backend
@@ -3438,6 +3437,7 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-transformer': link:../../core/transformer
+      '@itwin/electron-manager': link:../../core/electron-manager
       fs-extra: 8.1.0
       yargs: 16.2.0
     devDependencies:
@@ -3499,7 +3499,6 @@ importers:
 
   ../../test-apps/presentation-test-app:
     specifiers:
-      '@bentley/electron-manager': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/express-server': workspace:*
       '@bentley/icons-generic-webfont': ^1.0.15
@@ -3513,6 +3512,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/core-i18n': workspace:*
       '@itwin/core-quantity': workspace:*
+      '@itwin/electron-manager': workspace:*
       '@itwin/itwinui-css': ^0.27.0
       '@itwin/itwinui-react': ^1.16.2
       '@itwin/presentation-backend': workspace:*
@@ -3545,7 +3545,6 @@ importers:
       symlink-dir: ~4.0.3
       typescript: ~4.4.0
     dependencies:
-      '@bentley/electron-manager': link:../../core/electron-manager
       '@bentley/express-server': link:../../core/express-server
       '@bentley/icons-generic-webfont': 1.0.34
       '@itwin/appui-abstract': link:../../ui/abstract
@@ -3556,6 +3555,7 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-i18n': link:../../core/i18n
       '@itwin/core-quantity': link:../../core/quantity
+      '@itwin/electron-manager': link:../../core/electron-manager
       '@itwin/itwinui-css': 0.27.3
       '@itwin/itwinui-react': 1.19.0_react-dom@17.0.2+react@17.0.2
       '@itwin/presentation-backend': link:../../presentation/backend
@@ -3597,7 +3597,6 @@ importers:
       '@axe-core/react': ^4.1.1
       '@bentley/backend-itwin-client': workspace:*
       '@bentley/context-registry-client': workspace:*
-      '@bentley/electron-manager': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/express-server': workspace:*
       '@bentley/frontend-authorization-client': workspace:*
@@ -3623,6 +3622,7 @@ importers:
       '@itwin/editor-backend': workspace:*
       '@itwin/editor-common': workspace:*
       '@itwin/editor-frontend': workspace:*
+      '@itwin/electron-manager': workspace:*
       '@itwin/frontend-devtools': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
       '@itwin/itwinui-css': ^0.27.0
@@ -3669,7 +3669,6 @@ importers:
     dependencies:
       '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/context-registry-client': link:../../clients/context-registry
-      '@bentley/electron-manager': link:../../core/electron-manager
       '@bentley/express-server': link:../../core/express-server
       '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/icons-generic': 1.0.34
@@ -3692,6 +3691,7 @@ importers:
       '@itwin/editor-backend': link:../../editor/backend
       '@itwin/editor-common': link:../../editor/common
       '@itwin/editor-frontend': link:../../editor/frontend
+      '@itwin/electron-manager': link:../../core/electron-manager
       '@itwin/frontend-devtools': link:../../core/frontend-devtools
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
       '@itwin/itwinui-css': 0.27.3

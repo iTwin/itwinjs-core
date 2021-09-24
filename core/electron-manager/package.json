@@ -1,5 +1,5 @@
 {
-  "name": "@bentley/electron-manager",
+  "name": "@itwin/electron-manager",
   "version": "3.0.0-dev.66",
   "description": "iTwin.js ElectronHost and ElectronApp",
   "license": "MIT",

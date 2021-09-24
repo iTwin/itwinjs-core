@@ -364,7 +364,7 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/electron-manager",
+      "packageName": "@itwin/electron-manager",
       "projectFolder": "core/electron-manager",
       "reviewCategory": "backend",
       "shouldPublish": true,

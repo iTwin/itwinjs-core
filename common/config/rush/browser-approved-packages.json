@@ -47,7 +47,7 @@
       "allowedCategories": [ "backend", "integration-testing" ]
     },
     {
-      "name": "@bentley/electron-manager",
+      "name": "@itwin/electron-manager",
       "allowedCategories": [ "internal" ]
     },
     {

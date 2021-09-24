@@ -24,7 +24,7 @@
     "@itwin/core-frontend": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "@bentley/electron-manager": "workspace:*",
+    "@itwin/electron-manager": "workspace:*",
     "@bentley/mobile-manager": "workspace:*",
     "chai": "^4.1.2",
     "electron": "^11.1.0",

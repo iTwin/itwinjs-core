@@ -45,7 +45,7 @@
     "@itwin/frontend-devtools": "workspace:*",
     "@itwin/hypermodeling-frontend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
-    "@bentley/electron-manager": "workspace:*",
+    "@itwin/electron-manager": "workspace:*",
     "@bentley/mobile-manager": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
     "@itwin/core-geometry": "workspace:*",

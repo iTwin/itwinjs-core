@@ -73,7 +73,7 @@
   "dependencies": {
     "@itwin/core-bentley": "workspace:*",
     "@bentley/context-registry-client": "workspace:*",
-    "@bentley/electron-manager": "workspace:*",
+    "@itwin/electron-manager": "workspace:*",
     "@bentley/mobile-manager": "workspace:*",
     "@bentley/express-server": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",

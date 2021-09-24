@@ -5,7 +5,7 @@
 import { registerBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { commonSetup } from "./CommonBackendSetup";
-import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
+import { ElectronHost } from "@itwin/electron-manager/lib/ElectronBackend";
 
 async function init() {
   await commonSetup();

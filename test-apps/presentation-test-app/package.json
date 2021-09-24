@@ -32,7 +32,7 @@
   "dependencies": {
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "@bentley/electron-manager": "workspace:*",
+    "@itwin/electron-manager": "workspace:*",
     "@bentley/express-server": "workspace:*",
     "@bentley/icons-generic-webfont": "^1.0.15",
     "@itwin/core-common": "workspace:*",

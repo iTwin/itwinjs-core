@@ -6,7 +6,7 @@ import { BriefcaseConnection, IModelConnection, SnapshotConnection } from "@itwi
 import { SampleAppIModelApp } from "../index";
 import { IModelStatus, Logger, OpenMode } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { ElectronApp } from "@itwin/electron-manager/lib/ElectronFrontend";
 
 // cSpell:ignore TESTAPP FILEPATH
 
