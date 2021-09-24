@@ -3,15 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, compareStringsOrUndefined } from "@bentley/bentleyjs-core";
-import { ComboBox, ComboBoxEntry, createCheckBox, createComboBox, createNumericInput } from "@bentley/frontend-devtools";
+import { assert, compareStringsOrUndefined, GuidString } from "@bentley/bentleyjs-core";
+import { ComboBox, ComboBoxEntry, createCheckBox, createComboBox, createNestedMenu, createNumericInput, NestedMenu } from "@bentley/frontend-devtools";
 import {
-  ContextRealityModelProps, ModelProps, SpatialClassifier, SpatialClassifierFlagsProps, SpatialClassifierInsideDisplay,
+  CartographicRange, ContextRealityModelProps, ModelProps, SpatialClassifier, SpatialClassifierFlagsProps, SpatialClassifierInsideDisplay,
   SpatialClassifierOutsideDisplay, SpatialClassifiers,
 } from "@bentley/imodeljs-common";
 import {
-  ContextRealityModelState, DisplayStyle3dState, IModelApp, SpatialModelState, SpatialViewState, Viewport,
+  ContextRealityModelState, DisplayStyle3dState, IModelApp, queryRealityData, SpatialModelState, SpatialViewState, Viewport,
 } from "@bentley/imodeljs-frontend";
+import { DisplayTestApp } from "./App";
 import { ToolBarDropDown } from "./ToolBar";
 
 function clearElement(element: HTMLElement): void {
@@ -27,6 +28,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
   private readonly _realityModelListDiv: HTMLDivElement;
   private readonly _modelListDiv: HTMLDivElement;
   private readonly _propertiesDiv: HTMLDivElement;
+  private readonly _realityModelPickerMenu: NestedMenu;
   private _selectedSpatialClassifiers: SpatialClassifiers | undefined;
   private _selectedSpatialClassifiersIndex: number = 0;
   private _modelComboBox?: ComboBox;
@@ -35,6 +37,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
   //  SVT_STANDALONE_SIGNIN=true
   //  IMJS_BUDDI_RESOLVE_URL_USING_REGION=102
   //  SVT_ITWIN_ID="fb1696c8-c074-4c76-a539-a5546e048cc6"
+  private _iTwinId: GuidString | undefined = DisplayTestApp.iTwinId;
 
   private get _selectedClassifier(): SpatialClassifier | undefined {
     if (undefined === this._selectedSpatialClassifiers)
@@ -70,11 +73,50 @@ export class ClassificationsPanel extends ToolBarDropDown {
     this._realityModelListDiv = IModelApp.makeHTMLElement("div", { parent: this._element });
     this._modelListDiv = IModelApp.makeHTMLElement("div", { parent: this._element });
     this._propertiesDiv = IModelApp.makeHTMLElement("div", { parent: this._element });
+    this._realityModelPickerMenu = createNestedMenu({
+      label: "Reality Model Picker",
+    });
 
     this._element.style.display = "block";
     this._element.style.cssFloat = "left";
     this._element.style.width = "max-content";
     this._element.style.minWidth = "350px";
+
+    this._element.appendChild(this._realityModelPickerMenu.div);
+  }
+
+  private async populateRealityModelsPicker(): Promise<void> {
+    this._realityModelPickerMenu.div.style.display = "none";
+    clearElement(this._realityModelPickerMenu.body);
+
+    const view = this._vp.view;
+    const ecef = this._vp.iModel.ecefLocation;
+    if (!view.isSpatialView() || undefined === ecef) {
+      return;
+    }
+
+    const range = new CartographicRange(this._vp.iModel.projectExtents, ecef.getTransform());
+    let available = new Array<ContextRealityModelProps>();
+    try {
+      if (this._iTwinId !== undefined)
+        available = await queryRealityData({ iTwinId: this._iTwinId, range });
+    } catch (_error) {
+      // eslint-disable-next-line no-console
+      console.error("Error in query RealitydataList, you need to set SVT_STANDALONE_SIGNIN=true, and are your SVT_ITWIN_ID and IMJS_BUDDI_RESOLVE_URL_USING_REGION correctly set?");
+    }
+    for (const entry of available) {
+      const name = undefined !== entry.name ? entry.name : entry.tilesetUrl;
+      createCheckBox({
+        name,
+        id: entry.tilesetUrl,
+        parent: this._realityModelPickerMenu.body,
+        isChecked: view.displayStyle.hasAttachedRealityModel(name, entry.tilesetUrl),
+        handler: (checkbox) => this.toggle(entry, checkbox.checked),
+      });
+    }
+    IModelApp.makeHTMLElement("hr", { parent: this._realityModelPickerMenu.body });
+    if (available.length > 0)
+      this._realityModelPickerMenu.div.style.display = "block";
   }
 
   private populateRealityModelList(): void {
@@ -155,7 +197,9 @@ export class ClassificationsPanel extends ToolBarDropDown {
     this._selectedSpatialClassifiers = undefined;
     if (this._vp.view.is2d()) return;
 
+    this._realityModelPickerMenu.div.style.display = "none";
     this.populateRealityModelList();
+    await this.populateRealityModelsPicker();
     await this.populateModelList();
   }
 
