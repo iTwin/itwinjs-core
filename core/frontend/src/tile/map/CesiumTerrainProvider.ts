@@ -25,27 +25,33 @@ enum QuantizedMeshExtensionIds {
   Metadata = 4,
 }
 
-/** @internal */
-const bentleyCesiumIonRequestKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkZWIxNzk1OC0wNmVjLTQ1NDItOTBlYS1lOTViMDljNzQyNWUiLCJpZCI6MTQwLCJzY29wZXMiOlsiYXNsIiwiYXNyIiwiYXN3IiwiZ2MiXSwiaWF0IjoxNTYyMDA0NTYwfQ.VyMP5TPl--eX2bCQjIY7ijfPCd-J0sSPnEFj_mfPC3k";
-
 /** Return the URL for a Cesium ION asset from its asset ID and request Key.
  * @public
  */
-export function getCesiumAssetUrl(osmAssetId: number, requestKey: string) {
+export function getCesiumAssetUrl(osmAssetId: number, requestKey: string): string {
   return `$CesiumIonAsset=${osmAssetId}:${requestKey}`;
 }
 /** @internal */
-export function getCesiumOSMBuildingsUrl() {
+export function getCesiumOSMBuildingsUrl(): string | undefined {
+  const key = IModelApp.tileAdmin.cesiumIonKey;
+  if (undefined === key)
+    return undefined;
+
   const osmBuildingAssetId = 96188;
-  return getCesiumAssetUrl(osmBuildingAssetId, bentleyCesiumIonRequestKey);
+  return getCesiumAssetUrl(osmBuildingAssetId, key);
 }
 
 /** @internal */
 export async function getCesiumAccessTokenAndEndpointUrl(assetId = 1, requestKey?: string): Promise<{ token?: string, url?: string }> {
   const requestContext = new ClientRequestContext("");
-  const _requestKey = requestKey ? requestKey : bentleyCesiumIonRequestKey;
-  const _requestTemplate = `https://api.cesium.com/v1/assets/${assetId}/endpoint?access_token={CesiumRequestToken}`;
-  const apiUrl: string = _requestTemplate.replace("{CesiumRequestToken}", _requestKey);
+  if (undefined === requestKey) {
+    requestKey = IModelApp.tileAdmin.cesiumIonKey;
+    if (undefined === requestKey)
+      return { };
+  }
+
+  const requestTemplate = `https://api.cesium.com/v1/assets/${assetId}/endpoint?access_token={CesiumRequestToken}`;
+  const apiUrl: string = requestTemplate.replace("{CesiumRequestToken}", requestKey);
   const apiRequestOptions: RequestOptions = { method: "GET", responseType: "json" };
 
   try {

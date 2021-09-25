@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ProcessDetector } from "@bentley/bentleyjs-core";
 import { CloudStorageContainerUrl, CloudStorageTileCache, RpcConfiguration, TileContentIdentifier } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, RenderDiagnostics, RenderSystem } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, RenderDiagnostics, RenderSystem, TileAdmin } from "@bentley/imodeljs-frontend";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { DisplayTestApp } from "./App";
@@ -95,7 +95,11 @@ const dtaFrontendMain = async () => {
     antialiasSamples: configuration.antialiasSamples,
   };
 
-  const tileAdminProps = DisplayTestApp.tileAdminProps;
+  const tileAdminProps: TileAdmin.Props = {
+    retryInterval: 50,
+    enableInstancing: true,
+  };
+
   if (configuration.disableInstancing)
     tileAdminProps.enableInstancing = false;
 
@@ -121,11 +125,12 @@ const dtaFrontendMain = async () => {
   tileAdminProps.alwaysRequestEdges = true === configuration.alwaysLoadEdges;
   tileAdminProps.minimumSpatialTolerance = configuration.minimumSpatialTolerance;
   tileAdminProps.alwaysSubdivideIncompleteTiles = true === configuration.alwaysSubdivideIncompleteTiles;
+  tileAdminProps.cesiumIonKey = configuration.cesiumIonKey;
 
   if (configuration.useFakeCloudStorageTileCache)
     (CloudStorageTileCache as any)._instance = new FakeTileCache();
 
-  await DisplayTestApp.startup(configuration, renderSystemOptions);
+  await DisplayTestApp.startup(configuration, renderSystemOptions, tileAdminProps);
   if (false !== configuration.enableDiagnostics)
     IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
 

@@ -283,6 +283,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       return undefined;
 
     const url = getCesiumOSMBuildingsUrl();
+    if (undefined === url)
+      return undefined;
+
     return this.contextRealityModelStates.find((x) => x.url === url);
   }
 
@@ -295,6 +298,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       return false;
 
     const url = getCesiumOSMBuildingsUrl();
+    if (undefined === url)
+      return false;
+
     let model = this.settings.contextRealityModels.models.find((x) => x.url === url);
     if (options.onOff === false) {
       const turnedOff = undefined !== model && this.settings.contextRealityModels.delete(model);
