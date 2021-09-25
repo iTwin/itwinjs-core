@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { AccessToken, BeDuration, BentleyError, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { AccessToken, BeDuration, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import {
   BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcOpenProps, IModelRpcProps, IModelVersion, RpcActivity, RpcPendingResponse, SyncMode,
 } from "@bentley/imodeljs-common";
@@ -178,7 +178,7 @@ export class RpcBriefcaseUtility {
       Logger.logTrace(loggerCategory, "Opened V1 checkpoint", () => ({ ...tokenProps }));
     }
 
-    BriefcaseManager.logUsage(db);
+    BriefcaseManager.logUsage(db, activity);
     return db;
   }
 

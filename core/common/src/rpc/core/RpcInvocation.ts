@@ -20,7 +20,6 @@ import { RpcOperation } from "./RpcOperation";
 import { RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
 import { CURRENT_INVOCATION, RpcRegistry } from "./RpcRegistry";
 
-/* eslint-disable @typescript-eslint/naming-convention */
 /** The properties of an RpcActivity.
  * @beta
  */
@@ -59,7 +58,7 @@ export interface SerializedRpcActivity {
 /** Notification callback for an RPC invocation.
  * @public
  */
-export type RpcInvocationCallback_T = (invocation: RpcInvocation) => void;
+export type RpcInvocationCallback = (invocation: RpcInvocation) => void;
 
 /** An RPC operation invocation in response to a request.
  * @public
