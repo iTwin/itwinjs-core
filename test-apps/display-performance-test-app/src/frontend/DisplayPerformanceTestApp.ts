@@ -24,7 +24,8 @@ class MarkerHandler extends SectionMarkerHandler {
 export class DisplayPerfTestApp {
   public static async startup(iModelApp?: IModelAppOptions): Promise<void> {
     iModelApp = iModelApp ?? {};
-    iModelApp.localizationClient = new I18N("iModelJs", { urlTemplate: "locales/en/{{ns}}.json" });
+    iModelApp.localizationClient = new I18N("iModeljs", { urlTemplate: "locales/en/{{ns}}.json" });
+    iModelApp.tileAdmin = { minimumSpatialTolerance: 0 };
 
     /* eslint-disable @typescript-eslint/naming-convention */
     iModelApp.mapLayerOptions = {

@@ -103,7 +103,7 @@ describe("SqliteStatement", () => {
           assert.isFalse(blobSqlVal.isNull);
           assert.equal(blobSqlVal.type, SqliteValueType.Blob);
           assert.isDefined(blobSqlVal.value);
-          assert.equal(blobSqlVal.value.byteLength, blobVal.byteLength);
+          assert.equal((blobSqlVal.value as Uint8Array).byteLength, blobVal.byteLength);
           assert.equal(blobSqlVal.getBlob().byteLength, blobVal.byteLength);
           assert.equal(blobSqlVal.columnName, "blobcol");
         }
@@ -129,7 +129,7 @@ describe("SqliteStatement", () => {
           assert.equal(row.doublecol, doubleVal);
 
           assert.isDefined(row.blobcol);
-          assert.equal(row.blobcol.byteLength, blobVal.byteLength);
+          assert.equal((row.blobcol as Uint8Array).byteLength, blobVal.byteLength);
         }
         assert.equal(rowCount, 4);
       });
@@ -152,7 +152,7 @@ describe("SqliteStatement", () => {
           assert.equal(row.doublecol, doubleVal);
 
           assert.isDefined(row.blobcol);
-          assert.equal(row.blobcol.byteLength, blobVal.byteLength);
+          assert.equal((row.blobcol as Uint8Array).byteLength, blobVal.byteLength);
         }
         assert.equal(rowCount, 4);
       });
