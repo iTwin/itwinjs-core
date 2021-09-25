@@ -44,7 +44,6 @@ describe("IModelWriteTest (#integration)", () => {
 
     managerUser = await IModelTestUtils.getAccessToken(TestUserType.Manager);
     superUser = await IModelTestUtils.getAccessToken(TestUserType.Super);
-    (superUser as any).activityId = "IModelWriteTest (#integration)";
 
     testITwinId = await HubUtility.getTestITwinId(managerUser);
     readWriteTestIModelName = HubUtility.generateUniqueName("ReadWriteTest");
