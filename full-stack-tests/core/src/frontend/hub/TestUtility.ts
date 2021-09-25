@@ -4,14 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { AccessToken, GuidString, Logger } from "@bentley/bentleyjs-core";
+import { ITwin } from "@bentley/context-registry-client";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { BriefcaseQuery, Briefcase as HubBriefcase, IModelCloudEnvironment, IModelQuery } from "@bentley/imodelhub-client";
-import { IModelApp, IModelHubFrontend, NativeApp, NativeAppAuthorization } from "@bentley/imodeljs-frontend";
+import { Briefcase, BriefcaseQuery, IModelCloudEnvironment, IModelQuery } from "@bentley/imodelhub-client";
+import { IModelApp, IModelHubFrontend } from "@bentley/imodeljs-frontend";
+import { AuthorizationClient } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend, TestUserCredentials } from "@bentley/oidc-signin-tool/lib/frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { IModelBankCloudEnv } from "./IModelBankCloudEnv";
 import { IModelHubCloudEnv } from "./IModelHubCloudEnv";
-import { ITwin } from "@bentley/context-registry-client";
 
 export class TestUtility {
   public static testContextName = "iModelJsIntegrationTest";
@@ -85,12 +86,12 @@ export class TestUtility {
   /** Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded */
   public static async purgeAcquiredBriefcases(iModelId: string, acquireThreshold: number = 16): Promise<void> {
     const accessToken = (await IModelApp.authorizationClient?.getAccessToken())!;
-    const briefcases: HubBriefcase[] = await IModelHubFrontend.iModelClient.briefcases.get(accessToken, iModelId, new BriefcaseQuery().ownedByMe());
+    const briefcases = await IModelHubFrontend.iModelClient.briefcases.get(accessToken, iModelId, new BriefcaseQuery().ownedByMe());
     if (briefcases.length > acquireThreshold) {
       Logger.logInfo("TestUtility", `Reached limit of maximum number of briefcases for ${iModelId}. Purging all briefcases.`);
 
       const promises = new Array<Promise<void>>();
-      briefcases.forEach((briefcase: HubBriefcase) => {
+      briefcases.forEach((briefcase: Briefcase) => {
         promises.push(IModelHubFrontend.iModelClient.briefcases.delete(accessToken, iModelId, briefcase.briefcaseId!));
       });
       await Promise.all(promises);

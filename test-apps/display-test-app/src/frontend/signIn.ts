@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { BrowserAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { AccessToken } from "@bentley/itwin-client";
+import { AccessToken } from "@bentley/bentleyjs-core";
 
 // Wraps the signIn process
 // @return Promise that resolves to true after signIn is complete
