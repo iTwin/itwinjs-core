@@ -124,7 +124,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   }
 
   public async op15(): Promise<void> {
-    if (RpcInvocation.currentRequest.applicationVersion !== "testbed1") {
+    if (RpcInvocation.currentActivity.applicationVersion !== "testbed1") {
       throw new Error("Wrong app version code.");
     }
 

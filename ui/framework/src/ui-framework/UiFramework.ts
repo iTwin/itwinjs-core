@@ -9,17 +9,18 @@
 // cSpell:ignore configurableui clientservices
 
 import { Store } from "redux";
-import { AccessToken, GuidString, Logger, ProcessDetector, RpcActivity } from "@bentley/bentleyjs-core";
+import { AccessToken, GuidString, Logger, ProcessDetector } from "@bentley/bentleyjs-core";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
+import { RpcActivity } from "@bentley/imodeljs-common";
 import { IModelApp, IModelConnection, SnapMode, ViewState } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
-import { UserInfo } from "./UserInfo";
 import { Presentation } from "@bentley/presentation-frontend";
 import { TelemetryEvent } from "@bentley/telemetry-client";
 import { getClassName, UiAbstract, UiError } from "@bentley/ui-abstract";
 import { LocalSettingsStorage, SettingsManager, UiEvent, UiSettingsStorage } from "@bentley/ui-core";
 import { UiIModelComponents } from "@bentley/ui-imodel-components";
 import { BackstageManager } from "./backstage/BackstageManager";
+import { ChildWindowManager } from "./childwindow/ChildWindowManager";
 import { DefaultIModelServices } from "./clientservices/DefaultIModelServices";
 import { IModelServices } from "./clientservices/IModelServices";
 import { ConfigurableUiManager } from "./configurableui/ConfigurableUiManager";
@@ -31,12 +32,12 @@ import { HideIsolateEmphasizeActionHandler, HideIsolateEmphasizeManager } from "
 import { SyncUiEventDispatcher, SyncUiEventId } from "./syncui/SyncUiEventDispatcher";
 import { SYSTEM_PREFERRED_COLOR_THEME, WIDGET_OPACITY_DEFAULT } from "./theme/ThemeManager";
 import * as keyinPaletteTools from "./tools/KeyinPaletteTools";
-import * as restoreLayoutTools from "./tools/RestoreLayoutTool";
 import * as openSettingTools from "./tools/OpenSettingsTool";
+import * as restoreLayoutTools from "./tools/RestoreLayoutTool";
 import * as toolSettingTools from "./tools/ToolSettingsTools";
+import { UserInfo } from "./UserInfo";
 import { UiShowHideManager, UiShowHideSettingsProvider } from "./utils/UiShowHideManager";
 import { WidgetManager } from "./widgets/WidgetManager";
-import { ChildWindowManager } from "./childwindow/ChildWindowManager";
 
 // cSpell:ignore Mobi
 
@@ -545,7 +546,7 @@ export class UiFramework {
       activityId: "",
       applicationId: IModelApp.applicationId,
       applicationVersion: IModelApp.applicationVersion,
-      accessToken: await IModelApp.authorizationClient.getAccessToken(),
+      accessToken: (await IModelApp.authorizationClient.getAccessToken()) ?? "",
     };
     const telemetryEvent = new TelemetryEvent(eventName, eventId, iTwinId, iModeId, changeSetId, time, additionalProperties);
     await IModelApp.telemetry.postTelemetry(activity, telemetryEvent);

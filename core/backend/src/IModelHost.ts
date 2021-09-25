@@ -10,11 +10,9 @@ import * as os from "os";
 import * as path from "path";
 import * as semver from "semver";
 import { HttpRequestHost } from "@bentley/backend-itwin-client";
-import {
-  AccessToken, assert, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector, SessionProps,
-} from "@bentley/bentleyjs-core";
+import { AccessToken, assert, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@bentley/bentleyjs-core";
 import { IModelClient } from "@bentley/imodelhub-client";
-import { BentleyStatus, IModelError } from "@bentley/imodeljs-common";
+import { BentleyStatus, IModelError, SessionProps } from "@bentley/imodeljs-common";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { AuthorizationClient } from "@bentley/itwin-client";
 import { TelemetryManager } from "@bentley/telemetry-client";

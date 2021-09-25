@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module RpcInterface
  */
-import { AuthorizedRpcActivity, SerializedRpcActivity } from "@bentley/bentleyjs-core";
+import { RpcActivity, SerializedRpcActivity } from "./RpcInvocation";
 import { RpcRequest } from "./RpcRequest";
 
 /** Interface to enable passing application-specific context with each RPC request.
@@ -19,5 +19,5 @@ export interface RpcRequestContext {
   serialize: (request: RpcRequest) => Promise<SerializedRpcActivity>;
 
   /** Used at backend to deserialize client specified context */
-  deserialize: (request: SerializedRpcActivity) => AuthorizedRpcActivity;
+  deserialize: (request: SerializedRpcActivity) => RpcActivity;
 }

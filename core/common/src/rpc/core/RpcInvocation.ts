@@ -6,11 +6,12 @@
  * @module RpcInterface
  */
 
-import { AuthorizedRpcActivity, BentleyStatus, IModelStatus, Logger, RpcActivity, RpcInterfaceStatus, sanitizeRpcActivity } from "@bentley/bentleyjs-core";
+import { AccessToken, BentleyStatus, GuidString, IModelStatus, Logger, RpcInterfaceStatus } from "@bentley/bentleyjs-core";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
+import { SessionProps } from "../../SessionProps";
 import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcProtocolEvent, RpcRequestStatus } from "./RpcConstants";
 import { RpcNotFoundResponse, RpcPendingResponse } from "./RpcControl";
@@ -20,6 +21,40 @@ import { RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcP
 import { CURRENT_INVOCATION, RpcRegistry } from "./RpcRegistry";
 
 /* eslint-disable @typescript-eslint/naming-convention */
+/** The properties of an RpcActivity.
+ * @beta
+ */
+export interface RpcActivity extends SessionProps {
+  /** Used for logging to correlate an Rpc activity between frontend and backend */
+  readonly activityId: GuidString;
+
+  /** access token for authorization  */
+  readonly accessToken: AccessToken;
+}
+
+/** Use this for logging for ClientRequestContext.
+   * It returns only sanitized members, intentionally removing all others to avoid logging secrets or violating user-privacy rules.
+   */
+export function sanitizeRpcActivity(activity: RpcActivity) {
+  return {
+    activityId: activity.activityId,
+    applicationId: activity.applicationId,
+    applicationVersion: activity.applicationVersion,
+    sessionId: activity.sessionId,
+  };
+}
+
+/** Serialized format for sending the request across the RPC layer
+ * @public
+ */
+export interface SerializedRpcActivity {
+  id: string;
+  applicationId: string;
+  applicationVersion: string;
+  sessionId: string;
+  authorization: string;
+  csrfToken?: { headerName: string, headerValue: string };
+}
 
 /** Notification callback for an RPC invocation.
  * @public
@@ -30,7 +65,7 @@ export type RpcInvocationCallback_T = (invocation: RpcInvocation) => void;
  * @public
  */
 export class RpcInvocation {
-  public static currentRequest: AuthorizedRpcActivity;
+  public static currentActivity: RpcActivity;
   private _threw: boolean = false;
   private _pending: boolean = false;
   private _notFound: boolean = false;
@@ -131,7 +166,7 @@ export class RpcInvocation {
   }
 
   private async resolve(): Promise<any> {
-    let currentRequest: AuthorizedRpcActivity | undefined;
+    let currentRequest: RpcActivity | undefined;
     try {
       currentRequest = RpcConfiguration.requestContext.deserialize(this.request);
       this.protocol.events.raiseEvent(RpcProtocolEvent.RequestReceived, this);
@@ -144,7 +179,7 @@ export class RpcInvocation {
 
       // This global is a "pseudo-magic-argument" to every RPC call. RpcImplementations must pass it as an argument to
       // any asynchronous code that may need it, and *not* rely on the global variable remaining unchanged across async calls.
-      RpcInvocation.currentRequest = currentRequest;
+      RpcInvocation.currentActivity = currentRequest;
 
       return await op.call(impl, ...parameters);
     } catch (error: any) {

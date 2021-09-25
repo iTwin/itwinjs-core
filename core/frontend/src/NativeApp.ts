@@ -6,14 +6,11 @@
  * @module NativeApp
  */
 
-import {
-  AccessToken,
-  AsyncMethodsOf, BeEvent, GuidString, Logger, PromiseReturnType, SessionProps,
-} from "@bentley/bentleyjs-core";
+import { AccessToken, AsyncMethodsOf, BeEvent, GuidString, Logger, PromiseReturnType } from "@bentley/bentleyjs-core";
 import {
   BriefcaseDownloader, BriefcaseProps, IModelVersion, InternetConnectivityStatus, IpcSocketFrontend, LocalBriefcaseProps,
   NativeAppAuthorizationConfiguration, nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy,
-  RequestNewBriefcaseProps, StorageValue, SyncMode,
+  RequestNewBriefcaseProps, SessionProps, StorageValue, SyncMode,
 } from "@bentley/imodeljs-common";
 import { AuthorizationClient, ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";

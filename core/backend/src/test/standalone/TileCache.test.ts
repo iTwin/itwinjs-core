@@ -6,7 +6,7 @@ import { assert } from "chai";
 import * as path from "path";
 import { DbResult, Guid } from "@bentley/bentleyjs-core";
 import { CheckpointV2 } from "@bentley/imodelhub-client";
-import { IModelTileRpcInterface, RpcInvocation, RpcManager, RpcRegistry } from "@bentley/imodeljs-common";
+import { IModelTileRpcInterface, RpcActivity, RpcInvocation, RpcManager, RpcRegistry } from "@bentley/imodeljs-common";
 import { BlobDaemon } from "@bentley/imodeljs-native";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelHubBackend } from "../../IModelHubBackend";
@@ -17,12 +17,17 @@ import { getTileProps } from "../integration/TileUpload.test";
 
 import sinon = require("sinon");
 
+const fakeRpc: RpcActivity = {
+  accessToken: "dummy",
+  activityId: "",
+  applicationId: "",
+  applicationVersion: "",
+  sessionId: "",
+};
+
 describe("TileCache open v1", () => {
   let tileRpcInterface: IModelTileRpcInterface;
 
-  before(async () => {
-
-  });
   const verifyTileCache = async (dbPath: string) => {
     RpcManager.initializeInterface(IModelTileRpcInterface);
     tileRpcInterface = RpcRegistry.instance.getImplForInterface<IModelTileRpcInterface>(IModelTileRpcInterface);
@@ -32,6 +37,7 @@ describe("TileCache open v1", () => {
     // Generate tile
     const tileProps = await getTileProps(iModel);
     assert.isDefined(tileProps);
+    RpcInvocation.currentActivity = fakeRpc;
     await tileRpcInterface.generateTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid);
 
     const tilesCache = `${iModel.pathName}.Tiles`;
@@ -100,19 +106,13 @@ describe("TileCache, open v2", async () => {
     sinon.stub(BlobDaemon, "getDbFileName").callsFake(() => dbPath);
 
     process.env.BLOCKCACHE_DIR = "/foo/";
-    const checkpointProps = { iTwinId, iModelId, changeset };
+    const checkpointProps = { user: "dummy", iTwinId, iModelId, changeset };
     const checkpoint = await SnapshotDb.openCheckpointV2(checkpointProps);
 
     // Generate tile
     const tileProps = await getTileProps(checkpoint);
     assert.isDefined(tileProps);
-    RpcInvocation.currentRequest = {
-      activityId: "",
-      applicationId: "",
-      applicationVersion: "",
-      sessionId: "",
-      accessToken: (await IModelHost.getAccessToken()) ?? "",
-    };
+    RpcInvocation.currentActivity = fakeRpc;
     await tileRpcInterface.generateTileContent(checkpoint.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid);
 
     // Make sure .Tiles exists in the cacheDir. This was enforced by opening it as a V2 Checkpoint which passes as part of its open params a tempFileBasename.

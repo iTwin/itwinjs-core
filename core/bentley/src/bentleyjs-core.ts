@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+export * from "./AccessToken";
 export * from "./Assert";
 export * from "./AsyncMutex";
 export * from "./BeEvent";
@@ -25,7 +26,6 @@ export * from "./OrderedSet";
 export * from "./partitionArray";
 export * from "./PriorityQueue";
 export * from "./ProcessDetector";
-export * from "./RpcActivity";
 export * from "./SortedArray";
 export * from "./StringUtils";
 export * from "./Time";

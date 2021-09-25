@@ -10,11 +10,11 @@
 
 import * as path from "path";
 import {
-  AccessToken, AuthorizedRpcActivity, BeDuration, ChangeSetApplyOption, ChangeSetStatus, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode,
+  AccessToken, BeDuration, ChangeSetApplyOption, ChangeSetStatus, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode,
 } from "@bentley/bentleyjs-core";
 import {
   BriefcaseId, BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps,
-  LocalDirName, LocalFileName, RequestNewBriefcaseProps,
+  LocalDirName, LocalFileName, RequestNewBriefcaseProps, RpcActivity,
 } from "@bentley/imodeljs-common";
 import { TelemetryEvent } from "@bentley/telemetry-client";
 import { AcquireNewBriefcaseIdArg } from "./BackendHubAccess";
@@ -481,7 +481,7 @@ export class BriefcaseManager {
   }
 
   /** @internal */
-  public static logUsage(imodel: IModelDb, activity?: AuthorizedRpcActivity) {
+  public static logUsage(imodel: IModelDb, activity?: RpcActivity) {
 
     const telemetryEvent = new TelemetryEvent(
       "imodeljs-backend - Open iModel",

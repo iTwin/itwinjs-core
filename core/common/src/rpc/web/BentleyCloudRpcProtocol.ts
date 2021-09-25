@@ -7,7 +7,7 @@
  */
 
 import { URL } from "url";
-import { BentleyStatus, SerializedRpcActivity } from "@bentley/bentleyjs-core";
+import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
 import { RpcConfiguration } from "../core/RpcConfiguration";
@@ -16,6 +16,7 @@ import { SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtoco
 import { RpcRequest } from "../core/RpcRequest";
 import { OpenAPIParameter } from "./OpenAPI";
 import { WebAppRpcProtocol } from "./WebAppRpcProtocol";
+import { SerializedRpcActivity } from "../core/RpcInvocation";
 
 enum AppMode {
   MilestoneReview = "1",
