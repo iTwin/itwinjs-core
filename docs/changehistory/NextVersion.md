@@ -236,7 +236,7 @@ Previous versions of `@bentley/imodeljs-frontend` included API keys for Bing Map
 A valid [MapBox](https://www.mapbox.com/) key is required for display of map imagery in views with [BackgroundMapSettings.providerName]($common) set to "MapBoxProvider".
 
 A valid [Bing Maps](https://www.bing.com/maps) key is required for:
-- Display of map imagery in views with [BackgroundMapSettings.provideName]($common) set to "BingProvider".
+- Display of map imagery in views with [BackgroundMapSettings.providerName]($common) set to "BingProvider".
 - Location services supplied by [BingLocationProvider]($frontend), along with tools that use these services like [ViewGlobeLocationTool]($frontend).
 - Elevation services supplied by [BingElevationProvider]($frontend), including accurate 3d terrain display.
 
@@ -244,7 +244,7 @@ A valid [Cesium ION](https://cesium.com/platform/cesium-ion/) key is required fo
 - Display of 3d terrain in views with [TerrainSettings.providerName]($common) set to "CesiumWorldTerrain".
 - Display of OpenStreetMap buildings.
 
-[IModelAppOptions.mapLayerOptions]($frontend) can be used to configure keys for Bing Maps, MapBox, and/or any other map layer providers. [TileAdminProps.cesiumIonKey]($frontend) can be used to configure the Cesium ION key. For example, the following configures the Bing Maps and Cesium ION keys at startup:
+[IModelAppOptions.mapLayerOptions]($frontend) can be used to configure keys for Bing Maps, MapBox, and/or any other map layer providers. [TileAdmin.Props.cesiumIonKey]($frontend) can be used to configure the Cesium ION key. For example, the following configures the Bing Maps and Cesium ION keys at startup:
 
 ```ts
 const appOptions: IModelAppOptions = {
