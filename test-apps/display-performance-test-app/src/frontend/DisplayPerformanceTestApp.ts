@@ -73,7 +73,11 @@ async function createOidcClient(sessionProps: SessionProps): Promise<NativeAppAu
 // - promise wraps around a registered call back and resolves to true when the sign in is complete
 // @return Promise that resolves to true only after signIn is complete. Resolves to false until then.
 async function signIn(): Promise<boolean> {
-  const oidcClient = await createOidcClient(requestContext);
+  const oidcClient = await createOidcClient({
+    applicationId: IModelApp.applicationId,
+    applicationVersion: IModelApp.applicationVersion,
+    sessionId: IModelApp.sessionId,
+  });
 
   IModelApp.authorizationClient = oidcClient;
   if (oidcClient.isAuthorized)

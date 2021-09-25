@@ -9,8 +9,8 @@
 import { AccessToken, assert, BeDuration, Id64Array, Logger } from "@bentley/bentleyjs-core";
 import {
   CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageTileCache, ElementGraphicsRequestProps, IModelRpcProps,
-  IModelTileRpcInterface, IModelTileTreeProps, RpcInterface, RpcInvocation, RpcManager, RpcPendingResponse, SyncMode,
-  TileContentIdentifier, TileContentSource, TileTreeContentIds, TileVersionInfo,
+  IModelTileRpcInterface, IModelTileTreeProps, RpcInterface, RpcInvocation, RpcManager, RpcPendingResponse, SyncMode, TileContentIdentifier,
+  TileContentSource, TileTreeContentIds, TileVersionInfo,
 } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelHost } from "../IModelHost";

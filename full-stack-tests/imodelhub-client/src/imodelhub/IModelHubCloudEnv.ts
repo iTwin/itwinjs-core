@@ -3,12 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { AccessToken } from "@bentley/bentleyjs-core";
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
 import { ContextManagerClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
-
-import { getIModelHubClient } from "./TestUtils";
 import { TestIModelHubOidcAuthorizationClient } from "../TestIModelHubOidcAuthorizationClient";
-import { AccessToken } from "@bentley/bentleyjs-core";
+import { getIModelHubClient } from "./TestUtils";
 
 /** An implementation of IModelProjectAbstraction backed by a iModelHub/iTwin project */
 class TestContextManagerClient implements ContextManagerClient {
@@ -19,7 +18,7 @@ class TestContextManagerClient implements ContextManagerClient {
         searchString: name,
         propertyName: ITwinSearchableProperty.Name,
         exactMatch: true,
-      }
+      },
     });
 
     if (iTwinList.length === 0)
