@@ -46,4 +46,5 @@ export interface DtaConfiguration {
   iTwinId?: GuidString; // default is undefined, used by spatial classification to query reality data from context share
   mapBoxKey?: string; // default undefined
   bingMapsKey?: string; // default undefined
+  cesiumIonKey?: string; // default undefined
 }

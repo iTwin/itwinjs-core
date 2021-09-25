@@ -3359,7 +3359,7 @@ export function getCesiumAccessTokenAndEndpointUrl(assetId?: number, requestKey?
 export function getCesiumAssetUrl(osmAssetId: number, requestKey: string): string;
 
 // @internal (undocumented)
-export function getCesiumOSMBuildingsUrl(): string;
+export function getCesiumOSMBuildingsUrl(): string | undefined;
 
 // @internal (undocumented)
 export function getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, wantNormals: boolean, exaggeration: number): Promise<TerrainMeshProvider | undefined>;
@@ -9958,6 +9958,8 @@ export class TileAdmin {
     readonly alwaysRequestEdges: boolean;
     // @internal (undocumented)
     readonly alwaysSubdivideIncompleteTiles: boolean;
+    // @beta (undocumented)
+    readonly cesiumIonKey?: string;
     // (undocumented)
     readonly channels: TileRequestChannels;
     // @internal
@@ -10066,6 +10068,7 @@ export namespace TileAdmin {
         alwaysRequestEdges?: boolean;
         // @internal
         alwaysSubdivideIncompleteTiles?: boolean;
+        cesiumIonKey?: string;
         // @alpha
         contextPreloadParentDepth?: number;
         // @alpha
