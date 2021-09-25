@@ -4,10 +4,9 @@
 
 ```ts
 
-import { AccessToken } from '@bentley/itwin-client';
+import { AccessToken } from '@bentley/bentleyjs-core';
 import { Angle } from '@bentley/geometry-core';
 import { AuthorizationClient } from '@bentley/itwin-client';
-import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { AuxCoordSystem2dProps } from '@bentley/imodeljs-common';
 import { AuxCoordSystem3dProps } from '@bentley/imodeljs-common';
 import { AuxCoordSystemProps } from '@bentley/imodeljs-common';
@@ -36,7 +35,6 @@ import { ChangesetIndexOrId } from '@bentley/imodeljs-common';
 import { ChangesetProps } from '@bentley/imodeljs-common';
 import { ChangesetRange } from '@bentley/imodeljs-common';
 import { ChannelRootAspectProps } from '@bentley/imodeljs-common';
-import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ClipVector } from '@bentley/geometry-core';
 import { CloudStorageContainerDescriptor } from '@bentley/imodeljs-common';
 import { CloudStorageContainerUrl } from '@bentley/imodeljs-common';
@@ -167,12 +165,13 @@ import { RenderSchedule } from '@bentley/imodeljs-common';
 import { RenderTimelineProps } from '@bentley/imodeljs-common';
 import { RepositoryLinkProps } from '@bentley/imodeljs-common';
 import { RequestNewBriefcaseProps } from '@bentley/imodeljs-common';
+import { RpcActivity } from '@bentley/imodeljs-common';
 import { Schema as Schema_2 } from '@bentley/ecschema-metadata';
 import { SchemaState } from '@bentley/imodeljs-common';
 import { SectionDrawingLocationProps } from '@bentley/imodeljs-common';
 import { SectionDrawingProps } from '@bentley/imodeljs-common';
 import { SectionType } from '@bentley/imodeljs-common';
-import { SessionProps } from '@bentley/bentleyjs-core';
+import { SessionProps } from '@bentley/imodeljs-common';
 import { SheetBorderTemplateProps } from '@bentley/imodeljs-common';
 import { SheetProps } from '@bentley/imodeljs-common';
 import { SheetTemplateProps } from '@bentley/imodeljs-common';
@@ -241,12 +240,6 @@ export class AnnotationElement2d extends GraphicalElement2d {
     constructor(props: GeometricElement2dProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-}
-
-// @public
-export class AuthorizedBackendRequestContext extends AuthorizedClientRequestContext {
-    constructor(accessToken?: AccessToken, activityId?: string);
-    static create(activityId?: string): Promise<AuthorizedBackendRequestContext>;
 }
 
 // @public
@@ -374,11 +367,6 @@ export enum BackendLoggerCategory {
 }
 
 // @public
-export class BackendRequestContext extends ClientRequestContext {
-    constructor(activityId?: string);
-}
-
-// @public
 export type BindParameter = number | string;
 
 // @public
@@ -441,7 +429,7 @@ export enum BriefcaseLocalValue {
 export class BriefcaseManager {
     static acquireNewBriefcaseId(arg: AcquireNewBriefcaseIdArg): Promise<BriefcaseId>;
     static get cacheDir(): LocalDirName;
-    static deleteBriefcaseFiles(filePath: LocalFileName, user?: AuthorizedClientRequestContext): Promise<void>;
+    static deleteBriefcaseFiles(filePath: LocalFileName, user?: AccessToken): Promise<void>;
     // @internal
     static deleteChangeSetsFromLocalDisk(iModelId: string): void;
     static downloadBriefcase(arg: RequestNewBriefcaseArg): Promise<LocalBriefcaseProps>;
@@ -459,12 +447,12 @@ export class BriefcaseManager {
     static initialize(cacheRootDir: LocalDirName): void;
     static isValidBriefcaseId(id: BriefcaseId): boolean;
     // @internal (undocumented)
-    static logUsage(requestContext: ClientRequestContext | undefined, imodel: IModelDb): void;
+    static logUsage(imodel: IModelDb, activity?: RpcActivity): void;
     // @internal (undocumented)
     static pullAndApplyChangesets(db: IModelDb, arg: ToChangesetArgs): Promise<void>;
     // @internal
     static pullMergePush(db: BriefcaseDb, arg: PushChangesArgs): Promise<void>;
-    static releaseBriefcase(user: AuthorizedClientRequestContext, briefcase: BriefcaseProps): Promise<void>;
+    static releaseBriefcase(user: AccessToken, briefcase: BriefcaseProps): Promise<void>;
     }
 
 // @public
@@ -530,8 +518,8 @@ export class ChangedElementsDb implements IDisposable {
     // (undocumented)
     get nativeDb(): IModelJsNative.ChangedElementsECDb;
     static openDb(pathName: string, openMode?: ECDbOpenMode): ChangedElementsDb;
-    processChangesets(user: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
-    processChangesetsAndRoll(user: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
+    processChangesets(user: AccessToken, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
+    processChangesetsAndRoll(user: AccessToken, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
 }
 
 // @public
@@ -583,10 +571,10 @@ export class ChangeSummaryManager {
         };
     }, changedValueState: ChangedValueState, changedPropertyNames?: string[]): string;
     static createChangeSummaries(args: CreateChangeSummaryArgs): Promise<Id64String[]>;
-    static createChangeSummary(user: AuthorizedClientRequestContext, iModel: BriefcaseDb): Promise<Id64String>;
+    static createChangeSummary(user: AccessToken, iModel: BriefcaseDb): Promise<Id64String>;
     static detachChangeCache(iModel: IModelDb): void;
     // @deprecated
-    static extractChangeSummaries(user: AuthorizedClientRequestContext, iModel: BriefcaseDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]>;
+    static extractChangeSummaries(user: AccessToken, iModel: BriefcaseDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]>;
     static getChangedPropertyValueNames(iModel: IModelDb, instanceChangeId: Id64String): string[];
     static isChangeCacheAttached(iModel: IModelDb): boolean;
     static queryChangeSummary(iModel: BriefcaseDb, changeSummaryId: Id64String): ChangeSummary;
@@ -2224,7 +2212,7 @@ export abstract class IModelDb extends IModel {
     // @alpha
     queryTextureData(props: TextureLoadProps): Promise<TextureData | undefined>;
     // @internal (undocumented)
-    reattachDaemon(_user: AuthorizedClientRequestContext): Promise<void>;
+    reattachDaemon(_user: AccessToken): Promise<void>;
     // @internal (undocumented)
     reinstateTxn(): IModelStatus;
     get relationships(): Relationships;
@@ -2354,9 +2342,7 @@ export class IModelHost {
     static configuration?: IModelHostConfiguration;
     // @internal (undocumented)
     static flushLog(): void;
-    static getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken | undefined>;
-    // @internal (undocumented)
-    static getAuthorizedContext(): Promise<AuthorizedClientRequestContext>;
+    static getAccessToken(): Promise<AccessToken | undefined>;
     // @alpha
     static getCrashReportProperties(): CrashReportingConfigNameValuePair[];
     // @beta
@@ -3026,8 +3012,6 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
     // (undocumented)
     getAccessToken(): Promise<AccessToken | undefined>;
     // (undocumented)
-    getClientRequestContext(): ClientRequestContext;
-    // (undocumented)
     initialize(config?: NativeAppAuthorizationConfiguration): Promise<void>;
     // (undocumented)
     issuerUrl?: string;
@@ -3177,7 +3161,9 @@ export interface OnSubModelPropsArg extends OnElementArg {
 }
 
 // @public
-export type OpenBriefcaseArgs = OpenBriefcaseProps & UserArg;
+export type OpenBriefcaseArgs = OpenBriefcaseProps & {
+    rpcActivity?: RpcActivity;
+};
 
 // @public
 export class OrthographicViewDefinition extends SpatialViewDefinition {
@@ -3623,7 +3609,7 @@ export class SnapshotDb extends IModelDb {
     // @internal
     static openForApplyChangesets(path: LocalFileName, props?: SnapshotOpenOptions): SnapshotDb;
     // @internal
-    reattachDaemon(user?: AuthorizedClientRequestContext): Promise<void>;
+    reattachDaemon(user: AccessToken): Promise<void>;
     // (undocumented)
     static tryFindByKey(key: string): SnapshotDb | undefined;
 }
@@ -4105,7 +4091,7 @@ export class UrlLink extends LinkElement implements UrlLinkProps {
 
 // @public
 export interface UserArg {
-    readonly user?: AuthorizedClientRequestContext;
+    readonly user?: AccessToken;
 }
 
 // @internal

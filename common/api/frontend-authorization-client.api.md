@@ -4,10 +4,9 @@
 
 ```ts
 
-import { AccessToken } from '@bentley/itwin-client';
+import { AccessToken } from '@bentley/bentleyjs-core';
 import { AuthorizationClient } from '@bentley/itwin-client';
 import { BeEvent } from '@bentley/bentleyjs-core';
-import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { Logger } from 'oidc-client';
 import { User } from 'oidc-client';
@@ -128,8 +127,8 @@ export class BrowserAuthorizationLogger implements Logger {
 export interface FrontendAuthorizationClient extends AuthorizationClient {
     readonly hasSignedIn: boolean;
     readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
-    signIn(requestContext?: ClientRequestContext): Promise<void>;
-    signOut(requestContext?: ClientRequestContext): Promise<void>;
+    signIn(): Promise<void>;
+    signOut(): Promise<void>;
 }
 
 // @beta

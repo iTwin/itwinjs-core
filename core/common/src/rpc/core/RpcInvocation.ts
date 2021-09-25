@@ -21,7 +21,7 @@ import { RpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcP
 import { CURRENT_INVOCATION, RpcRegistry } from "./RpcRegistry";
 
 /** The properties of an RpcActivity.
- * @beta
+ * @public
  */
 export interface RpcActivity extends SessionProps {
   /** Used for logging to correlate an Rpc activity between frontend and backend */
@@ -32,8 +32,9 @@ export interface RpcActivity extends SessionProps {
 }
 
 /** Use this for logging for ClientRequestContext.
-   * It returns only sanitized members, intentionally removing all others to avoid logging secrets or violating user-privacy rules.
-   */
+ * It returns only sanitized members, intentionally removing all others to avoid logging secrets or violating user-privacy rules.
+ * @internal
+ */
 export function sanitizeRpcActivity(activity: RpcActivity) {
   return {
     activityId: activity.activityId,

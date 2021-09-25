@@ -4,51 +4,15 @@
 
 ```ts
 
+import { AccessToken } from '@bentley/bentleyjs-core';
 import { BentleyError } from '@bentley/bentleyjs-core';
-import { ClientRequestContext } from '@bentley/bentleyjs-core';
-import { ClientRequestContextProps } from '@bentley/bentleyjs-core';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
-import { GuidString } from '@bentley/bentleyjs-core';
 import * as https from 'https';
 import { HttpStatus } from '@bentley/bentleyjs-core';
-import { SessionProps } from '@bentley/bentleyjs-core';
-
-// @beta
-export type AccessToken = string;
 
 // @beta
 export interface AuthorizationClient {
-    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken | undefined>;
-}
-
-// @public
-export class AuthorizedClientRequestContext extends ClientRequestContext {
-    // @beta
-    constructor(accessToken?: AccessToken, activityId?: GuidString, applicationId?: string, applicationVersion?: string, sessionId?: GuidString);
-    // @beta
-    accessToken?: AccessToken;
-    // @internal (undocumented)
-    static fromJSON(json: AuthorizedClientRequestContextProps): AuthorizedClientRequestContext;
-    // @internal (undocumented)
-    toJSON(): AuthorizedClientRequestContextProps;
-}
-
-// @beta
-export interface AuthorizedClientRequestContextProps extends ClientRequestContextProps {
-    // (undocumented)
-    accessToken: AccessToken;
-}
-
-// @beta (undocumented)
-export interface AuthorizedSession extends SessionProps {
-    // (undocumented)
-    accessToken?: AccessToken;
-}
-
-// @beta
-export interface AuthorizedSessionProps extends SessionProps {
-    // (undocumented)
-    accessToken: AccessToken;
+    getAccessToken(): Promise<AccessToken | undefined>;
 }
 
 // @beta
@@ -60,7 +24,7 @@ export interface CancelRequest {
 export abstract class Client {
     protected constructor();
     protected baseUrl?: string;
-    protected delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string): Promise<void>;
+    protected delete(accessToken: AccessToken, relativeUrlPath: string): Promise<void>;
     getUrl(): Promise<string>;
     protected setupOptionDefaults(options: RequestOptions): Promise<void>;
     // (undocumented)
@@ -85,28 +49,25 @@ export interface FileHandler {
     // (undocumented)
     agent?: https.Agent;
     basename(filePath: string): string;
-    downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, path: string, fileSize?: number, progress?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
+    downloadFile(accessToken: AccessToken, downloadUrl: string, path: string, fileSize?: number, progress?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
     exists(filePath: string): boolean;
     getFileSize(filePath: string): number;
     isDirectory(filePath: string): boolean;
     join(...paths: string[]): string;
     unlink(filePath: string): void;
-    uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, path: string, progress?: ProgressCallback): Promise<void>;
+    uploadFile(accessToken: AccessToken, uploadUrlString: string, path: string, progress?: ProgressCallback): Promise<void>;
 }
 
 // @internal
-export function getArrayBuffer(requestContext: ClientRequestContext, url: string): Promise<any>;
+export function getArrayBuffer(url: string): Promise<any>;
 
 // @internal
-export function getJson(requestContext: ClientRequestContext, url: string): Promise<any>;
+export function getJson(url: string): Promise<any>;
 
 // @beta (undocumented)
 export class ImsAuthorizationClient extends Client {
     constructor();
 }
-
-// @beta
-export const isAuthorizedClientRequestContext: (requestContext: ClientRequestContext) => requestContext is AuthorizedClientRequestContext;
 
 // @beta
 export enum ITwinClientLoggerCategory {
@@ -134,7 +95,7 @@ export interface ProgressInfo {
 export function removeAccessTokenPrefix(accessToken: AccessToken | undefined): AccessToken | undefined;
 
 // @internal
-export function request(requestContext: ClientRequestContext, url: string, options: RequestOptions): Promise<Response>;
+export function request(url: string, options: RequestOptions): Promise<Response>;
 
 // @beta (undocumented)
 export interface RequestBasicCredentials {

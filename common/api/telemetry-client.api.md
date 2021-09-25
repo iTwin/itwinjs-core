@@ -4,12 +4,12 @@
 
 ```ts
 
-import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { GuidString } from '@bentley/bentleyjs-core';
+import { RpcActivity } from '@bentley/imodeljs-common';
 
 // @alpha
 export class ClientTelemetryEvent extends TelemetryEvent {
-    constructor(telemetryEvent: TelemetryEvent, requestContext: AuthorizedClientRequestContext);
+    constructor(telemetryEvent: TelemetryEvent, requestContext: RpcActivity);
     readonly activityId?: GuidString;
     readonly clientApplicationId?: string;
     readonly clientApplicationVersion?: string;
@@ -28,15 +28,15 @@ export class ClientTelemetryEvent extends TelemetryEvent {
 export abstract class FrontendTelemetryClient implements TelemetryClient {
     protected constructor();
     // (undocumented)
-    postTelemetry(requestContext: AuthorizedClientRequestContext, telemetryEvent: TelemetryEvent): Promise<void>;
+    postTelemetry(requestContext: RpcActivity, telemetryEvent: TelemetryEvent): Promise<void>;
     // (undocumented)
-    protected abstract _postTelemetry(requestContext: AuthorizedClientRequestContext, telemetryEvent: ClientTelemetryEvent): Promise<void>;
+    protected abstract _postTelemetry(requestContext: RpcActivity, telemetryEvent: ClientTelemetryEvent): Promise<void>;
 }
 
 // @alpha (undocumented)
 export interface TelemetryClient {
     // (undocumented)
-    postTelemetry(requestContext: AuthorizedClientRequestContext, telemetryEvent: TelemetryEvent): Promise<void>;
+    postTelemetry(requestContext: RpcActivity, telemetryEvent: TelemetryEvent): Promise<void>;
 }
 
 // @public
@@ -86,7 +86,7 @@ export class TelemetryManager {
     // (undocumented)
     hasClient(client: TelemetryClient): boolean;
     // (undocumented)
-    postTelemetry(requestContext: AuthorizedClientRequestContext, telemetryEvent: TelemetryEvent): Promise<void>;
+    postTelemetry(requestContext: RpcActivity, telemetryEvent: TelemetryEvent): Promise<void>;
 }
 
 

@@ -42,7 +42,6 @@ internal;ArcGisTokenManager
 internal;ArcGisUtilities
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number
 internal;areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise
-public;AuthorizedFrontendRequestContext 
 public;AuxCoordSystem2dState 
 public;AuxCoordSystem3dState 
 public;AuxCoordSystemSpatialState 
@@ -170,7 +169,6 @@ alpha;FrameStats
 internal;FrameStatsCollector
 internal;FrontendHubAccess
 public;FrontendLoggerCategory
-public;FrontendRequestContext 
 public;FrontendSecurityOptions
 public;Frustum2d
 public;FrustumAnimator 
