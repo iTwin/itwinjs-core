@@ -6,8 +6,9 @@
  * @module NativeApp
  */
 
-import { AccessToken, GuidString, SessionProps } from "@bentley/bentleyjs-core";
+import { AccessToken, GuidString } from "@bentley/bentleyjs-core";
 import { BriefcaseProps, LocalBriefcaseProps, RequestNewBriefcaseProps } from "./BriefcaseTypes";
+import { SessionProps } from "./SessionProps";
 
 /** @internal */
 export const nativeAppChannel = "nativeApp";

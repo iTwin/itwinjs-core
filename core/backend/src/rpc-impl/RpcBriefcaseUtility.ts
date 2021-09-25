@@ -6,9 +6,9 @@
  * @module RpcInterface
  */
 
-import { AuthorizedRpcActivity, BeDuration, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { AccessToken, BeDuration, BentleyError, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseProps, IModelConnectionProps, IModelRpcOpenProps, IModelRpcProps, IModelVersion, RpcPendingResponse, SyncMode,
+  BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcOpenProps, IModelRpcProps, IModelVersion, RpcActivity, RpcPendingResponse, SyncMode,
 } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { BriefcaseManager, RequestNewBriefcaseArg } from "../BriefcaseManager";
@@ -21,7 +21,7 @@ const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
 /** @internal */
 export interface DownloadAndOpenArgs {
-  activity: AuthorizedRpcActivity;
+  activity: RpcActivity;
   tokenProps: IModelRpcOpenProps;
   syncMode: SyncMode;
   fileNameResolvers?: ((arg: BriefcaseProps) => string)[];
@@ -102,13 +102,21 @@ export class RpcBriefcaseUtility {
     }
   }
 
-  public static async findOrOpen(activity: AuthorizedRpcActivity, iModel: IModelRpcProps, syncMode: SyncMode): Promise<IModelDb> {
+  public static async findOpenIModel(accessToken: AccessToken, iModel: IModelRpcProps) {
     const iModelDb = IModelDb.tryFindByKey(iModel.key);
     if (undefined === iModelDb)
-      return this.open({ activity, tokenProps: iModel, syncMode, timeout: 1000 });
+      throw new IModelError(IModelStatus.NotOpen, "iModel is not opened", () => iModel);
 
-    await iModelDb.reattachDaemon(activity.accessToken);
+    await iModelDb.reattachDaemon(accessToken);
     return iModelDb;
+  }
+
+  public static async findOrOpen(activity: RpcActivity, iModel: IModelRpcProps, syncMode: SyncMode): Promise<IModelDb> {
+    try {
+      return await this.findOpenIModel(activity.accessToken, iModel);
+    } catch (err) {
+      return this.open({ activity, tokenProps: iModel, syncMode, timeout: 1000 });
+    }
   }
 
   /**
@@ -174,7 +182,7 @@ export class RpcBriefcaseUtility {
     return db;
   }
 
-  public static async openWithTimeout(activity: AuthorizedRpcActivity, tokenProps: IModelRpcOpenProps, syncMode: SyncMode, timeout: number = 1000): Promise<IModelConnectionProps> {
+  public static async openWithTimeout(activity: RpcActivity, tokenProps: IModelRpcOpenProps, syncMode: SyncMode, timeout: number = 1000): Promise<IModelConnectionProps> {
     return (await this.open({ activity, tokenProps, syncMode, timeout })).toJSON();
   }
 

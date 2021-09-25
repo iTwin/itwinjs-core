@@ -6,7 +6,8 @@
  * @module Telemetry
  */
 
-import { GuidString, RpcActivity } from "@bentley/bentleyjs-core";
+import { GuidString } from "@bentley/bentleyjs-core";
+import { RpcActivity } from "@bentley/imodeljs-common";
 import { TelemetryClient, TelemetryEvent } from "./TelemetryClient";
 
 /**

@@ -154,7 +154,7 @@ describe("Checkpoint Manager", () => {
 
     const localFile = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint2.bim");
 
-    const request = { localFile, checkpoint: { iTwinId, iModelId, changeset } };
+    const request = { localFile, checkpoint: { user: "dummy", iTwinId, iModelId, changeset } };
     await CheckpointManager.downloadCheckpoint(request);
     assert.isTrue(v1Spy.calledOnce);
   });

@@ -6,7 +6,7 @@
  * @module Telemetry
  */
 
-import { AuthorizedRpcActivity } from "@bentley/bentleyjs-core";
+import { RpcActivity } from "@bentley/imodeljs-common";
 import { ImsIntrospectionResponse } from "../oidc";
 import { ClientAuthDetail, ClientAuthIntrospectionManager } from "./ClientAuthIntrospectionManager";
 
@@ -46,7 +46,7 @@ export class ImsClientAuthDetail extends ClientAuthDetail {
  * @internal
  */
 export class ImsClientAuthIntrospectionManager extends ClientAuthIntrospectionManager {
-  public override async getClientAuthDetails(requestContext: AuthorizedRpcActivity): Promise<ImsClientAuthDetail> {
+  public override async getClientAuthDetails(requestContext: RpcActivity): Promise<ImsClientAuthDetail> {
     const introspectionResponse = await this.introspectionClient.introspect(requestContext.accessToken);
     const clientAuthDetail = new ImsClientAuthDetail(introspectionResponse as ImsIntrospectionResponse);
     return clientAuthDetail;

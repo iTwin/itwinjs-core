@@ -8,12 +8,9 @@
 
 const copyrightNotice = 'Copyright © 2017-2021 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
-import {
-  AccessToken,
-  BeDuration, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger, SerializedRpcActivity,
-} from "@bentley/bentleyjs-core";
+import { AccessToken, BeDuration, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger } from "@bentley/bentleyjs-core";
 import { IModelClient } from "@bentley/imodelhub-client";
-import { IModelStatus, RpcConfiguration, RpcInterfaceDefinition, RpcRequest } from "@bentley/imodeljs-common";
+import { IModelStatus, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity } from "@bentley/imodeljs-common";
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
 import { AuthorizationClient } from "@bentley/itwin-client";
 import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";

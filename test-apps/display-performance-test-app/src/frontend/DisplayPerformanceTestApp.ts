@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { TestRunner, TestSetsProps } from "./TestRunner";
-import { ProcessDetector, SessionProps } from "@bentley/bentleyjs-core";
+import { ProcessDetector } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import {
-  BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SnapshotIModelRpcInterface,
+  BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SessionProps, SnapshotIModelRpcInterface,
 } from "@bentley/imodeljs-common";
 import { IModelApp, IModelAppOptions, NativeAppAuthorization } from "@bentley/imodeljs-frontend";
 import { BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@bentley/frontend-authorization-client";
@@ -45,7 +45,7 @@ export class DisplayPerfTestApp {
   }
 }
 
-async function createOidcClient(requestContext: SessionProps): Promise<NativeAppAuthorization | BrowserAuthorizationClient> {
+async function createOidcClient(sessionProps: SessionProps): Promise<NativeAppAuthorization | BrowserAuthorizationClient> {
   const scope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party";
 
   if (ProcessDetector.isElectronAppFrontend) {
@@ -53,7 +53,7 @@ async function createOidcClient(requestContext: SessionProps): Promise<NativeApp
     const redirectUri = "http://localhost:3000/signin-callback";
     const oidcConfiguration = { clientId, redirectUri, scope: `${scope} offline_access` };
     const desktopClient = new NativeAppAuthorization(oidcConfiguration);
-    await desktopClient.initialize(requestContext);
+    await desktopClient.initialize(sessionProps);
     return desktopClient;
   } else {
     const clientId = "imodeljs-spa-test";

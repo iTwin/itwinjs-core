@@ -6,8 +6,9 @@
  * @module Telemetry
  */
 
-import { AuthorizedRpcActivity, getErrorProps, Logger, RpcActivity } from "@bentley/bentleyjs-core";
+import { getErrorProps, Logger } from "@bentley/bentleyjs-core";
 import { ClientTelemetryEvent, TelemetryClient, TelemetryEvent } from "@bentley/telemetry-client";
+import { RpcActivity } from "@bentley/imodeljs-common";
 import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
 import { ClientAuthDetail, ClientAuthIntrospectionManager } from "./ClientAuthIntrospectionManager";
 
@@ -59,7 +60,7 @@ export abstract class BackendTelemetryClient implements TelemetryClient {
   ) {
   }
 
-  public async postTelemetry(requestContext: AuthorizedRpcActivity, telemetryEvent: TelemetryEvent): Promise<void> {
+  public async postTelemetry(requestContext: RpcActivity, telemetryEvent: TelemetryEvent): Promise<void> {
     let clientAuth: ClientAuthDetail | undefined;
     try {
       clientAuth = this._clientAuthManager
