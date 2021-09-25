@@ -233,12 +233,12 @@ The [AsyncFunction]($bentleyjs-core), [AsyncMethodsOf]($bentleyjs-core), and [Pr
 
 Previous versions of `@bentley/imodeljs-frontend` included API keys for Bing Maps, MapBox Imagery, and Cesium ION that would be used for _all_ iTwin.js applications. These common keys are no longer supported and will soon be disabled. All applications will now need to provide their own keys.
 
+A valid [MapBox](https://www.mapbox.com/) key is required for display of map imagery in views with [BackgroundMapSettings.providerName]($common) set to "MapBoxProvider".
+
 A valid [Bing Maps](https://www.bing.com/maps) key is required for:
 - Display of map imagery in views with [BackgroundMapSettings.provideName]($common) set to "BingProvider".
 - Location services supplied by [BingLocationProvider]($frontend), along with tools that use these services like [ViewGlobeLocationTool]($frontend).
 - Elevation services supplied by [BingElevationProvider]($frontend), including accurate 3d terrain display.
-
-A valid [MapBox](https://www.mapbox.com/) key is required for display of map imagery in views with [BackgroundMapSettings.providerName]($common) set to "MapBoxProvider".
 
 A valid [Cesium ION](https://cesium.com/platform/cesium-ion/) key is required for:
 - Display of 3d terrain in views with [TerrainSettings.providerName]($common) set to "CesiumWorldTerrain".
