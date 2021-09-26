@@ -115,7 +115,7 @@ export class ITwinStackCloudEnv implements ITwinPlatformAbstraction {
   }
 
   public async bootstrapIModelBankProject(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<void> {
-    let iTwin: ITwin | undefined = await this.contextMgr.getITwinByName(requestContext, projectName);
+    const iTwin: ITwin | undefined = await this.contextMgr.getITwinByName(requestContext, projectName);
     if (iTwin !== undefined)
       await this.contextMgr.deleteContext(requestContext, iTwin.id);
     await this.contextMgr.createContext(requestContext, projectName);

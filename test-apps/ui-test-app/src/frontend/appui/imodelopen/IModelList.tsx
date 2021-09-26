@@ -11,9 +11,9 @@ import { IModelCard } from "./IModelCard";
 import { ProjectDialog } from "./ProjectDialog";
 
 export interface IModelInfo {
-  id: string,
-  iTwinId: string,
-  name: string,
+  id: string;
+  iTwinId: string;
+  name: string;
   createdDate: Date;
 }
 

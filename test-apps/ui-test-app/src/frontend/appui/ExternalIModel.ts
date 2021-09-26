@@ -12,9 +12,9 @@ import { SampleAppIModelApp } from "../";
 /* eslint-disable deprecation/deprecation */
 
 export interface IModelInfo {
-  id: string,
-  iTwinId: string,
-  name: string,
+  id: string;
+  iTwinId: string;
+  name: string;
   createdDate: Date;
 }
 
@@ -53,7 +53,7 @@ export class ExternalIModel {
         searchString: projectName,
         propertyName: ITwinSearchableProperty.Name,
         exactMatch: true,
-      }
+      },
     });
 
     if (iTwinList.length === 0)
@@ -63,7 +63,7 @@ export class ExternalIModel {
 
     const hubClient = new IModelHubFrontend();
     const iModelId = await hubClient.queryIModelByName({
-      iModelName: iModelName,
+      iModelName,
       iTwinId: iTwinList[0].id,
       requestContext,
     });

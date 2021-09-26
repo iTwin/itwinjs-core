@@ -29,7 +29,7 @@ describe("Schedule script (#integration)", () => {
   const modelId = "0x10000000001";
 
   before(async () => {
-    await TestUtility.initialize(TestUsers.regular)
+    await TestUtility.initialize(TestUsers.regular);
 
     await IModelApp.shutdown();
     await IModelApp.startup({

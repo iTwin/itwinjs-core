@@ -22,7 +22,7 @@ const loggerCategory: string = "mobile.filehandler";
 const defined = (argumentName: string, argument?: any, allowEmpty: boolean = false) => {
   if (argument === undefined || argument === null || (argument === "" && !allowEmpty))
     throw Error(`Argument ${argumentName} is null or undefined`);
-}
+};
 
 /**
  * Provides methods to work with the file system and azure storage. An instance of this class has to be provided to [[IModelClient]] for file upload/download methods to work.

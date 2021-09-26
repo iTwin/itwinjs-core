@@ -14,7 +14,7 @@ describe("Sheet views (#integration)", () => {
   const attachmentCategoryId = "0x93";
 
   before(async () => {
-    await TestUtility.initialize(TestUsers.regular)
+    await TestUtility.initialize(TestUsers.regular);
     await IModelApp.startup({
       authorizationClient: TestUtility.itwinPlatformEnv.authClient,
       hubAccess: TestUtility.itwinPlatformEnv.hubAccess,

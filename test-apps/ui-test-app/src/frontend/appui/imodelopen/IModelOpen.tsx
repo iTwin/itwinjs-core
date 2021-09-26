@@ -6,19 +6,19 @@ import "./IModelOpen.scss";
 import "./Common.scss";
 import classnames from "classnames";
 import * as React from "react";
+import { BeDuration } from "@bentley/bentleyjs-core";
+import { ITwin, ITwinAccessClient } from "@bentley/context-registry-client";
+import { HubIModel, IModelHubFrontend, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
+import { ActivityMessageDetails, ActivityMessageEndReason, AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
+import { AccessToken } from "@bentley/itwin-client";
 import { ActivityMessagePopup } from "@bentley/ui-framework";
+import { Button } from "@itwin/itwinui-react";
 import { AppTools } from "../../tools/ToolSpecifications";
+import { IModelInfo } from "../ExternalIModel";
 import { BlockingPrompt } from "./BlockingPrompt";
 import { IModelList } from "./IModelList";
 import { NavigationItem, NavigationList } from "./Navigation";
 import { ProjectDropdown } from "./ProjectDropdown";
-import { ActivityMessageDetails, ActivityMessageEndReason, AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
-import { BeDuration } from "@bentley/bentleyjs-core";
-import { Button } from "@itwin/itwinui-react";
-import { ITwin, ITwinAccessClient } from "@bentley/context-registry-client";
-import { AccessToken } from "@bentley/itwin-client";
-import { IModelHubFrontend, VersionQuery, IModelQuery, HubIModel, Version } from "@bentley/imodelhub-client";
-import { IModelInfo } from "../ExternalIModel";
 
 /** Properties for the [[IModelOpen]] component */
 export interface IModelOpenProps {
@@ -118,7 +118,6 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
     }
     return iModelInfos;
   }
-
 
   // retrieves the IModels for a Project. Called when first mounted and when a new Project is selected.
   private startRetrieveIModels = async (iTwin: ITwin) => {
