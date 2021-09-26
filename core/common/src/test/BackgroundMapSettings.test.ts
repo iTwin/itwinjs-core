@@ -21,8 +21,6 @@ describe("BackgroundMapSettings", () => {
       const output = settings.toJSON();
 
       expect(output.groundBias).to.equal(expected.groundBias);
-      expect(output.providerName).to.equal(expected.providerName);
-      expect(output.providerData?.mapType).to.equal(expected.providerData?.mapType);
       expect(output.transparency).to.equal(expected.transparency);
       expect(output.useDepthBuffer).to.equal(expected.useDepthBuffer);
       expect(output.applyTerrain).to.equal(expected.applyTerrain);
@@ -51,31 +49,12 @@ describe("BackgroundMapSettings", () => {
 
       const expectedSettings = BackgroundMapSettings.fromJSON(expected);
       expect(settings.equals(expectedSettings)).to.be.true;
-
-      // Check synch through base map layer.
-      const mapLayer = MapLayerSettings.fromMapSettings(settings);
-      const providerProps = BackgroundMapSettings.providerFromMapLayer(mapLayer.toJSON());
-      const synchedFromProvider = settings.clone(providerProps);
-      expect(settings.equals(synchedFromProvider)).to.be.true;
     };
 
     roundTrip(undefined, {});
     roundTrip({}, "input");
 
     roundTrip({ groundBias: 123 }, "input");
-
-    roundTrip({ providerName: "BingProvider" }, {});
-    roundTrip({ providerName: "MapBoxProvider" }, "input");
-    roundTrip({ providerName: "UnknownProvider" }, {});
-
-    roundTrip({ providerData: { mapType: BackgroundMapType.Hybrid } }, {});
-    roundTrip({ providerData: { mapType: BackgroundMapType.Street } }, "input");
-    roundTrip({ providerData: { mapType: BackgroundMapType.Aerial } }, "input");
-
-    roundTrip({  providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street } }, "input");
-    roundTrip({  providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Aerial } }, "input");
-
-    roundTrip({ providerData: { mapType: -123 } }, {});
 
     roundTrip({ transparency: false }, {});
     roundTrip({ transparency: 0 }, "input");
@@ -117,8 +96,6 @@ describe("BackgroundMapSettings", () => {
     roundTrip({ terrainSettings: { nonLocatable: true } }, "input");
 
     roundTrip({
-      providerName: "BingProvider",
-      providerData: { mapType: BackgroundMapType.Hybrid },
       transparency: false,
       useDepthBuffer: false,
       applyTerrain: false,

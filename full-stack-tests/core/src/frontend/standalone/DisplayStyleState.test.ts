@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { CompressedId64Set } from "@bentley/bentleyjs-core";
 import { Vector3d } from "@bentley/geometry-core";
 import {
-  BackgroundMapType, ColorByName, DisplayStyle3dProps, DisplayStyle3dSettingsProps, PlanarClipMaskMode, PlanarClipMaskSettings,
+  ColorByName, DisplayStyle3dProps, DisplayStyle3dSettingsProps, PlanarClipMaskMode, PlanarClipMaskSettings,
   SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, ThematicDisplayMode,
 } from "@bentley/imodeljs-common";
 import { ContextRealityModelState, DisplayStyle3dState, IModelConnection, MockRender, SnapshotConnection } from "@bentley/imodeljs-frontend";
@@ -152,7 +152,6 @@ describe("DisplayStyle", () => {
     test({
       backgroundMap: {
         groundBias: 84,
-        providerData: { mapType: BackgroundMapType.Street },
         applyTerrain: true,
         terrainSettings: { exaggeration: 0.5, heightOriginMode: 1 },
         planarClipMask: { mode: PlanarClipMaskMode.IncludeSubCategories, modelIds: CompressedId64Set.compressArray(["0x123", "0x456"]), transparency: .5, subCategoryOrElementIds: CompressedId64Set.compressArray(["0x123", "0x456"]), priority: 0 },
@@ -229,7 +228,6 @@ describe("DisplayStyle", () => {
     test({
       backgroundMap: {
         groundBias: 42,
-        providerData: { mapType: BackgroundMapType.Aerial },
         terrainSettings: { exaggeration: 0.2, heightOriginMode: 0 },
       },
     });

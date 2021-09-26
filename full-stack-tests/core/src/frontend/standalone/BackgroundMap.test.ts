@@ -51,11 +51,6 @@ describe("Background map", () => {
       [ { groundBias: 100 }, false ],
       [ { groundBias: 0 }, false ],
       [ { transparency: 0.5 }, false ],
-      [ { providerName: "NotAValidProvider" }, true ],
-
-      // The same tile tree can draw different types of imagery from different providers.
-      [ { providerName: "MapBoxProvider" }, true ],
-      [ { providerData: { mapType: BackgroundMapType.Street } }, true ],
       [ { globeMode: GlobeMode.Plane }, false ],
 
       // Terrain-specific settings don't affect tile tree if terrain is disabled.
