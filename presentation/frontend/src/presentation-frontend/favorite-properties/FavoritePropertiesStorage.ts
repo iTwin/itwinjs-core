@@ -85,11 +85,7 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
     return !!IModelApp.authorizationClient && !!(await IModelApp.authorizationClient.getAccessToken());
   }
   private async getAccessToken() {
-    const accessToken = await IModelApp.authorizationClient?.getAccessToken();
-    if (undefined !== accessToken)
-      return accessToken;
-
-    throw new Error("not authorized");
+    return (await IModelApp.authorizationClient?.getAccessToken())!;
   }
 
   public async loadProperties(projectId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined> {
