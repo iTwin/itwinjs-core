@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-backend",
+      "comment": "Always create unique ruleset id when handling nodes requests",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-backend"
+}

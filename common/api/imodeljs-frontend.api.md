@@ -3361,7 +3361,7 @@ export function getCesiumAccessTokenAndEndpointUrl(assetId?: number, requestKey?
 export function getCesiumAssetUrl(osmAssetId: number, requestKey: string): string;
 
 // @internal (undocumented)
-export function getCesiumOSMBuildingsUrl(): string;
+export function getCesiumOSMBuildingsUrl(): string | undefined;
 
 // @internal (undocumented)
 export function getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, wantNormals: boolean, exaggeration: number): Promise<TerrainMeshProvider | undefined>;
@@ -8131,7 +8131,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     createRealityMeshGraphic(_terrainGeometry: RenderRealityMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string | undefined, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined;
     // @internal
-    abstract createRenderGraphic(_geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern, instancesOwnGeometry?: boolean): RenderGraphic | undefined;
+    abstract createRenderGraphic(_geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined;
     createScreenSpaceEffectBuilder(_params: ScreenSpaceEffectBuilderParams): ScreenSpaceEffectBuilder | undefined;
     createSkyBox(_params: SkyBox.CreateParams): RenderGraphic | undefined;
     // @internal (undocumented)
@@ -9961,6 +9961,8 @@ export class TileAdmin {
     readonly alwaysRequestEdges: boolean;
     // @internal (undocumented)
     readonly alwaysSubdivideIncompleteTiles: boolean;
+    // @beta (undocumented)
+    readonly cesiumIonKey?: string;
     // (undocumented)
     readonly channels: TileRequestChannels;
     // @internal
@@ -10069,6 +10071,7 @@ export namespace TileAdmin {
         alwaysRequestEdges?: boolean;
         // @internal
         alwaysSubdivideIncompleteTiles?: boolean;
+        cesiumIonKey?: string;
         // @alpha
         contextPreloadParentDepth?: number;
         // @alpha

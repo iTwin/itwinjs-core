@@ -169,6 +169,8 @@ You can use these environment variables to alter the default behavior of various
   * If defined, sets the MapBox key for the `MapLayerOptions` as an "access_token".
 * IMJS_BING_MAPS_KEY
   * If defined, sets a Bing Maps key within the `MapLayerOptions` as a "key" type.
+* IMJS_CESIUM_ION_KEY
+  * If defined, the API key supplying access to Cesium ION assets.
 
 ## Key-ins
 

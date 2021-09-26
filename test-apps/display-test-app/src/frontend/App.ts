@@ -179,23 +179,18 @@ class ShutDownTool extends Tool {
 }
 
 export class DisplayTestApp {
-  public static tileAdminProps: TileAdmin.Props = {
-    retryInterval: 50,
-    enableInstancing: true,
-  };
-
   private static _surface?: Surface;
   public static get surface() { return this._surface!; }
   public static set surface(surface: Surface) { this._surface = surface; }
   private static _iTwinId?: GuidString;
   public static get iTwinId(): GuidString | undefined { return this._iTwinId; }
 
-  public static async startup(configuration: DtaConfiguration, renderSys: RenderSystem.Options): Promise<void> {
+  public static async startup(configuration: DtaConfiguration, renderSys: RenderSystem.Options, tileAdmin: TileAdmin.Props): Promise<void> {
     const opts = {
       iModelApp: {
         accuSnap: new DisplayTestAppAccuSnap(),
         notifications: new Notifications(),
-        tileAdmin: DisplayTestApp.tileAdminProps,
+        tileAdmin,
         toolAdmin: new DisplayTestAppToolAdmin(),
         uiAdmin: new UiManager(),
         renderSys,

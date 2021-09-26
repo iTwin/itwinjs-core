@@ -46,6 +46,7 @@ export interface DtaConfiguration {
   iTwinId?: GuidString; // default is undefined, used by spatial classification to query reality data from context share
   mapBoxKey?: string; // default undefined
   bingMapsKey?: string; // default undefined
+  cesiumIonKey?: string; // default undefined
   logLevel?: string; // default undefined
   windowSize?: string; // default undefined
   devTools?: boolean; // default true
@@ -109,6 +110,9 @@ export const getConfig = (): DtaConfiguration => {
 
   if (undefined !== process.env.IMJS_MAPBOX_KEY)
     configuration.mapBoxKey = process.env.IMJS_MAPBOX_KEY;
+
+  if (undefined !== process.env.IMJS_CESIUM_ION_KEY)
+    configuration.cesiumIonKey = process.env.IMJS_CESIUM_ION_KEY;
 
   if (undefined !== process.env.IMJS_LOG_LEVEL)
     configuration.logLevel = process.env.IMJS_LOG_LEVEL;
