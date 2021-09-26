@@ -170,8 +170,8 @@ export class BackgroundMapProvider {
   }
 
   /** Used to determine is a JSON struct matches BackgroundMapProviderProps  */
-  public static isMatchingProps(props: any): boolean {
-    return props?.hasOwnProperty("providerName") || props?.hasOwnProperty("providerData");
+  public static isMatchingProps(props: any): props is BackgroundMapProviderProps {
+    return props !== undefined && (("providerName" in props) || ("providerData" in props));
   }
 }
 
@@ -209,9 +209,9 @@ export class MapImagerySettings {
     if (typeof baseLayer === "number") {
       base = ColorDef.create(baseLayer);
     } else if (BackgroundMapProvider.isMatchingProps(baseLayer)) {
-      base = BackgroundMapProvider.fromJSON(baseLayer as BackgroundMapProviderProps);
+      base = BackgroundMapProvider.fromJSON(baseLayer );
     } else {
-      base = MapLayerSettings.fromJSON(baseLayer as MapLayerProps|undefined);
+      base = MapLayerSettings.fromJSON(baseLayer );
     }
 
     if (base) {

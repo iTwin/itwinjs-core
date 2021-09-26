@@ -408,12 +408,11 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       // props is BackgroundMapProviderProps
       if (this.settings.mapImagery.backgroundBase instanceof BackgroundMapProvider) {
         const mapProvider = this.settings.mapImagery.backgroundBase;
-        this.settings.mapImagery.backgroundBase = mapProvider.clone(props as BackgroundMapProviderProps);
+        this.settings.mapImagery.backgroundBase = mapProvider.clone(props);
       } else {
-        this.settings.mapImagery.backgroundBase = BackgroundMapProvider.fromJSON(props as BackgroundMapProviderProps);
+        this.settings.mapImagery.backgroundBase = BackgroundMapProvider.fromJSON(props);
       }
     } else {
-      // props is MapLayerProps
       if (this.settings.mapImagery.backgroundBase instanceof MapLayerSettings)
         this.settings.mapImagery.backgroundBase = this.settings.mapImagery.backgroundBase.clone(props as MapLayerSettings);
       else {
