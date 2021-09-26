@@ -144,6 +144,8 @@ export class TileAdmin {
   public readonly contextPreloadParentDepth: number;
   /** @internal */
   public readonly contextPreloadParentSkip: number;
+  /** @beta */
+  public readonly cesiumIonKey?: string;
   private readonly _removeIModelConnectionOnCloseListener: () => void;
   private _totalElided = 0;
   private _rpcInitialized = false;
@@ -218,6 +220,7 @@ export class TileAdmin {
     this.useProjectExtents = options.useProjectExtents ?? defaultTileOptions.useProjectExtents;
     this.optimizeBRepProcessing = options.optimizeBRepProcessing ?? defaultTileOptions.optimizeBRepProcessing;
     this.mobileRealityTileMinToleranceRatio = Math.max(options.mobileRealityTileMinToleranceRatio ?? 3.0, 1.0);
+    this.cesiumIonKey = options.cesiumIonKey;
 
     const gpuMemoryLimits = options.gpuMemoryLimits;
     let gpuMemoryLimit: GpuMemoryLimit | undefined;
@@ -1086,6 +1089,12 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      * @public
      */
     minimumSpatialTolerance?: number;
+
+    /** An API key that can be used to access content from [Cesium ION](https://cesium.com/platform/cesium-ion/) like terrain meshes and OpenStreetMap Buildings meshes.
+     * If a valid key is not supplied, such content can neither be obtained nor displayed.
+     * @public
+     */
+    cesiumIonKey?: string;
   }
 
   /** The number of bytes of GPU memory associated with the various [[GpuMemoryLimit]]s for non-mobile devices.

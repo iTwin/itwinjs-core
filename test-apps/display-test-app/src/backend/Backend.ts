@@ -164,6 +164,9 @@ const setupStandaloneConfiguration = () => {
   if (undefined !== process.env.IMJS_MAPBOX_KEY)
     configuration.mapBoxKey = process.env.IMJS_MAPBOX_KEY;
 
+  if (undefined !== process.env.IMJS_CESIUM_ION_KEY)
+    configuration.cesiumIonKey = process.env.IMJS_CESIUM_ION_KEY;
+
   configuration.useProjectExtents = undefined === process.env.SVT_NO_USE_PROJECT_EXTENTS;
 
   const parseSeconds = (key: string) => {
