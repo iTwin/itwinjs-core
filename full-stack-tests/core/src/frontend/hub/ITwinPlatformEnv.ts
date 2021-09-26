@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, BentleyStatus, GuidString } from "@bentley/bentleyjs-core";
-import { Project } from "@bentley/context-registry-client";
+import { ITwin } from "@bentley/context-registry-client";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import {
   BriefcaseQuery,
@@ -115,9 +115,9 @@ export class ITwinStackCloudEnv implements ITwinPlatformAbstraction {
   }
 
   public async bootstrapIModelBankProject(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<void> {
-    let project: Project | undefined = await this.contextMgr.queryProjectByName(requestContext, projectName);
-    if (project !== undefined)
-      await this.contextMgr.deleteContext(requestContext, project.ecId);
+    let iTwin: ITwin | undefined = await this.contextMgr.getITwinByName(requestContext, projectName);
+    if (iTwin !== undefined)
+      await this.contextMgr.deleteContext(requestContext, iTwin.id);
     await this.contextMgr.createContext(requestContext, projectName);
   }
 }
