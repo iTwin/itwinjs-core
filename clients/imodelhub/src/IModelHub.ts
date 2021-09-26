@@ -6,10 +6,15 @@
 import { BentleyError, BentleyStatus, GuidString } from "@bentley/bentleyjs-core";
 import { ChangeSetId, FrontendHubAccess, IModelIdArg } from "@bentley/imodeljs-frontend"; // All of the imports from both frontend and common must be only of interfaces.
 import { BriefcaseId, IModelVersion } from "@bentley/imodeljs-common";
-import { BriefcaseQuery, ChangeSet, ChangeSetQuery, IModelHubClient, IModelQuery, VersionQuery } from "./imodelhub-client";
+import { BriefcaseQuery } from "./imodelhub/Briefcases";
+import { ChangeSet, ChangeSetQuery } from "./imodelhub/ChangeSets";
+import { IModelHubClient } from "./imodelhub/Client";
+import { VersionQuery } from "./imodelhub/Versions";
+import { IModelQuery } from "./imodelhub/iModels";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 // TODO: Replace with types from imodeljs-backend once its dep is removed on this client
+/** @internal */
 export interface IModelNameArg {
   readonly iModelName: string;
   readonly iTwinId: GuidString;
@@ -17,11 +22,14 @@ export interface IModelNameArg {
 }
 
 // TODO: Replace with types from imodeljs-backend once its dep is removed on this client
+/** @internal */
 export interface BriefcaseIdArg extends IModelIdArg {
   readonly briefcaseId: BriefcaseId;
 }
 
-/** Implements both FrontendHubAccess and BackendHubAccess */
+/** Implements both FrontendHubAccess and BackendHubAccess
+ * @internal
+*/
 export class IModelHubFrontend implements FrontendHubAccess {
   public readonly hubClient: IModelHubClient = new IModelHubClient();
 

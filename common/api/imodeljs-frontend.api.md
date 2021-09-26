@@ -140,7 +140,6 @@ import { ImageBufferFormat } from '@bentley/imodeljs-common';
 import { ImageSource } from '@bentley/imodeljs-common';
 import { ImageSourceFormat } from '@bentley/imodeljs-common';
 import { IModel } from '@bentley/imodeljs-common';
-import { IModelClient } from '@bentley/imodelhub-client';
 import { IModelConnectionProps } from '@bentley/imodeljs-common';
 import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
 import { IModelRpcProps } from '@bentley/imodeljs-common';
@@ -1826,7 +1825,7 @@ export class ChangeFlags {
     get viewState(): boolean;
 }
 
-// @internal (undocumented)
+// @public (undocumented)
 export type ChangeSetId = string;
 
 // @public
@@ -3181,7 +3180,7 @@ export class FrameStatsCollector {
     endTime(entry: keyof FrameStats): void;
     }
 
-// @internal (undocumented)
+// @public (undocumented)
 export interface FrontendHubAccess {
     // (undocumented)
     getChangesetIdFromNamedVersion: (arg: IModelIdArg & {
@@ -4349,8 +4348,8 @@ export interface IModelAppOptions {
     applicationId?: string;
     applicationVersion?: string;
     authorizationClient?: FrontendAuthorizationClient;
+    hubAccess?: FrontendHubAccess;
     i18n?: I18N | I18NOptions;
-    imodelClient?: IModelClient;
     // @internal (undocumented)
     locateManager?: ElementLocateManager;
     // @beta
@@ -4519,25 +4518,7 @@ export class IModelFrameLifecycle {
     static readonly onRenderOpaque: BeEvent<(data: FrameRenderData) => void>;
 }
 
-// @internal (undocumented)
-export class IModelHubFrontend {
-    // (undocumented)
-    static getChangesetIdFromNamedVersion(arg: IModelIdArg & {
-        versionName: string;
-    }): Promise<ChangeSetId>;
-    // (undocumented)
-    static getChangesetIdFromVersion(arg: IModelIdArg & {
-        version: IModelVersion;
-    }): Promise<ChangeSetId>;
-    // (undocumented)
-    static getLatestChangesetId(arg: IModelIdArg): Promise<ChangeSetId>;
-    // (undocumented)
-    static get iModelClient(): IModelClient;
-    // (undocumented)
-    static setIModelClient(client?: IModelClient): void;
-}
-
-// @internal (undocumented)
+// @public (undocumented)
 export interface IModelIdArg {
     // (undocumented)
     iModelId: GuidString;

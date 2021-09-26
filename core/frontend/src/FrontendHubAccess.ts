@@ -10,16 +10,16 @@ import { GuidString } from "@bentley/bentleyjs-core";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
-/** @internal */
+/** @public */
 export type ChangeSetId = string;
 
-/** @internal */
+/** @public */
 export interface IModelIdArg {
   iModelId: GuidString;
   requestContext: AuthorizedClientRequestContext;
 }
 
-/** @internal */
+/** @public */
 export interface FrontendHubAccess {
   getLatestChangesetId: (arg: IModelIdArg) => Promise<ChangeSetId>;
   getChangesetIdFromVersion: (arg: IModelIdArg & { version: IModelVersion }) => Promise<ChangeSetId>;

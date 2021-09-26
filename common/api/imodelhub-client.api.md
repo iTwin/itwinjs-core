@@ -6,17 +6,22 @@
 
 import { AccessToken } from '@bentley/itwin-client';
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
+import { BriefcaseId } from '@bentley/imodeljs-common';
 import { CancelRequest } from '@bentley/itwin-client';
+import { ChangeSetId } from '@bentley/imodeljs-frontend';
 import { Client } from '@bentley/itwin-client';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { DefaultRequestOptionsProvider } from '@bentley/itwin-client';
 import { FileHandler } from '@bentley/itwin-client';
 import { FrontendAuthorizationClient } from '@bentley/frontend-authorization-client';
+import { FrontendHubAccess } from '@bentley/imodeljs-frontend';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { GuidString } from '@bentley/bentleyjs-core';
 import { HttpStatus } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IModelHubStatus } from '@bentley/bentleyjs-core';
+import { IModelIdArg } from '@bentley/imodeljs-frontend';
+import { IModelVersion } from '@bentley/imodeljs-common';
 import { ITwin } from '@bentley/context-registry-client';
 import { LogFunction } from '@bentley/bentleyjs-core';
 import { ProgressCallback } from '@bentley/itwin-client';
@@ -133,6 +138,12 @@ export class BriefcaseHandler {
     download(requestContext: AuthorizedClientRequestContext, briefcase: Briefcase, path: string, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
     get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query?: BriefcaseQuery): Promise<Briefcase[]>;
     update(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, briefcase: Briefcase): Promise<Briefcase>;
+}
+
+// @internal (undocumented)
+export interface BriefcaseIdArg extends IModelIdArg {
+    // (undocumented)
+    readonly briefcaseId: BriefcaseId;
 }
 
 // @internal
@@ -873,11 +884,42 @@ export enum IModelHubEventType {
 }
 
 // @internal
+export class IModelHubFrontend implements FrontendHubAccess {
+    // (undocumented)
+    getChangesetIdFromNamedVersion(arg: IModelIdArg & {
+        versionName: string;
+    }): Promise<ChangeSetId>;
+    // (undocumented)
+    getChangesetIdFromVersion(arg: IModelIdArg & {
+        version: IModelVersion;
+    }): Promise<ChangeSetId>;
+    // (undocumented)
+    getLatestChangesetId(arg: IModelIdArg): Promise<ChangeSetId>;
+    // (undocumented)
+    getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]>;
+    // (undocumented)
+    readonly hubClient: IModelHubClient;
+    queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
+    // (undocumented)
+    releaseBriefcase(arg: BriefcaseIdArg): Promise<void>;
+}
+
+// @internal
 export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
     contextId?: string;
     fromJson(obj: any): void;
     iModelId?: GuidString;
     projectId?: string;
+}
+
+// @internal (undocumented)
+export interface IModelNameArg {
+    // (undocumented)
+    readonly iModelName: string;
+    // (undocumented)
+    readonly iTwinId: GuidString;
+    // (undocumented)
+    readonly requestContext: AuthorizedClientRequestContext;
 }
 
 // @internal
