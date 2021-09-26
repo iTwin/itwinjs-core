@@ -5,7 +5,7 @@
 import * as Azure from "@azure/storage-blob";
 import { AccessToken, GuidString } from "@bentley/bentleyjs-core";
 import {
-  BatchType, CloudStorageTileCache, ContentIdProvider, defaultTileOptions, IModelRpcProps, IModelTileRpcInterface, iModelTileTreeIdToString, RpcManager, RpcRegistry, TileContentSource,
+  BatchType, CloudStorageTileCache, ContentIdProvider, defaultTileOptions, IModelRpcProps, IModelTileRpcInterface, iModelTileTreeIdToString, RpcInvocation, RpcManager, RpcRegistry, TileContentSource,
 } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
@@ -117,6 +117,13 @@ describe("TileUpload (#integration)", () => {
     // Generate tile
     const tileProps = await getTileProps(iModel);
     assert.isDefined(tileProps);
+    RpcInvocation.currentActivity = {
+      accessToken: user,
+      activityId: "",
+      applicationId: "",
+      applicationVersion: "",
+      sessionId: "",
+    };
     const tile = await tileRpcInterface.generateTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid);
 
     assert.equal(tile, TileContentSource.ExternalCache);
