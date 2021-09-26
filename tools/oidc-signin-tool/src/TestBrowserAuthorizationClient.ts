@@ -4,11 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { AccessToken, UrlDiscoveryClient } from "@bentley/itwin-client";
+import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
 import { AuthorizationParameters, Client, custom, generators, Issuer, OpenIDCallbackChecks, TokenSet } from "openid-client";
 import * as os from "os";
 import * as puppeteer from "puppeteer";
-import * as url from "url";
 import { TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from "./TestUsers";
 
 /**
@@ -52,10 +51,8 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
     if (undefined === this._deploymentRegion)
       this._deploymentRegion = process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION !== undefined ? Number(process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION) : 0; // Defaults to PROD (for 3rd party users)
 
-    const urlDiscoveryClient: UrlDiscoveryClient = new UrlDiscoveryClient();
-    this._imsUrl = await urlDiscoveryClient.discoverUrl(new ClientRequestContext(""), "IMSProfile.RP", this._deploymentRegion);
-
-    const oidcUrl = await urlDiscoveryClient.discoverUrl(new ClientRequestContext(""), "IMSOpenID", this._deploymentRegion);
+    const imsClient = new ImsAuthorizationClient();
+    this._imsUrl = await imsClient.getUrl();
 
     // Due to issues with a timeout or failed request to the authorization service increasing the standard timeout and adding retries.
     // Docs for this option here, https://github.com/panva/node-openid-client/tree/master/docs#customizing-http-requests
@@ -64,7 +61,8 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
       retry: 3,
     });
 
-    this._issuer = await Issuer.discover(url.resolve(oidcUrl, "/.well-known/openid-configuration"));
+    const imsUrl = new URL("/.well-known/openid-configuration", this._imsUrl);
+    this._issuer = await Issuer.discover(imsUrl.toString());
     this._client = new this._issuer.Client({ client_id: this._config.clientId, token_endpoint_auth_method: "none" }); // eslint-disable-line @typescript-eslint/naming-convention
   }
 
@@ -254,8 +252,8 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
   }
 
   private async handleLoginPage(page: puppeteer.Page): Promise<void> {
-    const loginUrl = url.resolve(this._imsUrl, "/IMS/Account/Login");
-    if (page.url().startsWith(loginUrl)) {
+    const loginUrl = new URL("/IMS/Account/Login", this._imsUrl);
+    if (page.url().startsWith(loginUrl.toString())) {
       await page.waitForSelector("[name=EmailAddress]");
       await page.type("[name=EmailAddress]", this._user.email);
       await page.waitForSelector("[name=Password]");
@@ -387,8 +385,8 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
   }
 
   private async handleConsentPage(page: puppeteer.Page): Promise<void> {
-    const consentUrl = url.resolve(this._issuer.issuer as string, "/consent");
-    if (page.url().startsWith(consentUrl))
+    const consentUrl = new URL("/consent", this._issuer.issuer as string);
+    if (page.url().startsWith(consentUrl.toString()))
       await page.click("button[value=yes]");
 
     // New consent page acceptance

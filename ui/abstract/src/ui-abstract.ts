@@ -8,12 +8,13 @@ export * from "./ui-abstract/UiAdmin";
 export * from "./ui-abstract/UiItemsManager";
 export * from "./ui-abstract/UiItemsArbiter";
 
-export * from "./ui-abstract/accudraw/AccuDrawUiAdmin";
-
 export * from "./ui-abstract/backstage/BackstageItem";
 export * from "./ui-abstract/backstage/BackstageItemsManager";
 
 export * from "./ui-abstract/common/KeyboardKey";
+
+export * from "./ui-abstract/content/ContentLayoutProps";
+export * from "./ui-abstract/content/StandardContentLayouts";
 
 export * from "./ui-abstract/dialogs/DialogItem";
 export * from "./ui-abstract/dialogs/UiLayoutDataProvider";
@@ -80,6 +81,10 @@ export * from "./ui-abstract/widget/WidgetState";
  * Common enums and functions used throughout the UI packages.
  */
 /**
+ * @docs-group-description ContentView
+ * Classes and interfaces used with Content Layouts.
+ */
+/**
  * @docs-group-description Dialog
  * Interfaces and classes for generating UI items for Dialogs.
  */
@@ -102,6 +107,10 @@ export * from "./ui-abstract/widget/WidgetState";
 /**
  * @docs-group-description Toolbar
  * Classes for creating and managing items in a toolbar.
+ */
+/**
+ * @docs-group-description StandardContentLayouts
+ * Class that contains standard layout definitions for frontstage content/views.
  */
 /**
  * @docs-group-description UiAdmin

@@ -108,7 +108,7 @@ describe("DiagnosticReporters tests", () => {
       expect(logMessage.calledOnceWith("ecschema-metadata", "Test Message Param1 Param2")).to.be.true;
       const metaDataFunc = logMessage.firstCall.args[2];
       assert.isDefined(metaDataFunc);
-      const metaData = metaDataFunc!();
+      const metaData = metaDataFunc!() as any;
       assert.isDefined(metaData);
       expect(metaData.code).to.equal("TestRuleSet-100");
       expect(metaData.category).to.equal(DiagnosticCategory.Error);
@@ -159,7 +159,7 @@ describe("DiagnosticReporters tests", () => {
       expect(logMessage.calledOnceWith("ecschema-metadata", "Test Message Param1 Param2")).to.be.true;
       const metaDataFunc = logMessage.firstCall.args[2];
       assert.isDefined(metaDataFunc);
-      const metaData = metaDataFunc!();
+      const metaData = metaDataFunc!() as any;
       assert.isDefined(metaData);
       expect(metaData.code).to.equal("TestRuleSet-100");
       expect(metaData.category).to.equal(DiagnosticCategory.Warning);
@@ -178,7 +178,7 @@ describe("DiagnosticReporters tests", () => {
       expect(logMessage.calledOnceWith("ecschema-metadata", "Test Message Param1 Param2")).to.be.true;
       const metaDataFunc = logMessage.firstCall.args[2];
       assert.isDefined(metaDataFunc);
-      const metaData = metaDataFunc!();
+      const metaData = metaDataFunc!() as any;
       assert.isDefined(metaData);
       expect(metaData.code).to.equal("TestRuleSet-100");
       expect(metaData.category).to.equal(DiagnosticCategory.Message);
@@ -197,7 +197,7 @@ describe("DiagnosticReporters tests", () => {
       expect(logMessage.calledOnceWith("ecschema-metadata", "Test Message Param1 Param2")).to.be.true;
       const metaDataFunc = logMessage.firstCall.args[2];
       assert.isDefined(metaDataFunc);
-      const metaData = metaDataFunc!();
+      const metaData = metaDataFunc!() as any;
       assert.isDefined(metaData);
       expect(metaData.code).to.equal("TestRuleSet-100");
       expect(metaData.category).to.equal(DiagnosticCategory.Suggestion);

@@ -62,7 +62,6 @@ export class HiliteSetProvider {
     const descriptor: DescriptorOverrides = {
       displayType: DefaultContentDisplayTypes.Viewport,
       contentFlags: ContentFlags.KeysOnly,
-      hiddenFieldNames: [],
     };
     const options = {
       imodel: this._imodel,

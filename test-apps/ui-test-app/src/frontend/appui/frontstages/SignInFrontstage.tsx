@@ -6,9 +6,11 @@ import * as React from "react";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import {
-  ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, SignIn,
+  ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
 } from "@bentley/ui-framework";
+import { SignIn } from "../oidc/SignIn";
 import { SampleAppIModelApp } from "../../index";
+import { StageUsage, StandardContentLayouts } from "@bentley/ui-abstract";
 
 class SignInControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -32,22 +34,28 @@ class SignInControl extends ContentControl {
 }
 
 export class SignInFrontstage extends FrontstageProvider {
+  public get id(): string {
+    return "SignIn";
+  }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const contentGroup: ContentGroup = new ContentGroup({
+      id: "sign-in-stage",
+      layout: StandardContentLayouts.singleView,
       contents: [
         {
+          id: "sign-in",
           classId: SignInControl,
         },
       ],
     });
 
     return (
-      <Frontstage id="SignIn"
+      <Frontstage id={this.id}
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout="SingleContent"
         contentGroup={contentGroup}
         isInFooterMode={false}
+        usage={StageUsage.Private}
       />
     );
   }

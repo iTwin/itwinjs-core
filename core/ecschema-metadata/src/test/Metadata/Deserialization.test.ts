@@ -5,7 +5,7 @@
 
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
-import { DOMParser } from "xmldom";
+import { DOMParser } from "@xmldom/xmldom";
 import { SchemaContext } from "../../Context";
 import { SchemaReadHelper } from "../../Deserialization/Helper";
 import { JsonParser } from "../../Deserialization/JsonParser";
@@ -220,7 +220,7 @@ describe("Full Schema Deserialization", () => {
           { name: "RefSchemaB", version: "2.0.0" },
         ],
       };
-      await expect(Schema.fromJson(json, context)).to.be.rejectedWith(ECObjectsError, `ECObjects-3: Schema 'TestSchema' has reference cycles: RefSchemaB --> TestSchema, TestSchema --> RefSchemaB\r\n`);
+      await expect(Schema.fromJson(json, context)).to.be.rejectedWith(ECObjectsError, `Schema 'TestSchema' has reference cycles: RefSchemaB --> TestSchema, TestSchema --> RefSchemaB\r\n`);
 
       const context2 = new SchemaContext();
       const schemaCJson = {
@@ -287,7 +287,7 @@ describe("Full Schema Deserialization", () => {
           { name: "RefSchemaC", version: "1.0.0" },
         ],
       };
-      await expect(Schema.fromJson(json, context2)).to.be.rejectedWith(ECObjectsError, `ECObjects-3: Schema 'RefSchemaC' has reference cycles: RefSchemaF --> RefSchemaC, RefSchemaE --> RefSchemaF, RefSchemaC --> RefSchemaE\r\n`);
+      await expect(Schema.fromJson(json, context2)).to.be.rejectedWith(ECObjectsError, `Schema 'RefSchemaC' has reference cycles: RefSchemaF --> RefSchemaC, RefSchemaE --> RefSchemaF, RefSchemaC --> RefSchemaE\r\n`);
     });
 
     it("should not throw cyclic references", async () => {
@@ -386,7 +386,7 @@ describe("Full Schema Deserialization", () => {
       <ECSchemaReference name="RefSchemaB" version="02.00.00" alias="b"/>
       </ECSchema>`;
 
-      await expect(deserializeXml(testSchemaXML, context)).to.be.rejectedWith(ECObjectsError, `ECObjects-3: Schema 'TestSchema' has reference cycles: RefSchemaB --> TestSchema, TestSchema --> RefSchemaB\r\n`);
+      await expect(deserializeXml(testSchemaXML, context)).to.be.rejectedWith(ECObjectsError, `Schema 'TestSchema' has reference cycles: RefSchemaB --> TestSchema, TestSchema --> RefSchemaB\r\n`);
 
       const context2 = new SchemaContext();
 
@@ -427,7 +427,7 @@ describe("Full Schema Deserialization", () => {
       <ECSchemaReference name="RefSchemaC" version="01.00.00" alias="c"/>
       </ECSchema>`;
 
-      await expect(deserializeXml(testSchemaXML, context2)).to.be.rejectedWith(ECObjectsError, `ECObjects-3: Schema 'RefSchemaC' has reference cycles: RefSchemaF --> RefSchemaC, RefSchemaE --> RefSchemaF, RefSchemaC --> RefSchemaE\r\n`);
+      await expect(deserializeXml(testSchemaXML, context2)).to.be.rejectedWith(ECObjectsError, `Schema 'RefSchemaC' has reference cycles: RefSchemaF --> RefSchemaC, RefSchemaE --> RefSchemaF, RefSchemaC --> RefSchemaE\r\n`);
     });
 
     it("should not throw cyclic references in XML", async () => {

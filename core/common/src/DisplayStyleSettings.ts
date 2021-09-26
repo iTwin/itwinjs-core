@@ -9,7 +9,7 @@
 // cspell:ignore greyscale ovrs
 
 import {
-  assert, BeEvent, CompressedId64Set, Id64, Id64Array, Id64String, JsonUtils, MutableCompressedId64Set, ObservableSet, OrderedId64Iterable,
+  assert, BeEvent, CompressedId64Set, Id64, Id64Array, Id64String, JsonUtils, MutableCompressedId64Set, OrderedId64Iterable,
 } from "@bentley/bentleyjs-core";
 import { XYZProps } from "@bentley/geometry-core";
 import { AmbientOcclusion } from "./AmbientOcclusion";
@@ -36,6 +36,7 @@ import { Cartographic } from "./geometry/Cartographic";
 import { IModel } from "./IModel";
 import { calculateSolarDirection } from "./SolarCalculate";
 import { ContextRealityModel, ContextRealityModelProps, ContextRealityModels } from "./ContextRealityModel";
+import { WhiteOnWhiteReversalProps, WhiteOnWhiteReversalSettings } from "./WhiteOnWhiteReversalSettings";
 
 /** Describes the [[SubCategoryOverride]]s applied to a [[SubCategory]] by a [[DisplayStyle]].
  * @see [[DisplayStyleSettingsProps]]
@@ -141,7 +142,8 @@ export interface DisplayStyleSettingsProps {
   clipStyle?: ClipStyleProps;
   /** Planar clip masks applied to reality models. */
   planarClipOvr?: DisplayStylePlanarClipMaskProps[];
-
+  /** @see [[DisplayStyleSettings.whiteOnWhiteReversal]]. */
+  whiteOnWhiteReversal?: WhiteOnWhiteReversalProps;
 }
 
 /** JSON representation of settings associated with a [[DisplayStyle3dProps]].
@@ -163,8 +165,8 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
   lights?: LightSettingsProps;
   /** Settings controlling how plan projection models are to be rendered. The key for each entry is the Id of the model to which the settings apply. */
   planProjections?: { [modelId: string]: PlanProjectionSettingsProps };
-  /** Old lighting settings - only `sunDir` was ever used; it is now part of `lights`.
-   * @deprecated
+  /** Old lighting settings - only `sunDir` was ever used; it is now part of [[lights]].
+   * DisplayStyle3dSettings will construct a LightSettings from sceneLights.sunDir IFF [[lights]] is not present.
    * @internal
    */
   sceneLights?: { sunDir?: XYZProps };
@@ -235,7 +237,6 @@ export interface DisplayStyleOverridesOptions {
 class ExcludedElements implements OrderedId64Iterable {
   private readonly _json: DisplayStyleSettingsProps;
   private readonly _ids: MutableCompressedId64Set;
-  private _set?: ObservableSet<Id64String>;
   private _synchronizing = false;
 
   public constructor(json: DisplayStyleSettingsProps) {
@@ -248,7 +249,6 @@ class ExcludedElements implements OrderedId64Iterable {
 
   public reset(ids: CompressedId64Set | OrderedId64Iterable | undefined) {
     this.synchronize(() => {
-      this._set?.clear();
       this._ids.reset((ids && "string" !== typeof ids) ? CompressedId64Set.compressIds(ids) : ids);
     });
   }
@@ -259,51 +259,20 @@ class ExcludedElements implements OrderedId64Iterable {
 
   public add(ids: Iterable<Id64String>): void {
     this.synchronize(() => {
-      for (const id of ids) {
+      for (const id of ids)
         this._ids.add(id);
-        this._set?.add(id);
-      }
     });
   }
 
   public delete(ids: Iterable<Id64String>): void {
     this.synchronize(() => {
-      for (const id of ids) {
+      for (const id of ids)
         this._ids.delete(id);
-        this._set?.delete(id);
-      }
     });
-  }
-
-  public obtainSet(): Set<Id64String> {
-    if (this._set)
-      return this._set;
-
-    this.synchronize(() => {
-      this._set = new ObservableSet<string>(this._ids);
-      this._set.onAdded.addListener((id) => this.onAdded(id));
-      this._set.onDeleted.addListener((id) => this.onDeleted(id));
-      this._set.onCleared.addListener(() => this.onCleared());
-    });
-
-    assert(undefined !== this._set);
-    return this._set;
   }
 
   public [Symbol.iterator]() {
     return this._ids[Symbol.iterator]();
-  }
-
-  private onAdded(id: Id64String): void {
-    this.synchronize(() => this._ids.add(id));
-  }
-
-  private onDeleted(id: Id64String): void {
-    this.synchronize(() => this._ids.delete(id));
-  }
-
-  private onCleared(): void {
-    this.synchronize(() => this._ids.clear());
   }
 
   /** The JSON must be kept up-to-date at all times. */
@@ -455,6 +424,7 @@ export class DisplayStyleSettings {
   private _analysisStyle?: AnalysisStyle;
   private _clipStyle: ClipStyle;
   private readonly _contextRealityModels: ContextRealityModels;
+  private _whiteOnWhiteReversal: WhiteOnWhiteReversalSettings;
 
   public is3d(): this is DisplayStyle3dSettings {
     return false;
@@ -528,6 +498,8 @@ export class DisplayStyleSettings {
   public readonly onPlanProjectionSettingsChanged = new BeEvent<(modelId: Id64String, newSettings: PlanProjectionSettings | undefined) => void>();
   /** Event raised just before adding or removing an entry from [[planarClipMasks]]. */
   public readonly onPlanarClipMaskChanged = new BeEvent<(modelId: Id64String, newSettings: PlanarClipMaskSettings | undefined) => void>();
+  /** Event raised just prior to assignment to the [[whiteOnWhiteReversal]] property. */
+  public readonly onWhiteOnWhiteReversalChanged = new BeEvent<(newSettings: WhiteOnWhiteReversalSettings) => void>();
 
   /** Construct a new DisplayStyleSettings from an [[ElementProps.jsonProperties]].
    * @param jsonProperties An object with an optional `styles` property containing a display style's settings.
@@ -558,6 +530,7 @@ export class DisplayStyleSettings {
     if (this._json.analysisStyle)
       this._analysisStyle = AnalysisStyle.fromJSON(this._json.analysisStyle);
 
+    this._whiteOnWhiteReversal = WhiteOnWhiteReversalSettings.fromJSON(this._json.whiteOnWhiteReversal);
     this._clipStyle = ClipStyle.fromJSON(this._json.clipStyle);
 
     this._subCategoryOverrides = new OverridesMap<DisplayStyleSubCategoryProps, SubCategoryOverride>(this._json, "subCategoryOvr", this.onSubCategoryOverridesChanged,
@@ -735,6 +708,21 @@ export class DisplayStyleSettings {
     this._json.analysisFraction = Math.max(0, Math.min(1, fraction));
   }
 
+  /** Settings controlling how white-on-white reversal is applied. */
+  public get whiteOnWhiteReversal(): WhiteOnWhiteReversalSettings { return this._whiteOnWhiteReversal; }
+  public set whiteOnWhiteReversal(settings: WhiteOnWhiteReversalSettings) {
+    if (settings.equals(this.whiteOnWhiteReversal))
+      return;
+
+    this.onWhiteOnWhiteReversalChanged.raiseEvent(settings);
+    this._whiteOnWhiteReversal = settings;
+    const json = settings.toJSON();
+    if (json)
+      this._json.whiteOnWhiteReversal = json;
+    else
+      delete this._json.whiteOnWhiteReversal;
+  }
+
   /** Customize the way geometry belonging to a [[SubCategory]] is drawn by this display style.
    * @param id The Id of the SubCategory whose appearance is to be overridden.
    * @param ovr The overrides to apply to the [[SubCategoryAppearance]].
@@ -806,15 +794,6 @@ export class DisplayStyleSettings {
   /** Returns true if model appearance overrides are defined by this style. */
   public get hasModelAppearanceOverride(): boolean {
     return this.modelAppearanceOverrides.size > 0;
-  }
-
-  /** The set of elements that will not be drawn by this display style.
-   * @returns The set of excluded elements.
-   * @note The set and the Ids it contains may be very large. It is allocated the first time this property is requested.
-   * @deprecated Use [[excludedElementIds]] for better performance and reduced memory overhead, unless efficient lookup of Ids within the set is required.
-   */
-  public get excludedElements(): Set<Id64String> {
-    return this._excludedElements.obtainSet();
   }
 
   /** The set of elements that will not be drawn by this display style.
@@ -895,6 +874,7 @@ export class DisplayStyleSettings {
       backgroundColor: this.backgroundColor.toJSON(),
       monochromeColor: this.monochromeColor.toJSON(),
       monochromeMode: this.monochromeMode,
+      whiteOnWhiteReversal: this.whiteOnWhiteReversal.toJSON() ?? { ignoreBackgroundColor: false },
     };
 
     if (options?.includeBackgroundMap)
@@ -994,6 +974,9 @@ export class DisplayStyleSettings {
     if (overrides.analysisStyle)
       this.analysisStyle = AnalysisStyle.fromJSON(overrides.analysisStyle);
 
+    if (overrides.whiteOnWhiteReversal)
+      this.whiteOnWhiteReversal = WhiteOnWhiteReversalSettings.fromJSON(overrides.whiteOnWhiteReversal);
+
     if (undefined !== overrides.analysisFraction)
       this.analysisFraction = overrides.analysisFraction;
 
@@ -1053,7 +1036,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     if (this._json3d.lights) {
       this._lights = LightSettings.fromJSON(this._json3d.lights);
     } else {
-      const sunDir = this._json3d.sceneLights?.sunDir; // eslint-disable-line deprecation/deprecation
+      const sunDir = this._json3d.sceneLights?.sunDir;
       this._lights = LightSettings.fromJSON(sunDir ? { solar: { direction: sunDir } } : undefined);
     }
 
@@ -1251,7 +1234,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
         cartoCenter = Cartographic.fromEcef(location.ecefLocation.origin);
 
       if (!cartoCenter)
-        cartoCenter = Cartographic.fromDegrees(-75.17035, 39.954927, 0.0);
+        cartoCenter = Cartographic.fromDegrees({ longitude: -75.17035, latitude: 39.954927, height: 0.0 });
     } else {
       cartoCenter = location;
     }

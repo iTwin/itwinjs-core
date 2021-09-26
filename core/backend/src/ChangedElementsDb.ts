@@ -99,14 +99,11 @@ export class ChangedElementsDb implements IDisposable {
    * @param briefcase iModel briefcase to use
    * @param options Options for processing
    */
-  public async processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult> {
-    requestContext.enter();
-
+  public async processChangesets(user: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult> {
     const iModelId = briefcase.iModelId;
-    const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.startChangesetId }, requestContext })).index;
-    const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.endChangesetId }, requestContext })).index;
-    const changesets = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
-    requestContext.enter();
+    const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.startChangesetId }, user })).index;
+    const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.endChangesetId }, user })).index;
+    const changesets = await IModelHost.hubAccess.downloadChangesets({ user, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
 
     // ChangeSets need to be processed from newest to oldest
     changesets.reverse();
@@ -131,20 +128,17 @@ export class ChangedElementsDb implements IDisposable {
    * @param briefcase iModel briefcase to use
    * @param options options for processing
    */
-  public async processChangesetsAndRoll(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult> {
-    requestContext.enter();
-
+  public async processChangesetsAndRoll(user: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult> {
     const iModelId = briefcase.iModelId;
-    const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.startChangesetId }, requestContext })).index;
-    const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.endChangesetId }, requestContext })).index;
-    const changesets = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
-    requestContext.enter();
+    const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.startChangesetId }, user })).index;
+    const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.endChangesetId }, user })).index;
+    const changesets = await IModelHost.hubAccess.downloadChangesets({ user, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
 
     // ChangeSets need to be processed from newest to oldest
     changesets.reverse();
     // Close briefcase before doing processing and rolling briefcase
     const dbFilename = briefcase.pathName;
-    const dbGuid = briefcase.getGuid();
+    const dbGuid = briefcase.iModelId;
     briefcase.close();
     // Process changesets
     const status = this.nativeDb.processChangesetsAndRoll(

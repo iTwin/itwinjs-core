@@ -10,7 +10,6 @@ import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { Id64String } from '@bentley/bentleyjs-core';
-import { LogFunction } from '@bentley/bentleyjs-core';
 
 // @public
 export interface AbstractActionItemProps extends CommonItemProps, CommandHandler {
@@ -112,107 +111,6 @@ export enum AbstractZoneLocation {
     CenterLeft = 4,
     // (undocumented)
     CenterRight = 6
-}
-
-// @alpha
-export enum AccuDrawField {
-    // (undocumented)
-    Angle = 1,
-    // (undocumented)
-    Distance = 0,
-    // (undocumented)
-    X = 2,
-    // (undocumented)
-    Y = 3,
-    // (undocumented)
-    Z = 4
-}
-
-// @alpha (undocumented)
-export class AccuDrawGrabInputFocusEvent extends BeUiEvent<{}> {
-}
-
-// @alpha
-export enum AccuDrawMode {
-    // (undocumented)
-    Polar = 0,
-    // (undocumented)
-    Rectangular = 1
-}
-
-// @alpha (undocumented)
-export class AccuDrawSetFieldFocusEvent extends BeUiEvent<AccuDrawSetFieldFocusEventArgs> {
-}
-
-// @alpha (undocumented)
-export interface AccuDrawSetFieldFocusEventArgs {
-    // (undocumented)
-    field: AccuDrawField;
-}
-
-// @alpha (undocumented)
-export class AccuDrawSetFieldLockEvent extends BeUiEvent<AccuDrawSetFieldLockEventArgs> {
-}
-
-// @alpha (undocumented)
-export interface AccuDrawSetFieldLockEventArgs {
-    // (undocumented)
-    field: AccuDrawField;
-    // (undocumented)
-    lock: boolean;
-}
-
-// @alpha (undocumented)
-export class AccuDrawSetFieldValueFromUiEvent extends BeUiEvent<AccuDrawSetFieldValueFromUiEventArgs> {
-}
-
-// @alpha (undocumented)
-export interface AccuDrawSetFieldValueFromUiEventArgs {
-    // (undocumented)
-    field: AccuDrawField;
-    // (undocumented)
-    stringValue: string;
-}
-
-// @alpha (undocumented)
-export class AccuDrawSetFieldValueToUiEvent extends BeUiEvent<AccuDrawSetFieldValueToUiEventArgs> {
-}
-
-// @alpha (undocumented)
-export interface AccuDrawSetFieldValueToUiEventArgs {
-    // (undocumented)
-    field: AccuDrawField;
-    // (undocumented)
-    formattedValue: string;
-    // (undocumented)
-    value: number;
-}
-
-// @alpha (undocumented)
-export class AccuDrawSetModeEvent extends BeUiEvent<AccuDrawSetModeEventArgs> {
-}
-
-// @alpha (undocumented)
-export interface AccuDrawSetModeEventArgs {
-    // (undocumented)
-    mode: AccuDrawMode;
-}
-
-// @alpha (undocumented)
-export class AccuDrawUiAdmin {
-    grabInputFocus(): void;
-    get hasInputFocus(): boolean;
-    static readonly onAccuDrawGrabInputFocusEvent: AccuDrawGrabInputFocusEvent;
-    static readonly onAccuDrawSetFieldFocusEvent: AccuDrawSetFieldFocusEvent;
-    static readonly onAccuDrawSetFieldLockEvent: AccuDrawSetFieldLockEvent;
-    static readonly onAccuDrawSetFieldValueFromUiEvent: AccuDrawSetFieldValueFromUiEvent;
-    static readonly onAccuDrawSetFieldValueToUiEvent: AccuDrawSetFieldValueToUiEvent;
-    static readonly onAccuDrawSetModeEvent: AccuDrawSetModeEvent;
-    setFieldFocus(field: AccuDrawField): void;
-    setFieldLock(field: AccuDrawField, lock: boolean): void;
-    setFieldValueFromUi(field: AccuDrawField, stringValue: string): void;
-    setFieldValueToUi(field: AccuDrawField, value: number, formattedValue: string): void;
-    setMode(mode: AccuDrawMode): void;
 }
 
 // @public
@@ -974,6 +872,12 @@ export class ConditionalStringValue {
     get value(): string;
     }
 
+// @public
+export interface ContentLayoutProps extends LayoutFragmentProps {
+    description?: string;
+    id: string;
+}
+
 // @internal (undocumented)
 export function convertSimple2RegExpPattern(pattern: string): string;
 
@@ -1351,6 +1255,35 @@ export const isSuppressLabelEditorParams: (item: BasePropertyEditorParams) => it
 
 // @internal (undocumented)
 export function isUpperAsciiLetter(code: number): boolean;
+
+// @public
+export interface LayoutFragmentProps {
+    horizontalSplit?: LayoutHorizontalSplitProps;
+    verticalSplit?: LayoutVerticalSplitProps;
+}
+
+// @public
+export interface LayoutHorizontalSplitProps extends LayoutSplitPropsBase {
+    bottom: LayoutFragmentProps | number;
+    minSizeBottom?: number;
+    minSizeTop?: number;
+    top: LayoutFragmentProps | number;
+}
+
+// @public
+export interface LayoutSplitPropsBase {
+    id: string;
+    lock?: boolean;
+    percentage: number;
+}
+
+// @public
+export interface LayoutVerticalSplitProps extends LayoutSplitPropsBase {
+    left: LayoutFragmentProps | number;
+    minSizeLeft?: number;
+    minSizeRight?: number;
+    right: LayoutFragmentProps | number;
+}
 
 // @public
 export interface LinkElementsInfo {
@@ -1781,6 +1714,28 @@ export enum StageUsage {
     ViewOnly = "ViewOnly"
 }
 
+// @public
+export class StandardContentLayouts {
+    // (undocumented)
+    static readonly availableLayouts: ContentLayoutProps[];
+    // (undocumented)
+    static readonly fourQuadrants: ContentLayoutProps;
+    // (undocumented)
+    static readonly singleView: ContentLayoutProps;
+    // (undocumented)
+    static readonly threeViewsTwoOnBottom: ContentLayoutProps;
+    // (undocumented)
+    static readonly threeViewsTwoOnLeft: ContentLayoutProps;
+    // (undocumented)
+    static readonly threeViewsTwoOnRight: ContentLayoutProps;
+    // (undocumented)
+    static readonly threeViewsTwoOnTop: ContentLayoutProps;
+    // (undocumented)
+    static readonly twoHorizontalSplit: ContentLayoutProps;
+    // (undocumented)
+    static readonly twoVerticalSplit: ContentLayoutProps;
+}
+
 // @beta
 export enum StandardEditorNames {
     // (undocumented)
@@ -2034,9 +1989,6 @@ export class UiAbstract {
 
 // @public
 export class UiAdmin {
-    // @alpha
-    get accuDrawUi(): AccuDrawUiAdmin;
-    set accuDrawUi(v: AccuDrawUiAdmin);
     closeDialog(_dialogId: string): boolean;
     closeToolSettingsPopup(): boolean;
     createXAndY(x: number, y: number): PointProps;
@@ -2088,7 +2040,9 @@ export abstract class UiDataProvider {
 
 // @public
 export class UiError extends BentleyError {
-    constructor(category: string, message: string, errorNumber?: number, log?: LogFunction, getMetaData?: GetMetaDataFunction | undefined);
+    constructor(category: string, message: string, errorNumber?: number, getMetaData?: GetMetaDataFunction);
+    // (undocumented)
+    category: string;
 }
 
 // @public
@@ -2148,10 +2102,10 @@ export class UiItemsArbiter {
 // @public
 export class UiItemsManager {
     static getBackstageItems(): BackstageItem[];
-    static getStatusBarItems(stageId: string, stageUsage: string): CommonStatusBarItem[];
-    static getToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[];
+    static getStatusBarItems(stageId: string, stageUsage: string, stageAppData?: any): CommonStatusBarItem[];
+    static getToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[];
     static getUiItemsProvider(providerId: string): UiItemsProvider | undefined;
-    static getWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, zoneLocation?: AbstractZoneLocation): ReadonlyArray<AbstractWidgetProps>;
+    static getWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, zoneLocation?: AbstractZoneLocation, stageAppData?: any): ReadonlyArray<AbstractWidgetProps>;
     static get hasRegisteredProviders(): boolean;
     static readonly onUiProviderRegisteredEvent: BeEvent<(ev: UiItemProviderRegisteredEventArgs) => void>;
     static register(uiProvider: UiItemsProvider): void;
@@ -2167,9 +2121,9 @@ export interface UiItemsProvider {
     onToolbarButtonItemArbiterChange?: (item: CommonToolbarItem, action: UiItemsApplicationAction) => void;
     onWidgetArbiterChange?: (widget: AbstractWidgetProps, action: UiItemsApplicationAction) => void;
     provideBackstageItems?: () => BackstageItem[];
-    provideStatusBarItems?: (stageId: string, stageUsage: string) => CommonStatusBarItem[];
-    provideToolbarButtonItems?: (stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => CommonToolbarItem[];
-    provideWidgets?: (stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, zoneLocation?: AbstractZoneLocation) => ReadonlyArray<AbstractWidgetProps>;
+    provideStatusBarItems?: (stageId: string, stageUsage: string, stageAppData?: any) => CommonStatusBarItem[];
+    provideToolbarButtonItems?: (stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any) => CommonToolbarItem[];
+    provideWidgets?: (stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, zoneLocation?: AbstractZoneLocation, stageAppData?: any) => ReadonlyArray<AbstractWidgetProps>;
 }
 
 // @public (undocumented)

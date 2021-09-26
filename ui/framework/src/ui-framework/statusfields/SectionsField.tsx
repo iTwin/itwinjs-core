@@ -61,46 +61,50 @@ export function SectionsStatusField(props: SectionsStatusFieldProps) {
   }, [activeViewport, props.hideWhenUnused, isPopupOpen]);
 
   // istanbul ignore next
-  const toggleManipulators = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const toggleManipulators = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (activeViewport) {
       setHasManipulatorsShown(e.target.checked);
-      ViewClipDecorationProvider.create().toggleDecoration(activeViewport);
+      await ViewClipDecorationProvider.create().toggleDecoration(activeViewport);
     }
   };
 
   // istanbul ignore next
-  const handleClear = () => {
-    IModelApp.tools.run(ViewClipClearTool.toolId, ViewClipDecorationProvider.create());
+  const handleClear = async () => {
+    await IModelApp.tools.run(ViewClipClearTool.toolId, ViewClipDecorationProvider.create());
     setPopupOpen(false);
   };
 
   return (
-    <>
-      <div ref={targetDiv} title={toolTip}>
-        <Indicator className={classes}
-          iconName="icon-section-tool"
-          onClick={() => setPopupOpen(!isPopupOpen)}
-          opened={isPopupOpen}
-          isInFooterMode={props.isInFooterMode}
-        />
-      </div>
-      <FooterPopup
-        target={targetDiv.current}
-        onClose={() => setPopupOpen(false)}
-        isOpen={isPopupOpen}>
-        <Dialog
-          titleBar={
-            <TitleBar title={toolTip} />
-          }>
-          <div className="uifw-sections-footer-contents">
-            <Button onClick={handleClear}>{clearLabel}</Button>
-            <div className="uifw-uifw-sections-toggle-container">
-              <div className={classnames("uifw-sections-label")}>{showHandlesLabel}</div>
-              <ToggleSwitch className="uifw-sections-toggle" onChange={toggleManipulators} checked={hasManipulatorsShown} />
-            </div>
+    <div className="uifw-section-footer-popup-container">
+      {showIndicator &&
+        <>
+          <div ref={targetDiv} title={toolTip}>
+            <Indicator className={classes}
+              iconName="icon-section-tool"
+              onClick={() => setPopupOpen(!isPopupOpen)}
+              opened={isPopupOpen}
+              isInFooterMode={props.isInFooterMode}
+            />
           </div>
-        </Dialog>
-      </FooterPopup>
-    </>
+          <FooterPopup
+            target={targetDiv.current}
+            onClose={() => setPopupOpen(false)}
+            isOpen={isPopupOpen}>
+            <Dialog
+              titleBar={
+                <TitleBar title={toolTip} />
+              }>
+              <div className="uifw-sections-footer-contents">
+                <Button onClick={handleClear}>{clearLabel}</Button>
+                <div className="uifw-uifw-sections-toggle-container">
+                  <div className={classnames("uifw-sections-label")}>{showHandlesLabel}</div>
+                  <ToggleSwitch className="uifw-sections-toggle" onChange={toggleManipulators} checked={hasManipulatorsShown} />
+                </div>
+              </div>
+            </Dialog>
+          </FooterPopup>
+        </>
+      }
+    </div>
   );
 }

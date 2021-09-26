@@ -27,11 +27,13 @@ Typically in the index.tsx file of an IModelApp that uses `App UI` user interfac
 The component [UiSettingsProvider]($ui-framework) can be added into the component tree to provide the storage object via React context. See hook [useUiSettingsStorageContext]($ui-framework). Below is an example of how to wrap the [ConfigurableUiContent]($ui-framework) element so that the context is available to all App UI components.
 
 ```tsx
+<FrameworkVersion version="2">
   <UiSettingsProvider settingsStorage={uiSettingsStorage}>
     <ConfigurableUiContent
       appBackstage={<AppBackstageComposer />}
     />
   </UiSettingsProvider>
+</FrameworkVersion>
 ```
 
 ## UserSettingsProvider
@@ -74,11 +76,15 @@ The [AppUiSettings]($ui-framework) class, which implements the UserSettingsProvi
   }
 ```
 
+### FrameworkVersion
+
+The [FrameworkVersion]($ui-framework) component defines the version context that is accessible to any lower level components. The version string should typically be set to "2" and it should match the value returned by UiFramework.uiVersion. Version "1" compatible components are deprecated and will be removed in a future release.
+
 ## Settings Components
 
 ### Quantity Formatting Settings
 
-  The [QuantityFormatSettingsPage]($ui-framework) component provides the UI to set both the [PresentationUnitSystem]($presentation-common) and formatting overrides in the [QuantityFormatter]($frontend). This component can be used in the new [SettingsContainer]($ui-core) UI component. The function `getQuantityFormatsSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core) for use by the [SettingsManager]($ui-core).
+  The [QuantityFormatSettingsPage]($ui-framework) component provides the UI to set both the [PresentationManager.activeUnitSystem]($presentation-frontend) and formatting overrides in the [QuantityFormatter]($frontend). This component can be used in the new [SettingsContainer]($ui-core) UI component. The function `getQuantityFormatsSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core) for use by the [SettingsManager]($ui-core).
 
 ### User Interface Settings
 

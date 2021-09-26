@@ -18,7 +18,9 @@ import { ViewUtilities } from "../utils/ViewUtilities";
 import { ContentControl, SupportsViewSelectorChange } from "./ContentControl";
 import { ContentViewManager } from "./ContentViewManager";
 
-/** The base class for Frontstage Viewport content controls.
+/**
+ * The base class for frontstage Viewport content controls that connects to a `ScreenViewport`
+ * that is managed by the `ViewManager`.
  * @public
  */
 export class ViewportContentControl extends ContentControl implements SupportsViewSelectorChange {

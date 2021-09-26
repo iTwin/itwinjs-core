@@ -29,6 +29,14 @@ export class LocalSettingsStorage implements UiSettingsStorage {
     return { status: UiSettingsStatus.Success };
   }
 
+  public async hasSetting(settingNamespace: string, settingName: string): Promise<boolean> {
+    const name = `${settingNamespace}.${settingName}`;
+    const setting = this.w.localStorage.getItem(name);
+    if (setting === null)
+      return false;
+    return true;
+  }
+
   public async deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult> {
     const name = `${settingNamespace}.${settingName}`;
     const setting = this.w.localStorage.getItem(name);
@@ -44,6 +52,6 @@ export class LocalSettingsStorage implements UiSettingsStorage {
  * @deprecated use [LocalSettingsStorage]($ui-core) instead
  */
 export class LocalUiSettings extends LocalSettingsStorage {
-  constructor(w: Window = window) { super (w);}
+  constructor(w: Window = window) { super(w); }
 }
 

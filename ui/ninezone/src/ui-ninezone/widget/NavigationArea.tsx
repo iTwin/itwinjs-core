@@ -42,6 +42,13 @@ export const NavigationArea = React.memo<NavigationAreaProps>(function Navigatio
 
   const horizontalToolbar = React.isValidElement(props.horizontalToolbar) ? React.cloneElement(props.horizontalToolbar, { panelAlignment: ToolbarPanelAlignment.End }) : null;  // ensure proper panel alignment
   const verticalToolbar = React.isValidElement(props.verticalToolbar) ? React.cloneElement(props.verticalToolbar, { panelAlignment: ToolbarPanelAlignment.End }) : null;  // ensure proper panel alignment
+  const navigationAidArea = props.navigationAid ? (
+    <div className="nz-navigation-aid-container"
+      onMouseEnter={props.onMouseEnter}
+      onMouseLeave={props.onMouseLeave}>
+      {props.navigationAid}
+    </div>
+  ) : props.navigationAid;
 
   return (
     <div className={className} style={props.style}>
@@ -50,11 +57,7 @@ export const NavigationArea = React.memo<NavigationAreaProps>(function Navigatio
         onMouseLeave={props.onMouseLeave}>
         {horizontalToolbar}
       </div>
-      <div className="nz-navigation-aid-container"
-        onMouseEnter={props.onMouseEnter}
-        onMouseLeave={props.onMouseLeave}>
-        {props.navigationAid}
-      </div>
+      {navigationAidArea}
       <div className="nz-vertical-toolbar-container"
         onMouseEnter={props.onMouseEnter}
         onMouseLeave={props.onMouseLeave}>

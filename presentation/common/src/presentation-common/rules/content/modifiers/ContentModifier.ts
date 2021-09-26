@@ -10,9 +10,7 @@ import { SingleSchemaClassSpecification } from "../../ClassSpecifications";
 import { RuleBase, RuleTypes } from "../../Rule";
 import { PropertySpecification } from "../PropertySpecification";
 import { CalculatedPropertiesSpecification } from "./CalculatedPropertiesSpecification";
-import { DEPRECATED_PropertiesDisplaySpecification } from "./PropertiesDisplaySpecification";
 import { PropertyCategorySpecification } from "./PropertyCategorySpecification";
-import { DEPRECATED_PropertyEditorsSpecification } from "./PropertyEditorsSpecification";
 import { RelatedPropertiesSpecification } from "./RelatedPropertiesSpecification";
 
 /**
@@ -30,18 +28,6 @@ export interface ContentModifiersList {
   calculatedProperties?: CalculatedPropertiesSpecification[];
 
   /**
-   * Specifications for customizing property display by hiding / showing them
-   * @deprecated Use [[propertyOverrides]] attribute instead. Will be removed in iModel.js 3.0
-   */
-  propertiesDisplay?: DEPRECATED_PropertiesDisplaySpecification[]; // eslint-disable-line deprecation/deprecation
-
-  /**
-   * Specifications for assigning property editors
-   * @deprecated Use [[propertyOverrides]] attribute instead. Will be removed in iModel.js 3.0
-   */
-  propertyEditors?: DEPRECATED_PropertyEditorsSpecification[]; // eslint-disable-line deprecation/deprecation
-
-  /**
    * Specifications for custom categories. Simply defining the categories does
    * nothing - they have to be referenced from [[PropertySpecification]] defined in
    * [[propertyOverrides]] by `id`.
@@ -56,7 +42,7 @@ export interface ContentModifiersList {
  * Rule that allows supplementing content with additional
  * specifications for certain ECClasses.
  *
- * @see [More details]($docs/learning/presentation/Content/ContentModifier.md)
+ * @see [More details]($docs/presentation/Content/ContentModifier.md)
  * @public
  */
 export interface ContentModifier extends RuleBase, ContentModifiersList {

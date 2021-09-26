@@ -9,7 +9,7 @@ import * as moq from "typemoq";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { RpcManager } from "@bentley/imodeljs-common";
 import { PresentationError } from "@bentley/presentation-common";
-import { Presentation, PresentationPropsDeprecated } from "../presentation-backend/Presentation";
+import { MultiManagerPresentationProps, Presentation } from "../presentation-backend/Presentation";
 import { PresentationManager } from "../presentation-backend/PresentationManager";
 import { TemporaryStorage } from "../presentation-backend/TemporaryStorage";
 
@@ -51,7 +51,7 @@ describe("Presentation", () => {
       it("sets unused client lifetime provided through props", () => {
         Presentation.initialize({ unusedClientLifetime: faker.random.number() });
         const storage = (Presentation as any)._clientsStorage as TemporaryStorage<PresentationManager>;
-        expect(storage.props.valueLifetime).to.eq((Presentation.initProps! as PresentationPropsDeprecated).unusedClientLifetime); // eslint-disable-line deprecation/deprecation
+        expect(storage.props.valueLifetime).to.eq((Presentation.initProps! as MultiManagerPresentationProps).unusedClientLifetime);
       });
 
       describe("getRequestTimeout", () => {

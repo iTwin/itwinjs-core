@@ -2,6 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
+import { GuidString } from "@bentley/bentleyjs-core";
+
 /** Parameters for starting display-test-app with a specified initial configuration */
 export interface DtaConfiguration {
   customOrchestratorUri?: string;
@@ -40,4 +43,8 @@ export interface DtaConfiguration {
   alwaysSubdivideIncompleteTiles?: boolean; // default OFF
   antialiasSamples?: number; // default 1 (No antialiasing)
   openReadWrite?: boolean; // default false
+  iTwinId?: GuidString; // default is undefined, used by spatial classification to query reality data from context share
+  mapBoxKey?: string; // default undefined
+  bingMapsKey?: string; // default undefined
+  cesiumIonKey?: string; // default undefined
 }

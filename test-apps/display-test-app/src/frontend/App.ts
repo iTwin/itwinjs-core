@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AsyncMethodsOf, ProcessDetector, PromiseReturnType } from "@bentley/bentleyjs-core";
+import { AsyncMethodsOf, GuidString, ProcessDetector, PromiseReturnType } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
@@ -12,7 +12,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import {
-  AccuDrawHintBuilder,   AccuDrawShortcuts, AccuSnap, ExternalServerExtensionLoader, IModelApp, IpcApp, LocalhostIpcApp, RenderSystem,
+  AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, IModelApp, IpcApp, LocalhostIpcApp, RenderSystem,
   SelectionTool, SnapMode, TileAdmin, Tool, ToolAdmin,
 } from "@bentley/imodeljs-frontend";
 import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
@@ -58,7 +58,7 @@ class DisplayTestAppAccuSnap extends AccuSnap {
 
 class DisplayTestAppToolAdmin extends ToolAdmin {
   /** Process shortcut key events */
-  public override processShortcutKey(keyEvent: KeyboardEvent, wentDown: boolean): boolean {
+  public override async processShortcutKey(keyEvent: KeyboardEvent, wentDown: boolean): Promise<boolean> {
     if (wentDown && AccuDrawHintBuilder.isEnabled)
       return AccuDrawShortcuts.processShortcutKey(keyEvent);
     return false;
@@ -77,8 +77,8 @@ class SVTSelectionTool extends SelectionTool {
 
 class SignInTool extends Tool {
   public static override toolId = "SignIn";
-  public override run(): boolean {
-    signIn(); // eslint-disable-line @typescript-eslint/no-floating-promises
+  public override async run(): Promise<boolean> {
+    await signIn();
     return true;
   }
 }
@@ -88,7 +88,7 @@ class PushChangesTool extends Tool {
   public static override get maxArgs() { return 1; }
   public static override get minArgs() { return 1; }
 
-  public override run(description?: string): boolean {
+  public override async run(description?: string): Promise<boolean> {
     if (!description || "string" !== typeof description)
       return false;
 
@@ -96,11 +96,11 @@ class PushChangesTool extends Tool {
     if (!imodel || !imodel.isBriefcaseConnection())
       return false;
 
-    imodel.pushChanges(description); // eslint-disable-line @typescript-eslint/no-floating-promises
+    await imodel.pushChanges(description);
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     return this.run(args[0]);
   }
 }
@@ -108,12 +108,12 @@ class PushChangesTool extends Tool {
 class PullChangesTool extends Tool {
   public static override toolId = "PullChanges";
 
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     const imodel = IModelApp.viewManager.selectedView?.iModel;
     if (!imodel || !imodel.isBriefcaseConnection())
       return false;
 
-    imodel.pullAndMergeChanges(); // eslint-disable-line @typescript-eslint/no-floating-promises
+    await imodel.pullChanges();
     return true;
   }
 }
@@ -128,7 +128,7 @@ class RefreshTilesTool extends Tool {
   public static override toolId = "RefreshTiles";
   public static override get maxArgs() { return undefined; }
 
-  public override run(changedModelIds?: string[]): boolean {
+  public override async run(changedModelIds?: string[]): Promise<boolean> {
     if (undefined !== changedModelIds && 0 === changedModelIds.length)
       changedModelIds = undefined;
 
@@ -136,7 +136,7 @@ class RefreshTilesTool extends Tool {
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     return this.run(args);
   }
 }
@@ -146,7 +146,7 @@ class PurgeTileTreesTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return undefined; }
 
-  public override run(modelIds?: string[]): boolean {
+  public override async run(modelIds?: string[]): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp)
       return true;
@@ -154,14 +154,13 @@ class PurgeTileTreesTool extends Tool {
     if (undefined !== modelIds && 0 === modelIds.length)
       modelIds = undefined;
 
-    vp.iModel.tiles.purgeTileTrees(modelIds).then(() => { // eslint-disable-line @typescript-eslint/no-floating-promises
-      IModelApp.viewManager.refreshForModifiedModels(modelIds);
-    });
+    await vp.iModel.tiles.purgeTileTrees(modelIds);
+    IModelApp.viewManager.refreshForModifiedModels(modelIds);
 
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     return this.run(args);
   }
 }
@@ -169,33 +168,29 @@ class PurgeTileTreesTool extends Tool {
 class ShutDownTool extends Tool {
   public static override toolId = "ShutDown";
 
-  public override run(_args: any[]): boolean {
+  public override async run(_args: any[]): Promise<boolean> {
     DisplayTestApp.surface.closeAllViewers();
-    if (ElectronApp.isValid)
-      ElectronApp.shutdown();// eslint-disable-line @typescript-eslint/no-floating-promises
-    else
-      IModelApp.shutdown(); // eslint-disable-line @typescript-eslint/no-floating-promises
+    const app = ElectronApp.isValid ? ElectronApp : IModelApp;
+    await app.shutdown();
+
     debugger; // eslint-disable-line no-debugger
     return true;
   }
 }
 
 export class DisplayTestApp {
-  public static tileAdminProps: TileAdmin.Props = {
-    retryInterval: 50,
-    enableInstancing: true,
-  };
-
   private static _surface?: Surface;
   public static get surface() { return this._surface!; }
   public static set surface(surface: Surface) { this._surface = surface; }
+  private static _iTwinId?: GuidString;
+  public static get iTwinId(): GuidString | undefined { return this._iTwinId; }
 
-  public static async startup(configuration: DtaConfiguration, renderSys: RenderSystem.Options): Promise<void> {
+  public static async startup(configuration: DtaConfiguration, renderSys: RenderSystem.Options, tileAdmin: TileAdmin.Props): Promise<void> {
     const opts = {
       iModelApp: {
         accuSnap: new DisplayTestAppAccuSnap(),
         notifications: new Notifications(),
-        tileAdmin: DisplayTestApp.tileAdminProps,
+        tileAdmin,
         toolAdmin: new DisplayTestAppToolAdmin(),
         uiAdmin: new UiManager(),
         renderSys,
@@ -205,6 +200,12 @@ export class DisplayTestApp {
           IModelTileRpcInterface,
           SnapshotIModelRpcInterface,
         ],
+        /* eslint-disable @typescript-eslint/naming-convention */
+        mapLayerOptions: {
+          MapBoxImagery: configuration.mapBoxKey ? { key: "access_token", value: configuration.mapBoxKey } : undefined,
+          BingMaps: configuration.bingMapsKey ? { key: "key", value: configuration.bingMapsKey } : undefined,
+        },
+        /* eslint-enable @typescript-eslint/naming-convention */
       },
       webViewerApp: {
         rpcParams: {
@@ -214,14 +215,17 @@ export class DisplayTestApp {
         authConfig: {
           clientId: "imodeljs-spa-test",
           redirectUri: "http://localhost:3000/signin-callback",
-          scope: "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party imodel-extension-service-api imodeljs-router",
+          scope: "openid email profile organization itwinjs",
           responseType: "code",
         },
       },
       localhostIpcApp: {
         socketPort: 3002,
       },
+
     };
+
+    this._iTwinId = configuration.iTwinId;
 
     if (ProcessDetector.isElectronAppFrontend) {
       await ElectronApp.startup(opts);
@@ -232,9 +236,6 @@ export class DisplayTestApp {
     } else {
       await LocalhostIpcApp.startup(opts);
     }
-
-    // For testing local extensions only, should not be used in production.
-    IModelApp.extensionAdmin.addExtensionLoaderFront(new ExternalServerExtensionLoader("http://localhost:3000"));
 
     IModelApp.applicationLogoCard =
       () => IModelApp.makeLogoCard({ iconSrc: "DTA.png", iconWidth: 100, heading: "Display Test App", notice: "For internal testing" });

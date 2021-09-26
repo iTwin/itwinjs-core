@@ -131,10 +131,10 @@ export class BackgroundMapSettings {
    * allows the user to select elements that are behind the map.
    */
   public get locatable(): boolean {
-    // Handle deprecated TerrainProps.nonLocatable:
+    // Handle legacy TerrainProps.nonLocatable:
     // - If TerrainProps.nonLocatable=true and terrain is on, terrain is not locatable.
     // - Otherwise, use BackgroundMapProps.nonLocatable.
-    if (this.applyTerrain && !this.terrainSettings.locatable) // eslint-disable-line deprecation/deprecation
+    if (this.applyTerrain && this.terrainSettings.nonLocatable)
       return false;
 
     return this._locatable;

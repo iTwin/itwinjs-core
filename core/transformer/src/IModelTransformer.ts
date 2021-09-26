@@ -7,35 +7,23 @@
  */
 import * as path from "path";
 import * as Semver from "semver";
-import { ClientRequestContext, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import * as ECSchemaMetaData from "@bentley/ecschema-metadata";
 import { Point3d, Transform } from "@bentley/geometry-core";
+import {
+  ChannelRootAspect, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect,
+  ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
+  FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelDb, IModelJsFs, InformationPartitionElement, KnownLocations, Model,
+  RecipeDefinitionElement, Relationship, RelationshipProps, Schema, Subject, SynchronizationConfigLink,
+} from "@bentley/imodeljs-backend";
 import {
   Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, GeometricElement2dProps, GeometricElement3dProps, IModel,
   IModelError, ModelProps, Placement2d, Placement3d, PrimitiveTypeCode, PropertyMetaData,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-
-import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
-
-import {
-  ChannelRootAspect, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect,
-  ElementOwnsExternalSourceAspects, ElementRefersToElements,
-  ElementUniqueAspect, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment, FolderLink,
-  GeometricElement2d,
-  GeometricElement3d, IModelCloneContext,
-  IModelDb,
-  IModelJsFs,
-  InformationPartitionElement, KnownLocations,
-  Model,
-  RecipeDefinitionElement,
-  Relationship,
-  RelationshipProps,
-  Schema, Subject, SynchronizationConfigLink,
-} from "@bentley/imodeljs-backend";
-
 import { IModelExporter, IModelExportHandler } from "./IModelExporter";
 import { IModelImporter } from "./IModelImporter";
+import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 
 const loggerCategory: string = TransformerLoggerCategory.IModelTransformer;
 
@@ -256,7 +244,7 @@ export class IModelTransformer extends IModelExportHandler {
         return DbResult.BE_SQLITE_ROW === statement.step();
       });
       if (hasConflictingScope) {
-        throw new IModelError(IModelStatus.InvalidId, "Provenance scope conflict", Logger.logError, loggerCategory);
+        throw new IModelError(IModelStatus.InvalidId, "Provenance scope conflict");
       }
       if (!this._noProvenance) {
         this.provenanceDb.elements.insertAspect(aspectProps);
@@ -279,7 +267,7 @@ export class IModelTransformer extends IModelExportHandler {
   /** Iterate all matching ExternalSourceAspects in the target iModel and call a function for each one. */
   private forEachTrackedElement(fn: (sourceElementId: Id64String, targetElementId: Id64String) => void): void {
     if (!this.provenanceDb.containsClass(ExternalSourceAspect.classFullName)) {
-      throw new IModelError(IModelStatus.BadSchema, "The BisCore schema version of the target database is too old", Logger.logError, loggerCategory);
+      throw new IModelError(IModelStatus.BadSchema, "The BisCore schema version of the target database is too old");
     }
     const sql = `SELECT Identifier,Element.Id FROM ${ExternalSourceAspect.classFullName} WHERE Scope.Id=:scopeId AND Kind=:kind`;
     this.provenanceDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
@@ -322,7 +310,7 @@ export class IModelTransformer extends IModelExportHandler {
    */
   public async detectElementDeletes(): Promise<void> {
     if (this._isReverseSynchronization) {
-      throw new IModelError(IModelStatus.BadRequest, "Cannot detect deletes when isReverseSynchronization=true", Logger.logError, loggerCategory);
+      throw new IModelError(IModelStatus.BadRequest, "Cannot detect deletes when isReverseSynchronization=true");
     }
     const targetElementsToDelete: Id64String[] = [];
     this.forEachTrackedElement((sourceElementId: Id64String, targetElementId: Id64String) => {
@@ -414,7 +402,7 @@ export class IModelTransformer extends IModelExportHandler {
    */
   public async processElement(sourceElementId: Id64String): Promise<void> {
     if (sourceElementId === IModel.rootSubjectId) {
-      throw new IModelError(IModelStatus.BadRequest, "The root Subject should not be directly imported", Logger.logError, loggerCategory);
+      throw new IModelError(IModelStatus.BadRequest, "The root Subject should not be directly imported");
     }
     return this.exporter.exportElement(sourceElementId);
   }
@@ -601,7 +589,7 @@ export class IModelTransformer extends IModelExportHandler {
         Logger.logTrace(loggerCategory, "Retrying processDeferredElements()");
         await this.processDeferredElements(numRetries);
       } else {
-        throw new IModelError(IModelStatus.BadRequest, "Not all deferred elements could be processed", Logger.logError, loggerCategory);
+        throw new IModelError(IModelStatus.BadRequest, "Not all deferred elements could be processed");
       }
     }
   }
@@ -663,7 +651,7 @@ export class IModelTransformer extends IModelExportHandler {
    */
   public async detectRelationshipDeletes(): Promise<void> {
     if (this._isReverseSynchronization) {
-      throw new IModelError(IModelStatus.BadRequest, "Cannot detect deletes when isReverseSynchronization=true", Logger.logError, loggerCategory);
+      throw new IModelError(IModelStatus.BadRequest, "Cannot detect deletes when isReverseSynchronization=true");
     }
     const aspectDeleteIds: Id64String[] = [];
     const sql = `SELECT ECInstanceId,Identifier,JsonProperties FROM ${ExternalSourceAspect.classFullName} aspect WHERE aspect.Scope.Id=:scopeId AND aspect.Kind=:kind`;
@@ -773,13 +761,8 @@ export class IModelTransformer extends IModelExportHandler {
 
   /** Override of [IModelExportHandler.onExportSchema]($transformer) that serializes a schema to disk for [[processSchemas]] to import into
    * the target iModel when it is exported from the source iModel. */
-  protected override async onExportSchema(_schema: ECSchemaMetaData.Schema): Promise<void> {
-    // HACK: when the native serializer gets support for individual schema export, this will stop exporting all at once
-    // and instead export the asked for schema, which will prevent false errors because of trying to import already existing schemas
-    if (!this._hasNativelyExportedAllSchemas) {
-      this._hasNativelyExportedAllSchemas = true;
-      this.sourceDb.nativeDb.exportSchemas(this._schemaExportDir);
-    }
+  protected override async onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void> {
+    this.sourceDb.nativeDb.exportSchema(schema.name, this._schemaExportDir);
   }
 
   // pending PR https://github.com/typescript-eslint/typescript-eslint/pull/3601 fixes the rule @typescript-eslint/return-await
@@ -791,20 +774,17 @@ export class IModelTransformer extends IModelExportHandler {
    * @note For performance reasons, it is recommended that [IModelDb.saveChanges]($backend) be called after `processSchemas` is complete.
    * It is more efficient to process *data* changes after the schema changes have been saved.
    */
-  public async processSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void> {
+  public async processSchemas(): Promise<void> {
     try {
-      requestContext.enter();
       IModelJsFs.mkdirSync(this._schemaExportDir);
       await this.exporter.exportSchemas();
       this._hasNativelyExportedAllSchemas = false;
-      requestContext.enter();
       const exportedSchemaFiles = IModelJsFs.readdirSync(this._schemaExportDir);
       if (exportedSchemaFiles.length === 0)
         return;
       const schemaFullPaths = exportedSchemaFiles.map(this.makeAbsolute);
-      return await this.targetDb.importSchemas(requestContext, schemaFullPaths);
+      return await this.targetDb.importSchemas(schemaFullPaths);
     } finally {
-      requestContext.enter();
       IModelJsFs.removeSync(this._schemaExportDir);
     }
   }
@@ -886,13 +866,11 @@ export class IModelTransformer extends IModelExportHandler {
  * @note To form a range of versions to process, set `startChangesetId` for the start (inclusive) of the desired range and open the source iModel as of the end (inclusive) of the desired range.
  */
   public async processChanges(requestContext: AuthorizedClientRequestContext, startChangesetId?: string): Promise<void> {
-    requestContext.enter();
     Logger.logTrace(loggerCategory, "processChanges()");
     this.logSettings();
     this.validateScopeProvenance();
     this.initFromExternalSourceAspects();
     await this.exporter.exportChanges(requestContext, startChangesetId);
-    requestContext.enter();
     await this.processDeferredElements();
     this.importer.computeProjectExtents();
   }
@@ -961,13 +939,13 @@ export class TemplateModelCloner extends IModelTransformer {
     predecessorIds.forEach((predecessorId: Id64String) => {
       if (Id64.invalid === this.context.findTargetElementId(predecessorId)) {
         if (this.context.isBetweenIModels) {
-          throw new IModelError(IModelStatus.BadRequest, `Remapping for source dependency ${predecessorId} not found for target iModel`, Logger.logError, TransformerLoggerCategory.IModelTransformer);
+          throw new IModelError(IModelStatus.BadRequest, `Remapping for source dependency ${predecessorId} not found for target iModel`);
         } else {
           const definitionElement = this.sourceDb.elements.tryGetElement<DefinitionElement>(predecessorId, DefinitionElement);
           if (definitionElement && !(definitionElement instanceof RecipeDefinitionElement)) {
             this.context.remapElement(predecessorId, predecessorId); // when in the same iModel, can use existing DefinitionElements without remapping
           } else {
-            throw new IModelError(IModelStatus.BadRequest, `Remapping for dependency ${predecessorId} not found`, Logger.logError, TransformerLoggerCategory.IModelTransformer);
+            throw new IModelError(IModelStatus.BadRequest, `Remapping for dependency ${predecessorId} not found`);
           }
         }
       }

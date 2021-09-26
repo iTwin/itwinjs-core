@@ -9,7 +9,7 @@
 const copyrightNotice = 'Copyright © 2017-2021 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
 import {
-  BeDuration, BentleyStatus, ClientRequestContext, DbResult, dispose, Guid, GuidString, Logger, SerializedClientRequestContext,
+  BeDuration, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger, SerializedClientRequestContext,
 } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelClient } from "@bentley/imodelhub-client";
@@ -27,10 +27,8 @@ import * as displayStyleState from "./DisplayStyleState";
 import * as drawingViewState from "./DrawingViewState";
 import { ElementLocateManager } from "./ElementLocateManager";
 import { EntityState } from "./EntityState";
-import { ExtensionAdmin } from "./extension/ExtensionAdmin";
 import { FrontendHubAccess, IModelHubFrontend } from "./FrontendHubAccess";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
-import { FrontendRequestContext } from "./FrontendRequestContext";
 import * as modelselector from "./ModelSelectorState";
 import * as modelState from "./ModelState";
 import { NotificationManager } from "./NotificationManager";
@@ -43,7 +41,6 @@ import { TentativePoint } from "./TentativePoint";
 import { MapLayerFormatRegistry, MapLayerOptions, TileAdmin } from "./tile/internal";
 import * as accudrawTool from "./tools/AccuDrawTool";
 import * as clipViewTool from "./tools/ClipViewTool";
-import * as extensionTool from "./tools/ExtensionTool";
 import * as idleTool from "./tools/IdleTool";
 import * as measureTool from "./tools/MeasureTool";
 import * as selectTool from "./tools/SelectTool";
@@ -119,10 +116,6 @@ export interface IModelAppOptions {
   quantityFormatter?: QuantityFormatter;
   /** @internal */
   renderSys?: RenderSystem | RenderSystem.Options;
-  /** If present, supplies the [[ExtensionAdmin]] for this session.
-   * @beta
-   */
-  extensionAdmin?: ExtensionAdmin;
   /** If present, supplies the [[UiAdmin]] for this session. */
   uiAdmin?: UiAdmin;
   rpcInterfaces?: RpcInterfaceDefinition[];
@@ -177,7 +170,6 @@ export class IModelApp {
   private static _i18n: I18N;
   private static _locateManager: ElementLocateManager;
   private static _notifications: NotificationManager;
-  private static _extensionAdmin: ExtensionAdmin;
   private static _quantityFormatter: QuantityFormatter;
   private static _renderSystem?: RenderSystem;
   private static _settings: SettingsAdmin;
@@ -250,10 +242,6 @@ export class IModelApp {
 
   /** @internal */
   public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid; }
-  /** The [[ExtensionAdmin]] for this session.
-   * @beta
-   */
-  public static get extensionAdmin() { return this._extensionAdmin; }
   /** The [[UiAdmin]] for this session. */
   public static get uiAdmin() { return this._uiAdmin; }
   /** The requested security options for the frontend. */
@@ -320,10 +308,6 @@ export class IModelApp {
       return; // we're already initialized, do nothing.
     this._initialized = true;
 
-    // Setup a current context for all requests that originate from this frontend
-    const requestContext = new FrontendRequestContext();
-    requestContext.enter();
-
     opts = opts ?? {};
     this._securityOptions = opts.security || {};
 
@@ -353,7 +337,6 @@ export class IModelApp {
       clipViewTool,
       measureTool,
       accudrawTool,
-      extensionTool,
     ].forEach((tool) => this.tools.registerModule(tool, coreNamespace));
 
     this.registerEntityState(EntityState.classFullName, EntityState);
@@ -369,23 +352,6 @@ export class IModelApp {
       auxCoordState,
     ].forEach((module) => this.registerModuleEntities(module));
 
-    const defaultMapLayerOptions: MapLayerOptions = {
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      MapboxImagery: { key: "access_token", value: "pk%2EeyJ1IjoibWFwYm94YmVudGxleSIsImEiOiJjaWZvN2xpcW00ZWN2czZrcXdreGg2eTJ0In0%2Ef7c9GAxz6j10kZvL%5F2DBHg" },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      BingMaps: { key: "key", value: "AtaeI3QDNG7Bpv1L53cSfDBgBKXIgLq3q-xmn_Y2UyzvF-68rdVxwAuje49syGZt" },
-    };
-    if (opts.mapLayerOptions) {
-      // if we were passed maplayeroptions, fill in any gaps with defaultMapLayerOptions
-      for (const key of Object.keys(defaultMapLayerOptions)) {
-        if (opts.mapLayerOptions[key])
-          continue;
-        opts.mapLayerOptions[key] = defaultMapLayerOptions[key];
-      }
-    } else {
-      opts.mapLayerOptions = defaultMapLayerOptions;
-    }
-
     this._renderSystem = (opts.renderSys instanceof RenderSystem) ? opts.renderSys : this.createRenderSys(opts.renderSys);
 
     this._settings = (opts.settings !== undefined) ? opts.settings : new ConnectSettingsClient(this.applicationId);
@@ -397,7 +363,6 @@ export class IModelApp {
     this._accuSnap = (opts.accuSnap !== undefined) ? opts.accuSnap : new AccuSnap();
     this._locateManager = (opts.locateManager !== undefined) ? opts.locateManager : new ElementLocateManager();
     this._tentativePoint = (opts.tentativePoint !== undefined) ? opts.tentativePoint : new TentativePoint();
-    this._extensionAdmin = (opts.extensionAdmin !== undefined) ? opts.extensionAdmin : new ExtensionAdmin();
     this._quantityFormatter = (opts.quantityFormatter !== undefined) ? opts.quantityFormatter : new QuantityFormatter();
     this._uiAdmin = (opts.uiAdmin !== undefined) ? opts.uiAdmin : new UiAdmin();
     this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);
@@ -410,7 +375,6 @@ export class IModelApp {
       this.accuSnap,
       this.locateManager,
       this.tentativePoint,
-      this.extensionAdmin,
       this.uiAdmin,
     ].forEach((sys) => {
       if (sys)
@@ -523,9 +487,7 @@ export class IModelApp {
 
   private static _setupRpcRequestContext() {
     RpcConfiguration.requestContext.getId = (_request: RpcRequest): string => {
-      const id = ClientRequestContext.current.useContextForRpc ? ClientRequestContext.current.activityId : Guid.createValue(); // Use any context explicitly set for an RPC call if possible
-      ClientRequestContext.current.useContextForRpc = false; // Reset flag so it doesn't get used inadvertently for next RPC call
-      return id;
+      return Guid.createValue();
     };
 
     RpcConfiguration.requestContext.serialize = async (_request: RpcRequest): Promise<SerializedClientRequestContext> => {

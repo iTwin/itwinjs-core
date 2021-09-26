@@ -1,12 +1,12 @@
 {
   "name": "@bentley/imodeljs-transformer",
-  "version": "3.0.0-dev.42",
+  "version": "3.0.0-dev.68",
   "description": "API for exporting an iModel's parts and also importing them into another iModel",
   "main": "lib/imodeljs-transformer.js",
   "typings": "lib/imodeljs-transformer",
   "license": "MIT",
   "engines": {
-    "node": ">=10.17.0 <15.0"
+    "node": ">=12.22.0 < 14.0 || >=14.17.0 <17.0"
   },
   "scripts": {
     "compile": "npm run build",
@@ -19,8 +19,8 @@
     "cover:integration": "nyc npm run test:integration",
     "extract-api": "betools extract-api --entry=imodeljs-transformer",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "betools test --offline=\"mock\" --grep=\"#integration\" --invert",
-    "test:integration": "betools test --offline=\"mock\" --grep=\"#integration\""
+    "test": "mocha --grep=\"#integration\" --invert",
+    "test:integration": "mocha --grep=\"#integration\""
   },
   "repository": {
     "type": "git",
@@ -38,12 +38,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.42",
-    "@bentley/ecschema-metadata": "workspace:^3.0.0-dev.42",
-    "@bentley/geometry-core": "workspace:^3.0.0-dev.42",
-    "@bentley/imodeljs-backend": "workspace:^3.0.0-dev.42",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.42",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.42"
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.68",
+    "@bentley/ecschema-metadata": "workspace:^3.0.0-dev.68",
+    "@bentley/geometry-core": "workspace:^3.0.0-dev.68",
+    "@bentley/imodeljs-backend": "workspace:^3.0.0-dev.68",
+    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.68",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.68"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -61,7 +61,7 @@
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^8.2.2",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "@types/semver": "^5.5.0",
     "@types/sinon": "^9.0.0",
     "chai": "^4.1.2",
@@ -73,7 +73,7 @@
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",
-    "typescript": "~4.3.0"
+    "typescript": "~4.4.0"
   },
   "dependencies": {
     "semver": "^5.5.0"

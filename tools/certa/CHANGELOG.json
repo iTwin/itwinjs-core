@@ -2,6 +2,30 @@
   "name": "@bentley/certa",
   "entries": [
     {
+      "version": "2.19.13",
+      "tag": "@bentley/certa_v2.19.13",
+      "date": "Tue, 21 Sep 2021 21:06:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.12",
+      "tag": "@bentley/certa_v2.19.12",
+      "date": "Wed, 15 Sep 2021 18:06:46 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.11",
+      "tag": "@bentley/certa_v2.19.11",
+      "date": "Thu, 09 Sep 2021 21:04:57 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.10",
+      "tag": "@bentley/certa_v2.19.10",
+      "date": "Wed, 08 Sep 2021 14:36:01 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.19.9",
       "tag": "@bentley/certa_v2.19.9",
       "date": "Wed, 25 Aug 2021 15:36:01 GMT",

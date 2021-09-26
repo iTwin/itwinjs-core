@@ -182,21 +182,10 @@ export enum DbResult {
 }
 /* eslint-enable @typescript-eslint/naming-convention */
 
-/** Options that specify how to apply ChangeSets.
- * @public
+/**
+ * @internal
  */
 export enum ChangeSetApplyOption {
-  /** ChangeSet won't be used.  */
-  None = 0,
-  /** ChangeSet will be merged into the Db */
-  Merge,
-  /**
-   * ChangeSet will be reversed from the Db
-   * @deprecated
-   */
-  Reverse,
-  /** ChangeSet will be reinstated into the Db
-   * @deprecated
-   */
-  Reinstate,
+  Merge = 1,
+  Reverse = 2,
 }

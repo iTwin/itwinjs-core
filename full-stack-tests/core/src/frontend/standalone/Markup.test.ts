@@ -51,8 +51,8 @@ describe("Markup tests", async () => {
 
   it("viewing tools should fail when Markup active", async () => {
     const tools = IModelApp.tools;
-    assert.isFalse(tools.run(StandardViewTool.toolId, vp, StandardViewId.Back), "standard view");
-    assert.isFalse(tools.run(WindowAreaTool.toolId, vp), "standard view");
+    assert.isFalse(await tools.run(StandardViewTool.toolId, vp, StandardViewId.Back), "standard view");
+    assert.isFalse(await tools.run(WindowAreaTool.toolId, vp), "standard view");
   });
 
   it("Markup Undo/Redo", () => {

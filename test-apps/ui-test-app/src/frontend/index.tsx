@@ -8,8 +8,8 @@ import * as ReactDOM from "react-dom";
 import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
-import { ClientRequestContext, Id64String, Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
-import { ContextRegistryClient } from "@bentley/context-registry-client";
+import { Id64String, Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
+import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
@@ -18,31 +18,28 @@ import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@bentley/imodeljs-common";
 import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import {
-  AccuSnap, AuthorizedFrontendRequestContext, BriefcaseConnection, ExternalServerExtensionLoader, IModelApp, IModelConnection,
-  LocalUnitFormatProvider, NativeApp, NativeAppLogger, NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState,
+  AccuSnap, AuthorizedFrontendRequestContext, BriefcaseConnection, IModelApp, IModelConnection,
+  LocalUnitFormatProvider, NativeApp, NativeAppLogger, NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
   WebViewerApp, WebViewerAppOpts,
 } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { MarkupApp } from "@bentley/imodeljs-markup";
-import { AccessToken, ProgressInfo, UrlDiscoveryClient } from "@bentley/itwin-client";
-// To test map-layer extension comment out the following and ensure ui-test-app\build\imjs_extensions contains map-layers, if not see Readme.md in map-layers package.
+import { AccessToken, ProgressInfo } from "@bentley/itwin-client";
 import { MapLayersUI } from "@bentley/map-layers";
 import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
-import { PresentationUnitSystem } from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
+import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@bentley/presentation-frontend";
 import { getClassName } from "@bentley/ui-abstract";
-import { BeDragDropContext } from "@bentley/ui-components";
 import { LocalSettingsStorage, UiSettings } from "@bentley/ui-core";
 import {
-  ActionsUnion, AppNotificationManager, AppUiSettings, ConfigurableUiContent, createAction, DeepReadonly, DragDropLayerRenderer, FrameworkAccuDraw,
+  ActionsUnion, AppNotificationManager, AppUiSettings, ConfigurableUiContent, createAction, DeepReadonly, FrameworkAccuDraw,
   FrameworkReducer, FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef,
   FrontstageManager, IModelInfo, ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME,
   ThemeManager, ToolbarDragInteractionContext, UiFramework, UiSettingsProvider, UserSettingsStorage,
 } from "@bentley/ui-framework";
 import { SafeAreaInsets } from "@bentley/ui-ninezone";
+import { BeDragDropContext } from "@bentley/ui-components";
 import { getSupportedRpcs } from "../common/rpcs";
-import { TestAppConfiguration } from "../common/TestAppConfiguration";
-import { ActiveSettingsManager } from "./api/ActiveSettingsManager";
+import { loggerCategory, TestAppConfiguration } from "../common/TestAppConfiguration";
 import { BearingQuantityType } from "./api/BearingQuantityType";
 import { ErrorHandling } from "./api/ErrorHandling";
 import { AppUi } from "./appui/AppUi";
@@ -61,7 +58,10 @@ import { Tool1 } from "./tools/Tool1";
 import { Tool2 } from "./tools/Tool2";
 import { ToolWithDynamicSettings } from "./tools/ToolWithDynamicSettings";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
-import { OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool, UiProviderTool } from "./tools/UiProviderTool";
+import {
+  OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool,
+  RemoveSavedContentLayoutTool, RestoreSavedContentLayoutTool, SaveContentLayoutTool, UiProviderTool,
+} from "./tools/UiProviderTool";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -76,18 +76,21 @@ export enum SampleAppUiActionId {
   setTestProperty = "sampleapp:settestproperty",
   setAnimationViewId = "sampleapp:setAnimationViewId",
   setIsIModelLocal = "sampleapp:setisimodellocal",
+  setInitialViewIds = "sampleapp:setInitialViewIds",
 }
 
 export interface SampleAppState {
   testProperty: string;
   animationViewId: string;
   isIModelLocal: boolean;
+  initialViewIds: string[];
 }
 
 const initialState: SampleAppState = {
   testProperty: "",
   animationViewId: "",
   isIModelLocal: false,
+  initialViewIds: [],
 };
 
 // An object with a function that creates each OpenIModelAction that can be handled by our reducer.
@@ -95,6 +98,7 @@ export const SampleAppActions = {
   setTestProperty: (testProperty: string) => createAction(SampleAppUiActionId.setTestProperty, testProperty),
   setAnimationViewId: (viewId: string) => createAction(SampleAppUiActionId.setAnimationViewId, viewId),
   setIsIModelLocal: (isIModelLocal: boolean) => createAction(SampleAppUiActionId.setIsIModelLocal, isIModelLocal),
+  setInitialViewIds: (viewIds: string[]) => createAction(SampleAppUiActionId.setInitialViewIds, viewIds),
 };
 
 class SampleAppAccuSnap extends AccuSnap {
@@ -128,6 +132,9 @@ function SampleAppReducer(state: SampleAppState = initialState, action: SampleAp
     }
     case SampleAppUiActionId.setIsIModelLocal: {
       return { ...state, isIModelLocal: action.payload };
+    }
+    case SampleAppUiActionId.setInitialViewIds: {
+      return { ...state, initialViewIds: action.payload };
     }
   }
   return state;
@@ -184,9 +191,6 @@ export class SampleAppIModelApp {
       console.log(error);
     };
 
-    // For testing local extensions only, should not be used in production.
-    IModelApp.extensionAdmin.addExtensionLoaderFront(new ExternalServerExtensionLoader("http://localhost:3000"));
-
     this.sampleAppNamespace = IModelApp.i18n.registerNamespace("SampleApp");
 
     // use new state manager that allows dynamic additions from extensions and snippets
@@ -213,7 +217,14 @@ export class SampleAppIModelApp {
 
     // initialize Presentation
     await Presentation.initialize({
-      activeLocale: IModelApp.i18n.languageList()[0],
+      presentation: {
+        activeLocale: IModelApp.i18n.languageList()[0],
+      },
+      favorites: {
+        storage: createFavoritePropertiesStorage(SampleAppIModelApp.testAppConfiguration?.useLocalSettings
+          ? DefaultFavoritePropertiesStorageTypes.BrowserLocalStorage
+          : DefaultFavoritePropertiesStorageTypes.UserSettingsServiceStorage),
+      },
     });
     Presentation.selection.scopes.activeScope = "top-assembly";
 
@@ -227,6 +238,9 @@ export class SampleAppIModelApp {
     OpenComponentExamplesPopoutTool.register(this.sampleAppNamespace);
     OpenCustomPopoutTool.register(this.sampleAppNamespace);
     OpenViewPopoutTool.register(this.sampleAppNamespace);
+    RemoveSavedContentLayoutTool.register(this.sampleAppNamespace);
+    RestoreSavedContentLayoutTool.register(this.sampleAppNamespace);
+    SaveContentLayoutTool.register(this.sampleAppNamespace);
 
     // Register editing tools
     if (this.allowWrite) {
@@ -249,7 +263,7 @@ export class SampleAppIModelApp {
 
     // default to showing imperial formatted units
     await IModelApp.quantityFormatter.setActiveUnitSystem("imperial");
-    Presentation.presentation.activeUnitSystem = PresentationUnitSystem.BritishImperial;
+    Presentation.presentation.activeUnitSystem = "imperial";
     await IModelApp.quantityFormatter.setUnitFormattingSettingsProvider(new LocalUnitFormatProvider(IModelApp.quantityFormatter, true)); // pass true to save per imodel
 
     await FrontendDevTools.initialize();
@@ -323,38 +337,15 @@ export class SampleAppIModelApp {
   }
 
   public static async openViews(iModelConnection: IModelConnection, viewIdsSelected: Id64String[]) {
-    let viewIdsParam = "";
-    viewIdsSelected.forEach((viewId: string, index: number) => {
-      if (index > 0)
-        viewIdsParam += `&`;
-      viewIdsParam += `viewId=${viewId}`;
-    });
-    Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `openViews: ${viewIdsParam}`);
-
-    // store the IModelConnection in the sample app store - this may trigger redux connected components
-    UiFramework.setIModelConnection(iModelConnection, true);
-    const viewStates: ViewState[] = [];
-    let defaultViewState: ViewState | undefined;
-
-    // store the first selected viewId as default - mostly used by frontstages defined in extensions that want to open a IModelViewport
-    if (viewIdsSelected && viewIdsSelected.length > 0) {
-      for (const viewId of viewIdsSelected) {
-        const viewState = await iModelConnection.views.load(viewId);
-        if (viewState) {
-          if (!defaultViewState) {
-            defaultViewState = viewState;
-            ActiveSettingsManager.onViewOpened(viewState); // Review TODO
-          }
-          viewStates.push(viewState);
-        }
-      }
-      if (defaultViewState)
-        UiFramework.setDefaultViewState(defaultViewState);
-    }
-
     // we create a Frontstage that contains the views that we want.
     let stageId: string;
     const defaultFrontstage = this.allowWrite ? EditFrontstage.stageId : ViewsFrontstage.stageId;
+
+    // store the IModelConnection in the sample app store - this may trigger redux connected components
+    UiFramework.setIModelConnection(iModelConnection, true);
+    if (viewIdsSelected.length) {
+      SampleAppIModelApp.setInitialViewIds(viewIdsSelected);
+    }
 
     if (this.iModelParams && this.iModelParams.stageId)
       stageId = this.iModelParams.stageId;
@@ -364,16 +355,16 @@ export class SampleAppIModelApp {
     let frontstageDef: FrontstageDef | undefined;
     if (stageId === defaultFrontstage) {
       if (stageId === ViewsFrontstage.stageId) {
-        const frontstageProvider = new ViewsFrontstage(viewStates, iModelConnection);
+        const frontstageProvider = new ViewsFrontstage();
         FrontstageManager.addFrontstageProvider(frontstageProvider);
-        frontstageDef = frontstageProvider.frontstageDef;
       } else {
-        const frontstageProvider = new EditFrontstage(viewStates, iModelConnection);
+        const frontstageProvider = new EditFrontstage();
         FrontstageManager.addFrontstageProvider(frontstageProvider);
-        frontstageDef = frontstageProvider.frontstageDef;
       }
+      frontstageDef = await FrontstageManager.getFrontstageDef(stageId);
+
     } else {
-      frontstageDef = FrontstageManager.findFrontstageDef(stageId);
+      frontstageDef = await FrontstageManager.getFrontstageDef(stageId);
     }
 
     if (frontstageDef) {
@@ -382,7 +373,7 @@ export class SampleAppIModelApp {
         Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Frontstage & ScreenViewports are ready`);
         if (false && ProcessDetector.isElectronAppFrontend) { // used for testing pop-out support
           // delay 5 seconds to see if window opens - since web browser will block pop-out if we wait. Also web browser will not allow multiple pop-outs.
-          setTimeout(() => { IModelApp.tools.run(OpenCustomPopoutTool.toolId); /* IModelApp.tools.run(OpenWidgetPopoutTool.toolId); */ }, 5000);
+          setTimeout(() => { void IModelApp.tools.run(OpenCustomPopoutTool.toolId); /* IModelApp.tools.run(OpenWidgetPopoutTool.toolId); */ }, 5000);
         }
       });
     } else {
@@ -394,7 +385,7 @@ export class SampleAppIModelApp {
     await LocalFileOpenFrontstage.open();
   }
 
-  public static async showIModelIndex(contextId: string, iModelId: string) {
+  public static async showIModelIndex(iTwinId: string, iModelId: string) {
     const currentConnection = UiFramework.getIModelConnection();
     if (!currentConnection || (currentConnection.iModelId !== iModelId)) {
       // Close the current iModelConnection
@@ -402,18 +393,18 @@ export class SampleAppIModelApp {
 
       // open the imodel
       Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
-        `showIModelIndex: projectId=${contextId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
+        `showIModelIndex: projectId=${iTwinId}&iModelId=${iModelId} mode=${this.allowWrite ? "ReadWrite" : "Readonly"}`);
 
       let iModelConnection: IModelConnection | undefined;
       if (ProcessDetector.isMobileAppFrontend) {
-        const req = await NativeApp.requestDownloadBriefcase(contextId, iModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(), async (progress: ProgressInfo) => {
+        const req = await NativeApp.requestDownloadBriefcase(iTwinId, iModelId, { syncMode: SyncMode.PullOnly }, IModelVersion.latest(), async (progress: ProgressInfo) => {
           // eslint-disable-next-line no-console
           console.log(`Progress (${progress.loaded}/${progress.total}) -> ${progress.percent}%`);
         });
         await req.downloadPromise;
         iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
       } else {
-        iModelConnection = await UiFramework.iModelServices.openIModel(contextId, iModelId);
+        iModelConnection = await UiFramework.iModelServices.openIModel(iTwinId, iModelId);
       }
 
       SampleAppIModelApp.setIsIModelLocal(false, true);
@@ -444,19 +435,29 @@ export class SampleAppIModelApp {
       const iModelName = process.env.IMJS_UITESTAPP_IMODEL_NAME ?? "";
 
       const requestContext = await AuthorizedFrontendRequestContext.create();
-      const project = await (new ContextRegistryClient()).getProject(requestContext, {
-        $select: "*",
-        $filter: `Name+eq+'${projectName}'`,
+      const iTwinList: ITwin[] = await (new ITwinAccessClient()).getAll(requestContext, {
+        search: {
+          searchString: projectName,
+          propertyName: ITwinSearchableProperty.Name,
+          exactMatch: true,
+        },
       });
 
-      const iModel = (await (new IModelHubClient()).iModels.get(requestContext, project.wsgId, new IModelQuery().byName(iModelName)))[0];
+      if (iTwinList.length === 0)
+        throw new Error(`ITwin ${projectName} was not found for the user.`);
+      else if (iTwinList.length > 1)
+        throw new Error(`Multiple iTwins named ${projectName} were found for the user.`);
+
+      const project: ITwin = iTwinList[0];
+
+      const iModel = (await (new IModelHubClient()).iModels.get(requestContext, project.id, new IModelQuery().byName(iModelName)))[0];
 
       if (viewId) {
         // open directly into the iModel (view)
-        await SampleAppIModelApp.openIModelAndViews(project.wsgId, iModel.wsgId, [viewId]);
+        await SampleAppIModelApp.openIModelAndViews(project.id, iModel.wsgId, [viewId]);
       } else {
         // open to the IModelIndex frontstage
-        await SampleAppIModelApp.showIModelIndex(project.wsgId, iModel.wsgId);
+        await SampleAppIModelApp.showIModelIndex(project.id, iModel.wsgId);
       }
     } else if (SampleAppIModelApp.iModelParams) {
       if (SampleAppIModelApp.iModelParams.viewIds && SampleAppIModelApp.iModelParams.viewIds.length > 0) {
@@ -504,6 +505,10 @@ export class SampleAppIModelApp {
     }
   }
 
+  public static getInitialViewIds() {
+    return SampleAppIModelApp.store.getState().sampleAppState.initialViewIds;
+  }
+
   public static getTestProperty(): string {
     return SampleAppIModelApp.store.getState().sampleAppState.testProperty;
   }
@@ -526,13 +531,17 @@ export class SampleAppIModelApp {
     UiFramework.dispatchActionToStore(SampleAppUiActionId.setIsIModelLocal, isIModelLocal, immediateSync);
   }
 
+  public static setInitialViewIds(viewIds: string[], immediateSync = false) {
+    UiFramework.dispatchActionToStore(SampleAppUiActionId.setInitialViewIds, viewIds, immediateSync);
+  }
+
   public static get isIModelLocal(): boolean {
     return SampleAppIModelApp.store.getState().sampleAppState.isIModelLocal;
   }
 
   public static async showFrontstage(frontstageId: string) {
-    const frontstageDef = FrontstageManager.findFrontstageDef(frontstageId);
-    FrontstageManager.setActiveFrontstageDef(frontstageDef); // eslint-disable-line @typescript-eslint/no-floating-promises
+    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageId);
+    await FrontstageManager.setActiveFrontstageDef(frontstageDef);
   }
 }
 
@@ -632,8 +641,6 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
                 </AppFrameworkVersion>
               </AppDragInteraction>
             </SafeAreaContext.Provider>
-            {/* eslint-disable-next-line deprecation/deprecation */}
-            <DragDropLayerRenderer />
           </BeDragDropContext>
         </ThemeManager>
       </Provider >
@@ -651,12 +658,7 @@ const baseOidcScopes = [
   "email",
   "profile",
   "organization",
-  "imodelhub",
-  "context-registry-service:read-only",
-  "product-settings-service",
-  "projectwise-share",
-  "urlps-third-party",
-  "imodel-extension-service-api",
+  "itwinjs",
 ];
 
 // main entry point.
@@ -664,14 +666,10 @@ async function main() {
   // initialize logging
   Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Warning);
-  Logger.setLevel("ui-test-app", LogLevel.Info);
+  Logger.setLevel(loggerCategory, LogLevel.Info);
   Logger.setLevel("ui-framework.UiFramework", LogLevel.Info);
 
   ToolAdmin.exceptionHandler = async (err: any) => Promise.resolve(ErrorHandling.onUnexpectedError(err));
-
-  // Logger.setLevel("ui-framework.Toolbar", LogLevel.Info);  // used to show minimal output calculating toolbar overflow
-  // Logger.setLevel("ui-framework.Toolbar", LogLevel.Trace);  // used to show detailed output calculating toolbar overflow
-  // Logger.setLevel("ui-framework.DefaultToolSettings", LogLevel.Trace);  // used to show detailed output calculating default toolsettings
 
   // retrieve, set, and output the global configuration variable
   SampleAppIModelApp.testAppConfiguration = {};
@@ -684,10 +682,7 @@ async function main() {
 
   let rpcParams: BentleyCloudRpcParams;
   if (process.env.IMJS_GP_BACKEND) {
-    const urlClient = new UrlDiscoveryClient();
-    const requestContext = new ClientRequestContext();
-    const orchestratorUrl = await urlClient.discoverUrl(requestContext, "iModelJsOrchestrator.K8S", undefined);
-    rpcParams = { info: { title: "general-purpose-imodeljs-backend", version: "v2.0" }, uriPrefix: orchestratorUrl };
+    rpcParams = { info: { title: "general-purpose-imodeljs-backend", version: "v2.0" }, uriPrefix: `https://${undefined === process.env.IMJS_URL_PREFIX ? "" : process.env.IMJS_URL_PREFIX}api.bentley.com` };
   } else {
     rpcParams = { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
   }
@@ -708,15 +703,8 @@ async function main() {
       authConfig: {
         clientId: "imodeljs-spa-test",
         redirectUri: "http://localhost:3000/signin-callback",
-        scope: baseOidcScopes.concat("imodeljs-router").join(" "),
+        scope: baseOidcScopes.join(" "),
         responseType: "code",
-      },
-    },
-    nativeApp: {
-      authConfig: {
-        clientId: "imodeljs-electron-test",
-        redirectUri: ProcessDetector.isMobileAppFrontend ? "imodeljs://app/signin-callback" : "http://localhost:3000/signin-callback",
-        scope: baseOidcScopes.concat(["offline_access"]).join(" "),
       },
     },
   };

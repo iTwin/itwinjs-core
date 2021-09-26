@@ -7,17 +7,16 @@ import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend
 import { KeySet } from "@bentley/presentation-common";
 import { FavoritePropertiesDataProvider, PresentationPropertyDataProvider } from "@bentley/presentation-components";
 import { DEFAULT_PROPERTY_GRID_RULESET } from "@bentley/presentation-components/lib/presentation-components/propertygrid/DataProvider";
-import { Presentation } from "@bentley/presentation-frontend";
+import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { PropertyData } from "@bentley/ui-components";
 import { initialize, terminate } from "../../IntegrationTests";
-
-/* eslint-disable deprecation/deprecation */
 
 describe("FavoritePropertiesDataProvider", async () => {
 
   let imodel: IModelConnection;
   let provider: FavoritePropertiesDataProvider;
+  const scope = FavoritePropertiesScope.IModel;
 
   before(async () => {
     await initialize();
@@ -35,7 +34,7 @@ describe("FavoritePropertiesDataProvider", async () => {
   });
 
   afterEach(async () => {
-    await Presentation.favoriteProperties.clear();
+    await Presentation.favoriteProperties.clear(imodel, scope);
   });
 
   describe("getData", () => {
@@ -43,15 +42,16 @@ describe("FavoritePropertiesDataProvider", async () => {
     it("returns favorite properties", async () => {
       // make a couple of properties favorited
       const propertyProvider = new PresentationPropertyDataProvider({ imodel, ruleset: DEFAULT_PROPERTY_GRID_RULESET });
+      propertyProvider.isNestedPropertyCategoryGroupingEnabled = false;
       propertyProvider.keys = new KeySet([{ className: "PCJ_TestSchema:TestClass", id: "0x38" }]);
       const propertyData = await propertyProvider.getData();
 
       let record = getPropertyRecordByLabel(propertyData, "Country")!;
       let field = await propertyProvider.getFieldByPropertyRecord(record);
-      await Presentation.favoriteProperties.add(field!);
+      await Presentation.favoriteProperties.add(field!, imodel, scope);
       record = getPropertyRecordByLabel(propertyData, "Model")!;
       field = await propertyProvider.getFieldByPropertyRecord(record);
-      await Presentation.favoriteProperties.add(field!);
+      await Presentation.favoriteProperties.add(field!, imodel, scope);
 
       Presentation.selection.scopes.activeScope = "element";
       const tooltipData = await provider.getData(imodel, "0x38");

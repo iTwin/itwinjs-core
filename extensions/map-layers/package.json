@@ -1,21 +1,19 @@
 {
   "name": "@bentley/map-layers",
-  "version": "3.0.0-dev.42",
+  "version": "3.0.0-dev.68",
   "description": "Extension that adds a Map Layers Widget",
   "main": "lib/map-layers.js",
   "typings": "lib/map-layers",
   "license": "MIT",
   "scripts": {
     "compile": "npm run build",
-    "prebuild": "npm run pseudolocalize && npm run copy:assets",
-    "build": "tsc 1>&2 && npm run prebuild && npm run build:extension",
-    "build:extension": "extension-webpack-tools build -s ./src/map-layers.ts -o ./lib/extension --sourceMap",
+    "prebuild": "npm run copy:assets",
+    "build": "tsc 1>&2 && npm run prebuild",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "copy:assets": "cpx \"./src/**/*.{*css,json,svg}\" \"./lib\" && cpx \"./src/public/locales/**/*\" ./lib/extension/locales/ && cpx \"./lib/extension/locales/en-PSEUDO/*\" ./lib/public/locales/en-PSEUDO/",
+    "copy:assets": "cpx \"./src/**/*.{*css,json,svg}\" \"./lib\" && cpx \"./src/public/**/*\" ./lib/public",
     "cover": "nyc npm test",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
-    "pseudolocalize": "betools pseudolocalize --englishDir=./src/public/locales/en --out=./lib/extension/locales/en-PSEUDO",
     "test": "mocha \"./lib/test/**/*.test.js\""
   },
   "repository": {
@@ -36,7 +34,6 @@
     "@bentley/bentleyjs-core": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/extension-webpack-tools": "workspace:*",
     "@bentley/geometry-core": "workspace:*",
     "@bentley/imodeljs-common": "workspace:*",
     "@bentley/imodeljs-frontend": "workspace:*",
@@ -58,7 +55,7 @@
     "@types/chai": "^4.1.4",
     "@types/enzyme": "3.9.3",
     "@types/mocha": "^8.2.2",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "@types/react": "^17.0.0",
     "@types/react-beautiful-dnd": "^12.1.2",
     "@types/testing-library__react-hooks": "^3.1.0",
@@ -74,7 +71,7 @@
     "@wojtekmaj/enzyme-adapter-react-17": "^0.6.3",
     "enzyme-to-json": "^3.3.4",
     "eslint": "^7.11.0",
-    "jsdom": "^16.7.0",
+    "jsdom": "^17.0.0",
     "jsdom-global": "3.0.2",
     "mocha": "^8.3.2",
     "nyc": "^15.1.0",
@@ -82,13 +79,14 @@
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",
     "sinon-chai": "^3.2.0",
-    "typescript": "~4.3.0",
+    "typescript": "~4.4.0",
     "xmlhttprequest": "^1.8.0"
   },
   "dependencies": {
     "classnames": "^2.3.1",
     "react-beautiful-dnd": "^13.0.0",
-    "react-select": "3.1.0"
+    "react-select": "3.1.0",
+    "react-resize-detector": "^6.7.6"
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "workspace:*",

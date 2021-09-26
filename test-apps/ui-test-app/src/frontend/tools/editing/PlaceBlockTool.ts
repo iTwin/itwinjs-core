@@ -38,11 +38,11 @@ export class PlaceBlockTool extends CreateElementTool {
   protected allowView(vp: Viewport) { return vp.view.isSpatialView() || vp.view.isDrawingView(); }
   public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && this.allowView(vp)); }
 
-  public override onPostInstall() {
-    super.onPostInstall();
+  public override async onPostInstall() {
+    await super.onPostInstall();
     this.setupAndPromptForNextAction();
   }
-  public override onUnsuspend(): void { this.showPrompt(); }
+  public override async onUnsuspend() { this.showPrompt(); }
 
   protected translate(prompt: string) { return IModelApp.i18n.translate(`SampleApp:tools.PlaceBlock.${prompt}`); }
   protected showPrompt(): void {
@@ -200,7 +200,7 @@ export class PlaceBlockTool extends CreateElementTool {
       await PlaceBlockTool.callCommand("insertGeometricElement", elemProps);
       await this.saveChanges();
 
-    } catch (err) {
+    } catch (err: any) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
     }
   }
@@ -210,7 +210,7 @@ export class PlaceBlockTool extends CreateElementTool {
       return EventHandled.No;
 
     if (this._isComplete)
-      this.onReinitialize();
+      await this.onReinitialize();
 
     if (this._points.length > 1 && !ev.isControlKey) {
       const points = this.getShapePoints(ev);
@@ -223,7 +223,7 @@ export class PlaceBlockTool extends CreateElementTool {
 
       await this.createElement();
 
-      this.onReinitialize();
+      await this.onReinitialize();
       return EventHandled.No;
     }
 
@@ -248,11 +248,11 @@ export class PlaceBlockTool extends CreateElementTool {
   }
 
   public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
-    this.onReinitialize();
+    await this.onReinitialize();
     return EventHandled.No;
   }
 
-  public override onReinitialize(): void {
+  public override async onReinitialize() {
     this._isComplete = false;
     this._points.length = 0;
     this._matrix = undefined;
@@ -269,9 +269,9 @@ export class PlaceBlockTool extends CreateElementTool {
     return true;
   }
 
-  public onRestartTool(): void {
+  public async onRestartTool() {
     const tool = new PlaceBlockTool();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 }

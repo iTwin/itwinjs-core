@@ -121,7 +121,7 @@ export class BackgroundMapGeometry {
 
   public dbToCartographic(db: XYAndZ, result?: Cartographic): Cartographic {
     if (undefined === result)
-      result = Cartographic.fromRadians(0, 0, 0);
+      result = Cartographic.createZero();
 
     if (this.globeMode === GlobeMode.Plane) {
       const mercatorFraction = this._mercatorFractionToDb.multiplyInversePoint3d(db)!;
@@ -213,7 +213,7 @@ export class BackgroundMapGeometry {
   }
 
   /** @internal */
-  public getFrustumIntersectionDepthRange(frustum: Frustum, bimRange: Range3d, heightRange?: Range1d, gridPlane?: Plane3dByOriginAndUnitNormal, doGlobalScope?: boolean): Range1d {
+  public getFrustumIntersectionDepthRange(frustum: Frustum, heightRange?: Range1d, gridPlane?: Plane3dByOriginAndUnitNormal, doGlobalScope?: boolean): Range1d {
     const clipPlanes = frustum.getRangePlanes(false, false, 0);
     const eyePoint = frustum.getEyePoint(scratchEyePoint);
     const viewRotation = frustum.getRotation(scratchViewRotation);
@@ -272,7 +272,7 @@ export class BackgroundMapGeometry {
                 scratchSilhouetteNormal.negate(scratchSilhouetteNormal);
             } else {
               /* If parallel projection - clip toward side of ellipsoid with BIM geometry */
-              if (Vector3d.createStartEnd(silhouette.center, bimRange.center).dotProduct(scratchSilhouetteNormal) < 0)
+              if (viewZ.dotProduct(scratchSilhouetteNormal) < 0)
                 scratchSilhouetteNormal.negate(scratchSilhouetteNormal);
             }
             clipPlanes.planes.push(ClipPlane.createNormalAndDistance(scratchSilhouetteNormal, scratchSilhouetteNormal.dotProduct(silhouette.center))!);
@@ -406,9 +406,9 @@ export async function calculateEcefToDbTransformAtLocation(originIn: Point3d, iM
   const geoOrigin = Point3d.fromJSON(response.geoCoords[0].p);
   const geoNorth = Point3d.fromJSON(response.geoCoords[1].p);
   const geoEast = Point3d.fromJSON(response.geoCoords[2].p);
-  const ecefOrigin = Cartographic.fromDegrees(geoOrigin.x, geoOrigin.y, geoOrigin.z).toEcef()!;
-  const ecefNorth = Cartographic.fromDegrees(geoNorth.x, geoNorth.y, geoNorth.z).toEcef()!;
-  const ecefEast = Cartographic.fromDegrees(geoEast.x, geoEast.y, geoEast.z).toEcef()!;
+  const ecefOrigin = Cartographic.fromDegrees({longitude: geoOrigin.x, latitude: geoOrigin.y, height: geoOrigin.z}).toEcef()!;
+  const ecefNorth = Cartographic.fromDegrees({longitude: geoNorth.x, latitude: geoNorth.y, height: geoNorth.z}).toEcef()!;
+  const ecefEast = Cartographic.fromDegrees({longitude: geoEast.x, latitude: geoEast.y, height: geoEast.z}).toEcef()!;
 
   const xVector = Vector3d.createStartEnd(ecefOrigin, ecefEast);
   const yVector = Vector3d.createStartEnd(ecefOrigin, ecefNorth);

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64String, Logger } from "@bentley/bentleyjs-core";
-import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
 import { IModelQuery } from "@bentley/imodelhub-client";
 import { AuthorizedFrontendRequestContext, CheckpointConnection, IModelConnection, IModelHubFrontend } from "@bentley/imodeljs-frontend";
 import { SampleAppIModelApp } from "..";
@@ -40,21 +40,26 @@ export class ExternalIModel {
 
     const requestContext: AuthorizedFrontendRequestContext = await AuthorizedFrontendRequestContext.create();
 
-    const connectClient = new ContextRegistryClient();
-    let project: Project;
-    try {
-      project = await connectClient.getProject(requestContext, { $filter: `Name+eq+'${projectName}'` });
-    } catch (e) {
-      throw new Error(`Project with name "${projectName}" does not exist`);
-    }
+    const connectClient = new ITwinAccessClient();
+    const iTwinList: ITwin[] = await connectClient.getAll(requestContext, {
+      search: {
+        searchString: projectName,
+        propertyName: ITwinSearchableProperty.Name,
+        exactMatch: true,
+      }});
+
+    if (iTwinList.length === 0)
+      throw new Error(`ITwin ${projectName} was not found for the user.`);
+    else if (iTwinList.length > 1)
+      throw new Error(`Multiple iTwins named ${projectName} were found for the user.`);
 
     const imodelQuery = new IModelQuery();
     imodelQuery.byName(imodelName);
-    const imodels = await IModelHubFrontend.iModelClient.iModels.get(requestContext, project.wsgId, imodelQuery);
+    const imodels = await IModelHubFrontend.iModelClient.iModels.get(requestContext, iTwinList[0].id, imodelQuery);
     if (imodels.length === 0) {
       throw new Error(`iModel with name "${imodelName}" does not exist in project "${projectName}"`);
     }
-    return { projectId: project.wsgId, imodelId: imodels[0].wsgId };
+    return { projectId: iTwinList[0].id, imodelId: imodels[0].wsgId };
   }
 
   /** Handle iModel open event */

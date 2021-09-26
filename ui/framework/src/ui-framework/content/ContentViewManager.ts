@@ -120,6 +120,7 @@ export class ContentViewManager {
               this.onActiveContentChangedEvent.emit({ activeContent, oldContent });
             } else {
               if (activeContentControl.viewport && activeContentControl.viewport !== IModelApp.viewManager.selectedView) {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
                 IModelApp.viewManager.setSelectedView(activeContentControl.viewport);
               }
             }

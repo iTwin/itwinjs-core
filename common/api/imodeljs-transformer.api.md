@@ -5,7 +5,6 @@
 ```ts
 
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
-import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { CodeSpec } from '@bentley/imodeljs-common';
 import * as ECSchemaMetaData from '@bentley/ecschema-metadata';
 import { Element } from '@bentley/imodeljs-backend';
@@ -33,13 +32,11 @@ export class IModelExporter {
     excludeCodeSpec(codeSpecName: string): void;
     excludeElement(elementId: Id64String): void;
     excludeElementAspectClass(classFullName: string): void;
-    // @deprecated
-    excludeElementCategory(categoryId: Id64String): void;
     excludeElementClass(classFullName: string): void;
     excludeElementsInCategory(categoryId: Id64String): void;
     excludeRelationshipClass(classFullName: string): void;
     exportAll(): Promise<void>;
-    exportChanges(requestContext: AuthorizedClientRequestContext, startChangesetId?: string): Promise<void>;
+    exportChanges(user?: AuthorizedClientRequestContext, startChangesetId?: string): Promise<void>;
     exportChildElements(elementId: Id64String): Promise<void>;
     exportCodeSpecById(codeSpecId: Id64String): Promise<void>;
     exportCodeSpecByName(codeSpecName: string): Promise<void>;
@@ -52,8 +49,6 @@ export class IModelExporter {
     exportModelContents(modelId: Id64String, elementClassFullName?: string, skipRootSubject?: boolean): Promise<void>;
     exportRelationship(relClassFullName: string, relInstanceId: Id64String): Promise<void>;
     exportRelationships(baseRelClassFullName: string): Promise<void>;
-    // @deprecated
-    exportRepositoryLinks(): Promise<void>;
     exportSchemas(): Promise<void>;
     exportSubModels(parentModelId: Id64String): Promise<void>;
     protected get handler(): IModelExportHandler;
@@ -152,7 +147,7 @@ export class IModelTransformer extends IModelExportHandler {
     protected onExportFont(font: FontProps, _isUpdate: boolean | undefined): void;
     protected onExportModel(sourceModel: Model): void;
     protected onExportRelationship(sourceRelationship: Relationship): void;
-    protected onExportSchema(_schema: ECSchemaMetaData.Schema): Promise<void>;
+    protected onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void>;
     protected onTransformElement(sourceElement: Element): ElementProps;
     protected onTransformElementAspect(sourceElementAspect: ElementAspect, _targetElementId: Id64String): ElementAspectProps;
     protected onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
@@ -168,7 +163,7 @@ export class IModelTransformer extends IModelExportHandler {
     processModel(sourceModeledElementId: Id64String): Promise<void>;
     processModelContents(sourceModelId: Id64String, targetModelId: Id64String, elementClassFullName?: string): Promise<void>;
     processRelationships(baseRelClassFullName: string): Promise<void>;
-    processSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void>;
+    processSchemas(): Promise<void>;
     processSubject(sourceSubjectId: Id64String, targetSubjectId: Id64String): Promise<void>;
     get provenanceDb(): IModelDb;
     protected _schemaExportDir: string;

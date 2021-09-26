@@ -6,25 +6,41 @@
  * @module HubAccess
  */
 
-import { GuidString, Id64String } from "@bentley/bentleyjs-core";
+import { GuidString, Id64String, IModelHubStatus } from "@bentley/bentleyjs-core";
 import {
-  ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, CodeProps, IModelVersion,
-  LocalDirName, LocalFileName,
+  BriefcaseId, ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, IModelError,
+  IModelVersion, LocalDirName, LocalFileName,
 } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { BriefcaseId } from "./BriefcaseManager";
 import { CheckpointProps, DownloadRequest } from "./CheckpointManager";
+import { UserArg } from "./IModelDb";
 
-/** The scope of a lock.
+/** The state of a lock.
  * @public
  */
-export enum LockScope {
+export enum LockState {
   /** The entity is not locked */
-  None,
-  /** Holding a shared lock blocks other users from acquiring the Exclusive lock on an entity. More than one user may acquire the shared lock. */
-  Shared,
-  /** A Lock that blocks other users from making modifications to an entity. */
-  Exclusive,
+  None = 0,
+  /** Holding a shared lock on an element blocks other users from acquiring the Exclusive lock it. More than one user may acquire the shared lock. */
+  Shared = 1,
+  /** A Lock that permits modifications to an element and blocks other users from making modifications to it.
+   * Holding an exclusive lock on an "owner" (a model or a parent element), implicitly exclusively locks all its members.
+   */
+  Exclusive = 2,
+}
+
+/** Exception thrown if lock cannot be acquired.
+ * @beta
+*/
+export class LockConflict extends IModelError {
+  public constructor(
+    /** Id of Briefcase holding lock */
+    public readonly briefcaseId: BriefcaseId,
+    /** Alias of Briefcase holding lock */
+    public readonly briefcaseAlias: string,
+    msg: "shared lock is held" | "exclusive lock is already held"
+  ) {
+    super(IModelHubStatus.LockOwnedByAnotherBriefcase, msg);
+  }
 }
 
 /**
@@ -32,86 +48,110 @@ export enum LockScope {
  * @beta
  */
 export interface V2CheckpointAccessProps {
-  container: string;
-  auth: string;
-  user: string;
-  dbAlias: string;
-  storageType: string;
+  readonly container: string;
+  readonly auth: string;
+  readonly user: string;
+  readonly dbAlias: string;
+  readonly storageType: string;
 }
 
+/** @internal */
+export type LockMap = Map<Id64String, LockState>;
+
 /**
- * The properties of an iModel server lock.
+ * The properties of a lock that may be obtained from a lock server.
  * @beta
  */
 export interface LockProps {
-  /** The entityId for the lock */
-  entityId: Id64String;
-  /** the lock scope */
-  scope: LockScope;
+  /** The elementId for the lock */
+  readonly id: Id64String;
+  /** the lock state */
+  readonly state: LockState;
 }
 
-/** Argument for methods that must supply an IModelId
- * @internal
+/**
+ * Argument for methods that must supply an iTwinId
+ * @public
  */
-export interface IModelIdArg {
-  iModelId: GuidString;
-  requestContext?: AuthorizedClientRequestContext;
+export interface ITwinIdArg {
+  readonly iTwinId: GuidString;
 }
 
-/** Argument for methods that must supply an IModel name and ContextId
- * @internal
+/**
+ * Argument for methods that must supply an IModelId
+ * @public
  */
-export interface IModelNameArg {
-  requestContext?: AuthorizedClientRequestContext;
-  contextId: GuidString;
-  iModelName: string;
+export interface IModelIdArg extends UserArg {
+  readonly iModelId: GuidString;
 }
 
-/** Argument for methods that must supply briefcase properties
- * @internal
+/**
+ * Argument for acquiring a new BriefcaseId
+ * @public
  */
-export interface BriefcaseDbArg {
-  requestContext?: AuthorizedClientRequestContext;
-  briefcase: {
-    briefcaseId: BriefcaseId;
-    iModelId: GuidString;
-    changeset: ChangesetIdWithIndex;
-  };
+export interface AcquireNewBriefcaseIdArg extends IModelIdArg {
+  /** A string to be reported to other users to identify this briefcase, for example in the case of conflicts or lock collisions. */
+  readonly briefcaseAlias?: string;
+}
+
+/** Argument for methods that must supply an IModel name and iTwinId
+ * @public
+ */
+export interface IModelNameArg extends UserArg, ITwinIdArg {
+  readonly iModelName: string;
 }
 
 /** Argument for methods that must supply an IModelId and a BriefcaseId
- * @internal
+ * @public
  */
 export interface BriefcaseIdArg extends IModelIdArg {
-  briefcaseId: number;
+  readonly briefcaseId: BriefcaseId;
+}
+
+/** Argument for methods that must supply a briefcaseId and a changeset
+ * @public
+ */
+export interface BriefcaseDbArg extends BriefcaseIdArg {
+  readonly changeset: ChangesetIdWithIndex;
 }
 
 /** Argument for methods that must supply an IModelId and a changeset
- * @internal
+ * @public
  */
 export interface ChangesetArg extends IModelIdArg {
-  changeset: ChangesetIndexOrId;
+  readonly changeset: ChangesetIndexOrId;
 }
 
 /** @internal */
 export interface ChangesetIndexArg extends IModelIdArg {
-  changeset: ChangesetIdWithIndex;
+  readonly changeset: ChangesetIdWithIndex;
 }
 
 /** Argument for methods that must supply an IModelId and a range of ChangesetIds.
- * @internal
+ * @public
  */
 export interface ChangesetRangeArg extends IModelIdArg {
   /** the range of changesets desired. If is undefined, *all* changesets are returned. */
-  range?: ChangesetRange;
+  readonly range?: ChangesetRange;
 }
 
 /** @internal */
 export type CheckPointArg = DownloadRequest;
 
-/** Methods for accessing services of IModelHub from the backend.
- * @note these methods may be mocked for tests
- * @internal
+/**
+ * Arguments to create a new iModel in iModelHub
+ *  @public
+ */
+export interface CreateNewIModelProps extends IModelNameArg {
+  readonly description?: string;
+  readonly revision0?: LocalFileName;
+  readonly noLocks?: true;
+}
+
+/**
+ * Methods for accessing services of IModelHub from an iTwin.js backend.
+ * Generally direct access to these methods should not be required, since higher-level apis are provided.
+ * @beta
  */
 export interface BackendHubAccess {
   /** Download all the changesets in the specified range. */
@@ -134,44 +174,54 @@ export interface BackendHubAccess {
   /** Acquire a new briefcaseId for the supplied iModelId
      * @note usually there should only be one briefcase per iModel per user.
      */
-  acquireNewBriefcaseId(arg: IModelIdArg): Promise<number>;
+  acquireNewBriefcaseId(arg: AcquireNewBriefcaseIdArg): Promise<BriefcaseId>;
   /** Release a briefcaseId. After this call it is illegal to generate changesets for the released briefcaseId. */
   releaseBriefcase(arg: BriefcaseIdArg): Promise<void>;
 
-  /** get an array of the briefcases assigned to the current user. */
-  getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]>;
+  /** get an array of the briefcases assigned to a user. */
+  getMyBriefcaseIds(arg: IModelIdArg): Promise<BriefcaseId[]>;
 
-  /** download a v1 checkpoint */
+  /**
+   * download a v1 checkpoint
+   * @internal
+   */
   downloadV1Checkpoint(arg: CheckPointArg): Promise<ChangesetId>;
 
-  /** get the access props for a V2 checkpoint. Returns undefined if no V2 checkpoint exists. */
+  /**
+   * Get the access props for a V2 checkpoint. Returns undefined if no V2 checkpoint exists.
+   * @internal
+   */
   queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined>;
-  /** download a v2 checkpoint */
+  /**
+   * download a v2 checkpoint
+   * @internal
+   */
   downloadV2Checkpoint(arg: CheckPointArg): Promise<ChangesetId>;
 
-  /** acquire a list of locks. Throws if unsuccessful */
-  acquireLocks(arg: BriefcaseDbArg & { locks: LockProps[] }): Promise<void>;
-  /** acquire the schema lock. Throws if unsuccessful */
-  acquireSchemaLock(arg: BriefcaseDbArg): Promise<void>;
+  /**
+   * acquire one or more locks. Throws if unsuccessful. If *any* lock cannot be obtained, no locks are acquired
+   * @internal
+   */
+  acquireLocks(arg: BriefcaseDbArg, locks: LockMap): Promise<void>;
 
-  /** determine whether the schema lock is currently held */
-  querySchemaLock(arg: IModelIdArg): Promise<boolean>;
-  /** get the full list of held locks for a briefcase */
+  /**
+   * Get the list of all held locks for a briefcase. This can be very expensive and is currently used only for tests.
+   * @internal
+   */
   queryAllLocks(arg: BriefcaseDbArg): Promise<LockProps[]>;
 
-  /** release all currently held locks */
+  /**
+   * Release all currently held locks
+   * @internal
+   */
   releaseAllLocks(arg: BriefcaseDbArg): Promise<void>;
 
-  /** Query codes */
-  queryAllCodes(arg: BriefcaseDbArg): Promise<CodeProps[]>;
-  /** release codes */
-  releaseAllCodes(arg: BriefcaseDbArg): Promise<void>;
-
-  /** get the iModelId of an iModel by name. Undefined if no iModel with that name exists.  */
+  /** Get the iModelId of an iModel by name. Undefined if no iModel with that name exists.  */
   queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
-  /** create a new iModel. Returns the Guid of the newly created iModel */
-  createIModel(arg: IModelNameArg & { description?: string, revision0?: LocalFileName }): Promise<GuidString>;
-  /** delete an iModel  */
-  deleteIModel(arg: IModelIdArg & { contextId: GuidString }): Promise<void>;
-}
 
+  /** create a new iModel. Returns the Guid of the newly created iModel */
+  createNewIModel(arg: CreateNewIModelProps): Promise<GuidString>;
+
+  /** delete an iModel */
+  deleteIModel(arg: IModelIdArg & ITwinIdArg): Promise<void>;
+}
