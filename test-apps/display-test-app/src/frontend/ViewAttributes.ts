@@ -7,7 +7,8 @@ import {
   CheckBox, ComboBox, ComboBoxEntry, createCheckBox, createColorInput, createComboBox, createNestedMenu, createNumericInput, createSlider, Slider,
 } from "@bentley/frontend-devtools";
 import {
-  BackgroundMapProps, BackgroundMapProviderName, BackgroundMapType, ColorDef, DisplayStyle3dSettingsProps, GlobeMode, HiddenLine, LinePixels,
+  BackgroundMapProps, BackgroundMapProvider, BackgroundMapProviderName, BackgroundMapProviderProps, BackgroundMapType, BaseLayerProps, ColorDef, DisplayStyle3dSettingsProps, GlobeMode, HiddenLine, LinePixels,
+  MapLayerProps,
   MonochromeMode, RenderMode, TerrainProps, ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode,
 } from "@bentley/imodeljs-common";
 import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, Viewport, ViewState, ViewState3d } from "@bentley/imodeljs-frontend";
@@ -453,6 +454,7 @@ export class ViewAttributes {
     this._updates.push((view) => thematic.update(view));
   }
 
+  private getBaseMap(view: ViewState) { return view.displayStyle.settings.mapImagery.backgroundBase; }
   private getBackgroundMap(view: ViewState) { return view.displayStyle.settings.backgroundMap; }
   private addBackgroundMapOrTerrain(): void {
     const isMapSupported = (view: ViewState) => view.is3d() && view.iModel.isGeoLocated;
@@ -484,7 +486,7 @@ export class ViewAttributes {
         { name: "Bing", value: "BingProvider" },
         { name: "MapBox", value: "MapBoxProvider" },
       ],
-      handler: (select) => this.updateBackgroundMap({ providerName: select.value as BackgroundMapProviderName }),
+      handler: (select) => this.updateBaseMap({ providerName: select.value as BackgroundMapProviderName }),
     }).select;
 
     const types = createComboBox({
@@ -496,7 +498,7 @@ export class ViewAttributes {
         { name: "Aerial", value: BackgroundMapType.Aerial },
         { name: "Hybrid", value: BackgroundMapType.Hybrid },
       ],
-      handler: (select) => this.updateBackgroundMap({ providerData: { mapType: Number.parseInt(select.value, 10) } }),
+      handler: (select) => this.updateBaseMap({ providerData: { mapType: Number.parseInt(select.value, 10) } }),
     }).select;
     const globeModes = createComboBox({
       parent: backgroundSettingsDiv,
@@ -536,9 +538,12 @@ export class ViewAttributes {
       checkboxLabel.style.fontWeight = checkbox.checked ? "bold" : "500";
       showOrHideSettings(checkbox.checked);
 
+      const baseMap = this.getBaseMap(view);
+      if (baseMap instanceof BackgroundMapProvider) {
+        imageryProviders.value = baseMap.providerName;
+        types.value = baseMap.mapType.toString();
+      }
       const map = this.getBackgroundMap(view);
-      imageryProviders.value = map.providerName;
-      types.value = map.mapType.toString();
       terrainCheckbox.checked = map.applyTerrain;
       transCheckbox.checked = false !== map.transparency;
       locatable.checked = map.locatable;
@@ -583,6 +588,10 @@ export class ViewAttributes {
     return mapSettingsDiv;
   }
 
+  private updateBaseMap(props: ColorDef | MapLayerProps | BackgroundMapProviderProps): void {
+    this._vp.displayStyle.changeBaseMapProps(props);
+    this.sync();
+  }
   private updateBackgroundMap(props: BackgroundMapProps): void {
     this._vp.changeBackgroundMapProps(props);
     this.sync();
