@@ -519,9 +519,7 @@ export class EventHandler extends EventBaseHandler {
     return event;
   }
 
-  /** Create a listener for long polling events from an [[EventSubscription]]. When event is received from the subscription, every registered listener callback is called. This continuously waits for events until all created listeners for that subscriptionId are deleted. [[EventSAS]] token expirations are handled automatically, [AccessToken]($itwin-client) expiration is handled by calling authenticationCallback to get a new token.
-   * @param requestContext The client request context
-   * @param authenticationCallback Callback used to get AccessToken. Only the first registered authenticationCallback for this subscriptionId will be used.
+  /** Create a listener for long polling events from an [[EventSubscription]]. When event is received from the subscription, every registered listener callback is called. This continuously waits for events until all created listeners for that subscriptionId are deleted.
    * @param subscriptionId Id of EventSubscription.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param listener Callback that is called when an [[IModelHubEvent]] is received.
