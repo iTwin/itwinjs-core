@@ -5,7 +5,7 @@
 import "./IModelIndex.scss";
 import * as React from "react";
 import { Id64String } from "@bentley/bentleyjs-core";
-import { IModelClient, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
+import { IModelClient, IModelHubClient, IModelHubFrontend, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
 import { AuthorizedFrontendRequestContext, IModelConnection } from "@bentley/imodeljs-frontend";
 import { LoadingSpinner } from "@bentley/ui-core";
 import { UiFramework } from "@bentley/ui-framework";
@@ -90,8 +90,9 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
   }
 
   /* retrieves the iModel thumbnail. */
-  private async startRetrieveThumbnail(projectId: string, iModelId: string) {
-    const _thumbnail = await UiFramework.iModelServices.getThumbnail(projectId, iModelId);
+  private async startRetrieveThumbnail(iTwinId: string, iModelId: string) {
+    const hubFrontend = new IModelHubFrontend();
+    const _thumbnail = await hubFrontend.hubClient.thumbnails.download(await AuthorizedFrontendRequestContext.create(), iModelId, { contextId: iTwinId, size: "Small" });
     this.setState({ thumbnail: _thumbnail });
   }
 

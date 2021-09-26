@@ -62,6 +62,7 @@ import {
   OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool,
   RemoveSavedContentLayoutTool, RestoreSavedContentLayoutTool, SaveContentLayoutTool, UiProviderTool,
 } from "./tools/UiProviderTool";
+import { ExternalIModel } from "./appui/ExternalIModel";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -317,7 +318,9 @@ export class SampleAppIModelApp {
       await req.downloadPromise;
       iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
     } else {
-      iModelConnection = await UiFramework.iModelServices.openIModel(projectId, iModelId);
+      const iModel = new ExternalIModel(projectId, iModelId);
+      await iModel.openIModel();
+      iModelConnection = iModel.iModelConnection!;
     }
 
     SampleAppIModelApp.setIsIModelLocal(false, true);
@@ -404,7 +407,9 @@ export class SampleAppIModelApp {
         await req.downloadPromise;
         iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
       } else {
-        iModelConnection = await UiFramework.iModelServices.openIModel(iTwinId, iModelId);
+        const iModel = new ExternalIModel(iTwinId, iModelId)
+        await iModel.openIModel();
+        iModelConnection = iModel.iModelConnection!;
       }
 
       SampleAppIModelApp.setIsIModelLocal(false, true);
@@ -416,7 +421,7 @@ export class SampleAppIModelApp {
     await SampleAppIModelApp.showFrontstage("IModelIndex");
   }
 
-  public static async showIModelOpen(_iModels: IModelInfo[] | undefined) {
+  public static async showIModelOpen() {
     await SampleAppIModelApp.showFrontstage("IModelOpen");
   }
 
@@ -472,7 +477,7 @@ export class SampleAppIModelApp {
       await LocalFileOpenFrontstage.open();
     } else {
       // open to the IModelOpen frontstage
-      await SampleAppIModelApp.showIModelOpen(undefined);
+      await SampleAppIModelApp.showIModelOpen();
     }
   }
 

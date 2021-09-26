@@ -6,7 +6,7 @@ import * as React from "react";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { StageUsage, StandardContentLayouts } from "@bentley/ui-abstract";
 import {
-  ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, IModelInfo,
+  ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../../index";
 import { IModelOpen } from "../imodelopen/IModelOpen";
@@ -21,8 +21,8 @@ class IModelOpenControl extends ContentControl {
   }
 
   // called when an imodel has been selected on the IModelOpen
-  private _onOpenIModel = async (iModelInfo: IModelInfo) => {
-    await SampleAppIModelApp.showIModelIndex(iModelInfo.iTwinId, iModelInfo.wsgId);
+  private _onOpenIModel = async (arg: { iTwinId: string, id: string }) => {
+    await SampleAppIModelApp.showIModelIndex(arg.iTwinId, arg.id);
   };
 
   private _getAccessToken = async (): Promise<AccessToken | undefined> => {
