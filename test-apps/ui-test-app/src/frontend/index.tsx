@@ -675,6 +675,8 @@ async function main() {
   SampleAppIModelApp.testAppConfiguration = {};
   const envVar = "IMJS_TESTAPP_SNAPSHOT_FILEPATH";
   SampleAppIModelApp.testAppConfiguration.snapshotPath = process.env[envVar];
+  SampleAppIModelApp.testAppConfiguration.bingMapsKey = process.env.IMJS_BING_MAPS_KEY;
+  SampleAppIModelApp.testAppConfiguration.mapBoxKey = process.env.IMJS_MAPBOX_KEY;
   SampleAppIModelApp.testAppConfiguration.startWithSnapshots = SampleAppIModelApp.isEnvVarOn("IMJS_TESTAPP_START_WITH_SNAPSHOTS");
   SampleAppIModelApp.testAppConfiguration.reactAxeConsole = SampleAppIModelApp.isEnvVarOn("IMJS_TESTAPP_REACT_AXE_CONSOLE");
   SampleAppIModelApp.testAppConfiguration.useLocalSettings = SampleAppIModelApp.isEnvVarOn("IMJS_TESTAPP_USE_LOCAL_SETTINGS");
@@ -687,6 +689,10 @@ async function main() {
     rpcParams = { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
   }
 
+  const mapLayerOpts= {
+    BingMaps: SampleAppIModelApp.testAppConfiguration.bingMapsKey ? { key: "key", value: SampleAppIModelApp.testAppConfiguration.bingMapsKey } : undefined,
+    Mapbox: SampleAppIModelApp.testAppConfiguration.mapBoxKey ? { key: "key", value: SampleAppIModelApp.testAppConfiguration.mapBoxKey } : undefined,
+  };
   const opts: WebViewerAppOpts & NativeAppOpts = {
     iModelApp: {
       accuSnap: new SampleAppAccuSnap(),
@@ -697,6 +703,8 @@ async function main() {
       viewManager: new AppViewManager(true),  // Favorite Properties Support
       renderSys: { displaySolarShadows: true },
       rpcInterfaces: getSupportedRpcs(),
+      /* eslint-disable @typescript-eslint/naming-convention */
+      mapLayerOptions: mapLayerOpts,
     },
     webViewerApp: {
       rpcParams,
