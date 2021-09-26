@@ -10,6 +10,7 @@ export interface TestAppConfiguration {
   useLocalSettings?: boolean;
   bingMapsKey?: string;
   mapBoxKey?: string;
+  cesiumIonKey?: string;
 }
 
 export const loggerCategory = "ui-test-app";
