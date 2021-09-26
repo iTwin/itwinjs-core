@@ -234,49 +234,6 @@ export class MapLayerSettings {
         return "Streets";
     }
   }
-  /** Create a [[MapLayerSettings]] object from the image settings within a [[BackgroundMapSettings]] object (providerName and mapType).  */
-  // public static fromMapSettings(mapSettings: BackgroundMapSettings): MapLayerSettings {
-  //   let formatId: string, url: string, name: string;
-  //   switch (mapSettings.providerName) {
-  //     case "BingProvider":
-  //     default:
-  //       formatId = "BingMaps";
-
-  //       let imagerySet;
-  //       switch (mapSettings.mapType) {
-  //         case BackgroundMapType.Street:
-  //           imagerySet = "Road";
-  //           break;
-  //         case BackgroundMapType.Aerial:
-  //           imagerySet = "Aerial";
-  //           break;
-  //         case BackgroundMapType.Hybrid:
-  //         default:
-  //           imagerySet = "AerialWithLabels";
-  //           break;
-  //       }
-  //       name = `Bing Maps: ${MapLayerSettings.mapTypeName(mapSettings.mapType)}`;
-  //       url = `https://dev.virtualearth.net/REST/v1/Imagery/Metadata/${imagerySet}?o=json&incl=ImageryProviders&key={bingKey}`;
-  //       break;
-
-  //     case "MapBoxProvider":
-  //       formatId = "MapboxImagery";
-  //       name = `MapBox: ${MapLayerSettings.mapTypeName(mapSettings.mapType)}`;
-  //       switch (mapSettings.mapType) {
-  //         case BackgroundMapType.Street:
-  //           url = "https://api.mapbox.com/v4/mapbox.streets/";
-  //           break;
-  //         case BackgroundMapType.Aerial:
-  //           url = "https://api.mapbox.com/v4/mapbox.satellite/";
-  //           break;
-  //         case BackgroundMapType.Hybrid:
-  //           url = "https://api.mapbox.com/v4/mapbox.streets-satellite/";
-  //           break;
-  //       }
-  //       break;
-  //   }
-  //   return MapLayerSettings.fromJSON({ name, formatId, url, transparentBackground: false, isBase: true })!;
-  // }
 
   /** Create a copy of this MapLayerSettings, optionally modifying some of its properties.
    * @param changedProps JSON representation of the properties to change.
