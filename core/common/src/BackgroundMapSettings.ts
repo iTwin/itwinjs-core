@@ -80,10 +80,6 @@ function normalizeTransparency(trans?: number | false): number | false {
 export class BackgroundMapSettings {
   /** Elevation in meters, relative to WGS84 Ellipsoid.. */
   public readonly groundBias: number;
-  /** Identifies the provider from which map image will be obtained. */
-  // public readonly providerName: BackgroundMapProviderName;
-  /** The type of map graphics to be drawn. */
-  // public readonly mapType: BackgroundMapType;
   /** A transparency value from 0.0 (fully opaque) to 1.0 (fully transparent) to apply to map graphics when drawing, or false to indicate the transparency should not be overridden. Default value: false. */
   public readonly transparency: number | false;
   /** If set to true, the map tiles will be rendered with depth, allowing them to obscure other geometry. Otherwise, they are always rendered behind all other geometry. Default value: false. */
