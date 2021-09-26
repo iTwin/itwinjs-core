@@ -54,7 +54,7 @@ function setToStandalone(iModelName: string) {
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned); // standalone iModels should always have BriefcaseId unassigned
     nativeDb.saveChanges(); // save change to briefcaseId
     nativeDb.closeIModel();
-  } catch (err) {
+  } catch (err: any) {
     log(err.message);
   }
 
@@ -70,7 +70,7 @@ async function processDirectory(dir: string) {
     let isDirectory;
     try {
       isDirectory = fs.statSync(fullPath).isDirectory();
-    } catch (err) {
+    } catch (err: any) {
       log(err);
       continue;
     }

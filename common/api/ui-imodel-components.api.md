@@ -169,12 +169,13 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
 export const ColorPickerButton: (props: ColorPickerProps) => JSX.Element | null;
 
 // @beta
-export function ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets }: ColorPickerDialogProps): JSX.Element;
+export function ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets, colorInputType }: ColorPickerDialogProps): JSX.Element;
 
 // @beta
 export interface ColorPickerDialogProps {
     // (undocumented)
     color: ColorDef;
+    colorInputType?: "HSL" | "RGB";
     // (undocumented)
     colorPresets?: ColorDef[];
     // (undocumented)
@@ -185,27 +186,30 @@ export interface ColorPickerDialogProps {
     onOkResult: (selectedColor: ColorDef) => void;
 }
 
-// @beta
-export function ColorPickerPanel({ activeColor, onColorChange, colorPresets }: ColorPickerPanelProps): JSX.Element;
+// @public
+export function ColorPickerPanel({ activeColor, onColorChange, colorPresets, colorInputType }: ColorPickerPanelProps): JSX.Element;
 
-// @beta
+// @public
 export interface ColorPickerPanelProps {
     // (undocumented)
     activeColor: ColorDef;
+    colorInputType?: "HSL" | "RGB";
     // (undocumented)
     colorPresets?: ColorDef[];
     // (undocumented)
     onColorChange: (selectedColor: ColorDef) => void;
 }
 
-// @beta
+// @public
 export const ColorPickerPopup: (props: ColorPickerPopupProps) => JSX.Element | null;
 
-// @beta
+// @public
 export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
     captureClicks?: boolean;
     colorDefs?: ColorDef[];
+    colorInputType?: "HSL" | "RGB";
     disabled?: boolean;
+    hideCloseButton?: boolean;
     initialColor: ColorDef;
     onClose?: ((colorValue: ColorDef) => void) | undefined;
     onColorChange?: ((newColor: ColorDef) => void) | undefined;
@@ -1134,6 +1138,8 @@ export class ViewportComponentEvents {
 
 // @public
 export interface ViewportProps extends CommonProps {
+    // @internal
+    controlId?: string;
     // @internal (undocumented)
     getViewOverlay?: (viewport: ScreenViewport) => React.ReactNode;
     imodel: IModelConnection;

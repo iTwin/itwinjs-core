@@ -81,12 +81,23 @@ export class SaveRealityModelTool extends Tool {
 }
 
 function changeRealityModelAppearanceOverrides(vp: Viewport, overrides: FeatureAppearanceProps, index: number): boolean {
-  const model = vp.displayStyle.settings.contextRealityModels.models[index];
-  if (!model)
-    return false;
+  if (index < 0){
+    for (const model of vp.displayStyle.settings.contextRealityModels.models)
+      model.appearanceOverrides = model.appearanceOverrides ? model.appearanceOverrides.clone(overrides) : FeatureAppearance.fromJSON(overrides);
 
-  model.appearanceOverrides = model.appearanceOverrides ? model.appearanceOverrides.clone(overrides) : FeatureAppearance.fromJSON(overrides);
-  return true;
+    return vp.displayStyle.settings.contextRealityModels.models.length > 0;
+  } else {
+    const model = vp.displayStyle.settings.contextRealityModels.models[index];
+    if (!model)
+      return false;
+
+    model.appearanceOverrides = model.appearanceOverrides ? model.appearanceOverrides.clone(overrides) : FeatureAppearance.fromJSON(overrides);
+    return true;
+  }
+}
+
+function appearanceChangedString(index: number) {
+  return index < 0 ? `All Reality Models` : `Reality Model at Index: ${index}`;
 }
 
 /** Set reality model appearance override for transparency in display style.
@@ -105,7 +116,7 @@ export class SetRealityModelTransparencyTool extends Tool {
     const changed = changeRealityModelAppearanceOverrides(vp, { transparency }, index);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Reality Model at Index: ${index} set to transparency: ${transparency}`));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info,`${appearanceChangedString(index)} set to transparency: ${transparency}`));
 
     return true;
   }
@@ -131,7 +142,7 @@ export class SetRealityModelLocateTool extends Tool {
     const changed = changeRealityModelAppearanceOverrides(vp, { nonLocatable }, index);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Reality Model at Index: ${index} set to locate: ${locate}`));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info,`${appearanceChangedString(index)} set to locate: ${locate}`));
 
     return true;
   }
@@ -158,7 +169,7 @@ export class SetRealityModelEmphasizedTool extends Tool {
     const changed = changeRealityModelAppearanceOverrides(vp, { emphasized }, index);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Reality Model at Index: ${index} set to emphasized: ${emphasized}`));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info,`${appearanceChangedString(index)} set to emphasized: ${emphasized}`));
 
     return true;
   }
@@ -211,7 +222,7 @@ export class SetRealityModelColorTool extends Tool {
     const changed = changeRealityModelAppearanceOverrides(vp, { rgb }, index);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Reality Model at Index: ${index} set to color: ${rgb}`));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info,`${appearanceChangedString(index)} set to RGB color: (${rgb.r}, ${rgb.g}, ${rgb.b})`));
 
     return true;
   }

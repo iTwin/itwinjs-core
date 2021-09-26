@@ -58,8 +58,8 @@ function calculateChange(currentHue: number, e: React.MouseEvent<HTMLDivElement>
   if (undefined === y)
     return currentHue;
 
-  const pointerX = x - (containerLeft + window.pageXOffset);
-  const pointerY = y - (containerTop + window.pageYOffset);
+  const pointerX = x - (containerLeft + window.scrollX);
+  const pointerY = y - (containerTop + window.scrollY);
 
   if (!isHorizontal) { // vertical
     return calculateHue(pointerY, containerHeight, true);

@@ -138,7 +138,7 @@ describe("RpcInterface", () => {
 
     try {
       assert.equal(await response, customId);
-    } catch (reason) {
+    } catch (reason: any) {
       assert(false, reason);
     }
 
@@ -217,9 +217,8 @@ describe("RpcInterface", () => {
       });
 
       const id = interfaces.sort().join(",");
-      if (typeof (btoa) !== "undefined")
-        return btoa(id);
-
+      if (typeof (btoa) !== "undefined") // eslint-disable-line deprecation/deprecation
+        return btoa(id); // eslint-disable-line deprecation/deprecation
       return Buffer.from(id, "binary").toString("base64");
     };
 
@@ -295,7 +294,7 @@ describe("RpcInterface", () => {
       let err: Error | undefined;
       try {
         await c.op1({ a: 0, b: 0 });
-      } catch (error) {
+      } catch (error: any) {
         err = error;
       }
 

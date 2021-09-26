@@ -41,7 +41,7 @@ export class ExtensionUiItemsProvider implements UiItemsProvider {
     const label = ExtensionUiItemsProvider.i18n.translate("uiTestExtension:backstage.stageName");
     if (!this._backstageItems) {
       this._backstageItems = [
-        BackstageItemUtilities.createStageLauncher(ExtensionFrontstage.id, 100, 10, label, undefined, undefined),
+        BackstageItemUtilities.createStageLauncher(ExtensionFrontstage.stageId, 100, 10, label, undefined, undefined),
       ];
     }
     return this._backstageItems;

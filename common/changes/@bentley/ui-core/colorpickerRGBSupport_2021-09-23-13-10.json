@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-core",
+      "comment": "Update NumberInput to select on focus and to capture Enter key",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core"
+}

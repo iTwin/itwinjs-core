@@ -161,15 +161,18 @@ const ForwardRefNumberInput = React.forwardRef<HTMLInputElement, NumberInputProp
       if (event.key === SpecialKey.Enter) {
         updateValueFromString(event.currentTarget.value);
         event.preventDefault();
+        event.stopPropagation();
       } else if (event.key === SpecialKey.Escape) {
         setFormattedValue(formatInternal(currentValueRef.current));
         event.preventDefault();
       } else if (event.key === SpecialKey.ArrowDown) {
         applyStep(false);
         event.preventDefault();
+        event.stopPropagation();
       } else if (event.key === SpecialKey.ArrowUp) {
         applyStep(true);
         event.preventDefault();
+        event.stopPropagation();
       }
       onKeyDown && onKeyDown(event);
     }, [applyStep, formatInternal, updateValueFromString, onKeyDown]);
@@ -184,10 +187,14 @@ const ForwardRefNumberInput = React.forwardRef<HTMLInputElement, NumberInputProp
       event.preventDefault();
     }, [applyStep]);
 
+    const handleFocus = React.useCallback((event: React.FocusEvent<HTMLInputElement>) => {
+      event.currentTarget.select();
+    }, []);
+
     const containerClasses = classnames("core-number-input-container", containerClassName, showTouchButtons && "core-number-buttons-for-touch");
     return (
       <div className={containerClasses} style={containerStyle} >
-        <Input ref={ref} value={formattedValue} onChange={handleChange} onKeyDown={handleKeyDown} onBlur={handleBlur} {...otherProps} />
+        <Input ref={ref} value={formattedValue} onChange={handleChange} onKeyDown={handleKeyDown} onFocus={handleFocus} onBlur={handleBlur} {...otherProps} />
         <div className={classnames("core-number-input-buttons-container", showTouchButtons && "core-number-buttons-for-touch")}>
           { /* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
           <div className="core-number-input-button core-number-input-button-up" tabIndex={-1} onClick={handleUpClick}>

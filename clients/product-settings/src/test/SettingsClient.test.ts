@@ -52,7 +52,7 @@
 //   before(async () => {
 //     requestContext = await TestConfig.getAuthorizedClientRequestContext();
 
-//     projectId = (await TestConfig.queryProject(requestContext, TestConfig.projectName)).wsgId;
+//     projectId = (await TestConfig.getITwinByName(requestContext, TestConfig.iTwinName)).id;
 //     chai.assert.isDefined(projectId);
 //     iModelId = (await TestConfig.queryIModel(requestContext, projectId)).wsgId;
 //     chai.assert.isDefined(iModelId);
@@ -295,7 +295,7 @@
 
 //     requestContext = await TestConfig.getAuthorizedClientRequestContext(TestUsers.super);
 
-//     projectId = (await TestConfig.queryProject(requestContext, TestConfig.projectName)).wsgId;
+//     projectId = (await TestConfig.getITwinByName(requestContext, TestConfig.iTwinName)).id;
 //     chai.assert.isDefined(projectId);
 //     iModelId = (await TestConfig.queryIModel(requestContext, projectId)).wsgId;
 //     chai.assert.isDefined(iModelId);
@@ -551,7 +551,7 @@
 //     settingsClient = new ConnectSettingsClient("1001");
 //     requestContext = await TestConfig.getAuthorizedClientRequestContext();
 
-//     projectId = (await TestConfig.queryProject(requestContext, TestConfig.projectName)).wsgId;
+//     projectId = (await TestConfig.getITwinByName(requestContext, TestConfig.iTwinName)).id;
 //     chai.assert.isDefined(projectId);
 //     iModelId = (await TestConfig.queryIModel(requestContext, projectId)).wsgId;
 //     chai.assert.isDefined(iModelId);
@@ -620,7 +620,7 @@
 //   before(async () => {
 //     requestContext = await TestConfig.getAuthorizedClientRequestContext();
 
-//     projectId = (await TestConfig.queryProject(requestContext, TestConfig.projectName)).wsgId;
+//     projectId = (await TestConfig.getITwinByName(requestContext, TestConfig.iTwinName)).id;
 //     chai.assert.isDefined(projectId);
 //     iModelId = (await TestConfig.queryIModel(requestContext, projectId)).wsgId;
 //     chai.assert.isDefined(iModelId);
@@ -847,7 +847,7 @@
 //   before(async () => {
 //     requestContext = await TestConfig.getAuthorizedClientRequestContext();
 
-//     projectId = (await TestConfig.queryProject(requestContext, TestConfig.projectName)).wsgId;
+//     projectId = (await TestConfig.getITwinByName(requestContext, TestConfig.iTwinName)).id;
 //     chai.assert.isDefined(projectId);
 //     iModelId = (await TestConfig.queryIModel(requestContext, projectId)).wsgId;
 //     chai.assert.isDefined(iModelId);

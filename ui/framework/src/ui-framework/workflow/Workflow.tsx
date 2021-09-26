@@ -117,9 +117,9 @@ export class Workflow extends ItemDefBase {
   /** Sets a Task as active.
    * @param task  The Task to set as active
    */
-  public setActiveTask(task: Task) {
+  public async setActiveTask(task: Task) {
     this.activeTaskId = task.taskId;
-    task.onActivated(); // eslint-disable-line @typescript-eslint/no-floating-promises
+    await task.onActivated();
     WorkflowManager.onTaskActivatedEvent.emit({ task, taskId: task.id, workflow: this, workflowId: this.id });
   }
 
@@ -140,7 +140,6 @@ export class Workflow extends ItemDefBase {
 
     return sortedTasks;
   }
-
 }
 
 /** Workflow Activated Event Args class.
@@ -247,7 +246,7 @@ export class WorkflowManager {
 
     // istanbul ignore else
     if (!task.isActive)
-      workflow.setActiveTask(task);
+      await workflow.setActiveTask(task);
   }
 
   /** Gets the active Workflow */

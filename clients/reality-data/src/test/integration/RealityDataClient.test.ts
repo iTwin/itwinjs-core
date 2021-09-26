@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { ClientRequestContext, Guid, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Guid, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Angle, Range2d } from "@bentley/geometry-core";
 import { AuthorizedClientRequestContext, ImsAuthorizationClient } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import { RealityData, RealityDataClient, RealityDataRelationship } from "../../RealityDataClient";
 import { TestConfig } from "../TestConfig";
-import { query } from "jsonpath";
+import * as jsonpath from "jsonpath";
 chai.should();
 
 const LOG_CATEGORY: string = "RealityDataClient.Test";
@@ -31,7 +31,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
   before(async () => {
     requestContext = await TestConfig.getAuthorizedClientRequestContext();
     Logger.logInfo(LOG_CATEGORY, `ActivityId: ${requestContext.activityId}`);
-    projectId = (await TestConfig.queryProject(requestContext, TestConfig.projectName)).wsgId;
+    projectId = (await TestConfig.getITwinByName(requestContext, TestConfig.iTwinName)).id;
     chai.assert.isDefined(projectId);
   });
 
@@ -110,7 +110,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
   it("should be able to retrieve the azure blob url (write access)", async function () {
     // Skip this test if the issuing authority is not imsoidc.
     // The iTwin Platform currently does not support the reality-data:write scope.
-    const imsUrl = await imsClient.getUrl(new ClientRequestContext(""));
+    const imsUrl = await imsClient.getUrl();
     if (-1 === imsUrl.indexOf("imsoidc"))
       this.skip();
 
@@ -127,7 +127,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
     const rootData: any = await realityData.getRootDocumentJson(requestContext);
     chai.assert(rootData);
 
-    const jsonName = query(rootData.root.children, "$..url").find((u) => u.endsWith(".json"));
+    const jsonName = jsonpath.query(rootData.root.children, "$..url").find((u) => u.endsWith(".json"));
 
     chai.assert(jsonName);
     const jsonData: any = await realityData.getTileJson(requestContext, jsonName);
@@ -142,19 +142,19 @@ describe("RealityServicesClient Normal (#integration)", () => {
     const rootData: any = await realityData.getRootDocumentJson(requestContext);
     chai.assert(rootData);
 
-    const modelName = query(rootData.root.children, "$..url").find((u) => u.endsWith(".b3dm"));
+    const modelName = jsonpath.query(rootData.root.children, "$..url").find((u) => u.endsWith(".b3dm"));
     chai.assert(modelName);
 
     const modelData: any = await realityData.getTileContent(requestContext, modelName);
     chai.assert(modelData);
-    const modelDataString = decoder.decode(new Uint8Array(modelData)).substring(0,4);
+    const modelDataString = decoder.decode(new Uint8Array(modelData)).substring(0, 4);
     chai.assert(modelDataString === "b3dm");
   });
 
   it("should be able to create a reality data (without specific identifier) and delete it", async function () {
     // Skip this test if the issuing authority is not imsoidc.
     // The iTwin Platform currently does not support the reality-data:write scope.
-    const imsUrl = await imsClient.getUrl(new ClientRequestContext(""));
+    const imsUrl = await imsClient.getUrl();
     if (-1 === imsUrl.indexOf("imsoidc"))
       this.skip();
 
@@ -230,7 +230,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
   it("should be able to create a reality data (with fixed specific identifier) and delete it", async function () {
     // Skip this test if the issuing authority is not imsoidc.
     // The iTwin Platform currently does not support the reality-data:write scope.
-    const imsUrl = await imsClient.getUrl(new ClientRequestContext(""));
+    const imsUrl = await imsClient.getUrl();
     if (-1 === imsUrl.indexOf("imsoidc"))
       this.skip();
 
@@ -311,7 +311,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
   it("should be able to duplicate a reality data and delete it", async function () {
     // Skip this test if the issuing authority is not imsoidc.
     // The iTwin Platform currently does not support the reality-data:write scope.
-    const imsUrl = await imsClient.getUrl(new ClientRequestContext(""));
+    const imsUrl = await imsClient.getUrl();
     if (-1 === imsUrl.indexOf("imsoidc"))
       this.skip();
 
@@ -456,7 +456,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
   it("should be able to create a reality data then modify it then delete it", async function () {
     // Skip this test if the issuing authority is not imsoidc.
     // The iTwin Platform currently does not support the reality-data:write scope.
-    const imsUrl = await imsClient.getUrl(new ClientRequestContext(""));
+    const imsUrl = await imsClient.getUrl();
     if (-1 === imsUrl.indexOf("imsoidc"))
       this.skip();
 
@@ -647,7 +647,7 @@ describe("RealityServicesClient Admin (#integration)", () => {
   it("should be able to create a reality data as an admin (without specific context and admin) and delete it", async function () {
     // Skip this test if the issuing authority is not imsoidc.
     // The iTwin Platform currently does not support the reality-data:write scope.
-    const imsUrl = await imsClient.getUrl(new ClientRequestContext(""));
+    const imsUrl = await imsClient.getUrl();
     if (-1 === imsUrl.indexOf("imsoidc"))
       this.skip();
 

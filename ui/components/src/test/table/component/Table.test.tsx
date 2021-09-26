@@ -22,7 +22,6 @@ import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTabl
 import { FilterRenderer } from "../../../ui-components/table/TableDataProvider";
 import { ResolvablePromise, waitForSpy } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
-import { createDOMRect } from "../../Utils";
 let columnIndex = 0;
 let useSmallWidth = false;
 
@@ -46,21 +45,21 @@ describe("Table", () => {
     sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
       if (this.classList.contains("react-grid-Container")) {
         const totalTableWidth = useSmallWidth ? 160 : 250;
-        return createDOMRect({ width: totalTableWidth, height: 500 });
+        return DOMRect.fromRect({ width: totalTableWidth, height: 500 });
       } else if (this.classList.contains("react-grid-Cell") || this.classList.contains("react-grid-HeaderCell")) {
         columnIndex = columnIndex + 1;
         switch (columnIndex) {
           case 1:
-            return createDOMRect({ width: 80 });
+            return DOMRect.fromRect({ width: 80 });
           case 2:
-            return createDOMRect({ width: 90 });
+            return DOMRect.fromRect({ width: 90 });
           case 3:
-            return createDOMRect({ width: 80 });
+            return DOMRect.fromRect({ width: 80 });
           default:
-            return createDOMRect({ width: 80 });
+            return DOMRect.fromRect({ width: 80 });
         }
       }
-      return createDOMRect();
+      return new DOMRect();
     });
   });
 

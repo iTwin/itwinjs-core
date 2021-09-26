@@ -14,7 +14,7 @@ import * as path from "path";
 import { checkSync, lockSync } from "proper-lockfile";
 import * as stream from "stream";
 import * as util from "util";
-import { AsyncMutex, BeEvent, BriefcaseStatus } from "@bentley/bentleyjs-core";
+import { AsyncMutex, BeEvent, BriefcaseStatus, getErrorMessage } from "@bentley/bentleyjs-core";
 import { CancelRequest, UserCancelledError } from "@bentley/itwin-client";
 
 /** Configure download task
@@ -389,10 +389,10 @@ export class BlobDownloader {
       });
       await this.pipeline(downloadStream, fs.createWriteStream(targetFile, { flags: "r+", start: startByte }));
       this.markCompleted(session, blockId);
-    } catch (err: any) {
+    } catch (err) {
       session.bytesDownloaded -= localDataBytes;
       this.markFailed(session, blockId);
-      session.lastError = err;
+      session.lastError = err instanceof Error ? err : new Error(getErrorMessage(err));
       session.failedBocks++;
       if (session.failedBocks > 10) {
         throw new Error("failed to download");
@@ -463,7 +463,7 @@ export class BlobDownloader {
         session.progress.raiseEvent(this.getProgress(session));
         session.lastReportedBytes = session.bytesDownloaded;
       }
-    }, session.config.progressReportAfter!);
+    }, session.config.progressReportAfter);
   }
   private static stopProgress(session: SessionData) {
     if (session.progressTimer) {

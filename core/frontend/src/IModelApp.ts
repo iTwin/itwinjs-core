@@ -351,23 +351,6 @@ export class IModelApp {
       auxCoordState,
     ].forEach((module) => this.registerModuleEntities(module));
 
-    const defaultMapLayerOptions: MapLayerOptions = {
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      MapboxImagery: { key: "access_token", value: "pk%2EeyJ1IjoibWFwYm94YmVudGxleSIsImEiOiJjaWZvN2xpcW00ZWN2czZrcXdreGg2eTJ0In0%2Ef7c9GAxz6j10kZvL%5F2DBHg" },
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      BingMaps: { key: "key", value: "AtaeI3QDNG7Bpv1L53cSfDBgBKXIgLq3q-xmn_Y2UyzvF-68rdVxwAuje49syGZt" },
-    };
-    if (opts.mapLayerOptions) {
-      // if we were passed maplayeroptions, fill in any gaps with defaultMapLayerOptions
-      for (const key of Object.keys(defaultMapLayerOptions)) {
-        if (opts.mapLayerOptions[key])
-          continue;
-        opts.mapLayerOptions[key] = defaultMapLayerOptions[key];
-      }
-    } else {
-      opts.mapLayerOptions = defaultMapLayerOptions;
-    }
-
     this._renderSystem = (opts.renderSys instanceof RenderSystem) ? opts.renderSys : this.createRenderSys(opts.renderSys);
 
     this._settings = (opts.settings !== undefined) ? opts.settings : new ConnectSettingsClient(this.applicationId);

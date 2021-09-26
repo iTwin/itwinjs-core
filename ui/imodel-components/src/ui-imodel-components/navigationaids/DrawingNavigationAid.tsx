@@ -96,7 +96,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
   private _rootElement = React.createRef<HTMLDivElement>();
   private _viewContainerElement = React.createRef<HTMLDivElement>();
   private _viewElement = React.createRef<HTMLDivElement>();
-  private _rootOffset: ClientRect = { left: 0, right: 0, width: 0, top: 0, bottom: 0, height: 0 };
+  private _rootOffset: DOMRect = DOMRect.fromRect({ x: 0, y: 0, width: 0, height: 0 });
   private _viewport: Viewport | undefined;
   private _animationFrame: any;
   private _mounted: boolean = false;

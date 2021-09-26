@@ -119,7 +119,7 @@ export async function toggleExternalTiledGraphicsProvider(vp: Viewport): Promise
     const provider = await Provider.create(vp, iModel);
     providersByViewport.set(vp, provider);
     vp.addTiledGraphicsProvider(provider);
-  } catch (err) {
+  } catch (err: any) {
     alert(err.toString());
     return;
   }

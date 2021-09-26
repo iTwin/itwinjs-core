@@ -8,8 +8,9 @@
 
 import { BeEvent } from "@bentley/bentleyjs-core";
 import {
-  AccessToken, AuthorizedClientRequestContext, DefaultRequestOptionsProvider, ECJsonTypeMap, request, RequestOptions, WsgInstance,
+  AccessToken, AuthorizedClientRequestContext, DefaultRequestOptionsProvider, request, RequestOptions,
 } from "@bentley/itwin-client";
+import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
 import { IModelBaseHandler } from "./BaseHandler";
 
 /**
@@ -223,7 +224,7 @@ export class EventListener {
       try {
         const requestContext = new AuthorizedClientRequestContext(accessToken);
         eventSAS = (await subscription.getSASToken(requestContext));
-      } catch (err) {
+      } catch (err: any) {
         if (err.status === 401) {
           try {
             accessToken = await subscription.authenticationCallback();
@@ -240,7 +241,7 @@ export class EventListener {
           const event = await subscription.getEvent(eventSAS!.sasToken!, eventSAS!.baseAddress!, subscription.id, 60);
           if (event)
             subscription.listeners.raiseEvent(event);
-        } catch (err) {
+        } catch (err: any) {
           if (err.status === 401) {
             break;
           } else {

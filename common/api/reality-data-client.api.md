@@ -5,11 +5,11 @@
 ```ts
 
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
-import { ClientRequestContext } from '@bentley/bentleyjs-core';
+import { Client } from '@bentley/itwin-client';
+import { RequestOptions } from '@bentley/itwin-client';
 import { RequestQueryOptions } from '@bentley/itwin-client';
+import { RequestTimeoutOptions } from '@bentley/itwin-client';
 import { URL } from 'url';
-import { WsgClient } from '@bentley/itwin-client';
-import { WsgInstance } from '@bentley/itwin-client';
 
 // @internal
 export class DataLocation extends WsgInstance {
@@ -138,10 +138,7 @@ export class RealityDataClient extends WsgClient {
     getRealityDataInProjectOverlapping(requestContext: AuthorizedClientRequestContext, projectId: string, minLongDeg: number, maxLongDeg: number, minLatDeg: number, maxLatDeg: number, type?: string): Promise<RealityData[]>;
     getRealityDataRelationships(requestContext: AuthorizedClientRequestContext, projectId: string, realityDataId: string): Promise<RealityDataRelationship[]>;
     getRealityDatas(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, queryOptions: RealityDataRequestQueryOptions): Promise<RealityData[]>;
-    getRealityDataUrl(requestContext: ClientRequestContext, projectId: string | undefined, tilesId: string): Promise<string>;
-    protected getUrlSearchKey(): string;
-    // (undocumented)
-    static readonly searchKey: string;
+    getRealityDataUrl(projectId: string | undefined, tilesId: string): Promise<string>;
     updateRealityData(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, realityData: RealityData): Promise<RealityData>;
 }
 

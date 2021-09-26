@@ -95,7 +95,7 @@ export * from "./presentation-components/labels/LabelsProvider";
  * @module UnifiedSelection
  *
  * @docs-group-description UnifiedSelection
- * Utilities for working with [Unified Selection]($docs/learning/presentation/Unified-Selection/index.md) within [React](https://reactjs.org/) components.
+ * Utilities for working with [Unified Selection]($docs/presentation/Unified-Selection/index.md) within [React](https://reactjs.org/) components.
  */
 export * from "./presentation-components/unified-selection/UnifiedSelectionContext";
 

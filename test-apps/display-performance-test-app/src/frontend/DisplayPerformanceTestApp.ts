@@ -25,6 +25,14 @@ export class DisplayPerfTestApp {
   public static async startup(iModelApp?: IModelAppOptions): Promise<void> {
     iModelApp = iModelApp ?? {};
     iModelApp.i18n = { urlTemplate: "locales/en/{{ns}}.json" } as I18NOptions;
+    iModelApp.tileAdmin = { minimumSpatialTolerance: 0 };
+
+    /* eslint-disable @typescript-eslint/naming-convention */
+    iModelApp.mapLayerOptions = {
+      MapBoxImagery: process.env.IMJS_MAPBOX_KEY ? { key: "access_token", value: process.env.IMJS_MAPBOX_KEY } : undefined,
+      BingMaps: process.env.IMJS_BING_MAPS_KEY ? { key: "key", value: process.env.IMJS_BING_MAPS_KEY } : undefined,
+    };
+    /* eslint-enable @typescript-eslint/naming-convention */
 
     iModelApp.rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
     if (ProcessDetector.isElectronAppFrontend)
@@ -79,7 +87,7 @@ async function signIn(): Promise<boolean> {
     });
   });
 
-  await oidcClient.signIn(requestContext);
+  await oidcClient.signIn();
   return retPromise;
 }
 
@@ -93,7 +101,7 @@ async function main() {
 
     const runner = new TestRunner(props);
     await runner.run();
-  } catch (err) {
+  } catch (err: any) {
     alert(err.toString());
   }
 

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-components",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components"
+}

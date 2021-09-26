@@ -10,7 +10,7 @@ import { Rectangle } from "@bentley/ui-core";
 import * as ResizeObserverModule from "@bentley/ui-core/lib/ui-core/utils/hooks/ResizeObserverPolyfill";
 import { createNineZoneState, handleToCursorType, MeasureContext, NineZone, NineZoneDispatch, NineZoneLabels, NineZoneLabelsContext, sideToCursorType, useLabel } from "../../ui-ninezone";
 import { NineZoneProvider } from "../Providers";
-import { createBoundingClientRect, createDOMRect, flushAsyncOperations, ResizeObserverMock } from "../Utils";
+import { createRect, flushAsyncOperations, ResizeObserverMock } from "../Utils";
 
 describe("<NineZone />", () => {
   it("renders correctly", () => {
@@ -39,7 +39,7 @@ describe("<NineZone />", () => {
     >
       <Measurer ref={measurerRef} />
     </NineZone>);
-    sinon.stub(container.firstChild! as HTMLElement, "getBoundingClientRect").returns(createDOMRect({
+    sinon.stub(container.firstChild! as HTMLElement, "getBoundingClientRect").returns(DOMRect.fromRect({
       width: 200,
     }));
     measurerRef.current!.measure().toProps().should.eql({
@@ -67,9 +67,9 @@ describe("<NineZone />", () => {
 
     spy.reset();
 
-    sinon.stub(measurer!, "getBoundingClientRect").returns(createBoundingClientRect(0, 0, 10, 20));
+    sinon.stub(measurer!, "getBoundingClientRect").returns(createRect(0, 0, 10, 20));
     resizeObserver!.callback([{
-      contentRect: createDOMRect(),
+      contentRect: new DOMRect(),
       target: measurer!,
     } as any], resizeObserver!);
     await flushAsyncOperations();
@@ -91,7 +91,7 @@ describe("<NineZone />", () => {
       measurer = element;
     });
 
-    sinon.stub(HTMLElement.prototype, "getBoundingClientRect").returns(createBoundingClientRect(0, 0, 10, 20));
+    sinon.stub(HTMLElement.prototype, "getBoundingClientRect").returns(createRect(0, 0, 10, 20));
 
     const spy = sinon.stub<NineZoneDispatch>();
     render(<NineZone
@@ -104,7 +104,7 @@ describe("<NineZone />", () => {
     await flushAsyncOperations();
 
     resizeObserver!.callback([{
-      contentRect: createDOMRect(),
+      contentRect: new DOMRect(),
       target: measurer!,
     } as any], resizeObserver!);
 

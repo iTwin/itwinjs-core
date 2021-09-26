@@ -85,6 +85,7 @@ export interface ComputedProjectExtents {
 }
 
 /**
+ * Interface for acquiring element locks to coordinate simultaneous edits from multiple briefcases.
  * @beta
  */
 export interface LockControl {
@@ -143,7 +144,7 @@ export interface LockControl {
   releaseAllLocks(): Promise<void>;
 }
 
-/** a LockControl that does not attempt to limit access between briefcases. This relies on change-merging to resolve conflicts. */
+/** A null-implementation of LockControl that does not attempt to limit access between briefcases. This relies on change-merging to resolve conflicts. */
 class NoLocks implements LockControl {
   public get isServerBased() { return false; }
   public close(): void { }
@@ -164,7 +165,7 @@ export enum BriefcaseLocalValue {
   NoLocking = "NoLocking"
 }
 
-// open an briefcaseDb, perform an operation, and then close file.
+// function to open an briefcaseDb, perform an operation, and then close it.
 const withBriefcaseDb = async (briefcase: OpenBriefcaseArgs, fn: (_db: BriefcaseDb) => Promise<any>) => {
   const db = await BriefcaseDb.open(briefcase);
   try {
@@ -174,7 +175,7 @@ const withBriefcaseDb = async (briefcase: OpenBriefcaseArgs, fn: (_db: Briefcase
   }
 };
 
-/** An iModel database file. The database file is either briefcase or a snapshot.
+/** An iModel database file. The database file can either be a briefcase or a snapshot.
  * @see [Accessing iModels]($docs/learning/backend/AccessingIModels.md)
  * @see [About IModelDb]($docs/learning/backend/IModelDb.md)
  * @public
@@ -282,7 +283,7 @@ export abstract class IModelDb extends IModel {
   /** @internal */
   public async reattachDaemon(_user: AuthorizedClientRequestContext): Promise<void> { }
 
-  /** Event called when the iModel is about to be closed */
+  /** Event called when the iModel is about to be closed. */
   public readonly onBeforeClose = new BeEvent<() => void>();
 
   /**
@@ -1047,7 +1048,7 @@ export abstract class IModelDb extends IModel {
   public getJsClass<T extends typeof Entity>(classFullName: string): T {
     try {
       return ClassRegistry.getClass(classFullName, this) as T;
-    } catch (err: any) {
+    } catch (err) {
       if (!ClassRegistry.isNotFoundError(err)) {
         throw err;
       }
@@ -1184,6 +1185,7 @@ export abstract class IModelDb extends IModel {
    */
   public queryNextAvailableFileProperty(prop: FilePropertyProps) { return this.nativeDb.queryNextAvailableFileProperty(prop); }
 
+  /** @internal */
   public async requestSnap(sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
     let request = this._snaps.get(sessionId);
     if (undefined === request) {
@@ -1199,7 +1201,9 @@ export abstract class IModelDb extends IModel {
     }
   }
 
-  /** Cancel a previously requested snap. */
+  /** Cancel a previously requested snap.
+   * @internal
+   */
   public cancelSnap(sessionId: string): void {
     const request = this._snaps.get(sessionId);
     if (undefined !== request) {
@@ -2089,12 +2093,12 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       });
     }
 
-    private pollTileContent(resolve: (arg0: IModelJsNative.TileContent) => void, reject: (err: Error) => void, treeId: string, tileId: string) {
+    private pollTileContent(resolve: (arg0: IModelJsNative.TileContent) => void, reject: (err: unknown) => void, treeId: string, tileId: string) {
 
       let ret;
       try {
         ret = this._iModel.nativeDb.pollTileContent(treeId, tileId);
-      } catch (err: any) {
+      } catch (err) {
         // Typically "imodel not open".
         reject(err);
         return;

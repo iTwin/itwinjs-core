@@ -3,6 +3,10 @@ publish: false
 ---
 # NextVersion
 
+## Update minimum requirements
+
+Support for Node 10 has been dropped. The new minimum Node version is 12.22.0. The recommended version is the latest LTS version of Node. Please visit our [Supported Platforms](../learning/supportedplatforms) documentation for a full breakdown of compatibility.
+
 ## Dependency Updates
 
 The following dependencies of iTwin.js have been updated;
@@ -11,8 +15,9 @@ The following dependencies of iTwin.js have been updated;
 
 ## Build tools changes
 
-Removed TSLint support from `@bentley/build-tools`. If you're still using it, please switch to ESLint.
-Also removed legacy `.eslintrc.js` file from the same package. Instead, use `@bentley/eslint-plugin` and the `imodeljs-recommended` config included in it.
+- Removed `test` and `test-tsnode` scripts from `@bentley/build-tools`.  Please use mocha directly instead.
+- Removed TSLint support from `@bentley/build-tools`. If you're still using it, please switch to ESLint.
+- Removed legacy `.eslintrc.js` file from the same package. Instead, use `@bentley/eslint-plugin` and the `imodeljs-recommended` config included in it.
 
 ## BentleyError constructor no longer logs
 
@@ -224,6 +229,23 @@ Upgrade instructions:
 
 The [AsyncFunction]($bentleyjs-core), [AsyncMethodsOf]($bentleyjs-core), and [PromiseReturnType]($bentleyjs-core) types have moved to the @bentley/bentleyjs-core package. The ones in @bentley/imodeljs-frontend have been deprecated.
 
+## Removed default Bing Maps and MapBox keys
+
+Previous versions of `@bentley/imodeljs-frontend` included API keys for Bing Maps and MapBox Imagery that would be used for _all_ iTwin.js applications.  These common keys are no longer supported and will soon be disabled.  All applications will now need to provide their own keys.
+
+In order to configure a key for Bing Maps, or any other map layers, use the [[IModelAppOptions.mapLayerOptions]] configuration to supply the necessary information.
+
+```ts
+const appOptions = {
+  maplayerOptions: {
+    BingMaps: {
+      key: "some key",
+      value: "key"
+    }
+  }
+}
+```
+
 ## Concurrency Control
 
 The previous implementation of `ConcurrencyControl` for locking elements has been replaced with the [LockControl]($backend) interface.
@@ -281,6 +303,54 @@ The [NodeKey]($presentation-common) object contains a `pathFromRoot` attribute w
 
 In `3.0` changes have been made that changed the way this attribute is calculated, which means the same node produced by pre-3.0 and 3.x versions of `imodeljs` will have keys with different `pathFromRoot` value. To help identify the version of `NodeKey` a new `version` attribute has been added, with `undefined` or `1` being assigned to keys produced by pre-3.0 and `2` being assigned to keys produced by `3.x` versions of imodeljs. In addition, a new [NodeKey.equals]($presentation-common) function has been added to help with the equality checking of node keys, taking their version into account.
 
+## Changes to `Presentation` initialization in `@bentley/presentation-backend`
+
+- [PresentationManagerProps]($presentation-backend) have been restructured to make attributes' purpose clearer. This affects calls to constructor of [PresentationManager]($presentation-backend) and [Presentation.initialize]($presentation-backend). Typical migration:
+
+  **Before:**
+
+  ```ts
+  await Presentation.initialize({
+    // now `defaultLocale`
+    activeLocale: "en-us",
+
+    // now `defaultUnitSystem`
+    activeUnitSystem: "metric",
+
+    // now under `caching.hierarchies`
+    cacheConfig: { mode: HierarchyCacheMode.Memory },
+
+    // now under `caching.content.size`
+    contentCacheSize: 999,
+
+    // removed in favor of `workerThreadsCount`
+    taskAllocationsMap: {
+        [RequestPriority.Preload]: 1,
+        [RequestPriority.Max]: 2,
+    },
+  });
+  ```
+
+  **After:**
+
+  ```ts
+  await Presentation.initialize({
+    presentation: {
+      defaultLocale: "en-us",
+      defaultUnitSystem: "metric",
+      caching: {
+        hierarchies: {
+          mode: HierarchyCacheMode.Memory,
+        },
+        content: {
+          size: 999,
+        },
+      },
+      workerThreadsCount: 3,
+    },
+  });
+  ```
+
 ## Changes to `Presentation` initialization in `@bentley/presentation-frontend`
 
 - [Presentation.initialize]($presentation-frontend) used to take [PresentationManagerProps]($presentation-frontend) as an argument. Now it takes [PresentationProps]($presentation-frontend) which allows supplying props not only to [PresentationManager]($presentation-frontend), but also [SelectionManager]($presentation-frontend) and [FavoritePropertiesManager]($presentation-frontend). Typical migration:
@@ -330,6 +400,17 @@ It is no longer necessary to supply a [Viewport]($frontend) when creating a [Gra
 ## Changed return types
 
 The backend methods [IModelDb.saveFileProperty]($backend) and [IModelDb.deleteFileProperty]($backend) used to return a [DbResult]($bentleyjs-core). They now are `void`, and throw an exception if an error occurred. The error value can be retrieved in the `errorNumber` member of the exception object, if desired.
+
+## Default minimum level of detail for spatial views
+
+[TileAdmin.Props.minimumSpatialTolerance]($frontend) specifies the minimum level of detail to produce for views of spatial models. Previously, the default was `undefined`, indicating no minimum. The default has been changed to 1 millimeter. This means that when zooming in extremely closely, geometry that contains details on the order of 1mm or smaller will not refine further. This prevents the display system from requesting extraordinarily detailed graphics, improving performance.
+
+To change the minimum, supply a different value at startup. For example, the following code sets the minimum to 1 centimeter:
+```ts
+await IModelApp.startup({
+  tileAdmin: { minimumSpatialTolerance: 0.01 },
+});
+```
 
 ## Signature change to backend Geocoordinate methods
 
@@ -399,36 +480,38 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 
 ### @bentley/imodeljs-frontend
 
-| Removed                                | Replacement                                               |
-| -------------------------------------- | --------------------------------------------------------- |
-| `AppearanceOverrideProps`              | [AppearanceOverrideProps]($common)                        |
-| `AsyncMethodsOf`                       | [AsyncMethodsOf]($bentleyjs-core)                         |
-| `AsyncFunction`                        | [AsyncFunction]($bentleyjs-core)                          |
-| `EmphasizeElementsProps`               | [EmphasizeElementsProps]($common)                         |
-| `PromiseReturnType`                    | [PromiseReturnType]($bentleyjs-core)                      |
-| `CheckpointConnection.open`            | `CheckpointConnection.openRemote`                         |
-| `DecorateContext.screenViewport`       | `DecorateContext.viewport`                                |
-| `FeatureOverrideType`                  | [FeatureOverrideType]($common)                            |
-| `FeatureSymbology.Appearance`          | [FeatureAppearance]($common)                              |
-| `FeatureSymbology.AppearanceProps`     | [FeatureAppearanceProps]($common)                         |
-| `findAvailableRealityModels`           | `queryRealityData`                                        |
-| `findAvailableUnattachedRealityModels` | `queryRealityData`                                        |
-| `IModelApp.iModelClient`               | `IModelHubFrontend.iModelClient`                          |
-| `IModelConnection.Models.loaded`       | use `for..of` to iterate and `getLoaded` to look up by Id |
-| `IModelConnection.Views.saveThumbnail` | use IPC and `IModelDb.saveThumbnail`                      |
-| `IOidcFrontendClient`                  | `FrontendAuthorizationClient`                             |
-| `isIOidcFrontendClient`                | `FrontendAuthorizationClient`                             |
-| `OidcBrowserClient`                    | `BrowserAuthorizationClient`                              |
-| `OidcFrontendClientConfiguration`      | `BrowserAuthorizationClientConfiguration`                 |
-| `RemoteBriefcaseConnection`            | `CheckpointConnection`                                    |
-| `ScreenViewport.decorationDiv`         | `DecorateContext.addHtmlDecoration`                       |
-| `UnitSystemKey`                        | Moved to `@bentley/imodeljs-quantity`                     |
-| `ViewManager.forEachViewport`          | Use a `for..of` loop                                      |
-| `ViewState3d.lookAtPerspectiveOrOrtho` | `ViewState3d.LookAt`                                      |
-| `ViewState3d.lookAtUsingLensAngle`     | `ViewState3d.lookAt`                                      |
-| `Viewport.featureOverrideProvider`     | [Viewport.featureOverrideProviders]($frontend)            |
-| `Viewport.setFlashed`                  | [Viewport.flashedId]($frontend)                           |
-| `Viewport.setRedrawPending`            | [Viewport.requestRedraw]($frontend)                       |
+| Removed                                       | Replacement                                                        |
+| --------------------------------------------- | ------------------------------------------------------------------ |
+| `AppearanceOverrideProps`                     | [AppearanceOverrideProps]($common)                                 |
+| `AsyncMethodsOf`                              | [AsyncMethodsOf]($bentleyjs-core)                                  |
+| `AsyncFunction`                               | [AsyncFunction]($bentleyjs-core)                                   |
+| `EmphasizeElementsProps`                      | [EmphasizeElementsProps]($common)                                  |
+| `PromiseReturnType`                           | [PromiseReturnType]($bentleyjs-core)                               |
+| `CheckpointConnection.open`                   | `CheckpointConnection.openRemote`                                  |
+| `DecorateContext.screenViewport`              | `DecorateContext.viewport`                                         |
+| `FeatureOverrideType`                         | [FeatureOverrideType]($common)                                     |
+| `FeatureSymbology.Appearance`                 | [FeatureAppearance]($common)                                       |
+| `FeatureSymbology.AppearanceProps`            | [FeatureAppearanceProps]($common)                                  |
+| `findAvailableRealityModels`                  | `queryRealityData`                                                 |
+| `findAvailableUnattachedRealityModels`        | `queryRealityData`                                                 |
+| `IModelApp.iModelClient`                      | `IModelHubFrontend.iModelClient`                                   |
+| `IModelConnection.Models.loaded`              | use `for..of` to iterate and `getLoaded` to look up by Id          |
+| `IModelConnection.Views.saveThumbnail`        | use IPC and `IModelDb.saveThumbnail`                               |
+| `IOidcFrontendClient`                         | `FrontendAuthorizationClient`                                      |
+| `isIOidcFrontendClient`                       | `FrontendAuthorizationClient`                                      |
+| `OidcBrowserClient`                           | `BrowserAuthorizationClient`                                       |
+| `OidcFrontendClientConfiguration`             | `BrowserAuthorizationClientConfiguration`                          |
+| `QuantityFormatter.onActiveUnitSystemChanged` | [QuantityFormatter.onActiveFormattingUnitSystemChanged]($frontend) |
+| `QuantityFormatter.useImperialFormats`        | [QuantityFormatter.setActiveUnitSystem]($frontend)                 |
+| `RemoteBriefcaseConnection`                   | `CheckpointConnection`                                             |
+| `ScreenViewport.decorationDiv`                | `DecorateContext.addHtmlDecoration`                                |
+| `UnitSystemKey`                               | Moved to `@bentley/imodeljs-quantity`                              |
+| `ViewManager.forEachViewport`                 | Use a `for..of` loop                                               |
+| `ViewState3d.lookAtPerspectiveOrOrtho`        | `ViewState3d.LookAt`                                               |
+| `ViewState3d.lookAtUsingLensAngle`            | `ViewState3d.lookAt`                                               |
+| `Viewport.featureOverrideProvider`            | [Viewport.featureOverrideProviders]($frontend)                     |
+| `Viewport.setFlashed`                         | [Viewport.flashedId]($frontend)                                    |
+| `Viewport.setRedrawPending`                   | [Viewport.requestRedraw]($frontend)                                |
 
 ### @bentley/geometry-core
 
@@ -449,6 +532,12 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | ----------------------------------- | -------------------------------------------- |
 | `OidcDelegationClientConfiguration` | `DelegationAuthorizationClientConfiguration` |
 | `OidcDelegationClient`              | `DelegationAuthorizationClient`              |
+
+### @bentley/ui-abstract
+
+| Removed                             | Replacement                                  |
+| ----------------------------------- | -------------------------------------------- |
+| `ContentLayoutProps.priority`       | *eliminated*                                 |
 
 ### @bentley/ui-core
 
@@ -485,30 +574,43 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @bentley/ui-framework
 
-| Removed                                 | Replacement                                                                                                                   |
-| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `COLOR_THEME_DEFAULT`                   | `SYSTEM_PREFERRED_COLOR_THEME` in @bentley/ui-framework is used as default color theme                                        |
-| `FunctionKey`                           | `FunctionKey` in @bentley/ui-abstract                                                                                         |
-| `IModelAppUiSettings`                   | `UserSettingsStorage` in @bentley/ui-framework                                                                                |
-| `reactElement` in ContentControl        | `ContentControl.reactNode`                                                                                                    |
-| `reactElement` in NavigationAidControl  | `NavigationAidControl.reactNode`                                                                                              |
-| `reactElement` in NavigationWidgetDef   | `NavigationWidgetDef.reactNode`                                                                                               |
-| `reactElement` in ToolWidgetDef         | `ToolWidgetDef.reactNode`                                                                                                     |
-| `reactElement` in WidgetControl         | `WidgetControl.reactNode`                                                                                                     |
-| `reactElement` in WidgetDef             | `WidgetDef.reactNode`                                                                                                         |
-| `ReactMessage`                          | `ReactMessage` in @bentley/ui-core                                                                                            |
-| `SpecialKey`                            | `SpecialKey` in @bentley/ui-abstract                                                                                          |
-| `WidgetState`                           | `WidgetState` in @bentley/ui-abstract                                                                                         |
-| `UserProfileBackstageItem`              | *eliminated*                                                                                                                  |
-| `SignIn`                                | *eliminated*                                                                                                                  |
-| `SignOutModalFrontstage`                | *eliminated*                                                                                                                  |
-| `IModelConnectedCategoryTree`           | *eliminated*                                                                                                                  |
-| `IModelConnectedModelsTree`             | *eliminated*                                                                                                                  |
-| `IModelConnectedSpatialContainmentTree` | *eliminated*                                                                                                                  |
-| `CategoryTreeWithSearchBox`             | *eliminated*                                                                                                                  |
-| `VisibilityComponent`                   | `TreeWidgetComponent` in @bentley/tree-widget-react                                                                           |
-| `VisibilityWidget`                      | `TreeWidgetControl` in @bentley/tree-widget-react                                                                             |
-| All drag & drop related APIs            | Third party components. E.g. see this [example](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=drag-and-drop) |
+| Removed                                   | Replacement                                                                                                                   |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `COLOR_THEME_DEFAULT`                     | `SYSTEM_PREFERRED_COLOR_THEME` in @bentley/ui-framework is used as default color theme                                        |
+| `FunctionKey`                             | `FunctionKey` in @bentley/ui-abstract                                                                                         |
+| `IModelAppUiSettings`                     | `UserSettingsStorage` in @bentley/ui-framework
+| `ConfigurableUiManager.findFrontstageDef` | `FrontstageManager.findFrontstageDef`
+| `ConfigurableUiManager.loadContentGroup`  | *eliminated*
+| `ConfigurableUiManager.loadContentGroups` | *eliminated*
+| `ConfigurableUiManager.loadContentLayout` | *eliminated*
+| `ConfigurableUiManager.loadContentLayouts`| *eliminated*
+| `ContentGroupManager`                     | *eliminated*
+| `Frontstage.initializeFrontstageDef`      | `FrontstageManager.getFrontstageDef` (async method)
+| `Frontstage.findFrontstageDef`            | `FrontstageManager.getFrontstageDef` (async method)
+| `Frontstage.initializeFromProvider`       | `Frontstage.create` (async method)
+| `FrontstageProps.defaultLayout`           | `ContentGroup` now holds the layout information.
+| `FrontstageProvider.initializeDef`        | *eliminated*
+| `FrontstageProvider.frontstageDef`        | `FrontstageManager.getFrontstageDef` (async method)
+| `reactElement` in ContentControl          | `ContentControl.reactNode`                                                                                                    |
+| `reactElement` in NavigationAidControl    | `NavigationAidControl.reactNode`                                                                                              |
+| `reactElement` in NavigationWidgetDef     | `NavigationWidgetDef.reactNode`                                                                                               |
+| `reactElement` in ToolWidgetDef           | `ToolWidgetDef.reactNode`                                                                                                     |
+| `reactElement` in WidgetControl           | `WidgetControl.reactNode`                                                                                                     |
+| `reactElement` in WidgetDef               | `WidgetDef.reactNode`                                                                                                         |
+| `ReactMessage`                            | `ReactMessage` in @bentley/ui-core                                                                                            |
+| `SpecialKey`                              | `SpecialKey` in @bentley/ui-abstract                                                                                          |
+| `WidgetState`                             | `WidgetState` in @bentley/ui-abstract                                                                                         |
+| `UserProfileBackstageItem`                | *eliminated*                                                                                                                  |
+| `SignIn`                                  | *eliminated*                                                                                                                  |
+| `SignOutModalFrontstage`                  | *eliminated*                                                                                                                  |
+| `IModelConnectedCategoryTree`             | *eliminated*                                                                                                                  |
+| `IModelConnectedModelsTree`               | *eliminated*                                                                                                                  |
+| `IModelConnectedSpatialContainmentTree`   | *eliminated*                                                                                                                  |
+| `CategoryTreeWithSearchBox`               | *eliminated*                                                                                                                  |
+| `VisibilityComponent`                     | `TreeWidgetComponent` in @bentley/tree-widget-react                                                                           |
+| `VisibilityWidget`                        | `TreeWidgetControl` in @bentley/tree-widget-react
+| `ContentLayoutProps`                      | `ContentLayoutProps` in @bentley/ui-abstract                                                                               |
+| All drag & drop related APIs              | Third party components. E.g. see this [example](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=drag-and-drop) |
 
 ### @bentley/bentleyjs-core
 
@@ -519,57 +621,86 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @bentley/presentation-common
 
-| Removed                                               | Replacement                                                                                                                                                    |
-| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CompressedDescriptorJSON`                            | `DescriptorJSON`                                                                                                                                               |
-| `Descriptor.toCompressedJSON`                         | `Descriptor.toJSON`                                                                                                                                            |
-| `DescriptorOverrides.hiddenFieldNames`                | `DescriptorOverrides.fieldsSelector`                                                                                                                           |
-| `DescriptorOverrides.sortDirection`                   | `DescriptorOverrides.sorting.direction`                                                                                                                        |
-| `DescriptorOverrides.sortingFieldName`                | `DescriptorOverrides.sorting.field`                                                                                                                            |
-| `ECPropertyGroupingNodeKey.groupingValue`             | `ECPropertyGroupingNodeKey.groupingValues`                                                                                                                     |
-| `ExtendedContentRequestOptions`                       | `ContentRequestOptions`                                                                                                                                        |
-| `ExtendedContentRpcRequestOptions`                    | `ContentRpcRequestOptions`                                                                                                                                     |
-| `ExtendedHierarchyRequestOptions`                     | `HierarchyRequestOptions`                                                                                                                                      |
-| `ExtendedHierarchyRpcRequestOptions`                  | `HierarchyRpcRequestOptions`                                                                                                                                   |
-| `Field.fromJSON`                                      | `Field.fromCompressedJSON`                                                                                                                                     |
-| `HierarchyCompareRpcOptions`                          | *eliminated*                                                                                                                                                   |
-| `LabelRequestOptions`                                 | `DisplayLabelRequestOptions`                                                                                                                                   |
-| `LabelRpcRequestOptions`                              | `DisplayLabelRpcRequestOptions`                                                                                                                                |
-| `LoggingNamespaces`                                   | `PresentationBackendLoggerCategory`, `PresentationBackendNativeLoggerCategory`, `PresentationFrontendLoggerCategory` or `PresentationComponentsLoggerCategory` |
-| `NodeDeletionInfo.target`                             | `NodeDeletionInfo.parent` and `NodeDeletionInfo.position`                                                                                                      |
-| `NodeDeletionInfoJSON.target`                         | `NodeDeletionInfoJSON.parent` and `NodeDeletionInfoJSON.position`                                                                                              |
-| `PresentationDataCompareOptions`                      | *eliminated*                                                                                                                                                   |
-| `PresentationRpcInterface.compareHierarchies`         | *eliminated*                                                                                                                                                   |
-| `PresentationRpcInterface.compareHierarchiesPaged`    | *eliminated*                                                                                                                                                   |
-| `PresentationRpcInterface.getContent`                 | `PresentationRpcInterface.getPagedContent` and `getPagedContentSet`                                                                                            |
-| `PresentationRpcInterface.getContentAndSize`          | `PresentationRpcInterface.getPagedContent` and `getPagedContentSet`                                                                                            |
-| `PresentationRpcInterface.getDisplayLabelDefinitions` | `PresentationRpcInterface.getPagedDisplayLabelDefinitions`                                                                                                     |
-| `PresentationRpcInterface.getDistinctValues`          | `PresentationRpcInterface.getPagedDistinctValues`                                                                                                              |
-| `PresentationRpcInterface.getNodes`                   | `PresentationRpcInterface.getPagedNodes`                                                                                                                       |
-| `PresentationRpcInterface.getNodesAndCount`           | `PresentationRpcInterface.getPagedNodes`                                                                                                                       |
-| `PresentationRpcInterface.loadHierarchy`              | *eliminated*                                                                                                                                                   |
-| `PresentationUnitSystem`                              | `UnitSystemKey` in `@bentley/imodeljs-quantity`                                                                                                                |
-| `PropertiesFieldDescriptor.propertyClass`             | `PropertiesFieldDescriptor.properties.class`                                                                                                                   |
-| `PropertiesFieldDescriptor.propertyName`              | `PropertiesFieldDescriptor.properties.name`                                                                                                                    |
-| `Property.relatedClassPath`                           | `NestedContentField.pathToPrimaryClass`                                                                                                                        |
-| `PropertyJSON.relatedClassPath`                       | `NestedContentFieldJSON.pathToPrimaryClass`                                                                                                                    |
-| `SelectClassInfo.pathToPrimaryClass`                  | `SelectClassInfo.pathFromInputToSelectClass`                                                                                                                   |
-| `SelectClassInfo.relatedInstanceClasses`              | `SelectClassInfo.relatedInstancePaths`                                                                                                                         |
-| `SelectClassInfoJSON.pathToPrimaryClass`              | `SelectClassInfoJSON.pathFromInputToSelectClass`                                                                                                               |
-| `SelectClassInfoJSON.relatedInstanceClasses`          | `SelectClassInfoJSON.relatedInstancePaths`                                                                                                                     |
+| Removed                                                           | Replacement                                                                                                                                                    |
+| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CompressedDescriptorJSON`                                        | `DescriptorJSON`                                                                                                                                               |
+| `ContentInstancesOfSpecificClassesSpecification.arePolymorphic`   | `ContentInstancesOfSpecificClassesSpecification.handleInstancesPolymorphically`                                                                                |
+| `ContentModifiersList.propertiesDisplay`                          | `ContentModifiersList.propertyOverrides`                                                                                                                       |
+| `ContentModifiersList.propertyEditors`                            | `ContentModifiersList.propertyOverrides`                                                                                                                       |
+| `ContentRelatedInstancesSpecification.isRecursive`                | *eliminated*                                                                                                                                                   |
+| `ContentRelatedInstancesSpecification.relatedClasses`             | `ContentRelatedInstancesSpecification.relationshipPaths.targetClass`                                                                                           |
+| `ContentRelatedInstancesSpecification.relationships`              | `ContentRelatedInstancesSpecification.relationshipPaths.relationship`                                                                                          |
+| `ContentRelatedInstancesSpecification.requiredDirection`          | `ContentRelatedInstancesSpecification.relationshipPaths.direction`                                                                                             |
+| `ContentRelatedInstancesSpecification.skipRelatedLevel`           | *eliminated*                                                                                                                                                   |
+| `Descriptor.toCompressedJSON`                                     | `Descriptor.toJSON`                                                                                                                                            |
+| `DescriptorOverrides.hiddenFieldNames`                            | `DescriptorOverrides.fieldsSelector`                                                                                                                           |
+| `DescriptorOverrides.sortDirection`                               | `DescriptorOverrides.sorting.direction`                                                                                                                        |
+| `DescriptorOverrides.sortingFieldName`                            | `DescriptorOverrides.sorting.field`                                                                                                                            |
+| `ECPropertyGroupingNodeKey.groupingValue`                         | `ECPropertyGroupingNodeKey.groupingValues`                                                                                                                     |
+| `ExtendedContentRequestOptions`                                   | `ContentRequestOptions`                                                                                                                                        |
+| `ExtendedContentRpcRequestOptions`                                | `ContentRpcRequestOptions`                                                                                                                                     |
+| `ExtendedHierarchyRequestOptions`                                 | `HierarchyRequestOptions`                                                                                                                                      |
+| `ExtendedHierarchyRpcRequestOptions`                              | `HierarchyRpcRequestOptions`                                                                                                                                   |
+| `Field.fromJSON`                                                  | `Field.fromCompressedJSON`                                                                                                                                     |
+| `HierarchyCompareRpcOptions`                                      | *eliminated*                                                                                                                                                   |
+| `LabelRequestOptions`                                             | `DisplayLabelRequestOptions`                                                                                                                                   |
+| `LabelRpcRequestOptions`                                          | `DisplayLabelRpcRequestOptions`                                                                                                                                |
+| `LoggingNamespaces`                                               | `PresentationBackendLoggerCategory`, `PresentationBackendNativeLoggerCategory`, `PresentationFrontendLoggerCategory` or `PresentationComponentsLoggerCategory` |
+| `NodeDeletionInfo.target`                                         | `NodeDeletionInfo.parent` and `NodeDeletionInfo.position`                                                                                                      |
+| `NodeDeletionInfoJSON.target`                                     | `NodeDeletionInfoJSON.parent` and `NodeDeletionInfoJSON.position`                                                                                              |
+| `PresentationDataCompareOptions`                                  | *eliminated*                                                                                                                                                   |
+| `PresentationRpcInterface.compareHierarchies`                     | *eliminated*                                                                                                                                                   |
+| `PresentationRpcInterface.compareHierarchiesPaged`                | *eliminated*                                                                                                                                                   |
+| `PresentationRpcInterface.getContent`                             | `PresentationRpcInterface.getPagedContent` and `getPagedContentSet`                                                                                            |
+| `PresentationRpcInterface.getContentAndSize`                      | `PresentationRpcInterface.getPagedContent` and `getPagedContentSet`                                                                                            |
+| `PresentationRpcInterface.getDisplayLabelDefinitions`             | `PresentationRpcInterface.getPagedDisplayLabelDefinitions`                                                                                                     |
+| `PresentationRpcInterface.getDistinctValues`                      | `PresentationRpcInterface.getPagedDistinctValues`                                                                                                              |
+| `PresentationRpcInterface.getNodes`                               | `PresentationRpcInterface.getPagedNodes`                                                                                                                       |
+| `PresentationRpcInterface.getNodesAndCount`                       | `PresentationRpcInterface.getPagedNodes`                                                                                                                       |
+| `PresentationRpcInterface.loadHierarchy`                          | *eliminated*                                                                                                                                                   |
+| `PresentationUnitSystem`                                          | `UnitSystemKey` in `@bentley/imodeljs-quantity`                                                                                                                |
+| `PropertiesFieldDescriptor.propertyClass`                         | `PropertiesFieldDescriptor.properties.class`                                                                                                                   |
+| `PropertiesFieldDescriptor.propertyName`                          | `PropertiesFieldDescriptor.properties.name`                                                                                                                    |
+| `Property.relatedClassPath`                                       | `NestedContentField.pathToPrimaryClass`                                                                                                                        |
+| `PropertyJSON.relatedClassPath`                                   | `NestedContentFieldJSON.pathToPrimaryClass`                                                                                                                    |
+| `RelatedInstanceNodesSpecification.relatedClasses`                | `RelatedInstanceNodesSpecification.relationshipPaths.targetClass`                                                                                              |
+| `RelatedInstanceNodesSpecification.relationships`                 | `RelatedInstanceNodesSpecification.relationshipPaths.relationship`                                                                                             |
+| `RelatedInstanceNodesSpecification.requiredDirection`             | `RelatedInstanceNodesSpecification.relationshipPaths.direction`                                                                                                |
+| `RelatedInstanceNodesSpecification.skipRelatedLevel`              | *eliminated*                                                                                                                                                   |
+| `RelatedInstanceNodesSpecification.supportedSchemas`              | *eliminated*                                                                                                                                                   |
+| `RelatedInstanceSpecification.class`                              | `RelatedInstanceSpecification.relationshipPath.targetClass`                                                                                                    |
+| `RelatedInstanceSpecification.relationship`                       | `RelatedInstanceSpecification.relationshipPath.relationship`                                                                                                   |
+| `RelatedInstanceSpecification.requiredDirection`                  | `RelatedInstanceSpecification.relationshipPath.direction`                                                                                                      |
+| `RelatedPropertiesSpecification.isPolymorphic`                    | `RelatedPropertiesSpecification.handleTargetClassPolymorphically`                                                                                              |
+| `RelatedPropertiesSpecification.propertyNames`                    | `RelatedPropertiesSpecification.properties`                                                                                                                    |
+| `RelatedPropertiesSpecification.relatedClasses`                   | `RelatedPropertiesSpecification.propertiesSource.targetClass`                                                                                                  |
+| `RelatedPropertiesSpecification.relationships`                    | `RelatedPropertiesSpecification.propertiesSource.relationship`                                                                                                 |
+| `RelatedPropertiesSpecification.requiredDirection`                | `RelatedPropertiesSpecification.propertiesSource.direction`                                                                                                    |
+| `Ruleset.supportedSchemas`                                        | `Ruleset.requiredSchemas`                                                                                                                                      |
+| `RequestPriority`                                                 | *eliminated*                                                                                                                                                   |
+| `RequestOptions<TIModel>.priority`                                | *eliminated*                                                                                                                                                   |
+| `SelectClassInfo.pathToPrimaryClass`                              | `SelectClassInfo.pathFromInputToSelectClass`                                                                                                                   |
+| `SelectClassInfo.relatedInstanceClasses`                          | `SelectClassInfo.relatedInstancePaths`                                                                                                                         |
+| `SelectClassInfoJSON.pathToPrimaryClass`                          | `SelectClassInfoJSON.pathFromInputToSelectClass`                                                                                                               |
+| `SelectClassInfoJSON.relatedInstanceClasses`                      | `SelectClassInfoJSON.relatedInstancePaths`                                                                                                                     |
 
 ### @bentley/presentation-backend
 
-| Removed                                     | Replacement                                                       |
-| ------------------------------------------- | ----------------------------------------------------------------- |
-| `DuplicateRulesetHandlingStrategy`          | `RulesetInsertOptions`                                            |
-| `PresentationManager.activeUnitSystem`      | Changed type from `PresentationUnitSystem` to `UnitSystemKey`     |
-| `PresentationManager.getContentAndSize`     | `PresentationManager.getContent` and `getContentSetSize`          |
-| `PresentationManager.getDistinctValues`     | `PresentationManager.getPagedDistinctValues`                      |
-| `PresentationManager.getNodesAndCount`      | `PresentationManager.getNodes` and `getNodesCount`                |
-| `PresentationManager.loadHierarchy`         | *eliminated*                                                      |
-| `PresentationManagerProps.activeUnitSystem` | Changed type from `PresentationUnitSystem` to `UnitSystemKey`     |
-| `UnitSystemFormat.unitSystems`              | Changed type from `PresentationUnitSystem[]` to `UnitSystemKey[]` |
+| Removed                                       | Replacement                                                                                                               |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `DuplicateRulesetHandlingStrategy`            | `RulesetInsertOptions`                                                                                                    |
+| `PresentationManager.activeUnitSystem`        | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                                                             |
+| `PresentationManager.getContentAndSize`       | `PresentationManager.getContent` and `getContentSetSize`                                                                  |
+| `PresentationManager.getDistinctValues`       | `PresentationManager.getPagedDistinctValues`                                                                              |
+| `PresentationManager.getNodesAndCount`        | `PresentationManager.getNodes` and `getNodesCount`                                                                        |
+| `PresentationManager.loadHierarchy`           | *eliminated*                                                                                                              |
+| `PresentationManagerProps.activeLocale`       | `PresentationManagerProps.defaultLocale`                                                                                  |
+| `PresentationManagerProps.activeUnitSystem`   | Renamed to `PresentationManagerProps.defaultUnitSystem` and changed type from `PresentationUnitSystem` to `UnitSystemKey` |
+| `PresentationManagerProps.cacheConfig`        | `PresentationManagerProps.caching.hierarchies`                                                                            |
+| `PresentationManagerProps.contentCacheSize`   | `PresentationManagerProps.caching.content.size`                                                                           |
+| `PresentationManagerProps.taskAllocationsMap` | `PresentationManagerProps.workerThreadsCount`                                                                             |
+| `UnitSystemFormat.unitSystems`                | Changed type from `PresentationUnitSystem[]` to `UnitSystemKey[]`                                                         |
+| `WithClientRequestContext<T>`                 | *eliminated*                                                                                                              |
 
 ### @bentley/presentation-frontend
 
@@ -647,6 +778,19 @@ A new @bentley/ui-imodel-components package has been added and contains items re
 The @bentley/ui-* and @bentley/presentation-components packages are now dependent on React version 17. **Applications using the ui packages must update to React 17.** Details about React version 17 can be found in the [React Blog](https://reactjs.org/blog/2020/10/20/react-v17.html).
 
 For migration purposes, React 16 is included in the peerDependencies for the packages. React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
+
+### New options for defining Frontstages
+
+| Class/Component                                        | Description                                                                                        |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------|
+| [StandardFrontstageProvider]($ui-framework)            | Frontstage provider that provides an 'empty' stage that is to be populated via UiItemsProviders.   |
+| [StandardContentToolsProvider]($ui-framework)          | UiItemsProvider that will add common tool entries to Tool Widget.                                  |
+| [StandardNavigationToolsProvider]($ui-framework)       | UiItemsProvider that will add common view tool entries to Navigation Widget.                       |
+| [StandardStatusbarItemsProvider]($ui-framework)        | UiItemsProvider that will add common statusbar items.                                              |
+| [ContentToolWidgetComposer]($ui-framework)             | Provides an empty Tool Widget that is to be populate via UiItemsProviders.                         |
+| [ViewToolWidgetComposer]($ui-framework)                | Provides an empty Navigation Widget that is to be populate via UiItemsProviders.                   |
+| [StandardContentLayouts]($ui-abstract)                 | Provides standard view layouts that can be used when defining a ContentGroup.                      |
+| [ContentGroupProvider]($ui-framework)                  | Class that generates a ContentGroup at runtime when the frontstageDef is being constructed.        |
 
 ### New Timeline Date Marker
 

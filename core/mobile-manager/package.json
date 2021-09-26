@@ -1,10 +1,10 @@
 {
   "name": "@bentley/mobile-manager",
-  "version": "3.0.0-dev.63",
+  "version": "3.0.0-dev.66",
   "description": "iTwin.js MobileHost and MobileApp",
   "license": "MIT",
   "engines": {
-    "node": ">=10.17.0 <15.0"
+    "node": ">=12.22.0 < 14.0 || >=14.17.0 <17.0"
   },
   "scripts": {
     "compile": "npm run build",
@@ -31,13 +31,13 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.63",
-    "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.63",
-    "@bentley/imodeljs-backend": "workspace:^3.0.0-dev.63",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.63",
-    "@bentley/imodeljs-frontend": "workspace:^3.0.0-dev.63",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.63",
-    "@bentley/presentation-common": "workspace:^3.0.0-dev.63",
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.66",
+    "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.66",
+    "@bentley/imodeljs-backend": "workspace:^3.0.0-dev.66",
+    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.66",
+    "@bentley/imodeljs-frontend": "workspace:^3.0.0-dev.66",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.66",
+    "@bentley/presentation-common": "workspace:^3.0.0-dev.66",
     "js-base64": "^3.6.1",
     "ws": "^7.5.3"
   },
@@ -54,7 +54,7 @@
     "@types/chai": "^4.1.4",
     "@types/fs-extra": "^4.0.7",
     "@types/mocha": "^8.2.2",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "@types/ws": "^6.0.4",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
@@ -65,7 +65,7 @@
     "js-base64": "^3.6.1",
     "mocha": "^8.3.2",
     "rimraf": "^3.0.2",
-    "typescript": "~4.3.0",
+    "typescript": "~4.4.0",
     "ws": "^7.5.3"
   },
   "eslintConfig": {

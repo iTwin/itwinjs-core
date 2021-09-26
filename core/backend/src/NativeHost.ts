@@ -59,7 +59,7 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
       throw new IModelError(AuthStatus.Error, "Must specify a valid configuration when initializing authorization");
     if (this.config.expiryBuffer)
       this.expireSafety = this.config.expiryBuffer;
-    this.issuerUrl = this.config.issuerUrl ?? await this.getUrl(this.getClientRequestContext());
+    this.issuerUrl = this.config.issuerUrl ?? await this.getUrl();
   }
 }
 
@@ -153,6 +153,10 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
 
   public async storageMgrNames(): Promise<string[]> {
     return NativeAppStorage.getStorageNames();
+  }
+
+  public async storageGetValueType(storageId: string, key: string): Promise<"number" | "string" | "boolean" | "Uint8Array" | "null" | undefined> {
+    return NativeAppStorage.find(storageId).getValueType(key);
   }
 
   public async storageGet(storageId: string, key: string): Promise<StorageValue | undefined> {

@@ -165,6 +165,7 @@ export class WidgetStackTabs extends React.PureComponent<WidgetStackTabsProps> {
       if (tabs.length <= 0)
         return null;
       renderIndex++;
+      // istanbul ignore next
       return (
         <React.Fragment key={widgetId}>
           {renderIndex < 1 ? undefined : <TabSeparator

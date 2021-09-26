@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { GuidString, Logger } from "@bentley/bentleyjs-core";
-import { Project } from "@bentley/context-registry-client";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { AuthorizedFrontendRequestContext, NativeApp, NativeAppAuthorization } from "@bentley/imodeljs-frontend";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -78,9 +77,9 @@ export class TestUtility {
 
   public static async queryContextIdByName(contextName: string): Promise<string> {
     const requestContext = await AuthorizedFrontendRequestContext.create();
-    const project: Project = await this.itwinPlatformEnv.contextMgr.queryProjectByName(requestContext, contextName);
-    assert(project && project.wsgId);
-    return project.wsgId;
+    const iTwin: ITwin = await this.itwinPlatformEnv.contextMgr.getITwinByName(requestContext, contextName);
+    assert(iTwin && iTwin.id);
+    return iTwin.id;
   }
 
   public static async queryIModelIdbyName(iTwinId: string, iModelName: string): Promise<string> {

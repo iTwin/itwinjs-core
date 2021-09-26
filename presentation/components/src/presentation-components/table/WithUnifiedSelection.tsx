@@ -39,7 +39,7 @@ export interface TableWithUnifiedSelectionProps {
    *
    * Defaults to `1`.
    *
-   * @see [Selection levels]($docs/learning/presentation/Unified-Selection/Terminology#selection-level).
+   * @see [Selection levels]($docs/presentation/Unified-Selection/index#selection-levels).
    */
   selectionLevel?: number;
 

@@ -11,20 +11,22 @@ import { ECJsNames, IModelError } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelHost } from "./IModelHost";
 
-/** Marks a string as either an [Id64String]($bentleyjs-core) or [GuidString]($bentleyjs-core), so
- * that it can be passed to the [bindValue]($backend.SqliteStatement) or [bindValues]($backend.SqliteStatement)
- * methods of [SqliteStatement]($backend).
- * @internal
+/** an object returned by [[SqliteStatement.getRow]]
+ * @public
  */
-export interface StringParam {
-  id?: Id64String;
-  guid?: GuidString;
+export interface RowValue {
+  [propName: string]: Uint8Array | number | string | undefined;
 }
 
 /** parameter Index (1-based), or name of the parameter (including the initial ':', '@' or '$')
  * @public
  */
 export type BindParameter = number | string;
+
+/** A value that can be bound with [[SqliteStatement.bindValue]] or [[SqliteStatement.bindValues]]
+ * @public
+ */
+export type ParameterValue = undefined | number | boolean | string | Uint8Array | { id: Id64String, guid?: never } | { guid: GuidString, id?: never };
 
 /** Executes SQLite SQL statements.
  *
@@ -47,7 +49,7 @@ export type BindParameter = number | string;
  * > The key to making this strategy work is to phrase a statement in a general way and use placeholders to represent parameters that will vary on each use.
  * @public
  */
-export class SqliteStatement implements IterableIterator<any>, IDisposable {
+export class SqliteStatement implements IterableIterator<RowValue>, IDisposable {
   private _stmt: IModelJsNative.SqliteStatement | undefined;
 
   public constructor(private _sql: string) { }
@@ -97,37 +99,37 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    *  JavaScript Type | SQLite Type
    *  --- | ---
    *  undefined | NULL
+   *  null | NULL
    *  boolean | INTEGER with true being bound as 1 and false as 0
    *  number | INTEGER if number is integral or REAL if number is not integral
    *  string | TEXT
    *  Uint8Array or ArrayBuffer | BLOB
-   *  [StringParam]($backend) where member **id** is set | INTEGER
-   *  [StringParam]($backend) where member **guid** is set | BLOB
+   *  {id: Id64String}  | INTEGER
+   *  {guid: GuidString} | BLOB
    *
    *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
    *  @param value Value to bind.
-   *  @throws [IModelError]($common) if the value is of an unsupported type or in
-   *  case of other binding errors.
    */
-  public bindValue(parameter: BindParameter, value: any): void {
+  public bindValue(parameter: BindParameter, value: ParameterValue): void {
     let stat: DbResult;
+    const stmt = this.stmt!;
     if (value === undefined || value === null) {
-      stat = this._stmt!.bindNull(parameter);
+      stat = stmt.bindNull(parameter);
     } else if (typeof (value) === "number") {
       if (Number.isInteger(value))
-        stat = this._stmt!.bindInteger(parameter, value);
+        stat = stmt.bindInteger(parameter, value);
       else
-        stat = this._stmt!.bindDouble(parameter, value);
+        stat = stmt.bindDouble(parameter, value);
     } else if (typeof (value) === "boolean") {
-      stat = this._stmt!.bindInteger(parameter, value ? 1 : 0);
+      stat = stmt.bindInteger(parameter, value ? 1 : 0);
     } else if (typeof (value) === "string") {
-      stat = this._stmt!.bindString(parameter, value);
-    } else if (!!value.id) {
-      stat = this._stmt!.bindId(parameter, value.id);
-    } else if (!!value.guid) {
-      stat = this._stmt!.bindGuid(parameter, value.guid);
+      stat = stmt.bindString(parameter, value);
     } else if (value instanceof Uint8Array) {
-      stat = this._stmt!.bindBlob(parameter, value);
+      stat = stmt.bindBlob(parameter, value);
+    } else if (undefined !== value.id) {
+      stat = stmt.bindId(parameter, value.id);
+    } else if (undefined !== value.guid) {
+      stat = stmt.bindGuid(parameter, value.guid);
     } else
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Parameter value ${value} is of an unsupported data type.`);
 
@@ -189,26 +191,24 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * The values in either the array or object must match the respective types of the parameter.
    * See [[SqliteStatement.bindValue]] for details on the supported types.
    */
-  public bindValues(values: any[] | object): void {
+  public bindValues(values: ParameterValue[] | { [propName: string]: ParameterValue }): void {
     if (Array.isArray(values)) {
       for (let i = 0; i < values.length; i++) {
-        const paramIndex: number = i + 1;
-        const paramValue: any = values[i];
+        const paramValue = values[i];
         if (paramValue === undefined || paramValue === null)
           continue;
 
-        this.bindValue(paramIndex, paramValue);
+        this.bindValue(i + 1, paramValue);
       }
       return;
     }
 
     for (const entry of Object.entries(values)) {
-      const paramName: string = entry[0];
-      const paramValue: any = entry[1];
+      const paramValue = entry[1];
       if (paramValue === undefined || paramValue === null)
         continue;
 
-      this.bindValue(paramName, paramValue);
+      this.bindValue(entry[0], paramValue);
     }
   }
 
@@ -280,15 +280,15 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * [SqliteValueType.String]($backend) | string
    * [SqliteValueType.Blob]($backend) | Uint8Array
    */
-  public getRow(): any {
+  public getRow(): RowValue {
     const colCount = this.getColumnCount();
-    const row: object = {};
+    const row: RowValue = {};
     const duplicatePropNames = new Map<string, number>();
     for (let i = 0; i < colCount; i++) {
       const sqliteValue = this.getValue(i);
       if (!sqliteValue.isNull) {
-        const propName: string = SqliteStatement.determineResultRowPropertyName(duplicatePropNames, sqliteValue);
-        let val: any;
+        const propName = SqliteStatement.determineResultRowPropertyName(duplicatePropNames, sqliteValue);
+        let val: Uint8Array | number | string;
         switch (sqliteValue.type) {
           case SqliteValueType.Blob:
             val = sqliteValue.getBlob();
@@ -331,12 +331,12 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
 
   /** Calls step when called as an iterator.
    */
-  public next(): IteratorResult<any> {
+  public next(): IteratorResult<RowValue> {
     return DbResult.BE_SQLITE_ROW === this.step() ? { done: false, value: this.getRow() } : { done: true, value: undefined };
   }
 
   /** The iterator that will step through the results of this statement. */
-  public [Symbol.iterator](): IterableIterator<any> { return this; }
+  public [Symbol.iterator](): IterableIterator<RowValue> { return this; }
 }
 
 /** Data type of a value in in an SQLite SQL query result.
@@ -390,7 +390,7 @@ export class SqliteValue {
    * [SqliteValueType.String]($backend) | string
    * [SqliteValueType.Blob]($backend) | Uint8Array
    */
-  public get value(): any {
+  public get value(): Uint8Array | number | string | undefined {
     switch (this.type) {
       case SqliteValueType.Null:
         return undefined;

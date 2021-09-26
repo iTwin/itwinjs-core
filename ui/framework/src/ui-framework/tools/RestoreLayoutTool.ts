@@ -28,7 +28,7 @@ export class RestoreFrontstageLayoutTool extends Tool {
     let frontstageDef: FrontstageDef | undefined;
 
     if (frontstageId) {
-      frontstageDef = FrontstageManager.findFrontstageDef(frontstageId);
+      frontstageDef = await FrontstageManager.getFrontstageDef(frontstageId);
     } else {
       frontstageDef = FrontstageManager.activeFrontstageDef;
     }
