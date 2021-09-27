@@ -38,7 +38,6 @@ import { ByteStream } from '@bentley/bentleyjs-core';
 import { Camera } from '@bentley/imodeljs-common';
 import { Capabilities } from '@bentley/webgl-compatibility';
 import { Cartographic } from '@bentley/imodeljs-common';
-import { CartographicRange } from '@bentley/imodeljs-common';
 import { CategorySelectorProps } from '@bentley/imodeljs-common';
 import { ChangedEntities } from '@bentley/imodeljs-common';
 import { ChangesetIndex } from '@bentley/imodeljs-common';
@@ -235,7 +234,6 @@ import { Range3d } from '@bentley/geometry-core';
 import { Range3dProps } from '@bentley/geometry-core';
 import { Ray3d } from '@bentley/geometry-core';
 import { ReadonlySortedArray } from '@bentley/bentleyjs-core';
-import { RealityDataType as RealityDataType_2 } from '@bentley/reality-data-client';
 import { RelatedElement } from '@bentley/imodeljs-common';
 import { RelativePosition } from '@bentley/ui-abstract';
 import { RemoveFunction } from '@bentley/imodeljs-common';
@@ -2189,6 +2187,20 @@ export interface Decorator extends ViewportDecorator {
     onDecorationButtonEvent?(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled>;
     overrideElementHit?(hit: HitDetail): boolean;
     testDecorationHit?(id: string): boolean;
+}
+
+// @beta
+export enum DefaultSupportedTypes {
+    // (undocumented)
+    Cesium3dTiles = "Cesium3DTiles",
+    // (undocumented)
+    OMR = "OMR",
+    // (undocumented)
+    OPC = "OPC",
+    // (undocumented)
+    RealityMesh3dTiles = "RealityMesh3DTiles",
+    // (undocumented)
+    Terrain3dTiles = "Terrain3DTiles"
 }
 
 // @internal (undocumented)
@@ -7344,9 +7356,6 @@ export interface QuantityTypeDefinition {
 // @beta
 export type QuantityTypeKey = string;
 
-// @public
-export function queryRealityData(criteria: RealityDataQueryCriteria): Promise<ContextRealityModelProps[]>;
-
 // @beta
 export interface QueryScreenFeaturesOptions {
     includeNonLocatable?: boolean;
@@ -7386,15 +7395,15 @@ export interface RealityData {
     // (undocumented)
     getBlobUrl: (requestContext: AuthorizedClientRequestContext) => Promise<URL>;
     // (undocumented)
-    getRootDocumentJson: (requestContext: AuthorizedClientRequestContext) => Promise<any>;
-    // (undocumented)
     getTileContent: (requestContext: AuthorizedClientRequestContext, name: string) => Promise<any>;
     // (undocumented)
     getTileJson: (requestContext: AuthorizedClientRequestContext, name: string) => Promise<any>;
     // (undocumented)
+    id?: string;
+    // (undocumented)
     rootDocument?: string;
     // (undocumented)
-    type?: RealityDataType;
+    type?: string;
 }
 
 // @beta
@@ -7405,20 +7414,6 @@ export interface RealityDataAccess {
     getRealityDataUrl: (iTwinId: string | undefined, tileId: string) => Promise<string>;
 }
 
-// @public
-export interface RealityDataQueryCriteria {
-    filterIModel?: IModelConnection;
-    iTwinId: GuidString;
-    range?: CartographicRange;
-}
-
-// @beta
-export type RealityDataType = "RealityMesh3DTiles" | // Web Ready Scalable Mesh
-"OPC" | // Orbit Point Cloud
-"Terrain3DTiles" | // Terrain3DTiles
-"OMR" | // Mapping Resource,
-"Cesium3DTiles";
-
 // @internal (undocumented)
 export type RealityModelSource = ViewState | DisplayStyleState;
 
@@ -7427,7 +7422,7 @@ export class RealityModelTileClient {
     constructor(url: string, iTwinId?: string);
     // (undocumented)
     getBlobAccessData(): Promise<URL | undefined>;
-    getRealityDataType(): Promise<RealityDataType_2 | undefined>;
+    getRealityDataType(): Promise<string | undefined>;
     // (undocumented)
     getRootDocument(url: string): Promise<any>;
     getTileContent(url: string): Promise<any>;

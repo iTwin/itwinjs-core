@@ -22,6 +22,20 @@ export class DataLocation extends WsgInstance {
 }
 
 // @internal
+export enum DefaultSupportedTypes {
+    // (undocumented)
+    Cesium3dTiles = "Cesium3DTiles",
+    // (undocumented)
+    OMR = "OMR",
+    // (undocumented)
+    OPC = "OPC",
+    // (undocumented)
+    RealityMesh3dTiles = "RealityMesh3DTiles",
+    // (undocumented)
+    Terrain3dTiles = "Terrain3DTiles"
+}
+
+// @internal
 export class FileAccessKey extends WsgInstance {
     // (undocumented)
     permissions?: string;
@@ -112,7 +126,7 @@ export class RealityData extends WsgInstance {
     // (undocumented)
     thumbnailDocument?: string;
     // (undocumented)
-    type?: RealityDataType;
+    type?: string;
     // (undocumented)
     ultimateId?: string;
     // (undocumented)
@@ -162,13 +176,6 @@ export interface RealityDataRequestQueryOptions extends RequestQueryOptions {
     polygon?: string;
     project?: string;
 }
-
-// @internal
-export type RealityDataType = "RealityMesh3DTiles" | // Web Ready Scalable Mesh
-"OPC" | // Orbit Point Cloud
-"Terrain3DTiles" | // Terrain3DTiles
-"OMR" | // Mapping Resource,
-"Cesium3DTiles";
 
 
 // (No @packageDocumentation comment for this package)

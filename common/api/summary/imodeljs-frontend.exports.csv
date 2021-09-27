@@ -113,6 +113,7 @@ public;DecorateContext
 public;Decorations 
 internal;DecorationsCache
 public;Decorator 
+beta;DefaultSupportedTypes
 internal;DefaultViewTouchTool 
 internal;DefineACSByElementTool 
 internal;DefineACSByPointsTool 
@@ -414,7 +415,6 @@ beta;QuantityType
 beta;QuantityTypeArg = QuantityType | string
 beta;QuantityTypeDefinition
 beta;QuantityTypeKey = string
-public;queryRealityData(criteria: RealityDataQueryCriteria): Promise
 beta;QueryScreenFeaturesOptions
 public;queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise
 beta;QueryTileFeaturesOptions
@@ -426,7 +426,6 @@ public;readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId:
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
 beta;RealityData
 beta;RealityDataAccess
-public;RealityDataQueryCriteria
 internal;RealityModelSource = ViewState | DisplayStyleState
 internal;RealityModelTileClient
 internal;RealityModelTileTree 
