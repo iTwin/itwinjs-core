@@ -555,7 +555,7 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
     this.props.widgetDef.saveTransientState();
     this.props.renderTo.appendChild(this._content);
 
-    const shouldRemount = this.props.widgetDef.restoreTransientState()|| this.props.widgetDef.isToolSettings;
+    const shouldRemount = this.props.widgetDef.restoreTransientState() || this.props.widgetDef.isToolSettings;
 
     shouldRemount && this.setState((prevState) => ({ widgetKey: prevState.widgetKey + 1 }));
   }
@@ -601,7 +601,7 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
       return;
     // force update when tool is activated
     this.setState((prevState) => ({ widgetKey: prevState.widgetKey + 1 }));
-    };
+  };
 }
 
 /** @internal */
