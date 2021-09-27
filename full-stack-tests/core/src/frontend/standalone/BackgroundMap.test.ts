@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, GlobeMode, TerrainHeightOriginMode } from "@bentley/imodeljs-common";
+import {
+  BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, GlobeMode, PersistentBackgroundMapProps, TerrainHeightOriginMode,
+} from "@bentley/imodeljs-common";
 import { IModelApp, IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { testOnScreenViewport, TestViewport } from "../TestViewport";
 
@@ -29,13 +31,17 @@ describe("Background map", () => {
   });
 
   it("produces a different tile tree when background map settings change", async () => {
-    async function isSameTileTree(vp: TestViewport, props: BackgroundMapProps): Promise<boolean> {
+    async function isSameTileTree(vp: TestViewport, props: BackgroundMapProps | PersistentBackgroundMapProps): Promise<boolean> {
       expect(vp.viewFlags.backgroundMap).to.be.true;
       await vp.waitForAllTilesToRender();
       const prevTree = vp.backgroundMap!.treeOwner.tileTree!;
       expect(prevTree).not.to.be.undefined;
 
-      vp.changeBackgroundMapProps(props);
+
+      vp.changeBackgroundMapProps(props as BackgroundMapProps);
+      if (props.providerName || props.providerData)
+        vp.displayStyle.changeBackgroundMapProvider({ name: props.providerName as any, type: props.providerData?.mapType });
+
       await vp.waitForAllTilesToRender();
       const newTree = vp.backgroundMap!.treeOwner.tileTree!;
       expect(newTree).not.to.be.undefined;
@@ -43,7 +49,7 @@ describe("Background map", () => {
       return newTree === prevTree;
     }
 
-    type Test = [ BackgroundMapProps, boolean ]; // true if expect same tile tree after changing background map props
+    type Test = [ BackgroundMapProps | PersistentBackgroundMapProps, boolean ]; // true if expect same tile tree after changing background map props
     const tests: Test[] = [
       [ {}, true ],
       [ BackgroundMapSettings.fromJSON().toJSON(), true ],

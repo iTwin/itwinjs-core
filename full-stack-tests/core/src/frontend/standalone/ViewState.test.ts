@@ -140,21 +140,19 @@ describe("ViewState", () => {
     const vs0BackgroundColor = ColorDef.from(32, 1, 99);
     vs0DisplayStyle3d.backgroundColor = vs0BackgroundColor;
 
-    const oldBackgroundMap = vs0DisplayStyle3d.settings.backgroundMap.toJSON();
+    const oldBackgroundMap = vs0DisplayStyle3d.settings.backgroundMap.toPersistentJSON();
     if (undefined !== oldBackgroundMap) {
       // eslint-disable-next-line deprecation/deprecation
       const mt = oldBackgroundMap.providerData?.mapType === BackgroundMapType.Aerial ? BackgroundMapType.Hybrid : BackgroundMapType.Hybrid;
-      vs0DisplayStyle3d.backgroundMapSettings = BackgroundMapSettings.fromJSON({
-        // eslint-disable-next-line deprecation/deprecation
-        providerName: oldBackgroundMap.providerName === "BingProvider" ? "MapBoxProvider" : "BingProvider", providerData: { mapType: mt },
+      vs0DisplayStyle3d.changeBackgroundMapProvider({
+        name: oldBackgroundMap.providerName === "BingProvider" ? "MapBoxProvider" : "BingProvider",
+        type: mt,
       });
     } else {
-      vs0DisplayStyle3d.changeBackgroundMapProps(BackgroundMapSettings.fromJSON({
-        providerName: "BingProvider",
-        providerData: {
-          mapType: BackgroundMapType.Aerial,
-        },
-      }).toJSON());
+      vs0DisplayStyle3d.changeBackgroundMapProvider({
+        name: "BingProvider",
+        type: BackgroundMapType.Aerial,
+      });
     }
     const vs0BackgroundMap = vs0DisplayStyle3d.settings.backgroundMap;
 
@@ -210,18 +208,18 @@ describe("ViewState", () => {
     assert.isTrue(vs0BackgroundColor.equals(vs1BackgroundColor), "clone should copy displayStyle.backgroundColor");
     assert.isDefined(vs0BackgroundMap);
     // eslint-disable-next-line deprecation/deprecation
-    assert.isDefined(vs0BackgroundMap.toJSON().providerData?.mapType);
+    assert.isDefined(vs0BackgroundMap.toPersistentJSON().providerData?.mapType);
     assert.isDefined(vs1BackgroundMap);
     // eslint-disable-next-line deprecation/deprecation
-    assert.isDefined(vs1BackgroundMap.toJSON().providerData?.mapType);
+    assert.isDefined(vs1BackgroundMap.toPersistentJSON().providerData?.mapType);
     // eslint-disable-next-line deprecation/deprecation
-    assert.equal(vs0BackgroundMap.toJSON().providerData?.mapType, vs1BackgroundMap.toJSON().providerData?.mapType, "clone should copy displayStyle.backgroundMap.mapType");
+    assert.equal(vs0BackgroundMap.toPersistentJSON().providerData?.mapType, vs1BackgroundMap.toPersistentJSON().providerData?.mapType, "clone should copy displayStyle.backgroundMap.mapType");
     // eslint-disable-next-line deprecation/deprecation
-    assert.isDefined(vs0BackgroundMap.toJSON().providerName);
+    assert.isDefined(vs0BackgroundMap.toPersistentJSON().providerName);
     // eslint-disable-next-line deprecation/deprecation
-    assert.isDefined(vs1BackgroundMap.toJSON().providerName);
+    assert.isDefined(vs1BackgroundMap.toPersistentJSON().providerName);
     // eslint-disable-next-line deprecation/deprecation
-    assert.equal(vs0BackgroundMap.toJSON().providerName, vs1BackgroundMap.toJSON().providerName, "clone should copy displayStyle.backgroundMap.providerName");
+    assert.equal(vs0BackgroundMap.toPersistentJSON().providerName, vs1BackgroundMap.toPersistentJSON().providerName, "clone should copy displayStyle.backgroundMap.providerName");
     assert.equal(vs0HLSettings.transparencyThreshold, vs1HLSettings.transparencyThreshold, "clone should copy displayStyle.hiddenLineSettings.transparencyThreshold");
     assert.isTrue(vs0MonochromeColor.equals(vs1MonochromeColor), "clone should copy displayStyle.monochromeColor");
   });
