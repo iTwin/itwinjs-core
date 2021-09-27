@@ -43,7 +43,7 @@
       "allowedCategories": [ "backend", "integration-testing" ]
     },
     {
-      "name": "@bentley/eslint-plugin",
+      "name": "@itwin/eslint-plugin",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {

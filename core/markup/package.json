@@ -50,7 +50,7 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/certa": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
@@ -74,8 +74,8 @@
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

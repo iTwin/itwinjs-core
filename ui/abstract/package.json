@@ -43,7 +43,7 @@
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",
     "@itwin/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@itwin/core-i18n": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
@@ -96,11 +96,11 @@
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
     "extends": [
-      "plugin:@bentley/imodeljs-recommended",
-      "plugin:@bentley/jsdoc"
+      "plugin:@itwin/itwinjs-recommended",
+      "plugin:@itwin/jsdoc"
     ]
   }
 }

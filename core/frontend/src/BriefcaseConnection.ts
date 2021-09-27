@@ -216,7 +216,7 @@ export class BriefcaseConnection extends IModelConnection {
   }
 
   /** Query if there are any pending Txns in this briefcase that are waiting to be pushed. */
-  public async hasPendingTxns(): Promise<boolean> { // eslint-disable-line @bentley/prefer-get
+  public async hasPendingTxns(): Promise<boolean> { // eslint-disable-line @itwin/prefer-get
     return this.txns.hasPendingTxns();
   }
 

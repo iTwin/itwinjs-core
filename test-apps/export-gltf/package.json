@@ -23,7 +23,7 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@types/node": "14.14.31",
     "@types/yargs": "^12.0.5",
     "eslint": "^7.11.0",
@@ -32,8 +32,8 @@
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

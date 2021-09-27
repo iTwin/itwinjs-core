@@ -468,7 +468,7 @@ Every .ts file should have this notice as its **first lines**:
 
 ## Source Code Editor
 
-While not an absolute requirement, we recommend and optimize for [Visual Studio Code](https://code.visualstudio.com/). You will be likely be less productive if you attempt to use anything else. We recommend configuring the **ESLint** extension for Visual Studio Code and using our [@bentley/eslint-plugin](https://www.npmjs.com/package/@bentley/eslint-plugin) to get real-time feedback.
+While not an absolute requirement, we recommend and optimize for [Visual Studio Code](https://code.visualstudio.com/). You will be likely be less productive if you attempt to use anything else. We recommend configuring the **ESLint** extension for Visual Studio Code and using our [@itwin/eslint-plugin](https://www.npmjs.com/package/@itwin/eslint-plugin) to get real-time feedback.
 
 ## React Function Components
 

@@ -1,5 +1,5 @@
 {
-  "name": "@bentley/eslint-plugin",
+  "name": "@itwin/eslint-plugin",
   "entries": [
     {
       "version": "2.19.13",

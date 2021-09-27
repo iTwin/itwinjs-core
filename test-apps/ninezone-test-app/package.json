@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@bentley/react-scripts": "4.0.3",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",

@@ -58,7 +58,7 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/certa": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
@@ -106,11 +106,11 @@
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended",
+    "extends": "plugin:@itwin/itwinjs-recommended",
     "rules": {
-      "@bentley/no-internal-barrel-imports": [
+      "@itwin/no-internal-barrel-imports": [
         "error",
         {
           "required-barrel-modules": [
@@ -128,7 +128,7 @@
           "**/test/**/*.tsx"
         ],
         "rules": {
-          "@bentley/no-internal-barrel-imports": "off"
+          "@itwin/no-internal-barrel-imports": "off"
         }
       }
     ]

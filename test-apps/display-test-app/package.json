@@ -68,7 +68,7 @@
   "devDependencies": {
     "@itwin/backend-webpack-tools": "workspace:*",
     "@itwin/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@bentley/react-scripts": "4.0.3",
     "@types/express": "^4.16.1",
     "@types/fs-extra": "^4.0.7",
@@ -102,9 +102,9 @@
   ],
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended",
+    "extends": "plugin:@itwin/itwinjs-recommended",
     "parserOptions": {
       "project": [
         "tsconfig.json",

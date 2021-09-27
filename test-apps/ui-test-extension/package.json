@@ -28,7 +28,7 @@
   "license": "MIT",
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@types/react": "^17.0.0",
     "@types/react-select": "3.0.26",
     "@bentley/react-scripts": "4.0.3",
@@ -61,8 +61,8 @@
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

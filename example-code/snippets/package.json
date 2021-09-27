@@ -42,7 +42,7 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@itwin/oidc-signin-tool": "workspace:*",
     "@types/body-parser": "^1.17.0",
     "@types/chai": "^4.1.4",
@@ -73,8 +73,8 @@
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

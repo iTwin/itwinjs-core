@@ -47,7 +47,7 @@
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",
     "@itwin/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@itwin/core-i18n": "workspace:*",
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/ui-core-react": "workspace:*",
@@ -149,11 +149,11 @@
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
     "extends": [
-      "plugin:@bentley/ui",
-      "plugin:@bentley/jsdoc"
+      "plugin:@itwin/ui",
+      "plugin:@itwin/jsdoc"
     ]
   }
 }

@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@types/body-parser": "^1.17.0",
     "@types/chai": "^4.1.4",
@@ -57,9 +57,9 @@
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

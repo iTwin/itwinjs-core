@@ -86,19 +86,19 @@ export class LogMatchRule {
     this._level = lvl;
     return this;
   }
-  // eslint-disable-next-line @bentley/prefer-get
+  // eslint-disable-next-line @itwin/prefer-get
   public trace(): LogMatchRule {
     return this.level(LogLevel.Trace);
   }
-  // eslint-disable-next-line @bentley/prefer-get
+  // eslint-disable-next-line @itwin/prefer-get
   public error(): LogMatchRule {
     return this.level(LogLevel.Error);
   }
-  // eslint-disable-next-line @bentley/prefer-get
+  // eslint-disable-next-line @itwin/prefer-get
   public info(): LogMatchRule {
     return this.level(LogLevel.Info);
   }
-  // eslint-disable-next-line @bentley/prefer-get
+  // eslint-disable-next-line @itwin/prefer-get
   public warn(): LogMatchRule {
     return this.level(LogLevel.Warning);
   }

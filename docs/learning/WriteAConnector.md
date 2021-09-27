@@ -408,7 +408,7 @@ $npm install  @bentley/telemetry-client
 
 $npm install  --save-dev @itwin/build-tools
 $npm install  --save-dev @bentley/config-loader
-$npm install  --save-dev @bentley/eslint-plugin
+$npm install  --save-dev @itwin/eslint-plugin
 $npm install  --save-dev @bentley/oidc-signin-tool
 
 $npm install  --save-dev chai
