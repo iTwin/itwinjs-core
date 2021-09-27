@@ -115,7 +115,7 @@ export class PropertyDescriptionHelper {
     };
   }
 
-  /** Builds an editor that uses [NumberInput]($ui-core-react) control
+  /** Builds an editor that uses [NumberInput]($core-react) control
    * @beta
    */
   public static buildNumberEditorDescription(name: string, label: string, overrideParams?: RangeEditorParams, additionalParams: BasePropertyEditorParams[] = []): PropertyDescription {

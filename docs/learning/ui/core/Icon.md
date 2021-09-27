@@ -1,18 +1,18 @@
 # Icon
 
-The [Icon]($ui-core-react:Icon) category in the `@bentley/ui-core` package includes components that render icons when given an icon name or SVG source or path.
+The [Icon]($core-react:Icon) category in the `@bentley/ui-core` package includes components that render icons when given an icon name or SVG source or path.
 
-The [Icon]($ui-core-react) React component displays an icon based on an IconSpec.
-An [IconSpec]($ui-core-react:Icon) can be a string, ReactNode or
+The [Icon]($core-react) React component displays an icon based on an IconSpec.
+An [IconSpec]($core-react:Icon) can be a string, ReactNode or
 [ConditionalStringValue]($appui-abstract).
 When the IconSpec is a string, the value is either a Webfont name or a formatted string that includes an imported SVG.
 When using an SVG, it must be imported using the webpack loader `svg-sprite-loader`.
 The formatted string begins with "svg:".
 The `IconSpecUtilities.createSvgIconSpec` can be used to format the SVG string. See example usage below.
 
-The [SvgSprite]($ui-core-react) React component displays an icon using `<svg>` and `<use>` elements to reference an imported SVG file. The SVG file must be imported using the webpack loader `svg-sprite-loader`.
+The [SvgSprite]($core-react) React component displays an icon using `<svg>` and `<use>` elements to reference an imported SVG file. The SVG file must be imported using the webpack loader `svg-sprite-loader`.
 
-The [SvgSprite]($ui-core-react) React component displays an icon using an `<svg>` element and an array of SVG paths.
+The [SvgSprite]($core-react) React component displays an icon using an `<svg>` element and an array of SVG paths.
 
 ## Examples
 
@@ -115,4 +115,4 @@ In tsconfig.json, add a `types` entry for `@bentley/webpack-tools` in the `compi
 
 ## API Reference
 
-- [Icon]($ui-core-react:Icon)
+- [Icon]($core-react:Icon)

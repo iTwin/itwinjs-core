@@ -5,7 +5,7 @@
 import * as React from "react";
 import { expect } from "chai";
 import { render } from "@testing-library/react";
-import { HighlightedText } from "../../ui-components-react/common/HighlightedText";
+import { HighlightedText } from "../../components-react/common/HighlightedText";
 
 describe("<HighlightedText />", () => {
 

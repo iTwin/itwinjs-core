@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { CommonProps } from "@itwin/ui-core-react";
+import { CommonProps } from "@itwin/core-react";
 import { BackTarget, MergeTarget, WidgetZoneId, ZoneTargetType } from "@itwin/appui-layout-react";
 import { TargetChangeHandler } from "../frontstage/FrontstageComposer";
 

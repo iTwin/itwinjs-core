@@ -15,7 +15,7 @@ import { OutputMessageType } from "@itwin/core-frontend";
 import { ToastMessage } from "./ToastMessage";
 import { StickyMessage } from "./StickyMessage";
 import { ActivityMessage } from "./ActivityMessage";
-import { useLayoutResizeObserver } from "@itwin/ui-core-react";
+import { useLayoutResizeObserver } from "@itwin/core-react";
 
 /** Properties for [[StatusMessagesContainer]] component
  * @internal

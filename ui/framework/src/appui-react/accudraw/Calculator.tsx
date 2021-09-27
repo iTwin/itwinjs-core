@@ -10,7 +10,7 @@ import "./Calculator.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { OnCancelFunc, OnNumberCommitFunc, SpecialKey } from "@itwin/appui-abstract";
-import { CommonProps, Icon, IconInput, Omit, SvgSprite } from "@itwin/ui-core-react";
+import { CommonProps, Icon, IconInput, Omit, SvgSprite } from "@itwin/core-react";
 import { Button, Input } from "@itwin/itwinui-react";
 import { CalculatorEngine, CalculatorOperator } from "./CalculatorEngine";
 import { SquareButton, SquareButtonProps } from "./SquareButton";

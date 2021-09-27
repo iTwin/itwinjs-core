@@ -9,7 +9,7 @@
 import "./Grip.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, Point, Rectangle, Timer } from "@itwin/ui-core-react";
+import { CommonProps, Point, Rectangle, Timer } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { useDragPanelGrip, UseDragPanelGripArgs } from "../base/DragManager";
 import { NineZoneDispatchContext, useLabel } from "../base/NineZone";

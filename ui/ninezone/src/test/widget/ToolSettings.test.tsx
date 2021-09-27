@@ -5,7 +5,7 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Point, Rectangle } from "@itwin/ui-core-react";
+import { Point, Rectangle } from "@itwin/core-react";
 import { ResizeGrip, ResizeHandle, ToolSettings, ToolSettingsProps } from "../../appui-layout-react";
 import { createRect, mount } from "../Utils";
 

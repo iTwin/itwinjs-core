@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { UiEvent } from "../../ui-core-react";
+import { UiEvent } from "../../core-react";
 
 describe("UIEvent", () => {
 

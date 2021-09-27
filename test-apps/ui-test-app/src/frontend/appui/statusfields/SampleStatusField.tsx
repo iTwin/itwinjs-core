@@ -8,10 +8,10 @@
 
 import * as React from "react";
 import { IModelApp } from "@itwin/core-frontend";
-import { FillCentered } from "@itwin/ui-core-react";
+import { FillCentered } from "@itwin/core-react";
 import { Indicator, StatusBarFieldId, StatusFieldProps } from "@itwin/appui-react";
 import { Dialog, FooterPopup, TitleBar } from "@itwin/appui-layout-react";
-import { ColorPickerPopup } from "@itwin/ui-imodel-components-react";
+import { ColorPickerPopup } from "@itwin/imodel-components-react";
 import { ColorDef } from "@itwin/core-common";
 import { Button } from "@itwin/itwinui-react";
 

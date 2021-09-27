@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "~@itwin/appui-layout-react/lib/appui-layout-react/footer/_variables";
-@import "~@itwin/ui-core-react/lib/ui-core-react/style/themecolors";
-@import "~@itwin/ui-core-react/lib/ui-core-react/z-index";
-@import "~@itwin/ui-core-react/lib/ui-core-react/scrollbar";
-@import "~@itwin/ui-core-react/lib/ui-core-react/typography";
+@import "~@itwin/core-react/lib/core-react/style/themecolors";
+@import "~@itwin/core-react/lib/core-react/z-index";
+@import "~@itwin/core-react/lib/core-react/scrollbar";
+@import "~@itwin/core-react/lib/core-react/typography";
 
 $no-shadow: none;
 $shadow: drop-shadow(0 1px 0 $buic-text-color-reverse);

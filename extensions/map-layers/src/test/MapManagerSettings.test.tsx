@@ -17,7 +17,7 @@ import {
 } from "@itwin/core-common";
 import { MapManagerSettings } from "../ui/widget/MapManagerSettings";
 import { SourceMapContext } from "../ui/widget/MapLayerManager";
-import { NumberInput, Toggle } from "@itwin/ui-core-react";
+import { NumberInput, Toggle } from "@itwin/core-react";
 import { SpecialKey } from "@itwin/appui-abstract";
 import { Select } from "@itwin/itwinui-react";
 

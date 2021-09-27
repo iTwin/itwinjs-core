@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import { Orientation } from "@itwin/ui-core-react";
+import { Orientation } from "@itwin/core-react";
 import TestUtils from "../../TestUtils";
-import { PropertyList } from "../../../ui-components-react/propertygrid/component/PropertyList";
+import { PropertyList } from "../../../components-react/propertygrid/component/PropertyList";
 import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
 

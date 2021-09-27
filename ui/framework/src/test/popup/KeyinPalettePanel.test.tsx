@@ -11,7 +11,7 @@ import { SpecialKey } from "@itwin/appui-abstract";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { clearKeyinPaletteHistory, FrameworkUiAdmin, KeyinEntry, KeyinPalettePanel, UiFramework } from "../../appui-react";
 import TestUtils, { storageMock } from "../TestUtils";
-import { UiSettingsStatus } from "@itwin/ui-core-react";
+import { UiSettingsStatus } from "@itwin/core-react";
 
 const myLocalStorage = storageMock();
 const KEYIN_PALETTE_NAMESPACE = "KeyinPalettePanel";

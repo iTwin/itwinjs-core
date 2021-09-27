@@ -8,7 +8,7 @@
 
 import "./Tabs.scss";
 import * as React from "react";
-import { useResizeObserver } from "@itwin/ui-core-react";
+import { useResizeObserver } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { TabsStateContext } from "../base/NineZone";
 import { getChildKey, useOverflow } from "../tool-settings/Docked";

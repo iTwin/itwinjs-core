@@ -12,8 +12,8 @@ import { FavoritePropertiesScope, Presentation } from "@itwin/presentation-front
 import {
   ActionButtonRendererProps, PropertyGridContextMenuArgs, useAsyncValue, VirtualizedPropertyGridWithDataProvider,
   VirtualizedPropertyGridWithDataProviderProps,
-} from "@itwin/ui-components-react";
-import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Icon, Orientation, ResizableContainerObserver } from "@itwin/ui-core-react";
+} from "@itwin/components-react";
+import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Icon, Orientation, ResizableContainerObserver } from "@itwin/core-react";
 import { ConfigurableCreateInfo, useActiveIModelConnection, useFrameworkVersion, WidgetControl } from "@itwin/appui-react";
 import { ExtensionUiItemsProvider } from "../ExtensionUiItemsProvider";
 
@@ -171,7 +171,7 @@ export function PresentationPropertyGridWidget() {
     return null;
   }, [dataProvider, iModelConnection]);
 
-  const [gridSize, setGridSize] = React.useState<{width: number, height: number}>();
+  const [gridSize, setGridSize] = React.useState<{ width: number, height: number }>();
   const onGridResize = React.useCallback((width, height) => setGridSize({ width, height }), []);
 
   return (

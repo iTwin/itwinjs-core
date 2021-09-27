@@ -9,8 +9,8 @@ import {
   AbstractTreeNodeLoaderWithProvider, ControlledTree, DelayLoadedTreeNodeItem, ITreeDataProvider, MutableTreeModel, SelectionMode, Subscription,
   TreeCheckboxStateChangeEventArgs, TreeEventHandler, TreeModel, TreeModelChanges, TreeModelNode, TreeNodeItem, TreeSelectionModificationEventArgs,
   TreeSelectionReplacementEventArgs, useTreeEventsHandler, useTreeModel, useTreeModelSource, useTreeNodeLoader,
-} from "@itwin/ui-components-react";
-import { CheckBoxState } from "@itwin/ui-core-react";
+} from "@itwin/components-react";
+import { CheckBoxState } from "@itwin/core-react";
 import { ConfigurableCreateInfo, WidgetControl } from "@itwin/appui-react";
 
 export class TreeSelectionDemoWidgetControl extends WidgetControl {

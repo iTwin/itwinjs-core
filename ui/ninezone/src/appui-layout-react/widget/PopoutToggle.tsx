@@ -14,7 +14,7 @@ import { NineZoneDispatchContext, useLabel } from "../base/NineZone";
 // import { PanelStateContext } from "../widget-panels/Panel";
 // import { assert } from "@itwin/core-bentley";
 import popoutToggleSvg from "./window-popout.svg?sprite";
-import { Icon } from "@itwin/ui-core-react";
+import { Icon } from "@itwin/core-react";
 import { IconSpecUtilities } from "@itwin/appui-abstract";
 import { ActiveTabIdContext } from "./Widget";
 

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { Headline } from "../../ui-core-react";
+import { Headline } from "../../core-react";
 
 /* eslint-disable deprecation/deprecation */
 

@@ -13,7 +13,7 @@ import {
   DiagnosticsOptionsWithHandler, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, Node, NodeKey, NodePathElement, Paged, Ruleset,
 } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { DelayLoadedTreeNodeItem, PageOptions, TreeNodeItem } from "@itwin/ui-components-react";
+import { DelayLoadedTreeNodeItem, PageOptions, TreeNodeItem } from "@itwin/components-react";
 import { createDiagnosticsOptions, DiagnosticsProps } from "../common/Diagnostics";
 import { RulesetRegistrationHelper } from "../common/RulesetRegistrationHelper";
 import { PresentationComponentsLoggerCategory } from "../ComponentsLoggerCategory";

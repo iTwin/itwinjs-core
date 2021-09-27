@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
-import { Icon } from "@itwin/ui-core-react";
+import { Icon } from "@itwin/core-react";
 import { ConfigurableCreateInfo, ConfigurableUiManager, ToolSettingsEntry, ToolSettingsGrid, ToolUiProvider } from "@itwin/appui-react";
 import { Input, Slider } from "@itwin/itwinui-react";
 

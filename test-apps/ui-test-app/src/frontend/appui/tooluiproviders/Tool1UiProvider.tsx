@@ -6,7 +6,7 @@ import * as React from "react";
 import { ColorDef } from "@itwin/core-common";
 import { IModelApp } from "@itwin/core-frontend";
 import { DialogPropertySyncItem } from "@itwin/appui-abstract";
-import { ColorPickerButton, ColorSwatch, WeightPickerButton } from "@itwin/ui-imodel-components-react";
+import { ColorPickerButton, ColorSwatch, WeightPickerButton } from "@itwin/imodel-components-react";
 import {
   ConfigurableCreateInfo, ConfigurableUiManager, SyncToolSettingsPropertiesEventArgs, ToolSettingsEntry, ToolSettingsGrid, ToolSettingsManager,
   ToolUiProvider,

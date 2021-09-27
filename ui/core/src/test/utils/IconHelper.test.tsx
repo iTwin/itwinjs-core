@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import { ConditionalStringValue } from "@itwin/appui-abstract";
-import { IconHelper } from "../../ui-core-react/utils/IconHelper";
+import { IconHelper } from "../../core-react/utils/IconHelper";
 
 describe("IconHelper", () => {
 

@@ -9,8 +9,8 @@ import {
   Primitives, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
   StandardEditorNames, StandardTypeNames, StructValue, UiAbstract,
 } from "@itwin/appui-abstract";
-import { AsyncValueProcessingResult, ColumnDescription, CompositeFilterDescriptorCollection, DataControllerBase, FilterableTable, UiComponents } from "../ui-components-react";
-import { TableFilterDescriptorCollection } from "../ui-components-react/table/columnfiltering/TableFilterDescriptorCollection";
+import { AsyncValueProcessingResult, ColumnDescription, CompositeFilterDescriptorCollection, DataControllerBase, FilterableTable, UiComponents } from "../components-react";
+import { TableFilterDescriptorCollection } from "../components-react/table/columnfiltering/TableFilterDescriptorCollection";
 
 // cSpell:ignore buttongroup
 
@@ -37,9 +37,9 @@ export class TestUtils {
       TestUtils._uiComponentsInitialized = true;
 
       const mp: MessagePresenter = {
-        displayMessage: (_severity: MessageSeverity, _briefMessage: HTMLElement | string, _detailedMessage?: HTMLElement | string, _messageType?: DisplayMessageType.Toast): void => {},
-        displayInputFieldMessage: (_inputField: HTMLElement, _severity: MessageSeverity, _briefMessage: HTMLElement | string, _detailedMessage?: HTMLElement | string): void => {},
-        closeInputFieldMessage: (): void => {},
+        displayMessage: (_severity: MessageSeverity, _briefMessage: HTMLElement | string, _detailedMessage?: HTMLElement | string, _messageType?: DisplayMessageType.Toast): void => { },
+        displayInputFieldMessage: (_inputField: HTMLElement, _severity: MessageSeverity, _briefMessage: HTMLElement | string, _detailedMessage?: HTMLElement | string): void => { },
+        closeInputFieldMessage: (): void => { },
       };
       UiAbstract.messagePresenter = mp;
     }
@@ -387,7 +387,7 @@ export class TestFilterableTable implements FilterableTable {
 /** @internal */
 export class MineDataController extends DataControllerBase {
   public override async validateValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
-    return { encounteredError: true, errorMessage: { severity: MessageSeverity.Error, briefMessage: "Test"} };
+    return { encounteredError: true, errorMessage: { severity: MessageSeverity.Error, briefMessage: "Test" } };
   }
 }
 

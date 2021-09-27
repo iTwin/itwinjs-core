@@ -7,7 +7,7 @@
  */
 import * as React from "react";
 import { PointProps } from "@itwin/appui-abstract";
-import { Point, SizeProps } from "@itwin/ui-core-react";
+import { Point, SizeProps } from "@itwin/core-react";
 import { PanelSide } from "../widget-panels/Panel";
 import { FloatingWidgetResizeHandle } from "../widget/FloatingWidget";
 import { Event, EventEmitter } from "./Event";

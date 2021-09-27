@@ -8,7 +8,7 @@ import React from "react";
 import sinon from "sinon";
 import { ColorByName, ColorDef } from "@itwin/core-common";
 import { fireEvent, render } from "@testing-library/react";
-import { ColorPickerButton } from "../../ui-imodel-components-react/color/ColorPickerButton";
+import { ColorPickerButton } from "../../imodel-components-react/color/ColorPickerButton";
 
 // cSpell:ignore colorpicker
 

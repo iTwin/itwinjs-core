@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
-import { CommonProps, NoChildrenProps, Orientation, ResizableContainerObserver, Size } from "@itwin/ui-core-react";
+import { CommonProps, NoChildrenProps, Orientation, ResizableContainerObserver, Size } from "@itwin/core-react";
 import { Direction, Toolbar as NZ_Toolbar, ToolbarPanelAlignment } from "@itwin/appui-layout-react";
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { AnyItemDef } from "../shared/AnyItemDef";

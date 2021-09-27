@@ -12,10 +12,10 @@ import {
   BasePropertyEditorParams, InputEditorSizeParams, PropertyEditorParamTypes,
   RangeEditorParams, SpecialKey, StandardEditorNames,
 } from "@itwin/appui-abstract";
-import { NumericInputEditor } from "../../ui-components-react/editors/NumericInputEditor";
+import { NumericInputEditor } from "../../components-react/editors/NumericInputEditor";
 import TestUtils, { MineDataController } from "../TestUtils";
-import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components-react/editors/EditorContainer";
-import { PropertyEditorManager } from "../../ui-components-react/editors/PropertyEditorManager";
+import { EditorContainer, PropertyUpdatedArgs } from "../../components-react/editors/EditorContainer";
+import { PropertyEditorManager } from "../../components-react/editors/PropertyEditorManager";
 
 describe("<NumericInputEditor />", () => {
   before(async () => {

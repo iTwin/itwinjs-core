@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { IconSpec } from "@itwin/ui-core-react";
+import { IconSpec } from "@itwin/core-react";
 import { Backstage } from "../backstage/Backstage";
 import { CoreTools } from "../tools/CoreToolDefinitions";
 import { SelectionContextToolDefinitions } from "../selection/SelectionContextItemDef";

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelConnection } from "@itwin/core-frontend";
-import { Breadcrumb, BreadcrumbDetails, BreadcrumbMode, BreadcrumbPath } from "@itwin/ui-components-react";
+import { Breadcrumb, BreadcrumbDetails, BreadcrumbMode, BreadcrumbPath } from "@itwin/components-react";
 import { ConfigurableCreateInfo, ConfigurableUiManager, UiFramework, WidgetControl } from "@itwin/appui-react";
 import { demoMutableTreeDataProvider } from "./demodataproviders/demoTreeDataProvider";
 

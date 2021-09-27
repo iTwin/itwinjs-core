@@ -16,8 +16,8 @@ import { UnifiedSelectionTreeEventHandler, UnifiedSelectionTreeEventHandlerParam
 import {
   CheckBoxInfo, CheckboxStateChange, toRxjsObservable, TreeCheckboxStateChangeEventArgs, TreeModelNode, TreeNodeItem,
   TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
-} from "@itwin/ui-components-react";
-import { CheckBoxState, isPromiseLike } from "@itwin/ui-core-react";
+} from "@itwin/components-react";
+import { CheckBoxState, isPromiseLike } from "@itwin/core-react";
 
 /**
  * Data structure that describes instance visibility status.

@@ -9,8 +9,8 @@
 import * as React from "react";
 import { IModelConnection } from "@itwin/core-frontend";
 import { UiError } from "@itwin/appui-abstract";
-import { ViewClassFullNameChangedEventArgs, ViewportComponentEvents } from "@itwin/ui-imodel-components-react";
-import { CommonProps } from "@itwin/ui-core-react";
+import { ViewClassFullNameChangedEventArgs, ViewportComponentEvents } from "@itwin/imodel-components-react";
+import { CommonProps } from "@itwin/core-react";
 import { Direction, Tools as NZ_ToolsWidget, ToolbarPanelAlignment } from "@itwin/appui-layout-react";
 import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";

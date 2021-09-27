@@ -8,7 +8,7 @@ import { PropertyRecord } from "@itwin/appui-abstract";
 import {
   ControlledTree, DelayLoadedTreeNodeItem, EditableTreeDataProvider, SelectionMode, SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy,
   TreeModelNode, TreeNodeItem, useTreeEventsHandler, useTreeModel, useTreeModelSource, useTreeNodeLoader,
-} from "@itwin/ui-components-react";
+} from "@itwin/components-react";
 import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl } from "@itwin/appui-react";
 import { Select, SelectOption } from "@itwin/itwinui-react";
 

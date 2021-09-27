@@ -10,7 +10,7 @@ import "./Tab.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { PointProps } from "@itwin/appui-abstract";
-import { CommonProps, Rectangle, RectangleProps } from "@itwin/ui-core-react";
+import { CommonProps, Rectangle, RectangleProps } from "@itwin/core-react";
 import { DragHandle } from "../../../base/DragHandle";
 import { HorizontalAnchor, HorizontalAnchorHelpers, VerticalAnchor, VerticalAnchorHelpers } from "../../Stacked";
 

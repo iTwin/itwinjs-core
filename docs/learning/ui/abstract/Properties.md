@@ -140,7 +140,7 @@ private static _getColorDescription = (): PropertyDescription => {
 
 ## Property Record
 
-A [PropertyRecord]($appui-abstract:Properties) contains instance data about a Property. [EditorContainer]($ui-components-react) can use the data from a PropertyRecord to create a PropertyEditor React component that converts the instance data using a [TypeConverter]($ui-components-react:TypeConverters).
+A [PropertyRecord]($appui-abstract:Properties) contains instance data about a Property. [EditorContainer]($components-react) can use the data from a PropertyRecord to create a PropertyEditor React component that converts the instance data using a [TypeConverter]($components-react:TypeConverters).
 
 ## API Reference
 

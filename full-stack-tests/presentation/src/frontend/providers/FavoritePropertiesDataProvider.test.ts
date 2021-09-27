@@ -9,7 +9,7 @@ import { FavoritePropertiesDataProvider, PresentationPropertyDataProvider } from
 import { DEFAULT_PROPERTY_GRID_RULESET } from "@itwin/presentation-components/lib/presentation-components/propertygrid/DataProvider";
 import { FavoritePropertiesScope, Presentation } from "@itwin/presentation-frontend";
 import { PropertyRecord } from "@itwin/appui-abstract";
-import { PropertyData } from "@itwin/ui-components-react";
+import { PropertyData } from "@itwin/components-react";
 import { initialize, terminate } from "../../IntegrationTests";
 
 describe("FavoritePropertiesDataProvider", async () => {

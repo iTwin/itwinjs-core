@@ -6,8 +6,8 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
-import { Icon } from "../../ui-core-react/icons/IconComponent";
-import { Slider } from "../../ui-core-react/slider/Slider";
+import { Icon } from "../../core-react/icons/IconComponent";
+import { Slider } from "../../core-react/slider/Slider";
 import TestUtils from "../TestUtils";
 
 /* eslint-disable deprecation/deprecation */

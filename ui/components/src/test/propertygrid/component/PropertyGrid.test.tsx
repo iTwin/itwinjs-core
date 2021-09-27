@@ -9,14 +9,14 @@ import * as faker from "faker";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
-import { Orientation, ResizableContainerObserver } from "@itwin/ui-core-react";
+import { Orientation, ResizableContainerObserver } from "@itwin/core-react";
 import { fireEvent, render } from "@testing-library/react";
-import { PropertyCategoryBlock } from "../../../ui-components-react/propertygrid/component/PropertyCategoryBlock";
-import { PropertyGrid } from "../../../ui-components-react/propertygrid/component/PropertyGrid";
-import { PropertyGridCommons } from "../../../ui-components-react/propertygrid/component/PropertyGridCommons";
+import { PropertyCategoryBlock } from "../../../components-react/propertygrid/component/PropertyCategoryBlock";
+import { PropertyGrid } from "../../../components-react/propertygrid/component/PropertyGrid";
+import { PropertyGridCommons } from "../../../components-react/propertygrid/component/PropertyGridCommons";
 import {
   IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent,
-} from "../../../ui-components-react/propertygrid/PropertyDataProvider";
+} from "../../../components-react/propertygrid/PropertyDataProvider";
 import { ResolvablePromise } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
 

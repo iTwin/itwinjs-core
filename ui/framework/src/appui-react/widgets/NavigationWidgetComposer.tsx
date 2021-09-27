@@ -8,8 +8,8 @@
 
 import * as React from "react";
 import { ScreenViewport } from "@itwin/core-frontend";
-import { ViewClassFullNameChangedEventArgs, ViewportComponentEvents } from "@itwin/ui-imodel-components-react";
-import { CommonProps, useProximityToMouse, useWidgetOpacityContext, WidgetElementSet, WidgetOpacityContext } from "@itwin/ui-core-react";
+import { ViewClassFullNameChangedEventArgs, ViewportComponentEvents } from "@itwin/imodel-components-react";
+import { CommonProps, useProximityToMouse, useWidgetOpacityContext, WidgetElementSet, WidgetOpacityContext } from "@itwin/core-react";
 import { NavigationArea } from "@itwin/appui-layout-react";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { ContentControl, ContentControlActivatedEventArgs } from "../content/ContentControl";

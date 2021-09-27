@@ -7,7 +7,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { ToolAssistance } from "@itwin/core-frontend";
 import { RelativePosition } from "@itwin/appui-abstract";
-import { Point } from "@itwin/ui-core-react";
+import { Point } from "@itwin/core-react";
 import { CursorInformation } from "../../../appui-react/cursor/CursorInformation";
 import { CursorPopup } from "../../../appui-react/cursor/cursorpopup/CursorPopup";
 import { CursorPopupManager, CursorPopupRenderer } from "../../../appui-react/cursor/cursorpopup/CursorPopupManager";

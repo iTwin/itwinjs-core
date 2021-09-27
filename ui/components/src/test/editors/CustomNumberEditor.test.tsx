@@ -11,10 +11,10 @@ import { fireEvent, render } from "@testing-library/react";
 import {
   IconEditorParams, InputEditorSizeParams, PrimitiveValue, PropertyEditorParamTypes, SpecialKey,
 } from "@itwin/appui-abstract";
-import { CustomNumberEditor } from "../../ui-components-react/editors/CustomNumberEditor";
-import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components-react/editors/EditorContainer";
+import { CustomNumberEditor } from "../../components-react/editors/CustomNumberEditor";
+import { EditorContainer, PropertyUpdatedArgs } from "../../components-react/editors/EditorContainer";
 import TestUtils, { MineDataController } from "../TestUtils";
-import { PropertyEditorManager } from "../../ui-components-react/editors/PropertyEditorManager";
+import { PropertyEditorManager } from "../../components-react/editors/PropertyEditorManager";
 
 // cSpell:ignore customnumber
 

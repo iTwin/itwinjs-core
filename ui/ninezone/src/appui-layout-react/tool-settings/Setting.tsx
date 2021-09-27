@@ -9,7 +9,7 @@
 import "./Setting.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, useResizeObserver } from "@itwin/ui-core-react";
+import { CommonProps, useResizeObserver } from "@itwin/core-react";
 import { useToolSettingsEntry } from "./Docked";
 
 /** Properties of [[ToolSetting]] component.

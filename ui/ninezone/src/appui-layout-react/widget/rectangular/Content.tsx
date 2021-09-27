@@ -9,7 +9,7 @@
 import "./Content.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, NoChildrenProps } from "@itwin/ui-core-react";
+import { CommonProps, NoChildrenProps } from "@itwin/core-react";
 import { HorizontalAnchor, HorizontalAnchorHelpers } from "../Stacked";
 
 /** Properties of [[WidgetContent]] component.

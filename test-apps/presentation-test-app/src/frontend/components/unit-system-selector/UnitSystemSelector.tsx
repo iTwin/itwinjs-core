@@ -5,7 +5,7 @@
 import * as React from "react";
 import { IModelApp } from "@itwin/core-frontend";
 import { UnitSystemKey } from "@itwin/core-quantity";
-import { Select } from "@itwin/ui-core-react";
+import { Select } from "@itwin/core-react";
 
 export interface UnitSystemSelectorProps {
   selectedUnitSystem: UnitSystemKey | undefined;

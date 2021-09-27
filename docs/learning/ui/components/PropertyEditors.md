@@ -1,14 +1,14 @@
 # PropertyEditors
 
-The [PropertyEditors]($ui-components-react:PropertyEditors) category in the `@bentley/ui-components` package includes
+The [PropertyEditors]($components-react:PropertyEditors) category in the `@bentley/ui-components` package includes
 classes and components for working with Property Editors.
 Property editors are used by the Table, Tree and PropertyGrid components for cell editing of properties.
 Property editors have two pieces:
 
-1. A class that extends [PropertyEditorBase]($ui-components-react), is registered for a certain type name and optionally an editor name, and returns a React node for the editor component
-1. A React component that implements [TypeEditor]($ui-components-react) and renders the editor and processes user interaction
+1. A class that extends [PropertyEditorBase]($components-react), is registered for a certain type name and optionally an editor name, and returns a React node for the editor component
+1. A React component that implements [TypeEditor]($components-react) and renders the editor and processes user interaction
 
-Each property editor must be registered with the [PropertyEditorManager]($ui-components-react)
+Each property editor must be registered with the [PropertyEditorManager]($components-react)
 for a given type name, and optionally an editor name,
 by calling the `registerEditor` method.
 
@@ -16,25 +16,25 @@ by calling the `registerEditor` method.
 PropertyEditorManager.registerEditor("text", BasicPropertyEditor);
 ```
 
-The [EditorContainer]($ui-components-react) component is used by the Table, Tree and PropertyGrid for cell editing.
+The [EditorContainer]($components-react) component is used by the Table, Tree and PropertyGrid for cell editing.
 Those components render an EditorContainer in a cell when cell editing is invoked. The EditorContainer
 creates the appropriate property editor based on the cell's [PropertyDescription]($appui-abstract),
 which contains the type name and optional editor name.
 
 The following is a list of the provided property editors:
 
-- [BasicPropertyEditor]($ui-components-react) - registered for the "text" and "string" type names
-- [BooleanPropertyEditor]($ui-components-react) - registered for the "bool" and "boolean" type names
-- [ColorPropertyEditor]($ui-imodel-components-react) - registered for the "number" type name and "color-picker" editor name
-- [EnumPropertyButtonGroupEditor]($ui-components-react) - registered for the "enum" type name and the "enum-buttongroup" editor name
-- [EnumPropertyEditor]($ui-components-react) - registered for the "enum" type name
-- [ImageCheckBoxPropertyEditor]($ui-components-react) - registered for the "bool" and "boolean" type names and "image-check-box" editor name
-- [NumericInputPropertyEditor]($ui-components-react) - registered for the "number" type name and "numeric-input" editor name
-- [SliderPropertyEditor]($ui-components-react) - registered for the "number" type name and "slider" editor name
-- [TextareaPropertyEditor]($ui-components-react) - registered for the "text" and "string" type names and "multi-line" editor name
-- [ThemedEnumPropertyEditor]($ui-components-react) - registered for the "enum" type name and "themed-enum" editor name
-- [TogglePropertyEditor]($ui-components-react) - registered for the "bool" and "boolean" type names and "toggle" editor name
-- [WeightPropertyEditor]($ui-imodel-components-react) - registered for the "number" type name and "weight-picker" editor name
+- [BasicPropertyEditor]($components-react) - registered for the "text" and "string" type names
+- [BooleanPropertyEditor]($components-react) - registered for the "bool" and "boolean" type names
+- [ColorPropertyEditor]($imodel-components-react) - registered for the "number" type name and "color-picker" editor name
+- [EnumPropertyButtonGroupEditor]($components-react) - registered for the "enum" type name and the "enum-buttongroup" editor name
+- [EnumPropertyEditor]($components-react) - registered for the "enum" type name
+- [ImageCheckBoxPropertyEditor]($components-react) - registered for the "bool" and "boolean" type names and "image-check-box" editor name
+- [NumericInputPropertyEditor]($components-react) - registered for the "number" type name and "numeric-input" editor name
+- [SliderPropertyEditor]($components-react) - registered for the "number" type name and "slider" editor name
+- [TextareaPropertyEditor]($components-react) - registered for the "text" and "string" type names and "multi-line" editor name
+- [ThemedEnumPropertyEditor]($components-react) - registered for the "enum" type name and "themed-enum" editor name
+- [TogglePropertyEditor]($components-react) - registered for the "bool" and "boolean" type names and "toggle" editor name
+- [WeightPropertyEditor]($imodel-components-react) - registered for the "number" type name and "weight-picker" editor name
 
 **Note**: `PropertyEditorManager.registerEditor` is called by the system for these delivered property editors.
 
@@ -45,4 +45,4 @@ The [StandardTypeNames]($appui-abstract) and [StandardEditorNames]($appui-abstra
 
 ## API Reference
 
-- [PropertyEditors]($ui-components-react:PropertyEditors)
+- [PropertyEditors]($components-react:PropertyEditors)

@@ -6,9 +6,9 @@ import { expect } from "chai";
 import * as React from "react";
 import sinon from "sinon";
 import { PropertyRecord } from "@itwin/appui-abstract";
-import { Orientation } from "@itwin/ui-core-react";
+import { Orientation } from "@itwin/core-react";
 import { render } from "@testing-library/react";
-import { ActionButtonList, ActionButtonRendererProps } from "../../../ui-components-react";
+import { ActionButtonList, ActionButtonRendererProps } from "../../../components-react";
 import TestUtils from "../../TestUtils";
 
 describe("ActionButtonList", () => {

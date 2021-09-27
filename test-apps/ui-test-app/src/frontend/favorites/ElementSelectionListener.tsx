@@ -8,7 +8,7 @@ import { KeySet } from "@itwin/presentation-common";
 import { FavoritePropertiesDataProvider } from "@itwin/presentation-components";
 import { ISelectionProvider, Presentation, SelectionChangeEventArgs } from "@itwin/presentation-frontend";
 import { AbstractToolbarProps, CommonToolbarItem, RelativePosition, WidgetState } from "@itwin/appui-abstract";
-import { FavoritePropertiesRenderer, FavoritePropertyList } from "@itwin/ui-components-react";
+import { FavoritePropertiesRenderer, FavoritePropertyList } from "@itwin/components-react";
 import {
   ActionButtonItemDef, CommandItemDef, CoreTools, ElementTooltip,
   FrameworkUiAdmin, FrontstageManager, SelectionContextToolDefinitions, ToolbarHelper,

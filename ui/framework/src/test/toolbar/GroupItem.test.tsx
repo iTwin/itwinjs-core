@@ -7,7 +7,7 @@ import { ReactWrapper, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { BadgeType } from "@itwin/appui-abstract";
-import { WithOnOutsideClickProps } from "@itwin/ui-core-react";
+import { WithOnOutsideClickProps } from "@itwin/core-react";
 import { Direction, GroupTool, GroupToolExpander, Item, NestedGroup, WithDragInteractionProps } from "@itwin/appui-layout-react";
 import {
   BaseItemState, CommandItemDef, getFirstItem, getFirstItemId, GroupButton, GroupItem, GroupItemDef, KeyboardShortcutManager, SyncUiEventDispatcher,

@@ -19,8 +19,8 @@ import {
 import {
   AbstractTreeNodeLoaderWithProvider, MutableTreeModelNode, TreeModel, TreeModelChanges, TreeModelSource, TreeNodeItem,
   TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
-} from "@itwin/ui-components-react";
-import { CheckBoxState } from "@itwin/ui-core-react";
+} from "@itwin/components-react";
+import { CheckBoxState } from "@itwin/core-react";
 import { renderHook } from "@testing-library/react-hooks";
 import {
   IPresentationTreeDataProvider, UnifiedSelectionTreeEventHandler, useUnifiedSelectionTreeEventHandler,

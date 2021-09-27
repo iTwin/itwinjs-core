@@ -14,7 +14,7 @@ import {
 } from "@itwin/presentation-frontend";
 import { SettingsResult, SettingsStatus } from "@bentley/product-settings-client";
 import { PropertyRecord } from "@itwin/appui-abstract";
-import { PropertyData } from "@itwin/ui-components-react";
+import { PropertyData } from "@itwin/components-react";
 import { initialize, initializeWithClientServices, terminate } from "../IntegrationTests";
 
 describe("Favorite properties", () => {

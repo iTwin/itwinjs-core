@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { ActionButton, ConditionalBooleanValue, ConditionalStringValue, OnItemExecutedFunc } from "@itwin/appui-abstract";
-import { BadgeUtilities } from "@itwin/ui-core-react";
+import { BadgeUtilities } from "@itwin/core-react";
 import { Item } from "@itwin/appui-layout-react";
 import { ToolbarHelper } from "./ToolbarHelper";
 import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";

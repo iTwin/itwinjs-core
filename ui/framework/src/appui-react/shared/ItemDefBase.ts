@@ -10,7 +10,7 @@ import * as React from "react";
 import { BadgeType, ConditionalBooleanValue, ConditionalStringValue, StringGetter } from "@itwin/appui-abstract";
 import { PropsHelper } from "../utils/PropsHelper";
 import { ItemProps } from "./ItemProps";
-import { IconSpec } from "@itwin/ui-core-react";
+import { IconSpec } from "@itwin/core-react";
 
 /** Base state for any 'stateful' React component
  * @public

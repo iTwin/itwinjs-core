@@ -6,8 +6,8 @@ import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { ElementSeparator, RatioChangeResult } from "../../ui-core-react/elementseparator/ElementSeparator";
-import { Orientation } from "../../ui-core-react/enums/Orientation";
+import { ElementSeparator, RatioChangeResult } from "../../core-react/elementseparator/ElementSeparator";
+import { Orientation } from "../../core-react/enums/Orientation";
 
 describe("ElementSeparator", () => {
   let clock: sinon.SinonFakeTimers;

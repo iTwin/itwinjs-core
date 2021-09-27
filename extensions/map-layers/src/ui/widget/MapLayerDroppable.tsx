@@ -10,7 +10,7 @@
 import * as React from "react";
 import { Draggable, DraggableChildrenFn, Droppable, DroppableProvided, DroppableStateSnapshot } from "react-beautiful-dnd";
 import { MapLayerImageryProviderStatus, ScreenViewport } from "@itwin/core-frontend";
-import { Icon } from "@itwin/ui-core-react";
+import { Icon } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { ModalDialogManager } from "@itwin/appui-react";
 import { Button } from "@itwin/itwinui-react";

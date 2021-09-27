@@ -11,7 +11,7 @@ import {
   DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem, PropertyChangeResult,
   PropertyChangeStatus, PropertyDescription, RelativePosition, StandardTypeNames,
 } from "@itwin/appui-abstract";
-import { Point } from "@itwin/ui-core-react";
+import { Point } from "@itwin/core-react";
 import { CursorInformation, FrameworkUiAdmin, KeyinFieldLocalization } from "../../appui-react";
 import { ClearKeyinPaletteHistoryTool } from "../../appui-react/tools/KeyinPaletteTools";
 import * as keyinExports from "../../appui-react/popup/KeyinPalettePanel";

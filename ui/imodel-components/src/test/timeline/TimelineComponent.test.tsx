@@ -8,9 +8,9 @@ import React from "react";
 import * as sinon from "sinon";
 import { act, fireEvent, render } from "@testing-library/react";
 import { UiAdmin } from "@itwin/appui-abstract";
-import { BaseTimelineDataProvider } from "../../ui-imodel-components-react/timeline/BaseTimelineDataProvider";
-import { PlaybackSettings, TimelinePausePlayAction, TimelinePausePlayArgs } from "../../ui-imodel-components-react/timeline/interfaces";
-import { TimelineComponent, TimelineMenuItemProps } from "../../ui-imodel-components-react/timeline/TimelineComponent";
+import { BaseTimelineDataProvider } from "../../imodel-components-react/timeline/BaseTimelineDataProvider";
+import { PlaybackSettings, TimelinePausePlayAction, TimelinePausePlayArgs } from "../../imodel-components-react/timeline/interfaces";
+import { TimelineComponent, TimelineMenuItemProps } from "../../imodel-components-react/timeline/TimelineComponent";
 import { TestUtils } from "../TestUtils";
 
 class TestTimelineDataProvider extends BaseTimelineDataProvider {

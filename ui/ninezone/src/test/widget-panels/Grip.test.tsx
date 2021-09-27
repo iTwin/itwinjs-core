@@ -5,7 +5,7 @@
 import produce from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Rectangle } from "@itwin/ui-core-react";
+import { Rectangle } from "@itwin/core-react";
 import { fireEvent, render } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import {

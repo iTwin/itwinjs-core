@@ -10,7 +10,7 @@ import { CoreTools, Frontstage, FRONTSTAGE_SETTINGS_NAMESPACE, FrontstageDef, Fr
 import TestUtils, { storageMock } from "../TestUtils";
 import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, UiItemsManager, UiItemsProvider, WidgetState } from "@itwin/appui-abstract";
 import { addFloatingWidget, addPanelWidget, addPopoutWidget, addTab, createNineZoneState, NineZoneState } from "@itwin/appui-layout-react";
-import { UiSettingsStatus } from "@itwin/ui-core-react";
+import { UiSettingsStatus } from "@itwin/core-react";
 import { ProcessDetector } from "@itwin/core-bentley";
 
 describe("FrontstageDef", () => {

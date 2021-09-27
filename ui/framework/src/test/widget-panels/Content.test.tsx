@@ -6,7 +6,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { render } from "@testing-library/react";
 import { addPanelWidget, createNineZoneState, NineZoneProvider, WidgetStateContext } from "@itwin/appui-layout-react";
-import { Rectangle } from "@itwin/ui-core-react";
+import { Rectangle } from "@itwin/core-react";
 import { FrontstageDef, FrontstageManager, WidgetContent, WidgetDef } from "../../appui-react";
 import TestUtils from "../TestUtils";
 

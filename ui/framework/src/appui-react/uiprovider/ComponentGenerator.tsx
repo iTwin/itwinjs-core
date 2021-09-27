@@ -13,7 +13,7 @@ import {
   BaseDialogItem, DialogItem, DialogItemValue, DialogPropertySyncItem, DialogRow, PropertyValueFormat, SyncPropertiesChangeEventArgs,
   UiLayoutDataProvider,
 } from "@itwin/appui-abstract";
-import { EditorContainer, PropertyUpdatedArgs } from "@itwin/ui-components-react";
+import { EditorContainer, PropertyUpdatedArgs } from "@itwin/components-react";
 import { ToolSettingsEntry } from "../widget-panels/ToolSettings";
 import { assert, Logger } from "@itwin/core-bentley";
 

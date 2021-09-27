@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { CubeNavigationAid } from "@itwin/ui-imodel-components-react";
+import { CubeNavigationAid } from "@itwin/imodel-components-react";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { NavigationAidControl } from "./NavigationAidControl";
 

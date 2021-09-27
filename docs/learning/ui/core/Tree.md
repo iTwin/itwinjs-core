@@ -1,14 +1,14 @@
 # Tree
 
-The [Tree]($ui-core-react:Tabs) category in the `@bentley/ui-core` package includes
+The [Tree]($core-react:Tabs) category in the `@bentley/ui-core` package includes
 various presentation React components used by the Tree component in `@bentley/ui-components`.
 
-- [Tree]($ui-core-react) - Presentation React component for a Tree
-- [TreeNode]($ui-core-react) - Presentation React component for a Tree node
-- [TreeBranch]($ui-core-react) - Presentation React component for a Tree branch
-- [ExpansionToggle]($ui-core-react) - ExpansionToggle React component used by the TreeNode component to show collapsed or expanded state
-- [TreeNodePlaceholder]($ui-core-react) - Presentation React component for a placeholder to be displayed instead of a node while it's being loaded
+- [Tree]($core-react) - Presentation React component for a Tree
+- [TreeNode]($core-react) - Presentation React component for a Tree node
+- [TreeBranch]($core-react) - Presentation React component for a Tree branch
+- [ExpansionToggle]($core-react) - ExpansionToggle React component used by the TreeNode component to show collapsed or expanded state
+- [TreeNodePlaceholder]($core-react) - Presentation React component for a placeholder to be displayed instead of a node while it's being loaded
 
 ## API Reference
 
-- [Tree]($ui-core-react:Tree)
+- [Tree]($core-react:Tree)

@@ -7,7 +7,7 @@ import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { WidgetState } from "@itwin/appui-abstract";
-import { Rectangle } from "@itwin/ui-core-react";
+import { Rectangle } from "@itwin/core-react";
 import { getDefaultZoneManagerProps, ResizeHandle, ToolSettings } from "@itwin/appui-layout-react";
 import {
   ConfigurableCreateInfo, ConfigurableUiManager, CoreTools, Frontstage, FrontstageComposer, FrontstageManager, FrontstageProps, FrontstageProvider,

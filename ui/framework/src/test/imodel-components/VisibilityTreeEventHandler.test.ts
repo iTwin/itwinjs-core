@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import { BeEvent, BeUiEvent, using } from "@itwin/core-bentley";
 import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
 import { IVisibilityHandler, VisibilityChangeListener, VisibilityStatus, VisibilityTreeEventHandler, VisibilityTreeEventHandlerParams } from "../../appui-react/imodel-components/VisibilityTreeEventHandler";
-import { AbstractTreeNodeLoaderWithProvider, TreeModel, TreeModelChanges, TreeModelSource } from "@itwin/ui-components-react";
+import { AbstractTreeNodeLoaderWithProvider, TreeModel, TreeModelChanges, TreeModelSource } from "@itwin/components-react";
 import { SelectionHandler } from "@itwin/presentation-frontend";
 import { IPresentationTreeDataProvider } from "@itwin/presentation-components";
 import { createSimpleTreeModelNode } from "./Common";

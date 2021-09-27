@@ -14,11 +14,11 @@ import {
 } from "@itwin/core-frontend";
 import { FormatProps, FormatterSpec, UnitSystemKey } from "@itwin/core-quantity";
 import { DialogButtonType } from "@itwin/appui-abstract";
-import { FormatSample, QuantityFormatPanel } from "@itwin/ui-imodel-components-react";
+import { FormatSample, QuantityFormatPanel } from "@itwin/imodel-components-react";
 import {
   Dialog, Listbox, ListboxItem, SettingsTabEntry,
   useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer,
-} from "@itwin/ui-core-react";
+} from "@itwin/core-react";
 import { ModalDialogManager } from "../../dialog/ModalDialogManager";
 import { UiFramework } from "../../UiFramework";
 import { UnitSystemSelector } from "./UnitSystemSelector";

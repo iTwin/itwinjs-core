@@ -12,7 +12,7 @@ import {
   AbstractStatusBarActionItem, AbstractStatusBarLabelItem, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue,
   isAbstractStatusBarActionItem, isAbstractStatusBarLabelItem, StatusBarItemsManager, StatusBarLabelSide, StatusBarSection,
 } from "@itwin/appui-abstract";
-import { CommonProps, Icon, useRefs, useResizeObserver } from "@itwin/ui-core-react";
+import { CommonProps, Icon, useRefs, useResizeObserver } from "@itwin/core-react";
 import { eqlOverflown, FooterIndicator } from "@itwin/appui-layout-react";
 import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { Indicator } from "../statusfields/Indicator";

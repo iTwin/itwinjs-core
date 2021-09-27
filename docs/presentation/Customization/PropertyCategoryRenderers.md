@@ -1,6 +1,6 @@
 # Custom property category renderers
 
-This page explains how to leverage custom category renderers to create fully customizable property categories for [VirtualizedPropertyGrid]($ui-components-react).
+This page explains how to leverage custom category renderers to create fully customizable property categories for [VirtualizedPropertyGrid]($components-react).
 
 ## Defining a custom category
 
@@ -24,13 +24,13 @@ Now when `my_custom_category` is expanded, `my_custom_renderer` will be invoked 
 
 ## Registering a custom renderer
 
-In order to tell the [VirtualizedPropertyGrid]($ui-components-react) which React component `my_custom_renderer` refers to, we will need to register a component factory under this custom renderer name:
+In order to tell the [VirtualizedPropertyGrid]($components-react) which React component `my_custom_renderer` refers to, we will need to register a component factory under this custom renderer name:
 
 ```tsx
 [[include:Presentation.Customization.BasicCategoryRenderer]]
 ```
 
-Once the code above is run, [VirtualizedPropertyGrid]($ui-components-react) will render contents of `my_custom_category` using our new custom component, which currently displays primitive properties encountered in this category.
+Once the code above is run, [VirtualizedPropertyGrid]($components-react) will render contents of `my_custom_category` using our new custom component, which currently displays primitive properties encountered in this category.
 
 ## Connecting properties to instances
 

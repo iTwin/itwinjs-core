@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { UiCore } from "@itwin/ui-core-react";
+import { UiCore } from "@itwin/core-react";
 import { MessageHyperlink, MessageLayout, MessageProgress, Status } from "@itwin/appui-layout-react";
 import { Small } from "@itwin/itwinui-react";
 import { ToastPresentation } from "@itwin/itwinui-react/cjs/core/Toast/Toast";

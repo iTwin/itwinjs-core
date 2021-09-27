@@ -9,7 +9,7 @@ import { render } from "@testing-library/react";
 import { CoreTools, FrontstageDef, FrontstageManager, FrontstageProps, ModalFrontstage, ModalFrontstageInfo, SettingsModalFrontstage } from "../../appui-react";
 import TestUtils from "../TestUtils";
 import { UiFramework } from "../../appui-react/UiFramework";
-import { SettingsManager, SettingsTabEntry, SettingsTabsProvider, useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer } from "@itwin/ui-core-react";
+import { SettingsManager, SettingsTabEntry, SettingsTabsProvider, useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer } from "@itwin/core-react";
 import { IModelApp, MockRender } from "@itwin/core-frontend";
 import { ConditionalBooleanValue } from "@itwin/appui-abstract";
 

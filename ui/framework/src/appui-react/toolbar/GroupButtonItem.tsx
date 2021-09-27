@@ -12,7 +12,7 @@ import { Logger } from "@itwin/core-bentley";
 import {
   ActionButton, ConditionalBooleanValue, ConditionalStringValue, GroupButton, OnItemExecutedFunc, ToolbarItemUtilities,
 } from "@itwin/appui-abstract";
-import { BadgeUtilities, CommonProps, withOnOutsideClick } from "@itwin/ui-core-react";
+import { BadgeUtilities, CommonProps, withOnOutsideClick } from "@itwin/core-react";
 import {
   ExpandableItem, GroupColumn, GroupTool, GroupToolExpander, Item, NestedGroup as NestedToolGroupComponent, ToolbarDirectionContext,
   Group as ToolGroupComponent, withDragInteraction,

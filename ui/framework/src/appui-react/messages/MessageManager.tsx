@@ -15,7 +15,7 @@ import {
   OutputMessageType, ToolAssistanceInstructions, ToolTipOptions,
 } from "@itwin/core-frontend";
 import { MessageSeverity } from "@itwin/appui-abstract";
-import { MessageContainer, UiEvent } from "@itwin/ui-core-react";
+import { MessageContainer, UiEvent } from "@itwin/core-react";
 import { ConfigurableUiActionId } from "../configurableui/state";
 import { ModalDialogManager } from "../dialog/ModalDialogManager";
 import { StandardMessageBox } from "../dialog/StandardMessageBox";

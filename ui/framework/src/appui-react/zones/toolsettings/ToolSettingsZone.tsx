@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { PointProps } from "@itwin/appui-abstract";
-import { CommonProps, RectangleProps } from "@itwin/ui-core-react";
+import { CommonProps, RectangleProps } from "@itwin/core-react";
 import {
   ResizeHandle, TitleBarButton, ToolSettings, ToolSettingsTab, WidgetZoneId, Zone, ZoneManagerProps, ZoneTargetType,
 } from "@itwin/appui-layout-react";

@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { Rectangle, RectangleProps } from "@itwin/ui-core-react";
+import { Rectangle, RectangleProps } from "@itwin/core-react";
 import { Css } from "../utilities/Css";
 
 /** Properties of [[withContainIn]] HOC.
@@ -45,7 +45,7 @@ export const containVertically = (componentBounds: RectangleProps, containerBoun
 };
 
 /** HOC which will ensure, that wrapped component bounds are contained in specified container bounds.
- * @alpha Transfer to ui-core-react or remove if used with popups only.
+ * @alpha Transfer to core-react or remove if used with popups only.
  */
 export const withContainIn = <ComponentProps extends {}>(
   // eslint-disable-next-line @typescript-eslint/naming-convention

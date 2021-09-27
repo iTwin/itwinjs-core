@@ -8,7 +8,7 @@ import { IModelConnection } from "@itwin/core-frontend";
 import {
   DiagnosticsProps, useControlledPresentationTreeFiltering, usePresentationTreeNodeLoader, useUnifiedSelectionTreeEventHandler,
 } from "@itwin/presentation-components";
-import { ControlledTree, SelectionMode, useTreeModel } from "@itwin/ui-components-react";
+import { ControlledTree, SelectionMode, useTreeModel } from "@itwin/components-react";
 
 const PAGING_SIZE = 10;
 

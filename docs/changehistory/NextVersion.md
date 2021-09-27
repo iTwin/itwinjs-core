@@ -45,9 +45,9 @@ A number of packages have been renamed to use the @itwin scope rather than the @
 | @bentley/presentation-components | @itwin/presentation-components |
 | @bentley/presentation-testing | @itwin/presentation-testing |
 | @bentley/ui-abstract | @itwin/appui-abstract |
-| @bentley/ui-components | @itwin/ui-components-react |
-| @bentley/ui-core | @itwin/ui-core-react |
-| @bentley/ui-imodel-components | @itwin/ui-imodel-components-react |
+| @bentley/ui-components | @itwin/components-react |
+| @bentley/ui-core | @itwin/core-react |
+| @bentley/ui-imodel-components | @itwin/imodel-components-react |
 | @bentley/ui-ninezone | @itwin/appui-layout-react |
 | @bentley/ui-framework | @itwin/appui-react |
 | @bentley/ecschema2ts | @itwin/ecschema2ts |
@@ -613,26 +613,26 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | ----------------------------- | ------------ |
 | `ContentLayoutProps.priority` | _eliminated_ |
 
-### @itwin/ui-core-react
+### @itwin/core-react
 
 | Removed                              | Replacement                                                |
 | ------------------------------------ | ---------------------------------------------------------- |
-| `LoadingPromptProps.isDeterministic` | `LoadingPromptProps.isDeterminate` in @itwin/ui-core-react |
-| `NumericInput` component             | `NumberInput` component in @itwin/ui-core-react            |
-| `TabsProps.onClickLabel`             | `TabsProps.onActivateTab` in @itwin/ui-core-react          |
+| `LoadingPromptProps.isDeterministic` | `LoadingPromptProps.isDeterminate` in @itwin/core-react |
+| `NumericInput` component             | `NumberInput` component in @itwin/core-react            |
+| `TabsProps.onClickLabel`             | `TabsProps.onActivateTab` in @itwin/core-react          |
 
-### @itwin/ui-components-react
+### @itwin/components-react
 
 | Removed                                                    | Replacement                                                                                                                   |
 | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `hasFlag`                                                  | `hasSelectionModeFlag` in @itwin/ui-components-react                                                                          |
+| `hasFlag`                                                  | `hasSelectionModeFlag` in @itwin/components-react                                                                          |
 | `StandardEditorNames`                                      | `StandardEditorNames` in @itwin/appui-abstract                                                                                |
 | `StandardTypeConverterTypeNames`                           | `StandardTypeNames` in @itwin/appui-abstract                                                                                  |
 | `StandardTypeNames`                                        | `StandardTypeNames` in @itwin/appui-abstract                                                                                  |
-| `Timeline`                                                 | `TimelineComponent` in @itwin/ui-components-react                                                                             |
+| `Timeline`                                                 | `TimelineComponent` in @itwin/components-react                                                                             |
 | `ControlledTreeProps.treeEvents`                           | `ControlledTreeProps.eventsHandler`                                                                                           |
 | `ControlledTreeProps.visibleNodes`                         | `ControlledTreeProps.model`                                                                                                   |
-| `MutableTreeModel.computeVisibleNodes`                     | `computeVisibleNodes` in @itwin/ui-components-react                                                                           |
+| `MutableTreeModel.computeVisibleNodes`                     | `computeVisibleNodes` in @itwin/components-react                                                                           |
 | `TreeModelSource.getVisibleNodes`                          | memoized result of `computeVisibleNodes`                                                                                      |
 | `useVisibleTreeNodes`                                      | `useTreeModel` and `computeVisibleNodes`                                                                                      |
 | `SignIn`                                                   | _eliminated_                                                                                                                  |
@@ -671,7 +671,7 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `reactElement` in ToolWidgetDef            | `ToolWidgetDef.reactNode`                                                                                                     |
 | `reactElement` in WidgetControl            | `WidgetControl.reactNode`                                                                                                     |
 | `reactElement` in WidgetDef                | `WidgetDef.reactNode`                                                                                                         |
-| `ReactMessage`                             | `ReactMessage` in @itwin/ui-core-react                                                                                        |
+| `ReactMessage`                             | `ReactMessage` in @itwin/core-react                                                                                        |
 | `SpecialKey`                               | `SpecialKey` in @itwin/appui-abstract                                                                                         |
 | `WidgetState`                              | `WidgetState` in @itwin/appui-abstract                                                                                        |
 | `UserProfileBackstageItem`                 | _eliminated_                                                                                                                  |
@@ -845,9 +845,9 @@ User Interface Changes - section to comment below
 ## User Interface Changes
 
 Several changes were made in the @itwin ui packages.
-Some components in @itwin/ui-core-react were deprecated in favor of components in @itwinui-react.
-A few constructs were deprecated in @itwin/ui-core-react package with alternatives elsewhere.
-A new @itwin/ui-imodel-components-react package has been added and contains items related to Color, Cube, LineWeight, Navigation Aids, Quantity Inputs, Timeline and Viewport.
+Some components in @itwin/core-react were deprecated in favor of components in @itwinui-react.
+A few constructs were deprecated in @itwin/core-react package with alternatives elsewhere.
+A new @itwin/imodel-components-react package has been added and contains items related to Color, Cube, LineWeight, Navigation Aids, Quantity Inputs, Timeline and Viewport.
 
 The @itwin ui and @itwin/presentation-components packages are now dependent on React version 17. **Applications using the ui packages must update to React 17.** Details about React version 17 can be found in the [React Blog](https://reactjs.org/blog/2020/10/20/react-v17.html).
 
@@ -868,7 +868,7 @@ For migration purposes, React 16 is included in the peerDependencies for the pac
 
 ### New Timeline Date Marker
 
-The [TimelineComponent]($ui-imodel-components-react) react component now accepts a property to mark a specific date in a date-based timeline. If the timeline has a defined start date and end date, a date between them can be marked in the timeline by specifying an instance of [TimelineDateMarkerProps]($ui-imodel-components-react) in the new markDate member of [TimelineComponentProps]($ui-imodel-components-react). If the date member is left undefined, today's date will be used. The default marker is a short vertical bar, but a ReactNode can be specified in the dateMarker prop to customize the marker's appearance.
+The [TimelineComponent]($imodel-components-react) react component now accepts a property to mark a specific date in a date-based timeline. If the timeline has a defined start date and end date, a date between them can be marked in the timeline by specifying an instance of [TimelineDateMarkerProps]($imodel-components-react) in the new markDate member of [TimelineComponentProps]($imodel-components-react). If the date member is left undefined, today's date will be used. The default marker is a short vertical bar, but a ReactNode can be specified in the dateMarker prop to customize the marker's appearance.
 
 ### New Floating Widget Capabilities
 
@@ -953,10 +953,10 @@ The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to 
 
 ### Deprecated Components in Favor of iTwinUI-react Components
 
-Several UI components in the @itwin/ui-core-react and @itwin/ui-components-react packages have been deprecated.
+Several UI components in the @itwin/core-react and @itwin/components-react packages have been deprecated.
 Developers should use equivalent components in @itwin/itwinui-react instead.
 
-| Deprecated in @itwin/ui-core-react | Use from @itwin/itwinui-react instead          |
+| Deprecated in @itwin/core-react | Use from @itwin/itwinui-react instead          |
 | ---------------------------------- | ---------------------------------------------- |
 | Button                             | Button                                         |
 | ButtonSize                         | `size` prop for itwinui-react Button           |
@@ -989,31 +989,31 @@ Developers should use equivalent components in @itwin/itwinui-react instead.
 | Tooltip                            | Tooltip                                        |
 | TooltipPlacement                   | Placement                                      |
 
-| Deprecated in @itwin/ui-components-react | Use from @itwin/itwinui-react instead |
+| Deprecated in @itwin/components-react | Use from @itwin/itwinui-react instead |
 | ---------------------------------------- | ------------------------------------- |
 | Breadcrumb                               | Breadcrumbs                           |
 
 #### Slider
 
-The deprecated [Slider]($ui-core-react) was a wrapper around the react-compound-slider that does not work properly in popout windows. To eliminate this issue, the deprecated `Slider`will now wrap the `Slider` component from @itwin/itwinui-react. This result is a couple prop changes. The `onSlideStart` or `onSlideEnd` props are ignored, use `onUpdate` and `onChange` props if needed. The only two `modes` that remain supported are 1 and 2.
+The deprecated [Slider]($core-react) was a wrapper around the react-compound-slider that does not work properly in popout windows. To eliminate this issue, the deprecated `Slider`will now wrap the `Slider` component from @itwin/itwinui-react. This result is a couple prop changes. The `onSlideStart` or `onSlideEnd` props are ignored, use `onUpdate` and `onChange` props if needed. The only two `modes` that remain supported are 1 and 2.
 
 ### Deprecated with alternatives elsewhere
 
-A few constructs were deprecated in @itwin/ui-core-react package.
+A few constructs were deprecated in @itwin/core-react package.
 Some were copied to the @itwin/appui-abstract package.
-Some have replacements within the @itwin/ui-core-react package.
+Some have replacements within the @itwin/core-react package.
 
 | Deprecated                                | Replacement                                    |
 | ----------------------------------------- | ---------------------------------------------- |
-| DialogButtonDef in @itwin/ui-core-react   | DialogButtonDef in @itwin/appui-abstract       |
-| DialogButtonStyle in @itwin/ui-core-react | DialogButtonStyle in @itwin/appui-abstract     |
-| DialogButtonType in @itwin/ui-core-react  | DialogButtonType in @itwin/appui-abstract      |
-| LocalUiSettings in @itwin/ui-core-react   | LocalSettingsStorage in @itwin/ui-core-react   |
-| SessionUiSettings in @itwin/ui-core-react | SessionSettingsStorage in @itwin/ui-core-react |
+| DialogButtonDef in @itwin/core-react   | DialogButtonDef in @itwin/appui-abstract       |
+| DialogButtonStyle in @itwin/core-react | DialogButtonStyle in @itwin/appui-abstract     |
+| DialogButtonType in @itwin/core-react  | DialogButtonType in @itwin/appui-abstract      |
+| LocalUiSettings in @itwin/core-react   | LocalSettingsStorage in @itwin/core-react   |
+| SessionUiSettings in @itwin/core-react | SessionSettingsStorage in @itwin/core-react |
 
-### New @itwin/ui-imodel-components-react package
+### New @itwin/imodel-components-react package
 
-A new @itwin/ui-imodel-components-react package has been added, and some items were moved from @itwin/ui-core-react and @itwin/ui-components-react into this new package.
+A new @itwin/imodel-components-react package has been added, and some items were moved from @itwin/core-react and @itwin/components-react into this new package.
 The ui-imodel-components package contains React components that depend on the imodeljs-frontend, imodeljs-common or imodeljs-quantity packages.
 Dependencies on these other iTwin.js packages have been removed from ui-core and ui-components.
 The items moved to ui-imodel-components are related to Color, Cube, LineWeight, Navigation Aids, Quantity Inputs, Timeline and Viewport.

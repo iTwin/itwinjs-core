@@ -10,7 +10,7 @@ import "./Expandable.scss";
 import classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { CommonProps } from "@itwin/ui-core-react";
+import { CommonProps } from "@itwin/core-react";
 import { ToolbarItem, ToolbarItemProps } from "../../Toolbar";
 
 /** Properties of [[ExpandableItem]] component.

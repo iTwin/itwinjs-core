@@ -9,7 +9,7 @@
 import "./BackArrow.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, NoChildrenProps, useTargeted } from "@itwin/ui-core-react";
+import { CommonProps, NoChildrenProps, useTargeted } from "@itwin/core-react";
 
 /** Properties of [[BackArrow]] component.
  * @alpha

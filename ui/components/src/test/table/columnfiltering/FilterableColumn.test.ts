@@ -6,11 +6,11 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { StandardTypeNames } from "@itwin/appui-abstract";
-import { FilterOperator } from "../../../ui-components-react/table/columnfiltering/ColumnFiltering";
-import { TableColumnFilterDescriptor } from "../../../ui-components-react/table/columnfiltering/TableColumnFilterDescriptor";
-import { ReactDataGridColumn, TableColumn } from "../../../ui-components-react/table/component/TableColumn";
-import { SimpleTableDataProvider } from "../../../ui-components-react/table/SimpleTableDataProvider";
-import { ColumnDescription, RowItem } from "../../../ui-components-react/table/TableDataProvider";
+import { FilterOperator } from "../../../components-react/table/columnfiltering/ColumnFiltering";
+import { TableColumnFilterDescriptor } from "../../../components-react/table/columnfiltering/TableColumnFilterDescriptor";
+import { ReactDataGridColumn, TableColumn } from "../../../components-react/table/component/TableColumn";
+import { SimpleTableDataProvider } from "../../../components-react/table/SimpleTableDataProvider";
+import { ColumnDescription, RowItem } from "../../../components-react/table/TableDataProvider";
 import { TestFilterableTable, TestUtils } from "../../TestUtils";
 
 const columns: ColumnDescription[] = [

@@ -6,10 +6,10 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { render } from "@testing-library/react";
-import { Dialog } from "../../ui-core-react";
-import { DialogAlignment } from "../../ui-core-react/dialog/Dialog";
-import { GlobalDialog } from "../../ui-core-react/dialog/GlobalDialog";
-import { UiCore } from "../../ui-core-react/UiCore";
+import { Dialog } from "../../core-react";
+import { DialogAlignment } from "../../core-react/dialog/Dialog";
+import { GlobalDialog } from "../../core-react/dialog/GlobalDialog";
+import { UiCore } from "../../core-react/UiCore";
 import TestUtils from "../TestUtils";
 import { DialogButtonType } from "@itwin/appui-abstract";
 

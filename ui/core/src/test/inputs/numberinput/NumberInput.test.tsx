@@ -7,7 +7,7 @@ import { fireEvent, render } from "@testing-library/react";
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { NumberInput } from "../../../ui-core-react/inputs/numberinput/NumberInput";
+import { NumberInput } from "../../../core-react/inputs/numberinput/NumberInput";
 
 // cSpell:ignore decrementor numberinput
 

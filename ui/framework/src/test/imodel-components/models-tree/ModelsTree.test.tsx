@@ -18,7 +18,7 @@ import {
   HierarchyBuilder, HierarchyCacheMode, initialize as initializePresentationTesting, terminate as terminatePresentationTesting,
 } from "@itwin/presentation-testing";
 import { PropertyRecord } from "@itwin/appui-abstract";
-import { SelectionMode, TreeNodeItem } from "@itwin/ui-components-react";
+import { SelectionMode, TreeNodeItem } from "@itwin/components-react";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { ModelsTree, RULESET_MODELS, RULESET_MODELS_GROUPED_BY_CLASS } from "../../../appui-react/imodel-components/models-tree/ModelsTree";
 import { ModelsTreeNodeType, ModelsVisibilityHandler } from "../../../appui-react/imodel-components/models-tree/ModelsVisibilityHandler";

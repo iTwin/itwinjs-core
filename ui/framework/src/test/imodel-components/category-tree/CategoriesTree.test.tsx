@@ -13,7 +13,7 @@ import { IPresentationTreeDataProvider, PresentationTreeDataProvider } from "@it
 import { mockPresentationManager } from "@itwin/presentation-components/lib/test/_helpers/UiComponents";
 import { Presentation, PresentationManager, RulesetVariablesManager, SelectionChangeEvent, SelectionManager } from "@itwin/presentation-frontend";
 import { PropertyRecord } from "@itwin/appui-abstract";
-import { TreeDataChangesListener, TreeNodeItem } from "@itwin/ui-components-react";
+import { TreeDataChangesListener, TreeNodeItem } from "@itwin/components-react";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { CategoryTree, toggleAllCategories } from "../../../appui-react/imodel-components/category-tree/CategoriesTree";
 import { CategoryVisibilityHandler } from "../../../appui-react/imodel-components/category-tree/CategoryVisibilityHandler";

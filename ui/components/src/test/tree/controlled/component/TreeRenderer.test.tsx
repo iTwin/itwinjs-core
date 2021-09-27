@@ -10,15 +10,15 @@ import sinon from "sinon";
 import * as moq from "typemoq";
 import { PrimitiveValue, SpecialKey } from "@itwin/appui-abstract";
 import { act, fireEvent, render } from "@testing-library/react";
-import { TreeNodeRendererProps } from "../../../../ui-components-react/tree/controlled/component/TreeNodeRenderer";
-import { TreeRenderer, TreeRendererProps } from "../../../../ui-components-react/tree/controlled/component/TreeRenderer";
-import { from } from "../../../../ui-components-react/tree/controlled/Observable";
-import { TreeActions } from "../../../../ui-components-react/tree/controlled/TreeActions";
+import { TreeNodeRendererProps } from "../../../../components-react/tree/controlled/component/TreeNodeRenderer";
+import { TreeRenderer, TreeRendererProps } from "../../../../components-react/tree/controlled/component/TreeRenderer";
+import { from } from "../../../../components-react/tree/controlled/Observable";
+import { TreeActions } from "../../../../components-react/tree/controlled/TreeActions";
 import {
   computeVisibleNodes, MutableTreeModel, TreeModel, TreeModelNode, TreeModelNodePlaceholder, TreeModelRootNode, VisibleTreeNodes,
-} from "../../../../ui-components-react/tree/controlled/TreeModel";
-import { ITreeNodeLoader } from "../../../../ui-components-react/tree/controlled/TreeNodeLoader";
-import { HighlightableTreeProps, HighlightingEngine } from "../../../../ui-components-react/tree/HighlightingEngine";
+} from "../../../../components-react/tree/controlled/TreeModel";
+import { ITreeNodeLoader } from "../../../../components-react/tree/controlled/TreeNodeLoader";
+import { HighlightableTreeProps, HighlightingEngine } from "../../../../components-react/tree/HighlightingEngine";
 import TestUtils from "../../../TestUtils";
 import { createRandomMutableTreeModelNode } from "../RandomTreeNodesHelpers";
 

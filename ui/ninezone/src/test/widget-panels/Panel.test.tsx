@@ -6,7 +6,7 @@ import { should } from "chai";
 import produce from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Size } from "@itwin/ui-core-react";
+import { Size } from "@itwin/core-react";
 import { fireEvent, render } from "@testing-library/react";
 import { act, renderHook } from "@testing-library/react-hooks";
 import {

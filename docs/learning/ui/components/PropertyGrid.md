@@ -1,34 +1,34 @@
 # PropertyGrid
 
-The [PropertyGrid]($ui-components-react:PropertyGrid) category in the `@bentley/ui-components` package includes
+The [PropertyGrid]($components-react:PropertyGrid) category in the `@bentley/ui-components` package includes
 classes and components for working with a PropertyGrid control.
 
 ## Components
 
 The following React components comprise the PropertyGrid control.
 
-- [PropertyGrid]($ui-components-react) - renders property categories
-- [PropertyList]($ui-components-react) - renders multiple properties within a category as a list
-- [PropertyRenderer]($ui-components-react) - renders a property
-- [PrimitivePropertyRenderer]($ui-components-react) - renders a primitive property
-- [NonPrimitivePropertyRenderer]($ui-components-react) - renders struct and array properties
-- [PropertyView]($ui-components-react) - renders a property as a label/value pair
-- [PropertyCategoryBlock]($ui-components-react) - Expandable block for a category; uses [ExpandableBlock]($ui-core-react) for rendering
+- [PropertyGrid]($components-react) - renders property categories
+- [PropertyList]($components-react) - renders multiple properties within a category as a list
+- [PropertyRenderer]($components-react) - renders a property
+- [PrimitivePropertyRenderer]($components-react) - renders a primitive property
+- [NonPrimitivePropertyRenderer]($components-react) - renders struct and array properties
+- [PropertyView]($components-react) - renders a property as a label/value pair
+- [PropertyCategoryBlock]($components-react) - Expandable block for a category; uses [ExpandableBlock]($core-react) for rendering
 
-There are a number of value renderer components for different types that can be found in the [Properties]($ui-components-react:Properties) category.
-Those components are managed by the [PropertyValueRendererManager]($ui-components-react).
+There are a number of value renderer components for different types that can be found in the [Properties]($components-react:Properties) category.
+Those components are managed by the [PropertyValueRendererManager]($components-react).
 
 ## Data Provider
 
-The PropertyGrid data provider is defined by the [IPropertyDataProvider]($ui-components-react) interface.
+The PropertyGrid data provider is defined by the [IPropertyDataProvider]($components-react) interface.
 The `getData` method provides data to the PropertyGrid component via the
-[PropertyData]($ui-components-react) interface. The `onDataChanged` event should be emitted when property
+[PropertyData]($components-react) interface. The `onDataChanged` event should be emitted when property
 data changes.
 
-In the PropertyData interface, the `categories` member provides an array of [PropertyCategory]($ui-components-react) and the
+In the PropertyData interface, the `categories` member provides an array of [PropertyCategory]($components-react) and the
 `records` member provides a map of [PropertyRecord]($appui-abstract) associated with each category.
 
-The [SimplePropertyDataProvider]($ui-components-react) class is an implementation of
+The [SimplePropertyDataProvider]($components-react) class is an implementation of
 IPropertyDataProvider that uses an associative array.
 The [PresentationPropertyDataProvider]($presentation-components) class is a
 Presentation Rules-driven implementation.
@@ -36,7 +36,7 @@ Developers may develop their own implementation of IPropertyDataProvider.
 
 ## Properties
 
-The PropertyGrid component properties are defined by the [PropertyGridProps]($ui-components-react) interface.
+The PropertyGrid component properties are defined by the [PropertyGridProps]($components-react) interface.
 
 The `dataProvider` prop, which is the only mandatory prop, specifies the property data provider.
 
@@ -96,6 +96,6 @@ export default function SimplePropertiesComponent(props: Props) {
 
 ## API Reference
 
-- [VirtualizedPropertyGridWithDataProvider]($ui-components-react)
-- [Properties in @bentley/ui-components]($ui-components-react:Properties)
+- [VirtualizedPropertyGridWithDataProvider]($components-react)
+- [Properties in @bentley/ui-components]($components-react:Properties)
 - [Properties in @bentley/ui-abstract]($appui-abstract:Properties)

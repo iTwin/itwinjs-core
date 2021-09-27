@@ -9,8 +9,8 @@ import sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
 import { ColorByName } from "@itwin/core-common";
 import { PrimitiveValue, SpecialKey, StandardEditorNames } from "@itwin/appui-abstract";
-import { EditorContainer, PropertyEditorManager, PropertyUpdatedArgs } from "@itwin/ui-components-react";
-import { ColorEditor } from "../../ui-imodel-components-react/editors/ColorEditor";
+import { EditorContainer, PropertyEditorManager, PropertyUpdatedArgs } from "@itwin/components-react";
+import { ColorEditor } from "../../imodel-components-react/editors/ColorEditor";
 import { MineDataController, TestUtils } from "../TestUtils";
 
 // cspell:ignore colorpicker

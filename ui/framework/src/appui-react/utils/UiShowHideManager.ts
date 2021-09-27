@@ -6,7 +6,7 @@
  * @module Utilities
  */
 
-import { UiSettings, UiSettingsStatus } from "@itwin/ui-core-react";
+import { UiSettings, UiSettingsStatus } from "@itwin/core-react";
 import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework, UserSettingsProvider } from "../UiFramework";
 

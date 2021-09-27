@@ -9,8 +9,8 @@
 import * as React from "react";
 import { FormatProps } from "@itwin/core-quantity";
 import { RelativePosition, SpecialKey } from "@itwin/appui-abstract";
-import { Popup, WebFontIcon } from "@itwin/ui-core-react";
-import { FormatPanel, FormatPanelProps, UiIModelComponents } from "@itwin/ui-imodel-components-react";
+import { Popup, WebFontIcon } from "@itwin/core-react";
+import { FormatPanel, FormatPanelProps, UiIModelComponents } from "@itwin/imodel-components-react";
 import "./FormatPopupButton.scss";
 import { Button } from "@itwin/itwinui-react";
 

@@ -11,7 +11,7 @@ import { Omit, RegisteredRuleset, Ruleset } from "@itwin/presentation-common";
 import { PresentationTreeDataProvider } from "@itwin/presentation-components";
 import { PRESENTATION_TREE_NODE_KEY } from "@itwin/presentation-components/lib/presentation-components/tree/Utils";
 import { Presentation } from "@itwin/presentation-frontend";
-import { TreeNodeItem } from "@itwin/ui-components-react";
+import { TreeNodeItem } from "@itwin/components-react";
 
 /**
  * Structure that describes a Node with any indexed properties

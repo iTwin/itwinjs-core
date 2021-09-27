@@ -8,10 +8,10 @@ import React from "react";
 import * as sinon from "sinon";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { ScreenViewport } from "@itwin/core-frontend";
-import { BaseSolarDataProvider } from "../../ui-imodel-components-react/timeline/BaseSolarDataProvider";
+import { BaseSolarDataProvider } from "../../imodel-components-react/timeline/BaseSolarDataProvider";
 import { TestUtils } from "../TestUtils";
-import { SpeedTimeline } from "../../ui-imodel-components-react/timeline/SpeedTimeline";
-import { SolarTimeline } from "../../ui-imodel-components-react/timeline/SolarTimeline";
+import { SpeedTimeline } from "../../imodel-components-react/timeline/SpeedTimeline";
+import { SolarTimeline } from "../../imodel-components-react/timeline/SolarTimeline";
 
 class TestSolarDataProvider extends BaseSolarDataProvider {
   public playing = false;

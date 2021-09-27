@@ -6,7 +6,7 @@ import * as sinon from "sinon";
 import { expect } from "chai";
 import { AuthorizedFrontendRequestContext, IModelApp, MockRender } from "@itwin/core-frontend";
 import { SettingsAdmin, SettingsResult, SettingsStatus } from "@bentley/product-settings-client";
-import { UiSettingsStatus } from "@itwin/ui-core-react";
+import { UiSettingsStatus } from "@itwin/core-react";
 import { settingsStatusToUiSettingsStatus, UserSettingsStorage } from "../../appui-react";
 import { TestUtils } from "../TestUtils";
 

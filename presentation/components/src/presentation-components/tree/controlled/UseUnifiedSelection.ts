@@ -16,8 +16,8 @@ import { Presentation, SelectionChangeEventArgs, SelectionChangeType, SelectionH
 import {
   AbstractTreeNodeLoaderWithProvider, MutableTreeModel, MutableTreeModelNode, toRxjsObservable, TreeEditingParams, TreeEventHandler, TreeModelChanges,
   TreeModelSource, TreeNodeItem, TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
-} from "@itwin/ui-components-react";
-import { useDisposable } from "@itwin/ui-core-react";
+} from "@itwin/components-react";
+import { useDisposable } from "@itwin/core-react";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
 
 /**

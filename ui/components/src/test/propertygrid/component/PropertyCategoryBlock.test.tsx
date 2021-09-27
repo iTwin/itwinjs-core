@@ -5,8 +5,8 @@
 import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
-import { PropertyCategoryBlock } from "../../../ui-components-react/propertygrid/component/PropertyCategoryBlock";
-import { PropertyCategory } from "../../../ui-components-react/propertygrid/PropertyDataProvider";
+import { PropertyCategoryBlock } from "../../../components-react/propertygrid/component/PropertyCategoryBlock";
+import { PropertyCategory } from "../../../components-react/propertygrid/PropertyDataProvider";
 import { SpecialKey } from "@itwin/appui-abstract";
 
 describe("PropertyCategoryBlock", () => {

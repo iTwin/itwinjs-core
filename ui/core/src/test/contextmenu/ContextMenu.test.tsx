@@ -8,8 +8,8 @@ import * as sinon from "sinon";
 import { mount } from "enzyme";
 import { BadgeType, ConditionalBooleanValue, SpecialKey } from "@itwin/appui-abstract";
 import { render } from "@testing-library/react";
-import { ContextMenu, ContextMenuDirection, ContextMenuDivider, ContextMenuItem, ContextSubMenu, GlobalContextMenu } from "../../ui-core-react";
-import { TildeFinder } from "../../ui-core-react/contextmenu/TildeFinder";
+import { ContextMenu, ContextMenuDirection, ContextMenuDivider, ContextMenuItem, ContextSubMenu, GlobalContextMenu } from "../../core-react";
+import { TildeFinder } from "../../core-react/contextmenu/TildeFinder";
 import TestUtils from "../TestUtils";
 
 describe("ContextMenu", () => {

@@ -10,7 +10,7 @@ import "./Tab.scss";
 import * as React from "react";
 import { WidgetTab } from "@itwin/appui-layout-react";
 import { useWidgetDef } from "./Content";
-import { BadgeUtilities } from "@itwin/ui-core-react";
+import { BadgeUtilities } from "@itwin/core-react";
 import { BadgeType } from "@itwin/appui-abstract";
 
 /** @internal */

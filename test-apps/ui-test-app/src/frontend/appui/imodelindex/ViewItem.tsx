@@ -7,7 +7,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { ThumbnailProps, ViewDefinitionProps } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
-import { CommonProps, LoadingSpinner } from "@itwin/ui-core-react";
+import { CommonProps, LoadingSpinner } from "@itwin/core-react";
 
 class ThumbnailCache {
   private static _thumbnails: Map<string, ThumbnailProps | undefined> = new Map<string, ThumbnailProps>();

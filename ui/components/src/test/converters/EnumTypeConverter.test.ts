@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { PropertyDescription } from "@itwin/appui-abstract";
-import { EnumTypeConverter } from "../../ui-components-react";
+import { EnumTypeConverter } from "../../components-react";
 import TestUtils from "../TestUtils";
 
 describe("EnumTypeConverter", () => {

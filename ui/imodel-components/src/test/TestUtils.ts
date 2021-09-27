@@ -10,8 +10,8 @@ import {
   Primitives, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
   StandardEditorNames, StandardTypeNames, StructValue, UiAbstract,
 } from "@itwin/appui-abstract";
-import { AsyncValueProcessingResult, ColumnDescription, CompositeFilterDescriptorCollection, DataControllerBase, FilterableTable, TableFilterDescriptorCollection } from "@itwin/ui-components-react";
-import { UiIModelComponents } from "../ui-imodel-components-react/UiIModelComponents";
+import { AsyncValueProcessingResult, ColumnDescription, CompositeFilterDescriptorCollection, DataControllerBase, FilterableTable, TableFilterDescriptorCollection } from "@itwin/components-react";
+import { UiIModelComponents } from "../imodel-components-react/UiIModelComponents";
 
 // cSpell:ignore buttongroup
 

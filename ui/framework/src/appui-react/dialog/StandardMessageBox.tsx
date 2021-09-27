@@ -9,7 +9,7 @@
 import * as React from "react";
 import { MessageBoxIconType, MessageBoxType, MessageBoxValue } from "@itwin/core-frontend";
 import { DialogButtonDef, DialogButtonType, MessageSeverity } from "@itwin/appui-abstract";
-import { CommonProps, MessageBox } from "@itwin/ui-core-react";
+import { CommonProps, MessageBox } from "@itwin/core-react";
 import { ModalDialogManager } from "./ModalDialogManager";
 
 /** Properties for [[StandardMessageBox]] React component

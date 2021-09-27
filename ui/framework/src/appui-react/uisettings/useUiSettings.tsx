@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { LocalSettingsStorage, UiSettingsStorage } from "@itwin/ui-core-react";
+import { LocalSettingsStorage, UiSettingsStorage } from "@itwin/core-react";
 
 /** @beta */
 export function useUiSettingsStorageContext(): UiSettingsStorage {

@@ -11,7 +11,7 @@ import { IModelApp, IModelConnection, SelectedViewportChangedArgs, SelectionSetE
 import { getInstancesCount, SelectionScope } from "@itwin/presentation-common";
 import { ISelectionProvider, Presentation, SelectionChangeEventArgs } from "@itwin/presentation-frontend";
 // cSpell:ignore configurableui
-import { UiEvent } from "@itwin/ui-core-react";
+import { UiEvent } from "@itwin/core-react";
 import { Backstage } from "../backstage/Backstage";
 import { ContentViewManager } from "../content/ContentViewManager";
 import { FrontstageManager } from "../frontstage/FrontstageManager";

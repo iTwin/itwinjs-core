@@ -6,12 +6,12 @@ import { expect } from "chai";
 import { EMPTY } from "rxjs/internal/observable/empty";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { CheckBoxState } from "@itwin/ui-core-react";
-import { TreeModelMutator } from "../../../../ui-components-react/tree/controlled/internal/TreeModelMutator";
-import { CheckboxStateChange } from "../../../../ui-components-react/tree/controlled/TreeEvents";
-import { MutableTreeModel, MutableTreeModelNode } from "../../../../ui-components-react/tree/controlled/TreeModel";
-import { TreeModelSource } from "../../../../ui-components-react/tree/controlled/TreeModelSource";
-import { ITreeNodeLoader } from "../../../../ui-components-react/tree/controlled/TreeNodeLoader";
+import { CheckBoxState } from "@itwin/core-react";
+import { TreeModelMutator } from "../../../../components-react/tree/controlled/internal/TreeModelMutator";
+import { CheckboxStateChange } from "../../../../components-react/tree/controlled/TreeEvents";
+import { MutableTreeModel, MutableTreeModelNode } from "../../../../components-react/tree/controlled/TreeModel";
+import { TreeModelSource } from "../../../../components-react/tree/controlled/TreeModelSource";
+import { ITreeNodeLoader } from "../../../../components-react/tree/controlled/TreeNodeLoader";
 import { createRandomMutableTreeModelNode } from "../RandomTreeNodesHelpers";
 
 describe("TreeModelMutator", () => {

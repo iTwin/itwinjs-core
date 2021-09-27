@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { ContextMenuItem, ContextSubMenu, PopupContextMenu, useRefState } from "@itwin/ui-core-react";
+import { ContextMenuItem, ContextSubMenu, PopupContextMenu, useRefState } from "@itwin/core-react";
 import { RelativePosition } from "@itwin/appui-abstract";
 
 export function SamplePopupContextMenu() {

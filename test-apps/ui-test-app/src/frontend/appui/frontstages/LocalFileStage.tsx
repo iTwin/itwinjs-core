@@ -10,7 +10,7 @@ import { IModelConnection } from "@itwin/core-frontend";
 import { ElectronApp } from "@itwin/electron-manager/lib/ElectronFrontend";
 import { OpenDialogOptions } from "electron";
 
-import { FillCentered } from "@itwin/ui-core-react";
+import { FillCentered } from "@itwin/core-react";
 import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageManager,
   FrontstageProps, FrontstageProvider, ToolWidget, UiFramework, Widget, Zone,

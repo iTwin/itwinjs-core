@@ -9,10 +9,10 @@ import { fireEvent, render } from "@testing-library/react";
 import * as React from "react";
 import sinon from "sinon";
 import { PrimitiveValue, SpecialKey } from "@itwin/appui-abstract";
-import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components-react/editors/EditorContainer";
-import { ToggleEditor } from "../../ui-components-react/editors/ToggleEditor";
+import { EditorContainer, PropertyUpdatedArgs } from "../../components-react/editors/EditorContainer";
+import { ToggleEditor } from "../../components-react/editors/ToggleEditor";
 import TestUtils, { MineDataController } from "../TestUtils";
-import { PropertyEditorManager } from "../../ui-components-react/editors/PropertyEditorManager";
+import { PropertyEditorManager } from "../../components-react/editors/PropertyEditorManager";
 
 describe("<ToggleEditor />", () => {
   it("should render", () => {

@@ -5,10 +5,10 @@
 import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
-import { Orientation } from "@itwin/ui-core-react";
-import { NonPrimitivePropertyLabelRenderer, PrimitivePropertyLabelRenderer } from "../../../ui-components-react";
-import { NonPrimitivePropertyRenderer } from "../../../ui-components-react/properties/renderers/NonPrimitivePropertyRenderer";
-import { PropertyRenderer } from "../../../ui-components-react/properties/renderers/PropertyRenderer";
+import { Orientation } from "@itwin/core-react";
+import { NonPrimitivePropertyLabelRenderer, PrimitivePropertyLabelRenderer } from "../../../components-react";
+import { NonPrimitivePropertyRenderer } from "../../../components-react/properties/renderers/NonPrimitivePropertyRenderer";
+import { PropertyRenderer } from "../../../components-react/properties/renderers/PropertyRenderer";
 import TestUtils from "../../TestUtils";
 
 describe("NonPrimitivePropertyRenderer", () => {

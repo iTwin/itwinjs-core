@@ -7,7 +7,7 @@ import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
-import { TimeField, TimeSpec } from "../../ui-components-react/datepicker/TimeField";
+import { TimeField, TimeSpec } from "../../components-react/datepicker/TimeField";
 import TestUtils from "../TestUtils";
 import { SpecialKey, TimeDisplay } from "@itwin/appui-abstract";
 

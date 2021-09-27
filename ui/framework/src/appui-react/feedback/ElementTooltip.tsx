@@ -11,7 +11,7 @@ import * as React from "react";
 import { XAndY } from "@itwin/core-geometry";
 import { ToolTipOptions } from "@itwin/core-frontend";
 import { PointProps } from "@itwin/appui-abstract";
-import { CommonProps, Point, Rectangle, SizeProps, UiEvent } from "@itwin/ui-core-react";
+import { CommonProps, Point, Rectangle, SizeProps, UiEvent } from "@itwin/core-react";
 import { offsetAndContainInContainer, Tooltip } from "@itwin/appui-layout-react";
 import { MessageDiv } from "../messages/MessageSpan";
 import { NotifyMessageType } from "../messages/ReactNotifyMessageDetails";

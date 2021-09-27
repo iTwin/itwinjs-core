@@ -15,7 +15,7 @@ import {
   FavoritePropertiesManager, Presentation, PresentationManager, RulesetManager, SelectionManager, SelectionScopesManager,
 } from "@itwin/presentation-frontend";
 import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
-import { PropertyData } from "@itwin/ui-components-react";
+import { PropertyData } from "@itwin/components-react";
 import { FavoritePropertiesDataProvider, getFavoritesCategory } from "../../presentation-components/favorite-properties/DataProvider";
 import { PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
 

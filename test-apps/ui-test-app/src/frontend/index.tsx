@@ -29,7 +29,7 @@ import { MapLayersUI } from "@itwin/map-layers";
 import { AndroidApp, IOSApp } from "@itwin/mobile-manager/lib/MobileFrontend";
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@itwin/presentation-frontend";
 import { getClassName } from "@itwin/appui-abstract";
-import { LocalSettingsStorage, UiSettings } from "@itwin/ui-core-react";
+import { LocalSettingsStorage, UiSettings } from "@itwin/core-react";
 import {
   ActionsUnion, AppNotificationManager, AppUiSettings, ConfigurableUiContent, createAction, DeepReadonly, FrameworkAccuDraw,
   FrameworkReducer, FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef,
@@ -37,7 +37,7 @@ import {
   ThemeManager, ToolbarDragInteractionContext, UiFramework, UiSettingsProvider, UserSettingsStorage,
 } from "@itwin/appui-react";
 import { SafeAreaInsets } from "@itwin/appui-layout-react";
-import { BeDragDropContext } from "@itwin/ui-components-react";
+import { BeDragDropContext } from "@itwin/components-react";
 import { getSupportedRpcs } from "../common/rpcs";
 import { loggerCategory, TestAppConfiguration } from "../common/TestAppConfiguration";
 import { BearingQuantityType } from "./api/BearingQuantityType";

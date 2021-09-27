@@ -10,7 +10,7 @@ import { Provider } from "react-redux";
 import { render } from "@testing-library/react";
 import { Logger } from "@itwin/core-bentley";
 import { WidgetState } from "@itwin/appui-abstract";
-import { Size } from "@itwin/ui-core-react";
+import { Size } from "@itwin/core-react";
 import { IModelApp, MockRender, ScreenViewport, SpatialViewState } from "@itwin/core-frontend";
 import { ConfigurableCreateInfo, ConfigurableUiContent, CoreTools, FrontstageManager, ModalFrontstageRequestedCloseEventArgs, RestoreFrontstageLayoutTool, SettingsModalFrontstage, ToolSettingsManager, ToolUiProvider } from "../../appui-react";
 import TestUtils, { storageMock } from "../TestUtils";

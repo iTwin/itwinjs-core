@@ -10,7 +10,7 @@ import "./FloatingWidget.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { PointProps } from "@itwin/appui-abstract";
-import { CommonProps, Point, Rectangle, useRefs } from "@itwin/ui-core-react";
+import { CommonProps, Point, Rectangle, useRefs } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { useDragResizeHandle, UseDragResizeHandleArgs, useIsDraggedItem } from "../base/DragManager";
 import { NineZoneDispatchContext } from "../base/NineZone";

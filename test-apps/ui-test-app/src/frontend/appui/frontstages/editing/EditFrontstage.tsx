@@ -16,7 +16,7 @@ import { EditTools } from "../../../tools/editing/ToolSpecifications";
 import { EditStatusBarWidgetControl } from "../../statusbars/editing/EditStatusBar";
 import { ActiveSettingsWidget } from "../../widgets/editing/ActiveSettingsWidget";
 import { ModelCreationWidget } from "../../widgets/editing/ModelCreationWidget";
-import { Orientation } from "@itwin/ui-core-react";
+import { Orientation } from "@itwin/core-react";
 
 /* eslint-disable react/jsx-key, deprecation/deprecation */
 

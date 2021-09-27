@@ -15,8 +15,8 @@ import {
   NestedContentValue, PresentationError, PresentationStatus, ProcessFieldHierarchiesProps, RelationshipMeaning, Ruleset, SortDirection,
   StartItemProps, traverseContentItem, Value, ValuesDictionary,
 } from "@itwin/presentation-common";
-import { CellItem, ColumnDescription, TableDataProvider as ITableDataProvider, RowItem, TableDataChangeEvent } from "@itwin/ui-components-react";
-import { HorizontalAlignment, SortDirection as UiSortDirection } from "@itwin/ui-core-react";
+import { CellItem, ColumnDescription, TableDataProvider as ITableDataProvider, RowItem, TableDataChangeEvent } from "@itwin/components-react";
+import { HorizontalAlignment, SortDirection as UiSortDirection } from "@itwin/core-react";
 import { FieldHierarchyRecord, PropertyRecordsBuilder } from "../common/ContentBuilder";
 import { CacheInvalidationProps, ContentDataProvider, IContentDataProvider } from "../common/ContentDataProvider";
 import { DiagnosticsProps } from "../common/Diagnostics";

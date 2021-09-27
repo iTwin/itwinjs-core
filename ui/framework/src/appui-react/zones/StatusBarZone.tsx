@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { CommonProps, RectangleProps } from "@itwin/ui-core-react";
+import { CommonProps, RectangleProps } from "@itwin/core-react";
 import { Zone, ZoneManagerProps, ZoneTargetType } from "@itwin/appui-layout-react";
 import { TargetChangeHandler, WidgetChangeHandler } from "../frontstage/FrontstageComposer";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";

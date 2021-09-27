@@ -9,7 +9,7 @@
 import "./Panel.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, Popup } from "@itwin/ui-core-react";
+import { CommonProps, Popup } from "@itwin/core-react";
 
 /** Properties of [[ToolSettingsOverflowPanel]] component.
  * @internal

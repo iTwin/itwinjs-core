@@ -39,9 +39,9 @@ packageClassification:  [
       "header":"UI Packages",
       "packages":[
          "appui-abstract",
-         "ui-core-react",
-         "ui-components-react",
-         "ui-imodel-components-react",
+         "core-react",
+         "components-react",
+         "imodel-components-react",
          "appui-layout-react",
          "appui-react"
       ]

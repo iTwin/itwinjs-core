@@ -7,7 +7,7 @@ The `@bentley/ui-framework` and `@bentley/ui-core` packages contain several clas
 * [ModelessDialogManager]($appui-react) - displays and manages multiple modeless dialogs
 * [ModelessDialog]($appui-react) - Modeless Dialog React component uses the Dialog component with a modal={false} prop.
 It controls the z-index to keep the focused dialog above others.
-* [Dialog]($ui-core-react) - Dialog React component with optional resizing and moving functionality.
+* [Dialog]($core-react) - Dialog React component with optional resizing and moving functionality.
 Supports modal and modeless dialogs and supports a button cluster in the lower-right.
 
 ## Sample Modal Dialog
@@ -16,7 +16,7 @@ The following sample shows a modal dialog with OK/Cancel buttons.
 
 ### SampleModalDialog React component
 
-This sample React component uses the [Dialog]($ui-core-react) component and sets up the buttons and necessary handlers to
+This sample React component uses the [Dialog]($core-react) component and sets up the buttons and necessary handlers to
 close the dialog properly.
 
 ```tsx

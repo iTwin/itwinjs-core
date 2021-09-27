@@ -11,7 +11,7 @@
 import widowSettingsIconSvg from "@bentley/icons-generic/icons/window-settings.svg?sprite";
 import "./UiSettingsPage.scss";
 import * as React from "react";
-import { SettingsTabEntry } from "@itwin/ui-core-react";
+import { SettingsTabEntry } from "@itwin/core-react";
 import { UiFramework } from "../../UiFramework";
 import { ColorTheme, SYSTEM_PREFERRED_COLOR_THEME } from "../../theme/ThemeManager";
 import { UiShowHideManager } from "../../utils/UiShowHideManager";

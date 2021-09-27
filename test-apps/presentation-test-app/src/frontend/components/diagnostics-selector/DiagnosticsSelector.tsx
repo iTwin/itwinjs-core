@@ -8,7 +8,7 @@ import { DiagnosticsLoggerSeverity } from "@itwin/presentation-common";
 import { DiagnosticsProps } from "@itwin/presentation-components";
 import { consoleDiagnosticsHandler } from "@itwin/presentation-frontend";
 import { PointProps } from "@itwin/appui-abstract";
-import { ContextMenuDirection, GlobalContextMenu } from "@itwin/ui-core-react";
+import { ContextMenuDirection, GlobalContextMenu } from "@itwin/core-react";
 import { LabeledSelect, ToggleSwitch } from "@itwin/itwinui-react";
 
 export interface DiagnosticsSelectorProps {

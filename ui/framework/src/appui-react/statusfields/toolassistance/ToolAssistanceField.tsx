@@ -17,7 +17,7 @@ import {
 import { IconSpecUtilities } from "@itwin/appui-abstract";
 import {
   FillCentered, Icon, LocalSettingsStorage, SvgSprite, UiCore, UiSetting, UiSettingsResult, UiSettingsStatus, UiSettingsStorage,
-} from "@itwin/ui-core-react";
+} from "@itwin/core-react";
 import {
   FooterPopup, ToolAssistanceInstruction as NZ_ToolAssistanceInstruction, TitleBarButton, ToolAssistance, ToolAssistanceDialog, ToolAssistanceItem,
   ToolAssistanceSeparator,

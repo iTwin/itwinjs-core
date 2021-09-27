@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
 import { PropertyRecord } from "@itwin/appui-abstract";
-import { CheckBoxState } from "@itwin/ui-core-react";
-import { MutableTreeModelNode, TreeNodeItemData } from "../../../ui-components-react";
-import { TreeNodeItem } from "../../../ui-components-react/tree/TreeDataProvider";
+import { CheckBoxState } from "@itwin/core-react";
+import { MutableTreeModelNode, TreeNodeItemData } from "../../../components-react";
+import { TreeNodeItem } from "../../../components-react/tree/TreeDataProvider";
 
 /** Returns random MutableTreeModelNode. */
 export const createRandomMutableTreeModelNode = (parentNodeId?: string, selected?: boolean, label?: string): MutableTreeModelNode => {

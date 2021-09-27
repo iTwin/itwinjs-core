@@ -6,8 +6,8 @@
 import * as React from "react";
 import { Id64String } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection, ScreenViewport } from "@itwin/core-frontend";
-import { ViewportComponent } from "@itwin/ui-imodel-components-react";
-import { LoadingSpinner } from "@itwin/ui-core-react";
+import { ViewportComponent } from "@itwin/imodel-components-react";
+import { LoadingSpinner } from "@itwin/core-react";
 import { ConfigurableCreateInfo, ViewSelector, ViewSelectorChangedEventArgs, WidgetControl } from "@itwin/appui-react";
 import { ExternalIModel } from "../ExternalIModel";
 

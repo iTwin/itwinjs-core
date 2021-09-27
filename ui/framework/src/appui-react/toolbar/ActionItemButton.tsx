@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { BadgeUtilities, CommonProps, Icon, SizeProps } from "@itwin/ui-core-react";
+import { BadgeUtilities, CommonProps, Icon, SizeProps } from "@itwin/core-react";
 import { Item } from "@itwin/appui-layout-react";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";

@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { DialogLayoutDataProvider, OnCancelFunc, RelativePosition, SpecialKey } from "@itwin/appui-abstract";
-import { DivWithOutsideClick, FocusTrap, Orientation, Point, Size, SizeProps } from "@itwin/ui-core-react";
+import { DivWithOutsideClick, FocusTrap, Orientation, Point, Size, SizeProps } from "@itwin/core-react";
 import { CursorPopup } from "../cursor/cursorpopup/CursorPopup";
 import { PopupManager, PopupPropsBase } from "./PopupManager";
 import { PositionPopup, PositionPopupContent } from "./PositionPopup";

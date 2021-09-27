@@ -9,7 +9,7 @@
 import * as React from "react";
 import { IModelApp, Tool } from "@itwin/core-frontend";
 import { ConditionalStringValue, StringGetter } from "@itwin/appui-abstract";
-import { BadgeUtilities, CommonProps, Icon } from "@itwin/ui-core-react";
+import { BadgeUtilities, CommonProps, Icon } from "@itwin/core-react";
 import { getToolbarItemProps, Item } from "@itwin/appui-layout-react";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { BaseItemState } from "../shared/ItemDefBase";

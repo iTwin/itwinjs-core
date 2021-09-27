@@ -81,10 +81,10 @@
       "quantity": "imodeljs-quantity",
       "reality-data-client": "reality-data-client",
       "appui-abstract": "appui-abstract",
-      "ui-components-react": "ui-components-react",
-      "ui-core-react": "ui-core-react",
+      "components-react": "components-react",
+      "core-react": "core-react",
       "appui-react": "appui-react",
-      "ui-imodel-components-react": "ui-imodel-components-react",
+      "imodel-components-react": "imodel-components-react",
       "appui-ninezone": "appui-ninezone",
       "webgl-compatibility": "webgl-compatibility"
     },

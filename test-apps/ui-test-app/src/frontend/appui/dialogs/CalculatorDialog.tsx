@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
-import { Dialog, Icon } from "@itwin/ui-core-react";
+import { Dialog, Icon } from "@itwin/core-react";
 import { Calculator, ModalDialogManager } from "@itwin/appui-react";
 
 export interface CalculatorDialogProps {

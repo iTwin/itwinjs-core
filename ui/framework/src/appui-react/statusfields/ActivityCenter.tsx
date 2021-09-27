@@ -8,7 +8,7 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { Centered } from "@itwin/ui-core-react";
+import { Centered } from "@itwin/core-react";
 import { MessageLayout, MessageProgress, Status } from "@itwin/appui-layout-react";
 import { ActivityMessageEventArgs, MessageManager } from "../messages/MessageManager";
 import { NotifyMessageType } from "../messages/ReactNotifyMessageDetails";

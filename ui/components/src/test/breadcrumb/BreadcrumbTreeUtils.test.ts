@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
-import { BreadcrumbTreeUtils } from "../../ui-components-react/breadcrumb/BreadcrumbTreeUtils";
-import { CellItem, RowItem } from "../../ui-components-react/table/TableDataProvider";
-import { ImmediatelyLoadedTreeNodeItem, TreeDataProvider } from "../../ui-components-react/tree/TreeDataProvider";
+import { BreadcrumbTreeUtils } from "../../components-react/breadcrumb/BreadcrumbTreeUtils";
+import { CellItem, RowItem } from "../../components-react/table/TableDataProvider";
+import { ImmediatelyLoadedTreeNodeItem, TreeDataProvider } from "../../components-react/tree/TreeDataProvider";
 import TestUtils from "../TestUtils";
 import { mockInterfaceTreeDataProvider } from "./mockTreeDataProvider";
 
@@ -149,7 +149,7 @@ describe("BreadcrumbTreeUtils", () => {
           testNum: 0,
         },
         style: {
-          colorOverrides: {color: 0xfffff},
+          colorOverrides: { color: 0xfffff },
         },
       },
     ];

@@ -10,8 +10,8 @@ import {
   ActionButton, CommonToolbarItem, ConditionalStringValue, CustomButtonDefinition, GroupButton, OnItemExecutedFunc, StringGetter, ToolbarItem,
   ToolbarItemUtilities,
 } from "@itwin/appui-abstract";
-import { CustomToolbarItem } from "@itwin/ui-components-react";
-import { IconHelper } from "@itwin/ui-core-react";
+import { CustomToolbarItem } from "@itwin/components-react";
+import { IconHelper } from "@itwin/core-react";
 import { AnyItemDef } from "../shared/AnyItemDef";
 import { CommandItemDef } from "../shared/CommandItemDef";
 import { CustomItemDef } from "../shared/CustomItemDef";

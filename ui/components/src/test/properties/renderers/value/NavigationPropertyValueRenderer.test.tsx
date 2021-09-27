@@ -7,8 +7,8 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { Id64 } from "@itwin/core-bentley";
 import { render } from "@testing-library/react";
-import { NavigationPropertyValueRenderer } from "../../../../ui-components-react/properties/renderers/value/NavigationPropertyValueRenderer";
-import { PropertyValueRendererContext } from "../../../../ui-components-react/properties/ValueRendererManager";
+import { NavigationPropertyValueRenderer } from "../../../../components-react/properties/renderers/value/NavigationPropertyValueRenderer";
+import { PropertyValueRendererContext } from "../../../../components-react/properties/ValueRendererManager";
 import TestUtils from "../../../TestUtils";
 import { PropertyConverterInfo } from "@itwin/appui-abstract";
 

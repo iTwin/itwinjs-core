@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import { Orientation } from "@itwin/ui-core-react";
+import { Orientation } from "@itwin/core-react";
 import { Direction, ToolbarPanelAlignment } from "@itwin/appui-layout-react";
 import { render } from "@testing-library/react";
 import { BaseItemState, CommandItemDef, CustomItemDef, GroupItemDef, PopupButton, SyncUiEventDispatcher, Toolbar } from "../../appui-react";

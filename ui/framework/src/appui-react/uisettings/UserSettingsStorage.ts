@@ -8,7 +8,7 @@
 
 import { AuthorizedFrontendRequestContext, IModelApp } from "@itwin/core-frontend";
 import { SettingsStatus } from "@bentley/product-settings-client";
-import { UiSettingsResult, UiSettingsStatus, UiSettingsStorage } from "@itwin/ui-core-react";
+import { UiSettingsResult, UiSettingsStatus, UiSettingsStorage } from "@itwin/core-react";
 
 /**
  * Implementation of [[UiSettings]] that uses settings admin from `IModelApp.settings`.

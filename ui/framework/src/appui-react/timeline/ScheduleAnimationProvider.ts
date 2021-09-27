@@ -7,7 +7,7 @@
  */
 
 import { ScreenViewport, ViewState } from "@itwin/core-frontend";
-import { BaseTimelineDataProvider, PlaybackSettings } from "@itwin/ui-imodel-components-react";
+import { BaseTimelineDataProvider, PlaybackSettings } from "@itwin/imodel-components-react";
 
 /** ScheduleAnimation Timeline Data Provider - allows a TimelineComponent to animate the data found in a ScheduleScript in a ViewState.
  * @public

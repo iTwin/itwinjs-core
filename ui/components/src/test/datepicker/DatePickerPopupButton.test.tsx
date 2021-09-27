@@ -8,7 +8,7 @@ import React from "react";
 import sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
 import TestUtils from "../TestUtils";
-import { DatePickerPopupButton } from "../../ui-components-react/datepicker/DatePickerPopupButton";
+import { DatePickerPopupButton } from "../../components-react/datepicker/DatePickerPopupButton";
 import { SpecialKey, TimeDisplay } from "@itwin/appui-abstract";
 
 describe("<DatePickerPopupButton />", () => {

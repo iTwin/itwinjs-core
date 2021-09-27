@@ -17,11 +17,11 @@ import { DateFormatter, IconSpecUtilities, ParseResults, PropertyDescription, Pr
 import {
   adjustDateToTimezone, ColumnDescription, DatePickerPopupButton, DatePickerPopupButtonProps,
   IntlFormatter, ParsedInput, Table, TableDataChangeEvent, TableDataProvider,
-} from "@itwin/ui-components-react";
+} from "@itwin/components-react";
 import {
   ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch, LineWeightSwatch,
   QuantityInput, QuantityNumberInput, WeightPickerButton,
-} from "@itwin/ui-imodel-components-react";
+} from "@itwin/imodel-components-react";
 import {
   AutoSuggest,
   AutoSuggestData,
@@ -31,7 +31,7 @@ import {
   MinimalFeaturedTile, MinimalTile, MutedText, NewBadge, NumberInput, Popup, ProgressBar, ProgressSpinner, Radio, ReactMessage,
   SearchBox, Select, SettingsContainer, SettingsTabEntry, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea, ThemedSelect, Tile, Title,
   Toggle, ToggleButtonType, UnderlinedButton, VerticalTabs,
-} from "@itwin/ui-core-react";
+} from "@itwin/core-react";
 import { MessageManager, ModalDialogManager, QuantityFormatSettingsPage, ReactNotifyMessageDetails, UiFramework } from "@itwin/appui-react";
 import { SampleAppIModelApp } from "../../..";
 import { ComponentExampleCategory, ComponentExampleProps } from "./ComponentExamples";

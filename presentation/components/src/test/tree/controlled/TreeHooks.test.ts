@@ -12,7 +12,7 @@ import { Presentation, PresentationManager, RulesetManager, RulesetVariablesMana
 import { PrimitiveValue } from "@itwin/appui-abstract";
 import {
   computeVisibleNodes, MutableTreeModel, TreeModel, TreeModelNode, TreeModelNodeEditingInfo, TreeModelNodeInput, UiComponents,
-} from "@itwin/ui-components-react";
+} from "@itwin/components-react";
 import { act, cleanup, renderHook } from "@testing-library/react-hooks";
 import { IPresentationTreeDataProvider } from "../../../presentation-components";
 import {

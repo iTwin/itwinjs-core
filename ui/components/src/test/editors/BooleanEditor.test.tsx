@@ -9,10 +9,10 @@ import { fireEvent, render } from "@testing-library/react";
 import * as React from "react";
 import sinon from "sinon";
 import { PrimitiveValue, SpecialKey } from "@itwin/appui-abstract";
-import { BooleanEditor } from "../../ui-components-react/editors/BooleanEditor";
-import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components-react/editors/EditorContainer";
+import { BooleanEditor } from "../../components-react/editors/BooleanEditor";
+import { EditorContainer, PropertyUpdatedArgs } from "../../components-react/editors/EditorContainer";
 import TestUtils, { MineDataController } from "../TestUtils";
-import { PropertyEditorManager } from "../../ui-components-react/editors/PropertyEditorManager";
+import { PropertyEditorManager } from "../../components-react/editors/PropertyEditorManager";
 
 describe("<BooleanEditor />", () => {
   it("should render", () => {

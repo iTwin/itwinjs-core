@@ -7,7 +7,7 @@
  */
 
 import { BadgeType, CommandHandler, ConditionalBooleanValue, ConditionalStringValue, StringGetter } from "@itwin/appui-abstract";
-import { IconProps } from "@itwin/ui-core-react";
+import { IconProps } from "@itwin/core-react";
 import { BaseItemState } from "./ItemDefBase";
 
 /** Definition that specifies properties shared between many ConfigurableUi components.

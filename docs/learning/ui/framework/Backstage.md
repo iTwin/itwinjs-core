@@ -24,7 +24,7 @@ export function AppBackstageComposer() {
 }
 ```
 
-Note: the static method `SettingsModalFrontstage.getBackstageActionItem` used above, will create an entry for a `Settings` stage.  This stage will display [SettingsTabEntry]($ui-core-react) items from [SettingsTabsProvider]($ui-core-react) classes registered with the [SettingsManager]($ui-core-react). The `SettingsManager` instance is referenced by property `UiFramework.settingsManager`.
+Note: the static method `SettingsModalFrontstage.getBackstageActionItem` used above, will create an entry for a `Settings` stage.  This stage will display [SettingsTabEntry]($core-react) items from [SettingsTabsProvider]($core-react) classes registered with the [SettingsManager]($core-react). The `SettingsManager` instance is referenced by property `UiFramework.settingsManager`.
 
 See additional info in [Backstage](../../../learning/ui/abstract/Backstage.md).
 

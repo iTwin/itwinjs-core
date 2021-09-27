@@ -8,8 +8,8 @@ import React from "react";
 import * as sinon from "sinon";
 import { ActionButton, BadgeType, CommonToolbarItem, GroupButton, SpecialKey, ToolbarItemUtilities } from "@itwin/appui-abstract";
 import { fireEvent, render } from "@testing-library/react";
-import { CustomToolbarItem, ToolbarOpacitySetting, ToolbarPanelAlignment, ToolbarPanelAlignmentHelpers, ToolbarWithOverflow } from "../../ui-components-react/toolbar/ToolbarWithOverflow";
-import { Direction } from "../../ui-components-react/toolbar/utilities/Direction";
+import { CustomToolbarItem, ToolbarOpacitySetting, ToolbarPanelAlignment, ToolbarPanelAlignmentHelpers, ToolbarWithOverflow } from "../../components-react/toolbar/ToolbarWithOverflow";
+import { Direction } from "../../components-react/toolbar/utilities/Direction";
 import TestUtils from "../TestUtils";
 
 // cSpell:ignore testid

@@ -8,7 +8,7 @@ import { Table, ToggleSwitch } from "@itwin/itwinui-react";
 import { ConfigurableCreateInfo, ContentControl } from "@itwin/appui-react";
 import { TableExampleData } from "../contentviews/TableExampleData";
 import { TableDataProviderAdapter } from "./TableDataProviderAdapter";
-import { BodyText } from "@itwin/ui-core-react";
+import { BodyText } from "@itwin/core-react";
 
 export interface ReactTableDemoProps {
   isSortable?: boolean;

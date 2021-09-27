@@ -9,12 +9,12 @@ import { Logger } from "@itwin/core-bentley";
 import {
   DataGridFilterParser, FieldFilterData, FILTER_PARSER_TIMER_TIMEOUT, MultiValueFilterData, NumericExactMatchData, NumericFilterData,
   NumericFilterType, NumericGreaterThanData, NumericLessThanData, NumericRangeData, ReactDataGridFilter,
-} from "../../../ui-components-react/table/columnfiltering/DataGridFilterParser";
-import { ReactDataGridColumn, TableColumn } from "../../../ui-components-react/table/component/TableColumn";
-import { SimpleTableDataProvider } from "../../../ui-components-react/table/SimpleTableDataProvider";
-import { ColumnDescription, FilterRenderer, RowItem } from "../../../ui-components-react/table/TableDataProvider";
+} from "../../../components-react/table/columnfiltering/DataGridFilterParser";
+import { ReactDataGridColumn, TableColumn } from "../../../components-react/table/component/TableColumn";
+import { SimpleTableDataProvider } from "../../../components-react/table/SimpleTableDataProvider";
+import { ColumnDescription, FilterRenderer, RowItem } from "../../../components-react/table/TableDataProvider";
 import { TestFilterableTable, TestUtils } from "../../TestUtils";
-import { FilterCompositionLogicalOperator, FilterOperator, TableDistinctValue } from "../../../ui-components-react/table/columnfiltering/ColumnFiltering";
+import { FilterCompositionLogicalOperator, FilterOperator, TableDistinctValue } from "../../../components-react/table/columnfiltering/ColumnFiltering";
 
 const columns: ColumnDescription[] = [
   {

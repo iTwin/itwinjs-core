@@ -7,7 +7,7 @@
  */
 
 import { PointProps } from "@itwin/appui-abstract";
-import { Point, Rectangle, RectangleProps } from "@itwin/ui-core-react";
+import { Point, Rectangle, RectangleProps } from "@itwin/core-react";
 import { NestedStagePanelKey, NestedStagePanelsManagerProps } from "../stage-panels/manager/NestedStagePanels";
 import { StagePanelsManager } from "../stage-panels/manager/StagePanels";
 import { StagePanelType } from "../stage-panels/StagePanel";

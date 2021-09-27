@@ -10,13 +10,13 @@ import "./CardPopup.scss";
 import * as React from "react";
 import classnames from "classnames";
 import { CommonToolbarItem, OnCancelFunc, OnItemExecutedFunc, PropertyRecord, RelativePosition, SpecialKey } from "@itwin/appui-abstract";
-import { DivWithOutsideClick, FocusTrap, Orientation, Point, Size, SizeProps } from "@itwin/ui-core-react";
+import { DivWithOutsideClick, FocusTrap, Orientation, Point, Size, SizeProps } from "@itwin/core-react";
 import { Leading } from "@itwin/itwinui-react";
 import { CursorPopup } from "../cursor/cursorpopup/CursorPopup";
 import { isReactContent, PopupContentType, PopupManager, PopupPropsBase } from "./PopupManager";
 import { PositionPopup } from "./PositionPopup";
 import { MessageDiv } from "../messages/MessageSpan";
-import { Direction, PropertyValueRendererManager, ToolbarOpacitySetting, ToolbarPanelAlignment, ToolbarWithOverflow } from "@itwin/ui-components-react";
+import { Direction, PropertyValueRendererManager, ToolbarOpacitySetting, ToolbarPanelAlignment, ToolbarWithOverflow } from "@itwin/components-react";
 
 /** @alpha */
 export interface CardPopupProps extends PopupPropsBase {

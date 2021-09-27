@@ -5,10 +5,10 @@
 import { expect } from "chai";
 import React from "react";
 import { PropertyRecord } from "@itwin/appui-abstract";
-import { Orientation } from "@itwin/ui-core-react";
+import { Orientation } from "@itwin/core-react";
 import { render } from "@testing-library/react";
-import { HighlightingComponentProps } from "../../../ui-components-react/common/HighlightingComponentProps";
-import { CommonPropertyRenderer } from "../../../ui-components-react/properties/renderers/CommonPropertyRenderer";
+import { HighlightingComponentProps } from "../../../components-react/common/HighlightingComponentProps";
+import { CommonPropertyRenderer } from "../../../components-react/properties/renderers/CommonPropertyRenderer";
 
 describe("CommonPropertyRenderer", () => {
   describe("createNewDisplayValue", () => {

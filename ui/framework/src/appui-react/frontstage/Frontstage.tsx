@@ -10,7 +10,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Logger } from "@itwin/core-bentley";
 import { StagePanelLocation, UiItemProviderRegisteredEventArgs, UiItemsManager, WidgetState } from "@itwin/appui-abstract";
-import { CommonProps, Rectangle } from "@itwin/ui-core-react";
+import { CommonProps, Rectangle } from "@itwin/core-react";
 import {
   HorizontalAnchor, Zones as NZ_Zones, StagePanels, StagePanelsManager, ToolSettingsWidgetMode, WidgetZoneId, widgetZoneIds, ZoneManagerProps,
   ZonesManagerProps,

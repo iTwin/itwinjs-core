@@ -7,7 +7,7 @@
  */
 
 import { PointProps } from "@itwin/appui-abstract";
-import { Point } from "@itwin/ui-core-react";
+import { Point } from "@itwin/core-react";
 import { HorizontalAnchor, VerticalAnchor } from "../../widget/Stacked";
 import { WidgetZoneId } from "./Zones";
 

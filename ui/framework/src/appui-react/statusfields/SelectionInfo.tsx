@@ -10,7 +10,7 @@ import "./SelectionInfo.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { connect } from "react-redux";
-import { Icon } from "@itwin/ui-core-react";
+import { Icon } from "@itwin/core-react";
 import { FooterIndicator } from "@itwin/appui-layout-react";
 import { UiFramework } from "../UiFramework";
 import { StatusFieldProps } from "./StatusFieldProps";

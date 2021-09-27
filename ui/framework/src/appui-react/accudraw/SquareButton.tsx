@@ -9,7 +9,7 @@
 import "./SquareButton.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { Omit } from "@itwin/ui-core-react";
+import { Omit } from "@itwin/core-react";
 import { Button, ButtonProps } from "@itwin/itwinui-react";
 
 /** @alpha */

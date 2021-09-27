@@ -8,7 +8,7 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, NoChildrenProps } from "@itwin/ui-core-react";
+import { CommonProps, NoChildrenProps } from "@itwin/core-react";
 import { Columns } from "./Columns";
 import { Panel } from "./Panel";
 import { Title } from "./Title";

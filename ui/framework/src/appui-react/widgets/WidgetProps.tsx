@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { AbstractWidgetProps } from "@itwin/appui-abstract";
-import { IconProps } from "@itwin/ui-core-react";
+import { IconProps } from "@itwin/core-react";
 import { ConfigurableUiControlConstructor } from "../configurableui/ConfigurableUiControl";
 
 /** Properties for a [Widget]($appui-react) component.

@@ -10,7 +10,7 @@ import "./ActivityMessagePopup.scss";
 import * as React from "react";
 import classnames from "classnames";
 import { ActivityMessageEventArgs, MessageManager } from "../messages/MessageManager";
-import { CommonProps } from "@itwin/ui-core-react";
+import { CommonProps } from "@itwin/core-react";
 import { ActivityMessage } from "./ActivityMessage";
 
 /** Properties for [[ActivityMessagePopup]] component

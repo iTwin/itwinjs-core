@@ -11,7 +11,7 @@ import { NineZoneDispatchContext, PanelsStateContext } from "../base/NineZone";
 import { WidgetPanelsContent } from "./Content";
 import { ContentNodeContext } from "./Panels";
 import { panelSides } from "./Panel";
-import { useRefEffect } from "@itwin/ui-core-react";
+import { useRefEffect } from "@itwin/core-react";
 
 /** Main app content (i.e. viewport) that will change bounds based on panel pinned settings.
  * @internal

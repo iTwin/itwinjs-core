@@ -9,7 +9,7 @@
 import "./Progress.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, NoChildrenProps } from "@itwin/ui-core-react";
+import { CommonProps, NoChildrenProps } from "@itwin/core-react";
 import { Css } from "../../utilities/Css";
 import { Status, StatusHelpers } from "./Status";
 

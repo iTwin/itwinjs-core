@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { PropertyRecord } from "@itwin/appui-abstract";
-import { TreeImageLoader } from "../../ui-components-react/tree/ImageLoader";
+import { TreeImageLoader } from "../../components-react/tree/ImageLoader";
 
 describe("TreeImageLoader", () => {
   const imageLoader = new TreeImageLoader();

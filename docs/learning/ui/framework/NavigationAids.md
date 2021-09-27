@@ -83,7 +83,7 @@ export class SampleNavigationAidControl extends NavigationAidControl {
 ```
 
 The [NavigationWidgetComposer]($appui-react) and the [NavigationAidHost]($appui-react) pass the current iModelConnection and active Viewport to the NavigationAidControl subclass when it's created.
-Events such as [ViewportComponentEvents.onViewRotationChangeEvent]($ui-imodel-components-react) and [ViewManager.onSelectedViewportChanged]($core-frontend) provide an updated Viewport.
+Events such as [ViewportComponentEvents.onViewRotationChangeEvent]($imodel-components-react) and [ViewManager.onSelectedViewportChanged]($core-frontend) provide an updated Viewport.
 
 The React component part of our Navigation Aid might look something like this:
 
@@ -108,4 +108,4 @@ export function SampleNavigationAid(props: SampleNavigationAidProps) {
 ## API Reference
 
 - [NavigationAids in ui-framework]($appui-react:NavigationAids)
-- [NavigationAids in ui-imodel-components]($ui-imodel-components-react:NavigationAids)
+- [NavigationAids in ui-imodel-components]($imodel-components-react:NavigationAids)

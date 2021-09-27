@@ -5,7 +5,7 @@
 
 import * as React from "react";
 import { RelativePosition } from "@itwin/appui-abstract";
-import { Popup, WebFontIcon } from "@itwin/ui-core-react";
+import { Popup, WebFontIcon } from "@itwin/core-react";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { MapManagerSettings } from "./MapManagerSettings";
 

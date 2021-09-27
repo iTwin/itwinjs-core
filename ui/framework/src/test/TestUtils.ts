@@ -11,7 +11,7 @@ import { expect } from "chai";
 import { I18N } from "@itwin/core-i18n";
 import { UserInfo } from "@bentley/itwin-client";
 import { ContentLayoutProps, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValueFormat, StandardContentLayouts, StandardTypeNames } from "@itwin/appui-abstract";
-import { UiSettings, UiSettingsResult, UiSettingsStatus } from "@itwin/ui-core-react";
+import { UiSettings, UiSettingsResult, UiSettingsStatus } from "@itwin/core-react";
 
 import {
   ActionsUnion, combineReducers, ContentGroup, createAction, DeepReadonly, FrameworkReducer,

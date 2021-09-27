@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { OnCancelFunc, RelativePosition } from "@itwin/appui-abstract";
-import { DivWithOutsideClick, Orientation, Point, Size, SizeProps } from "@itwin/ui-core-react";
+import { DivWithOutsideClick, Orientation, Point, Size, SizeProps } from "@itwin/core-react";
 import { CursorPopup } from "../cursor/cursorpopup/CursorPopup";
 import { PopupManager, PopupPropsBase } from "./PopupManager";
 import { PositionPopup } from "./PositionPopup";

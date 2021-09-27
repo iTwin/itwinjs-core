@@ -13,7 +13,7 @@ import {
   AbstractToolbarProps, DialogLayoutDataProvider, OnCancelFunc, OnItemExecutedFunc, OnValueCommitFunc, Primitives, PrimitiveValue,
   PropertyDescription, PropertyRecord, PropertyValueFormat, RelativePosition,
 } from "@itwin/appui-abstract";
-import { Orientation, Point, Rectangle, SizeProps, UiEvent } from "@itwin/ui-core-react";
+import { Orientation, Point, Rectangle, SizeProps, UiEvent } from "@itwin/core-react";
 import { offsetAndContainInContainer } from "@itwin/appui-layout-react";
 import { KeyinEntry } from "../uiadmin/FrameworkUiAdmin";
 import { UiFramework } from "../UiFramework";

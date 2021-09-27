@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { Dialog } from "@itwin/ui-core-react";
+import { Dialog } from "@itwin/core-react";
 import { DialogButtonDef, DialogButtonType, DialogLayoutDataProvider } from "@itwin/appui-abstract";
 import { getUniqueId } from "@itwin/appui-layout-react";
 import { ModalDialogManager } from "./ModalDialogManager";

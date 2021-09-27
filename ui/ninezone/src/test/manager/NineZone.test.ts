@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
-import { Point, Rectangle } from "@itwin/ui-core-react";
+import { Point, Rectangle } from "@itwin/core-react";
 import { HorizontalAnchor, NineZoneManager, StagePanelType, ToolSettingsWidgetMode, ZonesManager } from "../../appui-layout-react";
 import { NineZoneManagerTestProps } from "./TestProps";
 

@@ -10,7 +10,7 @@
 
 import * as React from "react";
 import "./KeyinPalettePanel.scss";
-import { FilteredText, Listbox, ListboxItem, UiSettingsStatus } from "@itwin/ui-core-react";
+import { FilteredText, Listbox, ListboxItem, UiSettingsStatus } from "@itwin/core-react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, ParseAndRunResult } from "@itwin/core-frontend";
 import { UiFramework } from "../UiFramework";
 import { matchesWords, OnItemExecutedFunc, SpecialKey } from "@itwin/appui-abstract";

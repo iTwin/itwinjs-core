@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { ClassNameProps, MessageRenderer } from "@itwin/ui-core-react";
+import { ClassNameProps, MessageRenderer } from "@itwin/core-react";
 import { NotifyMessageType } from "./ReactNotifyMessageDetails";
 
 /** @internal */

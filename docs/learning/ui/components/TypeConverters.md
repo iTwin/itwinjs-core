@@ -1,19 +1,19 @@
 # TypeConverters
 
-The [TypeConverters]($ui-components-react:TypeConverters) category in the `@bentley/ui-components` package includes
+The [TypeConverters]($components-react:TypeConverters) category in the `@bentley/ui-components` package includes
 various Type Converter classes for different types.
 
-All type converters extend the [TypeConverter]($ui-components-react) abstract class.
-The TypeConverter class implements the [SortComparer]($ui-components-react),
-[OperatorProcessor]($ui-components-react) and [NullableOperatorProcessor]($ui-components-react) interfaces.
+All type converters extend the [TypeConverter]($components-react) abstract class.
+The TypeConverter class implements the [SortComparer]($components-react),
+[OperatorProcessor]($components-react) and [NullableOperatorProcessor]($components-react) interfaces.
 
 Type converters may optionally implement one of the following interfaces to provide
 value processing for Table filtering:
 
-- [LessGreaterOperatorProcessor]($ui-components-react) - numeric types
-- [StringOperatorProcessor]($ui-components-react) - string types
+- [LessGreaterOperatorProcessor]($components-react) - numeric types
+- [StringOperatorProcessor]($components-react) - string types
 
-Each type converter must be registered with the [TypeConverterManager]($ui-components-react)
+Each type converter must be registered with the [TypeConverterManager]($components-react)
 for a given type name
 by calling the `registerConverter` method.
 
@@ -30,18 +30,18 @@ const typeConverter = TypeConverterManager.TypeConverterManager.getConverter("st
 
 The following is a list of the provided type converters:
 
-- [BooleanTypeConverter]($ui-components-react)
-- [CompositeTypeConverter]($ui-components-react)
-- [DateTimeTypeConverter]($ui-components-react)
-- [EnumTypeConverter]($ui-components-react)
-- [FloatTypeConverter]($ui-components-react)
-- [HexadecimalTypeConverter]($ui-components-react)
-- [IntTypeConverter]($ui-components-react)
-- [NavigationPropertyTypeConverter]($ui-components-react)
-- [Point2dTypeConverter]($ui-components-react)
-- [Point3dTypeConverter]($ui-components-react)
-- [ShortDateTypeConverter]($ui-components-react)
-- [StringTypeConverter]($ui-components-react)
+- [BooleanTypeConverter]($components-react)
+- [CompositeTypeConverter]($components-react)
+- [DateTimeTypeConverter]($components-react)
+- [EnumTypeConverter]($components-react)
+- [FloatTypeConverter]($components-react)
+- [HexadecimalTypeConverter]($components-react)
+- [IntTypeConverter]($components-react)
+- [NavigationPropertyTypeConverter]($components-react)
+- [Point2dTypeConverter]($components-react)
+- [Point3dTypeConverter]($components-react)
+- [ShortDateTypeConverter]($components-react)
+- [StringTypeConverter]($components-react)
 
 **Note**: `TypeConverterManager.registerConverter` is called by the system for these delivered type converters.
 
@@ -52,4 +52,4 @@ This enum contains the type names used when registering the converters listed ab
 
 ## API Reference
 
-- [TypeConverters]($ui-components-react:TypeConverters)
+- [TypeConverters]($components-react:TypeConverters)

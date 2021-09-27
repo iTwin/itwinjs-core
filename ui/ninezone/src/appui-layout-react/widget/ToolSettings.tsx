@@ -10,7 +10,7 @@ import "./ToolSettings.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { PointProps } from "@itwin/appui-abstract";
-import { CommonProps, Point, Rectangle, RectangleProps } from "@itwin/ui-core-react";
+import { CommonProps, Point, Rectangle, RectangleProps } from "@itwin/core-react";
 import { DragHandle } from "../base/DragHandle";
 import { TitleBar } from "../footer/dialog/TitleBar";
 import { ResizeDirection, ResizeGrip, ResizeGripResizeArgs } from "./rectangular/ResizeGrip";

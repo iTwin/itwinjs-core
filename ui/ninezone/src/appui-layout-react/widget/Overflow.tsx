@@ -9,7 +9,7 @@
 import "./Overflow.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { useRefs, useRefState, useResizeObserver } from "@itwin/ui-core-react";
+import { useRefs, useRefState, useResizeObserver } from "@itwin/core-react";
 import { WidgetMenu } from "./Menu";
 import { useLabel } from "../base/NineZone";
 

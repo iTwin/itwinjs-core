@@ -8,7 +8,7 @@
 
 import "./Content.scss";
 import * as React from "react";
-import { Point } from "@itwin/ui-core-react";
+import { Point } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { useTransientState } from "./ContentRenderer";
 

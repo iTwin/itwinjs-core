@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { CommonProps, RectangleProps } from "@itwin/ui-core-react";
+import { CommonProps, RectangleProps } from "@itwin/core-react";
 import {
   DisabledResizeHandles, DraggedWidgetManagerProps, Zone as NZ_Zone, WidgetManagerProps, WidgetZoneId, ZoneManagerProps, ZoneTargetType,
 } from "@itwin/appui-layout-react";

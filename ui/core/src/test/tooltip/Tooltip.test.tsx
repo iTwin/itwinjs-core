@@ -5,7 +5,7 @@
 import * as React from "react";
 import { fireEvent, render } from "@testing-library/react";
 import { RelativePosition } from "@itwin/appui-abstract";
-import { placementToPosition, Tooltip } from "../../ui-core-react";
+import { placementToPosition, Tooltip } from "../../core-react";
 
 /* eslint-disable deprecation/deprecation */
 

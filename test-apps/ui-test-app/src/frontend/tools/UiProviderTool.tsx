@@ -17,7 +17,7 @@ import {
   ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
   UiItemsManager, UiItemsProvider, WidgetState,
 } from "@itwin/appui-abstract";
-import { FillCentered, LocalSettingsStorage } from "@itwin/ui-core-react";
+import { FillCentered, LocalSettingsStorage } from "@itwin/core-react";
 import {
   ActionCreatorsObject, ActionsUnion, ChildWindowLocationProps, ContentGroup, ContentLayoutManager, ContentProps, createAction,
   FrontstageManager, ReducerRegistryInstance, SavedViewLayout, SavedViewLayoutProps, StateManager, StatusBarItemUtilities, SyncUiEventId,

@@ -39,7 +39,7 @@ With that in mind, the above components *A*, *B* and *C* can be configured as fo
 
 ## Selection Handling
 
-The `@bentley/presentation-components` package delivers helper APIs for hooking four primary components into unified selection: [ControlledTree]($ui-components-react), [Table]($ui-components-react), [Property Grid]($ui-components-react:PropertyGrid) and [ViewportComponent]($ui-imodel-components-react). Each of those components handle unified selection differently and that behavior is explained in the below sections.
+The `@bentley/presentation-components` package delivers helper APIs for hooking four primary components into unified selection: [ControlledTree]($components-react), [Table]($components-react), [Property Grid]($components-react:PropertyGrid) and [ViewportComponent]($imodel-components-react). Each of those components handle unified selection differently and that behavior is explained in the below sections.
 
 ### Tree
 
@@ -121,16 +121,16 @@ The key unified selection APIs are defined in [@bentley/presentation-frontend]($
 For each type of component described in [selection handling section](#selection-handling), the `@bentley/presentation-component` package delivers a set of React-based helper APIs:
 
 - Tree
-  - [useUnifiedSelectionTreeEventHandler]($presentation-components) hook returns a [TreeEventHandler]($ui-components-react) that can be passed straight to [ControlledTree]($ui-components-react) component as an [ControlledTreeProps.eventsHandler]($ui-components-react) prop and takes care of syncing selection between the tree and unified selection storage.
+  - [useUnifiedSelectionTreeEventHandler]($presentation-components) hook returns a [TreeEventHandler]($components-react) that can be passed straight to [ControlledTree]($components-react) component as an [ControlledTreeProps.eventsHandler]($components-react) prop and takes care of syncing selection between the tree and unified selection storage.
 
 - Table
-  - [tableWithUnifiedSelection]($presentation-components) HOC takes a [Table]($ui-components-react) component as input and returns a component with injected handling for unified selection as described in [this section](#table).
+  - [tableWithUnifiedSelection]($presentation-components) HOC takes a [Table]($components-react) component as input and returns a component with injected handling for unified selection as described in [this section](#table).
 
 - Property Grid
   - [usePropertyDataProviderWithUnifiedSelection]($presentation-components) hook takes an [IPresentationPropertyDataProvider]($presentation-components) as an input and ensures the provider is updated with current selection as soon as there are changes in unified selection storage. It also returns some cues about the selection that help the component with various edge cases, like nothing being selected or overly large number of selected elements.
 
 - Viewport
-  - [viewWithUnifiedSelection]($presentation-components) HOC takes a [ViewportComponent]($ui-imodel-components-react) as input and returns a component with injected handling for unified selection as described in [this section](#viewport).
+  - [viewWithUnifiedSelection]($presentation-components) HOC takes a [ViewportComponent]($imodel-components-react) as input and returns a component with injected handling for unified selection as described in [this section](#viewport).
 
 ## Caveats
 

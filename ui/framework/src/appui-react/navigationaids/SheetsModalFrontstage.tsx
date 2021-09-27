@@ -10,7 +10,7 @@ import "./SheetsModalFrontstage.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { IModelApp, IModelConnection } from "@itwin/core-frontend";
-import { CommonProps, FlexWrapContainer, ScrollView, SearchBox, UiCore, UiEvent } from "@itwin/ui-core-react";
+import { CommonProps, FlexWrapContainer, ScrollView, SearchBox, UiCore, UiEvent } from "@itwin/core-react";
 import { FrontstageManager, ModalFrontstageInfo } from "../frontstage/FrontstageManager";
 import { UiFramework } from "../UiFramework";
 import { SheetData } from "./SheetNavigationAid";

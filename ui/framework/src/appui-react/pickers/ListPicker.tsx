@@ -10,8 +10,8 @@ import "@itwin/appui-layout-react/lib/appui-layout-react/toolbar/item/expandable
 import "./ListPicker.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { PopupItem } from "@itwin/ui-components-react";
-import { CommonProps, Icon, SizeProps, withOnOutsideClick } from "@itwin/ui-core-react";
+import { PopupItem } from "@itwin/components-react";
+import { CommonProps, Icon, SizeProps, withOnOutsideClick } from "@itwin/core-react";
 import { containHorizontally, ExpandableItem, Group, GroupColumn, Item, Panel, withContainIn } from "@itwin/appui-layout-react";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { FrameworkVersionSwitch } from "../hooks/useFrameworkVersion";

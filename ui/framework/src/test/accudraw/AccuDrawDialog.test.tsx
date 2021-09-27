@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import * as React from "react";
 import { CompassMode, IModelApp, IModelAppOptions, MockRender } from "@itwin/core-frontend";
 import { SpecialKey } from "@itwin/appui-abstract";
-import { Orientation } from "@itwin/ui-core-react";
+import { Orientation } from "@itwin/core-react";
 import { TestUtils } from "../TestUtils";
 import { FrameworkAccuDraw } from "../../appui-react/accudraw/FrameworkAccuDraw";
 import { AccuDrawDialog } from "../../appui-react/accudraw/AccuDrawDialog";

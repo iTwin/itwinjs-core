@@ -8,7 +8,7 @@
 
 import { Omit, PrimitivePropertyValue, RulesetsFactory } from "@itwin/presentation-common";
 import { PropertyRecord } from "@itwin/appui-abstract";
-import { TypeConverterManager } from "@itwin/ui-components-react";
+import { TypeConverterManager } from "@itwin/components-react";
 import { findField } from "./common/Utils";
 import { IPresentationPropertyDataProvider } from "./propertygrid/DataProvider";
 import { IPresentationTableDataProvider, PresentationTableDataProvider, PresentationTableDataProviderProps } from "./table/DataProvider";

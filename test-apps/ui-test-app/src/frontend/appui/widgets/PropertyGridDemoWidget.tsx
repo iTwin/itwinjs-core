@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames } from "@itwin/appui-abstract";
-import { PropertyCategory, PropertyGrid, PropertyUpdatedArgs, SimplePropertyDataProvider } from "@itwin/ui-components-react";
-import { Orientation } from "@itwin/ui-core-react";
+import { PropertyCategory, PropertyGrid, PropertyUpdatedArgs, SimplePropertyDataProvider } from "@itwin/components-react";
+import { Orientation } from "@itwin/core-react";
 import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, WidgetControl } from "@itwin/appui-react";
 import { HorizontalAnchor, WidgetContent } from "@itwin/appui-layout-react";
 

@@ -5,7 +5,7 @@
 
 import * as React from "react";
 import { RelativePosition } from "@itwin/appui-abstract";
-import { Popup } from "@itwin/ui-core-react";
+import { Popup } from "@itwin/core-react";
 import { Slider } from "@itwin/itwinui-react";
 
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";

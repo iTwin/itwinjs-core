@@ -10,8 +10,8 @@ import * as React from "react";
 import { IPresentationTreeDataProvider, useControlledPresentationTreeFiltering } from "@itwin/presentation-components";
 import {
   AbstractTreeNodeLoaderWithProvider, TreeImageLoader, TreeNodeRenderer, TreeNodeRendererProps, TreeRenderer, TreeRendererProps,
-} from "@itwin/ui-components-react";
-import { ImageCheckBox, NodeCheckboxRenderProps } from "@itwin/ui-core-react";
+} from "@itwin/components-react";
+import { ImageCheckBox, NodeCheckboxRenderProps } from "@itwin/core-react";
 import { VisibilityTreeFilterInfo } from "./Common";
 
 /**

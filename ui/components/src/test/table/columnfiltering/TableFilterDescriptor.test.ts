@@ -7,12 +7,12 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
 import { StandardTypeNames } from "@itwin/appui-abstract";
-import { BooleanTypeConverter } from "../../../ui-components-react/converters/BooleanTypeConverter";
-import { FilterOperator, OperatorValueFilterDescriptorCollection } from "../../../ui-components-react/table/columnfiltering/ColumnFiltering";
-import { ColumnFilteringUtilities } from "../../../ui-components-react/table/columnfiltering/ColumnFilteringUtilities";
-import { NumericFilterType, NumericRangeData } from "../../../ui-components-react/table/columnfiltering/DataGridFilterParser";
-import { TableFilterDescriptor } from "../../../ui-components-react/table/columnfiltering/TableFilterDescriptor";
-import { CellItem, ColumnDescription, RowItem } from "../../../ui-components-react/table/TableDataProvider";
+import { BooleanTypeConverter } from "../../../components-react/converters/BooleanTypeConverter";
+import { FilterOperator, OperatorValueFilterDescriptorCollection } from "../../../components-react/table/columnfiltering/ColumnFiltering";
+import { ColumnFilteringUtilities } from "../../../components-react/table/columnfiltering/ColumnFilteringUtilities";
+import { NumericFilterType, NumericRangeData } from "../../../components-react/table/columnfiltering/DataGridFilterParser";
+import { TableFilterDescriptor } from "../../../components-react/table/columnfiltering/TableFilterDescriptor";
+import { CellItem, ColumnDescription, RowItem } from "../../../components-react/table/TableDataProvider";
 import { TestFilterableTable, TestUtils } from "../../TestUtils";
 
 const columns: ColumnDescription[] = [

@@ -12,8 +12,8 @@ import * as React from "react";
 import { ColorDef } from "@itwin/core-common";
 import { CompassMode, IModelApp, ItemField, ScreenViewport, SelectedViewportChangedArgs } from "@itwin/core-frontend";
 import { IconSpecUtilities } from "@itwin/appui-abstract";
-import { CommonProps, IconSpec, Orientation, UiSettingsStorage } from "@itwin/ui-core-react";
-import { getCSSColorFromDef } from "@itwin/ui-imodel-components-react";
+import { CommonProps, IconSpec, Orientation, UiSettingsStorage } from "@itwin/core-react";
+import { getCSSColorFromDef } from "@itwin/imodel-components-react";
 
 import { AccuDrawInputField } from "./AccuDrawInputField";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";

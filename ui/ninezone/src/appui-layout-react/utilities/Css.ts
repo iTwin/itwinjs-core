@@ -7,7 +7,7 @@
  */
 
 import { PointProps } from "@itwin/appui-abstract";
-import { Rectangle, RectangleProps } from "@itwin/ui-core-react";
+import { Rectangle, RectangleProps } from "@itwin/core-react";
 
 /** CSS helpers.
  * @internal

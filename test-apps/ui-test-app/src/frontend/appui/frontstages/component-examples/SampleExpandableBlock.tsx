@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { SpecialKey } from "@itwin/appui-abstract";
-import { ExpandableBlock, ExpandableBlockProps } from "@itwin/ui-core-react";
+import { ExpandableBlock, ExpandableBlockProps } from "@itwin/core-react";
 
 /** Sample component using ExpandableBlock with an expanded state  */
 // eslint-disable-next-line @typescript-eslint/naming-convention

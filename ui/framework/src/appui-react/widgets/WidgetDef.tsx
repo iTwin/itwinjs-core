@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { AbstractWidgetProps, BadgeType, ConditionalStringValue, PointProps, StringGetter, UiError, WidgetState } from "@itwin/appui-abstract";
-import { UiEvent } from "@itwin/ui-core-react";
+import { UiEvent } from "@itwin/core-react";
 import { Direction, PanelSide } from "@itwin/appui-layout-react";
 import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";

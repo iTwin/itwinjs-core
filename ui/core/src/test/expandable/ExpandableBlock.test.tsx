@@ -7,7 +7,7 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { SpecialKey } from "@itwin/appui-abstract";
-import { ExpandableBlock } from "../../ui-core-react";
+import { ExpandableBlock } from "../../core-react";
 import TestUtils from "../TestUtils";
 
 /* eslint-disable deprecation/deprecation */

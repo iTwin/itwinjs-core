@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { ConditionalBooleanValue } from "@itwin/appui-abstract";
-import { SizeProps } from "@itwin/ui-core-react";
+import { SizeProps } from "@itwin/core-react";
 import { ActionButtonItemDef } from "./ActionButtonItemDef";
 import { CustomItemProps } from "./CustomItemProps";
 

@@ -9,7 +9,7 @@ import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
 import { MockRender, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod } from "@itwin/core-frontend";
 import { WidgetState } from "@itwin/appui-abstract";
-import { LocalSettingsStorage } from "@itwin/ui-core-react";
+import { LocalSettingsStorage } from "@itwin/core-react";
 import { FooterPopup, TitleBarButton } from "@itwin/appui-layout-react";
 import { ToggleSwitch } from "@itwin/itwinui-react";
 import {

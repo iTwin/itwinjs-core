@@ -12,7 +12,7 @@ import {
   DialogPropertySyncItem,
   PropertyChangeResult, PropertyChangeStatus, PropertyDescription, RelativePosition, StandardTypeNames,
 } from "@itwin/appui-abstract";
-import { Point } from "@itwin/ui-core-react";
+import { Point } from "@itwin/core-react";
 import { AccuDrawPopupManager } from "../../appui-react/accudraw/AccuDrawPopupManager";
 import { PopupManager, PopupRenderer } from "../../appui-react/popup/PopupManager";
 import { MenuItemProps } from "../../appui-react/shared/MenuItem";

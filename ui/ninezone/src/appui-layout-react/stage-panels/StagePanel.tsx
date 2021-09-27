@@ -9,7 +9,7 @@
 import "./StagePanel.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, Point, Rectangle } from "@itwin/ui-core-react";
+import { CommonProps, Point, Rectangle } from "@itwin/core-react";
 import { SafeAreaInsets, SafeAreaInsetsHelpers } from "../utilities/SafeAreaInsets";
 import { ResizeDirection, ResizeGrip, ResizeGripResizeArgs } from "../widget/rectangular/ResizeGrip";
 

@@ -19,7 +19,7 @@ import { assert } from "@itwin/core-bentley";
 import {
   isTreeModelNode, PagedTreeNodeLoader, toRxjsObservable, TreeModel, TreeModelNode, TreeModelRootNode, TreeModelSource,
   TreeNodeLoadResult,
-} from "@itwin/ui-components-react";
+} from "@itwin/components-react";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
 
 /**
@@ -27,7 +27,7 @@ import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider"
  * @param treeModel Previous tree model.
  * @param dataProvider Tree node provider.
  * @param pageSize Data provider's page size.
- * @returns An observable which will emit a new [TreeModelSource]($ui-components-react) and complete.
+ * @returns An observable which will emit a new [TreeModelSource]($components-react) and complete.
  * @internal
  */
 export function reloadTree(

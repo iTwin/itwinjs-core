@@ -6,7 +6,7 @@ import { should } from "chai";
 import * as sinon from "sinon";
 import * as Moq from "typemoq";
 import { PointProps } from "@itwin/appui-abstract";
-import { Point, Rectangle, RectangleProps } from "@itwin/ui-core-react";
+import { Point, Rectangle, RectangleProps } from "@itwin/core-react";
 import {
   DisabledResizeHandles, DraggedWidgetManager, getClosedWidgetTabIndex, getColumnZones, getZoneCell, HorizontalAnchor, ResizeHandle,
   ResizeStrategy, ToolSettingsWidgetMode, WidgetZoneId, widgetZoneIds, ZoneManager, ZonesManager, ZonesManagerProps, ZoneTargetType,

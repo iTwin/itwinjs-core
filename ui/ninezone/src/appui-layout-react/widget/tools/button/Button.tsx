@@ -12,7 +12,7 @@ import * as React from "react";
 import {
   calculateBackdropFilterBlur, calculateBoxShadowOpacity, calculateToolbarOpacity, CommonProps, getToolbarBackdropFilter, getToolbarBackgroundColor,
   getToolbarBoxShadow, TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT, TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT, TOOLBAR_OPACITY_DEFAULT,
-} from "@itwin/ui-core-react";
+} from "@itwin/core-react";
 
 /** Properties of [[ToolbarButton]] component.
  * @alpha

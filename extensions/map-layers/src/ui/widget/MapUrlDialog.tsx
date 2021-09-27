@@ -6,7 +6,7 @@
 
 import * as React from "react";
 import { Input, LabeledInput, ProgressLinear, Radio, Select, SelectOption } from "@itwin/itwinui-react";
-import { Dialog, Icon, InputStatus } from "@itwin/ui-core-react";
+import { Dialog, Icon, InputStatus } from "@itwin/core-react";
 import { ModalDialogManager } from "@itwin/appui-react";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { MapTypesOptions } from "../Interfaces";

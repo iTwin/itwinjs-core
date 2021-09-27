@@ -10,7 +10,7 @@ import {
   AuthorizedFrontendRequestContext, BriefcaseConnection, IModelApp, IModelHubFrontend, NotifyMessageDetails, OutputMessageAlert,
   OutputMessagePriority, OutputMessageType,
 } from "@itwin/core-frontend";
-import { Icon } from "@itwin/ui-core-react";
+import { Icon } from "@itwin/core-react";
 import { StatusFieldProps, UiFramework } from "@itwin/appui-react";
 import { FooterIndicator } from "@itwin/appui-layout-react";
 import { ProgressRadial } from "@itwin/itwinui-react";

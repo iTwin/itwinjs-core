@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { Orientation } from "@itwin/ui-core-react";
+import { Orientation } from "@itwin/core-react";
 import { Direction, ToolbarPanelAlignment } from "@itwin/appui-layout-react";
 import { ItemList } from "../shared/ItemMap";
 import { Toolbar } from "../toolbar/Toolbar";

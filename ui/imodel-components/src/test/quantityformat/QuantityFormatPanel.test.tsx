@@ -13,7 +13,7 @@ import { BearingQuantityType } from "./BearingQuantityType";
 import { SpecialKey } from "@itwin/appui-abstract";
 import { TestUtils } from "../TestUtils";
 import { handleError, selectChangeValueByIndex, selectChangeValueByText, stubScrollIntoView } from "../test-helpers/misc";
-import { QuantityFormatPanel } from "../../ui-imodel-components-react/quantityformat/QuantityFormatPanel";
+import { QuantityFormatPanel } from "../../imodel-components-react/quantityformat/QuantityFormatPanel";
 
 describe("QuantityInput", () => {
   const rnaDescriptorToRestore = Object.getOwnPropertyDescriptor(IModelApp, "requestNextAnimation")!;

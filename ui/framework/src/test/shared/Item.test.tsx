@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { IModelApp, SelectionTool } from "@itwin/core-frontend";
 import { ConditionalStringValue } from "@itwin/appui-abstract";
-import { Orientation, Size } from "@itwin/ui-core-react";
+import { Orientation, Size } from "@itwin/core-react";
 import { ActionButtonItemDef, CommandItemDef, ItemProps, ToolItemDef } from "../../appui-react";
 import TestUtils from "../TestUtils";
 import { Tool1 } from "../tools/Tool1";

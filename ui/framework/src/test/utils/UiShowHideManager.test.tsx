@@ -13,7 +13,7 @@ import {
 } from "../../appui-react";
 import { TestFrontstage } from "../frontstage/FrontstageTestUtils";
 import TestUtils, { storageMock } from "../TestUtils";
-import { LocalSettingsStorage } from "@itwin/ui-core-react";
+import { LocalSettingsStorage } from "@itwin/core-react";
 import { StandardContentLayouts } from "@itwin/appui-abstract";
 
 describe("UiShowHideManager localStorage Wrapper", () => {

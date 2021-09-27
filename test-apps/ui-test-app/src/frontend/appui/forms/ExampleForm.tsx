@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
-import { Dialog, FieldDefinitions, FieldValues, Form } from "@itwin/ui-core-react";
+import { Dialog, FieldDefinitions, FieldValues, Form } from "@itwin/core-react";
 import { ModalDialogManager } from "@itwin/appui-react";
 
 export class ExampleForm extends React.Component {

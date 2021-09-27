@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelConnection } from "@itwin/core-frontend";
-import { Table } from "@itwin/ui-components-react";
+import { Table } from "@itwin/components-react";
 import { ConfigurableCreateInfo, UiFramework, WidgetControl } from "@itwin/appui-react";
 import { Checkbox } from "@itwin/itwinui-react";
 import { demoMutableTableDataProvider } from "./demodataproviders/demoTableDataProvider";

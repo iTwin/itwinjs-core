@@ -9,7 +9,7 @@
 import "./Group.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@itwin/ui-core-react";
+import { CommonProps } from "@itwin/core-react";
 import { HorizontalAnchor, HorizontalAnchorHelpers, VerticalAnchor, VerticalAnchorHelpers } from "../../Stacked";
 
 /** Available handle modes.

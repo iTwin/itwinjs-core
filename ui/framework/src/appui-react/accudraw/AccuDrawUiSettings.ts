@@ -7,7 +7,7 @@
  */
 
 import { ColorDef } from "@itwin/core-common";
-import { IconSpec } from "@itwin/ui-core-react";
+import { IconSpec } from "@itwin/core-react";
 
 /** AccuDraw User Interface Settings
  * @beta

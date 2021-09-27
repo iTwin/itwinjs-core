@@ -7,11 +7,11 @@ import { mount } from "enzyme";
 import * as faker from "faker";
 import * as React from "react";
 import { PropertyRecord } from "@itwin/appui-abstract";
-import { PropertyCategory, PropertyData } from "../../ui-components-react/propertygrid/PropertyDataProvider";
-import { FavoritePropertyList } from "../../ui-components-react/favorite/FavoritePropertyList";
+import { PropertyCategory, PropertyData } from "../../components-react/propertygrid/PropertyDataProvider";
+import { FavoritePropertyList } from "../../components-react/favorite/FavoritePropertyList";
 import TestUtils from "../TestUtils";
-import { Orientation, ResizableContainerObserver } from "@itwin/ui-core-react";
-import { PropertyValueRendererManager } from "../../ui-components-react/properties/ValueRendererManager";
+import { Orientation, ResizableContainerObserver } from "@itwin/core-react";
+import { PropertyValueRendererManager } from "../../components-react/properties/ValueRendererManager";
 
 describe("FavoritePropertyList", () => {
 

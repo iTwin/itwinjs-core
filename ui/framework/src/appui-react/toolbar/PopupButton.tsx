@@ -11,7 +11,7 @@ import "./PopupButton.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { ConditionalBooleanValue, ConditionalStringValue, SpecialKey, StringGetter } from "@itwin/appui-abstract";
-import { BadgeUtilities, CommonProps, Icon, SizeProps, withOnOutsideClick } from "@itwin/ui-core-react";
+import { BadgeUtilities, CommonProps, Icon, SizeProps, withOnOutsideClick } from "@itwin/core-react";
 import { ExpandableItem, Item } from "@itwin/appui-layout-react";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";

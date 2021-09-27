@@ -15,8 +15,8 @@ import {
   IFilteredPresentationTreeDataProvider, IPresentationTreeDataProvider, usePresentationTreeNodeLoader,
 } from "@itwin/presentation-components";
 import { Presentation } from "@itwin/presentation-frontend";
-import { ControlledTree, SelectionMode, TreeNodeItem, useTreeModel } from "@itwin/ui-components-react";
-import { useDisposable, useOptionalDisposable } from "@itwin/ui-core-react";
+import { ControlledTree, SelectionMode, TreeNodeItem, useTreeModel } from "@itwin/components-react";
+import { useDisposable, useOptionalDisposable } from "@itwin/core-react";
 import { UiFramework } from "../../../appui-react/UiFramework";
 import { ClassGroupingOption, VisibilityTreeFilterInfo } from "../Common";
 import { VisibilityTreeEventHandler } from "../VisibilityTreeEventHandler";

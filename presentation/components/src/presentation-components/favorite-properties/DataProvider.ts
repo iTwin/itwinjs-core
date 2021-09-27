@@ -10,7 +10,7 @@ import { Id64Arg, using } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { CategoryDescription, KeySet, Ruleset } from "@itwin/presentation-common";
 import { getScopeId, Presentation } from "@itwin/presentation-frontend";
-import { PropertyData } from "@itwin/ui-components-react";
+import { PropertyData } from "@itwin/components-react";
 import { translate } from "../common/Utils";
 import { PresentationPropertyDataProvider } from "../propertygrid/DataProvider";
 

@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as React from "react";
 import { render } from "@testing-library/react";
 import { RelativePosition } from "@itwin/appui-abstract";
-import { PopupContextMenu } from "../../ui-core-react";
+import { PopupContextMenu } from "../../core-react";
 
 describe("PopupContextMenu", () => {
   it("renders correctly", () => {

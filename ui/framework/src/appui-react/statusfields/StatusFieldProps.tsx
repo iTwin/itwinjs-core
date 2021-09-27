@@ -6,7 +6,7 @@
  * @module StatusBar
  */
 
-import { CommonProps } from "@itwin/ui-core-react";
+import { CommonProps } from "@itwin/core-react";
 import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl";
 
 /** Properties for a StatusBar field component

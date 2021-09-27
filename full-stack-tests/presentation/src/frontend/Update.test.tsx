@@ -14,7 +14,7 @@ import { PrimitiveValue } from "@itwin/appui-abstract";
 import {
   AbstractTreeNodeLoader, DelayLoadedTreeNodeItem, MutableTreeModelNode, PagedTreeNodeLoader, Subscription, TreeModelNode, TreeModelRootNode,
   TreeModelSource,
-} from "@itwin/ui-components-react";
+} from "@itwin/components-react";
 import { renderHook } from "@testing-library/react-hooks";
 import { initialize, terminate } from "../IntegrationTests";
 

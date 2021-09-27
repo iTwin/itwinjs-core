@@ -9,7 +9,7 @@
 import "./TabBar.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { Point, Timer } from "@itwin/ui-core-react";
+import { Point, Timer } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { isTabTarget, useDragWidget, UseDragWidgetArgs } from "../base/DragManager";
 import { getUniqueId, NineZoneDispatchContext } from "../base/NineZone";

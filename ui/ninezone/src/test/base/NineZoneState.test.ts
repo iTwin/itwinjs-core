@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect, should } from "chai";
 import { castDraft, produce } from "immer";
-import { Point, Rectangle } from "@itwin/ui-core-react";
+import { Point, Rectangle } from "@itwin/core-react";
 import {
   addFloatingWidget, addPanelWidget, addPopoutWidget, addTab, addWidgetTabToFloatingPanel, createDraggedTabState, createFloatingWidgetState,
   createHorizontalPanelState, createNineZoneState, createPanelsState, createTabsState,

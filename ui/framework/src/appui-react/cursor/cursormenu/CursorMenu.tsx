@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { CommonProps, GlobalContextMenu } from "@itwin/ui-core-react"; // ContextSubMenu,
+import { CommonProps, GlobalContextMenu } from "@itwin/core-react"; // ContextSubMenu,
 import { SessionStateActionId } from "../../redux/SessionState";
 import { MenuItemHelpers, MenuItemProps } from "../../shared/MenuItem";
 import { SyncUiEventArgs, SyncUiEventDispatcher } from "../../syncui/SyncUiEventDispatcher";

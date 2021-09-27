@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { PanelSide, panelSides } from "./Panel";
 import { NineZoneDispatchContext, PanelsStateContext } from "../base/NineZone";
-import { Point, Timer } from "@itwin/ui-core-react";
+import { Point, Timer } from "@itwin/core-react";
 
 /** @internal */
 export interface WidgetPanelExpanderProps {

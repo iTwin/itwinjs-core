@@ -10,7 +10,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
 import { BadgeType, ConditionalStringValue, OnItemExecutedFunc, SpecialKey, StringGetter } from "@itwin/appui-abstract";
-import { BadgeUtilities, CommonProps, Icon, IconSpec, SizeProps, withOnOutsideClick } from "@itwin/ui-core-react";
+import { BadgeUtilities, CommonProps, Icon, IconSpec, SizeProps, withOnOutsideClick } from "@itwin/core-react";
 import {
   Direction, ExpandableItem, GroupColumn, GroupTool, GroupToolExpander, Item, NestedGroup as NestedToolGroupComponent, ToolbarDirectionContext,
   Group as ToolGroupComponent, withDragInteraction,

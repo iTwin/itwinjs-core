@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import { DatePickerPopupButton, DatePickerPopupButtonProps } from "@itwin/ui-components-react";
+import { DatePickerPopupButton, DatePickerPopupButtonProps } from "@itwin/components-react";
 import { ModalDialogManager, ModelessDialogManager, PopupManager } from "@itwin/appui-react";
 import { SampleModelessDialog } from "../appui/dialogs/SampleModelessDialog";
 import { TestModalDialog } from "../appui/dialogs/TestModalDialog";

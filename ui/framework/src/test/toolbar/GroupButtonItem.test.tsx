@@ -7,7 +7,7 @@ import { ReactWrapper, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { ActionButton, BadgeType, ToolbarItemUtilities } from "@itwin/appui-abstract";
-import { WithOnOutsideClickProps } from "@itwin/ui-core-react";
+import { WithOnOutsideClickProps } from "@itwin/core-react";
 import { GroupColumn, GroupTool, GroupToolExpander, Item, NestedGroup, WithDragInteractionProps } from "@itwin/appui-layout-react";
 import { GroupButtonItem, KeyboardShortcutManager, ToolbarDragInteractionContext, ToolbarGroupItem, ToolGroupPanelContext } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";

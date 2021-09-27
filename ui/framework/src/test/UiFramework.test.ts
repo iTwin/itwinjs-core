@@ -17,7 +17,7 @@ import { initialize as initializePresentationTesting, terminate as terminatePres
 import { ColorTheme, CursorMenuData, SettingsModalFrontstage, UiFramework, UserSettingsProvider } from "../appui-react";
 import { DefaultIModelServices } from "../appui-react/clientservices/DefaultIModelServices";
 import TestUtils, { mockUserInfo, storageMock } from "./TestUtils";
-import { LocalSettingsStorage, UiSettingsStorage } from "@itwin/ui-core-react";
+import { LocalSettingsStorage, UiSettingsStorage } from "@itwin/core-react";
 import { OpenSettingsTool } from "../appui-react/tools/OpenSettingsTool";
 
 describe("UiFramework localStorage Wrapper", () => {

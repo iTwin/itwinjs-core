@@ -9,7 +9,7 @@
 import "./Toolbar.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, flattenChildren, NoChildrenProps } from "@itwin/ui-core-react";
+import { CommonProps, flattenChildren, NoChildrenProps } from "@itwin/core-react";
 import { Direction, DirectionHelpers, OrthogonalDirection, OrthogonalDirectionHelpers } from "../utilities/Direction";
 import { Items } from "./Items";
 

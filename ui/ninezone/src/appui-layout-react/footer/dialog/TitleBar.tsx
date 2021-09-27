@@ -9,7 +9,7 @@
 import "./TitleBar.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@itwin/ui-core-react";
+import { CommonProps } from "@itwin/core-react";
 
 /** Properties of [[TitleBar]] component.
  * @beta

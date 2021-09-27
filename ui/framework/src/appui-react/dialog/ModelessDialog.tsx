@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { Dialog, DialogProps } from "@itwin/ui-core-react";
+import { Dialog, DialogProps } from "@itwin/core-react";
 import { ModelessDialogManager } from "./ModelessDialogManager";
 
 /** Properties for the [[ModelessDialog]] component

@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { AbstractMenuItemProps, ConditionalBooleanValue, UiError } from "@itwin/appui-abstract";
-import { ContextMenuItem, ContextSubMenu, IconSpec } from "@itwin/ui-core-react";
+import { ContextMenuItem, ContextSubMenu, IconSpec } from "@itwin/core-react";
 import { UiFramework } from "../UiFramework";
 import { ActionButtonItemDef } from "./ActionButtonItemDef";
 import { CommandItemDef } from "./CommandItemDef";

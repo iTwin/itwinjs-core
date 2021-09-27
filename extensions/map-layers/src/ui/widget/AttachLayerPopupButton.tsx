@@ -5,7 +5,7 @@
 import * as React from "react";
 import { IModelApp, MapLayerSettingsService, MapLayerSource, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
 import { RelativePosition } from "@itwin/appui-abstract";
-import * as UiCore from "@itwin/ui-core-react";
+import * as UiCore from "@itwin/core-react";
 import { ModalDialogManager } from "@itwin/appui-react";
 import { useSourceMapContext } from "./MapLayerManager";
 import { MapUrlDialog } from "./MapUrlDialog";

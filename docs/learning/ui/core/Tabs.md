@@ -1,11 +1,11 @@
 # Tabs
 
-The [Tabs]($ui-core-react:Tabs) category in the `@bentley/ui-core` package includes
-the [HorizontalTabs]($ui-core-react) and [VerticalTabs]($ui-core-react) components.
+The [Tabs]($core-react:Tabs) category in the `@bentley/ui-core` package includes
+the [HorizontalTabs]($core-react) and [VerticalTabs]($core-react) components.
 
 ## Properties
 
-The [TabsProps]($ui-core-react) interface specifies the properties for both the
+The [TabsProps]($core-react) interface specifies the properties for both the
 HorizontalTabs and VerticalTabs components.
 
 The `labels` prop is required and specifies the text shown for each tab.
@@ -48,4 +48,4 @@ The `green` prop indicates whether the bar on the active tab is green instead of
 
 ## API Reference
 
-- [Tabs]($ui-core-react:Tabs)
+- [Tabs]($core-react:Tabs)

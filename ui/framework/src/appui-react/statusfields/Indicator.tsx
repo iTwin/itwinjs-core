@@ -10,7 +10,7 @@ import "./Indicator.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { ConditionalStringValue } from "@itwin/appui-abstract";
-import { CommonProps, Icon } from "@itwin/ui-core-react";
+import { CommonProps, Icon } from "@itwin/core-react";
 
 /** Properties of [[Indicator]] component. */
 interface IndicatorProps extends CommonProps {

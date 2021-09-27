@@ -8,17 +8,17 @@ import { VariableSizeList } from "react-window";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import { PropertyRecord } from "@itwin/appui-abstract";
-import { CheckBoxState } from "@itwin/ui-core-react";
+import { CheckBoxState } from "@itwin/core-react";
 import { render } from "@testing-library/react";
-import { SelectionMode } from "../../../../ui-components-react/common/selection/SelectionModes";
-import { ControlledTree, ControlledTreeProps } from "../../../../ui-components-react/tree/controlled/component/ControlledTree";
-import { from } from "../../../../ui-components-react/tree/controlled/Observable";
-import { TreeEvents } from "../../../../ui-components-react/tree/controlled/TreeEvents";
-import { MutableTreeModelNode, TreeModel } from "../../../../ui-components-react/tree/controlled/TreeModel";
-import { ITreeNodeLoader } from "../../../../ui-components-react/tree/controlled/TreeNodeLoader";
-import { HighlightableTreeProps, HighlightingEngine } from "../../../../ui-components-react/tree/HighlightingEngine";
+import { SelectionMode } from "../../../../components-react/common/selection/SelectionModes";
+import { ControlledTree, ControlledTreeProps } from "../../../../components-react/tree/controlled/component/ControlledTree";
+import { from } from "../../../../components-react/tree/controlled/Observable";
+import { TreeEvents } from "../../../../components-react/tree/controlled/TreeEvents";
+import { MutableTreeModelNode, TreeModel } from "../../../../components-react/tree/controlled/TreeModel";
+import { ITreeNodeLoader } from "../../../../components-react/tree/controlled/TreeNodeLoader";
+import { HighlightableTreeProps, HighlightingEngine } from "../../../../components-react/tree/HighlightingEngine";
 import TestUtils from "../../../TestUtils";
-import { SparseArray } from "../../../../ui-components-react/tree/controlled/internal/SparseTree";
+import { SparseArray } from "../../../../components-react/tree/controlled/internal/SparseTree";
 
 describe("ControlledTree", () => {
   const nodeLoaderMock = moq.Mock.ofType<ITreeNodeLoader>();

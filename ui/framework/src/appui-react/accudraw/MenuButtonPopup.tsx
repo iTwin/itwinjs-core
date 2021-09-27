@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { Size, SizeProps } from "@itwin/ui-core-react";
+import { Size, SizeProps } from "@itwin/core-react";
 import { PopupManager, PopupPropsBase } from "../popup/PopupManager";
 import { MenuButton } from "./MenuButton";
 

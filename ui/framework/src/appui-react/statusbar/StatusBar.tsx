@@ -8,7 +8,7 @@
 
 import "./StatusBar.scss";
 import * as React from "react";
-import { CommonDivProps, CommonProps, Div } from "@itwin/ui-core-react";
+import { CommonDivProps, CommonProps, Div } from "@itwin/core-react";
 import { Footer } from "@itwin/appui-layout-react";
 import { ActivityMessageEventArgs, MessageAddedEventArgs, MessageManager } from "../messages/MessageManager";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";

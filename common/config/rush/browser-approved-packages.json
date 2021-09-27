@@ -375,15 +375,15 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
-      "name": "@itwin/ui-components-react",
+      "name": "@itwin/components-react",
       "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
     },
     {
-      "name": "@itwin/ui-core-react",
+      "name": "@itwin/core-react",
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
-      "name": "@itwin/ui-imodel-components-react",
+      "name": "@itwin/imodel-components-react",
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {

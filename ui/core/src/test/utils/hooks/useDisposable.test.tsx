@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { IDisposable } from "@itwin/core-bentley";
 import { renderHook } from "@testing-library/react-hooks";
-import { useDisposable } from "../../../ui-core-react/utils/hooks/useDisposable";
+import { useDisposable } from "../../../core-react/utils/hooks/useDisposable";
 
 describe("useDisposable", () => {
   let disposeSpy: sinon.SinonSpy<any, any[]>;

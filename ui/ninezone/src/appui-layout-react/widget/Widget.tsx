@@ -9,7 +9,7 @@
 import "./Widget.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, Rectangle, SizeProps } from "@itwin/ui-core-react";
+import { CommonProps, Rectangle, SizeProps } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { useDragWidget, UseDragWidgetArgs } from "../base/DragManager";
 import { getUniqueId, MeasureContext, NineZoneDispatchContext, TabsStateContext } from "../base/NineZone";

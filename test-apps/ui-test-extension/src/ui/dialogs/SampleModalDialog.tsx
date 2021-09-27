@@ -6,7 +6,7 @@ import * as React from "react";
 
 import { ModalDialogManager } from "@itwin/appui-react";
 import { TraceUiItemsProvider } from "../NetworkTraceUIProvider";
-import { Dialog } from "@itwin/ui-core-react";
+import { Dialog } from "@itwin/core-react";
 import { DialogButtonType } from "@itwin/appui-abstract";
 
 /**

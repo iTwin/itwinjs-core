@@ -8,7 +8,7 @@ import { fireEvent, render } from "@testing-library/react";
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { QuantityNumberInput } from "../../ui-imodel-components-react/inputs/QuantityNumberInput";
+import { QuantityNumberInput } from "../../imodel-components-react/inputs/QuantityNumberInput";
 import TestUtils from "../TestUtils";
 
 // cSpell:ignore decrementor QuantityNumberInput

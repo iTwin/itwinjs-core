@@ -9,7 +9,7 @@
 import * as React from "react";
 import widgetIconSvg from "@bentley/icons-generic/icons/home.svg?sprite";
 import { IconSpecUtilities } from "@itwin/appui-abstract";
-import { CommonProps, Icon, useProximityToMouse, useWidgetOpacityContext, WidgetElementSet, WidgetOpacityContext } from "@itwin/ui-core-react";
+import { CommonProps, Icon, useProximityToMouse, useWidgetOpacityContext, WidgetElementSet, WidgetOpacityContext } from "@itwin/core-react";
 import { AppButton, ToolsArea } from "@itwin/appui-layout-react";
 import { BackstageManager } from "../backstage/BackstageManager";
 import { useFrameworkVersion } from "../hooks/useFrameworkVersion";

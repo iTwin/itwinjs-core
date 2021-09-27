@@ -53,7 +53,7 @@ export class ViewportContent extends ViewportContentControl {
 }
 ```
 
-**Note:** It is important to provide a `viewportRef` Prop to the [ViewportComponent]($ui-imodel-components-react) implementation.
+**Note:** It is important to provide a `viewportRef` Prop to the [ViewportComponent]($imodel-components-react) implementation.
 The `viewportRef` function should set `this.viewport`. This is important in determining when the Frontstage is ready for use.
 
 ```js

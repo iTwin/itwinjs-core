@@ -8,8 +8,8 @@
 
 import { LabelDefinition, Node, NodeKey, PartialNode, PageOptions as PresentationPageOptions } from "@itwin/presentation-common";
 import { PropertyRecord } from "@itwin/appui-abstract";
-import { DelayLoadedTreeNodeItem, ItemColorOverrides, ItemStyle, PageOptions as UiPageOptions } from "@itwin/ui-components-react";
-import { CheckBoxState } from "@itwin/ui-core-react";
+import { DelayLoadedTreeNodeItem, ItemColorOverrides, ItemStyle, PageOptions as UiPageOptions } from "@itwin/components-react";
+import { CheckBoxState } from "@itwin/core-react";
 import { StyleHelper } from "../common/StyleHelper";
 import { createLabelRecord } from "../common/Utils";
 

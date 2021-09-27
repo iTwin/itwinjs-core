@@ -18,9 +18,9 @@ import {
   ActionButtonRendererProps, CompositeFilterType, CompositePropertyDataFilterer, DisplayValuePropertyDataFilterer, FilteredPropertyData,
   FilteringInput, FilteringInputStatus, FilteringPropertyDataProvider, LabelPropertyDataFilterer, PropertyCategory, PropertyCategoryLabelFilterer,
   PropertyData, PropertyGridContextMenuArgs, useAsyncValue, useDebouncedAsyncValue, VirtualizedPropertyGridWithDataProvider,
-} from "@itwin/ui-components-react";
-import { HighlightInfo } from "@itwin/ui-components-react/lib/ui-components-react/common/HighlightingComponentProps";
-import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Orientation, useDisposable } from "@itwin/ui-core-react";
+} from "@itwin/components-react";
+import { HighlightInfo } from "@itwin/components-react/lib/components-react/common/HighlightingComponentProps";
+import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Orientation, useDisposable } from "@itwin/core-react";
 import { ToggleSwitch } from "@itwin/itwinui-react";
 import { DiagnosticsSelector } from "../diagnostics-selector/DiagnosticsSelector";
 

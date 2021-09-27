@@ -10,8 +10,8 @@ import { IModelConnection, SpatialModelState } from "@itwin/core-frontend";
 import { RegisteredRuleset } from "@itwin/presentation-common";
 import { PresentationTreeDataProvider } from "@itwin/presentation-components";
 import { Presentation } from "@itwin/presentation-frontend";
-import { DelayLoadedTreeNodeItem, TreeNodeItem } from "@itwin/ui-components-react";
-import { CheckBoxState, CheckListBox, CheckListBoxItem, LoadingSpinner } from "@itwin/ui-core-react";
+import { DelayLoadedTreeNodeItem, TreeNodeItem } from "@itwin/components-react";
+import { CheckBoxState, CheckListBox, CheckListBoxItem, LoadingSpinner } from "@itwin/core-react";
 import { UiFramework } from "@itwin/appui-react";
 import { Button, Checkbox } from "@itwin/itwinui-react";
 

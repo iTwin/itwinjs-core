@@ -6,12 +6,12 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "typemoq";
 import { PropertyRecord } from "@itwin/appui-abstract";
-import { CheckBoxState } from "@itwin/ui-core-react";
-import { SparseArray, SparseTree } from "../../../ui-components-react/tree/controlled/internal/SparseTree";
+import { CheckBoxState } from "@itwin/core-react";
+import { SparseArray, SparseTree } from "../../../components-react/tree/controlled/internal/SparseTree";
 import {
   computeVisibleNodes, isTreeModelNode, isTreeModelNodePlaceholder, isTreeModelRootNode, MutableTreeModel, MutableTreeModelNode, TreeModel,
   TreeModelNode, TreeModelNodeInput, TreeModelNodePlaceholder, TreeModelRootNode,
-} from "../../../ui-components-react/tree/controlled/TreeModel";
+} from "../../../components-react/tree/controlled/TreeModel";
 import { createRandomMutableTreeModelNode } from "./RandomTreeNodesHelpers";
 
 const createTreeModelNode = (parentNode: TreeModelNode | TreeModelRootNode, input: TreeModelNodeInput): MutableTreeModelNode => {

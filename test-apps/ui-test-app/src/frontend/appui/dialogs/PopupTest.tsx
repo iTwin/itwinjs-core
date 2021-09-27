@@ -5,7 +5,7 @@
 import "./PopupTest.scss";
 import * as React from "react";
 import { DialogButtonType, RelativePosition } from "@itwin/appui-abstract";
-import { Dialog, Popup } from "@itwin/ui-core-react";
+import { Dialog, Popup } from "@itwin/core-react";
 import { ModalDialogManager } from "@itwin/appui-react";
 import { Button, ToggleSwitch } from "@itwin/itwinui-react";
 

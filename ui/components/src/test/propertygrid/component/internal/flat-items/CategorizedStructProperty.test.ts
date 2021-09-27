@@ -5,9 +5,9 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import { PropertyRecord } from "@itwin/appui-abstract";
-import { MutableCategorizedStructProperty } from "../../../../../ui-components-react/propertygrid/internal/flat-items/MutableCategorizedStructProperty";
-import { FlatGridItemType } from "../../../../../ui-components-react/propertygrid/internal/flat-items/MutableFlatGridItem";
-import { MutableGridItemFactory } from "../../../../../ui-components-react/propertygrid/internal/flat-items/MutableGridItemFactory";
+import { MutableCategorizedStructProperty } from "../../../../../components-react/propertygrid/internal/flat-items/MutableCategorizedStructProperty";
+import { FlatGridItemType } from "../../../../../components-react/propertygrid/internal/flat-items/MutableFlatGridItem";
+import { MutableGridItemFactory } from "../../../../../components-react/propertygrid/internal/flat-items/MutableGridItemFactory";
 import TestUtils from "../../../../TestUtils";
 import { FlatGridTestUtils as GridUtils } from "./FlatGridTestUtils";
 

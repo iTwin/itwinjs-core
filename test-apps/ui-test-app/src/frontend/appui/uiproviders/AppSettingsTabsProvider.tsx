@@ -5,7 +5,7 @@
 import * as React from "react";
 
 import { getQuantityFormatsSettingsManagerEntry, getUiSettingsManagerEntry, UiFramework } from "@itwin/appui-react";
-import { SettingsTabEntry, SettingsTabsProvider } from "@itwin/ui-core-react";
+import { SettingsTabEntry, SettingsTabsProvider } from "@itwin/core-react";
 import { AccudrawSettingsPageComponent } from "../frontstages/Settings";
 
 // Sample settings provider that dynamically adds settings into the setting stage
@@ -14,7 +14,7 @@ export class AppSettingsTabsProvider implements SettingsTabsProvider {
 
   public getSettingEntries(_stageId: string, _stageUsage: string): ReadonlyArray<SettingsTabEntry> | undefined {
     return [
-      getQuantityFormatsSettingsManagerEntry(10, {availableUnitSystems:new Set(["metric","imperial","usSurvey"])}),
+      getQuantityFormatsSettingsManagerEntry(10, { availableUnitSystems: new Set(["metric", "imperial", "usSurvey"]) }),
       {
         itemPriority: 20, tabId: "ui-test-app:Accudraw", label: "Accudraw",
         page: <AccudrawSettingsPageComponent />,

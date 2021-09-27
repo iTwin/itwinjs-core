@@ -8,7 +8,7 @@ import { BeDuration } from "@itwin/core-bentley";
 import { OutputMessagePriority } from "@itwin/core-frontend";
 import { RelativePosition } from "@itwin/appui-abstract";
 import { isReactNotifyMessageDetails, ReactNotifyMessageDetails } from "../../appui-react";
-import { isReactMessage } from "@itwin/ui-core-react";
+import { isReactMessage } from "@itwin/core-react";
 
 describe("ReactNotifyMessageDetails", () => {
 

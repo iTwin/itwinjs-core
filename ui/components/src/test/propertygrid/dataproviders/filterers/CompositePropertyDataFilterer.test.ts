@@ -8,11 +8,11 @@ import * as moq from "typemoq";
 import { PropertyRecord } from "@itwin/appui-abstract";
 import {
   CompositeFilterType, CompositePropertyDataFilterer,
-} from "../../../../ui-components-react/propertygrid/dataproviders/filterers/CompositePropertyDataFilterer";
+} from "../../../../components-react/propertygrid/dataproviders/filterers/CompositePropertyDataFilterer";
 import {
   FilteredType, IPropertyDataFilterer, PropertyFilterChangeEvent,
-} from "../../../../ui-components-react/propertygrid/dataproviders/filterers/PropertyDataFiltererBase";
-import { PropertyCategory } from "../../../../ui-components-react/propertygrid/PropertyDataProvider";
+} from "../../../../components-react/propertygrid/dataproviders/filterers/PropertyDataFiltererBase";
+import { PropertyCategory } from "../../../../components-react/propertygrid/PropertyDataProvider";
 import { TestUtils } from "../../../TestUtils";
 
 describe("CompositePropertyDataFilterer", () => {

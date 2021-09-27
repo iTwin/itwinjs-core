@@ -11,7 +11,7 @@ import * as ReactDOM from "react-dom";
 import { PointProps } from "@itwin/appui-abstract";
 import {
   Button, ButtonProps, ButtonType, Omit, Point, Rectangle, RectangleProps, Size, SizeProps, withOnOutsideClick, withTimeout,
-} from "@itwin/ui-core-react";
+} from "@itwin/core-react";
 import {
   Backstage,
   BackstageItem,

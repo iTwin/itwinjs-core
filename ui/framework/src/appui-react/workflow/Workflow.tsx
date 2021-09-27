@@ -9,7 +9,7 @@
 /* eslint-disable deprecation/deprecation */
 
 import { Logger } from "@itwin/core-bentley";
-import { UiEvent } from "@itwin/ui-core-react";
+import { UiEvent } from "@itwin/core-react";
 import { ItemDefBase } from "../shared/ItemDefBase";
 import { ItemProps } from "../shared/ItemProps";
 import { UiFramework } from "../UiFramework";

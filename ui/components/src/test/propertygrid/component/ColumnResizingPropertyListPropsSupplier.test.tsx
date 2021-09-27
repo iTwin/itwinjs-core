@@ -7,9 +7,9 @@ import { mount } from "enzyme";
 import * as React from "react";
 import sinon from "sinon";
 import { PropertyRecord } from "@itwin/appui-abstract";
-import { Orientation } from "@itwin/ui-core-react";
-import { ColumnResizingPropertyListPropsSupplier } from "../../../ui-components-react/propertygrid/component/ColumnResizingPropertyListPropsSupplier";
-import { PropertyList } from "../../../ui-components-react/propertygrid/component/PropertyList";
+import { Orientation } from "@itwin/core-react";
+import { ColumnResizingPropertyListPropsSupplier } from "../../../components-react/propertygrid/component/ColumnResizingPropertyListPropsSupplier";
+import { PropertyList } from "../../../components-react/propertygrid/component/PropertyList";
 import TestUtils from "../../TestUtils";
 
 describe("ColumnResizingPropertyListPropsSupplier", () => {

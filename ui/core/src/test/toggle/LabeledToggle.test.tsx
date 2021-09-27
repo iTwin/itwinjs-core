@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { LabeledToggle } from "../../ui-core-react";
+import { LabeledToggle } from "../../core-react";
 
 /* eslint-disable deprecation/deprecation */
 

@@ -6,7 +6,7 @@
  * @module Settings
  */
 
-import { UiSetting, UiSettingsStorage } from "@itwin/ui-core-react";
+import { UiSetting, UiSettingsStorage } from "@itwin/core-react";
 import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework, UserSettingsProvider } from "../UiFramework";
 

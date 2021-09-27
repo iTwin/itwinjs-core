@@ -10,7 +10,7 @@ import { BeDuration } from "@itwin/core-bentley";
 import { Point2d, XAndY } from "@itwin/core-geometry";
 import { NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 import { RelativePosition } from "@itwin/appui-abstract";
-import { MessageType } from "@itwin/ui-core-react";
+import { MessageType } from "@itwin/core-react";
 
 /** Types for message in [[MessageManager]]
  * @public

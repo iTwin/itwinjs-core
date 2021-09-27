@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { ReactWrapper, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Icon } from "@itwin/ui-core-react";
+import { Icon } from "@itwin/core-react";
 import { Calculator } from "../../appui-react/accudraw/Calculator";
 import { CalculatorEngine, CalculatorOperator } from "../../appui-react/accudraw/CalculatorEngine";
 import { mount } from "../TestUtils";

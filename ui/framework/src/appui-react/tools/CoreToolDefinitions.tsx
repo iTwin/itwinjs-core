@@ -14,7 +14,7 @@ import {
   WalkViewTool, WindowAreaTool, ZoomViewTool,
 } from "@itwin/core-frontend";
 import { ConditionalBooleanValue, ConditionalStringValue } from "@itwin/appui-abstract";
-import { ToolbarPopupContext } from "@itwin/ui-components-react";
+import { ToolbarPopupContext } from "@itwin/components-react";
 import { PopupButton, PopupButtonChildrenRenderPropArgs } from "../toolbar/PopupButton";
 import { ContentViewManager } from "../content/ContentViewManager";
 import { KeyinBrowser } from "../keyinbrowser/KeyinBrowser";

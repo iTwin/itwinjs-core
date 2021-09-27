@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Rectangle, RectangleProps } from "@itwin/ui-core-react";
+import { Rectangle, RectangleProps } from "@itwin/core-react";
 import { getDefaultZoneManagerProps, ZoneManager, ZoneManagerFloatingProps, ZoneManagerProps } from "../../../appui-layout-react";
 
 describe("ZoneManager", () => {

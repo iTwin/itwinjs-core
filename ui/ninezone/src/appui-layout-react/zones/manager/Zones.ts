@@ -8,7 +8,7 @@
 
 import produce from "immer";
 import { PointProps } from "@itwin/appui-abstract";
-import { Point, Rectangle, RectangleProps } from "@itwin/ui-core-react";
+import { Point, Rectangle, RectangleProps } from "@itwin/core-react";
 import { Cell, CellProps } from "../../utilities/Cell";
 import { DisabledResizeHandles } from "../../utilities/DisabledResizeHandles";
 import { HorizontalAnchor, ResizeHandle, VerticalAnchor } from "../../widget/Stacked";

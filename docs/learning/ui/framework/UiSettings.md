@@ -4,9 +4,9 @@
 
 ## Settings Storage
 
-Settings that are set up to be stored between "session" need to be stored and retrieved from some storage location. There are two provided storage locations that will serve that purpose. [LocalSettingsStorage]($ui-core-react) will use browser localStorage. [UserSettingsStorage]($appui-react) will use the Product Settings Service available through IModelApp.settings. Please note that UserSettingsStorage requires the user to be logged-in to have access to this storage.
+Settings that are set up to be stored between "session" need to be stored and retrieved from some storage location. There are two provided storage locations that will serve that purpose. [LocalSettingsStorage]($core-react) will use browser localStorage. [UserSettingsStorage]($appui-react) will use the Product Settings Service available through IModelApp.settings. Please note that UserSettingsStorage requires the user to be logged-in to have access to this storage.
 
-If an application wants to store settings only for the current session [SessionSettingsStorage]($ui-core-react) is available.
+If an application wants to store settings only for the current session [SessionSettingsStorage]($core-react) is available.
 
 An application can choose to create and register their own class that implements the [UiSettingsStorage](ui-core) interface, if a custom storage location is desired for UI Settings.
 
@@ -84,15 +84,15 @@ The [FrameworkVersion]($appui-react) component defines the version context that 
 
 ### Quantity Formatting Settings
 
-  The [QuantityFormatSettingsPage]($appui-react) component provides the UI to set both the [PresentationManager.activeUnitSystem]($presentation-frontend) and formatting overrides in the [QuantityFormatter]($frontend). This component can be used in the new [SettingsContainer]($ui-core-react) UI component. The function `getQuantityFormatsSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core-react) for use by the [SettingsManager]($ui-core-react).
+  The [QuantityFormatSettingsPage]($appui-react) component provides the UI to set both the [PresentationManager.activeUnitSystem]($presentation-frontend) and formatting overrides in the [QuantityFormatter]($frontend). This component can be used in the new [SettingsContainer]($core-react) UI component. The function `getQuantityFormatsSettingsManagerEntry` will return a [SettingsTabEntry]($core-react) for use by the [SettingsManager]($core-react).
 
 ### User Interface Settings
 
-  The [UiSettingsPage]($appui-react) component provides the UI to set general UI settings that effect the look and feel of the App UI user interface. This component can be used in the new [SettingsContainer]($ui-core-react) UI component. The function `getUiSettingsManagerEntry` will return a [SettingsTabEntry]($ui-core-react) for use by the [SettingsManager]($ui-core-react).
+  The [UiSettingsPage]($appui-react) component provides the UI to set general UI settings that effect the look and feel of the App UI user interface. This component can be used in the new [SettingsContainer]($core-react) UI component. The function `getUiSettingsManagerEntry` will return a [SettingsTabEntry]($core-react) for use by the [SettingsManager]($core-react).
 
 ### Settings stage
 
-UI and Quantity Settings as well as other settings can be present to the user for editing using the stage [SettingsModalFrontstage]($appui-react). This stage will display all [SettingsTabEntry]($ui-core-react) entries that are provided via [SettingsTabsProvider]($ui-core-react) classes. `SettingsTabsProvider` classes can be registered with the [SettingsManager]($ui-core-react) by the host application, package, or extension loaded into an IModelApp using the App UI user interface. The steps to add a settings stage include.
+UI and Quantity Settings as well as other settings can be present to the user for editing using the stage [SettingsModalFrontstage]($appui-react). This stage will display all [SettingsTabEntry]($core-react) entries that are provided via [SettingsTabsProvider]($core-react) classes. `SettingsTabsProvider` classes can be registered with the [SettingsManager]($core-react) by the host application, package, or extension loaded into an IModelApp using the App UI user interface. The steps to add a settings stage include.
 
 #### Adding a backstage item
 
@@ -118,7 +118,7 @@ export function AppBackstageComposerComponent({ userInfo }: AppBackstageComposer
 
 #### Defining a SettingsTabsProvider
 
-Below is an example [SettingsTabsProvider]($ui-core-react) class that adds two settings pages, one for Units Formatting and the other for UI Settings. In the `AppUiSettings` example above the call to the static method [AppSettingsTabsProvider.initializeAppSettingProvider] is called to add this provider with the SettingsManager instance held by UiFramework.
+Below is an example [SettingsTabsProvider]($core-react) class that adds two settings pages, one for Units Formatting and the other for UI Settings. In the `AppUiSettings` example above the call to the static method [AppSettingsTabsProvider.initializeAppSettingProvider] is called to add this provider with the SettingsManager instance held by UiFramework.
 
 ```tsx
 export class AppSettingsTabsProvider implements SettingsTabsProvider {

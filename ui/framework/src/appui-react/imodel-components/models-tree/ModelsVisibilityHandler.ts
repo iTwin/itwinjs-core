@@ -11,7 +11,7 @@ import { IModelConnection, PerModelCategoryVisibility, Viewport } from "@itwin/c
 import { ContentFlags, ECClassGroupingNodeKey, GroupingNodeKey, Keys, KeySet, NodeKey } from "@itwin/presentation-common";
 import { ContentDataProvider, IFilteredPresentationTreeDataProvider, IPresentationTreeDataProvider } from "@itwin/presentation-components";
 import { Presentation } from "@itwin/presentation-frontend";
-import { TreeNodeItem } from "@itwin/ui-components-react";
+import { TreeNodeItem } from "@itwin/components-react";
 import { UiFramework } from "../../UiFramework";
 import { IVisibilityHandler, VisibilityChangeListener, VisibilityStatus } from "../VisibilityTreeEventHandler";
 

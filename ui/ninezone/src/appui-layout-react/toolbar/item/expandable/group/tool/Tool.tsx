@@ -9,7 +9,7 @@
 import "./Tool.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, useTargeted } from "@itwin/ui-core-react";
+import { CommonProps, useTargeted } from "@itwin/core-react";
 
 /** Properties of [[GroupTool]] component.
  * @alpha

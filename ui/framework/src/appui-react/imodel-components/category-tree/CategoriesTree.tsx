@@ -12,8 +12,8 @@ import { IModelApp, IModelConnection, SpatialViewState, ViewManager, Viewport } 
 import { Ruleset } from "@itwin/presentation-common";
 import { IPresentationTreeDataProvider, usePresentationTreeNodeLoader } from "@itwin/presentation-components";
 import { Presentation } from "@itwin/presentation-frontend";
-import { ControlledTree, SelectionMode, useTreeModel } from "@itwin/ui-components-react";
-import { useDisposable } from "@itwin/ui-core-react";
+import { ControlledTree, SelectionMode, useTreeModel } from "@itwin/components-react";
+import { useDisposable } from "@itwin/core-react";
 import { UiFramework } from "../../UiFramework";
 import { VisibilityTreeFilterInfo } from "../Common";
 import { VisibilityTreeEventHandler } from "../VisibilityTreeEventHandler";

@@ -8,7 +8,7 @@
 
 import produce, { Draft } from "immer";
 import { StagePanelLocation, StagePanelSection } from "@itwin/appui-abstract";
-import { UiEvent } from "@itwin/ui-core-react";
+import { UiEvent } from "@itwin/core-react";
 import { NineZoneState, PanelSide } from "@itwin/appui-layout-react";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { WidgetDef } from "../widgets/WidgetDef";

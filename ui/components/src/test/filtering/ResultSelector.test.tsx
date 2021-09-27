@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as enzyme from "enzyme";
 import * as React from "react";
-import { ResultSelector } from "../../ui-components-react/filtering/ResultSelector";
+import { ResultSelector } from "../../components-react/filtering/ResultSelector";
 import { SpecialKey } from "@itwin/appui-abstract";
 
 describe("ResultSelector", () => {

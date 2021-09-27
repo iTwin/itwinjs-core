@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { Subheading } from "../../ui-core-react";
+import { Subheading } from "../../core-react";
 
 /* eslint-disable deprecation/deprecation */
 

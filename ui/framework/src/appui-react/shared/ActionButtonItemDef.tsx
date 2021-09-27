@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { CommandHandler, OnItemExecutedFunc } from "@itwin/appui-abstract";
-import { Orientation, SizeProps } from "@itwin/ui-core-react";
+import { Orientation, SizeProps } from "@itwin/core-react";
 import { ActionItemButton } from "../toolbar/ActionItemButton";
 import { ItemDefBase } from "./ItemDefBase";
 import { ItemProps } from "./ItemProps";

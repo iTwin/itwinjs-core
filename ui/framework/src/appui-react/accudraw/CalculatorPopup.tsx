@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { OnCancelFunc, OnNumberCommitFunc } from "@itwin/appui-abstract";
-import { DivWithOutsideClick, Icon, Size, SizeProps } from "@itwin/ui-core-react";
+import { DivWithOutsideClick, Icon, Size, SizeProps } from "@itwin/core-react";
 import { PopupManager, PopupPropsBase } from "../popup/PopupManager";
 import { PositionPopup, PositionPopupContent } from "../popup/PositionPopup";
 import { Calculator } from "./Calculator";

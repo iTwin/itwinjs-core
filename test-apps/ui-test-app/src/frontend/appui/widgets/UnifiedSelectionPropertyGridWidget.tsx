@@ -12,10 +12,10 @@ import { FavoritePropertiesScope, Presentation } from "@itwin/presentation-front
 import {
   ActionButtonRendererProps, PropertyGridContextMenuArgs, useAsyncValue, VirtualizedPropertyGridWithDataProvider,
   VirtualizedPropertyGridWithDataProviderProps,
-} from "@itwin/ui-components-react";
+} from "@itwin/components-react";
 import {
   ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Icon, Orientation, ResizableContainerObserver,
-} from "@itwin/ui-core-react";
+} from "@itwin/core-react";
 import { ConfigurableCreateInfo, ConfigurableUiManager, FrameworkVersionSwitch, WidgetControl } from "@itwin/appui-react";
 
 export class UnifiedSelectionPropertyGridWidgetControl extends WidgetControl {

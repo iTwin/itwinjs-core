@@ -10,7 +10,7 @@
 
 import "./AnalysisAnimationToolSettings.scss";
 import * as React from "react";
-import { Icon } from "@itwin/ui-core-react";
+import { Icon } from "@itwin/core-react";
 import { ConfigurableCreateInfo, ContentViewManager, ToolUiProvider } from "@itwin/appui-react";
 import { Direction, Item, Toolbar } from "@itwin/appui-layout-react";
 import { IModelApp } from "@itwin/core-frontend";

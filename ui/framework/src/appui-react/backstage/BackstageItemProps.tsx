@@ -7,7 +7,7 @@
  */
 
 import { StringGetter } from "@itwin/appui-abstract";
-import { IconProps, IconSpec } from "@itwin/ui-core-react";
+import { IconProps, IconSpec } from "@itwin/core-react";
 import { BackstageItemUtilities } from "./BackstageItemUtilities";
 
 /** Base properties for a [[Backstage]] item.

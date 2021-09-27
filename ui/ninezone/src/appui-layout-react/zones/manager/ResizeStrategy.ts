@@ -6,7 +6,7 @@
  * @module Zone
  */
 
-import { Rectangle, RectangleProps } from "@itwin/ui-core-react";
+import { Rectangle, RectangleProps } from "@itwin/core-react";
 import { HorizontalAnchor } from "../../widget/Stacked";
 import { WidgetZoneId, ZonesManager, ZonesManagerProps } from "./Zones";
 

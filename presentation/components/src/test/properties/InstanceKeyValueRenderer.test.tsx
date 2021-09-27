@@ -8,7 +8,7 @@ import sinon from "sinon";
 import { IModelApp, IModelConnection, NoRenderApp } from "@itwin/core-frontend";
 import { Presentation, SelectionManager } from "@itwin/presentation-frontend";
 import { Primitives, PrimitiveValue, PropertyRecord, PropertyValue, PropertyValueFormat } from "@itwin/appui-abstract";
-import { TypeConverter, TypeConverterManager } from "@itwin/ui-components-react";
+import { TypeConverter, TypeConverterManager } from "@itwin/components-react";
 import { act, cleanup, render } from "@testing-library/react";
 import { InstanceKeyValueRenderer } from "../../presentation-components/properties/InstanceKeyValueRenderer";
 import { UnifiedSelectionContextProvider } from "../../presentation-components/unified-selection/UnifiedSelectionContext";

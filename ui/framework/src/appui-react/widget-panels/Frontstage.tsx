@@ -14,7 +14,7 @@ import produce, { castDraft, Draft } from "immer";
 import * as React from "react";
 import { assert, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { StagePanelLocation, UiItemsManager, WidgetState } from "@itwin/appui-abstract";
-import { Size, SizeProps, UiSettingsResult, UiSettingsStatus } from "@itwin/ui-core-react";
+import { Size, SizeProps, UiSettingsResult, UiSettingsStatus } from "@itwin/core-react";
 import {
   addPanelWidget, addTab, addWidgetTabToFloatingPanel, convertAllPopupWidgetContainersToFloating, createNineZoneState, createTabsState, createTabState,
   createWidgetState, findTab, findWidget, floatingWidgetBringToFront, FloatingWidgetHomeState, FloatingWidgets, getUniqueId, isFloatingLocation,

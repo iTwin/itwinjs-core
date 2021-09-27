@@ -9,7 +9,7 @@
 import "./Back.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { NoChildrenProps, OmitChildrenProp } from "@itwin/ui-core-react";
+import { NoChildrenProps, OmitChildrenProp } from "@itwin/core-react";
 import { ToolbarIcon, ToolbarIconProps } from "./Icon";
 
 /** Properties of [[BackButton]] component.

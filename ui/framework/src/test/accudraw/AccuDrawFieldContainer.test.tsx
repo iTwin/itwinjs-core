@@ -9,7 +9,7 @@ import * as React from "react";
 import { ColorByName, ColorDef } from "@itwin/core-common";
 import { CompassMode, IModelApp, IModelAppOptions, ItemField, MockRender } from "@itwin/core-frontend";
 import { SpecialKey } from "@itwin/appui-abstract";
-import { Orientation } from "@itwin/ui-core-react";
+import { Orientation } from "@itwin/core-react";
 import TestUtils from "../TestUtils";
 import { FrameworkAccuDraw } from "../../appui-react/accudraw/FrameworkAccuDraw";
 import { AccuDrawFieldContainer } from "../../appui-react/accudraw/AccuDrawFieldContainer";

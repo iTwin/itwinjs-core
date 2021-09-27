@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { WidgetState } from "@itwin/appui-abstract";
-import { CommonProps, RectangleProps } from "@itwin/ui-core-react";
+import { CommonProps, RectangleProps } from "@itwin/core-react";
 import {
   DisabledResizeHandles, DraggedWidgetManagerProps, ToolSettingsWidgetManagerProps, ToolSettingsWidgetMode, WidgetManagerProps, WidgetZoneId,
   ZoneManagerProps, ZoneTargetType,

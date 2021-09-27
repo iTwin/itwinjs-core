@@ -9,7 +9,7 @@
 import "./MenuButton.scss";
 import * as React from "react";
 import { PointProps } from "@itwin/appui-abstract";
-import { ContextMenu, Icon, Size, SizeProps } from "@itwin/ui-core-react";
+import { ContextMenu, Icon, Size, SizeProps } from "@itwin/core-react";
 import { SquareButton, SquareButtonProps } from "./SquareButton";
 
 /** @alpha */

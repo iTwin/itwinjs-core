@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import "./ComponentExamples.scss";
 import * as React from "react";
-import { CommonProps, VerticalTabs } from "@itwin/ui-core-react";
+import { CommonProps, VerticalTabs } from "@itwin/core-react";
 import { ColorTheme, MessageManager, ModalFrontstageInfo, StatusMessageRenderer, UiFramework } from "@itwin/appui-react";
 import { ToggleSwitch } from "@itwin/itwinui-react";
 import { ComponentExamplesProvider } from "./ComponentExamplesProvider";

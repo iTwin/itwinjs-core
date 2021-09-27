@@ -9,7 +9,7 @@
 import "./Overflow.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, useRefs, useResizeObserver } from "@itwin/ui-core-react";
+import { CommonProps, useRefs, useResizeObserver } from "@itwin/core-react";
 import { Ellipsis } from "@itwin/appui-layout-react";
 import { UiFramework } from "../UiFramework";
 

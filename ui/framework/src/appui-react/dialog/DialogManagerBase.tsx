@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { UiEvent } from "@itwin/ui-core-react";
+import { UiEvent } from "@itwin/core-react";
 
 /** Dialog Stack Changed Event Args class.
  * @public

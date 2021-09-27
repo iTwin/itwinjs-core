@@ -7,8 +7,8 @@ import { mount } from "enzyme";
 import * as React from "react";
 import sinon from "sinon";
 import { PropertyRecord } from "@itwin/appui-abstract";
-import { ElementSeparator, Orientation } from "@itwin/ui-core-react";
-import { PropertyView } from "../../../ui-components-react";
+import { ElementSeparator, Orientation } from "@itwin/core-react";
+import { PropertyView } from "../../../components-react";
 import TestUtils from "../../TestUtils";
 
 describe("PropertyView", () => {

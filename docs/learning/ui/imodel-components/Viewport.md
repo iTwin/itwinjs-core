@@ -1,12 +1,12 @@
 # Viewport
 
-The [Viewport]($ui-imodel-components-react:Viewport) category in the `@bentley/ui-imodel-components` package includes
+The [Viewport]($imodel-components-react:Viewport) category in the `@bentley/ui-imodel-components` package includes
 classes and components for working with a Viewport.
 
 ## Component and Properties
 
-The [ViewportComponent]($ui-imodel-components-react) React component is wrapper for a [ScreenViewport]($core-frontend).
-The [ViewportProps]($ui-imodel-components-react) interface defines the properties for the ViewportComponent.
+The [ViewportComponent]($imodel-components-react) React component is wrapper for a [ScreenViewport]($core-frontend).
+The [ViewportProps]($imodel-components-react) interface defines the properties for the ViewportComponent.
 
 The `imodel` prop is required and specifies the [IModelConnection]($core-frontend) to display.
 
@@ -23,7 +23,7 @@ content view is ready.
 
 ### Simple Viewport Component
 
-This React component utilizes the [ViewportComponent]($ui-imodel-components-react) component and
+This React component utilizes the [ViewportComponent]($imodel-components-react) component and
 [viewWithUnifiedSelection]($presentation-components) HOC to
 create a HOC viewport component that supports unified selection.
 
@@ -71,4 +71,4 @@ const rulesetId = "Default";
 
 ## API Reference
 
-- [Viewport]($ui-imodel-components-react:Viewport)
+- [Viewport]($imodel-components-react:Viewport)

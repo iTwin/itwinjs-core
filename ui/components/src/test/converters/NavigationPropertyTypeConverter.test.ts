@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { PrimitiveValue } from "@itwin/appui-abstract";
 import { expect } from "chai";
-import { NavigationPropertyTypeConverter } from "../../ui-components-react/converters/NavigationPropertyTypeConverter";
+import { NavigationPropertyTypeConverter } from "../../components-react/converters/NavigationPropertyTypeConverter";
 import { TestUtils } from "../TestUtils";
 
 describe("NavigationPropertyTypeConverter", () => {

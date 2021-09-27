@@ -6,7 +6,7 @@ import "./Common.scss";
 import "./ProjectDialog.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { SearchBox } from "@itwin/ui-core-react";
+import { SearchBox } from "@itwin/core-react";
 import { ProgressRadial } from "@itwin/itwinui-react";
 import { ProjectTab, ProjectTabs } from "./ProjectTabs";
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";

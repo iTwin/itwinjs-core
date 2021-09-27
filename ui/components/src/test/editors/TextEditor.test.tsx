@@ -12,10 +12,10 @@ import {
   IconEditorParams, InputEditorSizeParams, MessageSeverity, PropertyConverterInfo, PropertyEditorInfo, PropertyEditorParamTypes,
   PropertyRecord, PropertyValue, SpecialKey,
 } from "@itwin/appui-abstract";
-import { TextEditor } from "../../ui-components-react/editors/TextEditor";
+import { TextEditor } from "../../components-react/editors/TextEditor";
 import TestUtils, { MineDataController } from "../TestUtils";
-import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components-react/editors/EditorContainer";
-import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components-react/editors/PropertyEditorManager";
+import { EditorContainer, PropertyUpdatedArgs } from "../../components-react/editors/EditorContainer";
+import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../components-react/editors/PropertyEditorManager";
 
 describe("<TextEditor />", () => {
   before(async () => {

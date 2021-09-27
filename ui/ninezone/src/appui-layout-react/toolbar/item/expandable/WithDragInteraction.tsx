@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { Point, Timer } from "@itwin/ui-core-react";
+import { Point, Timer } from "@itwin/core-react";
 import { Direction } from "../../../utilities/Direction";
 
 /** Properties of [[withDragInteraction]] HOC.

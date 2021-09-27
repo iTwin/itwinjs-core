@@ -19,7 +19,7 @@ import {
   BackstageItem, BackstageItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue, DialogButtonType,
   MessageSeverity, StandardContentLayouts, StatusBarSection, UiItemsManager, UiItemsProvider, WidgetState,
 } from "@itwin/appui-abstract";
-import { Dialog, ReactMessage, SvgPath, SvgSprite, UnderlinedButton } from "@itwin/ui-core-react";
+import { Dialog, ReactMessage, SvgPath, SvgSprite, UnderlinedButton } from "@itwin/core-react";
 import {
   Backstage, CommandItemDef, ContentGroup, ContentGroupProps, ContentLayoutManager, ContentProps, ContentViewManager,
   FrontstageManager, IModelViewportControl, MessageManager, ModalDialogManager, ReactNotifyMessageDetails,

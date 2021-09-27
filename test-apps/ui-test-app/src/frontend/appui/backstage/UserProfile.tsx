@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { UserInfo } from "@bentley/itwin-client";
-import { CommonProps, getUserColor } from "@itwin/ui-core-react";
+import { CommonProps, getUserColor } from "@itwin/core-react";
 import { UserProfile as NZ_UserProfile } from "@itwin/appui-layout-react";
 import { SignOutModalFrontstage } from "../oidc/SignOut";
 import { Backstage, FrontstageManager, SafeAreaContext, UiFramework } from "@itwin/appui-react";

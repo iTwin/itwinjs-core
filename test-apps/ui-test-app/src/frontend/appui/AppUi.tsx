@@ -20,7 +20,7 @@ import "./statusbars/AppStatusBar";
 import "./navigationaids/CubeExampleNavigationAid";
 import * as React from "react";
 import { BadgeType, ContentLayoutProps, FunctionKey, StagePanelLocation, StagePanelSection, StageUsage, StandardContentLayouts, WidgetState } from "@itwin/appui-abstract";
-import { FillCentered } from "@itwin/ui-core-react";
+import { FillCentered } from "@itwin/core-react";
 import { IModelApp } from "@itwin/core-frontend";
 
 import {

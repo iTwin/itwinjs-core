@@ -6,7 +6,7 @@ import "./ProjectDropdown.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { RelativePosition } from "@itwin/appui-abstract";
-import { Popup } from "@itwin/ui-core-react";
+import { Popup } from "@itwin/core-react";
 import { ITwin } from "@bentley/context-registry-client";
 import { ProjectDialog } from "./ProjectDialog";
 

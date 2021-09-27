@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { shallow } from "enzyme";
 import * as React from "react";
-import { ToolbarWithOverflow } from "@itwin/ui-components-react";
+import { ToolbarWithOverflow } from "@itwin/components-react";
 import { Direction, Toolbar } from "@itwin/appui-layout-react";
 import { ActionItemButton, CoreTools, FrontstageManager, ToolWidget, ToolWidgetComposer } from "../appui-react";
 import { ToolbarHelper } from "../appui-react/toolbar/ToolbarHelper";

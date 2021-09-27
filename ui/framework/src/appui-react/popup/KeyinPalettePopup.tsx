@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { OnCancelFunc, OnItemExecutedFunc, SpecialKey } from "@itwin/appui-abstract";
-import { DivWithOutsideClick, FocusTrap, Point, Size, SizeProps } from "@itwin/ui-core-react";
+import { DivWithOutsideClick, FocusTrap, Point, Size, SizeProps } from "@itwin/core-react";
 import { PositionPopup } from "./PositionPopup";
 import { KeyinPalettePanel } from "./KeyinPalettePanel";
 import { KeyinEntry } from "../uiadmin/FrameworkUiAdmin";

@@ -5,7 +5,7 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Point } from "@itwin/ui-core-react";
+import { Point } from "@itwin/core-react";
 import { Direction, getDragDistance, withDragInteraction } from "../../../../appui-layout-react";
 import { mount } from "../../../Utils";
 

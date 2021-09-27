@@ -12,7 +12,7 @@ import {
   NotifyMessageDetails, OutputMessagePriority, QuantityType, RotationMode,
 } from "@itwin/core-frontend";
 import { ConditionalBooleanValue } from "@itwin/appui-abstract";
-import { UiSettings, UiSettingsStatus } from "@itwin/ui-core-react";
+import { UiSettings, UiSettingsStatus } from "@itwin/core-react";
 import { UiFramework, UserSettingsProvider } from "../UiFramework";
 import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { AccuDrawUiSettings } from "./AccuDrawUiSettings";

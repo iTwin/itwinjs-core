@@ -10,7 +10,7 @@ import { NodeKey, RegisteredRuleset, Ruleset, VariableValue } from "@itwin/prese
 import { createRandomECInstancesNodeKey } from "@itwin/presentation-common/lib/test/_helpers/random";
 import { IModelContentChangeEventArgs, IModelHierarchyChangeEventArgs, PresentationManager, RulesetManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
 import { PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
-import { DelayLoadedTreeNodeItem } from "@itwin/ui-components-react";
+import { DelayLoadedTreeNodeItem } from "@itwin/components-react";
 import { PRESENTATION_TREE_NODE_KEY } from "../../presentation-components/tree/Utils";
 
 export const createRandomTreeNodeItem = (key?: NodeKey, parentId?: string): DelayLoadedTreeNodeItem => {

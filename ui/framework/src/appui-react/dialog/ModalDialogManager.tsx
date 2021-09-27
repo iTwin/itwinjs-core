@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { CommonProps } from "@itwin/ui-core-react";
+import { CommonProps } from "@itwin/core-react";
 import { DialogChangedEvent, DialogManagerBase, DialogRendererBase } from "./DialogManagerBase";
 
 /** Modal Dialog Changed Event class.

@@ -11,7 +11,7 @@ import {
   NineZoneProvider as RealNineZoneProvider,
   NineZoneProviderProps as RealNineZoneProviderProps,
 } from "../appui-layout-react";
-import { Point, Rectangle, Size } from "@itwin/ui-core-react";
+import { Point, Rectangle, Size } from "@itwin/core-react";
 
 type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 

@@ -12,7 +12,7 @@ import { ClientRequestContext, Logger } from "@itwin/core-bentley";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelApp } from "@itwin/core-frontend";
 import { UserInfo } from "@bentley/itwin-client";
-import { getUserColor } from "@itwin/ui-core-react";
+import { getUserColor } from "@itwin/core-react";
 import { Button } from "@itwin/itwinui-react";
 import { FrontstageManager, ModalFrontstageInfo, UiFramework } from "@itwin/appui-react";
 

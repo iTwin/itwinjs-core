@@ -10,7 +10,7 @@ import "./AccuDrawInputField.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { ItemField } from "@itwin/core-frontend";
-import { CommonProps, Icon, IconSpec, useRefs } from "@itwin/ui-core-react";
+import { CommonProps, Icon, IconSpec, useRefs } from "@itwin/core-react";
 import { isLetter, SpecialKey } from "@itwin/appui-abstract";
 import { Input } from "@itwin/itwinui-react";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";

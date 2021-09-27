@@ -12,7 +12,7 @@ import "./ContentLayout.scss";
 import classnames from "classnames";
 import * as React from "react";
 import SplitPane from "react-split-pane";
-import { CommonProps, Orientation, UiEvent } from "@itwin/ui-core-react";
+import { CommonProps, Orientation, UiEvent } from "@itwin/core-react";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { ContentGroup } from "./ContentGroup";

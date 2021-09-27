@@ -10,7 +10,7 @@ import "./PositionPopup.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { PointProps } from "@itwin/appui-abstract";
-import { CommonDivProps, CommonProps, Div, Size, SizeProps } from "@itwin/ui-core-react";
+import { CommonDivProps, CommonProps, Div, Size, SizeProps } from "@itwin/core-react";
 
 /** @alpha */
 export interface PositionPopupProps extends CommonProps {

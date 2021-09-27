@@ -7,8 +7,8 @@ import { Id64String } from "@itwin/core-bentley";
 import { ViewDefinitionProps, ViewQueryParams } from "@itwin/core-common";
 import { IModelConnection, ScreenViewport, ViewState } from "@itwin/core-frontend";
 import { viewWithUnifiedSelection } from "@itwin/presentation-components";
-import { TimelineComponent, TimelineDataProvider, ViewportComponent } from "@itwin/ui-imodel-components-react";
-import { LoadingSpinner } from "@itwin/ui-core-react";
+import { TimelineComponent, TimelineDataProvider, ViewportComponent } from "@itwin/imodel-components-react";
+import { LoadingSpinner } from "@itwin/core-react";
 import {
   AnalysisAnimationTimelineDataProvider, ConfigurableCreateInfo, ConfigurableUiManager, ContentViewManager, ScheduleAnimationTimelineDataProvider,
   UiFramework, ViewportContentControl,

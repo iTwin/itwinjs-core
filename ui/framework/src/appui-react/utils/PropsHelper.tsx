@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { ConditionalStringValue, StringGetter } from "@itwin/appui-abstract";
-import { Icon } from "@itwin/ui-core-react";
+import { Icon } from "@itwin/core-react";
 import { UiFramework } from "../UiFramework";
 
 /** A set of helper methods for various props

@@ -9,7 +9,7 @@ import { fireEvent, render } from "@testing-library/react";
 import sinon from "sinon";
 import * as React from "react";
 import { SpecialKey } from "@itwin/appui-abstract";
-import { PopupButton } from "../../ui-components-react/editors/PopupButton";
+import { PopupButton } from "../../components-react/editors/PopupButton";
 import { TestUtils } from "../TestUtils";
 
 describe("<PopupButton />", () => {

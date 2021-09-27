@@ -10,7 +10,7 @@ import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection, InteractiveTool, SelectedViewportChangedArgs, StartOrResume, Tool } from "@itwin/core-frontend";
 import { WidgetState } from "@itwin/appui-abstract";
-import { Size, UiEvent } from "@itwin/ui-core-react";
+import { Size, UiEvent } from "@itwin/core-react";
 import { NineZoneManager } from "@itwin/appui-layout-react";
 import { ContentControlActivatedEvent } from "../content/ContentControl";
 import { ContentGroup } from "../content/ContentGroup";

@@ -273,21 +273,21 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@itwin/ui-core-react",
+      "packageName": "@itwin/core-react",
       "projectFolder": "ui/core",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@itwin/ui-components-react",
+      "packageName": "@itwin/components-react",
       "projectFolder": "ui/components",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@itwin/ui-imodel-components-react",
+      "packageName": "@itwin/imodel-components-react",
       "projectFolder": "ui/imodel-components",
       "reviewCategory": "frontend",
       "shouldPublish": true,

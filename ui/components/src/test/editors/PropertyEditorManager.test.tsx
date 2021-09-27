@@ -8,8 +8,8 @@ import * as React from "react";
 import {
   IconEditorParams, PropertyDescription, PropertyEditorParams, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
 } from "@itwin/appui-abstract";
-import { AsyncValueProcessingResult, BasicPropertyEditor, DataControllerBase, PropertyEditorBase, PropertyEditorManager } from "../../ui-components-react/editors/PropertyEditorManager";
-import { TextEditor } from "../../ui-components-react/editors/TextEditor";
+import { AsyncValueProcessingResult, BasicPropertyEditor, DataControllerBase, PropertyEditorBase, PropertyEditorManager } from "../../components-react/editors/PropertyEditorManager";
+import { TextEditor } from "../../components-react/editors/TextEditor";
 
 // cspell:ignore badeditor newvalue
 

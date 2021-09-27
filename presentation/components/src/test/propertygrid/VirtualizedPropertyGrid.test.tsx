@@ -8,8 +8,8 @@ import { PropertyRecord } from "@itwin/appui-abstract";
 import {
   CategorizedPropertyItem, FlatGridItemType, IPropertyDataProvider, PrimitivePropertyRenderer, PropertyCategory, PropertyCategoryRendererManager,
   PropertyCategoryRendererProps, PropertyData, PropertyDataChangeEvent, PropertyValueRendererManager, VirtualizedPropertyGridWithDataProvider,
-} from "@itwin/ui-components-react";
-import { Orientation } from "@itwin/ui-core-react";
+} from "@itwin/components-react";
+import { Orientation } from "@itwin/core-react";
 import { render } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import { PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";

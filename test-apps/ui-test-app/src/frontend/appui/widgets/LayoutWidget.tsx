@@ -8,7 +8,7 @@ import {
   FrontstageDef, FrontstageManager, StagePanelState, useActiveFrontstageDef,
 } from "@itwin/appui-react";
 import { SpecialKey, StagePanelLocation, WidgetState } from "@itwin/appui-abstract";
-import { NumberInput, RectangleProps } from "@itwin/ui-core-react";
+import { NumberInput, RectangleProps } from "@itwin/core-react";
 import { Button, Input, Select, SelectOption } from "@itwin/itwinui-react";
 
 function usePanelDef(location: StagePanelLocation) {

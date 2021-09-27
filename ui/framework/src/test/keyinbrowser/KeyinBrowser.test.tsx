@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { IModelApp, MockRender } from "@itwin/core-frontend";
-import { AutoSuggest } from "@itwin/ui-core-react";
+import { AutoSuggest } from "@itwin/core-react";
 import { Button, LabeledInput } from "@itwin/itwinui-react";
 import { fireEvent, render } from "@testing-library/react";
 import { KeyinBrowser } from "../../appui-react";

@@ -10,8 +10,8 @@ import * as React from "react";
 import { Id64String } from "@itwin/core-bentley";
 import { IModelConnection, ScreenViewport, ViewState } from "@itwin/core-frontend";
 import { viewWithUnifiedSelection } from "@itwin/presentation-components";
-import { ViewportComponent, ViewStateProp } from "@itwin/ui-imodel-components-react";
-import { FillCentered } from "@itwin/ui-core-react";
+import { ViewportComponent, ViewStateProp } from "@itwin/imodel-components-react";
+import { FillCentered } from "@itwin/core-react";
 
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";

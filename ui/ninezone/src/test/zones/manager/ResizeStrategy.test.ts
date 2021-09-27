@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 import * as Moq from "typemoq";
-import { Rectangle, RectangleProps } from "@itwin/ui-core-react";
+import { Rectangle, RectangleProps } from "@itwin/core-react";
 import {
   GrowBottom, GrowLeft, GrowRight, GrowStrategy, GrowTop, HorizontalAnchor, ResizeStrategy, ShrinkBottom, ShrinkHorizontalStrategy, ShrinkLeft, ShrinkRight,
   ShrinkStrategy, ShrinkTop, ShrinkVerticalStrategy, UpdateWindowResizeSettings, WidgetZoneId, ZonesManager, ZonesManagerProps,

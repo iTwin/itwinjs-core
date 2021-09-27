@@ -9,7 +9,7 @@
 import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
 import { PointProps, StagePanelLocation, WidgetState } from "@itwin/appui-abstract";
-import { CommonProps, Rectangle, RectangleProps } from "@itwin/ui-core-react";
+import { CommonProps, Rectangle, RectangleProps } from "@itwin/core-react";
 import {
   getDefaultNineZoneStagePanelsManagerProps, getDefaultZonesManagerProps, NineZoneManagerProps, ResizeHandle, StagePanelsManager, StagePanelType,
   WidgetZoneId, widgetZoneIds, ZoneTargetType,

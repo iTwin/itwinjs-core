@@ -6,8 +6,8 @@ import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 import "./Zones.scss";
 import * as React from "react";
 import { ActionButton, GroupButton, BadgeType } from "@itwin/appui-abstract";
-import { ToolbarItem, ToolbarWithOverflow, UiComponents } from "@itwin/ui-components-react";
-import { Point, BadgeUtilities } from "@itwin/ui-core-react";
+import { ToolbarItem, ToolbarWithOverflow, UiComponents } from "@itwin/components-react";
+import { Point, BadgeUtilities } from "@itwin/core-react";
 import {
   NineZone,
   addPanelWidget,

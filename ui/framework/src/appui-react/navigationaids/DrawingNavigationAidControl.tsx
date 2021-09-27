@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { DrawingNavigationAid } from "@itwin/ui-imodel-components-react";
+import { DrawingNavigationAid } from "@itwin/imodel-components-react";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { NavigationAidControl } from "./NavigationAidControl";
 

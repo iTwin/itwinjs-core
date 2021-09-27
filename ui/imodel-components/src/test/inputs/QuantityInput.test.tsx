@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import * as React from "react";
 import { fireEvent, render } from "@testing-library/react";
 import { IModelApp, MockRender, QuantityType } from "@itwin/core-frontend";
-import { QuantityInput } from "../../ui-imodel-components-react/inputs/QuantityInput";
+import { QuantityInput } from "../../imodel-components-react/inputs/QuantityInput";
 import { SpecialKey } from "@itwin/appui-abstract";
 import { TestUtils } from "../TestUtils";
 

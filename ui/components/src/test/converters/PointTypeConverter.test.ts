@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Primitives } from "@itwin/appui-abstract";
-import { isPromiseLike } from "@itwin/ui-core-react";
-import { ConvertedPrimitives, Point2dTypeConverter, Point3dTypeConverter } from "../../ui-components-react";
-import { TypeConverter } from "../../ui-components-react/converters/TypeConverter";
-import { TypeConverterManager } from "../../ui-components-react/converters/TypeConverterManager";
+import { isPromiseLike } from "@itwin/core-react";
+import { ConvertedPrimitives, Point2dTypeConverter, Point3dTypeConverter } from "../../components-react";
+import { TypeConverter } from "../../components-react/converters/TypeConverter";
+import { TypeConverterManager } from "../../components-react/converters/TypeConverterManager";
 import TestUtils from "../TestUtils";
 
 describe("Point2dTypeConverter", () => {

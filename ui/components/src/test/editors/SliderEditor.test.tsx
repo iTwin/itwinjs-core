@@ -11,10 +11,10 @@ import * as React from "react";
 import {
   BasePropertyEditorParams, PropertyEditorParamTypes, SliderEditorParams, SpecialKey, StandardEditorNames,
 } from "@itwin/appui-abstract";
-import { SliderEditor } from "../../ui-components-react/editors/SliderEditor";
+import { SliderEditor } from "../../components-react/editors/SliderEditor";
 import TestUtils, { MineDataController } from "../TestUtils";
-import { EditorContainer } from "../../ui-components-react/editors/EditorContainer";
-import { PropertyEditorManager } from "../../ui-components-react/editors/PropertyEditorManager";
+import { EditorContainer } from "../../components-react/editors/EditorContainer";
+import { PropertyEditorManager } from "../../components-react/editors/PropertyEditorManager";
 
 describe("<SliderEditor />", () => {
   before(async () => {

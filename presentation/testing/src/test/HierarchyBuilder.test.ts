@@ -8,7 +8,7 @@ import { BeEvent, Guid } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { HierarchyRequestOptions, LabelDefinition, Node, NodeKey, RegisteredRuleset, Ruleset } from "@itwin/presentation-common";
 import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
-import { TreeNodeItem } from "@itwin/ui-components-react";
+import { TreeNodeItem } from "@itwin/components-react";
 import { HierarchyBuilder, NodeMappingFunc } from "../presentation-testing/HierarchyBuilder";
 
 async function getRootNodes() {

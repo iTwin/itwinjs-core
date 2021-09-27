@@ -7,7 +7,7 @@
  */
 
 import { NodeKey, NodePathElement } from "@itwin/presentation-common";
-import { ITreeDataProvider, TreeNodeItem } from "@itwin/ui-components-react";
+import { ITreeDataProvider, TreeNodeItem } from "@itwin/components-react";
 import { IPresentationDataProvider } from "../common/IPresentationDataProvider";
 
 /**

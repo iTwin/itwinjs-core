@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { Orientation, useResizeObserver } from "@itwin/ui-core-react";
+import { Orientation, useResizeObserver } from "@itwin/core-react";
 
 import { AccuDrawFieldContainer } from "./AccuDrawFieldContainer";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";

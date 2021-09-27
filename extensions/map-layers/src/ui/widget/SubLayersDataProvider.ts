@@ -5,8 +5,8 @@
 import { BeEvent, compareStringsOrUndefined } from "@itwin/core-bentley";
 import { MapSubLayerProps, SubLayerId } from "@itwin/core-common";
 import { PropertyRecord } from "@itwin/appui-abstract";
-import { DelayLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener, TreeNodeItem } from "@itwin/ui-components-react";
-import { CheckBoxState } from "@itwin/ui-core-react";
+import { DelayLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener, TreeNodeItem } from "@itwin/components-react";
+import { CheckBoxState } from "@itwin/core-react";
 import { StyleMapLayerSettings } from "../Interfaces";
 
 /**

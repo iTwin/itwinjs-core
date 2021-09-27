@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { PropertyRecord } from "@itwin/appui-abstract";
-import { SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy } from "../../ui-components-react/tree/SimpleTreeDataProvider";
-import { DelayLoadedTreeNodeItem } from "../../ui-components-react/tree/TreeDataProvider";
+import { SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy } from "../../components-react/tree/SimpleTreeDataProvider";
+import { DelayLoadedTreeNodeItem } from "../../components-react/tree/TreeDataProvider";
 
 describe("SimpleTreeDataProvider", () => {
 

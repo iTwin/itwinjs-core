@@ -17,8 +17,8 @@ import { AccessToken, UserInfo } from "@bentley/itwin-client";
 import { Presentation } from "@itwin/presentation-frontend";
 import { TelemetryEvent } from "@bentley/telemetry-client";
 import { getClassName, UiAbstract, UiError } from "@itwin/appui-abstract";
-import { LocalSettingsStorage, SettingsManager, UiEvent, UiSettingsStorage } from "@itwin/ui-core-react";
-import { UiIModelComponents } from "@itwin/ui-imodel-components-react";
+import { LocalSettingsStorage, SettingsManager, UiEvent, UiSettingsStorage } from "@itwin/core-react";
+import { UiIModelComponents } from "@itwin/imodel-components-react";
 import { BackstageManager } from "./backstage/BackstageManager";
 import { DefaultIModelServices } from "./clientservices/DefaultIModelServices";
 import { IModelServices } from "./clientservices/IModelServices";
@@ -193,7 +193,7 @@ export class UiFramework {
       oidcClient.onUserStateChanged.addListener(UiFramework._handleUserStateChanged);
     }
 
-    // Initialize ui-imodel-components-react, ui-components-react, ui-core-react & appui-abstract
+    // Initialize imodel-components-react, components-react, core-react & appui-abstract
     await UiIModelComponents.initialize(UiFramework._i18n);
 
     UiFramework.settingsManager.onSettingsProvidersChanged.addListener(() => {

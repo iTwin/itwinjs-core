@@ -9,7 +9,7 @@
 import "./Instruction.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@itwin/ui-core-react";
+import { CommonProps } from "@itwin/core-react";
 import { ToolAssistanceItem } from "./Item";
 import { NewDot } from "./NewDot";
 

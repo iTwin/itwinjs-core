@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { v4 } from "uuid";
-import { Rectangle, useRefs, useResizeObserver } from "@itwin/ui-core-react";
+import { Rectangle, useRefs, useResizeObserver } from "@itwin/core-react";
 import { CursorType } from "../widget-panels/CursorOverlay";
 import { PanelSide } from "../widget-panels/Panel";
 import { WidgetContentManager } from "../widget/ContentManager";

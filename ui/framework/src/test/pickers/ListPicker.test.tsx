@@ -6,8 +6,8 @@ import { expect } from "chai";
 import { ReactWrapper, shallow, ShallowWrapper } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { ToolbarItemContext } from "@itwin/ui-components-react";
-import { WithOnOutsideClickProps } from "@itwin/ui-core-react";
+import { ToolbarItemContext } from "@itwin/components-react";
+import { WithOnOutsideClickProps } from "@itwin/core-react";
 import { Group, Item } from "@itwin/appui-layout-react";
 import {
   ExpandableSection, FrameworkVersion, ListItem, ListItemType, ListPicker, ListPickerBase, ListPickerItem, ListPickerPropsExtended,

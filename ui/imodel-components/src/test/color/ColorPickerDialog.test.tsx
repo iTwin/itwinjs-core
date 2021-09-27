@@ -8,7 +8,7 @@ import { expect } from "chai";
 import { fireEvent, render } from "@testing-library/react";
 import { ColorByName, ColorDef } from "@itwin/core-common";
 import { TestUtils } from "../TestUtils";
-import { ColorPickerDialog } from "../../ui-imodel-components-react/color/ColorPickerDialog";
+import { ColorPickerDialog } from "../../imodel-components-react/color/ColorPickerDialog";
 
 // cSpell:ignore colorpicker
 

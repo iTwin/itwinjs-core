@@ -8,8 +8,8 @@
 
 import * as React from "react";
 import { OnCancelFunc, OnValueCommitFunc, Primitives, PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
-import { EditorContainer, PropertyUpdatedArgs } from "@itwin/ui-components-react";
-import { DivWithOutsideClick, Size, SizeProps } from "@itwin/ui-core-react";
+import { EditorContainer, PropertyUpdatedArgs } from "@itwin/components-react";
+import { DivWithOutsideClick, Size, SizeProps } from "@itwin/core-react";
 import { PopupManager, PopupPropsBase } from "./PopupManager";
 import { PositionPopup, PositionPopupContent } from "./PositionPopup";
 

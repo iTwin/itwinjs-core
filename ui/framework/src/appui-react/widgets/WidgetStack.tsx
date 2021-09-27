@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { BadgeType, ConditionalStringValue, PointProps } from "@itwin/appui-abstract";
-import { BadgeUtilities, CommonProps, IconHelper, Rectangle, RectangleProps } from "@itwin/ui-core-react";
+import { BadgeUtilities, CommonProps, IconHelper, Rectangle, RectangleProps } from "@itwin/core-react";
 import {
   DisabledResizeHandles, DraggedWidgetManagerProps, HandleMode, HorizontalAnchor, Stacked as NZ_WidgetStack, ResizeHandle, Tab, TabGroup, TabMode,
   TabSeparator, VerticalAnchor, VerticalAnchorHelpers, WidgetZoneId,

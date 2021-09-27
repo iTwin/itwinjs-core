@@ -7,7 +7,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
 import { StagePanelLocation, WidgetState } from "@itwin/appui-abstract";
-import { Rectangle } from "@itwin/ui-core-react";
+import { Rectangle } from "@itwin/core-react";
 import {
   getDefaultNineZoneStagePanelsManagerProps, getDefaultZonesManagerProps, NineZoneManagerProps, StagePanelsManager,
 } from "@itwin/appui-layout-react";

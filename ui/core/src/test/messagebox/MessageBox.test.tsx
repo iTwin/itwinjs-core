@@ -6,8 +6,8 @@ import { DialogButtonStyle, DialogButtonType, MessageSeverity } from "@itwin/app
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { MessageBox } from "../../ui-core-react";
-import { MessageContainer } from "../../ui-core-react/messagebox/MessageBox";
+import { MessageBox } from "../../core-react";
+import { MessageContainer } from "../../core-react/messagebox/MessageBox";
 import TestUtils from "../TestUtils";
 
 describe("MessageBox", () => {

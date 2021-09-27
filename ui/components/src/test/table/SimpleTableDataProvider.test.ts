@@ -5,9 +5,9 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { PrimitiveValue, PropertyConverterInfo, PropertyValueFormat } from "@itwin/appui-abstract";
-import { SortDirection } from "@itwin/ui-core-react";
-import { ColumnDescription, RowItem, SimpleTableDataProvider } from "../../ui-components-react";
-import { TableFilterDescriptorCollection } from "../../ui-components-react/table/columnfiltering/TableFilterDescriptorCollection";
+import { SortDirection } from "@itwin/core-react";
+import { ColumnDescription, RowItem, SimpleTableDataProvider } from "../../components-react";
+import { TableFilterDescriptorCollection } from "../../components-react/table/columnfiltering/TableFilterDescriptorCollection";
 import { TestUtils } from "../TestUtils";
 
 const columns: ColumnDescription[] = [

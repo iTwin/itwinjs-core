@@ -11,7 +11,7 @@ import {
 } from "@itwin/appui-abstract";
 import {
   ColumnDescription, FilterRenderer, RowItem, SimpleTableDataProvider, TableDataProvider,
-} from "@itwin/ui-components-react";
+} from "@itwin/components-react";
 
 // cSpell:ignore datetime
 

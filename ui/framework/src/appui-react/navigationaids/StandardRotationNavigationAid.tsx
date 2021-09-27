@@ -11,8 +11,8 @@ import classnames from "classnames";
 import * as React from "react";
 import { StandardViewId } from "@itwin/core-frontend";
 import { RelativePosition } from "@itwin/appui-abstract";
-import { ViewportComponentEvents } from "@itwin/ui-imodel-components-react";
-import { CommonProps, Icon, Popup } from "@itwin/ui-core-react";
+import { ViewportComponentEvents } from "@itwin/imodel-components-react";
+import { CommonProps, Icon, Popup } from "@itwin/core-react";
 import {
   containHorizontally, GroupColumn as NZ_Column, ExpandableButton as NZ_Expandable, ToolbarIcon as NZ_Icon, GroupTool as NZ_Item, Group as NZ_Tray,
   withContainIn,

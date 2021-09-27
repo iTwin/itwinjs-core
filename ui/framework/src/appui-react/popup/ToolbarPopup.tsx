@@ -8,8 +8,8 @@
 
 import * as React from "react";
 import { CommonToolbarItem, OnCancelFunc, OnItemExecutedFunc, RelativePosition, SpecialKey } from "@itwin/appui-abstract";
-import { DivWithOutsideClick, FocusTrap, Orientation, Point, Size, SizeProps } from "@itwin/ui-core-react";
-import { Direction, Toolbar, ToolbarOpacitySetting, ToolbarPanelAlignment } from "@itwin/ui-components-react";
+import { DivWithOutsideClick, FocusTrap, Orientation, Point, Size, SizeProps } from "@itwin/core-react";
+import { Direction, Toolbar, ToolbarOpacitySetting, ToolbarPanelAlignment } from "@itwin/components-react";
 import { CursorPopup } from "../cursor/cursorpopup/CursorPopup";
 import { PopupManager, PopupPropsBase } from "./PopupManager";
 import { PositionPopup } from "./PositionPopup";

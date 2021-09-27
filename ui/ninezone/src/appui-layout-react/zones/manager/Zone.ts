@@ -6,7 +6,7 @@
  * @module Zone
  */
 
-import { Rectangle, RectangleProps } from "@itwin/ui-core-react";
+import { Rectangle, RectangleProps } from "@itwin/core-react";
 import { RECTANGULAR_DEFAULT_MIN_HEIGHT, RECTANGULAR_DEFAULT_MIN_WIDTH } from "./ResizeStrategy";
 import { getZoneCell, WidgetZoneId } from "./Zones";
 

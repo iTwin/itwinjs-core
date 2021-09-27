@@ -12,7 +12,7 @@ import { BackstageItemUtilities, ConditionalBooleanValue, IconSpecUtilities, Sta
 import settingsIconSvg from "@bentley/icons-generic/icons/settings.svg?sprite";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 import { Logger } from "@itwin/core-bentley";
-import { Centered, SettingsContainer } from "@itwin/ui-core-react";
+import { Centered, SettingsContainer } from "@itwin/core-react";
 import { FrontstageManager, ModalFrontstageInfo, ModalFrontstageRequestedCloseEventArgs } from "./FrontstageManager";
 import { UiFramework } from "../UiFramework";
 import { SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
@@ -51,8 +51,8 @@ function ModalSettingsStage({ initialSettingsTabId }: { initialSettingsTabId?: s
   );
 }
 
-/** Modal frontstage displaying and editing settings from registered settings providers. See [SettingsManager]($ui-core-react)
- * and [SettingsContainer]($ui-core-react).
+/** Modal frontstage displaying and editing settings from registered settings providers. See [SettingsManager]($core-react)
+ * and [SettingsContainer]($core-react).
  * @beta
  */
 export class SettingsModalFrontstage implements ModalFrontstageInfo {

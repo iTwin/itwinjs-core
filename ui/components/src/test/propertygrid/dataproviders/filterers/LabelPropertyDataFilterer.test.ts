@@ -6,8 +6,8 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
 import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
-import { LabelPropertyDataFilterer } from "../../../../ui-components-react/propertygrid/dataproviders/filterers/LabelPropertyDataFilterer";
-import { FilteredType } from "../../../../ui-components-react/propertygrid/dataproviders/filterers/PropertyDataFiltererBase";
+import { LabelPropertyDataFilterer } from "../../../../components-react/propertygrid/dataproviders/filterers/LabelPropertyDataFilterer";
+import { FilteredType } from "../../../../components-react/propertygrid/dataproviders/filterers/PropertyDataFiltererBase";
 import { TestUtils } from "../../../TestUtils";
 
 describe("LabelPropertyDataFilterer", () => {

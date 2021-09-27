@@ -11,7 +11,7 @@ import {
 import { ECInstancesNodeKey, StandardNodeTypes } from "@itwin/presentation-common";
 import * as moq from "@itwin/presentation-common/lib/test/_helpers/Mocks";
 import { PropertyRecord } from "@itwin/appui-abstract";
-import * as UiComponents from "@itwin/ui-components-react";
+import * as UiComponents from "@itwin/components-react";
 import { renderHook } from "@testing-library/react-hooks";
 import {
   Category, CategoryVisibilityHandler, CategoryVisibilityHandlerParams, useCategories,

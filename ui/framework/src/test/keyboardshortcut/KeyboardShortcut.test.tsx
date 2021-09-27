@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { Point } from "@itwin/ui-core-react";
+import { Point } from "@itwin/core-react";
 import {
   AccuDrawKeyboardShortcuts, CommandItemDef, ConfigurableUiManager, KeyboardShortcut, KeyboardShortcutContainer, KeyboardShortcutManager, KeyboardShortcutProps,
 } from "../../appui-react";

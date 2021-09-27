@@ -11,7 +11,7 @@
 import * as React from "react";
 import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
 import { PointProps, StagePanelLocation, StageUsage, UiError } from "@itwin/appui-abstract";
-import { RectangleProps, SizeProps } from "@itwin/ui-core-react";
+import { RectangleProps, SizeProps } from "@itwin/core-react";
 import {
   dockWidgetContainer, findTab, findWidget, floatWidget, isFloatingLocation, isPopoutLocation, isPopoutWidgetLocation,
   NineZoneManagerProps, NineZoneState, popoutWidgetToChildWindow, setFloatingWidgetContainerBounds,

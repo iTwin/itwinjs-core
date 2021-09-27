@@ -11,7 +11,7 @@ import { Logger } from "@itwin/core-bentley";
 import {
   BackstageActionItem, BackstageItem, BackstageStageLauncher, ConditionalBooleanValue, ConditionalStringValue, isStageLauncher,
 } from "@itwin/appui-abstract";
-import { BadgeUtilities, Icon } from "@itwin/ui-core-react";
+import { BadgeUtilities, Icon } from "@itwin/core-react";
 import { BackstageItem as NZ_BackstageItem } from "@itwin/appui-layout-react";
 import { useActiveFrontstageId } from "../frontstage/Frontstage";
 import { FrontstageManager } from "../frontstage/FrontstageManager";

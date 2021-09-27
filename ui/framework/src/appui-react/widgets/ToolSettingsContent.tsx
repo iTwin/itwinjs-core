@@ -9,7 +9,7 @@
 import "./ToolSettingsContent.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ResizableContainerObserver } from "@itwin/ui-core-react";
+import { ResizableContainerObserver } from "@itwin/core-react";
 import { HorizontalAnchor, ToolSettingsWidgetMode, WidgetContent } from "@itwin/appui-layout-react";
 
 /** @internal */

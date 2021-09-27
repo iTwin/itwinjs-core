@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { CommonProps, Icon } from "@itwin/ui-core-react";
+import { CommonProps, Icon } from "@itwin/core-react";
 import { AppButton, Direction, Tools as NZ_ToolsWidget } from "@itwin/appui-layout-react";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { CommandItemDef } from "../shared/CommandItemDef";
