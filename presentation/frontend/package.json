@@ -1,6 +1,6 @@
 {
   "name": "@bentley/presentation-frontend",
-  "version": "3.0.0-dev.66",
+  "version": "3.0.0-dev.69",
   "description": "Frontend of iModel.js Presentation library",
   "main": "lib/cjs/presentation-frontend.js",
   "module": "lib/esm/presentation-frontend.js",
@@ -44,12 +44,12 @@
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.66",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.66",
-    "@bentley/imodeljs-frontend": "workspace:^3.0.0-dev.66",
-    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.66",
-    "@bentley/imodeljs-quantity": "workspace:^3.0.0-dev.66",
-    "@bentley/presentation-common": "workspace:^3.0.0-dev.66"
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.69",
+    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.69",
+    "@bentley/imodeljs-frontend": "workspace:^3.0.0-dev.69",
+    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.69",
+    "@bentley/imodeljs-quantity": "workspace:^3.0.0-dev.69",
+    "@bentley/presentation-common": "workspace:^3.0.0-dev.69"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "workspace:*",

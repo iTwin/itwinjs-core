@@ -185,7 +185,7 @@ public;class GeometricModelState
 internal;GeoServices
 public;getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect
 public;getCesiumAssetUrl(osmAssetId: number, requestKey: string): string
-internal;getCesiumOSMBuildingsUrl(): string
+internal;getCesiumOSMBuildingsUrl(): string | undefined
 internal;getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, wantNormals: boolean, exaggeration: number): Promise
 public;getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, minCompressionQuality?: number): string | undefined
 internal;getFrustumPlaneIntersectionDepthRange(frustum: Frustum, plane: Plane3dByOriginAndUnitNormal): Range1d

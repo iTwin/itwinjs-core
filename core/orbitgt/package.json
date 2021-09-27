@@ -1,6 +1,6 @@
 {
   "name": "@bentley/orbitgt-core",
-  "version": "3.0.0-dev.66",
+  "version": "3.0.0-dev.69",
   "description": "",
   "main": "lib/cjs/imodeljs-orbitgt.js",
   "module": "lib/esm/imodeljs-orbitgt.js",
