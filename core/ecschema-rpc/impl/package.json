@@ -1,5 +1,5 @@
 {
-  "name": "@bentley/ecschema-rpcinterface-impl",
+  "name": "@itwin/ecschema-rpcinterface-impl",
   "version": "3.0.0-dev.66",
   "description": "Schema RPC Interface backend implementation",
   "main": "lib/ecschema-rpc-impl.js",
@@ -32,7 +32,7 @@
   "peerDependencies": {
     "@itwin/core-bentley": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
-    "@bentley/ecschema-rpcinterface-common": "workspace:*",
+    "@itwin/ecschema-rpcinterface-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
     "@itwin/core-backend": "workspace:*",
@@ -43,7 +43,7 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
-    "@bentley/ecschema-rpcinterface-common": "workspace:*",
+    "@itwin/ecschema-rpcinterface-common": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",

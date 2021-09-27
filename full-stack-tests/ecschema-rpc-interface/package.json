@@ -1,5 +1,5 @@
 {
-  "name": "@bentley/ecschema-rpcinterface-tests",
+  "name": "@itwin/ecschema-rpcinterface-tests",
   "version": "3.0.0-dev.66",
   "description": "Integration tests for the Schema RPC Interface",
   "author": {
@@ -32,7 +32,7 @@
     "@bentley/certa": "workspace:*",
     "@bentley/context-registry-client": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
-    "@bentley/ecschema-rpcinterface-common": "workspace:*",
+    "@itwin/ecschema-rpcinterface-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
     "@itwin/core-common": "workspace:*",

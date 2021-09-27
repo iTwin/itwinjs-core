@@ -291,6 +291,10 @@
       "allowedCategories": [ "backend", "common", "integration-testing", "tools" ]
     },
     {
+      "name": "@itwin/ecschema-rpcinterface-common",
+      "allowedCategories": [ "backend", "integration-testing" ]
+    },
+    {
       "name": "@itwin/editor-backend",
       "allowedCategories": [ "internal" ]
     },

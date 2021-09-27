@@ -799,7 +799,6 @@ importers:
 
   ../../core/ecschema-rpc/impl:
     specifiers:
-      '@bentley/ecschema-rpcinterface-common': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
@@ -809,11 +808,11 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/ecschema-metadata': workspace:*
+      '@itwin/ecschema-rpcinterface-common': workspace:*
       eslint: ^7.11.0
       rimraf: ^3.0.2
       typescript: ~4.4.0
     devDependencies:
-      '@bentley/ecschema-rpcinterface-common': link:../common
       '@bentley/eslint-plugin': link:../../../tools/eslint-plugin
       '@bentley/imodelhub-client': link:../../../clients/imodelhub
       '@bentley/itwin-client': link:../../../clients/itwin
@@ -823,6 +822,7 @@ importers:
       '@itwin/core-common': link:../../common
       '@itwin/core-geometry': link:../../geometry
       '@itwin/ecschema-metadata': link:../../ecschema-metadata
+      '@itwin/ecschema-rpcinterface-common': link:../common
       eslint: 7.32.0
       rimraf: 3.0.2
       typescript: 4.4.3
@@ -2102,7 +2102,6 @@ importers:
       '@bentley/backend-itwin-client': workspace:*
       '@bentley/certa': workspace:*
       '@bentley/context-registry-client': workspace:*
-      '@bentley/ecschema-rpcinterface-common': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
@@ -2116,6 +2115,7 @@ importers:
       '@itwin/core-i18n': workspace:*
       '@itwin/core-quantity': workspace:*
       '@itwin/ecschema-metadata': workspace:*
+      '@itwin/ecschema-rpcinterface-common': workspace:*
       '@itwin/express-server': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
@@ -2145,7 +2145,6 @@ importers:
       '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/certa': link:../../tools/certa
       '@bentley/context-registry-client': link:../../clients/context-registry
-      '@bentley/ecschema-rpcinterface-common': link:../../core/ecschema-rpc/common
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
@@ -2157,6 +2156,7 @@ importers:
       '@itwin/core-i18n': link:../../core/i18n
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
+      '@itwin/ecschema-rpcinterface-common': link:../../core/ecschema-rpc/common
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-frontend': link:../../presentation/frontend
       chai: 4.3.4

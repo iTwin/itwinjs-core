@@ -385,21 +385,21 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/ecschema-rpcinterface-common",
+      "packageName": "@itwin/ecschema-rpcinterface-common",
       "projectFolder": "core/ecschema-rpc/common",
       "reviewCategory": "common",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/ecschema-rpcinterface-impl",
+      "packageName": "@itwin/ecschema-rpcinterface-impl",
       "projectFolder": "core/ecschema-rpc/impl",
       "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/ecschema-rpcinterface-tests",
+      "packageName": "@itwin/ecschema-rpcinterface-tests",
       "projectFolder": "full-stack-tests/ecschema-rpc-interface",
       "reviewCategory": "integration-testing",
       "shouldPublish": true,
