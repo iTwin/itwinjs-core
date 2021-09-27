@@ -293,27 +293,6 @@ describe("DisplayStyleSettings", () => {
       expectEvents([]);
     });
   });
-
-  // ###TODO @rbbentley
-  it.skip("synchronizes BackgroundMapSettings with MapLayerSettings", () => {
-    // ###TODO const style = new DisplayStyleSettings({});
-    // ###TODO expect(style.backgroundMap.providerName).to.equal("BingProvider");
-    // ###TODO expect(style.backgroundMap.mapType).to.equal(BackgroundMapType.Hybrid);
-
-    // ###TODO let base = style.mapImagery.backgroundBase as MapLayerSettings;
-    // ###TODO expect(base).instanceOf(MapLayerSettings);
-    // ###TODO expect(base.formatId).to.equal("BingMaps");
-    // ###TODO expect(base.url.indexOf("AerialWithLabels")).least(1);
-
-    // ###TODO style.backgroundMap = style.backgroundMap.clone({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street } });
-    // ###TODO base = style.mapImagery.backgroundBase as MapLayerSettings;
-    // ###TODO expect(base.formatId).to.equal("MapboxImagery");
-    // ###TODO expect(base.url.indexOf("mapbox.streets/")).least(1);
-
-    // ###TODO style.mapImagery.backgroundBase = BaseMapLayerSettings.fromBackgroundMapProps(style.backgroundMap.clone({ providerData: { mapType: BackgroundMapType.Aerial } }).toJSON());
-    // ###TODO expect(style.backgroundMap.providerName).to.equal("MapBoxProvider");
-    // ###TODO expect(style.backgroundMap.mapType).to.equal(BackgroundMapType.Aerial);
-  });
 });
 
 describe("DisplayStyleSettings overrides", () => {
