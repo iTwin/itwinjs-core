@@ -414,8 +414,10 @@ export class BaseMapLayerSettings extends MapLayerSettings {
 
   /** @internal */
   public static fromBackgroundMapProps(props: BackgroundMapProps): BaseMapLayerSettings {
-    const provider = BackgroundMapProvider.fromJSON({ name: props.providerName, type: props.providerData?.mapType });
+    return this.fromProvider(BackgroundMapProvider.fromJSON({ name: props.providerName, type: props.providerData?.mapType }));
+  }
 
+  public static fromProvider(provider: BackgroundMapProvider, options?: { invisible?: boolean, transparency?: number }): BaseMapLayerSettings {
     let formatId: string, url: string, name: string;
     switch (provider.name) {
       case "BingProvider":
@@ -456,12 +458,20 @@ export class BaseMapLayerSettings extends MapLayerSettings {
         break;
     }
 
-    const settings = super.fromJSON({ name, formatId, url, transparentBackground: false, isBase: true });
+    const settings = super.fromJSON({
+      name,
+      formatId,
+      url,
+      transparentBackground: false,
+      isBase: true,
+      visible: !options?.invisible,
+      transparency: options?.transparency,
+    });
+
     assert(undefined !== settings);
     assert(settings instanceof BaseMapLayerSettings);
 
     settings._provider = provider;
     return settings;
   }
-
 }
