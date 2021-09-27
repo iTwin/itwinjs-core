@@ -2,6 +2,7 @@
   "extends": "./node_modules/@bentley/build-tools/tsconfig-base.json",
   "compilerOptions": {
     "esModuleInterop": true,
+    "outDir": "lib"
   },
   "include": [
     "./src/**/*.ts"

@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ResizeObserver } from "@bentley/ui-core";
-import { act, fireEvent, queryByText, render } from "@testing-library/react";
 import * as React from "react";
 import * as sinon from "sinon";
+import * as ResizeObserverModule from "@bentley/ui-core/lib/cjs/ui-core/utils/hooks/ResizeObserverPolyfill";
+import { act, fireEvent, queryByText, render } from "@testing-library/react";
 import {
   DockedToolSetting, DockedToolSettings, eqlOverflown, getOverflown, onOverflowLabelAndEditorResize,
 } from "../../ui-ninezone";
-import { DragManagerProvider } from "../Providers";
 import { flushAsyncOperations, ResizeObserverMock } from "../Utils";
+import { DragManagerProvider } from "../Providers";
 
 describe("DockedToolSettings", () => {
   it("should render w/o entries", () => {
@@ -166,7 +166,7 @@ describe("DockedToolSettings", () => {
 
     let resizeObserver: ResizeObserverMock | undefined;
     let target: Element | undefined;
-    sinon.stub(ResizeObserver as any, "ResizeObserver").callsFake((callback) => new ResizeObserverMock(callback));
+    sinon.stub(ResizeObserverModule, "ResizeObserver").callsFake((callback) => new ResizeObserverMock(callback));
     sinon.stub(ResizeObserverMock.prototype, "observe").callsFake(function (this: ResizeObserverMock, element: Element) {
       if (element.classList.contains("nz-toolSettings-docked")) {
         resizeObserver = this;
@@ -214,7 +214,7 @@ describe("DockedToolSettings", () => {
 
     let resizeObserver: ResizeObserverMock | undefined;
     let target: Element | undefined;
-    sinon.stub(ResizeObserver as any, "ResizeObserver").callsFake((callback) => new ResizeObserverMock(callback));
+    sinon.stub(ResizeObserverModule, "ResizeObserver").callsFake((callback) => new ResizeObserverMock(callback));
     sinon.stub(ResizeObserverMock.prototype, "observe").callsFake(function (this: ResizeObserverMock, element: Element) {
       if (element instanceof HTMLElement && element.classList.contains("nz-toolSettings-setting") && queryByText(element, "Entry 1")) {
         resizeObserver = this;

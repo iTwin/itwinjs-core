@@ -11,7 +11,7 @@ import { createRandomECInstanceKey, createRandomId, ResolvablePromise, waitForAl
 import {
   HiliteSet, Presentation, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionManager, SelectionScopesManager,
 } from "@bentley/presentation-frontend";
-import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
+import "@bentley/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import { ViewportComponent } from "@bentley/ui-imodel-components";
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";

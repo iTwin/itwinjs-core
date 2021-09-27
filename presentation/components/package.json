@@ -130,7 +130,7 @@
     "exclude": [
       "src/presentation-components.ts",
       "src/test/**",
-      "lib/test/**"
+      "lib/cjs/test/**"
     ]
   },
   "eslintConfig": {

@@ -14,7 +14,7 @@
     "build": "npm run build:cjs && npm run copy:test-assets",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
+    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
     "extract-api": "betools extract-api --entry=ecschema-locaters",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "mocha",

@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { useTargeted } from "@bentley/ui-core";
 import { ReactWrapper, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
+import * as useTargetedModule from "@bentley/ui-core/lib/cjs/ui-core/utils/hooks/useTargeted";
 import { WidgetTarget, WidgetTargetProps } from "../../../ui-ninezone/zones/target/Target";
 import { mount } from "../../Utils";
 
@@ -27,7 +27,7 @@ describe("<WidgetTarget />", () => {
   });
 
   it("renders targeted correctly", () => {
-    sinon.stub(useTargeted as any, "useTargeted").returns(true);
+    sinon.stub(useTargetedModule, "useTargeted").returns(true);
     shallow(<WidgetTarget />).should.matchSnapshot();
   });
 

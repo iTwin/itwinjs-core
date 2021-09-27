@@ -10,7 +10,7 @@ import {
   ISelectionProvider, Presentation, PresentationManager, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler,
   SelectionManager,
 } from "@bentley/presentation-frontend";
-import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
+import "@bentley/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import { ColumnDescription, RowItem, Table, TableDataChangeEvent, TableProps } from "@bentley/ui-components";
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";

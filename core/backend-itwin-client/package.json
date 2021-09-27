@@ -15,6 +15,7 @@
     "compile": "npm run build",
     "build": "npm run build:cjs",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm test",
     "cover:integration": "nyc --report-dir ./lib/cjs/test/coverage/integration npm run test:integration",
