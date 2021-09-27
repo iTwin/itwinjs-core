@@ -872,10 +872,13 @@ export class DisplayStyleSettings {
       whiteOnWhiteReversal: this.whiteOnWhiteReversal.toJSON() ?? { ignoreBackgroundColor: false },
     };
 
-    if (options?.includeBackgroundMap)
+    if (options?.includeBackgroundMap) {
       props.backgroundMap = this.backgroundMap.toJSON();
-    else
-      delete viewflags.backgroundMap;
+      props.mapImagery = this.mapImagery.toJSON();
+    } else {
+      delete props.backgroundMap;
+      delete props.mapImagery;
+    }
 
     if (!options?.includeDrawingAids) {
       delete viewflags.acs;
@@ -956,6 +959,9 @@ export class DisplayStyleSettings {
 
     if (overrides.backgroundMap)
       this.backgroundMap = BackgroundMapSettings.fromJSON(overrides.backgroundMap);
+
+    if (overrides.mapImagery)
+      this.mapImagery = MapImagerySettings.createFromJSON(overrides.mapImagery, this.backgroundMap.toJSON());
 
     if (undefined !== overrides.timePoint)
       this.timePoint = overrides.timePoint;
