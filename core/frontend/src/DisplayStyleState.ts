@@ -8,8 +8,8 @@
 import { assert, BeEvent, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Angle, Range1d, Vector3d } from "@bentley/geometry-core";
 import {
-  BackgroundMapProps, BackgroundMapProvider, BackgroundMapProviderName, BackgroundMapSettings, BackgroundMapType, BaseLayerSettings, BaseMapLayerSettings,
-  ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
+  BackgroundMapProps, BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapSettings,
+  BaseLayerSettings, BaseMapLayerSettings, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
   DisplayStyleProps, DisplayStyleSettings, EnvironmentProps, FeatureAppearance, GlobeMode, GroundPlane, LightSettings, MapLayerProps,
   MapLayerSettings, MapSubLayerProps, RenderSchedule, RenderTexture, RenderTimelineProps, SkyBoxImageType, SkyBoxProps,
   SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, TerrainHeightOriginMode, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
@@ -170,7 +170,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this.backgroundMapSettings = newSettings;
   }
 
-  public changeBackgroundMapProvider(props: { name?: BackgroundMapProviderName, type?: BackgroundMapType }): void {
+  public changeBackgroundMapProvider(props: BackgroundMapProviderProps): void {
     const provider = BackgroundMapProvider.fromJSON(props);
     const base = this.settings.mapImagery.backgroundBase;
     if (base instanceof ColorDef)

@@ -5,7 +5,8 @@
 
 import { expect } from "chai";
 import { CompressedId64Set, Id64String, OrderedId64Iterable } from "@bentley/bentleyjs-core";
-import { BackgroundMapType, GlobeMode } from "../BackgroundMapSettings";
+import { BackgroundMapType } from "../BackgroundMapProvider";
+import { GlobeMode } from "../BackgroundMapSettings";
 import { ColorByName } from "../ColorByName";
 import {
   DisplayStyle3dSettings, DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, DisplayStylePlanarClipMaskProps, DisplayStyleSettings, MonochromeMode,
@@ -16,7 +17,6 @@ import { SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from 
 import { ThematicDisplayMode } from "../ThematicDisplay";
 import { RenderMode, ViewFlags } from "../ViewFlags";
 import { PlanarClipMaskMode, PlanarClipMaskSettings } from "../PlanarClipMask";
-import { BaseMapLayerSettings, MapLayerSettings } from "../MapLayerSettings";
 import { WhiteOnWhiteReversalProps, WhiteOnWhiteReversalSettings } from "../WhiteOnWhiteReversalSettings";
 
 describe("DisplayStyleSettings", () => {
@@ -421,7 +421,7 @@ describe("DisplayStyleSettings overrides", () => {
       },
       backgroundLayers: undefined,
       overlayLayers: undefined,
-    }
+    },
   };
 
   const projectProps: DisplayStyle3dSettingsProps = {

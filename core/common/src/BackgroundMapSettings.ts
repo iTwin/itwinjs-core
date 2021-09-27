@@ -6,20 +6,9 @@
  * @module DisplayStyles
  */
 
-import { BackgroundMapProvider, MapLayerProps } from "./MapLayerSettings";
+import { BackgroundMapProvider, BackgroundMapProviderName, BackgroundMapType } from "./BackgroundMapProvider";
 import { PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
 import { TerrainProps, TerrainSettings } from "./TerrainSettings";
-
-/** Describes the type of background map displayed by a [[DisplayStyle]]
- * @see [[BackgroundMapProps]]
- * @see [[DisplayStyleSettingsProps]]
- * @public
- */
-export enum BackgroundMapType {
-  Street = 1,
-  Aerial = 2,
-  Hybrid = 3,
-}
 
 /** Describes the projection of the background map
  * @see [[BackgroundMapProps]]
@@ -77,11 +66,6 @@ export interface BackgroundMapWithProviderProps extends BackgroundMapProps {
     mapType?: BackgroundMapType;
   };
 }
-
-/** The current set of supported background map providers.
- * @public
- */
-export type BackgroundMapProviderName = "BingProvider" | "MapBoxProvider";
 
 function normalizeGlobeMode(mode?: GlobeMode): GlobeMode {
   return GlobeMode.Plane === mode ? mode : GlobeMode.Ellipsoid;
@@ -176,10 +160,12 @@ export class BackgroundMapSettings {
       props.planarClipMask = this.planarClipMask.toJSON();
 
     // Preserve deprecated imagery provider properties.
+    // eslint-disable deprecation/deprecation
     if ("BingProvider" !== this._provider.name)
       props.providerName = this._provider.name;
     if (BackgroundMapType.Hybrid !== this._provider.type)
       props.providerData = { mapType: this._provider.type };
+    // eslint-enable deprecation/deprecation
 
     return props;
   }

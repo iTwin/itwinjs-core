@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { BackgroundMapProps, BackgroundMapSettings } from "./BackgroundMapSettings";
+import { BackgroundMapProps } from "./BackgroundMapSettings";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { BaseMapLayerProps, BaseMapLayerSettings, MapLayerProps, MapLayerSettings } from "./MapLayerSettings";
 
@@ -33,6 +33,7 @@ export interface MapImageryProps {
  */
 export type BaseLayerSettings = BaseMapLayerSettings | ColorDef;
 
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export namespace BaseLayerSettings {
   export function fromJSON(props: BaseLayerProps): BaseLayerSettings {
     const settings = typeof props === "number" ? ColorDef.fromJSON(props) : BaseMapLayerSettings.fromJSON(props);

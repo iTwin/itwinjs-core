@@ -14,7 +14,7 @@ import {
 import { XYZProps } from "@bentley/geometry-core";
 import { AmbientOcclusion } from "./AmbientOcclusion";
 import { AnalysisStyle, AnalysisStyleProps } from "./AnalysisStyle";
-import { BackgroundMapProps, BackgroundMapSettings, BackgroundMapWithProviderProps } from "./BackgroundMapSettings";
+import { BackgroundMapSettings, BackgroundMapWithProviderProps } from "./BackgroundMapSettings";
 import { ClipStyle, ClipStyleProps } from "./ClipStyle";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { DefinitionElementProps } from "./ElementProps";

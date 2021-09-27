@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { BackgroundMapSettings, BackgroundMapType } from "../BackgroundMapSettings";
+import { BackgroundMapType } from "../BackgroundMapProvider";
 import { BaseMapLayerSettings, MapLayerProps, MapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "../imodeljs-common";
 
 const testMapSubLayer0 = { name: "TestName", title: "TestTitle", visible: true };

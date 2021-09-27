@@ -9,7 +9,7 @@ import {
   SpatialModel, StandaloneDb, ViewDefinition,
 } from "@bentley/imodeljs-backend";
 import {
-  AxisAlignedBox3d, BackgroundMapWithProviderProps, BackgroundMapType, Cartographic, Code, ColorByName, ColorDef, EcefLocation, GeometricElement3dProps,
+  AxisAlignedBox3d, BackgroundMapType, BackgroundMapWithProviderProps, Cartographic, Code, ColorByName, ColorDef, EcefLocation, GeometricElement3dProps,
   GeometryParams, GeometryStreamBuilder, GeometryStreamProps, IModel, RenderMode, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { insertClassifiedRealityModel } from "./ClassifyRealityModel";

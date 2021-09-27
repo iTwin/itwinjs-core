@@ -7,7 +7,7 @@
 import { compareStrings, getErrorMessage } from "@bentley/bentleyjs-core";
 import { Point2d } from "@bentley/geometry-core";
 import {
-  BackgroundMapWithProviderProps, BackgroundMapProvider, BackgroundMapSettings, BackgroundMapType, BaseMapLayerSettings, MapLayerSettings, MapSubLayerProps,
+  BackgroundMapProvider, BackgroundMapType, BackgroundMapWithProviderProps, BaseMapLayerSettings, MapLayerSettings, MapSubLayerProps,
 } from "@bentley/imodeljs-common";
 import { getJson, RequestBasicCredentials } from "@bentley/itwin-client";
 import { FrontendRequestContext } from "../../FrontendRequestContext";

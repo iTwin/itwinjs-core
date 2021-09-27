@@ -7,7 +7,7 @@
  */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { BackgroundMapSettings, MapImagerySettings, MapLayerSettings } from "@bentley/imodeljs-common";
+import { MapImagerySettings, MapLayerSettings } from "@bentley/imodeljs-common";
 import { Viewport } from "../../Viewport";
 import { ViewState } from "../../ViewState";
 import { MapLayerImageryProvider, MapTileTreeReference, TiledGraphicsProvider, TileTreeReference } from "../internal";
