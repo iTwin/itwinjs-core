@@ -89,7 +89,12 @@ export class MapImagerySettings {
   }
 
   /** Construct from JSON, performing validation and applying default values for undefined fields. */
-  public static fromJSON(imageryJson?: MapImageryProps, mapProps?: BackgroundMapProps) {
+  public static fromJSON(imageryJson?: MapImageryProps) {
+    return this.createFromJSON(imageryJson, undefined);
+  }
+
+  /** @internal */
+  public static createFromJSON(imageryJson?: MapImageryProps, mapProps?: BackgroundMapProps) {
     const baseLayer = imageryJson?.backgroundBase ? BaseLayerSettings.fromJSON(imageryJson.backgroundBase) : BaseMapLayerSettings.fromBackgroundMapProps(mapProps ?? { });
     return new MapImagerySettings(baseLayer, imageryJson?.backgroundLayers, imageryJson?.overlayLayers);
   }

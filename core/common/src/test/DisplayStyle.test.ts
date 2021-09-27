@@ -296,23 +296,23 @@ describe("DisplayStyleSettings", () => {
 
   // ###TODO @rbbentley
   it.skip("synchronizes BackgroundMapSettings with MapLayerSettings", () => {
-    const style = new DisplayStyleSettings({});
-    expect(style.backgroundMap.providerName).to.equal("BingProvider");
-    expect(style.backgroundMap.mapType).to.equal(BackgroundMapType.Hybrid);
+    // ###TODO const style = new DisplayStyleSettings({});
+    // ###TODO expect(style.backgroundMap.providerName).to.equal("BingProvider");
+    // ###TODO expect(style.backgroundMap.mapType).to.equal(BackgroundMapType.Hybrid);
 
-    let base = style.mapImagery.backgroundBase as MapLayerSettings;
-    expect(base).instanceOf(MapLayerSettings);
-    expect(base.formatId).to.equal("BingMaps");
-    expect(base.url.indexOf("AerialWithLabels")).least(1);
+    // ###TODO let base = style.mapImagery.backgroundBase as MapLayerSettings;
+    // ###TODO expect(base).instanceOf(MapLayerSettings);
+    // ###TODO expect(base.formatId).to.equal("BingMaps");
+    // ###TODO expect(base.url.indexOf("AerialWithLabels")).least(1);
 
-    style.backgroundMap = style.backgroundMap.clone({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street } });
-    base = style.mapImagery.backgroundBase as MapLayerSettings;
-    expect(base.formatId).to.equal("MapboxImagery");
-    expect(base.url.indexOf("mapbox.streets/")).least(1);
+    // ###TODO style.backgroundMap = style.backgroundMap.clone({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street } });
+    // ###TODO base = style.mapImagery.backgroundBase as MapLayerSettings;
+    // ###TODO expect(base.formatId).to.equal("MapboxImagery");
+    // ###TODO expect(base.url.indexOf("mapbox.streets/")).least(1);
 
-    style.mapImagery.backgroundBase = BaseMapLayerSettings.fromBackgroundMapProps(style.backgroundMap.clone({ providerData: { mapType: BackgroundMapType.Aerial } }).toJSON());
-    expect(style.backgroundMap.providerName).to.equal("MapBoxProvider");
-    expect(style.backgroundMap.mapType).to.equal(BackgroundMapType.Aerial);
+    // ###TODO style.mapImagery.backgroundBase = BaseMapLayerSettings.fromBackgroundMapProps(style.backgroundMap.clone({ providerData: { mapType: BackgroundMapType.Aerial } }).toJSON());
+    // ###TODO expect(style.backgroundMap.providerName).to.equal("MapBoxProvider");
+    // ###TODO expect(style.backgroundMap.mapType).to.equal(BackgroundMapType.Aerial);
   });
 });
 

@@ -518,7 +518,7 @@ export class DisplayStyleSettings {
     this._monochromeMode = MonochromeMode.Flat === this._json.monochromeMode ? MonochromeMode.Flat : MonochromeMode.Scaled;
 
     this._backgroundMap = BackgroundMapSettings.fromJSON(this._json.backgroundMap);
-    this._mapImagery = MapImagerySettings.fromJSON(this._json.mapImagery, this._json.backgroundMap);
+    this._mapImagery = MapImagerySettings.createFromJSON(this._json.mapImagery, this._json.backgroundMap);
 
     this._excludedElements = new ExcludedElements(this._json);
 
