@@ -186,8 +186,8 @@ describe("Viewport", () => {
     test({ groundBias: -50.3 }, { groundBias: -50.3, transparency: 0.3, useDepthBuffer: true, applyTerrain: true });
 
     // Change bias
-    test({ groundBias: 0.03 },
-      { groundBias: 0.03, transparency: 0.3, useDepthBuffer: true, applyTerrain: true });
+    test({ groundBias: -10 },
+      { groundBias: -10, transparency: 0.3, useDepthBuffer: true, applyTerrain: true });
 
     // Change transparency to a number
     test({ transparency: 0.0 }, { groundBias: -10, transparency: 0.0, useDepthBuffer: true, applyTerrain: true });
