@@ -876,8 +876,7 @@ export class DisplayStyleSettings {
       props.backgroundMap = this.backgroundMap.toJSON();
       props.mapImagery = this.mapImagery.toJSON();
     } else {
-      delete props.backgroundMap;
-      delete props.mapImagery;
+      delete viewflags.backgroundMap;
     }
 
     if (!options?.includeDrawingAids) {

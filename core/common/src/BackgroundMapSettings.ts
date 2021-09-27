@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { MapLayerProps } from "./MapLayerSettings";
+import { BackgroundMapProvider, MapLayerProps } from "./MapLayerSettings";
 import { PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
 import { TerrainProps, TerrainSettings } from "./TerrainSettings";
 
@@ -97,6 +97,8 @@ function normalizeTransparency(trans?: number | false): number | false {
  * @public
  */
 export class BackgroundMapSettings {
+  private readonly _provider: BackgroundMapProvider;
+
   /** Elevation in meters, relative to WGS84 Ellipsoid.. */
   public readonly groundBias: number;
   /** A transparency value from 0.0 (fully opaque) to 1.0 (fully transparent) to apply to map graphics when drawing, or false to indicate the transparency should not be overridden. Default value: false. */
@@ -139,6 +141,7 @@ export class BackgroundMapSettings {
     this.globeMode = normalizeGlobeMode(props.globeMode);
     this._locatable = true !== props.nonLocatable;
     this.planarClipMask = PlanarClipMaskSettings.fromJSON(props.planarClipMask);
+    this._provider = BackgroundMapProvider.fromJSON({ name: props.providerName, type: props.providerData?.mapType });
   }
 
   /** Construct from JSON, performing validation and applying default values for undefined fields. */
@@ -170,6 +173,12 @@ export class BackgroundMapSettings {
     }
     if (this.planarClipMask.isValid)
       props.planarClipMask = this.planarClipMask.toJSON();
+
+    // Preserve deprecated imagery provider properties.
+    if ("BingProvider" !== this._provider.name)
+      props.providerName = this._provider.name;
+    if (BackgroundMapType.Hybrid !== this._provider.type)
+      props.providerData = { mapType: this._provider.type };
 
     return props;
   }

@@ -404,6 +404,24 @@ describe("DisplayStyleSettings overrides", () => {
         heightOriginMode: 0,
       },
     },
+    mapImagery: {
+      backgroundBase: {
+        accessKey: undefined,
+        formatId: "BingMaps",
+        isBase: true,
+        name: "Bing Maps: Aerial Imagery",
+        provider: {
+          name: "BingProvider",
+          type: 2,
+        },
+        subLayers: [],
+        transparentBackground: false,
+        url: "https://dev.virtualearth.net/REST/v1/Imagery/Metadata/Aerial?o=json&incl=ImageryProviders&key={bingKey}",
+        visible: true,
+      },
+      backgroundLayers: undefined,
+      overlayLayers: undefined,
+    }
   };
 
   const projectProps: DisplayStyle3dSettingsProps = {
