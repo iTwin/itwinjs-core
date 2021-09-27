@@ -7,12 +7,12 @@
  */
 
 import {
-  assert, BentleyStatus, compareNumbers, compareStrings, compareStringsOrUndefined, CompressedId64Set, Guid, Id64String,
+  assert, BentleyStatus, compareNumbers, compareStringsOrUndefined, CompressedId64Set, Guid, Id64String
 } from "@bentley/bentleyjs-core";
 import { Angle, Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@bentley/geometry-core";
 import {
   Cartographic, GeoCoordStatus, IModelError, PlanarClipMaskPriority, PlanarClipMaskSettings,
-  SpatialClassifiers, ViewFlagOverrides, ViewFlagPresence,
+  RealityDataConnectionProps, SpatialClassifiers, ViewFlagOverrides, ViewFlagPresence,
 } from "@bentley/imodeljs-common";
 import { AccessToken, request, RequestOptions } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
@@ -23,6 +23,7 @@ import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { PlanarClipMaskState } from "../PlanarClipMaskState";
+import { RealityDataConnection } from "../RealityDataConnection";
 import { RenderMemory } from "../render/RenderMemory";
 import { SceneContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
@@ -30,7 +31,7 @@ import { ViewState } from "../ViewState";
 import {
   BatchedTileIdMap, createClassifierTileTreeReference, createDefaultViewFlagOverrides, DisclosedTileTreeSet, getCesiumAccessTokenAndEndpointUrl, getCesiumOSMBuildingsUrl, getGcsConverterAvailable, RealityTile, RealityTileLoader, RealityTileParams,
   RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile, TileDrawArgs, TileLoadPriority, TileRequest, TileTree,
-  TileTreeOwner, TileTreeReference, TileTreeSupplier,
+  TileTreeOwner, TileTreeReference, TileTreeSupplier
 } from "./internal";
 
 function getUrl(content: any) {
@@ -38,7 +39,7 @@ function getUrl(content: any) {
 }
 
 interface RealityTreeId {
-  url: string;
+  rdConnection: RealityDataConnectionProps;
   transform?: Transform;
   modelId: Id64String;
   maskModelIds?: string;
@@ -88,11 +89,20 @@ class RealityTreeSupplier implements TileTreeSupplier {
     if (treeId.maskModelIds)
       await iModel.models.load(CompressedId64Set.decompressSet(treeId.maskModelIds));
 
-    return RealityModelTileTree.createRealityModelTileTree(treeId.url, iModel, treeId.modelId, treeId.transform);
+    return RealityModelTileTree.createRealityModelTileTree(treeId.rdConnection.tilesetUrl, iModel, treeId.modelId, treeId.transform);
   }
 
   public compareTileTreeIds(lhs: RealityTreeId, rhs: RealityTreeId): number {
-    let cmp = compareStrings(lhs.url, rhs.url);
+    let cmp = compareStringsOrUndefined(lhs.rdConnection.provider.toString(), rhs.rdConnection.provider.toString());
+    if (0 === cmp) {
+      cmp = compareStringsOrUndefined(lhs.rdConnection.realityDataId, rhs.rdConnection.realityDataId);
+      if (0 === cmp) {
+        cmp = compareStringsOrUndefined(lhs.rdConnection.tilesetUrl, rhs.rdConnection.tilesetUrl);
+        if (0 === cmp)
+          cmp = compareStringsOrUndefined(lhs.rdConnection.iTwinId, rhs.rdConnection.iTwinId);
+      }
+    }
+
     if (0 === cmp)
       cmp = compareStringsOrUndefined(lhs.modelId, rhs.modelId);
 
@@ -497,6 +507,7 @@ export namespace RealityModelTileTree {
   export interface ReferenceBaseProps {
     iModel: IModelConnection;
     source: RealityModelSource;
+    rdConnection?: RealityDataConnectionProps;
     modelId?: Id64String;
     tilesetToDbTransform?: TransformProps;
     tilesetToEcefTransform?: TransformProps;
@@ -683,13 +694,26 @@ export namespace RealityModelTileTree {
  */
 class RealityTreeReference extends RealityModelTileTree.Reference {
   private readonly _url: string;
+  protected _rdConnection: RealityDataConnection;
 
   public constructor(props: RealityModelTileTree.ReferenceProps) {
     super(props);
     this._url = props.url;
+    // Default legacy behavior is to use tilesetUrl (props.url);
+    this._rdConnection = RealityDataConnection.fromUrl(props.url);
+    if (props.rdConnection) {
+      // If rdConnection props is provided, instantiate an RealityDataConnection and resolved the connection now
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      RealityDataConnection.createFromProps(props.rdConnection).then((rdConnection) => {
+        if (rdConnection)
+          this._rdConnection = rdConnection;
+        else
+          this._rdConnection = RealityDataConnection.fromUrl(props.url);
+      });
+    }
   }
   public get treeOwner(): TileTreeOwner {
-    const treeId: RealityTreeId = { url: this._url, transform: this._transform, modelId: this.modelId, maskModelIds: this.maskModelIds };
+    const treeId: RealityTreeId = { rdConnection: this._rdConnection.toProps(), transform: this._transform, modelId: this.modelId, maskModelIds: this.maskModelIds };
     return realityTreeSupplier.getOwner(treeId, this._iModel);
   }
 

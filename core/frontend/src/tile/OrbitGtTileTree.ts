@@ -10,18 +10,22 @@ import { BeTimePoint, compareStrings, compareStringsOrUndefined, Id64String } fr
 import { Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
 import {
   BatchType, Cartographic, ColorDef, Feature,
-  FeatureTable, Frustum, FrustumPlanes, GeoCoordStatus, OrbitGtBlobProps, PackedFeatureTable, QParams3d, Quantization,
-  ViewFlagOverrides,
+  FeatureTable, Frustum, FrustumPlanes, GeoCoordStatus, OrbitGtBlobProps, PackedFeatureTable, QParams3d,
+  Quantization, RealityDataConnectionProps, ViewFlagOverrides,
 } from "@bentley/imodeljs-common";
+import { AccessToken } from "@bentley/itwin-client";
 import {
   ALong, CRSManager, Downloader, DownloaderXhr, OnlineEngine, OPCReader, OrbitGtAList, OrbitGtBlockIndex, OrbitGtBounds, OrbitGtCoordinate,
   OrbitGtDataManager, OrbitGtFrameData, OrbitGtIProjectToViewForSort, OrbitGtIViewRequest, OrbitGtLevel, OrbitGtTileIndex, OrbitGtTileLoadSorter,
   OrbitGtTransform, PageCachedFile, PointDataRaw, UrlFS,
 } from "@bentley/orbitgt-core";
+import { RealityDataClient } from "@bentley/reality-data-client";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
+import { AuthorizedFrontendRequestContext } from "../FrontendRequestContext";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
+import { RealityDataConnection } from "../RealityDataConnection";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
 import { RenderGraphic } from "../render/RenderGraphic";
@@ -34,14 +38,12 @@ import {
   TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeOwner, TileTreeParams, TileTreeSupplier,
 } from "./internal";
 import { TileUsageMarker } from "./TileUsageMarker";
-import { AccessToken } from "@bentley/itwin-client";
-import { AuthorizedFrontendRequestContext } from "../FrontendRequestContext";
-import { RealityDataClient } from "@bentley/reality-data-client";
 
 const scratchRange = Range3d.create();
 const scratchWorldFrustum = new Frustum();
 
 interface OrbitGtTreeId {
+  rdConnection: RealityDataConnectionProps;
   orbitGtProps: OrbitGtBlobProps;
   modelId: Id64String;
 }
@@ -52,11 +54,21 @@ class OrbitGtTreeSupplier implements TileTreeSupplier {
   }
 
   public async createTileTree(treeId: OrbitGtTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
-    return OrbitGtTileTree.createOrbitGtTileTree(treeId.orbitGtProps, iModel, treeId.modelId);
+    return OrbitGtTileTree.createOrbitGtTileTree(treeId.orbitGtProps, treeId.rdConnection, iModel, treeId.modelId);
   }
 
   public compareTileTreeIds(lhs: OrbitGtTreeId, rhs: OrbitGtTreeId): number {
-    let cmp = compareStrings(lhs.orbitGtProps.accountName, rhs.orbitGtProps.accountName);
+    let cmp = compareStringsOrUndefined(lhs.rdConnection.provider.toString(), rhs.rdConnection.provider.toString());
+    if (0 === cmp) {
+      cmp = compareStringsOrUndefined(lhs.rdConnection.realityDataId, rhs.rdConnection.realityDataId);
+      if (0 === cmp) {
+        cmp = compareStringsOrUndefined(lhs.rdConnection.tilesetUrl, rhs.rdConnection.tilesetUrl);
+        if (0 === cmp)
+          cmp = compareStringsOrUndefined(lhs.rdConnection.iTwinId, rhs.rdConnection.iTwinId);
+      }
+    }
+    if (0 === cmp)
+      cmp = compareStrings(lhs.orbitGtProps.accountName, rhs.orbitGtProps.accountName);
     if (0 === cmp)
       cmp = compareStringsOrUndefined(lhs.modelId, rhs.modelId);
     if (0 === cmp) {
@@ -109,7 +121,9 @@ function rangeFromOrbitGt(ogtBounds: OrbitGtBounds, result?: Range3d) {
 }
 
 /** @internal */
-export function createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): RealityModelTileTree.Reference { return new OrbitGtTreeReference(props); }
+export function createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): RealityModelTileTree.Reference {
+  return new OrbitGtTreeReference(props);
+}
 
 class OrbitGtTileTreeParams implements TileTreeParams {
   public id: string;
@@ -423,7 +437,7 @@ export namespace OrbitGtTileTree {
     return isValidOrbitGtBlobProps(props);
   }
 
-  async function initializeOrbitGtBlobProps(props: OrbitGtBlobProps, iModel: IModelConnection): Promise<boolean> {
+  async function initializeOrbitGtBlobProps(props: OrbitGtBlobProps, rdConnection: RealityDataConnection | undefined, iModel: IModelConnection): Promise<boolean> {
 
     // If blobFileName is full http(s), parse it to orbitGtBlobProps
     if(props.blobFileName) {
@@ -432,17 +446,21 @@ export namespace OrbitGtTileTree {
           return false;
     }
 
-    const accessToken: AccessToken | undefined = await getAccessTokenRDS();
-    if (!accessToken)
-      return false;
+    if (rdConnection === undefined) {
+      const accessToken: AccessToken | undefined = await getAccessTokenRDS();
+      if (!accessToken)
+        return false;
 
-    // If there's no rdsUrl, request one from RealityDataClient
-    if(!props.rdsUrl) {
-      const authRequestContext = new AuthorizedFrontendRequestContext(accessToken);
-      authRequestContext.enter();
+      // If there's no rdsUrl, request one from RealityDataClient
+      if (!props.rdsUrl) {
+        const authRequestContext = new AuthorizedFrontendRequestContext(accessToken);
+        authRequestContext.enter();
 
-      const rdClient: RealityDataClient = new RealityDataClient();
-      props.rdsUrl = await rdClient.getRealityDataUrl(authRequestContext, iModel.contextId, props.containerName);
+        const rdClient: RealityDataClient = new RealityDataClient();
+        props.rdsUrl = await rdClient.getRealityDataUrl(authRequestContext, iModel.contextId, props.containerName);
+      }
+    } else {
+      props.rdsUrl = await rdConnection.getServiceUrl();
     }
 
     // If props are now valid, return OK
@@ -453,9 +471,10 @@ export namespace OrbitGtTileTree {
     return updateOrbitGtBlobPropsFromRdsUrl(props.rdsUrl, props, iModel.contextId);
   }
 
-  export async function createOrbitGtTileTree(props: OrbitGtBlobProps, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined> {
+  export async function createOrbitGtTileTree(props: OrbitGtBlobProps, rdConnectionProps: RealityDataConnectionProps, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined> {
+    const rdConnection = await RealityDataConnection.createFromProps(rdConnectionProps);
 
-    if (await initializeOrbitGtBlobProps(props, iModel) === false)
+    if (await initializeOrbitGtBlobProps(props, rdConnection, iModel) === false)
       return undefined;
 
     const { accountName, containerName, blobFileName, sasToken } = props;
@@ -529,12 +548,26 @@ export namespace OrbitGtTileTree {
  */
 class OrbitGtTreeReference extends RealityModelTileTree.Reference {
   public readonly treeOwner: TileTreeOwner;
+  protected _rdConnection: RealityDataConnection;
   public override get castsShadows() { return false; }
 
   public constructor(props: OrbitGtTileTree.ReferenceProps) {
     super(props);
+    // Default legacy behavior is to use tilesetUrl (props.url);
+    if (props.orbitGtBlob.rdsUrl)
+      this._rdConnection = RealityDataConnection.fromUrl(props.orbitGtBlob.rdsUrl);
+    else
+      this._rdConnection = RealityDataConnection.fromUrl(props.orbitGtBlob.blobFileName);
+    if (props.rdConnection) {
+      // If rdConnection props is provided, instantiate an RealityDataConnection and resolved the connection now
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      RealityDataConnection.createFromProps(props.rdConnection).then((rdConnection) => {
+        if (rdConnection)
+          this._rdConnection = rdConnection;
+      });
+    }
 
-    const ogtTreeId: OrbitGtTreeId = { orbitGtProps: props.orbitGtBlob, modelId: this.modelId };
+    const ogtTreeId: OrbitGtTreeId = { rdConnection: this._rdConnection.toProps(), orbitGtProps: props.orbitGtBlob, modelId: this.modelId };
     this.treeOwner = orbitGtTreeSupplier.getOwner(ogtTreeId, props.iModel);
   }
 

@@ -37,4 +37,10 @@ export enum FrontendLoggerCategory {
    * @alpha
    */
   FeatureTracking = "imodeljs-frontend.FeatureTracking",
+
+  /**
+   * The logger category used by RealityData
+   * @alpha
+   */
+  RealityData = "imodeljs-frontend.RealityData",
 }
