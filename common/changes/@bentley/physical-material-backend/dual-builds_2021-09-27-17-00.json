@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/physical-material-backend",
+      "comment": "Upgrade target to ES2019",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/physical-material-backend"
+}

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-editor-backend",
+      "comment": "Upgrade target to ES2019",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-editor-backend"
+}

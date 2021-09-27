@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/linear-referencing-common",
+      "comment": "Upgrade target to ES2019",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/linear-referencing-common"
+}

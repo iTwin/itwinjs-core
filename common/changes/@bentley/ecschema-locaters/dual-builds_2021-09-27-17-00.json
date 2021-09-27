@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecschema-locaters",
+      "comment": "Upgrade target to ES2019",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ecschema-locaters"
+}
