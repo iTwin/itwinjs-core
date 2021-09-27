@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { assert } from "@bentley/bentleyjs-core";
-import { ElectronAuthorizationBackend, ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronBackend";
+import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronBackend";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
-import { IModelHost, IpcHandler } from "@bentley/imodeljs-backend";
+import { IpcHandler } from "@bentley/imodeljs-backend";
 import { getConfig } from "../common/DtaConfiguration";
 
 const mainWindowName = "mainWindow";
