@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, GlobeMode } from "../BackgroundMapSettings";
-import { MapLayerSettings } from "../MapLayerSettings";
+import { BaseMapLayerSettings, MapLayerSettings } from "../MapLayerSettings";
 import { TerrainHeightOriginMode } from "../TerrainSettings";
 
 describe("BackgroundMapSettings", () => {
@@ -53,7 +53,7 @@ describe("BackgroundMapSettings", () => {
       expect(settings.equals(expectedSettings)).to.be.true;
 
       // Check synch through base map layer.
-      const mapLayer = MapLayerSettings.fromMapSettings(settings);
+      const mapLayer = BaseMapLayerSettings.fromBackgroundMapProps(settings.toJSON());
       const providerProps = BackgroundMapSettings.providerFromMapLayer(mapLayer.toJSON());
       const synchedFromProvider = settings.clone(providerProps);
       expect(settings.equals(synchedFromProvider)).to.be.true;

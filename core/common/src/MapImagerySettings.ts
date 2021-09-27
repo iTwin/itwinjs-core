@@ -8,12 +8,12 @@
 
 import { BackgroundMapProps, BackgroundMapSettings } from "./BackgroundMapSettings";
 import { ColorDef, ColorDefProps } from "./ColorDef";
-import { MapLayerProps, MapLayerSettings } from "./MapLayerSettings";
+import { BaseMapLayerProps, BaseMapLayerSettings, MapLayerProps, MapLayerSettings } from "./MapLayerSettings";
 
 /** The JSON representation of base layer properties -- these can be represented by either a full map layer or a simple color.
  * @beta
  */
-export type BaseLayerProps = MapLayerProps | ColorDefProps;
+export type BaseLayerProps = BaseMapLayerProps | ColorDefProps;
 
 /** The JSON representation of the map imagery.  Map imagery include the specification for the base layer (which was originally
  * represented by [[BackgroundMapProps.providerName]]  && [[BackgroundMapProps.providerData]]) and additional map layers.
@@ -31,7 +31,16 @@ export interface MapImageryProps {
 /** Normalized representation of base layer properties -- these can be represented by either a full map layer or a simple color.
  * @beta
  */
-export type BaseLayerSettings = MapLayerSettings | ColorDef;
+export type BaseLayerSettings = BaseMapLayerSettings | ColorDef;
+
+export namespace BaseLayerSettings {
+  export function fromJSON(props: BaseLayerProps): BaseLayerSettings {
+    const settings = typeof props === "number" ? ColorDef.fromJSON(props) : BaseMapLayerSettings.fromJSON(props);
+    
+    // ###TODO handle undefined BaseMapLayerSettings differently (what should be default?), or make MapImagerySettings.fromJSON possibly return undefined.
+    return settings ?? ColorDef.black;
+  }
+}
 
 /** Provides access to the map imagery settings (Base and layers).
  * In earlier versions only a background map was supported as specified by the providerName and mapType members of [[BackgroundMapSettings]] object.
@@ -44,9 +53,8 @@ export class MapImagerySettings {
   private _backgroundLayers = new Array<MapLayerSettings>();
   private _overlayLayers = new Array<MapLayerSettings>();
 
-  private constructor(backgroundBaseProps?: BaseLayerProps, backgroundLayerProps?: MapLayerProps[], overlayLayersProps?: MapLayerProps[], mapProps?: BackgroundMapProps) {
-    const base = typeof backgroundBaseProps === "number" ? ColorDef.create(backgroundBaseProps) : MapLayerSettings.fromJSON(backgroundBaseProps);
-    this._backgroundBase = base ? base : MapLayerSettings.fromMapSettings(BackgroundMapSettings.fromJSON(mapProps));
+  private constructor(base: BaseLayerSettings, backgroundLayerProps?: MapLayerProps[], overlayLayersProps?: MapLayerProps[]) {
+    this._backgroundBase = base;
     if (backgroundLayerProps) {
       for (const layerProps of backgroundLayerProps) {
         const layer = MapLayerSettings.fromJSON(layerProps);
@@ -82,7 +90,8 @@ export class MapImagerySettings {
 
   /** Construct from JSON, performing validation and applying default values for undefined fields. */
   public static fromJSON(imageryJson?: MapImageryProps, mapProps?: BackgroundMapProps) {
-    return new MapImagerySettings(imageryJson?.backgroundBase, imageryJson?.backgroundLayers, imageryJson?.overlayLayers, mapProps);
+    const baseLayer = imageryJson?.backgroundBase ? BaseLayerSettings.fromJSON(imageryJson.backgroundBase) : BaseMapLayerSettings.fromBackgroundMapProps(mapProps ?? { });
+    return new MapImagerySettings(baseLayer, imageryJson?.backgroundLayers, imageryJson?.overlayLayers);
   }
 
   public toJSON(): MapImageryProps {

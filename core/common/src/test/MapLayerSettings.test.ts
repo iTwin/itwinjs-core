@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { BackgroundMapSettings, BackgroundMapType } from "../BackgroundMapSettings";
-import { MapLayerProps, MapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "../imodeljs-common";
+import { BaseMapLayerSettings, MapLayerProps, MapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "../imodeljs-common";
 
 const testMapSubLayer0 = { name: "TestName", title: "TestTitle", visible: true };
 const testMapSubLayer1 = { name: "TestName", title: "TestTitle", visible: true, id: 0, parent: -1, children: [1, 2, 3] };
@@ -62,7 +62,7 @@ const testMapLayer2 = { name: "TestName", url: "www.bentley.com", formatId: "WMS
 const testMapLayer3 = { name: "TestName", url: "www.bentley.com", formatId: "WMS", subLayers: [testMapSubLayer0, testMapSubLayer1], visible: true };
 const testMapLayer4 = { name: "TestName", url: "www.bentley.com", formatId: "WMS", subLayers: [testMapSubLayer0, testMapSubLayer1], isBase: true, visible: false };
 const testMapLayer6 = { name: "TestName", url: "www.bentley.com", formatId: "WMS", visible: false };
-const legacyMapLayer = MapLayerSettings.fromMapSettings(BackgroundMapSettings.fromJSON({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid } }));
+const legacyMapLayer = BaseMapLayerSettings.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid } });
 
 describe("MapLayerSettings", () => {
   const expectMatches = (output: MapLayerProps, expected: MapLayerProps) => {

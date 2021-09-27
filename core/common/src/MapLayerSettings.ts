@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { BackgroundMapProviderName, BackgroundMapSettings, BackgroundMapType } from "./BackgroundMapSettings";
+import { BackgroundMapProps, BackgroundMapProviderName, BackgroundMapSettings, BackgroundMapType } from "./BackgroundMapSettings";
 
 /** @beta */
 export type SubLayerId = string | number;
@@ -231,7 +231,7 @@ export class MapLayerSettings {
   }
 
   /** @internal */
-  private static mapTypeName(type: BackgroundMapType) {   // TBD.. Localization.
+  protected static mapTypeName(type: BackgroundMapType) {   // TBD.. Localization.
     switch (type) {
       case BackgroundMapType.Aerial:
         return "Aerial Imagery";
@@ -241,50 +241,6 @@ export class MapLayerSettings {
       case BackgroundMapType.Street:
         return "Streets";
     }
-  }
-
-  /** Create a [[MapLayerSettings]] object from the image settings within a [[BackgroundMapSettings]] object (providerName and mapType).  */
-  public static fromMapSettings(mapSettings: BackgroundMapSettings): MapLayerSettings {
-    let formatId: string, url: string, name: string;
-    switch (mapSettings.providerName) {
-      case "BingProvider":
-      default:
-        formatId = "BingMaps";
-
-        let imagerySet;
-        switch (mapSettings.mapType) {
-          case BackgroundMapType.Street:
-            imagerySet = "Road";
-            break;
-          case BackgroundMapType.Aerial:
-            imagerySet = "Aerial";
-            break;
-          case BackgroundMapType.Hybrid:
-          default:
-            imagerySet = "AerialWithLabels";
-            break;
-        }
-        name = `Bing Maps: ${MapLayerSettings.mapTypeName(mapSettings.mapType)}`;
-        url = `https://dev.virtualearth.net/REST/v1/Imagery/Metadata/${imagerySet}?o=json&incl=ImageryProviders&key={bingKey}`;
-        break;
-
-      case "MapBoxProvider":
-        formatId = "MapboxImagery";
-        name = `MapBox: ${MapLayerSettings.mapTypeName(mapSettings.mapType)}`;
-        switch (mapSettings.mapType) {
-          case BackgroundMapType.Street:
-            url = "https://api.mapbox.com/v4/mapbox.streets/";
-            break;
-          case BackgroundMapType.Aerial:
-            url = "https://api.mapbox.com/v4/mapbox.satellite/";
-            break;
-          case BackgroundMapType.Hybrid:
-            url = "https://api.mapbox.com/v4/mapbox.streets-satellite/";
-            break;
-        }
-        break;
-    }
-    return MapLayerSettings.fromJSON({ name, formatId, url, transparentBackground: false, isBase: true })!;
   }
 
   /** Create a copy of this MapLayerSettings, optionally modifying some of its properties.
@@ -392,9 +348,9 @@ export class MapLayerSettings {
 
 export interface BackgroundMapProviderProps {
   /** default "BingProvider" */
-  name: BackgroundMapProviderName;
+  name?: string;
   /** default Hybrid */
-  type: BackgroundMapType;
+  type?: BackgroundMapType;
 }
 
 export class BackgroundMapProvider {
@@ -447,4 +403,65 @@ export class BaseMapLayerSettings extends MapLayerSettings {
 
     return settings;
   }
+
+  public override toJSON(): BaseMapLayerProps {
+    const props = super.toJSON() as BaseMapLayerProps;
+    if (this.provider)
+      props.provider = this.provider.toJSON();
+
+    return props;
+  }
+
+  /** @internal */
+  public static fromBackgroundMapProps(props: BackgroundMapProps): BaseMapLayerSettings {
+    const provider = BackgroundMapProvider.fromJSON({ name: props.providerName, type: props.providerData?.mapType });
+
+    let formatId: string, url: string, name: string;
+    switch (provider.name) {
+      case "BingProvider":
+      default:
+        formatId = "BingMaps";
+
+        let imagerySet;
+        switch (provider.type) {
+          case BackgroundMapType.Street:
+            imagerySet = "Road";
+            break;
+          case BackgroundMapType.Aerial:
+            imagerySet = "Aerial";
+            break;
+          case BackgroundMapType.Hybrid:
+          default:
+            imagerySet = "AerialWithLabels";
+            break;
+        }
+        name = `Bing Maps: ${MapLayerSettings.mapTypeName(provider.type)}`;
+        url = `https://dev.virtualearth.net/REST/v1/Imagery/Metadata/${imagerySet}?o=json&incl=ImageryProviders&key={bingKey}`;
+        break;
+
+      case "MapBoxProvider":
+        formatId = "MapboxImagery";
+        name = `MapBox: ${MapLayerSettings.mapTypeName(provider.type)}`;
+        switch (provider.type) {
+          case BackgroundMapType.Street:
+            url = "https://api.mapbox.com/v4/mapbox.streets/";
+            break;
+          case BackgroundMapType.Aerial:
+            url = "https://api.mapbox.com/v4/mapbox.satellite/";
+            break;
+          case BackgroundMapType.Hybrid:
+            url = "https://api.mapbox.com/v4/mapbox.streets-satellite/";
+            break;
+        }
+        break;
+    }
+
+    const settings = super.fromJSON({ name, formatId, url, transparentBackground: false, isBase: true });
+    assert(undefined !== settings);
+    assert(settings instanceof BaseMapLayerSettings);
+
+    settings._provider = provider;
+    return settings;
+  }
+
 }

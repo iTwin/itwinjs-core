@@ -16,7 +16,7 @@ import { SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from 
 import { ThematicDisplayMode } from "../ThematicDisplay";
 import { RenderMode, ViewFlags } from "../ViewFlags";
 import { PlanarClipMaskMode, PlanarClipMaskSettings } from "../PlanarClipMask";
-import { MapLayerSettings } from "../MapLayerSettings";
+import { BaseMapLayerSettings, MapLayerSettings } from "../MapLayerSettings";
 import { WhiteOnWhiteReversalProps, WhiteOnWhiteReversalSettings } from "../WhiteOnWhiteReversalSettings";
 
 describe("DisplayStyleSettings", () => {
@@ -310,7 +310,7 @@ describe("DisplayStyleSettings", () => {
     expect(base.formatId).to.equal("MapboxImagery");
     expect(base.url.indexOf("mapbox.streets/")).least(1);
 
-    style.mapImagery.backgroundBase = MapLayerSettings.fromMapSettings(style.backgroundMap.clone({ providerData: { mapType: BackgroundMapType.Aerial } }));
+    style.mapImagery.backgroundBase = BaseMapLayerSettings.fromBackgroundMapProps(style.backgroundMap.clone({ providerData: { mapType: BackgroundMapType.Aerial } }).toJSON());
     expect(style.backgroundMap.providerName).to.equal("MapBoxProvider");
     expect(style.backgroundMap.mapType).to.equal(BackgroundMapType.Aerial);
   });
