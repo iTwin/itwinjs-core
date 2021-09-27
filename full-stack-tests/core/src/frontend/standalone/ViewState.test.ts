@@ -140,9 +140,9 @@ describe("ViewState", () => {
     const vs0BackgroundColor = ColorDef.from(32, 1, 99);
     vs0DisplayStyle3d.backgroundColor = vs0BackgroundColor;
 
-    const oldBackgroundMap = vs0DisplayStyle3d.settings.backgroundMap;
+    const oldBackgroundMap = vs0DisplayStyle3d.settings.backgroundMap.toJSON();
     if (undefined !== oldBackgroundMap) {
-      const mt = oldBackgroundMap.mapType === BackgroundMapType.Aerial ? BackgroundMapType.Hybrid : BackgroundMapType.Hybrid;
+      const mt = oldBackgroundMap.providerData?.mapType === BackgroundMapType.Aerial ? BackgroundMapType.Hybrid : BackgroundMapType.Hybrid;
       vs0DisplayStyle3d.changeBackgroundMapProps(BackgroundMapSettings.fromJSON({
         providerName: oldBackgroundMap.providerName === "BingProvider" ? "MapBoxProvider" : "BingProvider",
         providerData: { mapType: mt },
@@ -208,13 +208,13 @@ describe("ViewState", () => {
     assert.equal(vs0AOSettings.blurTexelStepSize, vs1AOSettings.blurTexelStepSize, "clone should copy displayStyle.ambientOcclusionSettings.blurTexelStepSize");
     assert.isTrue(vs0BackgroundColor.equals(vs1BackgroundColor), "clone should copy displayStyle.backgroundColor");
     assert.isDefined(vs0BackgroundMap);
-    assert.isDefined(vs0BackgroundMap.mapType);
+    assert.isDefined(vs0BackgroundMap.toJSON().providerData?.mapType);
     assert.isDefined(vs1BackgroundMap);
-    assert.isDefined(vs1BackgroundMap.mapType);
-    assert.equal(vs0BackgroundMap.mapType, vs1BackgroundMap.mapType, "clone should copy displayStyle.backgroundMap.mapType");
-    assert.isDefined(vs0BackgroundMap.providerName);
-    assert.isDefined(vs1BackgroundMap.providerName);
-    assert.equal(vs0BackgroundMap.providerName, vs1BackgroundMap.providerName, "clone should copy displayStyle.backgroundMap.providerName");
+    assert.isDefined(vs1BackgroundMap.toJSON().providerData?.mapType);
+    assert.equal(vs0BackgroundMap.toJSON().providerData?.mapType, vs1BackgroundMap.toJSON().providerData?.mapType, "clone should copy displayStyle.backgroundMap.mapType");
+    assert.isDefined(vs0BackgroundMap.toJSON().providerName);
+    assert.isDefined(vs1BackgroundMap.toJSON().providerName);
+    assert.equal(vs0BackgroundMap.toJSON().providerName, vs1BackgroundMap.toJSON().providerName, "clone should copy displayStyle.backgroundMap.providerName");
     assert.equal(vs0HLSettings.transparencyThreshold, vs1HLSettings.transparencyThreshold, "clone should copy displayStyle.hiddenLineSettings.transparencyThreshold");
     assert.isTrue(vs0MonochromeColor.equals(vs1MonochromeColor), "clone should copy displayStyle.monochromeColor");
   });

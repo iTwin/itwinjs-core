@@ -162,14 +162,9 @@ describe("Viewport", () => {
 
       expect(newSettings).to.deep.equal(expectSettings);
       expect(newSettings.equals(expectSettings)).to.be.true;
-      if (undefined === changeProps.providerName)
-        expect(newSettings.providerName).to.equal(oldSettings.providerName);
 
       if (undefined === changeProps.groundBias)
         expect(newSettings.groundBias).to.equal(oldSettings.groundBias);
-
-      if (undefined === changeProps.providerData || undefined === changeProps.providerData.mapType)
-        expect(newSettings.mapType).to.equal(oldSettings.mapType);
     };
 
     // Set up baseline values for all properties

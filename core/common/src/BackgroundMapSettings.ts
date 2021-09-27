@@ -199,7 +199,7 @@ export class BackgroundMapSettings {
    * @returns A BackgroundMapSettings with all of its properties set to match those of `this`, except those explicitly defined in `changedProps`.
    * @note If changing the provider it is currently necessary to also make same change to update the imagery base layer.
    */
-  public clone(changedProps?: BackgroundMapProps): BackgroundMapSettings {
+  public clone(changedProps?: Omit<BackgroundMapProps, "providerName" | "providerData">): BackgroundMapSettings {
     if (undefined === changedProps)
       return this;
 
