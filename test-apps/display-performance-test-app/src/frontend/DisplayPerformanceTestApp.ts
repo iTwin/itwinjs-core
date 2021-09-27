@@ -25,6 +25,10 @@ export class DisplayPerfTestApp {
   public static async startup(iModelApp?: IModelAppOptions): Promise<void> {
     iModelApp = iModelApp ?? {};
     iModelApp.i18n = { urlTemplate: "locales/en/{{ns}}.json" } as I18NOptions;
+    iModelApp.tileAdmin = {
+      minimumSpatialTolerance: 0,
+      cesiumIonKey: process.env.IMJS_CESIUM_ION_KEY,
+    };
 
     /* eslint-disable @typescript-eslint/naming-convention */
     iModelApp.mapLayerOptions = {

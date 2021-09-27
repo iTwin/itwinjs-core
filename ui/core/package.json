@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-core",
-  "version": "3.0.0-dev.65",
+  "version": "3.0.0-dev.69",
   "description": "iModel.js UI core components",
   "main": "lib/ui-core.js",
   "typings": "lib/ui-core",
@@ -35,9 +35,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.65",
-    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.65",
-    "@bentley/ui-abstract": "workspace:^3.0.0-dev.65",
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.69",
+    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.69",
+    "@bentley/ui-abstract": "workspace:^3.0.0-dev.69",
     "react": "^16.8.6 || ^17.0.0",
     "react-dom": "^16.8.6 || ^17.0.0"
   },
@@ -63,7 +63,7 @@
     "@types/enzyme": "3.9.3",
     "@types/lodash": "^4.14.0",
     "@types/mocha": "^8.2.2",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "@types/react": "^17.0.0",
     "@types/react-autosuggest": "10.1.2",
     "@types/react-dom": "^17.0.0",

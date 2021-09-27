@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-frontend",
+      "comment": "Ensure memory consumed by instanced geometry is accurately reported.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend"
+}

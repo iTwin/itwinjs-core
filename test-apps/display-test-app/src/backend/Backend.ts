@@ -14,7 +14,7 @@ import {
   SnapshotIModelRpcInterface,
 } from "@bentley/imodeljs-common";
 import { AndroidHost, IOSHost, MobileHostOpts } from "@bentley/mobile-manager/lib/MobileBackend";
-import { DtaConfiguration } from "../common/DtaConfiguration";
+import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { FakeTileCacheService } from "./FakeTileCacheService";
 import { EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
@@ -53,6 +53,7 @@ class DisplayTestAppRpc extends DtaRpcInterface {
 
   public override async writeExternalSavedViews(bimFileName: string, namedViews: string): Promise<void> {
     if (ProcessDetector.isMobileAppBackend && process.env.DOCS) {
+      // Used to set a writeable directory on an iOS or Android device.
       const docPath = process.env.DOCS;
       bimFileName = path.join(docPath, bimFileName);
     }
@@ -113,160 +114,29 @@ export const getRpcInterfaces = (): RpcInterfaceDefinition[] => {
   return rpcs;
 };
 
-const setupStandaloneConfiguration = () => {
+const getBackendConfig = (): DtaConfiguration => {
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
   loadEnv(path.join(__dirname, "..", "..", ".env"));
 
-  const configuration: DtaConfiguration = {};
-  if (ProcessDetector.isMobileAppBackend)
-    return configuration;
-
-  // Currently display-test-app ONLY supports opening files from local disk - i.e., "standalone" mode.
-  // At some point we will reinstate ability to open from hub.
-  configuration.standalone = true;
-  configuration.iModelName = process.env.SVT_STANDALONE_FILENAME;
-  configuration.standalonePath = process.env.SVT_STANDALONE_FILEPATH; // optional (browser-use only)
-  configuration.viewName = process.env.SVT_STANDALONE_VIEWNAME; // optional
-
-  if (undefined !== process.env.SVT_DISABLE_DIAGNOSTICS)
-    configuration.enableDiagnostics = false;
-
-  if (undefined !== process.env.SVT_STANDALONE_SIGNIN)
-    configuration.signInForStandalone = true;
-
-  if (undefined !== process.env.SVT_READ_WRITE)
-    configuration.openReadWrite = true;
-
-  if (undefined !== process.env.SVT_DISABLE_INSTANCING)
-    configuration.disableInstancing = true;
-
-  if (undefined !== process.env.SVT_NO_IMPROVED_ELISION)
-    configuration.enableImprovedElision = false;
-
-  if (undefined !== process.env.SVT_IGNORE_AREA_PATTERNS)
-    configuration.ignoreAreaPatterns = true;
-
-  if (undefined !== process.env.SVT_NO_EXTERNAL_TEXTURES)
-    configuration.enableExternalTextures = false;
-
-  if (undefined !== process.env.SVT_DISABLE_MAGNIFICATION)
-    configuration.disableMagnification = true;
-
-  if (undefined !== process.env.SVT_DISABLE_BREP_CACHE)
-    configuration.disableBRepCache = true;
-
-  if (undefined !== process.env.SVT_DEBUG_SHADERS)
-    configuration.debugShaders = true;
-
-  if (undefined !== process.env.IMJS_BING_MAPS_KEY)
-    configuration.bingMapsKey = process.env.IMJS_BING_MAPS_KEY;
-
-  if (undefined !== process.env.IMJS_MAPBOX_KEY)
-    configuration.mapBoxKey = process.env.IMJS_MAPBOX_KEY;
-
-  configuration.useProjectExtents = undefined === process.env.SVT_NO_USE_PROJECT_EXTENTS;
-
-  const parseSeconds = (key: string) => {
-    const env = process.env[key];
-    if (!env)
-      return undefined;
-
-    const val = Number.parseInt(env, 10);
-    return Number.isNaN(val) ? undefined : val;
-  };
-
-  configuration.tileTreeExpirationSeconds = parseSeconds("SVT_TILETREE_EXPIRATION_SECONDS");
-  configuration.tileExpirationSeconds = parseSeconds("SVT_TILE_EXPIRATION_SECONDS");
-
-  const maxToSkipVar = process.env.SVT_MAX_TILES_TO_SKIP;
-  if (undefined !== maxToSkipVar) {
-    const maxToSkip = Number.parseInt(maxToSkipVar, 10);
-    if (!Number.isNaN(maxToSkip))
-      configuration.maxTilesToSkip = maxToSkip;
-  }
-
-  const minSpatialTolEnv = process.env.SVT_MIN_SPATIAL_TOLERANCE;
-  if (undefined !== minSpatialTolEnv) {
-    const minSpatialTol = Number.parseFloat(minSpatialTolEnv);
-    if (!Number.isNaN(minSpatialTol))
-      configuration.minimumSpatialTolerance = minSpatialTol;
-  }
-
-  if (undefined !== process.env.SVT_DISABLE_LOG_Z)
-    configuration.logarithmicZBuffer = false;
-
-  if (undefined !== process.env.SVT_ENABLE_MAP_TEXTURE_FILTER)
-    configuration.filterMapTextures = true;
-
-  if (undefined !== process.env.SVT_DISABLE_MAP_DRAPE_TEXTURE_FILTER)
-    configuration.filterMapDrapeTextures = false;
-
-  if (undefined !== process.env.SVT_PRESERVE_SHADER_SOURCE_CODE)
-    configuration.preserveShaderSourceCode = true;
-
-  if (undefined !== process.env.SVT_DISABLE_DPI_AWARE_VIEWPORTS)
-    configuration.dpiAwareViewports = false;
-
-  const devicePixelRatioOverrideVar = process.env.SVT_DEVICE_PIXEL_RATIO_OVERRIDE;
-  if (undefined !== devicePixelRatioOverrideVar) {
-    const devicePixelRatioOverride = Number.parseFloat(devicePixelRatioOverrideVar);
-    if (!Number.isNaN(devicePixelRatioOverride))
-      configuration.devicePixelRatioOverride = devicePixelRatioOverride;
-  }
-
-  if (undefined !== process.env.SVT_DPI_LOD)
-    configuration.dpiAwareLOD = true;
-
-  const aaSamplesVar = process.env.SVT_AASAMPLES;
-  if (undefined !== aaSamplesVar && "0" !== aaSamplesVar && "false" !== aaSamplesVar.toLowerCase()) {
-    const aaSamples = Number.parseInt(aaSamplesVar, 10);
-    if (!Number.isNaN(aaSamples))
-      configuration.antialiasSamples = aaSamples;
-  }
-
-  const useWebGL2Var = process.env.SVT_USE_WEBGL2;
-  if (undefined !== useWebGL2Var && ("0" === useWebGL2Var || "false" === useWebGL2Var.toLowerCase()))
-    configuration.useWebGL2 = false;
-
-  const extensions = process.env.SVT_DISABLED_EXTENSIONS;
-  if (undefined !== extensions)
-    configuration.disabledExtensions = extensions.split(";");
-
-  configuration.useFakeCloudStorageTileCache = undefined !== process.env.SVT_FAKE_CLOUD_STORAGE;
-
-  configuration.disableEdges = undefined !== process.env.SVT_DISABLE_EDGE_DISPLAY;
-  configuration.alwaysLoadEdges = undefined !== process.env.SVT_ALWAYS_LOAD_EDGES;
-  configuration.alwaysSubdivideIncompleteTiles = undefined !== process.env.SVT_SUBDIVIDE_INCOMPLETE;
-
-  configuration.iTwinId = process.env.SVT_ITWIN_ID;
-
-  const configPathname = path.normalize(path.join(__dirname, "..", "..", "build", "configuration.json"));
-  try { fs.writeFileSync(configPathname, JSON.stringify(configuration), "utf8"); } catch { }
-
-  return configuration;
+  return getConfig();
 };
 
 export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & MobileHostOpts) => {
-  const dtaConfig = setupStandaloneConfiguration();
+  const dtaConfig = getBackendConfig();
 
   const iModelHost = new IModelHostConfiguration();
   iModelHost.logTileLoadTimeThreshold = 3;
   iModelHost.logTileSizeThreshold = 500000;
 
+  if (dtaConfig.customOrchestratorUri)
+    iModelHost.imodelClient = new IModelBankClient(dtaConfig.customOrchestratorUri, new UrlFileHandler());
+
+  if (dtaConfig.useFakeCloudStorageTileCache)
+    iModelHost.tileCacheCredentials = { service: "external", account: "", accessKey: "" };
+
   let logLevel = LogLevel.None;
-  if (ProcessDetector.isMobileAppBackend) {
-    // Does not seem DtaConfiguration is used anymore.
-  } else {
-    if (dtaConfig.customOrchestratorUri)
-      iModelHost.imodelClient = new IModelBankClient(dtaConfig.customOrchestratorUri, new UrlFileHandler());
-
-    if (dtaConfig.useFakeCloudStorageTileCache)
-      iModelHost.tileCacheCredentials = { service: "external", account: "", accessKey: "" };
-
-    const logLevelEnv = process.env.SVT_LOG_LEVEL as string;
-    if (undefined !== logLevelEnv)
-      logLevel = Logger.parseLogLevel(logLevelEnv);
-  }
+  if (undefined !== dtaConfig.logLevel)
+    logLevel = Logger.parseLogLevel(dtaConfig.logLevel);
 
   const opts = {
     iModelHost,

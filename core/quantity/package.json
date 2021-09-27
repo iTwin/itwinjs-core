@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-quantity",
-  "version": "3.0.0-dev.65",
+  "version": "3.0.0-dev.69",
   "description": "Quantity parsing, formatting and conversions for iModel.js",
   "main": "lib/imodeljs-quantity.js",
   "typings": "lib/imodeljs-quantity",
@@ -38,7 +38,7 @@
     "@types/chai-as-promised": "^7",
     "@types/glob": "^5.0.35",
     "@types/mocha": "^8.2.2",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "@types/sinon": "^9.0.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
@@ -50,7 +50,7 @@
     "typescript": "~4.4.0"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.65"
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.69"
   },
   "nyc": {
     "extends": "./node_modules/@bentley/build-tools/.nycrc"

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/itwin-client",
-  "version": "3.0.0-dev.65",
+  "version": "3.0.0-dev.69",
   "description": "Base client package for iTwin applications",
   "main": "lib/itwin-client.js",
   "typings": "lib/itwin-client",
@@ -30,7 +30,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.65"
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.69"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -45,7 +45,7 @@
     "@types/deep-assign": "^0.1.0",
     "@types/lodash": "^4.14.0",
     "@types/mocha": "^8.2.2",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "@types/qs": "^6.5.0",
     "@types/superagent": "^4.1.7",
     "chai": "^4.1.2",

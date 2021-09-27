@@ -1,6 +1,6 @@
 {
   "name": "@bentley/frontend-devtools",
-  "version": "3.0.0-dev.65",
+  "version": "3.0.0-dev.69",
   "description": "Debug menu and supporting UI widgets",
   "main": "lib/frontend-devtools.js",
   "imodeljsSharedLibrary": true,
@@ -44,7 +44,7 @@
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@types/file-saver": "^2.0.1",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "cpx": "^1.5.0",
     "eslint": "^7.11.0",
     "rimraf": "^3.0.2",

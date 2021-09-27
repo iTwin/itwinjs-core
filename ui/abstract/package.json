@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-abstract",
-  "version": "3.0.0-dev.65",
+  "version": "3.0.0-dev.69",
   "description": "iModel.js UI abstractions",
   "main": "lib/ui-abstract.js",
   "typings": "lib/ui-abstract",
@@ -33,8 +33,8 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.65",
-    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.65"
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.69",
+    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.69"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -50,7 +50,7 @@
     "@types/chai-jest-snapshot": "^1.3.0",
     "@types/chai-spies": "^1.0.0",
     "@types/mocha": "^8.2.2",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "@types/sinon": "^9.0.0",
     "@types/sinon-chai": "^3.2.0",
     "chai": "^4.1.2",

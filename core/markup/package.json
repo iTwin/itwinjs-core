@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-markup",
-  "version": "3.0.0-dev.65",
+  "version": "3.0.0-dev.69",
   "description": "iModel.js markup package",
   "main": "lib/imodeljs-markup.js",
   "typings": "lib/imodeljs-markup",
@@ -40,11 +40,11 @@
     "@svgdotjs/svg.js": "3.0.13"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.65",
-    "@bentley/geometry-core": "workspace:^3.0.0-dev.65",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.65",
-    "@bentley/imodeljs-frontend": "workspace:^3.0.0-dev.65",
-    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.65"
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.69",
+    "@bentley/geometry-core": "workspace:^3.0.0-dev.69",
+    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.69",
+    "@bentley/imodeljs-frontend": "workspace:^3.0.0-dev.69",
+    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.69"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "workspace:*",
@@ -57,7 +57,7 @@
     "@bentley/imodeljs-i18n": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^8.2.2",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
     "eslint": "^7.11.0",

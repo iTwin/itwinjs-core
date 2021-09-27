@@ -1,6 +1,6 @@
 {
   "name": "@bentley/product-settings-client",
-  "version": "3.0.0-dev.65",
+  "version": "3.0.0-dev.69",
   "description": "iModel.js Product Settings Client",
   "main": "lib/product-settings-client.js",
   "typings": "lib/product-settings-client",
@@ -36,8 +36,8 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.65",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.65"
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.69",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.69"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "workspace:*",
@@ -50,7 +50,7 @@
     "@bentley/oidc-signin-tool": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^8.2.2",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "chai": "^4.1.2",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",

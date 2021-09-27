@@ -1,10 +1,10 @@
 {
   "name": "@bentley/electron-manager",
-  "version": "3.0.0-dev.65",
+  "version": "3.0.0-dev.69",
   "description": "iTwin.js ElectronHost and ElectronApp",
   "license": "MIT",
   "engines": {
-    "node": ">=10.17.0 <15.0"
+    "node": ">=12.22.0 < 14.0 || >=14.17.0 <17.0"
   },
   "scripts": {
     "compile": "npm run build",
@@ -30,12 +30,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.65",
-    "@bentley/imodeljs-backend": "workspace:^3.0.0-dev.65",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.65",
-    "@bentley/imodeljs-frontend": "workspace:^3.0.0-dev.65",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.65",
-    "@bentley/presentation-common": "workspace:^3.0.0-dev.65",
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.69",
+    "@bentley/imodeljs-backend": "workspace:^3.0.0-dev.69",
+    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.69",
+    "@bentley/imodeljs-frontend": "workspace:^3.0.0-dev.69",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.69",
+    "@bentley/presentation-common": "workspace:^3.0.0-dev.69",
     "electron": "^11.1.0"
   },
   "devDependencies": {
@@ -47,7 +47,7 @@
     "@bentley/imodeljs-frontend": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@bentley/presentation-common": "workspace:*",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "electron": "^11.1.0",
     "eslint": "^7.11.0",
     "rimraf": "^3.0.2",

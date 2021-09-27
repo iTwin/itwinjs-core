@@ -3,6 +3,10 @@ publish: false
 ---
 # NextVersion
 
+## Update minimum requirements
+
+Support for Node 10 has been dropped. The new minimum Node version is 12.22.0. The recommended version is the latest LTS version of Node. Please visit our [Supported Platforms](../learning/supportedplatforms) documentation for a full breakdown of compatibility.
+
 ## Dependency Updates
 
 The following dependencies of iTwin.js have been updated;
@@ -225,21 +229,37 @@ Upgrade instructions:
 
 The [AsyncFunction]($bentleyjs-core), [AsyncMethodsOf]($bentleyjs-core), and [PromiseReturnType]($bentleyjs-core) types have moved to the @bentley/bentleyjs-core package. The ones in @bentley/imodeljs-frontend have been deprecated.
 
-## Removed default Bing Maps and MapBox keys
+## Removed default API keys
 
-Previous versions of `@bentley/imodeljs-frontend` included API keys for Bing Maps and MapBox Imagery that would be used for _all_ iTwin.js applications.  These common keys are no longer supported and will soon be disabled.  All applications will now need to provide their own keys.
+Previous versions of `@bentley/imodeljs-frontend` included API keys for Bing Maps, MapBox Imagery, and Cesium ION that would be used for _all_ iTwin.js applications. These common keys are no longer supported and will soon be disabled. All applications will now need to provide their own keys.
 
-In order to configure a key for Bing Maps, or any other map layers, use the [[IModelAppOptions.mapLayerOptions]] configuration to supply the necessary information.
+A valid [MapBox](https://www.mapbox.com/) key is required for display of map imagery in views with [BackgroundMapSettings.providerName]($common) set to "MapBoxProvider".
+
+A valid [Bing Maps](https://www.bing.com/maps) key is required for:
+- Display of map imagery in views with [BackgroundMapSettings.providerName]($common) set to "BingProvider".
+- Location services supplied by [BingLocationProvider]($frontend), along with tools that use these services like [ViewGlobeLocationTool]($frontend).
+- Elevation services supplied by [BingElevationProvider]($frontend), including accurate 3d terrain display.
+
+A valid [Cesium ION](https://cesium.com/platform/cesium-ion/) key is required for:
+- Display of 3d terrain in views with [TerrainSettings.providerName]($common) set to "CesiumWorldTerrain".
+- Display of OpenStreetMap buildings.
+
+[IModelAppOptions.mapLayerOptions]($frontend) can be used to configure keys for Bing Maps, MapBox, and/or any other map layer providers. [TileAdmin.Props.cesiumIonKey]($frontend) can be used to configure the Cesium ION key. For example, the following configures the Bing Maps and Cesium ION keys at startup:
 
 ```ts
-const appOptions = {
-  maplayerOptions: {
+const appOptions: IModelAppOptions = {
+  mapLayerOptions: {
     BingMaps: {
       key: "some key",
-      value: "key"
-    }
-  }
-}
+      value: "key",
+    },
+  },
+  tileAdmin: {
+    cesiumIonKey: "key",
+  },
+};
+
+await IModelApp.startup(appOptions);
 ```
 
 ## Concurrency Control
@@ -396,6 +416,17 @@ It is no longer necessary to supply a [Viewport]($frontend) when creating a [Gra
 ## Changed return types
 
 The backend methods [IModelDb.saveFileProperty]($backend) and [IModelDb.deleteFileProperty]($backend) used to return a [DbResult]($bentleyjs-core). They now are `void`, and throw an exception if an error occurred. The error value can be retrieved in the `errorNumber` member of the exception object, if desired.
+
+## Default minimum level of detail for spatial views
+
+[TileAdmin.Props.minimumSpatialTolerance]($frontend) specifies the minimum level of detail to produce for views of spatial models. Previously, the default was `undefined`, indicating no minimum. The default has been changed to 1 millimeter. This means that when zooming in extremely closely, geometry that contains details on the order of 1mm or smaller will not refine further. This prevents the display system from requesting extraordinarily detailed graphics, improving performance.
+
+To change the minimum, supply a different value at startup. For example, the following code sets the minimum to 1 centimeter:
+```ts
+await IModelApp.startup({
+  tileAdmin: { minimumSpatialTolerance: 0.01 },
+});
+```
 
 ## Signature change to backend Geocoordinate methods
 

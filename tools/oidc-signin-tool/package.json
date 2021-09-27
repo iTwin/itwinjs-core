@@ -1,6 +1,6 @@
 {
   "name": "@bentley/oidc-signin-tool",
-  "version": "3.0.0-dev.65",
+  "version": "3.0.0-dev.69",
   "description": "OIDC Signin Helper",
   "main": "lib/index.js",
   "typings": "lib/index",
@@ -46,7 +46,7 @@
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^8.2.2",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "@types/puppeteer": "2.0.1",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",

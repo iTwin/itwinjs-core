@@ -1,6 +1,6 @@
 {
   "name": "@bentley/presentation-frontend",
-  "version": "3.0.0-dev.65",
+  "version": "3.0.0-dev.69",
   "description": "Frontend of iModel.js Presentation library",
   "main": "lib/presentation-frontend.js",
   "typings": "lib/presentation-frontend",
@@ -40,12 +40,12 @@
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.65",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.65",
-    "@bentley/imodeljs-frontend": "workspace:^3.0.0-dev.65",
-    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.65",
-    "@bentley/imodeljs-quantity": "workspace:^3.0.0-dev.65",
-    "@bentley/presentation-common": "workspace:^3.0.0-dev.65"
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.69",
+    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.69",
+    "@bentley/imodeljs-frontend": "workspace:^3.0.0-dev.69",
+    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.69",
+    "@bentley/imodeljs-quantity": "workspace:^3.0.0-dev.69",
+    "@bentley/presentation-common": "workspace:^3.0.0-dev.69"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "workspace:*",
@@ -65,7 +65,7 @@
     "@types/deep-equal": "^1",
     "@types/faker": "^4.1.0",
     "@types/mocha": "^8.2.2",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "@types/sinon": "^9.0.0",
     "@types/sinon-chai": "^3.2.0",
     "chai": "^4.1.2",

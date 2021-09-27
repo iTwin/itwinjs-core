@@ -8,6 +8,9 @@ export interface TestAppConfiguration {
   startWithSnapshots?: boolean;
   reactAxeConsole?: boolean;
   useLocalSettings?: boolean;
+  bingMapsKey?: string;
+  mapBoxKey?: string;
+  cesiumIonKey?: string;
 }
 
 export const loggerCategory = "ui-test-app";

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-editor-common",
-  "version": "3.0.0-dev.65",
+  "version": "3.0.0-dev.69",
   "description": "iModel.js editing properties common to frontend and backend",
   "main": "lib/imodeljs-editor-common.js",
   "typings": "lib/imodeljs-editor-common",
@@ -32,9 +32,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.65",
-    "@bentley/geometry-core": "workspace:^3.0.0-dev.65",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.65"
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.69",
+    "@bentley/geometry-core": "workspace:^3.0.0-dev.69",
+    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.69"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "workspace:*",
@@ -44,7 +44,7 @@
     "@bentley/imodeljs-common": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^8.2.2",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "@types/semver": "^5.5.0",
     "chai": "^4.1.2",
     "eslint": "^7.11.0",

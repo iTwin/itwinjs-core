@@ -49,7 +49,7 @@ export class StandardStatusbarItemsProvider implements UiItemsProvider {
 
   /**
   * static function to register the StandardStatusbarItemsProvider
-  * @param defaultNavigationTools - if undefined all available tools are provided to stage. If defined only those
+  * @param defaultItems - if undefined all available tools are provided to stage. If defined only those
   * specific tool buttons are shown.
   * @param isSupportedStage - optional function that will be called to determine if tools should be added to current stage. If not set and
   * the current stage's `usage` is set to `StageUsage.General` then the provider will add items to frontstage.

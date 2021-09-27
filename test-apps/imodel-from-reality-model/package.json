@@ -27,7 +27,7 @@
     "@bentley/eslint-plugin": "workspace:*",
     "@types/fs-extra": "^4.0.7",
     "@types/lodash": "^4.14.0",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "@types/yargs": "^12.0.5",
     "eslint": "^7.11.0",
     "rimraf": "^3.0.2",

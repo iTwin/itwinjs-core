@@ -1,6 +1,6 @@
 {
   "name": "@bentley/hypermodeling-frontend",
-  "version": "3.0.0-dev.65",
+  "version": "3.0.0-dev.69",
   "description": "iModel.js hypermodeling package",
   "main": "lib/hypermodeling-frontend.js",
   "typings": "lib/hypermodeling-frontend",
@@ -35,12 +35,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.65",
-    "@bentley/geometry-core": "workspace:^3.0.0-dev.65",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.65",
-    "@bentley/imodeljs-frontend": "workspace:^3.0.0-dev.65",
-    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.65",
-    "@bentley/ui-abstract": "workspace:^3.0.0-dev.65"
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.69",
+    "@bentley/geometry-core": "workspace:^3.0.0-dev.69",
+    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.69",
+    "@bentley/imodeljs-frontend": "workspace:^3.0.0-dev.69",
+    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.69",
+    "@bentley/ui-abstract": "workspace:^3.0.0-dev.69"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "workspace:*",
@@ -54,7 +54,7 @@
     "@bentley/ui-abstract": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^8.2.2",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
     "eslint": "^7.11.0",

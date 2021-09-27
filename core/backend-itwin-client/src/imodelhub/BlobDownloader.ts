@@ -463,7 +463,7 @@ export class BlobDownloader {
         session.progress.raiseEvent(this.getProgress(session));
         session.lastReportedBytes = session.bytesDownloaded;
       }
-    }, session.config.progressReportAfter!);
+    }, session.config.progressReportAfter);
   }
   private static stopProgress(session: SessionData) {
     if (session.progressTimer) {

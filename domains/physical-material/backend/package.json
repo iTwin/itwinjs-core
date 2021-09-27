@@ -1,11 +1,11 @@
 {
   "name": "@bentley/physical-material-backend",
-  "version": "3.0.0-dev.65",
+  "version": "3.0.0-dev.69",
   "main": "lib/physical-material-backend.js",
   "typings": "lib/physical-material-backend",
   "license": "MIT",
   "engines": {
-    "node": ">=10.17.0 <15.0"
+    "node": ">=12.22.0 < 14.0 || >=14.17.0 <17.0"
   },
   "scripts": {
     "compile": "npm run build",
@@ -31,9 +31,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.65",
-    "@bentley/imodeljs-backend": "workspace:^3.0.0-dev.65",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.65"
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.69",
+    "@bentley/imodeljs-backend": "workspace:^3.0.0-dev.69",
+    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.69"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -48,7 +48,7 @@
     "@types/chai": "^4.1.4",
     "@types/fs-extra": "^4.0.7",
     "@types/mocha": "^8.2.2",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
     "eslint": "^7.11.0",

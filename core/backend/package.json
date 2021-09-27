@@ -1,12 +1,12 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "3.0.0-dev.65",
+  "version": "3.0.0-dev.69",
   "description": "iModel.js backend components",
   "main": "lib/imodeljs-backend.js",
   "typings": "lib/imodeljs-backend",
   "license": "MIT",
   "engines": {
-    "node": ">=10.17.0 <15.0"
+    "node": ">=12.22.0 < 14.0 || >=14.17.0 <17.0"
   },
   "scripts": {
     "compile": "npm run build",
@@ -55,14 +55,14 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/backend-itwin-client": "workspace:^3.0.0-dev.65",
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.65",
-    "@bentley/ecschema-metadata": "workspace:^3.0.0-dev.65",
-    "@bentley/geometry-core": "workspace:^3.0.0-dev.65",
-    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.65",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.65",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.65",
-    "@bentley/telemetry-client": "workspace:^3.0.0-dev.65"
+    "@bentley/backend-itwin-client": "workspace:^3.0.0-dev.69",
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.69",
+    "@bentley/ecschema-metadata": "workspace:^3.0.0-dev.69",
+    "@bentley/geometry-core": "workspace:^3.0.0-dev.69",
+    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.69",
+    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.69",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.69",
+    "@bentley/telemetry-client": "workspace:^3.0.0-dev.69"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -91,7 +91,7 @@
     "@types/lru-cache": "^5.1.0",
     "@types/mocha": "^8.2.2",
     "@types/multiparty": "^0.0.31",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "@types/semver": "^5.5.0",
     "@types/sinon": "^9.0.0",
     "@types/ws": "^6.0.4",
