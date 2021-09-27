@@ -97,8 +97,8 @@ import { FeatureOverrideType } from '@itwin/core-common';
 import { FeatureTable } from '@itwin/core-common';
 import { FillFlags } from '@itwin/core-common';
 import { FontMap } from '@itwin/core-common';
-import { FormatProps } from '@bentley/imodeljs-quantity';
-import { FormatterSpec } from '@bentley/imodeljs-quantity';
+import { FormatProps } from '@itwin/core-quantity';
+import { FormatterSpec } from '@itwin/core-quantity';
 import { FrontendAuthorizationClient } from '@bentley/frontend-authorization-client';
 import { Frustum } from '@itwin/core-common';
 import { FrustumPlanes } from '@itwin/core-common';
@@ -126,9 +126,9 @@ import { GroundPlane } from '@itwin/core-common';
 import { GuidString } from '@itwin/core-bentley';
 import { HiddenLine } from '@itwin/core-common';
 import { Hilite } from '@itwin/core-common';
-import { I18N } from '@bentley/imodeljs-i18n';
-import { I18NNamespace } from '@bentley/imodeljs-i18n';
-import { I18NOptions } from '@bentley/imodeljs-i18n';
+import { I18N } from '@itwin/core-i18n';
+import { I18NNamespace } from '@itwin/core-i18n';
+import { I18NOptions } from '@itwin/core-i18n';
 import { Id64 } from '@itwin/core-bentley';
 import { Id64Arg } from '@itwin/core-bentley';
 import { Id64Array } from '@itwin/core-bentley';
@@ -197,7 +197,7 @@ import { OrderedComparator } from '@itwin/core-bentley';
 import { OrderedId64Array } from '@itwin/core-bentley';
 import { PackedFeatureTable } from '@itwin/core-common';
 import { ParseResults } from '@itwin/appui-abstract';
-import { ParserSpec } from '@bentley/imodeljs-quantity';
+import { ParserSpec } from '@itwin/core-quantity';
 import { Path } from '@itwin/core-geometry';
 import { Placement } from '@itwin/core-common';
 import { PlacementProps } from '@itwin/core-common';
@@ -223,7 +223,7 @@ import { QParams3d } from '@itwin/core-common';
 import { QPoint2d } from '@itwin/core-common';
 import { QPoint3d } from '@itwin/core-common';
 import { QPoint3dList } from '@itwin/core-common';
-import { QuantityParseResult } from '@bentley/imodeljs-quantity';
+import { QuantityParseResult } from '@itwin/core-quantity';
 import { QueryLimit } from '@itwin/core-common';
 import { QueryPriority } from '@itwin/core-common';
 import { QueryQuota } from '@itwin/core-common';
@@ -293,10 +293,10 @@ import { TransientIdSequence } from '@itwin/core-bentley';
 import { Tweens } from '@itwin/core-common';
 import { TxnNotifications } from '@itwin/core-common';
 import { UiAdmin } from '@itwin/appui-abstract';
-import { UnitConversion } from '@bentley/imodeljs-quantity';
-import { UnitProps } from '@bentley/imodeljs-quantity';
-import { UnitsProvider } from '@bentley/imodeljs-quantity';
-import { UnitSystemKey } from '@bentley/imodeljs-quantity';
+import { UnitConversion } from '@itwin/core-quantity';
+import { UnitProps } from '@itwin/core-quantity';
+import { UnitsProvider } from '@itwin/core-quantity';
+import { UnitSystemKey } from '@itwin/core-quantity';
 import { Vector2d } from '@itwin/core-geometry';
 import { Vector3d } from '@itwin/core-geometry';
 import { ViewAttachmentProps } from '@itwin/core-common';
@@ -1131,7 +1131,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     // (undocumented)
     uintToString(uintArray: any): {
         type: "Buffer";
-        data: any[];
+        data: number[];
     };
 }
 
@@ -3361,7 +3361,7 @@ export function getCesiumAccessTokenAndEndpointUrl(assetId?: number, requestKey?
 export function getCesiumAssetUrl(osmAssetId: number, requestKey: string): string;
 
 // @internal (undocumented)
-export function getCesiumOSMBuildingsUrl(): string;
+export function getCesiumOSMBuildingsUrl(): string | undefined;
 
 // @internal (undocumented)
 export function getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, wantNormals: boolean, exaggeration: number): Promise<TerrainMeshProvider | undefined>;
@@ -8131,7 +8131,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     createRealityMeshGraphic(_terrainGeometry: RenderRealityMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string | undefined, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined;
     // @internal
-    abstract createRenderGraphic(_geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern, instancesOwnGeometry?: boolean): RenderGraphic | undefined;
+    abstract createRenderGraphic(_geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined;
     createScreenSpaceEffectBuilder(_params: ScreenSpaceEffectBuilderParams): ScreenSpaceEffectBuilder | undefined;
     createSkyBox(_params: SkyBox.CreateParams): RenderGraphic | undefined;
     // @internal (undocumented)
@@ -9961,6 +9961,8 @@ export class TileAdmin {
     readonly alwaysRequestEdges: boolean;
     // @internal (undocumented)
     readonly alwaysSubdivideIncompleteTiles: boolean;
+    // @beta (undocumented)
+    readonly cesiumIonKey?: string;
     // (undocumented)
     readonly channels: TileRequestChannels;
     // @internal
@@ -10069,6 +10071,7 @@ export namespace TileAdmin {
         alwaysRequestEdges?: boolean;
         // @internal
         alwaysSubdivideIncompleteTiles?: boolean;
+        cesiumIonKey?: string;
         // @alpha
         contextPreloadParentDepth?: number;
         // @alpha

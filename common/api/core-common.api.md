@@ -3943,7 +3943,11 @@ export type HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head
 // @public
 export interface HttpServerRequest extends Readable {
     // (undocumented)
+    aborted: boolean;
+    // (undocumented)
     body: string | Buffer;
+    // (undocumented)
+    complete: boolean;
     // (undocumented)
     connection: any;
     // (undocumented)

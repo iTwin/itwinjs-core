@@ -7,14 +7,14 @@
 import { BentleyError } from '@itwin/core-bentley';
 import { CompressedId64Set } from '@itwin/core-bentley';
 import { EntityProps } from '@itwin/core-common';
-import { FormatProps } from '@bentley/imodeljs-quantity';
+import { FormatProps } from '@itwin/core-quantity';
 import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { GuidString } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
 import { IDisposable } from '@itwin/core-bentley';
 import { IModelRpcProps } from '@itwin/core-common';
 import { RpcInterface } from '@itwin/core-common';
-import { UnitSystemKey } from '@bentley/imodeljs-quantity';
+import { UnitSystemKey } from '@itwin/core-quantity';
 
 // @alpha (undocumented)
 export function addFieldHierarchy(rootHierarchies: FieldHierarchy[], hierarchy: FieldHierarchy): void;

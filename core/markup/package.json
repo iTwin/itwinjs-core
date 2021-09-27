@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-markup",
-  "version": "3.0.0-dev.66",
+  "version": "3.0.0-dev.69",
   "description": "iModel.js markup package",
   "main": "lib/core-markup.js",
   "typings": "lib/core-markup",
@@ -40,11 +40,11 @@
     "@svgdotjs/svg.js": "3.0.13"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.66",
-    "@itwin/core-geometry": "workspace:^3.0.0-dev.66",
-    "@itwin/core-common": "workspace:^3.0.0-dev.66",
-    "@itwin/core-frontend": "workspace:^3.0.0-dev.66",
-    "@itwin/core-i18n": "workspace:^3.0.0-dev.66"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.69",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.69",
+    "@itwin/core-common": "workspace:^3.0.0-dev.69",
+    "@itwin/core-frontend": "workspace:^3.0.0-dev.69",
+    "@itwin/core-i18n": "workspace:^3.0.0-dev.69"
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",

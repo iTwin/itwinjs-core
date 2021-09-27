@@ -12,7 +12,7 @@ import { Box } from '@svgdotjs/svg.js';
 import { Element } from '@svgdotjs/svg.js';
 import { EventHandled } from '@itwin/core-frontend';
 import { G } from '@svgdotjs/svg.js';
-import { I18NNamespace } from '@bentley/imodeljs-i18n';
+import { I18NNamespace } from '@itwin/core-i18n';
 import { Marker } from '@svgdotjs/svg.js';
 import { Matrix } from '@svgdotjs/svg.js';
 import { Point2d } from '@itwin/core-geometry';

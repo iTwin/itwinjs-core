@@ -24,7 +24,7 @@ import { EnumerationProps } from '@itwin/ecschema-metadata';
 import { Format } from '@itwin/ecschema-metadata';
 import { FormatProps } from '@itwin/ecschema-metadata';
 import { FormatType } from '@itwin/ecschema-metadata';
-import { I18N } from '@bentley/imodeljs-i18n';
+import { I18N } from '@itwin/core-i18n';
 import { InvertedUnit } from '@itwin/ecschema-metadata';
 import { InvertedUnitProps } from '@itwin/ecschema-metadata';
 import { ISchemaPartVisitor } from '@itwin/ecschema-metadata';

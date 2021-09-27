@@ -18,7 +18,7 @@ import { PresentationManagerMode } from '@itwin/presentation-backend';
 import { PresentationProps } from '@itwin/presentation-frontend';
 import { PropertyRecord } from '@itwin/appui-abstract';
 import { Ruleset } from '@itwin/presentation-common';
-import { TreeNodeItem } from '@itwin/ui-components-react';
+import { TreeNodeItem } from '@itwin/components-react';
 
 // @public
 export class ContentBuilder {

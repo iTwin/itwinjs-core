@@ -300,21 +300,39 @@ let ovrs = { ...props }; // New code
 
 The [AsyncFunction]($core-bentley), [AsyncMethodsOf]($core-bentley), and [PromiseReturnType]($core-bentley) types have moved to the @itwin/core-bentley package. The ones in @itwin/core-frontend have been deprecated.
 
-## Removed default Bing Maps and MapBox keys
+## Removed default API keys
 
-Previous versions of `@itwin/core-frontend` included API keys for Bing Maps and MapBox Imagery that would be used for _all_ iTwin.js applications. These common keys are no longer supported and will soon be disabled. All applications will now need to provide their own keys.
+Previous versions of `@itwin/core-frontend` included API keys for Bing Maps, MapBox Imagery, and Cesium ION that would be used for _all_ iTwin.js applications. These common keys are no longer supported and will soon be disabled. All applications will now need to provide their own keys.
 
-In order to configure a key for Bing Maps, or any other map layers, use the [[IModelAppOptions.mapLayerOptions]] configuration to supply the necessary information.
+A valid [MapBox](https://www.mapbox.com/) key is required for display of map imagery in views with [BackgroundMapSettings.providerName]($common) set to "MapBoxProvider".
+
+A valid [Bing Maps](https://www.bing.com/maps) key is required for:
+
+- Display of map imagery in views with [BackgroundMapSettings.providerName]($common) set to "BingProvider".
+- Location services supplied by [BingLocationProvider]($frontend), along with tools that use these services like [ViewGlobeLocationTool]($frontend).
+- Elevation services supplied by [BingElevationProvider]($frontend), including accurate 3d terrain display.
+
+A valid [Cesium ION](https://cesium.com/platform/cesium-ion/) key is required for:
+
+- Display of 3d terrain in views with [TerrainSettings.providerName]($common) set to "CesiumWorldTerrain".
+- Display of OpenStreetMap buildings.
+
+[IModelAppOptions.mapLayerOptions]($frontend) can be used to configure keys for Bing Maps, MapBox, and/or any other map layer providers. [TileAdmin.Props.cesiumIonKey]($frontend) can be used to configure the Cesium ION key. For example, the following configures the Bing Maps and Cesium ION keys at startup:
 
 ```ts
-const appOptions = {
-  maplayerOptions: {
+const appOptions: IModelAppOptions = {
+  mapLayerOptions: {
     BingMaps: {
       key: "some key",
       value: "key",
     },
   },
+  tileAdmin: {
+    cesiumIonKey: "key",
+  },
 };
+
+await IModelApp.startup(appOptions);
 ```
 
 ## Concurrency Control

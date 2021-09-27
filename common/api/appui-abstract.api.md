@@ -8,7 +8,7 @@ import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
 import { BeUiEvent } from '@itwin/core-bentley';
 import { GetMetaDataFunction } from '@itwin/core-bentley';
-import { I18N } from '@bentley/imodeljs-i18n';
+import { I18N } from '@itwin/core-i18n';
 import { Id64String } from '@itwin/core-bentley';
 
 // @public

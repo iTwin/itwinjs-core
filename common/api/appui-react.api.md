@@ -7,20 +7,20 @@
 import { AbstractMenuItemProps } from '@itwin/appui-abstract';
 import { AbstractStatusBarCustomItem } from '@itwin/appui-abstract';
 import { AbstractToolbarProps } from '@itwin/appui-abstract';
-import { AbstractTreeNodeLoaderWithProvider } from '@itwin/ui-components-react';
+import { AbstractTreeNodeLoaderWithProvider } from '@itwin/components-react';
 import { AbstractWidgetProps } from '@itwin/appui-abstract';
 import { AccuDraw } from '@itwin/core-frontend';
 import { ActionButton } from '@itwin/appui-abstract';
 import { ActivityMessageDetails } from '@itwin/core-frontend';
 import { ActivityMessageEndReason } from '@itwin/core-frontend';
-import { AutoSuggestData } from '@itwin/ui-core-react';
+import { AutoSuggestData } from '@itwin/core-react';
 import { BackstageActionItem as BackstageActionItem_2 } from '@itwin/appui-abstract';
 import { BackstageItem } from '@itwin/appui-abstract';
 import { BackstageItemsManager } from '@itwin/appui-abstract';
 import { BackstageStageLauncher as BackstageStageLauncher_2 } from '@itwin/appui-abstract';
 import { BadgeType } from '@itwin/appui-abstract';
-import { BaseSolarDataProvider } from '@itwin/ui-imodel-components-react';
-import { BaseTimelineDataProvider } from '@itwin/ui-imodel-components-react';
+import { BaseSolarDataProvider } from '@itwin/imodel-components-react';
+import { BaseTimelineDataProvider } from '@itwin/imodel-components-react';
 import { BeButtonEvent } from '@itwin/core-frontend';
 import { BeDuration } from '@itwin/core-bentley';
 import { BeEvent } from '@itwin/core-bentley';
@@ -28,8 +28,8 @@ import { BeUiEvent } from '@itwin/core-bentley';
 import { ButtonProps } from '@itwin/itwinui-react';
 import { ColorDef } from '@itwin/core-common';
 import { CommandHandler } from '@itwin/appui-abstract';
-import { CommonDivProps } from '@itwin/ui-core-react';
-import { CommonProps } from '@itwin/ui-core-react';
+import { CommonDivProps } from '@itwin/core-react';
+import { CommonProps } from '@itwin/core-react';
 import { CommonStatusBarItem } from '@itwin/appui-abstract';
 import { CommonToolbarItem } from '@itwin/appui-abstract';
 import { CompassMode } from '@itwin/core-frontend';
@@ -38,11 +38,11 @@ import { ConditionalStringValue } from '@itwin/appui-abstract';
 import { ContentLayoutProps } from '@itwin/appui-abstract';
 import * as CSS from 'csstype';
 import { CustomButtonDefinition } from '@itwin/appui-abstract';
-import { CustomToolbarItem } from '@itwin/ui-components-react';
+import { CustomToolbarItem } from '@itwin/components-react';
 import { DialogItem } from '@itwin/appui-abstract';
 import { DialogLayoutDataProvider } from '@itwin/appui-abstract';
 import { DialogPropertySyncItem } from '@itwin/appui-abstract';
-import { DialogProps } from '@itwin/ui-core-react';
+import { DialogProps } from '@itwin/core-react';
 import { DialogProps as DialogProps_2 } from '@itwin/appui-abstract';
 import { DialogRow } from '@itwin/appui-abstract';
 import { Direction } from '@itwin/appui-layout-react';
@@ -55,9 +55,9 @@ import { FunctionKey } from '@itwin/appui-abstract';
 import { GroupButton as GroupButton_2 } from '@itwin/appui-abstract';
 import { GuidString } from '@itwin/core-bentley';
 import { HorizontalAnchor } from '@itwin/appui-layout-react';
-import { I18N } from '@bentley/imodeljs-i18n';
-import { IconProps } from '@itwin/ui-core-react';
-import { IconSpec } from '@itwin/ui-core-react';
+import { I18N } from '@itwin/core-i18n';
+import { IconProps } from '@itwin/core-react';
+import { IconSpec } from '@itwin/core-react';
 import { Id64Array } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
 import { IDisposable } from '@itwin/core-bentley';
@@ -73,7 +73,7 @@ import { MessageBoxIconType } from '@itwin/core-frontend';
 import { MessageBoxType } from '@itwin/core-frontend';
 import { MessageBoxValue } from '@itwin/core-frontend';
 import { MessageSeverity } from '@itwin/appui-abstract';
-import { MessageType } from '@itwin/ui-core-react';
+import { MessageType } from '@itwin/core-react';
 import { NestedStagePanelKey } from '@itwin/appui-layout-react';
 import { NestedStagePanelsManagerProps } from '@itwin/appui-layout-react';
 import { NineZoneDispatch } from '@itwin/appui-layout-react';
@@ -82,46 +82,46 @@ import { NineZoneManager } from '@itwin/appui-layout-react';
 import { NineZoneManagerProps } from '@itwin/appui-layout-react';
 import { NineZoneStagePanelManagerProps } from '@itwin/appui-layout-react';
 import { NineZoneState } from '@itwin/appui-layout-react';
-import { NoChildrenProps } from '@itwin/ui-core-react';
-import { NodeCheckboxRenderProps } from '@itwin/ui-core-react';
+import { NoChildrenProps } from '@itwin/core-react';
+import { NodeCheckboxRenderProps } from '@itwin/core-react';
 import { NodeKey } from '@itwin/presentation-common';
 import { NotificationManager } from '@itwin/core-frontend';
 import { NotifyMessageDetails } from '@itwin/core-frontend';
-import { Omit } from '@itwin/ui-core-react';
+import { Omit } from '@itwin/core-react';
 import { OnCancelFunc } from '@itwin/appui-abstract';
 import { OnItemExecutedFunc } from '@itwin/appui-abstract';
 import { OnNumberCommitFunc } from '@itwin/appui-abstract';
 import { OnValueCommitFunc } from '@itwin/appui-abstract';
-import { Orientation } from '@itwin/ui-core-react';
+import { Orientation } from '@itwin/core-react';
 import { OutputMessageAlert } from '@itwin/core-frontend';
 import { OutputMessagePriority } from '@itwin/core-frontend';
 import { OutputMessageType } from '@itwin/core-frontend';
 import { PanelSide } from '@itwin/appui-layout-react';
-import { PlaybackSettings } from '@itwin/ui-imodel-components-react';
-import { Point } from '@itwin/ui-core-react';
+import { PlaybackSettings } from '@itwin/imodel-components-react';
+import { Point } from '@itwin/core-react';
 import { Point2d } from '@itwin/core-geometry';
 import { PointProps } from '@itwin/appui-abstract';
 import { Primitives } from '@itwin/appui-abstract';
 import { PropertyDescription } from '@itwin/appui-abstract';
 import { PropertyRecord } from '@itwin/appui-abstract';
-import { PropertyUpdatedArgs } from '@itwin/ui-components-react';
+import { PropertyUpdatedArgs } from '@itwin/components-react';
 import * as PropTypes from 'prop-types';
 import { QuantityTypeArg } from '@itwin/core-frontend';
 import * as React from 'react';
-import { RectangleProps } from '@itwin/ui-core-react';
+import { RectangleProps } from '@itwin/core-react';
 import { RelativePosition } from '@itwin/appui-abstract';
 import { ResizeHandle } from '@itwin/appui-layout-react';
 import { Ruleset } from '@itwin/presentation-common';
 import { SafeAreaInsets } from '@itwin/appui-layout-react';
 import { ScreenViewport } from '@itwin/core-frontend';
-import { SelectionMode } from '@itwin/ui-components-react';
-import { SettingsManager } from '@itwin/ui-core-react';
+import { SelectionMode } from '@itwin/components-react';
+import { SettingsManager } from '@itwin/core-react';
 import { SettingsStatus } from '@bentley/product-settings-client';
-import { SettingsTabEntry } from '@itwin/ui-core-react';
-import { Size } from '@itwin/ui-core-react';
-import { SizeProps } from '@itwin/ui-core-react';
+import { SettingsTabEntry } from '@itwin/core-react';
+import { Size } from '@itwin/core-react';
+import { SizeProps } from '@itwin/core-react';
 import { SnapMode } from '@itwin/core-frontend';
-import { SolarDataProvider } from '@itwin/ui-imodel-components-react';
+import { SolarDataProvider } from '@itwin/imodel-components-react';
 import { SpecialKey } from '@itwin/appui-abstract';
 import { StagePanelLocation as StagePanelLocation_2 } from '@itwin/appui-abstract';
 import { StagePanelSection as StagePanelSection_2 } from '@itwin/appui-abstract';
@@ -147,32 +147,32 @@ import { ToolbarPanelAlignment } from '@itwin/appui-layout-react';
 import { ToolbarUsage } from '@itwin/appui-abstract';
 import { ToolSettingsWidgetManagerProps } from '@itwin/appui-layout-react';
 import { ToolTipOptions } from '@itwin/core-frontend';
-import { TreeCheckboxStateChangeEventArgs } from '@itwin/ui-components-react';
-import { TreeNodeItem } from '@itwin/ui-components-react';
-import { TreeNodeRendererProps } from '@itwin/ui-components-react';
-import { TreeRendererProps } from '@itwin/ui-components-react';
-import { TreeSelectionModificationEventArgs } from '@itwin/ui-components-react';
-import { TreeSelectionReplacementEventArgs } from '@itwin/ui-components-react';
+import { TreeCheckboxStateChangeEventArgs } from '@itwin/components-react';
+import { TreeNodeItem } from '@itwin/components-react';
+import { TreeNodeRendererProps } from '@itwin/components-react';
+import { TreeRendererProps } from '@itwin/components-react';
+import { TreeSelectionModificationEventArgs } from '@itwin/components-react';
+import { TreeSelectionReplacementEventArgs } from '@itwin/components-react';
 import { UiAdmin } from '@itwin/appui-abstract';
 import { UiDataProvider } from '@itwin/appui-abstract';
-import { UiEvent } from '@itwin/ui-core-react';
+import { UiEvent } from '@itwin/core-react';
 import { UiItemsProvider } from '@itwin/appui-abstract';
 import { UiLayoutDataProvider } from '@itwin/appui-abstract';
-import { UiSetting } from '@itwin/ui-core-react';
-import { UiSettings } from '@itwin/ui-core-react';
-import { UiSettingsResult } from '@itwin/ui-core-react';
-import { UiSettingsStatus } from '@itwin/ui-core-react';
-import { UiSettingsStorage } from '@itwin/ui-core-react';
+import { UiSetting } from '@itwin/core-react';
+import { UiSettings } from '@itwin/core-react';
+import { UiSettingsResult } from '@itwin/core-react';
+import { UiSettingsStatus } from '@itwin/core-react';
+import { UiSettingsStorage } from '@itwin/core-react';
 import { UnifiedSelectionTreeEventHandler } from '@itwin/presentation-components';
 import { UnifiedSelectionTreeEventHandlerParams } from '@itwin/presentation-components';
-import { UnitSystemKey } from '@bentley/imodeljs-quantity';
+import { UnitSystemKey } from '@itwin/core-quantity';
 import { UserInfo } from '@bentley/itwin-client';
 import { VerticalAnchor } from '@itwin/appui-layout-react';
 import { ViewFlagProps } from '@itwin/core-common';
 import { ViewManager } from '@itwin/core-frontend';
 import { Viewport } from '@itwin/core-frontend';
 import { ViewState } from '@itwin/core-frontend';
-import { ViewStateProp } from '@itwin/ui-imodel-components-react';
+import { ViewStateProp } from '@itwin/imodel-components-react';
 import { ViewStateProps } from '@itwin/core-common';
 import { WidgetManagerProps } from '@itwin/appui-layout-react';
 import { WidgetState } from '@itwin/appui-abstract';
@@ -3087,7 +3087,7 @@ export class IModelAppUiSettings extends UserSettingsStorage {
 export const IModelConnectedNavigationWidget: import("react-redux").ConnectedComponent<typeof DefaultNavigationWidget, any>;
 
 // @beta
-export const IModelConnectedViewport: import("react-redux").ConnectedComponent<React.ComponentType<import("@itwin/ui-imodel-components-react").ViewportProps & import("@itwin/presentation-components").ViewWithUnifiedSelectionProps>, any>;
+export const IModelConnectedViewport: import("react-redux").ConnectedComponent<React.ComponentType<import("@itwin/imodel-components-react").ViewportProps & import("@itwin/presentation-components").ViewWithUnifiedSelectionProps>, any>;
 
 // @beta
 export const IModelConnectedViewSelector: import("react-redux").ConnectedComponent<typeof ViewSelector, any>;
@@ -6400,7 +6400,7 @@ export function ToolSettingsContent(): JSX.Element | null;
 // @internal (undocumented)
 export function ToolSettingsDockedContent(): JSX.Element;
 
-// @beta
+// @public
 export interface ToolSettingsEntry {
     // (undocumented)
     editorNode: React.ReactNode;
@@ -6408,7 +6408,7 @@ export interface ToolSettingsEntry {
     labelNode: React.ReactNode;
 }
 
-// @beta
+// @internal
 export function ToolSettingsGrid({ settings }: ToolSettingsGridProps): JSX.Element;
 
 // @beta
@@ -6416,7 +6416,7 @@ export function ToolSettingsGridContainer({ componentGenerator }: {
     componentGenerator: ComponentGenerator;
 }): JSX.Element;
 
-// @beta
+// @internal
 export interface ToolSettingsGridProps {
     // (undocumented)
     settings?: ToolSettingsEntry[];
@@ -6923,7 +6923,7 @@ export function useUpdateNineZoneSize(frontstageDef: FrontstageDef): void;
 export const useVisibilityTreeFiltering: (nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>, filterInfo?: VisibilityTreeFilterInfo | undefined, onFilterApplied?: ((filteredDataProvider: IPresentationTreeDataProvider, matchesCount: number) => void) | undefined) => {
     filteredNodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
     isFiltering: boolean;
-    nodeHighlightingProps: import("@itwin/ui-components-react").HighlightableTreeProps | undefined;
+    nodeHighlightingProps: import("@itwin/components-react").HighlightableTreeProps | undefined;
 };
 
 // @alpha
@@ -7104,9 +7104,9 @@ export class VisibilityTreeEventHandler extends UnifiedSelectionTreeEventHandler
     // (undocumented)
     onCheckboxStateChanged(event: TreeCheckboxStateChangeEventArgs): undefined;
     // (undocumented)
-    onSelectionModified({ modifications }: TreeSelectionModificationEventArgs): import("@itwin/ui-components-react").Subscription | undefined;
+    onSelectionModified({ modifications }: TreeSelectionModificationEventArgs): import("@itwin/components-react").Subscription | undefined;
     // (undocumented)
-    onSelectionReplaced({ replacements }: TreeSelectionReplacementEventArgs): import("@itwin/ui-components-react").Subscription | undefined;
+    onSelectionReplaced({ replacements }: TreeSelectionReplacementEventArgs): import("@itwin/components-react").Subscription | undefined;
     }
 
 // @alpha

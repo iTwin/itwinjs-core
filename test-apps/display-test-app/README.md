@@ -40,7 +40,7 @@ npm run start:servers
 ## Using display-test-app
 
 display-test-app provides no UI for selecting iModels from iModelHub - only a toolbar button to open an iModel from the local file system. However, if the iModel is a briefcase that was downloaded from iModelHub and is opened in read-write mode, it can push and pull changesets.
-The `SVT_STANDALONE_FILENAME` environment variable can be defined before startup to contain the absolute path to an iModel on disk; if so, it will be opened automatically at startup.
+The `IMJS_STANDALONE_FILENAME` environment variable can be defined before startup to contain the absolute path to an iModel on disk; if so, it will be opened automatically at startup.
 
 display-test-app's UI consists of:
 
@@ -97,78 +97,80 @@ rush install -c
 
 You can use these environment variables to alter the default behavior of various aspects of the system. If you are running display-test-app on mobile, you will need to edit display-test-app's entry in apps.config.json. In the "env" section, add an entry corresponding to the desired property from the SVTConfiguration interface. The "env" section contains a JSON version of an SVTConfiguration object.
 
-* SVT_STANDALONE_FILENAME
+* IMJS_STANDALONE_FILENAME
   * Absolute path to an iModel to be opened on start-up.
-* SVT_STANDALONE_FILEPATH (browser only)
+* IMJS_STANDALONE_FILEPATH (browser only)
   * Allows display-test-app running in the browser to assume a common base path for ALL local iModels. This enables the use of a file open dialog. Within that dialog you must navigate to the exact path and select a file residing inside that directory - not in any subdirectory thereof.
-* SVT_STANDALONE_VIEWNAME
+* IMJS_STANDALONE_VIEWNAME
   * The name of a view to open by default within an iModel.
-* SVT_STANDALONE_SIGNIN
+* IMJS_STANDALONE_SIGNIN
   * If defined (value does not matter), the user will be required to sign in at startup. This enables access to content stored on the reality data service. As a side effect, you may observe a harmless "failed to fetch" dialog on startup, which can be safely dismissed.
-* SVT_NO_MAXIMIZE_WINDOW
+* IMJS_NO_MAXIMIZE_WINDOW
   * If defined, don't maximize the electron window on startup
-* SVT_NO_DEV_TOOLS
+* IMJS_NO_DEV_TOOLS
   * If defined, do not open the electron dev tools on startup
-* SVT_LOG_LEVEL
+* IMJS_LOG_LEVEL
   * If defined, the minimum logging level will be set to this value. Log messages are output to the terminal from which display-test-app was run. Example log levels include "debug", "error", "warning", etc - see Logger.ParseLogLevel() for the complete list.
-* SVT_DISABLE_DIAGNOSTICS
+* IMJS_DISABLE_DIAGNOSTICS
   * By default, all debug-only code paths are enabled. These include assertions, console output, and potentially-expensive WebGL state checks like checkFramebufferStatus(). If this environment variable is defined (value does not matter), all of these debug-only code paths will be disabled. Note that this *only* affects assertions and console output produced within the rendering code.
-* SVT_DISABLED_EXTENSIONS
+* IMJS_DISABLED_EXTENSIONS
   * If defined, a semicolon-separated list of names of WebGLExtensions to be disabled. See WebGLExtensionName for valid names (case-sensitive).
-* SVT_DISABLE_INSTANCING
+* IMJS_DISABLE_INSTANCING
   * If defined, instanced geometry will not be generated for tiles.
-* SVT_NO_IMPROVED_ELISION
+* IMJS_NO_IMPROVED_ELISION
   * If defined, disables more accurate empty tile elision on backend.
-* SVT_IGNORE_AREA_PATTERNS
+* IMJS_IGNORE_AREA_PATTERNS
   * If defined, area pattern geometry will be omitted from tiles.
-* SVT_DISABLE_MAGNIFICATION
+* IMJS_DISABLE_MAGNIFICATION
   * If defined, tiles will always be subdivided (size multipliers will never be applied).
-* SVT_PRESERVE_SHADER_SOURCE_CODE
+* IMJS_PRESERVE_SHADER_SOURCE_CODE
   * If defined, shader source code will be preserved as internal strings, useful for debugging purposes.
-* SVT_TILETREE_EXPIRATION_SECONDS
+* IMJS_TILETREE_EXPIRATION_SECONDS
   * If defined, the number of seconds after a TileTree has been most recently drawn before purging it.
-* SVT_TILE_EXPIRATION_SECONDS
+* IMJS_TILE_EXPIRATION_SECONDS
   * If defined, the number of seconds after a Tile has been most recently used before pruning it.
-* SVT_DISABLE_LOG_Z
+* IMJS_DISABLE_LOG_Z
   * If defined, the logarithmic depth buffer will not be used.
-* SVT_FAKE_CLOUD_STORAGE
+* IMJS_FAKE_CLOUD_STORAGE
   * If defined, cloud storage tile caching will be simulated. Cached tiles will be stored in ./lib/backend/tiles/. They will be removed by a `rush clean` or `npm run clean`.
     * NOTE: This currently only works when running display-test-app in a browser.
-* SVT_ENABLE_MAP_TEXTURE_FILTER
+* IMJS_ENABLE_MAP_TEXTURE_FILTER
   * If defined, the anisotropic filtering will be used for (planar) map tiles.
-* SVT_DISABLE_MAP_DRAPE_TEXTURE_FILTER
+* IMJS_DISABLE_MAP_DRAPE_TEXTURE_FILTER
   * If defined, the anisotropic filtering will be disabled for map tiles draped on terrain.
-* SVT_DISABLE_DPI_AWARE_VIEWPORTS
+* IMJS_DISABLE_DPI_AWARE_VIEWPORTS
   * If defined, do not respect the DPI of the system when rendering viewports.
-* SVT_DEVICE_PIXEL_RATIO_OVERRIDE
+* IMJS_DEVICE_PIXEL_RATIO_OVERRIDE
   * If defined, the pixel ratio used instead of the system's actual device pixel ratio.
-* SVT_DPI_LOD
+* IMJS_DPI_LOD
   * If defined, account for the device DPI when computing level of detail for tiles and decoration graphics.
-* SVT_DISABLE_EDGE_DISPLAY
+* IMJS_DISABLE_EDGE_DISPLAY
   * If defined, do not allow visible or hidden edges to be displayed, and also do not create any UI related to them.
-* SVT_USE_WEBGL2
+* IMJS_USE_WEBGL2
   * Unless set to "0" or "false", the system will attempt to create a WebGL2 context before possibly falling back to WebGL1.
-* SVT_MAX_TILES_TO_SKIP
+* IMJS_MAX_TILES_TO_SKIP
   * The number of levels of iModel tile trees to skip before loading graphics.
-* SVT_DEBUG_SHADERS
+* IMJS_DEBUG_SHADERS
   * If defined, and the WEBGL_debug_shaders extension is supported, collect debug info during shader compilation. See the `dta output shaders` key-in.
-* SVT_WINDOW_SIZE
+* IMJS_WINDOW_SIZE
   * If defined, a comma-separated startup size for the electron application window as `width,height`.
-* SVT_ALWAYS_LOAD_EDGES
+* IMJS_ALWAYS_LOAD_EDGES
   * If defined, when requesting tile content, edges will always be requested regardless of view settings.
-* SVT_SUBDIVIDE_INCOMPLETE
+* IMJS_SUBDIVIDE_INCOMPLETE
   * If defined, TileAdmin.Props.alwaysSubdivideIncompleteTiles will be initialized to `true`.
-* SVT_MIN_SPATIAL_TOLERANCE
+* IMJS_MIN_SPATIAL_TOLERANCE
   * See TileAdmin.Props.minimumSpatialTolerance.
-* SVT_NO_EXTERNAL_TEXTURES
+* IMJS_NO_EXTERNAL_TEXTURES
   * If defined, the backend will embed all texture image data directly in the tiles.
-* SVT_ITWIN_ID.
+* IMJS_ITWIN_ID.
   * GuidString of the Context Id (aka project id) to use to query Reality Data - use by Spatial Classification (e.g. "fb1696c8-c074-4c76-a539-a5546e048cc6").
-  For SVT_ITWIN_ID to work you should be in signin mode (SVT_STANDALONE_SIGNIN=true) with correct BUDDI region set if not in prod (see IMJS_BUDDI_RESOLVE_URL_USING_REGION)
+  For IMJS_ITWIN_ID to work you should be in signin mode (IMJS_STANDALONE_SIGNIN=true).
 * IMJS_MAPBOX_KEY
   * If defined, sets the MapBox key for the `MapLayerOptions` as an "access_token".
 * IMJS_BING_MAPS_KEY
   * If defined, sets a Bing Maps key within the `MapLayerOptions` as a "key" type.
+* IMJS_CESIUM_ION_KEY
+  * If defined, the API key supplying access to Cesium ION assets.
 
 ## Key-ins
 
@@ -189,7 +191,7 @@ display-test-app has access to all key-ins defined in the imodeljs-frontend and 
 * `dta path decoration` - toggle drawing a small path decoration in the selected viewport for testing purposes.
 * `dta markup` - toggle markup on the selected viewport.
 * `dta signin` - sign in to use Bentley services like iModelHub and reality data.
-* `dta output shaders` - output debug information for compiled shaders. Requires SVT_DEBUG_SHADERS to have been set. Accepts 0-2 arguments:
+* `dta output shaders` - output debug information for compiled shaders. Requires IMJS_DEBUG_SHADERS to have been set. Accepts 0-2 arguments:
   * `d=output\directory\` - directory into which to put the output files.
   * filter string: a combination of the following characters to filter the output (e.g., `gu` outputs all used glsl shaders, both fragment and vertex):
     * `f` or `v`: output only fragment or vertex shaders, respectively.
@@ -223,7 +225,7 @@ display-test-app has access to all key-ins defined in the imodeljs-frontend and 
 
 display-test-app supplies minimal features for editing the contents of an iModel, strictly for testing purposes. To use it:
 
-* Set SVT_READ_WRITE=1 in the environment.
+* Set IMJS_READ_WRITE=1 in the environment.
 * Open a briefcase or an editable standalone iModel.
 * Use the key-ins below to make changes; typically:
   * `dta edit` to begin an editing scope;

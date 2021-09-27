@@ -25,7 +25,7 @@ import { FilterByInstancePathsHierarchyRequestOptions } from '@itwin/presentatio
 import { FilterByTextHierarchyRequestOptions } from '@itwin/presentation-common';
 import { HierarchyRequestOptions } from '@itwin/presentation-common';
 import { HierarchyUpdateInfo } from '@itwin/presentation-common';
-import { I18N } from '@bentley/imodeljs-i18n';
+import { I18N } from '@itwin/core-i18n';
 import { Id64Arg } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
 import { IDisposable } from '@itwin/core-bentley';
@@ -49,7 +49,7 @@ import { RulesetVariable } from '@itwin/presentation-common';
 import { SelectClassInfo } from '@itwin/presentation-common';
 import { SelectionScope } from '@itwin/presentation-common';
 import { SetRulesetVariableParams } from '@itwin/presentation-common';
-import { UnitSystemKey } from '@bentley/imodeljs-quantity';
+import { UnitSystemKey } from '@itwin/core-quantity';
 import { UnsetRulesetVariableParams } from '@itwin/presentation-common';
 import { UpdateHierarchyStateParams } from '@itwin/presentation-common';
 import { VariableValue } from '@itwin/presentation-common';

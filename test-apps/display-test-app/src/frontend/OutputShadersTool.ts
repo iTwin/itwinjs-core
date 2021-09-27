@@ -333,7 +333,7 @@ export class OutputShadersTool extends Tool {
     if (undefined !== dsf && dsf.length > 0)
       await outputShaders(dsf, usedFlag, typeFlag, langFlag, outputDir);
     else
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "No shaders (did you define SVT_DEBUG_SHADERS?)"));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "No shaders (did you define IMJS_DEBUG_SHADERS?)"));
 
     return true;
   }

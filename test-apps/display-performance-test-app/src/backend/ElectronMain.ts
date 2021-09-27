@@ -20,8 +20,8 @@ const dptaElectronMain = async () => {
       debug = false;
   });
 
-  const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS) && debug;
-  const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW); // Make max window the default
+  const autoOpenDevTools = (undefined === process.env.IMJS_NO_DEV_TOOLS) && debug;
+  const maximizeWindow = (undefined === process.env.IMJS_NO_MAXIMIZE_WINDOW); // Make max window the default
 
   await ElectronHost.openMainWindow({ width: 1280, height: 800, show: !maximizeWindow });
   assert(ElectronHost.mainWindow !== undefined);

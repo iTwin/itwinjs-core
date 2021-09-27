@@ -4,21 +4,21 @@
 
 ```ts
 
-import { CommonProps } from '@itwin/ui-core-react';
+import { CommonProps } from '@itwin/core-react';
 import * as CSS from 'csstype';
 import { Draft } from 'immer';
 import { Interaction } from 'scheduler/tracing';
-import { NoChildrenProps } from '@itwin/ui-core-react';
-import { Omit } from '@itwin/ui-core-react';
-import { OmitChildrenProp } from '@itwin/ui-core-react';
-import { Point } from '@itwin/ui-core-react';
+import { NoChildrenProps } from '@itwin/core-react';
+import { Omit } from '@itwin/core-react';
+import { OmitChildrenProp } from '@itwin/core-react';
+import { Point } from '@itwin/core-react';
 import { PointProps } from '@itwin/appui-abstract';
-import { PopupProps } from '@itwin/ui-core-react';
+import { PopupProps } from '@itwin/core-react';
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
-import { Rectangle } from '@itwin/ui-core-react';
-import { RectangleProps } from '@itwin/ui-core-react';
-import { SizeProps } from '@itwin/ui-core-react';
+import { Rectangle } from '@itwin/core-react';
+import { RectangleProps } from '@itwin/core-react';
+import { SizeProps } from '@itwin/core-react';
 
 // @internal (undocumented)
 export const ActiveTabIdContext: React.Context<string>;
