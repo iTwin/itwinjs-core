@@ -40,6 +40,7 @@ export class ToolSettingsContent extends React.PureComponent<ToolSettingsContent
 
     return (
       <WidgetContent
+        key={Date.now()}
         anchor={this.props.anchor}
         className={className}
         containerRef={this._container}
