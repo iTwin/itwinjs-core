@@ -750,14 +750,14 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
 
     // If a type is specified, display it
     if (type !== undefined) {
-      switch (type.toUpperCase()) {
-        case "RealityMesh3DTiles":
+      switch (type) {
+        case DefaultSupportedTypes.RealityMesh3dTiles:
           strings.push(IModelApp.i18n.translate("iModelJs:RealityModelTypes.RealityMesh3DTiles"));
           break;
-        case "Terrain3DTiles":
+        case DefaultSupportedTypes.Terrain3dTiles:
           strings.push(IModelApp.i18n.translate("iModelJs:RealityModelTypes.Terrain3DTiles"));
           break;
-        case "Cesium3DTiles":
+        case DefaultSupportedTypes.Cesium3dTiles:
           strings.push(IModelApp.i18n.translate("iModelJs:RealityModelTypes.Cesium3DTiles"));
           break;
       }
