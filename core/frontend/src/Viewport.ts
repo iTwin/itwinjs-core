@@ -1055,10 +1055,13 @@ export abstract class Viewport implements IDisposable {
     // ###TODO reality model appearance overrides
     // ###TODO OSM Building display
 
-    removals.push(settings.onBackgroundMapChanged.addListener(() => {
+    const mapChanged = () => {
       this.invalidateController();
       this._changeFlags.setDisplayStyle();
-    }));
+    };
+
+    removals.push(settings.onBackgroundMapChanged.addListener(mapChanged));
+    removals.push(settings.onMapImageryChanged.addListener(mapChanged));
 
     removals.push(settings.onExcludedElementsChanged.addListener(() => {
       this._changeFlags.setDisplayStyle();
