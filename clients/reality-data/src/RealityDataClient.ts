@@ -13,23 +13,16 @@ import { AuthorizedClientRequestContext, getArrayBuffer, getJson, RequestQueryOp
 import { ECJsonTypeMap, WsgInstance } from "./wsg/ECJsonTypeMap";
 import { WsgClient } from "./wsg/WsgClient";
 
-/** Currenlty supported  ProjectWise ContextShare reality data types
+/** Currently supported ProjectWise ContextShare reality data types
  * @internal
  */
-export type RealityDataType =
-  "RealityMesh3DTiles" | // Web Ready Scalable Mesh
-  "OPC" | // Orbit Point Cloud
-  "Terrain3DTiles" | // Terrain3DTiles
-  "OMR" | // Mapping Resource,
-  "Cesium3DTiles"; // Cesium 3dTiles
-
-// TEMPORARY FIX: Continued support of type filtering
-const supportedTypes = [
-  "RealityMesh3DTiles",
-  "OPC",
-  "Terrain3DTiles",
-  "OMR",
-  "Cesium3DTiles"];
+export enum DefaultSupportedTypes {
+  RealityMesh3dTiles = "RealityMesh3DTiles", // Web Ready Scalable Mesh
+  OPC = "OPC", // Orbit Point Cloud
+  Terrain3dTiles = "Terrain3DTiles", // Terrain3DTiles
+  OMR = "OMR", // Mapping Resource
+  Cesium3dTiles = "Cesium3DTiles" // Cesium 3dTiles
+}
 
 /** RealityData
  * This class implements a Reality Data stored in ProjectWise Context Share (Reality Data Service)
@@ -91,7 +84,7 @@ export class RealityData extends WsgInstance {
   public streamed?: boolean;
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Type")
-  public type?: RealityDataType;
+  public type?: string;
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ReferenceElevation")
   public referenceElevation?: number;
@@ -423,12 +416,12 @@ export class RealityDataAccessClient extends WsgClient {
     if (!type) {
       // If type not specified, add all supported known types
       let isFirst = true;
-      for (const rdType of supportedTypes) {
+      for (const supportedType of Object.values(DefaultSupportedTypes)) {
         if (isFirst)
           isFirst = false;
         else
           filter += `+or+`;
-        filter += `Type+eq+'${rdType}'`;
+        filter += `Type+eq+'${supportedType}'`;
       }
     } else {
       filter = `Type+eq+'${type}'`;

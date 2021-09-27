@@ -15,7 +15,6 @@ import {
   SpatialClassifiers, ViewFlagOverrides,
 } from "@bentley/imodeljs-common";
 import { AccessToken, request, RequestOptions } from "@bentley/itwin-client";
-import { RealityDataType } from "@bentley/reality-data-client";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
 import { DisplayStyleState } from "../DisplayStyleState";
 import { AuthorizedFrontendRequestContext, FrontendRequestContext } from "../FrontendRequestContext";
@@ -23,7 +22,7 @@ import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { PlanarClipMaskState } from "../PlanarClipMaskState";
-import { RealityData } from "../RealityDataAccessProps";
+import { DefaultSupportedTypes, RealityData } from "../RealityDataAccessProps";
 import { RenderMemory } from "../render/RenderMemory";
 import { SceneContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
@@ -993,7 +992,7 @@ export class RealityModelTileClient {
   /**
    * Returns Reality Data type if available
    */
-  public async getRealityDataType(): Promise<RealityDataType | undefined> {
+  public async getRealityDataType(): Promise<string | undefined> {
     const token = await this.getAccessToken();
     if (this.rdsProps && token) {
       const authRequestContext = new AuthorizedFrontendRequestContext(token);
