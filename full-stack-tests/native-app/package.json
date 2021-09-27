@@ -39,7 +39,7 @@
     "electron": "^11.1.0"
   },
   "devDependencies": {
-    "@bentley/certa": "workspace:*",
+    "@itwin/certa": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@itwin/oidc-signin-tool": "workspace:*",

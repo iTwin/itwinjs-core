@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
+import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import { RpcProtocolEvent, RpcRequest } from "@itwin/core-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { TestRpcInterface3 } from "../common/TestRpcInterface";

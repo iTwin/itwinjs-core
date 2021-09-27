@@ -46,7 +46,7 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/certa": "workspace:*",
+    "@itwin/certa": "workspace:*",
     "@bentley/context-registry-client": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
     "@itwin/oidc-signin-tool": "workspace:*",

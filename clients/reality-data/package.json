@@ -45,7 +45,7 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@bentley/certa": "workspace:*",
+    "@itwin/certa": "workspace:*",
     "@bentley/context-registry-client": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@itwin/core-geometry": "workspace:*",

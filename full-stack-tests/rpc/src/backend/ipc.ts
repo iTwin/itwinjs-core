@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { registerBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
+import { registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import { IpcWebSocketBackend, iTwinChannel } from "@itwin/core-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
 

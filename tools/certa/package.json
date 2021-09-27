@@ -1,5 +1,5 @@
 {
-  "name": "@bentley/certa",
+  "name": "@itwin/certa",
   "version": "3.0.0-dev.66",
   "description": "A mocha-based integration test runner",
   "license": "MIT",

@@ -57,7 +57,7 @@
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",
     "@itwin/build-tools": "workspace:*",
-    "@bentley/certa": "workspace:*",
+    "@itwin/certa": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
     "@itwin/core-geometry": "workspace:*",

@@ -406,7 +406,7 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/certa",
+      "packageName": "@itwin/certa",
       "projectFolder": "tools/certa",
       "reviewCategory": "tools",
       "shouldPublish": true,

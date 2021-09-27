@@ -6,7 +6,7 @@
 import { assert } from "chai";
 import * as semver from "semver";
 import { BentleyError, SerializedClientRequestContext } from "@itwin/core-bentley";
-import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
+import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import {
   ChangesetIdWithIndex,
   IModelReadRpcInterface, IModelRpcProps, NoContentError, RpcConfiguration, RpcInterface, RpcInterfaceDefinition, RpcManager, RpcOperation, RpcOperationPolicy,

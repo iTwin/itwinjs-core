@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ProcessDetector } from "@itwin/core-bentley";
 import { IpcWebSocketFrontend } from "@itwin/core-common";
-import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
+import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import { assert } from "chai";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { IModelApp, NativeApp } from "@itwin/core-frontend";

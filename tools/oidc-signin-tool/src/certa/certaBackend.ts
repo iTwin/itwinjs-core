@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as path from "path";
-import { registerBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
+import { registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import { AccessToken } from "@bentley/itwin-client";
 import { TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from "../TestUsers";
 import { TestUtility } from "../TestUtility";

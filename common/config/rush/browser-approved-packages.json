@@ -239,6 +239,10 @@
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
+      "name": "@itwin/certa",
+      "allowedCategories": [ "common", "edit", "frontend", "integration-testing", "internal", "tools" ]
+    },
+    {
       "name": "@itwin/core-backend",
       "allowedCategories": [ "backend", "edit", "integration-testing", "internal", "tools" ]
     },

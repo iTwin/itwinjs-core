@@ -29,7 +29,7 @@
     "@bentley/backend-itwin-client": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/build-tools": "workspace:*",
-    "@bentley/certa": "workspace:*",
+    "@itwin/certa": "workspace:*",
     "@bentley/context-registry-client": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/ecschema-rpcinterface-common": "workspace:*",
