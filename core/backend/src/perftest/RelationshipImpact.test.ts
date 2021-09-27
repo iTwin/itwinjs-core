@@ -9,7 +9,7 @@ import { Arc3d, IModelJson as GeomJson, Point3d } from "@itwin/core-geometry";
 import {
   BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, RelatedElement, RelationshipProps, SubCategoryAppearance,
 } from "@itwin/core-common";
-import { Reporter } from "@bentley/perf-tools/lib/Reporter";
+import { Reporter } from "@itwin/perf-tools/lib/Reporter";
 import { SpatialCategory } from "../Category";
 import { ECSqlStatement } from "../ECSqlStatement";
 import { IModelDb, SnapshotDb } from "../IModelDb";

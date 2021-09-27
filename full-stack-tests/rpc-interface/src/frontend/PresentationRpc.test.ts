@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { CheckpointConnection, IModelApp, IModelConnection } from "@itwin/core-frontend";
-import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
+import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/frontend";
 import { ChildNodeSpecificationTypes, ContentSpecificationTypes, InstanceKey, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { TestContext } from "./setup/TestContext";

@@ -60,7 +60,7 @@
     "@bentley/imodelhub-client": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/oidc-signin-tool": "workspace:*",
+    "@itwin/oidc-signin-tool": "workspace:*",
     "@bentley/telemetry-client": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",

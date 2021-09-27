@@ -104,7 +104,7 @@
     "@itwin/ui-imodel-components-react": "workspace:*",
     "@itwin/appui-layout-react": "workspace:*",
     "@itwin/appui-react": "workspace:*",
-    "@bentley/map-layers": "workspace:*",
+    "@itwin/map-layers": "workspace:*",
     "@itwin/itwinui-css": "^0.27.0",
     "@itwin/itwinui-react": "^1.16.2",
     "classnames": "^2.3.1",

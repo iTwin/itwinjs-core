@@ -30,7 +30,7 @@
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
-    "@bentley/oidc-signin-tool": "workspace:*",
+    "@itwin/oidc-signin-tool": "workspace:*",
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-backend": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",

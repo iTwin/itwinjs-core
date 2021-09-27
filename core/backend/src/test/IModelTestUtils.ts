@@ -22,7 +22,7 @@ import {
 } from "@itwin/core-common";
 import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
 import { AccessToken, AccessTokenProps, AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
-import { TestUserCredentials, TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import { TestUserCredentials, TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { BackendLoggerCategory as BackendLoggerCategory } from "../BackendLoggerCategory";
 import { CheckpointProps, V1CheckpointManager } from "../CheckpointManager";
 import { ClassRegistry } from "../ClassRegistry";

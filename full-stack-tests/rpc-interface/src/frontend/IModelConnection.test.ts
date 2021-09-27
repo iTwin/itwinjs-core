@@ -10,7 +10,7 @@ import {
 } from "@itwin/core-common";
 import { CheckpointConnection, IModelApp, IModelConnection, SpatialModelState, ViewState } from "@itwin/core-frontend";
 import { AccessToken } from "@bentley/itwin-client";
-import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
+import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/frontend";
 import { TestContext } from "./setup/TestContext";
 
 /* eslint-disable deprecation/deprecation */

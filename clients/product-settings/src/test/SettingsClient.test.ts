@@ -5,7 +5,7 @@
 import * as chai from "chai";
 import { Guid, GuidString } from "@itwin/core-bentley";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/frontend";
 import { SettingsMapResult, SettingsResult, SettingsStatus } from "../SettingsAdmin";
 import { ConnectSettingsClient } from "../SettingsClient";
 import { TestConfig } from "./TestConfig";

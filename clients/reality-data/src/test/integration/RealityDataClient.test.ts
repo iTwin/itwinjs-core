@@ -6,7 +6,7 @@ import * as chai from "chai";
 import { Guid, GuidString, Logger, LogLevel } from "@itwin/core-bentley";
 import { Angle, Range2d } from "@itwin/core-geometry";
 import { AuthorizedClientRequestContext, ImsAuthorizationClient } from "@bentley/itwin-client";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/frontend";
 import { RealityData, RealityDataClient, RealityDataRelationship } from "../../RealityDataClient";
 import { TestConfig } from "../TestConfig";
 import * as jsonpath from "jsonpath";

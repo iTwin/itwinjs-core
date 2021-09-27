@@ -7,7 +7,7 @@ import { BeDuration, GuidString, Logger } from "@itwin/core-bentley";
 import { ChangeSet, ChangeSetQuery, IModelHubClient } from "@bentley/imodelhub-client";
 import { IModelVersion } from "@itwin/core-common";
 import { AuthorizedFrontendRequestContext, CheckpointConnection, IModelApp, IModelConnection, MockRender } from "@itwin/core-frontend";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/TestUsers";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { TestUtility } from "./TestUtility";
 

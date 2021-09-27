@@ -15,7 +15,7 @@ import {
 } from "@itwin/core-backend";
 import { ColorByName, IModel, LocalFileName } from "@itwin/core-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { Barrier } from "../BarrierElement";
 import { Robot } from "../RobotElement";
 import { RobotWorldEngine } from "../RobotWorldEngine";

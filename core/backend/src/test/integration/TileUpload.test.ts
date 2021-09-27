@@ -7,7 +7,7 @@ import { GuidString } from "@itwin/core-bentley";
 import {
   BatchType, CloudStorageTileCache, ContentIdProvider, defaultTileOptions, IModelRpcProps, IModelTileRpcInterface, iModelTileTreeIdToString, RpcManager, RpcRegistry, TileContentSource,
 } from "@itwin/core-common";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { assert } from "chai";
 import * as zlib from "zlib";
 import { IModelDb } from "../../IModelDb";

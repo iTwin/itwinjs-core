@@ -25,7 +25,7 @@ import {
 import { I18NNamespace } from "@itwin/core-i18n";
 import { MarkupApp } from "@itwin/core-markup";
 import { AccessToken, ProgressInfo } from "@bentley/itwin-client";
-import { MapLayersUI } from "@bentley/map-layers";
+import { MapLayersUI } from "@itwin/map-layers";
 import { AndroidApp, IOSApp } from "@itwin/mobile-manager/lib/MobileFrontend";
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@itwin/presentation-frontend";
 import { getClassName } from "@itwin/appui-abstract";

@@ -50,7 +50,7 @@
     "@bentley/eslint-plugin": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/oidc-signin-tool": "workspace:*",
+    "@itwin/oidc-signin-tool": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/jsonpath": "^0.2.0",

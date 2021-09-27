@@ -1,5 +1,5 @@
 {
-  "name": "@bentley/map-layers",
+  "name": "@itwin/map-layers",
   "version": "3.0.0-dev.66",
   "description": "Extension that adds a Map Layers Widget",
   "main": "lib/map-layers.js",

@@ -9,7 +9,7 @@ import {
 import {
   CheckpointConnection, DisplayStyle3dState, IModelApp, IModelConnection, SpatialViewState, ViewState,
 } from "@itwin/core-frontend";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
 
 function countTileTrees(view: ViewState): number {

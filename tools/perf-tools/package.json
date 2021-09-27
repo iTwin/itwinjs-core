@@ -1,5 +1,5 @@
 {
-  "name": "@bentley/perf-tools",
+  "name": "@itwin/perf-tools",
   "version": "3.0.0-dev.66",
   "description": "Tools for collecting and reporting performance data",
   "license": "MIT",

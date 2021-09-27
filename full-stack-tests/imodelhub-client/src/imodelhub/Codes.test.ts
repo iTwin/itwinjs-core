@@ -8,7 +8,7 @@ import {
   AggregateResponseError, CodeQuery, CodeSequence, CodeSequenceType, CodeState, ConflictingCodesError, HubCode, IModelClient, IModelHubClientError,
 } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { TestUsers } from "@bentley/oidc-signin-tool";
+import { TestUsers } from "@itwin/oidc-signin-tool";
 import { ResponseBuilder } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
 import * as utils from "./TestUtils";

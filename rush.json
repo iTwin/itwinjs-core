@@ -413,28 +413,28 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/perf-tools",
+      "packageName": "@itwin/perf-tools",
       "projectFolder": "tools/perf-tools",
       "reviewCategory": "tools",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/oidc-signin-tool",
+      "packageName": "@itwin/oidc-signin-tool",
       "projectFolder": "tools/oidc-signin-tool",
       "reviewCategory": "tools",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/geonames-extension",
+      "packageName": "@itwin/geonames-extension",
       "projectFolder": "extensions/geonames",
       "reviewCategory": "extensions",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/map-layers",
+      "packageName": "@itwin/map-layers",
       "projectFolder": "extensions/map-layers",
       "reviewCategory": "extensions",
       "shouldPublish": true,
@@ -555,14 +555,14 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@bentley/rpcinterface-full-stack-tests",
+      "packageName": "@itwin/rpcinterface-full-stack-tests",
       "projectFolder": "full-stack-tests/rpc-interface",
       "reviewCategory": "integration-testing",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/imodelhub-client-tests",
+      "packageName": "@itwin/imodelhub-client-tests",
       "projectFolder": "full-stack-tests/imodelhub-client",
       "reviewCategory": "integration-testing",
       "shouldPublish": true,

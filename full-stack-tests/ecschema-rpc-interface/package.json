@@ -40,7 +40,7 @@
     "@itwin/core-i18n": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/oidc-signin-tool": "workspace:*",
+    "@itwin/oidc-signin-tool": "workspace:*",
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",
     "chai": "^4.1.2",

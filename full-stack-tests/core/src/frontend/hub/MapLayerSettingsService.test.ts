@@ -5,7 +5,7 @@
 import * as chai from "chai";
 import { Guid, GuidString } from "@itwin/core-bentley";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { TestFrontendAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
+import { TestFrontendAuthorizationClient, TestUsers } from "@itwin/oidc-signin-tool/lib/frontend";
 
 import { TestUtility } from "./TestUtility";
 import { IModelApp, IModelAppOptions, MapLayerSettingsService, MapLayerSource } from "@itwin/core-frontend";

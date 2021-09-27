@@ -335,8 +335,20 @@
       "allowedCategories": [ "backend" ]
     },
     {
+      "name": "@itwin/map-layers",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/mobile-manager",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/oidc-signin-tool",
+      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
+    },
+    {
+      "name": "@itwin/perf-tools",
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "@itwin/presentation-backend",

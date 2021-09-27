@@ -1,5 +1,5 @@
 {
-  "name": "@bentley/imodelhub-client-tests",
+  "name": "@itwin/imodelhub-client-tests",
   "version": "3.0.0-dev.66",
   "main": "lib/imodelhub-client-tests.js",
   "description": "Tests the iModelHub client",
@@ -53,7 +53,7 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/oidc-signin-tool": "workspace:*",
+    "@itwin/oidc-signin-tool": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
     "@types/fs-extra": "^4.0.7",

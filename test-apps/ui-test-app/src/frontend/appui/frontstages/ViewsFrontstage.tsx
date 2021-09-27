@@ -8,7 +8,7 @@ import {
   ActivityMessageDetails, ActivityMessageEndReason, IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType,
   ScreenViewport, ViewState,
 } from "@itwin/core-frontend";
-import { MapLayersWidgetControl } from "@bentley/map-layers"; // used to test map-layers widget control
+import { MapLayersWidgetControl } from "@itwin/map-layers"; // used to test map-layers widget control
 import { NodeKey } from "@itwin/presentation-common";
 import {
   BadgeType, CommonToolbarItem, ConditionalBooleanValue, ContentLayoutProps, RelativePosition, SpecialKey, StageUsage, ToolbarItemUtilities, WidgetState,

@@ -9,7 +9,7 @@ import { AuthorizedFrontendRequestContext, NoRenderApp } from "@itwin/core-front
 import { AccessToken } from "@bentley/itwin-client";
 import {
   getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials,
-} from "@bentley/oidc-signin-tool/lib/frontend";
+} from "@itwin/oidc-signin-tool/lib/frontend";
 import { getRpcInterfaces, Settings } from "../../common/Settings";
 import { getProcessEnvFromBackend } from "../../common/SideChannels";
 import { IModelSession } from "./IModelSession";

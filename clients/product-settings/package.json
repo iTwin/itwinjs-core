@@ -47,7 +47,7 @@
     "@bentley/eslint-plugin": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/oidc-signin-tool": "workspace:*",
+    "@itwin/oidc-signin-tool": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^8.2.2",
     "@types/node": "14.14.31",

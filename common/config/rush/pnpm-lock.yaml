@@ -10,9 +10,9 @@ importers:
       '@bentley/certa': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/itwin-client': workspace:*
-      '@bentley/oidc-signin-tool': workspace:*
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
+      '@itwin/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
       '@types/deep-assign': ^0.1.0
       '@types/lodash': ^4.14.0
@@ -37,9 +37,9 @@ importers:
       '@bentley/certa': link:../../tools/certa
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/itwin-client': link:../itwin
-      '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../../core/bentley
+      '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/chai': 4.2.22
       '@types/deep-assign': 0.1.1
       '@types/lodash': 4.14.173
@@ -178,9 +178,9 @@ importers:
       '@bentley/eslint-plugin': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
-      '@bentley/oidc-signin-tool': workspace:*
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
+      '@itwin/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
@@ -200,9 +200,9 @@ importers:
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/imodelhub-client': link:../imodelhub
       '@bentley/itwin-client': link:../itwin
-      '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../../core/bentley
+      '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/chai': 4.2.22
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
@@ -223,10 +223,10 @@ importers:
       '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/itwin-client': workspace:*
-      '@bentley/oidc-signin-tool': workspace:*
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-geometry': workspace:*
+      '@itwin/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/deep-assign': ^0.1.0
@@ -257,9 +257,9 @@ importers:
       '@bentley/context-registry-client': link:../context-registry
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/itwin-client': link:../itwin
-      '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-geometry': link:../../core/geometry
+      '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
       '@types/deep-assign': 0.1.1
@@ -324,14 +324,14 @@ importers:
       '@bentley/imodelhub-client': workspace:*
       '@bentley/imodeljs-native': 3.0.10
       '@bentley/itwin-client': workspace:*
-      '@bentley/oidc-signin-tool': workspace:*
-      '@bentley/perf-tools': workspace:*
       '@bentley/telemetry-client': workspace:*
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/ecschema-metadata': workspace:*
+      '@itwin/oidc-signin-tool': workspace:*
+      '@itwin/perf-tools': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/deep-assign': ^0.1.0
@@ -391,14 +391,14 @@ importers:
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
-      '@bentley/perf-tools': link:../../tools/perf-tools
       '@bentley/telemetry-client': link:../../clients/telemetry
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-common': link:../common
       '@itwin/core-geometry': link:../geometry
       '@itwin/ecschema-metadata': link:../ecschema-metadata
+      '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
+      '@itwin/perf-tools': link:../../tools/perf-tools
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
       '@types/deep-assign': 0.1.1
@@ -441,12 +441,12 @@ importers:
       '@bentley/frontend-authorization-client': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
-      '@bentley/oidc-signin-tool': workspace:*
       '@bentley/telemetry-client': workspace:*
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
+      '@itwin/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
       '@types/deep-assign': ^0.1.0
       '@types/fs-extra': ^4.0.7
@@ -502,12 +502,12 @@ importers:
       '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@bentley/telemetry-client': link:../../clients/telemetry
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-common': link:../common
       '@itwin/core-geometry': link:../geometry
+      '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/chai': 4.2.22
       '@types/deep-assign': 0.1.1
       '@types/fs-extra': 4.0.12
@@ -1696,7 +1696,6 @@ importers:
       '@bentley/eslint-plugin': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
-      '@bentley/oidc-signin-tool': workspace:*
       '@itwin/build-tools': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
@@ -1704,6 +1703,7 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/electron-manager': workspace:*
+      '@itwin/oidc-signin-tool': workspace:*
       '@types/body-parser': ^1.17.0
       '@types/chai': ^4.1.4
       '@types/express': ^4.16.1
@@ -1752,8 +1752,8 @@ importers:
       webpack: 4.42.0
     devDependencies:
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@itwin/build-tools': link:../../tools/build
+      '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/body-parser': 1.19.1
       '@types/chai': 4.2.22
       '@types/express': 4.17.13
@@ -1776,7 +1776,6 @@ importers:
       '@bentley/eslint-plugin': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
-      '@bentley/oidc-signin-tool': workspace:*
       '@itwin/build-tools': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
@@ -1784,6 +1783,7 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/core-transformer': workspace:*
+      '@itwin/oidc-signin-tool': workspace:*
       '@types/body-parser': ^1.17.0
       '@types/chai': ^4.1.4
       '@types/express': ^4.16.1
@@ -1834,8 +1834,8 @@ importers:
       webpack: 4.42.0
     devDependencies:
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@itwin/build-tools': link:../../tools/build
+      '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/body-parser': 1.19.1
       '@types/chai': 4.2.22
       '@types/express': 4.17.13
@@ -2007,7 +2007,6 @@ importers:
       '@bentley/frontend-authorization-client': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
-      '@bentley/oidc-signin-tool': workspace:*
       '@bentley/product-settings-client': workspace:*
       '@itwin/build-tools': workspace:*
       '@itwin/core-backend': workspace:*
@@ -2023,6 +2022,7 @@ importers:
       '@itwin/electron-manager': workspace:*
       '@itwin/express-server': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
+      '@itwin/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
@@ -2073,9 +2073,9 @@ importers:
       '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
-      '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@bentley/product-settings-client': link:../../clients/product-settings
       '@itwin/build-tools': link:../../tools/build
+      '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
       '@types/fs-extra': 4.0.12
@@ -2105,7 +2105,6 @@ importers:
       '@bentley/eslint-plugin': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
-      '@bentley/oidc-signin-tool': workspace:*
       '@itwin/build-tools': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
@@ -2117,6 +2116,7 @@ importers:
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/ecschema-rpcinterface-common': workspace:*
       '@itwin/express-server': workspace:*
+      '@itwin/oidc-signin-tool': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
       '@types/chai': ^4.1.4
@@ -2147,7 +2147,6 @@ importers:
       '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -2157,6 +2156,7 @@ importers:
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       '@itwin/ecschema-rpcinterface-common': link:../../core/ecschema-rpc/common
+      '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-frontend': link:../../presentation/frontend
       chai: 4.3.4
@@ -2194,10 +2194,10 @@ importers:
       '@bentley/frontend-authorization-client': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
-      '@bentley/oidc-signin-tool': workspace:*
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
+      '@itwin/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
       '@types/deep-assign': ^0.1.0
       '@types/fs-extra': ^4.0.7
@@ -2232,8 +2232,8 @@ importers:
       nock: 12.0.3
     devDependencies:
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@itwin/build-tools': link:../../tools/build
+      '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/chai': 4.2.22
       '@types/deep-assign': 0.1.1
       '@types/fs-extra': 4.0.12
@@ -2256,7 +2256,6 @@ importers:
       '@bentley/frontend-authorization-client': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
-      '@bentley/oidc-signin-tool': workspace:*
       '@itwin/build-tools': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
@@ -2267,6 +2266,7 @@ importers:
       '@itwin/core-markup': workspace:*
       '@itwin/electron-manager': workspace:*
       '@itwin/express-server': workspace:*
+      '@itwin/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
@@ -2308,8 +2308,8 @@ importers:
     devDependencies:
       '@bentley/certa': link:../../tools/certa
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@itwin/build-tools': link:../../tools/build
+      '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/chai': 4.2.22
       '@types/fs-extra': 4.0.12
       '@types/mocha': 8.2.3
@@ -2332,7 +2332,6 @@ importers:
     specifiers:
       '@bentley/eslint-plugin': workspace:*
       '@bentley/itwin-client': workspace:*
-      '@bentley/oidc-signin-tool': workspace:*
       '@bentley/product-settings-client': workspace:*
       '@itwin/appui-abstract': workspace:*
       '@itwin/build-tools': workspace:*
@@ -2343,6 +2342,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/core-i18n': workspace:*
       '@itwin/core-quantity': workspace:*
+      '@itwin/oidc-signin-tool': workspace:*
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
@@ -2394,7 +2394,6 @@ importers:
       xmlhttprequest: ^1.8.0
     dependencies:
       '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@bentley/product-settings-client': link:../../clients/product-settings
       '@itwin/appui-abstract': link:../../ui/abstract
       '@itwin/core-backend': link:../../core/backend
@@ -2404,6 +2403,7 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-i18n': link:../../core/i18n
       '@itwin/core-quantity': link:../../core/quantity
+      '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@itwin/presentation-backend': link:../../presentation/backend
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-components': link:../../presentation/components
@@ -2528,7 +2528,6 @@ importers:
       '@bentley/eslint-plugin': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
-      '@bentley/oidc-signin-tool': workspace:*
       '@bentley/telemetry-client': workspace:*
       '@itwin/build-tools': workspace:*
       '@itwin/core-backend': workspace:*
@@ -2539,6 +2538,7 @@ importers:
       '@itwin/core-i18n': workspace:*
       '@itwin/core-quantity': workspace:*
       '@itwin/express-server': workspace:*
+      '@itwin/oidc-signin-tool': workspace:*
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
@@ -2571,7 +2571,6 @@ importers:
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@bentley/telemetry-client': link:../../clients/telemetry
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../../core/bentley
@@ -2580,6 +2579,7 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-i18n': link:../../core/i18n
       '@itwin/core-quantity': link:../../core/quantity
+      '@itwin/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-frontend': link:../../presentation/frontend
       chai: 4.3.4
@@ -3048,7 +3048,6 @@ importers:
       '@bentley/frontend-authorization-client': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
-      '@bentley/perf-tools': workspace:*
       '@bentley/react-scripts': 4.0.3
       '@itwin/appui-abstract': workspace:*
       '@itwin/build-tools': workspace:*
@@ -3062,6 +3061,7 @@ importers:
       '@itwin/electron-manager': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
       '@itwin/mobile-manager': workspace:*
+      '@itwin/perf-tools': workspace:*
       '@types/body-parser': ^1.17.0
       '@types/express': ^4.16.1
       '@types/node': 14.14.31
@@ -3101,9 +3101,9 @@ importers:
       body-parser: 1.19.0
     devDependencies:
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/perf-tools': link:../../tools/perf-tools
       '@bentley/react-scripts': 4.0.3_typescript@4.4.3
       '@itwin/build-tools': link:../../tools/build
+      '@itwin/perf-tools': link:../../tools/perf-tools
       '@types/body-parser': 1.19.1
       '@types/express': 4.17.13
       '@types/node': 14.14.31
@@ -3603,7 +3603,6 @@ importers:
       '@bentley/icons-generic-webfont': ^1.0.15
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
-      '@bentley/map-layers': workspace:*
       '@bentley/react-scripts': 4.0.3
       '@itwin/appui-abstract': workspace:*
       '@itwin/appui-layout-react': workspace:*
@@ -3626,6 +3625,7 @@ importers:
       '@itwin/hypermodeling-frontend': workspace:*
       '@itwin/itwinui-css': ^0.27.0
       '@itwin/itwinui-react': ^1.16.2
+      '@itwin/map-layers': workspace:*
       '@itwin/mobile-manager': workspace:*
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
@@ -3674,7 +3674,6 @@ importers:
       '@bentley/icons-generic-webfont': 1.0.34
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/map-layers': link:../../extensions/map-layers
       '@itwin/appui-abstract': link:../../ui/abstract
       '@itwin/appui-layout-react': link:../../ui/ninezone
       '@itwin/appui-react': link:../../ui/framework
@@ -3695,6 +3694,7 @@ importers:
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
       '@itwin/itwinui-css': 0.27.3
       '@itwin/itwinui-react': 1.19.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/map-layers': link:../../extensions/map-layers
       '@itwin/mobile-manager': link:../../core/mobile-manager
       '@itwin/presentation-backend': link:../../presentation/backend
       '@itwin/presentation-common': link:../../presentation/common

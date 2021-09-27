@@ -8,7 +8,7 @@ import {
   Briefcase, ChangeSet, IModelClient, Thumbnail, ThumbnailQuery, ThumbnailSize, Version, VersionQuery,
 } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext, RequestGlobalOptions, RequestTimeoutOptions } from "@bentley/itwin-client";
-import { TestUsers } from "@bentley/oidc-signin-tool";
+import { TestUsers } from "@itwin/oidc-signin-tool";
 import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
 import * as utils from "./TestUtils";

@@ -9,7 +9,7 @@ import {
   IModelClient, IModelCreatedEvent, IModelHubGlobalEvent, NamedVersionCreatedEvent, SoftiModelDeleteEvent,
 } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { TestUserCredentials } from "@bentley/oidc-signin-tool";
+import { TestUserCredentials } from "@itwin/oidc-signin-tool";
 import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
 import * as utils from "./TestUtils";

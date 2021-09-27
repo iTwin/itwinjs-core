@@ -5,7 +5,7 @@
 import { BackendAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
 import { LogLevel } from "@itwin/core-bentley";
 import { DevToolsRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface } from "@itwin/core-common";
-import { TestUserCredentials } from "@bentley/oidc-signin-tool";
+import { TestUserCredentials } from "@itwin/oidc-signin-tool";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
 
 /* eslint-disable @typescript-eslint/indent */

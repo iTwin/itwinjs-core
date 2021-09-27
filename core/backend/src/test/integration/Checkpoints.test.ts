@@ -11,7 +11,7 @@ import { GuidString } from "@itwin/core-bentley";
 import { CheckpointV2Query } from "@bentley/imodelhub-client";
 import { ChangesetProps } from "@itwin/core-common";
 import { BlobDaemon } from "@bentley/imodeljs-native";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { IModelHubBackend } from "../../IModelHubBackend";
 import { AuthorizedBackendRequestContext, IModelHost, IModelJsFs, SnapshotDb } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";

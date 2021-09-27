@@ -11,7 +11,7 @@ import {
 import {
   HyperModeling, HyperModelingDecorator, SectionDrawingLocationState, SectionMarker, SectionMarkerConfig, SectionMarkerHandler,
 } from "@itwin/hypermodeling-frontend";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
 import { testOnScreenViewport } from "../TestViewport";
 import { ProcessDetector } from "@itwin/core-bentley";

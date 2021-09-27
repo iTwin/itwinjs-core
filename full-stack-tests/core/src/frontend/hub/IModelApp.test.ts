@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { ClientRequestContextProps } from "@itwin/core-bentley";
 import { AuthorizedFrontendRequestContext, IModelApp } from "@itwin/core-frontend";
 import { AccessToken } from "@bentley/itwin-client";
-import { TestFrontendAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
+import { TestFrontendAuthorizationClient, TestUsers } from "@itwin/oidc-signin-tool/lib/frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { TestUtility } from "./TestUtility";
 

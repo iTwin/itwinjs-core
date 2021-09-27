@@ -5,7 +5,7 @@
 
 import { DbResult, GuidString, OpenMode } from "@itwin/core-bentley";
 import { IModelError, IModelVersion } from "@itwin/core-common";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { assert } from "chai";
 import { AuthorizedBackendRequestContext } from "../../BackendRequestContext";
 import { BriefcaseManager } from "../../BriefcaseManager";

@@ -1,5 +1,5 @@
 {
-  "name": "@bentley/oidc-signin-tool",
+  "name": "@itwin/oidc-signin-tool",
   "version": "3.0.0-dev.66",
   "description": "OIDC Signin Helper",
   "main": "lib/index.js",

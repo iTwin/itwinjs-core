@@ -43,7 +43,7 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/oidc-signin-tool": "workspace:*",
+    "@itwin/oidc-signin-tool": "workspace:*",
     "@types/body-parser": "^1.17.0",
     "@types/chai": "^4.1.4",
     "@types/express": "^4.16.1",

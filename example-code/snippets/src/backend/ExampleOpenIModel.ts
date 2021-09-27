@@ -6,7 +6,7 @@ import { OpenMode } from "@itwin/core-bentley";
 import { BriefcaseDb } from "@itwin/core-backend";
 import { IModelError, IModelStatus, OpenBriefcaseProps } from "@itwin/core-common";
 import { AccessToken } from "@bentley/itwin-client";
-import { TestUserCredentials, TestUtility } from "@bentley/oidc-signin-tool";
+import { TestUserCredentials, TestUtility } from "@itwin/oidc-signin-tool";
 
 /* eslint-disable @typescript-eslint/no-var-requires */
 

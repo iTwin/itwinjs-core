@@ -15,7 +15,7 @@ import {
   Version, VersionQuery, WsgError, WSStatus,
 } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext, ProgressInfo, UserInfo } from "@bentley/itwin-client";
-import { TestUserCredentials } from "@bentley/oidc-signin-tool";
+import { TestUserCredentials } from "@itwin/oidc-signin-tool";
 import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
 import { createFileHandler } from "./FileHandler";

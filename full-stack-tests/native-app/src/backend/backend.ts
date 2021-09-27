@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 // required to get certa to read the .env file - should be reworked
-import "@bentley/oidc-signin-tool/lib/certa/certaBackend";
+import "@itwin/oidc-signin-tool/lib/certa/certaBackend";
 import * as fs from "fs";
 import * as nock from "nock";
 import * as path from "path";
@@ -17,8 +17,8 @@ import {
 } from "@itwin/core-backend";
 import { IModelRpcProps, RpcConfiguration } from "@itwin/core-common";
 import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
-import { TestUtility } from "@bentley/oidc-signin-tool";
-import { TestUserCredentials } from "@bentley/oidc-signin-tool/lib/TestUsers";
+import { TestUtility } from "@itwin/oidc-signin-tool";
+import { TestUserCredentials } from "@itwin/oidc-signin-tool/lib/TestUsers";
 import { testIpcChannel, TestIpcInterface, TestProjectProps } from "../common/IpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 

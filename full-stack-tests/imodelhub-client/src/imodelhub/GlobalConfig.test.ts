@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { AccessToken, AuthorizedClientRequestContext, RequestGlobalOptions } from "@bentley/itwin-client";
-import { TestUsers } from "@bentley/oidc-signin-tool";
+import { TestUsers } from "@itwin/oidc-signin-tool";
 import { TestConfig } from "../TestConfig";
 import * as utils from "./TestUtils";
 

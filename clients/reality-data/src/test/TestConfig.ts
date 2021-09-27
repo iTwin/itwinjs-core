@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { getAccessTokenFromBackend, TestUserCredentials, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
+import { getAccessTokenFromBackend, TestUserCredentials, TestUsers } from "@itwin/oidc-signin-tool/lib/frontend";
 
 /** Basic configuration used by all tests
  */

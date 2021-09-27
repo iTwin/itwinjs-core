@@ -6,7 +6,7 @@
 import { BentleyError, GuidString } from "@itwin/core-bentley";
 import { IModelVersion } from "@itwin/core-common";
 import { AccessToken } from "@bentley/itwin-client";
-import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { assert, expect } from "chai";
 import { SnapshotDb } from "../../IModelDb";
 import { AuthorizedBackendRequestContext, BriefcaseManager, IModelHost } from "../../core-backend";

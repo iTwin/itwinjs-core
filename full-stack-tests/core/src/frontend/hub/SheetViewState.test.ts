@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { CheckpointConnection, IModelApp, SheetViewState } from "@itwin/core-frontend";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/TestUsers";
 import { testOnScreenViewport } from "../TestViewport";
 import { TestUtility } from "./TestUtility";
 
