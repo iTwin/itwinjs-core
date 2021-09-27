@@ -34,9 +34,8 @@ describe("ElementAspectPerformance", () => {
   before(async () => {
     if (!fs.existsSync(KnownTestLocations.outputDir))
       fs.mkdirSync(KnownTestLocations.outputDir);
-      // SWB TODO: Update config to match renaming
+    // TODO: Update config to use iTwin terminology
     const configData = require(path.join(__dirname, "CSPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-var-requires
-    // SWB Required config change
     const iTwinId = configData.basicTest.projectId;
     const imodelId = configData.basicTest.aspectIModelId;
 
