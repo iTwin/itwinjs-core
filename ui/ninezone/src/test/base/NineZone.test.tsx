@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Rectangle, ResizeObserver } from "@bentley/ui-core";
+import { Rectangle } from "@bentley/ui-core";
 import * as ResizeObserverModule from "@bentley/ui-core/lib/cjs/ui-core/utils/hooks/ResizeObserverPolyfill";
 import { render } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
