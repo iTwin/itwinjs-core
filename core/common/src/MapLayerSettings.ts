@@ -348,7 +348,7 @@ export class MapLayerSettings {
 
 export interface BackgroundMapProviderProps {
   /** default "BingProvider" */
-  name?: string;
+  name?: BackgroundMapProviderName;
   /** default Hybrid */
   type?: BackgroundMapType;
 }
@@ -384,7 +384,7 @@ export class BackgroundMapProvider {
 
   /** @internal */
   public static fromBackgroundMapProps(props: BackgroundMapWithProviderProps): BackgroundMapProvider {
-    return this.fromJSON({ name: props.providerName, type: props.providerData?.mapType });
+    return this.fromJSON({ name: props.providerName as BackgroundMapProviderName, type: props.providerData?.mapType });
   }
 }
 

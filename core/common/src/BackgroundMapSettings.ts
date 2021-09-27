@@ -142,7 +142,7 @@ export class BackgroundMapSettings {
     this.globeMode = normalizeGlobeMode(props.globeMode);
     this._locatable = true !== props.nonLocatable;
     this.planarClipMask = PlanarClipMaskSettings.fromJSON(props.planarClipMask);
-    this._provider = BackgroundMapProvider.fromJSON({ name: props.providerName, type: props.providerData?.mapType });
+    this._provider = BackgroundMapProvider.fromBackgroundMapProps(props);
   }
 
   /** Construct from JSON, performing validation and applying default values for undefined fields. */
