@@ -102,21 +102,18 @@ export class RpcBriefcaseUtility {
     }
   }
 
+  /** find a previously opened iModel for RPC.
+   * @param accessToken necessary (only) for V2 checkpoints to refresh access token in daemon if it has expired. We use the accessToken of the current RPC request
+   * to refresh the daemon, even though it will be used for all authorized users.
+   * @param the IModelRpcProps to locate the opened iModel.
+   */
   public static async findOpenIModel(accessToken: AccessToken, iModel: IModelRpcProps) {
     const iModelDb = IModelDb.tryFindByKey(iModel.key);
     if (undefined === iModelDb)
       throw new IModelError(IModelStatus.NotOpen, "iModel is not opened", () => iModel);
 
-    await iModelDb.reattachDaemon(accessToken);
+    await iModelDb.reattachDaemon(accessToken); // just in case this is a V2 checkpoint whose accessToken is about to expire.
     return iModelDb;
-  }
-
-  public static async findOrOpen(activity: RpcActivity, iModel: IModelRpcProps, syncMode: SyncMode): Promise<IModelDb> {
-    try {
-      return await this.findOpenIModel(activity.accessToken, iModel);
-    } catch (err) {
-      return this.open({ activity, tokenProps: iModel, syncMode, timeout: 1000 });
-    }
   }
 
   /**
