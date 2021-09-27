@@ -412,6 +412,17 @@ export class BaseMapLayerSettings extends MapLayerSettings {
     return props;
   }
 
+  public override clone(changedProps: MapLayerProps): BaseMapLayerSettings {
+    const prevUrl = this.url;
+    const clone = super.clone(changedProps);
+    assert(clone instanceof BaseMapLayerSettings);
+
+    if (this.provider && prevUrl !== this.url)
+      clone._provider = undefined;
+
+    return clone;
+  }
+
   /** @internal */
   public static fromBackgroundMapProps(props: BackgroundMapProps): BaseMapLayerSettings {
     return this.fromProvider(BackgroundMapProvider.fromJSON({ name: props.providerName, type: props.providerData?.mapType }));
