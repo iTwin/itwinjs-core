@@ -6848,7 +6848,7 @@ export class RpcInvocation {
     get elapsed(): number;
     readonly fulfillment: Promise<RpcRequestFulfillment>;
     // @internal
-    static logRpcException(currentRequest: RpcActivity, error: any): void;
+    static logRpcException(activity: RpcActivity, operationName: string, error: unknown): void;
     readonly operation: RpcOperation;
     readonly protocol: RpcProtocol;
     readonly request: SerializedRpcRequest;
@@ -7326,14 +7326,6 @@ export namespace RpcSerializedValue {
     // (undocumented)
     export function create(objects?: string, data?: Uint8Array[]): RpcSerializedValue;
 }
-
-// @internal
-export function sanitizeRpcActivity(activity: RpcActivity): {
-    activityId: string;
-    applicationId: string;
-    applicationVersion: string;
-    sessionId: string;
-};
 
 // @beta
 export enum SchemaState {

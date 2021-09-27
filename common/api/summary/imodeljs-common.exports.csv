@@ -564,7 +564,6 @@ alpha;RpcRoutingMap
 public;RpcRoutingToken
 public;RpcSerializedValue
 public;RpcSerializedValue
-internal;sanitizeRpcActivity(activity: RpcActivity):
 beta;SchemaState
 public;SectionDrawingLocationProps 
 public;SectionDrawingProps 
