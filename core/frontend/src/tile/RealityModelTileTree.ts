@@ -926,7 +926,12 @@ export class RealityModelTileClient {
     if (this.rdsProps && token) {
       const authRequestContext = new AuthorizedFrontendRequestContext(token);
       await this.initializeRDSRealityData(authRequestContext); // Only needed for PW Context Share data ... return immediately otherwise.
-      return this.getInitializedRealityData().getRootDocumentJson(authRequestContext);
+      const realityData: RealityData = this.getInitializedRealityData();
+
+      if (!realityData.rootDocument)
+        throw new Error(`Root document not defined for reality data: ${realityData.id}`);
+
+      return realityData.getTileJson(authRequestContext, realityData.rootDocument);
     }
 
     // The following is only if the reality data is not stored on PW Context Share.

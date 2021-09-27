@@ -30,13 +30,13 @@ export type RealityDataType =
  * @beta
  */
 export interface RealityData {
+  id?: string;
   rootDocument?: string;
   type?: RealityDataType;
 
   getBlobUrl: (requestContext: AuthorizedClientRequestContext) => Promise<URL>;
   getTileContent: (requestContext: AuthorizedClientRequestContext, name: string) => Promise<any>;
   getTileJson: (requestContext: AuthorizedClientRequestContext, name: string) => Promise<any>;
-  getRootDocumentJson: (requestContext: AuthorizedClientRequestContext) => Promise<any>;
 }
 
 /**
