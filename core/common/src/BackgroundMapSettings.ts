@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { BackgroundMapProvider, BackgroundMapProviderName, BackgroundMapType } from "./BackgroundMapProvider";
+import { BackgroundMapProvider, BackgroundMapType } from "./BackgroundMapProvider";
 import { PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
 import { TerrainProps, TerrainSettings } from "./TerrainSettings";
 
@@ -160,12 +160,10 @@ export class BackgroundMapSettings {
       props.planarClipMask = this.planarClipMask.toJSON();
 
     // Preserve deprecated imagery provider properties.
-    // eslint-disable deprecation/deprecation
     if ("BingProvider" !== this._provider.name)
-      props.providerName = this._provider.name;
+      props.providerName = this._provider.name; // eslint-disable-line deprecation/deprecation
     if (BackgroundMapType.Hybrid !== this._provider.type)
-      props.providerData = { mapType: this._provider.type };
-    // eslint-enable deprecation/deprecation
+      props.providerData = { mapType: this._provider.type }; // eslint-disable-line deprecation/deprecation
 
     return props;
   }
