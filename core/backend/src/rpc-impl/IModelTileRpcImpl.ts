@@ -182,12 +182,11 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
   }
 
   public async purgeTileTrees(tokenProps: IModelRpcProps, modelIds: Id64Array | undefined): Promise<void> {
-    const user = RpcInvocation.currentActivity;
     // `undefined` gets forwarded as `null`...
     if (null === modelIds)
       modelIds = undefined;
 
-    const db = await RpcBriefcaseUtility.findOrOpen(user, tokenProps, SyncMode.FixedVersion);
+    const db = await RpcBriefcaseUtility.findOpenIModel(RpcInvocation.currentActivity.accessToken, tokenProps);
     return db.nativeDb.purgeTileTrees(modelIds);
   }
 
@@ -197,8 +196,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
   }
 
   public async retrieveTileContent(tokenProps: IModelRpcProps, key: TileContentIdentifier): Promise<Uint8Array> {
-    const requestContext = RpcInvocation.currentActivity;
-    const db = await RpcBriefcaseUtility.findOrOpen(requestContext, tokenProps, SyncMode.FixedVersion);
+    const db = await RpcBriefcaseUtility.findOpenIModel(RpcInvocation.currentActivity.accessToken, tokenProps);
     return db.tiles.getTileContent(key.treeId, key.contentId);
   }
 
