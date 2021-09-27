@@ -5,11 +5,11 @@
 import { Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
 import { Angle, Arc3d, GeometryQuery, LineString3d, Loop, Range3d, StandardViewIndex } from "@bentley/geometry-core";
 import {
-  CategorySelector, DefinitionModel, DisplayStyle3d, DisplayStyleCreationOptions, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotDb, SpatialCategory,
+  CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotDb, SpatialCategory,
   SpatialModel, StandaloneDb, ViewDefinition,
 } from "@bentley/imodeljs-backend";
 import {
-  AxisAlignedBox3d, BackgroundMapProps, BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapType, BaseMapLayerSettings, Cartographic, Code, ColorByName, ColorDef, EcefLocation, GeometricElement3dProps,
+  AxisAlignedBox3d, BackgroundMapType, BackgroundMapWithProviderProps, Cartographic, Code, ColorByName, ColorDef, EcefLocation, GeometricElement3dProps,
   GeometryParams, GeometryStreamBuilder, GeometryStreamProps, IModel, RenderMode, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { insertClassifiedRealityModel } from "./ClassifyRealityModel";
@@ -30,8 +30,7 @@ export class GeoJsonImporter {
   private readonly _pointRadius: number;
   private _colorIndex?: number;
   private readonly _viewFlags: ViewFlags;
-  private readonly _backgroundMap: BackgroundMapProps | undefined;
-  private readonly _bgMapProvider: BackgroundMapProviderProps | undefined;
+  private readonly _backgroundMap: BackgroundMapWithProviderProps | undefined;
 
   /** Construct a new GeoJsonImporter
    * @param iModelFileName the output iModel file name
@@ -55,10 +54,8 @@ export class GeoJsonImporter {
     }
 
     this._viewFlags = new ViewFlags({ renderMode: RenderMode.SmoothShade, backgroundMap: undefined !== mapType });
-    if (undefined !== mapGroundBias)
-      this._backgroundMap = { groundBias: mapGroundBias};
     if (undefined !== mapType)
-      this._bgMapProvider = { name: "BingProvider", type: mapType };
+      this._backgroundMap = { providerName: "BingProvider", groundBias: mapGroundBias, providerData: { mapType } };
   }
 
   /** Perform the import */
@@ -288,20 +285,7 @@ export class GeoJsonImporter {
   protected insertSpatialView(viewName: string, range: AxisAlignedBox3d): Id64String {
     const modelSelectorId: Id64String = ModelSelector.insert(this.iModelDb, this.definitionModelId, viewName, [this.physicalModelId]);
     const categorySelectorId: Id64String = CategorySelector.insert(this.iModelDb, this.definitionModelId, viewName, [this.featureCategoryId]);
-
-    let baseMap: BaseMapLayerSettings|undefined;
-    if (this._bgMapProvider !== undefined) {
-      const provider = BackgroundMapProvider.fromJSON(this._bgMapProvider);
-      baseMap = BaseMapLayerSettings.fromProvider(provider);
-    }
-
-    const displayStyleOpts: DisplayStyleCreationOptions = {
-      viewFlags: this._viewFlags,
-      backgroundMap: this._backgroundMap,
-      mapImagery : {backgroundBase: baseMap?.toJSON()},
-    };
-
-    const displayStyleId: Id64String = DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, viewName, displayStyleOpts);
+    const displayStyleId: Id64String = DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, viewName, { viewFlags: this._viewFlags, backgroundMap: this._backgroundMap });
     return OrthographicViewDefinition.insert(this.iModelDb, this.definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Top);
   }
 }
