@@ -91,7 +91,7 @@ describe("FavoritePropertiesManager", () => {
 
     it("removes non-favorited property order information", async () => {
       const globalField = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "global" }) }] });
-      const iTwinField = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "itwin" }) }] });
+      const iTwinField = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "iTwin" }) }] });
 
       const globalFieldInfos = new Set<PropertyFullName>(getFieldsInfos([globalField]));
       storageMock.setup(async (x) => x.loadProperties()).returns(async () => globalFieldInfos);
