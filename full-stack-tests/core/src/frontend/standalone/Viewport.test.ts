@@ -152,7 +152,7 @@ describe("Viewport", () => {
     }
   });
 
-  it.only("supports changing a subset of background map settings", () => {
+  it("supports changing a subset of background map settings", () => {
     const vp = ScreenViewport.create(viewDiv, spatialView.clone());
     const test = (changeProps: BackgroundMapProps, expectProps: BackgroundMapProps) => {
       const oldSettings = vp.backgroundMapSettings;
