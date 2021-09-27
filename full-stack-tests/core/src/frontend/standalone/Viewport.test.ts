@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Point3d } from "@bentley/geometry-core";
-import { BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, ColorDef, FontMap, FontType } from "@bentley/imodeljs-common";
+import { BackgroundMapProps, BackgroundMapSettings, ColorDef, FontMap, FontType } from "@bentley/imodeljs-common";
 import {
   CompassMode, createRenderPlanFromViewport, IModelApp, IModelConnection, MockRender, PanViewTool,
   RenderPlan, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, TwoWayViewportSync,
