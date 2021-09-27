@@ -7,7 +7,7 @@ import {
   CheckBox, ComboBox, ComboBoxEntry, createCheckBox, createColorInput, createComboBox, createNestedMenu, createNumericInput, createSlider, Slider,
 } from "@bentley/frontend-devtools";
 import {
-  BackgroundMapProps, BackgroundMapProviderName, BackgroundMapType, ColorDef, DisplayStyle3dSettingsProps, GlobeMode, HiddenLine, LinePixels,
+  BackgroundMapProps, BackgroundMapProviderName, BackgroundMapType, BaseMapLayerSettings, ColorDef, DisplayStyle3dSettingsProps, GlobeMode, HiddenLine, LinePixels,
   MonochromeMode, RenderMode, TerrainProps, ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode,
 } from "@bentley/imodeljs-common";
 import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, Viewport, ViewState, ViewState3d } from "@bentley/imodeljs-frontend";
@@ -536,9 +536,13 @@ export class ViewAttributes {
       checkboxLabel.style.fontWeight = checkbox.checked ? "bold" : "500";
       showOrHideSettings(checkbox.checked);
 
+      const baseLayer = view.displayStyle.settings.mapImagery.backgroundBase;
+      if (baseLayer instanceof BaseMapLayerSettings && baseLayer.provider) {
+        imageryProviders.value = baseLayer.provider.name;
+        types.value = baseLayer.provider.type.toString();
+      }
+
       const map = this.getBackgroundMap(view);
-      imageryProviders.value = map.providerName;
-      types.value = map.mapType.toString();
       terrainCheckbox.checked = map.applyTerrain;
       transCheckbox.checked = false !== map.transparency;
       locatable.checked = map.locatable;
