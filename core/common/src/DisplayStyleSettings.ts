@@ -14,7 +14,7 @@ import {
 import { XYZProps } from "@bentley/geometry-core";
 import { AmbientOcclusion } from "./AmbientOcclusion";
 import { AnalysisStyle, AnalysisStyleProps } from "./AnalysisStyle";
-import { BackgroundMapProps, BackgroundMapSettings } from "./BackgroundMapSettings";
+import { BackgroundMapProps, BackgroundMapSettings, BackgroundMapWithProviderProps } from "./BackgroundMapSettings";
 import { ClipStyle, ClipStyleProps } from "./ClipStyle";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { DefinitionElementProps } from "./ElementProps";
@@ -126,7 +126,7 @@ export interface DisplayStyleSettingsProps {
   subCategoryOvr?: DisplayStyleSubCategoryProps[];
 
   /** Settings controlling display of map within views of geolocated models. */
-  backgroundMap?: BackgroundMapProps;
+  backgroundMap?: BackgroundMapWithProviderProps;
   /** @see [[DisplayStyleSettings.contextRealityModels]]. */
   contextRealityModels?: ContextRealityModelProps[];
   /** Ids of elements not to be displayed in the view. Prefer the compressed format, especially when sending between frontend and backend - the number of Ids may be quite large. */

@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { BackgroundMapProps, BackgroundMapProviderName, BackgroundMapSettings, BackgroundMapType } from "./BackgroundMapSettings";
+import { BackgroundMapProviderName, BackgroundMapSettings, BackgroundMapType, BackgroundMapWithProviderProps } from "./BackgroundMapSettings";
 
 /** @beta */
 export type SubLayerId = string | number;
@@ -383,7 +383,7 @@ export class BackgroundMapProvider {
   }
 
   /** @internal */
-  public static fromBackgroundMapProps(props: BackgroundMapProps): BackgroundMapProvider {
+  public static fromBackgroundMapProps(props: BackgroundMapWithProviderProps): BackgroundMapProvider {
     return this.fromJSON({ name: props.providerName, type: props.providerData?.mapType });
   }
 }
@@ -487,7 +487,7 @@ export class BaseMapLayerSettings extends MapLayerSettings {
   }
 
   /** @internal */
-  public static fromBackgroundMapProps(props: BackgroundMapProps): BaseMapLayerSettings {
+  public static fromBackgroundMapProps(props: BackgroundMapWithProviderProps): BaseMapLayerSettings {
     return this.fromProvider(BackgroundMapProvider.fromBackgroundMapProps(props));
   }
 

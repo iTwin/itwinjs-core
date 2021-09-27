@@ -725,7 +725,7 @@ export abstract class Viewport implements IDisposable {
   }
 
   /** @see [[DisplayStyleState.changeBackgroundMapProps]] */
-  public changeBackgroundMapProps(props: Omit<BackgroundMapProps, "providerName" | "providerData">): void {
+  public changeBackgroundMapProps(props: BackgroundMapProps): void {
     this.displayStyle.changeBackgroundMapProps(props);
   }
 

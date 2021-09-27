@@ -4,18 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, GlobeMode } from "../BackgroundMapSettings";
-import { BaseMapLayerSettings, MapLayerSettings } from "../MapLayerSettings";
+import { BackgroundMapSettings, BackgroundMapType, GlobeMode, BackgroundMapWithProviderProps } from "../BackgroundMapSettings";
 import { TerrainHeightOriginMode } from "../TerrainSettings";
 
 describe("BackgroundMapSettings", () => {
   it("round-trips through JSON", () => {
-    const roundTrip = (input: BackgroundMapProps | undefined, expected: BackgroundMapProps | "input") => {
+    const roundTrip = (input: BackgroundMapWithProviderProps | undefined, expected: BackgroundMapWithProviderProps | "input") => {
       if (!input)
         input = {};
 
       if ("input" === expected)
-        expected = JSON.parse(JSON.stringify(input)) as BackgroundMapProps;
+        expected = JSON.parse(JSON.stringify(input)) as BackgroundMapWithProviderProps;
 
       const settings = BackgroundMapSettings.fromJSON(input);
       const output = settings.toJSON();
@@ -51,12 +50,6 @@ describe("BackgroundMapSettings", () => {
 
       const expectedSettings = BackgroundMapSettings.fromJSON(expected);
       expect(settings.equals(expectedSettings)).to.be.true;
-
-      // Check synch through base map layer.
-      // ###TODO const mapLayer = BaseMapLayerSettings.fromBackgroundMapProps(settings.toJSON());
-      // ###TODO const providerProps = BackgroundMapSettings.providerFromMapLayer(mapLayer.toJSON());
-      // ###TODO const synchedFromProvider = settings.clone(providerProps);
-      // ###TODO expect(settings.equals(synchedFromProvider)).to.be.true;
     };
 
     roundTrip(undefined, {});

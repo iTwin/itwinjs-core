@@ -40,21 +40,6 @@ export enum GlobeMode {
 export interface BackgroundMapProps {
   /** The elevation of the map in meters relative the WGS84 ellipsoid. Default value: 0. */
   groundBias?: number;
-  /** Identifies the source of the map tiles. Currently supported providers are "BingProvider" and "MapBoxProvider". Support for additional providers may be added in the future.
-   *
-   * Default value: "BingProvider"
-   * @deprecated use MapImageryProps.backgroundBase.
-   * @internal
-   */
-  providerName?: string;
-  /** Options for customizing the tiles supplied by the provider. If undefined, default values of all members are used.
-   * @deprecated use MapImageryProps.backgroundBase
-   * @internal
-   */
-  providerData?: {
-    /** The type of map graphics to request. Default value: BackgroundMapType.Hybrid. */
-    mapType?: BackgroundMapType;
-  };
   /** A transparency value from 0.0 (fully opaque) to 1.0 (fully transparent) to apply to map graphics when drawing, or false to indicate the transparency should not be overridden.
    * Default value: false.
    */
@@ -75,6 +60,22 @@ export interface BackgroundMapProps {
    * @beta
    */
   planarClipMask?: PlanarClipMaskProps;
+}
+
+export interface BackgroundMapWithProviderProps extends BackgroundMapProps {
+  /** Identifies the source of the map tiles. Currently supported providers are "BingProvider" and "MapBoxProvider". Support for additional providers may be added in the future.
+   *
+   * Default value: "BingProvider"
+   * @deprecated use MapImageryProps.backgroundBase.
+   */
+  providerName?: string;
+  /** Options for customizing the tiles supplied by the provider. If undefined, default values of all members are used.
+   * @deprecated use MapImageryProps.backgroundBase
+   */
+  providerData?: {
+    /** The type of map graphics to request. Default value: BackgroundMapType.Hybrid. */
+    mapType?: BackgroundMapType;
+  };
 }
 
 /** The current set of supported background map providers.
@@ -132,7 +133,7 @@ export class BackgroundMapSettings {
   /** If transparency is overridden, the transparency to apply; otherwise, undefined. */
   public get transparencyOverride(): number | undefined { return false !== this.transparency ? this.transparency : undefined; }
 
-  private constructor(props: BackgroundMapProps) {
+  private constructor(props: BackgroundMapWithProviderProps) {
     this.groundBias = props.groundBias ?? 0;
     this.transparency = normalizeTransparency(props.transparency);
     this.useDepthBuffer = props.useDepthBuffer ?? false;
@@ -145,12 +146,12 @@ export class BackgroundMapSettings {
   }
 
   /** Construct from JSON, performing validation and applying default values for undefined fields. */
-  public static fromJSON(json?: BackgroundMapProps): BackgroundMapSettings {
+  public static fromJSON(json?: BackgroundMapWithProviderProps): BackgroundMapSettings {
     return new BackgroundMapSettings(json ?? {});
   }
 
-  public toJSON(): BackgroundMapProps {
-    const props: BackgroundMapProps = {};
+  public toJSON(): BackgroundMapWithProviderProps {
+    const props: BackgroundMapWithProviderProps = {};
     if (0 !== this.groundBias)
       props.groundBias = this.groundBias;
     if (this.applyTerrain)
@@ -199,7 +200,7 @@ export class BackgroundMapSettings {
    * @returns A BackgroundMapSettings with all of its properties set to match those of `this`, except those explicitly defined in `changedProps`.
    * @note If changing the provider it is currently necessary to also make same change to update the imagery base layer.
    */
-  public clone(changedProps?: Omit<BackgroundMapProps, "providerName" | "providerData">): BackgroundMapSettings {
+  public clone(changedProps?: BackgroundMapProps): BackgroundMapSettings {
     if (undefined === changedProps)
       return this;
 

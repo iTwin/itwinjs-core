@@ -165,7 +165,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    *  style.changeBackgroundMapProps({ groundBias: 16.2 });
    * ```
    */
-  public changeBackgroundMapProps(props: Omit<BackgroundMapProps, "providerName" | "providerData">): void {
+  public changeBackgroundMapProps(props: BackgroundMapProps): void {
     const newSettings = this.backgroundMapSettings.clone(props);
     this.backgroundMapSettings = newSettings;
   }

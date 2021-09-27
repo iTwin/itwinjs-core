@@ -7,7 +7,7 @@
 import { compareStrings, getErrorMessage } from "@bentley/bentleyjs-core";
 import { Point2d } from "@bentley/geometry-core";
 import {
-  BackgroundMapProps, BackgroundMapProvider, BackgroundMapSettings, BackgroundMapType, BaseMapLayerSettings, MapLayerSettings, MapSubLayerProps,
+  BackgroundMapWithProviderProps, BackgroundMapProvider, BackgroundMapSettings, BackgroundMapType, BaseMapLayerSettings, MapLayerSettings, MapSubLayerProps,
 } from "@bentley/imodeljs-common";
 import { getJson, RequestBasicCredentials } from "@bentley/itwin-client";
 import { FrontendRequestContext } from "../../FrontendRequestContext";
@@ -80,7 +80,7 @@ export class MapLayerSource {
   public async validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
     return IModelApp.mapLayerFormatRegistry.validateSource(this.formatId, this.url, this.getCredentials(), ignoreCache);
   }
-  public static fromBackgroundMapProps(props: BackgroundMapProps) {
+  public static fromBackgroundMapProps(props: BackgroundMapWithProviderProps) {
     const provider = BackgroundMapProvider.fromBackgroundMapProps(props);
     const layerSettings = BaseMapLayerSettings.fromProvider(provider);
     if (undefined !== layerSettings) {
