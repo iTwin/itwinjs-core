@@ -381,6 +381,11 @@ export class BackgroundMapProvider {
   public toJSON(): BackgroundMapProviderProps {
     return { name: this.name, type: this.type };
   }
+
+  /** @internal */
+  public static fromBackgroundMapProps(props: BackgroundMapProps): BackgroundMapProvider {
+    return this.fromJSON({ name: props.providerName, type: props.providerData?.mapType });
+  }
 }
 
 export interface BaseMapLayerProps extends MapLayerProps {
@@ -421,11 +426,6 @@ export class BaseMapLayerSettings extends MapLayerSettings {
       clone._provider = undefined;
 
     return clone;
-  }
-
-  /** @internal */
-  public static fromBackgroundMapProps(props: BackgroundMapProps): BaseMapLayerSettings {
-    return this.fromProvider(BackgroundMapProvider.fromJSON({ name: props.providerName, type: props.providerData?.mapType }));
   }
 
   public static fromProvider(provider: BackgroundMapProvider, options?: { invisible?: boolean, transparency?: number }): BaseMapLayerSettings {
@@ -484,5 +484,15 @@ export class BaseMapLayerSettings extends MapLayerSettings {
 
     settings._provider = provider;
     return settings;
+  }
+
+  /** @internal */
+  public static fromBackgroundMapProps(props: BackgroundMapProps): BaseMapLayerSettings {
+    return this.fromProvider(BackgroundMapProvider.fromBackgroundMapProps(props));
+  }
+
+  /** @alpha */
+  public cloneWithProvider(provider: BackgroundMapProvider): BaseMapLayerSettings {
+    return BaseMapLayerSettings.fromProvider(provider, { invisible: !this.visible, transparency: this.transparency });
   }
 }

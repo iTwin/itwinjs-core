@@ -8,7 +8,8 @@
 import { assert, BeEvent, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Angle, Range1d, Vector3d } from "@bentley/geometry-core";
 import {
-  BackgroundMapProps, BackgroundMapSettings, BaseLayerSettings, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
+  BackgroundMapProps, BackgroundMapProvider, BackgroundMapProviderName, BackgroundMapSettings, BackgroundMapType, BaseLayerSettings, BaseMapLayerSettings,
+  ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
   DisplayStyleProps, DisplayStyleSettings, EnvironmentProps, FeatureAppearance, GlobeMode, GroundPlane, LightSettings, MapLayerProps,
   MapLayerSettings, MapSubLayerProps, RenderSchedule, RenderTexture, RenderTimelineProps, SkyBoxImageType, SkyBoxProps,
   SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, TerrainHeightOriginMode, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
@@ -167,6 +168,17 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public changeBackgroundMapProps(props: Omit<BackgroundMapProps, "providerName" | "providerData">): void {
     const newSettings = this.backgroundMapSettings.clone(props);
     this.backgroundMapSettings = newSettings;
+  }
+
+  public changeBackgroundMapProvider(props: { name?: BackgroundMapProviderName, type?: BackgroundMapType }): void {
+    const provider = BackgroundMapProvider.fromJSON(props);
+    const base = this.settings.mapImagery.backgroundBase;
+    if (base instanceof ColorDef)
+      this.settings.mapImagery.backgroundBase = BaseMapLayerSettings.fromProvider(provider);
+    else
+      this.settings.mapImagery.backgroundBase = base.cloneWithProvider(provider);
+
+    this._synchBackgroundMapImagery();
   }
 
   /** Call a function for each reality model attached to this display style.
@@ -400,14 +412,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       if (this.settings.mapImagery.backgroundBase instanceof MapLayerSettings)
         this.settings.mapImagery.backgroundBase = this.settings.mapImagery.backgroundBase?.clone(props);
       else {
-        const backgroundLayerSettings = MapLayerSettings.fromJSON(props);
+        const backgroundLayerSettings = BaseMapLayerSettings.fromJSON(props);
         if (backgroundLayerSettings)
           this.settings.mapImagery.backgroundBase = backgroundLayerSettings;
       }
-      const mapProvider = BackgroundMapSettings.providerFromMapLayer(props);
-      if (mapProvider)
-        this.backgroundMapSettings = this.backgroundMapSettings.clone(mapProvider);
     }
+
     this._synchBackgroundMapImagery();
   }
 

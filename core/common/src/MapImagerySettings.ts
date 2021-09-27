@@ -36,7 +36,7 @@ export type BaseLayerSettings = BaseMapLayerSettings | ColorDef;
 export namespace BaseLayerSettings {
   export function fromJSON(props: BaseLayerProps): BaseLayerSettings {
     const settings = typeof props === "number" ? ColorDef.fromJSON(props) : BaseMapLayerSettings.fromJSON(props);
-    
+
     // ###TODO handle undefined BaseMapLayerSettings differently (what should be default?), or make MapImagerySettings.fromJSON possibly return undefined.
     return settings ?? ColorDef.black;
   }
