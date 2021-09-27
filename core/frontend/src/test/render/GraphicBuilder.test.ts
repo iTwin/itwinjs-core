@@ -248,7 +248,8 @@ describe("GraphicBuilder", () => {
         expect(builder.wantEdges).to.equal(generateEdges ?? true);
         addToGraphic(builder);
 
-        builder.finish();
+        const gf = builder.finish();
+        gf.dispose();
         expect(createMeshInvoked).to.be.true;
       }
 
