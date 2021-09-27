@@ -8,7 +8,7 @@ import {
 } from "@bentley/presentation-common";
 import {
   createRandomECInstanceKey, createRandomRuleset, createTestContentDescriptor, createTestContentItem, createTestNestedContentField, createTestPropertiesContentField,
-  createTestPropertyInfo, createTestSimpleContentField, PromiseContainer, ResolvablePromise
+  createTestPropertyInfo, createTestSimpleContentField, PromiseContainer, ResolvablePromise,
 } from "@bentley/presentation-common/lib/cjs/test";
 import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
 import "@bentley/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";

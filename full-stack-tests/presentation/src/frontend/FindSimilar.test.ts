@@ -6,7 +6,7 @@ import { Id64String, using } from "@bentley/bentleyjs-core";
 import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { InstanceKey, KeySet } from "@bentley/presentation-common";
 import {
-  DataProvidersFactory, DEFAULT_PROPERTY_GRID_RULESET, IPresentationTableDataProvider, PresentationPropertyDataProvider
+  DataProvidersFactory, DEFAULT_PROPERTY_GRID_RULESET, IPresentationTableDataProvider, PresentationPropertyDataProvider,
 } from "@bentley/presentation-components";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { PropertyData, RowItem } from "@bentley/ui-components";

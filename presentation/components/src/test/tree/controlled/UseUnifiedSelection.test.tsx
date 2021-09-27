@@ -7,11 +7,11 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Keys, KeySet, NodeKey } from "@bentley/presentation-common";
 import { createRandomECInstancesNodeKey, createRandomGroupingNodeKey, ResolvablePromise } from "@bentley/presentation-common/lib/cjs/test";
 import {
-  ISelectionProvider, Presentation, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler, SelectionHelper, SelectionManager
+  ISelectionProvider, Presentation, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler, SelectionHelper, SelectionManager,
 } from "@bentley/presentation-frontend";
 import {
   AbstractTreeNodeLoaderWithProvider, MutableTreeModelNode, TreeModel, TreeModelChanges, TreeModelSource, TreeNodeItem,
-  TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs
+  TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
 } from "@bentley/ui-components";
 import { CheckBoxState } from "@bentley/ui-core";
 import { renderHook } from "@testing-library/react-hooks";
@@ -22,7 +22,7 @@ import { ObservableInput } from "rxjs/internal/types";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import {
-  IPresentationTreeDataProvider, UnifiedSelectionTreeEventHandler, useUnifiedSelectionTreeEventHandler
+  IPresentationTreeDataProvider, UnifiedSelectionTreeEventHandler, useUnifiedSelectionTreeEventHandler,
 } from "../../../presentation-components";
 import { UnifiedSelectionTreeEventHandlerParams } from "../../../presentation-components/tree/controlled/UseUnifiedSelection";
 import { PRESENTATION_TREE_NODE_KEY } from "../../../presentation-components/tree/Utils";

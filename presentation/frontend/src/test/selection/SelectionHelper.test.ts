@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  createRandomBaseNodeKey, createRandomECInstanceKey, createRandomECInstancesNodeKey
+  createRandomBaseNodeKey, createRandomECInstanceKey, createRandomECInstancesNodeKey,
 } from "@bentley/presentation-common/lib/cjs/test";
 import { expect } from "chai";
 import { SelectionHelper } from "../../presentation-frontend";

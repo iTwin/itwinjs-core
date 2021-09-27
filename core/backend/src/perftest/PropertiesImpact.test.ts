@@ -8,7 +8,7 @@ import { BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStream
 import { Reporter } from "@bentley/perf-tools";
 import { assert } from "chai";
 import * as path from "path";
-import { BackendRequestContext, ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../imodeljs-backend";
+import { ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
 import { PerfTestUtility } from "./PerfTestUtils";

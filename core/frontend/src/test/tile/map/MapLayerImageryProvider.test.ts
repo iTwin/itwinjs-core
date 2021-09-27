@@ -15,9 +15,8 @@ import {
   WmsCapabilities,
   WmsMapLayerImageryProvider,
   WmtsCapabilities,
-  WmtsMapLayerImageryProvider
+  WmtsMapLayerImageryProvider,
 } from "../../../tile/internal";
-
 
 chai.use(chaiAsPromised);
 

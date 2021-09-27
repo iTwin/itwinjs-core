@@ -8,7 +8,7 @@ import { InstanceKey, KeySet } from "@bentley/presentation-common";
 import { createRandomECInstanceKey, isKeySet } from "@bentley/presentation-common/lib/cjs/test";
 import {
   ISelectionProvider, Presentation, PresentationManager, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler,
-  SelectionManager
+  SelectionManager,
 } from "@bentley/presentation-frontend";
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { ColumnDescription, RowItem, Table, TableDataChangeEvent, TableProps } from "@bentley/ui-components";

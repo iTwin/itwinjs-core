@@ -10,7 +10,7 @@ import { StageUsage, StandardContentLayouts } from "@bentley/ui-abstract";
 import { FillCentered } from "@bentley/ui-core";
 import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageManager,
-  FrontstageProps, FrontstageProvider, ToolWidget, UiFramework, Widget, Zone
+  FrontstageProps, FrontstageProvider, ToolWidget, UiFramework, Widget, Zone,
 } from "@bentley/ui-framework";
 import { Button, Headline } from "@itwin/itwinui-react";
 import { OpenDialogOptions } from "electron";

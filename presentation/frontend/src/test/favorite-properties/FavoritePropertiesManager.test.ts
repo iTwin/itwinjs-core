@@ -6,13 +6,13 @@
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Field, NestedContentField, PropertiesField, PropertyInfo } from "@bentley/presentation-common";
 import {
-  createTestNestedContentField, createTestPropertiesContentField, createTestSimpleContentField, createTestECClassInfo, createTestPropertyInfo, createTestRelatedClassInfo
+  createTestECClassInfo, createTestNestedContentField, createTestPropertiesContentField, createTestPropertyInfo, createTestRelatedClassInfo, createTestSimpleContentField,
 } from "@bentley/presentation-common/lib/cjs/test";
 import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import {
-  createFieldOrderInfos, FavoritePropertiesManager, FavoritePropertiesOrderInfo, FavoritePropertiesScope, getFieldInfos, IFavoritePropertiesStorage
+  createFieldOrderInfos, FavoritePropertiesManager, FavoritePropertiesOrderInfo, FavoritePropertiesScope, getFieldInfos, IFavoritePropertiesStorage,
 } from "../../presentation-frontend";
 import { PropertyFullName } from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager";
 

@@ -46,8 +46,8 @@ describe("MapLayerSources", () => {
 
     // We used to parse the "basemap" token in the URL to determine if baseMap flag should be turned on...
     // this should be no longer the case
-    sampleSourceJson.url = "https://testserver/basemap/wms",
-      sampleSource = MapLayerSource.fromJSON(sampleSourceJson);
+    sampleSourceJson.url = "https://testserver/basemap/wms";
+    sampleSource = MapLayerSource.fromJSON(sampleSourceJson);
     expect(sampleSource).to.not.undefined;
     expect(sampleSource!.baseMap).to.equals(false);
   });

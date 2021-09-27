@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { BeEvent, Id64String, using } from "@bentley/bentleyjs-core";
 import {
-  IModelConnection, PerModelCategoryVisibility, ScreenViewport, SubCategoriesCache, ViewManager, Viewport, ViewState
+  IModelConnection, PerModelCategoryVisibility, ScreenViewport, SubCategoriesCache, ViewManager, Viewport, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { ECInstancesNodeKey, StandardNodeTypes } from "@bentley/presentation-common";
 import { PropertyRecord } from "@bentley/ui-abstract";
@@ -14,7 +14,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import {
-  Category, CategoryVisibilityHandler, CategoryVisibilityHandlerParams, useCategories
+  Category, CategoryVisibilityHandler, CategoryVisibilityHandlerParams, useCategories,
 } from "../../../ui-framework/imodel-components/category-tree/CategoryVisibilityHandler";
 
 const createKey = (id: Id64String): ECInstancesNodeKey => {

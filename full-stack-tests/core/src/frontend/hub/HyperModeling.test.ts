@@ -5,11 +5,11 @@
 import { ProcessDetector } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
 import {
-  HyperModeling, HyperModelingDecorator, SectionDrawingLocationState, SectionMarker, SectionMarkerConfig, SectionMarkerHandler
+  HyperModeling, HyperModelingDecorator, SectionDrawingLocationState, SectionMarker, SectionMarkerConfig, SectionMarkerHandler,
 } from "@bentley/hypermodeling-frontend";
 import { SectionType } from "@bentley/imodeljs-common";
 import {
-  CheckpointConnection, IModelApp, IModelConnection, ParseAndRunResult, SnapshotConnection
+  CheckpointConnection, IModelApp, IModelConnection, ParseAndRunResult, SnapshotConnection,
 } from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/cjs/frontend";
 import { expect } from "chai";

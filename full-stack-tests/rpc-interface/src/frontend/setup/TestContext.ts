@@ -8,7 +8,7 @@ import { BentleyCloudRpcManager, OpenAPIInfo } from "@bentley/imodeljs-common";
 import { AuthorizedFrontendRequestContext, NoRenderApp } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/itwin-client";
 import {
-  getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials
+  getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials,
 } from "@bentley/oidc-signin-tool/lib/cjs/frontend";
 import { expect } from "chai";
 import { getRpcInterfaces, Settings } from "../../common/Settings";

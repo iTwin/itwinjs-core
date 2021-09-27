@@ -7,10 +7,10 @@ import { ElectronHost } from "@bentley/electron-manager/lib/cjs/ElectronBackend"
 import { IModelJsExpressServer } from "@bentley/express-server";
 import {
   FileNameResolver, IModelDb, IModelHost, IModelHostConfiguration, IpcHandler, PhysicalModel, PhysicalPartition, SpatialCategory,
-  SubjectOwnsPartitionElements
+  SubjectOwnsPartitionElements,
 } from "@bentley/imodeljs-backend";
 import {
-  BentleyCloudRpcManager, CodeProps, ElementProps, IModel, RelatedElement, RpcConfiguration, SubCategoryAppearance
+  BentleyCloudRpcManager, CodeProps, ElementProps, IModel, RelatedElement, RpcConfiguration, SubCategoryAppearance,
 } from "@bentley/imodeljs-common";
 import { BasicManipulationCommand, EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
 // Sets up certa to allow a method on the frontend to get an access token

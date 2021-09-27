@@ -18,8 +18,8 @@ import {
   Paged, PageOptions, PresentationError, PresentationRpcRequestOptions, PresentationStatus, RulesetVariable, RulesetVariableJSON, SelectClassInfo,
   SelectionScopeRequestOptions, VariableValueTypes,
 } from "@bentley/presentation-common";
-import { createTestContentDescriptor, createTestSelectClassInfo, ResolvablePromise, createRandomECInstanceKey, createRandomECInstancesNode,
-  createRandomECInstancesNodeKey, createRandomId, createRandomLabelDefinitionJSON,  createRandomNodePathElement, createRandomSelectionScope,
+import { createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomId, createRandomLabelDefinitionJSON,
+  createRandomNodePathElement, createRandomSelectionScope, createTestContentDescriptor,  createTestSelectClassInfo, ResolvablePromise,
 } from "@bentley/presentation-common/lib/cjs/test";
 import * as moq from "typemoq";
 import { Presentation } from "../presentation-backend/Presentation";

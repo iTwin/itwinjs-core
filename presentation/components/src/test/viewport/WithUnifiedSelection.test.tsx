@@ -9,7 +9,7 @@ import { IModelApp, IModelConnection, HiliteSet as IModelHiliteSet, NoRenderApp,
 import { KeySet } from "@bentley/presentation-common";
 import { createRandomECInstanceKey, createRandomId, ResolvablePromise, waitForAllAsyncs } from "@bentley/presentation-common/lib/cjs/test";
 import {
-  HiliteSet, Presentation, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionManager, SelectionScopesManager
+  HiliteSet, Presentation, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionManager, SelectionScopesManager,
 } from "@bentley/presentation-frontend";
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { ViewportComponent } from "@bentley/ui-imodel-components";

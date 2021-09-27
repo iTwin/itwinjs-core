@@ -8,7 +8,7 @@ import { Angle, Point3d } from "@bentley/geometry-core";
 import { IModelJsFs, PhysicalModel, StandaloneDb } from "@bentley/imodeljs-backend";
 import {
   BentleyCloudRpcManager, BentleyCloudRpcParams, GeometricElement3dProps, IModel, IModelReadRpcInterface,
-  RpcInterfaceDefinition, SnapshotIModelRpcInterface, TestRpcManager
+  RpcInterfaceDefinition, SnapshotIModelRpcInterface, TestRpcManager,
 } from "@bentley/imodeljs-common";
 import { BriefcaseConnection, NullRenderSystem } from "@bentley/imodeljs-frontend";
 import { assert } from "chai";

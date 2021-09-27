@@ -8,7 +8,7 @@ import produce from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
 import {
-  addPanelWidget, addTab, createDraggedTabState, createNineZoneState, DragManager, FloatingTab, NineZoneDispatch
+  addPanelWidget, addTab, createDraggedTabState, createNineZoneState, DragManager, FloatingTab, NineZoneDispatch,
 } from "../../ui-ninezone";
 import { createDragItemInfo, TestNineZoneProvider } from "../Providers";
 

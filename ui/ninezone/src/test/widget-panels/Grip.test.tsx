@@ -10,7 +10,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import {
   addPanelWidget, createNineZoneState, createPanelsState, createVerticalPanelState, DragManager,
-  NineZoneDispatch, PanelSide, PanelStateContext, useResizeGrip, WidgetPanelContext, WidgetPanelGrip
+  NineZoneDispatch, PanelSide, PanelStateContext, useResizeGrip, WidgetPanelContext, WidgetPanelGrip,
 } from "../../ui-ninezone";
 import { createDragItemInfo, TestNineZoneProvider, TestNineZoneProviderProps } from "../Providers";
 

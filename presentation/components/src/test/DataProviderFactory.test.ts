@@ -12,7 +12,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import {
-  DataProvidersFactory, DataProvidersFactoryProps, IPresentationPropertyDataProvider, PresentationTableDataProvider
+  DataProvidersFactory, DataProvidersFactoryProps, IPresentationPropertyDataProvider, PresentationTableDataProvider,
 } from "../presentation-components";
 import { createRandomPropertyRecord, mockPresentationManager } from "./_helpers/UiComponents";
 

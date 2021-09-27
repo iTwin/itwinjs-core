@@ -5,11 +5,11 @@
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Range3d, StandardViewIndex } from "@bentley/geometry-core";
 import {
-  CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, PhysicalModel, SnapshotDb, SpatialViewDefinition
+  CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, PhysicalModel, SnapshotDb, SpatialViewDefinition,
 } from "@bentley/imodeljs-backend";
 import { AxisAlignedBox3d, Cartographic, ContextRealityModelProps, EcefLocation, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
 import {
-  ALong, CRSManager, Downloader, OnlineEngine, OPCReader, OrbitGtBounds, PageCachedFile, PointCloudReader, UrlFS
+  ALong, CRSManager, Downloader, OnlineEngine, OPCReader, OrbitGtBounds, PageCachedFile, PointCloudReader, UrlFS,
 } from "@bentley/orbitgt-core";
 import { DownloaderNode } from "@bentley/orbitgt-core/lib/cjs/system/runtime/DownloaderNode";
 import * as fs from "fs";

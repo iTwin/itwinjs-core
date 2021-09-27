@@ -10,7 +10,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import {
   addFloatingWidget, addPanelWidget, addTab, createFloatingWidgetState, createNineZoneState, FloatingWidget, NineZoneDispatch, PanelStateContext,
-  PanelTarget, useDrag, WidgetIdContext, WidgetTabTarget
+  PanelTarget, useDrag, WidgetIdContext, WidgetTabTarget,
 } from "../../ui-ninezone";
 import * as NineZoneModule from "../../ui-ninezone/base/NineZone";
 import { TestNineZoneProvider } from "../Providers";

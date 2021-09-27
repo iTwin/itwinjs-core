@@ -10,7 +10,7 @@ import {
   SortDirection as PresentationSortDirection, RelationshipMeaning, ValuesDictionary,
 } from "@bentley/presentation-common";
 import {
-  createRandomECInstanceKey, createTestContentDescriptor, createTestContentItem, createTestNestedContentField, createTestSimpleContentField, PromiseContainer
+  createRandomECInstanceKey, createTestContentDescriptor, createTestContentItem, createTestNestedContentField, createTestSimpleContentField, PromiseContainer,
 } from "@bentley/presentation-common/lib/cjs/test";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import "@bentley/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";

@@ -12,12 +12,12 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import {
   ContentControlActivatedEventArgs, ContentLayoutActivatedEventArgs, NavigationAidActivatedEventArgs, SyncUiEventArgs, SyncUiEventDispatcher,
-  UiFramework, WidgetStateChangedEventArgs
+  UiFramework, WidgetStateChangedEventArgs,
 } from "../../ui-framework";
 import { Backstage, BackstageEventArgs } from "../../ui-framework/backstage/Backstage";
 import { ActiveContentChangedEventArgs, ContentViewManager } from "../../ui-framework/content/ContentViewManager";
 import {
-  FrontstageActivatedEventArgs, FrontstageManager, FrontstageReadyEventArgs, ModalFrontstageChangedEventArgs, ToolActivatedEventArgs
+  FrontstageActivatedEventArgs, FrontstageManager, FrontstageReadyEventArgs, ModalFrontstageChangedEventArgs, ToolActivatedEventArgs,
 } from "../../ui-framework/frontstage/FrontstageManager";
 import { TaskActivatedEventArgs, WorkflowActivatedEventArgs, WorkflowManager } from "../../ui-framework/workflow/Workflow";
 import TestUtils from "../TestUtils";

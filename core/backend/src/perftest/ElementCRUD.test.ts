@@ -9,7 +9,7 @@ import { Reporter } from "@bentley/perf-tools";
 import { assert } from "chai";
 import * as path from "path";
 import {
-  DrawingCategory, ECSqlStatement, Element, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory
+  DrawingCategory, ECSqlStatement, Element, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory,
 } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";

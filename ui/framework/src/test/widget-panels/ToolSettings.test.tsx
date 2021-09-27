@@ -11,7 +11,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import {
   ConfigurableCreateInfo, FrontstageDef, FrontstageManager, ToolSettingsContent, ToolSettingsDockedContent, ToolSettingsEntry, ToolSettingsGrid,
-  ToolUiProvider, useHorizontalToolSettingNodes, useToolSettingsNode, WidgetPanelsToolSettings, ZoneDef
+  ToolUiProvider, useHorizontalToolSettingNodes, useToolSettingsNode, WidgetPanelsToolSettings, ZoneDef,
 } from "../../ui-framework";
 
 describe("WidgetPanelsToolSettings", () => {

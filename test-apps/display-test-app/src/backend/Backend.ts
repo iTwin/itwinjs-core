@@ -9,7 +9,7 @@ import { IModelBankClient } from "@bentley/imodelhub-client";
 import { IModelHost, IModelHostConfiguration, LocalhostIpcHost } from "@bentley/imodeljs-backend";
 import {
   IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager,
-  SnapshotIModelRpcInterface
+  SnapshotIModelRpcInterface,
 } from "@bentley/imodeljs-common";
 import { EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
 import * as editorBuiltInCommands from "@bentley/imodeljs-editor-backend";

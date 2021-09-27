@@ -16,7 +16,6 @@ import { getQuantityFormatsSettingsManagerEntry } from "../../ui-framework/setti
 import { UiFramework } from "../../ui-framework/UiFramework";
 import TestUtils, { getButtonWithText, handleError, selectChangeValueByText, stubScrollIntoView } from "../TestUtils";
 
-
 describe("QuantityFormatSettingsPage", () => {
 
   let presentationManagerMock: moq.IMock<PresentationManager>;

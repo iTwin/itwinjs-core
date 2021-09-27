@@ -7,7 +7,7 @@ import { I18N } from "@bentley/imodeljs-i18n";
 import { applyOptionalPrefix, LabelCompositeValue, LabelDefinition } from "@bentley/presentation-common";
 import {
   createRandomLabelCompositeValue, createRandomLabelDefinition, createTestContentDescriptor, createTestNestedContentField, createTestPropertiesContentField,
-  createTestPropertyInfo, createTestSimpleContentField
+  createTestPropertyInfo, createTestSimpleContentField,
 } from "@bentley/presentation-common/lib/cjs/test";
 import { Presentation } from "@bentley/presentation-frontend";
 import { Primitives, PrimitiveValue } from "@bentley/ui-abstract";

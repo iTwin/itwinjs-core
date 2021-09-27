@@ -10,7 +10,7 @@ import {
   DragManager,
   DragManagerContext,
   NineZoneProvider,
-  NineZoneProviderProps
+  NineZoneProviderProps,
 } from "../ui-ninezone";
 
 type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;

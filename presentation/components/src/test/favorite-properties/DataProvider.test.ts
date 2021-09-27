@@ -7,7 +7,7 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { KeySet, Ruleset } from "@bentley/presentation-common";
 import {
-  FavoritePropertiesManager, Presentation, PresentationManager, RulesetManager, SelectionManager, SelectionScopesManager
+  FavoritePropertiesManager, Presentation, PresentationManager, RulesetManager, SelectionManager, SelectionScopesManager,
 } from "@bentley/presentation-frontend";
 import "@bentley/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";

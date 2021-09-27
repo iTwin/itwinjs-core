@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, Id64String } from "@bentley/bentleyjs-core";
-import { ECSqlStatement, Element, IModelDb, IModelJsFs as fs, Model, SnapshotDb } from "@bentley/imodeljs-backend";
+import { ECSqlStatement, Element, IModelDb, IModelJsFs, Model, SnapshotDb } from "@bentley/imodeljs-backend";
 import { assert } from "chai";
 import * as path from "path";
 import { IModelTestUtils } from "./IModelTestUtils";
@@ -22,8 +22,8 @@ class DumpIModel {
   public static dump(iModel: IModelDb, baseDir: string): void {
     // Use the GUID of the iModel to create a new directory
     const outputDir = path.join(baseDir, iModel.iModelId);
-    if (!fs.existsSync(outputDir)) {
-      fs.mkdirSync(outputDir);
+    if (!IModelJsFs.existsSync(outputDir)) {
+      IModelJsFs.mkdirSync(outputDir);
     }
     // Iterate each Model
     const sql = `SELECT ECInstanceId AS id FROM ${Model.classFullName}`;
@@ -38,23 +38,23 @@ class DumpIModel {
   private static dumpModel(iModel: IModelDb, modelId: Id64String, outputDir: string): void {
     // Use the Id of the Model to create a JSON output file
     const outputFile = path.join(outputDir, `${modelId.toString()}.json`);
-    fs.writeFileSync(outputFile, "[");
+    IModelJsFs.writeFileSync(outputFile, "[");
     // ECSQL to SELECT every Element in the specified Model
     const sql = `SELECT ECInstanceId AS id FROM ${Element.classFullName} WHERE Model.Id=:modelId`;
     iModel.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       statement.bindId("modelId", modelId);
       let isFirstEntry = true;
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        isFirstEntry ? fs.appendFileSync(outputFile, "\n") : fs.appendFileSync(outputFile, ",\n");
+        isFirstEntry ? IModelJsFs.appendFileSync(outputFile, "\n") : IModelJsFs.appendFileSync(outputFile, ",\n");
         isFirstEntry = false;
         const row = statement.getRow();
         // Get the ElementProps (including the geometry detail) for the specified Element
         const elementProps = iModel.elements.getElementProps({ id: row.id, wantGeometry: true });
         // Output the ElementProps as a JSON string
-        fs.appendFileSync(outputFile, JSON.stringify(elementProps));
+        IModelJsFs.appendFileSync(outputFile, JSON.stringify(elementProps));
       }
     });
-    fs.appendFileSync(outputFile, "\n]");
+    IModelJsFs.appendFileSync(outputFile, "\n]");
   }
 }
 // __PUBLISH_EXTRACT_END__
@@ -72,10 +72,10 @@ describe("DumpIModel", () => {
 
   it("should dump iModel to JSON", () => {
     const outputDir = path.join(__dirname, "output", "dump");
-    if (!fs.existsSync(outputDir)) {
-      fs.mkdirSync(outputDir);
+    if (!IModelJsFs.existsSync(outputDir)) {
+      IModelJsFs.mkdirSync(outputDir);
     }
-    assert.isTrue(fs.existsSync(outputDir));
+    assert.isTrue(IModelJsFs.existsSync(outputDir));
     DumpIModel.dump(iModel, outputDir);
   });
 });

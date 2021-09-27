@@ -6,7 +6,7 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "version": "0.0.0",
+  "version": "3.0.0-dev.69",
   "engines": {
     "node": ">=12.22.0 < 14.0 || >=14.17.0 <17.0"
   },

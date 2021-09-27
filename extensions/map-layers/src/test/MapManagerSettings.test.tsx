@@ -6,7 +6,7 @@
 
 import {
   BackgroundMapSettings, DisplayStyle3dSettings, PlanarClipMaskMode,
-  PlanarClipMaskPriority, TerrainHeightOriginMode, TerrainSettings
+  PlanarClipMaskPriority, TerrainHeightOriginMode, TerrainSettings,
 } from "@bentley/imodeljs-common";
 import { DisplayStyle3dState, IModelConnection, MockRender, ScreenViewport, ViewState3d } from "@bentley/imodeljs-frontend";
 import { SpecialKey } from "@bentley/ui-abstract";

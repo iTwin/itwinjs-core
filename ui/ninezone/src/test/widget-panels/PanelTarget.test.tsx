@@ -9,7 +9,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import {
   addPanelWidget, addTab, createDraggedTabState, createNineZoneState, CursorTypeContext, DragManager, PanelStateContext,
-  PanelTarget, useAllowedPanelTarget
+  PanelTarget, useAllowedPanelTarget,
 } from "../../ui-ninezone";
 import { createDragItemInfo, createDragStartArgs, TestNineZoneProvider } from "../Providers";
 

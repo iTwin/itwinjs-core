@@ -18,7 +18,7 @@ import { memoize } from "lodash";
 import * as React from "react";
 import ReactDataGrid from "react-data-grid";
 import {
-  MultiSelectionHandler, OnItemsDeselectedCallback, OnItemsSelectedCallback, SelectionHandler, SingleSelectionHandler
+  MultiSelectionHandler, OnItemsDeselectedCallback, OnItemsSelectedCallback, SelectionHandler, SingleSelectionHandler,
 } from "../../common/selection/SelectionHandler";
 import { SelectionMode } from "../../common/selection/SelectionModes";
 import { ShowHideMenu } from "../../common/showhide/ShowHideMenu";

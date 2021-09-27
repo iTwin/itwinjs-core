@@ -7,7 +7,7 @@ import { act, fireEvent, queryByText, render } from "@testing-library/react";
 import * as React from "react";
 import * as sinon from "sinon";
 import {
-  DockedToolSetting, DockedToolSettings, eqlOverflown, getOverflown, onOverflowLabelAndEditorResize
+  DockedToolSetting, DockedToolSettings, eqlOverflown, getOverflown, onOverflowLabelAndEditorResize,
 } from "../../ui-ninezone";
 import { DragManagerProvider } from "../Providers";
 import { flushAsyncOperations, ResizeObserverMock } from "../Utils";

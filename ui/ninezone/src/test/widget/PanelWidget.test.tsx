@@ -8,7 +8,8 @@ import produce from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
 import {
-  addPanelWidget, addTab, createHorizontalPanelState, createNineZoneState, createPanelsState, EventEmitter, HorizontalPanelSide, NineZoneState, PanelSide, PanelStateContext, PanelWidget, TabState, useBorders, useMode, VerticalPanelSide, WidgetContentManagerContext, WidgetContentManagerContextArgs
+  addPanelWidget, addTab, createHorizontalPanelState, createNineZoneState, createPanelsState, EventEmitter, HorizontalPanelSide, NineZoneState,
+  PanelSide, PanelStateContext, PanelWidget, TabState, useBorders, useMode, VerticalPanelSide, WidgetContentManagerContext, WidgetContentManagerContextArgs,
 } from "../../ui-ninezone";
 import { TestNineZoneProvider } from "../Providers";
 

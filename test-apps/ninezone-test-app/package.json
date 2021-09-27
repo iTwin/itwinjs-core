@@ -3,7 +3,7 @@
   "description": "9-Zone Test Application",
   "private": true,
   "license": "MIT",
-  "version": "0.0.0",
+  "version": "3.0.0-dev.69",
   "scripts": {
     "compile": "",
     "start": "react-scripts start",

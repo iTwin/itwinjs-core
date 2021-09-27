@@ -5,7 +5,7 @@
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Content, DEFAULT_KEYS_BATCH_SIZE, Item, KeySet } from "@bentley/presentation-common";
-import { createTestContentDescriptor, createRandomECInstanceKey, createRandomTransientId } from "@bentley/presentation-common/lib/cjs/test";
+import { createRandomECInstanceKey, createRandomTransientId, createTestContentDescriptor } from "@bentley/presentation-common/lib/cjs/test";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
