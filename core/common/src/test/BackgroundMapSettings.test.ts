@@ -4,21 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { BackgroundMapSettings, BackgroundMapWithProviderProps, GlobeMode } from "../BackgroundMapSettings";
+import { BackgroundMapSettings, GlobeMode, PersistentBackgroundMapProps } from "../BackgroundMapSettings";
 import { BackgroundMapType } from "../BackgroundMapProvider";
 import { TerrainHeightOriginMode } from "../TerrainSettings";
 
 describe("BackgroundMapSettings", () => {
   it("round-trips through JSON", () => {
-    const roundTrip = (input: BackgroundMapWithProviderProps | undefined, expected: BackgroundMapWithProviderProps | "input") => {
+    const roundTrip = (input: PersistentBackgroundMapProps | undefined, expected: PersistentBackgroundMapProps | "input") => {
       if (!input)
         input = {};
 
       if ("input" === expected)
-        expected = JSON.parse(JSON.stringify(input)) as BackgroundMapWithProviderProps;
+        expected = JSON.parse(JSON.stringify(input)) as PersistentBackgroundMapProps;
 
-      const settings = BackgroundMapSettings.fromJSON(input);
-      const output = settings.toJSON();
+      const settings = BackgroundMapSettings.fromPersistentJSON(input);
+      const output = settings.toPersistentJSON();
 
       expect(output.groundBias).to.equal(expected.groundBias);
       // eslint-disable-next-line deprecation/deprecation
@@ -49,9 +49,9 @@ describe("BackgroundMapSettings", () => {
         expect(outTerrain.nonLocatable).to.equal(expTerrain.nonLocatable);
       }
 
-      expect(settings.equalsJSON(expected)).to.be.true;
+      expect(settings.equalsPersistentJSON(expected)).to.be.true;
 
-      const expectedSettings = BackgroundMapSettings.fromJSON(expected);
+      const expectedSettings = BackgroundMapSettings.fromPersistentJSON(expected);
       expect(settings.equals(expectedSettings)).to.be.true;
     };
 

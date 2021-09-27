@@ -14,7 +14,7 @@ import {
 import { XYZProps } from "@bentley/geometry-core";
 import { AmbientOcclusion } from "./AmbientOcclusion";
 import { AnalysisStyle, AnalysisStyleProps } from "./AnalysisStyle";
-import { BackgroundMapSettings, BackgroundMapWithProviderProps } from "./BackgroundMapSettings";
+import { BackgroundMapSettings, PersistentBackgroundMapProps } from "./BackgroundMapSettings";
 import { ClipStyle, ClipStyleProps } from "./ClipStyle";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { DefinitionElementProps } from "./ElementProps";
@@ -126,7 +126,7 @@ export interface DisplayStyleSettingsProps {
   subCategoryOvr?: DisplayStyleSubCategoryProps[];
 
   /** Settings controlling display of map within views of geolocated models. */
-  backgroundMap?: BackgroundMapWithProviderProps;
+  backgroundMap?: PersistentBackgroundMapProps;
   /** @see [[DisplayStyleSettings.contextRealityModels]]. */
   contextRealityModels?: ContextRealityModelProps[];
   /** Ids of elements not to be displayed in the view. Prefer the compressed format, especially when sending between frontend and backend - the number of Ids may be quite large. */
@@ -517,7 +517,7 @@ export class DisplayStyleSettings {
     this._monochrome = undefined !== this._json.monochromeColor ? ColorDef.fromJSON(this._json.monochromeColor) : ColorDef.white;
     this._monochromeMode = MonochromeMode.Flat === this._json.monochromeMode ? MonochromeMode.Flat : MonochromeMode.Scaled;
 
-    this._backgroundMap = BackgroundMapSettings.fromJSON(this._json.backgroundMap);
+    this._backgroundMap = BackgroundMapSettings.fromPersistentJSON(this._json.backgroundMap);
     this._mapImagery = MapImagerySettings.createFromJSON(this._json.mapImagery, this._json.backgroundMap);
 
     this._excludedElements = new ExcludedElements(this._json);
@@ -611,7 +611,7 @@ export class DisplayStyleSettings {
     if (!this.backgroundMap.equals(map)) {
       this.onBackgroundMapChanged.raiseEvent(map);
       this._backgroundMap = map; // it's an immutable type.
-      this._json.backgroundMap = map.toJSON();
+      this._json.backgroundMap = map.toPersistentJSON();
     }
   }
 
@@ -873,7 +873,7 @@ export class DisplayStyleSettings {
     };
 
     if (options?.includeBackgroundMap) {
-      props.backgroundMap = this.backgroundMap.toJSON();
+      props.backgroundMap = this.backgroundMap.toPersistentJSON();
       props.mapImagery = this.mapImagery.toJSON();
     } else {
       delete viewflags.backgroundMap;
@@ -957,10 +957,10 @@ export class DisplayStyleSettings {
       this.monochromeMode = overrides.monochromeMode;
 
     if (overrides.backgroundMap)
-      this.backgroundMap = BackgroundMapSettings.fromJSON(overrides.backgroundMap);
+      this.backgroundMap = BackgroundMapSettings.fromPersistentJSON(overrides.backgroundMap);
 
     if (overrides.mapImagery)
-      this.mapImagery = MapImagerySettings.createFromJSON(overrides.mapImagery, this.backgroundMap.toJSON());
+      this.mapImagery = MapImagerySettings.createFromJSON(overrides.mapImagery, this.backgroundMap.toPersistentJSON());
 
     if (undefined !== overrides.timePoint)
       this.timePoint = overrides.timePoint;

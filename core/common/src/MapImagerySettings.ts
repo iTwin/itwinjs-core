@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { BackgroundMapProps } from "./BackgroundMapSettings";
+import { DeprecatedBackgroundMapProps } from "./BackgroundMapSettings";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { BaseMapLayerProps, BaseMapLayerSettings, MapLayerProps, MapLayerSettings } from "./MapLayerSettings";
 
@@ -95,7 +95,7 @@ export class MapImagerySettings {
   }
 
   /** @internal */
-  public static createFromJSON(imageryJson?: MapImageryProps, mapProps?: BackgroundMapProps) {
+  public static createFromJSON(imageryJson?: MapImageryProps, mapProps?: DeprecatedBackgroundMapProps) {
     const baseLayer = imageryJson?.backgroundBase ? BaseLayerSettings.fromJSON(imageryJson.backgroundBase) : BaseMapLayerSettings.fromBackgroundMapProps(mapProps ?? { });
     return new MapImagerySettings(baseLayer, imageryJson?.backgroundLayers, imageryJson?.overlayLayers);
   }

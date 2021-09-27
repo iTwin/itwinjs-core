@@ -8,7 +8,7 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import { BackgroundMapProvider, BackgroundMapProviderName, BackgroundMapProviderProps, BackgroundMapType } from "./BackgroundMapProvider";
-import { BackgroundMapWithProviderProps } from "./BackgroundMapSettings";
+import { DeprecatedBackgroundMapProps } from "./BackgroundMapSettings";
 
 /** @beta */
 export type SubLayerId = string | number;
@@ -446,7 +446,7 @@ export class BaseMapLayerSettings extends MapLayerSettings {
   }
 
   /** @internal */
-  public static fromBackgroundMapProps(props: BackgroundMapWithProviderProps): BaseMapLayerSettings {
+  public static fromBackgroundMapProps(props: DeprecatedBackgroundMapProps): BaseMapLayerSettings {
     return this.fromProvider(BackgroundMapProvider.fromBackgroundMapProps(props));
   }
 

@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { BackgroundMapWithProviderProps } from "./BackgroundMapSettings";
+import { DeprecatedBackgroundMapProps } from "./BackgroundMapSettings";
 
 /** Describes the type of background map displayed by a [[DisplayStyle]]
  * @see [[BackgroundMapProps]]
@@ -61,7 +61,7 @@ export class BackgroundMapProvider {
   }
 
   /** @internal */
-  public static fromBackgroundMapProps(props: BackgroundMapWithProviderProps): BackgroundMapProvider {
+  public static fromBackgroundMapProps(props: DeprecatedBackgroundMapProps): BackgroundMapProvider {
     // eslint-disable-next-line deprecation/deprecation
     return this.fromJSON({ name: props.providerName as BackgroundMapProviderName, type: props.providerData?.mapType });
   }

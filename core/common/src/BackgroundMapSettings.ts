@@ -49,9 +49,12 @@ export interface BackgroundMapProps {
    * @beta
    */
   planarClipMask?: PlanarClipMaskProps;
+
+  providerName?: never;
+  providerData?: never;
 }
 
-export interface BackgroundMapWithProviderProps extends BackgroundMapProps {
+export interface DeprecatedBackgroundMapProps {
   /** Identifies the source of the map tiles. Currently supported providers are "BingProvider" and "MapBoxProvider". Support for additional providers may be added in the future.
    *
    * Default value: "BingProvider"
@@ -66,6 +69,8 @@ export interface BackgroundMapWithProviderProps extends BackgroundMapProps {
     mapType?: BackgroundMapType;
   };
 }
+
+export type PersistentBackgroundMapProps = Omit<BackgroundMapProps, keyof DeprecatedBackgroundMapProps> & DeprecatedBackgroundMapProps;
 
 function normalizeGlobeMode(mode?: GlobeMode): GlobeMode {
   return GlobeMode.Plane === mode ? mode : GlobeMode.Ellipsoid;
@@ -117,7 +122,7 @@ export class BackgroundMapSettings {
   /** If transparency is overridden, the transparency to apply; otherwise, undefined. */
   public get transparencyOverride(): number | undefined { return false !== this.transparency ? this.transparency : undefined; }
 
-  private constructor(props: BackgroundMapWithProviderProps) {
+  private constructor(props: BackgroundMapProps | PersistentBackgroundMapProps) {
     this.groundBias = props.groundBias ?? 0;
     this.transparency = normalizeTransparency(props.transparency);
     this.useDepthBuffer = props.useDepthBuffer ?? false;
@@ -129,13 +134,17 @@ export class BackgroundMapSettings {
     this._provider = BackgroundMapProvider.fromBackgroundMapProps(props);
   }
 
+  public static fromPersistentJSON(json?: PersistentBackgroundMapProps): BackgroundMapSettings {
+    return new this(json ?? {});
+  }
+
   /** Construct from JSON, performing validation and applying default values for undefined fields. */
-  public static fromJSON(json?: BackgroundMapWithProviderProps): BackgroundMapSettings {
+  public static fromJSON(json?: BackgroundMapProps): BackgroundMapSettings {
     return new BackgroundMapSettings(json ?? {});
   }
 
-  public toJSON(): BackgroundMapWithProviderProps {
-    const props: BackgroundMapWithProviderProps = {};
+  public toJSON(): BackgroundMapProps {
+    const props: BackgroundMapProps = {};
     if (0 !== this.groundBias)
       props.groundBias = this.groundBias;
     if (this.applyTerrain)
@@ -156,8 +165,15 @@ export class BackgroundMapSettings {
         break;
       }
     }
+
     if (this.planarClipMask.isValid)
       props.planarClipMask = this.planarClipMask.toJSON();
+
+    return props;
+  }
+
+  public toPersistentJSON(): PersistentBackgroundMapProps {
+    const props = this.toJSON() as PersistentBackgroundMapProps;
 
     // Preserve deprecated imagery provider properties.
     if ("BingProvider" !== this._provider.name)
@@ -173,10 +189,15 @@ export class BackgroundMapSettings {
     return this.equals(BackgroundMapSettings.fromJSON(json));
   }
 
+  public equalsPersistentJSON(json?: PersistentBackgroundMapProps): boolean {
+    return this.equals(BackgroundMapSettings.fromPersistentJSON(json));
+  }
+
   public equals(other: BackgroundMapSettings): boolean {
     return this.groundBias === other.groundBias && this.useDepthBuffer === other.useDepthBuffer && this.transparency === other.transparency
       && this.globeMode === other.globeMode && this._locatable === other._locatable && this.applyTerrain === other.applyTerrain
-      && this.terrainSettings.equals(other.terrainSettings) && this.planarClipMask.equals(other.planarClipMask);
+      && this.terrainSettings.equals(other.terrainSettings) && this.planarClipMask.equals(other.planarClipMask)
+      && this._provider.name === other._provider.name && this._provider.type === other._provider.type;
   }
 
   /** Create a copy of this BackgroundMapSettings, optionally modifying some of its properties.
@@ -197,8 +218,10 @@ export class BackgroundMapSettings {
       applyTerrain: changedProps.applyTerrain ?? this.applyTerrain,
       terrainSettings: changedProps.terrainSettings ? this.terrainSettings.clone(changedProps.terrainSettings).toJSON() : this.terrainSettings.toJSON(),
       planarClipMask: changedProps.planarClipMask ? this.planarClipMask.clone(changedProps.planarClipMask).toJSON() : this.planarClipMask.toJSON(),
+      providerName: this._provider.name,
+      providerData: { mapType: this._provider.type },
     };
 
-    return BackgroundMapSettings.fromJSON(props);
+    return BackgroundMapSettings.fromPersistentJSON(props);
   }
 }
