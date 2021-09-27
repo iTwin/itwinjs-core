@@ -520,6 +520,10 @@ export class DisplayStyleSettings {
     this._backgroundMap = BackgroundMapSettings.fromPersistentJSON(this._json.backgroundMap);
     this._mapImagery = MapImagerySettings.createFromJSON(this._json.mapImagery, this._json.backgroundMap);
 
+    // Ensure that if we used the deprecated imagery properties from this._backgroundMap to set up the base layer of this._mapImagery,
+    // we update our JSON to include that base layer.
+    this._json.mapImagery = this._mapImagery.toJSON();
+
     this._excludedElements = new ExcludedElements(this._json);
 
     if (this._json.analysisStyle)
