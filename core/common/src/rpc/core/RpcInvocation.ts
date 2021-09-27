@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { AccessToken, BentleyStatus, GuidString, IModelStatus, Logger, RpcInterfaceStatus } from "@bentley/bentleyjs-core";
+import { AccessToken, BentleyStatus, getErrorProps, GuidString, IModelStatus, Logger, RpcInterfaceStatus } from "@bentley/bentleyjs-core";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
@@ -29,19 +29,6 @@ export interface RpcActivity extends SessionProps {
 
   /** access token for authorization  */
   readonly accessToken: AccessToken;
-}
-
-/** Use this for logging for ClientRequestContext.
- * It returns only sanitized members, intentionally removing all others to avoid logging secrets or violating user-privacy rules.
- * @internal
- */
-export function sanitizeRpcActivity(activity: RpcActivity) {
-  return {
-    activityId: activity.activityId,
-    applicationId: activity.applicationId,
-    applicationVersion: activity.applicationVersion,
-    sessionId: activity.sessionId,
-  };
 }
 
 /** Serialized format for sending the request across the RPC layer
@@ -156,19 +143,24 @@ export class RpcInvocation {
   /** When processing an RPC request that throws an unhandled exception, log it with sanitized requestContext.
    * @internal
    */
-  public static logRpcException(currentRequest: RpcActivity, error: any) {
-    let msg = error.toString();
-    const errMeta = error.getMetaData?.();
-    if (errMeta)
-      msg += ` [${JSON.stringify(errMeta)}]`;
+  public static logRpcException(activity: RpcActivity, operationName: string, error: unknown) {
+    const props = {
+      error: getErrorProps(error),
+      activity: {
+        activityId: activity.activityId,
+        sessionId: activity.sessionId,
+        app: activity.applicationId,
+        version: activity.applicationVersion,
+      },
+    };
 
-    Logger.logError(CommonLoggerCategory.RpcInterfaceBackend, msg, () => sanitizeRpcActivity(currentRequest));
+    Logger.logError(CommonLoggerCategory.RpcInterfaceBackend, `Error in RPC operation [${operationName}]`, () => props);
   }
 
   private async resolve(): Promise<any> {
-    let currentRequest: RpcActivity | undefined;
+    let activity: RpcActivity | undefined;
     try {
-      currentRequest = RpcConfiguration.requestContext.deserialize(this.request);
+      activity = RpcConfiguration.requestContext.deserialize(this.request);
       this.protocol.events.raiseEvent(RpcProtocolEvent.RequestReceived, this);
 
       const parameters = RpcMarshaling.deserialize(this.protocol, this.request.parameters);
@@ -179,12 +171,12 @@ export class RpcInvocation {
 
       // This global is a "pseudo-magic-argument" to every RPC call. RpcImplementations must pass it as an argument to
       // any asynchronous code that may need it, and *not* rely on the global variable remaining unchanged across async calls.
-      RpcInvocation.currentActivity = currentRequest;
+      RpcInvocation.currentActivity = activity;
 
       return await op.call(impl, ...parameters);
-    } catch (error: any) {
-      if (currentRequest)
-        RpcInvocation.logRpcException(currentRequest, error);
+    } catch (error: unknown) {
+      if (activity)
+        RpcInvocation.logRpcException(activity, this.request.operation.operationName, error);
 
       return this.reject(error);
     }
