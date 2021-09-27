@@ -572,7 +572,6 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
     this.props.renderTo.appendChild(this._content);
 
     const shouldRemount = this.props.widgetDef.restoreTransientState() || this.props.widgetDef.isToolSettings;
-    // const shouldRemount = this.props.widgetDef.widgetControl ? !this.props.widgetDef.widgetControl.restoreTransientState() : true;
 
     shouldRemount && this.setState((prevState) => ({ widgetKey: prevState.widgetKey + 1 }));
   }

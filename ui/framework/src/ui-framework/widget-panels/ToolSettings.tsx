@@ -13,7 +13,7 @@ import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 
 /** Defines a ToolSettings property entry.
- * @beta
+ * @public
  */
 export interface ToolSettingsEntry {
   // label node which potentially can contain a lock node as well.
@@ -81,7 +81,8 @@ export function useHorizontalToolSettingNodes() {
 }
 
 /** Defines the ToolSettingsEntry entries that are used to populate a grid layout of ToolSetting properties.
- * @beta
+ *  Used only when the "Use UI 2.0" setting is true
+ * @internal
  */
 export interface ToolSettingsGridProps {
   // label node which potentially can contain a lock node as well.
@@ -91,7 +92,7 @@ export interface ToolSettingsGridProps {
 /** Component that arranges an array of ToolSettingsEntry items into a two column grid layout.
  * The left column is considered the label column, the right column is considered the property
  * editor column.
- * @beta
+ * @internal
  */
 export function ToolSettingsGrid({ settings }: ToolSettingsGridProps) {
   return (
