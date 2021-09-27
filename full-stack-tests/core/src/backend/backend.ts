@@ -9,7 +9,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronHost } from "@itwin/electron-manager/lib/ElectronBackend";
-import { IModelJsExpressServer } from "@bentley/express-server";
+import { IModelJsExpressServer } from "@itwin/express-server";
 import {
   FileNameResolver, IModelDb, IModelHost, IModelHostConfiguration, IpcHandler, PhysicalModel, PhysicalPartition, SpatialCategory,
   SubjectOwnsPartitionElements,

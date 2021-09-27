@@ -13,7 +13,7 @@ import {
   IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager,
   SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
-import { AndroidHost, IOSHost, MobileHostOpts } from "@bentley/mobile-manager/lib/MobileBackend";
+import { AndroidHost, IOSHost, MobileHostOpts } from "@itwin/mobile-manager/lib/MobileBackend";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { FakeTileCacheService } from "./FakeTileCacheService";

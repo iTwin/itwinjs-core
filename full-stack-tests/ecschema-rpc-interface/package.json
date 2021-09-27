@@ -53,7 +53,7 @@
   },
   "devDependencies": {
     "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/express-server": "workspace:*",
+    "@itwin/express-server": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",

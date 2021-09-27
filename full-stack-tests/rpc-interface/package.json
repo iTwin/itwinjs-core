@@ -59,7 +59,7 @@
     "puppeteer": "chrome-86"
   },
   "devDependencies": {
-    "@bentley/express-server": "workspace:*",
+    "@itwin/express-server": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/presentation-backend": "workspace:*",
     "@types/chai": "^4.1.4",

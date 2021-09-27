@@ -39,7 +39,7 @@
     "@itwin/core-bentley": "workspace:*",
     "@bentley/context-registry-client": "workspace:*",
     "@itwin/electron-manager": "workspace:*",
-    "@bentley/mobile-manager": "workspace:*",
+    "@itwin/mobile-manager": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",

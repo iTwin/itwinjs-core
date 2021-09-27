@@ -46,7 +46,7 @@
     "@itwin/hypermodeling-frontend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/electron-manager": "workspace:*",
-    "@bentley/mobile-manager": "workspace:*",
+    "@itwin/mobile-manager": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",

@@ -23,10 +23,6 @@
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
-      "name": "@itwin/build-tools",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
       "name": "@bentley/certa",
       "allowedCategories": [ "common", "edit", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -47,10 +43,6 @@
       "allowedCategories": [ "backend", "integration-testing" ]
     },
     {
-      "name": "@itwin/electron-manager",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@bentley/eslint-plugin",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -69,10 +61,6 @@
     {
       "name": "@bentley/geometry-core",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
-      "name": "@itwin/hypermodeling-frontend",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@bentley/icons-generic",
@@ -247,6 +235,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@itwin/build-tools",
+      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+    },
+    {
       "name": "@itwin/core-backend",
       "allowedCategories": [ "backend", "edit", "integration-testing", "internal", "tools" ]
     },
@@ -311,7 +303,19 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@itwin/electron-manager",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/express-server",
+      "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
       "name": "@itwin/frontend-devtools",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/hypermodeling-frontend",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -325,6 +329,10 @@
     {
       "name": "@itwin/linear-referencing-common",
       "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@itwin/mobile-manager",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@itwin/presentation-backend",

@@ -1,5 +1,5 @@
 {
-  "name": "@bentley/mobile-manager",
+  "name": "@itwin/mobile-manager",
   "version": "3.0.0-dev.66",
   "description": "iTwin.js MobileHost and MobileApp",
   "license": "MIT",

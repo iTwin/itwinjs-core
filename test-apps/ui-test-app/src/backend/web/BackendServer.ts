@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Logger } from "@itwin/core-bentley";
-import { IModelJsExpressServer } from "@bentley/express-server";
+import { IModelJsExpressServer } from "@itwin/express-server";
 import { IModelHost } from "@itwin/core-backend";
 import { BentleyCloudRpcManager } from "@itwin/core-common";
 import { getSupportedRpcs } from "../../common/rpcs";
