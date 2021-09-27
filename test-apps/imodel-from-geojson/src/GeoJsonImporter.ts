@@ -9,8 +9,8 @@ import {
   SpatialModel, StandaloneDb, ViewDefinition,
 } from "@bentley/imodeljs-backend";
 import {
-  AxisAlignedBox3d, BackgroundMapType, BackgroundMapWithProviderProps, Cartographic, Code, ColorByName, ColorDef, EcefLocation, GeometricElement3dProps,
-  GeometryParams, GeometryStreamBuilder, GeometryStreamProps, IModel, RenderMode, ViewFlags,
+  AxisAlignedBox3d, BackgroundMapType, Cartographic, Code, ColorByName, ColorDef, EcefLocation, GeometricElement3dProps,
+  GeometryParams, GeometryStreamBuilder, GeometryStreamProps, IModel, PersistentBackgroundMapProps, RenderMode, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { insertClassifiedRealityModel } from "./ClassifyRealityModel";
 import { GeoJson } from "./GeoJson";
@@ -30,7 +30,7 @@ export class GeoJsonImporter {
   private readonly _pointRadius: number;
   private _colorIndex?: number;
   private readonly _viewFlags: ViewFlags;
-  private readonly _backgroundMap: BackgroundMapWithProviderProps | undefined;
+  private readonly _backgroundMap: PersistentBackgroundMapProps | undefined;
 
   /** Construct a new GeoJsonImporter
    * @param iModelFileName the output iModel file name
