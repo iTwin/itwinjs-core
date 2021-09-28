@@ -16,7 +16,7 @@ import { ContextRegistryClientWrapper } from "../../common/ContextRegistryClient
 export interface IModelNameArg {
   readonly iModelName: string;
   readonly iTwinId: GuidString;
-  readonly user: AccessToken;
+  readonly accessToken: AccessToken;
 }
 
 export interface BriefcaseIdArg extends IModelIdArg {
@@ -66,7 +66,7 @@ export class IModelBankFrontend implements TestFrontendHubAccess {
 
   /** Get the iModelId of an iModel by name. Undefined if no iModel with that name exists.  */
   public async queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined> {
-    const iModels = await this._hubClient.iModels.get(arg.user, arg.iTwinId, new IModelQuery().byName(arg.iModelName));
+    const iModels = await this._hubClient.iModels.get(arg.accessToken, arg.iTwinId, new IModelQuery().byName(arg.iModelName));
     return iModels.length === 0 ? undefined : iModels[0].id!;
   }
 

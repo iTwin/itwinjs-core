@@ -18,7 +18,7 @@ import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
 
 describe("Checkpoints (#integration)", () => {
-  let user: AccessToken;
+  let accessToken: AccessToken;
   let testIModelId: GuidString;
   let testITwinId: GuidString;
   let testChangeSet: ChangesetProps;
@@ -32,13 +32,13 @@ describe("Checkpoints (#integration)", () => {
     process.env.BLOCKCACHE_DIR = blockcacheDir;
     // IModelTestUtils.setupDebugLogLevels();
 
-    user = await TestUtility.getAccessToken(TestUsers.regular);
-    testITwinId = await HubUtility.getTestITwinId(user);
-    testIModelId = await HubUtility.getTestIModelId(user, HubUtility.testIModelNames.stadium);
-    testChangeSet = await IModelHost.hubAccess.getLatestChangeset({ user, iModelId: testIModelId });
+    accessToken = await TestUtility.getAccessToken(TestUsers.regular);
+    testITwinId = await HubUtility.getTestITwinId(accessToken);
+    testIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.stadium);
+    testChangeSet = await IModelHost.hubAccess.getLatestChangeset({ accessToken, iModelId: testIModelId });
 
     const checkpointQuery = new CheckpointV2Query().byChangeSetId(testChangeSet.id).selectContainerAccessKey();
-    const checkpoints = await IModelHubBackend.iModelClient.checkpointsV2.get(user, testIModelId, checkpointQuery);
+    const checkpoints = await IModelHubBackend.iModelClient.checkpointsV2.get(accessToken, testIModelId, checkpointQuery);
     assert.equal(checkpoints.length, 1, "checkpoint missing");
     assert.isDefined(checkpoints[0].containerAccessKeyAccount, "checkpoint storage account is invalid");
 
@@ -67,7 +67,7 @@ describe("Checkpoints (#integration)", () => {
 
   it("should be able to open and read V2 checkpoint", async () => {
     const iModel = await SnapshotDb.openCheckpointV2({
-      user,
+      accessToken,
       iTwinId: testITwinId,
       iModelId: testIModelId,
       changeset: testChangeSet,
@@ -79,7 +79,7 @@ describe("Checkpoints (#integration)", () => {
     let numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
     assert.equal(numModels, 32);
 
-    await iModel.reattachDaemon(user);
+    await iModel.reattachDaemon(accessToken);
     numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
     assert.equal(numModels, 32);
 

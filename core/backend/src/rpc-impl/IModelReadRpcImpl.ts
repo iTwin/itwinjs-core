@@ -37,9 +37,9 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   public async queryRows(tokenProps: IModelRpcProps, ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string, abbreviateBlobs?: boolean): Promise<QueryResponse> {
-    const user = RpcInvocation.currentActivity;
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(user.accessToken, tokenProps);
-    return iModelDb.queryRows(user.sessionId, ecsql, bindings, limit, quota, priority, restartToken, abbreviateBlobs);
+    const currentActivity = RpcInvocation.currentActivity;
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(currentActivity.accessToken, tokenProps);
+    return iModelDb.queryRows(currentActivity.sessionId, ecsql, bindings, limit, quota, priority, restartToken, abbreviateBlobs);
   }
 
   public async queryModelRanges(tokenProps: IModelRpcProps, modelIdsList: Id64String[]): Promise<Range3dProps[]> {

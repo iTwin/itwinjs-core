@@ -83,7 +83,7 @@ export class TestUtility {
 
   public static async queryIModelIdbyName(iTwinId: string, iModelName: string): Promise<string> {
     const accessToken = (await IModelApp.authorizationClient?.getAccessToken())!;
-    const iModelId = await this.itwinPlatformEnv.hubAccess.queryIModelByName({ user: accessToken, iTwinId, iModelName });
+    const iModelId = await this.itwinPlatformEnv.hubAccess.queryIModelByName({ accessToken: accessToken, iTwinId, iModelName });
     assert.isDefined(iModelId);
     return iModelId!;
   }

@@ -21,7 +21,7 @@ import { SQLiteDb } from "../SQLiteDb";
 /** @internal */
 interface MockBriefcaseIdProps {
   id: BriefcaseId;
-  user: string;
+  user: string; // Just an AccessToken that simulates a user
   alias: string;
   assigned: boolean;
 }

@@ -1882,8 +1882,8 @@ describe("iModel", () => {
     const commandStub = sinon.stub(BlobDaemon, "command").callsFake(async () => daemonSuccessResult);
 
     process.env.BLOCKCACHE_DIR = "/foo/";
-    const user = "token";
-    const checkpoint = await SnapshotDb.openCheckpointV2({ user, iTwinId, iModelId, changeset });
+    const accessToken = "token";
+    const checkpoint = await SnapshotDb.openCheckpointV2({ accessToken, iTwinId, iModelId, changeset });
     const props = checkpoint.getRpcProps();
     assert.equal(props.iModelId, iModelId);
     assert.equal(props.iTwinId, iTwinId);
@@ -1891,12 +1891,12 @@ describe("iModel", () => {
     assert.equal(commandStub.callCount, 1);
     assert.equal(commandStub.firstCall.firstArg, "attach");
 
-    await checkpoint.reattachDaemon(user);
+    await checkpoint.reattachDaemon(accessToken);
     assert.equal(commandStub.callCount, 2);
     assert.equal(commandStub.secondCall.firstArg, "attach");
 
     commandStub.callsFake(async () => daemonErrorResult);
-    const error = await getIModelError(checkpoint.reattachDaemon(user));
+    const error = await getIModelError(checkpoint.reattachDaemon(accessToken));
     expectIModelError(DbResult.BE_SQLITE_ERROR, error);
 
     checkpoint.close();
@@ -1932,14 +1932,14 @@ describe("iModel", () => {
     const daemonSuccessResult = { result: DbResult.BE_SQLITE_OK, errMsg: "" };
     sinon.stub(BlobDaemon, "command").callsFake(async () => daemonSuccessResult);
 
-    const user = "token";
+    const accessToken = "token";
 
     process.env.BLOCKCACHE_DIR = ""; // try without setting daemon dir
-    let error = await getIModelError(SnapshotDb.openCheckpointV2({ user, iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
+    let error = await getIModelError(SnapshotDb.openCheckpointV2({ accessToken, iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.BadRequest, error); // bad request because daemon dir wasn't set
 
     process.env.BLOCKCACHE_DIR = "/foo/";
-    error = await getIModelError(SnapshotDb.openCheckpointV2({ user, iTwinId, iModelId, changeset }));
+    error = await getIModelError(SnapshotDb.openCheckpointV2({ accessToken, iTwinId, iModelId, changeset }));
     expectIModelError(IModelStatus.ValidationFailed, error);
   });
 
@@ -1949,20 +1949,20 @@ describe("iModel", () => {
     const hubMock = sinon.stub(checkpointsV2Handler, "get").callsFake(async () => []);
     sinon.stub(IModelHubBackend.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
 
-    const user = "token";
-    let error = await getIModelError(SnapshotDb.openCheckpointV2({ user, iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
+    const accessToken = "token";
+    let error = await getIModelError(SnapshotDb.openCheckpointV2({ accessToken, iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.NotFound, error);
 
     hubMock.callsFake(async () => [{} as any]);
-    error = await getIModelError(SnapshotDb.openCheckpointV2({ user, iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
+    error = await getIModelError(SnapshotDb.openCheckpointV2({ accessToken, iTwinId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.NotFound, error);
   });
 
   it("attempting to re-attach a non-checkpoint snapshot should be a no-op", async () => {
     process.env.BLOCKCACHE_DIR = "/foo/";
-    const user = "token";
+    const accessToken = "token";
     const attachMock = sinon.stub(V2CheckpointManager, "attach").callsFake(async () => ({ filePath: "BAD", expiryTimestamp: Date.now() }));
-    await imodel1.reattachDaemon(user);
+    await imodel1.reattachDaemon(accessToken);
     assert.isTrue(attachMock.notCalled);
   });
 

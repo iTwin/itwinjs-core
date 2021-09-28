@@ -30,8 +30,8 @@ describe("Server-based locks", () => {
   };
 
   let iModelId: GuidString;
-  let user1: AccessToken;
-  let user2: AccessToken;
+  let accessToken1: AccessToken;
+  let accessToken2: AccessToken;
   let briefcase1Props: LocalBriefcaseProps;
   let briefcase2Props: LocalBriefcaseProps;
 
@@ -46,11 +46,11 @@ describe("Server-based locks", () => {
     };
 
     iModelId = await IModelHost.hubAccess.createNewIModel(iModelProps);
-    user1 = await IModelTestUtils.getAccessToken(TestUserType.Regular);
-    user2 = await IModelTestUtils.getAccessToken(TestUserType.Regular);
+    accessToken1 = await IModelTestUtils.getAccessToken(TestUserType.Regular);
+    accessToken2 = await IModelTestUtils.getAccessToken(TestUserType.Regular);
     const args: RequestNewBriefcaseProps = { iTwinId: iModelProps.iTwinId, iModelId };
-    briefcase1Props = await BriefcaseManager.downloadBriefcase({ user: user1, ...args });
-    briefcase2Props = await BriefcaseManager.downloadBriefcase({ user: user2, ...args });
+    briefcase1Props = await BriefcaseManager.downloadBriefcase({ accessToken: accessToken1, ...args });
+    briefcase2Props = await BriefcaseManager.downloadBriefcase({ accessToken: accessToken2, ...args });
   });
 
   const assertSharedLocks = (locks: ServerBasedLocks, ids: Id64Arg) => {
@@ -192,12 +192,12 @@ describe("Server-based locks", () => {
     bc1.elements.deleteElement(child1); // make sure delete now works
     bc1.abandonChanges();
 
-    await bc1.pushChanges({ user: user1, description: "my changes" });
+    await bc1.pushChanges({ accessToken: accessToken1, description: "my changes" });
 
     assert.throws(() => bc2.elements.deleteElement(child1), "exclusive lock"); // bc2 can't delete because it doesn't hold lock
     await expect(bc2Locks.acquireExclusiveLock(child1)).rejectedWith(IModelError, "pull is required"); // can't get lock since other briefcase changed it
 
-    await bc2.pullChanges({ user: user2 });
+    await bc2.pullChanges({ accessToken: accessToken2 });
     await bc2Locks.acquireExclusiveLock(child1);
     const child2El = bc2.elements.getElement<PhysicalElement>(child1);
     assert.equal(child2El.userLabel, childEl.userLabel);

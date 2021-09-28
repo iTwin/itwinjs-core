@@ -280,7 +280,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal */
-  public async reattachDaemon(_user: AccessToken): Promise<void> { }
+  public async reattachDaemon(_accessToken: AccessToken): Promise<void> { }
 
   /** Event called when the iModel is about to be closed. */
   public readonly onBeforeClose = new BeEvent<() => void>();
@@ -2151,12 +2151,12 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 }
 
 /**
- * Argument to a function that can accept an authenticated user.
+ * Argument to a function that can accept a valid access token.
  * @public
  */
-export interface UserArg {
-  /** If present, the user's access token for the requested operation. If not present, use [[IModelHost.getAccessToken]] */
-  readonly user?: AccessToken;
+export interface TokenArg {
+  /** If present, the access token for the requested operation. If not present, use [[IModelHost.getAccessToken]] */
+  readonly accessToken?: AccessToken;
 }
 
 /**
@@ -2470,9 +2470,9 @@ export class SnapshotDb extends IModelDb {
    * @throws [[IModelError]] If the db is not a checkpoint.
    * @internal
    */
-  public override async reattachDaemon(user: AccessToken): Promise<void> {
+  public override async reattachDaemon(accessToken: AccessToken): Promise<void> {
     if (undefined !== this._reattachDueTimestamp && this._reattachDueTimestamp <= Date.now()) {
-      const { expiryTimestamp } = await V2CheckpointManager.attach({ user, iTwinId: this.iTwinId!, iModelId: this.iModelId, changeset: this.changeset });
+      const { expiryTimestamp } = await V2CheckpointManager.attach({ accessToken, iTwinId: this.iTwinId!, iModelId: this.iModelId, changeset: this.changeset });
       this.setReattachDueTimestamp(expiryTimestamp);
     }
   }
@@ -2498,7 +2498,7 @@ export class SnapshotDb extends IModelDb {
 }
 
 /**
- * Standalone iModels are read/write files that are not associated with an Itwin or managed by iModelHub.
+ * Standalone iModels are read/write files that are not associated with an iTwin or managed by iModelHub.
  * They are relevant only for testing, or for small-scale single-user scenarios.
  * Standalone iModels are designed such that the API for Standalone iModels and Briefcase
  * iModels (those synchronized with iModelHub) are as similar and consistent as possible.

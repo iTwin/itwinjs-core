@@ -912,11 +912,11 @@ export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
 // @internal (undocumented)
 export interface IModelNameArg {
     // (undocumented)
+    readonly accessToken: AccessToken;
+    // (undocumented)
     readonly iModelName: string;
     // (undocumented)
     readonly iTwinId: GuidString;
-    // (undocumented)
-    readonly user: AccessToken;
 }
 
 // @internal

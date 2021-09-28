@@ -222,8 +222,8 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
 
   /** @internal */
   public async requestElementGraphics(rpcProps: IModelRpcProps, request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
-    const user = RpcInvocation.currentActivity;
-    const iModel = await RpcBriefcaseUtility.findOpenIModel(user.accessToken, rpcProps);
+    const currentActivity = RpcInvocation.currentActivity;
+    const iModel = await RpcBriefcaseUtility.findOpenIModel(currentActivity.accessToken, rpcProps);
     return iModel.generateElementGraphics(request);
   }
 }

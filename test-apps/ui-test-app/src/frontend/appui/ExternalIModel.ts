@@ -65,7 +65,7 @@ export class ExternalIModel {
     const iModelId = await hubClient.queryIModelByName({
       iModelName,
       iTwinId: iTwinList[0].id,
-      user: accessToken,
+      accessToken,
     });
     if (undefined === iModelId) {
       throw new Error(`iModel with name "${iModelName}" does not exist in project "${projectName}"`);

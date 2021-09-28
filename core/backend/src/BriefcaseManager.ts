@@ -20,7 +20,7 @@ import { TelemetryEvent } from "@bentley/telemetry-client";
 import { AcquireNewBriefcaseIdArg } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { CheckpointManager, CheckpointProps, ProgressFunction } from "./CheckpointManager";
-import { BriefcaseDb, IModelDb, UserArg } from "./IModelDb";
+import { BriefcaseDb, IModelDb, TokenArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 
@@ -29,7 +29,7 @@ const loggerCategory = BackendLoggerCategory.IModelDb;
 /** The argument for [[BriefcaseManager.downloadBriefcase]]
  * @public
 */
-export interface RequestNewBriefcaseArg extends UserArg, RequestNewBriefcaseProps {
+export interface RequestNewBriefcaseArg extends TokenArg, RequestNewBriefcaseProps {
   /** If present, a function called periodically during the download to indicate progress.
    * @note return non-zero from this function to abort the download.
    */
@@ -40,7 +40,7 @@ export interface RequestNewBriefcaseArg extends UserArg, RequestNewBriefcaseProp
  * Parameters for pushing changesets to iModelHub
  * @public
  */
-export interface PushChangesArgs extends UserArg {
+export interface PushChangesArgs extends TokenArg {
   /** A description of the changes. This is visible on the iModel's timeline. */
   description: string;
   /** if present, the locks are retained after the operation. Otherwise, *all* locks are released after the changeset is successfully pushed. */
@@ -59,7 +59,7 @@ export interface PushChangesArgs extends UserArg {
  * Specifies a specific index for pulling changes.
  * @public
  */
-export interface ToChangesetArgs extends UserArg {
+export interface ToChangesetArgs extends TokenArg {
   /** The last ChangesetIndex to pull. If not present, pull *all* newer changesets. */
   toIndex?: ChangesetIndex;
 }
@@ -251,9 +251,9 @@ export class BriefcaseManager {
    * @note generally, this method should not be called directly. Instead use [[deleteBriefcaseFiles]].
    * @see deleteBriefcaseFiles
    */
-  public static async releaseBriefcase(user: AccessToken, briefcase: BriefcaseProps): Promise<void> {
+  public static async releaseBriefcase(accessToken: AccessToken, briefcase: BriefcaseProps): Promise<void> {
     if (this.isValidBriefcaseId(briefcase.briefcaseId))
-      return IModelHost.hubAccess.releaseBriefcase({ user, iModelId: briefcase.iModelId, briefcaseId: briefcase.briefcaseId });
+      return IModelHost.hubAccess.releaseBriefcase({ accessToken, iModelId: briefcase.iModelId, briefcaseId: briefcase.briefcaseId });
   }
 
   /**
@@ -261,9 +261,9 @@ export class BriefcaseManager {
    * Then, if a requestContext is supplied, it releases a BriefcaseId from iModelHub. Finally it deletes the local briefcase file and
    * associated files (that is, all files in the same directory that start with the briefcase name).
    * @param filePath the full file name of the Briefcase to delete
-   * @param user for releasing the briefcaseId
+   * @param accessToken for releasing the briefcaseId
    */
-  public static async deleteBriefcaseFiles(filePath: LocalFileName, user?: AccessToken): Promise<void> {
+  public static async deleteBriefcaseFiles(filePath: LocalFileName, accessToken?: AccessToken): Promise<void> {
     try {
       const db = IModelDb.openDgnDb({ path: filePath }, OpenMode.Readonly);
       const briefcase: BriefcaseProps = {
@@ -272,9 +272,9 @@ export class BriefcaseManager {
       };
       db.closeIModel();
 
-      if (user) {
+      if (accessToken) {
         if (this.isValidBriefcaseId(briefcase.briefcaseId)) {
-          await BriefcaseManager.releaseBriefcase(user, briefcase);
+          await BriefcaseManager.releaseBriefcase(accessToken, briefcase);
         }
       }
     } catch (error) {
@@ -388,13 +388,13 @@ export class BriefcaseManager {
 
     let currentIndex = db.changeset.index;
     if (currentIndex === undefined)
-      currentIndex = (await IModelHost.hubAccess.queryChangeset({ user: arg.user, iModelId: db.iModelId, changeset: { id: db.changeset.id } })).index;
+      currentIndex = (await IModelHost.hubAccess.queryChangeset({ accessToken: arg.accessToken, iModelId: db.iModelId, changeset: { id: db.changeset.id } })).index;
 
     const reverse = (arg.toIndex && arg.toIndex < currentIndex) ? true : false;
 
     // Download change sets
     const changesets = await IModelHost.hubAccess.downloadChangesets({
-      user: arg.user,
+      accessToken: arg.accessToken,
       iModelId: db.iModelId,
       range: { first: reverse ? arg.toIndex! + 1 : currentIndex + 1, end: reverse ? currentIndex : arg.toIndex },
       targetDir: BriefcaseManager.getChangeSetsPath(db.iModelId),
@@ -424,16 +424,16 @@ export class BriefcaseManager {
 
     let retryCount = arg.pushRetryCount ?? 3;
     while (true) {
-      let user = arg.user;
+      let accessToken = arg.accessToken;
       try {
         // Refresh the access token since this process can take time
-        if (user) {
+        if (accessToken) {
           const auth = IModelHost.authorizationClient;
           if (auth)
-            user = await auth.getAccessToken();
+            accessToken = await auth.getAccessToken();
         }
 
-        const index = await IModelHost.hubAccess.pushChangeset({ user, iModelId: db.iModelId, changesetProps });
+        const index = await IModelHost.hubAccess.pushChangeset({ accessToken, iModelId: db.iModelId, changesetProps });
         db.nativeDb.completeCreateChangeset({ index });
         db.changeset = db.nativeDb.getCurrentChangeset();
         if (!arg.retainLocks)
