@@ -5,7 +5,7 @@
 import { ipcRenderer } from "electron";
 
 // NB: This has to happen _before_ we import mocha!
-window._CertaConsole = async (name: string, args: any[] = [""]) => {
+window._CertaConsole = (name: string, args: any[] = [""]) => {
   if (args.length === 0)
     args.push("");
 
