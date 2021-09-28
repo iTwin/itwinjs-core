@@ -11,13 +11,13 @@
     "url": "https://github.com/imodeljs/imodeljs/tree/master/core/bentley"
   },
   "scripts": {
-    "compile": "npm run build",
+    "compile": "npm run -s build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "extract-api": "betools extract-api --entry=bentleyjs-core",
     "test": "mocha",
     "docs": "betools docs --json=../../generated-docs/core/bentleyjs-core/file.json --tsIndexFile=bentleyjs-core.ts --onlyJson",
-    "cover": "nyc npm test",
+    "cover": "nyc npm -s test",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2"
   },
   "keywords": [

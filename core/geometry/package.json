@@ -7,7 +7,7 @@
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
-    "compile": "npm run build",
+    "compile": "npm run -s build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json ./src/test/output",
     "watch": "tsc --watch",
@@ -15,7 +15,7 @@
     "extract-api": "betools extract-api --entry=geometry-core",
     "extract-api-test": "betools extract-api --entry=geometry-core",
     "docs": "betools docs --tsIndexFile=./geometry-core.ts --json=../../generated-docs/core/geometry-core/file.json --onlyJson",
-    "cover": "nyc npm test",
+    "cover": "nyc npm -s test",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2"
   },
   "repository": {

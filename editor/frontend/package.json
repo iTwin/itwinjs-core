@@ -7,8 +7,8 @@
   "imodeljsSharedLibrary": false,
   "license": "MIT",
   "scripts": {
-    "compile": "npm run build",
-    "build": "npm run copy:assets && npm run pseudolocalize && tsc 1>&2",
+    "compile": "npm run -s build",
+    "build": "npm run -s copy:assets && npm run -s pseudolocalize && tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:assets": "cpx \"./src/public/**/*\" ./lib/public",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/editor/imodeljs-editor-frontend/file.json --tsIndexFile=./imodeljs-editor-frontend.ts --onlyJson --excludes=webgl/**/*,**/primitives --excludeGlob=**/*-css.ts",

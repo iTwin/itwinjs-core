@@ -4,9 +4,9 @@
   "description": "Example extension to exercise adding UI components and stages",
   "main": "index.js",
   "scripts": {
-    "compile": "npm run build",
-    "prebuild": "npm run pseudolocalize && npm run copy:assets",
-    "build": "npm run prebuild && tsc 1>&2",
+    "compile": "npm run -s build",
+    "prebuild": "npm run -s pseudolocalize && npm run -s copy:assets",
+    "build": "npm run -s prebuild && tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:assets": "cpx \"./src/**/*.{*css,json,svg}\" \"./lib\" && cpx \"./src/public/**/*\" ./lib/public/",
     "cover": "",

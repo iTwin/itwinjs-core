@@ -5,10 +5,10 @@
   "typings": "lib/linear-referencing-common",
   "license": "MIT",
   "scripts": {
-    "compile": "npm run build",
+    "compile": "npm run -s build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "cover": "nyc npm test",
+    "cover": "nyc npm -s test",
     "docs": "betools docs --includes=../../../generated-docs/extract --json=../../../generated-docs/domains/linear-referencing-common/file.json --tsIndexFile=./linear-referencing-common.ts --onlyJson",
     "extract-api": "betools extract-api --entry=linear-referencing-common",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",

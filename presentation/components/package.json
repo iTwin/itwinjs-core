@@ -24,14 +24,14 @@
     "url": "http://www.bentley.com"
   },
   "scripts": {
-    "compile": "npm run build",
+    "compile": "npm run -s build",
     "copy:locale": "cpx \"../common/assets/**/*\" ./lib/public && cpx \"./public/**/*\" ./lib/public",
     "copy:assets": "cpx \"./src/**/*.{scss,json}\" ./lib",
-    "build": "npm run copy:assets && npm run copy:locale && npm run pseudolocalize && npm run extract && tsc 1>&2",
-    "build:watch": "npm run copy:assets && npm run copy:locale && npm run pseudolocalize && npm run extract && tsc -w",
+    "build": "npm run -s copy:assets && npm run -s copy:locale && npm run -s pseudolocalize && npm run -s extract && tsc 1>&2",
+    "build:watch": "npm run -s copy:assets && npm run -s copy:locale && npm run -s pseudolocalize && npm run -s extract && tsc -w",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "cover": "nyc npm test",
-    "docs": "npm run docs:reference && npm run extract && npm run docs:changelog",
+    "cover": "nyc npm -s test",
+    "docs": "npm run -s docs:reference && npm run -s extract && npm run -s docs:changelog",
     "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/presentation-components",
     "docs:reference": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/presentation/presentation-components/file.json --tsIndexFile=presentation-components.ts --onlyJson --excludeGlob=**/presentation-components.ts",
     "extract": "betools extract --fileExt=ts,tsx --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
@@ -39,7 +39,7 @@
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir ./lib/public/locales/en --out ./lib/public/locales/en-PSEUDO",
     "test": "mocha --config ../.mocharc.json -r ignore-styles -r jsdom-global/register --file ./lib/test/index.test.js \"./lib/test/**/*.test.js\"",
-    "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
+    "test:watch": "npm -s test -- --reporter min --watch-extensions ts,tsx --watch"
   },
   "dependencies": {
     "fast-deep-equal": "^3.1.3",
