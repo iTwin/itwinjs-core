@@ -147,7 +147,7 @@ export class ElectronHost {
         nodeIntegration: false,
         contextIsolation: true,
         sandbox: true,
-        enableRemoteModule: false,
+        nativeWindowOpen: true,
         nodeIntegrationInWorker: false,
         nodeIntegrationInSubFrames: false,
       },
@@ -259,7 +259,6 @@ export class ElectronHost {
       this._electron = require("electron");
       this._ipc = new ElectronIpc();
       const app = this.app;
-      app.allowRendererProcessReuse = true; // see https://www.electronjs.org/docs/api/app#appallowrendererprocessreuse
       if (!app.isReady())
         this.electron.protocol.registerSchemesAsPrivileged([{ scheme: "electron", privileges: { standard: true, secure: true } }]);
       const eopt = opts?.electronHost;

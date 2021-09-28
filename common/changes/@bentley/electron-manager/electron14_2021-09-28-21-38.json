@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/electron-manager",
+      "comment": "Updated to Electron 14",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/electron-manager"
+}

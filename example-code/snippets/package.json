@@ -29,7 +29,7 @@
     "@bentley/imodeljs-frontend": "workspace:*",
     "body-parser": "^1.18.2",
     "chai": "^4.1.2",
-    "electron": "^11.1.0",
+    "electron": "^14.0.0",
     "express": "^4.16.3",
     "fs-extra": "^8.1.0",
     "fuse.js": "^3.3.0",

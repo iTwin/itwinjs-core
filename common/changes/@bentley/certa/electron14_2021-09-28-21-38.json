@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/certa",
+      "comment": "Updated to Electron 14",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/certa"
+}
