@@ -4,7 +4,7 @@
 
 ```ts
 
-import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
+import { AccessToken } from '@bentley/bentleyjs-core';
 import { Client } from '@bentley/itwin-client';
 import { RequestOptions } from '@bentley/itwin-client';
 import { RequestQueryOptions } from '@bentley/itwin-client';
@@ -66,11 +66,11 @@ export class RealityData extends WsgInstance {
     description?: string;
     // (undocumented)
     footprint?: string;
-    getBlobStringUrl(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<string>;
-    getBlobUrl(requestContext: AuthorizedClientRequestContext, writeAccess?: boolean): Promise<URL>;
-    getRootDocumentJson(requestContext: AuthorizedClientRequestContext): Promise<any>;
-    getTileContent(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<any>;
-    getTileJson(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<any>;
+    getBlobStringUrl(accessToken: AccessToken, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<string>;
+    getBlobUrl(accessToken: AccessToken, writeAccess?: boolean): Promise<URL>;
+    getRootDocumentJson(accessToken: AccessToken): Promise<any>;
+    getTileContent(accessToken: AccessToken, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<any>;
+    getTileJson(accessToken: AccessToken, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<any>;
     // (undocumented)
     group?: string;
     // (undocumented)
@@ -126,20 +126,20 @@ export class RealityData extends WsgInstance {
 // @internal
 export class RealityDataClient extends WsgClient {
     constructor();
-    createRealityData(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, realityData: RealityData): Promise<RealityData>;
-    createRealityDataRelationship(requestContext: AuthorizedClientRequestContext, projectId: string, relationship: RealityDataRelationship): Promise<RealityDataRelationship>;
-    deleteRealityData(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, realityDataId: string): Promise<void>;
-    deleteRealityDataRelationship(requestContext: AuthorizedClientRequestContext, projectId: string, relationshipId: string): Promise<void>;
-    getDataLocation(requestContext: AuthorizedClientRequestContext): Promise<DataLocation[]>;
-    getFileAccessKey(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, tilesId: string, writeAccess?: boolean): Promise<FileAccessKey[]>;
-    getRealityData(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, tilesId: string): Promise<RealityData>;
+    createRealityData(accessToken: AccessToken, projectId: string | undefined, realityData: RealityData): Promise<RealityData>;
+    createRealityDataRelationship(accessToken: AccessToken, projectId: string, relationship: RealityDataRelationship): Promise<RealityDataRelationship>;
+    deleteRealityData(accessToken: AccessToken, projectId: string | undefined, realityDataId: string): Promise<void>;
+    deleteRealityDataRelationship(accessToken: AccessToken, projectId: string, relationshipId: string): Promise<void>;
+    getDataLocation(accessToken: AccessToken): Promise<DataLocation[]>;
+    getFileAccessKey(accessToken: AccessToken, projectId: string | undefined, tilesId: string, writeAccess?: boolean): Promise<FileAccessKey[]>;
+    getRealityData(accessToken: AccessToken, projectId: string | undefined, tilesId: string): Promise<RealityData>;
     getRealityDataIdFromUrl(url: string): string | undefined;
-    getRealityDataInProject(requestContext: AuthorizedClientRequestContext, projectId: string, type?: string): Promise<RealityData[]>;
-    getRealityDataInProjectOverlapping(requestContext: AuthorizedClientRequestContext, projectId: string, minLongDeg: number, maxLongDeg: number, minLatDeg: number, maxLatDeg: number, type?: string): Promise<RealityData[]>;
-    getRealityDataRelationships(requestContext: AuthorizedClientRequestContext, projectId: string, realityDataId: string): Promise<RealityDataRelationship[]>;
-    getRealityDatas(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, queryOptions: RealityDataRequestQueryOptions): Promise<RealityData[]>;
+    getRealityDataInProject(accessToken: AccessToken, projectId: string, type?: string): Promise<RealityData[]>;
+    getRealityDataInProjectOverlapping(accessToken: AccessToken, projectId: string, minLongDeg: number, maxLongDeg: number, minLatDeg: number, maxLatDeg: number, type?: string): Promise<RealityData[]>;
+    getRealityDataRelationships(accessToken: AccessToken, projectId: string, realityDataId: string): Promise<RealityDataRelationship[]>;
+    getRealityDatas(accessToken: AccessToken, projectId: string | undefined, queryOptions: RealityDataRequestQueryOptions): Promise<RealityData[]>;
     getRealityDataUrl(projectId: string | undefined, tilesId: string): Promise<string>;
-    updateRealityData(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, realityData: RealityData): Promise<RealityData>;
+    updateRealityData(accessToken: AccessToken, projectId: string | undefined, realityData: RealityData): Promise<RealityData>;
 }
 
 // @internal

@@ -6,7 +6,7 @@
  * @module ContextRegistry
  */
 
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AccessToken } from "@bentley/bentleyjs-core";
 
 /** The iTwin context object, for generalized properties of Projects, Assets, custom contexts, etc.
  * @beta
@@ -54,5 +54,5 @@ export interface ITwinQueryArg {
 */
 export interface ITwinAccess {
   /** Get iTwins associated with the requester */
-  getAll: (requestContext: AuthorizedClientRequestContext, arg?: ITwinQueryArg) => Promise<ITwin[]>;
+  getAll(accessToken: AccessToken, arg?: ITwinQueryArg): Promise<ITwin[]>;
 }

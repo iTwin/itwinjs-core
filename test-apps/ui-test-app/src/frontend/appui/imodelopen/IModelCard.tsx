@@ -5,7 +5,7 @@
 import "./IModelCard.scss";
 import * as React from "react";
 import { IModelHubFrontend } from "@bentley/imodelhub-client";
-import { AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
+import { IModelApp } from "@bentley/imodeljs-frontend";
 import { ProgressRadial } from "@itwin/itwinui-react";
 
 /** Properties for the [[IModelCard]] component */
@@ -45,7 +45,7 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
   private async startRetrieveThumbnail(arg: { iTwinId: string, id: string }) {
     this.setState({ waitingForThumbnail: true });
     const hubFrontend = new IModelHubFrontend();
-    this.props.iModel.thumbnail = await hubFrontend.hubClient.thumbnails.download(await AuthorizedFrontendRequestContext.create(), arg.id, { contextId: arg.iTwinId, size: "Small" });
+    this.props.iModel.thumbnail = await hubFrontend.hubClient.thumbnails.download((await IModelApp.authorizationClient?.getAccessToken())!, arg.id, { contextId: arg.iTwinId, size: "Small" });
     this.setState({ waitingForThumbnail: false });
   }
 

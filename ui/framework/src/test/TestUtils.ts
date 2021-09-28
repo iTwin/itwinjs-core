@@ -9,7 +9,7 @@ import { fireEvent } from "@testing-library/react";
 import { expect } from "chai";
 
 import { I18N } from "@bentley/imodeljs-i18n";
-import { UserInfo } from "@bentley/itwin-client";
+import { UserInfo } from "../ui-framework/UserInfo";
 import { ContentLayoutProps, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValueFormat, StandardContentLayouts, StandardTypeNames } from "@bentley/ui-abstract";
 import { UiSettings, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 

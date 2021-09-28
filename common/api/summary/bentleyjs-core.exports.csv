@@ -1,6 +1,7 @@
 sep=;
 Release Tag;API Item
 beta;AbandonedError 
+beta;AccessToken = string
 public;areEqualPossiblyUndefined
 public;asInstanceOf
 public;assert(condition: boolean, msg?: string): asserts condition
@@ -22,8 +23,6 @@ beta;BriefcaseStatus
 public;ByteStream
 internal;ChangeSetApplyOption
 beta;ChangeSetStatus
-public;ClientRequestContext
-public;ClientRequestContextProps 
 public;CloneFunction
 public;compareBooleans(a: boolean, b: boolean): number
 public;compareBooleansOrUndefined(lhs?: boolean, rhs?: boolean): number
@@ -102,8 +101,6 @@ public;ReadonlyOrderedSet
 public;ReadonlySortedArray
 beta;RepositoryStatus
 beta;RpcInterfaceStatus
-public;SerializedClientRequestContext
-public;SessionProps
 public;shallowClone
 public;SortedArray
 beta;StatusCodeWithMessage

@@ -3,13 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { Guid, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import * as jsonpath from "jsonpath";
+import { AccessToken, Guid, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Angle, Range2d } from "@bentley/geometry-core";
-import { AuthorizedClientRequestContext, ImsAuthorizationClient } from "@bentley/itwin-client";
+import { ImsAuthorizationClient } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import { RealityData, RealityDataClient, RealityDataRelationship } from "../../RealityDataClient";
 import { TestConfig } from "../TestConfig";
-import * as jsonpath from "jsonpath";
+
 chai.should();
 
 const LOG_CATEGORY: string = "RealityDataClient.Test";
@@ -26,12 +27,11 @@ describe("RealityServicesClient Normal (#integration)", () => {
   const tilesId: string = "593eff78-b757-4c07-84b2-a8fe31c19927";
   const tilesIdWithRootDocPath: string = "3317b4a0-0086-4f16-a979-6ceb496d785e";
 
-  let requestContext: AuthorizedClientRequestContext;
+  let accessToken: AccessToken;
 
   before(async () => {
-    requestContext = await TestConfig.getAuthorizedClientRequestContext();
-    Logger.logInfo(LOG_CATEGORY, `ActivityId: ${requestContext.activityId}`);
-    projectId = (await TestConfig.getITwinByName(requestContext, TestConfig.iTwinName)).id;
+    accessToken = await TestConfig.getAccessToken();
+    projectId = (await TestConfig.getITwinByName(accessToken, TestConfig.iTwinName)).id;
     chai.assert.isDefined(projectId);
   });
 
@@ -53,7 +53,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
   });
 
   it("should be able to retrieve reality data properties", async () => {
-    const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesId);
+    const realityData: RealityData = await realityDataServiceClient.getRealityData(accessToken, projectId, tilesId);
     chai.assert(realityData);
     chai.assert(realityData.id === tilesId);
     chai.assert(realityData.client);
@@ -61,7 +61,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
   });
 
   it("should be able to retrieve reality data properties for every reality data associated to project", async () => {
-    const realityData: RealityData[] = await realityDataServiceClient.getRealityDataInProject(requestContext, projectId);
+    const realityData: RealityData[] = await realityDataServiceClient.getRealityDataInProject(accessToken, projectId);
 
     realityData.forEach((value) => {
       chai.assert(value.type === "RealityMesh3DTiles"); // iModelJS only supports this type
@@ -79,7 +79,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
     const maxLongDeg = Angle.radiansToDegrees(theRange.high.x);
     const minLatDeg = Angle.radiansToDegrees(theRange.low.y);
     const maxLatDeg = Angle.radiansToDegrees(theRange.high.y);
-    const realityData: RealityData[] = await realityDataServiceClient.getRealityDataInProjectOverlapping(requestContext, projectId, minLongDeg, maxLongDeg, minLatDeg, maxLatDeg);
+    const realityData: RealityData[] = await realityDataServiceClient.getRealityDataInProjectOverlapping(accessToken, projectId, minLongDeg, maxLongDeg, minLatDeg, maxLatDeg);
 
     chai.expect(realityData).that.is.not.empty;
     realityData.forEach((value) => {
@@ -92,17 +92,17 @@ describe("RealityServicesClient Normal (#integration)", () => {
   });
 
   it("should be able to retrieve app data json blob url", async () => {
-    const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesId);
+    const realityData: RealityData = await realityDataServiceClient.getRealityData(accessToken, projectId, tilesId);
 
-    const url: string = await realityData.getRootDocumentJson(requestContext);
+    const url: string = await realityData.getRootDocumentJson(accessToken);
 
     chai.assert(url);
   });
 
   it("should be able to retrieve the azure blob url", async () => {
-    const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesId);
+    const realityData: RealityData = await realityDataServiceClient.getRealityData(accessToken, projectId, tilesId);
 
-    const url: URL = await realityData.getBlobUrl(requestContext);
+    const url: URL = await realityData.getBlobUrl(accessToken);
 
     chai.assert(url);
   });
@@ -114,38 +114,38 @@ describe("RealityServicesClient Normal (#integration)", () => {
     if (-1 === imsUrl.indexOf("imsoidc"))
       this.skip();
 
-    const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesId);
+    const realityData: RealityData = await realityDataServiceClient.getRealityData(accessToken, projectId, tilesId);
 
-    const url: URL = await realityData.getBlobUrl(requestContext, true);
+    const url: URL = await realityData.getBlobUrl(accessToken, true);
 
     chai.assert(url);
   });
 
   it("should be able to get model data json", async () => {
-    const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesId);
+    const realityData: RealityData = await realityDataServiceClient.getRealityData(accessToken, projectId, tilesId);
 
-    const rootData: any = await realityData.getRootDocumentJson(requestContext);
+    const rootData: any = await realityData.getRootDocumentJson(accessToken);
     chai.assert(rootData);
 
     const jsonName = jsonpath.query(rootData.root.children, "$..url").find((u) => u.endsWith(".json"));
 
     chai.assert(jsonName);
-    const jsonData: any = await realityData.getTileJson(requestContext, jsonName);
+    const jsonData: any = await realityData.getTileJson(accessToken, jsonName);
     chai.assert(jsonData);
     chai.assert(jsonData.asset.version);
   });
 
   it("should be able to get model data content", async () => {
-    const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesId);
+    const realityData: RealityData = await realityDataServiceClient.getRealityData(accessToken, projectId, tilesId);
     const decoder = new TextDecoder("utf-8");
 
-    const rootData: any = await realityData.getRootDocumentJson(requestContext);
+    const rootData: any = await realityData.getRootDocumentJson(accessToken);
     chai.assert(rootData);
 
     const modelName = jsonpath.query(rootData.root.children, "$..url").find((u) => u.endsWith(".b3dm"));
     chai.assert(modelName);
 
-    const modelData: any = await realityData.getTileContent(requestContext, modelName);
+    const modelData: any = await realityData.getTileContent(accessToken, modelName);
     chai.assert(modelData);
     const modelDataString = decoder.decode(new Uint8Array(modelData)).substring(0, 4);
     chai.assert(modelDataString === "b3dm");
@@ -182,7 +182,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
     realityData.dataAcquisitionEndDate = "2019-05-10T09:46:16Z";
     realityData.referenceElevation = 234.3;
 
-    const realityDataAdded1 = await realityDataServiceClient.createRealityData(requestContext, projectId, realityData);
+    const realityDataAdded1 = await realityDataServiceClient.createRealityData(accessToken, projectId, realityData);
     chai.assert(realityDataAdded1.id && realityDataAdded1.id.length === 36);
     chai.assert(realityDataAdded1.name === realityData.name);
     chai.assert(realityDataAdded1.group === realityData.group);
@@ -217,14 +217,14 @@ describe("RealityServicesClient Normal (#integration)", () => {
     // At creation the last accessed time stamp remains null.
     // chai.assert(realityDataAdded1.lastAccessedTimestamp && Date.parse(realityDataAdded1.lastAccessedTimestamp as string) !== undefined);
 
-    const relationships: RealityDataRelationship[] = await realityDataServiceClient.getRealityDataRelationships(requestContext, projectId, realityDataAdded1.id as string);
+    const relationships: RealityDataRelationship[] = await realityDataServiceClient.getRealityDataRelationships(accessToken, projectId, realityDataAdded1.id as string);
 
     // Remove any relationship (can only be one to context at creation)
     for (const relationship of relationships) {
-      await realityDataServiceClient.deleteRealityDataRelationship(requestContext, projectId, relationship.wsgId);
+      await realityDataServiceClient.deleteRealityDataRelationship(accessToken, projectId, relationship.wsgId);
     }
 
-    await realityDataServiceClient.deleteRealityData(requestContext, projectId, realityDataAdded1.id as string);
+    await realityDataServiceClient.deleteRealityData(accessToken, projectId, realityDataAdded1.id as string);
   });
 
   it("should be able to create a reality data (with fixed specific identifier) and delete it", async function () {
@@ -262,7 +262,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
     realityData.dataAcquisitionEndDate = "2019-05-10T09:46:16Z";
     realityData.referenceElevation = 234.3;
 
-    const realityDataAdded1 = await realityDataServiceClient.createRealityData(requestContext, projectId, realityData);
+    const realityDataAdded1 = await realityDataServiceClient.createRealityData(accessToken, projectId, realityData);
 
     chai.assert(realityDataAdded1.id && realityDataAdded1.id.length === 36);
     chai.assert(realityDataAdded1.name === realityData.name);
@@ -298,14 +298,14 @@ describe("RealityServicesClient Normal (#integration)", () => {
     // At creation the last accessed time stamp remains null.
     // chai.assert(realityDataAdded1.lastAccessedTimestamp && Date.parse(realityDataAdded1.lastAccessedTimestamp as string) !== undefined);
 
-    const relationships: RealityDataRelationship[] = await realityDataServiceClient.getRealityDataRelationships(requestContext, projectId, realityDataAdded1.id as string);
+    const relationships: RealityDataRelationship[] = await realityDataServiceClient.getRealityDataRelationships(accessToken, projectId, realityDataAdded1.id as string);
 
     // Remove any relationship (can only be one to context at creation)
     for (const relationship of relationships) {
-      await realityDataServiceClient.deleteRealityDataRelationship(requestContext, projectId, relationship.wsgId);
+      await realityDataServiceClient.deleteRealityDataRelationship(accessToken, projectId, relationship.wsgId);
     }
 
-    await realityDataServiceClient.deleteRealityData(requestContext, projectId, realityDataAdded1.id as string);
+    await realityDataServiceClient.deleteRealityData(accessToken, projectId, realityDataAdded1.id as string);
   });
 
   it("should be able to duplicate a reality data and delete it", async function () {
@@ -343,7 +343,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
     realityData.dataAcquisitionEndDate = "2019-05-10T09:46:16Z";
     realityData.referenceElevation = 234.3;
 
-    const realityDataAdded1 = await realityDataServiceClient.createRealityData(requestContext, projectId, realityData);
+    const realityDataAdded1 = await realityDataServiceClient.createRealityData(accessToken, projectId, realityData);
 
     chai.assert(realityDataAdded1.id && realityDataAdded1.id.length === 36);
     chai.assert(realityDataAdded1.name === realityData.name);
@@ -399,7 +399,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
     realityDataAdded1.id = undefined;
     realityDataAdded1.wsgId = "";
 
-    const realityDataAdded2 = await realityDataServiceClient.createRealityData(requestContext, projectId, realityDataAdded1);
+    const realityDataAdded2 = await realityDataServiceClient.createRealityData(accessToken, projectId, realityDataAdded1);
 
     chai.assert(realityDataAdded2.id && realityDataAdded2.id.length === 36);
     chai.assert(realityDataAdded2.name === realityDataAdded1.name);
@@ -435,22 +435,22 @@ describe("RealityServicesClient Normal (#integration)", () => {
     // At creation the last accessed time stamp remains null.
     // chai.assert(realityDataAdded1.lastAccessedTimestamp && Date.parse(realityDataAdded1.lastAccessedTimestamp as string) !== undefined);
 
-    const relationships1: RealityDataRelationship[] = await realityDataServiceClient.getRealityDataRelationships(requestContext, projectId, realityDataId1);
+    const relationships1: RealityDataRelationship[] = await realityDataServiceClient.getRealityDataRelationships(accessToken, projectId, realityDataId1);
 
     // Remove any relationship (can only be one to context at creation)
     for (const relationship of relationships1) {
-      await realityDataServiceClient.deleteRealityDataRelationship(requestContext, projectId, relationship.wsgId);
+      await realityDataServiceClient.deleteRealityDataRelationship(accessToken, projectId, relationship.wsgId);
     }
 
-    const relationships2: RealityDataRelationship[] = await realityDataServiceClient.getRealityDataRelationships(requestContext, projectId, realityDataAdded2.id as string);
+    const relationships2: RealityDataRelationship[] = await realityDataServiceClient.getRealityDataRelationships(accessToken, projectId, realityDataAdded2.id as string);
 
     // Remove any relationship (can only be one to context at creation)
     for (const relationship of relationships2) {
-      await realityDataServiceClient.deleteRealityDataRelationship(requestContext, projectId, relationship.wsgId);
+      await realityDataServiceClient.deleteRealityDataRelationship(accessToken, projectId, relationship.wsgId);
     }
 
-    await realityDataServiceClient.deleteRealityData(requestContext, projectId, realityDataId1);
-    await realityDataServiceClient.deleteRealityData(requestContext, projectId, realityDataAdded2.id as string);
+    await realityDataServiceClient.deleteRealityData(accessToken, projectId, realityDataId1);
+    await realityDataServiceClient.deleteRealityData(accessToken, projectId, realityDataAdded2.id as string);
   });
 
   it("should be able to create a reality data then modify it then delete it", async function () {
@@ -485,7 +485,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
     realityData.dataAcquisitionEndDate = "2019-05-10T09:46:16Z";
     realityData.referenceElevation = 234.3;
 
-    const realityDataAdded1 = await realityDataServiceClient.createRealityData(requestContext, projectId, realityData);
+    const realityDataAdded1 = await realityDataServiceClient.createRealityData(accessToken, projectId, realityData);
 
     chai.assert(realityDataAdded1.id && realityDataAdded1.id.length === 36);
     chai.assert(realityDataAdded1.name === realityData.name);
@@ -549,7 +549,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
     realityDataAdded1.ownedBy = undefined;
     realityDataAdded1.ownerId = undefined;
 
-    const realityDataAdded2 = await realityDataServiceClient.updateRealityData(requestContext, projectId, realityDataAdded1);
+    const realityDataAdded2 = await realityDataServiceClient.updateRealityData(accessToken, projectId, realityDataAdded1);
 
     chai.assert(realityDataAdded2.id === realityDataAdded1.id);
     chai.assert(realityDataAdded2.name === realityDataAdded1.name);
@@ -585,18 +585,18 @@ describe("RealityServicesClient Normal (#integration)", () => {
     // At update the last accessed time stamp remains null.
     // chai.assert(realityDataAdded1.lastAccessedTimestamp && Date.parse(realityDataAdded1.lastAccessedTimestamp as string) !== undefined);
 
-    const relationships: RealityDataRelationship[] = await realityDataServiceClient.getRealityDataRelationships(requestContext, projectId, realityDataAdded1.id as string);
+    const relationships: RealityDataRelationship[] = await realityDataServiceClient.getRealityDataRelationships(accessToken, projectId, realityDataAdded1.id as string);
 
     // Remove any relationship (can only be one to context at creation)
     for (const relationship of relationships) {
-      await realityDataServiceClient.deleteRealityDataRelationship(requestContext, projectId, relationship.wsgId);
+      await realityDataServiceClient.deleteRealityDataRelationship(accessToken, projectId, relationship.wsgId);
     }
 
-    await realityDataServiceClient.deleteRealityData(requestContext, projectId, realityDataAdded2.id as string);
+    await realityDataServiceClient.deleteRealityData(accessToken, projectId, realityDataAdded2.id as string);
   });
 
   it("should be able to get model data content with root doc not at blob root (root doc path)", async () => {
-    const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesIdWithRootDocPath);
+    const realityData: RealityData = await realityDataServiceClient.getRealityData(accessToken, projectId, tilesIdWithRootDocPath);
 
     // The root document of this reality should not be at the root of the blob
     const rootParts = realityData.rootDocument!.split("/");
@@ -604,7 +604,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
     rootParts.pop();
     const rootDocPath: string = `${rootParts.join("/")}/`;
 
-    const rootData: any = await realityData.getRootDocumentJson(requestContext);
+    const rootData: any = await realityData.getRootDocumentJson(accessToken);
 
     const modelName = rootData.root.children[0].children[0].content.url;
 
@@ -614,7 +614,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
     let exceptionThrown: boolean = false;
     try {
       // Should fail as we call with an incorrect content path.
-      const data: any = await realityData.getTileContent(requestContext, modelName);
+      const data: any = await realityData.getTileContent(accessToken, modelName);
       chai.assert(!data); // Should never be reached.
     } catch {
       exceptionThrown = true;
@@ -622,12 +622,12 @@ describe("RealityServicesClient Normal (#integration)", () => {
     chai.assert(exceptionThrown);
 
     // Should succeed as we call with added root document path
-    const data2: any = await realityData.getTileContent(requestContext, rootDocPath + modelName, false);
+    const data2: any = await realityData.getTileContent(accessToken, rootDocPath + modelName, false);
 
     chai.assert(data2);
 
     // Should succeed as we call with indicate that path is relative to root path
-    const data3: any = await realityData.getTileContent(requestContext, modelName, true);
+    const data3: any = await realityData.getTileContent(accessToken, modelName, true);
 
     chai.assert(data3);
   });
@@ -637,11 +637,10 @@ describe("RealityServicesClient Normal (#integration)", () => {
 describe("RealityServicesClient Admin (#integration)", () => {
   const realityDataServiceClient: RealityDataClient = new RealityDataClient();
   const imsClient: ImsAuthorizationClient = new ImsAuthorizationClient();
-  let requestContext: AuthorizedClientRequestContext;
+  let accessToken: AccessToken;
 
   before(async () => {
-    requestContext = await TestConfig.getAuthorizedClientRequestContext(TestUsers.manager);
-    Logger.logInfo(LOG_CATEGORY, `ActivityId: ${requestContext.activityId}`);
+    accessToken = await TestConfig.getAccessToken(TestUsers.manager);
   });
 
   it("should be able to create a reality data as an admin (without specific context and admin) and delete it", async function () {
@@ -678,7 +677,7 @@ describe("RealityServicesClient Admin (#integration)", () => {
     realityData.dataAcquisitionEndDate = "2019-05-10T09:46:16Z";
     realityData.referenceElevation = 234.3;
 
-    const realityDataAdded1 = await realityDataServiceClient.createRealityData(requestContext, undefined, realityData);
+    const realityDataAdded1 = await realityDataServiceClient.createRealityData(accessToken, undefined, realityData);
     chai.assert(realityDataAdded1.id && realityDataAdded1.id.length === 36);
     chai.assert(realityDataAdded1.name === realityData.name);
     chai.assert(realityDataAdded1.group === realityData.group);
@@ -713,12 +712,12 @@ describe("RealityServicesClient Admin (#integration)", () => {
     // At creation the last accessed time stamp remains null.
     // chai.assert(realityDataAdded1.lastAccessedTimestamp && Date.parse(realityDataAdded1.lastAccessedTimestamp as string) !== undefined);
 
-    const relationships: RealityDataRelationship[] = await realityDataServiceClient.getRealityDataRelationships(requestContext, "Server", realityDataAdded1.id as string);
+    const relationships: RealityDataRelationship[] = await realityDataServiceClient.getRealityDataRelationships(accessToken, "Server", realityDataAdded1.id as string);
 
     // Check empty Array
     chai.expect(relationships).that.is.empty;
 
-    await realityDataServiceClient.deleteRealityData(requestContext, undefined, realityDataAdded1.id as string);
+    await realityDataServiceClient.deleteRealityData(accessToken, undefined, realityDataAdded1.id as string);
   });
 
 });

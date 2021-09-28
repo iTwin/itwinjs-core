@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-abstract",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-abstract"
+}

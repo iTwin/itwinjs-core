@@ -6,22 +6,18 @@
  * @module HubAccess
  */
 
-import { GuidString } from "@bentley/bentleyjs-core";
-import { IModelVersion } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-
-/** @public */
-export type ChangeSetId = string;
+import { AccessToken, GuidString } from "@bentley/bentleyjs-core";
+import { ChangesetId, IModelVersion } from "@bentley/imodeljs-common";
 
 /** @public */
 export interface IModelIdArg {
   iModelId: GuidString;
-  requestContext: AuthorizedClientRequestContext;
+  accessToken: AccessToken;
 }
 
 /** @public */
 export interface FrontendHubAccess {
-  getLatestChangesetId: (arg: IModelIdArg) => Promise<ChangeSetId>;
-  getChangesetIdFromVersion: (arg: IModelIdArg & { version: IModelVersion }) => Promise<ChangeSetId>;
-  getChangesetIdFromNamedVersion: (arg: IModelIdArg & { versionName: string }) => Promise<ChangeSetId>;
+  getLatestChangesetId: (arg: IModelIdArg) => Promise<ChangesetId>;
+  getChangesetIdFromVersion: (arg: IModelIdArg & { version: IModelVersion }) => Promise<ChangesetId>;
+  getChangesetIdFromNamedVersion: (arg: IModelIdArg & { versionName: string }) => Promise<ChangesetId>;
 }

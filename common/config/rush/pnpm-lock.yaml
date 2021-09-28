@@ -288,6 +288,7 @@ importers:
       '@bentley/build-tools': workspace:*
       '@bentley/certa': workspace:*
       '@bentley/eslint-plugin': workspace:*
+      '@bentley/imodeljs-common': workspace:*
       '@bentley/itwin-client': workspace:*
       '@types/chai': ^4.1.4
       '@types/mocha': ^8.2.2
@@ -301,6 +302,7 @@ importers:
       webpack: 4.42.0
     dependencies:
       '@bentley/bentleyjs-core': link:../../core/bentley
+      '@bentley/imodeljs-common': link:../../core/common
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/certa': link:../../tools/certa
