@@ -72,6 +72,8 @@ export interface ElectronHostOpts extends NativeHostOpts {
 /** @beta */
 export interface ElectronHostWindowOptions extends BrowserWindowConstructorOptions {
   storeWindowName?: string;
+  /** The style of window title bar. Default is `default`. */
+  titleBarStyle?: ("default" | "hidden" | "hiddenInset" | "customButtonsOnHover");
 }
 
 /** the size and position of a window as stored in the settings file.
