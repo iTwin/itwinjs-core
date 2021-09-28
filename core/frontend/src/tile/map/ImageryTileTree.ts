@@ -16,9 +16,9 @@ import { RenderMemory } from "../../render/RenderMemory";
 import { RenderSystem } from "../../render/RenderSystem";
 import { ScreenViewport, Viewport } from "../../Viewport";
 import {
-  MapCartoRectangle, MapLayerImageryProvider, MapLayerTileTreeReference, MapTile, QuadId, RealityTile, RealityTileLoader, RealityTileTree,
+  MapCartoRectangle, MapLayerImageryProvider, MapLayerTileTreeReference, MapTile, MapTilingScheme, QuadId, RealityTile, RealityTileLoader, RealityTileTree,
   RealityTileTreeParams, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeLoadStatus, TileTreeOwner,
-  TileTreeSupplier, WebMercatorTilingScheme,
+  TileTreeSupplier,
 } from "../internal";
 
 /** @internal */
@@ -144,12 +144,12 @@ export class ImageryMapTile extends RealityTile {
 
 /** @internal */
 export class ImageryMapTileTree extends RealityTileTree {
-  public tilingScheme = new WebMercatorTilingScheme();
   constructor(params: RealityTileTreeParams, private _imageryLoader: ImageryTileLoader) {
     super(params);
     const rootQuadId = new QuadId(0, 0, 0);
     this._rootTile = new ImageryMapTile(params.rootTile, this, rootQuadId, this.getTileRectangle(rootQuadId));
   }
+  public get tilingScheme(): MapTilingScheme { return this._imageryLoader.imageryProvider.tilingScheme; }
   public getLogo(vp: ScreenViewport): HTMLTableRowElement | undefined { return this._imageryLoader.getLogo(vp); }
   public getTileRectangle(quadId: QuadId): MapCartoRectangle {
     return this.tilingScheme.tileXYToRectangle(quadId.column, quadId.row, quadId.level);

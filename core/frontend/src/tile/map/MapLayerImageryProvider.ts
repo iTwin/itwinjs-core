@@ -13,7 +13,7 @@ import { IModelApp } from "../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
 import { ScreenViewport } from "../../Viewport";
 
-import { ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, QuadId } from "../internal";
+import { ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, QuadId, WebMercatorTilingScheme } from "../internal";
 
 const tileImageSize = 256, untiledImageSize = 256;
 
@@ -39,7 +39,7 @@ export abstract class MapLayerImageryProvider {
   public get mutualExclusiveSubLayer(): boolean { return false; }
   public cartoRange?: MapCartoRectangle;
   protected get _filterByCartoRange() { return true; }
-  constructor(protected readonly _settings: MapLayerSettings, protected _usesCachedTiles: boolean) { }
+  constructor(protected readonly _settings: MapLayerSettings, protected _usesCachedTiles: boolean, public readonly tilingScheme = new WebMercatorTilingScheme()) { }
 
   public async initialize(): Promise<void> {
     this.loadTile(0, 0, 22).then((tileData: ImageSource | undefined) => { // eslint-disable-line @typescript-eslint/no-floating-promises
