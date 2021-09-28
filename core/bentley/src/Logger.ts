@@ -63,7 +63,7 @@ export class Logger {
   public static staticMetaData: ExceptionMetaData;
 
   /** Initialize the logger streams. Should be called at application initialization time. */
-  public static initialize(logError: LogFunction | undefined, logWarning?: LogFunction | undefined, logInfo?: LogFunction | undefined, logTrace?: LogFunction | undefined): void {
+  public static initialize(logError: LogFunction | undefined, logWarning: LogFunction | undefined, logInfo?: LogFunction | undefined, logTrace?: LogFunction | undefined): void {
     Logger._logError = logError;
     Logger._logWarning = logWarning;
     Logger._logInfo = logInfo;
@@ -100,14 +100,10 @@ export class Logger {
 
   /** Initialize the logger streams to the console. Should be called at application initialization time. */
   public static initializeToConsole(): void {
-    /* eslint-disable no-console */
-    Logger.initialize(
-      (category: string, message: string, metaData?: ExceptionMetaData): void => console.log(`Error   |${category}| ${message}${Logger.formatMetaData(metaData)}`),
-      (category: string, message: string, metaData?: ExceptionMetaData): void => console.log(`Warning |${category}| ${message}${Logger.formatMetaData(metaData)}`),
-      (category: string, message: string, metaData?: ExceptionMetaData): void => console.log(`Info    |${category}| ${message}${Logger.formatMetaData(metaData)}`),
-      (category: string, message: string, metaData?: ExceptionMetaData): void => console.log(`Trace   |${category}| ${message}${Logger.formatMetaData(metaData)}`),
-    );
-    /* eslint-enable no-console */
+    const doLog = (level: string) => (category: string, message: string, metaData: ExceptionMetaData) =>
+      console.log(`${level} | ${category} | ${message}${Logger.formatMetaData(metaData)}`); // eslint-disable-line no-console
+
+    Logger.initialize(doLog("Error"), doLog("Warning"), doLog("Info"), doLog("Trace"));
   }
 
   public static set logExceptionCallstacks(b: boolean) {
