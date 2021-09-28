@@ -6331,7 +6331,7 @@ export function ToolSettingsContent(): JSX.Element | null;
 // @internal (undocumented)
 export function ToolSettingsDockedContent(): JSX.Element;
 
-// @beta
+// @public
 export interface ToolSettingsEntry {
     // (undocumented)
     editorNode: React.ReactNode;
@@ -6339,7 +6339,7 @@ export interface ToolSettingsEntry {
     labelNode: React.ReactNode;
 }
 
-// @beta
+// @internal
 export function ToolSettingsGrid({ settings }: ToolSettingsGridProps): JSX.Element;
 
 // @beta
@@ -6347,7 +6347,7 @@ export function ToolSettingsGridContainer({ componentGenerator }: {
     componentGenerator: ComponentGenerator;
 }): JSX.Element;
 
-// @beta
+// @internal
 export interface ToolSettingsGridProps {
     // (undocumented)
     settings?: ToolSettingsEntry[];
