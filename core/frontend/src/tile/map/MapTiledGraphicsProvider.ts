@@ -35,10 +35,6 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
 
     const removals = this._detachFromDisplayStyle;
     removals.push(displayStyle.settings.onBackgroundMapChanged.addListener((settings) => {
-      // ###TODO I think the clearLayers calls can be removed?
-      this.backgroundMap.clearLayers();
-      this.backgroundDrapeMap.clearLayers();
-
       this.backgroundMap.settings = settings;
       this.overlayMap.settings = settings;
       this.backgroundDrapeMap.settings = settings;
@@ -67,7 +63,9 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
       return true;
     });
     const mapImagery = newView.displayStyle.settings.mapImagery;
-    if (!newView.displayStyle.backgroundMapSettings.equals(this.backgroundMap.settings) || !layersMatch(mapImagery.backgroundLayers, this.backgroundMap.layerSettings)) {
+    if (!newView.displayStyle.backgroundMapSettings.equals(this.backgroundMap.settings)
+      || !layersMatch(mapImagery.backgroundLayers, this.backgroundMap.layerSettings)
+      || (mapImagery.backgroundBase instanceof MapLayerSettings && !layersMatch([mapImagery.backgroundBase], this.backgroundDrapeMap.layerSettings))) {
       this.backgroundMap.clearLayers();
       this.backgroundDrapeMap.clearLayers();
     }
