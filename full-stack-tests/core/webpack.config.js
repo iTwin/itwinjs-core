@@ -25,8 +25,6 @@ function loadEnv(envFile) {
 
 loadEnv(path.join(__dirname, ".env"));
 
-const { IModeljsLibraryExportsPlugin } = require('@itwin/core-webpack-tools');
-
 function createConfig(shouldInstrument) {
   const config = {
     mode: "development",
