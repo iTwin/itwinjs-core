@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { BentleyError, ExceptionMetaData } from "../BentleyError";
+import { BentleyError, LoggingMetaData } from "../BentleyError";
 import { using } from "../Disposable";
 import { Logger, LogLevel, PerfLogger } from "../Logger";
 import { BeDuration } from "../Time";
@@ -83,29 +83,36 @@ describe("Logger", () => {
     assert.isFalse(Logger.isEnabled("test", LogLevel.Trace));
   });
 
-  it("global logger metadata", () => {
-    Logger.staticMetaData = () => {
-      return {
-        prop1: "test1",
-        prop2: "test2",
-        prop3: "test3",
-      };
-    };
+  it("static logger metadata", () => {
+    const expectedA = `{"a":"hello"}`;
+    const expectedMeta1 = `{"prop1":"test1","prop2":"test2","prop3":"test3"}`;
+    const expectedMeta2 = `{"meta2":"v2"}`;
 
-    const expected = `{"a":"hello"},{"prop1":"test1","prop2":"test2","prop3":"test3"}`;
     let out = Logger.formatMetaData({ a: "hello" });
-    assert.include(out, expected);
+    assert.include(out, expectedA);
 
-    Logger.staticMetaData = {
+    Logger.staticMetaData.set("meta1", () => ({
       prop1: "test1",
       prop2: "test2",
       prop3: "test3",
-    };
+    })
+    );
     out = Logger.formatMetaData({ a: "hello" });
-    assert.include(out, expected);
-    out = Logger.formatMetaData(() => ({ a: "hello" }));
-    assert.include(out, expected);
+    assert.include(out, ` ${expectedA},${expectedMeta1}`);
 
+    Logger.staticMetaData.set("meta2", {
+      meta2: "v2",
+    });
+
+    out = Logger.formatMetaData({ a: "hello" });
+    assert.include(out, ` ${expectedA},${expectedMeta1},${expectedMeta2}`);
+
+    out = Logger.formatMetaData(() => ({ a: "hello" }));
+    assert.include(out, ` ${expectedA},${expectedMeta1},${expectedMeta2}`);
+
+    Logger.staticMetaData.delete("meta2");
+    out = Logger.formatMetaData({ a: "hello" });
+    assert.include(out, ` ${expectedA},${expectedMeta1}`);
   });
 
   it("levels", () => {
@@ -385,7 +392,7 @@ describe("Logger", () => {
     const perfMessages = new Array<string>();
     const perfData = new Array<any>();
     Logger.initialize(undefined, undefined,
-      (category, message, metadata?: ExceptionMetaData) => {
+      (category, message, metadata?: LoggingMetaData) => {
         if (category === "Performance") {
           perfMessages.push(message);
 

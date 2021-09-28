@@ -353,7 +353,7 @@ export type GetMetaDataFunction = () => object | undefined;
  * If this exception is logged and metadata is present, the metaData object is attached to the log entry via `JSON.stringify`
  * @public
  */
-export type ExceptionMetaData = GetMetaDataFunction | object | undefined;
+export type LoggingMetaData = GetMetaDataFunction | object | undefined;
 
 function isObject(obj: unknown): obj is { [key: string]: unknown } {
   return typeof obj === "object" && obj !== null;
@@ -369,14 +369,14 @@ interface ErrorProps {
  * @public
  */
 export class BentleyError extends Error {
-  private readonly _metaData: ExceptionMetaData;
+  private readonly _metaData: LoggingMetaData;
 
   /**
    * @param errorNumber The a number that identifies of the problem.
    * @param message  message that describes the problem (should not be localized).
    * @param metaData metaData about the exception.
    */
-  public constructor(public errorNumber: number, message?: string, metaData?: ExceptionMetaData) {
+  public constructor(public errorNumber: number, message?: string, metaData?: LoggingMetaData) {
     super(message);
     this.errorNumber = errorNumber;
     this._metaData = metaData;
@@ -392,7 +392,7 @@ export class BentleyError extends Error {
   }
 
   /** get the metadata object associated with an ExceptionMetaData, if any. */
-  public static getMetaData(metaData: ExceptionMetaData): object | undefined {
+  public static getMetaData(metaData: LoggingMetaData): object | undefined {
     return (typeof metaData === "function") ? metaData() : metaData;
   }
 

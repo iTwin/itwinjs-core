@@ -6,7 +6,7 @@
  * @module NativeApp
  */
 
-import { BentleyError, ExceptionMetaData, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { BentleyError, Logger, LoggingMetaData, LogLevel } from "@bentley/bentleyjs-core";
 import { IpcApp } from "./IpcApp";
 
 /**
@@ -52,20 +52,20 @@ export class NativeAppLogger {
       }
     }
   }
-  private static log(level: LogLevel, category: string, message: string, metaData: ExceptionMetaData) {
+  private static log(level: LogLevel, category: string, message: string, metaData: LoggingMetaData) {
     this._messages.push({ timestamp: Date.now(), level, category, message, metaData: BentleyError.getMetaData(metaData) });
     this.flushToBackend();
   }
-  public static logError(category: string, message: string, metaData: ExceptionMetaData) {
+  public static logError(category: string, message: string, metaData: LoggingMetaData) {
     this.log(LogLevel.Error, category, message, metaData);
   }
-  public static logInfo(category: string, message: string, metaData: ExceptionMetaData) {
+  public static logInfo(category: string, message: string, metaData: LoggingMetaData) {
     this.log(LogLevel.Info, category, message, metaData);
   }
-  public static logTrace(category: string, message: string, metaData: ExceptionMetaData) {
+  public static logTrace(category: string, message: string, metaData: LoggingMetaData) {
     this.log(LogLevel.Trace, category, message, metaData);
   }
-  public static logWarning(category: string, message: string, metaData: ExceptionMetaData) {
+  public static logWarning(category: string, message: string, metaData: LoggingMetaData) {
     this.log(LogLevel.Warning, category, message, metaData);
   }
   public static async flush(): Promise<void> {
@@ -75,10 +75,10 @@ export class NativeAppLogger {
     }
   }
   public static initialize() {
-    const errCb = (category: string, message: string, metaData: ExceptionMetaData) => this.logError(category, message, metaData);
-    const warnCb = (category: string, message: string, metaData: ExceptionMetaData) => this.logWarning(category, message, metaData);
-    const infoCb = (category: string, message: string, metaData: ExceptionMetaData) => this.logInfo(category, message, metaData);
-    const traceCb = (category: string, message: string, metaData: ExceptionMetaData) => this.logTrace(category, message, metaData);
+    const errCb = (category: string, message: string, metaData: LoggingMetaData) => this.logError(category, message, metaData);
+    const warnCb = (category: string, message: string, metaData: LoggingMetaData) => this.logWarning(category, message, metaData);
+    const infoCb = (category: string, message: string, metaData: LoggingMetaData) => this.logInfo(category, message, metaData);
+    const traceCb = (category: string, message: string, metaData: LoggingMetaData) => this.logTrace(category, message, metaData);
 
     Logger.initialize(errCb, warnCb, infoCb, traceCb);
   }

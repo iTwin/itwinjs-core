@@ -47,7 +47,6 @@ public;DisposeFunc = () => void
 public;DuplicatePolicy
 public;Entry
 public;EntryContainer
-public;ExceptionMetaData = GetMetaDataFunction | object | undefined
 public;GeoServiceStatus
 public;GetMetaDataFunction = () => object | undefined
 public;Guid
@@ -67,10 +66,11 @@ public;isIDisposable(obj: unknown): obj is IDisposable
 public;isInstanceOf
 public;JsonUtils
 public;Listener = (...arg: any[]) => void
-public;LogFunction = (category: string, message: string, metaData: ExceptionMetaData) => void
+public;LogFunction = (category: string, message: string, metaData: LoggingMetaData) => void
 public;Logger
 public;LoggerCategoryAndLevel
 public;LoggerLevelsConfig
+public;LoggingMetaData = GetMetaDataFunction | object | undefined
 public;LogLevel
 public;lowerBound
 public;LRUCache

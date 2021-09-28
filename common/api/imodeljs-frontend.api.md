@@ -84,7 +84,6 @@ import { EmphasizeElementsProps } from '@bentley/imodeljs-common';
 import { EntityProps } from '@bentley/imodeljs-common';
 import { EntityQueryParams } from '@bentley/imodeljs-common';
 import { EnvironmentProps } from '@bentley/imodeljs-common';
-import { ExceptionMetaData } from '@bentley/bentleyjs-core';
 import { Feature } from '@bentley/imodeljs-common';
 import { FeatureAppearance } from '@bentley/imodeljs-common';
 import { FeatureAppearanceProvider } from '@bentley/imodeljs-common';
@@ -154,6 +153,7 @@ import { IpcSocketFrontend } from '@bentley/imodeljs-common';
 import { LightSettings } from '@bentley/imodeljs-common';
 import { LinePixels } from '@bentley/imodeljs-common';
 import { LocalBriefcaseProps } from '@bentley/imodeljs-common';
+import { LoggingMetaData } from '@bentley/bentleyjs-core';
 import { LogLevel } from '@bentley/bentleyjs-core';
 import { Loop } from '@bentley/geometry-core';
 import { LowAndHighXY } from '@bentley/geometry-core';
@@ -6493,13 +6493,13 @@ export class NativeAppLogger {
     // (undocumented)
     static initialize(): void;
     // (undocumented)
-    static logError(category: string, message: string, metaData: ExceptionMetaData): void;
+    static logError(category: string, message: string, metaData: LoggingMetaData): void;
     // (undocumented)
-    static logInfo(category: string, message: string, metaData: ExceptionMetaData): void;
+    static logInfo(category: string, message: string, metaData: LoggingMetaData): void;
     // (undocumented)
-    static logTrace(category: string, message: string, metaData: ExceptionMetaData): void;
+    static logTrace(category: string, message: string, metaData: LoggingMetaData): void;
     // (undocumented)
-    static logWarning(category: string, message: string, metaData: ExceptionMetaData): void;
+    static logWarning(category: string, message: string, metaData: LoggingMetaData): void;
     }
 
 // @public

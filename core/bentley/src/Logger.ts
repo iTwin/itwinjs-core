@@ -6,14 +6,14 @@
  * @module Logging
  */
 
-import { BentleyError, ExceptionMetaData, IModelStatus } from "./BentleyError";
+import { BentleyError, IModelStatus, LoggingMetaData } from "./BentleyError";
 import { BentleyLoggerCategory } from "./BentleyLoggerCategory";
 import { IDisposable } from "./Disposable";
 
 /** Defines the *signature* for a log function.
  * @public
  */
-export type LogFunction = (category: string, message: string, metaData: ExceptionMetaData) => void;
+export type LogFunction = (category: string, message: string, metaData: LoggingMetaData) => void;
 
 /** Use to categorize logging messages by severity.
  * @public
@@ -60,7 +60,7 @@ export class Logger {
   private static _minLevel: LogLevel | undefined = undefined;
   private static _logExceptionCallstacks = false;
   /** @internal */
-  public static staticMetaData: ExceptionMetaData;
+  public static staticMetaData = new Map<string, LoggingMetaData>();
 
   /** Initialize the logger streams. Should be called at application initialization time. */
   public static initialize(logError: LogFunction | undefined, logWarning: LogFunction | undefined, logInfo?: LogFunction | undefined, logTrace?: LogFunction | undefined): void {
@@ -70,14 +70,14 @@ export class Logger {
     Logger._logTrace = logTrace;
     Logger.turnOffLevelDefault();
     Logger.turnOffCategories();
-    Logger.staticMetaData = undefined;
+    Logger.staticMetaData.clear();
   }
 
   /**
    * Gets raw callbacks which can be use to forward logging
    * @internal
    */
-  public static logRaw(level: LogLevel, category: string, message: string, metaData?: ExceptionMetaData): void {
+  public static logRaw(level: LogLevel, category: string, message: string, metaData?: LoggingMetaData): void {
     switch (level) {
       case LogLevel.Error:
         if (this._logError)
@@ -100,7 +100,7 @@ export class Logger {
 
   /** Initialize the logger streams to the console. Should be called at application initialization time. */
   public static initializeToConsole(): void {
-    const doLog = (level: string) => (category: string, message: string, metaData: ExceptionMetaData) =>
+    const doLog = (level: string) => (category: string, message: string, metaData: LoggingMetaData) =>
       console.log(`${level} | ${category} | ${message}${Logger.formatMetaData(metaData)}`); // eslint-disable-line no-console
 
     Logger.initialize(doLog("Error"), doLog("Warning"), doLog("Info"), doLog("Trace"));
@@ -117,11 +117,11 @@ export class Logger {
 
   /** Format the metadata for a log message.
    */
-  public static formatMetaData(metaData?: ExceptionMetaData): string {
+  public static formatMetaData(metaData?: LoggingMetaData): string {
     const metaObj = BentleyError.getMetaData(metaData);
     let msg = metaObj ? ` ${JSON.stringify(metaObj)}` : "";
-    if (Logger.staticMetaData) {
-      const globalObj = BentleyError.getMetaData(Logger.staticMetaData);
+    for (const meta of Logger.staticMetaData) {
+      const globalObj = BentleyError.getMetaData(meta[1]);
       if (globalObj)
         msg = `${msg},${JSON.stringify(globalObj)}`;
     }
@@ -234,7 +234,7 @@ export class Logger {
    * @param message  The message.
    * @param metaData  Optional data for the message
    */
-  public static logError(category: string, message: string, metaData?: ExceptionMetaData): void {
+  public static logError(category: string, message: string, metaData?: LoggingMetaData): void {
     if (Logger._logError && Logger.isEnabled(category, LogLevel.Error))
       Logger._logError(category, message, metaData);
   }
@@ -263,7 +263,7 @@ export class Logger {
    * @param message  The message.
    * @param metaData  Optional data for the message
    */
-  public static logWarning(category: string, message: string, metaData?: ExceptionMetaData): void {
+  public static logWarning(category: string, message: string, metaData?: LoggingMetaData): void {
     if (Logger._logWarning && Logger.isEnabled(category, LogLevel.Warning))
       Logger._logWarning(category, message, metaData);
   }
@@ -273,7 +273,7 @@ export class Logger {
    * @param message  The message.
    * @param metaData  Optional data for the message
    */
-  public static logInfo(category: string, message: string, metaData?: ExceptionMetaData): void {
+  public static logInfo(category: string, message: string, metaData?: LoggingMetaData): void {
     if (Logger._logInfo && Logger.isEnabled(category, LogLevel.Info))
       Logger._logInfo(category, message, metaData);
   }
@@ -283,7 +283,7 @@ export class Logger {
    * @param message  The message.
    * @param metaData  Optional data for the message
    */
-  public static logTrace(category: string, message: string, metaData?: ExceptionMetaData): void {
+  public static logTrace(category: string, message: string, metaData?: LoggingMetaData): void {
     if (Logger._logTrace && Logger.isEnabled(category, LogLevel.Trace))
       Logger._logTrace(category, message, metaData);
   }
@@ -302,10 +302,10 @@ export class PerfLogger implements IDisposable {
   private static _severity: LogLevel = LogLevel.Info;
 
   private _operation: string;
-  private _metaData?: ExceptionMetaData;
+  private _metaData?: LoggingMetaData;
   private _startTimeStamp: number;
 
-  public constructor(operation: string, metaData?: ExceptionMetaData) {
+  public constructor(operation: string, metaData?: LoggingMetaData) {
     this._operation = operation;
     this._metaData = metaData;
 

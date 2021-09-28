@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ExceptionMetaData, LogFunction, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { LogFunction, Logger, LoggingMetaData, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelHost } from "../IModelHost";
 
 /**
- * SequentialLogMatcher match log message in order and remove them from list. Any test using
+ * SequentialLogMatcher match log messages in order and remove them from the list. Any test using
  * should check if length come down to zero. If its not then test should fail.
  */
 export class SequentialLogMatcher extends Logger {
@@ -35,22 +35,22 @@ export class SequentialLogMatcher extends Logger {
     this._originalLogInfo = Logger._logInfo;
     this._originalLogTrace = Logger._logTrace;
 
-    Logger._logError = (category: string, message: string, metaData: ExceptionMetaData) => {
+    Logger._logError = (category: string, message: string, metaData: LoggingMetaData) => {
       if (this.allow(LogLevel.Error, category, message))
         this._originalLogError?.(category, message, metaData);
     };
 
-    Logger._logWarning = (category: string, message: string, metaData: ExceptionMetaData) => {
+    Logger._logWarning = (category: string, message: string, metaData: LoggingMetaData) => {
       if (this.allow(LogLevel.Warning, category, message))
         this._originalLogWarning?.(category, message, metaData);
     };
 
-    Logger._logInfo = (category: string, message: string, metaData: ExceptionMetaData) => {
+    Logger._logInfo = (category: string, message: string, metaData: LoggingMetaData) => {
       if (this.allow(LogLevel.Info, category, message))
         this._originalLogInfo?.(category, message, metaData);
     };
 
-    Logger._logTrace = (category: string, message: string, metaData: ExceptionMetaData) => {
+    Logger._logTrace = (category: string, message: string, metaData: LoggingMetaData) => {
       if (this.allow(LogLevel.Trace, category, message))
         this._originalLogTrace?.(category, message, metaData);
     };
