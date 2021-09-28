@@ -357,7 +357,7 @@ export interface BaseMapLayerProps extends MapLayerProps {
 
 /** A [[MapLayerSettings]] that can serve as the base layer for a [[MapImagerySettings]].
  * The base layer supports all of the same options as any other layer, but also allows for simplified configuration based
- * on a small set of known supported [[BackgroundMapProviders]] like [Bing Maps](https://www.microsoft.com/en-us/maps).
+ * on a small set of known supported [[BackgroundMapProvider]]s like [Bing Maps](https://www.microsoft.com/en-us/maps).
  * If the base layer was configured from such a provider, that information will be preserved and can be queried; this allows
  * the imagery provider and/or type to be easily modified.
  * @see [[MapImagerySettings.backgroundBase]].

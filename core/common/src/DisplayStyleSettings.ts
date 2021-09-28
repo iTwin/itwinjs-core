@@ -455,7 +455,7 @@ export class DisplayStyleSettings {
   /** Event raised just prior to assignment to the [[backgroundMap]] property. */
   public readonly onBackgroundMapChanged = new BeEvent<(newMap: BackgroundMapSettings) => void>();
   /** Event raised just prior to assignment to the [[mapImagery]] property.
-   * @alpha
+   * @beta
    */
   public readonly onMapImageryChanged = new BeEvent<(newImagery: Readonly<MapImagerySettings>) => void>();
   /** Event raised just prior to assignment to the `scheduleScriptProps` property.

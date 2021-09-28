@@ -2019,7 +2019,7 @@ export class DisplayStyleSettings {
     readonly onExcludedElementsChanged: BeEvent<() => void>;
     readonly onHiddenLineSettingsChanged: BeEvent<(newSettings: HiddenLine.Settings) => void>;
     readonly onLightsChanged: BeEvent<(newLights: LightSettings) => void>;
-    // @alpha
+    // @beta
     readonly onMapImageryChanged: BeEvent<(newImagery: Readonly<MapImagerySettings>) => void>;
     readonly onModelAppearanceOverrideChanged: BeEvent<(modelId: Id64String, newAppearance: FeatureAppearance | undefined) => void>;
     readonly onMonochromeColorChanged: BeEvent<(newColor: ColorDef) => void>;

@@ -23,7 +23,7 @@ export enum GlobeMode {
 }
 
 /** In-memory JSON representation of a [[BackgroundMapSettings]].
- * @see [[PersistentBackgroundMapSettings]] for the persistent JSON representation.
+ * @see [[PersistentBackgroundMapProps]] for the persistent JSON representation.
  * @public
  */
 export interface BackgroundMapProps {
