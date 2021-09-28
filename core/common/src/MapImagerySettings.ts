@@ -35,11 +35,8 @@ export type BaseLayerSettings = BaseMapLayerSettings | ColorDef;
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export namespace BaseLayerSettings {
-  export function fromJSON(props: BaseLayerProps): BaseLayerSettings {
-    const settings = typeof props === "number" ? ColorDef.fromJSON(props) : BaseMapLayerSettings.fromJSON(props);
-
-    // ###TODO handle undefined BaseMapLayerSettings differently (what should be default?), or make MapImagerySettings.fromJSON possibly return undefined.
-    return settings ?? ColorDef.black;
+  export function fromJSON(props: BaseLayerProps): BaseLayerSettings | undefined {
+    return typeof props === "number" ? ColorDef.fromJSON(props) : BaseMapLayerSettings.fromJSON(props);
   }
 }
 
@@ -96,7 +93,10 @@ export class MapImagerySettings {
 
   /** @internal */
   public static createFromJSON(imageryJson?: MapImageryProps, mapProps?: DeprecatedBackgroundMapProps) {
-    const baseLayer = imageryJson?.backgroundBase ? BaseLayerSettings.fromJSON(imageryJson.backgroundBase) : BaseMapLayerSettings.fromBackgroundMapProps(mapProps ?? { });
+    let baseLayer = imageryJson?.backgroundBase ? BaseLayerSettings.fromJSON(imageryJson.backgroundBase) : BaseMapLayerSettings.fromBackgroundMapProps(mapProps ?? { });
+    if (!baseLayer)
+      baseLayer = BaseMapLayerSettings.fromBackgroundMapProps(mapProps ?? { });
+
     return new MapImagerySettings(baseLayer, imageryJson?.backgroundLayers, imageryJson?.overlayLayers);
   }
 
