@@ -41,7 +41,7 @@ describe("iModelHub PermissionsManager", () => {
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
     (requestContext as any).activityId = "iModelHub PermissionHandler";
-    iTwinId = await utils.getiTwinId(requestContext, "iModelJsTest");
+    iTwinId = await utils.getITwinId(requestContext, "iModelJsTest");
 
     await utils.createIModel(requestContext, utils.sharedimodelName, iTwinId);
     imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, iTwinId);

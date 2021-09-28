@@ -31,12 +31,12 @@ describe("Schedule script (#integration)", () => {
   before(async () => {
     await IModelApp.shutdown();
     await IModelApp.startup({
-      authorizationClient: await TestUtility.initializeTestiTwin(TestUtility.testiTwinName, TestUsers.regular),
+      authorizationClient: await TestUtility.initializeTestITwin(TestUtility.testITwinName, TestUsers.regular),
       imodelClient: TestUtility.imodelCloudEnv.imodelClient,
       applicationVersion: "1.2.1.1",
     });
 
-    const iTwinId = await TestUtility.queryiTwinIdByName(TestUtility.testiTwinName);
+    const iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
     const oldIModelId = await TestUtility.queryIModelIdbyName(iTwinId, TestUtility.testIModelNames.synchro);
     dbOld = await CheckpointConnection.openRemote(iTwinId, oldIModelId);
     const newIModelId = await TestUtility.queryIModelIdbyName(iTwinId, TestUtility.testIModelNames.synchroNew);

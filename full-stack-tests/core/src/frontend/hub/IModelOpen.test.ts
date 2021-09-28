@@ -22,11 +22,11 @@ describe("Opening IModelConnection (#integration)", () => {
     });
     Logger.initializeToConsole();
 
-    const authorizationClient = await TestUtility.initializeTestiTwin(TestUtility.testiTwinName, TestUsers.regular);
+    const authorizationClient = await TestUtility.initializeTestITwin(TestUtility.testITwinName, TestUsers.regular);
     IModelApp.authorizationClient = authorizationClient;
 
     // Setup a model with a large number of change sets
-    testITwinId = await TestUtility.queryiTwinIdByName(TestUtility.testiTwinName);
+    testITwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
     testIModelId = await TestUtility.queryIModelIdbyName(testITwinId, TestUtility.testIModelNames.stadium);
 
     // Setup a testChangeSetId somewhere in the middle of the change history

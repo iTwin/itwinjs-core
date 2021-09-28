@@ -19,7 +19,7 @@ describe("MapLayerSettingsService (#integration)", () => {
   const testName: string = `test${Guid.createValue()}`;
 
   before(async () => {
-    const authorizationClient = await TestUtility.initializeTestiTwin(TestUtility.testiTwinName, TestUsers.regular);
+    const authorizationClient = await TestUtility.initializeTestITwin(TestUtility.testITwinName, TestUsers.regular);
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
 
     new TestFrontendAuthorizationClient(requestContext.accessToken);
@@ -28,7 +28,7 @@ describe("MapLayerSettingsService (#integration)", () => {
     };
     await IModelApp.shutdown();
     await IModelApp.startup(options);
-    iTwinId = await TestUtility.queryiTwinIdByName(TestUtility.testiTwinName);
+    iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
     chai.assert.isDefined(iTwinId);
     iModelId = await TestUtility.queryIModelIdbyName(iTwinId, TestUtility.testIModelNames.readOnly);
     chai.assert.isDefined(iModelId);

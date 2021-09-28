@@ -126,7 +126,7 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
   before(async () => {
     const accessToken: AccessToken = await utils.login();
     requestContext = new AuthorizedClientRequestContext(accessToken);
-    iTwinId = await utils.getiTwinId(requestContext);
+    iTwinId = await utils.getITwinId(requestContext);
 
     imodelHubClient = utils.getDefaultClient();
 

@@ -91,7 +91,7 @@ describe("iModelHub VersionHandler", () => {
     requestContext = new AuthorizedClientRequestContext(accessToken);
     (requestContext as any).activityId = "iModelHub VersionHandler";
 
-    iTwinId = await utils.getiTwinId(requestContext);
+    iTwinId = await utils.getITwinId(requestContext);
     await utils.createIModel(requestContext, utils.sharedimodelName, iTwinId, true, false, true);
     iModelId = await utils.getIModelId(requestContext, utils.sharedimodelName, iTwinId);
     iModelClient = utils.getDefaultClient();

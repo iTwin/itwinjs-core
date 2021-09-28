@@ -31,7 +31,7 @@ export class IModelSession {
     let imodelId;
 
     // Turn the iTwin name into an id
-    if (iModelData.useiTwinName) {
+    if (iModelData.useITwinName) {
       if (!iModelData.iTwinName)
         throw new Error(`The iModel has no iTwin name, so it cannot get the iTwin.`);
 

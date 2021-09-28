@@ -13,12 +13,12 @@ describe("Section Drawings (#integration)", () => {
 
   before(async () => {
     await IModelApp.startup({
-      authorizationClient: await TestUtility.initializeTestiTwin(TestUtility.testiTwinName, TestUsers.regular),
+      authorizationClient: await TestUtility.initializeTestITwin(TestUtility.testITwinName, TestUsers.regular),
       imodelClient: TestUtility.imodelCloudEnv.imodelClient,
       applicationVersion: "1.2.1.1",
     });
 
-    const iTwinId = await TestUtility.queryiTwinIdByName(TestUtility.testiTwinName);
+    const iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
     const iModelId = await TestUtility.queryIModelIdbyName(iTwinId, TestUtility.testIModelNames.sectionDrawingLocations);
     imodel = await CheckpointConnection.openRemote(iTwinId, iModelId);
   });

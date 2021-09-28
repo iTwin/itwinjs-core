@@ -74,7 +74,7 @@ describe("iModelHub ChangeSetHandler", () => {
     (requestContext as any).activityId = "iModelHub ChangeSetHandler";
 
     // SWB
-    iTwinId = await utils.getiTwinId(requestContext);
+    iTwinId = await utils.getITwinId(requestContext);
     await utils.createIModel(requestContext, utils.sharedimodelName, iTwinId);
     imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, iTwinId);
     iModelClient = utils.getDefaultClient();

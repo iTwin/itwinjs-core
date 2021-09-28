@@ -27,7 +27,7 @@ export class IModelSession {
     let imodelId;
 
     // Turn the iTwin name into an id
-    if (iModelData.useiTwinName && iModelData.iTwinName) {
+    if (iModelData.useITwinName && iModelData.iTwinName) {
       const client = new ITwinAccessClient();
       const iTwinList: ITwin[] = await client.getAll(requestContext, {
         search: {

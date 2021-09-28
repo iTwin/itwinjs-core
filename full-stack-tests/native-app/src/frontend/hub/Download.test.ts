@@ -23,7 +23,7 @@ describe("NativeApp Download (#integration)", () => {
       },
     });
 
-    testITwinId = await NativeAppTest.initializeTestiTwin();
+    testITwinId = await NativeAppTest.initializeTestITwin();
   });
 
   after(async () => ElectronApp.shutdown());

@@ -20,7 +20,7 @@ describe.skip("iModelHub Performance tests", () => {
     const accessToken: AccessToken = await utils.login();
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
-    iTwinId = await utils.getiTwinId(requestContext);
+    iTwinId = await utils.getITwinId(requestContext);
     await utils.createIModel(requestContext, utils.sharedimodelName, iTwinId, true, recreate);
     imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, iTwinId);
     imodelHubClient = utils.getDefaultClient();

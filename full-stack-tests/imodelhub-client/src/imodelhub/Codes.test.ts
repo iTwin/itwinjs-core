@@ -43,7 +43,7 @@ describe("iModelHub CodeHandler", () => {
     const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
-    iTwinId = await utils.getiTwinId(requestContext);
+    iTwinId = await utils.getITwinId(requestContext);
     await utils.createIModel(requestContext, utils.sharedimodelName, iTwinId);
     imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, iTwinId);
     iModelClient = utils.getDefaultClient();
@@ -392,7 +392,7 @@ describe("iModelHub CodeSequenceHandler (#iModelBank|#integration)", () => {
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
     // SWB
-    contextId = await utils.getiTwinId(requestContext);
+    contextId = await utils.getITwinId(requestContext);
     await utils.createIModel(requestContext, utils.sharedimodelName, contextId);
     imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);
     iModelClient = utils.getDefaultClient();

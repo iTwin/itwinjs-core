@@ -102,7 +102,7 @@ describe("iModelHub EventHandler", () => {
     const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
-    iTwinId = await utils.getiTwinId(requestContext);
+    iTwinId = await utils.getITwinId(requestContext);
     await utils.createIModel(requestContext, utils.sharedimodelName, iTwinId);
     imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, iTwinId);
     imodelHubClient = utils.getDefaultClient();

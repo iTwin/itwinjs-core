@@ -53,7 +53,7 @@ describe("iModelHubClient UserInfoHandler", () => {
     requestContexts.push(new AuthorizedClientRequestContext(managerAccessToken));
 
     requestContexts.sort((a: AuthorizedClientRequestContext, b: AuthorizedClientRequestContext) => a.accessToken.getUserInfo()!.id.localeCompare(b.accessToken.getUserInfo()!.id));
-    iTwinId = await utils.getiTwinId(requestContexts[0]);
+    iTwinId = await utils.getITwinId(requestContexts[0]);
     await utils.createIModel(requestContexts[0], utils.sharedimodelName);
     imodelId = await utils.getIModelId(requestContexts[0], utils.sharedimodelName);
     imodelHubClient = utils.getDefaultClient();

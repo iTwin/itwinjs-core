@@ -265,7 +265,7 @@ describe("iModelHub iModelsHandler", () => {
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
     (requestContext as any).activityId = "iModelHub iModelsHandler";
-    iTwinId = await utils.getiTwinId(requestContext);
+    iTwinId = await utils.getITwinId(requestContext);
     assetId = await utils.getAssetId(requestContext);
     imodelClient = utils.getDefaultClient();
 

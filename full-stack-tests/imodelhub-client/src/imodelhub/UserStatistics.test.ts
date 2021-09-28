@@ -75,7 +75,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
     requestContexts.push(new AuthorizedClientRequestContext(superAccessToken));
     requestContexts.push(new AuthorizedClientRequestContext(managerAccessToken));
 
-    iTwinId = await utils.getiTwinId(requestContexts[0]);
+    iTwinId = await utils.getITwinId(requestContexts[0]);
     await utils.createIModel(requestContexts[0], utils.sharedimodelName, iTwinId, true, true);
     imodelId = await utils.getIModelId(requestContexts[0], utils.sharedimodelName, iTwinId);
     imodelHubClient = utils.getDefaultClient();

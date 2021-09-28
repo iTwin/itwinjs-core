@@ -22,7 +22,7 @@ export class HubUtility {
   public static logCategory = "HubUtility";
   public static allowHubBriefcases = false;
 
-  public static testiTwinName = "iModelJsIntegrationTest";
+  public static testITwinName = "iModelJsIntegrationTest";
   public static testIModelNames = {
     noVersions: "NoVersionsTest",
     stadium: "Stadium Dataset 1",
@@ -36,7 +36,7 @@ export class HubUtility {
 
     if (undefined !== HubUtility.iTwinId)
       return HubUtility.iTwinId;
-    return HubUtility.getITwinIdByName(requestContext, HubUtility.testiTwinName);
+    return HubUtility.getITwinIdByName(requestContext, HubUtility.testITwinName);
   }
 
   private static imodelCache = new Map<string, GuidString>();

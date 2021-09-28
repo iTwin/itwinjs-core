@@ -18,13 +18,13 @@ before(() => {
 
 before(async () => {
   const requestContext = await getRequestContext();
-  const iTwinId = await utils.getiTwinId(requestContext);
+  const iTwinId = await utils.getITwinId(requestContext);
   await utils.createIModel(requestContext, utils.sharedimodelName, iTwinId);
 });
 
 after(async () => {
   const requestContext = await getRequestContext();
-  const iTwinId = await utils.getiTwinId(requestContext);
+  const iTwinId = await utils.getITwinId(requestContext);
   await utils.deleteIModelByName(requestContext, iTwinId, utils.sharedimodelName);
 });
 
