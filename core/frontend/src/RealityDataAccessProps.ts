@@ -13,11 +13,11 @@ import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
  * @beta
  */
 export enum DefaultSupportedTypes {
-  RealityMesh3dTiles = "RealityMesh3DTiles", // Web Ready Scalable Mesh
-  OPC = "OPC", // Orbit Point Cloud
-  Terrain3dTiles = "Terrain3DTiles", // Terrain3DTiles
-  OMR = "OMR", // Mapping Resource
-  Cesium3dTiles = "Cesium3DTiles" // Cesium 3dTiles
+  RealityMesh3dTiles = "RealityMesh3DTiles", // Web Ready 3D Scalable Mesh
+  OPC = "OPC", // Web Ready Orbit Point Cloud
+  Terrain3dTiles = "Terrain3DTiles", // Web Ready Terrain Scalable Mesh
+  OMR = "OMR", // Orbit Mapping Resource
+  Cesium3dTiles = "Cesium3DTiles" // Cesium 3D Tiles
 }
 
 /** RealityData
