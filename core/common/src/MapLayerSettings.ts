@@ -65,15 +65,19 @@ export class MapSubLayerSettings {
     return new MapSubLayerSettings(json.name, json.title, json.visible, (json.id === json.name) ? undefined : json.id, json.parent, json.children);
   }
   public toJSON(): MapSubLayerProps {
-    return {
-      name: this.name,
-      title: this.title,
-      visible: this.visible,
-      id: (this.id === this.name) ? undefined : this.id,
-      parent: this.parent,
-      children: this.children,
-    };
+    const props: MapSubLayerProps = { name: this.name, visible: this.visible };
+    if (undefined !== this.id && this.id !== this.name)
+      props.id = this.id;
+
+    if (this.children)
+      props.children = [...this.children];
+
+    if (undefined !== this.parent)
+      props.parent = this.parent;
+
+    return props;
   }
+
   /** Creating a copy of this MapSubLayer, optionally modifying some if its properties */
   public clone(changedProps: MapSubLayerProps): MapSubLayerSettings {
     if (undefined === changedProps)
@@ -205,7 +209,7 @@ export class MapLayerSettings {
   /** return JSON representation of this MapLayerSettings object */
   public toJSON(): MapLayerProps {
     const props: MapLayerProps = {};
-    if (this.subLayers) {
+    if (this.subLayers.length > 0) {
       props.subLayers = [];
       this.subLayers.forEach((subLayer) => {
         const subLayerJson = subLayer.toJSON();
@@ -217,7 +221,6 @@ export class MapLayerSettings {
     props.formatId = this.formatId;
     props.name = this.name;
     props.url = this.url;
-    props.accessKey = this.accessKey;
     if (0 !== this.transparency)
       props.transparency = this.transparency;
 

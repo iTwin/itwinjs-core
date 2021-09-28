@@ -104,10 +104,13 @@ export class MapImagerySettings {
   }
 
   public toJSON(): MapImageryProps {
-    return {
-      backgroundBase: this._backgroundBase.toJSON(),
-      backgroundLayers: this._backgroundLayers.length > 0 ? this._backgroundLayers.map((layer) => layer.toJSON()) : undefined,
-      overlayLayers: this._overlayLayers.length > 0 ? this._overlayLayers.map((layer) => layer.toJSON()) : undefined,
-    };
+    const props: MapImageryProps = { backgroundBase: this._backgroundBase.toJSON() };
+    if (this._backgroundLayers.length > 0)
+      props.backgroundLayers = this._backgroundLayers.map((layer) => layer.toJSON());
+
+    if (this._overlayLayers.length > 0)
+      props.overlayLayers = this._overlayLayers.map((layer) => layer.toJSON());
+
+    return props;
   }
 }

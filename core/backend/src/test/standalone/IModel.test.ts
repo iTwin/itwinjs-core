@@ -14,7 +14,7 @@ import {
 import { CheckpointV2 } from "@bentley/imodelhub-client";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
-  DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeographicCRS,
+  DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeographicCRS,
   GeometricElement3dProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError, IModelStatus,
   MapImageryProps, ModelProps, PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState,
   SpatialViewDefinitionProps, SubCategoryAppearance, TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
@@ -558,13 +558,20 @@ describe("iModel", () => {
 
   it("should create display styles", () => {
     const defaultViewFlags = new ViewFlags().toJSON();
+    const defaultMapImagery = new DisplayStyleSettings({ }).toJSON().mapImagery;
 
     const viewFlags = new ViewFlags({ patterns: false, visibleEdges: true });
     const viewflags: ViewFlagProps = { noWhiteOnWhiteReversal: true, shadows: true, noTransp: true };
 
     const mapImagery: MapImageryProps = {
       backgroundBase: ColorDef.red.tbgr,
-      backgroundLayers: [{ transparency: 0.5 }],
+      backgroundLayers: [{
+        name: "x",
+        url: "y",
+        transparency: 0.5,
+        formatId: "WMS",
+        visible: true,
+      }],
     };
 
     const props: DisplayStyleSettingsProps = {
@@ -607,7 +614,8 @@ describe("iModel", () => {
       const expectedBGColor = expected.backgroundColor instanceof ColorDef ? expected.backgroundColor.toJSON() : expected.backgroundColor;
       expect(actual.backgroundColor).to.equal(expectedBGColor);
 
-      expect(actual.mapImagery).to.deep.equal(expected.mapImagery);
+      // DisplayStyleSettings constructor always initializes json.mapImagery.
+      expect(actual.mapImagery).to.deep.equal(expected.mapImagery ?? defaultMapImagery);
       expect(actual.excludedElements).to.deep.equal(expected.excludedElements);
       expect(actual.timePoint).to.deep.equal(expected.timePoint);
     }
