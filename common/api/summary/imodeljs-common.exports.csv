@@ -25,13 +25,18 @@ internal;B3dmHeader
 public;BackendError 
 public;BackgroundFill
 public;BackgroundMapProps
+beta;BackgroundMapProvider
 public;BackgroundMapProviderName = "BingProvider" | "MapBoxProvider"
+beta;BackgroundMapProviderProps
 public;BackgroundMapSettings
 public;BackgroundMapType
 public;Base64EncodedString = string
 public;Base64EncodedString
-beta;BaseLayerProps = MapLayerProps | ColorDefProps
-beta;BaseLayerSettings = MapLayerSettings | ColorDef
+beta;BaseLayerProps = BaseMapLayerProps | ColorDefProps
+beta;BaseLayerSettings = BaseMapLayerSettings | ColorDef
+beta;BaseLayerSettings
+beta;BaseMapLayerProps 
+beta;BaseMapLayerSettings 
 public;BatchType
 public;class BentleyCloudRpcConfiguration 
 public;BentleyCloudRpcManager 
@@ -133,6 +138,7 @@ internal;DecorationGeometryProps
 internal;defaultTileOptions: TileOptions
 public;DefinitionElementProps 
 public;DeletedElementGeometryChange
+public;DeprecatedBackgroundMapProps
 internal;class DevToolsRpcInterface 
 internal;DevToolsStatsOptions
 public;DisplayStyle3dProps 
@@ -432,6 +438,7 @@ internal;PackedFeature
 internal;PackedFeatureTable
 internal;parseTileTreeIdAndContentId(treeId: string, contentId: string):
 public;PartReference
+public;PersistentBackgroundMapProps = Omit
 public;PersistentGraphicsRequestProps 
 public;PhysicalElementProps 
 public;PhysicalTypeProps 

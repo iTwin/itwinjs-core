@@ -8,7 +8,7 @@ import {
   assert, BeDuration, Dictionary, Id64, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch,
 } from "@itwin/core-bentley";
 import {
-  BackgroundMapType, DisplayStyleProps, FeatureAppearance, Hilite, RenderMode, ViewStateProps,
+  BackgroundMapType, BaseMapLayerSettings, DisplayStyleProps, FeatureAppearance, Hilite, RenderMode, ViewStateProps,
 } from "@itwin/core-common";
 import {
   DisplayStyle3dState, DisplayStyleState, EntityState, FeatureSymbology, GLTimerResult, GLTimerResultCallback, IModelApp, IModelConnection,
@@ -1070,32 +1070,29 @@ function getTileProps(props: TileAdmin.Props): string {
 
 function getBackgroundMapProps(vp: ScreenViewport): string {
   let bmPropsStr = "";
+  const layer = vp.displayStyle.settings.mapImagery.backgroundBase;
+  if (layer instanceof BaseMapLayerSettings && layer.provider) {
+    switch (layer.provider.name) {
+      case "BingProvider":
+        break;
+      case "MapBoxProvider":
+        bmPropsStr += "MapBox";
+        break;
+    }
+
+    switch (layer.provider.type) {
+      case BackgroundMapType.Hybrid:
+        break;
+      case BackgroundMapType.Aerial:
+        bmPropsStr += "+aer";
+        break;
+      case BackgroundMapType.Street:
+        bmPropsStr += "+st";
+        break;
+    }
+  }
+
   const bmProps = vp.displayStyle.settings.backgroundMap;
-  switch (bmProps.providerName) {
-    case "BingProvider":
-      break;
-    case "MapBoxProvider":
-      bmPropsStr += "MapBox";
-      break;
-    default:
-      bmPropsStr += bmProps.providerName;
-      break;
-  }
-
-  switch (bmProps.mapType) {
-    case BackgroundMapType.Hybrid:
-      break;
-    case BackgroundMapType.Aerial:
-      bmPropsStr += "+aer";
-      break;
-    case BackgroundMapType.Street:
-      bmPropsStr += "+st";
-      break;
-    default:
-      bmPropsStr += `+type${bmProps.mapType}`;
-      break;
-  }
-
   if (bmProps.groundBias !== 0)
     bmPropsStr += `+bias${bmProps.groundBias}`;
 

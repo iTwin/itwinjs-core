@@ -392,38 +392,50 @@ export interface BackgroundMapProps {
     nonLocatable?: boolean;
     // @beta
     planarClipMask?: PlanarClipMaskProps;
-    providerData?: {
-        mapType?: BackgroundMapType;
-    };
-    providerName?: string;
+    providerData?: never;
+    providerName?: never;
     terrainSettings?: TerrainProps;
     transparency?: number | false;
     useDepthBuffer?: boolean;
 }
 
+// @beta
+export class BackgroundMapProvider {
+    equals(other: BackgroundMapProvider): boolean;
+    // @internal (undocumented)
+    static fromBackgroundMapProps(props: DeprecatedBackgroundMapProps): BackgroundMapProvider;
+    static fromJSON(props: BackgroundMapProviderProps): BackgroundMapProvider;
+    readonly name: BackgroundMapProviderName;
+    toJSON(): BackgroundMapProviderProps;
+    readonly type: BackgroundMapType;
+}
+
 // @public
 export type BackgroundMapProviderName = "BingProvider" | "MapBoxProvider";
+
+// @beta
+export interface BackgroundMapProviderProps {
+    name?: BackgroundMapProviderName;
+    type?: BackgroundMapType;
+}
 
 // @public
 export class BackgroundMapSettings {
     readonly applyTerrain: boolean;
     clone(changedProps?: BackgroundMapProps): BackgroundMapSettings;
-    // (undocumented)
     equals(other: BackgroundMapSettings): boolean;
     equalsJSON(json?: BackgroundMapProps): boolean;
+    equalsPersistentJSON(json?: PersistentBackgroundMapProps): boolean;
     static fromJSON(json?: BackgroundMapProps): BackgroundMapSettings;
+    static fromPersistentJSON(json?: PersistentBackgroundMapProps): BackgroundMapSettings;
     readonly globeMode: GlobeMode;
     readonly groundBias: number;
     get locatable(): boolean;
-    readonly mapType: BackgroundMapType;
     // @beta
     readonly planarClipMask: PlanarClipMaskSettings;
-    // @internal (undocumented)
-    static providerFromMapLayer(props: MapLayerProps): BackgroundMapProps | undefined;
-    readonly providerName: BackgroundMapProviderName;
     readonly terrainSettings: TerrainSettings;
-    // (undocumented)
     toJSON(): BackgroundMapProps;
+    toPersistentJSON(): PersistentBackgroundMapProps;
     readonly transparency: number | false;
     get transparencyOverride(): number | undefined;
     readonly useDepthBuffer: boolean;
@@ -455,10 +467,39 @@ export namespace Base64EncodedString {
 }
 
 // @beta
-export type BaseLayerProps = MapLayerProps | ColorDefProps;
+export type BaseLayerProps = BaseMapLayerProps | ColorDefProps;
 
 // @beta
-export type BaseLayerSettings = MapLayerSettings | ColorDef;
+export type BaseLayerSettings = BaseMapLayerSettings | ColorDef;
+
+// @beta (undocumented)
+export namespace BaseLayerSettings {
+    export function fromJSON(props: BaseLayerProps): BaseLayerSettings | undefined;
+}
+
+// @beta
+export interface BaseMapLayerProps extends MapLayerProps {
+    // (undocumented)
+    provider?: BackgroundMapProviderProps;
+}
+
+// @beta
+export class BaseMapLayerSettings extends MapLayerSettings {
+    clone(changedProps: MapLayerProps): BaseMapLayerSettings;
+    // @internal (undocumented)
+    cloneProps(changedProps: MapLayerProps): BaseMapLayerProps;
+    // @alpha (undocumented)
+    cloneWithProvider(provider: BackgroundMapProvider): BaseMapLayerSettings;
+    // @internal (undocumented)
+    static fromBackgroundMapProps(props: DeprecatedBackgroundMapProps): BaseMapLayerSettings;
+    static fromJSON(props?: BaseMapLayerProps): BaseMapLayerSettings | undefined;
+    static fromProvider(provider: BackgroundMapProvider, options?: {
+        invisible?: boolean;
+        transparency?: number;
+    }): BaseMapLayerSettings;
+    get provider(): BackgroundMapProvider | undefined;
+    toJSON(): BaseMapLayerProps;
+}
 
 // @public
 export enum BatchType {
@@ -1798,6 +1839,16 @@ export interface DeletedElementGeometryChange {
     readonly type: DbOpcode.Delete;
 }
 
+// @public
+export interface DeprecatedBackgroundMapProps {
+    // @deprecated
+    providerData?: {
+        mapType?: BackgroundMapType;
+    };
+    // @deprecated
+    providerName?: string;
+}
+
 // @internal
 export abstract class DevToolsRpcInterface extends RpcInterface {
     static getClient(): DevToolsRpcInterface;
@@ -1947,7 +1998,7 @@ export class DisplayStyleSettings {
     is3d(): this is DisplayStyle3dSettings;
     // (undocumented)
     protected readonly _json: DisplayStyleSettingsProps;
-    // @alpha
+    // @beta
     get mapImagery(): MapImagerySettings;
     set mapImagery(mapImagery: MapImagerySettings);
     get modelAppearanceOverrides(): Map<Id64String, FeatureAppearance>;
@@ -1966,7 +2017,7 @@ export class DisplayStyleSettings {
     readonly onExcludedElementsChanged: BeEvent<() => void>;
     readonly onHiddenLineSettingsChanged: BeEvent<(newSettings: HiddenLine.Settings) => void>;
     readonly onLightsChanged: BeEvent<(newLights: LightSettings) => void>;
-    // @alpha
+    // @beta
     readonly onMapImageryChanged: BeEvent<(newImagery: Readonly<MapImagerySettings>) => void>;
     readonly onModelAppearanceOverrideChanged: BeEvent<(modelId: Id64String, newAppearance: FeatureAppearance | undefined) => void>;
     readonly onMonochromeColorChanged: BeEvent<(newColor: ColorDef) => void>;
@@ -2015,7 +2066,7 @@ export interface DisplayStyleSettingsProps {
     analysisFraction?: number;
     analysisStyle?: AnalysisStyleProps;
     backgroundColor?: ColorDefProps;
-    backgroundMap?: BackgroundMapProps;
+    backgroundMap?: PersistentBackgroundMapProps;
     clipStyle?: ClipStyleProps;
     contextRealityModels?: ContextRealityModelProps[];
     excludedElements?: Id64Array | CompressedId64Set;
@@ -4787,7 +4838,9 @@ export class MapImagerySettings {
     get backgroundLayers(): MapLayerSettings[];
     // @internal
     get baseTransparency(): number;
-    static fromJSON(imageryJson?: MapImageryProps, mapProps?: BackgroundMapProps): MapImagerySettings;
+    // @internal (undocumented)
+    static createFromJSON(imageryJson?: MapImageryProps, mapProps?: DeprecatedBackgroundMapProps): MapImagerySettings;
+    static fromJSON(imageryJson?: MapImageryProps): MapImagerySettings;
     // (undocumented)
     get overlayLayers(): MapLayerSettings[];
     // (undocumented)
@@ -4817,20 +4870,25 @@ export interface MapLayerProps {
 
 // @beta
 export class MapLayerSettings {
+    // @internal
+    protected constructor(url: string, name: string, formatId?: string, visible?: boolean, jsonSubLayers?: MapSubLayerProps[] | undefined, transparency?: number, transparentBackground?: boolean, isBase?: boolean, userName?: string, password?: string, accessKey?: MapLayerKey);
     // (undocumented)
-    readonly accessKey?: MapLayerKey;
+    accessKey?: MapLayerKey;
     get allSubLayersInvisible(): boolean;
     clone(changedProps: MapLayerProps): MapLayerSettings;
+    // @internal (undocumented)
+    protected cloneProps(changedProps: MapLayerProps): MapLayerProps;
     // @internal (undocumented)
     displayMatches(other: MapLayerSettings): boolean;
     // (undocumented)
     readonly formatId: string;
     static fromJSON(json?: MapLayerProps): MapLayerSettings | undefined;
-    static fromMapSettings(mapSettings: BackgroundMapSettings): MapLayerSettings;
     getSubLayerChildren(subLayer: MapSubLayerSettings): MapSubLayerSettings[] | undefined;
     // (undocumented)
     readonly isBase: boolean;
     isSubLayerVisible(subLayer: MapSubLayerSettings): boolean;
+    // @internal (undocumented)
+    protected static mapTypeName(type: BackgroundMapType): "Aerial Imagery" | "Aerial Imagery with labels" | "Streets";
     // @internal (undocumented)
     matchesNameAndUrl(name: string, url: string): boolean;
     // (undocumented)
@@ -5515,6 +5573,9 @@ export interface PartReference {
     // (undocumented)
     type: "partReference";
 }
+
+// @public
+export type PersistentBackgroundMapProps = Omit<BackgroundMapProps, keyof DeprecatedBackgroundMapProps> & DeprecatedBackgroundMapProps;
 
 // @public
 export interface PersistentGraphicsRequestProps extends GraphicsRequestProps {

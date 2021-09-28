@@ -16,7 +16,7 @@ import {
   Range3d, Ray3d, Transform, Vector3d, XAndY, XYAndZ, XYZ,
 } from "@itwin/core-geometry";
 import {
-  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, DisplayStyleSettingsProps, Easing,
+  AnalysisStyle, BackgroundMapProps, BackgroundMapProviderProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, DisplayStyleSettingsProps, Easing,
   ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation,
   isPlacement2dProps, LightSettings, MapLayerSettings, Npc, NpcCenter, Placement, Placement2d, Placement3d, PlacementProps,
   SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
@@ -729,6 +729,11 @@ export abstract class Viewport implements IDisposable {
     this.displayStyle.changeBackgroundMapProps(props);
   }
 
+  /** @see [[DisplayStyleState.changeBackgroundMapProvider]] */
+  public changeBackgroundMapProvider(props: BackgroundMapProviderProps): void {
+    this.displayStyle.changeBackgroundMapProvider(props);
+  }
+
   /** @internal */
   public get backgroundMap(): MapTileTreeReference | undefined { return this._mapTiledGraphicsProvider?.backgroundMap; }
 
@@ -1055,10 +1060,13 @@ export abstract class Viewport implements IDisposable {
     // ###TODO reality model appearance overrides
     // ###TODO OSM Building display
 
-    removals.push(settings.onBackgroundMapChanged.addListener(() => {
+    const mapChanged = () => {
       this.invalidateController();
       this._changeFlags.setDisplayStyle();
-    }));
+    };
+
+    removals.push(settings.onBackgroundMapChanged.addListener(mapChanged));
+    removals.push(settings.onMapImageryChanged.addListener(mapChanged));
 
     removals.push(settings.onExcludedElementsChanged.addListener(() => {
       this._changeFlags.setDisplayStyle();

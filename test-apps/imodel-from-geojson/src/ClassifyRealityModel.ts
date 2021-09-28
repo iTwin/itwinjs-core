@@ -7,7 +7,7 @@ import { Id64String, JsonUtils } from "@itwin/core-bentley";
 import { Matrix3d, Point3d, Range3d, StandardViewIndex, Transform, Vector3d } from "@itwin/core-geometry";
 import { CategorySelector, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition } from "@itwin/core-backend";
 import {
-  AxisAlignedBox3d, BackgroundMapProps, Cartographic, IModel, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, ViewFlags,
+  AxisAlignedBox3d, Cartographic, IModel, PersistentBackgroundMapProps, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, ViewFlags,
 } from "@itwin/core-common";
 
 class RealityModelTileUtils {
@@ -86,7 +86,7 @@ function parseDisplayMode(defaultDisplay: number, option?: string) {
   }
 }
 
-export async function insertClassifiedRealityModel(url: string, classifierModelId: Id64String, classifierCategoryId: Id64String, iModelDb: IModelDb, viewFlags: ViewFlags, isPlanar: boolean, backgroundMap?: BackgroundMapProps, inputName?: string, inside?: string, outside?: string): Promise<void> {
+export async function insertClassifiedRealityModel(url: string, classifierModelId: Id64String, classifierCategoryId: Id64String, iModelDb: IModelDb, viewFlags: ViewFlags, isPlanar: boolean, backgroundMap?: PersistentBackgroundMapProps, inputName?: string, inside?: string, outside?: string): Promise<void> {
   const name = inputName ? inputName : url;
   const classificationFlags = {
     inside: parseDisplayMode(SpatialClassifierInsideDisplay.ElementColor, inside),

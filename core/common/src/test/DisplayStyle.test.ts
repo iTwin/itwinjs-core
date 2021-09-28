@@ -5,7 +5,8 @@
 
 import { expect } from "chai";
 import { CompressedId64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
-import { BackgroundMapType, GlobeMode } from "../BackgroundMapSettings";
+import { BackgroundMapType } from "../BackgroundMapProvider";
+import { GlobeMode } from "../BackgroundMapSettings";
 import { ColorByName } from "../ColorByName";
 import {
   DisplayStyle3dSettings, DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, DisplayStylePlanarClipMaskProps, DisplayStyleSettings, MonochromeMode,
@@ -16,7 +17,6 @@ import { SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from 
 import { ThematicDisplayMode } from "../ThematicDisplay";
 import { RenderMode, ViewFlags } from "../ViewFlags";
 import { PlanarClipMaskMode, PlanarClipMaskSettings } from "../PlanarClipMask";
-import { MapLayerSettings } from "../MapLayerSettings";
 import { WhiteOnWhiteReversalProps, WhiteOnWhiteReversalSettings } from "../WhiteOnWhiteReversalSettings";
 
 describe("DisplayStyleSettings", () => {
@@ -242,7 +242,7 @@ describe("DisplayStyleSettings", () => {
         map.set("0x1", makeSettings(1));
         map.set("0x3", makeSettings(3));
       }, [["0x2", makeSettings(2)], ["0x1", makeSettings(1)], ["0x3", makeSettings(3)]],
-      [makeProps(2, "0x2"), makeProps(1, "0x1"), makeProps(3, "0x3")]);
+        [makeProps(2, "0x2"), makeProps(1, "0x1"), makeProps(3, "0x3")]);
 
       expectMasks([makeProps(1, "0x1")], (map) => map.set("0x1", makeSettings(2)),
         [["0x1", makeSettings(2)]], [makeProps(2, "0x1")]);
@@ -251,7 +251,7 @@ describe("DisplayStyleSettings", () => {
         map.delete("0x2");
         map.delete("0x4");
       }, [["0x1", makeSettings(1)], ["0x3", makeSettings(3)]],
-      [makeProps(1, "0x1"), makeProps(3, "0x3")]);
+        [makeProps(1, "0x1"), makeProps(3, "0x3")]);
 
       expectMasks([makeProps(1, "0x1"), makeProps(2, "0x2")], (map) => map.clear(), [], undefined);
 
@@ -292,27 +292,6 @@ describe("DisplayStyleSettings", () => {
       map.clear();
       expectEvents([]);
     });
-  });
-
-  // ###TODO @rbbentley
-  it.skip("synchronizes BackgroundMapSettings with MapLayerSettings", () => {
-    const style = new DisplayStyleSettings({});
-    expect(style.backgroundMap.providerName).to.equal("BingProvider");
-    expect(style.backgroundMap.mapType).to.equal(BackgroundMapType.Hybrid);
-
-    let base = style.mapImagery.backgroundBase as MapLayerSettings;
-    expect(base).instanceOf(MapLayerSettings);
-    expect(base.formatId).to.equal("BingMaps");
-    expect(base.url.indexOf("AerialWithLabels")).least(1);
-
-    style.backgroundMap = style.backgroundMap.clone({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street } });
-    base = style.mapImagery.backgroundBase as MapLayerSettings;
-    expect(base.formatId).to.equal("MapboxImagery");
-    expect(base.url.indexOf("mapbox.streets/")).least(1);
-
-    style.mapImagery.backgroundBase = MapLayerSettings.fromMapSettings(style.backgroundMap.clone({ providerData: { mapType: BackgroundMapType.Aerial } }));
-    expect(style.backgroundMap.providerName).to.equal("MapBoxProvider");
-    expect(style.backgroundMap.mapType).to.equal(BackgroundMapType.Aerial);
   });
 });
 
@@ -402,6 +381,20 @@ describe("DisplayStyleSettings overrides", () => {
         heightOrigin: -42,
         nonLocatable: true,
         heightOriginMode: 0,
+      },
+    },
+    mapImagery: {
+      backgroundBase: {
+        formatId: "BingMaps",
+        isBase: true,
+        name: "Bing Maps: Aerial Imagery",
+        provider: {
+          name: "BingProvider",
+          type: 2,
+        },
+        transparentBackground: false,
+        url: "https://dev.virtualearth.net/REST/v1/Imagery/Metadata/Aerial?o=json&incl=ImageryProviders&key={bingKey}",
+        visible: true,
       },
     },
   };
