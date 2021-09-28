@@ -23,7 +23,11 @@ The following dependencies of iTwin.js have been updated;
 
 In V2, the constructor of the base exception class [BentleyError]($bentleyjs-core) accepted 5 arguments, the last 3 being optional. Arguments 3 and 4 were for logging the exception in the constructor itself. That is a bad idea, since exceptions are often handled and recovered in `catch` statements, so there is no actual "problem" to report. In that case the message in the log is either misleading or just plain wrong. Also, code in `catch` statements always has more "context" about *why* the error may have happened than the lower level code that threw (e.g. "invalid Id" vs. "invalid MyHashClass Id") so log messages from callers can be more helpful than from callees. Since every thrown exception must be caught *somewhere*, logging should be done when exceptions are caught, not when they're thrown.
 
-The [BentleyError]($bentleyjs-core) constructor now accepts 3 arguments, the last argument (`getMetaData`) is optional. The previous `log` and `category` arguments were removed. If your code passed 5 arguments, remove the 3rd and 4th. If you previously passed 3 or 4 arguments, just leave the first two.
+The [BentleyError]($bentleyjs-core) constructor now accepts 3 arguments, the last argument (`metaData`) is optional. The previous `log` and `category` arguments were removed. If your code passed 5 arguments, remove the 3rd and 4th. If you previously passed 3 or 4 arguments, just leave the first two. Also, the previous version of the constructor required the metaData argument to be a function that returns an object. It may now also just be an object.
+
+## Logger functions
+
+The optional `metaData` argument for the [Logger]($bentleyjs-core) functions was previously a function returning an object or undefined. This was to allow cases where it may be expensive to create the metadata to be deferred, in the case where logging is turned off. However, there are many cases where the object for the metaData is directly available, so creating a function to return it creates overhead, whether or not logging is enabled. It may now also be just an object so you don't have to make a function.
 
 ## ClientRequestContext and AuthorizedClientRequestContext have been removed
 
