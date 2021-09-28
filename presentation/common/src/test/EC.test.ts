@@ -3,10 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { InstanceKey, RelationshipPath } from "../presentation-common";
-import { RelatedClassInfo, StrippedRelatedClassInfo } from "../presentation-common/EC";
-import { createRandomECClassInfo, createRandomRelatedClassInfo } from "./_helpers/random";
+import { ClassInfo, RelatedClassInfo, RelatedClassInfoJSON, StrippedRelatedClassInfo } from "../presentation-common/EC";
+import { createTestECClassInfo, createTestRelatedClassInfo } from "./_helpers/EC";
+import { createRandomECClassInfo } from "./_helpers/random";
 
 describe("InstanceKey", () => {
 
@@ -51,10 +52,22 @@ describe("RelatedClassInfo", () => {
   describe("to/from JSON", () => {
 
     it("passes roundtrip", () => {
-      const src = createRandomRelatedClassInfo();
+      const src = createTestRelatedClassInfo();
       const json = RelatedClassInfo.toJSON(src);
       const res = RelatedClassInfo.fromJSON(json);
       expect(res).to.deep.eq(src);
+    });
+
+    it("handles optional attributes", () => {
+      const json: RelatedClassInfoJSON = {
+        sourceClassInfo: ClassInfo.toJSON(createTestECClassInfo()),
+        relationshipInfo: ClassInfo.toJSON(createTestECClassInfo()),
+        isForwardRelationship: true,
+        targetClassInfo: ClassInfo.toJSON(createTestECClassInfo()),
+      };
+      const res = RelatedClassInfo.fromJSON(json);
+      expect(res.isPolymorphicRelationship).to.be.false;
+      expect(res.isPolymorphicTargetClass).to.be.false;
     });
 
   });
@@ -62,11 +75,31 @@ describe("RelatedClassInfo", () => {
   describe("to/from compressed JSON", () => {
 
     it("passes roundtrip", () => {
-      const src = createRandomRelatedClassInfo();
+      const src = createTestRelatedClassInfo();
       const classesMap = {};
       const json = RelatedClassInfo.toCompressedJSON(src, classesMap);
       const res = RelatedClassInfo.fromCompressedJSON(json, classesMap);
       expect(res).to.deep.eq(src);
+    });
+
+    it("handles optional attributes", () => {
+      const sourceClassInfo = createTestECClassInfo();
+      const relationshipInfo = createTestECClassInfo();
+      const targetClassInfo = createTestECClassInfo();
+      const classInfos = {
+        [sourceClassInfo.id]: { name: sourceClassInfo.name, label: sourceClassInfo.label },
+        [relationshipInfo.id]: { name: relationshipInfo.name, label: relationshipInfo.label },
+        [targetClassInfo.id]: { name: targetClassInfo.name, label: targetClassInfo.label },
+      };
+      const json: RelatedClassInfoJSON<Id64String> = {
+        sourceClassInfo: sourceClassInfo.id,
+        relationshipInfo: relationshipInfo.id,
+        isForwardRelationship: true,
+        targetClassInfo: targetClassInfo.id,
+      };
+      const res = RelatedClassInfo.fromCompressedJSON(json, classInfos);
+      expect(res.isPolymorphicRelationship).to.be.false;
+      expect(res.isPolymorphicTargetClass).to.be.false;
     });
 
   });

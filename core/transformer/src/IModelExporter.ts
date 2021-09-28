@@ -14,7 +14,7 @@ import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 import {
   BisCoreSchema, BriefcaseDb, BriefcaseManager, DefinitionModel, ECSqlStatement, Element, ElementAspect,
   ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, GeometricElement, IModelDb,
-  IModelHost, IModelJsNative, IModelSchemaLoader, Model, RecipeDefinitionElement, Relationship, RelationshipProps, RepositoryLink,
+  IModelHost, IModelJsNative, IModelSchemaLoader, Model, RecipeDefinitionElement, Relationship, RelationshipProps,
 } from "@bentley/imodeljs-backend";
 
 const loggerCategory = TransformerLoggerCategory.IModelExporter;
@@ -206,13 +206,6 @@ export class IModelExporter {
     this._excludedElementIds.add(elementId);
   }
 
-  /** Add a rule to exclude all Elements in a specified Category.
-   * @deprecated Use [[excludeElementsInCategory]] instead.
-  */
-  public excludeElementCategory(categoryId: Id64String): void {
-    this.excludeElementsInCategory(categoryId);
-  }
-
   /** Add a rule to exclude all Elements in a specified Category. */
   public excludeElementsInCategory(categoryId: Id64String): void {
     this._excludedElementCategoryIds.add(categoryId);
@@ -245,26 +238,23 @@ export class IModelExporter {
   }
 
   /** Export changes from the source iModel.
-   * @param requestContext The request context
+   * @param user The user
    * @param startChangesetId Include changes from this changeset up through and including the current changeset.
    * If this parameter is not provided, then just the current changeset will be exported.
    * @note To form a range of versions to export, set `startChangesetId` for the start (inclusive) of the desired range and open the source iModel as of the end (inclusive) of the desired range.
    */
-  public async exportChanges(requestContext: AuthorizedClientRequestContext, startChangesetId?: string): Promise<void> {
-    requestContext.enter();
+  public async exportChanges(user?: AuthorizedClientRequestContext, startChangesetId?: string): Promise<void> {
     if (!this.sourceDb.isBriefcaseDb()) {
-      throw new IModelError(IModelStatus.BadRequest, "Must be a briefcase to export changes", Logger.logError, loggerCategory);
+      throw new IModelError(IModelStatus.BadRequest, "Must be a briefcase to export changes");
     }
     if ("" === this.sourceDb.changeset.id) {
       await this.exportAll(); // no changesets, so revert to exportAll
-      requestContext.enter();
       return;
     }
     if (undefined === startChangesetId) {
       startChangesetId = this.sourceDb.changeset.id;
     }
-    this._sourceDbChanges = await ChangedInstanceIds.initialize(requestContext, this.sourceDb, startChangesetId);
-    requestContext.enter();
+    this._sourceDbChanges = await ChangedInstanceIds.initialize(user, this.sourceDb, startChangesetId);
     await this.exportCodeSpecs();
     await this.exportFonts();
     await this.exportModelContents(IModel.repositoryModelId);
@@ -599,23 +589,6 @@ export class IModelExporter {
     }
   }
 
-  /** Export RepositoryLinks in the RepositoryModel.
-   * @deprecated The entire RepositoryModel contents are now exported, so RepositoryLinks do no need to be handled separately.
-   */
-  public async exportRepositoryLinks(): Promise<void> {
-    if (!this.visitElements) {
-      Logger.logTrace(loggerCategory, `visitElements=false, skipping exportRepositoryLinks()`);
-      return;
-    }
-    const sql = `SELECT ECInstanceId FROM ${RepositoryLink.classFullName} WHERE Parent.Id IS NULL AND Model.Id=:modelId ORDER BY ECInstanceId`;
-    await this.sourceDb.withPreparedStatement(sql, async (statement: ECSqlStatement): Promise<void> => {
-      statement.bindId("modelId", IModel.repositoryModelId);
-      while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        await this.exportElement(statement.getValue(0).getId());
-      }
-    });
-  }
-
   /** Returns `true` if the specified ElementAspect should be exported or `false` if if should be excluded. */
   private shouldExportElementAspect(aspect: ElementAspect): boolean {
     for (const excludedElementAspectClass of this._excludedElementAspectClasses) {
@@ -746,21 +719,18 @@ class ChangedInstanceIds {
   public font = new ChangedInstanceOps();
   private constructor() { }
 
-  public static async initialize(requestContext: AuthorizedClientRequestContext, iModel: BriefcaseDb, firstChangesetId: string): Promise<ChangedInstanceIds> {
-    requestContext.enter();
-
+  public static async initialize(user: AuthorizedClientRequestContext | undefined, iModel: BriefcaseDb, firstChangesetId: string): Promise<ChangedInstanceIds> {
     const iModelId = iModel.iModelId;
-    const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: firstChangesetId }, requestContext })).index;
-    const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: iModel.changeset.id }, requestContext })).index;
-    const changesets = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
+    const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: firstChangesetId }, user })).index;
+    const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: iModel.changeset.id }, user })).index;
+    const changesets = await IModelHost.hubAccess.downloadChangesets({ user, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
 
-    requestContext.enter();
     const changedInstanceIds = new ChangedInstanceIds();
     changesets.forEach((changeset): void => {
       const changesetPath = changeset.pathname;
       const statusOrResult = iModel.nativeDb.extractChangedInstanceIdsFromChangeSet(changesetPath);
       if (undefined !== statusOrResult.error) {
-        throw new IModelError(statusOrResult.error.status, "Error processing changeset", Logger.logError, loggerCategory);
+        throw new IModelError(statusOrResult.error.status, "Error processing changeset");
       }
       if ("" !== statusOrResult.result) {
         const result: IModelJsNative.ChangedInstanceIdsProps = JSON.parse(statusOrResult.result!);

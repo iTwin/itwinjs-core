@@ -10,7 +10,7 @@ import { ColorDef } from "@bentley/imodeljs-common";
 import { IconSpec } from "@bentley/ui-core";
 
 /** AccuDraw User Interface Settings
- * @alpha
+ * @beta
  */
 export interface AccuDrawUiSettings {
   /** X field style */

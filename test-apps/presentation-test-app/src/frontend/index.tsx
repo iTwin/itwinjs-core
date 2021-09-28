@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 import "./index.css";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
@@ -10,11 +9,10 @@ import { Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { IModelApp, IModelAppOptions, WebViewerApp } from "@bentley/imodeljs-frontend";
 // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Imports
-import { Presentation } from "@bentley/presentation-frontend";
+import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@bentley/presentation-frontend";
 // __PUBLISH_EXTRACT_END__
 import { UiComponents } from "@bentley/ui-components";
-import rpcs from "../common/Rpcs";
-import { MyAppFrontend } from "./api/MyAppFrontend";
+import rpcInterfaces from "../common/Rpcs";
 import App from "./components/app/App";
 
 // initialize logging
@@ -24,13 +22,13 @@ Logger.setLevelDefault(LogLevel.Warning);
 export class SampleApp {
   private static _ready: Promise<void>;
   public static async startup(): Promise<void> {
-    // __PUBLISH_EXTRACT_START__ Presentation.Frontend.RpcInterface_1
+    // __PUBLISH_EXTRACT_START__ Presentation.Frontend.RpcInterface.Options
     const iModelAppOpts: IModelAppOptions = {
-      rpcInterfaces: rpcs,
+      rpcInterfaces,
     };
     // __PUBLISH_EXTRACT_END__
     if (ProcessDetector.isElectronAppFrontend) {
-      // __PUBLISH_EXTRACT_START__ Presentation.Frontend.RpcInterface_2
+      // __PUBLISH_EXTRACT_START__ Presentation.Frontend.IModelAppStartup
       await ElectronApp.startup({ iModelApp: iModelAppOpts });
       // __PUBLISH_EXTRACT_END__
     } else if (ProcessDetector.isBrowserProcess) {
@@ -58,15 +56,16 @@ export class SampleApp {
   private static async initializePresentation() {
     // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Initialization
     await Presentation.initialize({
-      // specify `clientId` so Presentation framework can share caches
-      // between sessions for the same clients
-      clientId: MyAppFrontend.getClientId(),
+      presentation: {
+        // specify locale for localizing presentation data, it can be changed afterwards
+        activeLocale: IModelApp.i18n.languageList()[0],
 
-      // specify locale for localizing presentation data
-      activeLocale: IModelApp.i18n.languageList()[0],
-
-      // specify the preferred unit system
-      activeUnitSystem: "metric",
+        // specify the preferred unit system
+        activeUnitSystem: "metric",
+      },
+      favorites: {
+        storage: createFavoritePropertiesStorage(DefaultFavoritePropertiesStorageTypes.UserSettingsServiceStorage),
+      },
     });
     // __PUBLISH_EXTRACT_END__
 

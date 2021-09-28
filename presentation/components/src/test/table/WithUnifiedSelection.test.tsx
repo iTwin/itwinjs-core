@@ -119,7 +119,7 @@ describe("Table withUnifiedSelection", () => {
 
     const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
     presentationManagerMock
-      .setup(async (x) => x.getContentDescriptor(moq.It.isAny(), moq.It.isAnyString(), moq.It.isAny(), moq.It.isAny())) // eslint-disable-line deprecation/deprecation
+      .setup(async (x) => x.getContentDescriptor(moq.It.isAny()))
       .returns(async () => undefined);
     Presentation.setPresentationManager(presentationManagerMock.object);
 

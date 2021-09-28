@@ -15,8 +15,8 @@ import {
   HorizontalAnchor, Zones as NZ_Zones, StagePanels, StagePanelsManager, ToolSettingsWidgetMode, WidgetZoneId, widgetZoneIds, ZoneManagerProps,
   ZonesManagerProps,
 } from "@bentley/ui-ninezone";
-import { ContentGroup } from "../content/ContentGroup";
-import { ContentLayout, ContentLayoutDef } from "../content/ContentLayout";
+import { ContentGroup, ContentGroupProvider } from "../content/ContentGroup";
+import { ContentLayout } from "../content/ContentLayout";
 import { ToolItemDef } from "../shared/ToolItemDef";
 import { getNestedStagePanelKey, StagePanelProps, StagePanelRuntimeProps } from "../stagepanels/StagePanel";
 import { StagePanelDef } from "../stagepanels/StagePanelDef";
@@ -28,7 +28,6 @@ import { WidgetProvidersChangedEventArgs, WidgetsChangedEventArgs } from "../wid
 import { isToolSettingsWidgetManagerProps, Zone, ZoneLocation, ZoneProps, ZoneRuntimeProps } from "../zones/Zone";
 import { ZoneDef } from "../zones/ZoneDef";
 import { FrontstageRuntimeProps, ZoneDefProvider } from "./FrontstageComposer";
-import { FrontstageDef } from "./FrontstageDef";
 import { FrontstageActivatedEventArgs, FrontstageManager } from "./FrontstageManager";
 
 /** Properties for a [[Frontstage]] component.
@@ -39,10 +38,8 @@ export interface FrontstageProps extends CommonProps {
   id: string;
   /** Tool that is started once the Frontstage is activated */
   defaultTool: ToolItemDef;
-  /** The default Content Layout used */
-  defaultLayout: string | ContentLayoutDef;
   /** The Content Group providing the Content Views */
-  contentGroup: string | ContentGroup;
+  contentGroup: ContentGroup | ContentGroupProvider;
   /** Id of the Content View to be activated initially */
   defaultContentId?: string;
   /** Indicated whether the StatusBar is in footer mode or widget mode. Defaults to true. */
@@ -202,18 +199,17 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
   };
 
   private updateWidgetDefs() {
+    // istanbul ignore else
     if (!this.props.runtimeProps)
       return;
 
-    const frontstageDef = this.props.runtimeProps.frontstageDef;
-    frontstageDef.updateWidgetDefs();
-    FrontstageManager.onWidgetDefsUpdatedEvent.emit();
-    this.forceUpdate();
-  }
-
-  /** Initializes a FrontstageDef from FrontstageProps */
-  public static initializeFrontstageDef(frontstageDef: FrontstageDef, props: FrontstageProps): void {
-    frontstageDef.initializeFromProps(props);
+    // istanbul ignore next
+    {
+      const frontstageDef = this.props.runtimeProps.frontstageDef;
+      frontstageDef.updateWidgetDefs();
+      FrontstageManager.onWidgetDefsUpdatedEvent.emit();
+      this.forceUpdate();
+    }
   }
 
   /** @internal */
@@ -544,7 +540,6 @@ interface WidgetContentRendererState {
 
 class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererProps, WidgetContentRendererState> {
   private _content = document.createElement("span");
-
   public constructor(props: WidgetContentRendererProps) {
     super(props);
 
@@ -576,8 +571,7 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
     this.props.widgetDef.saveTransientState();
     this.props.renderTo.appendChild(this._content);
 
-    const shouldRemount = this.props.widgetDef.restoreTransientState();
-    // const shouldRemount = this.props.widgetDef.widgetControl ? !this.props.widgetDef.widgetControl.restoreTransientState() : true;
+    const shouldRemount = this.props.widgetDef.restoreTransientState() || this.props.widgetDef.isToolSettings;
 
     shouldRemount && this.setState((prevState) => ({ widgetKey: prevState.widgetKey + 1 }));
   }
@@ -621,7 +615,8 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
   private _handleToolActivatedEvent = () => {
     if (this.props.toolSettingsMode === undefined)
       return;
-    this.forceUpdate();
+    // force update when tool is activated
+    this.setState((prevState) => ({ widgetKey: prevState.widgetKey + 1 }));
   };
 }
 

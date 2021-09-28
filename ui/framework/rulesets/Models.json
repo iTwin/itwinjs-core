@@ -21,11 +21,13 @@
           "groupByLabel": false,
           "relatedInstances": [
             {
-              "relationship": {
-                "schemaName": "BisCore",
-                "className": "ModelModelsElement"
+              "relationshipPath": {
+                "relationship": {
+                  "schemaName": "BisCore",
+                  "className": "ModelModelsElement"
+                },
+                "direction": "Forward"
               },
-              "requiredDirection": "Forward",
               "isRequired": true,
               "alias": "modeledElement"
             }

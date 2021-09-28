@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Logger } from "@bentley/bentleyjs-core";
-import { IModelApp, loggerCategory, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType, ToolAdmin } from "@bentley/imodeljs-frontend";
+import { IModelApp, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType, ToolAdmin } from "@bentley/imodeljs-frontend";
 import { ResponseError } from "@bentley/itwin-client";
 
 export class ErrorHandling {
@@ -49,7 +49,7 @@ export class ErrorHandling {
 
       // General case:
       this.displayError(String(err), err.stack);
-      Logger.logException(loggerCategory, err);
+      Logger.logException("ui-test-app", err);
       return;
     }
 

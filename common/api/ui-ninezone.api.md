@@ -1928,6 +1928,7 @@ export const ScrollableWidgetContent: React.NamedExoticComponent<ScrollableWidge
 export interface ScrollableWidgetContentProps {
     // (undocumented)
     children?: React.ReactNode;
+    itemId?: string;
 }
 
 // @internal (undocumented)

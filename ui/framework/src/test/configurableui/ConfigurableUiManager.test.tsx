@@ -6,8 +6,9 @@
 import { expect } from "chai";
 import * as React from "react";
 import { MockRender } from "@bentley/imodeljs-frontend";
+import { StandardContentLayouts } from "@bentley/ui-abstract";
 import {
-  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroupManager, ContentGroupProps, ContentLayoutManager, ContentLayoutProps, CoreTools,
+  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroup, ContentGroupProps, CoreTools,
   Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider, MessageManager, ModalDialogManager, ModelessDialogManager, PopupManager,
   TaskManager, TaskPropsList, WidgetControl, WorkflowManager, WorkflowProps, WorkflowPropsList,
 } from "../../ui-framework";
@@ -36,27 +37,30 @@ describe("ConfigurableUiManager", () => {
     TestUtils.terminateUiFramework();
   });
 
-  it("findFrontstageDef passed no argument", async () => {
+  it("setActiveFrontstageDef passed no argument", async () => {
     await FrontstageManager.setActiveFrontstageDef(undefined);
-    expect(ConfigurableUiManager.findFrontstageDef()).to.be.undefined;
+    expect(FrontstageManager.activeFrontstageDef).to.be.undefined;
   });
 
-  it("addFrontstageProvider & findFrontstageDef", async () => {
+  it("addFrontstageProvider & getFrontstageDef", async () => {
     class Frontstage1 extends FrontstageProvider {
+      public static stageId = "TestFrontstage2";
+      public get id(): string {
+        return Frontstage1.stageId;
+      }
+
       public get frontstage(): React.ReactElement<FrontstageProps> {
         return (
           <Frontstage
-            id="TestFrontstage2"
+            id={Frontstage1.stageId}
             defaultTool={CoreTools.selectElementCommand}
-            defaultLayout="FourQuadrants"
-            contentGroup="TestContentGroup1"
+            contentGroup={TestUtils.TestContentGroup1}
           />
         );
       }
     }
     ConfigurableUiManager.addFrontstageProvider(new Frontstage1());
-
-    const frontstageDef2 = ConfigurableUiManager.findFrontstageDef("TestFrontstage2");
+    const frontstageDef2 = await FrontstageManager.getFrontstageDef(Frontstage1.stageId);
     expect(frontstageDef2).to.not.be.undefined;
     await FrontstageManager.setActiveFrontstageDef(frontstageDef2);
   });
@@ -95,6 +99,7 @@ describe("ConfigurableUiManager", () => {
   it("loadContentGroup and read applicationData from control", () => {
     const contentGroupProps: ContentGroupProps = {
       id: "testContentGroup1",
+      layout: StandardContentLayouts.singleView,
       contents: [
         {
           id: "test-content-control",
@@ -103,8 +108,7 @@ describe("ConfigurableUiManager", () => {
         },
       ],
     };
-    ConfigurableUiManager.loadContentGroup(contentGroupProps);
-    const contentGroup = ContentGroupManager.findGroup("testContentGroup1");
+    const contentGroup = new ContentGroup(contentGroupProps);
     expect(contentGroup).to.not.be.undefined;
     // force controls to be creates
     const controls = contentGroup?.getContentControls();
@@ -114,58 +118,8 @@ describe("ConfigurableUiManager", () => {
     expect(control?.applicationData.label).eql("Content 1a");
   });
 
-  it("loadContentGroups", () => {
-    const contentGroupProps: ContentGroupProps[] = [
-      {
-        id: "testContentGroup2",
-        contents: [
-          {
-            classId: "TestContentControl",
-            applicationData: { label: "Content 1a", bgColor: "black" },
-          },
-        ],
-      },
-    ];
-    ConfigurableUiManager.loadContentGroups(contentGroupProps);
-    expect(ContentGroupManager.findGroup("testContentGroup2")).to.not.be.undefined;
-  });
-
-  it("loadContentLayout", () => {
-    const contentLayoutProps: ContentLayoutProps = {
-      // Three Views, one on the left, two stacked on the right.
-      id: "testContentLayout1",
-      descriptionKey: "SampleApp:ContentDef.ThreeRightStacked",
-      priority: 85,
-      verticalSplit: {
-        percentage: 0.50,
-        left: 0,
-        right: { horizontalSplit: { percentage: 0.50, top: 1, bottom: 2 } },
-      },
-    };
-    ConfigurableUiManager.loadContentLayout(contentLayoutProps);
-    expect(ContentLayoutManager.findLayout("testContentLayout1")).to.not.be.undefined;
-  });
-
-  it("loadContentLayouts", () => {
-    const contentLayoutProps: ContentLayoutProps[] = [
-      {
-        // Three Views, one on the left, two stacked on the right.
-        id: "testContentLayout2",
-        descriptionKey: "SampleApp:ContentDef.ThreeRightStacked",
-        priority: 85,
-        verticalSplit: {
-          percentage: 0.50,
-          left: 0,
-          right: { horizontalSplit: { percentage: 0.50, top: 1, bottom: 2 } },
-        },
-      },
-    ];
-    ConfigurableUiManager.loadContentLayouts(contentLayoutProps);
-    expect(ContentLayoutManager.findLayout("testContentLayout2")).to.not.be.undefined;
-  });
-
   it("loadTasks", () => {
-    const taskPropsList: TaskPropsList = {
+    const taskPropsList: TaskPropsList = {  // eslint-disable-line deprecation/deprecation
       tasks: [
         {
           id: "Task1",
@@ -182,12 +136,12 @@ describe("ConfigurableUiManager", () => {
       ],
     };
 
-    ConfigurableUiManager.loadTasks(taskPropsList);
-    expect(TaskManager.findTask("Task1")).to.not.be.undefined;
+    ConfigurableUiManager.loadTasks(taskPropsList); // eslint-disable-line deprecation/deprecation
+    expect(TaskManager.findTask("Task1")).to.not.be.undefined;  // eslint-disable-line deprecation/deprecation
   });
 
   it("loadWorkflows", () => {
-    const workflowPropsList: WorkflowPropsList = {
+    const workflowPropsList: WorkflowPropsList = {  // eslint-disable-line deprecation/deprecation
       defaultWorkflowId: "ExampleWorkflow",
       workflows: [
         {
@@ -200,12 +154,12 @@ describe("ConfigurableUiManager", () => {
       ],
     };
 
-    ConfigurableUiManager.loadWorkflows(workflowPropsList);
-    expect(WorkflowManager.findWorkflow("ExampleWorkflow")).to.not.be.undefined;
+    ConfigurableUiManager.loadWorkflows(workflowPropsList); // eslint-disable-line deprecation/deprecation
+    expect(WorkflowManager.findWorkflow("ExampleWorkflow")).to.not.be.undefined;  // eslint-disable-line deprecation/deprecation
   });
 
   it("loadWorkflow", () => {
-    const workflowProps: WorkflowProps = {
+    const workflowProps: WorkflowProps = {  // eslint-disable-line deprecation/deprecation
       id: "OneWorkflow",
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:Test.my-label",
@@ -213,12 +167,12 @@ describe("ConfigurableUiManager", () => {
       tasks: ["Task1", "Task2"],
     };
 
-    ConfigurableUiManager.loadWorkflow(workflowProps);
-    const workflow = WorkflowManager.findWorkflow("OneWorkflow");
+    ConfigurableUiManager.loadWorkflow(workflowProps);  // eslint-disable-line deprecation/deprecation
+    const workflow = WorkflowManager.findWorkflow("OneWorkflow"); // eslint-disable-line deprecation/deprecation
     expect(workflow).to.not.be.undefined;
 
     if (workflow)
-      expect(WorkflowManager.removeWorkflow(workflow)).to.eq(true);
+      expect(WorkflowManager.removeWorkflow(workflow)).to.eq(true); // eslint-disable-line deprecation/deprecation
   });
 
   it("closeUi", () => {

@@ -35,12 +35,11 @@ import { mockPresentationManager } from "../_helpers/UiComponents";
  */
 class Provider extends PresentationPropertyDataProvider {
   public override invalidateCache(props: CacheInvalidationProps) { super.invalidateCache(props); }
-  public override shouldConfigureContentDescriptor() { return super.shouldConfigureContentDescriptor(); } // eslint-disable-line deprecation/deprecation
-  public override isFieldHidden(field: Field) { return super.isFieldHidden(field); } // eslint-disable-line deprecation/deprecation
-  public override getDescriptorOverrides() { return super.getDescriptorOverrides(); }
+  public override async getDescriptorOverrides() { return super.getDescriptorOverrides(); }
   public override sortCategories(categories: CategoryDescription[]) { return super.sortCategories(categories); }
-  public override isFieldFavorite!: (field: Field) => boolean;
   public override sortFields!: (category: CategoryDescription, fields: Field[]) => void;
+  public override isFieldFavorite!: (field: Field) => boolean;
+  public override isFieldHidden(field: Field) { return super.isFieldHidden(field); }
 }
 
 describe("PropertyDataProvider", () => {
@@ -130,18 +129,11 @@ describe("PropertyDataProvider", () => {
 
   });
 
-  describe("shouldConfigureContentDescriptor", () => {
-
-    it("return false", () => {
-      expect(provider.shouldConfigureContentDescriptor()).to.be.false;
-    });
-
-  });
-
   describe("getDescriptorOverrides", () => {
 
-    it("should have `ShowLabels` and `MergeResults` flags", () => {
-      const flags = provider.getDescriptorOverrides().contentFlags!;
+    it("should have `ShowLabels` and `MergeResults` flags", async () => {
+      const overrides = await provider.getDescriptorOverrides();
+      const flags = overrides.contentFlags!;
       expect(flags & (ContentFlags.MergeResults | ContentFlags.ShowLabels)).to.not.eq(0);
     });
 
@@ -192,7 +184,7 @@ describe("PropertyDataProvider", () => {
       projectId = "project-id";
       imodelId = "imodel-id";
       imodelMock.setup((x) => x.iModelId).returns(() => imodelId);
-      imodelMock.setup((x) => x.contextId).returns(() => projectId);
+      imodelMock.setup((x) => x.iTwinId).returns(() => projectId);
 
       favoritePropertiesManagerMock.setup((x) => x.has(moq.It.isAny(), imodelMock.object, moq.It.isAny())).returns(() => false);
     });
@@ -244,7 +236,6 @@ describe("PropertyDataProvider", () => {
     const createArrayField = (props?: { name?: string, itemsType?: TypeDescription }) => {
       const property: Property = {
         property: createTestPropertyInfo(),
-        relatedClassPath: [],
       };
       const typeDescription: ArrayTypeDescription = {
         valueFormat: PropertyValueFormat.Array,
@@ -261,7 +252,6 @@ describe("PropertyDataProvider", () => {
     const createStructField = (props?: { name?: string, members?: StructFieldMemberDescription[] }) => {
       const property: Property = {
         property: createTestPropertyInfo(),
-        relatedClassPath: [],
       };
       const typeDescription: StructTypeDescription = {
         valueFormat: PropertyValueFormat.Struct,
@@ -1504,7 +1494,6 @@ describe("PropertyDataProvider", () => {
           const displayValues: ValuesDictionary<any> = {};
           const record = createTestContentItem({ values, displayValues });
           (provider as any).getContent = async () => new Content(descriptor, [record]);
-
           const data = await provider.getData();
           expect(data.categories.length).to.eq(0);
         });

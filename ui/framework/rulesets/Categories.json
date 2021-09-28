@@ -53,19 +53,15 @@
       "specifications": [
         {
           "specType": "RelatedInstanceNodes",
-          "relationships": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "CategoryOwnsSubCategories"
-            ]
-          },
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "SubCategory"
-            ]
-          },
-          "requiredDirection": "Forward",
+          "relationshipPaths": [
+            {
+              "relationship": {
+                "schemaName": "BisCore",
+                "className": "CategoryOwnsSubCategories"
+              },
+              "direction": "Forward"
+            }
+          ],
           "groupByClass": false,
           "groupByLabel": false
         }

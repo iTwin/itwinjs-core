@@ -169,12 +169,13 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
 export const ColorPickerButton: (props: ColorPickerProps) => JSX.Element | null;
 
 // @beta
-export function ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets }: ColorPickerDialogProps): JSX.Element;
+export function ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets, colorInputType }: ColorPickerDialogProps): JSX.Element;
 
 // @beta
 export interface ColorPickerDialogProps {
     // (undocumented)
     color: ColorDef;
+    colorInputType?: "HSL" | "RGB";
     // (undocumented)
     colorPresets?: ColorDef[];
     // (undocumented)
@@ -185,27 +186,30 @@ export interface ColorPickerDialogProps {
     onOkResult: (selectedColor: ColorDef) => void;
 }
 
-// @beta
-export function ColorPickerPanel({ activeColor, onColorChange, colorPresets }: ColorPickerPanelProps): JSX.Element;
+// @public
+export function ColorPickerPanel({ activeColor, onColorChange, colorPresets, colorInputType }: ColorPickerPanelProps): JSX.Element;
 
-// @beta
+// @public
 export interface ColorPickerPanelProps {
     // (undocumented)
     activeColor: ColorDef;
+    colorInputType?: "HSL" | "RGB";
     // (undocumented)
     colorPresets?: ColorDef[];
     // (undocumented)
     onColorChange: (selectedColor: ColorDef) => void;
 }
 
-// @beta
+// @public
 export const ColorPickerPopup: (props: ColorPickerPopupProps) => JSX.Element | null;
 
-// @beta
+// @public
 export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
     captureClicks?: boolean;
     colorDefs?: ColorDef[];
+    colorInputType?: "HSL" | "RGB";
     disabled?: boolean;
+    hideCloseButton?: boolean;
     initialColor: ColorDef;
     onClose?: ((colorValue: ColorDef) => void) | undefined;
     onColorChange?: ((newColor: ColorDef) => void) | undefined;
@@ -845,10 +849,11 @@ export interface QuantityProps extends CommonProps {
 }
 
 // @internal (undocumented)
-export function RailToolTip({ showToolTip, percent, tooltipText }: {
+export function RailMarkers({ showToolTip, percent, tooltipText, markDate }: {
     showToolTip: boolean;
     percent: number;
     tooltipText: string;
+    markDate?: DateMarkerProps;
 }): JSX.Element;
 
 // @beta
@@ -873,6 +878,8 @@ export interface ScrubberProps extends CommonProps {
     inMiniMode: boolean;
     // (undocumented)
     isPlaying: boolean;
+    // (undocumented)
+    markDate?: TimelineDateMarkerProps;
     // (undocumented)
     onChange?: (values: ReadonlyArray<number>) => void;
     // (undocumented)
@@ -948,39 +955,23 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
 
 // @public
 export interface TimelineComponentProps {
-    // (undocumented)
     alwaysMinimized?: boolean;
-    // (undocumented)
     appMenuItemOption?: TimelineMenuItemOption;
-    // (undocumented)
     appMenuItems?: TimelineMenuItemProps[];
-    // (undocumented)
     componentId?: string;
-    // (undocumented)
     endDate?: Date;
-    // (undocumented)
     includeRepeat?: boolean;
-    // (undocumented)
     initialDuration?: number;
-    // (undocumented)
+    markDate?: TimelineDateMarkerProps;
     minimized?: boolean;
-    // (undocumented)
     onChange?: (duration: number) => void;
-    // (undocumented)
     onJump?: (forward: boolean) => void;
-    // (undocumented)
     onPlayPause?: (playing: boolean) => void;
-    // (undocumented)
     onSettingsChange?: (arg: PlaybackSettings) => void;
-    // (undocumented)
     repeat?: boolean;
-    // (undocumented)
     showDuration?: boolean;
-    // (undocumented)
     startDate?: Date;
-    // (undocumented)
     timeZoneOffset?: number;
-    // (undocumented)
     totalDuration: number;
 }
 
@@ -1008,6 +999,12 @@ export interface TimelineDataProvider {
 export enum TimelineDateDisplay {
     ActualTime = 0,
     ProjectTime = 1
+}
+
+// @public
+export interface TimelineDateMarkerProps {
+    date?: Date;
+    dateMarker?: React.ReactNode;
 }
 
 // @public
@@ -1141,6 +1138,8 @@ export class ViewportComponentEvents {
 
 // @public
 export interface ViewportProps extends CommonProps {
+    // @internal
+    controlId?: string;
     // @internal (undocumented)
     getViewOverlay?: (viewport: ScreenViewport) => React.ReactNode;
     imodel: IModelConnection;

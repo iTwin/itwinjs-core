@@ -85,7 +85,7 @@ function mockDeleteBriefcase(imodelId: GuidString, briefcaseId: number) {
 
 describe("iModelHub BriefcaseHandler", () => {
   let requestContext: AuthorizedClientRequestContext;
-  let contextId: string;
+  let iTwinId: string;
   let imodelId: GuidString;
   let iModelClient: IModelClient;
   let briefcaseId: number;
@@ -96,9 +96,9 @@ describe("iModelHub BriefcaseHandler", () => {
     requestContext = new AuthorizedClientRequestContext(accessToken);
     (requestContext as any).activityId = "iModelHub BriefcaseHandler";
 
-    contextId = await utils.getProjectId(requestContext);
-    await utils.createIModel(requestContext, utils.sharedimodelName, contextId);
-    imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);
+    iTwinId = await utils.getProjectId(requestContext);
+    await utils.createIModel(requestContext, utils.sharedimodelName, iTwinId);
+    imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, iTwinId);
     iModelClient = utils.getDefaultClient();
     if (!TestConfig.enableMocks) {
       const briefcases = await iModelClient.briefcases.get(requestContext, imodelId, new BriefcaseQuery().ownedByMe());
@@ -129,7 +129,7 @@ describe("iModelHub BriefcaseHandler", () => {
 
   after(async () => {
     if (TestConfig.enableIModelBank) {
-      await utils.deleteIModelByName(requestContext, contextId, utils.sharedimodelName);
+      await utils.deleteIModelByName(requestContext, iTwinId, utils.sharedimodelName);
     }
   });
 
@@ -369,7 +369,7 @@ describe("iModelHub BriefcaseHandler", () => {
     let error;
     try {
       (await iModelClient.briefcases.get(requestContext, imodelId));
-    } catch (err) {
+    } catch (err: any) {
       error = err;
     }
     chai.assert(error);
@@ -383,7 +383,7 @@ describe("iModelHub BriefcaseHandler", () => {
     let error;
     try {
       (await iModelClient.briefcases.get(requestContext, imodelId));
-    } catch (err) {
+    } catch (err: any) {
       error = err;
     }
     chai.assert(error);

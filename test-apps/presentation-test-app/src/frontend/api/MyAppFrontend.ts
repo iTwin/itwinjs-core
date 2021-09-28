@@ -107,9 +107,9 @@ async function tryOpenStandalone(path: string) {
   try {
     iModel = await BriefcaseConnection.openStandalone(path, OpenMode.ReadWrite);
     Logger.logInfo("presentation", `Opened standalone: ${iModel.name}`);
-  } catch (err) {
+  } catch (err: any) {
     if (err instanceof IModelError) {
-      Logger.logError("presentation", `Failed to open standalone: ${err.message}`, err.getMetaData);
+      Logger.logError("presentation", `Failed to open standalone: ${err.message}`, () => err.getMetaData());
     } else {
       Logger.logError("presentation", `Failed to open standalone.`);
     }

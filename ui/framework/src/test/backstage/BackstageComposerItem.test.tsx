@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
 import {
   BackstageActionItem, BackstageComposerActionItem, BackstageComposerItem, BackstageComposerStageLauncher, BackstageItemType, BackstageManager,
-  BackstageStageLauncher, FrontstageDef, FrontstageManager, UiFramework,
+  BackstageStageLauncher, FrontstageManager, UiFramework,
 } from "../../ui-framework";
 import TestUtils, { mount } from "../TestUtils";
 import { BadgeType } from "@bentley/ui-abstract";
@@ -65,28 +65,26 @@ describe("BackstageComposerItem", () => {
       shallow(<BackstageComposerStageLauncher item={getStageLauncherItem()} />).should.matchSnapshot();
     });
 
-    it("should activate frontstage def", async () => {
+    it("should activate frontstage", async () => {
       const backstageManager = new BackstageManager();
       sinon.stub(UiFramework, "backstageManager").get(() => backstageManager);
       const sut = shallow(<BackstageComposerStageLauncher item={getStageLauncherItem({ stageId: "Frontstage-1" })} />);
       const backstageItem = sut.find(NZ_BackstageItem);
 
-      const frontstageDef = new FrontstageDef();
-      sinon.stub(FrontstageManager, "findFrontstageDef").withArgs("Frontstage-1").returns(frontstageDef);
-      const spy = sinon.stub(FrontstageManager, "setActiveFrontstageDef").returns(Promise.resolve());
+      sinon.stub(FrontstageManager, "hasFrontstage").withArgs("Frontstage-1").returns(true);
+      const spy = sinon.stub(FrontstageManager, "setActiveFrontstage");
       backstageItem.prop("onClick")!();
-
-      spy.calledOnceWithExactly(frontstageDef).should.true;
+      await TestUtils.flushAsyncOperations();
+      spy.calledOnceWithExactly("Frontstage-1").should.true;
     });
 
-    it("should not activate if frontstage def is not found", async () => {
+    it("should not activate if frontstage is not found", async () => {
       const backstageManager = new BackstageManager();
       sinon.stub(UiFramework, "backstageManager").get(() => backstageManager);
       const sut = shallow(<BackstageComposerStageLauncher item={getStageLauncherItem()} />);
       const backstageItem = sut.find(NZ_BackstageItem);
-
-      sinon.stub(FrontstageManager, "findFrontstageDef").returns(undefined);
-      const spy = sinon.spy(FrontstageManager, "setActiveFrontstageDef");
+      sinon.stub(FrontstageManager, "hasFrontstage").withArgs("stage-1").returns(false);
+      const spy = sinon.stub(FrontstageManager, "setActiveFrontstage");
       backstageItem.prop("onClick")!();
 
       spy.notCalled.should.true;

@@ -14,11 +14,24 @@ const mainWindowName = "mainWindow";
 /** Initializes Electron backend */
 export async function initializeElectron() {
 
+  const baseOidcScopes = [
+    "openid",
+    "email",
+    "profile",
+    "organization",
+    "itwinjs",
+  ];
+
   const opt = {
     electronHost: {
       webResourcesPath: join(__dirname, "..", "..", "..", "build"),
       developmentServer: process.env.NODE_ENV === "development",
       rpcInterfaces: getSupportedRpcs(),
+      authConfig: {
+        clientId: "imodeljs-electron-test",
+        redirectUri: "http://localhost:3000/signin-callback",
+        scope: baseOidcScopes.join(" "),
+      },
     },
     nativeHost: {
       applicationName: "ui-test-app",

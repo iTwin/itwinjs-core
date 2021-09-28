@@ -4,7 +4,6 @@
 
 ```ts
 
-import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { Content } from '@bentley/presentation-common';
 import { ContentDescriptorRequestOptions } from '@bentley/presentation-common';
 import { ContentRequestOptions } from '@bentley/presentation-common';
@@ -19,8 +18,8 @@ import { DistinctValuesRequestOptions } from '@bentley/presentation-common';
 import { ElementProperties } from '@bentley/presentation-common';
 import { ElementPropertiesRequestOptions } from '@bentley/presentation-common';
 import { Entity } from '@bentley/imodeljs-backend';
-import { ExtendedContentRequestOptions } from '@bentley/presentation-common';
-import { ExtendedHierarchyRequestOptions } from '@bentley/presentation-common';
+import { FilterByInstancePathsHierarchyRequestOptions } from '@bentley/presentation-common';
+import { FilterByTextHierarchyRequestOptions } from '@bentley/presentation-common';
 import { FormatProps } from '@bentley/imodeljs-quantity';
 import { HierarchyCompareInfo } from '@bentley/presentation-common';
 import { HierarchyCompareOptions } from '@bentley/presentation-common';
@@ -31,17 +30,15 @@ import { IModelDb } from '@bentley/imodeljs-backend';
 import { InstanceKey } from '@bentley/presentation-common';
 import { KeySet } from '@bentley/presentation-common';
 import { LabelDefinition } from '@bentley/presentation-common';
-import { LabelRequestOptions } from '@bentley/presentation-common';
 import { Node } from '@bentley/presentation-common';
 import { NodeKey } from '@bentley/presentation-common';
 import { NodePathElement } from '@bentley/presentation-common';
 import { Paged } from '@bentley/presentation-common';
 import { PagedResponse } from '@bentley/presentation-common';
-import { PartialHierarchyModification } from '@bentley/presentation-common';
+import { Prioritized } from '@bentley/presentation-common';
 import { RegisteredRuleset } from '@bentley/presentation-common';
 import { Ruleset } from '@bentley/presentation-common';
 import { SelectClassInfo } from '@bentley/presentation-common';
-import { SelectionInfo } from '@bentley/presentation-common';
 import { SelectionScope } from '@bentley/presentation-common';
 import { SelectionScopeRequestOptions } from '@bentley/presentation-common';
 import { UnitSystemKey } from '@bentley/imodeljs-quantity';
@@ -49,17 +46,17 @@ import { UpdateInfoJSON } from '@bentley/presentation-common';
 import { VariableValue } from '@bentley/presentation-common';
 import { VariableValueTypes } from '@bentley/presentation-common';
 
+// @public
+export interface ContentCacheConfig {
+    // @alpha
+    size?: number;
+}
+
 // @beta
 export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
     directory?: string;
     // (undocumented)
     mode: HierarchyCacheMode.Disk;
-}
-
-// @beta @deprecated
-export enum DuplicateRulesetHandlingStrategy {
-    Replace = 1,
-    Skip = 0
 }
 
 // @internal (undocumented)
@@ -88,13 +85,18 @@ export interface HybridCacheConfig extends HierarchyCacheConfigBase {
     mode: HierarchyCacheMode.Hybrid;
 }
 
-// @internal (undocumented)
-export function isEnum<TEnum>(e: TEnum, arg: any): arg is TEnum[keyof TEnum];
-
 // @beta
 export interface MemoryHierarchyCacheConfig extends HierarchyCacheConfigBase {
     // (undocumented)
     mode: HierarchyCacheMode.Memory;
+}
+
+// @public
+export interface MultiManagerPresentationProps extends PresentationManagerProps {
+    // @internal
+    clientManagerFactory?: (clientId: string, props: PresentationManagerProps) => PresentationManager;
+    requestTimeout?: number;
+    unusedClientLifetime?: number;
 }
 
 // @internal (undocumented)
@@ -157,72 +159,31 @@ export class PresentationManager {
     constructor(props?: PresentationManagerProps);
     activeLocale: string | undefined;
     activeUnitSystem: UnitSystemKey | undefined;
-    // @deprecated (undocumented)
-    compareHierarchies(requestContext: ClientRequestContext, requestOptions: HierarchyCompareOptions<IModelDb, NodeKey>): Promise<PartialHierarchyModification[]>;
-    compareHierarchies(requestOptions: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>>): Promise<HierarchyCompareInfo>;
-    // @deprecated
-    computeSelection(requestContext: ClientRequestContext, requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[], scopeId: string): Promise<KeySet>;
-    computeSelection(requestOptions: WithClientRequestContext<SelectionScopeRequestOptions<IModelDb> & {
+    compareHierarchies(requestOptions: HierarchyCompareOptions<IModelDb, NodeKey>): Promise<HierarchyCompareInfo>;
+    computeSelection(requestOptions: SelectionScopeRequestOptions<IModelDb> & {
         ids: Id64String[];
         scopeId: string;
-    }>): Promise<KeySet>;
+    }): Promise<KeySet>;
     dispose(): void;
-    // @deprecated
-    getContent(requestContext: ClientRequestContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<Content | undefined>;
-    getContent(requestOptions: WithClientRequestContext<Paged<ExtendedContentRequestOptions<IModelDb, Descriptor, KeySet>>>): Promise<Content | undefined>;
-    // @deprecated
-    getContentAndSize(requestContext: ClientRequestContext, requestOptions: Paged<ContentRequestOptions<IModelDb>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<{
-        content: Content | undefined;
-        size: number;
-    }>;
-    // @deprecated
-    getContentDescriptor(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, displayType: string, keys: KeySet, selection: SelectionInfo | undefined): Promise<Descriptor | undefined>;
-    getContentDescriptor(requestOptions: WithClientRequestContext<ContentDescriptorRequestOptions<IModelDb, KeySet>>): Promise<Descriptor | undefined>;
-    // @deprecated
-    getContentSetSize(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<number>;
-    getContentSetSize(requestOptions: WithClientRequestContext<ExtendedContentRequestOptions<IModelDb, Descriptor, KeySet>>): Promise<number>;
+    getContent(requestOptions: Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>>): Promise<Content | undefined>;
+    getContentDescriptor(requestOptions: Prioritized<ContentDescriptorRequestOptions<IModelDb, KeySet>>): Promise<Descriptor | undefined>;
+    getContentSetSize(requestOptions: Prioritized<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>): Promise<number>;
     // @beta (undocumented)
-    getContentSources(requestOptions: WithClientRequestContext<ContentSourcesRequestOptions<IModelDb>>): Promise<SelectClassInfo[]>;
-    // @deprecated
-    getDisplayLabelDefinition(requestContext: ClientRequestContext, requestOptions: LabelRequestOptions<IModelDb>, key: InstanceKey): Promise<LabelDefinition>;
-    getDisplayLabelDefinition(requestOptions: WithClientRequestContext<DisplayLabelRequestOptions<IModelDb, InstanceKey>>): Promise<LabelDefinition>;
-    // @deprecated
-    getDisplayLabelDefinitions(requestContext: ClientRequestContext, requestOptions: LabelRequestOptions<IModelDb>, instanceKeys: InstanceKey[]): Promise<LabelDefinition[]>;
-    getDisplayLabelDefinitions(requestOptions: WithClientRequestContext<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>): Promise<LabelDefinition[]>;
-    // @deprecated
-    getDistinctValues(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, descriptor: Descriptor | DescriptorOverrides, keys: KeySet, fieldName: string, maximumValueCount?: number): Promise<string[]>;
+    getContentSources(requestOptions: Prioritized<ContentSourcesRequestOptions<IModelDb>>): Promise<SelectClassInfo[]>;
+    getDisplayLabelDefinition(requestOptions: Prioritized<DisplayLabelRequestOptions<IModelDb, InstanceKey>>): Promise<LabelDefinition>;
+    getDisplayLabelDefinitions(requestOptions: Prioritized<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>): Promise<LabelDefinition[]>;
     // @beta
-    getElementProperties(requestOptions: WithClientRequestContext<ElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined>;
-    // @deprecated
-    getFilteredNodePaths(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, filterText: string): Promise<NodePathElement[]>;
-    getFilteredNodePaths(requestOptions: WithClientRequestContext<HierarchyRequestOptions<IModelDb> & {
-        filterText: string;
-    }>): Promise<NodePathElement[]>;
+    getElementProperties(requestOptions: Prioritized<ElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined>;
+    getFilteredNodePaths(requestOptions: Prioritized<FilterByTextHierarchyRequestOptions<IModelDb>>): Promise<NodePathElement[]>;
     // @internal (undocumented)
     getNativePlatform: () => NativePlatformDefinition;
-    // @deprecated
-    getNodePaths(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]>;
-    getNodePaths(requestOptions: WithClientRequestContext<HierarchyRequestOptions<IModelDb> & {
-        paths: InstanceKey[][];
-        markedIndex: number;
-    }>): Promise<NodePathElement[]>;
-    // @deprecated
-    getNodes(requestContext: ClientRequestContext, requestOptions: Paged<HierarchyRequestOptions<IModelDb>>, parentKey?: NodeKey): Promise<Node[]>;
-    getNodes(requestOptions: WithClientRequestContext<Paged<ExtendedHierarchyRequestOptions<IModelDb, NodeKey>>>): Promise<Node[]>;
-    // @deprecated
-    getNodesAndCount(requestContext: ClientRequestContext, requestOptions: Paged<HierarchyRequestOptions<IModelDb>>, parentKey?: NodeKey): Promise<{
-        nodes: Node[];
-        count: number;
-    }>;
-    // @deprecated
-    getNodesCount(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, parentKey?: NodeKey): Promise<number>;
-    getNodesCount(requestOptions: WithClientRequestContext<ExtendedHierarchyRequestOptions<IModelDb, NodeKey>>): Promise<number>;
-    getPagedDistinctValues(requestOptions: WithClientRequestContext<DistinctValuesRequestOptions<IModelDb, Descriptor, KeySet>>): Promise<PagedResponse<DisplayValueGroup>>;
+    getNodePaths(requestOptions: Prioritized<FilterByInstancePathsHierarchyRequestOptions<IModelDb>>): Promise<NodePathElement[]>;
+    getNodes(requestOptions: Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey>>>): Promise<Node[]>;
+    getNodesCount(requestOptions: Prioritized<HierarchyRequestOptions<IModelDb, NodeKey>>): Promise<number>;
+    getPagedDistinctValues(requestOptions: Prioritized<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>): Promise<PagedResponse<DisplayValueGroup>>;
     // @internal (undocumented)
     getRulesetId(rulesetOrId: Ruleset | string): string;
-    // @deprecated
-    getSelectionScopes(requestContext: ClientRequestContext, requestOptions: SelectionScopeRequestOptions<IModelDb>): Promise<SelectionScope[]>;
-    getSelectionScopes(requestOptions: WithClientRequestContext<SelectionScopeRequestOptions<IModelDb>>): Promise<SelectionScope[]>;
+    getSelectionScopes(_requestOptions: SelectionScopeRequestOptions<IModelDb>): Promise<SelectionScope[]>;
     get props(): PresentationManagerProps;
     rulesets(): RulesetManager;
     vars(rulesetId: string): RulesetVariablesManager;
@@ -236,17 +197,17 @@ export enum PresentationManagerMode {
 
 // @public
 export interface PresentationManagerProps {
-    activeLocale?: string;
-    activeUnitSystem?: UnitSystemKey;
     // @internal (undocumented)
     addon?: NativePlatformDefinition;
-    // @beta
-    cacheConfig?: HierarchyCacheConfig;
-    // @alpha (undocumented)
-    contentCacheSize?: number;
+    caching?: {
+        hierarchies?: HierarchyCacheConfig;
+        content?: ContentCacheConfig;
+    };
     defaultFormats?: {
         [phenomenon: string]: UnitSystemFormat;
     };
+    defaultLocale?: string;
+    defaultUnitSystem?: UnitSystemKey;
     enableSchemasPreload?: boolean;
     // @internal
     id?: string;
@@ -258,39 +219,20 @@ export interface PresentationManagerProps {
     };
     rulesetDirectories?: string[];
     supplementalRulesetDirectories?: string[];
-    taskAllocationsMap?: {
-        [priority: number]: number;
-    };
     // @alpha
     updatesPollInterval?: number;
     // @alpha
     useMmap?: boolean | number;
+    workerThreadsCount?: number;
 }
 
 // @public
-export type PresentationProps = PresentationPropsDeprecated | PresentationPropsNew;
-
-// @public @deprecated (undocumented)
-export interface PresentationPropsDeprecated extends PresentationManagerProps {
-    // @internal
-    clientManagerFactory?: (clientId: string, props: PresentationManagerProps) => PresentationManager;
-    requestTimeout?: number;
-    unusedClientLifetime?: number;
-}
-
-// @public (undocumented)
-export interface PresentationPropsNew extends PresentationManagerProps {
-    requestTimeout?: number;
-    // @internal
-    useSingleManager?: boolean;
-}
+export type PresentationProps = MultiManagerPresentationProps | SingleManagerPresentationProps;
 
 // @beta
 export class RulesetEmbedder {
     constructor(props: RulesetEmbedderProps);
     getRulesets(): Promise<Ruleset[]>;
-    // @deprecated
-    insertRuleset(ruleset: Ruleset, duplicateHandlingStrategy: DuplicateRulesetHandlingStrategy): Promise<Id64String>;
     insertRuleset(ruleset: Ruleset, options?: RulesetInsertOptions): Promise<Id64String>;
     }
 
@@ -371,17 +313,19 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
 }
 
 // @public
+export interface SingleManagerPresentationProps extends PresentationManagerProps {
+    requestTimeout?: number;
+    // @alpha
+    useSingleManager?: boolean;
+}
+
+// @public
 export interface UnitSystemFormat {
     // (undocumented)
     format: FormatProps;
     // (undocumented)
     unitSystems: UnitSystemKey[];
 }
-
-// @public
-export type WithClientRequestContext<T> = T & {
-    requestContext: ClientRequestContext;
-};
 
 
 // (No @packageDocumentation comment for this package)

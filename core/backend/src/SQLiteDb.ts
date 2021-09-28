@@ -20,7 +20,6 @@ export class SQLiteDb implements IDisposable {
 
   /** @internal */
   public get nativeDb(): IModelJsNative.SQLiteDb {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     return this._nativeDb!;
   }
 
@@ -127,11 +126,12 @@ export class SQLiteDb implements IDisposable {
 
   /** Prepare an SQL statement.
      * @param sql The SQLite SQL statement to prepare
+     * @param logErrors Determine if errors are logged or not
      * @internal
      */
-  public prepareSqliteStatement(sql: string): SqliteStatement {
+  public prepareSqliteStatement(sql: string, logErrors = true): SqliteStatement {
     const stmt = new SqliteStatement(sql);
-    stmt.prepare(this.nativeDb);
+    stmt.prepare(this.nativeDb, logErrors);
     return stmt;
   }
 

@@ -23,19 +23,27 @@ import { DynamicsContext } from '@bentley/imodeljs-frontend';
 import { EcefLocation } from '@bentley/imodeljs-common';
 import { EcefLocationProps } from '@bentley/imodeljs-common';
 import { EditManipulator } from '@bentley/imodeljs-frontend';
+import { ElementGeometryCacheFilter } from '@bentley/imodeljs-editor-common';
 import { ElementGeometryInfo } from '@bentley/imodeljs-common';
+import { ElementGeometryResultProps } from '@bentley/imodeljs-editor-common';
 import { ElementSetTool } from '@bentley/imodeljs-frontend';
 import { EventHandled } from '@bentley/imodeljs-frontend';
+import { FeatureAppearance } from '@bentley/imodeljs-common';
+import { FeatureOverrideProvider } from '@bentley/imodeljs-frontend';
+import { FeatureSymbology } from '@bentley/imodeljs-frontend';
 import { FlatBufferGeometryStream } from '@bentley/imodeljs-common';
 import { GeometricElementProps } from '@bentley/imodeljs-common';
 import { GeometryParams } from '@bentley/imodeljs-common';
 import { GeometryQuery } from '@bentley/geometry-core';
 import { GeometryStreamProps } from '@bentley/imodeljs-common';
+import { GraphicBranchOptions } from '@bentley/imodeljs-frontend';
+import { GraphicType } from '@bentley/imodeljs-frontend';
 import { HitDetail } from '@bentley/imodeljs-frontend';
 import { Id64Arg } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { JsonGeometryStream } from '@bentley/imodeljs-common';
+import { LocateResponse } from '@bentley/imodeljs-frontend';
 import { Matrix3d } from '@bentley/geometry-core';
 import { Path } from '@bentley/geometry-core';
 import { Placement } from '@bentley/imodeljs-common';
@@ -50,6 +58,10 @@ import { RenderGraphic } from '@bentley/imodeljs-frontend';
 import { RenderGraphicOwner } from '@bentley/imodeljs-frontend';
 import { ScreenViewport } from '@bentley/imodeljs-frontend';
 import { SnapDetail } from '@bentley/imodeljs-frontend';
+import { SolidModelingCommandIpc } from '@bentley/imodeljs-editor-common';
+import { SubEntityGeometryProps } from '@bentley/imodeljs-editor-common';
+import { SubEntityLocationProps } from '@bentley/imodeljs-editor-common';
+import { SubEntityProps } from '@bentley/imodeljs-editor-common';
 import { Tool } from '@bentley/imodeljs-frontend';
 import { ToolAssistanceInstruction } from '@bentley/imodeljs-frontend';
 import { Transform } from '@bentley/geometry-core';
@@ -95,7 +107,7 @@ export function computeChordToleranceFromRange(vp: Viewport, range: Range3d): nu
 // @alpha
 export class CreateArcTool extends CreateOrContinuePathTool {
     // (undocumented)
-    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean;
+    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
     // (undocumented)
     protected createConstructionCurve(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined;
     // (undocumented)
@@ -116,10 +128,10 @@ export class CreateArcTool extends CreateOrContinuePathTool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    onInstall(): boolean;
+    onInstall(): Promise<boolean>;
     // (undocumented)
-    onRestartTool(): void;
-    parseAndRun(...inputArgs: string[]): boolean;
+    onRestartTool(): Promise<void>;
+    parseAndRun(...inputArgs: string[]): Promise<boolean>;
     // (undocumented)
     protected provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void;
     // (undocumented)
@@ -157,7 +169,7 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
     // (undocumented)
     protected addConstructionGraphics(curve: CurvePrimitive, showCurve: boolean, context: DynamicsContext): void;
     // (undocumented)
-    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean;
+    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
     // (undocumented)
     protected createNewCurvePrimitive(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined;
     // (undocumented)
@@ -176,17 +188,17 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
     // (undocumented)
     protected get minOrder(): number;
     // (undocumented)
-    onInstall(): boolean;
+    onInstall(): Promise<boolean>;
     // (undocumented)
     onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    onRestartTool(): void;
+    onRestartTool(): Promise<void>;
     // (undocumented)
     get order(): number;
     set order(value: number);
     // (undocumented)
     get orderProperty(): DialogProperty<number>;
-    parseAndRun(...inputArgs: string[]): boolean;
+    parseAndRun(...inputArgs: string[]): Promise<boolean>;
     // (undocumented)
     protected provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void;
     // (undocumented)
@@ -204,7 +216,7 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
 // @alpha
 export class CreateCircleTool extends CreateOrContinuePathTool {
     // (undocumented)
-    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean;
+    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
     // (undocumented)
     protected get createCurvePhase(): CreateCurvePhase;
     // (undocumented)
@@ -223,16 +235,16 @@ export class CreateCircleTool extends CreateOrContinuePathTool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    onInstall(): boolean;
+    onInstall(): Promise<boolean>;
     // (undocumented)
-    onPostInstall(): void;
+    onPostInstall(): Promise<void>;
     // (undocumented)
-    onReinitialize(): void;
+    onReinitialize(): Promise<void>;
     // (undocumented)
     onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    onRestartTool(): void;
-    parseAndRun(...inputArgs: string[]): boolean;
+    onRestartTool(): Promise<void>;
+    parseAndRun(...inputArgs: string[]): Promise<boolean>;
     // (undocumented)
     protected provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void;
     // (undocumented)
@@ -270,10 +282,10 @@ export abstract class CreateElementTool extends PrimitiveTool {
     protected isComplete(_ev: BeButtonEvent): boolean;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
-    onPostInstall(): void;
+    onPostInstall(): Promise<void>;
     // (undocumented)
     onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
-    onUnsuspend(): void;
+    onUnsuspend(): Promise<void>;
     protected processDataButton(ev: BeButtonEvent): Promise<EventHandled>;
     protected provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void;
     protected setupAndPromptForNextAction(): void;
@@ -296,7 +308,7 @@ export class CreateEllipseTool extends CreateOrContinuePathTool {
     // (undocumented)
     protected isComplete(_ev: BeButtonEvent): boolean;
     // (undocumented)
-    onRestartTool(): void;
+    onRestartTool(): Promise<void>;
     // (undocumented)
     protected provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void;
     // (undocumented)
@@ -316,7 +328,7 @@ export class CreateLineStringTool extends CreateOrContinuePathTool {
     // (undocumented)
     onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    onRestartTool(): void;
+    onRestartTool(): Promise<void>;
     // (undocumented)
     protected provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void;
     // (undocumented)
@@ -412,7 +424,7 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
     // (undocumented)
     protected isValidForJoin(): Promise<boolean>;
     // (undocumented)
-    onCleanup(): void;
+    onCleanup(): Promise<void>;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
@@ -468,7 +480,7 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
 // @alpha
 export class CreateRectangleTool extends CreateOrContinuePathTool {
     // (undocumented)
-    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean;
+    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
     // (undocumented)
     protected cornerLocal?: Point3d;
     // (undocumented)
@@ -488,12 +500,12 @@ export class CreateRectangleTool extends CreateOrContinuePathTool {
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    onInstall(): boolean;
+    onInstall(): Promise<boolean>;
     // (undocumented)
-    onRestartTool(): void;
+    onRestartTool(): Promise<void>;
     // (undocumented)
     protected originLocal?: Point3d;
-    parseAndRun(...inputArgs: string[]): boolean;
+    parseAndRun(...inputArgs: string[]): Promise<boolean>;
     // (undocumented)
     protected provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void;
     // (undocumented)
@@ -529,7 +541,7 @@ export class DeleteElementsTool extends ElementSetTool {
     // (undocumented)
     static iconSpec: string;
     // (undocumented)
-    onRestartTool(): void;
+    onRestartTool(): Promise<void>;
     // (undocumented)
     processAgendaImmediate(): Promise<void>;
     // (undocumented)
@@ -563,6 +575,7 @@ export interface EditorOptions {
     registerBasicManipulationTools?: true | undefined;
     registerProjectLocationTools?: true | undefined;
     registerSketchTools?: true | undefined;
+    registerSolidModelingTools?: true | undefined;
     registerUndoRedoTools?: true | undefined;
 }
 
@@ -582,17 +595,142 @@ export class EditTools {
 }
 
 // @alpha
+export abstract class ElementGeometryCacheTool extends ElementSetTool implements FeatureOverrideProvider {
+    // (undocumented)
+    addFeatureOverrides(overrides: FeatureSymbology.Overrides, _vp: Viewport): void;
+    // (undocumented)
+    protected get agendaAppearance(): FeatureAppearance;
+    // (undocumented)
+    protected allowView(vp: Viewport): boolean;
+    // (undocumented)
+    static callCommand<T extends keyof SolidModelingCommandIpc>(method: T, ...args: Parameters<SolidModelingCommandIpc[T]>): ReturnType<SolidModelingCommandIpc[T]>;
+    // (undocumented)
+    protected readonly _checkedIds: Map<string, boolean>;
+    // (undocumented)
+    protected clearElementGeometryCache(): Promise<void>;
+    // (undocumented)
+    protected clearGraphic(): void;
+    // (undocumented)
+    protected createGraphic(graphicData: Uint8Array): Promise<void>;
+    // (undocumented)
+    protected _firstResult: boolean;
+    // (undocumented)
+    protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
+    // (undocumented)
+    protected getGraphicData(_ev: BeButtonEvent): Promise<Uint8Array | undefined>;
+    // (undocumented)
+    protected _graphicsPending?: true | undefined;
+    // (undocumented)
+    protected _graphicsProvider?: ElementGeometryGraphicsProvider;
+    // (undocumented)
+    isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
+    // (undocumented)
+    protected isElementValidForOperation(hit: HitDetail, out?: LocateResponse): Promise<boolean>;
+    // (undocumented)
+    onCleanup(): Promise<void>;
+    // (undocumented)
+    onDynamicFrame(_ev: BeButtonEvent, context: DynamicsContext): void;
+    // (undocumented)
+    onMouseMotion(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    onPostInstall(): Promise<void>;
+    // (undocumented)
+    onSuspend(): Promise<void>;
+    // (undocumented)
+    onUnsuspend(): Promise<void>;
+    // (undocumented)
+    protected startCommand(): Promise<string>;
+    // (undocumented)
+    protected _startedCmd?: string;
+    // (undocumented)
+    protected updateAgendaAppearanceProvider(drop?: true): void;
+    // (undocumented)
+    protected updateGraphic(ev: BeButtonEvent, isDynamics: boolean): Promise<void>;
+    // (undocumented)
+    protected get wantAgendaAppearanceOverride(): boolean;
+}
+
+// @alpha (undocumented)
+export class ElementGeometryGraphicsProvider {
+    constructor(iModel: IModelConnection);
+    // (undocumented)
+    addDecoration(context: DecorateContext, type: GraphicType, transform?: Transform, opts?: GraphicBranchOptions): void;
+    // (undocumented)
+    addGraphic(context: DynamicsContext, transform?: Transform, opts?: GraphicBranchOptions): void;
+    cleanupGraphic(): void;
+    createGraphic(graphicData: Uint8Array): Promise<boolean>;
+    // (undocumented)
+    graphic?: RenderGraphicOwner;
+    // (undocumented)
+    readonly iModel: IModelConnection;
+}
+
+// @alpha
 export class MoveElementsTool extends TransformElementsTool {
     // (undocumented)
     protected calculateTransform(ev: BeButtonEvent): Transform | undefined;
     // (undocumented)
     static iconSpec: string;
     // (undocumented)
-    onRestartTool(): void;
+    onRestartTool(): Promise<void>;
     // (undocumented)
     protected provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void;
     // (undocumented)
     static toolId: string;
+}
+
+// @alpha
+export class OffsetFacesTool extends ElementGeometryCacheTool {
+    // (undocumented)
+    protected _acceptedSubEntity?: SubEntityLocationProps;
+    // (undocumented)
+    protected applyAgendaOperation(ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
+    protected chooseNextHit(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    protected clearSubEntityGraphic(): void;
+    // (undocumented)
+    protected _currentSubEntity?: SubEntityData;
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    // (undocumented)
+    protected doLocateSubEntity(ev: BeButtonEvent, newSearch: boolean): Promise<boolean>;
+    // (undocumented)
+    protected doPickSubEntities(id: Id64String, boresite: Ray3d): Promise<SubEntityLocationProps | undefined>;
+    // (undocumented)
+    protected gatherInput(ev: BeButtonEvent): Promise<EventHandled | undefined>;
+    // (undocumented)
+    protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
+    // (undocumented)
+    protected getGraphicData(ev: BeButtonEvent): Promise<Uint8Array | undefined>;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    onCleanup(): Promise<void>;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    processAgenda(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    requireWriteableTarget(): boolean;
+    // (undocumented)
+    protected setCurrentSubEntity(id?: Id64String, current?: SubEntityLocationProps, chordTolerance?: number): Promise<boolean>;
+    // (undocumented)
+    protected setupAndPromptForNextAction(): void;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    protected updateGraphic(ev: BeButtonEvent, isDynamics: boolean): Promise<void>;
+    // (undocumented)
+    protected updateSubEntityGraphic(ev: BeButtonEvent): Promise<boolean>;
+    // (undocumented)
+    protected get wantAccuSnap(): boolean;
+    // (undocumented)
+    protected get wantAdditionalInput(): boolean;
+    // (undocumented)
+    protected get wantAgendaAppearanceOverride(): boolean;
+    // (undocumented)
+    protected get wantDynamics(): boolean;
 }
 
 // @beta
@@ -667,7 +805,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     protected get maxExtentHeight(): number;
     protected get maxExtentLength(): number;
     // (undocumented)
-    protected modifyControls(hit: HitDetail, _ev: BeButtonEvent): boolean;
+    protected modifyControls(hit: HitDetail, _ev: BeButtonEvent): Promise<boolean>;
     // (undocumented)
     protected _monumentId?: string;
     // (undocumented)
@@ -706,7 +844,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     // (undocumented)
     testDecorationHit(id: string): boolean;
     // (undocumented)
-    static update(): void;
+    static update(): Promise<void>;
     // (undocumented)
     protected updateDecorationListener(_add: boolean): void;
     // (undocumented)
@@ -730,23 +868,23 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
     // (undocumented)
     isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean;
     // (undocumented)
-    onCleanup(): void;
+    onCleanup(): Promise<void>;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    onInstall(): boolean;
+    onInstall(): Promise<boolean>;
     // (undocumented)
     onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled>;
     // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
-    onPostInstall(): void;
+    onPostInstall(): Promise<void>;
     // (undocumented)
     onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    onRestartTool(): void;
+    onRestartTool(): Promise<void>;
     // (undocumented)
-    onUnsuspend(): void;
+    onUnsuspend(): Promise<void>;
     // (undocumented)
     protected _origin?: Point3d;
     // (undocumented)
@@ -756,7 +894,7 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
     // (undocumented)
     protected setupAndPromptForNextAction(): void;
     // (undocumented)
-    static startTool(): boolean;
+    static startTool(): Promise<boolean>;
     // (undocumented)
     static toolId: string;
     }
@@ -774,23 +912,23 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
     // (undocumented)
     protected _northDir?: Ray3d;
     // (undocumented)
-    onCleanup(): void;
+    onCleanup(): Promise<void>;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    onInstall(): boolean;
+    onInstall(): Promise<boolean>;
     // (undocumented)
     onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled>;
     // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
-    onPostInstall(): void;
+    onPostInstall(): Promise<void>;
     // (undocumented)
     onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    onRestartTool(): void;
+    onRestartTool(): Promise<void>;
     // (undocumented)
-    onUnsuspend(): void;
+    onUnsuspend(): Promise<void>;
     // (undocumented)
     protected _origin?: Point3d;
     // (undocumented)
@@ -800,7 +938,7 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
     // (undocumented)
     protected setupAndPromptForNextAction(): void;
     // (undocumented)
-    static startTool(): boolean;
+    static startTool(): Promise<boolean>;
     // (undocumented)
     static toolId: string;
     }
@@ -810,14 +948,14 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     // (undocumented)
     protected _accept: boolean;
     // (undocumented)
-    acceptCoordinates(): void;
+    acceptCoordinates(): Promise<void>;
     // (undocumented)
     acceptKnownLocation(ev: BeButtonEvent): void;
     // (undocumented)
     get altitude(): number;
     set altitude(value: number);
     // (undocumented)
-    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean;
+    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
     // (undocumented)
     protected _cartographicFromArgs: boolean;
     // (undocumented)
@@ -846,24 +984,24 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     get north(): number;
     set north(value: number);
     // (undocumented)
-    onCleanup(): void;
+    onCleanup(): Promise<void>;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    onInstall(): boolean;
+    onInstall(): Promise<boolean>;
     // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
-    onPostInstall(): void;
+    onPostInstall(): Promise<void>;
     // (undocumented)
     onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    onRestartTool(): void;
+    onRestartTool(): Promise<void>;
     // (undocumented)
-    onUnsuspend(): void;
+    onUnsuspend(): Promise<void>;
     // (undocumented)
     protected _origin?: Point3d;
-    parseAndRun(...inputArgs: string[]): boolean;
+    parseAndRun(...inputArgs: string[]): Promise<boolean>;
     // (undocumented)
     protected provideToolAssistance(): void;
     // (undocumented)
@@ -873,7 +1011,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     // (undocumented)
     protected setupAndPromptForNextAction(): void;
     // (undocumented)
-    static startTool(): boolean;
+    static startTool(): Promise<boolean>;
     // (undocumented)
     supplyToolSettingsProperties(): DialogItem[] | undefined;
     // (undocumented)
@@ -883,7 +1021,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
 // @beta
 export class ProjectLocationCancelTool extends Tool {
     // (undocumented)
-    run(): boolean;
+    run(): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }
@@ -902,7 +1040,7 @@ export enum ProjectLocationChanged {
 // @beta
 export class ProjectLocationHideTool extends Tool {
     // (undocumented)
-    run(): boolean;
+    run(): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }
@@ -914,7 +1052,7 @@ export class ProjectLocationSaveTool extends Tool {
     // (undocumented)
     static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
     // (undocumented)
-    run(): boolean;
+    run(): Promise<boolean>;
     // (undocumented)
     protected saveChanges(deco: ProjectExtentsClipDecoration, extents?: Range3dProps, ecefLocation?: EcefLocationProps): Promise<void>;
     // (undocumented)
@@ -924,7 +1062,7 @@ export class ProjectLocationSaveTool extends Tool {
 // @beta
 export class ProjectLocationShowTool extends Tool {
     // (undocumented)
-    run(): boolean;
+    run(): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }
@@ -932,7 +1070,7 @@ export class ProjectLocationShowTool extends Tool {
 // @alpha
 export class RedoTool extends Tool {
     // (undocumented)
-    run(): boolean;
+    run(): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }
@@ -954,7 +1092,7 @@ export class RotateElementsTool extends TransformElementsTool {
     // (undocumented)
     get angleProperty(): DialogProperty<number>;
     // (undocumented)
-    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean;
+    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
     // (undocumented)
     protected calculateTransform(ev: BeButtonEvent): Transform | undefined;
     // (undocumented)
@@ -972,10 +1110,10 @@ export class RotateElementsTool extends TransformElementsTool {
     // (undocumented)
     onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void;
     // (undocumented)
-    onInstall(): boolean;
+    onInstall(): Promise<boolean>;
     // (undocumented)
-    onRestartTool(): void;
-    parseAndRun(...inputArgs: string[]): boolean;
+    onRestartTool(): Promise<void>;
+    parseAndRun(...inputArgs: string[]): Promise<boolean>;
     // (undocumented)
     protected provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void;
     // (undocumented)
@@ -1015,6 +1153,28 @@ export enum RotateMethod {
     ByAngle = 1
 }
 
+// @alpha (undocumented)
+export class SubEntityData {
+    // (undocumented)
+    cleanupGraphic(): void;
+    // (undocumented)
+    createGraphic(iModel: IModelConnection): Promise<boolean>;
+    // (undocumented)
+    display(context: DecorateContext, accepted: boolean): void;
+    // (undocumented)
+    geom?: SubEntityGeometryProps;
+    // (undocumented)
+    getAppearance(vp: Viewport, accepted: boolean): FeatureAppearance;
+    // (undocumented)
+    protected _graphicsProvider?: ElementGeometryGraphicsProvider;
+    // (undocumented)
+    get hasGraphic(): boolean;
+    // (undocumented)
+    info?: SubEntityProps;
+    // (undocumented)
+    isSame(other: SubEntityProps): boolean;
+}
+
 // @alpha
 export abstract class TransformElementsTool extends ElementSetTool {
     // (undocumented)
@@ -1040,7 +1200,7 @@ export abstract class TransformElementsTool extends ElementSetTool {
     // (undocumented)
     protected onAgendaModified(): Promise<void>;
     // (undocumented)
-    onCleanup(): void;
+    onCleanup(): Promise<void>;
     // (undocumented)
     onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void;
     // (undocumented)
@@ -1099,7 +1259,7 @@ export class TransformGraphicsProvider {
 // @alpha
 export class UndoAllTool extends Tool {
     // (undocumented)
-    run(): boolean;
+    run(): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }
@@ -1107,7 +1267,7 @@ export class UndoAllTool extends Tool {
 // @alpha
 export class UndoTool extends Tool {
     // (undocumented)
-    run(): boolean;
+    run(): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }

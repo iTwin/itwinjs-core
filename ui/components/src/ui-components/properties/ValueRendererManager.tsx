@@ -59,8 +59,6 @@ export interface PropertyValueRendererContext {
   onPopupHide?: () => void;
   /** Callback to request for Dialog to be opened. */
   onDialogOpen?: (dialogState: PropertyDialogState) => void;
-  /** Text with custom style applied to it */
-  decoratedTextElement?: React.ReactNode;
   /** Callback to highlight text */
   textHighlighter?: (text: string) => React.ReactNode;
   /** Default value to show if value rendering is asynchronous */
@@ -99,11 +97,11 @@ export class PropertyValueRendererManager {
     if (record.property.renderer && this._propertyRenderers.has(record.property.renderer.name))
       return this._propertyRenderers.get(record.property.renderer.name);
 
-    if (this._propertyRenderers.has(record.property.typename))
-      return this._propertyRenderers.get(record.property.typename)!;
-
     if (this._defaultMergedValueRenderer.canRender(record))
       return this._defaultMergedValueRenderer;
+
+    if (this._propertyRenderers.has(record.property.typename))
+      return this._propertyRenderers.get(record.property.typename)!;
 
     // Use one of default renderers
     switch (record.value.valueFormat) {

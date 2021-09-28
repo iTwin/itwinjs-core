@@ -64,13 +64,17 @@ describe("ToolUiProvider", () => {
     });
 
     class Frontstage1 extends FrontstageProvider {
+      public static stageId = "ToolUiProvider-TestFrontstage";
+      public get id(): string {
+        return Frontstage1.stageId;
+      }
+
       public get frontstage(): React.ReactElement<FrontstageProps> {
         return (
           <Frontstage
-            id="ToolUiProvider-TestFrontstage"
+            id={this.id}
             defaultTool={CoreTools.selectElementCommand}
-            defaultLayout="FourQuadrants"
-            contentGroup="TestContentGroup1"
+            contentGroup={TestUtils.TestContentGroup1}
             topCenter={
               <Zone
                 widgets={[
@@ -99,7 +103,7 @@ describe("ToolUiProvider", () => {
   });
 
   it("starting a tool with tool settings", async () => {
-    const frontstageDef = FrontstageManager.findFrontstageDef("ToolUiProvider-TestFrontstage");
+    const frontstageDef = await FrontstageManager.getFrontstageDef("ToolUiProvider-TestFrontstage");
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {

@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, BeTimePoint, ByteStream } from "@bentley/bentleyjs-core";
+import { assert, BeTimePoint, ByteStream, getErrorMessage } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import {
   ColorDef, computeChildTileProps, computeChildTileRanges, computeTileChordTolerance, ElementAlignedBox3d, LinePixels, TileFormat, TileProps,
@@ -162,7 +162,7 @@ export class IModelTile extends Tile {
 
       resolve(children);
     } catch (err) {
-      reject(err);
+      reject(err instanceof Error ? err : new Error(getErrorMessage(err)));
     }
   }
 

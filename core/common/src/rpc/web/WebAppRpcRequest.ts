@@ -162,7 +162,7 @@ export class WebAppRpcRequest extends RpcRequest {
       try {
         resolve(await this.performFetch());
       } catch (reason) {
-        reject(new ServerError(-1, reason || "Server connection error."));
+        reject(new ServerError(-1, typeof (reason) === "string" ? reason : "Server connection error."));
       }
     });
   }
@@ -227,7 +227,7 @@ export class WebAppRpcRequest extends RpcRequest {
           return;
 
         this._loading = false;
-        reject(new ServerError(this.metadata.status, reason || "Unknown server response error."));
+        reject(new ServerError(this.metadata.status, typeof (reason) === "string" ? reason : "Unknown server response error."));
       }
     });
   }
@@ -377,7 +377,7 @@ export class WebAppRpcRequest extends RpcRequest {
 
   private setupTextTransport(parameters: RpcSerializedValue) {
     if (this.operation.policy.allowResponseCaching(this)) {
-      const encodedBody = btoa(parameters.objects);
+      const encodedBody = btoa(parameters.objects); // eslint-disable-line deprecation/deprecation
       if (encodedBody.length <= WebAppRpcRequest.maxUrlComponentSize) {
         this._request.method = "get";
         this._request.body = undefined;

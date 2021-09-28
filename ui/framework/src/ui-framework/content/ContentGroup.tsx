@@ -9,18 +9,19 @@
 import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
-import { UiError } from "@bentley/ui-abstract";
+import { ContentLayoutProps, UiError } from "@bentley/ui-abstract";
 import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { UiFramework } from "../UiFramework";
 import { ContentControl } from "./ContentControl";
+import { FrontstageProps } from "../frontstage/Frontstage";
 
 /** Properties for content displayed in a content view
  * @public
  */
 export interface ContentProps {
-  /** An optional id for the Content View */
-  id?: string;
+  /** A unique id for the Content View within the group */
+  id: string;
   /** The class name or [[ConfigurableUiControlConstructor]] of the content control */
   classId: string | ConfigurableUiControlConstructor;
   /** Optional application data passed down to the Content View */
@@ -32,9 +33,33 @@ export interface ContentProps {
  */
 export interface ContentGroupProps {
   /** An optional id for the [[ContentGroup]] */
-  id?: string;
+  id: string;
+  /** Content Layout Id or complete set of [[ContentLayoutProps]]  */
+  layout: ContentLayoutProps;
   /** A collection of [[ContentProps]], one for each content view */
   contents: ContentProps[];
+}
+
+/** Abstract class that can be implemented and specified by frontstage to dynamically construct
+ * content group just prior to activating the frontstage.
+ * @public
+ */
+export abstract class ContentGroupProvider {
+  abstract provideContentGroup(props: FrontstageProps): Promise<ContentGroup>;
+
+  /** Allow provider to update any data stored in ContentGroupProps. Typically this may
+   * be to remove applicationData entries.
+   */
+  public prepareToSaveProps(contentGroupProps: ContentGroupProps) {
+    return contentGroupProps;
+  }
+
+  /** Allow provider to update any stored ContentGroupProps be it is to be used to create ContentGroup and layouts.
+   * Typically this may be to add applicationData to content entries.
+   */
+  public applyUpdatesToSavedProps(contentGroupProps: ContentGroupProps) {
+    return contentGroupProps;
+  }
 }
 
 /** Callback to process content properties during toJSON method
@@ -44,46 +69,44 @@ export type ContentCallback = (content: ContentProps) => void;
 
 /** ContentGroup class. Content Groups define content displayed in content views that are laid out using a [[ContentLayout]].
  * @public
- */
+ */
 export class ContentGroup {
   private static _sId = 0;
-
   public groupId: string;
+  public propsId: string;
+  public layout: ContentLayoutProps;
   public contentPropsList: ContentProps[];
   private _contentControls = new Map<string, ContentControl>();
   private _contentSetMap = new Map<string, ContentControl>();
 
-  constructor(groupProps: ContentGroupProps) {
-    if (groupProps.id !== undefined)
-      this.groupId = groupProps.id;
-    else {
-      ContentGroup._sId++;
-      this.groupId = `ContentGroup-${ContentGroup._sId}`;
-    }
+  public get id() {
+    return this.groupId;
+  }
 
-    this.contentPropsList = groupProps.contents;
+  constructor(contentGroupProps: ContentGroupProps) {
+    this.layout = { ...contentGroupProps.layout };
+    this.propsId = contentGroupProps.id;
+    // ensure we have a unique groupId for each instance of a content group - this will be used to generate a key in the React controls
+    this.groupId = `[${contentGroupProps.id}-${ContentGroup._sId++}]`;
+    this.contentPropsList = contentGroupProps.contents;
   }
 
   /** Gets a [[ContentControl]] from the Content Group based on its [[ContentProps]]. */
-  public getContentControl(contentProps: ContentProps, index: number): ContentControl | undefined {
-    let id: string;
-    if (contentProps.id !== undefined)
-      id = contentProps.id;
-    else
-      id = `${this.groupId}-${index}`;
-
+  public getContentControl(contentProps: ContentProps, _index: number): ContentControl | undefined {
+    // ensure we have a unique control Id for each instance of a content control - this will be used as a key for the React control - see `ContentControl.getKeyedReactNode`
+    const id = `${contentProps.id}::${this.groupId}`;
     let contentControl: ContentControl | undefined;
 
-    if (!this._contentControls.get(id)) {
+    if (!this._contentControls.get(contentProps.id)) {
       let usedClassId: string = "";
 
       if (typeof contentProps.classId === "string") {
-        if (!this._contentControls.get(id) && ConfigurableUiManager.isControlRegistered(contentProps.classId)) {
-          contentControl = ConfigurableUiManager.createControl(contentProps.classId, id, contentProps.applicationData) as ContentControl;
+        if (!this._contentControls.get(contentProps.id) && ConfigurableUiManager.isControlRegistered(contentProps.classId)) {
+          contentControl = ConfigurableUiManager.createControl(contentProps.classId, id, contentProps.applicationData, contentProps.id) as ContentControl;
           usedClassId = contentProps.classId;
         }
       } else {
-        const info = new ConfigurableCreateInfo(contentProps.classId.name, id, id);
+        const info = new ConfigurableCreateInfo(contentProps.classId.name, id, contentProps.id);
         contentControl = new contentProps.classId(info, contentProps.applicationData) as ContentControl;
         usedClassId = contentProps.classId.name;
       }
@@ -93,11 +116,11 @@ export class ContentGroup {
           throw new UiError(UiFramework.loggerCategory(this), `getContentControl error: '${usedClassId}' is NOT a ContentControl or ViewportContentControl`);
         }
         contentControl.initialize();
-        this._contentControls.set(id, contentControl);
+        this._contentControls.set(contentProps.id, contentControl);
       }
     }
 
-    return this._contentControls.get(id);
+    return this._contentControls.get(contentProps.id);
   }
 
   /** Gets a [[ContentControl]] from the Content Group with a given ID. */
@@ -127,8 +150,12 @@ export class ContentGroup {
     if (this._contentSetMap.size === 0)
       this.getContentNodes();
 
-    if (node && (node as React.ReactElement<any>).key)
-      return this._contentSetMap.get((node as React.ReactElement<any>).key as string);
+    if (node && (node as React.ReactElement<any>).key) {
+      const key = ((node as React.ReactElement<any>).key as string);
+      // key has format `${contentProps.id}::${this.groupId}` which is stored as unique id
+      const controlId = key.split("::", 1)[0];
+      return this._contentSetMap.get(controlId);
+    }
 
     Logger.logError(UiFramework.loggerCategory(this), `getControlFromElement: no control found for element`);
     return undefined;
@@ -171,7 +198,8 @@ export class ContentGroup {
    */
   public toJSON(contentCallback?: ContentCallback): ContentGroupProps {
     const contentGroupProps: ContentGroupProps = {
-      id: this.groupId,
+      id: this.propsId,
+      layout: this.layout,
       contents: this.contentPropsList,
     };
 
@@ -207,39 +235,5 @@ export class ContentGroup {
     });
 
     return viewports;
-  }
-
-}
-
-// -----------------------------------------------------------------------------
-// ContentGroupManager class
-// -----------------------------------------------------------------------------
-
-/** ContentGroup Manager class.
- * @public
- */
-export class ContentGroupManager {
-  private static _groups: Map<string, ContentGroup> = new Map<string, ContentGroup>();
-
-  public static loadGroups(groupPropsList: ContentGroupProps[]) {
-    groupPropsList.map((groupProps, _index) => {
-      this.loadGroup(groupProps);
-    });
-  }
-
-  public static loadGroup(groupProps: ContentGroupProps) {
-    const group = new ContentGroup(groupProps);
-    if (groupProps.id)
-      this.addGroup(groupProps.id, group);
-    else
-      throw new UiError(UiFramework.loggerCategory(this), `loadGroup: ContentGroupProps should contain an id`);
-  }
-
-  public static findGroup(groupId: string): ContentGroup | undefined {
-    return this._groups.get(groupId);
-  }
-
-  public static addGroup(groupId: string, group: ContentGroup) {
-    this._groups.set(groupId, group);
   }
 }

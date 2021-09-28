@@ -23,7 +23,7 @@ import { currentEnvironment } from "./_Setup.test";
 // cspell:ignore oldvalue newvalue
 
 const timeout = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-const testToken: IModelRpcProps = { key: "test", contextId: "test", iModelId: "test", changeset: { id: "test" } };
+const testToken: IModelRpcProps = { key: "test", iTwinId: "test", iModelId: "test", changeset: { id: "test" } };
 
 describe("RpcInterface", () => {
   class LocalInterface extends RpcInterface {
@@ -138,7 +138,7 @@ describe("RpcInterface", () => {
 
     try {
       assert.equal(await response, customId);
-    } catch (reason) {
+    } catch (reason: any) {
       assert(false, reason);
     }
 
@@ -217,9 +217,8 @@ describe("RpcInterface", () => {
       });
 
       const id = interfaces.sort().join(",");
-      if (typeof (btoa) !== "undefined")
-        return btoa(id);
-
+      if (typeof (btoa) !== "undefined") // eslint-disable-line deprecation/deprecation
+        return btoa(id); // eslint-disable-line deprecation/deprecation
       return Buffer.from(id, "binary").toString("base64");
     };
 
@@ -249,10 +248,10 @@ describe("RpcInterface", () => {
     assert.isTrue(endpointsRestored[0].compatible);
 
     const originalToken = RpcOperation.fallbackToken;
-    RpcOperation.fallbackToken = { key: "test", contextId: "test", iModelId: "test", changeset: { id: "test" } };
-    assert.equal(controlPolicy.token(undefined as any)!.contextId, "test");
+    RpcOperation.fallbackToken = { key: "test", iTwinId: "test", iModelId: "test", changeset: { id: "test" } };
+    assert.equal(controlPolicy.token(undefined as any)!.iTwinId, "test");
     RpcOperation.fallbackToken = originalToken;
-    assert.equal(controlPolicy.token(undefined as any)!.contextId, originalToken ? originalToken.contextId : "none");
+    assert.equal(controlPolicy.token(undefined as any)!.iTwinId, originalToken ? originalToken.iTwinId : "none");
   });
 
   it("should support retrieving binary resources from the backend", async () => {
@@ -295,7 +294,7 @@ describe("RpcInterface", () => {
       let err: Error | undefined;
       try {
         await c.op1({ a: 0, b: 0 });
-      } catch (error) {
+      } catch (error: any) {
         err = error;
       }
 
@@ -469,9 +468,9 @@ describe("RpcInterface", () => {
   it("should transport imodel tokens correctly", async () => {
     RpcOperation.lookup(TestRpcInterface, "op16").policy.token = new RpcOperationPolicy().token;
 
-    async function check(key: string, contextId?: string, iModelId?: string, changeset?: ChangesetIdWithIndex) {
-      const token: IModelRpcProps = { key, contextId, iModelId, changeset };
-      const values: TokenValues = { key, contextId, iModelId, changeset };
+    async function check(key: string, iTwinId?: string, iModelId?: string, changeset?: ChangesetIdWithIndex) {
+      const token: IModelRpcProps = { key, iTwinId, iModelId, changeset };
+      const values: TokenValues = { key, iTwinId, iModelId, changeset };
       assert.isTrue(await TestRpcInterface.getClient().op16(token, values));
     }
 

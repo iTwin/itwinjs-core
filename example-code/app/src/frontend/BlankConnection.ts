@@ -16,7 +16,7 @@ export class BlankConnectionExample {
       // call this connection "Exton PA"
       name: "Exton PA",
       // put the center of the connection near Exton, Pennsylvania (Bentley's HQ)
-      location: Cartographic.fromDegrees(-75.686694, 40.065757, 0),
+      location: Cartographic.fromDegrees({longitude: -75.686694, latitude: 40.065757, height: 0}),
       // create the area-of-interest to be 2000 x 2000 x 200 meters, centered around 0,0.0
       extents: new Range3d(-1000, -1000, -100, 1000, 1000, 100),
     });

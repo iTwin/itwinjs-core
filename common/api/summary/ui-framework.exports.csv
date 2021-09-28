@@ -1,25 +1,25 @@
 sep=;
 Release Tag;API Item
-alpha;AccuDrawCommandItems
-alpha;AccuDrawDialog(props: AccuDrawDialogProps): JSX.Element
-alpha;AccuDrawDialogProps 
-alpha;AccuDrawGrabInputFocusEvent 
-alpha;AccuDrawKeyboardShortcuts
+beta;AccuDrawCommandItems
+beta;AccuDrawDialog(props: AccuDrawDialogProps): JSX.Element
+beta;AccuDrawDialogProps 
+beta;AccuDrawGrabInputFocusEvent 
+beta;AccuDrawKeyboardShortcuts
 alpha;AccuDrawPopupManager
-alpha;AccuDrawSetCompassModeEvent 
-alpha;AccuDrawSetCompassModeEventArgs
-alpha;AccuDrawSetFieldFocusEvent 
-alpha;AccuDrawSetFieldFocusEventArgs
-alpha;AccuDrawSetFieldLockEvent 
-alpha;AccuDrawSetFieldLockEventArgs
-alpha;AccuDrawSetFieldValueFromUiEvent 
-alpha;AccuDrawSetFieldValueFromUiEventArgs
-alpha;AccuDrawSetFieldValueToUiEvent 
-alpha;AccuDrawSetFieldValueToUiEventArgs
-alpha;AccuDrawUiSettings
-alpha;AccuDrawUiSettingsChangedEvent 
-alpha;AccuDrawWidget(): JSX.Element
-alpha;AccuDrawWidgetControl 
+beta;AccuDrawSetCompassModeEvent 
+beta;AccuDrawSetCompassModeEventArgs
+beta;AccuDrawSetFieldFocusEvent 
+beta;AccuDrawSetFieldFocusEventArgs
+beta;AccuDrawSetFieldLockEvent 
+beta;AccuDrawSetFieldLockEventArgs
+beta;AccuDrawSetFieldValueFromUiEvent 
+beta;AccuDrawSetFieldValueFromUiEventArgs
+beta;AccuDrawSetFieldValueToUiEvent 
+beta;AccuDrawSetFieldValueToUiEventArgs
+beta;AccuDrawUiSettings
+beta;AccuDrawUiSettingsChangedEvent 
+beta;AccuDrawWidget(): JSX.Element
+beta;AccuDrawWidgetControl 
 public;Action
 internal;ActionButtonItem(props: ActionButtonProps): JSX.Element
 public;class ActionButtonItemDef 
@@ -109,6 +109,7 @@ beta;ChildWindowLocationProps
 beta;ChildWindowManager
 beta;ClassGroupingOption
 beta;ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element
+deprecated;ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element
 internal;clearKeyinPaletteHistory(): void
 public;ColorTheme
 public;CombinedReducerState
@@ -141,16 +142,17 @@ public;ContentControl
 public;ContentControlActivatedEvent 
 public;ContentControlActivatedEventArgs
 public;ContentGroup
-public;ContentGroupManager
 public;ContentGroupProps
+public;class ContentGroupProvider
 public;ContentLayout 
 public;ContentLayoutActivatedEvent 
 public;ContentLayoutActivatedEventArgs
 public;ContentLayoutComponentProps 
 public;ContentLayoutDef
 public;ContentLayoutManager
-public;ContentLayoutProps 
 public;ContentProps
+public;ContentToolWidgetComposer(props: ContentToolWidgetComposerProps): JSX.Element
+public;ContentToolWidgetComposerProps
 public;ContentViewManager
 public;CoreTools
 public;createAction
@@ -182,11 +184,15 @@ public;CustomItemProps
 public;DeepReadonly
 public;DeepReadonlyArray
 public;DeepReadonlyObject
+public;DefaultContentTools
+public;DefaultContentToolsAppData
 beta;DefaultDialogGridContainer({ componentGenerator, isToolSettings }:
 beta;DefaultNavigationProps
 deprecated;DefaultNavigationProps
+public;DefaultNavigationTools
 beta;DefaultNavigationWidget 
 deprecated;DefaultNavigationWidget 
+public;DefaultStatusbarItems
 internal;DefaultToolSettingsProvider 
 public;DefaultViewOverlay({ viewport, onPlayPause, featureOptions }: ViewOverlayProps): JSX.Element | null
 public;DialogChangedEvent 
@@ -197,18 +203,6 @@ internal;DialogManagerBase
 internal;DialogRendererBase 
 internal;DialogRendererProps
 internal;DockedStatusBarItem(props: StatusBarItemProps): JSX.Element
-beta;DragDropLayerChangedEvent 
-deprecated;DragDropLayerChangedEvent 
-beta;DragDropLayerChangedEventArgs
-deprecated;DragDropLayerChangedEventArgs
-beta;DragDropLayerManager
-deprecated;DragDropLayerManager
-beta;DragDropLayerRenderer: typeof DragDropLayerRendererComponent & DndComponentClass
-deprecated;DragDropLayerRenderer: typeof DragDropLayerRendererComponent & DndComponentClass
-beta;DragDropLayerRendererComponent 
-deprecated;DragDropLayerRendererComponent 
-beta;DragDropLayerRendererProps 
-deprecated;DragDropLayerRendererProps 
 beta;DrawingNavigationAidControl 
 public;ElementTooltip 
 public;ElementTooltipChangedEvent 
@@ -222,7 +216,7 @@ beta;featureOverridesActiveStateFunc(state: Readonly
 alpha;FocusToolSettings 
 public;FooterModeField 
 public;FooterModeFieldProps 
-alpha;FrameworkAccuDraw 
+beta;FrameworkAccuDraw 
 beta;FrameworkRootState
 internal;FrameworkStagePanel 
 internal;FrameworkStagePanelProps
@@ -293,15 +287,10 @@ alpha;HTMLElementPopup
 alpha;HTMLElementPopupProps 
 beta;IModelAppUiSettings 
 deprecated;IModelAppUiSettings 
-beta;IModelConnectedCategoryTree: import("react-redux").ConnectedComponent
-alpha;IModelConnectedModelsTree: import("react-redux").ConnectedComponent
 beta;IModelConnectedNavigationWidget: import("react-redux").ConnectedComponent
 deprecated;IModelConnectedNavigationWidget: import("react-redux").ConnectedComponent
-beta;IModelConnectedSpatialContainmentTree: import("react-redux").ConnectedComponent
 beta;IModelConnectedViewport: import("react-redux").ConnectedComponent
 beta;IModelConnectedViewSelector: import("react-redux").ConnectedComponent
-beta;IModelConnectedVisibilityComponent: import("react-redux").ConnectedComponent
-deprecated;IModelConnectedVisibilityComponent: import("react-redux").ConnectedComponent
 internal;IModelInfo
 internal;IModelScope
 internal;IModelServices
@@ -349,11 +338,6 @@ public;KeyinFieldLocalization
 internal;KeyinPalettePanel({ keyins, onKeyinExecuted, historyLength: allowedHistoryLength }: KeyinPalettePanelProps): JSX.Element
 alpha;KeyinPalettePopup({ el, id, keyins, onCancel, onItemExecuted }: KeyinPalettePopupProps): JSX.Element
 alpha;KeyinPalettePopupProps
-public;LayoutFragmentProps
-public;LayoutHorizontalSplitProps 
-public;LayoutSplit
-public;LayoutSplitPropsBase
-public;LayoutVerticalSplitProps 
 beta;ListItem
 beta;ListItemType
 beta;ListPicker 
@@ -394,9 +378,6 @@ public;ModelessDialogChangedEvent
 public;ModelessDialogManager
 public;ModelessDialogProps 
 public;ModelessDialogRenderer 
-internal;ModelSelectorWidget 
-deprecated;ModelSelectorWidget 
-internal;ModelSelectorWidgetControl 
 public;ModelsTree(props: ModelsTreeProps): JSX.Element
 beta;ModelsTreeNodeType
 public;ModelsTreeProps
@@ -455,10 +436,6 @@ alpha;PositionPopup
 alpha;PositionPopupContent(props: CommonDivProps): JSX.Element
 alpha;PositionPopupProps 
 public;PresentationSelectionScope
-internal;ProjectInfo
-internal;ProjectReadStatus
-internal;ProjectScope
-internal;ProjectServices
 public;PromptField: import("react-redux").ConnectedComponent
 deprecated;PromptField: import("react-redux").ConnectedComponent
 public;PropsHelper
@@ -542,10 +519,15 @@ internal;StagePanelZoneDefKeys = keyof Pick
 public;StagePanelZoneProps
 internal;StagePanelZonesDef
 public;StagePanelZonesProps
+public;StandardContentToolsProvider 
+public;StandardFrontstageProps
+public;StandardFrontstageProvider 
 public;StandardMessageBox 
 public;StandardMessageBoxProps 
+public;StandardNavigationToolsProvider 
 alpha;StandardRotationNavigationAid 
 alpha;StandardRotationNavigationAidControl 
+public;StandardStatusbarItemsProvider 
 public;StateManager
 public;StateType
 public;StatusBar 
@@ -563,6 +545,7 @@ public;StatusBarLeftSection(props: CommonDivProps): JSX.Element
 public;StatusBarProps 
 public;StatusBarRightSection(props: CommonDivProps): JSX.Element
 public;StatusBarSpaceBetween(props: CommonDivProps): JSX.Element
+public;StatusBarWidgetComposerControl 
 public;class StatusBarWidgetControl 
 public;StatusBarWidgetControlArgs
 internal;StatusBarZone 
@@ -582,14 +565,22 @@ public;SyncUiEventId
 public;SYSTEM_PREFERRED_COLOR_THEME = "SYSTEM_PREFERRED"
 internal;TabLocation
 public;TargetChangeHandler
-public;Task 
-public;TaskActivatedEvent 
-public;TaskActivatedEventArgs
-public;TaskLaunchBackstageItem 
-public;TaskLaunchBackstageItemProps 
-public;TaskManager
-public;TaskProps 
-public;TaskPropsList
+internal;Task 
+deprecated;Task 
+internal;TaskActivatedEvent 
+deprecated;TaskActivatedEvent 
+internal;TaskActivatedEventArgs
+deprecated;TaskActivatedEventArgs
+internal;TaskLaunchBackstageItem 
+deprecated;TaskLaunchBackstageItem 
+internal;TaskLaunchBackstageItemProps 
+deprecated;TaskLaunchBackstageItemProps 
+internal;TaskManager
+deprecated;TaskManager
+internal;TaskProps 
+deprecated;TaskProps 
+internal;TaskPropsList
+deprecated;TaskPropsList
 public;ThemeManager: import("react-redux").ConnectedComponent
 beta;TileLoadingIndicator 
 beta;ToastMessage(props: ToastMessageProps): JSX.Element
@@ -623,10 +614,10 @@ public;ToolItemDef
 public;ToolItemProps 
 internal;ToolSettingsContent(): JSX.Element | null
 internal;ToolSettingsDockedContent(): JSX.Element
-beta;ToolSettingsEntry
-beta;ToolSettingsGrid({ settings }: ToolSettingsGridProps): JSX.Element
+public;ToolSettingsEntry
+internal;ToolSettingsGrid({ settings }: ToolSettingsGridProps): JSX.Element
 beta;ToolSettingsGridContainer({ componentGenerator }:
-beta;ToolSettingsGridProps
+internal;ToolSettingsGridProps
 beta;ToolSettingsManager
 internal;ToolSettingsWidgetContent(): JSX.Element
 internal;ToolSettingsZone 
@@ -660,7 +651,7 @@ public;UiVisibilityChangedEvent
 public;UiVisibilityEventArgs
 alpha;UnitSystemSelector(props: UnitSystemSelectorProps): JSX.Element
 beta;UnitSystemSelectorProps
-internal;useActiveFrontstageDef(): FrontstageDef | undefined
+internal;useActiveFrontstageDef(): import("./FrontstageDef").FrontstageDef | undefined
 beta;useActiveFrontstageId: () => string
 public;useActiveIModelConnection(): IModelConnection | undefined
 internal;useActiveModalFrontstageInfo(): ModalFrontstageInfo | undefined
@@ -711,16 +702,10 @@ beta;ViewSelectorChangedEvent
 beta;ViewSelectorChangedEventArgs
 beta;ViewSelectorDefaultProps = Pick
 beta;ViewSelectorProps
+public;ViewToolWidgetComposer(props: ViewToolWidgetComposerProps): JSX.Element
+public;ViewToolWidgetComposerProps
 public;ViewUtilities
 alpha;VisibilityChangeListener = (nodeIds?: string[], visibilityStatus?: Map
-beta;VisibilityComponent 
-deprecated;VisibilityComponent 
-beta;VisibilityComponentConfig
-deprecated;VisibilityComponentConfig
-public;VisibilityComponentHierarchy
-deprecated;VisibilityComponentHierarchy
-beta;VisibilityComponentProps
-deprecated;VisibilityComponentProps
 alpha;VisibilityStatus
 alpha;VisibilityTreeEventHandler 
 alpha;VisibilityTreeEventHandlerParams 
@@ -729,8 +714,6 @@ alpha;visibilityTreeNodeCheckboxRenderer: (props: NodeCheckboxRenderProps) => JS
 alpha;VisibilityTreeNoFilteredData(props: VisibilityTreeNoFilteredDataProps): JSX.Element
 alpha;VisibilityTreeNoFilteredDataProps
 alpha;VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => boolean
-beta;VisibilityWidget 
-deprecated;VisibilityWidget 
 public;Widget 
 public;WIDGET_OPACITY_DEFAULT = 0.9
 internal;WidgetChangedEventArgs
@@ -742,6 +725,7 @@ internal;WidgetEventArgs
 public;WidgetHost
 internal;WidgetInfo
 beta;WidgetManager
+public;WidgetPanelProps = Omit
 internal;WidgetPanelsFrontstage: React.NamedExoticComponent
 internal;WidgetPanelsFrontstageContent(): JSX.Element | null
 internal;WidgetPanelsFrontstageState
@@ -772,12 +756,18 @@ public;WidgetType
 public;withMessageCenterFieldProps: 
 public;withSafeArea: 
 public;withStatusFieldProps: 
-public;Workflow 
-public;WorkflowActivatedEvent 
-public;WorkflowActivatedEventArgs
-public;WorkflowManager
-public;WorkflowProps 
-public;WorkflowPropsList
+internal;Workflow 
+deprecated;Workflow 
+internal;WorkflowActivatedEvent 
+deprecated;WorkflowActivatedEvent 
+internal;WorkflowActivatedEventArgs
+deprecated;WorkflowActivatedEventArgs
+internal;WorkflowManager
+deprecated;WorkflowManager
+internal;WorkflowProps 
+deprecated;WorkflowProps 
+internal;WorkflowPropsList
+deprecated;WorkflowPropsList
 public;Zone 
 public;ZoneDef 
 public;ZoneDefProvider
@@ -785,5 +775,3 @@ public;ZoneLocation
 public;ZoneProps 
 internal;ZoneRuntimeProps
 public;ZoneState
-internal;ZoneTargets 
-internal;ZoneTargetsProps 

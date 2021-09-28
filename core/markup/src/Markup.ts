@@ -6,7 +6,7 @@
  * @module MarkupApp
  */
 
-import { Logger } from "@bentley/bentleyjs-core";
+import { getErrorProps, Logger } from "@bentley/bentleyjs-core";
 import { Point3d, XAndY } from "@bentley/geometry-core";
 import { ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
 import { FrontendLoggerCategory, imageElementFromImageSource, IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
@@ -228,7 +228,7 @@ export class MarkupApp {
     // set the markup Select tool as the default tool and start it, saving current default tool
     this._saveDefaultToolId = IModelApp.toolAdmin.defaultToolId;
     IModelApp.toolAdmin.defaultToolId = this.markupSelectToolId;
-    IModelApp.toolAdmin.startDefaultTool();
+    return IModelApp.toolAdmin.startDefaultTool();
   }
 
   /** Read the result of a Markup session, then stop the session.
@@ -248,7 +248,7 @@ export class MarkupApp {
     // now restore the default tool and start it
     IModelApp.toolAdmin.defaultToolId = this._saveDefaultToolId;
     this._saveDefaultToolId = "";
-    IModelApp.toolAdmin.startDefaultTool();
+    await IModelApp.toolAdmin.startDefaultTool();
     return data;
   }
 
@@ -282,7 +282,7 @@ export class MarkupApp {
       return undefined;
     markup.svgDecorations!.remove(); // we don't want the decorations or dynamics to be included
     markup.svgDynamics!.remove();
-    IModelApp.toolAdmin.startDefaultTool();
+    void IModelApp.toolAdmin.startDefaultTool();
     return markup.svgContainer.svg(); // string-ize the SVG data
   }
 
@@ -326,7 +326,7 @@ export class MarkupApp {
       // return the markup data to be saved by the application.
       image = (!result.imageFormat ? undefined : canvas.toDataURL(result.imageFormat));
     } catch (e) {
-      Logger.logError(`${FrontendLoggerCategory.Package}.markup`, "Error creating image from svg", () => ({ message: e.message }));
+      Logger.logError(`${FrontendLoggerCategory.Package}.markup`, "Error creating image from svg", () => getErrorProps(e));
     }
     return { rect: { width: canvas.width, height: canvas.height }, svg, image };
   }

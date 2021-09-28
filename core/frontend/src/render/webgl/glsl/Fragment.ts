@@ -26,8 +26,8 @@ export function addWindowToTexCoords(frag: FragmentShaderBuilder) {
 export function addWhiteOnWhiteReversal(frag: FragmentShaderBuilder) {
   frag.addUniform("u_reverseWhiteOnWhite", VariableType.Boolean, (prog) => {
     prog.addGraphicUniform("u_reverseWhiteOnWhite", (uniform, params) => {
-      const isWhite = params.target.uniforms.style.isWhiteBackground;
-      const doReversal = (isWhite && params.geometry.wantWoWReversal(params.programParams)) ? 1 : 0;
+      const wantWoW = params.target.uniforms.style.wantWoWReversal;
+      const doReversal = (wantWoW && params.geometry.wantWoWReversal(params.programParams)) ? 1 : 0;
       uniform.setUniform1i(doReversal);
     });
   });

@@ -19,7 +19,7 @@ export abstract class EmphasizeElementsTool extends Tool {
   protected get _wantClear(): boolean { return false; }
   protected abstract execute(emph: EmphasizeElements, vp: ScreenViewport): void;
 
-  public override run(_args: any[]): boolean {
+  public override async run(_args: any[]): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp)
       return true;
@@ -66,7 +66,7 @@ export class EmphasizeSelectedElementsTool extends EmphasizeElementsTool {
     vp.isFadeOutActive = false;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     if (1 === args.length) {
       switch (args[0].toLowerCase()[0]) {
         case "n":
@@ -132,7 +132,7 @@ export class EmphasizeVisibleElementsTool extends EmphasizeElementsTool {
   private _options: QueryVisibleFeaturesOptions = { source: "screen" };
   protected override get _wantClear() { return true; }
 
-  public override parseAndRun(...input: string[]): boolean {
+  public override async parseAndRun(...input: string[]): Promise<boolean> {
     const args = parseArgs(input);
     const includeNonLocatable = args.getBoolean("n");
     let source: "screen" | "tiles";

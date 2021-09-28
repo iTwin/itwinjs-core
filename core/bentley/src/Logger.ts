@@ -7,15 +7,19 @@
  */
 
 import { BeEvent } from "./BeEvent";
-import { BentleyError, GetMetaDataFunction, IModelStatus } from "./BentleyError";
+import { BentleyError, getErrorMessage, getErrorMetadata, getErrorStack, GetMetaDataFunction, IModelStatus } from "./BentleyError";
 import { BentleyLoggerCategory } from "./BentleyLoggerCategory";
-import { addClientRequestContext, ClientRequestContext } from "./ClientRequestContext";
 import { IDisposable } from "./Disposable";
 
 /** Defines the *signature* for a log function.
  * @public
  */
 export type LogFunction = (category: string, message: string, metaData?: GetMetaDataFunction) => void;
+
+/** Defines log filter intercept.
+ * @internal
+ * */
+export type LogIntercept = (level: LogLevel, category: string, message: string, metaData?: GetMetaDataFunction) => boolean;
 
 /** Use to categorize logging messages by severity.
  * @public
@@ -58,6 +62,7 @@ export class Logger {
   private static _logWarning: LogFunction | undefined;
   private static _logInfo: LogFunction | undefined;
   private static _logTrace: LogFunction | undefined;
+  private static _logIntercept: LogIntercept | undefined;
   private static _categoryFilter: Map<string, LogLevel> = new Map<string, LogLevel>();
   private static _minLevel: LogLevel | undefined = undefined;
   private static _logExceptionCallstacks = false;
@@ -72,7 +77,6 @@ export class Logger {
     Logger.turnOffLevelDefault();
     Logger.turnOffCategories();
     Logger.clearMetaDataSources();
-    Logger.registerMetaDataSource(addClientRequestContext);
   }
 
   /**
@@ -98,6 +102,12 @@ export class Logger {
           this._logWarning(category, message, getMetaData);
         break;
     }
+  }
+  /** Register a log intercept that get call called before log is forwarded to log functions.
+   * @internal
+   */
+  public static setIntercept(logIntercept?: LogIntercept) {
+    Logger._logIntercept = logIntercept;
   }
 
   /** Initialize the logger streams to the console. Should be called at application initialization time. */
@@ -145,23 +155,6 @@ export class Logger {
     this._makeMetaDataEvent.raiseEvent(metaData);
   }
 
-  /** @internal used by addon */
-  public static getCurrentClientRequestContext(): ClientRequestContext {
-    return ClientRequestContext.current;
-  }
-
-  /** @internal used by addon */
-  public static setCurrentClientRequestContext(obj: any) {
-    if (obj === undefined) {
-      if (ClientRequestContext.current.activityId !== "")
-        new ClientRequestContext("").enter();
-    } else {
-      if (!(obj instanceof ClientRequestContext))
-        throw new TypeError(`${JSON.stringify(obj)} -- this is not an instance of ClientRequestContext`);
-      obj.enter();
-    }
-  }
-
   public static set logExceptionCallstacks(b: boolean) {
     Logger._logExceptionCallstacks = b;
   }
@@ -179,7 +172,7 @@ export class Logger {
   }
 
   /** Format the metadata for a log message.  */
-  private static formatMetaData(getMetaData?: GetMetaDataFunction): any {
+  private static formatMetaData(getMetaData?: GetMetaDataFunction): string {
     return getMetaData ? ` ${JSON.stringify(Logger.makeMetaData(getMetaData))}` : "";
   }
 
@@ -290,15 +283,17 @@ export class Logger {
    * @param metaData  Optional data for the message
    */
   public static logError(category: string, message: string, metaData?: GetMetaDataFunction): void {
+    if (Logger._logIntercept) {
+      if (!Logger._logIntercept(LogLevel.Error, category, message, metaData))
+        return;
+    }
     if (Logger._logError && Logger.isEnabled(category, LogLevel.Error))
       Logger._logError(category, message, metaData);
   }
 
-  private static getExceptionMessage(err: Error): string {
-    let msg = err.toString();
-    if (Logger.logExceptionCallstacks && err.stack)
-      msg += `\n${err.stack}`;
-    return msg;
+  private static getExceptionMessage(err: unknown): string {
+    const stack = Logger.logExceptionCallstacks ? `\n${getErrorStack(err)}` : "";
+    return getErrorMessage(err) + stack;
   }
 
   /** Log the specified exception. The special "ExceptionType" property will be added as metadata,
@@ -309,12 +304,9 @@ export class Logger {
    * @param log The logger output function to use - defaults to Logger.logError
    * @param metaData  Optional data for the message
    */
-  public static logException(category: string, err: Error, log: LogFunction = Logger.logError, metaData?: GetMetaDataFunction): void {
+  public static logException(category: string, err: any, log: LogFunction = Logger.logError, metaData?: GetMetaDataFunction): void {
     log(category, Logger.getExceptionMessage(err), () => {
-      const mdata = metaData ? metaData() : {};
-      if (!mdata.hasOwnProperty("ExceptionType"))
-        mdata.ExceptionType = err.constructor.name;
-      return mdata;
+      return { ...getErrorMetadata(err), ...metaData?.(), exceptionType: err.constructor.name };
     });
   }
 
@@ -324,6 +316,10 @@ export class Logger {
    * @param metaData  Optional data for the message
    */
   public static logWarning(category: string, message: string, metaData?: GetMetaDataFunction): void {
+    if (Logger._logIntercept) {
+      if (!Logger._logIntercept(LogLevel.Warning, category, message, metaData))
+        return;
+    }
     if (Logger._logWarning && Logger.isEnabled(category, LogLevel.Warning))
       Logger._logWarning(category, message, metaData);
   }
@@ -334,6 +330,10 @@ export class Logger {
    * @param metaData  Optional data for the message
    */
   public static logInfo(category: string, message: string, metaData?: GetMetaDataFunction): void {
+    if (Logger._logIntercept) {
+      if (!Logger._logIntercept(LogLevel.Info, category, message, metaData))
+        return;
+    }
     if (Logger._logInfo && Logger.isEnabled(category, LogLevel.Info))
       Logger._logInfo(category, message, metaData);
   }
@@ -344,6 +344,10 @@ export class Logger {
    * @param metaData  Optional data for the message
    */
   public static logTrace(category: string, message: string, metaData?: GetMetaDataFunction): void {
+    if (Logger._logIntercept) {
+      if (!Logger._logIntercept(LogLevel.Trace, category, message, metaData))
+        return;
+    }
     if (Logger._logTrace && Logger.isEnabled(category, LogLevel.Trace))
       Logger._logTrace(category, message, metaData);
   }

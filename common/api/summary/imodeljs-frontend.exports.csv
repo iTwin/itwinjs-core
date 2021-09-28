@@ -32,8 +32,6 @@ internal;AnimatedTreeReference
 internal;AnimationBranchState
 internal;AnimationBranchStates = Map
 public;Animator
-public;AppearanceOverrideProps = AppearanceOverrideProps_2
-deprecated;AppearanceOverrideProps = AppearanceOverrideProps_2
 internal;ArcGisErrorCode
 internal;ArcGisGenerateTokenOptions
 internal;ArcGISMapLayerImageryProvider 
@@ -44,10 +42,6 @@ internal;ArcGisTokenManager
 internal;ArcGisUtilities
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number
 internal;areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise
-public;AsyncFunction = AsyncFunction_2
-deprecated;AsyncFunction = AsyncFunction_2
-public;AsyncMethodsOf
-deprecated;AsyncMethodsOf
 public;AuthorizedFrontendRequestContext 
 public;AuxCoordSystem2dState 
 public;AuxCoordSystem3dState 
@@ -76,7 +70,6 @@ public;BlankConnectionProps
 public;BriefcaseConnection 
 public;class BriefcaseNotificationHandler 
 public;BriefcaseTxns 
-internal;BuilderOptions = GraphicBuilderOptions &
 internal;CachedDecoration =
 internal;CachedIModelCoordinatesResponseProps
 public;calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise
@@ -94,6 +87,7 @@ public;CheckpointConnection
 public;ClipEventType
 public;Cluster
 alpha;CompassMode
+public;ComputeChordToleranceArgs
 internal;ContextMode
 public;ContextRealityModelState 
 public;ContextRotationId
@@ -112,6 +106,7 @@ internal;createRenderPlanFromViewport(vp: Viewport): RenderPlan
 internal;CurrentInputState
 internal;CurrentState
 beta;CustomFormatPropEditorSpec
+public;CustomGraphicBuilderOptions 
 beta;CustomQuantityTypeDefinition 
 internal;DebugShaderFile
 public;DecorateContext 
@@ -146,29 +141,18 @@ alpha;class ElementSetTool
 public;ElementState 
 internal;EllipsoidTerrainProvider 
 public;EmphasizeElements 
-public;EmphasizeElementsProps = EmphasizeElementsProps_2
-deprecated;EmphasizeElementsProps = EmphasizeElementsProps_2
 beta;EngineeringLengthDescription 
 public;EntityState 
 public;Environment
 public;EventController
 public;EventHandled
-beta;class Extension
-beta;ExtensionAdmin
-beta;ExtensionLoader
-beta;ExtensionProps
 public;ExtentLimits
-beta;ExternalServerExtensionLoader 
 internal;ExternalTileStatistics
 public;extractImageSourceDimensions(source: ImageSource): Promise
 internal;eyeToCartographicOnGlobe(viewport: ScreenViewport, preserveHeight?: boolean): Cartographic | undefined
 internal;eyeToCartographicOnGlobeFromGcs(viewport: ScreenViewport, preserveHeight?: boolean): Promise
 public;FeatureOverrideProvider
 public;FeatureSymbology
-internal;findAvailableRealityModels(contextId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise
-deprecated;findAvailableRealityModels(contextId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise
-internal;findAvailableUnattachedRealityModels(contextId: GuidString, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise
-deprecated;findAvailableUnattachedRealityModels(contextId: GuidString, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise
 public;FitViewTool 
 internal;Flags
 public;FlashMode
@@ -201,7 +185,7 @@ public;class GeometricModelState
 internal;GeoServices
 public;getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect
 public;getCesiumAssetUrl(osmAssetId: number, requestKey: string): string
-internal;getCesiumOSMBuildingsUrl(): string
+internal;getCesiumOSMBuildingsUrl(): string | undefined
 internal;getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, wantNormals: boolean, exaggeration: number): Promise
 public;getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, minCompressionQuality?: number): string | undefined
 internal;getFrustumPlaneIntersectionDepthRange(frustum: Frustum, plane: Plane3dByOriginAndUnitNormal): Range1d
@@ -304,7 +288,6 @@ public;KeyinParseError
 internal;KeyinStatus
 beta;LengthDescription 
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
-internal;LoadedExtensionProps
 internal;LocalhostIpcApp
 internal;LocalHostIpcAppOpts 
 beta;LocalUnitFormatProvider 
@@ -313,8 +296,11 @@ public;LocateFilterStatus
 public;LocateOptions
 public;LocateResponse
 internal;LockedStates
-internal;loggerCategory = "imodeljs-frontend.Extension"
 public;LookAndMoveTool 
+beta;LookAtArgs
+beta;LookAtOrthoArgs 
+beta;LookAtPerspectiveArgs 
+beta;LookAtUsingLensAngle 
 public;LookViewTool 
 internal;LRUTileList
 internal;LRUTileListNode
@@ -342,6 +328,7 @@ internal;class MapTileProjection
 internal;MapTileTree 
 internal;MapTileTreeReference 
 internal;class MapTilingScheme
+public;MarginOptions
 public;MarginPercent
 public;Marker 
 public;MarkerFillStyle = string | CanvasGradient | CanvasPattern
@@ -384,6 +371,7 @@ public;OffScreenViewportOptions
 public;OnFlashedIdChangedEventArgs =
 alpha;OnFrameStatsReadyEvent = BeEvent
 internal;OnScreenTarget 
+public;OnViewExtentsError
 beta;openImageDataUrlInNewWindow(url: string, title?: string): void
 internal;OrbitGtTileTree 
 internal;OrbitGtTileTree
@@ -403,7 +391,7 @@ public;ParticleCollectionBuilder
 public;ParticleCollectionBuilder
 public;ParticleCollectionBuilderParams
 public;ParticleProps 
-beta;PendingExtension
+internal;PatternGraphicParams
 internal;PerformanceMetrics
 public;PerModelCategoryVisibility
 public;PhysicalModelState 
@@ -418,8 +406,6 @@ alpha;PlanarGridTransparency
 internal;PlanarTilePatch
 public;class PrimitiveTool 
 internal;PrimitiveVisibility
-public;PromiseReturnType
-deprecated;PromiseReturnType
 internal;QuadId
 beta;QuantityFormatOverridesChangedArgs
 beta;QuantityFormatsChangedArgs
@@ -436,7 +422,7 @@ internal;queryVisibleFeatures(viewport: Viewport, options: QueryVisibleFeaturesO
 beta;QueryVisibleFeaturesCallback = (features: Iterable
 beta;QueryVisibleFeaturesOptions = QueryScreenFeaturesOptions | QueryTileFeaturesOptions
 internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined
-public;readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions): Promise
+public;readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions | false): Promise
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
 public;RealityDataQueryCriteria
 internal;RealityModelSource = ViewState | DisplayStyleState
@@ -451,9 +437,11 @@ internal;RealityTileParams
 internal;RealityTileRegion
 internal;RealityTileTree 
 internal;RealityTileTreeParams 
+internal;RenderAreaPattern = IDisposable & RenderMemory.Consumer
 public;class RenderClipVolume
 public;RenderContext
 internal;RenderDiagnostics
+internal;RenderGeometry = IDisposable & RenderMemory.Consumer
 public;class RenderGraphic 
 public;class RenderGraphicOwner 
 internal;RenderMemory
@@ -642,6 +630,7 @@ public;ViewManager
 public;class ViewManip 
 public;class Viewport 
 public;ViewportDecorator
+public;ViewportGraphicBuilderOptions 
 internal;ViewportIdSet 
 internal;ViewportIdSets 
 public;class ViewPose

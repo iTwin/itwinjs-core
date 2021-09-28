@@ -7,7 +7,7 @@ import { assert } from "chai";
 import * as path from "path";
 import { ChangeSetApplyOption, Id64String, OpenMode } from "@bentley/bentleyjs-core";
 import { ChangesetFileProps, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
-import { ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelJsFs, SpatialCategory, StandaloneDb } from "../../imodeljs-backend";
+import { DictionaryModel, Element, IModelDb, IModelJsFs, SpatialCategory, StandaloneDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
@@ -28,7 +28,7 @@ function createChangeset(imodel: IModelDb): ChangesetFileProps {
 function applyOneChangeSet(imodel: IModelDb, csToken: ChangesetFileProps) {
   try {
     imodel.nativeDb.applyChangeset(csToken, ChangeSetApplyOption.Merge);
-  } catch (err) {
+  } catch (err: any) {
     assert.isTrue(false, `apply failed, err=${err.errorNumber}`);
   }
 }
@@ -67,10 +67,6 @@ describe("ChangeMerging", () => {
     secondDb.nativeDb.resetBriefcaseId(200);
     neutralDb.nativeDb.resetBriefcaseId(300);
 
-    firstDb.nativeDb.setBriefcaseManagerOptimisticConcurrencyControlPolicy(new ConcurrencyControl.OptimisticPolicy().conflictResolution);
-    secondDb.nativeDb.setBriefcaseManagerOptimisticConcurrencyControlPolicy(new ConcurrencyControl.OptimisticPolicy().conflictResolution);
-    // // Note: neutral observer's IModel does not need to be configured for optimistic concurrency. He just pulls changes.
-
     const csHistory: ChangesetFileProps[] = [];
 
     let firstParent = -1;
@@ -108,10 +104,12 @@ describe("ChangeMerging", () => {
 
     // --- Test 1: Overlapping changes that really are conflicts => conflict-resolution policy is applied ---
 
+    let expectedValueOfEl1UserLabel: string;
+
     // first: modify el1.userLabel
     if (true) {
       const el1cc = firstDb.elements.getElement(el1);
-      el1cc.userLabel = `${el1cc.userLabel} -> changed by first`;
+      expectedValueOfEl1UserLabel = el1cc.userLabel = `${el1cc.userLabel} -> changed by first`;
       firstDb.elements.updateElement(el1cc);
       firstDb.saveChanges("first modified el1.userLabel");
       csHistory.push(createChangeset(firstDb));
@@ -119,11 +117,9 @@ describe("ChangeMerging", () => {
     }
 
     // second: modify el1.userLabel
-    let expectedValueOfEl1UserLabel: string;
     if (true) {
       const el1before: Element = secondDb.elements.getElement(el1);
-      expectedValueOfEl1UserLabel = `${el1before.userLabel} -> changed by second`;
-      el1before.userLabel = expectedValueOfEl1UserLabel;
+      el1before.userLabel = `${el1before.userLabel} -> changed by first`;
       secondDb.elements.updateElement(el1before);
       secondDb.saveChanges("second modified el1.userLabel");
 

@@ -1,6 +1,35 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Wed, 25 Aug 2021 15:36:01 GMT and should not be manually modified.
+This log was last generated on Tue, 21 Sep 2021 21:06:40 GMT and should not be manually modified.
+
+## 2.19.13
+Tue, 21 Sep 2021 21:06:40 GMT
+
+### Updates
+
+- added callback after animating frustum change
+- Fix OIDC access token that didn't get renew in code that get Reality Data tiles
+- Remove hardcoded contextId (aka iTwinId) used for testing
+
+## 2.19.12
+Wed, 15 Sep 2021 18:06:46 GMT
+
+_Version update only_
+
+## 2.19.11
+Thu, 09 Sep 2021 21:04:58 GMT
+
+### Updates
+
+- Allow white-on-white reversal to be applied regardless of background color.
+
+## 2.19.10
+Wed, 08 Sep 2021 14:36:01 GMT
+
+### Updates
+
+- Geometry created by a GraphicBuilder needs to have its specified placement transform applied properly.
+- The previous fix to the graphicbuilder transform problem actually resulted in some graphicbuilder primitives being transformed twice because they already had the transform applied to them. This fixes that issue by moving the transformation only to primitives that were missing it. This also adds code to ensure that GeometryAccumulator does not mutate the graphicbuilder's transform in-place.
 
 ## 2.19.9
 Wed, 25 Aug 2021 15:36:01 GMT

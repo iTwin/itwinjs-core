@@ -9,6 +9,7 @@ import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Geometry } from "../../Geometry";
+import { Point3dArray, PolyfaceQuery, PolylineOps} from "../../geometry-core";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
@@ -792,6 +793,210 @@ describe("Triangulation", () => {
       dx += 20;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "PinchedTriangulation");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("DartInTriangle", () => {
+    // This simple dart-inside-triangle showed an error in a special case test in the earcut triangulator.
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let dx = 0;
+    let dy = 0;
+    const outer = [
+      Point3d.create (1,-4), Point3d.create (13,0), Point3d.create (1,4), Point3d.create (1,-4),
+    ];
+    const inner = [
+      Point3d.create (5,0), Point3d.create (3,-2), Point3d.create (9,0), Point3d.create (3,2),Point3d.create (5,0),
+    ];
+    const outerArea = PolygonOps.areaXY(outer);
+    const innerArea = PolygonOps.areaXY(inner);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, outer, dx, dy);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, inner, dx, dy);
+    dy += 10;
+    const graph1 = Triangulator.createTriangulatedGraphFromLoops([outer, inner]);
+      if (graph1) {
+        const polyface1 = PolyfaceBuilder.graphToPolyface(graph1);
+        ck.testCoordinate(Math.abs(outerArea) - Math.abs(innerArea), PolyfaceQuery.sumFacetAreas(polyface1), "area of dart in dart");
+        GeometryCoreTestIO.captureGeometry(allGeometry, polyface1, dx, dy);
+    }
+    dx += 20;
+    dy = 0;
+    inner.reverse();
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, outer, dx, dy);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, inner, dx, dy);
+    dy += 10;
+    const graph2 = Triangulator.createTriangulatedGraphFromLoops([outer, inner]);
+      if (graph2) {
+        const polyface2 = PolyfaceBuilder.graphToPolyface(graph2);
+        ck.testCoordinate(Math.abs(outerArea) - Math.abs(innerArea), PolyfaceQuery.sumFacetAreas(polyface2), "area of dart in dart");
+        GeometryCoreTestIO.captureGeometry(allGeometry, polyface2, dx, dy);
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "DartInTriangle");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  function messyShapePointsJson(ex0: number = 0, ey0: number = 0, ex1: number = 0, ey1: number = 0): any {
+    return [
+      [0, 0],
+      [0.654709, 0.03484],
+      [1.302022, 0.138965],
+      [1.93463, 0.311201],
+      [2.545385, 0.549601],
+      [3.925434, 0.248946],
+      [4.226089, 1.628994],
+      [4.676643, 2.095353],
+      [5.076021, 2.606223],
+      [5.419851, 3.156015],
+      [5.704372, 3.738714],
+      [4.911329, 0.012742],
+      [9.180947, -0.896012],
+      [10.026788, 2.986512],
+      [5.77525, 3.912745],
+      [5.979092, 4.528871],
+      [6.117235, 5.162968],
+      [6.188159, 5.808051],
+      [15.071005, 3.872848],
+      [15.149952, 4.234942],
+      [17.675663, 3.684497],
+      [16.263188, -2.797961],
+      [16.064641, -2.754699],
+      [15.959866, -3.235548],
+      [13.473343, -2.693754],
+      [13.578118, -2.212905],
+      [12.585406, -1.996601],
+      [12.484111, -2.468461],
+      [9.996137, -1.926351],
+      [10.09889, -1.454772],
+      [9.782465, -1.385825],
+      [9.659434, -1.950464],
+      [8.666728, -1.734157],
+      [8.412537, -2.900748],
+      [8.348474, -2.936379],
+      [8.409278, -3.049394],
+      [6.537996, -3.910283],
+      [4.596704, -4.522471],
+      [3.073072, -4.777725],
+      [2.406422, -4.878351],
+      [1.159118, -4.928844],
+      [0.507533, -4.944266],
+      [0.044633, -4.952745],
+      [-4.559386, -3.941573],
+      [-5.084428, -3.72601],
+      [-6.937781, -2.781619],
+      [-8.410058, -1.803001],
+      [-8.88581, -1.41257],
+      [-10.198609, -0.20053],
+      [-11.487166, 1.280115],
+      [-11.379811, 1.362224],
+      [-11.423276, 1.421324],
+      [-11.169085, 2.587913],
+      [-12.161793, 2.804211],
+      [-12.05118, 3.371515],
+      [-12.355197, 3.437758],
+      [-12.459969, 2.956911],
+      [-14.946492, 3.498704],
+      [-14.841721, 3.979552],
+      [-15.834432, 4.195856],
+      [-15.939202, 3.715008],
+      [-18.425726, 4.256801],
+      [-18.32095, 4.737653],
+      [-19.313664, 4.953956],
+      [-19.418435, 4.473105],
+      [-21.904958, 5.014898],
+      [-21.800185, 5.495752],
+      [-22.792897, 5.712056],
+      [-22.89767, 5.231202],
+      [-25.384193, 5.772996],
+      [-25.279418, 6.253847],
+      [-27.642639, 6.768779],
+      [-26.961521, 9.894707],
+      [-25.373773, 9.548751],
+      [-25.513633, 8.906874],
+      [-24.714594, 8.726444],
+      [-25.180075, 6.589819],
+      [-22.71835, 6.053513],
+      [-22.252868, 8.190138],
+      [-22.031532, 8.148114],
+      [-21.06162, 8.765842],
+      [-21.700817, 5.83184],
+      [-19.239094, 5.295533],
+      [-18.393224, 9.178193],
+      [-19.906289, 9.507827],
+      [-17.59824, 10.990118],
+      [-5.777575, 8.414887],
+      [-5.768427, 8.411331],
+      [-5.971378, 7.795457],
+      [-6.108774, 7.161728],
+      [-6.179107, 6.517102],
+      [-10.44429, 7.446451],
+      [-11.290253, 3.563954],
+      [-7.02507, 2.634605],
+      [-6.194445, 6.442253],
+      [-6.195142, 5.901328],
+      [-6.148684, 5.362402],
+      [-6.055425, 4.829577],
+      [-5.916075, 4.30691],
+      [-5.731695, 3.798379],
+      [-6.032348, 2.418332],
+      [-4.709612, 2.129385],
+      [-4.245829, 1.644422],
+      [-3.732387, 1.212379],
+      [-3.175292, 0.838308],
+      [-2.581059, 0.526585],
+      [-3.387468, -3.174972],
+      [-2.539054, -3.414636],
+      [-1.677653, -3.602342],
+      [-0.806443, -3.737396],
+      // The zinger
+      [-0.801128 + ex0, -3.712995 + ey0],
+      [-5.820766e-11 + ex1, -0.035721 + ey1],
+      [-0.801128 + ex0, -3.712995 + ey0],
+      [-0.806443, -3.737396],
+
+      [0, 1.593037e-11]];
+  }
+const _messyShape = [
+      {
+        shape: {
+          points: messyShapePointsJson () ,
+          trans: [
+            [0.998765, 0.049683, -1.032365e-16, 532612.092389],
+            [-0.049683, 0.998765, -5.489607e-20, 212337.746743],
+            [1.031063e-16, 5.183973e-18, 1, 7.41464]],
+        },
+      },
+    ];
+
+  function tryTriangulation(allGeometry: GeometryQuery[], points: Point3d[], x0: number, y0: number) {
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, points, x0, y0);
+    const range = Range3d.createArray(points);
+    y0 += range.yLength();
+    Triangulator.clearAndEnableDebugGraphCapture(true);
+    const graph1 = Triangulator.createTriangulatedGraphFromSingleLoop(points);
+      if (graph1) {
+        const polyface1 = PolyfaceBuilder.graphToPolyface(graph1);
+        GeometryCoreTestIO.captureGeometry(allGeometry, polyface1, x0, y0);
+      } else {
+        const graph2 = Triangulator.claimDebugGraph();
+        if (graph2) {
+          const polyface2 = PolyfaceBuilder.graphToPolyface(graph2);
+          GeometryCoreTestIO.captureGeometry(allGeometry, polyface2, x0 + range.xLength (), y0);
+        }
+    }
+  }
+  it("MessyPolygon", () => {
+    // This simple dart-inside-triangle showed an error in a special case test in the earcut triangulator.
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    const y0 = 0;
+    const points = Point3dArray.cloneDeepXYZPoint3dArrays(messyShapePointsJson());
+    const range = Range3d.createFromVariantData(points);
+    tryTriangulation(allGeometry, points, x0, y0);
+    const cleanerPoints = PolylineOps.compressDanglers(points, true);
+    x0 += 3.0 * range.xLength();
+    tryTriangulation(allGeometry, cleanerPoints, x0, y0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Triangulation", "MessyPolygon");
     expect(ck.getNumErrors()).equals(0);
   });
 

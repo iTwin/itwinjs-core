@@ -6,7 +6,7 @@ import { shallow } from "enzyme";
 import * as React from "react";
 import { ToolbarWithOverflow } from "@bentley/ui-components";
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
-import { ActionItemButton, CoreTools, ToolWidget, ToolWidgetComposer } from "../ui-framework";
+import { ActionItemButton, CoreTools, FrontstageManager, ToolWidget, ToolWidgetComposer } from "../ui-framework";
 import { ToolbarHelper } from "../ui-framework/toolbar/ToolbarHelper";
 import TestUtils, { mount } from "./TestUtils";
 
@@ -17,6 +17,8 @@ describe("CoreToolDefinitions", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+    FrontstageManager.clearFrontstageDefs();
+    await FrontstageManager.setActiveFrontstageDef(undefined);
 
     // Set in the before() after UiFramework.i18n is initialized
     horizontalToolbar =

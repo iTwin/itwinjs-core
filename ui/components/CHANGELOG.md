@@ -1,6 +1,30 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Wed, 25 Aug 2021 15:36:01 GMT and should not be manually modified.
+This log was last generated on Tue, 21 Sep 2021 21:06:40 GMT and should not be manually modified.
+
+## 2.19.13
+Tue, 21 Sep 2021 21:06:40 GMT
+
+### Updates
+
+- 'PropertyValueRendererManager': use merged MergedPropertyValueRenderer before looking for typename specific renderer if property is merged.
+
+## 2.19.12
+Wed, 15 Sep 2021 18:06:47 GMT
+
+### Updates
+
+- `TreeRenderer`: Fix last call to `scrollToNode` being repeated on each render.
+
+## 2.19.11
+Thu, 09 Sep 2021 21:04:58 GMT
+
+_Version update only_
+
+## 2.19.10
+Wed, 08 Sep 2021 14:36:01 GMT
+
+_Version update only_
 
 ## 2.19.9
 Wed, 25 Aug 2021 15:36:01 GMT

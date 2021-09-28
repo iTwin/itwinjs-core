@@ -40,8 +40,6 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 # Covers most client libraries, all others with more specific reviewers should be after these two lines
 /common/**/*-client.*                             @calebmshafer @ramanujam-raman
 /common/**/*-client/                              @calebmshafer @ramanujam-raman
-/common/**/extension-client.*                     @calebmshafer @paulius-valiunas
-/common/**/extension-client/                      @calebmshafer @paulius-valiunas
 /common/**/imodelhub-client.*                     @amikoliunas @Animagne
 /common/**/imodelhub-client/                      @amikoliunas @Animagne
 
@@ -61,15 +59,16 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /common/**/eslint-plugin/                         @calebmshafer @paulius-valiunas
 /common/**/express-server.*                       @calebmshafer @wgoehrig
 /common/**/express-server/                        @calebmshafer @wgoehrig
-/common/**/extension-webpack-tools/               @calebmshafer @wgoehrig
 /common/**/frontend-devtools.*                    @imodeljs/display @Ellord207
 /common/**/frontend-devtools/                     @imodeljs/display @Ellord207
-/common/**/geometry-core.*                        @bbastings @EarlinLutz @mgooding @RBBentley
-/common/**/geometry-core/                         @bbastings @EarlinLutz @mgooding @RBBentley
+/common/**/geometry-core.*                        @bbastings @EarlinLutz @mgooding @RBBentley @dassaf4
+/common/**/geometry-core/                         @bbastings @EarlinLutz @mgooding @RBBentley @dassaf4
 /common/**/hypermodeling-frontend.*               @imodeljs/display @bbastings
 /common/**/hypermodeling-frontend/                @imodeljs/display @bbastings
 /common/**/imodeljs-backend.*                     @imodeljs/admins
 /common/**/imodeljs-backend/                      @imodeljs/admins
+/common/**/imodeljs-transformer.*                 @MichaelBelousov @ColinKerr
+/common/**/imodeljs-transformer/                  @MichaelBelousov @ColinKerr
 /common/**/imodeljs-common.*                      @imodeljs/admins @imodeljs/display
 /common/**/imodeljs-common/                       @imodeljs/admins @imodeljs/display
 /common/**/imodeljs-editor-*.*                    @bbastings @kabentley @pmconne
@@ -101,11 +100,12 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /common/**/ui-*/                                  @imodeljs/ui
 /common/**/webgl-compatibility.*                  @imodeljs/display @Ellord207
 /common/**/webgl-compatibility/                   @imodeljs/display @Ellord207
-/common/**/webpack-tools-core/                    @calebmshafer @wgoehrig
+/common/**/webpack-tools-core/                    @calebmshafer @wgoehrig @aruniverse
 
 /common/config/azure-pipelines  @calebmshafer @wgoehrig @ColinKerr
 
 /core/backend                   @imodeljs/admins
+/core/transformer               @MichaelBelousov @ColinKerr
 /core/backend-itwin-client      @calebmshafer @ramanujam-raman
 /core/bentley                   @imodeljs/admins
 /core/common                    @imodeljs/admins @imodeljs/display
@@ -119,7 +119,7 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /core/frontend/src/oidc         @calebmshafer @ramanujam-raman
 /core/frontend/src/extension    @calebmshafer @wgoehrig
 /core/frontend-devtools         @imodeljs/display @Ellord207
-/core/geometry                  @bbastings @EarlinLutz @mgooding @RBBentley
+/core/geometry                  @bbastings @EarlinLutz @mgooding @RBBentley @dassaf4
 /core/hypermodeling             @bbastings @imodeljs/display
 /core/i18n                      @wgoehrig @calebmshafer
 /core/markup                    @kabentley @pmconne @bbastings
@@ -129,7 +129,7 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 
 /docs/getting-started @calebmshafer @williamkbentley
 /docs/config @calebmshafer @williamkbentley
-/docs/learning/presentation @imodeljs/presentation
+/docs/presentation @imodeljs/presentation
 
 # These domains should be split up a bit more
 /domains                      @imodeljs/admins
@@ -159,7 +159,7 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /test-apps/display-test-app                 @bbastings @kabentley @imodeljs/display
 /test-apps/export-gltf                      @mgooding @MichaelBelousov
 /test-apps/export-obj                       @mgooding @MichaelBelousov
-/test-apps/imjs-importer                    @EarlinLutz
+/test-apps/imjs-importer                    @EarlinLutz @dassaf4
 /test-apps/imodel-from-geojson              @mgooding @pmconne
 /test-apps/imodel-from-orbitgt              @imodeljs/display
 /test-apps/imodel-from-reality-model        @imodeljs/display
@@ -173,7 +173,6 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /tools/backend-webpack @calebmshafer @wgoehrig
 /tools/build @calebmshafer @wgoehrig
 /tools/certa @calebmshafer @wgoehrig
-/tools/extension-webpack @calebmshafer @wgoehrig
 /tools/oidc-signin-tool @calebmshafer @wgoehrig
 /tools/webpack-core @calebmshafer @wgoehrig
 /tools/ecschema2ts @calebmshafer @ColinKerr @wgoehrig

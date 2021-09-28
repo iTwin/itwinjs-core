@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { ProcessDetector } from "@bentley/bentleyjs-core";
 import { CloudStorageContainerUrl, CloudStorageTileCache, RpcConfiguration, TileContentIdentifier } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, RenderDiagnostics, RenderSystem } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, RenderDiagnostics, RenderSystem, TileAdmin } from "@bentley/imodeljs-frontend";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
-import { DtaConfiguration } from "../common/DtaConfiguration";
+import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DisplayTestApp } from "./App";
 import { openIModel } from "./openIModel";
 import { signIn } from "./signIn";
@@ -16,38 +16,22 @@ import { showStatus } from "./Utils";
 import { Dock } from "./Window";
 
 const configuration: DtaConfiguration = {};
-
-// Retrieves the configuration for starting SVT from configuration.json file located in the built public folder
-async function retrieveConfiguration(): Promise<void> {
-  return new Promise<void>((resolve, _reject) => {
-    if (ProcessDetector.isMobileAppFrontend) {
-      if (window) {
-        const urlParams = new URLSearchParams(window.location.hash);
-        urlParams.forEach((val, key) => {
-          (configuration as any)[key] = val;
-          Object.assign(configuration, { iModelName: urlParams.get("iModelName") });
-        });
-      }
-      const newConfigurationInfo = JSON.parse(window.localStorage.getItem("imodeljs:env")!);
-      Object.assign(configuration, newConfigurationInfo);
-      resolve();
-    } else {
-      const request: XMLHttpRequest = new XMLHttpRequest();
-      request.open("GET", "configuration.json");
-      request.setRequestHeader("Cache-Control", "no-cache");
-      request.onreadystatechange = ((_event: Event) => {
-        if (request.readyState === XMLHttpRequest.DONE) {
-          if (request.status === 200) {
-            const newConfigurationInfo: any = JSON.parse(request.responseText);
-            Object.assign(configuration, newConfigurationInfo);
-            resolve();
-          }
-        }
+const getFrontendConfig = () => {
+  if (ProcessDetector.isMobileAppFrontend) {
+    if (window) {
+      const urlParams = new URLSearchParams(window.location.hash);
+      urlParams.forEach((val, key) => {
+        (configuration as any)[key] = val;
+        Object.assign(configuration, { iModelName: urlParams.get("iModelName") });
       });
-      request.send();
     }
-  });
-}
+    const newConfigurationInfo = JSON.parse(window.localStorage.getItem("imodeljs:env")!);
+    Object.assign(configuration, newConfigurationInfo);
+  }
+
+  Object.assign(configuration, getConfig());
+  console.log("Configuration", JSON.stringify(configuration)); // eslint-disable-line no-console
+};
 
 async function openFile(filename: string, writable: boolean): Promise<IModelConnection> {
   configuration.standalone = true;
@@ -76,8 +60,7 @@ const dtaFrontendMain = async () => {
   RpcConfiguration.disableRoutingValidation = true;
 
   // retrieve, set, and output the global configuration variable
-  await retrieveConfiguration(); // (does a fetch)
-  console.log("Configuration", JSON.stringify(configuration)); // eslint-disable-line no-console
+  getFrontendConfig();
 
   // Start the app. (This tries to fetch a number of localization json files from the origin.)
   const renderSystemOptions: RenderSystem.Options = {
@@ -95,7 +78,11 @@ const dtaFrontendMain = async () => {
     antialiasSamples: configuration.antialiasSamples,
   };
 
-  const tileAdminProps = DisplayTestApp.tileAdminProps;
+  const tileAdminProps: TileAdmin.Props = {
+    retryInterval: 50,
+    enableInstancing: true,
+  };
+
   if (configuration.disableInstancing)
     tileAdminProps.enableInstancing = false;
 
@@ -121,17 +108,17 @@ const dtaFrontendMain = async () => {
   tileAdminProps.alwaysRequestEdges = true === configuration.alwaysLoadEdges;
   tileAdminProps.minimumSpatialTolerance = configuration.minimumSpatialTolerance;
   tileAdminProps.alwaysSubdivideIncompleteTiles = true === configuration.alwaysSubdivideIncompleteTiles;
+  tileAdminProps.cesiumIonKey = configuration.cesiumIonKey;
 
   if (configuration.useFakeCloudStorageTileCache)
     (CloudStorageTileCache as any)._instance = new FakeTileCache();
 
-  await DisplayTestApp.startup(configuration, renderSystemOptions);
+  await DisplayTestApp.startup(configuration, renderSystemOptions, tileAdminProps);
   if (false !== configuration.enableDiagnostics)
     IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
 
   if (!configuration.standalone && !configuration.customOrchestratorUri) {
-    alert("Standalone iModel required. Set SVT_STANDALONE_FILENAME in environment");
-
+    alert("Standalone iModel required. Set IMJS_STANDALONE_FILENAME in environment");
     return;
   }
 

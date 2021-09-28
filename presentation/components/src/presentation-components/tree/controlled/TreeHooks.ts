@@ -6,14 +6,13 @@
  * @module Tree
  */
 
-import * as immer from "immer";
 import * as React from "react";
 import { Subscription } from "rxjs/internal/Subscription";
 import { HierarchyUpdateRecord, PageOptions, UPDATE_FULL } from "@bentley/presentation-common";
 import { IModelHierarchyChangeEventArgs, Presentation } from "@bentley/presentation-frontend";
 import {
-  isTreeModelNode, isTreeModelNodePlaceholder, MutableTreeModel, MutableTreeModelNode, PagedTreeNodeLoader, RenderedItemsRange, TreeModelNode,
-  TreeModelNodeInput, TreeModelSource, TreeNodeItem, usePagedTreeNodeLoader, VisibleTreeNodes,
+  computeVisibleNodes, isTreeModelNode, isTreeModelNodePlaceholder, MutableTreeModel, MutableTreeModelNode, PagedTreeNodeLoader, RenderedItemsRange,
+  TreeModelNode, TreeModelNodeInput, TreeModelSource, TreeNodeItem, usePagedTreeNodeLoader, VisibleTreeNodes,
 } from "@bentley/ui-components";
 import { RulesetRegistrationHelper } from "../../common/RulesetRegistrationHelper";
 import { PresentationTreeDataProvider, PresentationTreeDataProviderProps } from "../DataProvider";
@@ -36,12 +35,6 @@ export interface PresentationTreeNodeLoaderProps extends PresentationTreeDataPro
    * Note: The prop is already defined in `PresentationTreeDataProviderProps` but specified here again to make it required.
    */
   pagingSize: number;
-
-  /**
-   * Should node loader initiate loading of the whole hierarchy as soon as it's created.
-   * @alpha @deprecated Will be removed on 3.0.
-   */
-  preloadingEnabled?: boolean;
 
   /**
    * Auto-update the hierarchy when ruleset, ruleset variables or data in the iModel changes.
@@ -329,7 +322,7 @@ async function updateModelSourceAfterIModelChange(
     return new TreeModelSource(modelWithUpdateRecords);
   }
 
-  const reloadedHierarchyParts = await reloadVisibleHierarchyParts(new TreeModelSource(modelWithUpdateRecords).getVisibleNodes(), renderedItems, dataProvider);
+  const reloadedHierarchyParts = await reloadVisibleHierarchyParts(computeVisibleNodes(modelWithUpdateRecords), renderedItems, dataProvider);
   const newModel = applyHierarchyChanges(modelSource.getModel() as MutableTreeModel, hierarchyUpdateRecords, reloadedHierarchyParts, treeNodeItemCreationProps);
   return new TreeModelSource(newModel);
 }
@@ -348,7 +341,8 @@ export function applyHierarchyChanges(
   reloadedHierarchyParts: ReloadedHierarchyPart[],
   treeNodeItemCreationProps: CreateTreeNodeItemProps
 ) {
-  const updatedTreeModel = immer.produce(treeModel, (model: MutableTreeModel) => {
+  const modelSource = new TreeModelSource(treeModel);
+  modelSource.modifyModel((model: MutableTreeModel) => {
     const updateParentIds = hierarchyUpdateRecords
       .map((record) => record.parent ? createTreeNodeId(record.parent) : undefined);
     for (const record of hierarchyUpdateRecords) {
@@ -385,7 +379,7 @@ export function applyHierarchyChanges(
       }
     }
   });
-  return updatedTreeModel;
+  return modelSource.getModel() as MutableTreeModel;
 }
 
 function rebuildSubTree(oldModel: MutableTreeModel, newModel: MutableTreeModel, parentNode: TreeModelNode, excludedNodeIds: Array<string | undefined>) {

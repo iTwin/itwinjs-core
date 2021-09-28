@@ -38,7 +38,6 @@ describe("PropertyRecordsBuilder", () => {
       fields: [createTestPropertiesContentField({
         properties: [{
           property: createTestPropertyInfo({ enumerationInfo }),
-          relatedClassPath: [],
         }],
       })],
     });
@@ -101,6 +100,30 @@ describe("PropertyRecordsBuilder", () => {
     expect(record.autoExpand).to.be.true;
     expect((record.value as ArrayValue).items[0].autoExpand).to.be.true;
     expect(((record.value as ArrayValue).items[0].value as StructValue).members.child.autoExpand).to.be.undefined;
+  });
+
+  it("sets custom `renderer`", () => {
+    const descriptor = createTestContentDescriptor({
+      fields: [createTestSimpleContentField({ renderer: { name: "custom-renderer" } })],
+    });
+    const item = createTestContentItem({ values: {}, displayValues: {} });
+    traverseContentItem(builder, descriptor, item);
+    expect(builder.entries.length).to.eq(1);
+    expect(builder.entries[0].record.property.renderer).to.deep.eq({
+      name: "custom-renderer",
+    });
+  });
+
+  it("sets custom `editor`", () => {
+    const descriptor = createTestContentDescriptor({
+      fields: [createTestSimpleContentField({ editor: { name: "custom-editor" } })],
+    });
+    const item = createTestContentItem({ values: {}, displayValues: {} });
+    traverseContentItem(builder, descriptor, item);
+    expect(builder.entries.length).to.eq(1);
+    expect(builder.entries[0].record.property.editor).to.deep.eq({
+      name: "custom-editor",
+    });
   });
 
 });

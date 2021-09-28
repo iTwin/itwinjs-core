@@ -8,20 +8,16 @@
 
 import { GuidString, Id64String } from "@bentley/bentleyjs-core";
 import { Angle } from "@bentley/geometry-core";
-import {
-  CartographicRange, ContextRealityModel, ContextRealityModelProps, FeatureAppearance, OrbitGtBlobProps,
-} from "@bentley/imodeljs-common";
+import { CartographicRange, ContextRealityModel, ContextRealityModelProps, FeatureAppearance, OrbitGtBlobProps } from "@bentley/imodeljs-common";
 import { AccessToken } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
 import { DisplayStyleState } from "./DisplayStyleState";
 import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
-import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { SpatialModelState } from "./ModelState";
-import {
-  createOrbitGtTileTreeReference, createRealityTileTreeReference, RealityModelTileTree, TileTreeReference,
-} from "./tile/internal";
+import { PlanarClipMaskState } from "./PlanarClipMaskState";
+import { createOrbitGtTileTreeReference, createRealityTileTreeReference, RealityModelTileTree, TileTreeReference } from "./tile/internal";
 
 async function getAccessToken(): Promise<AccessToken | undefined> {
   if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.hasSignedIn)
@@ -93,25 +89,11 @@ export class ContextRealityModelState extends ContextRealityModel {
  */
 export interface RealityDataQueryCriteria {
   /** The Id of the iTwin context. */
-  contextId: GuidString;
+  iTwinId: GuidString;
   /** If supplied, only reality data overlapping this range will be included. */
   range?: CartographicRange;
   /** If supplied, reality data already referenced by a [[GeometricModelState]] within this iModel will be excluded. */
   filterIModel?: IModelConnection;
-}
-
-/** @deprecated Use queryRealityData
- * @internal
- */
-export async function findAvailableRealityModels(contextId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]> {
-  return queryRealityData({ contextId, range: modelCartographicRange });
-}
-
-/** @deprecated Use queryRealityData
- * @internal
- */
-export async function findAvailableUnattachedRealityModels(contextId: GuidString, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]> {
-  return queryRealityData({ contextId, filterIModel: iModel, range: modelCartographicRange });
 }
 
 /** Query for reality data associated with an iTwin context.
@@ -120,7 +102,7 @@ export async function findAvailableUnattachedRealityModels(contextId: GuidString
  * @public
  */
 export async function queryRealityData(criteria: RealityDataQueryCriteria): Promise<ContextRealityModelProps[]> {
-  const contextId = criteria.contextId;
+  const iTwinId = criteria.iTwinId;
   const availableRealityModels: ContextRealityModelProps[] = [];
 
   const accessToken = await getAccessToken();
@@ -128,22 +110,19 @@ export async function queryRealityData(criteria: RealityDataQueryCriteria): Prom
     return availableRealityModels;
 
   const requestContext = await AuthorizedFrontendRequestContext.create();
-  requestContext.enter();
 
   const client = new RealityDataClient();
 
   let realityData: RealityData[];
   if (criteria.range) {
     const iModelRange = criteria.range.getLongitudeLatitudeBoundingBox();
-    realityData = await client.getRealityDataInProjectOverlapping(requestContext, contextId, Angle.radiansToDegrees(iModelRange.low.x),
+    realityData = await client.getRealityDataInProjectOverlapping(requestContext, iTwinId, Angle.radiansToDegrees(iModelRange.low.x),
       Angle.radiansToDegrees(iModelRange.high.x),
       Angle.radiansToDegrees(iModelRange.low.y),
       Angle.radiansToDegrees(iModelRange.high.y));
   } else {
-    realityData = await client.getRealityDataInProject(requestContext, contextId);
+    realityData = await client.getRealityDataInProject(requestContext, iTwinId);
   }
-
-  requestContext.enter();
 
   // Get set of URLs that are directly attached to the model.
   const modelRealityDataIds = new Set<string>();
@@ -175,7 +154,7 @@ export async function queryRealityData(criteria: RealityDataQueryCriteria): Prom
 
     // If the RealityData is valid then we add it to the list.
     if (currentRealityData.id && validRd === true) {
-      const url = await client.getRealityDataUrl(requestContext, contextId, currentRealityData.id);
+      const url = await client.getRealityDataUrl(iTwinId, currentRealityData.id);
       let opcConfig: OrbitGtBlobProps | undefined;
 
       if (currentRealityData.type && (currentRealityData.type.toUpperCase() === "OPC") && currentRealityData.rootDocument !== undefined) {
@@ -189,7 +168,6 @@ export async function queryRealityData(criteria: RealityDataQueryCriteria): Prom
         };
       }
 
-      requestContext.enter();
       if (!modelRealityDataIds.has(currentRealityData.id))
         availableRealityModels.push({
           tilesetUrl: url, name: realityDataName, description: (currentRealityData.description ? currentRealityData.description : ""),

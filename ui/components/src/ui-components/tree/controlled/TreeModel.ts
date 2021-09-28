@@ -406,27 +406,6 @@ export class MutableTreeModel implements TreeModel {
     this._tree.deleteSubtree(parentId, false);
   }
 
-  /** Generates flat list of visible nodes in the tree model. */
-  public computeVisibleNodes(): VisibleTreeNodes {
-    const result = MutableTreeModel.getVisibleDescendants(this._tree, this._rootNode);
-    return {
-      getNumNodes: () => result.length,
-      getAtIndex: (index: number): TreeModelNode | TreeModelNodePlaceholder | undefined => {
-        if (typeof (index) === "number") {
-          return result[index];
-        }
-
-        return this._tree.getNode(index);
-      },
-      getModel: () => this,
-      getNumRootNodes: () => this._rootNode.numChildren,
-      [Symbol.iterator]: () => result[Symbol.iterator](),
-      getIndexOfNode: (nodeId: string): number => {
-        return result.findIndex((visibleNode) => (visibleNode as TreeModelNode).id === nodeId);
-      },
-    };
-  }
-
   /** Iterates over all nodes present in the tree model. */
   public * iterateTreeModelNodes(parentId?: string): IterableIterator<MutableTreeModelNode> {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -481,38 +460,60 @@ export class MutableTreeModel implements TreeModel {
       item: _.cloneDeep(input.item),
     };
   }
+}
 
-  // Traverses the tree and collects visible descendants.
-  private static getVisibleDescendants(
-    tree: SparseTree<TreeModelNode>,
-    rootNode: TreeModelNode | TreeModelRootNode,
-    result: Array<TreeModelNode | TreeModelNodePlaceholder> = [],
-  ): Array<TreeModelNode | TreeModelNodePlaceholder> {
-    const children = tree.getChildren(rootNode.id);
-    if (!children) {
-      return result;
-    }
+/**
+ * Generates flat list of visible nodes in the tree model.
+ * @public
+ */
+export function computeVisibleNodes(model: TreeModel): VisibleTreeNodes {
+  const result = getVisibleDescendants(model, model.getRootNode());
+  return {
+    getNumNodes: () => result.length,
+    getAtIndex: (index: number): TreeModelNode | TreeModelNodePlaceholder | undefined => {
+      return result[index];
+    },
+    getModel: () => model,
+    getNumRootNodes: () => model.getRootNode().numChildren,
+    [Symbol.iterator]: () => result[Symbol.iterator](),
+    getIndexOfNode: (nodeId: string): number => {
+      return result.findIndex((visibleNode) => (visibleNode as TreeModelNode).id === nodeId);
+    },
+  };
+}
 
-    let index = 0;
-    for (const childId of children) {
-      if (childId === undefined) {
-        result.push({ parentId: rootNode.id, depth: rootNode.depth + 1, childIndex: index });
-      } else {
-        const childNode = tree.getNode(childId);
-        if (childNode === undefined) {
-          // node was disposed
-          result.push({ parentId: rootNode.id, depth: rootNode.depth + 1, childIndex: index });
-        } else {
-          result.push(childNode);
-          if (childNode.isExpanded && childNode.numChildren !== undefined) {
-            MutableTreeModel.getVisibleDescendants(tree, childNode, result);
-          }
-        }
-      }
-
-      ++index;
-    }
-
+/**
+ * Traverses the tree and collects visible descendants.
+ * @internal
+ */
+export function getVisibleDescendants(
+  model: TreeModel,
+  parentNode: TreeModelNode | TreeModelRootNode,
+  result: Array<TreeModelNode | TreeModelNodePlaceholder> = [],
+): Array<TreeModelNode | TreeModelNodePlaceholder> {
+  const children = model.getChildren(parentNode.id);
+  if (!children) {
     return result;
   }
+
+  let index = 0;
+  for (const childId of children) {
+    if (childId === undefined) {
+      result.push({ parentId: parentNode.id, depth: parentNode.depth + 1, childIndex: index });
+    } else {
+      const childNode = model.getNode(childId);
+      if (childNode === undefined) {
+        // node was disposed
+        result.push({ parentId: parentNode.id, depth: parentNode.depth + 1, childIndex: index });
+      } else {
+        result.push(childNode);
+        if (childNode.isExpanded && childNode.numChildren !== undefined) {
+          getVisibleDescendants(model, childNode, result);
+        }
+      }
+    }
+    ++index;
+  }
+
+  return result;
 }
