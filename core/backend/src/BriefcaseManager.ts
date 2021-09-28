@@ -395,7 +395,7 @@ export class BriefcaseManager {
     const changesets = await IModelHost.hubAccess.downloadChangesets({
       user: arg.user,
       iModelId: db.iModelId,
-      range: { first: reverse ? arg.toIndex + 1 : currentIndex + 1, end: reverse ? currentIndex : arg.toIndex },
+      range: { first: reverse ? arg.toIndex! + 1 : currentIndex + 1, end: reverse ? currentIndex : arg.toIndex },
       targetDir: BriefcaseManager.getChangeSetsPath(db.iModelId),
     });
 

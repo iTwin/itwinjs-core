@@ -2273,8 +2273,7 @@ export namespace RelatedClassInfoWithOptionalRelationship {
 // @public (undocumented)
 export type RelatedClassInfoWithOptionalRelationshipJSON<TClassInfoJSON = ClassInfoJSON> = PartialBy<RelatedClassInfoJSON<TClassInfoJSON>, "relationshipInfo" | "isForwardRelationship" | "isPolymorphicRelationship">;
 
-
-// @public (undocumented)
+// @public
 export interface RelatedInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
     instanceFilter?: string;
     relationshipPaths: RepeatableRelationshipPathSpecification[];

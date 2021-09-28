@@ -315,7 +315,7 @@ describe("IModelWriteTest (#integration)", () => {
     await IModelHost.hubAccess.deleteIModel({ user: managerUser, iTwinId, iModelId });
   });
   it("changeset size and ec schema version change", async () => {
-    const adminRequestContext = await IModelTestUtils.getUserContext(TestUserType.SuperManager);
+    const adminRequestContext = await IModelTestUtils.getAccessToken(TestUserType.SuperManager);
     const iTwinId = await HubUtility.getTestITwinId(adminRequestContext);
     const iModelName = HubUtility.generateUniqueName("changeset_size");
     const rwIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName, description: "TestSubject", user: adminRequestContext });
@@ -388,8 +388,8 @@ describe("IModelWriteTest (#integration)", () => {
     rwIModel.close();
   });
   it("clear cache on schema changes", async () => {
-    const adminRequestContext = await IModelTestUtils.getUserContext(TestUserType.SuperManager);
-    const userRequestContext = await IModelTestUtils.getUserContext(TestUserType.Super);
+    const adminRequestContext = await IModelTestUtils.getAccessToken(TestUserType.SuperManager);
+    const userRequestContext = await IModelTestUtils.getAccessToken(TestUserType.Super);
     const iTwinId = await HubUtility.getTestITwinId(adminRequestContext);
     // Delete any existing iModels with the same name as the OptimisticConcurrencyTest iModel
     const iModelName = HubUtility.generateUniqueName("SchemaChanges");

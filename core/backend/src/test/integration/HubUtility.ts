@@ -591,7 +591,7 @@ class TestIModelHubProject {
   public terminate(): void { }
 
   public get iModelHubClient(): IModelHubClient {
-    return IModelHubBackend.iModelClient ;
+    return IModelHubBackend.iModelClient as IModelHubClient;
   }
 
   private static _iTwinAccessClient?: ITwinAccessClient;
