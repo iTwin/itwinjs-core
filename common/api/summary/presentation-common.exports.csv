@@ -257,6 +257,7 @@ public;Paged
 public;PagedResponse
 public;PageOptions
 public;ParentCategoryIdentifier
+public;PartialBy
 public;PartialHierarchyModification = NodeInsertionInfo | NodeDeletionInfo | NodeUpdateInfo
 public;PartialHierarchyModification
 public;PartialHierarchyModificationJSON = NodeInsertionInfoJSON | NodeDeletionInfoJSON | NodeUpdateInfoJSON
@@ -312,6 +313,9 @@ public;RegisteredRuleset
 public;RelatedClassInfo
 public;RelatedClassInfo
 public;RelatedClassInfoJSON
+public;RelatedClassInfoWithOptionalRelationship = PartialBy
+public;RelatedClassInfoWithOptionalRelationship
+public;RelatedClassInfoWithOptionalRelationshipJSON
 public;RelatedInstanceNodesSpecification = DEPRECATED_RelatedInstanceNodesSpecification | RelatedInstanceNodesSpecificationNew
 public;RelatedInstanceNodesSpecificationNew 
 public;RelatedInstanceSpecification = DEPRECATED_RelatedInstanceSpecification | RelatedInstanceSpecificationNew

@@ -8,6 +8,7 @@
 
 import { assert, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { FormatProps } from "@bentley/imodeljs-quantity";
+import { PartialBy } from "./Utils";
 
 /**
  * Type of an ECClass ID.
@@ -332,6 +333,57 @@ export interface RelatedClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
   relationshipInfo: TClassInfoJSON;
   isForwardRelationship: boolean;
   isPolymorphicRelationship?: boolean;
+}
+
+/**
+ * A structure that describes a relationship between source and target classes where
+ * an actual ECRelationship between them is optional.
+ * @public
+ */
+export type RelatedClassInfoWithOptionalRelationship = PartialBy<RelatedClassInfo, "relationshipInfo" | "isForwardRelationship" | "isPolymorphicRelationship">;
+
+/** @public */
+export type RelatedClassInfoWithOptionalRelationshipJSON<TClassInfoJSON = ClassInfoJSON> = PartialBy<RelatedClassInfoJSON<TClassInfoJSON>, "relationshipInfo" | "isForwardRelationship" | "isPolymorphicRelationship">;
+
+/** @public */
+export namespace RelatedClassInfoWithOptionalRelationship { // eslint-disable-line @typescript-eslint/no-redeclare
+  /** Serialize [[RelatedClassInfoWithOptionalRelationship]] to compressed JSON */
+  export function toCompressedJSON(classInfo: RelatedClassInfoWithOptionalRelationship, classesMap: { [id: string]: CompressedClassInfoJSON }): RelatedClassInfoWithOptionalRelationshipJSON<string> {
+    const { sourceClassInfo, targetClassInfo, relationshipInfo, ...otherProps } = classInfo;
+    const { id: sourceId, ...sourceLeftOverInfo } = sourceClassInfo;
+    const { id: targetId, ...targetLeftOverInfo } = targetClassInfo;
+
+    classesMap[sourceId] = sourceLeftOverInfo;
+    classesMap[targetId] = targetLeftOverInfo;
+
+    if (relationshipInfo) {
+      const { id: relationshipId, ...relationshipLeftOverInfo } = relationshipInfo;
+      classesMap[relationshipId] = relationshipLeftOverInfo;
+    }
+
+    return {
+      ...otherProps,
+      sourceClassInfo: sourceId,
+      targetClassInfo: targetId,
+      ...(relationshipInfo ? { relationshipInfo: relationshipInfo.id } : undefined),
+    };
+  }
+
+  /** Deserialize [[RelatedClassInfoWithOptionalRelationship]] from compressed JSON */
+  export function fromCompressedJSON(json: RelatedClassInfoWithOptionalRelationshipJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): RelatedClassInfoWithOptionalRelationship {
+    const { sourceClassInfo, targetClassInfo, relationshipInfo, ...otherProps } = json;
+    assert(classesMap.hasOwnProperty(sourceClassInfo));
+    assert(classesMap.hasOwnProperty(targetClassInfo));
+    if (relationshipInfo)
+      assert(classesMap.hasOwnProperty(relationshipInfo));
+    return {
+      ...otherProps,
+      sourceClassInfo: ClassInfo.fromJSON({ id: sourceClassInfo, ...classesMap[sourceClassInfo] }),
+      targetClassInfo: ClassInfo.fromJSON({ id: targetClassInfo, ...classesMap[targetClassInfo] }),
+      isPolymorphicTargetClass: json.isPolymorphicTargetClass ?? false,
+      ...(relationshipInfo ? { relationshipInfo: ClassInfo.fromJSON({ id: relationshipInfo, ...classesMap[relationshipInfo] }) } : undefined),
+    };
+  }
 }
 
 /**
