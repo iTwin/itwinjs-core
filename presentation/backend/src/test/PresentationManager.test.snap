@@ -964,10 +964,13 @@ Object {
     },
   ],
   "classesMap": Object {
-    "0": Object {},
     "0x1": Object {
       "label": "Source",
       "name": "source:class",
+    },
+    "0x1054a000001245d": Object {
+      "label": "Rustic Metal Fish Automotive Cuban Peso Peso Convertible",
+      "name": "Barbados",
     },
     "0x2": Object {
       "label": "Target",
@@ -977,7 +980,14 @@ Object {
       "label": "Relationship",
       "name": "relationship:class",
     },
-    "[object Object]": Object {},
+    "0xab690000009ba9": Object {
+      "label": "back-end",
+      "name": "auxiliary",
+    },
+    "0xea7d000000f2b6": Object {
+      "label": "Assurance turquoise navigating",
+      "name": "Berkshire",
+    },
   },
   "connectionId": "d61dcbd0-3355-426a-9ebf-3eadccd4b8be",
   "contentFlags": 0,
@@ -999,25 +1009,21 @@ Object {
       "properties": Array [
         Object {
           "property": Object {
-            "classInfo": Object {
-              "id": "0xb0b60000001f53",
-              "label": "withdrawal",
-              "name": "utilize",
-            },
+            "classInfo": "0x1",
             "enumerationInfo": Object {
               "choices": Array [
                 Object {
-                  "label": "SQL markets",
-                  "value": "655821da-f1ef-4589-ad49-bacbaea86483",
+                  "label": "Games withdrawal",
+                  "value": "27ad4616-5582-41da-b1ef-5896d49bacba",
                 },
                 Object {
-                  "label": "tangible platforms navigating",
-                  "value": "bc243b63-ea44-46b6-bcee-422bd1fbdfff",
+                  "label": "payment morph Congo",
+                  "value": "b4e62d6b-c243-4b63-aa44-6b6bcee422bd",
                 },
               ],
-              "isStrict": true,
+              "isStrict": false,
             },
-            "name": "Granite",
+            "name": "Practical",
             "type": "string",
           },
         },
@@ -1032,23 +1038,19 @@ Object {
       "category": "test-category",
       "editor": undefined,
       "isReadonly": true,
-      "label": "Directives multi-byte Keys",
+      "label": "bus Strategist Facilitator",
       "name": "Complex array of structs property field",
-      "priority": 4698,
+      "priority": 26470,
       "properties": Array [
         Object {
           "property": Object {
-            "classInfo": Object {
-              "id": "0x675f0000014e92",
-              "label": "stable transmitter",
-              "name": "Kids",
-            },
+            "classInfo": "0x1",
             "kindOfQuantity": Object {
-              "label": "web services",
-              "name": "Personal Loan Account",
-              "persistenceUnit": "Home Loan Account",
+              "label": "Accounts backing up",
+              "name": "Avon",
+              "persistenceUnit": "Senior",
             },
-            "name": "Integration",
+            "name": "Tennessee",
             "type": "double",
           },
         },
@@ -1058,16 +1060,16 @@ Object {
         "memberType": Object {
           "members": Array [
             Object {
-              "label": "Fields open-source Tennessee",
-              "name": "efficient",
+              "label": "multi-byte",
+              "name": "CFA Franc BCEAO",
               "type": Object {
                 "typeName": "string",
                 "valueFormat": "Primitive",
               },
             },
             Object {
-              "label": "Accounts backing up",
-              "name": "Avon",
+              "label": "United States Minor Outlying Islands Fields",
+              "name": "Keys",
               "type": Object {
                 "memberType": Object {
                   "typeName": "string",
@@ -1089,19 +1091,19 @@ Object {
       "actualPrimaryClassIds": Array [],
       "autoExpand": true,
       "category": "test-category",
-      "contentClassInfo": "0",
+      "contentClassInfo": "0x1",
       "editor": undefined,
-      "isReadonly": true,
-      "label": "Rue Assurance",
+      "isReadonly": false,
+      "label": "24/7 Home Loan Account stable",
       "name": "Nested content field",
       "nestedFields": Array [
         Object {
           "category": "test-category",
           "editor": undefined,
-          "isReadonly": false,
-          "label": "reintermediate Licensed Soft Bike",
+          "isReadonly": true,
+          "label": "Avon Planner Ways",
           "name": "Simple property field",
-          "priority": 17182,
+          "priority": 27093,
           "renderer": undefined,
           "type": Object {
             "typeName": "string",
@@ -1114,26 +1116,26 @@ Object {
           "isForwardRelationship": false,
           "isPolymorphicRelationship": false,
           "isPolymorphicTargetClass": false,
-          "relationshipInfo": "0",
-          "sourceClassInfo": "0",
-          "targetClassInfo": "0",
+          "relationshipInfo": "0x1054a000001245d",
+          "sourceClassInfo": "0xea7d000000f2b6",
+          "targetClassInfo": "0xab690000009ba9",
         },
       ],
-      "priority": 60528,
+      "priority": 77648,
       "relationshipMeaning": "RelatedInstance",
       "renderer": undefined,
       "type": Object {
         "members": Array [
           Object {
-            "label": "users Movies",
-            "name": "navigating",
+            "label": "Integration web services",
+            "name": "Integration",
             "type": Object {
               "typeName": "string",
               "valueFormat": "Primitive",
             },
           },
         ],
-        "typeName": "turquoise",
+        "typeName": "transmitter",
         "valueFormat": "Struct",
       },
     },
@@ -1221,7 +1223,6 @@ Array [
     "pathFromInputToSelectClass": Array [
       Object {
         "isForwardRelationship": true,
-        "isPolymorphicRelationship": false,
         "isPolymorphicTargetClass": false,
         "relationshipInfo": Object {
           "id": "0x456",

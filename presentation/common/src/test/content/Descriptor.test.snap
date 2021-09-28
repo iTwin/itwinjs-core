@@ -984,7 +984,6 @@ Object {
       "pathFromInputToSelectClass": Array [
         Object {
           "isForwardRelationship": true,
-          "isPolymorphicRelationship": false,
           "isPolymorphicTargetClass": false,
           "relationshipInfo": "0x4",
           "sourceClassInfo": "0x2",
