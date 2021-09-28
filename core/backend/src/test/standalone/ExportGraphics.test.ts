@@ -27,7 +27,7 @@ function saveNewElementFromBuilder(builder: GeometryStreamBuilder, seedElement: 
   return newId;
 }
 
-describe.only("exportGraphics", () => {
+describe("exportGraphics", () => {
   let iModel: SnapshotDb;
 
   before(() => {
@@ -44,7 +44,7 @@ describe.only("exportGraphics", () => {
     // Get known model/category from seed element a la GeometryStream.test.ts
     const seedElement = iModel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
-    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+    assert.isTrue(seedElement.federationGuid === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
     const builder = new GeometryStreamBuilder();
     const geometryParams = new GeometryParams(seedElement.category);
@@ -69,7 +69,7 @@ describe.only("exportGraphics", () => {
     // Get known model/category from seed element a la GeometryStream.test.ts
     const seedElement = iModel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
-    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+    assert.isTrue(seedElement.federationGuid === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
     const builder = new GeometryStreamBuilder();
     const geometryParams = new GeometryParams(seedElement.category);
@@ -109,7 +109,7 @@ describe.only("exportGraphics", () => {
     // Get known model/category from seed element a la GeometryStream.test.ts
     const seedElement = iModel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
-    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+    assert.isTrue(seedElement.federationGuid === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
     const builder = new GeometryStreamBuilder();
     const geometryParams = new GeometryParams(seedElement.category);
@@ -140,7 +140,7 @@ describe.only("exportGraphics", () => {
     // Get known model/category from seed element a la GeometryStream.test.ts
     const seedElement = iModel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
-    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+    assert.isTrue(seedElement.federationGuid === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
     const partBuilder = new GeometryStreamBuilder();
     const partGeometryParams = new GeometryParams(Id64.invalid); // category unused for GeometryPart
@@ -189,7 +189,7 @@ describe.only("exportGraphics", () => {
     // Get known model/category from seed element a la GeometryStream.test.ts
     const seedElement = iModel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
-    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+    assert.isTrue(seedElement.federationGuid === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
     const partBuilder = new GeometryStreamBuilder();
     partBuilder.appendGeometry(Sphere.createCenterRadius(Point3d.createZero(), 1));
@@ -238,7 +238,7 @@ describe.only("exportGraphics", () => {
     // Get known model/category from seed element a la GeometryStream.test.ts
     const seedElement = iModel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
-    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+    assert.isTrue(seedElement.federationGuid === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
     const partBuilder = new GeometryStreamBuilder();
     const partGeometryParams = new GeometryParams(Id64.invalid); // category unused for GeometryPart
@@ -290,7 +290,7 @@ describe.only("exportGraphics", () => {
     // Get known model/category from seed element a la GeometryStream.test.ts
     const seedElement = iModel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
-    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+    assert.isTrue(seedElement.federationGuid === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
     const box = Box.createRange(Range3d.create(Point3d.createZero(), Point3d.create(1.0, 1.0, 1.0)), true);
     assert.isFalse(undefined === box);
