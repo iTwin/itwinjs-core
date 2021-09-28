@@ -6,20 +6,14 @@
  * @module Logging
  */
 
-import { BeEvent } from "./BeEvent";
-import { BentleyError, getErrorMessage, getErrorMetadata, getErrorStack, GetMetaDataFunction, IModelStatus } from "./BentleyError";
+import { BentleyError, ExceptionMetaData, IModelStatus } from "./BentleyError";
 import { BentleyLoggerCategory } from "./BentleyLoggerCategory";
 import { IDisposable } from "./Disposable";
 
 /** Defines the *signature* for a log function.
  * @public
  */
-export type LogFunction = (category: string, message: string, metaData?: GetMetaDataFunction) => void;
-
-/** Defines log filter intercept.
- * @internal
- * */
-export type LogIntercept = (level: LogLevel, category: string, message: string, metaData?: GetMetaDataFunction) => boolean;
+export type LogFunction = (category: string, message: string, metaData: ExceptionMetaData) => void;
 
 /** Use to categorize logging messages by severity.
  * @public
@@ -58,15 +52,15 @@ export interface LoggerLevelsConfig {
  * @public
  */
 export class Logger {
-  private static _logError: LogFunction | undefined;
-  private static _logWarning: LogFunction | undefined;
-  private static _logInfo: LogFunction | undefined;
-  private static _logTrace: LogFunction | undefined;
-  private static _logIntercept: LogIntercept | undefined;
+  protected static _logError: LogFunction | undefined;
+  protected static _logWarning: LogFunction | undefined;
+  protected static _logInfo: LogFunction | undefined;
+  protected static _logTrace: LogFunction | undefined;
   private static _categoryFilter: Map<string, LogLevel> = new Map<string, LogLevel>();
   private static _minLevel: LogLevel | undefined = undefined;
   private static _logExceptionCallstacks = false;
-  private static _makeMetaDataEvent: BeEvent<(...arg: any[]) => void> = new BeEvent<(...arg: any[]) => void>();
+  /** @internal */
+  public static staticMetaData: ExceptionMetaData;
 
   /** Initialize the logger streams. Should be called at application initialization time. */
   public static initialize(logError: LogFunction | undefined, logWarning?: LogFunction | undefined, logInfo?: LogFunction | undefined, logTrace?: LogFunction | undefined): void {
@@ -76,83 +70,44 @@ export class Logger {
     Logger._logTrace = logTrace;
     Logger.turnOffLevelDefault();
     Logger.turnOffCategories();
-    Logger.clearMetaDataSources();
+    Logger.staticMetaData = undefined;
   }
 
   /**
    * Gets raw callbacks which can be use to forward logging
    * @internal
    */
-  public static logRaw(level: LogLevel, category: string, message: string, getMetaData?: GetMetaDataFunction): void {
+  public static logRaw(level: LogLevel, category: string, message: string, metaData?: ExceptionMetaData): void {
     switch (level) {
       case LogLevel.Error:
         if (this._logError)
-          this._logError(category, message, getMetaData);
+          this._logError(category, message, metaData);
         break;
       case LogLevel.Info:
         if (this._logInfo)
-          this._logInfo(category, message, getMetaData);
+          this._logInfo(category, message, metaData);
         break;
       case LogLevel.Trace:
         if (this._logTrace)
-          this._logTrace(category, message, getMetaData);
+          this._logTrace(category, message, metaData);
         break;
       case LogLevel.Warning:
         if (this._logWarning)
-          this._logWarning(category, message, getMetaData);
+          this._logWarning(category, message, metaData);
         break;
     }
-  }
-  /** Register a log intercept that get call called before log is forwarded to log functions.
-   * @internal
-   */
-  public static setIntercept(logIntercept?: LogIntercept) {
-    Logger._logIntercept = logIntercept;
   }
 
   /** Initialize the logger streams to the console. Should be called at application initialization time. */
   public static initializeToConsole(): void {
     /* eslint-disable no-console */
     Logger.initialize(
-      (category: string, message: string, getMetaData?: GetMetaDataFunction): void => console.log(`Error   |${category}| ${message}${Logger.formatMetaData(getMetaData)}`),
-      (category: string, message: string, getMetaData?: GetMetaDataFunction): void => console.log(`Warning |${category}| ${message}${Logger.formatMetaData(getMetaData)}`),
-      (category: string, message: string, getMetaData?: GetMetaDataFunction): void => console.log(`Info    |${category}| ${message}${Logger.formatMetaData(getMetaData)}`),
-      (category: string, message: string, getMetaData?: GetMetaDataFunction): void => console.log(`Trace   |${category}| ${message}${Logger.formatMetaData(getMetaData)}`),
+      (category: string, message: string, metaData?: ExceptionMetaData): void => console.log(`Error   |${category}| ${message}${Logger.formatMetaData(metaData)}`),
+      (category: string, message: string, metaData?: ExceptionMetaData): void => console.log(`Warning |${category}| ${message}${Logger.formatMetaData(metaData)}`),
+      (category: string, message: string, metaData?: ExceptionMetaData): void => console.log(`Info    |${category}| ${message}${Logger.formatMetaData(metaData)}`),
+      (category: string, message: string, metaData?: ExceptionMetaData): void => console.log(`Trace   |${category}| ${message}${Logger.formatMetaData(metaData)}`),
     );
     /* eslint-enable no-console */
-  }
-
-  /** Register a metadata source to the logger.
-   * Source should be in the form of a callback function that adds properties to a metadata object.
-   * @beta
-   */
-  public static registerMetaDataSource(callback: (metadata: any) => void): boolean {
-    if (!this._makeMetaDataEvent.has(callback)) {
-      this._makeMetaDataEvent.addListener(callback);
-      return true;
-    }
-    return false;
-  }
-
-  /** Remove a metadata source.
-   * @beta
-   */
-  public static removeMetaDataSource(callback: (md: any) => void) {
-    return this._makeMetaDataEvent.removeListener(callback);
-  }
-
-  /** Clear all of a logger's metadata sources.
-   * @beta
-   */
-  private static clearMetaDataSources(): void {
-    this._makeMetaDataEvent.clear();
-  }
-
-  /** Add metadata from all registered sources.
-   * @beta
-   */
-  private static addMetaDataFromSources(metaData: any): void {
-    this._makeMetaDataEvent.raiseEvent(metaData);
   }
 
   public static set logExceptionCallstacks(b: boolean) {
@@ -164,16 +119,17 @@ export class Logger {
     return Logger._logExceptionCallstacks;
   }
 
-  /** Compose the metadata for a log message.  */
-  public static makeMetaData(getMetaData?: GetMetaDataFunction): any {
-    const metaData: any = getMetaData ? { ...getMetaData() } : {}; // Copy object to avoid mutating the original
-    Logger.addMetaDataFromSources(metaData);
-    return metaData;
-  }
-
-  /** Format the metadata for a log message.  */
-  private static formatMetaData(getMetaData?: GetMetaDataFunction): string {
-    return getMetaData ? ` ${JSON.stringify(Logger.makeMetaData(getMetaData))}` : "";
+  /** Format the metadata for a log message.
+   */
+  public static formatMetaData(metaData?: ExceptionMetaData): string {
+    const metaObj = BentleyError.getMetaData(metaData);
+    let msg = metaObj ? ` ${JSON.stringify(metaObj)}` : "";
+    if (Logger.staticMetaData) {
+      const globalObj = BentleyError.getMetaData(Logger.staticMetaData);
+      if (globalObj)
+        msg = `${msg},${JSON.stringify(globalObj)}`;
+    }
+    return msg;
   }
 
   /** Set the least severe level at which messages should be displayed by default. Call setLevel to override this default setting for specific categories. */
@@ -282,18 +238,14 @@ export class Logger {
    * @param message  The message.
    * @param metaData  Optional data for the message
    */
-  public static logError(category: string, message: string, metaData?: GetMetaDataFunction): void {
-    if (Logger._logIntercept) {
-      if (!Logger._logIntercept(LogLevel.Error, category, message, metaData))
-        return;
-    }
+  public static logError(category: string, message: string, metaData?: ExceptionMetaData): void {
     if (Logger._logError && Logger.isEnabled(category, LogLevel.Error))
       Logger._logError(category, message, metaData);
   }
 
   private static getExceptionMessage(err: unknown): string {
-    const stack = Logger.logExceptionCallstacks ? `\n${getErrorStack(err)}` : "";
-    return getErrorMessage(err) + stack;
+    const stack = Logger.logExceptionCallstacks ? `\n${BentleyError.getErrorStack(err)}` : "";
+    return BentleyError.getErrorMessage(err) + stack;
   }
 
   /** Log the specified exception. The special "ExceptionType" property will be added as metadata,
@@ -304,9 +256,9 @@ export class Logger {
    * @param log The logger output function to use - defaults to Logger.logError
    * @param metaData  Optional data for the message
    */
-  public static logException(category: string, err: any, log: LogFunction = Logger.logError, metaData?: GetMetaDataFunction): void {
+  public static logException(category: string, err: any, log: LogFunction = Logger.logError): void {
     log(category, Logger.getExceptionMessage(err), () => {
-      return { ...getErrorMetadata(err), ...metaData?.(), exceptionType: err.constructor.name };
+      return { ...BentleyError.getErrorMetadata(err), exceptionType: err.constructor.name };
     });
   }
 
@@ -315,11 +267,7 @@ export class Logger {
    * @param message  The message.
    * @param metaData  Optional data for the message
    */
-  public static logWarning(category: string, message: string, metaData?: GetMetaDataFunction): void {
-    if (Logger._logIntercept) {
-      if (!Logger._logIntercept(LogLevel.Warning, category, message, metaData))
-        return;
-    }
+  public static logWarning(category: string, message: string, metaData?: ExceptionMetaData): void {
     if (Logger._logWarning && Logger.isEnabled(category, LogLevel.Warning))
       Logger._logWarning(category, message, metaData);
   }
@@ -329,11 +277,7 @@ export class Logger {
    * @param message  The message.
    * @param metaData  Optional data for the message
    */
-  public static logInfo(category: string, message: string, metaData?: GetMetaDataFunction): void {
-    if (Logger._logIntercept) {
-      if (!Logger._logIntercept(LogLevel.Info, category, message, metaData))
-        return;
-    }
+  public static logInfo(category: string, message: string, metaData?: ExceptionMetaData): void {
     if (Logger._logInfo && Logger.isEnabled(category, LogLevel.Info))
       Logger._logInfo(category, message, metaData);
   }
@@ -343,11 +287,7 @@ export class Logger {
    * @param message  The message.
    * @param metaData  Optional data for the message
    */
-  public static logTrace(category: string, message: string, metaData?: GetMetaDataFunction): void {
-    if (Logger._logIntercept) {
-      if (!Logger._logIntercept(LogLevel.Trace, category, message, metaData))
-        return;
-    }
+  public static logTrace(category: string, message: string, metaData?: ExceptionMetaData): void {
     if (Logger._logTrace && Logger.isEnabled(category, LogLevel.Trace))
       Logger._logTrace(category, message, metaData);
   }
@@ -366,10 +306,10 @@ export class PerfLogger implements IDisposable {
   private static _severity: LogLevel = LogLevel.Info;
 
   private _operation: string;
-  private _metaData?: GetMetaDataFunction;
+  private _metaData?: ExceptionMetaData;
   private _startTimeStamp: number;
 
-  public constructor(operation: string, metaData?: GetMetaDataFunction) {
+  public constructor(operation: string, metaData?: ExceptionMetaData) {
     this._operation = operation;
     this._metaData = metaData;
 
@@ -388,7 +328,7 @@ export class PerfLogger implements IDisposable {
       return;
 
     Logger.logInfo(BentleyLoggerCategory.Performance, `${this._operation},END`, () => {
-      const mdata = this._metaData ? this._metaData() : {};
+      const mdata = this._metaData ? BentleyError.getMetaData(this._metaData) : {};
       return {
         ...mdata, TimeElapsed: endTimeStamp - this._startTimeStamp, // eslint-disable-line @typescript-eslint/naming-convention
       };

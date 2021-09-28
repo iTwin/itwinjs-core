@@ -9,7 +9,7 @@ import * as moq from "typemoq";
 import produce from "immer";
 import { render } from "@testing-library/react";
 import { act, renderHook } from "@testing-library/react-hooks";
-import { Logger } from "@bentley/bentleyjs-core";
+import { BentleyError, Logger } from "@bentley/bentleyjs-core";
 import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, UiItemsManager, UiItemsProvider, WidgetState } from "@bentley/ui-abstract";
 import { Size, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 import { addFloatingWidget, addPanelWidget, addTab, createDraggedTabState, createNineZoneState, NineZone, NineZoneState, toolSettingsTabId } from "@bentley/ui-ninezone";
@@ -1470,7 +1470,7 @@ describe("Frontstage local storage wrapper", () => {
         };
         restoreNineZoneState(frontstageDef, savedState);
         spy.calledOnce.should.true;
-        (spy.firstCall.args[2]!() as any).should.matchSnapshot();
+        (BentleyError.getMetaData(spy.firstCall.args[2]) as any).should.matchSnapshot();
       });
 
       it("should remove tab from widgetState if widgetDef is not found", () => {

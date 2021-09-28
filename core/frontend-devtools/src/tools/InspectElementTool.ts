@@ -7,7 +7,7 @@
  * @module Tools
  */
 
-import { getErrorMessage, Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { BentleyError, Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
 import { GeometrySummaryOptions, GeometrySummaryVerbosity, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import {
   BeButtonEvent, CoreTools, EventHandled, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, MessageBoxIconType, MessageBoxType,
@@ -167,7 +167,7 @@ export class InspectElementTool extends PrimitiveTool {
         await IModelApp.notifications.openMessageBox(MessageBoxType.Ok, div, MessageBoxIconType.Information);
       }
     } catch (err) {
-      messageDetails = new NotifyMessageDetails(OutputMessagePriority.Error, "Error occurred while generating summary", getErrorMessage(err));
+      messageDetails = new NotifyMessageDetails(OutputMessagePriority.Error, "Error occurred while generating summary", BentleyError.getErrorMessage(err));
     }
 
     IModelApp.notifications.outputMessage(messageDetails);

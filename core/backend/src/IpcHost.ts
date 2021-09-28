@@ -6,7 +6,7 @@
  * @module NativeApp
  */
 
-import { getErrorMessage, getErrorStack, IModelStatus, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { BentleyError, IModelStatus, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import {
   ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, IModelConnectionProps, IModelError, IModelRpcProps, IpcAppChannel, IpcAppFunctions,
   IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel, OpenBriefcaseProps, RemoveFunction, StandaloneOpenOptions,
@@ -162,12 +162,12 @@ export abstract class IpcHandler {
         const ret: IpcInvokeReturn = {
           error: {
             name: (err && typeof (err) === "object") ? err.constructor.name : "Unknown Error",
-            message: getErrorMessage(err),
+            message: BentleyError.getErrorMessage(err),
             errorNumber: (err as any).errorNumber ?? 0,
           },
         };
         if (!IpcHost.noStack)
-          ret.error.stack = getErrorStack(err);
+          ret.error.stack = BentleyError.getErrorStack(err);
         return ret;
       }
     });
