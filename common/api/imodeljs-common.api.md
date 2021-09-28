@@ -4873,7 +4873,7 @@ export class MapLayerSettings {
     // @internal
     protected constructor(url: string, name: string, formatId?: string, visible?: boolean, jsonSubLayers?: MapSubLayerProps[] | undefined, transparency?: number, transparentBackground?: boolean, isBase?: boolean, userName?: string, password?: string, accessKey?: MapLayerKey);
     // (undocumented)
-    readonly accessKey?: MapLayerKey;
+    accessKey?: MapLayerKey;
     get allSubLayersInvisible(): boolean;
     clone(changedProps: MapLayerProps): MapLayerSettings;
     // @internal (undocumented)

@@ -136,9 +136,12 @@ export interface MapLayerProps {
   transparentBackground?: boolean;
   /** Is a base layer.  Defaults to 'false'. */
   isBase?: boolean;
-  /** Access Key for the Layer, like a subscription key or access token */
+  /** Access Key for the Layer, like a subscription key or access token.
+   * TODO This does not belong in the props object. It should never be persisted.
+   */
   accessKey?: MapLayerKey;
 }
+
 /**
  * stores key-value pair to be added to all requests made involving map layer.
  * @beta
@@ -164,7 +167,7 @@ export class MapLayerSettings {
   public readonly isBase: boolean;
   public userName?: string;
   public password?: string;
-  public readonly accessKey?: MapLayerKey;
+  public accessKey?: MapLayerKey;
 
   public setCredentials(userName?: string, password?: string) {
     this.userName = userName;
@@ -260,6 +263,7 @@ export class MapLayerSettings {
     // Clone members not part of MapLayerProps
     clone.userName = this.userName;
     clone.password = this.password;
+    clone.accessKey = this.accessKey;
 
     return clone;
   }
