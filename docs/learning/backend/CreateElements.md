@@ -38,14 +38,6 @@ See [Subject.insert]($backend)
 
 See [GeometricElement3dProps]($common).
 
-where:
-
-``` ts
-[[include:GeometryStreamBuilder.example-code]]
-```
-
-See [GeometryStreamBuilder]($common)
-
 ## SpatialCategory
 
 See [SpatialCategory.insert]($backend)
