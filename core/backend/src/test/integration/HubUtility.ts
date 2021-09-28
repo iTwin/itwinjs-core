@@ -82,7 +82,7 @@ export class HubUtility {
   /**
    * Queries the iModel id by its name
    * @param requestContext The client request context
-     * @param iTwinId Id of the parent iTwin
+   * @param iTwinId Id of the parent iTwin
    * @param iModelName Name of the iModel
    * @throws If the iModel is not found, or if there is more than one iModel with the supplied name
    */
