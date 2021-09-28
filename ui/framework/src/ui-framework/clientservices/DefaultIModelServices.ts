@@ -11,7 +11,7 @@ import {
   ChangeSet, ChangeSetQuery, HubIModel, HubUserInfo, IModelHubClient, IModelQuery, UserInfoQuery, Version, VersionQuery,
 } from "@bentley/imodelhub-client";
 import { IModelVersion } from "@bentley/imodeljs-common";
-import { AuthorizedFrontendRequestContext, CheckpointConnection, IModelConnection } from "@bentley/imodeljs-frontend";
+import { CheckpointConnection, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { UiFramework } from "../UiFramework";
 import { ChangeSetInfo, IModelInfo, IModelServices, IModelUserInfo, VersionInfo } from "./IModelServices";
 
@@ -52,17 +52,24 @@ export class DefaultIModelServices implements IModelServices {
     this._hubClient = new IModelHubClient();
   }
 
+  private async getAccessToken() {
+    const accessToken = (await IModelApp.authorizationClient?.getAccessToken());
+    if (undefined !== accessToken)
+      return accessToken;
+    throw new Error("not authorized");
+
+  }
   /** Get all iModels in a project */
   public async getIModels(iTwinId: GuidString, top: number, skip: number): Promise<IModelInfo[]> {
-    const requestContext = await AuthorizedFrontendRequestContext.create();
+    const accessToken = await this.getAccessToken();
 
     const iModelInfos: IModelInfo[] = [];
     const queryOptions = new IModelQuery();
     queryOptions.select("*").top(top).skip(skip);
     try {
-      const iModels: HubIModel[] = await this._hubClient.iModels.get(requestContext, iTwinId, queryOptions);
+      const iModels: HubIModel[] = await this._hubClient.iModels.get(accessToken, iTwinId, queryOptions);
       for (const imodel of iModels) {
-        const versions: Version[] = await this._hubClient.versions.get(requestContext, imodel.id!, new VersionQuery().select("Name,ChangeSetId").top(1));
+        const versions: Version[] = await this._hubClient.versions.get(accessToken, imodel.id!, new VersionQuery().select("Name,ChangeSetId").top(1));
         if (versions.length > 0) {
           imodel.latestVersionName = versions[0].name;
           imodel.latestVersionChangeSetId = versions[0].changeSetId;
@@ -92,9 +99,9 @@ export class DefaultIModelServices implements IModelServices {
 
   /** Get the thumbnail for the iModel */
   public async getThumbnail(iTwinId: string, iModelId: GuidString): Promise<string | undefined> {
-    const requestContext = await AuthorizedFrontendRequestContext.create();
+    const accessToken = await this.getAccessToken();
     try {
-      const pngImage = await this._hubClient.thumbnails.download(requestContext, iModelId, { contextId: iTwinId, size: "Small" });
+      const pngImage = await this._hubClient.thumbnails.download(accessToken, iModelId, { contextId: iTwinId, size: "Small" });
       return pngImage;
     } catch (err) {
       // No image available
@@ -104,10 +111,10 @@ export class DefaultIModelServices implements IModelServices {
 
   /** Get versions (top 5 for testing) for the iModel */
   public async getVersions(iModelId: GuidString): Promise<VersionInfo[]> {
-    const requestContext = await AuthorizedFrontendRequestContext.create();
+    const accessToken = await this.getAccessToken();
     const versionInfos: VersionInfo[] = [];
     try {
-      const versions: Version[] = await this._hubClient.versions.get(requestContext, iModelId, new VersionQuery().select("*").top(5));
+      const versions: Version[] = await this._hubClient.versions.get(accessToken, iModelId, new VersionQuery().select("*").top(5));
       for (const thisVersion of versions) {
         versionInfos.push(this.createVersionInfo(thisVersion));
       }
@@ -120,10 +127,10 @@ export class DefaultIModelServices implements IModelServices {
 
   /** Get changesets (top 5 for testing) for the iModel */
   public async getChangeSets(iModelId: GuidString): Promise<ChangeSetInfo[]> {
-    const requestContext = await AuthorizedFrontendRequestContext.create();
+    const accessToken = await this.getAccessToken();
     const changeSetInfos: ChangeSetInfo[] = [];
     try {
-      const changesets: ChangeSet[] = await this._hubClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery().top(5).latest());
+      const changesets: ChangeSet[] = await this._hubClient.changeSets.get(accessToken, iModelId, new ChangeSetQuery().top(5).latest());
       for (const thisChangeSet of changesets) {
         changeSetInfos.push(this.createChangeSetInfo(thisChangeSet));
       }
@@ -136,10 +143,10 @@ export class DefaultIModelServices implements IModelServices {
 
   /** Get users that have access to a particular iModel */
   public async getUsers(iModelId: GuidString): Promise<IModelUserInfo[]> {
-    const requestContext = await AuthorizedFrontendRequestContext.create();
+    const accessToken = await this.getAccessToken();
     const userInfos: IModelUserInfo[] = [];
     try {
-      const users: HubUserInfo[] = await this._hubClient.users.get(requestContext, iModelId, new UserInfoQuery().select("*"));
+      const users: HubUserInfo[] = await this._hubClient.users.get(accessToken, iModelId, new UserInfoQuery().select("*"));
       for (const userInfo of users) {
         userInfos.push(this.createUserInfo(userInfo));
       }
@@ -151,10 +158,10 @@ export class DefaultIModelServices implements IModelServices {
   }
 
   public async getUser(iModelId: GuidString, userId: string): Promise<IModelUserInfo[]> {
-    const requestContext = await AuthorizedFrontendRequestContext.create();
+    const accessToken = await this.getAccessToken();
     const userInfos: IModelUserInfo[] = [];
     try {
-      const users: HubUserInfo[] = await this._hubClient.users.get(requestContext, iModelId, new UserInfoQuery().byId(userId));
+      const users: HubUserInfo[] = await this._hubClient.users.get(accessToken, iModelId, new UserInfoQuery().byId(userId));
       for (const userInfo of users) {
         userInfos.push(this.createUserInfo(userInfo));
       }

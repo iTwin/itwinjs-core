@@ -5,10 +5,10 @@
 
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult, GuidString, Id64, Id64String, PerfLogger } from "@bentley/bentleyjs-core";
+import { AccessToken, DbResult, GuidString, Id64, Id64String, PerfLogger } from "@bentley/bentleyjs-core";
 import { ChangedValueState, ChangeOpCode, ColorDef, IModel, IModelError, IModelVersion, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import {
-  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ECSqlStatement, ElementOwnsChildElements,
+  BriefcaseDb, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ECSqlStatement, ElementOwnsChildElements,
   IModelHost, IModelJsFs, SpatialCategory,
 } from "../../imodeljs-backend";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
@@ -66,13 +66,13 @@ function getChangeSummaryAsJson(iModel: BriefcaseDb, changeSummaryId: string) {
 }
 
 describe("ChangeSummary (#integration)", () => {
-  let user: AuthorizedBackendRequestContext;
+  let user: AccessToken;
   let iTwinId: string;
   let iModelId: GuidString;
 
   before(async () => {
     HubUtility.allowHubBriefcases = true;
-    user = await IModelTestUtils.getUserContext(TestUserType.Regular);
+    user = await IModelTestUtils.getAccessToken(TestUserType.Regular);
 
     iTwinId = await HubUtility.getTestITwinId(user);
     iModelId = await HubUtility.getTestIModelId(user, HubUtility.testIModelNames.readOnly);
@@ -80,7 +80,7 @@ describe("ChangeSummary (#integration)", () => {
     await HubUtility.purgeAcquiredBriefcasesById(user, iModelId);
 
     // Purge briefcases that are close to reaching the acquire limit
-    const managerRequestContext = await IModelTestUtils.getUserContext(TestUserType.Manager);
+    const managerRequestContext = await IModelTestUtils.getAccessToken(TestUserType.Manager);
     await HubUtility.purgeAcquiredBriefcasesById(managerRequestContext, iModelId);
   });
 
@@ -371,7 +371,7 @@ describe("ChangeSummary (#integration)", () => {
     const iModelName = HubUtility.generateUniqueName("ParentElementChangeTest");
 
     // Recreate iModel
-    const managerRequestContext = await IModelTestUtils.getUserContext(TestUserType.Manager);
+    const managerRequestContext = await IModelTestUtils.getAccessToken(TestUserType.Manager);
     const testITwinId = await HubUtility.getTestITwinId(managerRequestContext);
     const testIModelId = await HubUtility.recreateIModel({ user: managerRequestContext, iTwinId: testITwinId, iModelName, noLocks: true });
 
@@ -445,8 +445,8 @@ describe("ChangeSummary (#integration)", () => {
   });
 
   it.skip("should be able to extract the last change summary right after applying a change set", async () => {
-    const userContext1 = await IModelTestUtils.getUserContext(TestUserType.Manager);
-    const userContext2 = await IModelTestUtils.getUserContext(TestUserType.SuperManager);
+    const userContext1 = await IModelTestUtils.getAccessToken(TestUserType.Manager);
+    const userContext2 = await IModelTestUtils.getAccessToken(TestUserType.SuperManager);
 
     // User1 creates an iModel (on the Hub)
     const testUtility = new TestChangeSetUtility(userContext1, "ChangeSummaryTest");

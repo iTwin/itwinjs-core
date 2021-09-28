@@ -6,8 +6,8 @@
 import { assert } from "chai";
 import * as fs from "fs";
 import * as path from "path";
-import { GuidString } from "@bentley/bentleyjs-core";
-import { AuthorizedBackendRequestContext, IModelHost, PhysicalElement } from "../../imodeljs-backend";
+import { AccessToken, GuidString } from "@bentley/bentleyjs-core";
+import { IModelHost, PhysicalElement } from "../../imodeljs-backend";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -22,13 +22,13 @@ import { HubUtility } from "./HubUtility";
 //      - Required: "openid imodelhub context-registry-service:read-only"
 
 describe("Schema XML Import Tests (#integration)", () => {
-  let user: AuthorizedBackendRequestContext;
+  let user: AccessToken;
   let testContextId: string;
   let readWriteTestIModelId: GuidString;
 
   before(async () => {
     HubMock.startup("schemaImport");
-    user = await IModelTestUtils.getUserContext(TestUserType.Manager);
+    user = await IModelTestUtils.getAccessToken(TestUserType.Manager);
     testContextId = await HubUtility.getTestITwinId(user);
     readWriteTestIModelId = await HubUtility.recreateIModel({ user, iTwinId: testContextId, iModelName: HubUtility.generateUniqueName("ReadWriteTest"), noLocks: true });
   });

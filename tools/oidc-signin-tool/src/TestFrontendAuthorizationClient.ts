@@ -3,9 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AuthStatus, BeEvent, BentleyError } from "@bentley/bentleyjs-core";
+import { AccessToken, AuthStatus, BeEvent, BentleyError } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { AccessToken } from "@bentley/itwin-client";
 
 /**
  * Basic FrontendAuthorizationClient to use with an already created access token.
@@ -16,6 +15,8 @@ export class TestFrontendAuthorizationClient implements FrontendAuthorizationCli
 
   constructor(private _accessToken?: AccessToken) {
     this._activeToken = this._accessToken;
+    if (!this._activeToken?.toLowerCase().includes("bearer"))
+      this._activeToken = `Bearer ${this._accessToken}`;
     this.onUserStateChanged.raiseEvent(this._activeToken);
   }
 

@@ -4,9 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import * as fs from "fs";
-import { GuidString } from "@bentley/bentleyjs-core";
+import { AccessToken, GuidString } from "@bentley/bentleyjs-core";
 import { IModelClient, IModelPermissions } from "@bentley/imodelhub-client";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool";
 import { TestConfig } from "../TestConfig";
 import * as utils from "./TestUtils";
@@ -33,18 +32,15 @@ describe("iModelHub PermissionsManager", () => {
   let projectId: string;
   let imodelId: GuidString;
   let imodelClient: IModelClient;
-  let requestContext: AuthorizedClientRequestContext;
+  let accessToken: AccessToken;
 
   before(async function () {
     this.timeout(0);
-    const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
-    requestContext = new AuthorizedClientRequestContext(accessToken);
+    accessToken = TestConfig.enableMocks ? "" : await utils.login(TestUsers.super);
+    projectId = await utils.getProjectId(accessToken, "iModelJsTest");
 
-    (requestContext as any).activityId = "iModelHub PermissionHandler";
-    projectId = await utils.getProjectId(requestContext, "iModelJsTest");
-
-    await utils.createIModel(requestContext, utils.sharedimodelName, projectId);
-    imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, projectId);
+    await utils.createIModel(accessToken, utils.sharedimodelName, projectId);
+    imodelId = await utils.getIModelId(accessToken, utils.sharedimodelName, projectId);
     imodelClient = utils.getIModelHubClient();
 
     if (!fs.existsSync(workDir)) {
@@ -58,14 +54,14 @@ describe("iModelHub PermissionsManager", () => {
 
   after(async () => {
     if (TestConfig.enableIModelBank) {
-      await utils.deleteIModelByName(requestContext, projectId, utils.sharedimodelName);
+      await utils.deleteIModelByName(accessToken, projectId, utils.sharedimodelName);
     }
   });
 
   it("should get iModel permissions (#unit)", async () => {
     mockGetiModelPermissions(imodelId, true, true, false, false);
 
-    const imodelPermissions: IModelPermissions = await imodelClient.permissions!.getiModelPermissions(requestContext, imodelId);
+    const imodelPermissions: IModelPermissions = await imodelClient.permissions!.getiModelPermissions(accessToken, imodelId);
     chai.assert.isTrue(imodelPermissions.webView && imodelPermissions.read);
     chai.assert.isFalse(imodelPermissions.write || imodelPermissions.manage);
   });

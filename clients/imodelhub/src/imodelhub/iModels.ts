@@ -7,8 +7,8 @@
  */
 
 import * as deepAssign from "deep-assign";
-import { getErrorMessage, GuidString, IModelHubStatus, Logger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, FileHandler, ProgressCallback } from "@bentley/itwin-client";
+import { AccessToken, getErrorMessage, GuidString, IModelHubStatus, Logger } from "@bentley/bentleyjs-core";
+import { FileHandler, ProgressCallback } from "@bentley/itwin-client";
 import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { IModelBaseHandler } from "./BaseHandler";
@@ -200,10 +200,10 @@ class SeedFileHandler {
    * @param query Optional query object to filter the queried SeedFiles or select different data from them.
    * @returns Resolves to the seed file.
    */
-  public async get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: SeedFileQuery = new SeedFileQuery()): Promise<SeedFile[]> {
+  public async get(accessToken: AccessToken, iModelId: GuidString, query: SeedFileQuery = new SeedFileQuery()): Promise<SeedFile[]> {
     Logger.logInfo(loggerCategory, "Started querying seed files", () => ({ iModelId }));
 
-    const seedFiles = await this._handler.getInstances<SeedFile>(requestContext, SeedFile, this.getRelativeUrl(iModelId, query.getId()), query.getQueryOptions());
+    const seedFiles = await this._handler.getInstances<SeedFile>(accessToken, SeedFile, this.getRelativeUrl(iModelId, query.getId()), query.getQueryOptions());
 
     Logger.logInfo(loggerCategory, "Finished querying seed files", () => ({ iModelId, count: seedFiles.length }));
     return seedFiles;
@@ -216,7 +216,7 @@ class SeedFileHandler {
    * @param seedPath Path of the SeedFile to be uploaded.
    * @param progressCallback Callback for tracking progress.
    */
-  public async uploadSeedFile(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, seedPath: string, seedFileDescription?: string, progressCallback?: ProgressCallback): Promise<SeedFile> {
+  public async uploadSeedFile(accessToken: AccessToken, iModelId: GuidString, seedPath: string, seedFileDescription?: string, progressCallback?: ProgressCallback): Promise<SeedFile> {
     Logger.logInfo(loggerCategory, "Started uploading seed file", () => ({ iModelId, seedPath }));
 
     const seedFile = new SeedFile();
@@ -225,13 +225,13 @@ class SeedFileHandler {
     if (seedFileDescription)
       seedFile.fileDescription = seedFileDescription;
 
-    const createdSeedFile: SeedFile = await this._handler.postInstance<SeedFile>(requestContext, SeedFile, this.getRelativeUrl(iModelId), seedFile);
-    await this._fileHandler!.uploadFile(requestContext, createdSeedFile.uploadUrl!, seedPath, progressCallback);
+    const createdSeedFile: SeedFile = await this._handler.postInstance<SeedFile>(accessToken, SeedFile, this.getRelativeUrl(iModelId), seedFile);
+    await this._fileHandler!.uploadFile(accessToken, createdSeedFile.uploadUrl!, seedPath, progressCallback);
     createdSeedFile.uploadUrl = undefined;
     createdSeedFile.downloadUrl = undefined;
     createdSeedFile.isUploaded = true;
 
-    const confirmSeedFile: SeedFile = await this._handler.postInstance<SeedFile>(requestContext, SeedFile, this.getRelativeUrl(iModelId, createdSeedFile.id), createdSeedFile);
+    const confirmSeedFile: SeedFile = await this._handler.postInstance<SeedFile>(accessToken, SeedFile, this.getRelativeUrl(iModelId, createdSeedFile.id), createdSeedFile);
     Logger.logTrace(loggerCategory, "Finished uploading seed file", () => confirmSeedFile);
 
     return confirmSeedFile;
@@ -406,12 +406,11 @@ export class IModelsHandler {
    * @throws [WsgError]($itwin-client) with [WSStatus.InstanceNotFound]($bentley) if [[InstanceIdQuery.byId]] is used and an HubIModel with the specified id could not be found.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(requestContext: AuthorizedClientRequestContext, contextId: string, query: IModelQuery = new IModelQuery()): Promise<HubIModel[]> {
+  public async get(accessToken: AccessToken, contextId: string, query: IModelQuery = new IModelQuery()): Promise<HubIModel[]> {
     Logger.logInfo(loggerCategory, `Started querying iModels in context`, () => ({ contextId }));
-    ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.defined("contextId", contextId); // contextId is a GUID for iModelHub and a JSON representation of an IModelBankAccessContext for iModelBank.
 
-    const imodels = await this._handler.getInstances<HubIModel>(requestContext, HubIModel, this.getRelativeUrl(contextId, query.getId()), query.getQueryOptions());
+    const imodels = await this._handler.getInstances<HubIModel>(accessToken, HubIModel, this.getRelativeUrl(contextId, query.getId()), query.getQueryOptions());
     Logger.logInfo(loggerCategory, `Finished querying iModels in context`, () => ({ contextId, count: imodels.length }));
 
     return imodels;
@@ -425,9 +424,8 @@ export class IModelsHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have DeleteiModel permission.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async delete(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: GuidString): Promise<void> {
+  public async delete(accessToken: AccessToken, contextId: string, iModelId: GuidString): Promise<void> {
     Logger.logInfo(loggerCategory, "Started deleting iModel", () => ({ iModelId, contextId }));
-    ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("contextId", contextId);
     ArgumentCheck.validGuid("iModelId", iModelId);
 
@@ -436,9 +434,9 @@ export class IModelsHandler {
       const imodel = new HubIModel();
       imodel.id = iModelId;
       imodel.changeState = "deleted";
-      await this._handler.deleteInstance(requestContext, this.getRelativeUrl(contextId, iModelId), imodel);
+      await this._handler.deleteInstance(accessToken, this.getRelativeUrl(contextId, iModelId), imodel);
     } else {
-      await this._handler.delete(requestContext, this.getRelativeUrl(contextId, iModelId));
+      await this._handler.delete(accessToken, this.getRelativeUrl(contextId, iModelId));
     }
     Logger.logInfo(loggerCategory, "Finished deleting iModel", () => ({ iModelId, contextId }));
   }
@@ -451,7 +449,7 @@ export class IModelsHandler {
    * @param iModelTemplate iModel template.
    * @param iModelType iModel type.
    */
-  private async createIModelInstance(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, description?: string, iModelTemplate?: string, iModelType?: IModelType, extent?: number[]): Promise<HubIModel> {
+  private async createIModelInstance(accessToken: AccessToken, contextId: string, iModelName: string, description?: string, iModelTemplate?: string, iModelType?: IModelType, extent?: number[]): Promise<HubIModel> {
     Logger.logInfo(loggerCategory, `Creating iModel with name ${iModelName}`, () => ({ contextId }));
 
     let imodel: HubIModel;
@@ -467,7 +465,7 @@ export class IModelsHandler {
       iModel.iModelType = iModelType;
 
     try {
-      imodel = await this._handler.postInstance<HubIModel>(requestContext, HubIModel, this.getRelativeUrl(contextId), iModel);
+      imodel = await this._handler.postInstance<HubIModel>(accessToken, HubIModel, this.getRelativeUrl(contextId), iModel);
       Logger.logTrace(loggerCategory, `Created iModel instance with name ${iModelName}`, () => ({ contextId }));
     } catch (err) {
       if (!(err instanceof IModelHubError) || IModelHubStatus.iModelAlreadyExists !== err.errorNumber) {
@@ -485,7 +483,7 @@ export class IModelsHandler {
 
       Logger.logInfo(loggerCategory, `Querying iModel by name ${iModelName}`, () => ({ contextId }));
 
-      const imodels = await this.get(requestContext, contextId, new IModelQuery().byName(iModelName));
+      const imodels = await this.get(accessToken, contextId, new IModelQuery().byName(iModelName));
       Logger.logTrace(loggerCategory, `Queried iModel by name ${iModelName}`, () => ({ contextId }));
 
       if (imodels.length > 0) {
@@ -508,8 +506,8 @@ export class IModelsHandler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    * @internal
    */
-  public async getInitializationState(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<InitializationState> {
-    const seedFiles: SeedFile[] = await this._seedFileHandler.get(requestContext, iModelId, new SeedFileQuery().latest());
+  public async getInitializationState(accessToken: AccessToken, iModelId: GuidString): Promise<InitializationState> {
+    const seedFiles: SeedFile[] = await this._seedFileHandler.get(accessToken, iModelId, new SeedFileQuery().latest());
     if (seedFiles.length < 1)
       throw new IModelHubError(IModelHubStatus.FileDoesNotExist);
 
@@ -533,12 +531,12 @@ export class IModelsHandler {
    * @param imodel iModel instance that will be returned if initialization is successful.
    * @param timeOutInMilliseconds Maximum time to wait for the initialization.
    */
-  private async waitForInitialization(requestContext: AuthorizedClientRequestContext, contextId: string, imodel: HubIModel, timeOutInMilliseconds: number): Promise<HubIModel> {
+  private async waitForInitialization(accessToken: AccessToken, contextId: string, imodel: HubIModel, timeOutInMilliseconds: number): Promise<HubIModel> {
     const errorMessage = "iModel initialization failed";
     const retryDelay = timeOutInMilliseconds / 10;
     for (let retries = 10; retries > 0; --retries) {
       try {
-        const initState = await this.getInitializationState(requestContext, imodel.id!);
+        const initState = await this.getInitializationState(accessToken, imodel.id!);
         if (initState === InitializationState.Successful) {
           Logger.logTrace(loggerCategory, "Created iModel", () => ({ contextId, iModelId: imodel.id }));
           imodel.initialized = true;
@@ -601,9 +599,8 @@ export class IModelsHandler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    * @internal
    */
-  public async create(requestContext: AuthorizedClientRequestContext, contextId: string, name: string, createOptions?: IModelCreateOptions): Promise<HubIModel> {
+  public async create(accessToken: AccessToken, contextId: string, name: string, createOptions?: IModelCreateOptions): Promise<HubIModel> {
     Logger.logInfo(loggerCategory, "Creating iModel", () => ({ contextId }));
-    ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("contextId", contextId);
     ArgumentCheck.defined("name", name);
 
@@ -627,7 +624,7 @@ export class IModelsHandler {
     }
 
     const template = IModelsHandler._defaultCreateOptionsProvider.templateToString(createOptions);
-    const imodel = await this.createIModelInstance(requestContext, contextId, name, createOptions.description, template, createOptions.iModelType, createOptions.extent);
+    const imodel = await this.createIModelInstance(accessToken, contextId, name, createOptions.description, template, createOptions.iModelType, createOptions.extent);
 
     if (createOptions.template === iModelTemplateEmpty) {
       return imodel;
@@ -635,14 +632,14 @@ export class IModelsHandler {
 
     if (!createOptions.template) {
       try {
-        await this._seedFileHandler.uploadSeedFile(requestContext, imodel.id!, createOptions.path!, createOptions.description, createOptions.progressCallback);
+        await this._seedFileHandler.uploadSeedFile(accessToken, imodel.id!, createOptions.path!, createOptions.description, createOptions.progressCallback);
       } catch (err) {
-        await this.delete(requestContext, contextId, imodel.id!);
+        await this.delete(accessToken, contextId, imodel.id!);
         throw err;
       }
     }
 
-    return this.waitForInitialization(requestContext, contextId, imodel, createOptions.timeOutInMilliseconds!);
+    return this.waitForInitialization(accessToken, contextId, imodel, createOptions.timeOutInMilliseconds!);
   }
 
   /** Update iModel's name and/or description
@@ -655,12 +652,11 @@ export class IModelsHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.iModelAlreadyExists]$(bentley) if iModel with specified name already exists.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async update(requestContext: AuthorizedClientRequestContext, contextId: string, imodel: HubIModel): Promise<HubIModel> {
+  public async update(accessToken: AccessToken, contextId: string, imodel: HubIModel): Promise<HubIModel> {
     Logger.logInfo(loggerCategory, "Updating iModel", () => ({ contextId, iModelId: imodel.id }));
-    ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("contextId", contextId);
 
-    const updatedIModel = await this._handler.postInstance<HubIModel>(requestContext, HubIModel, this.getRelativeUrl(contextId, imodel.id), imodel);
+    const updatedIModel = await this._handler.postInstance<HubIModel>(accessToken, HubIModel, this.getRelativeUrl(contextId, imodel.id), imodel);
 
     Logger.logTrace(loggerCategory, "Updated iModel", () => ({ contextId, iModelId: imodel.id }));
     return updatedIModel;
@@ -674,9 +670,8 @@ export class IModelsHandler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    * @internal
    */
-  public async download(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, path: string, progressCallback?: ProgressCallback): Promise<void> {
+  public async download(accessToken: AccessToken, iModelId: GuidString, path: string, progressCallback?: ProgressCallback): Promise<void> {
     Logger.logInfo(loggerCategory, "Started downloading seed file", () => ({ iModelId }));
-    ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
     ArgumentCheck.defined("path", path);
 
@@ -686,12 +681,12 @@ export class IModelsHandler {
     if (!this._fileHandler)
       throw IModelHubClientError.fileHandler();
 
-    const seedFiles: SeedFile[] = await this._seedFileHandler.get(requestContext, iModelId, new SeedFileQuery().selectDownloadUrl().latest());
+    const seedFiles: SeedFile[] = await this._seedFileHandler.get(accessToken, iModelId, new SeedFileQuery().selectDownloadUrl().latest());
 
     if (!seedFiles || !seedFiles[0] || !seedFiles[0].downloadUrl)
       throw IModelHubError.fromId(IModelHubStatus.FileDoesNotExist, "Failed to get seed file.");
 
-    await this._fileHandler.downloadFile(requestContext, seedFiles[0].downloadUrl, path, parseInt(seedFiles[0].fileSize!, 10), progressCallback);
+    await this._fileHandler.downloadFile(accessToken, seedFiles[0].downloadUrl, path, parseInt(seedFiles[0].fileSize!, 10), progressCallback);
     Logger.logInfo(loggerCategory, "Finished downloading seed file", () => ({ iModelId }));
   }
 }
@@ -722,11 +717,11 @@ export class IModelHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<HubIModel> {
+  public async get(accessToken: AccessToken, contextId: string): Promise<HubIModel> {
 
     Logger.logInfo(loggerCategory, "Querying iModel", () => ({ contextId }));
     const query = new IModelQuery().orderBy("CreatedDate+asc").top(1);
-    const imodels = await this._handler.get(requestContext, contextId, query);
+    const imodels = await this._handler.get(accessToken, contextId, query);
 
     if (imodels.length < 1)
       throw new IModelHubError(IModelHubStatus.iModelDoesNotExist);
@@ -742,9 +737,9 @@ export class IModelHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have DeleteiModel permission.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async delete(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<void> {
-    const imodel = await this.get(requestContext, contextId);
-    await this._handler.delete(requestContext, contextId, imodel.id!);
+  public async delete(accessToken: AccessToken, contextId: string): Promise<void> {
+    const imodel = await this.get(accessToken, contextId);
+    await this._handler.delete(accessToken, contextId, imodel.id!);
   }
 
   /**
@@ -757,9 +752,9 @@ export class IModelHandler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    * @internal
    */
-  public async getInitializationState(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<InitializationState> {
-    const imodel = await this.get(requestContext, contextId);
-    return this._handler.getInitializationState(requestContext, imodel.id!);
+  public async getInitializationState(accessToken: AccessToken, contextId: string): Promise<InitializationState> {
+    const imodel = await this.get(accessToken, contextId);
+    return this._handler.getInitializationState(accessToken, imodel.id!);
   }
 
   /**
@@ -774,11 +769,11 @@ export class IModelHandler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    * @internal
    */
-  public async create(requestContext: AuthorizedClientRequestContext, contextId: string, name: string, createOptions?: IModelCreateOptions): Promise<HubIModel> {
+  public async create(accessToken: AccessToken, contextId: string, name: string, createOptions?: IModelCreateOptions): Promise<HubIModel> {
 
     let imodelExists = true;
     try {
-      await this.get(requestContext, contextId);
+      await this.get(accessToken, contextId);
     } catch (err) {
       if (err instanceof IModelHubError && err.errorNumber === IModelHubStatus.iModelDoesNotExist)
         imodelExists = false;
@@ -789,7 +784,7 @@ export class IModelHandler {
     if (imodelExists)
       throw new IModelHubError(IModelHubStatus.iModelAlreadyExists);
 
-    return this._handler.create(requestContext, contextId, name, createOptions);
+    return this._handler.create(accessToken, contextId, name, createOptions);
   }
 
   /**
@@ -803,8 +798,8 @@ export class IModelHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.iModelAlreadyExists]$(bentley) if iModel with specified name already exists.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async update(requestContext: AuthorizedClientRequestContext, contextId: string, imodel: HubIModel): Promise<HubIModel> {
-    return this._handler.update(requestContext, contextId, imodel);
+  public async update(accessToken: AccessToken, contextId: string, imodel: HubIModel): Promise<HubIModel> {
+    return this._handler.update(accessToken, contextId, imodel);
   }
 
   /**
@@ -817,8 +812,8 @@ export class IModelHandler {
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    * @internal
    */
-  public async download(requestContext: AuthorizedClientRequestContext, contextId: string, path: string, progressCallback?: ProgressCallback): Promise<void> {
-    const imodel = await this.get(requestContext, contextId);
-    await this._handler.download(requestContext, imodel.id!, path, progressCallback);
+  public async download(accessToken: AccessToken, contextId: string, path: string, progressCallback?: ProgressCallback): Promise<void> {
+    const imodel = await this.get(accessToken, contextId);
+    await this._handler.download(accessToken, imodel.id!, path, progressCallback);
   }
 }
